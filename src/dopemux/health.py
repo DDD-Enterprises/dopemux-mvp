@@ -174,7 +174,7 @@ class HealthChecker:
             claude_processes = []
             for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
                 try:
-                    cmdline = ' '.join(proc.info.get('cmdline', []))
+                    cmdline = ' '.join(proc.info.get('cmdline') or [])
                     if 'claude' in cmdline.lower() and 'code' in cmdline.lower():
                         claude_processes.append({
                             'pid': proc.info['pid'],
@@ -219,7 +219,7 @@ class HealthChecker:
             mcp_processes = []
             for proc in psutil.process_iter(['pid', 'name', 'cmdline', 'status']):
                 try:
-                    cmdline = ' '.join(proc.info.get('cmdline', []))
+                    cmdline = ' '.join(proc.info.get('cmdline') or [])
                     if 'mcp-server' in cmdline or 'sequential-thinking' in cmdline:
                         memory_info = proc.memory_info()
                         mcp_processes.append({

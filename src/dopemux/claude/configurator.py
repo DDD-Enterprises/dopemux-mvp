@@ -330,7 +330,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
                 "task_decomposition": True,
                 "gentle_notifications": True
             },
-            "mcp_servers": template_config.get('mcp_servers', []),
+            # Don't include mcp_servers in project config - let config manager handle it
             "session_settings": {
                 "auto_save_interval": config.context.auto_save_interval,
                 "max_sessions": config.context.max_sessions,

@@ -26,6 +26,21 @@
         "DOPEMUX_INTEGRATION_KEY": "${DOPEMUX_INTEGRATION_KEY}"
       },
       "type": "stdio"
+    },
+    "mas-sequential-thinking": {
+      "command": "uv",
+      "args": ["--directory", "docker/mcp-servers/mcp-server-mas-sequential-thinking", "run", "mcp-server-mas-sequential-thinking"],
+      "env": {
+        "LLM_PROVIDER": "github",
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}",
+        "GITHUB_TEAM_MODEL_ID": "openai/gpt-5",
+        "GITHUB_AGENT_MODEL_ID": "openai/gpt-5-min",
+        "EXA_API_KEY": "00000000-REDACTED-ROTATE-IMMEDIATELY",
+        "ENABLE_CONTEXT_PRESERVATION": "true",
+        "ENABLE_GENTLE_GUIDANCE": "true",
+        "MAX_THINKING_STEPS": "10"
+      },
+      "type": "stdio"
     }
   }
 }

@@ -1,4 +1,65 @@
+# Dopemux MCP Servers - Complete Docker Orchestration
+# Based on ADR-007 (Routing Logic) and ADR-012 (MCP Integration Patterns)
+
 services:
+  # === CRITICAL PATH SERVERS (Priority: High) ===
+
+  # Context7 - ALWAYS FIRST for documentation and API references
+  context7:
+    image: mcp/context7:latest
+    container_name: mcp-context7
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - CONTEXT7_API_KEY=${CONTEXT7_API_KEY}
+      - CONTEXT7_ENDPOINT=${CONTEXT7_ENDPOINT}
+    ports:
+      - "3002:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8080 || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+    volumes:
+      - mcp_context7_cache:/app/cache
+    labels:
+      - "mcp.role=critical_path"
+      - "mcp.priority=highest"
+      - "mcp.description=Documentation and API references"
+
+  # Zen - Multi-model orchestration and complex decision making
+  zen:
+    build:
+      context: ./zen
+      dockerfile: Dockerfile
+    container_name: mcp-zen
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DISABLED_TOOLS=analyze,refactor,testgen,secaudit,docgen,tracer
+      - DEFAULT_MODEL=auto
+      - MCP_SERVER_PORT=3003
+    ports:
+      - "3003:3003"
+    working_dir: /app
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+    labels:
+      - "mcp.role=critical_path"
+      - "mcp.priority=highest"
+      - "mcp.description=Multi-model orchestration"
+
+  # Sequential Thinking - Multi-step reasoning and architectural analysis
   mas-sequential-thinking:
     build:
       context: ./mcp-server-mas-sequential-thinking
@@ -20,16 +81,353 @@ services:
     volumes:
       - mcp_logs:/app/logs
       - mcp_cache:/app/cache
+    labels:
+      - "mcp.role=critical_path"
+      - "mcp.priority=high"
+      - "mcp.description=Multi-step reasoning and analysis"
 
+  # === WORKFLOW SERVERS (Priority: Medium) ===
+
+  # ConPort - Project memory and decision tracking
+  conport:
+    build:
+      context: ./conport
+      dockerfile: Dockerfile
+    container_name: mcp-conport
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - MCP_SERVER_PORT=3004
+    ports:
+      - "3004:3004"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+    volumes:
+      - mcp_conport_data:/app/data
+    labels:
+      - "mcp.role=workflow"
+      - "mcp.priority=medium"
+      - "mcp.description=Project memory and decision tracking"
+
+  # Task Master AI - Task management and PRD processing
+  task-master-ai:
+    build:
+      context: ./task-master-ai
+      dockerfile: Dockerfile
+    container_name: mcp-task-master-ai
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - MCP_SERVER_PORT=3005
+    ports:
+      - "3005:3005"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3005/health"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+    volumes:
+      - mcp_task_master_data:/app/data
+    labels:
+      - "mcp.role=workflow"
+      - "mcp.priority=medium"
+      - "mcp.description=Task management and PRD processing"
+
+  # Serena - Code navigation, refactoring, LSP functionality
+  serena:
+    image: python:3.11-slim
+    container_name: mcp-serena
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - MCP_SERVER_PORT=3006
+    ports:
+      - "3006:3006"
+    command: >
+      sh -c "
+        apt-get update && apt-get install -y curl git build-essential &&
+        pip install uv &&
+        cat > /tmp/serena_wrapper.py << 'EOF'
+        import subprocess
+        import http.server
+        import socketserver
+        import threading
+        import signal
+        import sys
+        import json
+        import os
+
+        port = int(os.environ.get('MCP_SERVER_PORT', 3006))
+
+        # Start serena MCP server as subprocess
+        serena_process = subprocess.Popen(
+            ['uvx', '--from', 'git+https://github.com/oraios/serena', 'serena', 'start-mcp-server'],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+
+        class HealthHandler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                if self.path == '/health':
+                    status = {
+                        'status': 'healthy' if serena_process.poll() is None else 'unhealthy',
+                        'serena_running': serena_process.poll() is None
+                    }
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps(status).encode())
+                else:
+                    self.send_response(404)
+                    self.end_headers()
+
+        def output_reader(pipe, prefix):
+            for line in iter(pipe.readline, ''):
+                print(f'[SERENA {prefix}] {line.strip()}')
+
+        # Start output readers
+        threading.Thread(target=output_reader, args=(serena_process.stdout, 'OUT'), daemon=True).start()
+        threading.Thread(target=output_reader, args=(serena_process.stderr, 'ERR'), daemon=True).start()
+
+        # Start HTTP server
+        with socketserver.TCPServer(('0.0.0.0', port), HealthHandler) as httpd:
+            print(f'🔧 Serena MCP Server wrapper running on port {port}')
+            try:
+                httpd.serve_forever()
+            except KeyboardInterrupt:
+                serena_process.terminate()
+                sys.exit(0)
+        EOF
+        python /tmp/serena_wrapper.py
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3006/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 60s
+    volumes:
+      - mcp_serena_data:/app/data
+    labels:
+      - "mcp.role=workflow"
+      - "mcp.priority=medium"
+      - "mcp.description=Code navigation and refactoring"
+
+  # Milvus - Vector database for claude-context
+  milvus:
+    image: milvusdb/milvus:latest
+    container_name: milvus-standalone
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    volumes:
+      - milvus_data:/var/lib/milvus
+    command: milvus run standalone
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9091/healthz || exit 1"]
+      timeout: 10s
+      retries: 5
+      interval: 30s
+      start_period: 60s
+
+  # Claude Context - Semantic code search within repositories
+  claude-context:
+    image: node:20-slim
+    container_name: mcp-claude-context
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - EMBEDDING_PROVIDER=OpenAI
+      - EMBEDDING_MODEL=text-embedding-3-small
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MILVUS_ADDRESS=milvus:19530
+      - MILVUS_TOKEN=
+      - MCP_SERVER_PORT=3007
+    ports:
+      - "3007:3007"
+    depends_on:
+      milvus:
+        condition: service_healthy
+    command: >
+      sh -c "
+        apt-get update && apt-get install -y curl python3 build-essential &&
+        npm install -g @zilliz/claude-context-mcp@latest &&
+        npx @zilliz/claude-context-mcp@latest
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3007/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 60s
+    volumes:
+      - mcp_claude_context_data:/app/data
+    labels:
+      - "mcp.role=research"
+      - "mcp.priority=medium"
+      - "mcp.description=Semantic code search"
+
+  # === RESEARCH SERVERS (Priority: Low - Fallback Only) ===
+
+  # Exa - Web research (ONLY when context7 lacks information)
+  exa:
+    image: node:20-slim
+    container_name: mcp-exa
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - EXA_API_KEY=${EXA_API_KEY}
+      - MCP_SERVER_PORT=3008
+    ports:
+      - "3008:3008"
+    command: >
+      sh -c "
+        npm install -g exa-mcp &&
+        cat > /tmp/exa_wrapper.js << 'EOF'
+        const { spawn } = require('child_process');
+        const http = require('http');
+        const port = process.env.MCP_SERVER_PORT || 3008;
+
+        const mcpProcess = spawn('npx', ['exa-mcp'], {
+          stdio: ['pipe', 'pipe', 'pipe'],
+          env: { ...process.env, EXA_API_KEY: process.env.EXA_API_KEY }
+        });
+
+        const server = http.createServer((req, res) => {
+          if (req.url === '/health') {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ status: 'healthy', mcp_running: !mcpProcess.killed }));
+          } else {
+            res.writeHead(404);
+            res.end('Not Found');
+          }
+        });
+
+        mcpProcess.stdout.on('data', data => console.log('EXA:', data.toString()));
+        mcpProcess.stderr.on('data', data => console.error('EXA ERR:', data.toString()));
+
+        server.listen(port, '0.0.0.0', () => {
+          console.log('🔍 EXA MCP Server wrapper running on port ' + port);
+        });
+        EOF
+        node /tmp/exa_wrapper.js
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3008/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+    labels:
+      - "mcp.role=research"
+      - "mcp.priority=low"
+      - "mcp.description=Web research fallback"
+
+  # === QUALITY & UTILITY SERVERS (Priority: Medium) ===
+
+  # MorphLLM Fast Apply - Pattern-based transformations and bulk edits
+  morphllm-fast-apply:
+    build:
+      context: ./morphllm-fast-apply
+      dockerfile: Dockerfile
+    container_name: mcp-morphllm-fast-apply
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - MCP_SERVER_PORT=3011
+    ports:
+      - "3011:3011"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3011/health"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+    labels:
+      - "mcp.role=quality"
+      - "mcp.priority=medium"
+      - "mcp.description=Pattern-based transformations and bulk edits"
+
+  # Desktop Commander - Desktop automation and system control
+  desktop-commander:
+    build:
+      context: ./desktop-commander
+      dockerfile: Dockerfile
+    container_name: mcp-desktop-commander
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - MCP_SERVER_PORT=3012
+      - DISPLAY=${DISPLAY:-:0}
+    ports:
+      - "3012:3012"
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp:/tmp
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3012/health"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+    labels:
+      - "mcp.role=utility"
+      - "mcp.priority=medium"
+      - "mcp.description=Desktop automation and system control"
+
+# === NETWORKS ===
 networks:
   mcp-network:
     driver: bridge
     name: mcp-network
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+  # Connect to existing Leantime network for PM integration
   leantime-net:
     external: true
+    name: leantime-net
 
+# === VOLUMES ===
 volumes:
   mcp_logs:
     driver: local
+    name: mcp_logs
   mcp_cache:
     driver: local
+    name: mcp_cache
+  mcp_context7_cache:
+    driver: local
+    name: mcp_context7_cache
+  mcp_conport_data:
+    driver: local
+    name: mcp_conport_data
+  mcp_task_master_data:
+    driver: local
+    name: mcp_task_master_data
+  mcp_serena_data:
+    driver: local
+    name: mcp_serena_data
+  mcp_claude_context_data:
+    driver: local
+    name: mcp_claude_context_data
+  milvus_data:
+    driver: local
+    name: milvus_data

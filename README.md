@@ -1,8 +1,41 @@
-# Dopemux MVP
+# 🧠 Dopemux - ADHD-Optimized Development Platform
 
-**ADHD-Optimized Development Platform with Leantime & Task-Master AI Integration**
+> **Dopemux MVP**: Complete ADHD-optimized development platform with health monitoring, MCP server integration, and comprehensive Claude Code support.
 
-Dopemux transforms chaotic development workflows into structured, attention-friendly experiences through intelligent project management and AI-powered task decomposition.
+Dopemux is a specialized development platform designed for neurodivergent developers, particularly those with ADHD. It provides context preservation, attention monitoring, task decomposition, and comprehensive health monitoring to enhance productivity and reduce cognitive load.
+
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![ADHD](https://img.shields.io/badge/ADHD-Optimized-purple.svg)](docs/ADHD_FEATURES.md)
+[![Health](https://img.shields.io/badge/Health-Monitoring-orange.svg)](docs/HEALTH_MONITORING.md)
+
+## 🎯 Key Features
+
+### **🧠 ADHD-First Design**
+- **Context Preservation**: Automatic session state management across interruptions
+- **Attention Monitoring**: Real-time focus state tracking and adaptive responses
+- **Task Decomposition**: Complex tasks broken into manageable 25-minute chunks
+- **Gentle Guidance**: Non-judgmental, encouraging feedback and clear next steps
+- **Decision Reduction**: Maximum 3 options presented to reduce cognitive overwhelm
+
+### **🏥 Comprehensive Health Monitoring**
+- **Real-time Health Checks**: Monitor Dopemux core, Claude Code, MCP servers, and system resources
+- **Slash Command Integration**: Instant health status from Claude Code with `/health`, `/mcp-status`, `/health-fix`
+- **Auto-remediation**: Automatic service restart and problem resolution
+- **ADHD-Friendly Interface**: Clear visual indicators (🟢🟡🔴) and minimal cognitive load
+- **Docker MCP Support**: Ready for comprehensive Docker-based MCP server ecosystem
+
+### **🔧 Claude Code Integration**
+- **MCP Server Management**: Integrated sequential thinking and reasoning capabilities
+- **Auto-responder**: Intelligent confirmation handling with attention-aware features
+- **Configuration Management**: ADHD-optimized Claude Code setup and maintenance
+- **Project Templates**: Pre-configured setups for common development scenarios
+
+### **⚡ Advanced MCP Ecosystem**
+- **Sequential Thinking Server**: Multi-agent reasoning with DeepSeek/GitHub Models
+- **Leantime Integration**: Project management with ADHD accommodations
+- **Docker Orchestration**: Scalable MCP server architecture
+- **Health Monitoring**: Comprehensive service monitoring and auto-recovery
 
 ## ✨ Features
 

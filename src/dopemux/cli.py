@@ -22,7 +22,6 @@ from . import __version__
 from .config import ConfigManager
 from .claude import ClaudeLauncher, ClaudeConfigurator
 from .adhd import ContextManager, AttentionMonitor, TaskDecomposer
-from integrations.claude_autoresponder import create_autoresponder_manager
 from .health import HealthChecker
 
 console = Console()
@@ -452,6 +451,7 @@ def autoresponder_start(ctx, terminal_scope, delay, timeout, whitelist, debug):
     if updates:
         config_manager.update_claude_autoresponder(**updates)
 
+    from integrations.claude_autoresponder import create_autoresponder_manager
     autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
 
     with Progress(
@@ -494,6 +494,7 @@ def autoresponder_stop(ctx):
         console.print("[red]No Dopemux project found in current directory[/red]")
         sys.exit(1)
 
+    from integrations.claude_autoresponder import create_autoresponder_manager
     autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
 
     if not autoresponder_manager.is_running():
@@ -541,6 +542,7 @@ def autoresponder_status(ctx):
         console.print("[red]No Dopemux project found in current directory[/red]")
         sys.exit(1)
 
+    from integrations.claude_autoresponder import create_autoresponder_manager
     autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
     status = autoresponder_manager.get_status()
 
@@ -596,6 +598,7 @@ def autoresponder_setup(ctx):
         console.print("[red]No Dopemux project found in current directory[/red]")
         sys.exit(1)
 
+    from integrations.claude_autoresponder import create_autoresponder_manager
     autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
 
     with Progress(
@@ -760,6 +763,7 @@ def autoresponder_config(ctx, enabled, terminal_scope, delay, timeout, whitelist
         # Restart if running
         project_path = Path.cwd()
         if (project_path / '.dopemux').exists():
+            from integrations.claude_autoresponder import create_autoresponder_manager
             autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
             if autoresponder_manager.is_running():
                 console.print("[yellow]🔄 Restarting auto responder with new settings...[/yellow]")

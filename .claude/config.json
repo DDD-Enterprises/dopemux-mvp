@@ -1,0 +1,24 @@
+{
+  "claude_code": {
+    "version": "1.0.0",
+    "mcp_servers": {
+      "task-master-ai": {
+        "enabled": true,
+        "type": "stdio"
+      },
+      "leantime-mcp": {
+        "enabled": true,
+        "type": "stdio"
+      },
+      "mas-sequential-thinking": {
+        "enabled": true,
+        "type": "stdio"
+      }
+    },
+    "adhd_features": {
+      "context_preservation": true,
+      "gentle_guidance": true,
+      "progress_visualization": true
+    }
+  }
+}

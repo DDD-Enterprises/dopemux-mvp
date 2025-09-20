@@ -1,0 +1,17 @@
+{
+  "name": "dopemux-context7-mcp",
+  "version": "1.0.0",
+  "description": "Context7 MCP Server for Dopemux",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "@upstash/context7-mcp": "^1.0.17",
+    "@modelcontextprotocol/sdk": "^1.18.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
