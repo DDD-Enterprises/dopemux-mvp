@@ -165,4 +165,5 @@ Temporary Items
 .idea/
 *.swp
 *.swo
-*~
+*~docker/mcp-servers/mcp-server-mas-sequential-thinking/
+docker/mcp-servers/zen/zen-mcp-server/
