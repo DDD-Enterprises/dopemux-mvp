@@ -1,0 +1,94 @@
+{
+  "mcpServers": {
+    "metamcp-production": {
+      "command": "python",
+      "args": ["/Users/hue/code/dopemux-mvp/metamcp_server.py"],
+      "env": {
+        "PYTHONPATH": "/Users/hue/code/dopemux-mvp/src",
+        "METAMCP_CONFIG_PATH": "/Users/hue/code/dopemux-mvp/config/mcp",
+        "DOPEMUX_INTEGRATION": "true",
+        "ADHD_OPTIMIZATIONS": "enabled"
+      },
+      "type": "stdio"
+    },
+    "conport-memory": {
+      "url": "http://localhost:3010/sse",
+      "type": "SSE"
+    },
+    "mas-sequential-thinking": {
+      "command": "docker",
+      "args": ["exec", "-i", "mcp-mas-sequential-thinking", "python", "docker_server.py"],
+      "env": {
+        "ADHD_MODE": "enabled",
+        "THINKING_DEPTH_LIMIT": "5",
+        "SESSION_TIMEOUT": "1500"
+      },
+      "type": "stdio"
+    },
+    "context7": {
+      "url": "http://localhost:3002/mcp",
+      "type": "http"
+    },
+    "zen": {
+      "url": "http://localhost:3003/mcp",
+      "type": "http"
+    },
+    "task-master-ai": {
+      "url": "http://localhost:3005/mcp",
+      "type": "http"
+    },
+    "morphllm-fast-apply": {
+      "url": "http://localhost:3011/mcp",
+      "type": "http"
+    },
+    "desktop-commander": {
+      "url": "http://localhost:3012/mcp",
+      "type": "http"
+    },
+    "leantime-mcp": {
+      "command": "node",
+      "args": ["/Users/hue/code/dopemux-mvp/src/integrations/leantime_mcp_server.js"],
+      "env": {
+        "LEANTIME_API_URL": "${LEANTIME_API_URL:-http://localhost:8080}",
+        "LEANTIME_API_TOKEN": "${LEANTIME_API_TOKEN}",
+        "DOPEMUX_INTEGRATION_KEY": "${DOPEMUX_INTEGRATION_KEY}",
+        "ADHD_MODE": "enabled"
+      },
+      "type": "stdio"
+    }
+  },
+  "dopemuxIntegration": {
+    "enabled": true,
+    "version": "1.0.0",
+    "features": {
+      "adhdOptimizations": {
+        "enabled": true,
+        "sessionLength": 1500,
+        "breakReminders": true,
+        "progressiveDisclosure": true,
+        "gentleNotifications": true
+      },
+      "roleBasedMounting": {
+        "enabled": true,
+        "autoDetection": true,
+        "fallbackRole": "developer"
+      },
+      "memoryIntegration": {
+        "enabled": true,
+        "crossSession": true,
+        "contextPreservation": true
+      },
+      "multiModelConsensus": {
+        "enabled": true,
+        "complexDecisionThreshold": 0.7,
+        "modelAgreementRequired": 0.8
+      }
+    },
+    "healthMonitoring": {
+      "enabled": true,
+      "checkInterval": 60,
+      "autoFailover": true,
+      "fallbackToStandard": true
+    }
+  }
+}
