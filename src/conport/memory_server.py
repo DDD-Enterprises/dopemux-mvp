@@ -19,12 +19,13 @@ from typing import Any, Dict, List, Optional, Sequence
 from uuid import uuid4
 
 import asyncpg
-from milvus import MilvusClient
+from pymilvus import MilvusClient
 from pydantic import BaseModel
 import voyageai
 from mcp import types
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
+from mcp.server.sse import SseServerTransport
 
 
 # Configure logging
@@ -81,10 +82,16 @@ class MilvusManager:
     async def connect(self):
         """Connect to Milvus."""
         try:
+            # Create Milvus client with proper configuration
             self.client = MilvusClient(
-                uri=f"http://{self.config.milvus_host}:{self.config.milvus_port}"
+                uri=f"http://{self.config.milvus_host}:{self.config.milvus_port}",
+                db_name="default",
+                timeout=30
             )
+            # Test connection
+            collections = self.client.list_collections()
             logger.info(f"Connected to Milvus at {self.config.milvus_host}:{self.config.milvus_port}")
+            logger.info(f"Existing collections: {collections}")
             await self._ensure_collections()
         except Exception as e:
             logger.error(f"Failed to connect to Milvus: {e}")
@@ -96,37 +103,51 @@ class MilvusManager:
 
         for collection_name in collections:
             if not self.client.has_collection(collection_name):
-                # Create collection with schema
-                schema = {
-                    "fields": [
-                        {"name": "id", "type": "VARCHAR", "max_length": 255, "is_primary": True},
-                        {"name": "ts", "type": "INT64"},
-                        {"name": "type", "type": "VARCHAR", "max_length": 50},
-                        {"name": "repo", "type": "VARCHAR", "max_length": 255},
-                        {"name": "author", "type": "VARCHAR", "max_length": 255},
-                        {"name": "embedding", "type": "FLOAT_VECTOR", "dim": self.config.embedding_dimension}
-                    ]
-                }
-
-                self.client.create_collection(
-                    collection_name=collection_name,
-                    schema=schema,
-                    index_params={"index_type": "HNSW", "metric_type": "COSINE", "params": {"M": 16, "efConstruction": 256}}
-                )
-                logger.info(f"Created Milvus collection: {collection_name}")
+                try:
+                    # Use the simpler create_collection API with minimal schema
+                    self.client.create_collection(
+                        collection_name=collection_name,
+                        dimension=self.config.embedding_dimension,
+                        metric_type="COSINE",
+                        index_type="HNSW"
+                    )
+                    logger.info(f"Created Milvus collection: {collection_name}")
+                except Exception as e:
+                    logger.error(f"Failed to create collection {collection_name}: {e}")
+                    # Continue with other collections instead of failing completely
 
     async def embed_text(self, text: str) -> List[float]:
-        """Generate embeddings for text using Voyage AI."""
-        if not self.voyage_client:
-            logger.warning("No Voyage API key configured, using dummy embedding")
-            return [0.0] * self.config.embedding_dimension
+        """Generate embeddings for text using Voyage AI or OpenAI as fallback."""
+        # Try Voyage AI first (preferred for code)
+        if self.voyage_client:
+            try:
+                result = self.voyage_client.embed([text], model=self.config.embedding_model)
+                return result.embeddings[0]
+            except Exception as e:
+                logger.error(f"Failed to generate Voyage embedding: {e}")
 
-        try:
-            result = self.voyage_client.embed([text], model=self.config.embedding_model)
-            return result.embeddings[0]
-        except Exception as e:
-            logger.error(f"Failed to generate embedding: {e}")
-            return [0.0] * self.config.embedding_dimension
+        # Fallback to OpenAI embeddings
+        openai_key = os.getenv("OPENAI_API_KEY")
+        if openai_key:
+            try:
+                import openai
+                client = openai.OpenAI(api_key=openai_key)
+                response = client.embeddings.create(
+                    model="text-embedding-3-small",
+                    input=text
+                )
+                embedding = response.data[0].embedding
+                # Adjust to match expected dimension (1024 for Voyage, 1536 for OpenAI small)
+                if len(embedding) < self.config.embedding_dimension:
+                    embedding.extend([0.0] * (self.config.embedding_dimension - len(embedding)))
+                elif len(embedding) > self.config.embedding_dimension:
+                    embedding = embedding[:self.config.embedding_dimension]
+                return embedding
+            except Exception as e:
+                logger.error(f"Failed to generate OpenAI embedding: {e}")
+
+        logger.warning("No API keys configured for embeddings, using dummy embedding")
+        return [0.0] * self.config.embedding_dimension
 
     async def upsert_node(self, node: MemoryNode) -> bool:
         """Insert or update a node in Milvus."""
@@ -565,16 +586,67 @@ class ConPortMemoryServer:
 
 async def main():
     """Main entry point for ConPort Memory Server."""
+    import os
+
     server_instance = ConPortMemoryServer()
 
     try:
         await server_instance.start()
 
-        # Run the MCP server
-        async with stdio_server() as (read_stream, write_stream):
-            await server_instance.server.run(
-                read_stream, write_stream, server_instance.server.create_initialization_options()
-            )
+        # Check if running in HTTP mode (for Docker) or stdio mode
+        http_mode = os.getenv("MCP_HTTP_MODE", "false").lower() == "true"
+
+        if http_mode:
+            # Run as HTTP server for Docker deployment
+            from aiohttp import web
+            import aiohttp_cors
+
+            app = web.Application()
+
+            # Enable CORS
+            cors = aiohttp_cors.setup(app, defaults={
+                "*": aiohttp_cors.ResourceOptions(
+                    allow_credentials=True,
+                    expose_headers="*",
+                    allow_headers="*",
+                    allow_methods="*"
+                )
+            })
+
+            # Health check endpoint
+            async def health_check(request):
+                return web.json_response({"status": "healthy", "service": "ConPort Memory Server"})
+
+            health_route = app.router.add_get("/health", health_check)
+            cors.add(health_route)
+
+            # TODO: Add MCP SSE transport once API is stabilized
+            # For now, focus on health endpoint and basic HTTP functionality
+
+            port = int(os.getenv("PORT", "3004"))
+            logger.info(f"Starting HTTP server on port {port}")
+
+            # Create and start the server within the existing event loop
+            runner = web.AppRunner(app)
+            await runner.setup()
+            site = web.TCPSite(runner, "0.0.0.0", port)
+            await site.start()
+
+            logger.info(f"HTTP server started on http://0.0.0.0:{port}")
+
+            # Keep the server running
+            try:
+                await asyncio.Future()  # Run forever
+            except KeyboardInterrupt:
+                pass
+            finally:
+                await runner.cleanup()
+        else:
+            # Run as stdio server for CLI usage
+            async with stdio_server() as (read_stream, write_stream):
+                await server_instance.server.run(
+                    read_stream, write_stream, server_instance.server.create_initialization_options()
+                )
     except Exception as e:
         logger.error(f"Server failed: {e}")
         sys.exit(1)

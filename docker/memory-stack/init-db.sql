@@ -102,12 +102,12 @@ CREATE TRIGGER update_conversation_threads_updated_at BEFORE UPDATE ON conversat
 INSERT INTO nodes (id, type, text, repo, author, metadata) VALUES
 ('dec_001', 'decision', 'Adopt Milvus for vector embeddings storage', 'dopemux-mvp', 'hue', '{"priority": "high", "status": "implemented"}'),
 ('file_001', 'file', 'src/conport/memory_server.py', 'dopemux-mvp', 'system', '{"path": "src/conport/memory_server.py", "size": 2048}'),
-('task_001', 'task', 'Implement unified memory graph architecture', 'dopemux-mvp', 'hue', '{"status": "in_progress", "assignee": "hue"})
+('task_001', 'task', 'Implement unified memory graph architecture', 'dopemux-mvp', 'hue', '{"status": "in_progress", "assignee": "hue"}')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO edges (from_id, to_id, relation, metadata) VALUES
 ('dec_001', 'file_001', 'affects', '{"reason": "Implementation of Milvus integration"}'),
-('dec_001', 'task_001', 'implements', '{"phase": "week1"})
+('dec_001', 'task_001', 'implements', '{"phase": "week1"}')
 ON CONFLICT (from_id, to_id, relation) DO NOTHING;
 
 -- Grant permissions for ConPort service

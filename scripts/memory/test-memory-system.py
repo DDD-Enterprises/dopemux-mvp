@@ -15,7 +15,7 @@ from typing import Dict, Any
 
 import asyncpg
 import requests
-from milvus import MilvusClient
+from pymilvus import MilvusClient
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

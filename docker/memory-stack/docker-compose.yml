@@ -78,27 +78,28 @@ services:
       timeout: 5s
       retries: 5
 
-  # Zep for conversational memory
-  zep:
-    container_name: dopemux-zep
-    image: ghcr.io/getzep/zep:latest
-    environment:
-      ZEP_STORE_TYPE: postgres
-      ZEP_STORE_POSTGRES_DSN: postgres://dopemux:dopemux_dev_password@postgres:5432/dopemux_memory?sslmode=disable
-      ZEP_AUTH_REQUIRED: false
-      ZEP_LOG_LEVEL: info
-    ports:
-      - "8000:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    volumes:
-      - zep_data:/app/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # Zep for conversational memory (temporarily disabled)
+  # zep:
+  #   container_name: dopemux-zep
+  #   image: ghcr.io/getzep/zep:latest
+  #   environment:
+  #     ZEP_STORE_TYPE: postgres
+  #     ZEP_STORE_POSTGRES_DSN: postgres://dopemux:dopemux_dev_password@postgres:5432/dopemux_memory?sslmode=disable
+  #     ZEP_AUTH_REQUIRED: "false"
+  #     ZEP_LOG_LEVEL: info
+  #     ZEP_OPENAI_API_KEY: ${OPENAI_API_KEY}
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   volumes:
+  #     - zep_data:/app/data
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
   # ConPort MCP server with memory extensions
   conport-memory:
@@ -114,14 +115,14 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       VOYAGE_API_KEY: ${VOYAGE_API_KEY}
       LOG_LEVEL: info
+      MCP_HTTP_MODE: "true"
+      PORT: 3004
     ports:
-      - "3004:3004"
+      - "3010:3004"
     depends_on:
       postgres:
         condition: service_healthy
       milvus-standalone:
-        condition: service_healthy
-      zep:
         condition: service_healthy
     volumes:
       - ../../:/workspace
