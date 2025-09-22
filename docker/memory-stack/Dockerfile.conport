@@ -1,0 +1,39 @@
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /workspace
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+COPY requirements-memory.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements-memory.txt
+
+# Copy the entire project
+COPY . .
+
+# Create ConPort memory server directory
+RUN mkdir -p /workspace/src/conport
+
+# Install project in development mode
+RUN pip install -e .
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3004/health || exit 1
+
+# Default command
+CMD ["python", "-m", "conport.memory_server"]

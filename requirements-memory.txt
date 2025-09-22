@@ -1,0 +1,39 @@
+# Memory Stack Dependencies for Dopemux Unified Memory Graph
+
+# Vector Database
+pymilvus>=2.3.0
+milvus-client>=2.3.0
+
+# PostgreSQL
+psycopg2-binary>=2.9.0
+sqlalchemy>=2.0.0
+alembic>=1.12.0
+
+# Zep Integration
+zep-python>=0.32.0
+
+# Embeddings
+voyageai>=0.2.0
+openai>=1.0.0
+
+# Graph Processing (future Neo4j support)
+neo4j>=5.0.0
+
+# Data Processing
+pydantic>=2.0.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Async Support
+asyncio-mqtt>=0.13.0
+asyncpg>=0.28.0
+
+# Monitoring & Observability
+opentelemetry-api>=1.20.0
+opentelemetry-sdk>=1.20.0
+opentelemetry-instrumentation-sqlalchemy>=0.41b0
+
+# Utilities
+python-dotenv>=1.0.0
+rich>=13.0.0
+typer>=0.9.0
