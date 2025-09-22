@@ -23,8 +23,15 @@ from .models import (
     IngestionResponse,
     SearchQuery,
     SearchResponse,
+    BulkOperationRequest,
+    BulkOperationResponse,
+    DocumentVersion,
+    AdvancedSearchFilters,
+    SearchAnalytics,
 )
 from .service import DocRAGService
+from .mcp_tools import get_mcp_tools, MCPToolHandler, DpmxRagQueryParams
+from .bulk_operations import BulkOperationsHandler
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -48,14 +55,16 @@ structlog.configure(
 
 logger = structlog.get_logger(__name__)
 
-# Global service instance
+# Global service instances
 service: DocRAGService = None
+mcp_handler: MCPToolHandler = None
+bulk_handler: BulkOperationsHandler = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """FastAPI lifespan manager."""
-    global service
+    global service, mcp_handler, bulk_handler
 
     # Initialize service
     config = get_config()
@@ -63,7 +72,14 @@ async def lifespan(app: FastAPI):
 
     try:
         await service.initialize()
-        logger.info("DocRAG service started", host=config.host, port=config.port)
+
+        # Initialize handlers
+        mcp_handler = MCPToolHandler(service)
+        bulk_handler = BulkOperationsHandler(service)
+
+        logger.info("DocRAG service started",
+                   host=config.host, port=config.port,
+                   features=["semantic_search", "mcp_tools", "bulk_operations", "versioning"])
         yield
     finally:
         if service:
@@ -116,8 +132,58 @@ async def search_documents(query: SearchQuery):
     return await service.search_documents(query)
 
 
-# Future: MCP Server Integration will be added here
-# For now, we provide REST API endpoints
+# === ENHANCED API ENDPOINTS (ADR-0034) ===
+
+@app.post("/mcp/dpmx_rag_query")
+async def dpmx_rag_query_endpoint(params: DpmxRagQueryParams):
+    """MCP-compatible unified RAG query endpoint."""
+    if not mcp_handler:
+        raise HTTPException(status_code=503, detail="MCP handler not initialized")
+
+    return await mcp_handler.dpmx_rag_query(params)
+
+
+@app.post("/bulk", response_model=BulkOperationResponse)
+async def bulk_operations(request: BulkOperationRequest):
+    """Bulk operations endpoint for upload/delete/update."""
+    if not bulk_handler:
+        raise HTTPException(status_code=503, detail="Bulk handler not initialized")
+
+    return await bulk_handler.handle_bulk_operation(request)
+
+
+@app.post("/search/advanced", response_model=SearchResponse)
+async def advanced_search(query: SearchQuery, filters: AdvancedSearchFilters):
+    """Advanced search with comprehensive filtering."""
+    if not service:
+        raise HTTPException(status_code=503, detail="Service not initialized")
+
+    # Merge advanced filters into query filters
+    enhanced_query = query.copy()
+    enhanced_query.filters.update({
+        k: v for k, v in filters.dict().items()
+        if v is not None and v != [] and v != ""
+    })
+
+    return await service.search_documents(enhanced_query)
+
+
+@app.get("/documents/{doc_id}/versions")
+async def get_document_versions(doc_id: str):
+    """Get version history for a document."""
+    # Implementation would require database version tracking
+    return {"message": "Document versioning not yet implemented", "doc_id": doc_id}
+
+
+@app.post("/analytics/search")
+async def log_search_analytics(analytics: SearchAnalytics):
+    """Log search analytics for usage tracking."""
+    # In a real implementation, this would store to analytics database
+    logger.info("Search analytics",
+               query=analytics.query,
+               results_count=analytics.results_count,
+               query_time_ms=analytics.query_time_ms)
+    return {"status": "logged"}
 
 
 def main():
