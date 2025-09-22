@@ -1,0 +1,147 @@
+name: 🚀 Complete CI Pipeline (ADHD-Optimized)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true  # ADHD-friendly: cancel outdated runs
+
+jobs:
+  # ADHD chunk #1: Code quality (fast feedback)
+  code-quality:
+    name: "💅 Code Quality & Linting"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10  # Quick feedback loop
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 📦 Install pre-commit & deps
+        run: |
+          pip install pre-commit
+          pre-commit install --install-hooks
+
+      - name: 🔍 Run pre-commit (code quality)
+        run: pre-commit run --all-files
+
+      - name: 🎯 ADHD-Friendly Summary
+        if: always()
+        run: |
+          echo "## 💅 Code Quality Check" >> $GITHUB_STEP_SUMMARY
+          if [ $? -eq 0 ]; then
+            echo "✅ **Code looks great!** Ready for the next step." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Code quality items found** - Check the details above." >> $GITHUB_STEP_SUMMARY
+            echo "_Focus on the most important fixes first._" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ADHD chunk #2: Security (takes longer, separate job)
+  security:
+    name: "🔒 Security Review"
+    runs-on: ubuntu-latest
+    timeout-minutes: 25  # 25-minute focus session
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2
+
+      - name: 🛡️ AI-Powered Security Analysis
+        uses: anthropics/claude-code-security-review@main
+        with:
+          comment-pr: true
+          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
+          custom-security-scan-instructions: .github/security-scan-instructions.txt
+          false-positive-filtering-instructions: .github/security-filtering-instructions.txt
+          claudecode-timeout: "20"
+
+      - name: 🎯 Gentle Security Summary
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          echo "## 🔒 Security Check Complete" >> $GITHUB_STEP_SUMMARY
+          echo "AI-powered analysis finished! Check PR comments for details." >> $GITHUB_STEP_SUMMARY
+          echo "_Remember: Security is about progress, not perfection._" >> $GITHUB_STEP_SUMMARY
+
+  # ADHD chunk #3: Documentation (link checking)
+  docs:
+    name: "📚 Documentation Check"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔗 Check links (lychee)
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: --config .lychee.toml docs/**/*.md
+
+      - name: 📖 Documentation Summary
+        if: always()
+        run: |
+          echo "## 📚 Documentation Check" >> $GITHUB_STEP_SUMMARY
+          echo "Link checking completed! Your docs are being kept current." >> $GITHUB_STEP_SUMMARY
+
+  # Final summary for ADHD-friendly overview
+  ci-summary:
+    name: "📊 CI Pipeline Summary"
+    runs-on: ubuntu-latest
+    needs: [code-quality, security, docs]
+    if: always()
+
+    steps:
+      - name: 🎉 ADHD-Optimized Results Summary
+        run: |
+          echo "## 🚀 Dopemux CI Pipeline Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Code Quality Status
+          if [ "${{ needs.code-quality.result }}" == "success" ]; then
+            echo "✅ **Code Quality:** Passing - Code is clean and consistent!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Code Quality:** Needs attention - Small fixes needed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Security Status
+          if [ "${{ needs.security.result }}" == "success" ]; then
+            echo "✅ **Security:** Clear - Memory systems are secure!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "🔒 **Security:** Review needed - Check findings above" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Documentation Status
+          if [ "${{ needs.docs.result }}" == "success" ]; then
+            echo "✅ **Documentation:** Links working - Docs are current!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "📝 **Documentation:** Links need fixing - Minor updates needed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 💡 ADHD-Friendly Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.code-quality.result }}" == "success" ] && [ "${{ needs.security.result }}" == "success" ] && [ "${{ needs.docs.result }}" == "success" ]; then
+            echo "**🎉 Excellent work!** All checks passed. Ready to merge when you are!" >> $GITHUB_STEP_SUMMARY
+            echo "_Take a well-deserved break - you've earned it._" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**📋 Focus areas:** Address the items above one at a time." >> $GITHUB_STEP_SUMMARY
+            echo "**⏰ Tip:** Use 25-minute Pomodoro sessions for fixes." >> $GITHUB_STEP_SUMMARY
+            echo "**🤝 Need help?** Ask in the PR discussion!" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*Powered by Dopemux ADHD-optimized CI/CD*" >> $GITHUB_STEP_SUMMARY

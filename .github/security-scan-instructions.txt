@@ -1,0 +1,34 @@
+**Memory System Security:**
+- Unauthorized access to conversation memory or user decision history
+- Memory poisoning attacks that could corrupt decision context
+- Cross-user memory leakage in shared instances
+- Tampering with attention state classification algorithms
+- Memory persistence failures that could lose critical development context
+
+**Intelligent Classification Security:**
+- Manipulation of AI classification models for memory categorization
+- Injection attacks against context processing pipelines
+- Data exfiltration through memory export functions
+- Unauthorized modification of cognitive load tracking data
+- Bypassing attention state validation mechanisms
+
+**MCP Integration Security:**
+- Unauthorized MCP server connections or tool access
+- Token leakage in MetaMCP broker configurations
+- Privilege escalation through role-based tool assignments
+- Injection attacks against MCP protocol communications
+- Cross-server data leakage in broker operations
+
+**ADHD-Optimized Features Security:**
+- Session state tampering that could disrupt workflow continuity
+- Unauthorized access to focus duration or break interval settings
+- Manipulation of notification batching mechanisms
+- Context preservation bypass attacks
+- Task chunking data corruption vulnerabilities
+
+**Dopemux Multi-Instance Security:**
+- Cross-instance data leakage through shared volumes
+- Unauthorized instance switching or worktree manipulation
+- Git worktree isolation bypass attacks
+- Port auto-detection enumeration for reconnaissance
+- Session continuity state injection attacks

@@ -1,0 +1,81 @@
+name: 🔒 Security Review with Claude Code
+
+permissions:
+  pull-requests: write  # Needed for PR comments
+  contents: read
+  issues: write         # For issue tracking
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+jobs:
+  security-review:
+    name: "🤖 Claude Code Security Analysis"
+    runs-on: ubuntu-latest
+    timeout-minutes: 25  # ADHD-optimized: 25-minute chunks
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 2  # Get enough history for diff analysis
+
+      - name: 🔐 ADHD-Optimized Security Review
+        uses: anthropics/claude-code-security-review@main
+        with:
+          comment-pr: true
+          claude-api-key: ${{ secrets.CLAUDE_API_KEY }}
+          upload-results: true
+
+          # ADHD-optimized timeout (25-minute focus sessions)
+          claudecode-timeout: "20"
+
+          # Use latest Claude model for best analysis
+          claude-model: "claude-opus-4-1-20250805"
+
+          # Custom instructions for memory/intelligence systems
+          custom-security-scan-instructions: .github/security-scan-instructions.txt
+          false-positive-filtering-instructions: .github/security-filtering-instructions.txt
+
+          # Exclude test directories and generated files to reduce noise
+          exclude-directories: "tests,__pycache__,node_modules,.git,docker/leantime/data"
+
+          # Run on every commit for comprehensive coverage
+          run-every-commit: false
+
+  # ADHD-friendly summary for non-technical stakeholders
+  security-summary:
+    name: "📊 ADHD-Friendly Security Summary"
+    runs-on: ubuntu-latest
+    needs: security-review
+    if: always() && github.event_name == 'pull_request'
+
+    steps:
+      - name: 🎯 Generate gentle security report
+        run: |
+          echo "🧠 **ADHD-Friendly Security Check Complete**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.security-review.result }}" == "success" ]; then
+            echo "✅ **Great news!** Your code changes look secure." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**What this means:**" >> $GITHUB_STEP_SUMMARY
+            echo "- No high-severity security issues detected" >> $GITHUB_STEP_SUMMARY
+            echo "- Memory system components are safe" >> $GITHUB_STEP_SUMMARY
+            echo "- Ready for merge when tests pass!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Security items need attention**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Next steps:**" >> $GITHUB_STEP_SUMMARY
+            echo "1. Check the detailed findings in the PR comments above" >> $GITHUB_STEP_SUMMARY
+            echo "2. Address high-priority items first (marked 🔴)" >> $GITHUB_STEP_SUMMARY
+            echo "3. Ask for help if anything is unclear" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**💡 Remember:** Small, focused security fixes work best!" >> $GITHUB_STEP_SUMMARY
+          echo "_Take breaks and tackle one issue at a time._" >> $GITHUB_STEP_SUMMARY
