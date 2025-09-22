@@ -27,7 +27,7 @@ class MemorySystemTester:
 
     def __init__(self):
         self.database_url = os.getenv("DATABASE_URL", "postgresql://dopemux:dopemux_dev_password@localhost:5432/dopemux_memory")
-        self.conport_url = "http://localhost:3004"
+        self.conport_url = "http://localhost:3010"
         self.milvus_host = "localhost"
         self.milvus_port = 19530
         self.test_results = []
@@ -212,7 +212,8 @@ class MemorySystemTester:
 
             async with pool.acquire() as conn:
                 # Create test import run
-                run_id = "test_run_001"
+                import uuid
+                run_id = str(uuid.uuid4())
                 await conn.execute("""
                     INSERT INTO import_runs (id, source, file_path, status, items_processed, started_at)
                     VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
@@ -251,10 +252,19 @@ class MemorySystemTester:
 
         # Functional tests
         upsert_ok = await self.test_mem_upsert()
+        self.log_test("mem.upsert", upsert_ok)
+
         graph_ok = await self.test_graph_operations()
+        self.log_test("Graph Operations", graph_ok)
+
         conv_ok = await self.test_conversation_storage()
+        self.log_test("Conversation Storage", conv_ok)
+
         import_ok = await self.test_import_tracking()
+        self.log_test("Import Tracking", import_ok)
+
         collections_ok = self.test_milvus_collections()
+        self.log_test("Milvus Collections", collections_ok)
 
         # Summary
         logger.info("\n📊 Test Results Summary:")

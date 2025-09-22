@@ -620,8 +620,116 @@ async def main():
             health_route = app.router.add_get("/health", health_check)
             cors.add(health_route)
 
-            # TODO: Add MCP SSE transport once API is stabilized
-            # For now, focus on health endpoint and basic HTTP functionality
+            # Direct HTTP endpoints for memory tools (while SSE is being perfected)
+            async def memory_search(request):
+                """HTTP endpoint for mem.search tool."""
+                try:
+                    data = await request.json()
+                    query = data.get("query", "")
+                    node_type = data.get("type")
+                    k = data.get("k", 5)
+                    filters = data.get("filters", {})
+
+                    # Call the actual memory search function
+                    mcp_results = await server_instance._handle_mem_search({
+                        "query": query, "type": node_type, "k": k, "filters": filters
+                    })
+                    # Extract text content from MCP TextContent objects
+                    results = [{"text": item.text} for item in mcp_results]
+                    return web.json_response({"success": True, "results": results})
+                except Exception as e:
+                    return web.json_response({"success": False, "error": str(e)}, status=400)
+
+            async def memory_upsert(request):
+                """HTTP endpoint for mem.upsert tool."""
+                try:
+                    data = await request.json()
+                    node_type = data.get("type")
+                    node_id = data.get("id")
+                    text = data.get("text")
+                    metadata = data.get("metadata", {})
+                    repo = data.get("repo", "dopemux-mvp")
+                    author = data.get("author", "user")
+
+                    mcp_result = await server_instance._handle_mem_upsert({
+                        "type": node_type, "id": node_id, "text": text,
+                        "metadata": metadata, "repo": repo, "author": author
+                    })
+                    result = [{"text": item.text} for item in mcp_result]
+                    return web.json_response({"success": True, "result": result})
+                except Exception as e:
+                    return web.json_response({"success": False, "error": str(e)}, status=400)
+
+            async def graph_link(request):
+                """HTTP endpoint for graph.link tool."""
+                try:
+                    data = await request.json()
+                    from_id = data.get("from_id")
+                    to_id = data.get("to_id")
+                    relation = data.get("relation")
+                    metadata = data.get("metadata", {})
+
+                    mcp_result = await server_instance._handle_graph_link({
+                        "from_id": from_id, "to_id": to_id, "relation": relation, "metadata": metadata
+                    })
+                    result = [{"text": item.text} for item in mcp_result]
+                    return web.json_response({"success": True, "result": result})
+                except Exception as e:
+                    return web.json_response({"success": False, "error": str(e)}, status=400)
+
+            async def graph_neighbors(request):
+                """HTTP endpoint for graph.neighbors tool."""
+                try:
+                    data = await request.json()
+                    node_id = data.get("id")
+                    depth = data.get("depth", 1)
+                    relation = data.get("relation")
+
+                    mcp_result = await server_instance._handle_graph_neighbors({
+                        "id": node_id, "depth": depth, "relation": relation
+                    })
+                    result = [{"text": item.text} for item in mcp_result]
+                    return web.json_response({"success": True, "result": result})
+                except Exception as e:
+                    return web.json_response({"success": False, "error": str(e)}, status=400)
+
+            # Add HTTP endpoints
+            search_route = app.router.add_post("/api/mem/search", memory_search)
+            cors.add(search_route)
+            upsert_route = app.router.add_post("/api/mem/upsert", memory_upsert)
+            cors.add(upsert_route)
+            link_route = app.router.add_post("/api/graph/link", graph_link)
+            cors.add(link_route)
+            neighbors_route = app.router.add_post("/api/graph/neighbors", graph_neighbors)
+            cors.add(neighbors_route)
+
+            # Simplified SSE endpoint for MCP (work in progress)
+            async def sse_handler(request):
+                """Handle SSE connections for MCP protocol."""
+                from aiohttp.web import Response
+                response = Response(
+                    content_type='text/event-stream',
+                    headers={
+                        'Cache-Control': 'no-cache',
+                        'Connection': 'keep-alive',
+                        'Access-Control-Allow-Origin': '*',
+                    }
+                )
+                await response.prepare(request)
+                await response.write(b'data: {"type": "connection", "status": "ready", "message": "ConPort Memory SSE endpoint - under development"}\n\n')
+
+                # Keep connection alive
+                try:
+                    while True:
+                        await asyncio.sleep(60)
+                        await response.write(b'data: {"type": "heartbeat"}\n\n')
+                except:
+                    pass
+
+                return response
+
+            sse_route = app.router.add_get("/sse", sse_handler)
+            cors.add(sse_route)
 
             port = int(os.getenv("PORT", "3004"))
             logger.info(f"Starting HTTP server on port {port}")
