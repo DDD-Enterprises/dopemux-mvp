@@ -1,0 +1,382 @@
+#!/bin/bash
+
+# Dopemux - Smart Multi-Instance Manager
+# Auto-detects running instances and manages git worktrees
+#
+# Usage:
+#   dopemux start [instance] [branch]    - Start or create instance
+#   dopemux stop [instance]              - Stop instance
+#   dopemux status                       - Show all instances
+#   dopemux list                         - List available instances
+#   dopemux switch <instance>            - Switch to instance worktree
+#   dopemux clean                        - Clean up stopped instances
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# Helper functions
+log_info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
+log_success() { echo -e "${GREEN}✅ $1${NC}"; }
+log_warning() { echo -e "${YELLOW}⚠️  $1${NC}"; }
+log_error() { echo -e "${RED}❌ $1${NC}"; }
+log_header() { echo -e "${PURPLE}🚀 $1${NC}"; }
+
+# Get script directory and project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+WORKTREE_ROOT="$(cd "$PROJECT_ROOT/.." && pwd)/dopemux-instances"
+
+# Function to detect running instances
+detect_running_instances() {
+    local running_instances=()
+
+    # Check for running containers with mcp.instance label
+    if command -v docker &> /dev/null; then
+        while IFS= read -r line; do
+            if [[ -n "$line" ]]; then
+                running_instances+=("$line")
+            fi
+        done < <(docker ps --filter "label=mcp.instance" --format "{{.Label \"mcp.instance\"}}" 2>/dev/null | sort -u)
+    fi
+
+    printf '%s\n' "${running_instances[@]}"
+}
+
+# Function to get next available port
+get_next_port() {
+    local base_port=3000
+    local used_ports=()
+
+    # Get ports from running instances
+    if command -v docker &> /dev/null; then
+        while IFS= read -r port; do
+            if [[ -n "$port" && "$port" =~ ^[0-9]+$ ]]; then
+                used_ports+=("$port")
+            fi
+        done < <(docker ps --format "{{.Ports}}" 2>/dev/null | grep -oE '0\.0\.0\.0:[0-9]+' | cut -d: -f2 | sort -n)
+    fi
+
+    # Find next available port base (multiple of 30)
+    while true; do
+        local port_in_use=false
+        for used_port in "${used_ports[@]}"; do
+            if (( used_port >= base_port && used_port < base_port + 30 )); then
+                port_in_use=true
+                break
+            fi
+        done
+
+        if [[ "$port_in_use" == false ]]; then
+            echo "$base_port"
+            return
+        fi
+
+        base_port=$((base_port + 30))
+
+        # Safety check - don't go beyond reasonable range
+        if (( base_port > 4000 )); then
+            log_error "No available port ranges found"
+            exit 1
+        fi
+    done
+}
+
+# Function to show status
+show_status() {
+    log_header "Dopemux Multi-Instance Status"
+    echo
+
+    local running_instances
+    mapfile -t running_instances < <(detect_running_instances)
+
+    if [[ ${#running_instances[@]} -eq 0 ]]; then
+        log_info "No instances currently running"
+        echo
+        log_info "Available worktrees:"
+        if [[ -d "$WORKTREE_ROOT" ]]; then
+            for dir in "$WORKTREE_ROOT"/*; do
+                if [[ -d "$dir" ]]; then
+                    local instance_name=$(basename "$dir")
+                    local branch
+                    cd "$dir" 2>/dev/null && branch=$(git branch --show-current 2>/dev/null || echo "unknown")
+                    echo "  📁 $instance_name (branch: $branch)"
+                fi
+            done
+        else
+            echo "  (none created yet)"
+        fi
+    else
+        log_success "${#running_instances[@]} instance(s) running:"
+        echo
+
+        # Show detailed instance info
+        for instance in "${running_instances[@]}"; do
+            echo -e "${CYAN}📦 Instance: $instance${NC}"
+
+            # Get container info
+            local containers
+            mapfile -t containers < <(docker ps --filter "label=mcp.instance=$instance" --format "{{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null)
+
+            if [[ ${#containers[@]} -gt 0 ]]; then
+                echo "  🐳 Containers:"
+                for container_info in "${containers[@]}"; do
+                    IFS=$'\t' read -r name status ports <<< "$container_info"
+                    echo "    ▶ $name ($status)"
+                    if [[ -n "$ports" ]]; then
+                        echo "      🔌 Ports: $ports"
+                    fi
+                done
+            fi
+
+            # Get worktree info
+            local worktree_path="$WORKTREE_ROOT/$instance"
+            if [[ -d "$worktree_path" ]]; then
+                cd "$worktree_path" 2>/dev/null || continue
+                local branch=$(git branch --show-current 2>/dev/null || echo "unknown")
+                local commit=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+                echo "  🌳 Worktree: $worktree_path"
+                echo "  🌿 Branch: $branch ($commit)"
+            fi
+            echo
+        done
+    fi
+}
+
+# Function to start an instance
+start_instance() {
+    local instance_name="${1:-}"
+    local branch="${2:-main}"
+
+    # If no instance name provided, auto-generate based on running instances
+    if [[ -z "$instance_name" ]]; then
+        local running_instances
+        mapfile -t running_instances < <(detect_running_instances)
+
+        if [[ ${#running_instances[@]} -eq 0 ]]; then
+            instance_name="default"
+            log_info "No running instances detected, creating 'default' instance"
+        else
+            # Auto-generate next instance name
+            local counter=1
+            while [[ " ${running_instances[*]} " =~ " dev${counter} " ]]; do
+                ((counter++))
+            done
+            instance_name="dev${counter}"
+            log_info "Detected running instances: ${running_instances[*]}"
+            log_info "Creating new instance: $instance_name"
+        fi
+    fi
+
+    # Check if instance is already running
+    local running_instances
+    mapfile -t running_instances < <(detect_running_instances)
+
+    if [[ " ${running_instances[*]} " =~ " $instance_name " ]]; then
+        log_warning "Instance '$instance_name' is already running"
+        log_info "Use 'dopemux switch $instance_name' to open its worktree"
+        return 0
+    fi
+
+    # Get next available port
+    local port_base
+    port_base=$(get_next_port)
+
+    log_header "Starting Dopemux instance: $instance_name"
+    log_info "Port base: $port_base"
+    log_info "Branch: $branch"
+
+    # Use the launch-instance script
+    cd "$SCRIPT_DIR"
+    ./launch-instance.sh "$instance_name" "$port_base" "$branch"
+
+    # Start the instance
+    local instance_dir="instance-$instance_name"
+    if [[ -f "$instance_dir/start.sh" ]]; then
+        log_info "Starting services..."
+        ./"$instance_dir/start.sh"
+        log_success "Instance '$instance_name' started successfully!"
+        log_info "Access URLs:"
+        echo "  🌐 Context7: http://localhost:$((port_base + 2))"
+        echo "  🤖 Zen: http://localhost:$((port_base + 3))"
+        echo "  🔍 Claude Context: http://localhost:$((port_base + 7))"
+        echo "  💾 Milvus: http://localhost:$((port_base + 18))"
+        echo
+        log_info "Worktree path: $WORKTREE_ROOT/$instance_name"
+        log_info "Use 'dopemux switch $instance_name' to open the worktree"
+    else
+        log_error "Failed to create instance startup script"
+        exit 1
+    fi
+}
+
+# Function to stop an instance
+stop_instance() {
+    local instance_name="${1:-}"
+
+    if [[ -z "$instance_name" ]]; then
+        log_error "Instance name required for stop command"
+        echo "Usage: dopemux stop <instance_name>"
+        exit 1
+    fi
+
+    log_header "Stopping Dopemux instance: $instance_name"
+
+    cd "$SCRIPT_DIR"
+    local instance_dir="instance-$instance_name"
+
+    if [[ -f "$instance_dir/stop.sh" ]]; then
+        ./"$instance_dir/stop.sh"
+        log_success "Instance '$instance_name' stopped successfully!"
+    else
+        log_warning "No stop script found for instance '$instance_name'"
+        # Try to stop containers directly
+        docker ps --filter "label=mcp.instance=$instance_name" --format "{{.Names}}" | xargs -r docker stop
+        log_info "Stopped containers for instance '$instance_name'"
+    fi
+}
+
+# Function to switch to an instance worktree
+switch_instance() {
+    local instance_name="${1:-}"
+
+    if [[ -z "$instance_name" ]]; then
+        log_error "Instance name required for switch command"
+        echo "Usage: dopemux switch <instance_name>"
+        exit 1
+    fi
+
+    local worktree_path="$WORKTREE_ROOT/$instance_name"
+
+    if [[ ! -d "$worktree_path" ]]; then
+        log_error "Worktree for instance '$instance_name' does not exist"
+        log_info "Use 'dopemux start $instance_name' to create it"
+        exit 1
+    fi
+
+    log_info "Switching to instance: $instance_name"
+
+    cd "$SCRIPT_DIR"
+    local instance_dir="instance-$instance_name"
+
+    if [[ -f "$instance_dir/open.sh" ]]; then
+        ./"$instance_dir/open.sh"
+    else
+        log_info "Worktree path: $worktree_path"
+        if command -v claude &> /dev/null; then
+            log_info "Run: cd $worktree_path && claude"
+        else
+            log_info "Navigate to: $worktree_path"
+        fi
+    fi
+}
+
+# Function to list instances
+list_instances() {
+    log_header "Available Dopemux Instances"
+    echo
+
+    if [[ ! -d "$WORKTREE_ROOT" ]]; then
+        log_info "No instances created yet"
+        log_info "Use 'dopemux start' to create your first instance"
+        return
+    fi
+
+    local running_instances
+    mapfile -t running_instances < <(detect_running_instances)
+
+    for dir in "$WORKTREE_ROOT"/*; do
+        if [[ -d "$dir" ]]; then
+            local instance_name=$(basename "$dir")
+            local status="stopped"
+
+            if [[ " ${running_instances[*]} " =~ " $instance_name " ]]; then
+                status="running"
+            fi
+
+            cd "$dir" 2>/dev/null || continue
+            local branch=$(git branch --show-current 2>/dev/null || echo "unknown")
+            local commit=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
+            if [[ "$status" == "running" ]]; then
+                echo -e "  ${GREEN}🟢 $instance_name${NC} (branch: $branch, commit: $commit)"
+            else
+                echo -e "  ${YELLOW}🟡 $instance_name${NC} (branch: $branch, commit: $commit)"
+            fi
+        fi
+    done
+}
+
+# Function to clean up
+cleanup() {
+    log_header "Cleaning up Dopemux instances"
+
+    # Remove stopped containers
+    log_info "Removing stopped containers..."
+    docker container prune -f --filter "label=mcp.instance" 2>/dev/null || true
+
+    # Remove unused networks
+    log_info "Removing unused networks..."
+    docker network prune -f 2>/dev/null || true
+
+    log_success "Cleanup completed"
+}
+
+# Main command handler
+main() {
+    local command="${1:-}"
+
+    case "$command" in
+        "start")
+            start_instance "${2:-}" "${3:-main}"
+            ;;
+        "stop")
+            stop_instance "${2:-}"
+            ;;
+        "status")
+            show_status
+            ;;
+        "list")
+            list_instances
+            ;;
+        "switch")
+            switch_instance "${2:-}"
+            ;;
+        "clean")
+            cleanup
+            ;;
+        "")
+            # No command provided - show status and offer to start
+            show_status
+            echo
+            log_info "Commands:"
+            echo "  dopemux start [instance] [branch]  - Start new instance"
+            echo "  dopemux stop <instance>            - Stop instance"
+            echo "  dopemux switch <instance>          - Switch to worktree"
+            echo "  dopemux list                       - List all instances"
+            echo "  dopemux clean                      - Clean up resources"
+            ;;
+        *)
+            log_error "Unknown command: $command"
+            echo
+            echo "Available commands:"
+            echo "  start [instance] [branch]  - Start or create instance"
+            echo "  stop <instance>            - Stop instance"
+            echo "  status                     - Show all instances"
+            echo "  list                       - List available instances"
+            echo "  switch <instance>          - Switch to instance worktree"
+            echo "  clean                      - Clean up stopped instances"
+            exit 1
+            ;;
+    esac
+}
+
+# Run main function with all arguments
+main "$@"
