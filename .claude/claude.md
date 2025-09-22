@@ -70,17 +70,37 @@ You are working on a **python project** with Dopemux ADHD optimizations enabled.
 
 ## Integration with Dopemux
 
-### Available Commands
-- `dopemux save` - Manual context preservation
-- `dopemux restore` - Restore previous session
-- `dopemux status` - Check attention metrics
-- `dopemux task` - ADHD-friendly task management
+### Available Slash Commands (Claude Code)
+- `/dopemux save` - Save current session state
+- `/dopemux restore [session]` - Restore session (latest if not specified)
+- `/dopemux status` - Show all running instances
+- `/dopemux start [instance] [branch]` - Start instance (auto-detect if not specified)
+- `/dopemux stop <instance>` - Stop specific instance
+- `/dopemux switch <instance>` - Switch to instance worktree
+- `/dopemux list` - List all available instances
+- `/dopemux help` - Show all available commands
 
-### Context Sharing
-- Session state automatically preserved
+### Terminal Commands
+- `dopemux start [instance] [branch]` - Start/create instance with git worktree
+- `dopemux status` - Show detailed instance status
+- `dopemux switch <instance>` - Switch to instance worktree
+- `dopemux stop <instance>` - Stop instance
+- `dopemux list` - List all instances
+- `dopemux clean` - Clean up stopped containers
+
+### Multi-Instance Features
+- **Git Worktrees**: Each instance gets its own code workspace
+- **Port Auto-Detection**: Automatically assigns available ports
+- **Smart Volume Sharing**: Code indexing shared, project data isolated
+- **Session Continuity**: Switch between instances without losing context
+
+### Context Sharing & Session Management
+- Session state automatically preserved across instances
 - Mental model tracked across interruptions
-- Decision history maintained
+- Decision history maintained in shared volumes
 - Progress visualization available
+- Git worktrees provide code isolation per instance
+- Shared session data enables seamless instance switching
 
 ---
 
