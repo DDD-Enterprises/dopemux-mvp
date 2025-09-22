@@ -273,6 +273,42 @@ services:
 
   # === RESEARCH SERVERS (Priority: Low - Fallback Only) ===
 
+  # DocRAG - Document semantic search with Milvus and Voyage AI
+  docrag:
+    build:
+      context: ./docrag-service
+      dockerfile: Dockerfile
+    container_name: mcp-docrag
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - VOYAGEAI_API_KEY=${VOYAGEAI_API_KEY}
+      - MILVUS_HOST=milvus
+      - MILVUS_PORT=19530
+      - DOCRAG_PORT=3009
+      - ENABLE_HYBRID_SEARCH=true
+      - ENABLE_RERANKING=true
+      - LOG_LEVEL=INFO
+    ports:
+      - "3009:3009"
+    depends_on:
+      milvus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3009/health"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 60s
+    volumes:
+      - mcp_docrag_data:/app/data
+      - /Users/hue/code/dopemux-mvp:/workspace/dopemux-mvp:ro
+    labels:
+      - "mcp.role=research"
+      - "mcp.priority=medium"
+      - "mcp.description=Document semantic search"
+
   # Exa - Web research (ONLY when context7 lacks information)
   exa:
     build:
@@ -391,6 +427,9 @@ volumes:
   mcp_claude_context_cache:
     driver: local
     name: mcp_claude_context_cache
+  mcp_docrag_data:
+    driver: local
+    name: mcp_docrag_data
   milvus_data:
     driver: local
     name: milvus_data

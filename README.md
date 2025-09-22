@@ -33,6 +33,7 @@ Dopemux is a specialized development platform designed for neurodivergent develo
 
 ### **⚡ Advanced MCP Ecosystem**
 - **Sequential Thinking Server**: Multi-agent reasoning with DeepSeek/GitHub Models
+- **MCP Proxy Integration**: Seamless Docker-to-Claude Code connectivity
 - **Leantime Integration**: Project management with ADHD accommodations
 - **Docker Orchestration**: Scalable MCP server architecture
 - **Health Monitoring**: Comprehensive service monitoring and auto-recovery
@@ -80,6 +81,9 @@ python installers/leantime/install.py --interactive
 # Manual installation
 cd docker/leantime
 docker-compose up -d
+
+# MCP Proxy Setup for Claude Code Integration
+./scripts/mcp-proxy-setup.sh setup
 npm install -g claude-task-master
 pip install -r requirements.txt
 ```
@@ -89,6 +93,32 @@ pip install -r requirements.txt
 2. **Verify Health**: `python installers/leantime/health_check.py`
 3. **Create Project**: Start with a simple PRD document
 4. **Enable ADHD Mode**: Configure attention tracking preferences
+5. **Test MCP Integration**: Use `/mcp` in Claude Code to access containerized servers
+
+### 🔗 MCP Proxy Integration
+
+Dopemux includes an innovative MCP proxy solution that bridges Docker-containerized MCP servers with Claude Code:
+
+```bash
+# Quick setup
+./scripts/mcp-proxy-setup.sh setup
+
+# Verify connection
+claude mcp list  # Should show ✓ Connected servers
+
+# Use in Claude Code
+/mcp tools list  # See available MCP tools
+```
+
+**Available MCP Servers:**
+- **Sequential Thinking** - Advanced multi-agent reasoning
+- **Exa Search** - Web research and data gathering
+- **Zen Orchestration** - Multi-model coordination
+- **Serena Navigation** - Enhanced code exploration
+
+📖 **Detailed guides:**
+- [Quick Start](docs/MCP_PROXY_QUICK_START.md) - Get running in 2 minutes
+- [Complete Setup Guide](docs/MCP_PROXY_SETUP_GUIDE.md) - Comprehensive documentation
 
 ## 📊 System Architecture
 

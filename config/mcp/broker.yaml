@@ -1,0 +1,408 @@
+# MetaMCP Broker Configuration
+#
+# Core configuration for the MetaMCP role-aware tool brokering system.
+# This file defines the broker's operational parameters, server connections,
+# and integration settings.
+
+version: "1.0"
+metadata:
+  description: "MetaMCP broker configuration for role-aware tool orchestration"
+  created: "2025-01-09"
+  last_updated: "2025-01-09"
+
+# Broker core settings
+broker:
+  # Basic operational parameters
+  name: "dopemux-metamcp-broker"
+  version: "1.0.0"
+  host: "localhost"
+  port: 8090
+
+  # Performance settings
+  max_concurrent_tools: 10
+  tool_timeout_seconds: 30
+  role_switch_timeout_seconds: 5
+  health_check_interval: 60
+
+  # Connection pools
+  connection_pools:
+    stdio_pool_size: 5
+    http_pool_size: 10
+    websocket_pool_size: 8
+
+  # Retry and resilience
+  retry_policy:
+    max_retries: 3
+    backoff_multiplier: 2.0
+    initial_delay_ms: 100
+    max_delay_ms: 5000
+
+  # Circuit breaker for tool failures
+  circuit_breaker:
+    failure_threshold: 5
+    recovery_timeout: 30
+    half_open_max_calls: 3
+
+# MCP server definitions and connection details
+servers:
+  # Core development tools
+  serena:
+    transport: "stdio"
+    command: ["npx", "@serena/serena-mcp"]
+    working_directory: "/workspace"
+    environment:
+      NODE_ENV: "production"
+    startup_timeout: 10
+    health_check:
+      method: "ping"
+      interval: 30
+
+  claude-context:
+    transport: "stdio"
+    command: ["npx", "claude-context-mcp"]
+    working_directory: "/workspace"
+    environment:
+      CONTEXT_WORKSPACE: "/workspace"
+      INDEX_STRATEGY: "incremental"
+    startup_timeout: 15
+    health_check:
+      method: "get_status"
+      interval: 45
+
+  cli:
+    transport: "stdio"
+    command: ["mcp-server-cli"]
+    working_directory: "/workspace"
+    environment:
+      ALLOWED_DIRECTORIES: "/workspace,/tmp"
+      SHELL: "/bin/bash"
+    startup_timeout: 5
+    health_check:
+      method: "echo"
+      interval: 30
+
+  # Research and information gathering
+  context7:
+    transport: "http"
+    url: "http://context7-server:8080"
+    api_key_env: "CONTEXT7_API_KEY"
+    startup_timeout: 10
+    health_check:
+      method: "health"
+      endpoint: "/health"
+      interval: 30
+
+  exa:
+    transport: "http"
+    url: "http://exa-server:8080"
+    api_key_env: "EXA_API_KEY"
+    startup_timeout: 8
+    health_check:
+      method: "health"
+      endpoint: "/health"
+      interval: 45
+
+  # AI and reasoning tools
+  zen:
+    transport: "stdio"
+    command: ["zen-mcp-server"]
+    working_directory: "/workspace"
+    environment:
+      OPENAI_API_KEY_ENV: "OPENAI_API_KEY"
+      ANTHROPIC_API_KEY_ENV: "ANTHROPIC_API_KEY"
+      GEMINI_API_KEY_ENV: "GEMINI_API_KEY"
+      ZEN_DISABLED_TOOLS: "analyze,refactor,testgen,secaudit,docgen,tracer"
+      ZEN_DEFAULT_THINKING_MODE: "low"
+    startup_timeout: 20
+    health_check:
+      method: "ping"
+      interval: 60
+
+  sequential-thinking:
+    transport: "stdio"
+    command: ["docker", "exec", "-i", "mcp-mas-sequential-thinking", "mcp-server-mas-sequential-thinking"]
+    startup_timeout: 15
+    health_check:
+      method: "ping"
+      interval: 45
+
+  # Task and project management
+  task-master-ai:
+    transport: "http"
+    url: "http://task-master-server:8080"
+    api_key_env: "TASK_MASTER_API_KEY"
+    startup_timeout: 12
+    health_check:
+      method: "health"
+      endpoint: "/health"
+      interval: 30
+
+  conport:
+    transport: "stdio"
+    command: ["conport-mcp-server"]
+    working_directory: "/workspace"
+    environment:
+      DATABASE_URL_ENV: "CONPORT_DATABASE_URL"
+      AUTO_DETECT_WORKSPACE: "true"
+    startup_timeout: 10
+    health_check:
+      method: "ping"
+      interval: 30
+
+  # UI automation (ops role)
+  playwright:
+    transport: "stdio"
+    command: ["npx", "playwright-mcp-server"]
+    working_directory: "/workspace"
+    environment:
+      BROWSER_TIMEOUT: "30000"
+      HEADLESS: "true"
+    startup_timeout: 25
+    health_check:
+      method: "ping"
+      interval: 60
+
+# Role-based server mounting rules
+role_mappings:
+  developer:
+    primary_servers: ["serena", "claude-context", "cli"]
+    escalation_servers: ["sequential-thinking", "zen", "playwright"]
+    pre_warm: true  # Keep connections ready
+
+  researcher:
+    primary_servers: ["context7", "exa"]
+    escalation_servers: ["sequential-thinking"]
+    pre_warm: false  # Load on demand
+
+  planner:
+    primary_servers: ["task-master-ai", "conport"]
+    escalation_servers: ["zen", "context7"]
+    pre_warm: true
+
+  reviewer:
+    primary_servers: ["claude-context", "conport"]
+    escalation_servers: ["sequential-thinking", "zen"]
+    pre_warm: true
+
+  ops:
+    primary_servers: ["cli", "conport"]
+    escalation_servers: ["playwright", "sequential-thinking", "zen"]
+    pre_warm: false
+
+  architect:
+    primary_servers: ["zen", "sequential-thinking"]
+    escalation_servers: ["context7", "exa", "claude-context", "serena"]
+    pre_warm: true
+
+  debugger:
+    primary_servers: ["zen", "claude-context", "sequential-thinking"]
+    escalation_servers: ["serena", "cli", "playwright"]
+    pre_warm: true
+
+# Integration settings
+integrations:
+  # Letta memory system integration
+  letta:
+    enabled: true
+    endpoint: "http://letta-server:8000"
+    api_key_env: "LETTA_API_KEY"
+    memory_tiers:
+      core:
+        max_size: 8000  # tokens
+        retention: "session"
+      recall:
+        max_size: 32000  # tokens
+        retention: "24h"
+      archival:
+        max_size: 1000000  # tokens
+        retention: "30d"
+
+  # Claude-flow orchestration
+  claude_flow:
+    enabled: true
+    endpoint: "http://claude-flow:3000"
+    bridge_command: ["node", "/opt/claude-flow/bridge.js"]
+    process_timeout: 300
+
+  # ConPort session management
+  conport:
+    enabled: true
+    auto_checkpoint_interval: 1500  # 25 minutes
+    context_preservation: true
+
+  # Dopemux UI integration
+  tmux_ui:
+    enabled: true
+    status_bar_updates: true
+    popup_notifications: true
+    max_status_signals: 7
+
+# Monitoring and observability
+monitoring:
+  # Metrics collection
+  metrics:
+    enabled: true
+    export_interval: 60  # seconds
+    retention_days: 7
+
+    # Prometheus metrics export
+    prometheus:
+      enabled: true
+      port: 9090
+      path: "/metrics"
+
+    # Custom metrics
+    custom_metrics:
+      - name: "tool_mount_latency"
+        type: "histogram"
+        help: "Time to mount tools by role"
+
+      - name: "token_budget_usage"
+        type: "gauge"
+        help: "Current token usage by session"
+
+      - name: "role_transitions"
+        type: "counter"
+        help: "Number of role transitions by type"
+
+      - name: "optimization_savings"
+        type: "counter"
+        help: "Tokens saved by pre-tool hooks"
+
+  # Health monitoring
+  health:
+    enabled: true
+    endpoint: "/health"
+    detailed_endpoint: "/health/detailed"
+
+    checks:
+      - name: "tool_servers"
+        type: "server_connectivity"
+        timeout: 5
+
+      - name: "memory_usage"
+        type: "system_resource"
+        threshold: 80  # percent
+
+      - name: "token_budgets"
+        type: "custom"
+        check_function: "check_budget_health"
+
+  # Logging configuration
+  logging:
+    level: "INFO"
+    format: "json"
+
+    outputs:
+      - type: "file"
+        path: "/var/log/metamcp/broker.log"
+        rotation: "daily"
+        retention: 7
+
+      - type: "console"
+        enabled: true
+
+      - type: "syslog"
+        enabled: false
+        facility: "local0"
+
+# Security settings
+security:
+  # API authentication
+  authentication:
+    enabled: true
+    method: "bearer_token"
+    token_env: "METAMCP_AUTH_TOKEN"
+
+  # Tool access control
+  access_control:
+    enabled: true
+    policy_file: "/config/mcp/policy.yaml"
+    audit_logging: true
+
+  # Rate limiting
+  rate_limiting:
+    enabled: true
+    global_limit: 1000  # requests per hour
+    per_role_limits:
+      developer: 120
+      researcher: 80
+      planner: 60
+      reviewer: 90
+      ops: 140
+      architect: 70
+      debugger: 110
+
+  # Audit configuration
+  audit:
+    enabled: true
+    log_all_calls: true
+    sensitive_data_masking: true
+    retention_days: 90
+
+# Feature flags and experimental features
+features:
+  # Enable/disable major features
+  role_based_mounting: true
+  budget_aware_hooks: true
+  letta_integration: true
+  predictive_loading: false  # Experimental
+  auto_policy_tuning: false  # Experimental
+
+  # ADHD accommodations
+  adhd_optimizations:
+    progressive_disclosure: true
+    gentle_notifications: true
+    context_preservation: true
+    break_reminders: true
+
+  # Development and debugging
+  debug_mode: false
+  verbose_logging: false
+  tool_call_tracing: false
+
+# Error handling and fallbacks
+error_handling:
+  # Tool failure responses
+  tool_failures:
+    max_consecutive_failures: 3
+    failure_cooldown: 300  # seconds
+    fallback_behavior: "degrade_gracefully"
+
+  # Role transition failures
+  role_transitions:
+    timeout_behavior: "preserve_current"
+    fallback_profile: "safe_mode"
+
+  # Budget enforcement failures
+  budget_enforcement:
+    enforcement_failure_behavior: "allow_with_warning"
+    hard_cap_behavior: "deny_and_suggest"
+
+# Performance tuning
+performance:
+  # Caching
+  caching:
+    tool_definitions:
+      enabled: true
+      ttl: 3600  # 1 hour
+
+    role_policies:
+      enabled: true
+      ttl: 1800  # 30 minutes
+
+    budget_calculations:
+      enabled: true
+      ttl: 300   # 5 minutes
+
+  # Connection management
+  connections:
+    keep_alive: true
+    idle_timeout: 300
+    max_idle_connections: 20
+
+  # Resource limits
+  resources:
+    max_memory_mb: 2048
+    max_cpu_percent: 80
+    max_open_files: 1024

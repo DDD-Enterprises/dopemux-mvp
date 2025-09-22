@@ -1,0 +1,20 @@
+mcp_servers:
+  mas-sequential-thinking:
+    command: ["docker", "exec", "-i", "mcp-mas-sequential-thinking", "mcp-server-mas-sequential-thinking"]
+    port: 8001
+
+  context7:
+    command: ["docker", "exec", "-i", "mcp-claude-context", "npx", "@modelcontextprotocol/server-context7"]
+    port: 8002
+
+  exa:
+    command: ["docker", "exec", "-i", "mcp-exa", "python", "server.py"]
+    port: 8003
+
+  zen:
+    command: ["docker", "exec", "-i", "mcp-zen", "python", "-m", "zen_mcp_server"]
+    port: 8004
+
+  serena:
+    command: ["docker", "exec", "-i", "mcp-serena", "python", "server.py"]
+    port: 8005
