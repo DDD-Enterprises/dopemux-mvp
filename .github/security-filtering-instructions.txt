@@ -1,0 +1,41 @@
+### HARD EXCLUSIONS
+
+Exclude findings in:
+- Test files (pytest, integration tests)
+- Documentation files (markdown, architecture docs)
+- Configuration files (yaml, json, toml)
+- Development tools (scripts/, docker/, .claude/)
+- Auto-generated code or artifacts
+
+### SIGNAL QUALITY CRITERIA
+
+For Dopemux memory/intelligence systems:
+- Does this vulnerability affect ADHD-optimized workflows?
+- Could this compromise memory persistence or context continuity?
+- Does this impact MCP server communication security?
+- Could this disrupt task chunking or session management?
+
+### PRECEDENTS
+
+Acceptable patterns for this codebase:
+- Fast context processing (<10ms) may use simplified validation
+- Memory systems prioritize performance over exhaustive input checking
+- MCP communications use authenticated channels only
+- Session data is encrypted at rest and in transit
+- Docker configurations are for development environments only
+
+### ADHD-DEVELOPMENT SPECIFIC
+
+Exclude findings that would be false positives in ADHD-optimized development:
+- Complex password requirements in development configs
+- Rate limiting that would disrupt focused work sessions
+- Input validation warnings in debugging code paths
+- Resource consumption warnings for development builds
+
+### MEMORY SYSTEM SPECIFIC
+
+Acceptable for intelligent memory systems:
+- JSON parsing without strict schema validation (flexible data import)
+- Context metadata storage in accessible formats
+- Classification algorithm access to raw input data
+- Graph database queries with minimal parameter sanitization
