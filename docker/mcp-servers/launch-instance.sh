@@ -1,18 +1,70 @@
 #!/bin/bash
 
-# Dopemux MCP Servers - Multi-Instance Launcher
-# Usage: ./launch-instance.sh [instance_name] [port_base]
+# Dopemux MCP Servers - Multi-Instance Launcher with Git Worktrees
+# Usage: ./launch-instance.sh [instance_name] [port_base] [branch]
 # Examples:
-#   ./launch-instance.sh default 3000
-#   ./launch-instance.sh dev 3030
-#   ./launch-instance.sh staging 3060
-#   ./launch-instance.sh prod 3090
+#   ./launch-instance.sh default 3000 main
+#   ./launch-instance.sh dev 3030 feature/new-ui
+#   ./launch-instance.sh staging 3060 develop
+#   ./launch-instance.sh prod 3090 release/v1.2.0
 
 set -e
 
 # Default values
 INSTANCE_NAME=${1:-default}
 PORT_BASE=${2:-3000}
+BRANCH=${3:-main}
+
+# Get the project root (two levels up from this script)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+WORKTREE_ROOT="$(cd "$PROJECT_ROOT/.." && pwd)/dopemux-instances"
+
+echo "🔍 Project root: $PROJECT_ROOT"
+echo "🌳 Worktree root: $WORKTREE_ROOT"
+
+# Create worktree root directory if it doesn't exist
+mkdir -p "$WORKTREE_ROOT"
+
+# Define worktree path for this instance
+WORKTREE_PATH="$WORKTREE_ROOT/$INSTANCE_NAME"
+
+# Setup git worktree for this instance
+echo "🌳 Setting up git worktree for instance '$INSTANCE_NAME' on branch '$BRANCH'..."
+
+# Check if worktree already exists
+if [ -d "$WORKTREE_PATH" ]; then
+    echo "✅ Worktree already exists at $WORKTREE_PATH"
+    # Check if it's on the correct branch
+    cd "$WORKTREE_PATH"
+    CURRENT_BRANCH=$(git branch --show-current)
+    if [ "$CURRENT_BRANCH" != "$BRANCH" ]; then
+        echo "🔄 Switching from '$CURRENT_BRANCH' to '$BRANCH'..."
+        git checkout "$BRANCH" || git checkout -b "$BRANCH"
+    fi
+else
+    echo "🔨 Creating new worktree..."
+    cd "$PROJECT_ROOT"
+
+    # Check if branch exists locally
+    if git branch --list "$BRANCH" | grep -q "$BRANCH"; then
+        echo "✅ Branch '$BRANCH' exists locally"
+        git worktree add "$WORKTREE_PATH" "$BRANCH"
+    else
+        echo "🔍 Branch '$BRANCH' not found locally, checking remote..."
+        # Fetch latest from remote
+        git fetch origin
+
+        # Check if branch exists on remote
+        if git branch -r --list "origin/$BRANCH" | grep -q "origin/$BRANCH"; then
+            echo "✅ Branch '$BRANCH' found on remote, creating local tracking branch"
+            git worktree add "$WORKTREE_PATH" -b "$BRANCH" "origin/$BRANCH"
+        else
+            echo "🔨 Creating new branch '$BRANCH' from current branch"
+            git worktree add "$WORKTREE_PATH" -b "$BRANCH"
+        fi
+    fi
+fi
 
 # Validate port base (must be multiple of 30 to avoid conflicts)
 if ! (( PORT_BASE % 30 == 0 )); then
@@ -38,9 +90,12 @@ fi
 
 echo "✅ Port range $PORT_BASE-$((PORT_BASE + 20)) is available"
 
-# Create instance-specific .env file
+# Change to the instance worktree directory
+cd "$WORKTREE_PATH/docker/mcp-servers"
+
+# Create instance-specific .env file in the worktree
 ENV_FILE=".env.${INSTANCE_NAME}"
-echo "📝 Creating environment file: $ENV_FILE"
+echo "📝 Creating environment file: $WORKTREE_PATH/docker/mcp-servers/$ENV_FILE"
 
 cat > "$ENV_FILE" << EOF
 # Dopemux MCP Servers - Instance: $INSTANCE_NAME
@@ -49,6 +104,8 @@ cat > "$ENV_FILE" << EOF
 # === INSTANCE CONFIGURATION ===
 DOPEMUX_INSTANCE=$INSTANCE_NAME
 PORT_BASE=$PORT_BASE
+WORKTREE_PATH=$WORKTREE_PATH
+BRANCH=$BRANCH
 
 # === CONTAINER & NETWORK NAMES ===
 CONTAINER_PREFIX=mcp-${INSTANCE_NAME}
@@ -108,16 +165,19 @@ mkdir -p "$INSTANCE_DIR"
 # Start script
 cat > "$INSTANCE_DIR/start.sh" << EOF
 #!/bin/bash
-cd "$(dirname "\$0")/.."
+cd "$WORKTREE_PATH/docker/mcp-servers"
 echo "🚀 Starting Dopemux MCP instance: $INSTANCE_NAME"
+echo "📁 Working from: $WORKTREE_PATH"
+echo "🌳 Branch: $BRANCH"
 docker-compose --env-file .env.${INSTANCE_NAME} -f docker-compose.multi-instance.yml up -d
 echo "✅ Instance $INSTANCE_NAME started on ports $PORT_BASE-$((PORT_BASE + 20))"
+echo "💻 Claude Code working directory: $WORKTREE_PATH"
 EOF
 
 # Stop script
 cat > "$INSTANCE_DIR/stop.sh" << EOF
 #!/bin/bash
-cd "$(dirname "\$0")/.."
+cd "$WORKTREE_PATH/docker/mcp-servers"
 echo "🛑 Stopping Dopemux MCP instance: $INSTANCE_NAME"
 docker-compose --env-file .env.${INSTANCE_NAME} -f docker-compose.multi-instance.yml down
 echo "✅ Instance $INSTANCE_NAME stopped"
@@ -126,7 +186,7 @@ EOF
 # Logs script
 cat > "$INSTANCE_DIR/logs.sh" << EOF
 #!/bin/bash
-cd "$(dirname "\$0")/.."
+cd "$WORKTREE_PATH/docker/mcp-servers"
 echo "📊 Showing logs for Dopemux MCP instance: $INSTANCE_NAME"
 docker-compose --env-file .env.${INSTANCE_NAME} -f docker-compose.multi-instance.yml logs -f
 EOF
@@ -134,9 +194,28 @@ EOF
 # Status script
 cat > "$INSTANCE_DIR/status.sh" << EOF
 #!/bin/bash
-cd "$(dirname "\$0")/.."
+cd "$WORKTREE_PATH/docker/mcp-servers"
 echo "📊 Status for Dopemux MCP instance: $INSTANCE_NAME"
+echo "📁 Working from: $WORKTREE_PATH"
+echo "🌳 Branch: $BRANCH"
 docker-compose --env-file .env.${INSTANCE_NAME} -f docker-compose.multi-instance.yml ps
+EOF
+
+# Open worktree script
+cat > "$INSTANCE_DIR/open.sh" << EOF
+#!/bin/bash
+echo "📁 Opening worktree for instance: $INSTANCE_NAME"
+echo "🌳 Branch: $BRANCH"
+echo "💻 Path: $WORKTREE_PATH"
+if command -v code &> /dev/null; then
+    echo "🚀 Opening in VS Code..."
+    code "$WORKTREE_PATH"
+elif command -v claude &> /dev/null; then
+    echo "🚀 Opening in Claude Code..."
+    cd "$WORKTREE_PATH" && claude
+else
+    echo "💡 Navigate to: $WORKTREE_PATH"
+fi
 EOF
 
 chmod +x "$INSTANCE_DIR"/*.sh

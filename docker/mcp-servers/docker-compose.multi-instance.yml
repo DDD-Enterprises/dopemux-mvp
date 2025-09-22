@@ -295,7 +295,7 @@ services:
       - mcp_shared_claude_context_cache:/root/.context
       - mcp_shared_dopemux_sessions:/workspace/.dopemux
       - mcp_shared_claude_sessions:/workspace/.claude
-      - /Users/hue/code/dopemux-mvp:/workspace/dopemux-mvp:ro
+      - ${WORKTREE_PATH:-/Users/hue/code/dopemux-mvp}:/workspace/dopemux-mvp:ro
     labels:
       - "mcp.role=research"
       - "mcp.priority=medium"
