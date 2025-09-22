@@ -1,0 +1,596 @@
+openapi: 3.1.0
+info:
+  title: Dopemux API
+  version: 0.1.0
+  description: |
+    ADHD-optimized development platform API providing task management,
+    memory persistence, and MCP server orchestration capabilities.
+  contact:
+    name: Dopemux Development Team
+    url: https://github.com/dopemux/dopemux-mvp
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: http://localhost:8080/api/v1
+    description: Local development with API versioning
+
+paths:
+  /tasks:
+    post:
+      summary: Create a task from PRD or input
+      description: |
+        Creates a new task with ADHD-optimized decomposition and context preservation.
+        Supports both free-form text and structured PRD input.
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskInput'
+            examples:
+              simple_task:
+                summary: Simple task creation
+                value:
+                  title: "Fix authentication bug"
+                  description: "Users cannot log in with Google OAuth"
+              prd_task:
+                summary: PRD-based task
+                value:
+                  title: "Implement dark mode"
+                  description: "Full PRD attached"
+                  prd_content: "## User Story\nAs a user with light sensitivity..."
+      responses:
+        '201':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+    get:
+      summary: List tasks
+      description: Retrieve tasks with ADHD-friendly filtering and pagination
+      operationId: listTasks
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/TaskStatus'
+        - name: focus_session
+          in: query
+          description: Filter by current focus session
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  focus_context:
+                    $ref: '#/components/schemas/FocusContext'
+
+  /tasks/{taskId}:
+    get:
+      summary: Get task details
+      operationId: getTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: Task not found
+
+    patch:
+      summary: Update task
+      operationId: updateTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdate'
+      responses:
+        '200':
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+
+  /memory/blocks:
+    get:
+      summary: Retrieve memory blocks
+      description: |
+        Access the multi-level memory system with ADHD-optimized context preservation.
+        Supports working memory, session memory, and persistent storage.
+      operationId: getMemoryBlocks
+      parameters:
+        - name: scope
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              enum: [working, session, persistent]
+        - name: context_id
+          in: query
+          description: Filter by context identifier
+          schema:
+            type: string
+        - name: created_after
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: List of memory blocks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  blocks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MemoryBlock'
+                  attention_state:
+                    $ref: '#/components/schemas/AttentionState'
+
+    post:
+      summary: Create memory block
+      operationId: createMemoryBlock
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemoryBlockInput'
+      responses:
+        '201':
+          description: Memory block created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryBlock'
+
+  /attention/state:
+    get:
+      summary: Get current attention state
+      description: ADHD-specific endpoint for attention monitoring and adaptation
+      operationId: getAttentionState
+      responses:
+        '200':
+          description: Current attention state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttentionState'
+
+    post:
+      summary: Update attention state
+      operationId: updateAttentionState
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttentionStateUpdate'
+      responses:
+        '200':
+          description: Attention state updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttentionState'
+
+  /mcp/servers:
+    get:
+      summary: List available MCP servers
+      operationId: listMcpServers
+      responses:
+        '200':
+          description: List of MCP servers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/McpServer'
+
+  /health:
+    get:
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+components:
+  schemas:
+    TaskInput:
+      type: object
+      required:
+        - title
+        - description
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        prd_content:
+          type: string
+          description: Full PRD content for complex tasks
+        priority:
+          $ref: '#/components/schemas/Priority'
+        estimated_duration:
+          type: integer
+          description: Estimated duration in minutes
+          minimum: 1
+          maximum: 480
+        context_tags:
+          type: array
+          items:
+            type: string
+          maxItems: 10
+
+    Task:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - status
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        priority:
+          $ref: '#/components/schemas/Priority'
+        estimated_duration:
+          type: integer
+          description: Estimated duration in minutes
+        actual_duration:
+          type: integer
+          description: Actual time spent in minutes
+        focus_sessions:
+          type: integer
+          description: Number of focus sessions completed
+        subtasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subtask'
+        context_tags:
+          type: array
+          items:
+            type: string
+        adhd_adaptations:
+          $ref: '#/components/schemas/AdhdAdaptations'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+
+    TaskUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        priority:
+          $ref: '#/components/schemas/Priority'
+        actual_duration:
+          type: integer
+
+    TaskStatus:
+      type: string
+      enum: [todo, in_progress, paused, completed, cancelled]
+
+    Priority:
+      type: string
+      enum: [low, medium, high, urgent]
+
+    Subtask:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        estimated_minutes:
+          type: integer
+
+    AdhdAdaptations:
+      type: object
+      description: ADHD-specific task adaptations
+      properties:
+        break_reminders:
+          type: boolean
+        complexity_level:
+          type: string
+          enum: [simple, moderate, complex]
+        attention_span_minutes:
+          type: integer
+        context_switching_cost:
+          type: string
+          enum: [low, medium, high]
+
+    MemoryBlockInput:
+      type: object
+      required:
+        - type
+        - content
+      properties:
+        type:
+          type: string
+          enum: [working, session, persistent]
+        content:
+          type: string
+        context_id:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    MemoryBlock:
+      type: object
+      required:
+        - id
+        - type
+        - content
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [working, session, persistent]
+        content:
+          type: string
+        context_id:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        access_count:
+          type: integer
+
+    AttentionState:
+      type: object
+      description: ADHD attention monitoring state
+      properties:
+        current_level:
+          type: string
+          enum: [hyperfocus, focused, scattered, overwhelmed]
+        session_duration:
+          type: integer
+          description: Current session duration in minutes
+        break_needed:
+          type: boolean
+        context_switches:
+          type: integer
+          description: Number of context switches this session
+        recommended_action:
+          type: string
+          enum: [continue, take_break, simplify_task, change_environment]
+
+    AttentionStateUpdate:
+      type: object
+      properties:
+        current_level:
+          type: string
+          enum: [hyperfocus, focused, scattered, overwhelmed]
+        activity_type:
+          type: string
+          enum: [coding, planning, debugging, researching]
+
+    FocusContext:
+      type: object
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        started_at:
+          type: string
+          format: date-time
+        planned_duration:
+          type: integer
+        active_task_id:
+          type: string
+          format: uuid
+
+    McpServer:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, error]
+        capabilities:
+          type: array
+          items:
+            type: string
+        health_check_url:
+          type: string
+
+    Pagination:
+      type: object
+      properties:
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+        has_more:
+          type: boolean
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        services:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              status:
+                type: string
+                enum: [up, down, unknown]
+              response_time_ms:
+                type: number
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+    ValidationError:
+      type: object
+      required:
+        - error
+        - message
+        - validation_errors
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        validation_errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token for API authentication. Include in Authorization header as:
+        Authorization: Bearer <token>
