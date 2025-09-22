@@ -1,0 +1,38 @@
+servers:
+  clear_thought:
+    command: "npx"
+    args: ["-y", "@waldzellai/clear-thought-onepointfive"]
+    env:
+      CLEAR_THOUGHT_TELEMETRY: "off"
+    timeout_ms: 180000
+
+policies:
+  clear_thought:
+    allow_code_execution: false
+    allowed_operations:
+      - decision_framework
+      - socratic_method
+      - metacognitive_monitoring
+      - creative_thinking
+      - ulysses_protocol
+      - ooda_loop
+      - root_cause_analysis
+      - debugging_approach
+      - collaborative_reasoning
+      - risk_assessment
+      - prioritization
+      - notebook_create
+      - notebook_add
+      - notebook_run
+      - notebook_export
+      - session_import
+      - session_export
+    token_budget:
+      max_input_tokens: 8000
+      max_output_tokens: 2000
+    rate_limits:
+      per_session_per_minute: 6
+      per_workspace_per_hour: 60
+
+feature_flags:
+  CLEAR_THOUGHT_ENABLED: true

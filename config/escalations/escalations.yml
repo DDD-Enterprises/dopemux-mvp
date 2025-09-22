@@ -1,0 +1,9 @@
+allow_code_execution_within_clear_thought:
+  requires:
+    - role: maintainer
+    - approval: "/approve code-exec"
+  grants:
+    - policies.clear_thought.allow_code_execution: true
+  auto_revoke:
+    ttl_minutes: 30
+    on_session_end: true

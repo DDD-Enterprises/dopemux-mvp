@@ -1,0 +1,183 @@
+rules:
+  # Architectural decisions & tradeoffs
+  - when:
+      any:
+        - tag: "arch:decision"
+        - tag: "arch:tradeoff"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: decision_framework
+        params:
+          style: "concise-options+pros-cons+recommendation"
+
+  - when:
+      any:
+        - tag: "arch:risk"
+        - tag: "arch:review"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: risk_assessment
+        params:
+          matrix: "likelihood*impact"
+
+  # Debugging / incidents / high stakes
+  - when:
+      any:
+        - tag: "debug:highstakes"
+        - tag: "incident:active"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: ulysses_protocol
+        params:
+          mode: "stabilize>triage>verify>fix>postmortem"
+
+  - when:
+      any:
+        - tag: "debug:rootcause"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: root_cause_analysis
+        params:
+          pattern: "5-whys+fishbone"
+
+  - when:
+      any:
+        - tag: "debug:approach"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: debugging_approach
+
+  # Metacognition / reflection / getting unstuck
+  - when:
+      any:
+        - tag: "reason:reflect"
+        - tag: "reason:stuck"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: metacognitive_monitoring
+
+  - when:
+      any:
+        - tag: "reason:multi-perspective"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: collaborative_reasoning
+
+  - when:
+      any:
+        - tag: "reason:socratic"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: socratic_method
+
+  - when:
+      any:
+        - tag: "reason:creative"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: creative_thinking
+
+  - when:
+      any:
+        - tag: "reason:prioritize"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: prioritization
+
+  - when:
+      any:
+        - tag: "reason:ooda"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: ooda_loop
+
+  # Notebook + Session artifact capture
+  - when:
+      any:
+        - tag: "note:create"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: notebook_create
+        params:
+          title_from_context: true
+
+  - when:
+      any:
+        - tag: "note:add"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: notebook_add
+
+  - when:
+      any:
+        - tag: "note:export"
+        - tag: "memory:export"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: notebook_export
+    and_then:
+      emit:
+        event: "artifact.persist"
+        payload:
+          targets: ["conport", "letta:L2"]
+          format: "md+json"
+
+  - when:
+      any:
+        - tag: "session:export"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: session_export
+    and_then:
+      emit:
+        event: "artifact.persist"
+        payload:
+          targets: ["conport", "letta:L3"]
+          format: "json"
+
+  - when:
+      any:
+        - tag: "session:import"
+    then:
+      call:
+        server: clear_thought
+        tool: clear_thought
+        operation: session_import
+        params:
+          source: "conport|letta"
+
+fallbacks:
+  on_error:
+    prefer: sequential_thinking
+    log_event: true
+    user_notice: "Used baseline reasoning due to ClearThought error."
