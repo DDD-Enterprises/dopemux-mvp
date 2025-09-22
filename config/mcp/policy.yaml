@@ -16,7 +16,7 @@ profiles:
     default_tools:
       - serena
       - claude-context
-      - cli
+      - morphllm-fast-apply
     token_budget: 10000
     escalation_triggers:
       test_failure:
@@ -36,7 +36,7 @@ profiles:
   researcher:
     description: "Information gathering and analysis"
     default_tools:
-      - context7
+      - claude-context
       - exa
     token_budget: 15000
     escalation_triggers:

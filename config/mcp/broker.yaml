@@ -147,22 +147,22 @@ role_mappings:
     pre_warm: true  # Keep connections ready
 
   researcher:
-    primary_servers: ["exa", "docrag"]
-    escalation_servers: ["sequential-thinking", "claude-context"]
+    primary_servers: ["exa", "claude-context"]
+    escalation_servers: ["sequential-thinking", "zen"]
     pre_warm: false  # Load on demand
 
   planner:
-    primary_servers: ["task-master-ai", "conport"]
+    primary_servers: ["task-master-ai", "conport-memory"]
     escalation_servers: ["zen", "exa"]
     pre_warm: true
 
   reviewer:
-    primary_servers: ["claude-context", "conport"]
+    primary_servers: ["claude-context", "conport-memory"]
     escalation_servers: ["sequential-thinking", "zen"]
     pre_warm: true
 
   ops:
-    primary_servers: ["desktop-commander", "conport"]
+    primary_servers: ["desktop-commander", "conport-memory"]
     escalation_servers: ["sequential-thinking", "zen"]
     pre_warm: false
 
