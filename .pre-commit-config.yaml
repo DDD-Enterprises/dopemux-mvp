@@ -14,3 +14,10 @@ repos:
     hooks:
       - id: lychee
         args: ["--config", ".lychee.toml", "--no-progress", "docs/**/*.md"]
+  - repo: local
+    hooks:
+      - id: docs-frontmatter-guard
+        name: Ensure required YAML front-matter
+        entry: python scripts/docs_frontmatter_guard.py --fix
+        language: system
+        files: ^docs/.*\.md$
