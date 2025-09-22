@@ -4,34 +4,59 @@ Run multiple isolated Dopemux instances without conflicts. Each instance gets it
 
 ## Quick Start
 
-### 1. Launch Your First Instance
+### 🚀 Smart Command (Recommended)
 ```bash
-# Default instance on ports 3000-3020
-./launch-instance.sh default 3000
+# Auto-detect and start instances with git worktrees
+./dopemux start                    # Creates 'default' instance on main branch
+./dopemux start dev feature/ui     # Creates 'dev' instance on feature/ui branch
+./dopemux start staging develop    # Creates 'staging' instance on develop branch
+
+# Check running instances
+./dopemux status
+
+# Switch to instance worktree (opens in Claude Code)
+./dopemux switch dev
+
+# Stop instance
+./dopemux stop dev
+```
+
+### 🔧 Manual Setup (Advanced)
+```bash
+# Default instance on ports 3000-3020, main branch
+./launch-instance.sh default 3000 main
 
 # Edit the generated .env file with your API keys
 nano .env.default
 
-# Start the instance
-docker-compose --env-file .env.default -f docker-compose.multi-instance.yml up -d
-```
-
-### 2. Launch Additional Instances
-```bash
-# Development instance on ports 3030-3050
-./launch-instance.sh dev 3030
-nano .env.dev
-docker-compose --env-file .env.dev -f docker-compose.multi-instance.yml up -d
-
-# Staging instance on ports 3060-3080
-./launch-instance.sh staging 3060
-nano .env.staging
-docker-compose --env-file .env.staging -f docker-compose.multi-instance.yml up -d
+# Start the instance (from the worktree)
+./instance-default/start.sh
 ```
 
 ## Instance Management
 
-### Using Helper Scripts
+### 🎛️ Smart Commands
+```bash
+# Show all instances and their status
+./dopemux status
+
+# List available instances
+./dopemux list
+
+# Start instance (auto-detects ports and creates worktree)
+./dopemux start [instance] [branch]
+
+# Stop instance
+./dopemux stop <instance>
+
+# Switch to instance worktree
+./dopemux switch <instance>
+
+# Clean up stopped containers
+./dopemux clean
+```
+
+### 📁 Helper Scripts (Per Instance)
 Each instance gets its own helper scripts in `instance-{name}/`:
 
 ```bash
@@ -48,6 +73,9 @@ Each instance gets its own helper scripts in `instance-{name}/`:
 
 # Check status
 ./instance-default/status.sh
+
+# Open worktree in editor
+./instance-default/open.sh
 ```
 
 ### Manual Commands
@@ -348,3 +376,77 @@ These directories are automatically shared across instances:
 - For completely isolated work, use separate project directories
 - Session files are no longer created randomly in repo root
 - All session data is properly containerized and persistent
+
+## Git Worktree Integration
+
+### 🌳 **Automatic Worktree Management**
+
+Each instance automatically gets its own git worktree, providing complete code isolation:
+
+```
+dopemux-mvp/                    # Main repository
+../dopemux-instances/           # Worktree directory
+├── default/                    # Default instance (main branch)
+├── dev/                        # Dev instance (feature/ui branch)
+├── staging/                    # Staging instance (develop branch)
+└── prod/                       # Prod instance (release/v1.2.0 branch)
+```
+
+### 🔄 **Branch-Per-Instance Workflow**
+
+```bash
+# Work on feature branch in dev instance
+./dopemux start dev feature/new-ui
+./dopemux switch dev
+# Code in feature/new-ui branch...
+
+# Test in staging with develop branch
+./dopemux start staging develop
+./dopemux switch staging
+# Test integration...
+
+# Deploy to prod with release branch
+./dopemux start prod release/v1.2.0
+./dopemux switch prod
+# Production deployment...
+```
+
+### 🎯 **Benefits of Worktree Approach**
+
+**🔒 Complete Isolation:**
+- Each instance has its own working directory
+- No conflicts between different branches
+- Can work on multiple features simultaneously
+- Safe to experiment without affecting other instances
+
+**🚀 Efficient Development:**
+- Switch between branches instantly
+- No need to stash/commit incomplete work
+- Parallel development on multiple features
+- Easy comparison between versions
+
+**🧠 ADHD-Friendly:**
+- Context preserved per branch/instance
+- Visual separation of work streams
+- No mental overhead of branch switching
+- Clear workspace organization
+
+### 🔧 **Worktree Operations**
+
+```bash
+# List all worktrees (git command)
+git worktree list
+
+# Remove worktree manually (if needed)
+git worktree remove ../dopemux-instances/old-instance
+
+# Prune removed worktrees
+git worktree prune
+```
+
+### ⚠️ **Important Notes**
+
+- **Worktrees share git history** - commits in one affect all
+- **Shared session state** - Dopemux sessions preserved across worktrees
+- **Independent code** - Each worktree can have different file states
+- **Automatic cleanup** - Stopped instances keep their worktrees for resume
