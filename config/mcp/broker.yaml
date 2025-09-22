@@ -43,94 +43,59 @@ broker:
     recovery_timeout: 30
     half_open_max_calls: 3
 
-# MCP server definitions and connection details
+# MCP server definitions and connection details - LIVE DOCKER CONNECTIONS
 servers:
-  # Core development tools
+  # Core development tools - LIVE CONNECTIONS
   serena:
-    transport: "stdio"
-    command: ["npx", "@serena/serena-mcp"]
-    working_directory: "/workspace"
-    environment:
-      NODE_ENV: "production"
-    startup_timeout: 10
-    health_check:
-      method: "ping"
-      interval: 30
-
-  claude-context:
-    transport: "stdio"
-    command: ["npx", "claude-context-mcp"]
-    working_directory: "/workspace"
-    environment:
-      CONTEXT_WORKSPACE: "/workspace"
-      INDEX_STRATEGY: "incremental"
-    startup_timeout: 15
-    health_check:
-      method: "get_status"
-      interval: 45
-
-  cli:
-    transport: "stdio"
-    command: ["mcp-server-cli"]
-    working_directory: "/workspace"
-    environment:
-      ALLOWED_DIRECTORIES: "/workspace,/tmp"
-      SHELL: "/bin/bash"
-    startup_timeout: 5
-    health_check:
-      method: "echo"
-      interval: 30
-
-  # Research and information gathering
-  context7:
     transport: "http"
-    url: "http://context7-server:8080"
-    api_key_env: "CONTEXT7_API_KEY"
+    url: "http://localhost:3006"
     startup_timeout: 10
     health_check:
       method: "health"
       endpoint: "/health"
       interval: 30
 
+  claude-context:
+    transport: "http"
+    url: "http://localhost:3007"
+    startup_timeout: 15
+    health_check:
+      method: "health"
+      endpoint: "/health"
+      interval: 45
+
+  # Research and information gathering - LIVE CONNECTIONS
   exa:
     transport: "http"
-    url: "http://exa-server:8080"
-    api_key_env: "EXA_API_KEY"
+    url: "http://localhost:3008"
     startup_timeout: 8
     health_check:
       method: "health"
       endpoint: "/health"
       interval: 45
 
-  # AI and reasoning tools
+  # AI and reasoning tools - LIVE CONNECTIONS
   zen:
-    transport: "stdio"
-    command: ["zen-mcp-server"]
-    working_directory: "/workspace"
-    environment:
-      OPENAI_API_KEY_ENV: "OPENAI_API_KEY"
-      ANTHROPIC_API_KEY_ENV: "ANTHROPIC_API_KEY"
-      GEMINI_API_KEY_ENV: "GEMINI_API_KEY"
-      ZEN_DISABLED_TOOLS: "analyze,refactor,testgen,secaudit,docgen,tracer"
-      ZEN_DEFAULT_THINKING_MODE: "low"
+    transport: "http"
+    url: "http://localhost:3003"
     startup_timeout: 20
     health_check:
-      method: "ping"
+      method: "health"
+      endpoint: "/health"
       interval: 60
 
   sequential-thinking:
     transport: "stdio"
-    command: ["docker", "exec", "-i", "mcp-mas-sequential-thinking", "mcp-server-mas-sequential-thinking"]
+    command: ["docker", "exec", "-i", "mcp-mas-sequential-thinking", "python", "docker_server.py"]
     startup_timeout: 15
     health_check:
       method: "ping"
       interval: 45
 
-  # Task and project management
+  # Task and project management - LIVE CONNECTIONS
   task-master-ai:
     transport: "http"
-    url: "http://task-master-server:8080"
-    api_key_env: "TASK_MASTER_API_KEY"
+    url: "http://localhost:3005"
     startup_timeout: 12
     health_check:
       method: "health"
@@ -138,45 +103,57 @@ servers:
       interval: 30
 
   conport:
-    transport: "stdio"
-    command: ["conport-mcp-server"]
-    working_directory: "/workspace"
-    environment:
-      DATABASE_URL_ENV: "CONPORT_DATABASE_URL"
-      AUTO_DETECT_WORKSPACE: "true"
+    transport: "http"
+    url: "http://localhost:3004"
     startup_timeout: 10
     health_check:
-      method: "ping"
+      method: "health"
+      endpoint: "/health"
       interval: 30
 
-  # UI automation (ops role)
-  playwright:
-    transport: "stdio"
-    command: ["npx", "playwright-mcp-server"]
-    working_directory: "/workspace"
-    environment:
-      BROWSER_TIMEOUT: "30000"
-      HEADLESS: "true"
-    startup_timeout: 25
+  # Additional live servers available
+  morphllm-fast-apply:
+    transport: "http"
+    url: "http://localhost:3011"
+    startup_timeout: 10
     health_check:
-      method: "ping"
-      interval: 60
+      method: "health"
+      endpoint: "/health"
+      interval: 30
 
-# Role-based server mounting rules
+  desktop-commander:
+    transport: "http"
+    url: "http://localhost:3012"
+    startup_timeout: 10
+    health_check:
+      method: "health"
+      endpoint: "/health"
+      interval: 30
+
+  docrag:
+    transport: "http"
+    url: "http://localhost:3009"
+    startup_timeout: 10
+    health_check:
+      method: "health"
+      endpoint: "/health"
+      interval: 30
+
+# Role-based server mounting rules - UPDATED FOR LIVE SERVERS
 role_mappings:
   developer:
-    primary_servers: ["serena", "claude-context", "cli"]
-    escalation_servers: ["sequential-thinking", "zen", "playwright"]
+    primary_servers: ["serena", "claude-context", "morphllm-fast-apply"]
+    escalation_servers: ["sequential-thinking", "zen", "desktop-commander"]
     pre_warm: true  # Keep connections ready
 
   researcher:
-    primary_servers: ["context7", "exa"]
-    escalation_servers: ["sequential-thinking"]
+    primary_servers: ["exa", "docrag"]
+    escalation_servers: ["sequential-thinking", "claude-context"]
     pre_warm: false  # Load on demand
 
   planner:
     primary_servers: ["task-master-ai", "conport"]
-    escalation_servers: ["zen", "context7"]
+    escalation_servers: ["zen", "exa"]
     pre_warm: true
 
   reviewer:
@@ -185,18 +162,18 @@ role_mappings:
     pre_warm: true
 
   ops:
-    primary_servers: ["cli", "conport"]
-    escalation_servers: ["playwright", "sequential-thinking", "zen"]
+    primary_servers: ["desktop-commander", "conport"]
+    escalation_servers: ["sequential-thinking", "zen"]
     pre_warm: false
 
   architect:
     primary_servers: ["zen", "sequential-thinking"]
-    escalation_servers: ["context7", "exa", "claude-context", "serena"]
+    escalation_servers: ["exa", "claude-context", "serena"]
     pre_warm: true
 
   debugger:
     primary_servers: ["zen", "claude-context", "sequential-thinking"]
-    escalation_servers: ["serena", "cli", "playwright"]
+    escalation_servers: ["serena", "morphllm-fast-apply", "desktop-commander"]
     pre_warm: true
 
 # Integration settings
