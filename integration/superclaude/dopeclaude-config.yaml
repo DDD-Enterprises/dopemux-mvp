@@ -1,0 +1,395 @@
+# DopeClaude Configuration
+# SuperClaude Enhanced with Dopemux Intelligence
+
+dopeclaude:
+  # Operation mode: standard|enhanced|dopemux-full
+  mode: "enhanced"
+  version: "1.0.0"
+
+  # SuperClaude preservation settings
+  superclaude:
+    commands_enabled: true
+    personas_enabled: true
+    context_injection: true
+    workflow_chaining: true
+    original_syntax_preserved: true
+
+  # Dopemux enhancement integration
+  dopemux:
+    metamcp_orchestration: true
+    adhd_optimizations: true
+    memory_persistence: true
+    multi_model_consensus: true
+    progressive_disclosure: true
+    intelligent_tool_routing: true
+
+  # ADHD accommodation settings
+  adhd:
+    session_length: 1500  # 25 minutes (Pomodoro)
+    break_reminders: true
+    gentle_guidance: true
+    progress_tracking: true
+    context_preservation: true
+    cognitive_load_management: true
+
+    # Break settings
+    break_duration: 300  # 5 minutes
+    break_style: "gentle"  # gentle|firm|optional
+
+    # Disclosure settings
+    progressive_disclosure: true
+    max_initial_complexity: "medium"  # low|medium|high
+    expand_on_request: true
+
+  # SuperClaude Persona → Dopemux Role Mappings
+  persona_mappings:
+    architect:
+      role: "architect"
+      tools: ["zen", "sequential-thinking", "context7"]
+      description: "System design and high-level architecture"
+      enhanced_capabilities: ["multi-model consensus", "deep reasoning"]
+
+    frontend:
+      role: "developer"
+      tools: ["serena", "morphllm-fast-apply", "claude-context"]
+      description: "Frontend development and UI/UX"
+      enhanced_capabilities: ["code transformation", "component analysis"]
+
+    backend:
+      role: "developer"
+      tools: ["serena", "claude-context", "zen"]
+      description: "Backend systems and API development"
+      enhanced_capabilities: ["system integration", "performance analysis"]
+
+    security:
+      role: "reviewer"
+      tools: ["zen", "sequential-thinking", "context7"]
+      description: "Security analysis and threat modeling"
+      enhanced_capabilities: ["systematic review", "consensus validation"]
+
+    analyzer:
+      role: "researcher"
+      tools: ["exa", "claude-context", "sequential-thinking"]
+      description: "Code and system analysis"
+      enhanced_capabilities: ["deep research", "systematic thinking"]
+
+    qa:
+      role: "reviewer"
+      tools: ["claude-context", "zen", "sequential-thinking"]
+      description: "Quality assurance and testing"
+      enhanced_capabilities: ["systematic testing", "quality consensus"]
+
+    performance:
+      role: "developer"
+      tools: ["morphllm-fast-apply", "zen", "claude-context"]
+      description: "Performance optimization and profiling"
+      enhanced_capabilities: ["optimization patterns", "performance consensus"]
+
+    refactorer:
+      role: "developer"
+      tools: ["morphllm-fast-apply", "serena", "claude-context"]
+      description: "Code refactoring and improvement"
+      enhanced_capabilities: ["intelligent transformations", "safe refactoring"]
+
+    mentor:
+      role: "planner"
+      tools: ["task-master-ai", "zen", "sequential-thinking"]
+      description: "Guidance and knowledge transfer"
+      enhanced_capabilities: ["strategic planning", "consensus teaching"]
+
+  # SuperClaude Command → Dopemux Enhancement Mappings
+  command_mappings:
+    # Analysis Commands
+    analyze:
+      role: "researcher"
+      tools: ["zen", "claude-context"]
+      consensus: true
+      systematic: true
+      description: "Deep analysis with multi-model consensus"
+      adhd_adaptations:
+        chunking: true
+        progressive_disclosure: true
+        break_points: ["initial_scan", "deep_dive", "synthesis"]
+
+    review:
+      role: "reviewer"
+      tools: ["claude-context", "zen"]
+      consensus: true
+      safety: true
+      description: "Code and design review with consensus validation"
+      adhd_adaptations:
+        chunking: true
+        systematic_approach: true
+
+    audit:
+      role: "reviewer"
+      tools: ["zen", "sequential-thinking", "context7"]
+      consensus: true
+      systematic: true
+      depth: "comprehensive"
+      description: "Comprehensive system audit"
+
+    critique:
+      role: "reviewer"
+      tools: ["zen", "sequential-thinking"]
+      consensus: true
+      perspective: "multi-angle"
+      description: "Critical analysis from multiple perspectives"
+
+    # Implementation Commands
+    implement:
+      role: "developer"
+      tools: ["serena", "morphllm-fast-apply"]
+      chunking: true
+      safety: true
+      description: "Implementation with intelligent code assistance"
+      adhd_adaptations:
+        pomodoro_chunks: true
+        progress_celebration: true
+        break_reminders: true
+
+    build:
+      role: "developer"
+      tools: ["serena", "morphllm-fast-apply", "claude-context"]
+      chunking: true
+      systematic: true
+      description: "Systematic build process with error handling"
+
+    code:
+      role: "developer"
+      tools: ["serena", "morphllm-fast-apply"]
+      real_time: true
+      safety: true
+      description: "Real-time coding assistance"
+
+    refactor:
+      role: "developer"
+      tools: ["morphllm-fast-apply", "claude-context"]
+      safety: true
+      validation: true
+      description: "Safe refactoring with validation"
+
+    # Design Commands
+    design:
+      role: "architect"
+      tools: ["zen", "sequential-thinking"]
+      consensus: true
+      creative: true
+      description: "Architectural design with multi-model creativity"
+      adhd_adaptations:
+        inspiration_breaks: true
+        visual_thinking: true
+
+    plan:
+      role: "planner"
+      tools: ["task-master-ai", "zen"]
+      chunking: true
+      systematic: true
+      description: "Strategic planning with task breakdown"
+      adhd_adaptations:
+        milestone_creation: true
+        progress_tracking: true
+
+    workflow:
+      role: "planner"
+      tools: ["task-master-ai", "sequential-thinking"]
+      systematic: true
+      optimization: true
+      description: "Workflow design and optimization"
+
+    brainstorm:
+      role: "architect"
+      tools: ["zen", "sequential-thinking"]
+      creative: true
+      divergent: true
+      description: "Creative brainstorming with structured thinking"
+
+    # Research Commands
+    research:
+      role: "researcher"
+      tools: ["exa", "context7", "sequential-thinking"]
+      depth: "deep"
+      systematic: true
+      description: "Comprehensive research with official sources"
+      adhd_adaptations:
+        progressive_depth: true
+        bookmark_interesting: true
+
+    document:
+      role: "researcher"
+      tools: ["context7", "claude-context"]
+      comprehensive: true
+      structured: true
+      description: "Documentation creation and organization"
+
+    explore:
+      role: "researcher"
+      tools: ["exa", "sequential-thinking"]
+      open_ended: true
+      curious: true
+      description: "Open-ended exploration and discovery"
+
+    # Operations Commands
+    deploy:
+      role: "ops"
+      tools: ["desktop-commander", "sequential-thinking"]
+      systematic: true
+      safety: true
+      description: "Deployment with safety checks"
+
+    test:
+      role: "reviewer"
+      tools: ["claude-context", "zen"]
+      comprehensive: true
+      systematic: true
+      description: "Comprehensive testing strategy"
+
+    monitor:
+      role: "ops"
+      tools: ["desktop-commander", "sequential-thinking"]
+      continuous: true
+      alerting: true
+      description: "System monitoring and alerting"
+
+    optimize:
+      role: "developer"
+      tools: ["morphllm-fast-apply", "zen"]
+      performance: true
+      systematic: true
+      description: "Performance optimization with consensus"
+
+    # Debugging Commands
+    debug:
+      role: "debugger"
+      tools: ["zen", "claude-context", "sequential-thinking"]
+      systematic: true
+      methodical: true
+      description: "Systematic debugging with multiple approaches"
+      adhd_adaptations:
+        step_by_step: true
+        hypothesis_tracking: true
+
+    troubleshoot:
+      role: "debugger"
+      tools: ["zen", "sequential-thinking", "claude-context"]
+      systematic: true
+      root_cause: true
+      description: "Root cause analysis and resolution"
+
+    diagnose:
+      role: "debugger"
+      tools: ["sequential-thinking", "claude-context"]
+      methodical: true
+      comprehensive: true
+      description: "Systematic problem diagnosis"
+
+  # Progressive Disclosure Settings
+  progressive_disclosure:
+    enabled: true
+    levels:
+      summary:
+        max_lines: 5
+        focus: "key insights"
+      overview:
+        max_lines: 15
+        focus: "main points with some detail"
+      detailed:
+        max_lines: 50
+        focus: "comprehensive information"
+      complete:
+        max_lines: null
+        focus: "full analysis"
+
+    auto_level_selection:
+      enabled: true
+      factors: ["session_duration", "cognitive_load", "complexity"]
+
+    expansion_triggers:
+      commands: ["/dx:expand", "/dx:more", "/dx:detail"]
+      automatic: ["user_request", "follow_up_question"]
+
+  # Session Management
+  session_management:
+    auto_save_interval: 300  # 5 minutes
+    context_preservation: true
+    cross_session_memory: true
+    workflow_continuity: true
+
+    break_management:
+      auto_suggest: true
+      suggest_threshold: 1500  # 25 minutes
+      break_types: ["micro", "short", "medium"]
+      break_activities: ["stretch", "hydrate", "breathe", "walk"]
+
+  # Multi-Model Consensus Settings
+  consensus:
+    enabled: true
+    threshold: 0.7  # 70% agreement required
+    models: ["zen-primary", "zen-secondary", "sequential-thinking"]
+
+    trigger_conditions:
+      complexity: "high"
+      importance: "critical"
+      uncertainty: "high"
+      safety_critical: true
+
+    consensus_types:
+      analysis: ["accuracy", "completeness", "relevance"]
+      design: ["feasibility", "elegance", "maintainability"]
+      implementation: ["correctness", "performance", "safety"]
+
+  # Tool Routing Intelligence
+  tool_routing:
+    auto_selection: true
+    optimization: "cognitive_load"  # performance|accuracy|cognitive_load
+
+    routing_rules:
+      simple_queries: ["claude-context"]
+      complex_analysis: ["zen", "sequential-thinking"]
+      code_tasks: ["serena", "morphllm-fast-apply"]
+      research_tasks: ["exa", "context7"]
+      planning_tasks: ["task-master-ai"]
+
+    fallback_strategy: "graceful_degradation"
+    health_monitoring: true
+
+  # Enhanced Workflow Patterns
+  workflow_patterns:
+    # Development workflow
+    dev_cycle:
+      commands: ["plan", "design", "implement", "test", "review"]
+      chunking: "pomodoro"
+      break_points: ["after_design", "after_implementation"]
+
+    # Research workflow
+    research_cycle:
+      commands: ["explore", "research", "analyze", "document"]
+      depth_progression: true
+      bookmark_system: true
+
+    # Architecture workflow
+    arch_cycle:
+      commands: ["brainstorm", "design", "validate", "document"]
+      consensus_points: ["design", "validate"]
+      stakeholder_review: true
+
+  # Quality and Safety
+  quality_assurance:
+    validation_points: ["before_execution", "after_completion"]
+    safety_checks: ["code_safety", "security_review", "performance_impact"]
+    rollback_capability: true
+
+  # Observability
+  observability:
+    metrics_collection: true
+    performance_tracking: true
+    adhd_effectiveness_metrics: true
+    usage_analytics: true
+
+    tracked_metrics:
+      - "command_success_rate"
+      - "session_duration_optimal"
+      - "break_adherence"
+      - "cognitive_load_score"
+      - "task_completion_rate"
+      - "context_preservation_effectiveness"
