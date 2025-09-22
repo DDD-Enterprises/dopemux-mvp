@@ -108,10 +108,15 @@ These volumes are shared across ALL instances for efficiency:
 **📖 Documentation Cache:**
 - `mcp_shared_context7_cache` - API reference cache
 
+**💾 Session State & Context:**
+- `mcp_shared_dopemux_sessions` - Dopemux session data (.dopemux/)
+- `mcp_shared_claude_sessions` - Claude Code session data (.claude/)
+
 ✅ **Why shared?** All instances work on the same codebase, so they benefit from shared:
 - Code embeddings and semantic search indexes
 - Documentation caches
 - Vector database with code understanding
+- **Session continuity across instances** - switch between dev/staging/prod seamlessly
 
 ### 🔒 **Isolated Data (Instance-Specific)**
 These volumes are separate per instance:
@@ -153,6 +158,7 @@ These volumes are separate per instance:
 - Code only indexed once across all instances
 - Shared vector database reduces storage overhead
 - Documentation cache shared for faster responses
+- **Session state preserved across instance switches**
 
 **🔒 Isolation Where It Matters:**
 - Each instance has independent project state
@@ -163,11 +169,13 @@ These volumes are separate per instance:
 - Faster semantic search (shared embeddings)
 - Reduced startup time (cached data available)
 - Lower resource usage overall
+- **Seamless context switching between instances**
 
 **🎛️ Flexibility:**
 - Can run dev/staging/prod simultaneously
 - Each instance can have different configurations
 - Easy to add/remove instances
+- **Pick up exactly where you left off in any instance**
 
 ## Environment Variables
 
@@ -281,3 +289,62 @@ docker-compose --env-file .env.default -f docker-compose.multi-instance.yml up -
 ```
 
 Your data volumes will be preserved if using the same volume names.
+
+## Session State Management
+
+### 🔄 **Cross-Instance Session Continuity**
+
+Dopemux now shares session state across all instances, so you can:
+
+- Start work in the `dev` instance
+- Switch to `staging` for testing
+- Continue in `prod` for deployment
+- **All while maintaining your session context!**
+
+### 📁 **Shared Session Data**
+
+These directories are automatically shared across instances:
+
+```
+/workspace/.dopemux/     # Dopemux session state
+├── sessions/           # Active sessions
+├── context.db         # Context database
+├── context.json       # Context metadata
+├── attention.json     # ADHD attention tracking
+└── config.json        # Instance configuration
+
+/workspace/.claude/     # Claude Code session state
+├── session.md         # Session persistence
+├── context.md         # Context management
+└── claude.md          # Project instructions
+```
+
+### 🎯 **How It Works**
+
+1. **Session Data**: Stored in shared volumes `mcp_shared_dopemux_sessions` and `mcp_shared_claude_sessions`
+2. **Automatic Sync**: All instances access the same session data in real-time
+3. **Context Preservation**: Switch instances without losing your mental model
+4. **ADHD Support**: Attention metrics and task state persist across switches
+
+### 💡 **Usage Examples**
+
+```bash
+# Start development work
+./instance-dev/start.sh
+# Work on features, build context...
+
+# Switch to staging for testing (keeps all context!)
+./instance-staging/start.sh
+# Run tests with full session awareness...
+
+# Deploy to production (session continuity maintained!)
+./instance-prod/start.sh
+# Deploy with complete context of what was built and tested
+```
+
+### ⚠️ **Important Notes**
+
+- Session state is **shared** - changes in one instance affect others
+- For completely isolated work, use separate project directories
+- Session files are no longer created randomly in repo root
+- All session data is properly containerized and persistent
