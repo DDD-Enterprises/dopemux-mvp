@@ -1,0 +1,2 @@
+exclude_path = ["docs/94-architecture/c4/"]
+max_concurrency = 8

@@ -1,5 +1,12 @@
-# Dopemux MCP Servers - Complete Docker Orchestration
-# Based on ADR-007 (Routing Logic) and ADR-012 (MCP Integration Patterns)
+# Dopemux MCP Servers - Multi-Instance Docker Orchestration
+# Usage:
+#   1. Copy .env.template to .env and configure DOPEMUX_INSTANCE and PORT_BASE
+#   2. docker-compose -f docker-compose.multi-instance.yml up -d
+#
+# Examples:
+#   Instance 1: DOPEMUX_INSTANCE=default PORT_BASE=3000
+#   Instance 2: DOPEMUX_INSTANCE=dev PORT_BASE=3030
+#   Instance 3: DOPEMUX_INSTANCE=staging PORT_BASE=3060
 
 services:
   # === CRITICAL PATH SERVERS (Priority: High) ===
@@ -7,7 +14,7 @@ services:
   # Context7 - ALWAYS FIRST for documentation and API references
   context7:
     image: mcp/context7:latest
-    container_name: mcp-context7
+    container_name: ${CONTAINER_PREFIX:-mcp}-context7
     restart: unless-stopped
     networks:
       - mcp-network
@@ -15,7 +22,7 @@ services:
       - CONTEXT7_API_KEY=${CONTEXT7_API_KEY}
       - CONTEXT7_ENDPOINT=${CONTEXT7_ENDPOINT}
     ports:
-      - "3002:8080"
+      - "${PORT_BASE:-3000}2:8080"  # PORT_BASE + 2
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 8080"]
       timeout: 10s
@@ -23,18 +30,19 @@ services:
       interval: 30s
       start_period: 30s
     volumes:
-      - mcp_context7_cache:/app/cache
+      - mcp_shared_context7_cache:/app/cache
     labels:
       - "mcp.role=critical_path"
       - "mcp.priority=highest"
       - "mcp.description=Documentation and API references"
+      - "mcp.instance=${DOPEMUX_INSTANCE:-default}"
 
   # Zen - Multi-model orchestration and complex decision making
   zen:
     build:
       context: ./zen
       dockerfile: Dockerfile
-    container_name: mcp-zen
+    container_name: ${CONTAINER_PREFIX:-mcp}-zen
     restart: unless-stopped
     networks:
       - mcp-network
@@ -44,9 +52,9 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - DISABLED_TOOLS=analyze,refactor,testgen,secaudit,docgen,tracer
       - DEFAULT_MODEL=auto
-      - MCP_SERVER_PORT=3003
+      - MCP_SERVER_PORT=${PORT_BASE:-3000}3
     ports:
-      - "3003:3003"
+      - "${PORT_BASE:-3000}3:${PORT_BASE:-3000}3"  # PORT_BASE + 3
     working_dir: /app
     healthcheck:
       test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
@@ -54,24 +62,30 @@ services:
       retries: 3
       interval: 30s
       start_period: 30s
+    volumes:
+      - ${VOLUME_PREFIX:-mcp}_zen_logs:/app/logs
+      - ${VOLUME_PREFIX:-mcp}_zen_config:/app/conf
     labels:
       - "mcp.role=critical_path"
       - "mcp.priority=highest"
       - "mcp.description=Multi-model orchestration"
+      - "mcp.instance=${DOPEMUX_INSTANCE:-default}"
 
   # Sequential Thinking - Multi-step reasoning and architectural analysis
   mas-sequential-thinking:
     build:
       context: ./mcp-server-mas-sequential-thinking
       dockerfile: Dockerfile
-    container_name: mcp-mas-sequential-thinking
+    container_name: ${CONTAINER_PREFIX:-mcp}-mas-sequential-thinking
     restart: unless-stopped
     networks:
       - mcp-network
     env_file:
       - ./mcp-server-mas-sequential-thinking/.env
+    environment:
+      - MCP_SERVER_PORT=${PORT_BASE:-3000}1
     ports:
-      - "3001:3001"
+      - "${PORT_BASE:-3000}1:${PORT_BASE:-3000}1"  # PORT_BASE + 1
     healthcheck:
       test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
       timeout: 10s
@@ -79,12 +93,13 @@ services:
       interval: 30s
       start_period: 30s
     volumes:
-      - mcp_logs:/app/logs
-      - mcp_cache:/app/cache
+      - ${VOLUME_PREFIX:-mcp}_logs:/app/logs
+      - ${VOLUME_PREFIX:-mcp}_cache:/app/cache
     labels:
       - "mcp.role=critical_path"
       - "mcp.priority=high"
       - "mcp.description=Multi-step reasoning and analysis"
+      - "mcp.instance=${DOPEMUX_INSTANCE:-default}"
 
   # === WORKFLOW SERVERS (Priority: Medium) ===
 
@@ -93,82 +108,89 @@ services:
     build:
       context: ./conport
       dockerfile: Dockerfile
-    container_name: mcp-conport
+    container_name: ${CONTAINER_PREFIX:-mcp}-conport
     restart: unless-stopped
     networks:
       - mcp-network
     environment:
-      - MCP_SERVER_PORT=3004
+      - MCP_SERVER_PORT=${PORT_BASE:-3000}4
     ports:
-      - "3004:3004"
+      - "${PORT_BASE:-3000}4:${PORT_BASE:-3000}4"  # PORT_BASE + 4
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT_BASE:-3000}4/health"]
       timeout: 10s
       retries: 3
       interval: 30s
       start_period: 30s
     volumes:
-      - mcp_conport_data:/app/data
+      - ${VOLUME_PREFIX:-mcp}_conport_data:/app/data
+      - mcp_shared_dopemux_sessions:/workspace/.dopemux
+      - mcp_shared_claude_sessions:/workspace/.claude
     labels:
       - "mcp.role=workflow"
       - "mcp.priority=medium"
       - "mcp.description=Project memory and decision tracking"
+      - "mcp.instance=${DOPEMUX_INSTANCE:-default}"
 
   # Task Master AI - Task management and PRD processing
   task-master-ai:
     build:
       context: ./task-master-ai
       dockerfile: Dockerfile
-    container_name: mcp-task-master-ai
+    container_name: ${CONTAINER_PREFIX:-mcp}-task-master-ai
     restart: unless-stopped
     networks:
       - mcp-network
     environment:
-      - MCP_SERVER_PORT=3005
+      - MCP_SERVER_PORT=${PORT_BASE:-3000}5
     ports:
-      - "3005:3005"
+      - "${PORT_BASE:-3000}5:${PORT_BASE:-3000}5"  # PORT_BASE + 5
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3005/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT_BASE:-3000}5/health"]
       timeout: 10s
       retries: 3
       interval: 30s
       start_period: 30s
     volumes:
-      - mcp_task_master_data:/app/data
+      - ${VOLUME_PREFIX:-mcp}_task_master_data:/app/data
+      - mcp_shared_dopemux_sessions:/workspace/.dopemux
+      - mcp_shared_claude_sessions:/workspace/.claude
     labels:
       - "mcp.role=workflow"
       - "mcp.priority=medium"
       - "mcp.description=Task management and PRD processing"
+      - "mcp.instance=${DOPEMUX_INSTANCE:-default}"
 
   # Serena - Code navigation, refactoring, LSP functionality
   serena:
     build:
       context: ./serena
       dockerfile: Dockerfile
-    container_name: mcp-serena
+    container_name: ${CONTAINER_PREFIX:-mcp}-serena
     restart: unless-stopped
     networks:
       - mcp-network
     environment:
-      - MCP_SERVER_PORT=3006
+      - MCP_SERVER_PORT=${PORT_BASE:-3000}6
     ports:
-      - "3006:3006"
+      - "${PORT_BASE:-3000}6:${PORT_BASE:-3000}6"  # PORT_BASE + 6
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3006/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:${PORT_BASE:-3000}6/health || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
       start_period: 60s
     volumes:
-      - mcp_serena_data:/app/data
+      - ${VOLUME_PREFIX:-mcp}_serena_data:/app/data
     labels:
       - "mcp.role=workflow"
       - "mcp.priority=medium"
       - "mcp.description=Code navigation and refactoring"
+      - "mcp.instance=${DOPEMUX_INSTANCE:-default}"
 
   # Milvus dependencies
   etcd:
-    container_name: milvus-etcd
+    container_name: ${CONTAINER_PREFIX:-mcp}-etcd
     image: quay.io/coreos/etcd:v3.5.5
     environment:
       - ETCD_AUTO_COMPACTION_MODE=revision
@@ -176,7 +198,7 @@ services:
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ETCD_SNAPSHOT_COUNT=50000
     volumes:
-      - etcd_data:/etcd
+      - mcp_shared_etcd_data:/etcd
     command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
     healthcheck:
       test: ["CMD", "etcdctl", "endpoint", "health"]
@@ -185,18 +207,20 @@ services:
       retries: 3
     networks:
       - mcp-network
+    labels:
+      - "mcp.instance=${DOPEMUX_INSTANCE:-default}"
 
   minio:
-    container_name: milvus-minio
+    container_name: ${CONTAINER_PREFIX:-mcp}-minio
     image: minio/minio:RELEASE.2023-03-20T20-16-18Z
     environment:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
     ports:
-      - "9001:9001"
-      - "9000:9000"
+      - "${PORT_BASE:-3000}15:9001"  # PORT_BASE + 15 for console
+      - "${PORT_BASE:-3000}16:9000"  # PORT_BASE + 16 for API
     volumes:
-      - minio_data:/minio_data
+      - mcp_shared_minio_data:/minio_data
     command: minio server /minio_data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -205,19 +229,21 @@ services:
       retries: 3
     networks:
       - mcp-network
+    labels:
+      - "mcp.instance=${DOPEMUX_INSTANCE:-default}"
 
   # Milvus - Vector database for claude-context
   milvus:
     image: milvusdb/milvus:latest
-    container_name: milvus-standalone
+    container_name: ${CONTAINER_PREFIX:-mcp}-milvus
     restart: unless-stopped
     networks:
       - mcp-network
     ports:
-      - "19530:19530"
-      - "9091:9091"
+      - "${PORT_BASE:-3000}17:19530"  # PORT_BASE + 17
+      - "${PORT_BASE:-3000}18:9091"   # PORT_BASE + 18
     volumes:
-      - milvus_data:/var/lib/milvus
+      - mcp_shared_milvus_data:/var/lib/milvus
     environment:
       - ETCD_ENDPOINTS=etcd:2379
       - MINIO_ADDRESS=minio:9000
@@ -233,13 +259,15 @@ services:
       retries: 5
       interval: 30s
       start_period: 90s
+    labels:
+      - "mcp.instance=${DOPEMUX_INSTANCE:-default}"
 
   # Claude Context - Semantic code search within repositories
   claude-context:
     build:
       context: ./claude-context
       dockerfile: Dockerfile
-    container_name: mcp-claude-context
+    container_name: ${CONTAINER_PREFIX:-mcp}-claude-context
     restart: unless-stopped
     networks:
       - mcp-network
@@ -250,26 +278,29 @@ services:
       - VOYAGEAI_RERANK_MODEL=rerank-2.5
       - MILVUS_ADDRESS=milvus:19530
       - MILVUS_TOKEN=
-      - MCP_SERVER_PORT=3007
+      - MCP_SERVER_PORT=${PORT_BASE:-3000}7
     ports:
-      - "3007:3007"
+      - "${PORT_BASE:-3000}7:${PORT_BASE:-3000}7"  # PORT_BASE + 7
     depends_on:
       milvus:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3007/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:${PORT_BASE:-3000}7/health || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
       start_period: 60s
     volumes:
-      - mcp_claude_context_data:/app/data
-      - mcp_claude_context_cache:/root/.context
+      - mcp_shared_claude_context_data:/app/data
+      - mcp_shared_claude_context_cache:/root/.context
+      - mcp_shared_dopemux_sessions:/workspace/.dopemux
+      - mcp_shared_claude_sessions:/workspace/.claude
       - /Users/hue/code/dopemux-mvp:/workspace/dopemux-mvp:ro
     labels:
       - "mcp.role=research"
       - "mcp.priority=medium"
       - "mcp.description=Semantic code search"
+      - "mcp.instance=${DOPEMUX_INSTANCE:-default}"
 
   # === RESEARCH SERVERS (Priority: Low - Fallback Only) ===
 
@@ -278,17 +309,17 @@ services:
     build:
       context: ./exa
       dockerfile: Dockerfile
-    container_name: mcp-exa
+    container_name: ${CONTAINER_PREFIX:-mcp}-exa
     restart: unless-stopped
     networks:
       - mcp-network
     environment:
       - EXA_API_KEY=${EXA_API_KEY}
-      - MCP_SERVER_PORT=3008
+      - MCP_SERVER_PORT=${PORT_BASE:-3000}8
     ports:
-      - "3008:3008"
+      - "${PORT_BASE:-3000}8:${PORT_BASE:-3000}8"  # PORT_BASE + 8
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3008/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:${PORT_BASE:-3000}8/health || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -297,6 +328,7 @@ services:
       - "mcp.role=research"
       - "mcp.priority=low"
       - "mcp.description=Web research fallback"
+      - "mcp.instance=${DOPEMUX_INSTANCE:-default}"
 
   # === QUALITY & UTILITY SERVERS (Priority: Medium) ===
 
@@ -305,16 +337,16 @@ services:
     build:
       context: ./morphllm-fast-apply
       dockerfile: Dockerfile
-    container_name: mcp-morphllm-fast-apply
+    container_name: ${CONTAINER_PREFIX:-mcp}-morphllm-fast-apply
     restart: unless-stopped
     networks:
       - mcp-network
     environment:
-      - MCP_SERVER_PORT=3011
+      - MCP_SERVER_PORT=${PORT_BASE:-3000}11
     ports:
-      - "3011:3011"
+      - "${PORT_BASE:-3000}11:${PORT_BASE:-3000}11"  # PORT_BASE + 11
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3011/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT_BASE:-3000}11/health"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -323,26 +355,27 @@ services:
       - "mcp.role=quality"
       - "mcp.priority=medium"
       - "mcp.description=Pattern-based transformations and bulk edits"
+      - "mcp.instance=${DOPEMUX_INSTANCE:-default}"
 
   # Desktop Commander - Desktop automation and system control
   desktop-commander:
     build:
       context: ./desktop-commander
       dockerfile: Dockerfile
-    container_name: mcp-desktop-commander
+    container_name: ${CONTAINER_PREFIX:-mcp}-desktop-commander
     restart: unless-stopped
     networks:
       - mcp-network
     environment:
-      - MCP_SERVER_PORT=3012
+      - MCP_SERVER_PORT=${PORT_BASE:-3000}12
       - DISPLAY=${DISPLAY:-:0}
     ports:
-      - "3012:3012"
+      - "${PORT_BASE:-3000}12:${PORT_BASE:-3000}12"  # PORT_BASE + 12
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /tmp:/tmp
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3012/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT_BASE:-3000}12/health"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -351,52 +384,74 @@ services:
       - "mcp.role=utility"
       - "mcp.priority=medium"
       - "mcp.description=Desktop automation and system control"
+      - "mcp.instance=${DOPEMUX_INSTANCE:-default}"
 
 # === NETWORKS ===
 networks:
   mcp-network:
     driver: bridge
-    name: mcp-network
+    name: ${NETWORK_NAME:-mcp-network-default}
     ipam:
       config:
-        - subnet: 172.20.0.0/16
-  # Connect to existing Leantime network for PM integration
-  leantime-net:
-    external: true
-    name: leantime-net
+        - subnet: ${NETWORK_SUBNET:-172.20.0.0/16}
 
 # === VOLUMES ===
 volumes:
-  mcp_logs:
+  # === SHARED VOLUMES (across all instances) ===
+  # Code indexing and semantic search data - shared for efficiency
+  mcp_shared_claude_context_data:
     driver: local
-    name: mcp_logs
-  mcp_cache:
+    name: mcp_shared_claude_context_data
+  mcp_shared_claude_context_cache:
     driver: local
-    name: mcp_cache
-  mcp_context7_cache:
+    name: mcp_shared_claude_context_cache
+
+  # Vector database - shared for code embeddings
+  mcp_shared_milvus_data:
     driver: local
-    name: mcp_context7_cache
-  mcp_conport_data:
+    name: mcp_shared_milvus_data
+  mcp_shared_etcd_data:
     driver: local
-    name: mcp_conport_data
-  mcp_task_master_data:
+    name: mcp_shared_etcd_data
+  mcp_shared_minio_data:
     driver: local
-    name: mcp_task_master_data
-  mcp_serena_data:
+    name: mcp_shared_minio_data
+
+  # Documentation and API reference cache - shared for efficiency
+  mcp_shared_context7_cache:
     driver: local
-    name: mcp_serena_data
-  mcp_claude_context_data:
+    name: mcp_shared_context7_cache
+
+  # Session state and context - shared for cross-instance continuity
+  mcp_shared_dopemux_sessions:
     driver: local
-    name: mcp_claude_context_data
-  mcp_claude_context_cache:
+    name: mcp_shared_dopemux_sessions
+  mcp_shared_claude_sessions:
     driver: local
-    name: mcp_claude_context_cache
-  milvus_data:
+    name: mcp_shared_claude_sessions
+
+  # === INSTANCE-SPECIFIC VOLUMES ===
+  # Logs and configs - isolated per instance
+  ${VOLUME_PREFIX:-mcp}_logs:
     driver: local
-    name: milvus_data
-  etcd_data:
+    name: ${VOLUME_PREFIX:-mcp}_logs
+  ${VOLUME_PREFIX:-mcp}_cache:
     driver: local
-    name: etcd_data
-  minio_data:
+    name: ${VOLUME_PREFIX:-mcp}_cache
+  ${VOLUME_PREFIX:-mcp}_zen_logs:
     driver: local
-    name: minio_data
+    name: ${VOLUME_PREFIX:-mcp}_zen_logs
+  ${VOLUME_PREFIX:-mcp}_zen_config:
+    driver: local
+    name: ${VOLUME_PREFIX:-mcp}_zen_config
+
+  # Project memory and decisions - isolated per instance
+  ${VOLUME_PREFIX:-mcp}_conport_data:
+    driver: local
+    name: ${VOLUME_PREFIX:-mcp}_conport_data
+  ${VOLUME_PREFIX:-mcp}_task_master_data:
+    driver: local
+    name: ${VOLUME_PREFIX:-mcp}_task_master_data
+  ${VOLUME_PREFIX:-mcp}_serena_data:
+    driver: local
+    name: ${VOLUME_PREFIX:-mcp}_serena_data

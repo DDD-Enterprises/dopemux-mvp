@@ -1,0 +1,13 @@
+site_name: Dopemux MVP Docs
+theme:
+  name: material
+plugins:
+  - search
+nav:
+  - Tutorials: docs/01-tutorials/
+  - How-to: docs/02-how-to/
+  - Reference: docs/03-reference/
+  - Explanation: docs/04-explanation/
+  - Architecture:
+      - C4: docs/94-architecture/c4/
+      - arc42: docs/94-architecture/arc42/01-intro-and-goals.md
