@@ -19,7 +19,7 @@ def parse_frontmatter(text):
         if end != -1:
             fm = text[4:end]
             body = text[end+5:]
-            data = yaml.safe_load(fm) or {{}}
+            data = yaml.safe_load(fm) or {}
             return data, body
     return None, text
 
@@ -37,14 +37,14 @@ def ensure_fm(path, fix=False):
         # Create new front-matter
         slug = os.path.splitext(os.path.basename(path))[0]
         title = slug.replace('-', ' ').title()
-        data = {{
+        data = {
             "id": slug,
             "title": title,
             "type": guess_type(path),
             "owner": DEFAULT_OWNER,
             "last_review": str(TODAY),
             "next_review": str(TODAY + datetime.timedelta(days=90)),
-        }}
+        }
         changed = True
     else:
         # Fill missing keys
