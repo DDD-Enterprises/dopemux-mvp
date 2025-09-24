@@ -19,10 +19,10 @@ from pathlib import Path
 
 from pydantic import BaseModel, ValidationError
 
-from ..core.exceptions import DopemuxIntegrationError, AIServiceError
-from ..core.config import Config
-from ..core.monitoring import MetricsCollector
-from ..utils.security import SecureTokenManager
+from core.exceptions import DopemuxIntegrationError, AIServiceError
+from core.config import Config
+from core.monitoring import MetricsCollector
+from utils.security import SecureTokenManager
 
 
 logger = logging.getLogger(__name__)
