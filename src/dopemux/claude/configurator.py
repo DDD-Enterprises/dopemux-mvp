@@ -5,15 +5,16 @@ Handles generation and management of project-specific Claude Code configurations
 with ADHD-optimized settings and templates.
 """
 
-import json
 import shutil
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict
 
 from rich.console import Console
+
 from ..config import ConfigManager
 
 console = Console()
+
 
 class ClaudeConfigurator:
     """
@@ -31,10 +32,7 @@ class ClaudeConfigurator:
         self.config_manager = config_manager
 
     def setup_project_config(
-        self,
-        project_path: Path,
-        template: str = 'python',
-        force: bool = False
+        self, project_path: Path, template: str = "python", force: bool = False
     ) -> None:
         """
         Setup complete project configuration for Dopemux.
@@ -44,8 +42,8 @@ class ClaudeConfigurator:
             template: Project template type
             force: Overwrite existing configuration
         """
-        claude_dir = project_path / '.claude'
-        dopemux_dir = project_path / '.dopemux'
+        claude_dir = project_path / ".claude"
+        dopemux_dir = project_path / ".dopemux"
 
         # Create directories
         claude_dir.mkdir(exist_ok=True)
@@ -63,12 +61,14 @@ class ClaudeConfigurator:
         # Copy template files if they exist
         self._copy_template_files(project_path, template)
 
-        console.print(f"[green]✓ Claude configuration setup complete for {template} project[/green]")
+        console.print(
+            f"[green]✓ Claude configuration setup complete for {template} project[/green]"
+        )
 
     def _create_claude_md(self, claude_dir: Path, template: str) -> None:
         """Create project-specific claude.md file."""
         config = self.config_manager.load_config()
-        template_config = config.project_templates.get(template, {})
+        config.project_templates.get(template, {})
 
         content = f"""# {template.title()} Project - Dopemux Configuration
 
@@ -136,7 +136,7 @@ You are working on a **{template} project** with Dopemux ADHD optimizations enab
 **Style**: Supportive, clear, action-oriented
 """
 
-        (claude_dir / 'claude.md').write_text(content)
+        (claude_dir / "claude.md").write_text(content)
 
     def _create_session_md(self, claude_dir: Path, template: str) -> None:
         """Create session.md for project session management."""
@@ -201,7 +201,7 @@ Session persistence patterns optimized for {template} development with ADHD cons
 **Privacy**: No sensitive data, local-only storage
 """
 
-        (claude_dir / 'session.md').write_text(content)
+        (claude_dir / "session.md").write_text(content)
 
     def _create_context_md(self, claude_dir: Path, template: str) -> None:
         """Create context.md for context management."""
@@ -260,11 +260,11 @@ ADHD-optimized context preservation and restoration for {template} development.
 **Storage**: Local with optional cloud backup
 """
 
-        (claude_dir / 'context.md').write_text(content)
+        (claude_dir / "context.md").write_text(content)
 
     def _create_llms_md(self, claude_dir: Path, template: str) -> None:
         """Create llms.md with project-specific model preferences."""
-        config = self.config_manager.load_config()
+        self.config_manager.load_config()
 
         content = f"""# LLM Configuration - {template.title()} Project
 
@@ -309,7 +309,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
 **Goal**: Optimal AI assistance without cognitive overload
 """
 
-        (claude_dir / 'llms.md').write_text(content)
+        (claude_dir / "llms.md").write_text(content)
 
     def _create_dopemux_config(self, dopemux_dir: Path, template: str) -> None:
         """Create Dopemux-specific configuration."""
@@ -322,35 +322,36 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
             "initialized_at": "2024-01-15T10:30:00Z",
             "adhd_profile": {
                 **config.adhd_profile.model_dump(),
-                **template_config.get('adhd_adaptations', {})
+                **template_config.get("adhd_adaptations", {}),
             },
             "active_features": {
                 "context_preservation": True,
                 "attention_monitoring": True,
                 "task_decomposition": True,
-                "gentle_notifications": True
+                "gentle_notifications": True,
             },
             # Don't include mcp_servers in project config - let config manager handle it
             "session_settings": {
                 "auto_save_interval": config.context.auto_save_interval,
                 "max_sessions": config.context.max_sessions,
-                "compression": config.context.compression
-            }
+                "compression": config.context.compression,
+            },
         }
 
-        config_file = dopemux_dir / 'config.yaml'
+        config_file = dopemux_dir / "config.yaml"
         import yaml
-        with open(config_file, 'w') as f:
+
+        with open(config_file, "w") as f:
             yaml.dump(dopemux_config, f, default_flow_style=False, indent=2)
 
     def _copy_template_files(self, project_path: Path, template: str) -> None:
         """Copy template-specific files if they exist."""
-        template_dir = Path(__file__).parent.parent / 'templates' / template
+        template_dir = Path(__file__).parent.parent / "templates" / template
 
         if not template_dir.exists():
             return
 
-        for file_path in template_dir.rglob('*'):
+        for file_path in template_dir.rglob("*"):
             if file_path.is_file():
                 relative_path = file_path.relative_to(template_dir)
                 target_path = project_path / relative_path
@@ -361,7 +362,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
     def _get_language_specific_instructions(self, template: str) -> str:
         """Get language-specific development instructions."""
         instructions = {
-            'python': """
+            "python": """
 ### Python Development Guidelines
 - Use type hints for better ADHD developer experience
 - Follow PEP 8 with Black formatting
@@ -375,7 +376,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
 - Use descriptive test names
 - Mock external dependencies
 """,
-            'javascript': """
+            "javascript": """
 ### JavaScript Development Guidelines
 - Use TypeScript for type safety and better IDE support
 - Follow consistent naming conventions (camelCase)
@@ -389,7 +390,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
 - Clear test descriptions
 - Mock external APIs
 """,
-            'rust': """
+            "rust": """
 ### Rust Development Guidelines
 - Leverage the type system for correctness
 - Use cargo fmt and cargo clippy
@@ -402,15 +403,18 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
 - Write integration tests in tests/ directory
 - Use descriptive test names
 - Test both success and error cases
-"""
+""",
         }
 
-        return instructions.get(template, f"### {template.title()} Development\nUse best practices for {template} development.")
+        return instructions.get(
+            template,
+            f"### {template.title()} Development\nUse best practices for {template} development.",
+        )
 
     def _get_project_standards(self, template: str) -> str:
         """Get project-specific coding standards."""
         standards = {
-            'python': """
+            "python": """
 ### Code Organization
 - Use src/ layout for packages
 - Group related functionality in modules
@@ -423,7 +427,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
 - Use virtual environments
 - Document all dependencies
 """,
-            'javascript': """
+            "javascript": """
 ### Code Organization
 - Use consistent folder structure
 - Separate components, utilities, and services
@@ -436,7 +440,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
 - Use semantic versioning
 - Document breaking changes
 """,
-            'rust': """
+            "rust": """
 ### Code Organization
 - Use Cargo.toml for project management
 - Organize code into logical modules
@@ -448,15 +452,18 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
 - Prefer stable crate versions
 - Document feature flags
 - Use workspaces for multi-crate projects
-"""
+""",
         }
 
-        return standards.get(template, f"### {template.title()} Standards\nFollow established {template} best practices.")
+        return standards.get(
+            template,
+            f"### {template.title()} Standards\nFollow established {template} best practices.",
+        )
 
     def _get_session_specifics(self, template: str) -> str:
         """Get template-specific session state."""
         specifics = {
-            'python': """
+            "python": """
 - Virtual environment state
 - Python interpreter version
 - Installed packages (pip list)
@@ -464,7 +471,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
 - Database connections
 - Test runner state
 """,
-            'javascript': """
+            "javascript": """
 - Node.js version and npm/yarn state
 - Package.json and lock file status
 - Environment variables (.env files)
@@ -472,17 +479,20 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
 - Browser dev tools state
 - Testing framework state
 """,
-            'rust': """
+            "rust": """
 - Cargo project state
 - Target compilation settings
 - Feature flags enabled
 - Dependency versions
 - Cargo registry state
 - Compiler version
-"""
+""",
         }
 
-        return specifics.get(template, f"### {template.title()} Session State\n- Project-specific state tracking")
+        return specifics.get(
+            template,
+            f"### {template.title()} Session State\n- Project-specific state tracking",
+        )
 
     def _get_attention_patterns(self, template: str) -> str:
         """Get template-specific attention adaptation patterns."""
@@ -509,99 +519,110 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
     def _get_language_model_preferences(self, template: str) -> str:
         """Get model preferences for specific language."""
         preferences = {
-            'python': """
+            "python": """
 - **Code Generation**: Claude Sonnet 4, DeepSeek Chat
 - **Architecture**: Claude Opus 4.1, O3-Pro
 - **Quick Fixes**: Gemini 2.5 Flash, GPT-5 Mini
 - **Documentation**: Claude Opus 4.1, GPT-4.1
 """,
-            'javascript': """
+            "javascript": """
 - **Code Generation**: Grok Code Fast, Claude Sonnet 4
 - **React/Vue**: Claude Sonnet 4, DeepSeek Chat
 - **Node.js**: Claude Sonnet 4, GPT-4.1
 - **TypeScript**: Claude Opus 4.1, O3-Pro
 """,
-            'rust': """
+            "rust": """
 - **Systems Programming**: Claude Opus 4.1, O3-Pro
 - **Code Generation**: Claude Sonnet 4, DeepSeek Chat
 - **Performance**: O3-Deep-Research, Claude Opus 4.1
 - **Memory Safety**: Claude Opus 4.1, DeepSeek Reasoner
-"""
+""",
         }
 
-        return preferences.get(template, f"- **{template.title()} Development**: Claude Sonnet 4, DeepSeek Chat")
+        return preferences.get(
+            template,
+            f"- **{template.title()} Development**: Claude Sonnet 4, DeepSeek Chat",
+        )
 
     def _get_language_model_adaptations(self, template: str) -> str:
         """Get language-specific model adaptations."""
         adaptations = {
-            'python': """
+            "python": """
 - Pythonic code patterns and idioms
 - Type hints and mypy compatibility
 - PEP compliance and best practices
 - pytest testing patterns
 """,
-            'javascript': """
+            "javascript": """
 - Modern ES6+ syntax and features
 - React/Vue component patterns
 - Async/await best practices
 - Node.js and browser compatibility
 """,
-            'rust': """
+            "rust": """
 - Memory safety and ownership patterns
 - Error handling with Result types
 - Performance optimization techniques
 - Concurrent programming patterns
-"""
+""",
         }
 
-        return adaptations.get(template, f"- {template.title()}-specific patterns and best practices")
+        return adaptations.get(
+            template, f"- {template.title()}-specific patterns and best practices"
+        )
 
     def _get_mcp_servers_for_template(self, template: str) -> str:
         """Get recommended MCP servers for template."""
         servers = {
-            'python': """
+            "python": """
 - **mas-sequential-thinking**: Complex reasoning for architecture
 - **context7**: Python documentation and patterns
 - **claude-context**: Semantic code search
 - **morphllm-fast-apply**: Code transformations
 """,
-            'javascript': """
+            "javascript": """
 - **context7**: React/Vue/Node.js documentation
 - **claude-context**: Codebase semantic search
 - **morphllm-fast-apply**: Framework migrations
 - **exa**: Web research for best practices
 """,
-            'rust': """
+            "rust": """
 - **mas-sequential-thinking**: Systems design reasoning
 - **context7**: Rust documentation and crates
 - **claude-context**: Large codebase navigation
 - **morphllm-fast-apply**: Code modernization
-"""
+""",
         }
 
-        return servers.get(template, """
+        return servers.get(
+            template,
+            """
 - **context7**: Language documentation
 - **claude-context**: Code search
 - **morphllm-fast-apply**: Transformations
-""")
+""",
+        )
 
-    def update_project_config(self, project_path: Path, updates: Dict[str, Any]) -> None:
+    def update_project_config(
+        self, project_path: Path, updates: Dict[str, Any]
+    ) -> None:
         """Update existing project configuration."""
-        config_file = project_path / '.dopemux' / 'config.yaml'
+        config_file = project_path / ".dopemux" / "config.yaml"
 
         if not config_file.exists():
             console.print("[red]No Dopemux configuration found in project[/red]")
             return
 
         import yaml
-        with open(config_file, 'r') as f:
+
+        with open(config_file, "r") as f:
             config = yaml.safe_load(f)
 
         # Apply updates
         for key, value in updates.items():
-            if '.' in key:
+            if "." in key:
                 # Nested key (e.g., 'adhd_profile.focus_duration_avg')
-                keys = key.split('.')
+                keys = key.split(".")
                 current = config
                 for k in keys[:-1]:
                     current = current.setdefault(k, {})
@@ -610,35 +631,36 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
                 config[key] = value
 
         # Save updated config
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config, f, default_flow_style=False, indent=2)
 
         console.print(f"[green]✓ Updated project configuration[/green]")
 
     def get_project_status(self, project_path: Path) -> Dict[str, Any]:
         """Get project configuration status."""
-        claude_dir = project_path / '.claude'
-        dopemux_dir = project_path / '.dopemux'
+        claude_dir = project_path / ".claude"
+        dopemux_dir = project_path / ".dopemux"
 
         status = {
             "dopemux_initialized": dopemux_dir.exists(),
             "claude_configured": claude_dir.exists(),
             "config_files": {
-                "claude.md": (claude_dir / 'claude.md').exists(),
-                "session.md": (claude_dir / 'session.md').exists(),
-                "context.md": (claude_dir / 'context.md').exists(),
-                "llms.md": (claude_dir / 'llms.md').exists(),
-                "config.yaml": (dopemux_dir / 'config.yaml').exists()
-            }
+                "claude.md": (claude_dir / "claude.md").exists(),
+                "session.md": (claude_dir / "session.md").exists(),
+                "context.md": (claude_dir / "context.md").exists(),
+                "llms.md": (claude_dir / "llms.md").exists(),
+                "config.yaml": (dopemux_dir / "config.yaml").exists(),
+            },
         }
 
         # Load project config if available
-        config_file = dopemux_dir / 'config.yaml'
+        config_file = dopemux_dir / "config.yaml"
         if config_file.exists():
             import yaml
-            with open(config_file, 'r') as f:
+
+            with open(config_file, "r") as f:
                 project_config = yaml.safe_load(f)
-                status["project_type"] = project_config.get('project_type', 'unknown')
-                status["adhd_features"] = project_config.get('active_features', {})
+                status["project_type"] = project_config.get("project_type", "unknown")
+                status["adhd_features"] = project_config.get("active_features", {})
 
         return status

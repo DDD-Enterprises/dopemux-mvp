@@ -6,7 +6,6 @@ Provides secure token management and authentication helpers.
 
 import hashlib
 import secrets
-from typing import Optional
 
 
 class SecureTokenManager:
