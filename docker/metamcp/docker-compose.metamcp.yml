@@ -1,0 +1,272 @@
+# MetaMCP Integration for Dopemux
+# Official MetaMCP Docker container integrated with existing MCP servers
+
+version: '3.8'
+
+services:
+  # MetaMCP Core Service
+  metamcp:
+    image: metatoolai/metamcp:latest
+    container_name: dopemux-metamcp
+    restart: unless-stopped
+
+    # Environment configuration
+    environment:
+      # Core MetaMCP settings
+      - APP_URL=http://localhost:12008
+      - DATABASE_URL=postgresql://metamcp:metamcp_secure_2024@metamcp-postgres:5432/metamcp
+      - NEXTAUTH_SECRET=dopemux_metamcp_auth_secret_2024_secure_key
+      - NEXTAUTH_URL=http://localhost:12008
+
+      # API Keys for MCP servers
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+
+      # External service keys
+      - CONTEXT7_API_KEY=${CONTEXT7_API_KEY}
+      - EXA_API_KEY=${EXA_API_KEY}
+      - VOYAGEAI_API_KEY=${VOYAGEAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+
+      # MetaMCP feature flags
+      - ENABLE_AUTH=true
+      - ENABLE_API_KEYS=true
+      - ENABLE_MONITORING=true
+      - ENABLE_METRICS=true
+
+      # ADHD optimizations
+      - RESPONSE_TIMEOUT=30000
+      - MAX_CONCURRENT_REQUESTS=10
+      - ENABLE_CIRCUIT_BREAKER=true
+      - ENABLE_REQUEST_QUEUING=true
+
+      # Logging
+      - LOG_LEVEL=INFO
+      - ENABLE_REQUEST_LOGGING=true
+      - ENABLE_ERROR_TRACKING=true
+
+    # Port mapping
+    ports:
+      - "12008:3000"  # MetaMCP Web UI and API
+
+    # Volume mounts
+    volumes:
+      - ./metamcp-config:/app/config:ro
+      - metamcp_logs:/app/logs
+      - metamcp_cache:/app/cache
+
+    # Network configuration
+    networks:
+      - mcp-network
+      - metamcp-network
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+
+    # Dependencies
+    depends_on:
+      metamcp-postgres:
+        condition: service_healthy
+      metamcp-redis:
+        condition: service_healthy
+
+  # PostgreSQL for MetaMCP persistence
+  metamcp-postgres:
+    image: postgres:15-alpine
+    container_name: metamcp-postgres
+    restart: unless-stopped
+
+    environment:
+      - POSTGRES_DB=metamcp
+      - POSTGRES_USER=metamcp
+      - POSTGRES_PASSWORD=metamcp_secure_2024
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --locale=C
+
+    volumes:
+      - metamcp_postgres_data:/var/lib/postgresql/data
+      - ./metamcp-config/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+    networks:
+      - metamcp-network
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metamcp -d metamcp"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  # Redis for MetaMCP caching and session management
+  metamcp-redis:
+    image: redis:7-alpine
+    container_name: metamcp-redis
+    restart: unless-stopped
+
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+
+    volumes:
+      - metamcp_redis_data:/data
+
+    networks:
+      - metamcp-network
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+
+  # MetaMCP Monitoring (Prometheus)
+  metamcp-prometheus:
+    image: prom/prometheus:latest
+    container_name: metamcp-prometheus
+    restart: unless-stopped
+
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.enable-lifecycle'
+
+    volumes:
+      - ./metamcp-config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - metamcp_prometheus_data:/prometheus
+
+    networks:
+      - metamcp-network
+      - mcp-network
+
+    ports:
+      - "9090:9090"
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  # MetaMCP Grafana Dashboard
+  metamcp-grafana:
+    image: grafana/grafana:latest
+    container_name: metamcp-grafana
+    restart: unless-stopped
+
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=dopemux_admin_2024
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+
+    volumes:
+      - metamcp_grafana_data:/var/lib/grafana
+      - ./metamcp-config/grafana:/etc/grafana/provisioning:ro
+
+    networks:
+      - metamcp-network
+
+    ports:
+      - "3001:3000"  # Avoid conflict with MetaMCP
+
+    depends_on:
+      - metamcp-prometheus
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+
+# Networks
+networks:
+  # Connect to existing MCP network
+  mcp-network:
+    external: true
+    name: mcp-network
+
+  # Internal MetaMCP network
+  metamcp-network:
+    driver: bridge
+    name: metamcp-network
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+
+# Volumes
+volumes:
+  # MetaMCP application data
+  metamcp_logs:
+    driver: local
+    name: metamcp_logs
+
+  metamcp_cache:
+    driver: local
+    name: metamcp_cache
+
+  # Database volumes
+  metamcp_postgres_data:
+    driver: local
+    name: metamcp_postgres_data
+
+  metamcp_redis_data:
+    driver: local
+    name: metamcp_redis_data
+
+  # Monitoring volumes
+  metamcp_prometheus_data:
+    driver: local
+    name: metamcp_prometheus_data
+
+  metamcp_grafana_data:
+    driver: local
+    name: metamcp_grafana_data
+
+# Configuration for integration with existing MCP servers
+# This file should be used alongside the main docker-compose.yml
+#
+# Usage:
+# 1. Start existing MCP servers: docker-compose -f docker-compose.yml up -d
+# 2. Start MetaMCP: docker-compose -f docker-compose.metamcp.yml up -d
+# 3. Configure namespaces using the MetaMCP web UI at http://localhost:12008
+# 4. Update custom broker to use MetaMCP endpoints
