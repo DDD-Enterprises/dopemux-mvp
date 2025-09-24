@@ -2,21 +2,21 @@
 Unit tests for Claude Auto Responder integration.
 """
 
-import pytest
 import subprocess
 import tempfile
 import threading
-import time
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock, call
 from datetime import datetime, timedelta
+from pathlib import Path
+from unittest.mock import Mock, patch
 
-from dopemux.config.manager import ConfigManager, ClaudeAutoResponderConfig
+import pytest
+
+from dopemux.config.manager import ClaudeAutoResponderConfig, ConfigManager
 from integrations.claude_autoresponder import (
-    ClaudeAutoResponderManager,
-    AutoResponderStatus,
     AutoResponderMetrics,
-    create_autoresponder_manager
+    AutoResponderStatus,
+    ClaudeAutoResponderManager,
+    create_autoresponder_manager,
 )
 
 
@@ -56,13 +56,13 @@ class TestClaudeAutoResponderConfig:
     def test_config_validation_terminal_scope(self):
         """Test terminal scope validation."""
         # Valid scopes
-        for scope in ['current', 'all', 'project']:
+        for scope in ["current", "all", "project"]:
             config = ClaudeAutoResponderConfig(terminal_scope=scope)
             assert config.terminal_scope == scope
 
         # Invalid scope
         with pytest.raises(ValueError):
-            ClaudeAutoResponderConfig(terminal_scope='invalid')
+            ClaudeAutoResponderConfig(terminal_scope="invalid")
 
 
 class TestAutoResponderMetrics:
@@ -111,16 +111,19 @@ class TestClaudeAutoResponderManager:
     def temp_project_dir(self):
         """Create temporary project directory."""
         temp_dir = Path(tempfile.mkdtemp())
-        (temp_dir / '.dopemux').mkdir()
+        (temp_dir / ".dopemux").mkdir()
         yield temp_dir
         import shutil
+
         shutil.rmtree(temp_dir)
 
     @pytest.fixture
     def mock_config_manager(self, temp_project_dir):
         """Create mock config manager."""
         config_manager = Mock(spec=ConfigManager)
-        config_manager.get_claude_autoresponder_config.return_value = ClaudeAutoResponderConfig()
+        config_manager.get_claude_autoresponder_config.return_value = (
+            ClaudeAutoResponderConfig()
+        )
         return config_manager
 
     @pytest.fixture
@@ -131,11 +134,14 @@ class TestClaudeAutoResponderManager:
     def test_initialization(self, autoresponder_manager, temp_project_dir):
         """Test manager initialization."""
         assert autoresponder_manager.project_path == temp_project_dir
-        assert autoresponder_manager.data_dir == temp_project_dir / '.dopemux' / 'autoresponder'
+        assert (
+            autoresponder_manager.data_dir
+            == temp_project_dir / ".dopemux" / "autoresponder"
+        )
         assert autoresponder_manager.data_dir.exists()
         assert not autoresponder_manager.is_running()
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_setup_autoresponder_success(self, mock_run, autoresponder_manager):
         """Test successful auto responder setup."""
         mock_run.return_value = Mock()
@@ -143,17 +149,17 @@ class TestClaudeAutoResponderManager:
         # Mock the repository and setup files
         car_repo = autoresponder_manager.car_repo_path
         car_repo.mkdir(parents=True)
-        (car_repo / 'setup.py').touch()
+        (car_repo / "setup.py").touch()
 
         result = autoresponder_manager.setup_autoresponder()
 
         assert result is True
-        assert (car_repo / 'whitelisted_tools.txt').exists()
+        assert (car_repo / "whitelisted_tools.txt").exists()
 
-    @patch('subprocess.run')
+    @patch("subprocess.run")
     def test_setup_autoresponder_clone_failure(self, mock_run, autoresponder_manager):
         """Test auto responder setup with clone failure."""
-        mock_run.side_effect = subprocess.CalledProcessError(1, 'git')
+        mock_run.side_effect = subprocess.CalledProcessError(1, "git")
 
         result = autoresponder_manager.setup_autoresponder()
 
@@ -171,13 +177,13 @@ class TestClaudeAutoResponderManager:
 
         autoresponder_manager._setup_whitelist()
 
-        whitelist_file = car_repo / 'whitelisted_tools.txt'
+        whitelist_file = car_repo / "whitelisted_tools.txt"
         assert whitelist_file.exists()
 
         content = whitelist_file.read_text()
-        assert 'Read' in content
-        assert 'Write' in content
-        assert 'Bash' in content
+        assert "Read" in content
+        assert "Write" in content
+        assert "Bash" in content
 
     def test_build_command_basic(self, autoresponder_manager, mock_config_manager):
         """Test command building with basic configuration."""
@@ -186,35 +192,39 @@ class TestClaudeAutoResponderManager:
 
         cmd = autoresponder_manager._build_command(config)
 
-        assert cmd[0] == 'python3'
+        assert cmd[0] == "python3"
         assert str(autoresponder_manager.car_executable) in cmd
-        assert '--single-window' in cmd
+        assert "--single-window" in cmd
 
-    def test_build_command_all_options(self, autoresponder_manager, mock_config_manager):
+    def test_build_command_all_options(
+        self, autoresponder_manager, mock_config_manager
+    ):
         """Test command building with all options."""
         config = ClaudeAutoResponderConfig(
             response_delay=2.0,
-            terminal_scope='all',
+            terminal_scope="all",
             debug_mode=True,
-            whitelist_tools=True
+            whitelist_tools=True,
         )
         mock_config_manager.get_claude_autoresponder_config.return_value = config
 
         # Setup whitelist file
         car_repo = autoresponder_manager.car_repo_path
         car_repo.mkdir(parents=True)
-        (car_repo / 'whitelisted_tools.txt').touch()
+        (car_repo / "whitelisted_tools.txt").touch()
 
         cmd = autoresponder_manager._build_command(config)
 
-        assert '--delay' in cmd
-        assert '2.0' in cmd
-        assert '--multi-window' in cmd
-        assert '--debug' in cmd
-        assert '--whitelist' in cmd
+        assert "--delay" in cmd
+        assert "2.0" in cmd
+        assert "--multi-window" in cmd
+        assert "--debug" in cmd
+        assert "--whitelist" in cmd
 
-    @patch('subprocess.Popen')
-    def test_start_success(self, mock_popen, autoresponder_manager, mock_config_manager):
+    @patch("subprocess.Popen")
+    def test_start_success(
+        self, mock_popen, autoresponder_manager, mock_config_manager
+    ):
         """Test successful start."""
         # Setup config
         config = ClaudeAutoResponderConfig(enabled=True)
@@ -279,7 +289,7 @@ class TestClaudeAutoResponderManager:
         """Test stop with force kill after timeout."""
         # Setup running state
         mock_process = Mock()
-        mock_process.wait.side_effect = [subprocess.TimeoutExpired('test', 5), None]
+        mock_process.wait.side_effect = [subprocess.TimeoutExpired("test", 5), None]
         autoresponder_manager._process = mock_process
         autoresponder_manager._metrics.status = AutoResponderStatus.RUNNING
         autoresponder_manager._stop_event = threading.Event()
@@ -300,11 +310,11 @@ class TestClaudeAutoResponderManager:
 
         status = autoresponder_manager.get_status()
 
-        assert status['status'] == 'stopped'
-        assert status['running'] is False
-        assert status['responses_sent'] == 5
-        assert status['attention_state'] == "focused"
-        assert 'config' in status
+        assert status["status"] == "stopped"
+        assert status["running"] is False
+        assert status["responses_sent"] == 5
+        assert status["attention_state"] == "focused"
+        assert "config" in status
 
     def test_update_attention_state(self, autoresponder_manager):
         """Test attention state updates."""
@@ -316,8 +326,9 @@ class TestClaudeAutoResponderManager:
 
     def test_restart(self, autoresponder_manager):
         """Test restart functionality."""
-        with patch.object(autoresponder_manager, 'stop') as mock_stop, \
-             patch.object(autoresponder_manager, 'start') as mock_start:
+        with patch.object(autoresponder_manager, "stop") as mock_stop, patch.object(
+            autoresponder_manager, "start"
+        ) as mock_start:
 
             mock_stop.return_value = True
             mock_start.return_value = True
@@ -330,7 +341,7 @@ class TestClaudeAutoResponderManager:
 
     def test_update_config(self, autoresponder_manager, mock_config_manager):
         """Test configuration updates."""
-        with patch.object(autoresponder_manager, 'restart') as mock_restart:
+        with patch.object(autoresponder_manager, "restart") as mock_restart:
             # Not running - shouldn't restart
             mock_restart.return_value = True
             autoresponder_manager._process = None
@@ -338,13 +349,18 @@ class TestClaudeAutoResponderManager:
             result = autoresponder_manager.update_config(enabled=True)
 
             assert result is True
-            mock_config_manager.update_claude_autoresponder.assert_called_once_with(enabled=True)
+            mock_config_manager.update_claude_autoresponder.assert_called_once_with(
+                enabled=True
+            )
             mock_restart.assert_not_called()
 
     def test_update_config_running(self, autoresponder_manager, mock_config_manager):
         """Test configuration updates when running."""
-        with patch.object(autoresponder_manager, 'restart') as mock_restart, \
-             patch.object(autoresponder_manager, 'is_running') as mock_is_running:
+        with patch.object(
+            autoresponder_manager, "restart"
+        ) as mock_restart, patch.object(
+            autoresponder_manager, "is_running"
+        ) as mock_is_running:
 
             mock_restart.return_value = True
             mock_is_running.return_value = True
@@ -364,12 +380,13 @@ class TestConfigManagerIntegration:
         temp_dir = Path(tempfile.mkdtemp())
         yield temp_dir
         import shutil
+
         shutil.rmtree(temp_dir)
 
     def test_config_manager_claude_autoresponder_methods(self, temp_config_dir):
         """Test ConfigManager auto responder methods."""
         config_manager = ConfigManager()
-        config_manager.paths.user_config = temp_config_dir / 'config.yaml'
+        config_manager.paths.user_config = temp_config_dir / "config.yaml"
 
         # Test get default config
         config = config_manager.get_claude_autoresponder_config()
@@ -387,10 +404,10 @@ class TestConfigManagerIntegration:
         config_manager = ConfigManager()
         default_config = config_manager._get_default_config()
 
-        assert 'claude_autoresponder' in default_config
-        autoresponder_config = default_config['claude_autoresponder']
-        assert autoresponder_config['enabled'] is False
-        assert autoresponder_config['terminal_scope'] == 'current'
+        assert "claude_autoresponder" in default_config
+        autoresponder_config = default_config["claude_autoresponder"]
+        assert autoresponder_config["enabled"] is False
+        assert autoresponder_config["terminal_scope"] == "current"
 
 
 class TestFactoryFunction:
@@ -424,7 +441,7 @@ class TestMonitorThread:
         autoresponder_manager._process.poll.return_value = None
         autoresponder_manager._stop_event = threading.Event()
 
-        with patch.object(autoresponder_manager, 'stop') as mock_stop:
+        with patch.object(autoresponder_manager, "stop") as mock_stop:
             # Start monitor thread manually for testing
             autoresponder_manager._monitor_process()
 
@@ -435,7 +452,9 @@ class TestMonitorThread:
         """Test monitor thread handles dead process."""
         # Setup dead process
         autoresponder_manager._process = Mock()
-        autoresponder_manager._process.poll.return_value = 1  # Exit code indicating dead
+        autoresponder_manager._process.poll.return_value = (
+            1  # Exit code indicating dead
+        )
         autoresponder_manager._stop_event = threading.Event()
         autoresponder_manager._metrics = AutoResponderMetrics(start_time=datetime.now())
 

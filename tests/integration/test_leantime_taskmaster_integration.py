@@ -5,19 +5,24 @@ Tests the complete workflow from PRD parsing to task synchronization
 between Leantime and Task-Master AI with ADHD optimizations.
 """
 
-import pytest
-import asyncio
 import json
-import tempfile
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
-from pathlib import Path
 
-from integrations.leantime_bridge import LeantimeMCPClient, LeantimeTask, TaskStatus, TaskPriority
-from integrations.taskmaster_bridge import TaskMasterMCPClient, TaskMasterTask
-from integrations.sync_manager import LeantimeTaskMasterSyncManager, SyncResult, TaskMapping
-from utils.adhd_optimizations import ADHDTaskOptimizer, ADHDProfile
+import pytest
+
 from core.config import Config
+from integrations.leantime_bridge import (
+    LeantimeMCPClient,
+    LeantimeTask,
+    TaskPriority,
+)
+from integrations.sync_manager import (
+    LeantimeTaskMasterSyncManager,
+    TaskMapping,
+)
+from integrations.taskmaster_bridge import TaskMasterMCPClient, TaskMasterTask
+from utils.adhd_optimizations import ADHDTaskOptimizer
 
 
 class TestLeantimeTaskMasterIntegration:
@@ -26,24 +31,24 @@ class TestLeantimeTaskMasterIntegration:
     @pytest.fixture
     async def config(self):
         """Create test configuration."""
-        return Config({
-            'leantime': {
-                'api_url': 'http://localhost:8080',
-                'api_token': 'test_token'
-            },
-            'taskmaster': {
-                'path': '.test_taskmaster',
-                'default_provider': 'anthropic'
-            },
-            'api_keys': {
-                'anthropic': 'test_anthropic_key'
-            },
-            'sync': {
-                'interval': 60,
-                'conflict_resolution': 'merge_intelligent',
-                'mappings_file': 'test_mappings.json'
+        return Config(
+            {
+                "leantime": {
+                    "api_url": "http://localhost:8080",
+                    "api_token": "test_token",
+                },
+                "taskmaster": {
+                    "path": ".test_taskmaster",
+                    "default_provider": "anthropic",
+                },
+                "api_keys": {"anthropic": "test_anthropic_key"},
+                "sync": {
+                    "interval": 60,
+                    "conflict_resolution": "merge_intelligent",
+                    "mappings_file": "test_mappings.json",
+                },
             }
-        })
+        )
 
     @pytest.fixture
     async def leantime_client(self, config):
@@ -56,9 +61,9 @@ class TestLeantimeTaskMasterIntegration:
     @pytest.fixture
     async def taskmaster_client(self, config):
         """Create mock TaskMaster client."""
-        with patch('pathlib.Path.mkdir'):
-            with patch('builtins.open'):
-                with patch('json.dump'):
+        with patch("pathlib.Path.mkdir"):
+            with patch("builtins.open"):
+                with patch("json.dump"):
                     client = TaskMasterMCPClient(config)
                     client._connected = True
                     client._process = AsyncMock()
@@ -109,8 +114,9 @@ Enhance the existing e-commerce platform with new features for better user exper
         """
 
     @pytest.mark.asyncio
-    async def test_complete_prd_to_tasks_workflow(self, sync_manager, leantime_client,
-                                                 taskmaster_client, sample_prd):
+    async def test_complete_prd_to_tasks_workflow(
+        self, sync_manager, leantime_client, taskmaster_client, sample_prd
+    ):
         """Test complete workflow from PRD to synchronized tasks."""
 
         # Mock TaskMaster PRD parsing
@@ -124,7 +130,7 @@ Enhance the existing e-commerce platform with new features for better user exper
                 "complexity": 4.5,
                 "estimatedHours": 20.0,
                 "dependencies": [],
-                "tags": ["authentication", "security"]
+                "tags": ["authentication", "security"],
             },
             {
                 "id": "cart_improvements",
@@ -135,7 +141,7 @@ Enhance the existing e-commerce platform with new features for better user exper
                 "complexity": 3.5,
                 "estimatedHours": 15.0,
                 "dependencies": ["auth_system"],
-                "tags": ["cart", "frontend"]
+                "tags": ["cart", "frontend"],
             },
             {
                 "id": "payment_processing",
@@ -146,57 +152,78 @@ Enhance the existing e-commerce platform with new features for better user exper
                 "complexity": 5.0,
                 "estimatedHours": 25.0,
                 "dependencies": ["auth_system", "cart_improvements"],
-                "tags": ["payment", "backend"]
-            }
+                "tags": ["payment", "backend"],
+            },
         ]
 
-        taskmaster_client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "version": "1.0",
-                        "requirements": ["Authentication", "Cart", "Payment"],
-                        "tasks": parsed_tasks,
-                        "complexitySummary": {"total_complexity": 13.0, "avg_complexity": 4.3},
-                        "estimatedTimeline": "8-10 weeks",
-                        "keyDependencies": ["PostgreSQL", "React", "Node.js"],
-                        "riskFactors": ["Integration complexity", "Performance requirements"]
-                    })
-                }]
+        taskmaster_client._send_mcp_request = AsyncMock(
+            return_value={
+                "result": {
+                    "content": [
+                        {
+                            "text": json.dumps(
+                                {
+                                    "version": "1.0",
+                                    "requirements": [
+                                        "Authentication",
+                                        "Cart",
+                                        "Payment",
+                                    ],
+                                    "tasks": parsed_tasks,
+                                    "complexitySummary": {
+                                        "total_complexity": 13.0,
+                                        "avg_complexity": 4.3,
+                                    },
+                                    "estimatedTimeline": "8-10 weeks",
+                                    "keyDependencies": [
+                                        "PostgreSQL",
+                                        "React",
+                                        "Node.js",
+                                    ],
+                                    "riskFactors": [
+                                        "Integration complexity",
+                                        "Performance requirements",
+                                    ],
+                                }
+                            )
+                        }
+                    ]
+                }
             }
-        })
+        )
 
         # Mock Leantime project creation
-        leantime_client._send_mcp_request = AsyncMock(side_effect=[
-            # Project creation response
-            {
-                "result": {
-                    "content": [{
-                        "text": json.dumps({
-                            "success": True,
-                            "projectId": 100
-                        })
-                    }]
-                }
-            },
-            # Task creation responses
-            *[{
-                "result": {
-                    "content": [{
-                        "text": json.dumps({
-                            "success": True,
-                            "ticketId": 200 + i
-                        })
-                    }]
-                }
-            } for i in range(len(parsed_tasks))]
-        ])
+        leantime_client._send_mcp_request = AsyncMock(
+            side_effect=[
+                # Project creation response
+                {
+                    "result": {
+                        "content": [
+                            {"text": json.dumps({"success": True, "projectId": 100})}
+                        ]
+                    }
+                },
+                # Task creation responses
+                *[
+                    {
+                        "result": {
+                            "content": [
+                                {
+                                    "text": json.dumps(
+                                        {"success": True, "ticketId": 200 + i}
+                                    )
+                                }
+                            ]
+                        }
+                    }
+                    for i in range(len(parsed_tasks))
+                ],
+            ]
+        )
 
         # Execute PRD sync workflow
         result = await sync_manager.sync_project_from_prd(
-            sample_prd,
-            "E-commerce Enhancement",
-            None
+            sample_prd, "E-commerce Enhancement", None
         )
 
         # Verify results
@@ -215,8 +242,9 @@ Enhance the existing e-commerce platform with new features for better user exper
         assert leantime_client._send_mcp_request.call_count == 4  # 1 project + 3 tasks
 
     @pytest.mark.asyncio
-    async def test_bidirectional_task_synchronization(self, sync_manager, leantime_client,
-                                                     taskmaster_client):
+    async def test_bidirectional_task_synchronization(
+        self, sync_manager, leantime_client, taskmaster_client
+    ):
         """Test bidirectional synchronization between Leantime and TaskMaster."""
 
         # Setup existing tasks in both systems
@@ -228,7 +256,7 @@ Enhance the existing e-commerce platform with new features for better user exper
                 "projectId": 10,
                 "status": "1",  # In progress
                 "storypoints": 3,
-                "date": "2024-01-01 10:00:00"
+                "date": "2024-01-01 10:00:00",
             },
             {
                 "id": 2,
@@ -237,8 +265,8 @@ Enhance the existing e-commerce platform with new features for better user exper
                 "projectId": 10,
                 "status": "0",  # Pending
                 "storypoints": 5,
-                "date": "2024-01-01 11:00:00"
-            }
+                "date": "2024-01-01 11:00:00",
+            },
         ]
 
         taskmaster_tasks = [
@@ -248,7 +276,7 @@ Enhance the existing e-commerce platform with new features for better user exper
                 "description": "User cannot login with special characters",
                 "status": "in_progress",
                 "priority": 1,
-                "complexity": 2.5
+                "complexity": 2.5,
             },
             {
                 "id": "new_feature",
@@ -256,44 +284,40 @@ Enhance the existing e-commerce platform with new features for better user exper
                 "description": "Implement global search feature",
                 "status": "pending",
                 "priority": 2,
-                "complexity": 4.0
-            }
+                "complexity": 4.0,
+            },
         ]
 
         # Mock responses
-        leantime_client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps(leantime_tasks)
-                }]
-            }
-        })
+        leantime_client._send_mcp_request = AsyncMock(
+            return_value={"result": {"content": [{"text": json.dumps(leantime_tasks)}]}}
+        )
 
-        taskmaster_client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "tasks": taskmaster_tasks
-                    })
-                }]
+        taskmaster_client._send_mcp_request = AsyncMock(
+            return_value={
+                "result": {
+                    "content": [{"text": json.dumps({"tasks": taskmaster_tasks})}]
+                }
             }
-        })
+        )
 
         # Create task mappings for existing tasks
         sync_manager.task_mappings["lt_1"] = TaskMapping(
             leantime_id=1,
             taskmaster_id="fix_login_bug",
             sync_hash="test_hash_1",
-            last_sync=datetime.now() - timedelta(hours=1)
+            last_sync=datetime.now() - timedelta(hours=1),
         )
 
         # Mock task creation for new tasks
-        leantime_client.create_task = AsyncMock(return_value=LeantimeTask(
-            id=3,
-            headline="Add search functionality",
-            description="Implement global search feature",
-            project_id=10
-        ))
+        leantime_client.create_task = AsyncMock(
+            return_value=LeantimeTask(
+                id=3,
+                headline="Add search functionality",
+                description="Implement global search feature",
+                project_id=10,
+            )
+        )
 
         # Execute synchronization
         result = await sync_manager.sync_all()
@@ -307,7 +331,9 @@ Enhance the existing e-commerce platform with new features for better user exper
         assert taskmaster_client._send_mcp_request.called
 
     @pytest.mark.asyncio
-    async def test_adhd_optimization_integration(self, leantime_client, taskmaster_client):
+    async def test_adhd_optimization_integration(
+        self, leantime_client, taskmaster_client
+    ):
         """Test ADHD optimization integration in the workflow."""
 
         # Create ADHD optimizer
@@ -319,18 +345,18 @@ Enhance the existing e-commerce platform with new features for better user exper
             headline="Complex refactoring task",
             description="Refactor legacy authentication system with new architecture patterns",
             project_id=10,
-            priority=TaskPriority.FOCUSED
+            priority=TaskPriority.FOCUSED,
         )
 
         # Test task optimization
         optimized_task = await adhd_optimizer.optimize_task(task, "test_user")
 
         # Verify ADHD optimizations were applied
-        assert hasattr(optimized_task, 'adhd_metadata')
-        assert optimized_task.adhd_metadata['cognitive_load'] > 0
-        assert optimized_task.adhd_metadata['estimated_attention_duration'] > 0
-        assert len(optimized_task.adhd_metadata['break_recommendations']) > 0
-        assert len(optimized_task.adhd_metadata['attention_anchors']) > 0
+        assert hasattr(optimized_task, "adhd_metadata")
+        assert optimized_task.adhd_metadata["cognitive_load"] > 0
+        assert optimized_task.adhd_metadata["estimated_attention_duration"] > 0
+        assert len(optimized_task.adhd_metadata["break_recommendations"]) > 0
+        assert len(optimized_task.adhd_metadata["attention_anchors"]) > 0
 
         # Test TaskMaster task optimization
         tm_task = TaskMasterTask(
@@ -339,7 +365,7 @@ Enhance the existing e-commerce platform with new features for better user exper
             description="Refactor legacy authentication system",
             status="pending",
             complexity_score=4.5,
-            estimated_hours=8.0
+            estimated_hours=8.0,
         )
 
         optimized_tm_task = await adhd_optimizer.optimize_taskmaster_task(tm_task)
@@ -348,7 +374,9 @@ Enhance the existing e-commerce platform with new features for better user exper
         assert "deep_work" in optimized_tm_task.tags
         assert "hyperfocus_required" in optimized_tm_task.tags
         assert "adhd_optimization" in optimized_tm_task.ai_analysis
-        assert optimized_tm_task.ai_analysis["adhd_optimization"]["cognitive_load"] == 4.5
+        assert (
+            optimized_tm_task.ai_analysis["adhd_optimization"]["cognitive_load"] == 4.5
+        )
 
     @pytest.mark.asyncio
     async def test_context_preservation_workflow(self, sync_manager):
@@ -363,10 +391,13 @@ Enhance the existing e-commerce platform with new features for better user exper
             "current_state": "designing_oauth_flow",
             "recent_decisions": [
                 {"decision": "Use OAuth2", "rationale": "Industry standard"},
-                {"decision": "Support Google/Facebook", "rationale": "User convenience"}
+                {
+                    "decision": "Support Google/Facebook",
+                    "rationale": "User convenience",
+                },
             ],
             "blockers": [],
-            "next_steps": ["Implement OAuth2 flow", "Add social login buttons"]
+            "next_steps": ["Implement OAuth2 flow", "Add social login buttons"],
         }
 
         preservation_data = await adhd_optimizer.generate_context_preservation(
@@ -381,7 +412,9 @@ Enhance the existing e-commerce platform with new features for better user exper
         assert preservation_data["restoration_steps"]
 
         # Test context restoration
-        restoration = await adhd_optimizer.restore_context("test_user", preservation_data)
+        restoration = await adhd_optimizer.restore_context(
+            "test_user", preservation_data
+        )
 
         # Verify restoration guidance
         assert restoration["status"] == "ready"
@@ -399,17 +432,29 @@ Enhance the existing e-commerce platform with new features for better user exper
         # Create test tasks with different complexity levels
         tasks = [
             MagicMock(
-                id=1, headline="Quick bug fix", description="Fix typo",
-                complexity_score=1.0, estimated_hours=0.5, dependencies=[]
+                id=1,
+                headline="Quick bug fix",
+                description="Fix typo",
+                complexity_score=1.0,
+                estimated_hours=0.5,
+                dependencies=[],
             ),
             MagicMock(
-                id=2, headline="Feature implementation", description="Add user dashboard",
-                complexity_score=3.5, estimated_hours=8.0, dependencies=[]
+                id=2,
+                headline="Feature implementation",
+                description="Add user dashboard",
+                complexity_score=3.5,
+                estimated_hours=8.0,
+                dependencies=[],
             ),
             MagicMock(
-                id=3, headline="Architecture refactor", description="Redesign database schema",
-                complexity_score=5.0, estimated_hours=20.0, dependencies=[]
-            )
+                id=3,
+                headline="Architecture refactor",
+                description="Redesign database schema",
+                complexity_score=5.0,
+                estimated_hours=20.0,
+                dependencies=[],
+            ),
         ]
 
         # Test scheduling for different attention states
@@ -429,8 +474,9 @@ Enhance the existing e-commerce platform with new features for better user exper
         assert any(entry["type"] == "break" for entry in schedule)
 
     @pytest.mark.asyncio
-    async def test_conflict_resolution_workflow(self, sync_manager, leantime_client,
-                                               taskmaster_client):
+    async def test_conflict_resolution_workflow(
+        self, sync_manager, leantime_client, taskmaster_client
+    ):
         """Test conflict resolution during synchronization."""
 
         # Setup conflicting task updates
@@ -442,7 +488,7 @@ Enhance the existing e-commerce platform with new features for better user exper
             "headline": "Updated from Leantime",
             "description": "Task updated in Leantime",
             "status": "2",  # Completed
-            "dateToFinish": (now - timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M:%S")
+            "dateToFinish": (now - timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M:%S"),
         }
 
         # TaskMaster task also updated recently
@@ -451,34 +497,30 @@ Enhance the existing e-commerce platform with new features for better user exper
             "title": "Updated from TaskMaster",
             "description": "Task updated in TaskMaster",
             "status": "in_progress",
-            "updated_at": (now - timedelta(minutes=3)).isoformat()
+            "updated_at": (now - timedelta(minutes=3)).isoformat(),
         }
 
         # Mock responses
-        leantime_client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps([leantime_task_data])
-                }]
+        leantime_client._send_mcp_request = AsyncMock(
+            return_value={
+                "result": {"content": [{"text": json.dumps([leantime_task_data])}]}
             }
-        })
+        )
 
-        taskmaster_client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "tasks": [taskmaster_task_data]
-                    })
-                }]
+        taskmaster_client._send_mcp_request = AsyncMock(
+            return_value={
+                "result": {
+                    "content": [{"text": json.dumps({"tasks": [taskmaster_task_data]})}]
+                }
             }
-        })
+        )
 
         # Create existing mapping
         sync_manager.task_mappings["lt_1"] = TaskMapping(
             leantime_id=1,
             taskmaster_id="task_1",
             sync_hash="old_hash",
-            last_sync=datetime.now() - timedelta(hours=1)
+            last_sync=datetime.now() - timedelta(hours=1),
         )
 
         # Set conflict resolution to latest timestamp
@@ -496,23 +538,28 @@ Enhance the existing e-commerce platform with new features for better user exper
         assert mapping.conflict_count >= 0
 
     @pytest.mark.asyncio
-    async def test_health_monitoring_integration(self, sync_manager, leantime_client,
-                                                taskmaster_client):
+    async def test_health_monitoring_integration(
+        self, sync_manager, leantime_client, taskmaster_client
+    ):
         """Test health monitoring across integrated systems."""
 
         # Mock healthy responses
-        leantime_client.health_check = AsyncMock(return_value={
-            "status": "healthy",
-            "connected": True,
-            "api_responsive": True
-        })
+        leantime_client.health_check = AsyncMock(
+            return_value={
+                "status": "healthy",
+                "connected": True,
+                "api_responsive": True,
+            }
+        )
 
-        taskmaster_client.health_check = AsyncMock(return_value={
-            "status": "healthy",
-            "connected": True,
-            "process_running": True,
-            "api_responsive": True
-        })
+        taskmaster_client.health_check = AsyncMock(
+            return_value={
+                "status": "healthy",
+                "connected": True,
+                "process_running": True,
+                "api_responsive": True,
+            }
+        )
 
         # Get overall sync status
         status = await sync_manager.get_sync_status()
@@ -523,18 +570,21 @@ Enhance the existing e-commerce platform with new features for better user exper
         assert status["task_mappings_count"] >= 0
 
         # Test unhealthy state
-        leantime_client.health_check = AsyncMock(return_value={
-            "status": "unhealthy",
-            "connected": False,
-            "error": "Connection failed"
-        })
+        leantime_client.health_check = AsyncMock(
+            return_value={
+                "status": "unhealthy",
+                "connected": False,
+                "error": "Connection failed",
+            }
+        )
 
         status = await sync_manager.get_sync_status()
         assert status["leantime_status"]["status"] == "unhealthy"
 
     @pytest.mark.asyncio
-    async def test_performance_under_load(self, sync_manager, leantime_client,
-                                         taskmaster_client):
+    async def test_performance_under_load(
+        self, sync_manager, leantime_client, taskmaster_client
+    ):
         """Test system performance with large number of tasks."""
 
         # Create large number of test tasks
@@ -547,7 +597,7 @@ Enhance the existing e-commerce platform with new features for better user exper
                 "description": f"Description for task {i}",
                 "projectId": 10,
                 "status": str(i % 3),  # Vary status
-                "storypoints": (i % 5) + 1
+                "storypoints": (i % 5) + 1,
             }
             for i in range(1, num_tasks + 1)
         ]
@@ -558,29 +608,23 @@ Enhance the existing e-commerce platform with new features for better user exper
                 "title": f"Task {i}",
                 "description": f"Description for task {i}",
                 "status": "pending",
-                "priority": (i % 3) + 1
+                "priority": (i % 3) + 1,
             }
             for i in range(1, num_tasks + 1)
         ]
 
         # Mock responses
-        leantime_client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps(leantime_tasks)
-                }]
-            }
-        })
+        leantime_client._send_mcp_request = AsyncMock(
+            return_value={"result": {"content": [{"text": json.dumps(leantime_tasks)}]}}
+        )
 
-        taskmaster_client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "tasks": taskmaster_tasks
-                    })
-                }]
+        taskmaster_client._send_mcp_request = AsyncMock(
+            return_value={
+                "result": {
+                    "content": [{"text": json.dumps({"tasks": taskmaster_tasks})}]
+                }
             }
-        })
+        )
 
         # Measure sync performance
         start_time = datetime.now()
@@ -596,8 +640,9 @@ Enhance the existing e-commerce platform with new features for better user exper
         assert result.sync_duration > 0
 
     @pytest.mark.asyncio
-    async def test_error_recovery_and_resilience(self, sync_manager, leantime_client,
-                                                taskmaster_client):
+    async def test_error_recovery_and_resilience(
+        self, sync_manager, leantime_client, taskmaster_client
+    ):
         """Test error recovery and system resilience."""
 
         # Test Leantime connection failure
@@ -605,13 +650,9 @@ Enhance the existing e-commerce platform with new features for better user exper
             side_effect=Exception("Leantime connection failed")
         )
 
-        taskmaster_client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps({"tasks": []})
-                }]
-            }
-        })
+        taskmaster_client._send_mcp_request = AsyncMock(
+            return_value={"result": {"content": [{"text": json.dumps({"tasks": []})}]}}
+        )
 
         result = await sync_manager.sync_all()
 
@@ -621,13 +662,9 @@ Enhance the existing e-commerce platform with new features for better user exper
         assert "Leantime connection failed" in str(result.errors)
 
         # Test TaskMaster failure
-        leantime_client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps([])
-                }]
-            }
-        })
+        leantime_client._send_mcp_request = AsyncMock(
+            return_value={"result": {"content": [{"text": json.dumps([])}]}}
+        )
 
         taskmaster_client._send_mcp_request = AsyncMock(
             side_effect=Exception("TaskMaster process crashed")
@@ -640,26 +677,30 @@ Enhance the existing e-commerce platform with new features for better user exper
         assert len(result.errors) > 0
 
         # Test partial failure recovery
-        leantime_client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps([{
-                        "id": 1,
-                        "headline": "Working task",
-                        "description": "This task syncs successfully",
-                        "status": "0"
-                    }])
-                }]
+        leantime_client._send_mcp_request = AsyncMock(
+            return_value={
+                "result": {
+                    "content": [
+                        {
+                            "text": json.dumps(
+                                [
+                                    {
+                                        "id": 1,
+                                        "headline": "Working task",
+                                        "description": "This task syncs successfully",
+                                        "status": "0",
+                                    }
+                                ]
+                            )
+                        }
+                    ]
+                }
             }
-        })
+        )
 
-        taskmaster_client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps({"tasks": []})
-                }]
-            }
-        })
+        taskmaster_client._send_mcp_request = AsyncMock(
+            return_value={"result": {"content": [{"text": json.dumps({"tasks": []})}]}}
+        )
 
         result = await sync_manager.sync_all()
 
@@ -682,31 +723,28 @@ Enhance the existing e-commerce platform with new features for better user exper
         config_file = test_taskmaster_dir / "config.json"
         config_data = {
             "providers": {
-                "anthropic": {
-                    "model": "claude-3-sonnet-20240229",
-                    "apiKey": "test_key"
-                }
+                "anthropic": {"model": "claude-3-sonnet-20240229", "apiKey": "test_key"}
             },
-            "defaultProvider": "anthropic"
+            "defaultProvider": "anthropic",
         }
 
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             json.dump(config_data, f)
 
         # Create empty tasks file
         tasks_file = tasks_dir / "tasks.json"
-        with open(tasks_file, 'w') as f:
+        with open(tasks_file, "w") as f:
             json.dump({"tasks": [], "metadata": {}}, f)
 
         # Update config to use temporary directory
-        config.data['taskmaster']['path'] = str(test_taskmaster_dir)
+        config.data["taskmaster"]["path"] = str(test_taskmaster_dir)
 
         # Test that files can be read and written
         assert config_file.exists()
         assert tasks_file.exists()
 
         # Verify config content
-        with open(config_file, 'r') as f:
+        with open(config_file, "r") as f:
             loaded_config = json.load(f)
             assert loaded_config["defaultProvider"] == "anthropic"
 

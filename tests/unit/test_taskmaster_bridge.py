@@ -4,25 +4,23 @@ Unit tests for Task-Master AI MCP Bridge.
 Comprehensive test coverage for Task-Master AI integration.
 """
 
-import pytest
 import asyncio
 import json
-import subprocess
-import tempfile
 from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch, mock_open
-from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock, mock_open, patch
 
-from integrations.taskmaster_bridge import (
-    TaskMasterMCPClient,
-    TaskMasterTask,
-    PRDAnalysis,
-    TaskMasterProvider,
-    ComplexityLevel,
-    create_taskmaster_bridge
-)
+import pytest
+
 from core.config import Config
-from core.exceptions import DopemuxIntegrationError, AIServiceError
+from core.exceptions import AIServiceError, DopemuxIntegrationError
+from integrations.taskmaster_bridge import (
+    ComplexityLevel,
+    PRDAnalysis,
+    TaskMasterMCPClient,
+    TaskMasterProvider,
+    TaskMasterTask,
+    create_taskmaster_bridge,
+)
 
 
 class TestTaskMasterTask:
@@ -34,7 +32,7 @@ class TestTaskMasterTask:
             id="test_id",
             title="Test Task",
             description="Test description",
-            status="pending"
+            status="pending",
         )
 
         assert task.id == "test_id"
@@ -55,7 +53,7 @@ class TestTaskMasterTask:
             id="subtask_1",
             title="Subtask",
             description="Subtask description",
-            status="pending"
+            status="pending",
         )
 
         task = TaskMasterTask(
@@ -69,7 +67,7 @@ class TestTaskMasterTask:
             dependencies=["dep1", "dep2"],
             subtasks=[subtask],
             tags=["feature", "high-priority"],
-            created_at=now
+            created_at=now,
         )
 
         assert task.id == "main_task"
@@ -88,8 +86,12 @@ class TestPRDAnalysis:
 
     def test_prd_analysis_creation(self):
         """Test creating PRD analysis."""
-        task1 = TaskMasterTask(id="1", title="Task 1", description="Desc 1", status="pending")
-        task2 = TaskMasterTask(id="2", title="Task 2", description="Desc 2", status="pending")
+        task1 = TaskMasterTask(
+            id="1", title="Task 1", description="Desc 1", status="pending"
+        )
+        task2 = TaskMasterTask(
+            id="2", title="Task 2", description="Desc 2", status="pending"
+        )
 
         analysis = PRDAnalysis(
             project_name="Test Project",
@@ -99,7 +101,7 @@ class TestPRDAnalysis:
             complexity_summary={"total_complexity": 7.5},
             estimated_timeline="4 weeks",
             key_dependencies=["Database", "API"],
-            risk_factors=["Technical debt", "Resource constraints"]
+            risk_factors=["Technical debt", "Resource constraints"],
         )
 
         assert analysis.project_name == "Test Project"
@@ -145,45 +147,46 @@ class TestTaskMasterMCPClient:
     @pytest.fixture
     def config(self):
         """Create test configuration."""
-        return Config({
-            'taskmaster': {
-                'path': '.taskmaster',
-                'default_provider': 'anthropic'
-            },
-            'api_keys': {
-                'anthropic': 'test_anthropic_key',
-                'openai': 'test_openai_key',
-                'perplexity': 'test_perplexity_key'
+        return Config(
+            {
+                "taskmaster": {"path": ".taskmaster", "default_provider": "anthropic"},
+                "api_keys": {
+                    "anthropic": "test_anthropic_key",
+                    "openai": "test_openai_key",
+                    "perplexity": "test_perplexity_key",
+                },
             }
-        })
+        )
 
     @pytest.fixture
     def client(self, config):
         """Create test client."""
-        with patch('pathlib.Path.mkdir'):
-            with patch('builtins.open', mock_open()):
-                with patch('json.dump'):
+        with patch("pathlib.Path.mkdir"):
+            with patch("builtins.open", mock_open()):
+                with patch("json.dump"):
                     return TaskMasterMCPClient(config)
 
     def test_client_initialization(self, client, config):
         """Test client initialization."""
         assert client.config == config
-        assert client.task_master_path == '.taskmaster'
+        assert client.task_master_path == ".taskmaster"
         assert client.default_provider == TaskMasterProvider.ANTHROPIC
-        assert client.api_keys[TaskMasterProvider.ANTHROPIC] == 'test_anthropic_key'
-        assert client.api_keys[TaskMasterProvider.OPENAI] == 'test_openai_key'
+        assert client.api_keys[TaskMasterProvider.ANTHROPIC] == "test_anthropic_key"
+        assert client.api_keys[TaskMasterProvider.OPENAI] == "test_openai_key"
         assert client._process is None
         assert client._connected is False
 
-    @patch('pathlib.Path.mkdir')
-    @patch('pathlib.Path.exists')
-    @patch('builtins.open', new_callable=mock_open)
-    @patch('json.dump')
-    def test_init_taskmaster_directory(self, mock_json_dump, mock_file, mock_exists, mock_mkdir, config):
+    @patch("pathlib.Path.mkdir")
+    @patch("pathlib.Path.exists")
+    @patch("builtins.open", new_callable=mock_open)
+    @patch("json.dump")
+    def test_init_taskmaster_directory(
+        self, mock_json_dump, mock_file, mock_exists, mock_mkdir, config
+    ):
         """Test TaskMaster directory initialization."""
         mock_exists.return_value = False
 
-        client = TaskMasterMCPClient(config)
+        TaskMasterMCPClient(config)
 
         # Verify directories were created
         mock_mkdir.assert_called()
@@ -193,8 +196,8 @@ class TestTaskMasterMCPClient:
 
         # Verify API keys were configured
         call_args = mock_json_dump.call_args[0][0]
-        assert call_args['providers']['anthropic']['apiKey'] == 'test_anthropic_key'
-        assert call_args['defaultProvider'] == 'anthropic'
+        assert call_args["providers"]["anthropic"]["apiKey"] == "test_anthropic_key"
+        assert call_args["defaultProvider"] == "anthropic"
 
     @pytest.mark.asyncio
     async def test_connect_success(self, client):
@@ -202,16 +205,18 @@ class TestTaskMasterMCPClient:
         mock_process = MagicMock()
         mock_process.stdin = MagicMock()
         mock_process.stdout = MagicMock()
-        mock_process.stdout.readline.return_value = json.dumps({
-            "jsonrpc": "2.0",
-            "id": 1,
-            "result": {
-                "protocolVersion": "2024-11-05",
-                "capabilities": {}
-            }
-        }) + '\n'
+        mock_process.stdout.readline.return_value = (
+            json.dumps(
+                {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {"protocolVersion": "2024-11-05", "capabilities": {}},
+                }
+            )
+            + "\n"
+        )
 
-        with patch('subprocess.Popen', return_value=mock_process):
+        with patch("subprocess.Popen", return_value=mock_process):
             success = await client.connect()
 
             assert success is True
@@ -221,7 +226,7 @@ class TestTaskMasterMCPClient:
     @pytest.mark.asyncio
     async def test_connect_failure(self, client):
         """Test connection failure."""
-        with patch('subprocess.Popen', side_effect=Exception("Process failed")):
+        with patch("subprocess.Popen", side_effect=Exception("Process failed")):
             success = await client.connect()
 
             assert success is False
@@ -253,19 +258,11 @@ class TestTaskMasterMCPClient:
         mock_process.stdin = MagicMock()
         mock_process.stdout = MagicMock()
 
-        request_data = {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "test_method"
-        }
+        request_data = {"jsonrpc": "2.0", "id": 1, "method": "test_method"}
 
-        response_data = {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "result": {"success": True}
-        }
+        response_data = {"jsonrpc": "2.0", "id": 1, "result": {"success": True}}
 
-        mock_process.stdout.readline.return_value = json.dumps(response_data) + '\n'
+        mock_process.stdout.readline.return_value = json.dumps(response_data) + "\n"
 
         client._process = mock_process
         client._connected = True
@@ -281,7 +278,9 @@ class TestTaskMasterMCPClient:
         """Test MCP request when not connected."""
         request_data = {"jsonrpc": "2.0", "id": 1, "method": "test"}
 
-        with pytest.raises(DopemuxIntegrationError, match="Not connected to Task-Master"):
+        with pytest.raises(
+            DopemuxIntegrationError, match="Not connected to Task-Master"
+        ):
             await client._send_mcp_request(request_data)
 
     @pytest.mark.asyncio
@@ -323,30 +322,34 @@ class TestTaskMasterMCPClient:
 
         mock_response = {
             "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "version": "1.0",
-                        "requirements": ["Requirement 1", "Requirement 2"],
-                        "tasks": [
+                "content": [
+                    {
+                        "text": json.dumps(
                             {
-                                "id": "task_1",
-                                "title": "Task 1",
-                                "description": "Description 1",
-                                "status": "pending",
-                                "priority": 1,
-                                "complexity": 3.0,
-                                "estimatedHours": 2.0,
-                                "dependencies": [],
-                                "tags": ["feature"],
-                                "subtasks": []
+                                "version": "1.0",
+                                "requirements": ["Requirement 1", "Requirement 2"],
+                                "tasks": [
+                                    {
+                                        "id": "task_1",
+                                        "title": "Task 1",
+                                        "description": "Description 1",
+                                        "status": "pending",
+                                        "priority": 1,
+                                        "complexity": 3.0,
+                                        "estimatedHours": 2.0,
+                                        "dependencies": [],
+                                        "tags": ["feature"],
+                                        "subtasks": [],
+                                    }
+                                ],
+                                "complexitySummary": {"total": 3.0},
+                                "estimatedTimeline": "2 weeks",
+                                "keyDependencies": ["Database"],
+                                "riskFactors": ["Time constraints"],
                             }
-                        ],
-                        "complexitySummary": {"total": 3.0},
-                        "estimatedTimeline": "2 weeks",
-                        "keyDependencies": ["Database"],
-                        "riskFactors": ["Time constraints"]
-                    })
-                }]
+                        )
+                    }
+                ]
             }
         }
 
@@ -367,32 +370,36 @@ class TestTaskMasterMCPClient:
         """Test PRD parsing with subtasks."""
         mock_response = {
             "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "version": "1.0",
-                        "requirements": [],
-                        "tasks": [
+                "content": [
+                    {
+                        "text": json.dumps(
                             {
-                                "id": "task_1",
-                                "title": "Main Task",
-                                "description": "Main description",
-                                "status": "pending",
-                                "priority": 1,
-                                "subtasks": [
+                                "version": "1.0",
+                                "requirements": [],
+                                "tasks": [
                                     {
-                                        "id": "subtask_1",
-                                        "title": "Subtask 1",
-                                        "description": "Subtask description",
+                                        "id": "task_1",
+                                        "title": "Main Task",
+                                        "description": "Main description",
                                         "status": "pending",
                                         "priority": 1,
-                                        "subtasks": []
+                                        "subtasks": [
+                                            {
+                                                "id": "subtask_1",
+                                                "title": "Subtask 1",
+                                                "description": "Subtask description",
+                                                "status": "pending",
+                                                "priority": 1,
+                                                "subtasks": [],
+                                            }
+                                        ],
                                     }
-                                ]
+                                ],
+                                "complexitySummary": {},
                             }
-                        ],
-                        "complexitySummary": {}
-                    })
-                }]
+                        )
+                    }
+                ]
             }
         }
 
@@ -417,26 +424,30 @@ class TestTaskMasterMCPClient:
         """Test successful task retrieval."""
         mock_response = {
             "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "tasks": [
+                "content": [
+                    {
+                        "text": json.dumps(
                             {
-                                "id": "task_1",
-                                "title": "Task 1",
-                                "description": "Description 1",
-                                "status": "pending",
-                                "priority": 1
-                            },
-                            {
-                                "id": "task_2",
-                                "title": "Task 2",
-                                "description": "Description 2",
-                                "status": "in_progress",
-                                "priority": 2
+                                "tasks": [
+                                    {
+                                        "id": "task_1",
+                                        "title": "Task 1",
+                                        "description": "Description 1",
+                                        "status": "pending",
+                                        "priority": 1,
+                                    },
+                                    {
+                                        "id": "task_2",
+                                        "title": "Task 2",
+                                        "description": "Description 2",
+                                        "status": "in_progress",
+                                        "priority": 2,
+                                    },
+                                ]
                             }
-                        ]
-                    })
-                }]
+                        )
+                    }
+                ]
             }
         }
 
@@ -454,7 +465,9 @@ class TestTaskMasterMCPClient:
     @pytest.mark.asyncio
     async def test_get_tasks_with_tag_filter(self, client):
         """Test task retrieval with tag filter."""
-        client._send_mcp_request = AsyncMock(return_value={"result": {"content": [{"text": '{"tasks": []}'}]}})
+        client._send_mcp_request = AsyncMock(
+            return_value={"result": {"content": [{"text": '{"tasks": []}'}]}}
+        )
 
         await client.get_tasks(tag="feature")
 
@@ -467,15 +480,19 @@ class TestTaskMasterMCPClient:
         """Test successful next task retrieval."""
         mock_response = {
             "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "id": "next_task",
-                        "title": "Next Task",
-                        "description": "Next description",
-                        "status": "pending",
-                        "priority": 1
-                    })
-                }]
+                "content": [
+                    {
+                        "text": json.dumps(
+                            {
+                                "id": "next_task",
+                                "title": "Next Task",
+                                "description": "Next description",
+                                "status": "pending",
+                                "priority": 1,
+                            }
+                        )
+                    }
+                ]
             }
         }
 
@@ -490,7 +507,9 @@ class TestTaskMasterMCPClient:
     @pytest.mark.asyncio
     async def test_get_next_task_none_available(self, client):
         """Test next task retrieval when none available."""
-        client._send_mcp_request = AsyncMock(return_value={"result": {"content": [{"text": "null"}]}})
+        client._send_mcp_request = AsyncMock(
+            return_value={"result": {"content": [{"text": "null"}]}}
+        )
 
         task = await client.get_next_task()
 
@@ -501,24 +520,28 @@ class TestTaskMasterMCPClient:
         """Test successful task expansion."""
         mock_response = {
             "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "id": "expanded_task",
-                        "title": "Expanded Task",
-                        "description": "Expanded description",
-                        "status": "pending",
-                        "priority": 1,
-                        "subtasks": [
+                "content": [
+                    {
+                        "text": json.dumps(
                             {
-                                "id": "subtask_1",
-                                "title": "Subtask 1",
-                                "description": "Subtask description",
+                                "id": "expanded_task",
+                                "title": "Expanded Task",
+                                "description": "Expanded description",
                                 "status": "pending",
-                                "priority": 1
+                                "priority": 1,
+                                "subtasks": [
+                                    {
+                                        "id": "subtask_1",
+                                        "title": "Subtask 1",
+                                        "description": "Subtask description",
+                                        "status": "pending",
+                                        "priority": 1,
+                                    }
+                                ],
                             }
-                        ]
-                    })
-                }]
+                        )
+                    }
+                ]
             }
         }
 
@@ -536,14 +559,21 @@ class TestTaskMasterMCPClient:
         """Test successful complexity analysis."""
         mock_response = {
             "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "complexity_score": 4.5,
-                        "estimated_hours": 8.0,
-                        "difficulty_factors": ["algorithm_design", "integration"],
-                        "recommendations": ["Break into smaller tasks"]
-                    })
-                }]
+                "content": [
+                    {
+                        "text": json.dumps(
+                            {
+                                "complexity_score": 4.5,
+                                "estimated_hours": 8.0,
+                                "difficulty_factors": [
+                                    "algorithm_design",
+                                    "integration",
+                                ],
+                                "recommendations": ["Break into smaller tasks"],
+                            }
+                        )
+                    }
+                ]
             }
         }
 
@@ -559,13 +589,7 @@ class TestTaskMasterMCPClient:
     async def test_update_task_status_success(self, client):
         """Test successful task status update."""
         mock_response = {
-            "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "success": True
-                    })
-                }]
-            }
+            "result": {"content": [{"text": json.dumps({"success": True})}]}
         }
 
         client._send_mcp_request = AsyncMock(return_value=mock_response)
@@ -579,12 +603,9 @@ class TestTaskMasterMCPClient:
         """Test task status update failure."""
         mock_response = {
             "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "success": False,
-                        "error": "Task not found"
-                    })
-                }]
+                "content": [
+                    {"text": json.dumps({"success": False, "error": "Task not found"})}
+                ]
             }
         }
 
@@ -599,21 +620,24 @@ class TestTaskMasterMCPClient:
         """Test successful task research."""
         mock_response = {
             "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "research_results": ["Result 1", "Result 2"],
-                        "sources": ["Source 1", "Source 2"],
-                        "summary": "Research summary"
-                    })
-                }]
+                "content": [
+                    {
+                        "text": json.dumps(
+                            {
+                                "research_results": ["Result 1", "Result 2"],
+                                "sources": ["Source 1", "Source 2"],
+                                "summary": "Research summary",
+                            }
+                        )
+                    }
+                ]
             }
         }
 
         client._send_mcp_request = AsyncMock(return_value=mock_response)
 
         research = await client.research_task(
-            "Implement authentication",
-            "Best practices for JWT implementation"
+            "Implement authentication", "Best practices for JWT implementation"
         )
 
         assert "research_results" in research
@@ -629,7 +653,9 @@ class TestTaskMasterMCPClient:
         client._connected = True
         client._process = mock_process
 
-        with patch.object(client, 'get_tasks', AsyncMock(return_value=[MagicMock(), MagicMock()])):
+        with patch.object(
+            client, "get_tasks", AsyncMock(return_value=[MagicMock(), MagicMock()])
+        ):
             health = await client.health_check()
 
             assert health["status"] == "healthy"
@@ -674,7 +700,9 @@ class TestTaskMasterMCPClient:
         client._connected = True
         client._process = mock_process
 
-        with patch.object(client, 'get_tasks', AsyncMock(side_effect=Exception("API Error"))):
+        with patch.object(
+            client, "get_tasks", AsyncMock(side_effect=Exception("API Error"))
+        ):
             health = await client.health_check()
 
             assert health["status"] == "unhealthy"
@@ -698,8 +726,8 @@ class TestTaskMasterMCPClient:
     @pytest.mark.asyncio
     async def test_context_manager_usage(self, client):
         """Test client as async context manager."""
-        with patch.object(client, 'connect', AsyncMock(return_value=True)):
-            with patch.object(client, 'disconnect', AsyncMock()):
+        with patch.object(client, "connect", AsyncMock(return_value=True)):
+            with patch.object(client, "disconnect", AsyncMock()):
                 async with client as c:
                     assert c is client
 
@@ -722,9 +750,9 @@ class TestTaskMasterMCPClient:
                         "title": "Sub Subtask 1",
                         "description": "Sub description",
                         "status": "pending",
-                        "priority": 1
+                        "priority": 1,
                     }
-                ]
+                ],
             }
         ]
 
@@ -735,8 +763,8 @@ class TestTaskMasterMCPClient:
         assert len(subtasks[0].subtasks) == 1
         assert subtasks[0].subtasks[0].id == "sub_subtask_1"
 
-    @patch('tempfile.NamedTemporaryFile')
-    @patch('os.unlink')
+    @patch("tempfile.NamedTemporaryFile")
+    @patch("os.unlink")
     def test_parse_prd_file_cleanup(self, mock_unlink, mock_temp_file, client):
         """Test PRD parsing cleans up temporary files."""
         mock_temp_file.return_value.__enter__.return_value.name = "/tmp/test_prd.md"
@@ -755,11 +783,11 @@ class TestFactoryFunction:
 
     def test_create_taskmaster_bridge(self):
         """Test factory function."""
-        config = Config({'taskmaster': {'path': '.test_taskmaster'}})
+        config = Config({"taskmaster": {"path": ".test_taskmaster"}})
 
-        with patch('pathlib.Path.mkdir'):
-            with patch('builtins.open', mock_open()):
-                with patch('json.dump'):
+        with patch("pathlib.Path.mkdir"):
+            with patch("builtins.open", mock_open()):
+                with patch("json.dump"):
                     bridge = create_taskmaster_bridge(config)
 
         assert isinstance(bridge, TaskMasterMCPClient)
@@ -767,4 +795,11 @@ class TestFactoryFunction:
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "--cov=integrations.taskmaster_bridge", "--cov-report=term-missing"])
+    pytest.main(
+        [
+            __file__,
+            "-v",
+            "--cov=integrations.taskmaster_bridge",
+            "--cov-report=term-missing",
+        ]
+    )
