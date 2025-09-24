@@ -16,22 +16,19 @@ import os
 import sys
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Sequence
-from uuid import uuid4
 
 import asyncpg
-from pymilvus import MilvusClient
-from pydantic import BaseModel
 import voyageai
 from mcp import types
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
-from mcp.server.sse import SseServerTransport
-
+from pydantic import BaseModel
+from pymilvus import MilvusClient
 
 # Configure logging
 logging.basicConfig(
     level=getattr(logging, os.getenv("LOG_LEVEL", "INFO").upper()),
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger("conport.memory_server")
 
@@ -40,7 +37,10 @@ class MemoryConfig:
     """Configuration for ConPort memory system."""
 
     def __init__(self):
-        self.database_url = os.getenv("DATABASE_URL", "postgresql://dopemux:dopemux_dev_password@localhost:5432/dopemux_memory")
+        self.database_url = os.getenv(
+            "DATABASE_URL",
+            "postgresql://dopemux:dopemux_dev_password@localhost:5432/dopemux_memory",
+        )
         self.milvus_host = os.getenv("MILVUS_HOST", "localhost")
         self.milvus_port = int(os.getenv("MILVUS_PORT", "19530"))
         self.zep_api_url = os.getenv("ZEP_API_URL", "http://localhost:8000")
@@ -52,6 +52,7 @@ class MemoryConfig:
 
 class MemoryNode(BaseModel):
     """Represents a node in the memory graph."""
+
     id: str
     type: str  # decision, task, file, endpoint, message, agent, thread, run
     text: str
@@ -62,6 +63,7 @@ class MemoryNode(BaseModel):
 
 class MemoryEdge(BaseModel):
     """Represents an edge in the memory graph."""
+
     from_id: str
     to_id: str
     relation: str  # affects, depends_on, implements, discussed_in, produced_by, belongs_to_thread
@@ -86,11 +88,13 @@ class MilvusManager:
             self.client = MilvusClient(
                 uri=f"http://{self.config.milvus_host}:{self.config.milvus_port}",
                 db_name="default",
-                timeout=30
+                timeout=30,
             )
             # Test connection
             collections = self.client.list_collections()
-            logger.info(f"Connected to Milvus at {self.config.milvus_host}:{self.config.milvus_port}")
+            logger.info(
+                f"Connected to Milvus at {self.config.milvus_host}:{self.config.milvus_port}"
+            )
             logger.info(f"Existing collections: {collections}")
             await self._ensure_collections()
         except Exception as e:
@@ -99,7 +103,15 @@ class MilvusManager:
 
     async def _ensure_collections(self):
         """Ensure required Milvus collections exist."""
-        collections = ["decisions", "messages", "files", "tasks", "agents", "threads", "runs"]
+        collections = [
+            "decisions",
+            "messages",
+            "files",
+            "tasks",
+            "agents",
+            "threads",
+            "runs",
+        ]
 
         for collection_name in collections:
             if not self.client.has_collection(collection_name):
@@ -109,7 +121,7 @@ class MilvusManager:
                         collection_name=collection_name,
                         dimension=self.config.embedding_dimension,
                         metric_type="COSINE",
-                        index_type="HNSW"
+                        index_type="HNSW",
                     )
                     logger.info(f"Created Milvus collection: {collection_name}")
                 except Exception as e:
@@ -121,7 +133,9 @@ class MilvusManager:
         # Try Voyage AI first (preferred for code)
         if self.voyage_client:
             try:
-                result = self.voyage_client.embed([text], model=self.config.embedding_model)
+                result = self.voyage_client.embed(
+                    [text], model=self.config.embedding_model
+                )
                 return result.embeddings[0]
             except Exception as e:
                 logger.error(f"Failed to generate Voyage embedding: {e}")
@@ -131,17 +145,19 @@ class MilvusManager:
         if openai_key:
             try:
                 import openai
+
                 client = openai.OpenAI(api_key=openai_key)
                 response = client.embeddings.create(
-                    model="text-embedding-3-small",
-                    input=text
+                    model="text-embedding-3-small", input=text
                 )
                 embedding = response.data[0].embedding
                 # Adjust to match expected dimension (1024 for Voyage, 1536 for OpenAI small)
                 if len(embedding) < self.config.embedding_dimension:
-                    embedding.extend([0.0] * (self.config.embedding_dimension - len(embedding)))
+                    embedding.extend(
+                        [0.0] * (self.config.embedding_dimension - len(embedding))
+                    )
                 elif len(embedding) > self.config.embedding_dimension:
-                    embedding = embedding[:self.config.embedding_dimension]
+                    embedding = embedding[: self.config.embedding_dimension]
                 return embedding
             except Exception as e:
                 logger.error(f"Failed to generate OpenAI embedding: {e}")
@@ -152,34 +168,53 @@ class MilvusManager:
     async def upsert_node(self, node: MemoryNode) -> bool:
         """Insert or update a node in Milvus."""
         try:
-            collection_name = f"{node.type}s" if not node.type.endswith('s') else node.type
-            if collection_name not in ["decisions", "messages", "files", "tasks", "agents", "threads", "runs"]:
+            collection_name = (
+                f"{node.type}s" if not node.type.endswith("s") else node.type
+            )
+            if collection_name not in [
+                "decisions",
+                "messages",
+                "files",
+                "tasks",
+                "agents",
+                "threads",
+                "runs",
+            ]:
                 collection_name = "messages"  # Default fallback
 
             # Generate embedding
             embedding = await self.embed_text(node.text)
 
             # Prepare data for Milvus
-            data = [{
-                "id": node.id,
-                "ts": int(datetime.now().timestamp()),
-                "type": node.type,
-                "repo": node.repo or "",
-                "author": node.author or "",
-                "embedding": embedding
-            }]
+            data = [
+                {
+                    "id": node.id,
+                    "ts": int(datetime.now().timestamp()),
+                    "type": node.type,
+                    "repo": node.repo or "",
+                    "author": node.author or "",
+                    "embedding": embedding,
+                }
+            ]
 
             # Upsert to Milvus
             self.client.upsert(collection_name=collection_name, data=data)
-            logger.debug(f"Upserted node {node.id} to Milvus collection {collection_name}")
+            logger.debug(
+                f"Upserted node {node.id} to Milvus collection {collection_name}"
+            )
             return True
 
         except Exception as e:
             logger.error(f"Failed to upsert node to Milvus: {e}")
             return False
 
-    async def search_similar(self, query_text: str, collection_type: Optional[str] = None,
-                           limit: int = 10, filters: Optional[Dict] = None) -> List[Dict]:
+    async def search_similar(
+        self,
+        query_text: str,
+        collection_type: Optional[str] = None,
+        limit: int = 10,
+        filters: Optional[Dict] = None,
+    ) -> List[Dict]:
         """Search for similar nodes using vector similarity."""
         try:
             # Generate query embedding
@@ -188,10 +223,32 @@ class MilvusManager:
             # Determine collections to search
             collections = []
             if collection_type:
-                collection_name = f"{collection_type}s" if not collection_type.endswith('s') else collection_type
-                collections = [collection_name] if collection_name in ["decisions", "messages", "files", "tasks", "agents", "threads", "runs"] else ["messages"]
+                collection_name = (
+                    f"{collection_type}s"
+                    if not collection_type.endswith("s")
+                    else collection_type
+                )
+                collections = (
+                    [collection_name]
+                    if collection_name
+                    in [
+                        "decisions",
+                        "messages",
+                        "files",
+                        "tasks",
+                        "agents",
+                        "threads",
+                        "runs",
+                    ]
+                    else ["messages"]
+                )
             else:
-                collections = ["decisions", "messages", "files", "tasks"]  # Search most relevant collections
+                collections = [
+                    "decisions",
+                    "messages",
+                    "files",
+                    "tasks",
+                ]  # Search most relevant collections
 
             all_results = []
 
@@ -218,19 +275,21 @@ class MilvusManager:
                     search_params=search_params,
                     limit=limit,
                     expr=filter_expr if filter_expr else None,
-                    output_fields=["id", "ts", "type", "repo", "author"]
+                    output_fields=["id", "ts", "type", "repo", "author"],
                 )
 
                 # Process results
                 for result in results[0]:  # First query results
-                    all_results.append({
-                        "id": result["entity"]["id"],
-                        "type": result["entity"]["type"],
-                        "repo": result["entity"]["repo"],
-                        "author": result["entity"]["author"],
-                        "score": result["distance"],
-                        "collection": collection_name
-                    })
+                    all_results.append(
+                        {
+                            "id": result["entity"]["id"],
+                            "type": result["entity"]["type"],
+                            "repo": result["entity"]["repo"],
+                            "author": result["entity"]["author"],
+                            "score": result["distance"],
+                            "collection": collection_name,
+                        }
+                    )
 
             # Sort by score and return top results
             all_results.sort(key=lambda x: x["score"], reverse=True)
@@ -261,7 +320,8 @@ class PostgreSQLManager:
         """Insert or update a node in PostgreSQL."""
         try:
             async with self.pool.acquire() as conn:
-                await conn.execute("""
+                await conn.execute(
+                    """
                     INSERT INTO nodes (id, type, text, metadata, repo, author, updated_at)
                     VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)
                     ON CONFLICT (id) DO UPDATE SET
@@ -271,7 +331,14 @@ class PostgreSQLManager:
                         repo = EXCLUDED.repo,
                         author = EXCLUDED.author,
                         updated_at = CURRENT_TIMESTAMP
-                """, node.id, node.type, node.text, json.dumps(node.metadata), node.repo, node.author)
+                """,
+                    node.id,
+                    node.type,
+                    node.text,
+                    json.dumps(node.metadata),
+                    node.repo,
+                    node.author,
+                )
 
             logger.debug(f"Upserted node {node.id} to PostgreSQL")
             return True
@@ -284,21 +351,31 @@ class PostgreSQLManager:
         """Create a link between two nodes."""
         try:
             async with self.pool.acquire() as conn:
-                await conn.execute("""
+                await conn.execute(
+                    """
                     INSERT INTO edges (from_id, to_id, relation, metadata)
                     VALUES ($1, $2, $3, $4)
                     ON CONFLICT (from_id, to_id, relation) DO UPDATE SET
                         metadata = EXCLUDED.metadata
-                """, edge.from_id, edge.to_id, edge.relation, json.dumps(edge.metadata))
+                """,
+                    edge.from_id,
+                    edge.to_id,
+                    edge.relation,
+                    json.dumps(edge.metadata),
+                )
 
-            logger.debug(f"Created edge {edge.from_id} -> {edge.to_id} ({edge.relation})")
+            logger.debug(
+                f"Created edge {edge.from_id} -> {edge.to_id} ({edge.relation})"
+            )
             return True
 
         except Exception as e:
             logger.error(f"Failed to create edge: {e}")
             return False
 
-    async def get_neighbors(self, node_id: str, depth: int = 1, relation: Optional[str] = None) -> List[Dict]:
+    async def get_neighbors(
+        self, node_id: str, depth: int = 1, relation: Optional[str] = None
+    ) -> List[Dict]:
         """Get neighboring nodes in the graph."""
         try:
             async with self.pool.acquire() as conn:
@@ -341,15 +418,19 @@ class PostgreSQLManager:
                 # Convert to dictionaries
                 neighbors = []
                 for row in rows:
-                    neighbors.append({
-                        "id": row["id"],
-                        "type": row["type"],
-                        "text": row["text"],
-                        "metadata": json.loads(row["metadata"]) if row["metadata"] else {},
-                        "repo": row["repo"],
-                        "author": row["author"],
-                        "depth": row["depth"]
-                    })
+                    neighbors.append(
+                        {
+                            "id": row["id"],
+                            "type": row["type"],
+                            "text": row["text"],
+                            "metadata": (
+                                json.loads(row["metadata"]) if row["metadata"] else {}
+                            ),
+                            "repo": row["repo"],
+                            "author": row["author"],
+                            "depth": row["depth"],
+                        }
+                    )
 
                 return neighbors
 
@@ -357,7 +438,9 @@ class PostgreSQLManager:
             logger.error(f"Failed to get neighbors: {e}")
             return []
 
-    async def search_nodes(self, filters: Optional[Dict] = None, limit: int = 100) -> List[Dict]:
+    async def search_nodes(
+        self, filters: Optional[Dict] = None, limit: int = 100
+    ) -> List[Dict]:
         """Search nodes by metadata filters."""
         try:
             async with self.pool.acquire() as conn:
@@ -389,15 +472,19 @@ class PostgreSQLManager:
                 # Convert to dictionaries
                 nodes = []
                 for row in rows:
-                    nodes.append({
-                        "id": row["id"],
-                        "type": row["type"],
-                        "text": row["text"],
-                        "metadata": json.loads(row["metadata"]) if row["metadata"] else {},
-                        "repo": row["repo"],
-                        "author": row["author"],
-                        "created_at": row["created_at"].isoformat()
-                    })
+                    nodes.append(
+                        {
+                            "id": row["id"],
+                            "type": row["type"],
+                            "text": row["text"],
+                            "metadata": (
+                                json.loads(row["metadata"]) if row["metadata"] else {}
+                            ),
+                            "repo": row["repo"],
+                            "author": row["author"],
+                            "created_at": row["created_at"].isoformat(),
+                        }
+                    )
 
                 return nodes
 
@@ -431,15 +518,33 @@ class ConPortMemoryServer:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "type": {"type": "string", "description": "Node type (decision, task, file, message, etc.)"},
-                            "id": {"type": "string", "description": "Unique identifier for the node"},
-                            "text": {"type": "string", "description": "Text content to embed and store"},
-                            "metadata": {"type": "object", "description": "Additional metadata"},
-                            "repo": {"type": "string", "description": "Repository/project name"},
-                            "author": {"type": "string", "description": "Author/creator"}
+                            "type": {
+                                "type": "string",
+                                "description": "Node type (decision, task, file, message, etc.)",
+                            },
+                            "id": {
+                                "type": "string",
+                                "description": "Unique identifier for the node",
+                            },
+                            "text": {
+                                "type": "string",
+                                "description": "Text content to embed and store",
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "description": "Additional metadata",
+                            },
+                            "repo": {
+                                "type": "string",
+                                "description": "Repository/project name",
+                            },
+                            "author": {
+                                "type": "string",
+                                "description": "Author/creator",
+                            },
                         },
-                        "required": ["type", "id", "text"]
-                    }
+                        "required": ["type", "id", "text"],
+                    },
                 ),
                 types.Tool(
                     name="mem.search",
@@ -447,13 +552,26 @@ class ConPortMemoryServer:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "query": {"type": "string", "description": "Search query text"},
-                            "type": {"type": "string", "description": "Optional: filter by node type"},
-                            "k": {"type": "integer", "description": "Number of results to return", "default": 10},
-                            "filters": {"type": "object", "description": "Additional filters (repo, author, etc.)"}
+                            "query": {
+                                "type": "string",
+                                "description": "Search query text",
+                            },
+                            "type": {
+                                "type": "string",
+                                "description": "Optional: filter by node type",
+                            },
+                            "k": {
+                                "type": "integer",
+                                "description": "Number of results to return",
+                                "default": 10,
+                            },
+                            "filters": {
+                                "type": "object",
+                                "description": "Additional filters (repo, author, etc.)",
+                            },
                         },
-                        "required": ["query"]
-                    }
+                        "required": ["query"],
+                    },
                 ),
                 types.Tool(
                     name="graph.link",
@@ -461,13 +579,25 @@ class ConPortMemoryServer:
                     inputSchema={
                         "type": "object",
                         "properties": {
-                            "from_id": {"type": "string", "description": "Source node ID"},
-                            "to_id": {"type": "string", "description": "Target node ID"},
-                            "relation": {"type": "string", "description": "Relationship type (affects, depends_on, implements, etc.)"},
-                            "metadata": {"type": "object", "description": "Additional relationship metadata"}
+                            "from_id": {
+                                "type": "string",
+                                "description": "Source node ID",
+                            },
+                            "to_id": {
+                                "type": "string",
+                                "description": "Target node ID",
+                            },
+                            "relation": {
+                                "type": "string",
+                                "description": "Relationship type (affects, depends_on, implements, etc.)",
+                            },
+                            "metadata": {
+                                "type": "object",
+                                "description": "Additional relationship metadata",
+                            },
                         },
-                        "required": ["from_id", "to_id", "relation"]
-                    }
+                        "required": ["from_id", "to_id", "relation"],
+                    },
                 ),
                 types.Tool(
                     name="graph.neighbors",
@@ -476,16 +606,25 @@ class ConPortMemoryServer:
                         "type": "object",
                         "properties": {
                             "id": {"type": "string", "description": "Starting node ID"},
-                            "depth": {"type": "integer", "description": "Traversal depth", "default": 1},
-                            "relation": {"type": "string", "description": "Optional: filter by specific relationship type"}
+                            "depth": {
+                                "type": "integer",
+                                "description": "Traversal depth",
+                                "default": 1,
+                            },
+                            "relation": {
+                                "type": "string",
+                                "description": "Optional: filter by specific relationship type",
+                            },
                         },
-                        "required": ["id"]
-                    }
-                )
+                        "required": ["id"],
+                    },
+                ),
             ]
 
         @self.server.call_tool()
-        async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[types.TextContent]:
+        async def call_tool(
+            name: str, arguments: Dict[str, Any]
+        ) -> Sequence[types.TextContent]:
             """Handle tool calls."""
             try:
                 if name == "mem.upsert":
@@ -497,12 +636,16 @@ class ConPortMemoryServer:
                 elif name == "graph.neighbors":
                     return await self._handle_graph_neighbors(arguments)
                 else:
-                    return [types.TextContent(type="text", text=f"Unknown tool: {name}")]
+                    return [
+                        types.TextContent(type="text", text=f"Unknown tool: {name}")
+                    ]
             except Exception as e:
                 logger.error(f"Tool call failed: {e}")
                 return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
-    async def _handle_mem_upsert(self, args: Dict[str, Any]) -> Sequence[types.TextContent]:
+    async def _handle_mem_upsert(
+        self, args: Dict[str, Any]
+    ) -> Sequence[types.TextContent]:
         """Handle mem.upsert tool call."""
         node = MemoryNode(
             id=args["id"],
@@ -510,7 +653,7 @@ class ConPortMemoryServer:
             text=args["text"],
             metadata=args.get("metadata", {}),
             repo=args.get("repo"),
-            author=args.get("author")
+            author=args.get("author"),
         )
 
         # Store in both PostgreSQL (truth) and Milvus (vectors)
@@ -518,11 +661,22 @@ class ConPortMemoryServer:
         milvus_success = await self.milvus.upsert_node(node)
 
         if pg_success and milvus_success:
-            return [types.TextContent(type="text", text=json.dumps({"ok": True, "id": node.id}))]
+            return [
+                types.TextContent(
+                    type="text", text=json.dumps({"ok": True, "id": node.id})
+                )
+            ]
         else:
-            return [types.TextContent(type="text", text=json.dumps({"ok": False, "error": "Failed to store node"}))]
+            return [
+                types.TextContent(
+                    type="text",
+                    text=json.dumps({"ok": False, "error": "Failed to store node"}),
+                )
+            ]
 
-    async def _handle_mem_search(self, args: Dict[str, Any]) -> Sequence[types.TextContent]:
+    async def _handle_mem_search(
+        self, args: Dict[str, Any]
+    ) -> Sequence[types.TextContent]:
         """Handle mem.search tool call."""
         query = args["query"]
         node_type = args.get("type")
@@ -536,24 +690,27 @@ class ConPortMemoryServer:
         results = []
         for vector_result in vector_results:
             # Get detailed node information from PostgreSQL
-            pg_results = await self.postgres.search_nodes({"type": vector_result["type"]}, limit=1)
+            pg_results = await self.postgres.search_nodes(
+                {"type": vector_result["type"]}, limit=1
+            )
             for pg_result in pg_results:
                 if pg_result["id"] == vector_result["id"]:
-                    results.append({
-                        **pg_result,
-                        "similarity_score": vector_result["score"]
-                    })
+                    results.append(
+                        {**pg_result, "similarity_score": vector_result["score"]}
+                    )
                     break
 
         return [types.TextContent(type="text", text=json.dumps({"results": results}))]
 
-    async def _handle_graph_link(self, args: Dict[str, Any]) -> Sequence[types.TextContent]:
+    async def _handle_graph_link(
+        self, args: Dict[str, Any]
+    ) -> Sequence[types.TextContent]:
         """Handle graph.link tool call."""
         edge = MemoryEdge(
             from_id=args["from_id"],
             to_id=args["to_id"],
             relation=args["relation"],
-            metadata=args.get("metadata", {})
+            metadata=args.get("metadata", {}),
         )
 
         success = await self.postgres.link_nodes(edge)
@@ -561,9 +718,16 @@ class ConPortMemoryServer:
         if success:
             return [types.TextContent(type="text", text=json.dumps({"ok": True}))]
         else:
-            return [types.TextContent(type="text", text=json.dumps({"ok": False, "error": "Failed to create link"}))]
+            return [
+                types.TextContent(
+                    type="text",
+                    text=json.dumps({"ok": False, "error": "Failed to create link"}),
+                )
+            ]
 
-    async def _handle_graph_neighbors(self, args: Dict[str, Any]) -> Sequence[types.TextContent]:
+    async def _handle_graph_neighbors(
+        self, args: Dict[str, Any]
+    ) -> Sequence[types.TextContent]:
         """Handle graph.neighbors tool call."""
         node_id = args["id"]
         depth = args.get("depth", 1)
@@ -571,7 +735,9 @@ class ConPortMemoryServer:
 
         neighbors = await self.postgres.get_neighbors(node_id, depth, relation)
 
-        return [types.TextContent(type="text", text=json.dumps({"neighbors": neighbors}))]
+        return [
+            types.TextContent(type="text", text=json.dumps({"neighbors": neighbors}))
+        ]
 
     async def start(self):
         """Start the ConPort memory server."""
@@ -598,24 +764,29 @@ async def main():
 
         if http_mode:
             # Run as HTTP server for Docker deployment
-            from aiohttp import web
             import aiohttp_cors
+            from aiohttp import web
 
             app = web.Application()
 
             # Enable CORS
-            cors = aiohttp_cors.setup(app, defaults={
-                "*": aiohttp_cors.ResourceOptions(
-                    allow_credentials=True,
-                    expose_headers="*",
-                    allow_headers="*",
-                    allow_methods="*"
-                )
-            })
+            cors = aiohttp_cors.setup(
+                app,
+                defaults={
+                    "*": aiohttp_cors.ResourceOptions(
+                        allow_credentials=True,
+                        expose_headers="*",
+                        allow_headers="*",
+                        allow_methods="*",
+                    )
+                },
+            )
 
             # Health check endpoint
             async def health_check(request):
-                return web.json_response({"status": "healthy", "service": "ConPort Memory Server"})
+                return web.json_response(
+                    {"status": "healthy", "service": "ConPort Memory Server"}
+                )
 
             health_route = app.router.add_get("/health", health_check)
             cors.add(health_route)
@@ -631,14 +802,16 @@ async def main():
                     filters = data.get("filters", {})
 
                     # Call the actual memory search function
-                    mcp_results = await server_instance._handle_mem_search({
-                        "query": query, "type": node_type, "k": k, "filters": filters
-                    })
+                    mcp_results = await server_instance._handle_mem_search(
+                        {"query": query, "type": node_type, "k": k, "filters": filters}
+                    )
                     # Extract text content from MCP TextContent objects
                     results = [{"text": item.text} for item in mcp_results]
                     return web.json_response({"success": True, "results": results})
                 except Exception as e:
-                    return web.json_response({"success": False, "error": str(e)}, status=400)
+                    return web.json_response(
+                        {"success": False, "error": str(e)}, status=400
+                    )
 
             async def memory_upsert(request):
                 """HTTP endpoint for mem.upsert tool."""
@@ -651,14 +824,22 @@ async def main():
                     repo = data.get("repo", "dopemux-mvp")
                     author = data.get("author", "user")
 
-                    mcp_result = await server_instance._handle_mem_upsert({
-                        "type": node_type, "id": node_id, "text": text,
-                        "metadata": metadata, "repo": repo, "author": author
-                    })
+                    mcp_result = await server_instance._handle_mem_upsert(
+                        {
+                            "type": node_type,
+                            "id": node_id,
+                            "text": text,
+                            "metadata": metadata,
+                            "repo": repo,
+                            "author": author,
+                        }
+                    )
                     result = [{"text": item.text} for item in mcp_result]
                     return web.json_response({"success": True, "result": result})
                 except Exception as e:
-                    return web.json_response({"success": False, "error": str(e)}, status=400)
+                    return web.json_response(
+                        {"success": False, "error": str(e)}, status=400
+                    )
 
             async def graph_link(request):
                 """HTTP endpoint for graph.link tool."""
@@ -669,13 +850,20 @@ async def main():
                     relation = data.get("relation")
                     metadata = data.get("metadata", {})
 
-                    mcp_result = await server_instance._handle_graph_link({
-                        "from_id": from_id, "to_id": to_id, "relation": relation, "metadata": metadata
-                    })
+                    mcp_result = await server_instance._handle_graph_link(
+                        {
+                            "from_id": from_id,
+                            "to_id": to_id,
+                            "relation": relation,
+                            "metadata": metadata,
+                        }
+                    )
                     result = [{"text": item.text} for item in mcp_result]
                     return web.json_response({"success": True, "result": result})
                 except Exception as e:
-                    return web.json_response({"success": False, "error": str(e)}, status=400)
+                    return web.json_response(
+                        {"success": False, "error": str(e)}, status=400
+                    )
 
             async def graph_neighbors(request):
                 """HTTP endpoint for graph.neighbors tool."""
@@ -685,13 +873,15 @@ async def main():
                     depth = data.get("depth", 1)
                     relation = data.get("relation")
 
-                    mcp_result = await server_instance._handle_graph_neighbors({
-                        "id": node_id, "depth": depth, "relation": relation
-                    })
+                    mcp_result = await server_instance._handle_graph_neighbors(
+                        {"id": node_id, "depth": depth, "relation": relation}
+                    )
                     result = [{"text": item.text} for item in mcp_result]
                     return web.json_response({"success": True, "result": result})
                 except Exception as e:
-                    return web.json_response({"success": False, "error": str(e)}, status=400)
+                    return web.json_response(
+                        {"success": False, "error": str(e)}, status=400
+                    )
 
             # Add HTTP endpoints
             search_route = app.router.add_post("/api/mem/search", memory_search)
@@ -700,23 +890,28 @@ async def main():
             cors.add(upsert_route)
             link_route = app.router.add_post("/api/graph/link", graph_link)
             cors.add(link_route)
-            neighbors_route = app.router.add_post("/api/graph/neighbors", graph_neighbors)
+            neighbors_route = app.router.add_post(
+                "/api/graph/neighbors", graph_neighbors
+            )
             cors.add(neighbors_route)
 
             # Simplified SSE endpoint for MCP (work in progress)
             async def sse_handler(request):
                 """Handle SSE connections for MCP protocol."""
                 from aiohttp.web import Response
+
                 response = Response(
-                    content_type='text/event-stream',
+                    content_type="text/event-stream",
                     headers={
-                        'Cache-Control': 'no-cache',
-                        'Connection': 'keep-alive',
-                        'Access-Control-Allow-Origin': '*',
-                    }
+                        "Cache-Control": "no-cache",
+                        "Connection": "keep-alive",
+                        "Access-Control-Allow-Origin": "*",
+                    },
                 )
                 await response.prepare(request)
-                await response.write(b'data: {"type": "connection", "status": "ready", "message": "ConPort Memory SSE endpoint - under development"}\n\n')
+                await response.write(
+                    b'data: {"type": "connection", "status": "ready", "message": "ConPort Memory SSE endpoint - under development"}\n\n'
+                )
 
                 # Keep connection alive
                 try:
@@ -753,7 +948,9 @@ async def main():
             # Run as stdio server for CLI usage
             async with stdio_server() as (read_stream, write_stream):
                 await server_instance.server.run(
-                    read_stream, write_stream, server_instance.server.create_initialization_options()
+                    read_stream,
+                    write_stream,
+                    server_instance.server.create_initialization_options(),
                 )
     except Exception as e:
         logger.error(f"Server failed: {e}")

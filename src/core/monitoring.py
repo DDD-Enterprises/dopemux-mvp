@@ -5,15 +5,15 @@ Provides monitoring and metrics collection capabilities for
 ADHD optimization and integration tracking.
 """
 
-import time
-from typing import Dict, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any, Dict, Optional
 
 
 @dataclass
 class MetricRecord:
     """Individual metric record."""
+
     service: str
     method: str
     status: str
@@ -28,20 +28,27 @@ class MetricsCollector:
     def __init__(self):
         self.records: list[MetricRecord] = []
 
-    def record_api_call(self, service: str, method: str, status: str,
-                       duration: Optional[float] = None, **metadata) -> None:
+    def record_api_call(
+        self,
+        service: str,
+        method: str,
+        status: str,
+        duration: Optional[float] = None,
+        **metadata,
+    ) -> None:
         """Record an API call metric."""
         record = MetricRecord(
             service=service,
             method=method,
             status=status,
             duration=duration,
-            metadata=metadata
+            metadata=metadata,
         )
         self.records.append(record)
 
-    def get_metrics(self, service: Optional[str] = None,
-                   last_n: Optional[int] = None) -> list[MetricRecord]:
+    def get_metrics(
+        self, service: Optional[str] = None, last_n: Optional[int] = None
+    ) -> list[MetricRecord]:
         """Get collected metrics with optional filtering."""
         filtered = self.records
 
@@ -63,7 +70,7 @@ class MetricsCollector:
             return {"total_calls": 0}
 
         total_calls = len(self.records)
-        success_calls = len([r for r in self.records if r.status == 'success'])
+        success_calls = len([r for r in self.records if r.status == "success"])
         error_calls = total_calls - success_calls
 
         services = {}
@@ -71,7 +78,7 @@ class MetricsCollector:
             if record.service not in services:
                 services[record.service] = {"total": 0, "success": 0, "error": 0}
             services[record.service]["total"] += 1
-            if record.status == 'success':
+            if record.status == "success":
                 services[record.service]["success"] += 1
             else:
                 services[record.service]["error"] += 1
@@ -81,5 +88,5 @@ class MetricsCollector:
             "success_calls": success_calls,
             "error_calls": error_calls,
             "success_rate": success_calls / total_calls if total_calls > 0 else 0,
-            "services": services
+            "services": services,
         }
