@@ -1,0 +1,101 @@
+# Dopemux Safe Mode Profile
+# Standard safety restrictions and approval gates for production use
+
+version: "1.0"
+metadata:
+  description: "Production-safe profile with full security restrictions"
+  created: "2025-01-10"
+  environment: "production"
+  risk_level: "minimal"
+
+# Standard broker settings with safety enabled
+broker:
+  name: "dopemux-safe-broker"
+  dangerous_mode: false
+  skip_all_validations: false
+
+  # Conservative timeouts
+  tool_timeout_seconds: 30
+  role_switch_timeout_seconds: 5
+  max_concurrent_tools: 5
+
+# Use original role-based system
+profiles:
+  # Import from main policy.yaml
+  inherit_from: "/config/mcp/policy.yaml"
+
+# Enforce all safety rules
+rules:
+  budgets:
+    default_tokens: 60000
+    hard_cap: 120000
+    warning_threshold: 48000
+    emergency_reserve: 10000
+
+  # Full query optimization
+  trims:
+    claude-context:
+      max_results: 3
+      max_file_size: 50000
+
+    zen:
+      consensus:
+        max_models: 3
+        fast_mode: true
+
+  # Maximum security
+  security:
+    approval_required:
+      - zen.consensus
+      - playwright.*
+      - cli.system.*
+    audit_logging: true
+    rate_limits:
+      developer: 100
+      researcher: 80
+      planner: 60
+
+  # Conservative ADHD optimizations
+  adhd_optimizations:
+    progressive_disclosure:
+      enabled: true
+      max_simultaneous_tools: 3
+      status_bar_signals: 5
+
+    notifications:
+      budget_warnings:
+        enabled: true
+        threshold: 0.8
+        style: "gentle"
+
+    break_reminders:
+      enabled: true
+      interval: 1500
+      style: "gentle"
+
+# Restricted emergency access
+emergency:
+  break_glass:
+    enabled: true
+    approval_timeout: 300  # 5 minutes to approve
+    max_duration: 3600     # 1 hour maximum
+    audit_required: true
+    available_tools: ["cli", "conport", "claude-context"]
+
+# Full monitoring for production
+monitoring:
+  metrics:
+    enabled: true
+    collection_interval: 60
+    retention_days: 30
+
+  alerts:
+    budget_exceeded:
+      enabled: true
+      threshold: 0.95
+    tool_mount_failures:
+      enabled: true
+      threshold: 3
+    performance_degradation:
+      enabled: true
+      latency_threshold: 1000

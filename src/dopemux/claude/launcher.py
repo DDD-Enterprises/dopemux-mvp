@@ -7,21 +7,22 @@ ADHD-optimized settings and MCP server integration.
 
 import json
 import os
-import subprocess
-import sys
 import shutil
-from pathlib import Path
-from typing import Dict, Any, Optional, List
+import subprocess
 import tempfile
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from rich.console import Console
+
 from ..config import ConfigManager
 
 console = Console()
 
+
 class ClaudeNotFoundError(Exception):
     """Raised when Claude Code executable is not found."""
-    pass
+
 
 class ClaudeLauncher:
     """
@@ -52,14 +53,14 @@ class ClaudeLauncher:
 
         # Common installation paths
         search_paths = [
-            Path.home() / '.local' / 'bin' / 'claude',
-            Path('/usr/local/bin/claude'),
-            Path('/opt/homebrew/bin/claude'),
-            Path('/usr/bin/claude'),
+            Path.home() / ".local" / "bin" / "claude",
+            Path("/usr/local/bin/claude"),
+            Path("/opt/homebrew/bin/claude"),
+            Path("/usr/bin/claude"),
         ]
 
         # Check PATH
-        claude_in_path = shutil.which('claude')
+        claude_in_path = shutil.which("claude")
         if claude_in_path:
             search_paths.insert(0, Path(claude_in_path))
 
@@ -68,12 +69,12 @@ class ClaudeLauncher:
                 try:
                     # Verify it's actually Claude Code
                     result = subprocess.run(
-                        [str(path), '--version'],
+                        [str(path), "--version"],
                         capture_output=True,
                         text=True,
-                        timeout=5
+                        timeout=5,
                     )
-                    if result.returncode == 0 and 'claude' in result.stdout.lower():
+                    if result.returncode == 0 and "claude" in result.stdout.lower():
                         self.claude_path = path
                         console.print(f"[green]✓ Found Claude Code at {path}[/green]")
                         return
@@ -105,7 +106,7 @@ Alternative: Set CLAUDE_PATH environment variable
         project_path: Path,
         background: bool = False,
         debug: bool = False,
-        context: Optional[Dict[str, Any]] = None
+        context: Optional[Dict[str, Any]] = None,
     ) -> subprocess.Popen:
         """
         Launch Claude Code with ADHD-optimized configuration.
@@ -138,17 +139,29 @@ Alternative: Set CLAUDE_PATH environment variable
         cmd = [str(self.claude_path)]
 
         # Add settings file
-        cmd.extend(['--settings', str(settings_file)])
+        cmd.extend(["--settings", str(settings_file)])
 
         # Add project path
         cmd.append(str(project_path))
 
         # Debug mode
         if debug:
-            cmd.append('--debug')
+            cmd.append("--debug")
+
+        # Dangerous mode - check environment variables
+        if (
+            os.environ.get("CLAUDE_CODE_SKIP_PERMISSIONS") == "true"
+            or os.environ.get("DOPEMUX_DANGEROUS_MODE") == "true"
+        ):
+            cmd.append("--dangerously-skip-permissions")
+            console.print(
+                "[red]⚠️  Added --dangerously-skip-permissions flag to Claude Code[/red]"
+            )
 
         # Launch process
-        console.print(f"[blue]🚀 Launching Claude Code with ADHD optimizations...[/blue]")
+        console.print(
+            f"[blue]🚀 Launching Claude Code with ADHD optimizations...[/blue]"
+        )
 
         if background:
             # Detached background process
@@ -157,21 +170,16 @@ Alternative: Set CLAUDE_PATH environment variable
                 env=env,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                start_new_session=True
+                start_new_session=True,
             )
         else:
             # Interactive process
-            process = subprocess.Popen(
-                cmd,
-                env=env
-            )
+            process = subprocess.Popen(cmd, env=env)
 
         return process
 
     def _generate_claude_config(
-        self,
-        project_path: Path,
-        context: Optional[Dict[str, Any]] = None
+        self, project_path: Path, context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """Generate Claude Code configuration."""
         config = self.config_manager.load_config()
@@ -182,29 +190,37 @@ Alternative: Set CLAUDE_PATH environment variable
                 "MCP_TOOL_TIMEOUT": "40000",
                 "MAX_MCP_OUTPUT_TOKENS": "10000",
                 "DOPEMUX_PROJECT": str(project_path),
-                "DOPEMUX_ENABLED": "true"
+                "DOPEMUX_ENABLED": "true",
             },
-            "mcpServers": {}
+            "mcpServers": {},
         }
 
         # Add ADHD-specific environment variables
         adhd_profile = config.adhd_profile
-        claude_config["env"].update({
-            "ADHD_FOCUS_DURATION": str(adhd_profile.focus_duration_avg),
-            "ADHD_BREAK_INTERVAL": str(adhd_profile.break_interval),
-            "ADHD_DISTRACTION_SENSITIVITY": str(adhd_profile.distraction_sensitivity),
-            "ADHD_HYPERFOCUS_TENDENCY": str(adhd_profile.hyperfocus_tendency).lower(),
-            "ADHD_NOTIFICATION_STYLE": adhd_profile.notification_style,
-            "ADHD_VISUAL_COMPLEXITY": adhd_profile.visual_complexity
-        })
+        claude_config["env"].update(
+            {
+                "ADHD_FOCUS_DURATION": str(adhd_profile.focus_duration_avg),
+                "ADHD_BREAK_INTERVAL": str(adhd_profile.break_interval),
+                "ADHD_DISTRACTION_SENSITIVITY": str(
+                    adhd_profile.distraction_sensitivity
+                ),
+                "ADHD_HYPERFOCUS_TENDENCY": str(
+                    adhd_profile.hyperfocus_tendency
+                ).lower(),
+                "ADHD_NOTIFICATION_STYLE": adhd_profile.notification_style,
+                "ADHD_VISUAL_COMPLEXITY": adhd_profile.visual_complexity,
+            }
+        )
 
         # Add context information if available
         if context:
-            claude_config["env"].update({
-                "DOPEMUX_CONTEXT_AVAILABLE": "true",
-                "DOPEMUX_LAST_GOAL": context.get('current_goal', ''),
-                "DOPEMUX_SESSION_ID": context.get('session_id', '')
-            })
+            claude_config["env"].update(
+                {
+                    "DOPEMUX_CONTEXT_AVAILABLE": "true",
+                    "DOPEMUX_LAST_GOAL": context.get("current_goal", ""),
+                    "DOPEMUX_SESSION_ID": context.get("session_id", ""),
+                }
+            )
 
         # Configure MCP servers
         for name, server_config in config.mcp_servers.items():
@@ -213,7 +229,7 @@ Alternative: Set CLAUDE_PATH environment variable
                     "type": "stdio",
                     "command": server_config.command,
                     "args": server_config.args,
-                    "env": self._resolve_env_vars(server_config.env)
+                    "env": self._resolve_env_vars(server_config.env),
                 }
 
                 # Add timeout if specified
@@ -227,10 +243,10 @@ Alternative: Set CLAUDE_PATH environment variable
     def _create_settings_file(self, config: Dict[str, Any]) -> Path:
         """Create temporary settings file for Claude Code."""
         # Create temporary file
-        fd, temp_path = tempfile.mkstemp(suffix='.json', prefix='dopemux-claude-')
+        fd, temp_path = tempfile.mkstemp(suffix=".json", prefix="dopemux-claude-")
 
         try:
-            with os.fdopen(fd, 'w') as f:
+            with os.fdopen(fd, "w") as f:
                 json.dump(config, f, indent=2)
         except Exception:
             os.unlink(temp_path)
@@ -243,17 +259,10 @@ Alternative: Set CLAUDE_PATH environment variable
         env = os.environ.copy()
 
         # Add Dopemux-specific variables
-        env.update({
-            "DOPEMUX_VERSION": "0.1.0",
-            "DOPEMUX_ACTIVE": "true"
-        })
+        env.update({"DOPEMUX_VERSION": "0.1.0", "DOPEMUX_ACTIVE": "true"})
 
         # Ensure required API keys are available
-        required_keys = [
-            "OPENAI_API_KEY",
-            "ANTHROPIC_API_KEY",
-            "EXA_API_KEY"
-        ]
+        required_keys = ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "EXA_API_KEY"]
 
         missing_keys = []
         for key in required_keys:
@@ -261,7 +270,9 @@ Alternative: Set CLAUDE_PATH environment variable
                 missing_keys.append(key)
 
         if missing_keys:
-            console.print(f"[yellow]⚠️ Missing API keys: {', '.join(missing_keys)}[/yellow]")
+            console.print(
+                f"[yellow]⚠️ Missing API keys: {', '.join(missing_keys)}[/yellow]"
+            )
             console.print("[dim]Some MCP servers may not function correctly[/dim]")
 
         return env
@@ -269,20 +280,21 @@ Alternative: Set CLAUDE_PATH environment variable
     def _resolve_env_vars(self, env_dict: Dict[str, str]) -> Dict[str, str]:
         """Resolve environment variables in MCP server config."""
         import re
+
         resolved = {}
 
         for key, value in env_dict.items():
             # Handle multiple variable substitutions in a single string
             def replace_var(match):
                 var_part = match.group(1)
-                if ':' in var_part:
-                    var_name, default = var_part.split(':', 1)
+                if ":" in var_part:
+                    var_name, default = var_part.split(":", 1)
                 else:
-                    var_name, default = var_part, ''
+                    var_name, default = var_part, ""
                 return os.getenv(var_name, default)
 
             # Find all ${VAR} or ${VAR:default} patterns
-            resolved_value = re.sub(r'\$\{([^}]+)\}', replace_var, value)
+            resolved_value = re.sub(r"\$\{([^}]+)\}", replace_var, value)
             resolved[key] = resolved_value
 
         return resolved
@@ -293,7 +305,7 @@ Alternative: Set CLAUDE_PATH environment variable
             "claude_available": self.is_available(),
             "claude_path": str(self.claude_path) if self.claude_path else None,
             "mcp_servers_configured": len(self.config_manager.get_mcp_servers()),
-            "adhd_optimizations": True
+            "adhd_optimizations": True,
         }
 
     def validate_mcp_servers(self) -> List[Dict[str, Any]]:
@@ -307,17 +319,19 @@ Alternative: Set CLAUDE_PATH environment variable
                 "enabled": server_config.enabled,
                 "command_available": False,
                 "env_vars_set": True,
-                "issues": []
+                "issues": [],
             }
 
             # Check if command is available
             try:
-                if server_config.command in ['python', 'node', 'npx', 'uv', 'uvx']:
+                if server_config.command in ["python", "node", "npx", "uv", "uvx"]:
                     # Check if interpreter is available
                     cmd_path = shutil.which(server_config.command)
                     result["command_available"] = cmd_path is not None
                     if not cmd_path:
-                        result["issues"].append(f"Command '{server_config.command}' not found in PATH")
+                        result["issues"].append(
+                            f"Command '{server_config.command}' not found in PATH"
+                        )
                 else:
                     # Check if specific command exists
                     if Path(server_config.command).exists():
@@ -326,20 +340,24 @@ Alternative: Set CLAUDE_PATH environment variable
                         cmd_path = shutil.which(server_config.command)
                         result["command_available"] = cmd_path is not None
                         if not cmd_path:
-                            result["issues"].append(f"Command '{server_config.command}' not found")
+                            result["issues"].append(
+                                f"Command '{server_config.command}' not found"
+                            )
             except Exception as e:
                 result["issues"].append(f"Error checking command: {e}")
 
             # Check environment variables
             for env_key, env_value in server_config.env.items():
-                if env_value.startswith('${') and env_value.endswith('}'):
+                if env_value.startswith("${") and env_value.endswith("}"):
                     var_name = env_value[2:-1]
-                    if ':' in var_name:
-                        var_name = var_name.split(':', 1)[0]
+                    if ":" in var_name:
+                        var_name = var_name.split(":", 1)[0]
 
                     if not os.getenv(var_name):
                         result["env_vars_set"] = False
-                        result["issues"].append(f"Environment variable '{var_name}' not set")
+                        result["issues"].append(
+                            f"Environment variable '{var_name}' not set"
+                        )
 
             results.append(result)
 
@@ -353,34 +371,31 @@ Alternative: Set CLAUDE_PATH environment variable
                 "@zilliz/claude-context-mcp",
                 "context7-mcp",
                 "morphllm-fast-apply-mcp",
-                "exa-mcp"
+                "exa-mcp",
             ]
 
             for package in node_packages:
                 console.print(f"[blue]Installing {package}...[/blue]")
                 result = subprocess.run(
-                    ["npm", "install", "-g", package],
-                    capture_output=True,
-                    text=True
+                    ["npm", "install", "-g", package], capture_output=True, text=True
                 )
                 if result.returncode != 0:
-                    console.print(f"[yellow]Warning: Failed to install {package}[/yellow]")
+                    console.print(
+                        f"[yellow]Warning: Failed to install {package}[/yellow]"
+                    )
 
             # Install Python packages
-            python_packages = [
-                "task-master-ai",
-                "context-portal-mcp"
-            ]
+            python_packages = ["task-master-ai", "context-portal-mcp"]
 
             for package in python_packages:
                 console.print(f"[blue]Installing {package}...[/blue]")
                 result = subprocess.run(
-                    ["pip", "install", package],
-                    capture_output=True,
-                    text=True
+                    ["pip", "install", package], capture_output=True, text=True
                 )
                 if result.returncode != 0:
-                    console.print(f"[yellow]Warning: Failed to install {package}[/yellow]")
+                    console.print(
+                        f"[yellow]Warning: Failed to install {package}[/yellow]"
+                    )
 
             return True
 
