@@ -5,62 +5,64 @@ Handles automatic preservation and restoration of development context including
 files, cursor positions, mental model, and decision history.
 """
 
+import hashlib
 import json
 import sqlite3
+import subprocess
 import time
 import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Any, List, Optional
-import subprocess
-import hashlib
+from typing import Any, Dict, List, Optional
 
 from rich.console import Console
 
 console = Console()
 
+
 class ContextSnapshot:
     """Represents a saved development context."""
 
     def __init__(self, **kwargs):
-        self.session_id = kwargs.get('session_id', str(uuid.uuid4()))
-        self.timestamp = kwargs.get('timestamp', datetime.now().isoformat())
-        self.working_directory = kwargs.get('working_directory', str(Path.cwd()))
-        self.open_files = kwargs.get('open_files', [])
-        self.current_goal = kwargs.get('current_goal', '')
-        self.mental_model = kwargs.get('mental_model', {})
-        self.git_state = kwargs.get('git_state', {})
-        self.recent_commands = kwargs.get('recent_commands', [])
-        self.decisions = kwargs.get('decisions', [])
-        self.attention_state = kwargs.get('attention_state', 'normal')
-        self.focus_duration = kwargs.get('focus_duration', 0)
-        self.context_switches = kwargs.get('context_switches', 0)
-        self.unsaved_changes = kwargs.get('unsaved_changes', False)
-        self.message = kwargs.get('message', '')
+        self.session_id = kwargs.get("session_id", str(uuid.uuid4()))
+        self.timestamp = kwargs.get("timestamp", datetime.now().isoformat())
+        self.working_directory = kwargs.get("working_directory", str(Path.cwd()))
+        self.open_files = kwargs.get("open_files", [])
+        self.current_goal = kwargs.get("current_goal", "")
+        self.mental_model = kwargs.get("mental_model", {})
+        self.git_state = kwargs.get("git_state", {})
+        self.recent_commands = kwargs.get("recent_commands", [])
+        self.decisions = kwargs.get("decisions", [])
+        self.attention_state = kwargs.get("attention_state", "normal")
+        self.focus_duration = kwargs.get("focus_duration", 0)
+        self.context_switches = kwargs.get("context_switches", 0)
+        self.unsaved_changes = kwargs.get("unsaved_changes", False)
+        self.message = kwargs.get("message", "")
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for storage."""
         return {
-            'session_id': self.session_id,
-            'timestamp': self.timestamp,
-            'working_directory': self.working_directory,
-            'open_files': self.open_files,
-            'current_goal': self.current_goal,
-            'mental_model': self.mental_model,
-            'git_state': self.git_state,
-            'recent_commands': self.recent_commands,
-            'decisions': self.decisions,
-            'attention_state': self.attention_state,
-            'focus_duration': self.focus_duration,
-            'context_switches': self.context_switches,
-            'unsaved_changes': self.unsaved_changes,
-            'message': self.message
+            "session_id": self.session_id,
+            "timestamp": self.timestamp,
+            "working_directory": self.working_directory,
+            "open_files": self.open_files,
+            "current_goal": self.current_goal,
+            "mental_model": self.mental_model,
+            "git_state": self.git_state,
+            "recent_commands": self.recent_commands,
+            "decisions": self.decisions,
+            "attention_state": self.attention_state,
+            "focus_duration": self.focus_duration,
+            "context_switches": self.context_switches,
+            "unsaved_changes": self.unsaved_changes,
+            "message": self.message,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'ContextSnapshot':
+    def from_dict(cls, data: Dict[str, Any]) -> "ContextSnapshot":
         """Create from dictionary."""
         return cls(**data)
+
 
 class ContextManager:
     """
@@ -77,9 +79,9 @@ class ContextManager:
     def __init__(self, project_path: Path):
         """Initialize context manager for project."""
         self.project_path = project_path
-        self.dopemux_dir = project_path / '.dopemux'
-        self.db_path = self.dopemux_dir / 'context.db'
-        self.sessions_dir = self.dopemux_dir / 'sessions'
+        self.dopemux_dir = project_path / ".dopemux"
+        self.db_path = self.dopemux_dir / "context.db"
+        self.sessions_dir = self.dopemux_dir / "sessions"
 
         # Create directories if they don't exist (needed for database)
         self.dopemux_dir.mkdir(exist_ok=True)
@@ -102,7 +104,8 @@ class ContextManager:
     def _init_storage(self) -> None:
         """Initialize SQLite database."""
         with sqlite3.connect(self.db_path) as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS context_snapshots (
                     session_id TEXT PRIMARY KEY,
                     timestamp TEXT NOT NULL,
@@ -112,9 +115,11 @@ class ContextManager:
                     size INTEGER NOT NULL,
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS session_metadata (
                     session_id TEXT PRIMARY KEY,
                     project_path TEXT NOT NULL,
@@ -124,18 +129,17 @@ class ContextManager:
                     context_switches INTEGER DEFAULT 0,
                     focus_score REAL DEFAULT 0.0
                 )
-            """)
+            """
+            )
 
-            conn.execute("""
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_timestamp
                 ON context_snapshots(timestamp DESC)
-            """)
+            """
+            )
 
-    def save_context(
-        self,
-        message: Optional[str] = None,
-        force: bool = False
-    ) -> str:
+    def save_context(self, message: Optional[str] = None, force: bool = False) -> str:
         """
         Save current development context.
 
@@ -188,7 +192,7 @@ class ContextManager:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.execute(
                     "SELECT data FROM context_snapshots WHERE session_id = ?",
-                    (session_id,)
+                    (session_id,),
                 )
                 row = cursor.fetchone()
 
@@ -216,7 +220,7 @@ class ContextManager:
                     """SELECT session_id, data FROM context_snapshots
                        WHERE working_directory = ?
                        ORDER BY timestamp DESC LIMIT 1""",
-                    (str(self.project_path),)
+                    (str(self.project_path),),
                 )
                 row = cursor.fetchone()
 
@@ -250,22 +254,26 @@ class ContextManager:
                        FROM context_snapshots
                        WHERE working_directory = ?
                        ORDER BY timestamp DESC LIMIT ?""",
-                    (str(self.project_path), limit)
+                    (str(self.project_path), limit),
                 )
 
                 for row in cursor.fetchall():
                     session_id, timestamp, data_json = row
                     data = json.loads(data_json)
 
-                    sessions.append({
-                        'id': session_id,
-                        'timestamp': timestamp,
-                        'current_goal': data.get('current_goal', 'No goal set'),
-                        'open_files': data.get('open_files', []),
-                        'git_branch': data.get('git_state', {}).get('branch', 'unknown'),
-                        'focus_duration': data.get('focus_duration', 0),
-                        'message': data.get('message', '')
-                    })
+                    sessions.append(
+                        {
+                            "id": session_id,
+                            "timestamp": timestamp,
+                            "current_goal": data.get("current_goal", "No goal set"),
+                            "open_files": data.get("open_files", []),
+                            "git_branch": data.get("git_state", {}).get(
+                                "branch", "unknown"
+                            ),
+                            "focus_duration": data.get("focus_duration", 0),
+                            "message": data.get("message", ""),
+                        }
+                    )
 
         except Exception as e:
             console.print(f"[red]Error listing sessions: {e}[/red]")
@@ -308,8 +316,7 @@ class ContextManager:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.execute(
-                    "DELETE FROM context_snapshots WHERE timestamp < ?",
-                    (cutoff_str,)
+                    "DELETE FROM context_snapshots WHERE timestamp < ?", (cutoff_str,)
                 )
                 deleted_count = cursor.rowcount
 
@@ -318,7 +325,9 @@ class ContextManager:
                     if session_file.stat().st_mtime < cutoff_date.timestamp():
                         session_file.unlink()
 
-                console.print(f"[green]✓ Cleaned up {deleted_count} old sessions[/green]")
+                console.print(
+                    f"[green]✓ Cleaned up {deleted_count} old sessions[/green]"
+                )
                 return deleted_count
 
         except Exception as e:
@@ -347,10 +356,10 @@ class ContextManager:
             current_goal=self._get_current_goal(),
             mental_model=self._get_mental_model(),
             decisions=self._get_recent_decisions(),
-            attention_state='normal',  # Would come from attention monitor
+            attention_state="normal",  # Would come from attention monitor
             focus_duration=0,  # Would come from attention monitor
             context_switches=0,  # Would come from attention monitor
-            unsaved_changes=self._has_unsaved_changes()
+            unsaved_changes=self._has_unsaved_changes(),
         )
 
     def _get_open_files(self) -> List[Dict[str, Any]]:
@@ -361,22 +370,29 @@ class ContextManager:
 
         try:
             # Find recently modified files
-            for file_path in self.project_path.rglob('*'):
-                if (file_path.is_file() and
-                    not any(part.startswith('.') for part in file_path.parts) and
-                    file_path.suffix in ['.py', '.js', '.ts', '.rs', '.md', '.yaml', '.json']):
+            for file_path in self.project_path.rglob("*"):
+                if (
+                    file_path.is_file()
+                    and not any(part.startswith(".") for part in file_path.parts)
+                    and file_path.suffix
+                    in [".py", ".js", ".ts", ".rs", ".md", ".yaml", ".json"]
+                ):
 
                     # Check if modified in last hour
                     mtime = file_path.stat().st_mtime
                     if time.time() - mtime < 3600:  # 1 hour
-                        open_files.append({
-                            'path': str(file_path.relative_to(self.project_path)),
-                            'absolute_path': str(file_path),
-                            'last_modified': datetime.fromtimestamp(mtime).isoformat(),
-                            'cursor_position': {'line': 1, 'column': 1},  # Default
-                            'scroll_position': 0,
-                            'unsaved_changes': False
-                        })
+                        open_files.append(
+                            {
+                                "path": str(file_path.relative_to(self.project_path)),
+                                "absolute_path": str(file_path),
+                                "last_modified": datetime.fromtimestamp(
+                                    mtime
+                                ).isoformat(),
+                                "cursor_position": {"line": 1, "column": 1},  # Default
+                                "scroll_position": 0,
+                                "unsaved_changes": False,
+                            }
+                        )
 
         except Exception as e:
             console.print(f"[yellow]Warning: Could not get open files: {e}[/yellow]")
@@ -390,34 +406,34 @@ class ContextManager:
         try:
             # Get current branch
             result = subprocess.run(
-                ['git', 'branch', '--show-current'],
+                ["git", "branch", "--show-current"],
                 cwd=self.project_path,
                 capture_output=True,
-                text=True
+                text=True,
             )
             if result.returncode == 0:
-                git_state['branch'] = result.stdout.strip()
+                git_state["branch"] = result.stdout.strip()
 
             # Get status
             result = subprocess.run(
-                ['git', 'status', '--porcelain'],
+                ["git", "status", "--porcelain"],
                 cwd=self.project_path,
                 capture_output=True,
-                text=True
+                text=True,
             )
             if result.returncode == 0:
-                git_state['status'] = result.stdout.strip()
-                git_state['has_changes'] = bool(result.stdout.strip())
+                git_state["status"] = result.stdout.strip()
+                git_state["has_changes"] = bool(result.stdout.strip())
 
             # Get last commit
             result = subprocess.run(
-                ['git', 'log', '-1', '--oneline'],
+                ["git", "log", "-1", "--oneline"],
                 cwd=self.project_path,
                 capture_output=True,
-                text=True
+                text=True,
             )
             if result.returncode == 0:
-                git_state['last_commit'] = result.stdout.strip()
+                git_state["last_commit"] = result.stdout.strip()
 
         except Exception as e:
             console.print(f"[yellow]Warning: Could not get git state: {e}[/yellow]")
@@ -441,7 +457,7 @@ class ContextManager:
         return {
             "approach": "Implementing ADHD features",
             "next_steps": ["Complete context manager", "Add attention monitoring"],
-            "blockers": []
+            "blockers": [],
         }
 
     def _get_recent_decisions(self) -> List[Dict[str, Any]]:
@@ -453,7 +469,7 @@ class ContextManager:
         """Check if there are unsaved changes."""
         # This would integrate with the editor
         git_state = self._get_git_state()
-        return git_state.get('has_changes', False)
+        return git_state.get("has_changes", False)
 
     def _has_context_changed(self, context: ContextSnapshot) -> bool:
         """Check if context has meaningfully changed."""
@@ -471,8 +487,14 @@ class ContextManager:
                 """INSERT OR REPLACE INTO context_snapshots
                    (session_id, timestamp, working_directory, data, hash, size)
                    VALUES (?, ?, ?, ?, ?, ?)""",
-                (context.session_id, context.timestamp, context.working_directory,
-                 data_json, data_hash, len(data_json))
+                (
+                    context.session_id,
+                    context.timestamp,
+                    context.working_directory,
+                    data_json,
+                    data_hash,
+                    len(data_json),
+                ),
             )
 
     def _update_session_metadata(self, session_id: str) -> None:
@@ -482,36 +504,42 @@ class ContextManager:
                 """INSERT OR REPLACE INTO session_metadata
                    (session_id, project_path, started_at, last_active)
                    VALUES (?, ?, ?, ?)""",
-                (session_id, str(self.project_path),
-                 datetime.now().isoformat(), datetime.now().isoformat())
+                (
+                    session_id,
+                    str(self.project_path),
+                    datetime.now().isoformat(),
+                    datetime.now().isoformat(),
+                ),
             )
 
     def _save_session_file(self, context: ContextSnapshot) -> None:
         """Save detailed session file."""
         session_file = self.sessions_dir / f"session-{context.session_id}.json"
-        with open(session_file, 'w') as f:
+        with open(session_file, "w") as f:
             json.dump(context.to_dict(), f, indent=2)
 
     def _apply_context(self, context_data: Dict[str, Any]) -> None:
         """Apply restored context (placeholder for editor integration)."""
         # This would integrate with the editor to restore file positions
         # For now, just print what would be restored
-        console.print(f"[blue]Restoring context: {context_data.get('current_goal', 'Unknown')}[/blue]")
+        console.print(
+            f"[blue]Restoring context: {context_data.get('current_goal', 'Unknown')}[/blue]"
+        )
 
     def _emergency_save(self) -> Optional[str]:
         """Emergency context save on system failure."""
         try:
-            emergency_file = self.dopemux_dir / 'emergency_context.json'
+            emergency_file = self.dopemux_dir / "emergency_context.json"
             # Create minimal context without calling potentially failing methods
             emergency_session_id = str(uuid.uuid4())
             emergency_context = {
-                'session_id': emergency_session_id,
-                'timestamp': datetime.now().isoformat(),
-                'working_directory': str(self.project_path),
-                'emergency_save': True,
-                'message': 'Emergency save due to system failure'
+                "session_id": emergency_session_id,
+                "timestamp": datetime.now().isoformat(),
+                "working_directory": str(self.project_path),
+                "emergency_save": True,
+                "message": "Emergency save due to system failure",
             }
-            with open(emergency_file, 'w') as f:
+            with open(emergency_file, "w") as f:
                 json.dump(emergency_context, f, indent=2)
             console.print("[yellow]Emergency context saved[/yellow]")
             return emergency_session_id
