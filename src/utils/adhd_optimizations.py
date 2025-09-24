@@ -16,8 +16,8 @@ from enum import Enum
 import statistics
 import math
 
-from ..core.config import Config
-from ..core.monitoring import MetricsCollector
+from core.config import Config
+from core.monitoring import MetricsCollector
 
 
 logger = logging.getLogger(__name__)

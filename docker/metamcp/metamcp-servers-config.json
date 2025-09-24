@@ -1,0 +1,297 @@
+{
+  "servers": {
+    "context7": {
+      "type": "HTTP",
+      "url": "http://mcp-context7:3002",
+      "name": "Context7 Documentation",
+      "description": "Official API documentation and library references - ALWAYS QUERY FIRST",
+      "healthCheck": {
+        "enabled": true,
+        "path": "/health",
+        "interval": 30000,
+        "timeout": 5000
+      },
+      "metadata": {
+        "priority": "highest",
+        "role": "reference",
+        "tokenCost": "very_low",
+        "adhdOptimized": true,
+        "alwaysFirst": true
+      }
+    },
+
+    "conport": {
+      "type": "HTTP",
+      "url": "http://mcp-conport:3004",
+      "name": "ConPort Memory",
+      "description": "Project memory and context preservation for ADHD support",
+      "healthCheck": {
+        "enabled": true,
+        "path": "/health",
+        "interval": 30000,
+        "timeout": 5000
+      },
+      "metadata": {
+        "priority": "highest",
+        "role": "context",
+        "tokenCost": "very_low",
+        "adhdOptimized": true,
+        "alwaysOn": true
+      }
+    },
+
+    "mas-sequential-thinking": {
+      "type": "HTTP",
+      "url": "http://mcp-mas-sequential-thinking:3001",
+      "name": "Multi-Agent Sequential Thinking",
+      "description": "Deep architectural analysis with 5 specialist agents",
+      "healthCheck": {
+        "enabled": true,
+        "path": "/health",
+        "interval": 60000,
+        "timeout": 10000
+      },
+      "metadata": {
+        "priority": "high",
+        "role": "analysis",
+        "tokenCost": "very_high",
+        "adhdOptimized": false,
+        "requiresApproval": true,
+        "estimatedTokens": "5000-15000"
+      }
+    },
+
+    "zen": {
+      "type": "HTTP",
+      "url": "http://mcp-zen:3003",
+      "name": "Zen Multi-Model Orchestrator",
+      "description": "Multi-model AI orchestration with 16 specialized tools",
+      "healthCheck": {
+        "enabled": true,
+        "path": "/health",
+        "interval": 30000,
+        "timeout": 8000
+      },
+      "metadata": {
+        "priority": "high",
+        "role": "orchestration",
+        "tokenCost": "variable",
+        "adhdOptimized": true,
+        "configurableTools": true,
+        "defaultTools": ["chat", "thinkdeep", "planner", "consensus", "codereview", "precommit", "debug", "challenge"]
+      }
+    },
+
+    "claude-context": {
+      "type": "HTTP",
+      "url": "http://mcp-claude-context:3007",
+      "name": "Claude Context Search",
+      "description": "Semantic code search with vector embeddings",
+      "healthCheck": {
+        "enabled": true,
+        "path": "/health",
+        "interval": 45000,
+        "timeout": 8000
+      },
+      "metadata": {
+        "priority": "medium_high",
+        "role": "search",
+        "tokenCost": "medium",
+        "adhdOptimized": true,
+        "dependencies": ["milvus"]
+      }
+    },
+
+    "serena": {
+      "type": "HTTP",
+      "url": "http://mcp-serena:3006",
+      "name": "Serena Code Navigation",
+      "description": "LSP functionality and code refactoring",
+      "healthCheck": {
+        "enabled": true,
+        "path": "/health",
+        "interval": 30000,
+        "timeout": 5000
+      },
+      "metadata": {
+        "priority": "medium",
+        "role": "navigation",
+        "tokenCost": "low_medium",
+        "adhdOptimized": true,
+        "fastOperations": true
+      }
+    },
+
+    "task-master-ai": {
+      "type": "HTTP",
+      "url": "http://mcp-task-master-ai:3005",
+      "name": "Task Master AI",
+      "description": "ADHD-optimized task management and PRD processing",
+      "healthCheck": {
+        "enabled": true,
+        "path": "/health",
+        "interval": 30000,
+        "timeout": 5000
+      },
+      "metadata": {
+        "priority": "medium_high",
+        "role": "planning",
+        "tokenCost": "medium",
+        "adhdOptimized": true,
+        "leantimeIntegration": true
+      }
+    },
+
+    "morphllm-fast-apply": {
+      "type": "HTTP",
+      "url": "http://mcp-morphllm-fast-apply:3011",
+      "name": "MorphLLM Fast Apply",
+      "description": "Pattern-based bulk transformations and edits",
+      "healthCheck": {
+        "enabled": true,
+        "path": "/health",
+        "interval": 30000,
+        "timeout": 5000
+      },
+      "metadata": {
+        "priority": "medium",
+        "role": "transformation",
+        "tokenCost": "very_low",
+        "adhdOptimized": true,
+        "fastBulkOps": true
+      }
+    },
+
+    "docrag": {
+      "type": "HTTP",
+      "url": "http://mcp-docrag:3009",
+      "name": "DocRAG Semantic Search",
+      "description": "Document semantic search with hybrid retrieval",
+      "healthCheck": {
+        "enabled": true,
+        "path": "/health",
+        "interval": 45000,
+        "timeout": 8000
+      },
+      "metadata": {
+        "priority": "medium",
+        "role": "documentation",
+        "tokenCost": "medium",
+        "adhdOptimized": false,
+        "dependencies": ["milvus"]
+      }
+    },
+
+    "exa": {
+      "type": "HTTP",
+      "url": "http://mcp-exa:3008",
+      "name": "Exa Web Research",
+      "description": "Web research - FALLBACK ONLY when Context7 insufficient",
+      "healthCheck": {
+        "enabled": true,
+        "path": "/health",
+        "interval": 60000,
+        "timeout": 8000
+      },
+      "metadata": {
+        "priority": "low",
+        "role": "research",
+        "tokenCost": "medium",
+        "adhdOptimized": false,
+        "fallbackOnly": true,
+        "useWhenContext7Fails": true
+      }
+    },
+
+    "desktop-commander": {
+      "type": "HTTP",
+      "url": "http://mcp-desktop-commander:3012",
+      "name": "Desktop Commander",
+      "description": "Desktop automation and system control",
+      "healthCheck": {
+        "enabled": true,
+        "path": "/health",
+        "interval": 30000,
+        "timeout": 5000
+      },
+      "metadata": {
+        "priority": "low",
+        "role": "automation",
+        "tokenCost": "low",
+        "adhdOptimized": false,
+        "platformSpecific": true
+      }
+    },
+
+    "clear-thought": {
+      "type": "HTTP",
+      "url": "http://mcp-clear-thought:3013",
+      "name": "ClearThought",
+      "description": "Structured reasoning and decision frameworks",
+      "healthCheck": {
+        "enabled": true,
+        "path": "/health",
+        "interval": 45000,
+        "timeout": 8000
+      },
+      "metadata": {
+        "priority": "medium",
+        "role": "reasoning",
+        "tokenCost": "medium",
+        "adhdOptimized": true,
+        "decisionSupport": true
+      }
+    }
+  },
+
+  "networking": {
+    "networkName": "mcp-network",
+    "subnet": "172.20.0.0/16",
+    "timeout": 30000,
+    "retries": 3,
+    "circuitBreaker": {
+      "enabled": true,
+      "failureThreshold": 5,
+      "recoveryTimeout": 60000
+    }
+  },
+
+  "performance": {
+    "responseTimeTargets": {
+      "context7": 500,
+      "conport": 200,
+      "serena": 1000,
+      "morphllm-fast-apply": 500,
+      "claude-context": 3000,
+      "zen": 5000,
+      "mas-sequential-thinking": 30000
+    },
+    "adhdOptimizations": {
+      "maxRoleSwitchTime": 200,
+      "maxDecisionTime": 5000,
+      "flowStateProtection": true
+    }
+  },
+
+  "tokenManagement": {
+    "tracking": {
+      "enabled": true,
+      "granularity": "per_tool",
+      "estimation": true
+    },
+    "budgets": {
+      "developer": 15000,
+      "researcher": 10000,
+      "architect": 25000,
+      "reviewer": 15000,
+      "debugger": 12000,
+      "planner": 8000,
+      "ops": 6000
+    },
+    "alerts": {
+      "warningThreshold": 0.8,
+      "criticalThreshold": 0.95,
+      "gentleNotifications": true
+    }
+  }
+}
