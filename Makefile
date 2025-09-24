@@ -28,6 +28,13 @@ help:
 	@echo "  build          Build distribution packages"
 	@echo "  docs           Build documentation"
 	@echo "  serve-docs     Serve documentation locally"
+	@echo ""
+	@echo "Project Management (Leantime + Task-Master):"
+	@echo "  pm-install     Interactive installer (Leantime + Task-Master)"
+	@echo "  pm-install-unattended  Unattended install with default config"
+	@echo "  pm-up          Start PM stack (docker-compose up -d)"
+	@echo "  pm-down        Stop PM stack (docker-compose down)"
+	@echo "  pm-logs        Tail PM stack logs"
 
 # Installation targets
 install:
@@ -105,3 +112,19 @@ docs:
 
 serve-docs:
 	@echo "Documentation server not yet implemented"
+
+# ---- Project Management (Leantime + Task-Master) ----
+pm-install:
+	python3 installers/leantime/install.py
+
+pm-install-unattended:
+	python3 installers/leantime/install.py -u -c installers/leantime/configs/default.yaml
+
+pm-up:
+	cd docker/leantime && docker-compose up -d
+
+pm-down:
+	cd docker/leantime && docker-compose down
+
+pm-logs:
+	cd docker/leantime && docker-compose logs -f

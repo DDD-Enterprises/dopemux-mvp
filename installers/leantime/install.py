@@ -18,6 +18,7 @@ import string
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
+from datetime import datetime
 import click
 import yaml
 import docker
@@ -339,7 +340,7 @@ class DopemuxLeantimeInstaller:
 
         # Check Python dependencies
         try:
-            import docker, yaml, click
+            import yaml, click
             self.preflight_results["python_deps"] = {"status": "ok"}
             logger.info("✅ Required Python dependencies are available")
         except ImportError as e:
@@ -415,18 +416,24 @@ class DopemuxLeantimeInstaller:
 
     def _generate_env_file(self) -> str:
         """Generate .env file content."""
+        def esc(v: str) -> str:
+            try:
+                return v.replace("$", "$$")
+            except Exception:
+                return v
+
         return f"""# Dopemux Leantime Environment Configuration
 # Generated on {datetime.now().isoformat()}
 
 # Database Configuration
-MYSQL_ROOT_PASSWORD={self.install_config.mysql_root_password}
+MYSQL_ROOT_PASSWORD={esc(self.install_config.mysql_root_password)}
 MYSQL_DATABASE={self.install_config.mysql_database}
 MYSQL_USER={self.install_config.mysql_user}
-MYSQL_PASSWORD={self.install_config.mysql_password}
+MYSQL_PASSWORD={esc(self.install_config.mysql_password)}
 
 # Leantime Application Settings
 LEAN_SITENAME={self.install_config.lean_sitename}
-LEAN_SESSION_PASSWORD={self.install_config.lean_session_password}
+LEAN_SESSION_PASSWORD={esc(self.install_config.lean_session_password)}
 LEAN_APP_URL={self.install_config.lean_app_url}
 LEAN_SESSION_EXPIRATION=28800
 LEAN_DEBUG=0
@@ -442,7 +449,7 @@ LEAN_MCP_TOKEN={secrets.token_urlsafe(32)}
 LEAN_API_ENABLED=true
 
 # Redis Configuration
-REDIS_PASSWORD={self.install_config.redis_password}
+REDIS_PASSWORD={esc(self.install_config.redis_password)}
 
 # File Storage
 LEAN_S3_USE_S3=false
