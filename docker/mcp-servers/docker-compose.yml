@@ -99,6 +99,10 @@ services:
       - mcp-network
     environment:
       - MCP_SERVER_PORT=3004
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GOOGLE_API_KEY=${GEMINI_API_KEY}
+      - VOYAGEAI_API_KEY=${VOYAGEAI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     ports:
       - "3004:3004"
     healthcheck:
