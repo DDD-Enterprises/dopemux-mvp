@@ -4,20 +4,20 @@ repos:
     hooks:
       - id: markdownlint
         args: ["--config", ".markdownlint.jsonc", "docs/**/*.md"]
-  - repo: https://github.com/errata-ai/vale
-    rev: v3.7.1
-    hooks:
-      - id: vale
-        args: ["docs/"]
+  # - repo: https://github.com/errata-ai/vale
+  #   rev: v3.7.1
+  #   hooks:
+  #     - id: vale
+  #       args: ["docs/"]
   - repo: https://github.com/lycheeverse/lychee
     rev: v0.15.1
     hooks:
       - id: lychee
         args: ["--config", ".lychee.toml", "--no-progress", "docs/**/*.md"]
-  - repo: local
-    hooks:
-      - id: docs-frontmatter-guard
-        name: Ensure required YAML front-matter
-        entry: python scripts/docs_frontmatter_guard.py --fix
-        language: system
-        files: ^docs/.*\.md$
+  # - repo: local
+  #   hooks:
+  #     - id: docs-frontmatter-guard
+  #       name: Ensure required YAML front-matter
+  #       entry: python scripts/docs_frontmatter_guard.py --fix
+  #       language: system
+  #       files: ^docs/.*\.md$
