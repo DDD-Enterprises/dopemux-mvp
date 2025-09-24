@@ -1,7 +1,7 @@
 """
-Leantime MCP Integration Bridge for Dopemux
+Leantime JSON-RPC Integration Bridge for Dopemux
 
-This module provides a bridge between Dopemux and Leantime through the Model Context Protocol.
+This module provides a bridge between Dopemux and Leantime through JSON-RPC 2.0 API.
 Handles project management, task tracking, and ADHD-optimized workflows.
 """
 
@@ -14,15 +14,14 @@ from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass, asdict
 from enum import Enum
 
-import aiohttp
-import jwt
 from pydantic import BaseModel, ValidationError
 
-from ..core.exceptions import DopemuxIntegrationError, AuthenticationError
-from ..core.config import Config
-from ..core.monitoring import MetricsCollector
-from ..utils.security import SecureTokenManager
-from ..utils.adhd_optimizations import ADHDTaskOptimizer
+from core.exceptions import DopemuxIntegrationError, AuthenticationError
+from core.config import Config
+from core.monitoring import MetricsCollector
+from utils.security import SecureTokenManager
+from utils.adhd_optimizations import ADHDTaskOptimizer
+from .leantime_jsonrpc_client import LeantimeJSONRPCClient, create_leantime_client
 
 
 logger = logging.getLogger(__name__)
@@ -100,33 +99,27 @@ class LeantimeProject:
     notification_batching: bool = True
 
 
-class LeantimeMCPClient:
+class LeantimeBridge:
     """
-    MCP client for Leantime integration with ADHD optimizations.
+    JSON-RPC bridge for Leantime integration with ADHD optimizations.
 
     Handles authentication, API communication, and data synchronization
-    with Leantime's MCP server.
+    with Leantime's JSON-RPC API while providing ADHD-specific features.
     """
 
     def __init__(self, config: Config):
         self.config = config
-        self.base_url = config.get('leantime.api_url', 'http://localhost:8080')
-        self.api_token = config.get('leantime.api_token')
-        self.mcp_endpoint = f"{self.base_url}/mcp"
+        self.api_client: Optional[LeantimeJSONRPCClient] = None
 
-        self.session: Optional[aiohttp.ClientSession] = None
+        # ADHD optimization components
         self.token_manager = SecureTokenManager()
         self.metrics = MetricsCollector()
         self.adhd_optimizer = ADHDTaskOptimizer()
 
         # Connection state
         self._connected = False
-        self._session_id = None
         self._last_heartbeat = None
-
-        # Request tracking
-        self._request_id = 0
-        self._pending_requests: Dict[int, asyncio.Future] = {}
+        self._session_id = None
 
     async def __aenter__(self):
         """Async context manager entry."""
@@ -139,142 +132,45 @@ class LeantimeMCPClient:
 
     async def connect(self) -> bool:
         """
-        Establish connection to Leantime MCP server.
+        Establish connection to Leantime JSON-RPC API.
 
         Returns:
             bool: True if connection successful, False otherwise
         """
         try:
-            self.session = aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=30),
-                headers={
-                    'Authorization': f'Bearer {self.api_token}',
-                    'Content-Type': 'application/json',
-                    'User-Agent': 'Dopemux-Leantime-Bridge/1.0'
-                }
-            )
+            # Create JSON-RPC client
+            self.api_client = create_leantime_client(self.config)
 
-            # Test connection with MCP initialization
-            init_response = await self._send_mcp_request({
-                "jsonrpc": "2.0",
-                "id": self._next_request_id(),
-                "method": "initialize",
-                "params": {
-                    "protocolVersion": "2024-11-05",
-                    "capabilities": {
-                        "tools": {},
-                        "resources": {},
-                        "prompts": {}
-                    },
-                    "clientInfo": {
-                        "name": "Dopemux-Leantime-Bridge",
-                        "version": "1.0.0"
-                    }
-                }
-            })
+            # Test connection
+            connection_success = await self.api_client.connect()
 
-            if init_response.get('result'):
+            if connection_success:
                 self._connected = True
-                self._session_id = init_response['result'].get('sessionId')
-                logger.info("Successfully connected to Leantime MCP server")
-
-                # Start heartbeat
-                asyncio.create_task(self._heartbeat_loop())
-
+                self._last_heartbeat = datetime.now()
+                self._session_id = f"leantime_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                logger.info("Successfully connected to Leantime JSON-RPC API")
                 return True
             else:
-                logger.error(f"Failed to initialize MCP connection: {init_response}")
+                logger.error("Failed to connect to Leantime JSON-RPC API")
                 return False
 
         except Exception as e:
             logger.error(f"Failed to connect to Leantime: {e}")
-            if self.session:
-                await self.session.close()
-                self.session = None
+            self.api_client = None
             return False
 
     async def disconnect(self):
-        """Gracefully disconnect from Leantime MCP server."""
-        if self.session:
+        """Gracefully disconnect from Leantime JSON-RPC API."""
+        if self.api_client:
             try:
-                # Send shutdown notification
-                await self._send_mcp_request({
-                    "jsonrpc": "2.0",
-                    "method": "notifications/shutdown"
-                })
+                await self.api_client.disconnect()
             except Exception as e:
-                logger.warning(f"Error during shutdown: {e}")
+                logger.warning(f"Error during disconnect: {e}")
             finally:
-                await self.session.close()
-                self.session = None
+                self.api_client = None
                 self._connected = False
-                logger.info("Disconnected from Leantime MCP server")
+                logger.info("Disconnected from Leantime JSON-RPC API")
 
-    def _next_request_id(self) -> int:
-        """Generate next request ID."""
-        self._request_id += 1
-        return self._request_id
-
-    async def _send_mcp_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Send MCP request to Leantime server.
-
-        Args:
-            request: MCP request payload
-
-        Returns:
-            MCP response
-        """
-        if not self.session:
-            raise DopemuxIntegrationError("Not connected to Leantime")
-
-        try:
-            async with self.session.post(self.mcp_endpoint, json=request) as response:
-                response.raise_for_status()
-                result = await response.json()
-
-                # Track metrics
-                self.metrics.record_api_call(
-                    service='leantime',
-                    method=request.get('method', 'unknown'),
-                    status='success',
-                    response_time=(datetime.now() - datetime.now()).total_seconds()
-                )
-
-                return result
-
-        except aiohttp.ClientError as e:
-            logger.error(f"HTTP error in MCP request: {e}")
-            self.metrics.record_api_call(
-                service='leantime',
-                method=request.get('method', 'unknown'),
-                status='error'
-            )
-            raise DopemuxIntegrationError(f"Leantime API error: {e}")
-        except Exception as e:
-            logger.error(f"Unexpected error in MCP request: {e}")
-            raise DopemuxIntegrationError(f"Unexpected error: {e}")
-
-    async def _heartbeat_loop(self):
-        """Maintain connection with periodic heartbeat."""
-        while self._connected and self.session:
-            try:
-                await asyncio.sleep(30)  # 30 second heartbeat
-
-                await self._send_mcp_request({
-                    "jsonrpc": "2.0",
-                    "method": "notifications/heartbeat",
-                    "params": {
-                        "sessionId": self._session_id,
-                        "timestamp": datetime.now().isoformat()
-                    }
-                })
-
-                self._last_heartbeat = datetime.now()
-
-            except Exception as e:
-                logger.warning(f"Heartbeat failed: {e}")
-                break
 
     # Project Management Methods
 
@@ -288,21 +184,20 @@ class LeantimeMCPClient:
         Returns:
             List of Leantime projects
         """
-        response = await self._send_mcp_request({
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": "tools/call",
-            "params": {
-                "name": "leantime.rpc.projects.getAllProjects",
-                "arguments": {
-                    "limit": limit
-                }
-            }
-        })
+        if not self.api_client:
+            raise DopemuxIntegrationError("Not connected to Leantime")
 
-        if response.get('result', {}).get('content'):
-            projects_data = response['result']['content'][0]['text']
-            projects = json.loads(projects_data)
+        response = await self.api_client.get_projects(limit)
+
+        if response.success and response.data:
+            projects_data = response.data if isinstance(response.data, list) else [response.data]
+
+            # Track metrics
+            self.metrics.record_api_call(
+                service='leantime',
+                method='get_projects',
+                status='success'
+            )
 
             return [
                 LeantimeProject(
@@ -312,8 +207,15 @@ class LeantimeMCPClient:
                     state=proj.get('state', 'open'),
                     created_at=self._parse_datetime(proj.get('created'))
                 )
-                for proj in projects
+                for proj in projects_data
             ]
+
+        # Track failed metrics
+        self.metrics.record_api_call(
+            service='leantime',
+            method='get_projects',
+            status='error'
+        )
 
         return []
 
@@ -327,20 +229,13 @@ class LeantimeMCPClient:
         Returns:
             Project details or None if not found
         """
-        response = await self._send_mcp_request({
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": "tools/call",
-            "params": {
-                "name": "leantime.rpc.projects.getProject",
-                "arguments": {
-                    "projectId": project_id
-                }
-            }
-        })
+        if not self.api_client:
+            raise DopemuxIntegrationError("Not connected to Leantime")
 
-        if response.get('result', {}).get('content'):
-            project_data = json.loads(response['result']['content'][0]['text'])
+        response = await self.api_client.get_project(project_id)
+
+        if response.success and response.data:
+            project_data = response.data
 
             return LeantimeProject(
                 id=project_data.get('id'),
@@ -364,22 +259,17 @@ class LeantimeMCPClient:
         Returns:
             Created project with ID or None if failed
         """
-        response = await self._send_mcp_request({
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": "tools/call",
-            "params": {
-                "name": "leantime.rpc.projects.addProject",
-                "arguments": {
-                    "name": project.name,
-                    "details": project.description,
-                    "state": project.state
-                }
-            }
-        })
+        if not self.api_client:
+            raise DopemuxIntegrationError("Not connected to Leantime")
 
-        if response.get('result', {}).get('content'):
-            result_data = json.loads(response['result']['content'][0]['text'])
+        response = await self.api_client.create_project(
+            name=project.name,
+            description=project.description,
+            state=project.state
+        )
+
+        if response.success and response.data:
+            result_data = response.data
             if result_data.get('success'):
                 project.id = result_data.get('projectId')
                 return project
@@ -402,27 +292,18 @@ class LeantimeMCPClient:
         Returns:
             List of Leantime tasks
         """
-        params = {
-            "limit": limit
-        }
+        if not self.api_client:
+            raise DopemuxIntegrationError("Not connected to Leantime")
 
-        if project_id:
-            params["projectId"] = project_id
-        if status:
-            params["status"] = status.value
+        # Get tickets using JSON-RPC client
+        response = await self.api_client.get_tickets(
+            project_id=project_id,
+            status=status.value if status else None,
+            limit=limit
+        )
 
-        response = await self._send_mcp_request({
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": "tools/call",
-            "params": {
-                "name": "leantime.rpc.tickets.getAllTickets",
-                "arguments": params
-            }
-        })
-
-        if response.get('result', {}).get('content'):
-            tasks_data = json.loads(response['result']['content'][0]['text'])
+        if response.success and response.data:
+            tasks_data = response.data if isinstance(response.data, list) else [response.data]
 
             tasks = []
             for task_data in tasks_data:
@@ -696,14 +577,14 @@ class LeantimeMCPClient:
 
 
 # Factory function for easy instantiation
-def create_leantime_bridge(config: Config) -> LeantimeMCPClient:
+def create_leantime_bridge(config: Config) -> LeantimeBridge:
     """
-    Factory function to create Leantime MCP client.
+    Factory function to create Leantime JSON-RPC bridge.
 
     Args:
         config: Dopemux configuration
 
     Returns:
-        Configured Leantime MCP client
+        Configured Leantime JSON-RPC bridge
     """
-    return LeantimeMCPClient(config)
+    return LeantimeBridge(config)

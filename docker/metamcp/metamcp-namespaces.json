@@ -1,0 +1,501 @@
+{
+  "namespaces": {
+    "reference": {
+      "name": "Reference & Context",
+      "description": "Always-active documentation and context preservation",
+      "priority": "critical",
+      "servers": ["context7", "conport"],
+      "tokenBudget": "unlimited",
+      "adhdOptimizations": {
+        "alwaysActive": true,
+        "fastResponse": true,
+        "contextPreservation": true,
+        "uncertaintyReduction": true
+      },
+      "middleware": [
+        {
+          "name": "context7_first",
+          "enabled": true,
+          "config": {
+            "enforceDocumentationFirst": true,
+            "preventHallucination": true
+          }
+        },
+        {
+          "name": "auto_context_save",
+          "enabled": true,
+          "config": {
+            "saveInterval": 30,
+            "maxHistory": 100
+          }
+        }
+      ],
+      "routing": {
+        "defaultServer": "context7",
+        "fallbackChain": ["context7", "conport"]
+      }
+    },
+
+    "development": {
+      "name": "Development Workspace",
+      "description": "Core implementation tools for flow state coding",
+      "priority": "high",
+      "servers": ["claude-context", "serena", "morphllm-fast-apply"],
+      "tokenBudget": 15000,
+      "adhdOptimizations": {
+        "fastOperations": true,
+        "flowStateProtection": true,
+        "minimalContextSwitching": true,
+        "toolLimit": 3
+      },
+      "middleware": [
+        {
+          "name": "tool_filter",
+          "enabled": true,
+          "config": {
+            "maxConcurrentTools": 3,
+            "priorityOrder": ["claude-context", "serena", "morphllm-fast-apply"]
+          }
+        },
+        {
+          "name": "bulk_optimization",
+          "enabled": true,
+          "config": {
+            "preferMorphLLMForBulk": true,
+            "bulkThreshold": 10
+          }
+        }
+      ],
+      "routing": {
+        "patternMatching": {
+          "codeSearch": "claude-context",
+          "navigation": "serena",
+          "bulkEdit": "morphllm-fast-apply"
+        }
+      }
+    },
+
+    "research": {
+      "name": "Research & Discovery",
+      "description": "Information gathering with controlled scope",
+      "priority": "medium",
+      "servers": ["docrag", "exa", "zen"],
+      "tokenBudget": 10000,
+      "adhdOptimizations": {
+        "preventRabbitHoles": true,
+        "timeBoxing": true,
+        "structuredExploration": true,
+        "toolLimit": 2
+      },
+      "middleware": [
+        {
+          "name": "research_governor",
+          "enabled": true,
+          "config": {
+            "maxResearchTime": 1800,
+            "rabbitHoleDetection": true,
+            "progressTracking": true
+          }
+        },
+        {
+          "name": "zen_tool_filter",
+          "enabled": true,
+          "config": {
+            "enabledTools": ["chat", "thinkdeep"],
+            "disabledTools": ["analyze", "refactor", "testgen", "secaudit", "docgen", "tracer"]
+          }
+        }
+      ],
+      "routing": {
+        "cascade": [
+          {
+            "condition": "internal_docs",
+            "server": "docrag"
+          },
+          {
+            "condition": "external_research",
+            "server": "exa",
+            "requiresApproval": true
+          },
+          {
+            "condition": "multi_model_discussion",
+            "server": "zen"
+          }
+        ]
+      }
+    },
+
+    "planning": {
+      "name": "Architecture & Planning",
+      "description": "Deep analysis and structured planning with high token budget",
+      "priority": "high",
+      "servers": ["mas-sequential-thinking", "task-master-ai", "zen", "clear-thought"],
+      "tokenBudget": 25000,
+      "adhdOptimizations": {
+        "deepWorkMode": true,
+        "structuredFrameworks": true,
+        "decisionSupport": true,
+        "approvalRequired": true
+      },
+      "middleware": [
+        {
+          "name": "high_cost_approval",
+          "enabled": true,
+          "config": {
+            "requireApprovalFor": ["mas-sequential-thinking"],
+            "tokenThreshold": 5000,
+            "showEstimatedCost": true
+          }
+        },
+        {
+          "name": "zen_planning_filter",
+          "enabled": true,
+          "config": {
+            "enabledTools": ["planner", "consensus"],
+            "disabledTools": ["codereview", "debug", "testgen", "secaudit", "docgen", "tracer", "refactor"]
+          }
+        },
+        {
+          "name": "structured_workflow",
+          "enabled": true,
+          "config": {
+            "enforceSequence": ["analysis", "planning", "validation"],
+            "pausePoints": true
+          }
+        }
+      ],
+      "routing": {
+        "workflow": [
+          {
+            "phase": "analysis",
+            "server": "mas-sequential-thinking",
+            "condition": "complex_architecture"
+          },
+          {
+            "phase": "analysis",
+            "server": "clear-thought",
+            "condition": "decision_making"
+          },
+          {
+            "phase": "planning",
+            "server": "zen",
+            "tool": "planner"
+          },
+          {
+            "phase": "planning",
+            "server": "task-master-ai",
+            "condition": "task_management"
+          },
+          {
+            "phase": "validation",
+            "server": "zen",
+            "tool": "consensus"
+          }
+        ]
+      }
+    },
+
+    "quality": {
+      "name": "Quality Assurance",
+      "description": "Systematic code quality validation and review",
+      "priority": "high",
+      "servers": ["zen"],
+      "tokenBudget": 15000,
+      "adhdOptimizations": {
+        "systematicProcess": true,
+        "clearCriteria": true,
+        "checklistBased": true,
+        "toolLimit": 4
+      },
+      "middleware": [
+        {
+          "name": "zen_quality_filter",
+          "enabled": true,
+          "config": {
+            "enabledTools": ["codereview", "debug", "testgen", "secaudit", "precommit"],
+            "disabledTools": ["chat", "thinkdeep", "planner", "consensus", "analyze", "refactor", "docgen", "tracer"]
+          }
+        },
+        {
+          "name": "quality_workflow",
+          "enabled": true,
+          "config": {
+            "enforceSequence": ["review", "test", "security", "precommit"],
+            "allowParallel": false
+          }
+        }
+      ],
+      "routing": {
+        "qualityGates": [
+          {
+            "gate": "code_review",
+            "tool": "codereview",
+            "required": true
+          },
+          {
+            "gate": "testing",
+            "tool": "testgen",
+            "condition": "missing_tests"
+          },
+          {
+            "gate": "security",
+            "tool": "secaudit",
+            "condition": "security_critical"
+          },
+          {
+            "gate": "debug",
+            "tool": "debug",
+            "condition": "issues_found"
+          },
+          {
+            "gate": "final_check",
+            "tool": "precommit",
+            "required": true
+          }
+        ]
+      }
+    },
+
+    "automation": {
+      "name": "Automation & Utilities",
+      "description": "Desktop automation and bulk operations",
+      "priority": "low",
+      "servers": ["desktop-commander", "zen"],
+      "tokenBudget": 8000,
+      "adhdOptimizations": {
+        "reduceManualWork": true,
+        "fastExecution": true,
+        "predictableResults": true
+      },
+      "middleware": [
+        {
+          "name": "zen_automation_filter",
+          "enabled": true,
+          "config": {
+            "enabledTools": ["refactor", "docgen", "tracer"],
+            "disabledTools": ["chat", "thinkdeep", "planner", "consensus", "codereview", "debug", "testgen", "secaudit", "precommit"]
+          }
+        },
+        {
+          "name": "automation_safety",
+          "enabled": true,
+          "config": {
+            "requireConfirmation": true,
+            "dryRunMode": true,
+            "backupBeforeChanges": true
+          }
+        }
+      ],
+      "routing": {
+        "automation": [
+          {
+            "category": "desktop",
+            "server": "desktop-commander"
+          },
+          {
+            "category": "code_refactoring",
+            "server": "zen",
+            "tool": "refactor"
+          },
+          {
+            "category": "documentation",
+            "server": "zen",
+            "tool": "docgen"
+          },
+          {
+            "category": "analysis",
+            "server": "zen",
+            "tool": "tracer"
+          }
+        ]
+      }
+    }
+  },
+
+  "roleMapping": {
+    "developer": {
+      "primaryNamespaces": ["reference", "development"],
+      "secondaryNamespaces": ["automation"],
+      "onDemandNamespaces": ["research"],
+      "toolLimits": {
+        "maxActive": 4,
+        "maxPerNamespace": 3
+      },
+      "tokenBudget": 15000,
+      "adhdProfile": {
+        "focusMode": "implementation",
+        "contextSwitchTolerance": "low",
+        "preferredSessionLength": 1800
+      }
+    },
+
+    "researcher": {
+      "primaryNamespaces": ["reference", "research"],
+      "secondaryNamespaces": ["development"],
+      "onDemandNamespaces": [],
+      "toolLimits": {
+        "maxActive": 3,
+        "maxPerNamespace": 2
+      },
+      "tokenBudget": 10000,
+      "adhdProfile": {
+        "focusMode": "exploration",
+        "contextSwitchTolerance": "medium",
+        "preferredSessionLength": 2400
+      }
+    },
+
+    "architect": {
+      "primaryNamespaces": ["reference", "planning"],
+      "secondaryNamespaces": ["development"],
+      "onDemandNamespaces": ["research"],
+      "toolLimits": {
+        "maxActive": 3,
+        "maxPerNamespace": 2
+      },
+      "tokenBudget": 25000,
+      "adhdProfile": {
+        "focusMode": "deep_analysis",
+        "contextSwitchTolerance": "very_low",
+        "preferredSessionLength": 3600
+      }
+    },
+
+    "reviewer": {
+      "primaryNamespaces": ["reference", "quality"],
+      "secondaryNamespaces": ["development"],
+      "onDemandNamespaces": [],
+      "toolLimits": {
+        "maxActive": 4,
+        "maxPerNamespace": 3
+      },
+      "tokenBudget": 15000,
+      "adhdProfile": {
+        "focusMode": "validation",
+        "contextSwitchTolerance": "low",
+        "preferredSessionLength": 2400
+      }
+    },
+
+    "debugger": {
+      "primaryNamespaces": ["reference", "development", "quality"],
+      "secondaryNamespaces": [],
+      "onDemandNamespaces": ["research"],
+      "toolLimits": {
+        "maxActive": 4,
+        "maxPerNamespace": 2
+      },
+      "tokenBudget": 12000,
+      "adhdProfile": {
+        "focusMode": "investigation",
+        "contextSwitchTolerance": "medium",
+        "preferredSessionLength": 2400
+      }
+    },
+
+    "planner": {
+      "primaryNamespaces": ["reference", "planning"],
+      "secondaryNamespaces": [],
+      "onDemandNamespaces": [],
+      "toolLimits": {
+        "maxActive": 3,
+        "maxPerNamespace": 2
+      },
+      "tokenBudget": 8000,
+      "adhdProfile": {
+        "focusMode": "organization",
+        "contextSwitchTolerance": "high",
+        "preferredSessionLength": 1800
+      }
+    },
+
+    "ops": {
+      "primaryNamespaces": ["reference", "automation"],
+      "secondaryNamespaces": ["development"],
+      "onDemandNamespaces": [],
+      "toolLimits": {
+        "maxActive": 3,
+        "maxPerNamespace": 2
+      },
+      "tokenBudget": 6000,
+      "adhdProfile": {
+        "focusMode": "automation",
+        "contextSwitchTolerance": "high",
+        "preferredSessionLength": 1200
+      }
+    }
+  },
+
+  "globalMiddleware": [
+    {
+      "name": "adhd_optimization",
+      "enabled": true,
+      "config": {
+        "maxDecisionTime": 5000,
+        "maxRoleSwitchTime": 200,
+        "flowStateProtection": true,
+        "gentleNotifications": true,
+        "progressVisualization": true
+      }
+    },
+    {
+      "name": "token_tracking",
+      "enabled": true,
+      "config": {
+        "granularity": "per_tool",
+        "estimation": true,
+        "budgetAlerts": true,
+        "optimizationSuggestions": true
+      }
+    },
+    {
+      "name": "context_preservation",
+      "enabled": true,
+      "config": {
+        "autoSaveInterval": 30,
+        "maxHistoryItems": 100,
+        "crossNamespaceContext": true,
+        "compressionThreshold": 50
+      }
+    },
+    {
+      "name": "performance_monitoring",
+      "enabled": true,
+      "config": {
+        "responseTimeTracking": true,
+        "healthCheckIntegration": true,
+        "circuitBreaker": true,
+        "adhdMetrics": true
+      }
+    }
+  ],
+
+  "optimization": {
+    "tokenReduction": {
+      "target": 0.95,
+      "strategies": [
+        "role_based_filtering",
+        "tool_limiting",
+        "context7_first",
+        "bulk_operations",
+        "smart_caching"
+      ]
+    },
+    "adhdSupport": {
+      "cognitiveLoadReduction": true,
+      "contextPreservation": true,
+      "decisionSimplification": true,
+      "flowStateProtection": true,
+      "gentleGuidance": true
+    },
+    "performanceTargets": {
+      "roleSwitchTime": 200,
+      "decisionTime": 5000,
+      "toolResponseTime": {
+        "fast": 1000,
+        "normal": 5000,
+        "complex": 30000
+      }
+    }
+  }
+}
