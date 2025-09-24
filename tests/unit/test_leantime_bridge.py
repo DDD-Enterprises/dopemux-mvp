@@ -5,27 +5,27 @@ Comprehensive test coverage for Leantime integration with ADHD optimizations.
 """
 
 import pytest
+
 pytest.importorskip("aiohttp")
 pytest.importorskip("aioresponses")
 import asyncio
 import json
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
-from dataclasses import asdict
 
 import aiohttp
 import aioresponses
 
+from core.config import Config
+from core.exceptions import DopemuxIntegrationError
 from integrations.leantime_bridge import (
     LeantimeMCPClient,
-    LeantimeTask,
     LeantimeProject,
-    TaskStatus,
+    LeantimeTask,
     TaskPriority,
-    create_leantime_bridge
+    TaskStatus,
+    create_leantime_bridge,
 )
-from core.config import Config
-from core.exceptions import DopemuxIntegrationError, AuthenticationError
 
 
 class TestLeantimeTask:
@@ -59,7 +59,7 @@ class TestLeantimeTask:
             story_points=5,
             dependencies=[1, 2, 3],
             tags=["urgent", "bug"],
-            created_at=now
+            created_at=now,
         )
 
         assert task.id == 123
@@ -120,7 +120,7 @@ class TestLeantimeProject:
             state="closed",
             start_date=start_date,
             end_date=end_date,
-            adhd_mode_enabled=False
+            adhd_mode_enabled=False,
         )
 
         assert project.id == 123
@@ -138,12 +138,14 @@ class TestLeantimeMCPClient:
     @pytest.fixture
     def config(self):
         """Create test configuration."""
-        return Config({
-            'leantime': {
-                'api_url': 'http://localhost:8080',
-                'api_token': 'test_token'
+        return Config(
+            {
+                "leantime": {
+                    "api_url": "http://localhost:8080",
+                    "api_token": "test_token",
+                }
             }
-        })
+        )
 
     @pytest.fixture
     def client(self, config):
@@ -153,9 +155,9 @@ class TestLeantimeMCPClient:
     def test_client_initialization(self, client, config):
         """Test client initialization."""
         assert client.config == config
-        assert client.base_url == 'http://localhost:8080'
-        assert client.api_token == 'test_token'
-        assert client.mcp_endpoint == 'http://localhost:8080/mcp'
+        assert client.base_url == "http://localhost:8080"
+        assert client.api_token == "test_token"
+        assert client.mcp_endpoint == "http://localhost:8080/mcp"
         assert client.session is None
         assert client._connected is False
 
@@ -165,16 +167,16 @@ class TestLeantimeMCPClient:
         with aioresponses.aioresponses() as m:
             # Mock successful MCP initialization
             m.post(
-                'http://localhost:8080/mcp',
+                "http://localhost:8080/mcp",
                 payload={
                     "jsonrpc": "2.0",
                     "id": 1,
                     "result": {
                         "protocolVersion": "2024-11-05",
                         "capabilities": {},
-                        "sessionId": "test_session_123"
-                    }
-                }
+                        "sessionId": "test_session_123",
+                    },
+                },
             )
 
             success = await client.connect()
@@ -190,8 +192,8 @@ class TestLeantimeMCPClient:
         with aioresponses.aioresponses() as m:
             # Mock connection failure
             m.post(
-                'http://localhost:8080/mcp',
-                exception=aiohttp.ClientError("Connection failed")
+                "http://localhost:8080/mcp",
+                exception=aiohttp.ClientError("Connection failed"),
             )
 
             success = await client.connect()
@@ -208,7 +210,7 @@ class TestLeantimeMCPClient:
         client.session = AsyncMock()
 
         with aioresponses.aioresponses() as m:
-            m.post('http://localhost:8080/mcp', payload={})
+            m.post("http://localhost:8080/mcp", payload={})
 
             await client.disconnect()
 
@@ -220,17 +222,9 @@ class TestLeantimeMCPClient:
         """Test successful MCP request."""
         client.session = AsyncMock()
 
-        request_data = {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "test_method"
-        }
+        request_data = {"jsonrpc": "2.0", "id": 1, "method": "test_method"}
 
-        expected_response = {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "result": {"success": True}
-        }
+        expected_response = {"jsonrpc": "2.0", "id": 1, "result": {"success": True}}
 
         # Mock session response
         mock_response = AsyncMock()
@@ -242,8 +236,7 @@ class TestLeantimeMCPClient:
 
         assert result == expected_response
         client.session.post.assert_called_once_with(
-            'http://localhost:8080/mcp',
-            json=request_data
+            "http://localhost:8080/mcp", json=request_data
         )
 
     @pytest.mark.asyncio
@@ -276,28 +269,34 @@ class TestLeantimeMCPClient:
     @pytest.mark.asyncio
     async def test_get_projects_success(self, client):
         """Test successful project retrieval."""
-        client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps([
+        client._send_mcp_request = AsyncMock(
+            return_value={
+                "result": {
+                    "content": [
                         {
-                            "id": 1,
-                            "name": "Project 1",
-                            "details": "Description 1",
-                            "state": "open",
-                            "created": "2024-01-01 10:00:00"
-                        },
-                        {
-                            "id": 2,
-                            "name": "Project 2",
-                            "details": "Description 2",
-                            "state": "closed",
-                            "created": "2024-01-02 11:00:00"
+                            "text": json.dumps(
+                                [
+                                    {
+                                        "id": 1,
+                                        "name": "Project 1",
+                                        "details": "Description 1",
+                                        "state": "open",
+                                        "created": "2024-01-01 10:00:00",
+                                    },
+                                    {
+                                        "id": 2,
+                                        "name": "Project 2",
+                                        "details": "Description 2",
+                                        "state": "closed",
+                                        "created": "2024-01-02 11:00:00",
+                                    },
+                                ]
+                            )
                         }
-                    ])
-                }]
+                    ]
+                }
             }
-        })
+        )
 
         projects = await client.get_projects(limit=10)
 
@@ -321,21 +320,27 @@ class TestLeantimeMCPClient:
     @pytest.mark.asyncio
     async def test_get_project_success(self, client):
         """Test successful single project retrieval."""
-        client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "id": 1,
-                        "name": "Test Project",
-                        "details": "Test description",
-                        "state": "open",
-                        "start": "2024-01-01",
-                        "end": "2024-12-31",
-                        "created": "2024-01-01 10:00:00"
-                    })
-                }]
+        client._send_mcp_request = AsyncMock(
+            return_value={
+                "result": {
+                    "content": [
+                        {
+                            "text": json.dumps(
+                                {
+                                    "id": 1,
+                                    "name": "Test Project",
+                                    "details": "Test description",
+                                    "state": "open",
+                                    "start": "2024-01-01",
+                                    "end": "2024-12-31",
+                                    "created": "2024-01-01 10:00:00",
+                                }
+                            )
+                        }
+                    ]
+                }
             }
-        })
+        )
 
         project = await client.get_project(1)
 
@@ -357,21 +362,18 @@ class TestLeantimeMCPClient:
     @pytest.mark.asyncio
     async def test_create_project_success(self, client):
         """Test successful project creation."""
-        client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "success": True,
-                        "projectId": 123
-                    })
-                }]
+        client._send_mcp_request = AsyncMock(
+            return_value={
+                "result": {
+                    "content": [
+                        {"text": json.dumps({"success": True, "projectId": 123})}
+                    ]
+                }
             }
-        })
+        )
 
         project = LeantimeProject(
-            name="New Project",
-            description="New description",
-            state="open"
+            name="New Project", description="New description", state="open"
         )
 
         created_project = await client.create_project(project)
@@ -383,16 +385,19 @@ class TestLeantimeMCPClient:
     @pytest.mark.asyncio
     async def test_create_project_failure(self, client):
         """Test project creation failure."""
-        client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "success": False,
-                        "error": "Creation failed"
-                    })
-                }]
+        client._send_mcp_request = AsyncMock(
+            return_value={
+                "result": {
+                    "content": [
+                        {
+                            "text": json.dumps(
+                                {"success": False, "error": "Creation failed"}
+                            )
+                        }
+                    ]
+                }
             }
-        })
+        )
 
         project = LeantimeProject(name="New Project")
 
@@ -403,36 +408,44 @@ class TestLeantimeMCPClient:
     @pytest.mark.asyncio
     async def test_get_tasks_success(self, client):
         """Test successful task retrieval."""
-        client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps([
+        client._send_mcp_request = AsyncMock(
+            return_value={
+                "result": {
+                    "content": [
                         {
-                            "id": 1,
-                            "headline": "Task 1",
-                            "description": "Description 1",
-                            "projectId": 10,
-                            "editorId": 5,
-                            "status": "1",
-                            "storypoints": 3,
-                            "date": "2024-01-01 10:00:00"
-                        },
-                        {
-                            "id": 2,
-                            "headline": "Task 2",
-                            "description": "Description 2",
-                            "projectId": 10,
-                            "status": "0",
-                            "storypoints": 5
+                            "text": json.dumps(
+                                [
+                                    {
+                                        "id": 1,
+                                        "headline": "Task 1",
+                                        "description": "Description 1",
+                                        "projectId": 10,
+                                        "editorId": 5,
+                                        "status": "1",
+                                        "storypoints": 3,
+                                        "date": "2024-01-01 10:00:00",
+                                    },
+                                    {
+                                        "id": 2,
+                                        "headline": "Task 2",
+                                        "description": "Description 2",
+                                        "projectId": 10,
+                                        "status": "0",
+                                        "storypoints": 5,
+                                    },
+                                ]
+                            )
                         }
-                    ])
-                }]
+                    ]
+                }
             }
-        })
+        )
 
         # Mock ADHD optimizer
-        with patch('integrations.leantime_bridge.ADHDTaskOptimizer') as mock_optimizer:
-            mock_optimizer.return_value.optimize_task = AsyncMock(side_effect=lambda x: x)
+        with patch("integrations.leantime_bridge.ADHDTaskOptimizer") as mock_optimizer:
+            mock_optimizer.return_value.optimize_task = AsyncMock(
+                side_effect=lambda x: x
+            )
 
             tasks = await client.get_tasks(project_id=10)
 
@@ -447,20 +460,26 @@ class TestLeantimeMCPClient:
     @pytest.mark.asyncio
     async def test_get_task_success(self, client):
         """Test successful single task retrieval."""
-        client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "id": 1,
-                        "headline": "Test Task",
-                        "description": "Test description",
-                        "projectId": 10,
-                        "status": "1",
-                        "storypoints": 3
-                    })
-                }]
+        client._send_mcp_request = AsyncMock(
+            return_value={
+                "result": {
+                    "content": [
+                        {
+                            "text": json.dumps(
+                                {
+                                    "id": 1,
+                                    "headline": "Test Task",
+                                    "description": "Test description",
+                                    "projectId": 10,
+                                    "status": "1",
+                                    "storypoints": 3,
+                                }
+                            )
+                        }
+                    ]
+                }
             }
-        })
+        )
 
         task = await client.get_task(1)
 
@@ -472,30 +491,27 @@ class TestLeantimeMCPClient:
     @pytest.mark.asyncio
     async def test_create_task_success(self, client):
         """Test successful task creation."""
-        client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "success": True,
-                        "ticketId": 123
-                    })
-                }]
+        client._send_mcp_request = AsyncMock(
+            return_value={
+                "result": {
+                    "content": [
+                        {"text": json.dumps({"success": True, "ticketId": 123})}
+                    ]
+                }
             }
-        })
+        )
 
         # Mock ADHD optimizer
-        with patch('integrations.leantime_bridge.ADHDTaskOptimizer') as mock_optimizer:
+        with patch("integrations.leantime_bridge.ADHDTaskOptimizer") as mock_optimizer:
             mock_task = LeantimeTask(
-                headline="New Task",
-                description="New description",
-                project_id=10
+                headline="New Task", description="New description", project_id=10
             )
-            mock_optimizer.return_value.optimize_task = AsyncMock(return_value=mock_task)
+            mock_optimizer.return_value.optimize_task = AsyncMock(
+                return_value=mock_task
+            )
 
             task = LeantimeTask(
-                headline="New Task",
-                description="New description",
-                project_id=10
+                headline="New Task", description="New description", project_id=10
             )
 
             created_task = await client.create_task(task)
@@ -507,20 +523,14 @@ class TestLeantimeMCPClient:
     @pytest.mark.asyncio
     async def test_update_task_success(self, client):
         """Test successful task update."""
-        client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "success": True
-                    })
-                }]
+        client._send_mcp_request = AsyncMock(
+            return_value={
+                "result": {"content": [{"text": json.dumps({"success": True})}]}
             }
-        })
+        )
 
         task = LeantimeTask(
-            id=123,
-            headline="Updated Task",
-            description="Updated description"
+            id=123, headline="Updated Task", description="Updated description"
         )
 
         success = await client.update_task(task)
@@ -538,15 +548,11 @@ class TestLeantimeMCPClient:
     @pytest.mark.asyncio
     async def test_delete_task_success(self, client):
         """Test successful task deletion."""
-        client._send_mcp_request = AsyncMock(return_value={
-            "result": {
-                "content": [{
-                    "text": json.dumps({
-                        "success": True
-                    })
-                }]
+        client._send_mcp_request = AsyncMock(
+            return_value={
+                "result": {"content": [{"text": json.dumps({"success": True})}]}
             }
-        })
+        )
 
         success = await client.delete_task(123)
 
@@ -562,25 +568,25 @@ class TestLeantimeMCPClient:
                 headline="Quick Task",
                 user_id=5,
                 priority=TaskPriority.SCATTERED,
-                story_points=1
+                story_points=1,
             ),
             LeantimeTask(
                 id=2,
                 headline="Complex Task",
                 user_id=5,
                 priority=TaskPriority.HYPERFOCUS,
-                story_points=8
+                story_points=8,
             ),
             LeantimeTask(
                 id=3,
                 headline="Medium Task",
                 user_id=6,  # Different user
                 priority=TaskPriority.FOCUSED,
-                story_points=3
-            )
+                story_points=3,
+            ),
         ]
 
-        with patch.object(client, 'get_tasks', AsyncMock(return_value=test_tasks)):
+        with patch.object(client, "get_tasks", AsyncMock(return_value=test_tasks)):
             # Test scattered attention state
             scattered_tasks = await client.get_adhd_optimized_tasks(
                 user_id=5, attention_state="scattered"
@@ -605,10 +611,12 @@ class TestLeantimeMCPClient:
         context_data = {
             "current_task": "task_123",
             "focus_state": "deep_work",
-            "recent_decisions": ["decision_1", "decision_2"]
+            "recent_decisions": ["decision_1", "decision_2"],
         }
 
-        success = await client.update_context_preservation(user_id=5, context_data=context_data)
+        success = await client.update_context_preservation(
+            user_id=5, context_data=context_data
+        )
 
         assert success is True
 
@@ -618,7 +626,7 @@ class TestLeantimeMCPClient:
         test_cases = [
             ("2024-01-01 10:30:00", datetime(2024, 1, 1, 10, 30, 0)),
             ("2024-01-01", datetime(2024, 1, 1, 0, 0, 0)),
-            ("2024-01-01T10:30:00", datetime(2024, 1, 1, 10, 30, 0))
+            ("2024-01-01T10:30:00", datetime(2024, 1, 1, 10, 30, 0)),
         ]
 
         for date_str, expected in test_cases:
@@ -633,7 +641,7 @@ class TestLeantimeMCPClient:
             "",
             "invalid_date",
             "2024-13-01",  # Invalid month
-            "not_a_date"
+            "not_a_date",
         ]
 
         for date_str in invalid_dates:
@@ -647,7 +655,9 @@ class TestLeantimeMCPClient:
         client._last_heartbeat = datetime.now()
         client._session_id = "test_session"
 
-        with patch.object(client, 'get_projects', AsyncMock(return_value=[MagicMock()])):
+        with patch.object(
+            client, "get_projects", AsyncMock(return_value=[MagicMock()])
+        ):
             health = await client.health_check()
 
             assert health["status"] == "healthy"
@@ -671,7 +681,9 @@ class TestLeantimeMCPClient:
         """Test health check when unhealthy."""
         client._connected = True
 
-        with patch.object(client, 'get_projects', AsyncMock(side_effect=Exception("API Error"))):
+        with patch.object(
+            client, "get_projects", AsyncMock(side_effect=Exception("API Error"))
+        ):
             health = await client.health_check()
 
             assert health["status"] == "unhealthy"
@@ -681,8 +693,8 @@ class TestLeantimeMCPClient:
     @pytest.mark.asyncio
     async def test_context_manager_usage(self, client):
         """Test client as async context manager."""
-        with patch.object(client, 'connect', AsyncMock(return_value=True)):
-            with patch.object(client, 'disconnect', AsyncMock()):
+        with patch.object(client, "connect", AsyncMock(return_value=True)):
+            with patch.object(client, "disconnect", AsyncMock()):
                 async with client as c:
                     assert c is client
 
@@ -722,14 +734,21 @@ class TestFactoryFunction:
 
     def test_create_leantime_bridge(self):
         """Test factory function."""
-        config = Config({'leantime': {'api_url': 'http://test'}})
+        config = Config({"leantime": {"api_url": "http://test"}})
 
         bridge = create_leantime_bridge(config)
 
         assert isinstance(bridge, LeantimeMCPClient)
         assert bridge.config == config
-        assert bridge.base_url == 'http://test'
+        assert bridge.base_url == "http://test"
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "--cov=integrations.leantime_bridge", "--cov-report=term-missing"])
+    pytest.main(
+        [
+            __file__,
+            "-v",
+            "--cov=integrations.leantime_bridge",
+            "--cov-report=term-missing",
+        ]
+    )

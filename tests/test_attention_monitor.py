@@ -2,15 +2,14 @@
 Tests for the attention monitor module.
 """
 
-import pytest
-import time
 import json
-import threading
+import time
 from datetime import datetime, timedelta
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
 from dopemux.adhd.attention_monitor import (
-    AttentionMonitor, AttentionMetrics, AttentionState
+    AttentionMetrics,
+    AttentionState,
 )
 
 
@@ -27,7 +26,7 @@ class TestAttentionMetrics:
             context_switches=1,
             pause_duration=5.0,
             focus_score=0.8,
-            attention_state=AttentionState.FOCUSED
+            attention_state=AttentionState.FOCUSED,
         )
 
         assert metrics.timestamp == now
@@ -57,7 +56,7 @@ class TestAttentionMonitor:
     def test_initialization(self, attention_monitor, temp_project_dir):
         """Test AttentionMonitor initialization."""
         assert attention_monitor.project_path == temp_project_dir
-        assert attention_monitor.data_dir == temp_project_dir / '.dopemux' / 'attention'
+        assert attention_monitor.data_dir == temp_project_dir / ".dopemux" / "attention"
         assert attention_monitor.data_dir.exists()
 
         # Check default configuration
@@ -88,10 +87,10 @@ class TestAttentionMonitor:
         """Test getting current metrics when no data available."""
         metrics = attention_monitor.get_current_metrics()
 
-        assert metrics['attention_state'] == AttentionState.NORMAL
-        assert metrics['focus_score'] == 0.5
-        assert metrics['session_duration'] == 0
-        assert metrics['monitoring_active'] is False
+        assert metrics["attention_state"] == AttentionState.NORMAL
+        assert metrics["focus_score"] == 0.5
+        assert metrics["session_duration"] == 0
+        assert metrics["monitoring_active"] is False
 
     def test_get_current_metrics_with_data(self, attention_monitor):
         """Test getting current metrics with data."""
@@ -104,17 +103,17 @@ class TestAttentionMonitor:
             context_switches=2,
             pause_duration=10.0,
             focus_score=0.75,
-            attention_state=AttentionState.FOCUSED
+            attention_state=AttentionState.FOCUSED,
         )
 
         attention_monitor._metrics_history.append(sample_metrics)
 
         metrics = attention_monitor.get_current_metrics()
 
-        assert metrics['attention_state'] == AttentionState.FOCUSED
-        assert metrics['focus_score'] == 0.75
-        assert metrics['keystroke_rate'] == 25.0
-        assert metrics['error_rate'] == 1.0
+        assert metrics["attention_state"] == AttentionState.FOCUSED
+        assert metrics["focus_score"] == 0.75
+        assert metrics["keystroke_rate"] == 25.0
+        assert metrics["error_rate"] == 1.0
 
     def test_simulate_activity_keystroke(self, attention_monitor):
         """Test simulating keystroke activity."""
@@ -169,9 +168,7 @@ class TestAttentionMonitor:
 
         # Add context switches in current sample period
         for i in range(3):
-            attention_monitor._context_switch_buffer.append(
-                now - timedelta(seconds=i)
-            )
+            attention_monitor._context_switch_buffer.append(now - timedelta(seconds=i))
 
         switches = attention_monitor._calculate_context_switches()
         assert switches == 3
@@ -181,18 +178,18 @@ class TestAttentionMonitor:
         # Test perfect focus conditions
         score = attention_monitor._calculate_focus_score(
             keystroke_rate=60,  # High activity
-            error_rate=0,       # No errors
-            context_switches=0, # No switches
-            pause_duration=0    # No pause
+            error_rate=0,  # No errors
+            context_switches=0,  # No switches
+            pause_duration=0,  # No pause
         )
         assert score == 1.0
 
         # Test poor focus conditions
         score = attention_monitor._calculate_focus_score(
-            keystroke_rate=0,   # No activity
-            error_rate=10,      # Many errors
-            context_switches=5, # Many switches
-            pause_duration=300  # Long pause
+            keystroke_rate=0,  # No activity
+            error_rate=10,  # Many errors
+            context_switches=5,  # Many switches
+            pause_duration=300,  # Long pause
         )
         assert score == 0.0  # Should be clamped to 0
 
@@ -203,7 +200,7 @@ class TestAttentionMonitor:
             error_rate=0,
             context_switches=0,
             pause_duration=700,  # > 10 minutes
-            focus_score=0.5
+            focus_score=0.5,
         )
         assert state == AttentionState.DISTRACTED
 
@@ -214,7 +211,7 @@ class TestAttentionMonitor:
             error_rate=2,
             context_switches=5,  # > threshold
             pause_duration=0,
-            focus_score=0.5
+            focus_score=0.5,
         )
         assert state == AttentionState.SCATTERED
 
@@ -222,10 +219,10 @@ class TestAttentionMonitor:
         """Test classifying focused state."""
         state = attention_monitor._classify_attention_state(
             keystroke_rate=30,
-            error_rate=1,    # < 2
+            error_rate=1,  # < 2
             context_switches=1,
             pause_duration=5,
-            focus_score=0.8  # > threshold
+            focus_score=0.8,  # > threshold
         )
         assert state == AttentionState.FOCUSED
 
@@ -235,11 +232,11 @@ class TestAttentionMonitor:
         attention_monitor._state_duration = 50 * 60  # 50 minutes
 
         state = attention_monitor._classify_attention_state(
-            keystroke_rate=40,   # High activity
+            keystroke_rate=40,  # High activity
             error_rate=1,
             context_switches=0,
             pause_duration=0,
-            focus_score=0.9      # Very high focus
+            focus_score=0.9,  # Very high focus
         )
         assert state == AttentionState.HYPERFOCUS
 
@@ -248,20 +245,17 @@ class TestAttentionMonitor:
         initial_duration = attention_monitor._state_duration
         initial_state = attention_monitor._current_state
 
-        attention_monitor._update_state_tracking(
-            AttentionState.NORMAL,
-            datetime.now()
-        )
+        attention_monitor._update_state_tracking(AttentionState.NORMAL, datetime.now())
 
         assert attention_monitor._current_state == initial_state
-        assert attention_monitor._state_duration == initial_duration + attention_monitor.sample_interval
+        assert (
+            attention_monitor._state_duration
+            == initial_duration + attention_monitor.sample_interval
+        )
 
     def test_update_state_tracking_state_change(self, attention_monitor):
         """Test state tracking when state changes."""
-        attention_monitor._update_state_tracking(
-            AttentionState.FOCUSED,
-            datetime.now()
-        )
+        attention_monitor._update_state_tracking(AttentionState.FOCUSED, datetime.now())
 
         assert attention_monitor._current_state == AttentionState.FOCUSED
         assert attention_monitor._state_duration == 0
@@ -319,21 +313,23 @@ class TestAttentionMonitor:
                 context_switches=0,
                 pause_duration=0,
                 focus_score=0.7 + (i * 0.01),
-                attention_state=AttentionState.FOCUSED if i % 2 == 0 else AttentionState.NORMAL
+                attention_state=(
+                    AttentionState.FOCUSED if i % 2 == 0 else AttentionState.NORMAL
+                ),
             )
             attention_monitor._metrics_history.append(metrics)
 
         summary = attention_monitor.get_session_summary()
 
-        assert 'session_duration_minutes' in summary
-        assert 'average_focus_score' in summary
-        assert 'total_context_switches' in summary
-        assert 'state_distribution' in summary
-        assert 'productivity_score' in summary
-        assert 'recommendations' in summary
+        assert "session_duration_minutes" in summary
+        assert "average_focus_score" in summary
+        assert "total_context_switches" in summary
+        assert "state_distribution" in summary
+        assert "productivity_score" in summary
+        assert "recommendations" in summary
 
         # Check state distribution
-        state_dist = summary['state_distribution']
+        state_dist = summary["state_distribution"]
         assert AttentionState.FOCUSED in state_dist
         assert AttentionState.NORMAL in state_dist
 
@@ -349,7 +345,7 @@ class TestAttentionMonitor:
                 context_switches=0,
                 pause_duration=0,
                 focus_score=0.8,  # High focus
-                attention_state=AttentionState.FOCUSED
+                attention_state=AttentionState.FOCUSED,
             )
             attention_monitor._metrics_history.append(metrics)
 
@@ -361,11 +357,11 @@ class TestAttentionMonitor:
         # Set up scattered state
         attention_monitor._current_state = AttentionState.SCATTERED
 
-        with patch.object(attention_monitor, 'get_current_metrics') as mock_metrics:
+        with patch.object(attention_monitor, "get_current_metrics") as mock_metrics:
             mock_metrics.return_value = {
-                'attention_state': AttentionState.SCATTERED,
-                'focus_score': 0.6,
-                'session_duration': 30
+                "attention_state": AttentionState.SCATTERED,
+                "focus_score": 0.6,
+                "session_duration": 30,
             }
 
             recommendations = attention_monitor._generate_recommendations()
@@ -375,11 +371,11 @@ class TestAttentionMonitor:
 
     def test_generate_recommendations_hyperfocus(self, attention_monitor):
         """Test recommendations for hyperfocus state."""
-        with patch.object(attention_monitor, 'get_current_metrics') as mock_metrics:
+        with patch.object(attention_monitor, "get_current_metrics") as mock_metrics:
             mock_metrics.return_value = {
-                'attention_state': AttentionState.HYPERFOCUS,
-                'focus_score': 0.9,
-                'session_duration': 30
+                "attention_state": AttentionState.HYPERFOCUS,
+                "focus_score": 0.9,
+                "session_duration": 30,
             }
 
             recommendations = attention_monitor._generate_recommendations()
@@ -389,11 +385,11 @@ class TestAttentionMonitor:
 
     def test_generate_recommendations_low_focus(self, attention_monitor):
         """Test recommendations for low focus."""
-        with patch.object(attention_monitor, 'get_current_metrics') as mock_metrics:
+        with patch.object(attention_monitor, "get_current_metrics") as mock_metrics:
             mock_metrics.return_value = {
-                'attention_state': AttentionState.NORMAL,
-                'focus_score': 0.3,  # Low focus
-                'session_duration': 30
+                "attention_state": AttentionState.NORMAL,
+                "focus_score": 0.3,  # Low focus
+                "session_duration": 30,
             }
 
             recommendations = attention_monitor._generate_recommendations()
@@ -412,30 +408,32 @@ class TestAttentionMonitor:
             context_switches=2,
             pause_duration=0,
             focus_score=0.7,
-            attention_state=AttentionState.FOCUSED
+            attention_state=AttentionState.FOCUSED,
         )
         attention_monitor._metrics_history.append(metrics)
 
         attention_monitor._save_session_metrics()
 
         # Check that file was created
-        session_files = list(attention_monitor.data_dir.glob('session_*.json'))
+        session_files = list(attention_monitor.data_dir.glob("session_*.json"))
         assert len(session_files) > 0
 
         # Verify content
         with open(session_files[0]) as f:
             data = json.load(f)
-            assert 'session_start' in data
-            assert 'session_end' in data
-            assert 'summary' in data
+            assert "session_start" in data
+            assert "session_end" in data
+            assert "summary" in data
 
     def test_log_focus_session(self, attention_monitor):
         """Test logging focus sessions."""
         # Mock session quality calculation
-        with patch.object(attention_monitor, '_calculate_session_quality', return_value=0.8):
+        with patch.object(
+            attention_monitor, "_calculate_session_quality", return_value=0.8
+        ):
             attention_monitor._log_focus_session(30.0)  # 30 minute session
 
-        log_file = attention_monitor.data_dir / 'focus_sessions.jsonl'
+        log_file = attention_monitor.data_dir / "focus_sessions.jsonl"
         assert log_file.exists()
 
         # Verify content
@@ -444,12 +442,12 @@ class TestAttentionMonitor:
             assert len(lines) > 0
 
             last_session = json.loads(lines[-1])
-            assert last_session['duration_minutes'] == 30.0
-            assert last_session['quality_score'] == 0.8
+            assert last_session["duration_minutes"] == 30.0
+            assert last_session["quality_score"] == 0.8
 
     def test_log_focus_session_too_short(self, attention_monitor):
         """Test that short focus sessions are not logged."""
-        log_file = attention_monitor.data_dir / 'focus_sessions.jsonl'
+        log_file = attention_monitor.data_dir / "focus_sessions.jsonl"
 
         # Remove existing log file if it exists
         if log_file.exists():
@@ -474,7 +472,7 @@ class TestAttentionMonitor:
                 context_switches=1,
                 pause_duration=0,
                 focus_score=score,
-                attention_state=AttentionState.FOCUSED
+                attention_state=AttentionState.FOCUSED,
             )
             attention_monitor._metrics_history.append(metrics)
 
@@ -496,6 +494,7 @@ class TestAttentionMonitor:
 
     def test_error_handling_in_callback(self, attention_monitor):
         """Test error handling when callback fails."""
+
         def failing_callback(metrics):
             raise ValueError("Test error")
 

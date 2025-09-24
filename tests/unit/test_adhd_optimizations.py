@@ -4,22 +4,21 @@ Unit tests for ADHD Workflow Optimizations.
 Comprehensive test coverage for ADHD-specific task optimization and workflow management.
 """
 
-import pytest
-import asyncio
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
-from dataclasses import asdict
 
+import pytest
+
+from core.config import Config
 from utils.adhd_optimizations import (
-    ADHDTaskOptimizer,
     ADHDProfile,
-    TaskOptimization,
+    ADHDTaskOptimizer,
     AttentionState,
     CognitiveLoad,
     TaskComplexity,
-    create_adhd_optimizer
+    TaskOptimization,
+    create_adhd_optimizer,
 )
-from core.config import Config
 
 
 class TestAttentionState:
@@ -93,7 +92,7 @@ class TestADHDProfile:
             time_of_day_preference=time_preferences,
             hyperfocus_triggers=triggers,
             attention_drain_factors=drains,
-            successful_patterns=patterns
+            successful_patterns=patterns,
         )
 
         assert profile.user_id == "custom_user"
@@ -160,7 +159,7 @@ class TestTaskOptimization:
             context_cues=cues,
             completion_rewards=rewards,
             optimal_time_slots=time_slots,
-            avoid_time_slots=avoid_slots
+            avoid_time_slots=avoid_slots,
         )
 
         assert optimization.cognitive_load_score == 4.5
@@ -198,13 +197,15 @@ class TestADHDTaskOptimizer:
     @pytest.fixture
     def config(self):
         """Create test configuration."""
-        return Config({
-            'adhd': {
-                'cognitive_load_threshold': 0.8,
-                'attention_decay_rate': 0.05,
-                'context_switch_penalty': 0.2
+        return Config(
+            {
+                "adhd": {
+                    "cognitive_load_threshold": 0.8,
+                    "attention_decay_rate": 0.05,
+                    "context_switch_penalty": 0.2,
+                }
             }
-        })
+        )
 
     @pytest.fixture
     def optimizer(self, config):
@@ -230,16 +231,21 @@ class TestADHDTaskOptimizer:
         task.estimated_hours = None
         task.dependencies = []
 
-        with patch.object(optimizer, '_get_adhd_profile') as mock_get_profile:
-            with patch.object(optimizer, '_analyze_task_complexity') as mock_analyze:
-                with patch.object(optimizer, '_generate_task_optimization') as mock_generate:
-                    with patch.object(optimizer, '_apply_optimizations') as mock_apply:
-                        with patch.object(optimizer, '_log_optimization') as mock_log:
+        with patch.object(optimizer, "_get_adhd_profile") as mock_get_profile:
+            with patch.object(optimizer, "_analyze_task_complexity") as mock_analyze:
+                with patch.object(
+                    optimizer, "_generate_task_optimization"
+                ) as mock_generate:
+                    with patch.object(optimizer, "_apply_optimizations") as mock_apply:
+                        with patch.object(optimizer, "_log_optimization") as mock_log:
                             # Setup mocks
                             mock_profile = ADHDProfile("test_user")
                             mock_get_profile.return_value = mock_profile
 
-                            mock_analysis = {"cognitive_load": 3.0, "attention_requirement": 25}
+                            mock_analysis = {
+                                "cognitive_load": 3.0,
+                                "attention_requirement": 25,
+                            }
                             mock_analyze.return_value = mock_analysis
 
                             mock_optimization = TaskOptimization()
@@ -263,10 +269,18 @@ class TestADHDTaskOptimizer:
         task = MagicMock()
         task.headline = "Test Task"
 
-        with patch.object(optimizer, '_analyze_task_complexity', AsyncMock(return_value={})):
-            with patch.object(optimizer, '_generate_task_optimization', AsyncMock(return_value=TaskOptimization())):
-                with patch.object(optimizer, '_apply_optimizations', AsyncMock(return_value=task)):
-                    with patch.object(optimizer, '_log_optimization', AsyncMock()):
+        with patch.object(
+            optimizer, "_analyze_task_complexity", AsyncMock(return_value={})
+        ):
+            with patch.object(
+                optimizer,
+                "_generate_task_optimization",
+                AsyncMock(return_value=TaskOptimization()),
+            ):
+                with patch.object(
+                    optimizer, "_apply_optimizations", AsyncMock(return_value=task)
+                ):
+                    with patch.object(optimizer, "_log_optimization", AsyncMock()):
                         result = await optimizer.optimize_task(task)
 
                         assert result == task
@@ -276,7 +290,11 @@ class TestADHDTaskOptimizer:
         """Test task optimization error handling."""
         task = MagicMock()
 
-        with patch.object(optimizer, '_analyze_task_complexity', AsyncMock(side_effect=Exception("Analysis error"))):
+        with patch.object(
+            optimizer,
+            "_analyze_task_complexity",
+            AsyncMock(side_effect=Exception("Analysis error")),
+        ):
             result = await optimizer.optimize_task(task)
 
             # Should return original task on error
@@ -310,7 +328,7 @@ class TestADHDTaskOptimizer:
         tm_task.tags = []
         tm_task.ai_analysis = {}
 
-        result = await optimizer.optimize_taskmaster_task(tm_task)
+        await optimizer.optimize_taskmaster_task(tm_task)
 
         assert "quick_win" in tm_task.tags
         assert "adhd_optimization" in tm_task.ai_analysis
@@ -321,7 +339,9 @@ class TestADHDTaskOptimizer:
         tm_task = MagicMock()
 
         # Simulate error during optimization
-        with patch.object(optimizer, '_calculate_break_frequency', side_effect=Exception("Error")):
+        with patch.object(
+            optimizer, "_calculate_break_frequency", side_effect=Exception("Error")
+        ):
             result = await optimizer.optimize_taskmaster_task(tm_task)
 
             # Should return original task on error
@@ -333,29 +353,43 @@ class TestADHDTaskOptimizer:
         tasks = [
             MagicMock(id=1, headline="Task 1"),
             MagicMock(id=2, headline="Task 2"),
-            MagicMock(id=3, headline="Task 3")
+            MagicMock(id=3, headline="Task 3"),
         ]
 
-        with patch.object(optimizer, '_get_adhd_profile') as mock_get_profile:
-            with patch.object(optimizer, '_analyze_task_complexity') as mock_analyze:
-                with patch.object(optimizer, '_sort_tasks_for_adhd') as mock_sort:
-                    with patch.object(optimizer, '_create_adhd_schedule') as mock_create:
+        with patch.object(optimizer, "_get_adhd_profile") as mock_get_profile:
+            with patch.object(optimizer, "_analyze_task_complexity") as mock_analyze:
+                with patch.object(optimizer, "_sort_tasks_for_adhd") as mock_sort:
+                    with patch.object(
+                        optimizer, "_create_adhd_schedule"
+                    ) as mock_create:
                         # Setup mocks
                         mock_profile = ADHDProfile("test_user")
                         mock_get_profile.return_value = mock_profile
 
-                        mock_analyze.return_value = {"cognitive_load": 3.0, "estimated_duration": 30}
+                        mock_analyze.return_value = {
+                            "cognitive_load": 3.0,
+                            "estimated_duration": 30,
+                        }
 
-                        task_analyses = [(task, {"cognitive_load": 3.0}) for task in tasks]
+                        task_analyses = [
+                            (task, {"cognitive_load": 3.0}) for task in tasks
+                        ]
                         mock_sort.return_value = task_analyses
 
                         expected_schedule = [
-                            {"type": "task", "task": tasks[0], "start_time": 0, "duration": 30}
+                            {
+                                "type": "task",
+                                "task": tasks[0],
+                                "start_time": 0,
+                                "duration": 30,
+                            }
                         ]
                         mock_create.return_value = expected_schedule
 
                         # Run scheduling
-                        result = await optimizer.schedule_optimal_sequence(tasks, "test_user", 480)
+                        result = await optimizer.schedule_optimal_sequence(
+                            tasks, "test_user", 480
+                        )
 
                         assert result == expected_schedule
                         mock_get_profile.assert_called_once_with("test_user")
@@ -368,7 +402,11 @@ class TestADHDTaskOptimizer:
         """Test task scheduling error handling."""
         tasks = [MagicMock()]
 
-        with patch.object(optimizer, '_analyze_task_complexity', AsyncMock(side_effect=Exception("Error"))):
+        with patch.object(
+            optimizer,
+            "_analyze_task_complexity",
+            AsyncMock(side_effect=Exception("Error")),
+        ):
             result = await optimizer.schedule_optimal_sequence(tasks)
 
             # Should return simple fallback schedule
@@ -378,7 +416,7 @@ class TestADHDTaskOptimizer:
     @pytest.mark.asyncio
     async def test_detect_attention_state_default(self, optimizer):
         """Test attention state detection with default pattern."""
-        with patch.object(optimizer, '_get_adhd_profile') as mock_get_profile:
+        with patch.object(optimizer, "_get_adhd_profile") as mock_get_profile:
             mock_profile = ADHDProfile("test_user")
             mock_profile.primary_attention_pattern = AttentionState.FOCUSED
             mock_get_profile.return_value = mock_profile
@@ -392,13 +430,19 @@ class TestADHDTaskOptimizer:
         """Test attention state detection with activity data."""
         activity = [
             {"type": "task_switch", "timestamp": datetime.now()},
-            {"type": "focus_session", "duration": 60}
+            {"type": "focus_session", "duration": 60},
         ]
 
-        with patch.object(optimizer, '_get_adhd_profile') as mock_get_profile:
-            with patch.object(optimizer, '_analyze_attention_indicators') as mock_analyze:
-                with patch.object(optimizer, '_classify_attention_state') as mock_classify:
-                    with patch.object(optimizer, '_update_attention_pattern') as mock_update:
+        with patch.object(optimizer, "_get_adhd_profile") as mock_get_profile:
+            with patch.object(
+                optimizer, "_analyze_attention_indicators"
+            ) as mock_analyze:
+                with patch.object(
+                    optimizer, "_classify_attention_state"
+                ) as mock_classify:
+                    with patch.object(
+                        optimizer, "_update_attention_pattern"
+                    ) as mock_update:
                         mock_profile = ADHDProfile("test_user")
                         mock_get_profile.return_value = mock_profile
 
@@ -408,17 +452,25 @@ class TestADHDTaskOptimizer:
                         mock_classify.return_value = AttentionState.HYPERFOCUS
                         mock_update.return_value = None
 
-                        state = await optimizer.detect_attention_state("test_user", activity)
+                        state = await optimizer.detect_attention_state(
+                            "test_user", activity
+                        )
 
                         assert state == AttentionState.HYPERFOCUS
                         mock_analyze.assert_called_once_with(activity)
-                        mock_classify.assert_called_once_with(mock_indicators, mock_profile)
-                        mock_update.assert_called_once_with("test_user", AttentionState.HYPERFOCUS)
+                        mock_classify.assert_called_once_with(
+                            mock_indicators, mock_profile
+                        )
+                        mock_update.assert_called_once_with(
+                            "test_user", AttentionState.HYPERFOCUS
+                        )
 
     @pytest.mark.asyncio
     async def test_detect_attention_state_error_handling(self, optimizer):
         """Test attention state detection error handling."""
-        with patch.object(optimizer, '_get_adhd_profile', AsyncMock(side_effect=Exception("Error"))):
+        with patch.object(
+            optimizer, "_get_adhd_profile", AsyncMock(side_effect=Exception("Error"))
+        ):
             state = await optimizer.detect_attention_state("test_user")
 
             # Should return safe default
@@ -430,39 +482,64 @@ class TestADHDTaskOptimizer:
         context = {
             "task_name": "Test Task",
             "project": "Test Project",
-            "current_state": "working"
+            "current_state": "working",
         }
 
-        with patch.object(optimizer, '_get_adhd_profile') as mock_get_profile:
-            with patch.object(optimizer, '_generate_context_summary') as mock_summary:
-                with patch.object(optimizer, '_capture_mental_model') as mock_mental:
-                    with patch.object(optimizer, '_extract_decision_trail') as mock_decisions:
-                        with patch.object(optimizer, '_identify_attention_anchors') as mock_anchors:
-                            with patch.object(optimizer, '_generate_continuation_cues') as mock_cues:
-                                with patch.object(optimizer, '_create_restoration_steps') as mock_steps:
-                                    with patch.object(optimizer, '_store_context_preservation') as mock_store:
+        with patch.object(optimizer, "_get_adhd_profile") as mock_get_profile:
+            with patch.object(optimizer, "_generate_context_summary") as mock_summary:
+                with patch.object(optimizer, "_capture_mental_model") as mock_mental:
+                    with patch.object(
+                        optimizer, "_extract_decision_trail"
+                    ) as mock_decisions:
+                        with patch.object(
+                            optimizer, "_identify_attention_anchors"
+                        ) as mock_anchors:
+                            with patch.object(
+                                optimizer, "_generate_continuation_cues"
+                            ) as mock_cues:
+                                with patch.object(
+                                    optimizer, "_create_restoration_steps"
+                                ) as mock_steps:
+                                    with patch.object(
+                                        optimizer, "_store_context_preservation"
+                                    ) as mock_store:
                                         # Setup mocks
                                         mock_profile = ADHDProfile("test_user")
                                         mock_get_profile.return_value = mock_profile
                                         mock_summary.return_value = "Context summary"
-                                        mock_mental.return_value = {"concepts": ["concept1"]}
-                                        mock_decisions.return_value = [{"decision": "choice1"}]
+                                        mock_mental.return_value = {
+                                            "concepts": ["concept1"]
+                                        }
+                                        mock_decisions.return_value = [
+                                            {"decision": "choice1"}
+                                        ]
                                         mock_anchors.return_value = ["anchor1"]
                                         mock_cues.return_value = ["cue1"]
                                         mock_steps.return_value = ["step1"]
 
-                                        result = await optimizer.generate_context_preservation("test_user", context)
+                                        result = await optimizer.generate_context_preservation(
+                                            "test_user", context
+                                        )
 
                                         assert result["user_id"] == "test_user"
-                                        assert result["context_summary"] == "Context summary"
-                                        assert result["mental_model"] == {"concepts": ["concept1"]}
-                                        assert result["attention_anchors"] == ["anchor1"]
+                                        assert (
+                                            result["context_summary"]
+                                            == "Context summary"
+                                        )
+                                        assert result["mental_model"] == {
+                                            "concepts": ["concept1"]
+                                        }
+                                        assert result["attention_anchors"] == [
+                                            "anchor1"
+                                        ]
                                         mock_store.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_generate_context_preservation_error_handling(self, optimizer):
         """Test context preservation error handling."""
-        with patch.object(optimizer, '_get_adhd_profile', AsyncMock(side_effect=Exception("Error"))):
+        with patch.object(
+            optimizer, "_get_adhd_profile", AsyncMock(side_effect=Exception("Error"))
+        ):
             result = await optimizer.generate_context_preservation("test_user", {})
 
             assert "error" in result
@@ -476,18 +553,22 @@ class TestADHDTaskOptimizer:
             "context_summary": "Previous work summary",
             "restoration_steps": ["Step 1", "Step 2"],
             "attention_anchors": ["Anchor 1"],
-            "continuation_cues": ["Cue 1"]
+            "continuation_cues": ["Cue 1"],
         }
 
-        with patch.object(optimizer, '_get_adhd_profile') as mock_get_profile:
-            with patch.object(optimizer, '_calculate_context_age') as mock_age:
-                with patch.object(optimizer, '_generate_restoration_recommendations') as mock_recs:
+        with patch.object(optimizer, "_get_adhd_profile") as mock_get_profile:
+            with patch.object(optimizer, "_calculate_context_age") as mock_age:
+                with patch.object(
+                    optimizer, "_generate_restoration_recommendations"
+                ) as mock_recs:
                     mock_profile = ADHDProfile("test_user")
                     mock_get_profile.return_value = mock_profile
                     mock_age.return_value = "30 minutes ago"
                     mock_recs.return_value = ["Recommendation 1"]
 
-                    result = await optimizer.restore_context("test_user", preservation_data)
+                    result = await optimizer.restore_context(
+                        "test_user", preservation_data
+                    )
 
                     assert result["status"] == "ready"
                     assert result["context_age"] == "30 minutes ago"
@@ -497,7 +578,9 @@ class TestADHDTaskOptimizer:
     @pytest.mark.asyncio
     async def test_restore_context_no_data(self, optimizer):
         """Test context restoration with no data."""
-        with patch.object(optimizer, '_retrieve_latest_context', AsyncMock(return_value=None)):
+        with patch.object(
+            optimizer, "_retrieve_latest_context", AsyncMock(return_value=None)
+        ):
             result = await optimizer.restore_context("test_user")
 
             assert result["status"] == "no_context"
@@ -506,7 +589,11 @@ class TestADHDTaskOptimizer:
     @pytest.mark.asyncio
     async def test_restore_context_error_handling(self, optimizer):
         """Test context restoration error handling."""
-        with patch.object(optimizer, '_retrieve_latest_context', AsyncMock(side_effect=Exception("Error"))):
+        with patch.object(
+            optimizer,
+            "_retrieve_latest_context",
+            AsyncMock(side_effect=Exception("Error")),
+        ):
             result = await optimizer.restore_context("test_user")
 
             assert result["status"] == "error"
@@ -525,8 +612,10 @@ class TestADHDTaskOptimizer:
     @pytest.mark.asyncio
     async def test_get_adhd_profile_new(self, optimizer):
         """Test getting new ADHD profile."""
-        with patch.object(optimizer, '_load_profile_data', AsyncMock(return_value=None)):
-            with patch.object(optimizer, '_save_profile_data', AsyncMock()):
+        with patch.object(
+            optimizer, "_load_profile_data", AsyncMock(return_value=None)
+        ):
+            with patch.object(optimizer, "_save_profile_data", AsyncMock()):
                 result = await optimizer._get_adhd_profile("new_user")
 
                 assert result.user_id == "new_user"
@@ -538,10 +627,12 @@ class TestADHDTaskOptimizer:
         profile_data = {
             "user_id": "stored_user",
             "optimal_focus_duration": 45,
-            "break_duration": 10
+            "break_duration": 10,
         }
 
-        with patch.object(optimizer, '_load_profile_data', AsyncMock(return_value=profile_data)):
+        with patch.object(
+            optimizer, "_load_profile_data", AsyncMock(return_value=profile_data)
+        ):
             result = await optimizer._get_adhd_profile("stored_user")
 
             assert result.user_id == "stored_user"
@@ -573,10 +664,14 @@ class TestADHDTaskOptimizer:
         complex_task.complexity_score = 3.0
         complex_task.estimated_hours = None
         complex_task.dependencies = []
-        complex_task.description = "Integrate complex algorithm and refactor architecture"
+        complex_task.description = (
+            "Integrate complex algorithm and refactor architecture"
+        )
 
         analysis = await optimizer._analyze_task_complexity(complex_task)
-        assert analysis["cognitive_load"] >= 3.5  # Should increase due to complex indicators
+        assert (
+            analysis["cognitive_load"] >= 3.5
+        )  # Should increase due to complex indicators
 
         # Simple task
         simple_task = MagicMock()
@@ -586,7 +681,9 @@ class TestADHDTaskOptimizer:
         simple_task.description = "Fix small bug and update documentation"
 
         analysis = await optimizer._analyze_task_complexity(simple_task)
-        assert analysis["cognitive_load"] <= 2.5  # Should decrease due to simple indicators
+        assert (
+            analysis["cognitive_load"] <= 2.5
+        )  # Should decrease due to simple indicators
 
     @pytest.mark.asyncio
     async def test_analyze_task_complexity_error_handling(self, optimizer):
@@ -597,7 +694,9 @@ class TestADHDTaskOptimizer:
         task.dependencies = []
 
         # Mock an error in attribute access
-        with patch.object(task, 'description', side_effect=Exception("Attribute error")):
+        with patch.object(
+            task, "description", side_effect=Exception("Attribute error")
+        ):
             analysis = await optimizer._analyze_task_complexity(task)
 
             # Should return default values despite error
@@ -606,10 +705,16 @@ class TestADHDTaskOptimizer:
 
     def test_calculate_break_frequency(self, optimizer):
         """Test break frequency calculation."""
-        assert optimizer._calculate_break_frequency(10) == 0  # No breaks for short tasks
+        assert (
+            optimizer._calculate_break_frequency(10) == 0
+        )  # No breaks for short tasks
         assert optimizer._calculate_break_frequency(25) == 25  # Standard Pomodoro
-        assert optimizer._calculate_break_frequency(45) == 20  # More frequent for medium tasks
-        assert optimizer._calculate_break_frequency(90) == 15  # Very frequent for long tasks
+        assert (
+            optimizer._calculate_break_frequency(45) == 20
+        )  # More frequent for medium tasks
+        assert (
+            optimizer._calculate_break_frequency(90) == 15
+        )  # Very frequent for long tasks
 
     def test_get_optimal_scheduling(self, optimizer):
         """Test optimal scheduling recommendations."""
@@ -685,8 +790,11 @@ class TestADHDTaskOptimizer:
         """Test optimal timing calculation."""
         profile = ADHDProfile("test_user")
         profile.time_of_day_preference = {
-            "9": 0.9, "10": 0.8, "11": 0.7,  # High productivity hours
-            "14": 0.6, "15": 0.5  # Lower productivity hours
+            "9": 0.9,
+            "10": 0.8,
+            "11": 0.7,  # High productivity hours
+            "14": 0.6,
+            "15": 0.5,  # Lower productivity hours
         }
 
         # High cognitive load - needs peak times
@@ -705,9 +813,33 @@ class TestADHDTaskOptimizer:
         task3 = MagicMock()
 
         task_analyses = [
-            (task1, {"estimated_duration": 60, "cognitive_load": 4.0, "context_complexity": 0.8, "dependency_count": 3}),
-            (task2, {"estimated_duration": 10, "cognitive_load": 1.0, "context_complexity": 0.1, "dependency_count": 0}),
-            (task3, {"estimated_duration": 30, "cognitive_load": 3.0, "context_complexity": 0.3, "dependency_count": 1})
+            (
+                task1,
+                {
+                    "estimated_duration": 60,
+                    "cognitive_load": 4.0,
+                    "context_complexity": 0.8,
+                    "dependency_count": 3,
+                },
+            ),
+            (
+                task2,
+                {
+                    "estimated_duration": 10,
+                    "cognitive_load": 1.0,
+                    "context_complexity": 0.1,
+                    "dependency_count": 0,
+                },
+            ),
+            (
+                task3,
+                {
+                    "estimated_duration": 30,
+                    "cognitive_load": 3.0,
+                    "context_complexity": 0.3,
+                    "dependency_count": 1,
+                },
+            ),
         ]
 
         profile = ADHDProfile("test_user")
@@ -729,7 +861,7 @@ class TestADHDTaskOptimizer:
 
         sorted_tasks = [
             (task1, {"estimated_duration": 20, "cognitive_load": 2.0}),
-            (task2, {"estimated_duration": 45, "cognitive_load": 4.0})
+            (task2, {"estimated_duration": 45, "cognitive_load": 4.0}),
         ]
 
         profile = ADHDProfile("test_user")
@@ -742,7 +874,11 @@ class TestADHDTaskOptimizer:
         assert len(schedule) > 0
 
         # First task should be at time 0
-        first_task_entry = next(entry for entry in schedule if entry["type"] == "task" and entry["task"] == task1)
+        first_task_entry = next(
+            entry
+            for entry in schedule
+            if entry["type"] == "task" and entry["task"] == task1
+        )
         assert first_task_entry["start_time"] == 0
 
         # Should have breaks and buffers
@@ -755,7 +891,9 @@ class TestADHDTaskOptimizer:
 
         # Hyperfocus indicators
         hyperfocus_indicators = {"focus_duration": 90, "task_switches": 1}
-        state = await optimizer._classify_attention_state(hyperfocus_indicators, profile)
+        state = await optimizer._classify_attention_state(
+            hyperfocus_indicators, profile
+        )
         assert state == AttentionState.HYPERFOCUS
 
         # Scattered indicators
@@ -793,8 +931,12 @@ class TestADHDTaskOptimizer:
         profile = ADHDProfile("test_user")
 
         # Recent context
-        recent_data = {"timestamp": (datetime.now() - timedelta(minutes=30)).isoformat()}
-        recs = await optimizer._generate_restoration_recommendations(recent_data, profile)
+        recent_data = {
+            "timestamp": (datetime.now() - timedelta(minutes=30)).isoformat()
+        }
+        recs = await optimizer._generate_restoration_recommendations(
+            recent_data, profile
+        )
         assert len(recs) >= 3
         assert all(isinstance(rec, str) for rec in recs)
 
@@ -809,7 +951,7 @@ class TestFactoryFunction:
 
     def test_create_adhd_optimizer(self):
         """Test factory function."""
-        config = Config({'adhd': {'cognitive_load_threshold': 0.9}})
+        config = Config({"adhd": {"cognitive_load_threshold": 0.9}})
 
         optimizer = create_adhd_optimizer(config)
 
@@ -819,4 +961,6 @@ class TestFactoryFunction:
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "--cov=utils.adhd_optimizations", "--cov-report=term-missing"])
+    pytest.main(
+        [__file__, "-v", "--cov=utils.adhd_optimizations", "--cov-report=term-missing"]
+    )

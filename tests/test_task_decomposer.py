@@ -2,14 +2,10 @@
 Tests for the task decomposer module.
 """
 
-import pytest
 import json
 from datetime import datetime, timedelta
-from unittest.mock import patch, Mock
 
-from dopemux.adhd.task_decomposer import (
-    TaskDecomposer, Task, TaskPriority, TaskStatus
-)
+from dopemux.adhd.task_decomposer import Task, TaskDecomposer, TaskPriority, TaskStatus
 
 
 class TestTaskPriority:
@@ -45,7 +41,7 @@ class TestTask:
             description="Test task",
             priority=TaskPriority.MEDIUM,
             status=TaskStatus.PENDING,
-            estimated_duration=25
+            estimated_duration=25,
         )
 
         assert task.id == "test-123"
@@ -70,7 +66,7 @@ class TestTask:
             description="Test task",
             priority=TaskPriority.HIGH,
             status=TaskStatus.PENDING,
-            estimated_duration=30
+            estimated_duration=30,
         )
 
         assert task.created_at  # Should be set
@@ -82,8 +78,11 @@ class TestTask:
     def test_property_is_completed(self):
         """Test is_completed property."""
         task = Task(
-            id="test", description="Test", priority=TaskPriority.LOW,
-            status=TaskStatus.COMPLETED, estimated_duration=10
+            id="test",
+            description="Test",
+            priority=TaskPriority.LOW,
+            status=TaskStatus.COMPLETED,
+            estimated_duration=10,
         )
         assert task.is_completed is True
 
@@ -93,8 +92,11 @@ class TestTask:
     def test_property_is_in_progress(self):
         """Test is_in_progress property."""
         task = Task(
-            id="test", description="Test", priority=TaskPriority.LOW,
-            status=TaskStatus.IN_PROGRESS, estimated_duration=10
+            id="test",
+            description="Test",
+            priority=TaskPriority.LOW,
+            status=TaskStatus.IN_PROGRESS,
+            estimated_duration=10,
         )
         assert task.is_in_progress is True
 
@@ -104,8 +106,11 @@ class TestTask:
     def test_property_is_blocked(self):
         """Test is_blocked property."""
         task = Task(
-            id="test", description="Test", priority=TaskPriority.LOW,
-            status=TaskStatus.BLOCKED, estimated_duration=10
+            id="test",
+            description="Test",
+            priority=TaskPriority.LOW,
+            status=TaskStatus.BLOCKED,
+            estimated_duration=10,
         )
         assert task.is_blocked is True
 
@@ -119,8 +124,11 @@ class TestTask:
     def test_property_can_start(self):
         """Test can_start property."""
         task = Task(
-            id="test", description="Test", priority=TaskPriority.LOW,
-            status=TaskStatus.PENDING, estimated_duration=10
+            id="test",
+            description="Test",
+            priority=TaskPriority.LOW,
+            status=TaskStatus.PENDING,
+            estimated_duration=10,
         )
         assert task.can_start is True
 
@@ -142,7 +150,7 @@ class TestTaskDecomposer:
     def test_initialization(self, task_decomposer, temp_project_dir):
         """Test TaskDecomposer initialization."""
         assert task_decomposer.project_path == temp_project_dir
-        assert task_decomposer.data_dir == temp_project_dir / '.dopemux' / 'tasks'
+        assert task_decomposer.data_dir == temp_project_dir / ".dopemux" / "tasks"
         assert task_decomposer.data_dir.exists()
 
         # Check ADHD-specific settings
@@ -160,7 +168,7 @@ class TestTaskDecomposer:
             priority="high",
             duration=20,
             energy_required="low",
-            tags=["test"]
+            tags=["test"],
         )
 
         assert task_id in task_decomposer._tasks
@@ -179,7 +187,7 @@ class TestTaskDecomposer:
             description="Large task",
             priority="medium",
             duration=60,  # > max_task_duration (25)
-            energy_required="high"
+            energy_required="high",
         )
 
         assert task_id in task_decomposer._tasks
@@ -287,10 +295,10 @@ class TestTaskDecomposer:
         assert len(tasks) == 3
 
         # Should be sorted by priority (urgent first, then high, etc.)
-        priorities = [t['priority'] for t in tasks]
+        priorities = [t["priority"] for t in tasks]
         assert priorities[0] == "urgent"  # Task 3
-        assert priorities[1] == "high"    # Task 1
-        assert priorities[2] == "low"     # Task 2
+        assert priorities[1] == "high"  # Task 1
+        assert priorities[2] == "low"  # Task 2
 
     def test_list_tasks_filtered_by_status(self, task_decomposer):
         """Test listing tasks filtered by status."""
@@ -304,12 +312,12 @@ class TestTaskDecomposer:
         # Filter by completed status
         completed_tasks = task_decomposer.list_tasks(status="completed")
         assert len(completed_tasks) == 1
-        assert completed_tasks[0]['description'] == "Task 1"
+        assert completed_tasks[0]["description"] == "Task 1"
 
         # Filter by pending status
         pending_tasks = task_decomposer.list_tasks(status="pending")
         assert len(pending_tasks) == 1
-        assert pending_tasks[0]['description'] == "Task 2"
+        assert pending_tasks[0]["description"] == "Task 2"
 
     def test_get_progress_no_tasks(self, task_decomposer):
         """Test getting progress when no tasks exist."""
@@ -329,25 +337,33 @@ class TestTaskDecomposer:
 
         progress = task_decomposer.get_progress()
 
-        assert progress['total_tasks'] == 2
-        assert progress['completed_tasks'] == 1
-        assert progress['in_progress_tasks'] == 1
-        assert progress['overall_progress'] > 0
-        assert progress['current_task'] is not None
-        assert progress['current_task']['description'] == "Task 2"
+        assert progress["total_tasks"] == 2
+        assert progress["completed_tasks"] == 1
+        assert progress["in_progress_tasks"] == 1
+        assert progress["overall_progress"] > 0
+        assert progress["current_task"] is not None
+        assert progress["current_task"]["description"] == "Task 2"
 
     def test_get_recommended_task(self, task_decomposer):
         """Test getting recommended task."""
         # Add tasks with different characteristics
-        task_decomposer.add_task("Low energy task", energy_required="low", priority="high", duration=15)
-        task_decomposer.add_task("High energy task", energy_required="high", priority="medium", duration=30)
-        task_decomposer.add_task("Medium energy task", energy_required="medium", priority="low", duration=20)
+        task_decomposer.add_task(
+            "Low energy task", energy_required="low", priority="high", duration=15
+        )
+        task_decomposer.add_task(
+            "High energy task", energy_required="high", priority="medium", duration=30
+        )
+        task_decomposer.add_task(
+            "Medium energy task", energy_required="medium", priority="low", duration=20
+        )
 
         # Get recommendation for low energy user
         recommended = task_decomposer.get_recommended_task(energy_level="low")
 
         assert recommended is not None
-        assert recommended['description'] == "Low energy task"  # Should match energy level
+        assert (
+            recommended["description"] == "Low energy task"
+        )  # Should match energy level
 
     def test_get_recommended_task_no_available(self, task_decomposer):
         """Test getting recommended task when none available."""
@@ -396,7 +412,7 @@ class TestTaskDecomposer:
             priority=TaskPriority.HIGH,
             status=TaskStatus.PENDING,
             estimated_duration=50,
-            energy_required="medium"
+            energy_required="medium",
         )
 
         subtasks = task_decomposer._decompose_task(main_task)
@@ -413,20 +429,26 @@ class TestTaskDecomposer:
                 assert len(subtask.dependencies) == 0
             else:
                 assert len(subtask.dependencies) == 1
-                assert subtask.dependencies[0] == subtasks[i-1].id
+                assert subtask.dependencies[0] == subtasks[i - 1].id
 
     def test_calculate_task_score(self, task_decomposer):
         """Test task scoring algorithm."""
         urgent_task = Task(
-            id="urgent", description="Urgent", priority=TaskPriority.URGENT,
-            status=TaskStatus.PENDING, estimated_duration=15,
-            energy_required="low"
+            id="urgent",
+            description="Urgent",
+            priority=TaskPriority.URGENT,
+            status=TaskStatus.PENDING,
+            estimated_duration=15,
+            energy_required="low",
         )
 
         low_task = Task(
-            id="low", description="Low", priority=TaskPriority.LOW,
-            status=TaskStatus.PENDING, estimated_duration=15,
-            energy_required="high"
+            id="low",
+            description="Low",
+            priority=TaskPriority.LOW,
+            status=TaskStatus.PENDING,
+            estimated_duration=15,
+            energy_required="high",
         )
 
         urgent_score = task_decomposer._calculate_task_score(urgent_task, "low")
@@ -438,7 +460,9 @@ class TestTaskDecomposer:
         # Task with matching energy level should score higher
         low_energy_score = task_decomposer._calculate_task_score(urgent_task, "low")
         high_energy_score = task_decomposer._calculate_task_score(urgent_task, "high")
-        assert low_energy_score >= high_energy_score  # low energy task for low energy user
+        assert (
+            low_energy_score >= high_energy_score
+        )  # low energy task for low energy user
 
     def test_check_unblocked_tasks(self, task_decomposer):
         """Test checking for newly unblocked tasks."""
@@ -497,8 +521,8 @@ class TestTaskDecomposer:
             sessions = json.load(f)
 
         assert len(sessions) >= 2  # Start and complete events
-        assert any(s['action'] == 'started' for s in sessions)
-        assert any(s['action'] == 'completed' for s in sessions)
+        assert any(s["action"] == "started" for s in sessions)
+        assert any(s["action"] == "completed" for s in sessions)
 
     def test_show_task_progress(self, task_decomposer, capsys):
         """Test visual progress display."""
@@ -522,12 +546,16 @@ class TestTaskDecomposer:
     def test_energy_level_matching(self, task_decomposer):
         """Test that energy levels are properly matched in recommendations."""
         # Add tasks with different energy requirements
-        low_task_id = task_decomposer.add_task("Low energy", energy_required="low", priority="medium")
-        high_task_id = task_decomposer.add_task("High energy", energy_required="high", priority="medium")
+        low_task_id = task_decomposer.add_task(
+            "Low energy", energy_required="low", priority="medium"
+        )
+        high_task_id = task_decomposer.add_task(
+            "High energy", energy_required="high", priority="medium"
+        )
 
         # For low energy user, low energy task should be preferred
         low_rec = task_decomposer.get_recommended_task(energy_level="low")
-        assert low_rec['description'] == "Low energy"
+        assert low_rec["description"] == "Low energy"
 
         # For high energy user, either should be acceptable
         high_rec = task_decomposer.get_recommended_task(energy_level="high")
@@ -537,9 +565,12 @@ class TestTaskDecomposer:
         """Test that older tasks get priority boost in scoring."""
         # Create task and mock it as older
         task = Task(
-            id="old", description="Old task", priority=TaskPriority.LOW,
-            status=TaskStatus.PENDING, estimated_duration=15,
-            energy_required="medium"
+            id="old",
+            description="Old task",
+            priority=TaskPriority.LOW,
+            status=TaskStatus.PENDING,
+            estimated_duration=15,
+            energy_required="medium",
         )
 
         # Mock creation time as 5 days ago
@@ -550,9 +581,12 @@ class TestTaskDecomposer:
 
         # Create identical new task
         new_task = Task(
-            id="new", description="New task", priority=TaskPriority.LOW,
-            status=TaskStatus.PENDING, estimated_duration=15,
-            energy_required="medium"
+            id="new",
+            description="New task",
+            priority=TaskPriority.LOW,
+            status=TaskStatus.PENDING,
+            estimated_duration=15,
+            energy_required="medium",
         )
 
         new_score = task_decomposer._calculate_task_score(new_task, "medium")
