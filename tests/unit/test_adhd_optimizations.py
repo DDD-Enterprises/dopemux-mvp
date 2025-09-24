@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from dataclasses import asdict
 
-from src.utils.adhd_optimizations import (
+from utils.adhd_optimizations import (
     ADHDTaskOptimizer,
     ADHDProfile,
     TaskOptimization,
@@ -19,7 +19,7 @@ from src.utils.adhd_optimizations import (
     TaskComplexity,
     create_adhd_optimizer
 )
-from src.core.config import Config
+from core.config import Config
 
 
 class TestAttentionState:
@@ -819,4 +819,4 @@ class TestFactoryFunction:
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "--cov=src.utils.adhd_optimizations", "--cov-report=term-missing"])
+    pytest.main([__file__, "-v", "--cov=utils.adhd_optimizations", "--cov-report=term-missing"])

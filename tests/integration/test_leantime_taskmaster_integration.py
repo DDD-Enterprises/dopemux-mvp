@@ -13,11 +13,11 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from pathlib import Path
 
-from src.integrations.leantime_bridge import LeantimeMCPClient, LeantimeTask, TaskStatus, TaskPriority
-from src.integrations.taskmaster_bridge import TaskMasterMCPClient, TaskMasterTask
-from src.integrations.sync_manager import LeantimeTaskMasterSyncManager, SyncResult, TaskMapping
-from src.utils.adhd_optimizations import ADHDTaskOptimizer, ADHDProfile
-from src.core.config import Config
+from integrations.leantime_bridge import LeantimeMCPClient, LeantimeTask, TaskStatus, TaskPriority
+from integrations.taskmaster_bridge import TaskMasterMCPClient, TaskMasterTask
+from integrations.sync_manager import LeantimeTaskMasterSyncManager, SyncResult, TaskMapping
+from utils.adhd_optimizations import ADHDTaskOptimizer, ADHDProfile
+from core.config import Config
 
 
 class TestLeantimeTaskMasterIntegration:
@@ -712,4 +712,4 @@ Enhance the existing e-commerce platform with new features for better user exper
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "--cov=src.integrations", "--cov-report=term-missing"])
+    pytest.main([__file__, "-v", "--cov=integrations", "--cov-report=term-missing"])

@@ -5,6 +5,8 @@ Comprehensive test coverage for Leantime integration with ADHD optimizations.
 """
 
 import pytest
+pytest.importorskip("aiohttp")
+pytest.importorskip("aioresponses")
 import asyncio
 import json
 from datetime import datetime, timedelta
@@ -14,7 +16,7 @@ from dataclasses import asdict
 import aiohttp
 import aioresponses
 
-from src.integrations.leantime_bridge import (
+from integrations.leantime_bridge import (
     LeantimeMCPClient,
     LeantimeTask,
     LeantimeProject,
@@ -22,8 +24,8 @@ from src.integrations.leantime_bridge import (
     TaskPriority,
     create_leantime_bridge
 )
-from src.core.config import Config
-from src.core.exceptions import DopemuxIntegrationError, AuthenticationError
+from core.config import Config
+from core.exceptions import DopemuxIntegrationError, AuthenticationError
 
 
 class TestLeantimeTask:
@@ -429,7 +431,7 @@ class TestLeantimeMCPClient:
         })
 
         # Mock ADHD optimizer
-        with patch('src.integrations.leantime_bridge.ADHDTaskOptimizer') as mock_optimizer:
+        with patch('integrations.leantime_bridge.ADHDTaskOptimizer') as mock_optimizer:
             mock_optimizer.return_value.optimize_task = AsyncMock(side_effect=lambda x: x)
 
             tasks = await client.get_tasks(project_id=10)
@@ -482,7 +484,7 @@ class TestLeantimeMCPClient:
         })
 
         # Mock ADHD optimizer
-        with patch('src.integrations.leantime_bridge.ADHDTaskOptimizer') as mock_optimizer:
+        with patch('integrations.leantime_bridge.ADHDTaskOptimizer') as mock_optimizer:
             mock_task = LeantimeTask(
                 headline="New Task",
                 description="New description",
@@ -730,4 +732,4 @@ class TestFactoryFunction:
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "--cov=src.integrations.leantime_bridge", "--cov-report=term-missing"])
+    pytest.main([__file__, "-v", "--cov=integrations.leantime_bridge", "--cov-report=term-missing"])
