@@ -2,15 +2,16 @@
 Tests for the configuration manager module.
 """
 
+from unittest.mock import patch
+
 import pytest
 import yaml
-import json
-from pathlib import Path
-from unittest.mock import patch, mock_open
 
 from dopemux.config.manager import (
-    ConfigManager, DopemuxConfig, ADHDProfile, MCPServerConfig,
-    AttentionConfig, ContextConfig
+    ADHDProfile,
+    ConfigManager,
+    DopemuxConfig,
+    MCPServerConfig,
 )
 
 
@@ -61,7 +62,7 @@ class TestMCPServerConfig:
             args=["server.js"],
             env={"NODE_ENV": "production"},
             timeout=60,
-            enabled=False
+            enabled=False,
         )
         assert config.command == "node"
         assert config.args == ["server.js"]
@@ -77,7 +78,7 @@ class TestConfigManager:
         """Test ConfigManager initialization."""
         config_file = str(temp_config_dir / "config.yaml")
 
-        with patch('dopemux.config.manager.ConfigManager._init_paths') as mock_init:
+        with patch("dopemux.config.manager.ConfigManager._init_paths") as mock_init:
             from dopemux.config.manager import ConfigPaths
 
             mock_init.return_value = ConfigPaths(
@@ -85,7 +86,7 @@ class TestConfigManager:
                 user_config=temp_config_dir / "config.yaml",
                 project_config=temp_config_dir / "project.yaml",
                 cache_dir=temp_config_dir / "cache",
-                data_dir=temp_config_dir / "data"
+                data_dir=temp_config_dir / "data",
             )
 
             manager = ConfigManager(config_file)
@@ -101,10 +102,10 @@ class TestConfigManager:
     def test_load_user_config(self, temp_config_dir, sample_config_data):
         """Test loading user configuration."""
         config_file = temp_config_dir / "config.yaml"
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(sample_config_data, f)
 
-        with patch('dopemux.config.manager.ConfigManager._init_paths') as mock_init:
+        with patch("dopemux.config.manager.ConfigManager._init_paths") as mock_init:
             from dopemux.config.manager import ConfigPaths
 
             mock_init.return_value = ConfigPaths(
@@ -112,11 +113,11 @@ class TestConfigManager:
                 user_config=config_file,
                 project_config=temp_config_dir / "project.yaml",
                 cache_dir=temp_config_dir / "cache",
-                data_dir=temp_config_dir / "data"
+                data_dir=temp_config_dir / "data",
             )
 
             manager = ConfigManager()
-            with patch.object(manager, '_get_default_config', return_value={}):
+            with patch.object(manager, "_get_default_config", return_value={}):
                 config = manager.load_config()
                 assert config.version == "1.0"
 
@@ -134,15 +135,13 @@ class TestConfigManager:
         # Verify content
         with open(config_manager.paths.user_config) as f:
             saved_data = yaml.safe_load(f)
-            assert 'adhd_profile' in saved_data
+            assert "adhd_profile" in saved_data
 
     def test_mcp_server_management(self, config_manager):
         """Test MCP server configuration management."""
         # Add server
         server_config = MCPServerConfig(
-            command="python",
-            args=["test.py"],
-            enabled=True
+            command="python", args=["test.py"], enabled=True
         )
 
         config_manager.add_mcp_server("test-server", server_config)
@@ -159,8 +158,7 @@ class TestConfigManager:
     def test_adhd_profile_update(self, config_manager):
         """Test ADHD profile updates."""
         config_manager.update_adhd_profile(
-            focus_duration_avg=30,
-            notification_style="bold"
+            focus_duration_avg=30, notification_style="bold"
         )
 
         config = config_manager.load_config()
@@ -180,13 +178,13 @@ class TestConfigManager:
         test_data = {
             "api_key": "${TEST_API_KEY}",
             "fallback": "${MISSING_KEY:default_value}",
-            "nested": {
-                "value": "${NESTED_VAR}"
-            },
-            "normal": "no_substitution"
+            "nested": {"value": "${NESTED_VAR}"},
+            "normal": "no_substitution",
         }
 
-        with patch.dict('os.environ', {'TEST_API_KEY': 'secret', 'NESTED_VAR': 'nested_value'}):
+        with patch.dict(
+            "os.environ", {"TEST_API_KEY": "secret", "NESTED_VAR": "nested_value"}
+        ):
             result = config_manager._substitute_env_vars(test_data)
 
             assert result["api_key"] == "secret"
@@ -196,29 +194,16 @@ class TestConfigManager:
 
     def test_deep_merge(self, config_manager):
         """Test deep dictionary merging."""
-        base = {
-            "a": 1,
-            "b": {
-                "c": 2,
-                "d": 3
-            },
-            "e": 4
-        }
+        base = {"a": 1, "b": {"c": 2, "d": 3}, "e": 4}
 
-        override = {
-            "b": {
-                "c": 20,
-                "f": 6
-            },
-            "g": 7
-        }
+        override = {"b": {"c": 20, "f": 6}, "g": 7}
 
         result = config_manager._deep_merge(base, override)
 
         assert result["a"] == 1
         assert result["b"]["c"] == 20  # overridden
-        assert result["b"]["d"] == 3   # preserved
-        assert result["b"]["f"] == 6   # added
+        assert result["b"]["d"] == 3  # preserved
+        assert result["b"]["f"] == 6  # added
         assert result["e"] == 4
         assert result["g"] == 7
 
@@ -254,7 +239,7 @@ class TestConfigManager:
         """Test handling of invalid config files."""
         # Create invalid YAML file
         invalid_file = temp_config_dir / "invalid.yaml"
-        with open(invalid_file, 'w') as f:
+        with open(invalid_file, "w") as f:
             f.write("invalid: yaml: content: [")
 
         result = config_manager._load_file(invalid_file)
@@ -270,10 +255,7 @@ class TestConfigManager:
 
         assert config1 is config2  # Same object reference
 
-    @patch.dict('os.environ', {
-        'OPENAI_API_KEY': 'test-key',
-        'EXA_API_KEY': 'exa-key'
-    })
+    @patch.dict("os.environ", {"OPENAI_API_KEY": "test-key", "EXA_API_KEY": "exa-key"})
     def test_default_mcp_servers(self, config_manager):
         """Test default MCP server configurations."""
         defaults = config_manager._get_default_mcp_servers()
