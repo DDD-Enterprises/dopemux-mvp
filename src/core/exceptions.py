@@ -23,3 +23,7 @@ class ConfigurationError(DopemuxError):
 
 class ADHDOptimizationError(DopemuxError):
     """Exception raised when ADHD optimization operations fail."""
+
+
+class AIServiceError(DopemuxError):
+    """Exception raised when AI service operations fail."""
