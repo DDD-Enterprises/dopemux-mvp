@@ -5,30 +5,27 @@ This module provides a bridge between Dopemux and Leantime through JSON-RPC 2.0 
 Handles project management, task tracking, and ADHD-optimized workflows.
 """
 
-import asyncio
 import json
 import logging
-import os
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Union
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ValidationError
-
-from core.exceptions import DopemuxIntegrationError, AuthenticationError
 from core.config import Config
+from core.exceptions import DopemuxIntegrationError
 from core.monitoring import MetricsCollector
-from utils.security import SecureTokenManager
 from utils.adhd_optimizations import ADHDTaskOptimizer
-from .leantime_jsonrpc_client import LeantimeJSONRPCClient, create_leantime_client
+from utils.security import SecureTokenManager
 
+from .leantime_jsonrpc_client import LeantimeJSONRPCClient, create_leantime_client
 
 logger = logging.getLogger(__name__)
 
 
 class TaskStatus(Enum):
     """Leantime task status enumeration with ADHD considerations."""
+
     PENDING = "0"
     IN_PROGRESS = "1"
     COMPLETED = "2"
@@ -41,15 +38,17 @@ class TaskStatus(Enum):
 
 class TaskPriority(Enum):
     """Task priority levels optimized for ADHD attention management."""
-    HYPERFOCUS = "1"      # High cognitive load, deep work
-    FOCUSED = "2"         # Standard attention required
-    SCATTERED = "3"       # Low cognitive load, quick wins
-    BACKGROUND = "4"      # Can be done with divided attention
+
+    HYPERFOCUS = "1"  # High cognitive load, deep work
+    FOCUSED = "2"  # Standard attention required
+    SCATTERED = "3"  # Low cognitive load, quick wins
+    BACKGROUND = "4"  # Can be done with divided attention
 
 
 @dataclass
 class LeantimeTask:
     """Leantime task representation with ADHD optimizations."""
+
     id: Optional[int] = None
     headline: str = ""
     description: str = ""
@@ -85,6 +84,7 @@ class LeantimeTask:
 @dataclass
 class LeantimeProject:
     """Leantime project representation."""
+
     id: Optional[int] = None
     name: str = ""
     description: str = ""
@@ -147,7 +147,9 @@ class LeantimeBridge:
             if connection_success:
                 self._connected = True
                 self._last_heartbeat = datetime.now()
-                self._session_id = f"leantime_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                self._session_id = (
+                    f"leantime_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                )
                 logger.info("Successfully connected to Leantime JSON-RPC API")
                 return True
             else:
@@ -171,7 +173,6 @@ class LeantimeBridge:
                 self._connected = False
                 logger.info("Disconnected from Leantime JSON-RPC API")
 
-
     # Project Management Methods
 
     async def get_projects(self, limit: int = 50) -> List[LeantimeProject]:
@@ -190,31 +191,29 @@ class LeantimeBridge:
         response = await self.api_client.get_projects(limit)
 
         if response.success and response.data:
-            projects_data = response.data if isinstance(response.data, list) else [response.data]
+            projects_data = (
+                response.data if isinstance(response.data, list) else [response.data]
+            )
 
             # Track metrics
             self.metrics.record_api_call(
-                service='leantime',
-                method='get_projects',
-                status='success'
+                service="leantime", method="get_projects", status="success"
             )
 
             return [
                 LeantimeProject(
-                    id=proj.get('id'),
-                    name=proj.get('name', ''),
-                    description=proj.get('details', ''),
-                    state=proj.get('state', 'open'),
-                    created_at=self._parse_datetime(proj.get('created'))
+                    id=proj.get("id"),
+                    name=proj.get("name", ""),
+                    description=proj.get("details", ""),
+                    state=proj.get("state", "open"),
+                    created_at=self._parse_datetime(proj.get("created")),
                 )
                 for proj in projects_data
             ]
 
         # Track failed metrics
         self.metrics.record_api_call(
-            service='leantime',
-            method='get_projects',
-            status='error'
+            service="leantime", method="get_projects", status="error"
         )
 
         return []
@@ -238,18 +237,20 @@ class LeantimeBridge:
             project_data = response.data
 
             return LeantimeProject(
-                id=project_data.get('id'),
-                name=project_data.get('name', ''),
-                description=project_data.get('details', ''),
-                state=project_data.get('state', 'open'),
-                start_date=self._parse_datetime(project_data.get('start')),
-                end_date=self._parse_datetime(project_data.get('end')),
-                created_at=self._parse_datetime(project_data.get('created'))
+                id=project_data.get("id"),
+                name=project_data.get("name", ""),
+                description=project_data.get("details", ""),
+                state=project_data.get("state", "open"),
+                start_date=self._parse_datetime(project_data.get("start")),
+                end_date=self._parse_datetime(project_data.get("end")),
+                created_at=self._parse_datetime(project_data.get("created")),
             )
 
         return None
 
-    async def create_project(self, project: LeantimeProject) -> Optional[LeantimeProject]:
+    async def create_project(
+        self, project: LeantimeProject
+    ) -> Optional[LeantimeProject]:
         """
         Create new project in Leantime.
 
@@ -263,24 +264,25 @@ class LeantimeBridge:
             raise DopemuxIntegrationError("Not connected to Leantime")
 
         response = await self.api_client.create_project(
-            name=project.name,
-            description=project.description,
-            state=project.state
+            name=project.name, description=project.description, state=project.state
         )
 
         if response.success and response.data:
             result_data = response.data
-            if result_data.get('success'):
-                project.id = result_data.get('projectId')
+            if result_data.get("success"):
+                project.id = result_data.get("projectId")
                 return project
 
         return None
 
     # Task Management Methods
 
-    async def get_tasks(self, project_id: Optional[int] = None,
-                       status: Optional[TaskStatus] = None,
-                       limit: int = 100) -> List[LeantimeTask]:
+    async def get_tasks(
+        self,
+        project_id: Optional[int] = None,
+        status: Optional[TaskStatus] = None,
+        limit: int = 100,
+    ) -> List[LeantimeTask]:
         """
         Retrieve tasks from Leantime with ADHD optimizations.
 
@@ -297,26 +299,26 @@ class LeantimeBridge:
 
         # Get tickets using JSON-RPC client
         response = await self.api_client.get_tickets(
-            project_id=project_id,
-            status=status.value if status else None,
-            limit=limit
+            project_id=project_id, status=status.value if status else None, limit=limit
         )
 
         if response.success and response.data:
-            tasks_data = response.data if isinstance(response.data, list) else [response.data]
+            tasks_data = (
+                response.data if isinstance(response.data, list) else [response.data]
+            )
 
             tasks = []
             for task_data in tasks_data:
                 task = LeantimeTask(
-                    id=task_data.get('id'),
-                    headline=task_data.get('headline', ''),
-                    description=task_data.get('description', ''),
-                    project_id=task_data.get('projectId', 0),
-                    user_id=task_data.get('editorId'),
-                    status=TaskStatus(str(task_data.get('status', '0'))),
-                    story_points=task_data.get('storypoints'),
-                    created_at=self._parse_datetime(task_data.get('date')),
-                    updated_at=self._parse_datetime(task_data.get('dateToFinish'))
+                    id=task_data.get("id"),
+                    headline=task_data.get("headline", ""),
+                    description=task_data.get("description", ""),
+                    project_id=task_data.get("projectId", 0),
+                    user_id=task_data.get("editorId"),
+                    status=TaskStatus(str(task_data.get("status", "0"))),
+                    story_points=task_data.get("storypoints"),
+                    created_at=self._parse_datetime(task_data.get("date")),
+                    updated_at=self._parse_datetime(task_data.get("dateToFinish")),
                 )
 
                 # Apply ADHD optimizations
@@ -337,31 +339,31 @@ class LeantimeBridge:
         Returns:
             Task details or None if not found
         """
-        response = await self._send_mcp_request({
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": "tools/call",
-            "params": {
-                "name": "leantime.rpc.tickets.getTicket",
-                "arguments": {
-                    "ticketId": task_id
-                }
+        response = await self._send_mcp_request(
+            {
+                "jsonrpc": "2.0",
+                "id": self._next_request_id(),
+                "method": "tools/call",
+                "params": {
+                    "name": "leantime.rpc.tickets.getTicket",
+                    "arguments": {"ticketId": task_id},
+                },
             }
-        })
+        )
 
-        if response.get('result', {}).get('content'):
-            task_data = json.loads(response['result']['content'][0]['text'])
+        if response.get("result", {}).get("content"):
+            task_data = json.loads(response["result"]["content"][0]["text"])
 
             return LeantimeTask(
-                id=task_data.get('id'),
-                headline=task_data.get('headline', ''),
-                description=task_data.get('description', ''),
-                project_id=task_data.get('projectId', 0),
-                user_id=task_data.get('editorId'),
-                status=TaskStatus(str(task_data.get('status', '0'))),
-                story_points=task_data.get('storypoints'),
-                created_at=self._parse_datetime(task_data.get('date')),
-                updated_at=self._parse_datetime(task_data.get('dateToFinish'))
+                id=task_data.get("id"),
+                headline=task_data.get("headline", ""),
+                description=task_data.get("description", ""),
+                project_id=task_data.get("projectId", 0),
+                user_id=task_data.get("editorId"),
+                status=TaskStatus(str(task_data.get("status", "0"))),
+                story_points=task_data.get("storypoints"),
+                created_at=self._parse_datetime(task_data.get("date")),
+                updated_at=self._parse_datetime(task_data.get("dateToFinish")),
             )
 
         return None
@@ -379,28 +381,30 @@ class LeantimeBridge:
         # Apply ADHD optimizations before creation
         optimized_task = await self.adhd_optimizer.optimize_task(task)
 
-        response = await self._send_mcp_request({
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": "tools/call",
-            "params": {
-                "name": "leantime.rpc.tickets.addTicket",
-                "arguments": {
-                    "headline": optimized_task.headline,
-                    "description": optimized_task.description,
-                    "projectId": optimized_task.project_id,
-                    "status": optimized_task.status.value,
-                    "priority": optimized_task.priority.value,
-                    "storypoints": optimized_task.story_points,
-                    "editorId": optimized_task.user_id
-                }
+        response = await self._send_mcp_request(
+            {
+                "jsonrpc": "2.0",
+                "id": self._next_request_id(),
+                "method": "tools/call",
+                "params": {
+                    "name": "leantime.rpc.tickets.addTicket",
+                    "arguments": {
+                        "headline": optimized_task.headline,
+                        "description": optimized_task.description,
+                        "projectId": optimized_task.project_id,
+                        "status": optimized_task.status.value,
+                        "priority": optimized_task.priority.value,
+                        "storypoints": optimized_task.story_points,
+                        "editorId": optimized_task.user_id,
+                    },
+                },
             }
-        })
+        )
 
-        if response.get('result', {}).get('content'):
-            result_data = json.loads(response['result']['content'][0]['text'])
-            if result_data.get('success'):
-                optimized_task.id = result_data.get('ticketId')
+        if response.get("result", {}).get("content"):
+            result_data = json.loads(response["result"]["content"][0]["text"])
+            if result_data.get("success"):
+                optimized_task.id = result_data.get("ticketId")
                 return optimized_task
 
         return None
@@ -418,26 +422,28 @@ class LeantimeBridge:
         if not task.id:
             raise ValueError("Task ID required for update")
 
-        response = await self._send_mcp_request({
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": "tools/call",
-            "params": {
-                "name": "leantime.rpc.tickets.updateTicket",
-                "arguments": {
-                    "ticketId": task.id,
-                    "headline": task.headline,
-                    "description": task.description,
-                    "status": task.status.value,
-                    "priority": task.priority.value,
-                    "storypoints": task.story_points
-                }
+        response = await self._send_mcp_request(
+            {
+                "jsonrpc": "2.0",
+                "id": self._next_request_id(),
+                "method": "tools/call",
+                "params": {
+                    "name": "leantime.rpc.tickets.updateTicket",
+                    "arguments": {
+                        "ticketId": task.id,
+                        "headline": task.headline,
+                        "description": task.description,
+                        "status": task.status.value,
+                        "priority": task.priority.value,
+                        "storypoints": task.story_points,
+                    },
+                },
             }
-        })
+        )
 
-        if response.get('result', {}).get('content'):
-            result_data = json.loads(response['result']['content'][0]['text'])
-            return result_data.get('success', False)
+        if response.get("result", {}).get("content"):
+            result_data = json.loads(response["result"]["content"][0]["text"])
+            return result_data.get("success", False)
 
         return False
 
@@ -451,28 +457,29 @@ class LeantimeBridge:
         Returns:
             True if deletion successful, False otherwise
         """
-        response = await self._send_mcp_request({
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": "tools/call",
-            "params": {
-                "name": "leantime.rpc.tickets.deleteTicket",
-                "arguments": {
-                    "ticketId": task_id
-                }
+        response = await self._send_mcp_request(
+            {
+                "jsonrpc": "2.0",
+                "id": self._next_request_id(),
+                "method": "tools/call",
+                "params": {
+                    "name": "leantime.rpc.tickets.deleteTicket",
+                    "arguments": {"ticketId": task_id},
+                },
             }
-        })
+        )
 
-        if response.get('result', {}).get('content'):
-            result_data = json.loads(response['result']['content'][0]['text'])
-            return result_data.get('success', False)
+        if response.get("result", {}).get("content"):
+            result_data = json.loads(response["result"]["content"][0]["text"])
+            return result_data.get("success", False)
 
         return False
 
     # ADHD-Specific Methods
 
-    async def get_adhd_optimized_tasks(self, user_id: int,
-                                      attention_state: str = "focused") -> List[LeantimeTask]:
+    async def get_adhd_optimized_tasks(
+        self, user_id: int, attention_state: str = "focused"
+    ) -> List[LeantimeTask]:
         """
         Get tasks optimized for current ADHD attention state.
 
@@ -490,21 +497,36 @@ class LeantimeBridge:
         for task in all_tasks:
             if task.user_id == user_id or task.user_id is None:
                 # Apply ADHD filtering logic
-                if attention_state == "hyperfocus" and task.priority == TaskPriority.HYPERFOCUS:
+                if (
+                    attention_state == "hyperfocus"
+                    and task.priority == TaskPriority.HYPERFOCUS
+                ):
                     optimized_tasks.append(task)
-                elif attention_state == "focused" and task.priority in [TaskPriority.FOCUSED, TaskPriority.HYPERFOCUS]:
+                elif attention_state == "focused" and task.priority in [
+                    TaskPriority.FOCUSED,
+                    TaskPriority.HYPERFOCUS,
+                ]:
                     optimized_tasks.append(task)
-                elif attention_state == "scattered" and task.priority in [TaskPriority.SCATTERED, TaskPriority.BACKGROUND]:
+                elif attention_state == "scattered" and task.priority in [
+                    TaskPriority.SCATTERED,
+                    TaskPriority.BACKGROUND,
+                ]:
                     optimized_tasks.append(task)
 
         # Sort by ADHD-optimized criteria
-        return sorted(optimized_tasks, key=lambda t: (
-            t.cognitive_load or 5,  # Lower cognitive load first for scattered attention
-            t.story_points or 0,    # Smaller tasks first
-            t.priority.value        # Priority order
-        ))
+        return sorted(
+            optimized_tasks,
+            key=lambda t: (
+                t.cognitive_load
+                or 5,  # Lower cognitive load first for scattered attention
+                t.story_points or 0,  # Smaller tasks first
+                t.priority.value,  # Priority order
+            ),
+        )
 
-    async def update_context_preservation(self, user_id: int, context_data: Dict[str, Any]) -> bool:
+    async def update_context_preservation(
+        self, user_id: int, context_data: Dict[str, Any]
+    ) -> bool:
         """
         Update context preservation data for ADHD users.
 
@@ -529,7 +551,7 @@ class LeantimeBridge:
 
         try:
             # Try common Leantime date formats
-            for fmt in ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d', '%Y-%m-%dT%H:%M:%S']:
+            for fmt in ["%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S"]:
                 try:
                     return datetime.strptime(date_str, fmt)
                 except ValueError:
@@ -552,7 +574,7 @@ class LeantimeBridge:
                     "status": "disconnected",
                     "connected": False,
                     "last_heartbeat": None,
-                    "error": "Not connected to Leantime"
+                    "error": "Not connected to Leantime",
                 }
 
             # Try a simple API call
@@ -561,18 +583,22 @@ class LeantimeBridge:
             return {
                 "status": "healthy",
                 "connected": True,
-                "last_heartbeat": self._last_heartbeat.isoformat() if self._last_heartbeat else None,
+                "last_heartbeat": (
+                    self._last_heartbeat.isoformat() if self._last_heartbeat else None
+                ),
                 "session_id": self._session_id,
                 "api_responsive": True,
-                "projects_accessible": len(projects) >= 0
+                "projects_accessible": len(projects) >= 0,
             }
 
         except Exception as e:
             return {
                 "status": "unhealthy",
                 "connected": self._connected,
-                "last_heartbeat": self._last_heartbeat.isoformat() if self._last_heartbeat else None,
-                "error": str(e)
+                "last_heartbeat": (
+                    self._last_heartbeat.isoformat() if self._last_heartbeat else None
+                ),
+                "error": str(e),
             }
 
 

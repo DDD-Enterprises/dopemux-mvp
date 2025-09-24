@@ -5,13 +5,13 @@ Provides comprehensive codebase analysis, semantic search, and knowledge extract
 optimized for ADHD-friendly development workflows.
 """
 
-from .processor import DocumentProcessor, ProcessingConfig
 from .embedder import DocumentEmbedder
 from .extractor import MultiAngleExtractor
+from .processor import DocumentProcessor, ProcessingConfig
 
 __all__ = [
     "DocumentProcessor",
     "ProcessingConfig",
     "DocumentEmbedder",
-    "MultiAngleExtractor"
+    "MultiAngleExtractor",
 ]

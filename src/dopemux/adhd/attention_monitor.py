@@ -5,23 +5,24 @@ Tracks attention patterns, keystrokes, context switches, and classifies
 attention states to provide adaptive interface adjustments.
 """
 
-import time
 import json
 import threading
+import time
+from collections import deque
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Callable
-from dataclasses import dataclass
-from collections import deque
-import psutil
+from typing import Any, Callable, Dict, List, Optional
 
 from rich.console import Console
 
 console = Console()
 
+
 @dataclass
 class AttentionMetrics:
     """Attention metrics data structure."""
+
     timestamp: datetime
     keystroke_rate: float  # Keys per minute
     error_rate: float  # Errors per minute
@@ -30,13 +31,16 @@ class AttentionMetrics:
     focus_score: float  # Calculated focus score (0-1)
     attention_state: str  # classified state
 
+
 class AttentionState:
     """Attention state classification."""
+
     FOCUSED = "focused"
     NORMAL = "normal"
     SCATTERED = "scattered"
     HYPERFOCUS = "hyperfocus"
     DISTRACTED = "distracted"
+
 
 class AttentionMonitor:
     """
@@ -53,7 +57,7 @@ class AttentionMonitor:
     def __init__(self, project_path: Path):
         """Initialize attention monitor."""
         self.project_path = project_path
-        self.data_dir = project_path / '.dopemux' / 'attention'
+        self.data_dir = project_path / ".dopemux" / "attention"
         self.data_dir.mkdir(parents=True, exist_ok=True)
 
         # Monitoring state
@@ -113,14 +117,16 @@ class AttentionMonitor:
         session_duration = (datetime.now() - self._session_start).total_seconds() / 60
 
         return {
-            'attention_state': latest_metrics.attention_state,
-            'focus_score': latest_metrics.focus_score,
-            'session_duration': session_duration,
-            'keystroke_rate': latest_metrics.keystroke_rate,
-            'error_rate': latest_metrics.error_rate,
-            'context_switches': sum(m.context_switches for m in list(self._metrics_history)[-12:]),  # Last minute
-            'state_duration': self._state_duration,
-            'monitoring_active': self._monitoring
+            "attention_state": latest_metrics.attention_state,
+            "focus_score": latest_metrics.focus_score,
+            "session_duration": session_duration,
+            "keystroke_rate": latest_metrics.keystroke_rate,
+            "error_rate": latest_metrics.error_rate,
+            "context_switches": sum(
+                m.context_switches for m in list(self._metrics_history)[-12:]
+            ),  # Last minute
+            "state_duration": self._state_duration,
+            "monitoring_active": self._monitoring,
         }
 
     def get_session_summary(self) -> Dict[str, Any]:
@@ -147,13 +153,17 @@ class AttentionMonitor:
         }
 
         return {
-            'session_duration_minutes': session_duration,
-            'average_focus_score': avg_focus_score,
-            'total_context_switches': total_context_switches,
-            'context_switches_per_hour': (total_context_switches / session_duration) * 60 if session_duration > 0 else 0,
-            'state_distribution': state_percentages,
-            'productivity_score': self._calculate_productivity_score(),
-            'recommendations': self._generate_recommendations()
+            "session_duration_minutes": session_duration,
+            "average_focus_score": avg_focus_score,
+            "total_context_switches": total_context_switches,
+            "context_switches_per_hour": (
+                (total_context_switches / session_duration) * 60
+                if session_duration > 0
+                else 0
+            ),
+            "state_distribution": state_percentages,
+            "productivity_score": self._calculate_productivity_score(),
+            "recommendations": self._generate_recommendations(),
         }
 
     def add_callback(self, callback: Callable[[AttentionMetrics], None]) -> None:
@@ -171,7 +181,7 @@ class AttentionMonitor:
             self._error_buffer.append(now)
         elif activity_type == "file_switch":
             self._context_switch_buffer.append(now)
-            self._current_file = kwargs.get('file', self._current_file)
+            self._current_file = kwargs.get("file", self._current_file)
 
         # Trigger immediate metrics update
         if self._monitoring:
@@ -215,7 +225,7 @@ class AttentionMonitor:
             context_switches=context_switches,
             pause_duration=pause_duration,
             focus_score=focus_score,
-            attention_state=attention_state
+            attention_state=attention_state,
         )
 
         # Store metrics
@@ -263,7 +273,7 @@ class AttentionMonitor:
         keystroke_rate: float,
         error_rate: float,
         context_switches: int,
-        pause_duration: float
+        pause_duration: float,
     ) -> float:
         """Calculate normalized focus score (0-1)."""
         # Base score from activity level
@@ -276,7 +286,9 @@ class AttentionMonitor:
         switch_penalty = min(context_switches / 5, 0.3)  # Max 30% penalty for switches
 
         # Penalty for long pauses
-        pause_penalty = min(pause_duration / 300, 0.4) if pause_duration > 30 else 0  # 5 min max
+        pause_penalty = (
+            min(pause_duration / 300, 0.4) if pause_duration > 30 else 0
+        )  # 5 min max
 
         # Calculate final score
         focus_score = activity_score - error_penalty - switch_penalty - pause_penalty
@@ -288,7 +300,7 @@ class AttentionMonitor:
         error_rate: float,
         context_switches: int,
         pause_duration: float,
-        focus_score: float
+        focus_score: float,
     ) -> str:
         """Classify current attention state."""
         # Check for distraction (long pause)
@@ -296,8 +308,11 @@ class AttentionMonitor:
             return AttentionState.DISTRACTED
 
         # Check for hyperfocus (sustained high activity)
-        if (focus_score > 0.8 and keystroke_rate > 30 and
-            self._state_duration > self.hyperfocus_duration * 60):
+        if (
+            focus_score > 0.8
+            and keystroke_rate > 30
+            and self._state_duration > self.hyperfocus_duration * 60
+        ):
             return AttentionState.HYPERFOCUS
 
         # Check for scattered attention (high context switches)
@@ -323,7 +338,9 @@ class AttentionMonitor:
                 self._focus_session_start = timestamp
             elif self._focus_session_start:
                 # Focus session ended
-                focus_duration = (timestamp - self._focus_session_start).total_seconds() / 60
+                focus_duration = (
+                    timestamp - self._focus_session_start
+                ).total_seconds() / 60
                 self._log_focus_session(focus_duration)
                 self._focus_session_start = None
 
@@ -336,14 +353,14 @@ class AttentionMonitor:
         """Log completed focus session."""
         if duration > 5:  # Only log sessions > 5 minutes
             session_log = {
-                'duration_minutes': duration,
-                'timestamp': datetime.now().isoformat(),
-                'quality_score': self._calculate_session_quality()
+                "duration_minutes": duration,
+                "timestamp": datetime.now().isoformat(),
+                "quality_score": self._calculate_session_quality(),
             }
 
-            log_file = self.data_dir / 'focus_sessions.jsonl'
-            with open(log_file, 'a') as f:
-                f.write(json.dumps(session_log) + '\n')
+            log_file = self.data_dir / "focus_sessions.jsonl"
+            with open(log_file, "a") as f:
+                f.write(json.dumps(session_log) + "\n")
 
     def _calculate_session_quality(self) -> float:
         """Calculate quality score for completed focus session."""
@@ -364,11 +381,17 @@ class AttentionMonitor:
 
         # Factors for productivity
         avg_focus = sum(m.focus_score for m in metrics_list) / len(metrics_list)
-        focused_time_ratio = sum(1 for m in metrics_list if m.attention_state == AttentionState.FOCUSED) / len(metrics_list)
-        low_error_ratio = sum(1 for m in metrics_list if m.error_rate < 2) / len(metrics_list)
+        focused_time_ratio = sum(
+            1 for m in metrics_list if m.attention_state == AttentionState.FOCUSED
+        ) / len(metrics_list)
+        low_error_ratio = sum(1 for m in metrics_list if m.error_rate < 2) / len(
+            metrics_list
+        )
 
         # Weighted score
-        productivity = (avg_focus * 0.4 + focused_time_ratio * 0.4 + low_error_ratio * 0.2)
+        productivity = (
+            avg_focus * 0.4 + focused_time_ratio * 0.4 + low_error_ratio * 0.2
+        )
         return productivity
 
     def _generate_recommendations(self) -> List[str]:
@@ -376,54 +399,64 @@ class AttentionMonitor:
         recommendations = []
         current_metrics = self.get_current_metrics()
 
-        if current_metrics['attention_state'] == AttentionState.SCATTERED:
-            recommendations.extend([
-                "Consider taking a short break to reset focus",
-                "Try working on a single file for the next 25 minutes",
-                "Enable 'Do Not Disturb' mode to reduce distractions"
-            ])
+        if current_metrics["attention_state"] == AttentionState.SCATTERED:
+            recommendations.extend(
+                [
+                    "Consider taking a short break to reset focus",
+                    "Try working on a single file for the next 25 minutes",
+                    "Enable 'Do Not Disturb' mode to reduce distractions",
+                ]
+            )
 
-        elif current_metrics['attention_state'] == AttentionState.HYPERFOCUS:
-            recommendations.extend([
-                "You've been in deep focus for a while - consider a break",
-                "Remember to hydrate and look away from the screen",
-                "Set a timer for the next 15 minutes to check in"
-            ])
+        elif current_metrics["attention_state"] == AttentionState.HYPERFOCUS:
+            recommendations.extend(
+                [
+                    "You've been in deep focus for a while - consider a break",
+                    "Remember to hydrate and look away from the screen",
+                    "Set a timer for the next 15 minutes to check in",
+                ]
+            )
 
-        elif current_metrics['focus_score'] < 0.5:
-            recommendations.extend([
-                "Low focus detected - try the Pomodoro technique",
-                "Consider changing your environment or taking a walk",
-                "Break current task into smaller, more manageable pieces"
-            ])
+        elif current_metrics["focus_score"] < 0.5:
+            recommendations.extend(
+                [
+                    "Low focus detected - try the Pomodoro technique",
+                    "Consider changing your environment or taking a walk",
+                    "Break current task into smaller, more manageable pieces",
+                ]
+            )
 
-        elif current_metrics['session_duration'] > 90:
-            recommendations.append("Long session detected - consider taking a longer break")
+        elif current_metrics["session_duration"] > 90:
+            recommendations.append(
+                "Long session detected - consider taking a longer break"
+            )
 
         return recommendations
 
     def _save_session_metrics(self) -> None:
         """Save session metrics to file."""
         session_data = {
-            'session_start': self._session_start.isoformat(),
-            'session_end': datetime.now().isoformat(),
-            'summary': self.get_session_summary(),
-            'total_samples': len(self._metrics_history)
+            "session_start": self._session_start.isoformat(),
+            "session_end": datetime.now().isoformat(),
+            "summary": self.get_session_summary(),
+            "total_samples": len(self._metrics_history),
         }
 
-        session_file = self.data_dir / f'session_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
-        with open(session_file, 'w') as f:
+        session_file = (
+            self.data_dir / f'session_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+        )
+        with open(session_file, "w") as f:
             json.dump(session_data, f, indent=2)
 
     def _get_default_metrics(self) -> Dict[str, Any]:
         """Get default metrics when no data available."""
         return {
-            'attention_state': AttentionState.NORMAL,
-            'focus_score': 0.5,
-            'session_duration': 0,
-            'keystroke_rate': 0,
-            'error_rate': 0,
-            'context_switches': 0,
-            'state_duration': 0,
-            'monitoring_active': self._monitoring
+            "attention_state": AttentionState.NORMAL,
+            "focus_score": 0.5,
+            "session_duration": 0,
+            "keystroke_rate": 0,
+            "error_rate": 0,
+            "context_switches": 0,
+            "state_duration": 0,
+            "monitoring_active": self._monitoring,
         }

@@ -6,66 +6,65 @@ including attention-aware scheduling, cognitive load optimization, and
 context preservation for neurodivergent developers.
 """
 
-import asyncio
-import json
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
-import statistics
-import math
+from typing import Any, Dict, List, Optional, Tuple
 
 from core.config import Config
 from core.monitoring import MetricsCollector
-
 
 logger = logging.getLogger(__name__)
 
 
 class AttentionState(Enum):
     """ADHD attention states with specific characteristics."""
-    HYPERFOCUS = "hyperfocus"          # Deep, sustained concentration
-    FOCUSED = "focused"                # Normal attention level
-    SCATTERED = "scattered"            # Easily distracted, need structure
-    OVERWHELMED = "overwhelmed"        # Too much stimuli, need reduction
-    TRANSITIONING = "transitioning"    # Moving between states
+
+    HYPERFOCUS = "hyperfocus"  # Deep, sustained concentration
+    FOCUSED = "focused"  # Normal attention level
+    SCATTERED = "scattered"  # Easily distracted, need structure
+    OVERWHELMED = "overwhelmed"  # Too much stimuli, need reduction
+    TRANSITIONING = "transitioning"  # Moving between states
 
 
 class CognitiveLoad(Enum):
     """Cognitive load levels for task difficulty assessment."""
-    MINIMAL = 1    # Routine, automatic tasks
-    LOW = 2        # Simple tasks with clear steps
-    MODERATE = 3   # Standard complexity
-    HIGH = 4       # Complex tasks requiring deep thinking
-    MAXIMUM = 5    # Extremely challenging, requires hyperfocus
+
+    MINIMAL = 1  # Routine, automatic tasks
+    LOW = 2  # Simple tasks with clear steps
+    MODERATE = 3  # Standard complexity
+    HIGH = 4  # Complex tasks requiring deep thinking
+    MAXIMUM = 5  # Extremely challenging, requires hyperfocus
 
 
 class TaskComplexity(Enum):
     """Task complexity categories for ADHD optimization."""
-    QUICK_WIN = "quick_win"            # 5-15 minutes, easy completion
-    FOCUSED_WORK = "focused_work"      # 25-45 minutes, sustained attention
-    DEEP_WORK = "deep_work"            # 1-4 hours, hyperfocus required
-    COLLABORATIVE = "collaborative"    # Requires interaction with others
-    CREATIVE = "creative"              # Open-ended, requires inspiration
+
+    QUICK_WIN = "quick_win"  # 5-15 minutes, easy completion
+    FOCUSED_WORK = "focused_work"  # 25-45 minutes, sustained attention
+    DEEP_WORK = "deep_work"  # 1-4 hours, hyperfocus required
+    COLLABORATIVE = "collaborative"  # Requires interaction with others
+    CREATIVE = "creative"  # Open-ended, requires inspiration
 
 
 @dataclass
 class ADHDProfile:
     """ADHD user profile with personalized accommodations."""
+
     user_id: str
     primary_attention_pattern: AttentionState = AttentionState.FOCUSED
 
     # Timing preferences
     optimal_focus_duration: int = 25  # minutes
-    break_duration: int = 5           # minutes
-    long_break_duration: int = 15     # minutes
-    context_switch_buffer: int = 10   # minutes
+    break_duration: int = 5  # minutes
+    long_break_duration: int = 15  # minutes
+    context_switch_buffer: int = 10  # minutes
 
     # Cognitive preferences
     max_cognitive_load: CognitiveLoad = CognitiveLoad.MODERATE
     preferred_task_size: TaskComplexity = TaskComplexity.FOCUSED_WORK
-    notification_threshold: int = 3   # batch size
+    notification_threshold: int = 3  # batch size
 
     # Environmental factors
     time_of_day_preference: Dict[str, float] = None  # hour -> productivity score
@@ -81,10 +80,12 @@ class ADHDProfile:
         if self.time_of_day_preference is None:
             # Default pattern: higher energy in morning, dip after lunch
             self.time_of_day_preference = {
-                str(h): 0.9 if 9 <= h <= 11 else
-                       0.8 if 14 <= h <= 16 else
-                       0.6 if 13 <= h <= 13 else
-                       0.7 for h in range(24)
+                str(h): (
+                    0.9
+                    if 9 <= h <= 11
+                    else 0.8 if 14 <= h <= 16 else 0.6 if 13 <= h <= 13 else 0.7
+                )
+                for h in range(24)
             }
 
         if self.hyperfocus_triggers is None:
@@ -100,6 +101,7 @@ class ADHDProfile:
 @dataclass
 class TaskOptimization:
     """ADHD-optimized task representation."""
+
     # Core task properties
     cognitive_load_score: float = 3.0  # 1-5 scale
     estimated_attention_duration: int = 25  # minutes
@@ -142,13 +144,13 @@ class TaskOptimization:
         elif self.cognitive_load_score <= 3.5:
             return [
                 {"type": "short", "duration": 5, "activity": "walk"},
-                {"type": "micro", "duration": 1, "activity": "breathe"}
+                {"type": "micro", "duration": 1, "activity": "breathe"},
             ]
         else:
             return [
                 {"type": "standard", "duration": 10, "activity": "movement"},
                 {"type": "short", "duration": 5, "activity": "hydrate"},
-                {"type": "micro", "duration": 2, "activity": "eyes_rest"}
+                {"type": "micro", "duration": 2, "activity": "eyes_rest"},
             ]
 
 
@@ -185,16 +187,24 @@ class ADHDTaskOptimizer:
         """
         try:
             # Get or create user profile
-            profile = await self._get_adhd_profile(user_id) if user_id else ADHDProfile("default")
+            profile = (
+                await self._get_adhd_profile(user_id)
+                if user_id
+                else ADHDProfile("default")
+            )
 
             # Analyze task characteristics
             task_analysis = await self._analyze_task_complexity(task)
 
             # Generate optimizations
-            optimization = await self._generate_task_optimization(task, task_analysis, profile)
+            optimization = await self._generate_task_optimization(
+                task, task_analysis, profile
+            )
 
             # Apply optimizations to task
-            optimized_task = await self._apply_optimizations(task, optimization, profile)
+            optimized_task = await self._apply_optimizations(
+                task, optimization, profile
+            )
 
             # Log optimization for learning
             await self._log_optimization(task, optimization, profile)
@@ -222,30 +232,32 @@ class ADHDTaskOptimizer:
                 tm_task.priority = max(tm_task.priority, 2)  # Increase priority
 
                 # Add ADHD-specific tags
-                if not hasattr(tm_task, 'tags'):
+                if not hasattr(tm_task, "tags"):
                     tm_task.tags = []
 
-                if 'deep_work' not in tm_task.tags:
-                    tm_task.tags.append('deep_work')
+                if "deep_work" not in tm_task.tags:
+                    tm_task.tags.append("deep_work")
 
-                if 'hyperfocus_required' not in tm_task.tags:
-                    tm_task.tags.append('hyperfocus_required')
+                if "hyperfocus_required" not in tm_task.tags:
+                    tm_task.tags.append("hyperfocus_required")
 
             elif cognitive_load < 2.0:
                 # Low complexity tasks are quick wins
-                if 'quick_win' not in (tm_task.tags or []):
-                    tm_task.tags = (tm_task.tags or []) + ['quick_win']
+                if "quick_win" not in (tm_task.tags or []):
+                    tm_task.tags = (tm_task.tags or []) + ["quick_win"]
 
             # Add ADHD optimization metadata
-            if not hasattr(tm_task, 'ai_analysis'):
+            if not hasattr(tm_task, "ai_analysis"):
                 tm_task.ai_analysis = {}
 
-            tm_task.ai_analysis['adhd_optimization'] = {
-                'cognitive_load': cognitive_load,
-                'estimated_attention_duration': attention_duration,
-                'recommended_break_frequency': self._calculate_break_frequency(attention_duration),
-                'optimal_scheduling': self._get_optimal_scheduling(cognitive_load),
-                'context_preservation_tips': self._get_context_tips(tm_task)
+            tm_task.ai_analysis["adhd_optimization"] = {
+                "cognitive_load": cognitive_load,
+                "estimated_attention_duration": attention_duration,
+                "recommended_break_frequency": self._calculate_break_frequency(
+                    attention_duration
+                ),
+                "optimal_scheduling": self._get_optimal_scheduling(cognitive_load),
+                "context_preservation_tips": self._get_context_tips(tm_task),
             }
 
             return tm_task
@@ -254,8 +266,9 @@ class ADHDTaskOptimizer:
             logger.error(f"TaskMaster optimization failed: {e}")
             return tm_task
 
-    async def schedule_optimal_sequence(self, tasks: List[Any], user_id: str = None,
-                                      time_window: int = 480) -> List[Dict[str, Any]]:
+    async def schedule_optimal_sequence(
+        self, tasks: List[Any], user_id: str = None, time_window: int = 480
+    ) -> List[Dict[str, Any]]:
         """
         Schedule tasks in ADHD-optimal sequence.
 
@@ -268,7 +281,11 @@ class ADHDTaskOptimizer:
             Optimized task sequence with timing
         """
         try:
-            profile = await self._get_adhd_profile(user_id) if user_id else ADHDProfile("default")
+            profile = (
+                await self._get_adhd_profile(user_id)
+                if user_id
+                else ADHDProfile("default")
+            )
 
             # Analyze all tasks
             task_analyses = []
@@ -280,16 +297,22 @@ class ADHDTaskOptimizer:
             sorted_tasks = await self._sort_tasks_for_adhd(task_analyses, profile)
 
             # Create schedule with breaks and buffers
-            schedule = await self._create_adhd_schedule(sorted_tasks, profile, time_window)
+            schedule = await self._create_adhd_schedule(
+                sorted_tasks, profile, time_window
+            )
 
             return schedule
 
         except Exception as e:
             logger.error(f"Task scheduling failed: {e}")
-            return [{"task": task, "start_time": i * 30, "duration": 30} for i, task in enumerate(tasks)]
+            return [
+                {"task": task, "start_time": i * 30, "duration": 30}
+                for i, task in enumerate(tasks)
+            ]
 
-    async def detect_attention_state(self, user_id: str,
-                                   recent_activity: List[Dict[str, Any]] = None) -> AttentionState:
+    async def detect_attention_state(
+        self, user_id: str, recent_activity: List[Dict[str, Any]] = None
+    ) -> AttentionState:
         """
         Detect current attention state based on activity patterns.
 
@@ -308,7 +331,9 @@ class ADHDTaskOptimizer:
                 return profile.primary_attention_pattern
 
             # Analyze activity patterns
-            attention_indicators = await self._analyze_attention_indicators(recent_activity)
+            attention_indicators = await self._analyze_attention_indicators(
+                recent_activity
+            )
 
             # Determine state based on indicators
             state = await self._classify_attention_state(attention_indicators, profile)
@@ -322,8 +347,9 @@ class ADHDTaskOptimizer:
             logger.error(f"Attention state detection failed: {e}")
             return AttentionState.FOCUSED  # Safe default
 
-    async def generate_context_preservation(self, user_id: str,
-                                          current_context: Dict[str, Any]) -> Dict[str, Any]:
+    async def generate_context_preservation(
+        self, user_id: str, current_context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Generate context preservation data for ADHD users.
 
@@ -340,12 +366,20 @@ class ADHDTaskOptimizer:
             preservation_data = {
                 "timestamp": datetime.now().isoformat(),
                 "user_id": user_id,
-                "context_summary": await self._generate_context_summary(current_context),
+                "context_summary": await self._generate_context_summary(
+                    current_context
+                ),
                 "mental_model": await self._capture_mental_model(current_context),
                 "decision_trail": await self._extract_decision_trail(current_context),
-                "attention_anchors": await self._identify_attention_anchors(current_context),
-                "continuation_cues": await self._generate_continuation_cues(current_context, profile),
-                "restoration_steps": await self._create_restoration_steps(current_context, profile)
+                "attention_anchors": await self._identify_attention_anchors(
+                    current_context
+                ),
+                "continuation_cues": await self._generate_continuation_cues(
+                    current_context, profile
+                ),
+                "restoration_steps": await self._create_restoration_steps(
+                    current_context, profile
+                ),
             }
 
             # Store for later retrieval
@@ -357,8 +391,9 @@ class ADHDTaskOptimizer:
             logger.error(f"Context preservation failed: {e}")
             return {"error": str(e), "timestamp": datetime.now().isoformat()}
 
-    async def restore_context(self, user_id: str,
-                            preservation_data: Dict[str, Any] = None) -> Dict[str, Any]:
+    async def restore_context(
+        self, user_id: str, preservation_data: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
         """
         Restore work context for ADHD users.
 
@@ -387,7 +422,7 @@ class ADHDTaskOptimizer:
                 "continuation_cues": preservation_data.get("continuation_cues", []),
                 "recommendations": await self._generate_restoration_recommendations(
                     preservation_data, profile
-                )
+                ),
             }
 
             return restoration
@@ -420,47 +455,68 @@ class ADHDTaskOptimizer:
             "attention_requirement": 25,
             "context_complexity": 0.5,
             "dependency_count": 0,
-            "estimated_duration": 30
+            "estimated_duration": 30,
         }
 
         try:
             # Extract task information based on type
-            if hasattr(task, 'complexity_score') and task.complexity_score:
+            if hasattr(task, "complexity_score") and task.complexity_score:
                 analysis["cognitive_load"] = float(task.complexity_score)
 
-            if hasattr(task, 'estimated_hours') and task.estimated_hours:
+            if hasattr(task, "estimated_hours") and task.estimated_hours:
                 analysis["estimated_duration"] = int(task.estimated_hours * 60)
-                analysis["attention_requirement"] = min(analysis["estimated_duration"], 120)
+                analysis["attention_requirement"] = min(
+                    analysis["estimated_duration"], 120
+                )
 
-            if hasattr(task, 'dependencies') and task.dependencies:
+            if hasattr(task, "dependencies") and task.dependencies:
                 analysis["dependency_count"] = len(task.dependencies)
-                analysis["context_complexity"] = min(analysis["dependency_count"] * 0.2, 1.0)
+                analysis["context_complexity"] = min(
+                    analysis["dependency_count"] * 0.2, 1.0
+                )
 
             # Adjust based on task description complexity
-            description = getattr(task, 'description', '') or getattr(task, 'headline', '')
+            description = getattr(task, "description", "") or getattr(
+                task, "headline", ""
+            )
             if description:
                 word_count = len(description.split())
                 if word_count > 50:
                     analysis["context_complexity"] += 0.2
 
                 # Look for complexity indicators
-                complex_indicators = ['integrate', 'refactor', 'architect', 'design', 'algorithm']
-                simple_indicators = ['fix', 'update', 'add', 'remove', 'change']
+                complex_indicators = [
+                    "integrate",
+                    "refactor",
+                    "architect",
+                    "design",
+                    "algorithm",
+                ]
+                simple_indicators = ["fix", "update", "add", "remove", "change"]
 
                 description_lower = description.lower()
 
-                if any(indicator in description_lower for indicator in complex_indicators):
-                    analysis["cognitive_load"] = min(analysis["cognitive_load"] + 1.0, 5.0)
-                elif any(indicator in description_lower for indicator in simple_indicators):
-                    analysis["cognitive_load"] = max(analysis["cognitive_load"] - 0.5, 1.0)
+                if any(
+                    indicator in description_lower for indicator in complex_indicators
+                ):
+                    analysis["cognitive_load"] = min(
+                        analysis["cognitive_load"] + 1.0, 5.0
+                    )
+                elif any(
+                    indicator in description_lower for indicator in simple_indicators
+                ):
+                    analysis["cognitive_load"] = max(
+                        analysis["cognitive_load"] - 0.5, 1.0
+                    )
 
         except Exception as e:
             logger.warning(f"Task analysis error: {e}")
 
         return analysis
 
-    async def _generate_task_optimization(self, task: Any, analysis: Dict[str, Any],
-                                        profile: ADHDProfile) -> TaskOptimization:
+    async def _generate_task_optimization(
+        self, task: Any, analysis: Dict[str, Any], profile: ADHDProfile
+    ) -> TaskOptimization:
         """Generate ADHD-specific task optimizations."""
 
         cognitive_load = analysis["cognitive_load"]
@@ -468,19 +524,27 @@ class ADHDTaskOptimizer:
 
         optimization = TaskOptimization(
             cognitive_load_score=cognitive_load,
-            estimated_attention_duration=min(attention_duration, profile.optimal_focus_duration),
+            estimated_attention_duration=min(
+                attention_duration, profile.optimal_focus_duration
+            ),
             context_complexity=analysis["context_complexity"],
-            dependency_weight=min(analysis["dependency_count"] * 0.1, 1.0)
+            dependency_weight=min(analysis["dependency_count"] * 0.1, 1.0),
         )
 
         # Generate attention anchors
-        optimization.attention_anchors = await self._generate_attention_anchors(task, analysis)
+        optimization.attention_anchors = await self._generate_attention_anchors(
+            task, analysis
+        )
 
         # Generate context cues
-        optimization.context_cues = await self._generate_context_cues(task, analysis, profile)
+        optimization.context_cues = await self._generate_context_cues(
+            task, analysis, profile
+        )
 
         # Generate completion rewards
-        optimization.completion_rewards = await self._generate_completion_rewards(task, profile)
+        optimization.completion_rewards = await self._generate_completion_rewards(
+            task, profile
+        )
 
         # Determine optimal timing
         optimization.optimal_time_slots = await self._calculate_optimal_timing(
@@ -489,8 +553,9 @@ class ADHDTaskOptimizer:
 
         return optimization
 
-    async def _apply_optimizations(self, task: Any, optimization: TaskOptimization,
-                                 profile: ADHDProfile) -> Any:
+    async def _apply_optimizations(
+        self, task: Any, optimization: TaskOptimization, profile: ADHDProfile
+    ) -> Any:
         """Apply ADHD optimizations to the task."""
 
         # Add ADHD metadata to task
@@ -501,28 +566,30 @@ class ADHDTaskOptimizer:
             "attention_anchors": optimization.attention_anchors,
             "context_cues": optimization.context_cues,
             "completion_rewards": optimization.completion_rewards,
-            "optimal_timing": optimization.optimal_time_slots
+            "optimal_timing": optimization.optimal_time_slots,
         }
 
         # Apply to different task types
-        if hasattr(task, 'cognitive_load'):
+        if hasattr(task, "cognitive_load"):
             task.cognitive_load = int(optimization.cognitive_load_score)
 
-        if hasattr(task, 'attention_requirement'):
-            task.attention_requirement = "hyperfocus" if optimization.cognitive_load_score > 4 else \
-                                       "focused" if optimization.cognitive_load_score > 2 else \
-                                       "scattered"
+        if hasattr(task, "attention_requirement"):
+            task.attention_requirement = (
+                "hyperfocus"
+                if optimization.cognitive_load_score > 4
+                else "focused" if optimization.cognitive_load_score > 2 else "scattered"
+            )
 
-        if hasattr(task, 'break_frequency'):
+        if hasattr(task, "break_frequency"):
             task.break_frequency = self._calculate_break_frequency(
                 optimization.estimated_attention_duration
             )
 
-        if hasattr(task, 'context_complexity'):
+        if hasattr(task, "context_complexity"):
             task.context_complexity = int(optimization.context_complexity * 5)
 
         # Store metadata for retrieval
-        if not hasattr(task, 'adhd_metadata'):
+        if not hasattr(task, "adhd_metadata"):
             task.adhd_metadata = adhd_metadata
         else:
             task.adhd_metadata.update(adhd_metadata)
@@ -553,10 +620,14 @@ class ADHDTaskOptimizer:
         """Generate context preservation tips for a task."""
         tips = ["Write down your current approach before starting"]
 
-        if hasattr(task, 'dependencies') and task.dependencies:
+        if hasattr(task, "dependencies") and task.dependencies:
             tips.append("Note the relationships between this task and its dependencies")
 
-        if hasattr(task, 'complexity_score') and task.complexity_score and task.complexity_score > 3:
+        if (
+            hasattr(task, "complexity_score")
+            and task.complexity_score
+            and task.complexity_score > 3
+        ):
             tips.append("Break this complex task into smaller, concrete steps")
             tips.append("Document key decisions and reasoning as you work")
 
@@ -564,12 +635,14 @@ class ADHDTaskOptimizer:
 
         return tips
 
-    async def _generate_attention_anchors(self, task: Any, analysis: Dict[str, Any]) -> List[str]:
+    async def _generate_attention_anchors(
+        self, task: Any, analysis: Dict[str, Any]
+    ) -> List[str]:
         """Generate attention anchors for a task."""
         anchors = []
 
         # Extract key concepts from task
-        description = getattr(task, 'description', '') or getattr(task, 'headline', '')
+        description = getattr(task, "description", "") or getattr(task, "headline", "")
         if description:
             # Simple keyword extraction
             words = description.lower().split()
@@ -585,8 +658,9 @@ class ADHDTaskOptimizer:
 
         return anchors[:5]  # Limit to 5 anchors
 
-    async def _generate_context_cues(self, task: Any, analysis: Dict[str, Any],
-                                   profile: ADHDProfile) -> List[str]:
+    async def _generate_context_cues(
+        self, task: Any, analysis: Dict[str, Any], profile: ADHDProfile
+    ) -> List[str]:
         """Generate context cues for memory support."""
         cues = []
 
@@ -600,17 +674,19 @@ class ADHDTaskOptimizer:
             cues.append("Standard focus mode")
 
         # Task-specific cues
-        if hasattr(task, 'project_id'):
+        if hasattr(task, "project_id"):
             cues.append(f"Part of project {task.project_id}")
 
         return cues
 
-    async def _generate_completion_rewards(self, task: Any, profile: ADHDProfile) -> List[str]:
+    async def _generate_completion_rewards(
+        self, task: Any, profile: ADHDProfile
+    ) -> List[str]:
         """Generate completion rewards for dopamine motivation."""
         rewards = [
             "Check off the completed task",
             "Take a victory break",
-            "Note what went well"
+            "Note what went well",
         ]
 
         # Add personalized rewards based on profile
@@ -619,8 +695,9 @@ class ADHDTaskOptimizer:
 
         return rewards
 
-    async def _calculate_optimal_timing(self, cognitive_load: float,
-                                      profile: ADHDProfile) -> List[Tuple[int, int]]:
+    async def _calculate_optimal_timing(
+        self, cognitive_load: float, profile: ADHDProfile
+    ) -> List[Tuple[int, int]]:
         """Calculate optimal time slots for task execution."""
         optimal_slots = []
 
@@ -644,8 +721,9 @@ class ADHDTaskOptimizer:
 
         return optimal_slots[:3]  # Limit to 3 time slots
 
-    async def _sort_tasks_for_adhd(self, task_analyses: List[Tuple[Any, Dict[str, Any]]],
-                                 profile: ADHDProfile) -> List[Tuple[Any, Dict[str, Any]]]:
+    async def _sort_tasks_for_adhd(
+        self, task_analyses: List[Tuple[Any, Dict[str, Any]]], profile: ADHDProfile
+    ) -> List[Tuple[Any, Dict[str, Any]]]:
         """Sort tasks for ADHD-optimal execution order."""
 
         def adhd_priority_score(task_analysis_tuple):
@@ -676,8 +754,12 @@ class ADHDTaskOptimizer:
 
         return sorted(task_analyses, key=adhd_priority_score, reverse=True)
 
-    async def _create_adhd_schedule(self, sorted_tasks: List[Tuple[Any, Dict[str, Any]]],
-                                  profile: ADHDProfile, time_window: int) -> List[Dict[str, Any]]:
+    async def _create_adhd_schedule(
+        self,
+        sorted_tasks: List[Tuple[Any, Dict[str, Any]]],
+        profile: ADHDProfile,
+        time_window: int,
+    ) -> List[Dict[str, Any]]:
         """Create ADHD-accommodated schedule with breaks and buffers."""
         schedule = []
         current_time = 0
@@ -692,41 +774,53 @@ class ADHDTaskOptimizer:
 
             # Check if we need a break before this task
             break_needed = (
-                accumulated_cognitive_load + cognitive_load > self.cognitive_load_threshold * 5.0 or
-                current_time > 0 and current_time % (profile.optimal_focus_duration * 3) == 0
+                accumulated_cognitive_load + cognitive_load
+                > self.cognitive_load_threshold * 5.0
+                or current_time > 0
+                and current_time % (profile.optimal_focus_duration * 3) == 0
             )
 
             if break_needed and current_time > 0:
                 # Add break
-                break_duration = profile.break_duration if accumulated_cognitive_load < 10 else profile.long_break_duration
-                schedule.append({
-                    "type": "break",
-                    "start_time": current_time,
-                    "duration": break_duration,
-                    "activity": "rest_and_recharge"
-                })
+                break_duration = (
+                    profile.break_duration
+                    if accumulated_cognitive_load < 10
+                    else profile.long_break_duration
+                )
+                schedule.append(
+                    {
+                        "type": "break",
+                        "start_time": current_time,
+                        "duration": break_duration,
+                        "activity": "rest_and_recharge",
+                    }
+                )
                 current_time += break_duration
                 accumulated_cognitive_load = 0.0
 
             # Add context switch buffer for complex tasks
             if cognitive_load > 3.0 and current_time > 0:
-                schedule.append({
-                    "type": "buffer",
-                    "start_time": current_time,
-                    "duration": profile.context_switch_buffer,
-                    "activity": "context_transition"
-                })
+                schedule.append(
+                    {
+                        "type": "buffer",
+                        "start_time": current_time,
+                        "duration": profile.context_switch_buffer,
+                        "activity": "context_transition",
+                    }
+                )
                 current_time += profile.context_switch_buffer
 
             # Add the task
-            schedule.append({
-                "type": "task",
-                "task": task,
-                "start_time": current_time,
-                "duration": min(task_duration, profile.optimal_focus_duration),
-                "cognitive_load": cognitive_load,
-                "break_recommended": task_duration > profile.optimal_focus_duration
-            })
+            schedule.append(
+                {
+                    "type": "task",
+                    "task": task,
+                    "start_time": current_time,
+                    "duration": min(task_duration, profile.optimal_focus_duration),
+                    "cognitive_load": cognitive_load,
+                    "break_recommended": task_duration > profile.optimal_focus_duration,
+                }
+            )
 
             current_time += min(task_duration, profile.optimal_focus_duration)
             accumulated_cognitive_load += cognitive_load
@@ -736,34 +830,44 @@ class ADHDTaskOptimizer:
                 remaining_duration = task_duration - profile.optimal_focus_duration
 
                 # Add break between task segments
-                schedule.append({
-                    "type": "break",
-                    "start_time": current_time,
-                    "duration": profile.break_duration,
-                    "activity": "micro_break"
-                })
+                schedule.append(
+                    {
+                        "type": "break",
+                        "start_time": current_time,
+                        "duration": profile.break_duration,
+                        "activity": "micro_break",
+                    }
+                )
                 current_time += profile.break_duration
 
                 # Add continuation
-                schedule.append({
-                    "type": "task_continuation",
-                    "task": task,
-                    "start_time": current_time,
-                    "duration": min(remaining_duration, profile.optimal_focus_duration),
-                    "cognitive_load": cognitive_load * 0.8  # Reduced load for continuation
-                })
+                schedule.append(
+                    {
+                        "type": "task_continuation",
+                        "task": task,
+                        "start_time": current_time,
+                        "duration": min(
+                            remaining_duration, profile.optimal_focus_duration
+                        ),
+                        "cognitive_load": cognitive_load
+                        * 0.8,  # Reduced load for continuation
+                    }
+                )
                 current_time += min(remaining_duration, profile.optimal_focus_duration)
 
         return schedule
 
     # Placeholder methods for future implementation
 
-    async def _analyze_attention_indicators(self, activity: List[Dict[str, Any]]) -> Dict[str, Any]:
+    async def _analyze_attention_indicators(
+        self, activity: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """Analyze activity patterns for attention state indicators."""
         return {"focus_duration": 25, "task_switches": 3, "completion_rate": 0.8}
 
-    async def _classify_attention_state(self, indicators: Dict[str, Any],
-                                      profile: ADHDProfile) -> AttentionState:
+    async def _classify_attention_state(
+        self, indicators: Dict[str, Any], profile: ADHDProfile
+    ) -> AttentionState:
         """Classify attention state based on indicators."""
         # Simple classification logic
         if indicators.get("focus_duration", 0) > 60:
@@ -776,7 +880,6 @@ class ADHDTaskOptimizer:
     async def _update_attention_pattern(self, user_id: str, state: AttentionState):
         """Update user's attention pattern history."""
         # Store pattern for learning
-        pass
 
     async def _generate_context_summary(self, context: Dict[str, Any]) -> str:
         """Generate human-readable context summary."""
@@ -787,10 +890,12 @@ class ADHDTaskOptimizer:
         return {
             "key_concepts": context.get("concepts", []),
             "current_approach": context.get("approach", ""),
-            "known_issues": context.get("issues", [])
+            "known_issues": context.get("issues", []),
         }
 
-    async def _extract_decision_trail(self, context: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def _extract_decision_trail(
+        self, context: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """Extract decision trail from context."""
         return context.get("decisions", [])
 
@@ -798,29 +903,30 @@ class ADHDTaskOptimizer:
         """Identify key attention anchors in current context."""
         return context.get("focus_points", ["main_objective"])
 
-    async def _generate_continuation_cues(self, context: Dict[str, Any],
-                                        profile: ADHDProfile) -> List[str]:
+    async def _generate_continuation_cues(
+        self, context: Dict[str, Any], profile: ADHDProfile
+    ) -> List[str]:
         """Generate cues for continuing work after interruption."""
         return [
             "Review the last completed step",
             "Check the current objective",
-            "Verify the approach is still valid"
+            "Verify the approach is still valid",
         ]
 
-    async def _create_restoration_steps(self, context: Dict[str, Any],
-                                      profile: ADHDProfile) -> List[str]:
+    async def _create_restoration_steps(
+        self, context: Dict[str, Any], profile: ADHDProfile
+    ) -> List[str]:
         """Create step-by-step restoration process."""
         return [
             "Read the context summary",
             "Review recent decisions",
             "Identify the next concrete action",
-            "Set a focus timer"
+            "Set a focus timer",
         ]
 
     async def _store_context_preservation(self, user_id: str, data: Dict[str, Any]):
         """Store context preservation data."""
         # Implementation would store to database or file
-        pass
 
     async def _retrieve_latest_context(self, user_id: str) -> Optional[Dict[str, Any]]:
         """Retrieve latest context preservation data."""
@@ -839,20 +945,25 @@ class ADHDTaskOptimizer:
         else:
             return f"{age.days} days ago"
 
-    async def _generate_restoration_recommendations(self, preservation_data: Dict[str, Any],
-                                                  profile: ADHDProfile) -> List[str]:
+    async def _generate_restoration_recommendations(
+        self, preservation_data: Dict[str, Any], profile: ADHDProfile
+    ) -> List[str]:
         """Generate recommendations for context restoration."""
         recommendations = []
 
         context_age = self._calculate_context_age(preservation_data)
         if "hours" in context_age or "days" in context_age:
-            recommendations.append("Take extra time to re-familiarize yourself with the context")
+            recommendations.append(
+                "Take extra time to re-familiarize yourself with the context"
+            )
 
-        recommendations.extend([
-            "Start with a quick review of what was accomplished",
-            "Identify any blockers that may have emerged",
-            "Set a realistic goal for the current session"
-        ])
+        recommendations.extend(
+            [
+                "Start with a quick review of what was accomplished",
+                "Identify any blockers that may have emerged",
+                "Set a realistic goal for the current session",
+            ]
+        )
 
         return recommendations
 
@@ -864,16 +975,16 @@ class ADHDTaskOptimizer:
     async def _save_profile_data(self, user_id: str, profile: ADHDProfile):
         """Save user profile data to storage."""
         # Implementation would save to database or file
-        pass
 
-    async def _log_optimization(self, task: Any, optimization: TaskOptimization,
-                              profile: ADHDProfile):
+    async def _log_optimization(
+        self, task: Any, optimization: TaskOptimization, profile: ADHDProfile
+    ):
         """Log optimization for machine learning and improvement."""
         self.metrics.record_adhd_optimization(
-            task_id=getattr(task, 'id', 'unknown'),
+            task_id=getattr(task, "id", "unknown"),
             cognitive_load=optimization.cognitive_load_score,
             attention_duration=optimization.estimated_attention_duration,
-            user_pattern=profile.primary_attention_pattern.value
+            user_pattern=profile.primary_attention_pattern.value,
         )
 
 

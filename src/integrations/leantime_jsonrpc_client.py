@@ -5,18 +5,15 @@ This module provides a JSON-RPC 2.0 client for communicating with Leantime's API
 Follows the official Leantime API specification for authentication and method calls.
 """
 
-import asyncio
 import json
 import logging
-from datetime import datetime
-from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
+from typing import Any, Dict, Optional, Union
 
 import aiohttp
 
-from core.exceptions import DopemuxIntegrationError, AuthenticationError
 from core.config import Config
-
+from core.exceptions import DopemuxIntegrationError
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +21,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class LeantimeResponse:
     """Structured response from Leantime JSON-RPC API."""
+
     success: bool
     data: Any
     error: Optional[str] = None
@@ -44,8 +42,8 @@ class LeantimeJSONRPCClient:
 
     def __init__(self, config: Config):
         self.config = config
-        self.base_url = config.get('leantime.api_url', 'http://localhost:8080')
-        self.api_token = config.get('leantime.api_token')
+        self.base_url = config.get("leantime.api_url", "http://localhost:8080")
+        self.api_token = config.get("leantime.api_token")
         self.endpoint = f"{self.base_url}/api/jsonrpc"
 
         self.session: Optional[aiohttp.ClientSession] = None
@@ -75,14 +73,13 @@ class LeantimeJSONRPCClient:
         try:
             # Setup HTTP headers for Leantime API
             headers = {
-                'x-api-key': self.api_token,  # Leantime uses x-api-key header
-                'Content-Type': 'application/json',
-                'User-Agent': 'Dopemux-Leantime-Bridge/2.0'
+                "x-api-key": self.api_token,  # Leantime uses x-api-key header
+                "Content-Type": "application/json",
+                "User-Agent": "Dopemux-Leantime-Bridge/2.0",
             }
 
             self.session = aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=30),
-                headers=headers
+                timeout=aiohttp.ClientTimeout(total=30), headers=headers
             )
 
             # Test connection with a simple API call
@@ -93,7 +90,9 @@ class LeantimeJSONRPCClient:
                 logger.info("Successfully connected to Leantime JSON-RPC API")
                 return True
             else:
-                logger.error(f"Failed to authenticate with Leantime: {test_response.error}")
+                logger.error(
+                    f"Failed to authenticate with Leantime: {test_response.error}"
+                )
                 await self.disconnect()
                 return False
 
@@ -117,7 +116,9 @@ class LeantimeJSONRPCClient:
         self._request_id += 1
         return self._request_id
 
-    async def call_method(self, method: str, params: Optional[Dict[str, Any]] = None) -> LeantimeResponse:
+    async def call_method(
+        self, method: str, params: Optional[Dict[str, Any]] = None
+    ) -> LeantimeResponse:
         """
         Call a JSON-RPC method on Leantime API.
 
@@ -136,7 +137,7 @@ class LeantimeJSONRPCClient:
             "jsonrpc": "2.0",
             "id": request_id,
             "method": method,
-            "params": params or {}
+            "params": params or {},
         }
 
         try:
@@ -146,8 +147,8 @@ class LeantimeJSONRPCClient:
                 response_data = await response.json()
 
                 # Check for JSON-RPC error
-                if 'error' in response_data:
-                    error_msg = response_data['error'].get('message', 'Unknown error')
+                if "error" in response_data:
+                    error_msg = response_data["error"].get("message", "Unknown error")
                     logger.warning(f"Leantime API error for {method}: {error_msg}")
 
                     return LeantimeResponse(
@@ -155,18 +156,15 @@ class LeantimeJSONRPCClient:
                         data=None,
                         error=error_msg,
                         method=method,
-                        request_id=request_id
+                        request_id=request_id,
                     )
 
                 # Success response
-                result = response_data.get('result')
+                result = response_data.get("result")
                 logger.debug(f"Successful response from {method}")
 
                 return LeantimeResponse(
-                    success=True,
-                    data=result,
-                    method=method,
-                    request_id=request_id
+                    success=True, data=result, method=method, request_id=request_id
                 )
 
         except aiohttp.ClientError as e:
@@ -177,7 +175,7 @@ class LeantimeJSONRPCClient:
                 data=None,
                 error=error_msg,
                 method=method,
-                request_id=request_id
+                request_id=request_id,
             )
 
         except json.JSONDecodeError as e:
@@ -188,7 +186,7 @@ class LeantimeJSONRPCClient:
                 data=None,
                 error=error_msg,
                 method=method,
-                request_id=request_id
+                request_id=request_id,
             )
 
         except Exception as e:
@@ -199,7 +197,7 @@ class LeantimeJSONRPCClient:
                 data=None,
                 error=error_msg,
                 method=method,
-                request_id=request_id
+                request_id=request_id,
             )
 
     # Project Management Methods
@@ -227,9 +225,13 @@ class LeantimeJSONRPCClient:
         Returns:
             LeantimeResponse with project details
         """
-        return await self.call_method("leantime.rpc.Projects.getProject", {"projectId": project_id})
+        return await self.call_method(
+            "leantime.rpc.Projects.getProject", {"projectId": project_id}
+        )
 
-    async def create_project(self, name: str, description: str = "", **kwargs) -> LeantimeResponse:
+    async def create_project(
+        self, name: str, description: str = "", **kwargs
+    ) -> LeantimeResponse:
         """
         Create new project in Leantime.
 
@@ -241,18 +243,17 @@ class LeantimeJSONRPCClient:
         Returns:
             LeantimeResponse with created project data
         """
-        params = {
-            "name": name,
-            "details": description,
-            **kwargs
-        }
+        params = {"name": name, "details": description, **kwargs}
         return await self.call_method("leantime.rpc.Projects.addProject", params)
 
     # Task/Ticket Management Methods
 
-    async def get_tickets(self, project_id: Optional[int] = None,
-                         status: Optional[str] = None,
-                         limit: int = 100) -> LeantimeResponse:
+    async def get_tickets(
+        self,
+        project_id: Optional[int] = None,
+        status: Optional[str] = None,
+        limit: int = 100,
+    ) -> LeantimeResponse:
         """
         Retrieve tickets/tasks from Leantime.
 
@@ -283,10 +284,13 @@ class LeantimeJSONRPCClient:
         Returns:
             LeantimeResponse with ticket details
         """
-        return await self.call_method("leantime.rpc.Tickets.getTicket", {"ticketId": ticket_id})
+        return await self.call_method(
+            "leantime.rpc.Tickets.getTicket", {"ticketId": ticket_id}
+        )
 
-    async def create_ticket(self, headline: str, description: str = "",
-                           project_id: int = 0, **kwargs) -> LeantimeResponse:
+    async def create_ticket(
+        self, headline: str, description: str = "", project_id: int = 0, **kwargs
+    ) -> LeantimeResponse:
         """
         Create new ticket in Leantime.
 
@@ -303,7 +307,7 @@ class LeantimeJSONRPCClient:
             "headline": headline,
             "description": description,
             "projectId": project_id,
-            **kwargs
+            **kwargs,
         }
         return await self.call_method("leantime.rpc.Tickets.addTicket", params)
 
@@ -331,7 +335,9 @@ class LeantimeJSONRPCClient:
         Returns:
             LeantimeResponse with deletion result
         """
-        return await self.call_method("leantime.rpc.Tickets.deleteTicket", {"ticketId": ticket_id})
+        return await self.call_method(
+            "leantime.rpc.Tickets.deleteTicket", {"ticketId": ticket_id}
+        )
 
     # User Management Methods
 
@@ -367,7 +373,7 @@ class LeantimeJSONRPCClient:
                 return {
                     "status": "disconnected",
                     "connected": False,
-                    "error": "Not connected to Leantime"
+                    "error": "Not connected to Leantime",
                 }
 
             # Try a simple API call
@@ -377,14 +383,14 @@ class LeantimeJSONRPCClient:
                 "status": "healthy" if response.success else "unhealthy",
                 "connected": True,
                 "api_responsive": response.success,
-                "last_error": response.error if not response.success else None
+                "last_error": response.error if not response.success else None,
             }
 
         except Exception as e:
             return {
                 "status": "unhealthy",
                 "connected": self._connected,
-                "error": str(e)
+                "error": str(e),
             }
 
 

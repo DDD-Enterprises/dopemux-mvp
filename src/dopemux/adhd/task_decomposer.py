@@ -7,35 +7,40 @@ tracking and dependency management.
 
 import json
 import uuid
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
+from datetime import datetime
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from rich.console import Console
-from rich.progress import Progress, BarColumn, TextColumn, TimeElapsedColumn
 
 console = Console()
 
+
 class TaskPriority(Enum):
     """Task priority levels."""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     URGENT = "urgent"
 
+
 class TaskStatus(Enum):
     """Task status."""
+
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     BLOCKED = "blocked"
     CANCELLED = "cancelled"
 
+
 @dataclass
 class Task:
     """ADHD-optimized task structure."""
+
     id: str
     description: str
     priority: TaskPriority
@@ -81,9 +86,12 @@ class Task:
 
     @property
     def can_start(self) -> bool:
-        return (self.status == TaskStatus.PENDING and
-                not self.is_blocked and
-                not self.dependencies)
+        return (
+            self.status == TaskStatus.PENDING
+            and not self.is_blocked
+            and not self.dependencies
+        )
+
 
 class TaskDecomposer:
     """
@@ -101,11 +109,11 @@ class TaskDecomposer:
     def __init__(self, project_path: Path):
         """Initialize task decomposer."""
         self.project_path = project_path
-        self.data_dir = project_path / '.dopemux' / 'tasks'
+        self.data_dir = project_path / ".dopemux" / "tasks"
         self.data_dir.mkdir(parents=True, exist_ok=True)
 
-        self.tasks_file = self.data_dir / 'tasks.json'
-        self.sessions_file = self.data_dir / 'task_sessions.json'
+        self.tasks_file = self.data_dir / "tasks.json"
+        self.sessions_file = self.data_dir / "task_sessions.json"
 
         self._tasks: Dict[str, Task] = {}
         self._load_tasks()
@@ -122,7 +130,7 @@ class TaskDecomposer:
         priority: str = "medium",
         duration: int = 25,
         energy_required: str = "medium",
-        tags: Optional[List[str]] = None
+        tags: Optional[List[str]] = None,
     ) -> str:
         """
         Add a new task with automatic decomposition if needed.
@@ -147,7 +155,7 @@ class TaskDecomposer:
             status=TaskStatus.PENDING,
             estimated_duration=duration,
             energy_required=energy_required,
-            tags=tags or []
+            tags=tags or [],
         )
 
         # Decompose if task is too large
@@ -164,7 +172,9 @@ class TaskDecomposer:
 
         console.print(f"[green]✅ Task added: {description} ({duration}m)[/green]")
         if task.subtasks:
-            console.print(f"[blue]🔍 Decomposed into {len(task.subtasks)} subtasks[/blue]")
+            console.print(
+                f"[blue]🔍 Decomposed into {len(task.subtasks)} subtasks[/blue]"
+            )
 
         return task_id
 
@@ -185,13 +195,17 @@ class TaskDecomposer:
         task = self._tasks[task_id]
 
         if not task.can_start:
-            console.print(f"[yellow]Task {task_id} cannot be started (blocked or has dependencies)[/yellow]")
+            console.print(
+                f"[yellow]Task {task_id} cannot be started (blocked or has dependencies)[/yellow]"
+            )
             return False
 
         # Check if another task is in progress
         active_tasks = [t for t in self._tasks.values() if t.is_in_progress]
         if active_tasks:
-            console.print("[yellow]Another task is already in progress. Complete it first or use 'dopemux task switch'[/yellow]")
+            console.print(
+                "[yellow]Another task is already in progress. Complete it first or use 'dopemux task switch'[/yellow]"
+            )
             return False
 
         # Start the task
@@ -203,7 +217,9 @@ class TaskDecomposer:
         self._log_task_session(task_id, "started")
 
         console.print(f"[green]🚀 Started task: {task.description}[/green]")
-        console.print(f"[blue]⏱️ Estimated duration: {task.estimated_duration} minutes[/blue]")
+        console.print(
+            f"[blue]⏱️ Estimated duration: {task.estimated_duration} minutes[/blue]"
+        )
 
         # Show progress if task has subtasks
         if task.subtasks:
@@ -256,8 +272,14 @@ class TaskDecomposer:
         if task.actual_duration:
             estimated = task.estimated_duration
             actual = task.actual_duration
-            accuracy = "on time" if abs(actual - estimated) <= 5 else "over" if actual > estimated else "under"
-            console.print(f"[blue]⏱️ Duration: {actual}m (estimated {estimated}m) - {accuracy}[/blue]")
+            accuracy = (
+                "on time"
+                if abs(actual - estimated) <= 5
+                else "over" if actual > estimated else "under"
+            )
+            console.print(
+                f"[blue]⏱️ Duration: {actual}m (estimated {estimated}m) - {accuracy}[/blue]"
+            )
 
         # Check for newly available tasks
         self._check_unblocked_tasks()
@@ -281,13 +303,15 @@ class TaskDecomposer:
                 continue
 
             # Skip subtasks in main list (they'll be shown under parent)
-            is_subtask = any(task.id in parent.subtasks for parent in self._tasks.values())
+            is_subtask = any(
+                task.id in parent.subtasks for parent in self._tasks.values()
+            )
             if is_subtask:
                 continue
 
             task_dict = asdict(task)
-            task_dict['priority'] = task.priority.value
-            task_dict['status'] = task.status.value
+            task_dict["priority"] = task.priority.value
+            task_dict["status"] = task.status.value
 
             # Add subtask info
             if task.subtasks:
@@ -295,21 +319,29 @@ class TaskDecomposer:
                 for subtask_id in task.subtasks:
                     if subtask_id in self._tasks:
                         subtask = self._tasks[subtask_id]
-                        subtask_data.append({
-                            'id': subtask.id,
-                            'description': subtask.description,
-                            'status': subtask.status.value,
-                            'progress': subtask.progress
-                        })
-                task_dict['subtask_data'] = subtask_data
+                        subtask_data.append(
+                            {
+                                "id": subtask.id,
+                                "description": subtask.description,
+                                "status": subtask.status.value,
+                                "progress": subtask.progress,
+                            }
+                        )
+                task_dict["subtask_data"] = subtask_data
 
             tasks.append(task_dict)
 
         # Sort by priority and creation time
-        priority_order = {TaskPriority.URGENT: 0, TaskPriority.HIGH: 1,
-                         TaskPriority.MEDIUM: 2, TaskPriority.LOW: 3}
+        priority_order = {
+            TaskPriority.URGENT: 0,
+            TaskPriority.HIGH: 1,
+            TaskPriority.MEDIUM: 2,
+            TaskPriority.LOW: 3,
+        }
 
-        tasks.sort(key=lambda t: (priority_order[TaskPriority(t['priority'])], t['created_at']))
+        tasks.sort(
+            key=lambda t: (priority_order[TaskPriority(t["priority"])], t["created_at"])
+        )
         return tasks
 
     def get_progress(self) -> Dict[str, Any]:
@@ -319,8 +351,21 @@ class TaskDecomposer:
         if not all_tasks:
             return {}
 
-        total_tasks = len([t for t in all_tasks if not any(t.id in parent.subtasks for parent in all_tasks)])
-        completed_tasks = len([t for t in all_tasks if t.is_completed and not any(t.id in parent.subtasks for parent in all_tasks)])
+        total_tasks = len(
+            [
+                t
+                for t in all_tasks
+                if not any(t.id in parent.subtasks for parent in all_tasks)
+            ]
+        )
+        completed_tasks = len(
+            [
+                t
+                for t in all_tasks
+                if t.is_completed
+                and not any(t.id in parent.subtasks for parent in all_tasks)
+            ]
+        )
         in_progress_tasks = len([t for t in all_tasks if t.is_in_progress])
 
         # Calculate overall progress
@@ -332,23 +377,29 @@ class TaskDecomposer:
         for task in all_tasks:
             if task.is_in_progress:
                 current_task = {
-                    'id': task.id,
-                    'description': task.description,
-                    'duration': task.estimated_duration,
-                    'started_at': task.started_at
+                    "id": task.id,
+                    "description": task.description,
+                    "duration": task.estimated_duration,
+                    "started_at": task.started_at,
                 }
                 break
 
         return {
-            'total_tasks': total_tasks,
-            'completed_tasks': completed_tasks,
-            'in_progress_tasks': in_progress_tasks,
-            'overall_progress': overall_progress,
-            'current_task': current_task,
-            'tasks': [asdict(t) for t in all_tasks if not any(t.id in parent.subtasks for parent in all_tasks)]
+            "total_tasks": total_tasks,
+            "completed_tasks": completed_tasks,
+            "in_progress_tasks": in_progress_tasks,
+            "overall_progress": overall_progress,
+            "current_task": current_task,
+            "tasks": [
+                asdict(t)
+                for t in all_tasks
+                if not any(t.id in parent.subtasks for parent in all_tasks)
+            ],
         }
 
-    def get_recommended_task(self, energy_level: str = "medium") -> Optional[Dict[str, Any]]:
+    def get_recommended_task(
+        self, energy_level: str = "medium"
+    ) -> Optional[Dict[str, Any]]:
         """
         Get AI-recommended next task based on ADHD considerations.
 
@@ -414,7 +465,11 @@ class TaskDecomposer:
         total_duration = main_task.estimated_duration
 
         # Calculate number of subtasks needed
-        num_subtasks = max(2, (total_duration + self.optimal_task_duration - 1) // self.optimal_task_duration)
+        num_subtasks = max(
+            2,
+            (total_duration + self.optimal_task_duration - 1)
+            // self.optimal_task_duration,
+        )
         subtask_duration = total_duration // num_subtasks
 
         # Create subtasks
@@ -428,12 +483,12 @@ class TaskDecomposer:
                 status=TaskStatus.PENDING,
                 estimated_duration=subtask_duration,
                 energy_required=main_task.energy_required,
-                tags=main_task.tags + [f"subtask-{i+1}"]
+                tags=main_task.tags + [f"subtask-{i+1}"],
             )
 
             # Set dependencies (each subtask depends on previous)
             if i > 0:
-                subtask.dependencies = [subtasks[i-1].id]
+                subtask.dependencies = [subtasks[i - 1].id]
 
             subtasks.append(subtask)
 
@@ -457,7 +512,7 @@ class TaskDecomposer:
             TaskPriority.URGENT: 4,
             TaskPriority.HIGH: 3,
             TaskPriority.MEDIUM: 2,
-            TaskPriority.LOW: 1
+            TaskPriority.LOW: 1,
         }
         score += priority_scores[task.priority]
 
@@ -492,8 +547,11 @@ class TaskDecomposer:
         task = self._tasks[task_id]
 
         if task.subtasks:
-            completed_subtasks = sum(1 for st_id in task.subtasks
-                                   if st_id in self._tasks and self._tasks[st_id].is_completed)
+            completed_subtasks = sum(
+                1
+                for st_id in task.subtasks
+                if st_id in self._tasks and self._tasks[st_id].is_completed
+            )
             total_subtasks = len(task.subtasks)
 
             # Create progress bar
@@ -501,39 +559,48 @@ class TaskDecomposer:
             remaining_chars = "░" * (10 - len(progress_chars))
             progress_bar = f"[{progress_chars}{remaining_chars}]"
 
-            console.print(f"Progress: {progress_bar} {completed_subtasks}/{total_subtasks} subtasks ✅")
+            console.print(
+                f"Progress: {progress_bar} {completed_subtasks}/{total_subtasks} subtasks ✅"
+            )
 
     def _check_unblocked_tasks(self) -> None:
         """Check for tasks that became available after completion."""
         newly_available = []
 
         for task in self._tasks.values():
-            if (task.status == TaskStatus.PENDING and
-                task.dependencies and
-                all(self._tasks.get(dep_id, {}).status == TaskStatus.COMPLETED
-                    for dep_id in task.dependencies if dep_id in self._tasks)):
+            if (
+                task.status == TaskStatus.PENDING
+                and task.dependencies
+                and all(
+                    self._tasks.get(dep_id, {}).status == TaskStatus.COMPLETED
+                    for dep_id in task.dependencies
+                    if dep_id in self._tasks
+                )
+            ):
 
                 # Clear dependencies since they're complete
                 task.dependencies = []
                 newly_available.append(task)
 
         if newly_available:
-            console.print(f"[green]🚀 {len(newly_available)} task(s) now available![/green]")
+            console.print(
+                f"[green]🚀 {len(newly_available)} task(s) now available![/green]"
+            )
             for task in newly_available:
                 console.print(f"  • {task.description}")
 
     def _log_task_session(self, task_id: str, action: str, notes: str = "") -> None:
         """Log task session for analytics."""
         session_entry = {
-            'task_id': task_id,
-            'action': action,
-            'timestamp': datetime.now().isoformat(),
-            'notes': notes
+            "task_id": task_id,
+            "action": action,
+            "timestamp": datetime.now().isoformat(),
+            "notes": notes,
         }
 
         sessions = []
         if self.sessions_file.exists():
-            with open(self.sessions_file, 'r') as f:
+            with open(self.sessions_file, "r") as f:
                 sessions = json.load(f)
 
         sessions.append(session_entry)
@@ -541,7 +608,7 @@ class TaskDecomposer:
         # Keep only last 1000 entries
         sessions = sessions[-1000:]
 
-        with open(self.sessions_file, 'w') as f:
+        with open(self.sessions_file, "w") as f:
             json.dump(sessions, f, indent=2)
 
     def _load_tasks(self) -> None:
@@ -550,7 +617,7 @@ class TaskDecomposer:
             return
 
         try:
-            with open(self.tasks_file, 'r') as f:
+            with open(self.tasks_file, "r") as f:
                 data = json.load(f)
 
             for task_data in data:
@@ -569,11 +636,11 @@ class TaskDecomposer:
             data = []
             for task in self._tasks.values():
                 task_dict = asdict(task)
-                task_dict['priority'] = task.priority.value
-                task_dict['status'] = task.status.value
+                task_dict["priority"] = task.priority.value
+                task_dict["status"] = task.status.value
                 data.append(task_dict)
 
-            with open(self.tasks_file, 'w') as f:
+            with open(self.tasks_file, "w") as f:
                 json.dump(data, f, indent=2)
 
         except Exception as e:

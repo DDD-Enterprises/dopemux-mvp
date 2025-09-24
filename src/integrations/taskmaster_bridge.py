@@ -5,31 +5,27 @@ This module provides integration with Claude-Task-Master AI for intelligent
 task decomposition, complexity analysis, and AI-powered project management.
 """
 
-import asyncio
 import json
 import logging
 import os
 import subprocess
 import tempfile
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Union
-from dataclasses import dataclass, asdict
 from enum import Enum
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ValidationError
-
-from core.exceptions import DopemuxIntegrationError, AIServiceError
 from core.config import Config
+from core.exceptions import AIServiceError, DopemuxIntegrationError
 from core.monitoring import MetricsCollector
-from utils.security import SecureTokenManager
-
 
 logger = logging.getLogger(__name__)
 
 
 class TaskMasterProvider(Enum):
     """AI provider options for Task-Master."""
+
     ANTHROPIC = "anthropic"
     OPENAI = "openai"
     GOOGLE = "google"
@@ -42,6 +38,7 @@ class TaskMasterProvider(Enum):
 
 class ComplexityLevel(Enum):
     """Task complexity levels from Task-Master analysis."""
+
     TRIVIAL = 1
     SIMPLE = 2
     MODERATE = 3
@@ -52,6 +49,7 @@ class ComplexityLevel(Enum):
 @dataclass
 class TaskMasterTask:
     """Task representation from Task-Master AI."""
+
     id: str
     title: str
     description: str
@@ -60,7 +58,7 @@ class TaskMasterTask:
     complexity_score: Optional[float] = None
     estimated_hours: Optional[float] = None
     dependencies: List[str] = None
-    subtasks: List['TaskMasterTask'] = None
+    subtasks: List["TaskMasterTask"] = None
     tags: List[str] = None
     ai_analysis: Optional[Dict[str, Any]] = None
     created_at: Optional[datetime] = None
@@ -78,6 +76,7 @@ class TaskMasterTask:
 @dataclass
 class PRDAnalysis:
     """Product Requirements Document analysis result."""
+
     project_name: str
     version: str
     requirements: List[str]
@@ -107,21 +106,21 @@ class TaskMasterMCPClient:
         self.metrics = MetricsCollector()
 
         # Task-Master configuration
-        self.task_master_path = config.get('taskmaster.path', '.taskmaster')
+        self.task_master_path = config.get("taskmaster.path", ".taskmaster")
         self.default_provider = TaskMasterProvider(
-            config.get('taskmaster.default_provider', 'anthropic')
+            config.get("taskmaster.default_provider", "anthropic")
         )
 
         # API Keys for different providers
         self.api_keys = {
-            TaskMasterProvider.ANTHROPIC: config.get('api_keys.anthropic'),
-            TaskMasterProvider.OPENAI: config.get('api_keys.openai'),
-            TaskMasterProvider.GOOGLE: config.get('api_keys.google'),
-            TaskMasterProvider.PERPLEXITY: config.get('api_keys.perplexity'),
-            TaskMasterProvider.MISTRAL: config.get('api_keys.mistral'),
-            TaskMasterProvider.GROQ: config.get('api_keys.groq'),
-            TaskMasterProvider.OLLAMA: config.get('api_keys.ollama'),
-            TaskMasterProvider.AZURE: config.get('api_keys.azure'),
+            TaskMasterProvider.ANTHROPIC: config.get("api_keys.anthropic"),
+            TaskMasterProvider.OPENAI: config.get("api_keys.openai"),
+            TaskMasterProvider.GOOGLE: config.get("api_keys.google"),
+            TaskMasterProvider.PERPLEXITY: config.get("api_keys.perplexity"),
+            TaskMasterProvider.MISTRAL: config.get("api_keys.mistral"),
+            TaskMasterProvider.GROQ: config.get("api_keys.groq"),
+            TaskMasterProvider.OLLAMA: config.get("api_keys.ollama"),
+            TaskMasterProvider.AZURE: config.get("api_keys.azure"),
         }
 
         # MCP connection state
@@ -138,39 +137,39 @@ class TaskMasterMCPClient:
         task_master_dir.mkdir(exist_ok=True)
 
         # Create config.json
-        config_file = task_master_dir / 'config.json'
+        config_file = task_master_dir / "config.json"
         if not config_file.exists():
             config_data = {
                 "providers": {
                     "anthropic": {
                         "model": "claude-3-sonnet-20240229",
-                        "apiKey": self.api_keys.get(TaskMasterProvider.ANTHROPIC, "")
+                        "apiKey": self.api_keys.get(TaskMasterProvider.ANTHROPIC, ""),
                     },
                     "openai": {
                         "model": "gpt-4",
-                        "apiKey": self.api_keys.get(TaskMasterProvider.OPENAI, "")
+                        "apiKey": self.api_keys.get(TaskMasterProvider.OPENAI, ""),
                     },
                     "perplexity": {
                         "model": "llama-3.1-sonar-small-128k-online",
-                        "apiKey": self.api_keys.get(TaskMasterProvider.PERPLEXITY, "")
-                    }
+                        "apiKey": self.api_keys.get(TaskMasterProvider.PERPLEXITY, ""),
+                    },
                 },
                 "defaultProvider": self.default_provider.value,
                 "researchProvider": "perplexity",
-                "fallbackProvider": "openai"
+                "fallbackProvider": "openai",
             }
 
-            with open(config_file, 'w') as f:
+            with open(config_file, "w") as f:
                 json.dump(config_data, f, indent=2)
 
         # Create tasks directory
-        tasks_dir = task_master_dir / 'tasks'
+        tasks_dir = task_master_dir / "tasks"
         tasks_dir.mkdir(exist_ok=True)
 
         # Create empty tasks.json if it doesn't exist
-        tasks_file = tasks_dir / 'tasks.json'
+        tasks_file = tasks_dir / "tasks.json"
         if not tasks_file.exists():
-            with open(tasks_file, 'w') as f:
+            with open(tasks_file, "w") as f:
                 json.dump({"tasks": [], "metadata": {}}, f, indent=2)
 
     async def __aenter__(self):
@@ -199,13 +198,13 @@ class TaskMasterMCPClient:
 
             # Start Task-Master MCP server
             self._process = subprocess.Popen(
-                ['npx', '-y', '--package=task-master-ai', 'task-master-ai'],
+                ["npx", "-y", "--package=task-master-ai", "task-master-ai"],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
                 env=env,
-                cwd=self.task_master_path
+                cwd=self.task_master_path,
             )
 
             # Send MCP initialization
@@ -215,20 +214,17 @@ class TaskMasterMCPClient:
                 "method": "initialize",
                 "params": {
                     "protocolVersion": "2024-11-05",
-                    "capabilities": {
-                        "tools": {},
-                        "resources": {}
-                    },
+                    "capabilities": {"tools": {}, "resources": {}},
                     "clientInfo": {
                         "name": "Dopemux-TaskMaster-Bridge",
-                        "version": "1.0.0"
-                    }
-                }
+                        "version": "1.0.0",
+                    },
+                },
             }
 
             response = await self._send_mcp_request(init_request)
 
-            if response.get('result'):
+            if response.get("result"):
                 self._connected = True
                 logger.info("Successfully connected to Task-Master MCP server")
                 return True
@@ -250,7 +246,7 @@ class TaskMasterMCPClient:
                 # Send shutdown notification
                 shutdown_request = {
                     "jsonrpc": "2.0",
-                    "method": "notifications/shutdown"
+                    "method": "notifications/shutdown",
                 }
                 await self._send_mcp_request(shutdown_request)
 
@@ -288,7 +284,7 @@ class TaskMasterMCPClient:
 
         try:
             # Send request
-            request_json = json.dumps(request) + '\n'
+            request_json = json.dumps(request) + "\n"
             self._process.stdin.write(request_json)
             self._process.stdin.flush()
 
@@ -301,9 +297,9 @@ class TaskMasterMCPClient:
 
             # Track metrics
             self.metrics.record_api_call(
-                service='taskmaster',
-                method=request.get('method', 'unknown'),
-                status='success'
+                service="taskmaster",
+                method=request.get("method", "unknown"),
+                status="success",
             )
 
             return response
@@ -314,15 +310,17 @@ class TaskMasterMCPClient:
         except Exception as e:
             logger.error(f"Error in Task-Master MCP request: {e}")
             self.metrics.record_api_call(
-                service='taskmaster',
-                method=request.get('method', 'unknown'),
-                status='error'
+                service="taskmaster",
+                method=request.get("method", "unknown"),
+                status="error",
             )
             raise AIServiceError(f"Task-Master error: {e}")
 
     # Core Task-Master Methods
 
-    async def parse_prd(self, prd_content: str, project_name: str = "Untitled") -> PRDAnalysis:
+    async def parse_prd(
+        self, prd_content: str, project_name: str = "Untitled"
+    ) -> PRDAnalysis:
         """
         Parse Product Requirements Document using Task-Master AI.
 
@@ -334,58 +332,62 @@ class TaskMasterMCPClient:
             PRD analysis with tasks and complexity
         """
         # Create temporary PRD file
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".md", delete=False
+        ) as temp_file:
             temp_file.write(prd_content)
             temp_file_path = temp_file.name
 
         try:
-            response = await self._send_mcp_request({
-                "jsonrpc": "2.0",
-                "id": self._next_request_id(),
-                "method": "tools/call",
-                "params": {
-                    "name": "parse_prd",
-                    "arguments": {
-                        "prdFile": temp_file_path,
-                        "projectName": project_name
-                    }
+            response = await self._send_mcp_request(
+                {
+                    "jsonrpc": "2.0",
+                    "id": self._next_request_id(),
+                    "method": "tools/call",
+                    "params": {
+                        "name": "parse_prd",
+                        "arguments": {
+                            "prdFile": temp_file_path,
+                            "projectName": project_name,
+                        },
+                    },
                 }
-            })
+            )
 
-            if response.get('result', {}).get('content'):
-                result_data = json.loads(response['result']['content'][0]['text'])
+            if response.get("result", {}).get("content"):
+                result_data = json.loads(response["result"]["content"][0]["text"])
 
                 # Parse tasks from result
                 tasks = []
-                for task_data in result_data.get('tasks', []):
+                for task_data in result_data.get("tasks", []):
                     task = TaskMasterTask(
-                        id=task_data.get('id', ''),
-                        title=task_data.get('title', ''),
-                        description=task_data.get('description', ''),
-                        status=task_data.get('status', 'pending'),
-                        priority=task_data.get('priority', 1),
-                        complexity_score=task_data.get('complexity'),
-                        estimated_hours=task_data.get('estimatedHours'),
-                        dependencies=task_data.get('dependencies', []),
-                        tags=task_data.get('tags', []),
-                        ai_analysis=task_data.get('aiAnalysis')
+                        id=task_data.get("id", ""),
+                        title=task_data.get("title", ""),
+                        description=task_data.get("description", ""),
+                        status=task_data.get("status", "pending"),
+                        priority=task_data.get("priority", 1),
+                        complexity_score=task_data.get("complexity"),
+                        estimated_hours=task_data.get("estimatedHours"),
+                        dependencies=task_data.get("dependencies", []),
+                        tags=task_data.get("tags", []),
+                        ai_analysis=task_data.get("aiAnalysis"),
                     )
 
                     # Parse subtasks recursively
-                    if task_data.get('subtasks'):
-                        task.subtasks = self._parse_subtasks(task_data['subtasks'])
+                    if task_data.get("subtasks"):
+                        task.subtasks = self._parse_subtasks(task_data["subtasks"])
 
                     tasks.append(task)
 
                 return PRDAnalysis(
                     project_name=project_name,
-                    version=result_data.get('version', '1.0'),
-                    requirements=result_data.get('requirements', []),
+                    version=result_data.get("version", "1.0"),
+                    requirements=result_data.get("requirements", []),
                     tasks=tasks,
-                    complexity_summary=result_data.get('complexitySummary', {}),
-                    estimated_timeline=result_data.get('estimatedTimeline'),
-                    key_dependencies=result_data.get('keyDependencies', []),
-                    risk_factors=result_data.get('riskFactors', [])
+                    complexity_summary=result_data.get("complexitySummary", {}),
+                    estimated_timeline=result_data.get("estimatedTimeline"),
+                    key_dependencies=result_data.get("keyDependencies", []),
+                    risk_factors=result_data.get("riskFactors", []),
                 )
 
         finally:
@@ -402,20 +404,20 @@ class TaskMasterMCPClient:
         subtasks = []
         for subtask_data in subtasks_data:
             subtask = TaskMasterTask(
-                id=subtask_data.get('id', ''),
-                title=subtask_data.get('title', ''),
-                description=subtask_data.get('description', ''),
-                status=subtask_data.get('status', 'pending'),
-                priority=subtask_data.get('priority', 1),
-                complexity_score=subtask_data.get('complexity'),
-                estimated_hours=subtask_data.get('estimatedHours'),
-                dependencies=subtask_data.get('dependencies', []),
-                tags=subtask_data.get('tags', [])
+                id=subtask_data.get("id", ""),
+                title=subtask_data.get("title", ""),
+                description=subtask_data.get("description", ""),
+                status=subtask_data.get("status", "pending"),
+                priority=subtask_data.get("priority", 1),
+                complexity_score=subtask_data.get("complexity"),
+                estimated_hours=subtask_data.get("estimatedHours"),
+                dependencies=subtask_data.get("dependencies", []),
+                tags=subtask_data.get("tags", []),
             )
 
             # Recursive subtask parsing
-            if subtask_data.get('subtasks'):
-                subtask.subtasks = self._parse_subtasks(subtask_data['subtasks'])
+            if subtask_data.get("subtasks"):
+                subtask.subtasks = self._parse_subtasks(subtask_data["subtasks"])
 
             subtasks.append(subtask)
 
@@ -435,35 +437,34 @@ class TaskMasterMCPClient:
         if tag:
             params["tag"] = tag
 
-        response = await self._send_mcp_request({
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": "tools/call",
-            "params": {
-                "name": "get_tasks",
-                "arguments": params
+        response = await self._send_mcp_request(
+            {
+                "jsonrpc": "2.0",
+                "id": self._next_request_id(),
+                "method": "tools/call",
+                "params": {"name": "get_tasks", "arguments": params},
             }
-        })
+        )
 
-        if response.get('result', {}).get('content'):
-            tasks_data = json.loads(response['result']['content'][0]['text'])
+        if response.get("result", {}).get("content"):
+            tasks_data = json.loads(response["result"]["content"][0]["text"])
 
             tasks = []
-            for task_data in tasks_data.get('tasks', []):
+            for task_data in tasks_data.get("tasks", []):
                 task = TaskMasterTask(
-                    id=task_data.get('id', ''),
-                    title=task_data.get('title', ''),
-                    description=task_data.get('description', ''),
-                    status=task_data.get('status', 'pending'),
-                    priority=task_data.get('priority', 1),
-                    complexity_score=task_data.get('complexity'),
-                    estimated_hours=task_data.get('estimatedHours'),
-                    dependencies=task_data.get('dependencies', []),
-                    tags=task_data.get('tags', [])
+                    id=task_data.get("id", ""),
+                    title=task_data.get("title", ""),
+                    description=task_data.get("description", ""),
+                    status=task_data.get("status", "pending"),
+                    priority=task_data.get("priority", 1),
+                    complexity_score=task_data.get("complexity"),
+                    estimated_hours=task_data.get("estimatedHours"),
+                    dependencies=task_data.get("dependencies", []),
+                    tags=task_data.get("tags", []),
                 )
 
-                if task_data.get('subtasks'):
-                    task.subtasks = self._parse_subtasks(task_data['subtasks'])
+                if task_data.get("subtasks"):
+                    task.subtasks = self._parse_subtasks(task_data["subtasks"])
 
                 tasks.append(task)
 
@@ -471,7 +472,9 @@ class TaskMasterMCPClient:
 
         return []
 
-    async def get_next_task(self, preference: str = "priority") -> Optional[TaskMasterTask]:
+    async def get_next_task(
+        self, preference: str = "priority"
+    ) -> Optional[TaskMasterTask]:
         """
         Get the next recommended task to work on.
 
@@ -481,32 +484,32 @@ class TaskMasterMCPClient:
         Returns:
             Next recommended task or None
         """
-        response = await self._send_mcp_request({
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": "tools/call",
-            "params": {
-                "name": "next_task",
-                "arguments": {
-                    "preference": preference
-                }
+        response = await self._send_mcp_request(
+            {
+                "jsonrpc": "2.0",
+                "id": self._next_request_id(),
+                "method": "tools/call",
+                "params": {
+                    "name": "next_task",
+                    "arguments": {"preference": preference},
+                },
             }
-        })
+        )
 
-        if response.get('result', {}).get('content'):
-            task_data = json.loads(response['result']['content'][0]['text'])
+        if response.get("result", {}).get("content"):
+            task_data = json.loads(response["result"]["content"][0]["text"])
 
             if task_data:
                 return TaskMasterTask(
-                    id=task_data.get('id', ''),
-                    title=task_data.get('title', ''),
-                    description=task_data.get('description', ''),
-                    status=task_data.get('status', 'pending'),
-                    priority=task_data.get('priority', 1),
-                    complexity_score=task_data.get('complexity'),
-                    estimated_hours=task_data.get('estimatedHours'),
-                    dependencies=task_data.get('dependencies', []),
-                    tags=task_data.get('tags', [])
+                    id=task_data.get("id", ""),
+                    title=task_data.get("title", ""),
+                    description=task_data.get("description", ""),
+                    status=task_data.get("status", "pending"),
+                    priority=task_data.get("priority", 1),
+                    complexity_score=task_data.get("complexity"),
+                    estimated_hours=task_data.get("estimatedHours"),
+                    dependencies=task_data.get("dependencies", []),
+                    tags=task_data.get("tags", []),
                 )
 
         return None
@@ -521,36 +524,33 @@ class TaskMasterMCPClient:
         Returns:
             Expanded task with subtasks
         """
-        response = await self._send_mcp_request({
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": "tools/call",
-            "params": {
-                "name": "expand_task",
-                "arguments": {
-                    "taskId": task_id
-                }
+        response = await self._send_mcp_request(
+            {
+                "jsonrpc": "2.0",
+                "id": self._next_request_id(),
+                "method": "tools/call",
+                "params": {"name": "expand_task", "arguments": {"taskId": task_id}},
             }
-        })
+        )
 
-        if response.get('result', {}).get('content'):
-            task_data = json.loads(response['result']['content'][0]['text'])
+        if response.get("result", {}).get("content"):
+            task_data = json.loads(response["result"]["content"][0]["text"])
 
             if task_data:
                 task = TaskMasterTask(
-                    id=task_data.get('id', ''),
-                    title=task_data.get('title', ''),
-                    description=task_data.get('description', ''),
-                    status=task_data.get('status', 'pending'),
-                    priority=task_data.get('priority', 1),
-                    complexity_score=task_data.get('complexity'),
-                    estimated_hours=task_data.get('estimatedHours'),
-                    dependencies=task_data.get('dependencies', []),
-                    tags=task_data.get('tags', [])
+                    id=task_data.get("id", ""),
+                    title=task_data.get("title", ""),
+                    description=task_data.get("description", ""),
+                    status=task_data.get("status", "pending"),
+                    priority=task_data.get("priority", 1),
+                    complexity_score=task_data.get("complexity"),
+                    estimated_hours=task_data.get("estimatedHours"),
+                    dependencies=task_data.get("dependencies", []),
+                    tags=task_data.get("tags", []),
                 )
 
-                if task_data.get('subtasks'):
-                    task.subtasks = self._parse_subtasks(task_data['subtasks'])
+                if task_data.get("subtasks"):
+                    task.subtasks = self._parse_subtasks(task_data["subtasks"])
 
                 return task
 
@@ -566,20 +566,20 @@ class TaskMasterMCPClient:
         Returns:
             Complexity analysis
         """
-        response = await self._send_mcp_request({
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": "tools/call",
-            "params": {
-                "name": "analyze_complexity",
-                "arguments": {
-                    "description": task_description
-                }
+        response = await self._send_mcp_request(
+            {
+                "jsonrpc": "2.0",
+                "id": self._next_request_id(),
+                "method": "tools/call",
+                "params": {
+                    "name": "analyze_complexity",
+                    "arguments": {"description": task_description},
+                },
             }
-        })
+        )
 
-        if response.get('result', {}).get('content'):
-            return json.loads(response['result']['content'][0]['text'])
+        if response.get("result", {}).get("content"):
+            return json.loads(response["result"]["content"][0]["text"])
 
         return {}
 
@@ -594,22 +594,21 @@ class TaskMasterMCPClient:
         Returns:
             True if update successful
         """
-        response = await self._send_mcp_request({
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": "tools/call",
-            "params": {
-                "name": "set_status",
-                "arguments": {
-                    "taskId": task_id,
-                    "status": status
-                }
+        response = await self._send_mcp_request(
+            {
+                "jsonrpc": "2.0",
+                "id": self._next_request_id(),
+                "method": "tools/call",
+                "params": {
+                    "name": "set_status",
+                    "arguments": {"taskId": task_id, "status": status},
+                },
             }
-        })
+        )
 
-        if response.get('result', {}).get('content'):
-            result_data = json.loads(response['result']['content'][0]['text'])
-            return result_data.get('success', False)
+        if response.get("result", {}).get("content"):
+            result_data = json.loads(response["result"]["content"][0]["text"])
+            return result_data.get("success", False)
 
         return False
 
@@ -624,21 +623,20 @@ class TaskMasterMCPClient:
         Returns:
             Research results
         """
-        response = await self._send_mcp_request({
-            "jsonrpc": "2.0",
-            "id": self._next_request_id(),
-            "method": "tools/call",
-            "params": {
-                "name": "research",
-                "arguments": {
-                    "taskDescription": task_description,
-                    "query": query
-                }
+        response = await self._send_mcp_request(
+            {
+                "jsonrpc": "2.0",
+                "id": self._next_request_id(),
+                "method": "tools/call",
+                "params": {
+                    "name": "research",
+                    "arguments": {"taskDescription": task_description, "query": query},
+                },
             }
-        })
+        )
 
-        if response.get('result', {}).get('content'):
-            return json.loads(response['result']['content'][0]['text'])
+        if response.get("result", {}).get("content"):
+            return json.loads(response["result"]["content"][0]["text"])
 
         return {}
 
@@ -657,7 +655,7 @@ class TaskMasterMCPClient:
                     "status": "disconnected",
                     "connected": False,
                     "process_running": False,
-                    "error": "Not connected to Task-Master"
+                    "error": "Not connected to Task-Master",
                 }
 
             # Check if process is still running
@@ -666,7 +664,7 @@ class TaskMasterMCPClient:
                     "status": "process_terminated",
                     "connected": False,
                     "process_running": False,
-                    "error": "Task-Master process terminated"
+                    "error": "Task-Master process terminated",
                 }
 
             # Try a simple API call
@@ -678,15 +676,16 @@ class TaskMasterMCPClient:
                 "process_running": True,
                 "api_responsive": True,
                 "tasks_count": len(tasks),
-                "default_provider": self.default_provider.value
+                "default_provider": self.default_provider.value,
             }
 
         except Exception as e:
             return {
                 "status": "unhealthy",
                 "connected": self._connected,
-                "process_running": self._process is not None and self._process.poll() is None,
-                "error": str(e)
+                "process_running": self._process is not None
+                and self._process.poll() is None,
+                "error": str(e),
             }
 
     def get_available_providers(self) -> List[str]:

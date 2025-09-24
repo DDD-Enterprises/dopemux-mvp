@@ -23,25 +23,26 @@ Integration Points:
 import asyncio
 import logging
 import time
-import yaml
-from typing import Dict, List, Optional, Any, Tuple, Set
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from pathlib import Path
+from typing import Any, Dict, List, Optional, Set
 
-from .roles import RoleManager, Role
-from .token_manager import TokenBudgetManager, BudgetStatus
+import yaml
+
+from .hooks import OptimizationResult, PreToolHookManager
+from .observability import HealthMonitor, MetricsCollector
+from .roles import RoleManager
+from .server_manager import MCPServerManager
 from .session_manager import SessionManager
-from .hooks import PreToolHookManager, OptimizationResult
-from .server_manager import MCPServerManager, ServerConnection
-from .observability import MetricsCollector, HealthMonitor
+from .token_manager import BudgetStatus, TokenBudgetManager
 
 logger = logging.getLogger(__name__)
 
 
 class BrokerStatus(Enum):
     """Broker operational status"""
+
     STARTING = "starting"
     READY = "ready"
     DEGRADED = "degraded"
@@ -52,6 +53,7 @@ class BrokerStatus(Enum):
 @dataclass
 class BrokerConfig:
     """Configuration for the MetaMCP Broker"""
+
     name: str = "dopemux-metamcp-broker"
     version: str = "1.0.0"
     host: str = "localhost"
@@ -74,33 +76,50 @@ class BrokerConfig:
     adhd_optimizations: bool = True
 
     @classmethod
-    def from_file(cls, config_path: str) -> 'BrokerConfig':
+    def from_file(cls, config_path: str) -> "BrokerConfig":
         """Load configuration from YAML file"""
-        with open(config_path, 'r') as f:
+        with open(config_path, "r") as f:
             config_data = yaml.safe_load(f)
 
-        broker_section = config_data.get('broker', {})
-        features_section = config_data.get('features', {})
+        broker_section = config_data.get("broker", {})
+        features_section = config_data.get("features", {})
 
         return cls(
-            name=broker_section.get('name', cls.name),
-            version=broker_section.get('version', cls.version),
-            host=broker_section.get('host', cls.host),
-            port=broker_section.get('port', cls.port),
-            max_concurrent_tools=broker_section.get('max_concurrent_tools', cls.max_concurrent_tools),
-            tool_timeout_seconds=broker_section.get('tool_timeout_seconds', cls.tool_timeout_seconds),
-            role_switch_timeout_seconds=broker_section.get('role_switch_timeout_seconds', cls.role_switch_timeout_seconds),
-            health_check_interval=broker_section.get('health_check_interval', cls.health_check_interval),
-            role_based_mounting=features_section.get('role_based_mounting', cls.role_based_mounting),
-            budget_aware_hooks=features_section.get('budget_aware_hooks', cls.budget_aware_hooks),
-            letta_integration=features_section.get('letta_integration', cls.letta_integration),
-            adhd_optimizations=features_section.get('adhd_optimizations', cls.adhd_optimizations)
+            name=broker_section.get("name", cls.name),
+            version=broker_section.get("version", cls.version),
+            host=broker_section.get("host", cls.host),
+            port=broker_section.get("port", cls.port),
+            max_concurrent_tools=broker_section.get(
+                "max_concurrent_tools", cls.max_concurrent_tools
+            ),
+            tool_timeout_seconds=broker_section.get(
+                "tool_timeout_seconds", cls.tool_timeout_seconds
+            ),
+            role_switch_timeout_seconds=broker_section.get(
+                "role_switch_timeout_seconds", cls.role_switch_timeout_seconds
+            ),
+            health_check_interval=broker_section.get(
+                "health_check_interval", cls.health_check_interval
+            ),
+            role_based_mounting=features_section.get(
+                "role_based_mounting", cls.role_based_mounting
+            ),
+            budget_aware_hooks=features_section.get(
+                "budget_aware_hooks", cls.budget_aware_hooks
+            ),
+            letta_integration=features_section.get(
+                "letta_integration", cls.letta_integration
+            ),
+            adhd_optimizations=features_section.get(
+                "adhd_optimizations", cls.adhd_optimizations
+            ),
         )
 
 
 @dataclass
 class ToolCallRequest:
     """Request to call a tool through the broker"""
+
     session_id: str
     tool_name: str
     method: str
@@ -114,6 +133,7 @@ class ToolCallRequest:
 @dataclass
 class ToolCallResponse:
     """Response from a tool call through the broker"""
+
     request_id: str
     success: bool
     result: Any = None
@@ -127,6 +147,7 @@ class ToolCallResponse:
 @dataclass
 class SessionState:
     """Current state of a broker session"""
+
     session_id: str
     role: Optional[str] = None
     mounted_tools: Set[str] = field(default_factory=set)
@@ -171,7 +192,9 @@ class MetaMCPBroker:
         # Background tasks
         self._background_tasks: Set[asyncio.Task] = set()
 
-        logger.info(f"MetaMCP Broker initialized: {self.config.name} v{self.config.version}")
+        logger.info(
+            f"MetaMCP Broker initialized: {self.config.name} v{self.config.version}"
+        )
 
     async def start(self) -> None:
         """Start the MetaMCP broker and all subsystems"""
@@ -222,7 +245,12 @@ class MetaMCPBroker:
         self.status = BrokerStatus.FAILED
         logger.info("MetaMCP Broker stopped")
 
-    async def switch_role(self, session_id: str, new_role: str, user_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def switch_role(
+        self,
+        session_id: str,
+        new_role: str,
+        user_context: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         """
         Switch a session to a new role with tool remounting.
 
@@ -239,12 +267,18 @@ class MetaMCPBroker:
             previous_role = session.role
 
             # Validate the role transition
-            if not await self.role_manager.validate_role_transition(previous_role, new_role):
-                raise ValueError(f"Invalid role transition: {previous_role} -> {new_role}")
+            if not await self.role_manager.validate_role_transition(
+                previous_role, new_role
+            ):
+                raise ValueError(
+                    f"Invalid role transition: {previous_role} -> {new_role}"
+                )
 
             # Create context checkpoint before role switch (ADHD accommodation)
             if previous_role and self.config.adhd_optimizations:
-                checkpoint = await self._create_context_checkpoint(session_id, f"role_switch_from_{previous_role}")
+                checkpoint = await self._create_context_checkpoint(
+                    session_id, f"role_switch_from_{previous_role}"
+                )
                 session.context_checkpoints.append(checkpoint)
 
             # Get new role configuration
@@ -274,7 +308,9 @@ class MetaMCPBroker:
 
             # Update token budget for new role
             await self.token_manager.switch_role_budget(session_id, new_role)
-            session.budget_status = await self.token_manager.get_budget_status(session_id)
+            session.budget_status = await self.token_manager.get_budget_status(
+                session_id
+            )
 
             # Clear any active escalations
             session.escalation_active = False
@@ -282,23 +318,29 @@ class MetaMCPBroker:
 
             # Notify UI about role switch (ADHD accommodation)
             if self.config.adhd_optimizations:
-                await self._notify_role_switch(session_id, previous_role, new_role, session.mounted_tools)
+                await self._notify_role_switch(
+                    session_id, previous_role, new_role, session.mounted_tools
+                )
 
             # Record metrics
             switch_time_ms = int((time.time() - start_time) * 1000)
             self.metrics.record_role_switch(previous_role, new_role, switch_time_ms)
 
-            logger.info(f"Role switch completed: {previous_role} -> {new_role} in {switch_time_ms}ms")
+            logger.info(
+                f"Role switch completed: {previous_role} -> {new_role} in {switch_time_ms}ms"
+            )
 
             return {
-                'success': True,
-                'previous_role': previous_role,
-                'new_role': new_role,
-                'mounted_tools': list(session.mounted_tools),
-                'tools_mounted': list(tools_to_mount),
-                'tools_unmounted': list(tools_to_unmount),
-                'switch_time_ms': switch_time_ms,
-                'budget_status': session.budget_status.__dict__ if session.budget_status else None
+                "success": True,
+                "previous_role": previous_role,
+                "new_role": new_role,
+                "mounted_tools": list(session.mounted_tools),
+                "tools_mounted": list(tools_to_mount),
+                "tools_unmounted": list(tools_to_unmount),
+                "switch_time_ms": switch_time_ms,
+                "budget_status": (
+                    session.budget_status.__dict__ if session.budget_status else None
+                ),
             }
 
         except Exception as e:
@@ -306,10 +348,10 @@ class MetaMCPBroker:
             self.metrics.record_role_switch_failure(session_id, new_role, str(e))
 
             return {
-                'success': False,
-                'error': str(e),
-                'session_id': session_id,
-                'requested_role': new_role
+                "success": False,
+                "error": str(e),
+                "session_id": session_id,
+                "requested_role": new_role,
             }
 
     async def call_tool(self, request: ToolCallRequest) -> ToolCallResponse:
@@ -332,36 +374,40 @@ class MetaMCPBroker:
 
             # Verify tool access for current role
             if not await self._verify_tool_access(session, request.tool_name):
-                raise PermissionError(f"Tool {request.tool_name} not available for role {session.role}")
+                raise PermissionError(
+                    f"Tool {request.tool_name} not available for role {session.role}"
+                )
 
             # Apply pre-tool hooks for optimization
             optimizations = []
             if self.config.budget_aware_hooks:
                 call_dict = {
-                    'tool': request.tool_name,
-                    'method': request.method,
-                    'args': request.args
+                    "tool": request.tool_name,
+                    "method": request.method,
+                    "args": request.args,
                 }
 
                 session_context = {
-                    'session_id': request.session_id,
-                    'role': session.role
+                    "session_id": request.session_id,
+                    "role": session.role,
                 }
 
-                optimized_call, applied_optimizations = await self.hook_manager.pre_tool_check(call_dict, session_context)
+                optimized_call, applied_optimizations = (
+                    await self.hook_manager.pre_tool_check(call_dict, session_context)
+                )
                 optimizations.extend(applied_optimizations)
 
                 # Update request with optimized parameters
-                request.args = optimized_call.get('args', request.args)
+                request.args = optimized_call.get("args", request.args)
 
             # Check if the call was denied by hooks
-            if any(opt.action_taken.value == 'deny_expensive' for opt in optimizations):
+            if any(opt.action_taken.value == "deny_expensive" for opt in optimizations):
                 return ToolCallResponse(
                     request_id=request.request_id,
                     success=False,
                     error="Tool call denied due to budget constraints",
                     optimizations=optimizations,
-                    execution_time_ms=int((time.time() - start_time) * 1000)
+                    execution_time_ms=int((time.time() - start_time) * 1000),
                 )
 
             # Execute the tool call
@@ -369,17 +415,19 @@ class MetaMCPBroker:
                 server_name=request.tool_name,
                 method=request.method,
                 args=request.args,
-                timeout=self.config.tool_timeout_seconds
+                timeout=self.config.tool_timeout_seconds,
             )
 
             # Update token usage
-            estimated_tokens = sum(opt.estimated_token_savings for opt in optimizations)
+            sum(opt.estimated_token_savings for opt in optimizations)
             actual_tokens = await self._estimate_actual_token_usage(result)
             await self.token_manager.record_usage(request.session_id, actual_tokens)
 
             # Update session activity
             session.last_activity = datetime.now()
-            session.budget_status = await self.token_manager.get_budget_status(request.session_id)
+            session.budget_status = await self.token_manager.get_budget_status(
+                request.session_id
+            )
 
             execution_time_ms = int((time.time() - start_time) * 1000)
 
@@ -390,7 +438,7 @@ class MetaMCPBroker:
                 request.method,
                 execution_time_ms,
                 actual_tokens,
-                len(optimizations)
+                len(optimizations),
             )
 
             return ToolCallResponse(
@@ -399,23 +447,29 @@ class MetaMCPBroker:
                 result=result,
                 optimizations=optimizations,
                 token_usage=actual_tokens,
-                execution_time_ms=execution_time_ms
+                execution_time_ms=execution_time_ms,
             )
 
         except Exception as e:
             execution_time_ms = int((time.time() - start_time) * 1000)
-            logger.error(f"Tool call failed: {request.tool_name}.{request.method} - {e}")
+            logger.error(
+                f"Tool call failed: {request.tool_name}.{request.method} - {e}"
+            )
 
-            self.metrics.record_tool_call_failure(request.tool_name, request.method, str(e))
+            self.metrics.record_tool_call_failure(
+                request.tool_name, request.method, str(e)
+            )
 
             return ToolCallResponse(
                 request_id=request.request_id,
                 success=False,
                 error=str(e),
-                execution_time_ms=execution_time_ms
+                execution_time_ms=execution_time_ms,
             )
 
-    async def request_escalation(self, session_id: str, escalation_type: str, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def request_escalation(
+        self, session_id: str, escalation_type: str, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Request temporary access to additional tools beyond role defaults.
 
@@ -430,67 +484,76 @@ class MetaMCPBroker:
             # Check if escalation is allowed for this role and type
             role_config = await self.role_manager.get_role(session.role)
             if escalation_type not in role_config.escalation_triggers:
-                raise ValueError(f"Escalation type '{escalation_type}' not allowed for role '{session.role}'")
+                raise ValueError(
+                    f"Escalation type '{escalation_type}' not allowed for role '{session.role}'"
+                )
 
             escalation_config = role_config.escalation_triggers[escalation_type]
 
             # Check if approval is required
-            if escalation_config.get('approval_required', False):
+            if escalation_config.get("approval_required", False):
                 # In a real implementation, this would trigger an approval workflow
-                logger.info(f"Escalation approval required for {session_id}: {escalation_type}")
+                logger.info(
+                    f"Escalation approval required for {session_id}: {escalation_type}"
+                )
                 return {
-                    'success': False,
-                    'status': 'approval_required',
-                    'escalation_type': escalation_type,
-                    'approval_timeout': 300  # 5 minutes
+                    "success": False,
+                    "status": "approval_required",
+                    "escalation_type": escalation_type,
+                    "approval_timeout": 300,  # 5 minutes
                 }
 
             # Mount additional tools
-            additional_tools = set(escalation_config.get('additional_tools', []))
+            additional_tools = set(escalation_config.get("additional_tools", []))
             if additional_tools:
                 await self._mount_tools(session_id, additional_tools)
                 session.mounted_tools.update(additional_tools)
 
             # Set escalation expiry
-            duration = escalation_config.get('max_duration', 1800)  # Default 30 minutes
+            duration = escalation_config.get("max_duration", 1800)  # Default 30 minutes
             session.escalation_active = True
             session.escalation_expires = datetime.now() + timedelta(seconds=duration)
 
-            logger.info(f"Escalation granted for {session_id}: {escalation_type} -> {additional_tools}")
+            logger.info(
+                f"Escalation granted for {session_id}: {escalation_type} -> {additional_tools}"
+            )
 
             return {
-                'success': True,
-                'escalation_type': escalation_type,
-                'additional_tools': list(additional_tools),
-                'expires_in_seconds': duration,
-                'expires_at': session.escalation_expires.isoformat()
+                "success": True,
+                "escalation_type": escalation_type,
+                "additional_tools": list(additional_tools),
+                "expires_in_seconds": duration,
+                "expires_at": session.escalation_expires.isoformat(),
             }
 
         except Exception as e:
             logger.error(f"Escalation request failed for {session_id}: {e}")
-            return {
-                'success': False,
-                'error': str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     async def get_session_status(self, session_id: str) -> Dict[str, Any]:
         """Get current status of a session"""
         session = self.active_sessions.get(session_id)
         if not session:
-            return {'exists': False}
+            return {"exists": False}
 
-        budget_status = session.budget_status.__dict__ if session.budget_status else None
+        budget_status = (
+            session.budget_status.__dict__ if session.budget_status else None
+        )
 
         return {
-            'exists': True,
-            'session_id': session_id,
-            'role': session.role,
-            'mounted_tools': list(session.mounted_tools),
-            'budget_status': budget_status,
-            'last_activity': session.last_activity.isoformat(),
-            'escalation_active': session.escalation_active,
-            'escalation_expires': session.escalation_expires.isoformat() if session.escalation_expires else None,
-            'checkpoints_count': len(session.context_checkpoints)
+            "exists": True,
+            "session_id": session_id,
+            "role": session.role,
+            "mounted_tools": list(session.mounted_tools),
+            "budget_status": budget_status,
+            "last_activity": session.last_activity.isoformat(),
+            "escalation_active": session.escalation_active,
+            "escalation_expires": (
+                session.escalation_expires.isoformat()
+                if session.escalation_expires
+                else None
+            ),
+            "checkpoints_count": len(session.context_checkpoints),
         }
 
     async def get_broker_health(self) -> Dict[str, Any]:
@@ -499,7 +562,7 @@ class MetaMCPBroker:
             broker_status=self.status,
             active_sessions=len(self.active_sessions),
             server_manager=self.server_manager,
-            metrics=self.metrics.get_summary()
+            metrics=self.metrics.get_summary(),
         )
 
     # Private helper methods
@@ -513,12 +576,11 @@ class MetaMCPBroker:
     async def _load_configurations(self) -> None:
         """Load all configuration files"""
         # Policy configuration is loaded by individual managers
-        pass
 
     async def _initialize_components(self) -> None:
         """Initialize all core components"""
         # Load policy configuration
-        with open(self.config.policy_config_path, 'r') as f:
+        with open(self.config.policy_config_path, "r") as f:
             policy_config = yaml.safe_load(f)
 
         # Initialize managers
@@ -585,7 +647,8 @@ class MetaMCPBroker:
                 inactive_threshold = timedelta(hours=2)
 
                 inactive_sessions = [
-                    session_id for session_id, session in self.active_sessions.items()
+                    session_id
+                    for session_id, session in self.active_sessions.items()
                     if now - session.last_activity > inactive_threshold
                 ]
 
@@ -623,7 +686,9 @@ class MetaMCPBroker:
 
                 for session_id, session in self.active_sessions.items():
                     if session.role:  # Only checkpoint active sessions
-                        checkpoint = await self._create_context_checkpoint(session_id, "pomodoro_auto")
+                        checkpoint = await self._create_context_checkpoint(
+                            session_id, "pomodoro_auto"
+                        )
                         session.context_checkpoints.append(checkpoint)
 
                         # Gentle notification about checkpoint created
@@ -649,19 +714,23 @@ class MetaMCPBroker:
         """Verify that a tool is accessible for the current session"""
         return tool_name in session.mounted_tools
 
-    async def _create_context_checkpoint(self, session_id: str, checkpoint_type: str) -> Dict[str, Any]:
+    async def _create_context_checkpoint(
+        self, session_id: str, checkpoint_type: str
+    ) -> Dict[str, Any]:
         """Create an ADHD-friendly context checkpoint"""
         session = self.active_sessions.get(session_id)
         if not session:
             return {}
 
         checkpoint = {
-            'timestamp': datetime.now().isoformat(),
-            'session_id': session_id,
-            'type': checkpoint_type,
-            'role': session.role,
-            'mounted_tools': list(session.mounted_tools),
-            'budget_usage': session.budget_status.__dict__ if session.budget_status else None
+            "timestamp": datetime.now().isoformat(),
+            "session_id": session_id,
+            "type": checkpoint_type,
+            "role": session.role,
+            "mounted_tools": list(session.mounted_tools),
+            "budget_usage": (
+                session.budget_status.__dict__ if session.budget_status else None
+            ),
         }
 
         # Store checkpoint via session manager
@@ -670,7 +739,9 @@ class MetaMCPBroker:
 
         return checkpoint
 
-    async def _notify_role_switch(self, session_id: str, old_role: str, new_role: str, tools: Set[str]) -> None:
+    async def _notify_role_switch(
+        self, session_id: str, old_role: str, new_role: str, tools: Set[str]
+    ) -> None:
         """Notify UI about role switch (ADHD accommodation)"""
         # This would integrate with the tmux UI notification system
         logger.info(f"Role switch notification: {old_role} -> {new_role}")
@@ -713,7 +784,9 @@ class MetaMCPBroker:
 
         # Save final checkpoint
         if self.config.adhd_optimizations:
-            checkpoint = await self._create_context_checkpoint(session_id, "session_cleanup")
+            checkpoint = await self._create_context_checkpoint(
+                session_id, "session_cleanup"
+            )
 
         del self.active_sessions[session_id]
         logger.info(f"Cleaned up inactive session: {session_id}")

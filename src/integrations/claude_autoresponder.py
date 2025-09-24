@@ -5,25 +5,24 @@ This module manages the ClaudeAutoResponder tool integration, providing
 automatic Claude Code confirmation responses with ADHD-optimized controls.
 """
 
-import asyncio
 import logging
 import subprocess
 import threading
 import time
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from dopemux.config.manager import ConfigManager, ClaudeAutoResponderConfig
-
+from dopemux.config.manager import ClaudeAutoResponderConfig, ConfigManager
 
 logger = logging.getLogger(__name__)
 
 
 class AutoResponderStatus(Enum):
     """Auto responder status states."""
+
     STOPPED = "stopped"
     STARTING = "starting"
     RUNNING = "running"
@@ -34,6 +33,7 @@ class AutoResponderStatus(Enum):
 @dataclass
 class AutoResponderMetrics:
     """Auto responder performance metrics."""
+
     start_time: datetime
     responses_sent: int = 0
     last_response_time: Optional[datetime] = None
@@ -68,7 +68,7 @@ class ClaudeAutoResponderManager:
         """Initialize auto responder manager."""
         self.config_manager = config_manager
         self.project_path = project_path
-        self.data_dir = project_path / '.dopemux' / 'autoresponder'
+        self.data_dir = project_path / ".dopemux" / "autoresponder"
         self.data_dir.mkdir(parents=True, exist_ok=True)
 
         self._process: Optional[subprocess.Popen] = None
@@ -77,8 +77,8 @@ class ClaudeAutoResponderManager:
         self._metrics = AutoResponderMetrics(start_time=datetime.now())
 
         # Setup ClaudeAutoResponder repository
-        self.car_repo_path = self.data_dir / 'ClaudeAutoResponder'
-        self.car_executable = self.car_repo_path / 'claude_auto_responder.py'
+        self.car_repo_path = self.data_dir / "ClaudeAutoResponder"
+        self.car_executable = self.car_repo_path / "claude_auto_responder.py"
 
         # ADHD-specific features
         self._last_activity = datetime.now()
@@ -89,19 +89,27 @@ class ClaudeAutoResponderManager:
         try:
             if not self.car_repo_path.exists():
                 logger.info("Cloning ClaudeAutoResponder repository...")
-                subprocess.run([
-                    'git', 'clone',
-                    'https://github.com/BeehiveInnovations/ClaudeAutoResponder.git',
-                    str(self.car_repo_path)
-                ], check=True, capture_output=True)
+                subprocess.run(
+                    [
+                        "git",
+                        "clone",
+                        "https://github.com/BeehiveInnovations/ClaudeAutoResponder.git",
+                        str(self.car_repo_path),
+                    ],
+                    check=True,
+                    capture_output=True,
+                )
 
             # Run setup if needed
-            setup_script = self.car_repo_path / 'setup.py'
+            setup_script = self.car_repo_path / "setup.py"
             if setup_script.exists():
                 logger.info("Running ClaudeAutoResponder setup...")
-                subprocess.run([
-                    'python3', str(setup_script)
-                ], cwd=self.car_repo_path, check=True, capture_output=True)
+                subprocess.run(
+                    ["python3", str(setup_script)],
+                    cwd=self.car_repo_path,
+                    check=True,
+                    capture_output=True,
+                )
 
             # Create whitelist configuration
             self._setup_whitelist()
@@ -134,7 +142,7 @@ WebFetch
 WebSearch
 Task
 """
-            whitelist_path = self.car_repo_path / 'whitelisted_tools.txt'
+            whitelist_path = self.car_repo_path / "whitelisted_tools.txt"
             whitelist_path.write_text(whitelist_content)
 
     def start(self) -> bool:
@@ -166,7 +174,7 @@ Task
                 cwd=self.car_repo_path,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True
+                text=True,
             )
 
             # Start monitoring thread
@@ -232,22 +240,28 @@ Task
 
     def is_running(self) -> bool:
         """Check if auto responder is currently running."""
-        return (self._process is not None and
-                self._process.poll() is None and
-                self._metrics.status == AutoResponderStatus.RUNNING)
+        return (
+            self._process is not None
+            and self._process.poll() is None
+            and self._metrics.status == AutoResponderStatus.RUNNING
+        )
 
     def get_status(self) -> Dict[str, Any]:
         """Get current status and metrics."""
         return {
-            'status': self._metrics.status.value,
-            'running': self.is_running(),
-            'uptime_minutes': self._metrics.uptime_minutes,
-            'responses_sent': self._metrics.responses_sent,
-            'responses_per_minute': self._metrics.responses_per_minute,
-            'errors_count': self._metrics.errors_count,
-            'last_response': self._metrics.last_response_time.isoformat() if self._metrics.last_response_time else None,
-            'attention_state': self._attention_state,
-            'config': self.config_manager.get_claude_autoresponder_config().dict()
+            "status": self._metrics.status.value,
+            "running": self.is_running(),
+            "uptime_minutes": self._metrics.uptime_minutes,
+            "responses_sent": self._metrics.responses_sent,
+            "responses_per_minute": self._metrics.responses_per_minute,
+            "errors_count": self._metrics.errors_count,
+            "last_response": (
+                self._metrics.last_response_time.isoformat()
+                if self._metrics.last_response_time
+                else None
+            ),
+            "attention_state": self._attention_state,
+            "config": self.config_manager.get_claude_autoresponder_config().dict(),
         }
 
     def update_attention_state(self, attention_state: str) -> None:
@@ -263,26 +277,26 @@ Task
 
     def _build_command(self, config: ClaudeAutoResponderConfig) -> List[str]:
         """Build command line for ClaudeAutoResponder."""
-        cmd = ['python3', str(self.car_executable)]
+        cmd = ["python3", str(self.car_executable)]
 
         # Response delay
         if config.response_delay > 0:
-            cmd.extend(['--delay', str(config.response_delay)])
+            cmd.extend(["--delay", str(config.response_delay)])
 
         # Terminal scope
-        if config.terminal_scope == 'all':
-            cmd.append('--multi-window')
-        elif config.terminal_scope == 'current':
-            cmd.append('--single-window')
+        if config.terminal_scope == "all":
+            cmd.append("--multi-window")
+        elif config.terminal_scope == "current":
+            cmd.append("--single-window")
 
         # Debug mode
         if config.debug_mode:
-            cmd.append('--debug')
+            cmd.append("--debug")
 
         # Whitelist tools (if file exists)
-        whitelist_path = self.car_repo_path / 'whitelisted_tools.txt'
+        whitelist_path = self.car_repo_path / "whitelisted_tools.txt"
         if config.whitelist_tools and whitelist_path.exists():
-            cmd.extend(['--whitelist', str(whitelist_path)])
+            cmd.extend(["--whitelist", str(whitelist_path)])
 
         return cmd
 
@@ -310,6 +324,7 @@ Task
                 if self._process and self._process.stdout:
                     # Non-blocking read attempt
                     import select
+
                     if select.select([self._process.stdout], [], [], 0.1)[0]:
                         line = self._process.stdout.readline()
                         if line and "response sent" in line.lower():
@@ -341,6 +356,8 @@ Task
         return True
 
 
-def create_autoresponder_manager(config_manager: ConfigManager, project_path: Path) -> ClaudeAutoResponderManager:
+def create_autoresponder_manager(
+    config_manager: ConfigManager, project_path: Path
+) -> ClaudeAutoResponderManager:
     """Factory function to create auto responder manager."""
     return ClaudeAutoResponderManager(config_manager, project_path)

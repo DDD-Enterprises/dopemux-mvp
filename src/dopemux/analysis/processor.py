@@ -7,14 +7,14 @@ semantic embedding and registry generation.
 
 import os
 import time
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
-from rich.table import Table
 from rich.panel import Panel
+from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
+from rich.table import Table
 
 console = Console()
 
@@ -46,16 +46,37 @@ class ProcessingConfig:
         """Set default values after initialization."""
         if self.file_extensions is None:
             self.file_extensions = [
-                '.md', '.txt', '.py', '.js', '.ts', '.jsx', '.tsx',
-                '.html', '.css', '.yml', '.yaml', '.json', '.toml',
-                '.rst', '.adoc', '.org', '.tex'
+                ".md",
+                ".txt",
+                ".py",
+                ".js",
+                ".ts",
+                ".jsx",
+                ".tsx",
+                ".html",
+                ".css",
+                ".yml",
+                ".yaml",
+                ".json",
+                ".toml",
+                ".rst",
+                ".adoc",
+                ".org",
+                ".tex",
             ]
 
         if self.exclude_patterns is None:
             self.exclude_patterns = [
-                '*/node_modules/*', '*/.git/*', '*/__pycache__/*',
-                '*/venv/*', '*/env/*', '*/build/*', '*/dist/*',
-                '*/.next/*', '*/.nuxt/*', '*/target/*'
+                "*/node_modules/*",
+                "*/.git/*",
+                "*/__pycache__/*",
+                "*/venv/*",
+                "*/env/*",
+                "*/build/*",
+                "*/dist/*",
+                "*/.next/*",
+                "*/.nuxt/*",
+                "*/target/*",
             ]
 
 
@@ -71,15 +92,15 @@ class DocumentProcessor:
         """Initialize processor with configuration."""
         self.config = config
         self.stats = {
-            'files_processed': 0,
-            'atomic_units_created': 0,
-            'features_extracted': 0,
-            'components_identified': 0,
-            'subsystems_mapped': 0,
-            'research_entries': 0,
-            'evidence_links': 0,
-            'start_time': None,
-            'end_time': None
+            "files_processed": 0,
+            "atomic_units_created": 0,
+            "features_extracted": 0,
+            "components_identified": 0,
+            "subsystems_mapped": 0,
+            "research_entries": 0,
+            "evidence_links": 0,
+            "start_time": None,
+            "end_time": None,
         }
 
         # Initialize sub-processors
@@ -94,17 +115,14 @@ class DocumentProcessor:
         # Initialize document embedder
         milvus_config = {}
         if self.config.milvus_uri:
-            milvus_config['milvus_uri'] = self.config.milvus_uri
+            milvus_config["milvus_uri"] = self.config.milvus_uri
 
         self.embedder = DocumentEmbedder(
-            model_name=self.config.embedding_model,
-            **milvus_config
+            model_name=self.config.embedding_model, **milvus_config
         )
 
         # Initialize multi-angle extractor
-        self.extractor = MultiAngleExtractor(
-            output_dir=self.config.output_directory
-        )
+        self.extractor = MultiAngleExtractor(output_dir=self.config.output_directory)
 
     def analyze_directory(self) -> Dict[str, Any]:
         """
@@ -113,7 +131,7 @@ class DocumentProcessor:
         Returns:
             Dict containing processing results and statistics
         """
-        self.stats['start_time'] = time.time()
+        self.stats["start_time"] = time.time()
 
         with console.status("[bold green]Discovering documents...") as status:
             # Phase 1: Document Discovery
@@ -131,14 +149,14 @@ class DocumentProcessor:
 
             # Phase 3: Registry Generation
             status.update("[bold cyan]Generating registries...")
-            registries = self._generate_registries(atomic_units)
+            self._generate_registries(atomic_units)
 
             # Phase 4: Embedding Generation
             if self.config.milvus_uri:
                 status.update("[bold magenta]Creating embeddings...")
                 self._create_embeddings(atomic_units)
 
-        self.stats['end_time'] = time.time()
+        self.stats["end_time"] = time.time()
         self._display_completion_summary()
 
         return self._get_results()
@@ -149,7 +167,9 @@ class DocumentProcessor:
         source_path = Path(self.config.source_directory)
 
         if not source_path.exists():
-            console.print(f"[red]❌ Source directory does not exist: {source_path}[/red]")
+            console.print(
+                f"[red]❌ Source directory does not exist: {source_path}[/red]"
+            )
             return files
 
         # Walk directory tree
@@ -170,7 +190,10 @@ class DocumentProcessor:
                         files.append(file_path)
 
                         # Respect max files limit
-                        if self.config.max_files and len(files) >= self.config.max_files:
+                        if (
+                            self.config.max_files
+                            and len(files) >= self.config.max_files
+                        ):
                             break
 
         return sorted(files)
@@ -181,7 +204,7 @@ class DocumentProcessor:
 
         for pattern in self.config.exclude_patterns:
             # Simple glob-style pattern matching
-            if pattern.replace('*', '').strip('/') in path_str:
+            if pattern.replace("*", "").strip("/") in path_str:
                 return True
 
         return False
@@ -199,10 +222,7 @@ class DocumentProcessor:
             console=console,
         ) as progress:
 
-            task = progress.add_task(
-                "Processing documents...",
-                total=len(files)
-            )
+            task = progress.add_task("Processing documents...", total=len(files))
 
             for i, file_path in enumerate(files):
                 try:
@@ -211,21 +231,23 @@ class DocumentProcessor:
                     atomic_units.extend(units)
 
                     # Update statistics
-                    self.stats['files_processed'] += 1
-                    self.stats['atomic_units_created'] += len(units)
+                    self.stats["files_processed"] += 1
+                    self.stats["atomic_units_created"] += len(units)
 
                     # ADHD-friendly feedback
                     if self.config.gentle_feedback and i % 10 == 0:
                         progress.update(
                             task,
                             description=f"✅ Processed {self.stats['files_processed']} files, {self.stats['atomic_units_created']} units created",
-                            completed=i + 1
+                            completed=i + 1,
                         )
                     else:
                         progress.update(task, completed=i + 1)
 
                 except Exception as e:
-                    console.print(f"[yellow]⚠️ Error processing {file_path}: {e}[/yellow]")
+                    console.print(
+                        f"[yellow]⚠️ Error processing {file_path}: {e}[/yellow]"
+                    )
                     continue
 
         return atomic_units
@@ -234,7 +256,7 @@ class DocumentProcessor:
         """Process a single file into atomic units."""
         # Simple processing - break files into manageable chunks
         try:
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
         except Exception:
             return []  # Skip files that can't be read
@@ -243,7 +265,7 @@ class DocumentProcessor:
         atomic_units = []
 
         # Split by double newlines (paragraphs/sections)
-        sections = content.split('\n\n')
+        sections = content.split("\n\n")
 
         for i, section in enumerate(sections):
             section = section.strip()
@@ -252,35 +274,37 @@ class DocumentProcessor:
 
             # Create atomic unit
             unit = {
-                'id': f"{file_path.stem}_section_{i}",
-                'content': section[:2000],  # Limit content length
-                'title': file_path.name,
-                'source_file': str(file_path),
-                'doc_type': self._infer_doc_type(file_path),
-                'metadata': {
-                    'section_index': i,
-                    'file_size': file_path.stat().st_size,
-                    'modified_time': file_path.stat().st_mtime,
-                    'section_length': len(section)
-                }
+                "id": f"{file_path.stem}_section_{i}",
+                "content": section[:2000],  # Limit content length
+                "title": file_path.name,
+                "source_file": str(file_path),
+                "doc_type": self._infer_doc_type(file_path),
+                "metadata": {
+                    "section_index": i,
+                    "file_size": file_path.stat().st_size,
+                    "modified_time": file_path.stat().st_mtime,
+                    "section_length": len(section),
+                },
             }
             atomic_units.append(unit)
 
         # If no sections found, treat entire file as one unit
         if not atomic_units:
-            atomic_units.append({
-                'id': f"{file_path.stem}_full",
-                'content': content[:2000],
-                'title': file_path.name,
-                'source_file': str(file_path),
-                'doc_type': self._infer_doc_type(file_path),
-                'metadata': {
-                    'section_index': 0,
-                    'file_size': file_path.stat().st_size,
-                    'modified_time': file_path.stat().st_mtime,
-                    'full_file': True
+            atomic_units.append(
+                {
+                    "id": f"{file_path.stem}_full",
+                    "content": content[:2000],
+                    "title": file_path.name,
+                    "source_file": str(file_path),
+                    "doc_type": self._infer_doc_type(file_path),
+                    "metadata": {
+                        "section_index": 0,
+                        "file_size": file_path.stat().st_size,
+                        "modified_time": file_path.stat().st_mtime,
+                        "full_file": True,
+                    },
                 }
-            })
+            )
 
         return atomic_units
 
@@ -289,34 +313,36 @@ class DocumentProcessor:
         extension = file_path.suffix.lower()
 
         type_mapping = {
-            '.md': 'markdown',
-            '.txt': 'text',
-            '.py': 'python',
-            '.js': 'javascript',
-            '.ts': 'typescript',
-            '.jsx': 'react',
-            '.tsx': 'react_typescript',
-            '.html': 'html',
-            '.css': 'stylesheet',
-            '.yml': 'yaml',
-            '.yaml': 'yaml',
-            '.json': 'json',
-            '.toml': 'toml'
+            ".md": "markdown",
+            ".txt": "text",
+            ".py": "python",
+            ".js": "javascript",
+            ".ts": "typescript",
+            ".jsx": "react",
+            ".tsx": "react_typescript",
+            ".html": "html",
+            ".css": "stylesheet",
+            ".yml": "yaml",
+            ".yaml": "yaml",
+            ".json": "json",
+            ".toml": "toml",
         }
 
-        return type_mapping.get(extension, 'unknown')
+        return type_mapping.get(extension, "unknown")
 
-    def _generate_registries(self, atomic_units: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def _generate_registries(
+        self, atomic_units: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """Generate feature, component, and research registries."""
         try:
             registries = self.extractor.extract_all_entities(atomic_units)
 
             # Update statistics
-            self.stats['features_extracted'] = len(registries.get('features', []))
-            self.stats['components_identified'] = len(registries.get('components', []))
-            self.stats['subsystems_mapped'] = len(registries.get('subsystems', []))
-            self.stats['research_entries'] = len(registries.get('research', []))
-            self.stats['evidence_links'] = len(registries.get('evidence_links', []))
+            self.stats["features_extracted"] = len(registries.get("features", []))
+            self.stats["components_identified"] = len(registries.get("components", []))
+            self.stats["subsystems_mapped"] = len(registries.get("subsystems", []))
+            self.stats["research_entries"] = len(registries.get("research", []))
+            self.stats["evidence_links"] = len(registries.get("evidence_links", []))
 
             return registries
 
@@ -339,13 +365,10 @@ class DocumentProcessor:
                 console=console,
             ) as progress:
 
-                task = progress.add_task(
-                    "Creating embeddings...",
-                    total=total_batches
-                )
+                task = progress.add_task("Creating embeddings...", total=total_batches)
 
                 for i in range(0, len(atomic_units), batch_size):
-                    batch = atomic_units[i:i + batch_size]
+                    batch = atomic_units[i : i + batch_size]
 
                     # Create embeddings for batch
                     self.embedder.embed_documents(batch)
@@ -357,7 +380,7 @@ class DocumentProcessor:
 
     def _display_completion_summary(self):
         """Display ADHD-friendly completion summary."""
-        duration = self.stats['end_time'] - self.stats['start_time']
+        duration = self.stats["end_time"] - self.stats["start_time"]
 
         # Create summary table
         table = Table(title="🎉 Processing Complete!")
@@ -365,36 +388,40 @@ class DocumentProcessor:
         table.add_column("Count", style="green", justify="right")
         table.add_column("Status", style="yellow")
 
-        table.add_row("Files Processed", str(self.stats['files_processed']), "✅")
-        table.add_row("Atomic Units", str(self.stats['atomic_units_created']), "✅")
-        table.add_row("Features Extracted", str(self.stats['features_extracted']), "✅")
-        table.add_row("Components Identified", str(self.stats['components_identified']), "✅")
-        table.add_row("Subsystems Mapped", str(self.stats['subsystems_mapped']), "✅")
-        table.add_row("Research Entries", str(self.stats['research_entries']), "✅")
-        table.add_row("Evidence Links", str(self.stats['evidence_links']), "✅")
+        table.add_row("Files Processed", str(self.stats["files_processed"]), "✅")
+        table.add_row("Atomic Units", str(self.stats["atomic_units_created"]), "✅")
+        table.add_row("Features Extracted", str(self.stats["features_extracted"]), "✅")
+        table.add_row(
+            "Components Identified", str(self.stats["components_identified"]), "✅"
+        )
+        table.add_row("Subsystems Mapped", str(self.stats["subsystems_mapped"]), "✅")
+        table.add_row("Research Entries", str(self.stats["research_entries"]), "✅")
+        table.add_row("Evidence Links", str(self.stats["evidence_links"]), "✅")
         table.add_row("Processing Time", f"{duration:.1f}s", "⏱️")
 
         console.print(table)
 
         # Encouraging message
-        console.print(Panel(
-            f"🧠 Great work! Your codebase has been transformed into a structured knowledge base.\n\n"
-            f"📊 {self.stats['atomic_units_created']} atomic units created from {self.stats['files_processed']} files\n"
-            f"🔗 {self.stats['evidence_links']} evidence links for full traceability\n"
-            f"🎯 Ready for semantic search and intelligent navigation!",
-            title="🎉 Analysis Complete",
-            border_style="green"
-        ))
+        console.print(
+            Panel(
+                f"🧠 Great work! Your codebase has been transformed into a structured knowledge base.\n\n"
+                f"📊 {self.stats['atomic_units_created']} atomic units created from {self.stats['files_processed']} files\n"
+                f"🔗 {self.stats['evidence_links']} evidence links for full traceability\n"
+                f"🎯 Ready for semantic search and intelligent navigation!",
+                title="🎉 Analysis Complete",
+                border_style="green",
+            )
+        )
 
     def _get_results(self) -> Dict[str, Any]:
         """Get processing results summary."""
         return {
-            'success': True,
-            'statistics': self.stats.copy(),
-            'output_directory': str(self.config.output_directory),
-            'processing_time': (
-                self.stats['end_time'] - self.stats['start_time']
-                if self.stats['end_time'] and self.stats['start_time']
+            "success": True,
+            "statistics": self.stats.copy(),
+            "output_directory": str(self.config.output_directory),
+            "processing_time": (
+                self.stats["end_time"] - self.stats["start_time"]
+                if self.stats["end_time"] and self.stats["start_time"]
                 else 0
-            )
+            ),
         }

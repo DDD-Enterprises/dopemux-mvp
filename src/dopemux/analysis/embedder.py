@@ -1,14 +1,24 @@
 """Document embedding and indexing system with Voyage AI support."""
 
+import hashlib
 import json
-import numpy as np
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-from dataclasses import dataclass
-import hashlib
+
+import numpy as np
 
 try:
-    from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection, utility, MilvusClient
+    from pymilvus import (
+        Collection,
+        CollectionSchema,
+        DataType,
+        FieldSchema,
+        MilvusClient,
+        connections,
+        utility,
+    )
+
     MILVUS_AVAILABLE = True
 except ImportError:
     MILVUS_AVAILABLE = False
@@ -17,6 +27,7 @@ except ImportError:
 try:
     import chromadb
     from chromadb.config import Settings
+
     CHROMADB_AVAILABLE = True
 except ImportError:
     CHROMADB_AVAILABLE = False
@@ -24,6 +35,7 @@ except ImportError:
 
 try:
     import voyageai
+
     VOYAGE_AVAILABLE = True
 except ImportError:
     VOYAGE_AVAILABLE = False
@@ -31,14 +43,17 @@ except ImportError:
 
 try:
     import openai
+
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
     print("⚠️ OpenAI not available. Install with: pip install openai")
 
+
 @dataclass
 class EmbeddedUnit:
     """Represents a unit with its embedding."""
+
     unit_id: str
     doc_uri: str
     doc_type: str
@@ -50,24 +65,30 @@ class EmbeddedUnit:
     tags: List[str]
     similarity_hash: str
 
+
 @dataclass
 class DuplicateCluster:
     """Represents a cluster of duplicate or near-duplicate units."""
+
     cluster_id: str
     primary_unit_id: str
     duplicate_unit_ids: List[str]
     similarity_scores: List[float]
     resolution: str  # 'keep_primary', 'merge', 'manual_review'
 
+
 class DocumentEmbedder:
     """Handles embedding generation, indexing, and similarity detection using Voyage Context-3 and Milvus."""
 
-    def __init__(self, model_name: str = "voyage-context-3",
-                 similarity_threshold: float = 0.92,
-                 jaccard_threshold: float = 0.82,
-                 milvus_host: str = "localhost",
-                 milvus_port: str = "19530",
-                 milvus_uri: Optional[str] = None):
+    def __init__(
+        self,
+        model_name: str = "voyage-context-3",
+        similarity_threshold: float = 0.92,
+        jaccard_threshold: float = 0.82,
+        milvus_host: str = "localhost",
+        milvus_port: str = "19530",
+        milvus_uri: Optional[str] = None,
+    ):
         self.model_name = model_name
         self.similarity_threshold = similarity_threshold
         self.jaccard_threshold = jaccard_threshold
@@ -95,14 +116,18 @@ class DocumentEmbedder:
                 self.embedding_provider = "voyage"
                 print(f"✅ Using Voyage AI with model: {model_name}")
             else:
-                raise ImportError("Voyage AI not available. Install with: pip install voyageai")
+                raise ImportError(
+                    "Voyage AI not available. Install with: pip install voyageai"
+                )
         else:
             if OPENAI_AVAILABLE:
                 self.openai_client = openai.OpenAI()
                 self.embedding_provider = "openai"
                 print(f"✅ Using OpenAI with model: {model_name}")
             else:
-                raise ImportError("OpenAI not available. Install with: pip install openai")
+                raise ImportError(
+                    "OpenAI not available. Install with: pip install openai"
+                )
 
     def _init_milvus(self) -> None:
         """Initialize Milvus for vector storage (supports both server and Lite modes)."""
@@ -114,8 +139,12 @@ class DocumentEmbedder:
                 self._setup_milvus_lite_collection()
             else:
                 # Use traditional server-based Milvus
-                connections.connect("default", host=self.milvus_host, port=self.milvus_port)
-                print(f"✅ Connected to Milvus server at {self.milvus_host}:{self.milvus_port}")
+                connections.connect(
+                    "default", host=self.milvus_host, port=self.milvus_port
+                )
+                print(
+                    f"✅ Connected to Milvus server at {self.milvus_host}:{self.milvus_port}"
+                )
                 self._setup_milvus_server_collection()
 
         except Exception as e:
@@ -136,8 +165,17 @@ class DocumentEmbedder:
             # Create collection schema
             schema = {
                 "fields": [
-                    {"name": "id", "type": "VarChar", "max_length": 255, "is_primary": True},
-                    {"name": "vector", "type": "FloatVector", "dim": 1024},  # voyage-context-3
+                    {
+                        "name": "id",
+                        "type": "VarChar",
+                        "max_length": 255,
+                        "is_primary": True,
+                    },
+                    {
+                        "name": "vector",
+                        "type": "FloatVector",
+                        "dim": 1024,
+                    },  # voyage-context-3
                     {"name": "doc_uri", "type": "VarChar", "max_length": 500},
                     {"name": "doc_type", "type": "VarChar", "max_length": 100},
                     {"name": "title", "type": "VarChar", "max_length": 500},
@@ -147,14 +185,14 @@ class DocumentEmbedder:
                 "index_params": {
                     "index_type": "HNSW",
                     "metric_type": "COSINE",
-                    "params": {"M": 16, "efConstruction": 256}
-                }
+                    "params": {"M": 16, "efConstruction": 256},
+                },
             }
 
             self.milvus_client.create_collection(
                 collection_name=collection_name,
                 dimension=1024,  # voyage-context-3 dimension
-                auto_id=False
+                auto_id=False,
             )
             print(f"✅ Created Milvus Lite collection: {collection_name}")
         else:
@@ -173,26 +211,37 @@ class DocumentEmbedder:
         else:
             # Create new collection
             fields = [
-                    FieldSchema(name="unit_id", dtype=DataType.VARCHAR, max_length=100, is_primary=True),
-                    FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=1024),  # Voyage Context-3 is 1024-dim
-                    FieldSchema(name="doc_uri", dtype=DataType.VARCHAR, max_length=500),
-                    FieldSchema(name="doc_type", dtype=DataType.VARCHAR, max_length=50),
-                    FieldSchema(name="entity_type", dtype=DataType.VARCHAR, max_length=50),
-                    FieldSchema(name="title", dtype=DataType.VARCHAR, max_length=200),
-                    FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=10000),
-                    FieldSchema(name="created_at", dtype=DataType.VARCHAR, max_length=50),
-                    FieldSchema(name="tags", dtype=DataType.VARCHAR, max_length=500),
-                    FieldSchema(name="similarity_hash", dtype=DataType.VARCHAR, max_length=100)
+                FieldSchema(
+                    name="unit_id",
+                    dtype=DataType.VARCHAR,
+                    max_length=100,
+                    is_primary=True,
+                ),
+                FieldSchema(
+                    name="embedding", dtype=DataType.FLOAT_VECTOR, dim=1024
+                ),  # Voyage Context-3 is 1024-dim
+                FieldSchema(name="doc_uri", dtype=DataType.VARCHAR, max_length=500),
+                FieldSchema(name="doc_type", dtype=DataType.VARCHAR, max_length=50),
+                FieldSchema(name="entity_type", dtype=DataType.VARCHAR, max_length=50),
+                FieldSchema(name="title", dtype=DataType.VARCHAR, max_length=200),
+                FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=10000),
+                FieldSchema(name="created_at", dtype=DataType.VARCHAR, max_length=50),
+                FieldSchema(name="tags", dtype=DataType.VARCHAR, max_length=500),
+                FieldSchema(
+                    name="similarity_hash", dtype=DataType.VARCHAR, max_length=100
+                ),
             ]
 
-            schema = CollectionSchema(fields, "Document processing units with embeddings")
+            schema = CollectionSchema(
+                fields, "Document processing units with embeddings"
+            )
             self.collection = Collection(collection_name, schema)
 
             # Create index for efficient similarity search
             index_params = {
                 "metric_type": "COSINE",
                 "index_type": "IVF_FLAT",
-                "params": {"nlist": 128}
+                "params": {"nlist": 128},
             }
             self.collection.create_index("embedding", index_params)
             print(f"✅ Created Milvus collection: {collection_name}")
@@ -204,14 +253,12 @@ class DocumentEmbedder:
         """Initialize ChromaDB for vector storage."""
         try:
             self.chroma_client = chromadb.PersistentClient(
-                path="build/vector_db",
-                settings=Settings(anonymized_telemetry=False)
+                path="build/vector_db", settings=Settings(anonymized_telemetry=False)
             )
 
             # Create or get collection
             self.collection = self.chroma_client.get_or_create_collection(
-                name="document_units",
-                metadata={"hnsw:space": "cosine"}
+                name="document_units", metadata={"hnsw:space": "cosine"}
             )
 
             print("✅ ChromaDB initialized")
@@ -230,7 +277,7 @@ class DocumentEmbedder:
 
         # Load atomic units
         units = []
-        with open(units_file, 'r', encoding='utf-8') as f:
+        with open(units_file, "r", encoding="utf-8") as f:
             for line in f:
                 if line.strip():
                     units.append(json.loads(line))
@@ -240,9 +287,11 @@ class DocumentEmbedder:
         # Process units in batches (Voyage AI has different batch limits)
         batch_size = 50 if self.embedding_provider == "voyage" else 100
         for i in range(0, len(units), batch_size):
-            batch = units[i:i + batch_size]
+            batch = units[i : i + batch_size]
             self._process_batch(batch)
-            print(f"✅ Processed batch {i//batch_size + 1}/{(len(units)-1)//batch_size + 1}")
+            print(
+                f"✅ Processed batch {i//batch_size + 1}/{(len(units)-1)//batch_size + 1}"
+            )
 
         print(f"🎯 Generated {len(self.embedded_units)} embeddings")
         return self.embedded_units
@@ -272,16 +321,16 @@ class DocumentEmbedder:
 
                 # Create embedded unit
                 embedded_unit = EmbeddedUnit(
-                    unit_id=unit['unit_id'],
-                    doc_uri=unit['doc_uri'],
-                    doc_type=unit['doc_type'],
-                    entity_type=unit['entity_type'],
-                    title=unit['title'],
-                    text=unit['text'],
+                    unit_id=unit["unit_id"],
+                    doc_uri=unit["doc_uri"],
+                    doc_type=unit["doc_type"],
+                    entity_type=unit["entity_type"],
+                    title=unit["title"],
+                    text=unit["text"],
                     embedding=embedding,
-                    created_at=unit.get('created_at'),
-                    tags=unit.get('tags', []),
-                    similarity_hash=self._generate_similarity_hash(unit['text'])
+                    created_at=unit.get("created_at"),
+                    tags=unit.get("tags", []),
+                    similarity_hash=self._generate_similarity_hash(unit["text"]),
                 )
 
                 self.embedded_units.append(embedded_unit)
@@ -300,7 +349,7 @@ class DocumentEmbedder:
             response = self.voyage_client.embed(
                 texts=texts,
                 model=self.model_name,
-                input_type="document"  # Use 'document' for indexing, 'query' for search
+                input_type="document",  # Use 'document' for indexing, 'query' for search
             )
 
             return [embedding for embedding in response.embeddings]
@@ -313,8 +362,7 @@ class DocumentEmbedder:
         """Generate embeddings using OpenAI (fallback)."""
         try:
             response = self.openai_client.embeddings.create(
-                model=self.model_name,
-                input=texts
+                model=self.model_name, input=texts
             )
 
             return [embedding_data.embedding for embedding_data in response.data]
@@ -326,11 +374,11 @@ class DocumentEmbedder:
     def _prepare_embedding_text(self, unit: Dict) -> str:
         """Prepare text for embedding generation with Voyage Context-3 optimization."""
         # Combine title and text with context
-        title = unit.get('title', '')
-        text = unit.get('text', '')
-        doc_type = unit.get('doc_type', '')
-        entity_type = unit.get('entity_type', '')
-        tags = unit.get('tags', [])
+        title = unit.get("title", "")
+        text = unit.get("text", "")
+        doc_type = unit.get("doc_type", "")
+        entity_type = unit.get("entity_type", "")
+        tags = unit.get("tags", [])
 
         # Create structured text for embedding
         embedding_parts = []
@@ -364,19 +412,19 @@ class DocumentEmbedder:
         import re
 
         # Create shingles (n-grams) for better similarity detection
-        words = re.findall(r'\\b\\w+\\b', normalized_text)
+        words = re.findall(r"\\b\\w+\\b", normalized_text)
         shingles = set()
 
         # Create 3-grams of words
         for i in range(len(words) - 2):
-            shingle = ' '.join(words[i:i+3])
+            shingle = " ".join(words[i : i + 3])
             shingles.add(shingle)
 
         # Sort shingles for consistent hashing
         sorted_shingles = sorted(list(shingles))
 
         # Take first 20 shingles for hash
-        combined = ' '.join(sorted_shingles[:20])
+        combined = " ".join(sorted_shingles[:20])
         return hashlib.md5(combined.encode()).hexdigest()
 
     def _store_in_vectordb(self, embedded_unit: EmbeddedUnit) -> None:
@@ -385,20 +433,22 @@ class DocumentEmbedder:
             return
 
         try:
-            if MILVUS_AVAILABLE and hasattr(self.collection, 'insert'):
+            if MILVUS_AVAILABLE and hasattr(self.collection, "insert"):
                 # Milvus storage
-                data = [{
-                    "unit_id": embedded_unit.unit_id,
-                    "embedding": embedded_unit.embedding,
-                    "doc_uri": embedded_unit.doc_uri,
-                    "doc_type": embedded_unit.doc_type,
-                    "entity_type": embedded_unit.entity_type,
-                    "title": embedded_unit.title,
-                    "text": embedded_unit.text[:10000],  # Truncate if too long
-                    "created_at": embedded_unit.created_at or "",
-                    "tags": ",".join(embedded_unit.tags),
-                    "similarity_hash": embedded_unit.similarity_hash
-                }]
+                data = [
+                    {
+                        "unit_id": embedded_unit.unit_id,
+                        "embedding": embedded_unit.embedding,
+                        "doc_uri": embedded_unit.doc_uri,
+                        "doc_type": embedded_unit.doc_type,
+                        "entity_type": embedded_unit.entity_type,
+                        "title": embedded_unit.title,
+                        "text": embedded_unit.text[:10000],  # Truncate if too long
+                        "created_at": embedded_unit.created_at or "",
+                        "tags": ",".join(embedded_unit.tags),
+                        "similarity_hash": embedded_unit.similarity_hash,
+                    }
+                ]
 
                 self.collection.insert(data)
                 self.collection.flush()  # Ensure data is persisted
@@ -412,14 +462,14 @@ class DocumentEmbedder:
                     "title": embedded_unit.title,
                     "created_at": embedded_unit.created_at or "",
                     "tags": ",".join(embedded_unit.tags),
-                    "similarity_hash": embedded_unit.similarity_hash
+                    "similarity_hash": embedded_unit.similarity_hash,
                 }
 
                 self.collection.add(
                     ids=[embedded_unit.unit_id],
                     embeddings=[embedded_unit.embedding],
                     documents=[embedded_unit.text],
-                    metadatas=[metadata]
+                    metadatas=[metadata],
                 )
 
         except Exception as e:
@@ -437,7 +487,7 @@ class DocumentEmbedder:
                 continue
 
             # Find similar units using both methods
-            similar_units = self._find_similar_units(unit, self.embedded_units[i+1:])
+            similar_units = self._find_similar_units(unit, self.embedded_units[i + 1 :])
 
             if similar_units:
                 # Create cluster
@@ -447,15 +497,19 @@ class DocumentEmbedder:
                 all_units = [unit] + similar_units
                 primary_unit = self._select_primary_unit(all_units)
 
-                duplicate_ids = [u.unit_id for u in all_units if u.unit_id != primary_unit.unit_id]
-                similarity_scores = [self._calculate_similarity(primary_unit, u) for u in all_units[1:]]
+                duplicate_ids = [
+                    u.unit_id for u in all_units if u.unit_id != primary_unit.unit_id
+                ]
+                similarity_scores = [
+                    self._calculate_similarity(primary_unit, u) for u in all_units[1:]
+                ]
 
                 cluster = DuplicateCluster(
                     cluster_id=cluster_id,
                     primary_unit_id=primary_unit.unit_id,
                     duplicate_unit_ids=duplicate_ids,
                     similarity_scores=similarity_scores,
-                    resolution=self._determine_resolution(similarity_scores)
+                    resolution=self._determine_resolution(similarity_scores),
                 )
 
                 clusters.append(cluster)
@@ -471,8 +525,9 @@ class DocumentEmbedder:
         print(f"🎯 Found {len(clusters)} duplicate clusters")
         return clusters
 
-    def _find_similar_units(self, target_unit: EmbeddedUnit,
-                           candidate_units: List[EmbeddedUnit]) -> List[EmbeddedUnit]:
+    def _find_similar_units(
+        self, target_unit: EmbeddedUnit, candidate_units: List[EmbeddedUnit]
+    ) -> List[EmbeddedUnit]:
         """Find units similar to the target unit using both cosine and Jaccard similarity."""
         similar_units = []
 
@@ -481,26 +536,32 @@ class DocumentEmbedder:
             cosine_similarity = self._calculate_similarity(target_unit, candidate)
 
             # Calculate Jaccard similarity using MinHash approximation
-            jaccard_similarity = self._calculate_jaccard_similarity(target_unit, candidate)
+            jaccard_similarity = self._calculate_jaccard_similarity(
+                target_unit, candidate
+            )
 
             # Check similarity hash for faster fuzzy matching
             hash_match = target_unit.similarity_hash == candidate.similarity_hash
 
             # Apply thresholds from original playbook
-            if (cosine_similarity >= self.similarity_threshold or
-                jaccard_similarity >= self.jaccard_threshold or
-                hash_match):
+            if (
+                cosine_similarity >= self.similarity_threshold
+                or jaccard_similarity >= self.jaccard_threshold
+                or hash_match
+            ):
                 similar_units.append(candidate)
 
         return similar_units
 
-    def _calculate_jaccard_similarity(self, unit1: EmbeddedUnit, unit2: EmbeddedUnit) -> float:
+    def _calculate_jaccard_similarity(
+        self, unit1: EmbeddedUnit, unit2: EmbeddedUnit
+    ) -> float:
         """Calculate Jaccard similarity using simplified approach."""
         # Extract words from both texts
         import re
 
-        words1 = set(re.findall(r'\\b\\w+\\b', unit1.text.lower()))
-        words2 = set(re.findall(r'\\b\\w+\\b', unit2.text.lower()))
+        words1 = set(re.findall(r"\\b\\w+\\b", unit1.text.lower()))
+        words2 = set(re.findall(r"\\b\\w+\\b", unit2.text.lower()))
 
         if not words1 or not words2:
             return 0.0
@@ -541,7 +602,10 @@ class DocumentEmbedder:
             if unit.created_at:
                 try:
                     from datetime import datetime
-                    date = datetime.fromisoformat(unit.created_at.replace('Z', '+00:00'))
+
+                    date = datetime.fromisoformat(
+                        unit.created_at.replace("Z", "+00:00")
+                    )
                     days_old = (datetime.now() - date).days
                     recency_score = max(0, 365 - days_old) / 365  # Higher for newer
                     score += recency_score * 0.3
@@ -568,9 +632,9 @@ class DocumentEmbedder:
 
         # IDs presence (weight: 0.3) - Look for explicit IDs
         id_patterns = [
-            r'\\b(ADR|RFC|FEATURE)[-_]\\d+\\b',
-            r'\\b[A-Z]{2,}-\\d+\\b',  # General ID patterns
-            r'\\b(COMP|SYS|RES)[-_][A-F0-9]{8}\\b'  # Generated IDs
+            r"\\b(ADR|RFC|FEATURE)[-_]\\d+\\b",
+            r"\\b[A-Z]{2,}-\\d+\\b",  # General ID patterns
+            r"\\b(COMP|SYS|RES)[-_][A-F0-9]{8}\\b",  # Generated IDs
         ]
 
         has_ids = False
@@ -583,7 +647,7 @@ class DocumentEmbedder:
             score += 0.3
 
         # Numbers presence (weight: 0.2) - Proportional to number density
-        numbers = re.findall(r'\\b\\d+\\b', text)
+        numbers = re.findall(r"\\b\\d+\\b", text)
         if len(text) > 0:
             number_density = len(numbers) / max(len(text.split()), 1)
             # Normalize: high number density gets full 0.2 weight
@@ -594,15 +658,17 @@ class DocumentEmbedder:
         has_structured_content = False
 
         # Code blocks
-        if '```' in text or re.search(r'`[^`]+`', text):
+        if "```" in text or re.search(r"`[^`]+`", text):
             has_structured_content = True
 
         # Tables (markdown or other formats)
-        if ('|' in text and text.count('|') > 2) or re.search(r'\\n\\s*\\|', text):
+        if ("|" in text and text.count("|") > 2) or re.search(r"\\n\\s*\\|", text):
             has_structured_content = True
 
         # JSON/XML/YAML structures
-        if any(marker in text for marker in ['{', '[', '<', ':', 'yaml', 'json', 'xml']):
+        if any(
+            marker in text for marker in ["{", "[", "<", ":", "yaml", "json", "xml"]
+        ):
             has_structured_content = True
 
         if has_structured_content:
@@ -612,23 +678,27 @@ class DocumentEmbedder:
         section_depth_score = 0.0
 
         # Check section path depth
-        section_path = getattr(unit, 'section_path', []) or []
+        section_path = getattr(unit, "section_path", []) or []
         if section_path:
             # Deeper sections are more specific
             depth = len(section_path)
-            section_depth_score = min(depth / 5.0, 1.0)  # Normalize: 5+ levels = max score
+            section_depth_score = min(
+                depth / 5.0, 1.0
+            )  # Normalize: 5+ levels = max score
 
         # Check heading depth in title
-        title = unit.title or ''
+        title = unit.title or ""
         heading_level = 0
-        if title.startswith('#'):
-            heading_level = len(title) - len(title.lstrip('#'))
-        elif re.search(r'^\\d+(\\.\\d+)*\\s', title):  # Numbered sections like "5.2.1"
-            parts = re.findall(r'\\d+', title.split()[0])
+        if title.startswith("#"):
+            heading_level = len(title) - len(title.lstrip("#"))
+        elif re.search(r"^\\d+(\\.\\d+)*\\s", title):  # Numbered sections like "5.2.1"
+            parts = re.findall(r"\\d+", title.split()[0])
             heading_level = len(parts)
 
         if heading_level > 0:
-            title_depth_score = min(heading_level / 4.0, 1.0)  # Normalize: 4+ levels = max score
+            title_depth_score = min(
+                heading_level / 4.0, 1.0
+            )  # Normalize: 4+ levels = max score
             section_depth_score = max(section_depth_score, title_depth_score)
 
         score += section_depth_score * 0.2
@@ -639,19 +709,20 @@ class DocumentEmbedder:
     def _determine_resolution(self, similarity_scores: List[float]) -> str:
         """Determine how to resolve duplicate cluster."""
         if not similarity_scores:
-            return 'keep_primary'
+            return "keep_primary"
 
         avg_similarity = sum(similarity_scores) / len(similarity_scores)
 
         if avg_similarity >= 0.98:
-            return 'keep_primary'  # Very high similarity, safe to dedupe
+            return "keep_primary"  # Very high similarity, safe to dedupe
         elif avg_similarity >= 0.95:
-            return 'merge'  # High similarity, consider merging
+            return "merge"  # High similarity, consider merging
         else:
-            return 'manual_review'  # Medium similarity, needs review
+            return "manual_review"  # Medium similarity, needs review
 
-    def query_similar_units(self, query_text: str, k: int = 15,
-                           filters: Optional[Dict] = None) -> List[Tuple[EmbeddedUnit, float]]:
+    def query_similar_units(
+        self, query_text: str, k: int = 15, filters: Optional[Dict] = None
+    ) -> List[Tuple[EmbeddedUnit, float]]:
         """Query for similar units using vector search (top-k 8-15 as per playbook)."""
         if not self.collection:
             print("⚠️ Vector search not available")
@@ -663,19 +734,18 @@ class DocumentEmbedder:
                 response = self.voyage_client.embed(
                     texts=[query_text],
                     model=self.model_name,
-                    input_type="query"  # Use 'query' for search
+                    input_type="query",  # Use 'query' for search
                 )
                 query_embedding = response.embeddings[0]
             else:
                 response = self.openai_client.embeddings.create(
-                    model=self.model_name,
-                    input=[query_text]
+                    model=self.model_name, input=[query_text]
                 )
                 query_embedding = response.data[0].embedding
 
             similar_units = []
 
-            if MILVUS_AVAILABLE and hasattr(self.collection, 'search'):
+            if MILVUS_AVAILABLE and hasattr(self.collection, "search"):
                 # Milvus search
                 search_params = {"metric_type": "COSINE", "params": {"nprobe": 10}}
 
@@ -687,7 +757,7 @@ class DocumentEmbedder:
                         if isinstance(value, dict) and "$in" in value:
                             # Handle $in filter (e.g., entity_type in [list])
                             values_str = ", ".join([f'"{v}"' for v in value["$in"]])
-                            filter_conditions.append(f'{key} in [{values_str}]')
+                            filter_conditions.append(f"{key} in [{values_str}]")
                         else:
                             filter_conditions.append(f'{key} == "{value}"')
 
@@ -701,30 +771,52 @@ class DocumentEmbedder:
                     param=search_params,
                     limit=k,
                     expr=filter_expr,
-                    output_fields=["unit_id", "doc_uri", "doc_type", "entity_type", "title", "text", "created_at", "tags"]
+                    output_fields=[
+                        "unit_id",
+                        "doc_uri",
+                        "doc_type",
+                        "entity_type",
+                        "title",
+                        "text",
+                        "created_at",
+                        "tags",
+                    ],
                 )
 
                 # Convert Milvus results to EmbeddedUnit objects
                 for hit in results[0]:
                     # Find the embedded unit or create from hit data
-                    unit = next((u for u in self.embedded_units if u.unit_id == hit.entity.get('unit_id')), None)
+                    unit = next(
+                        (
+                            u
+                            for u in self.embedded_units
+                            if u.unit_id == hit.entity.get("unit_id")
+                        ),
+                        None,
+                    )
 
                     if not unit:
                         # Create EmbeddedUnit from search result
                         unit = EmbeddedUnit(
-                            unit_id=hit.entity.get('unit_id', ''),
-                            doc_uri=hit.entity.get('doc_uri', ''),
-                            doc_type=hit.entity.get('doc_type', ''),
-                            entity_type=hit.entity.get('entity_type', ''),
-                            title=hit.entity.get('title', ''),
-                            text=hit.entity.get('text', ''),
+                            unit_id=hit.entity.get("unit_id", ""),
+                            doc_uri=hit.entity.get("doc_uri", ""),
+                            doc_type=hit.entity.get("doc_type", ""),
+                            entity_type=hit.entity.get("entity_type", ""),
+                            title=hit.entity.get("title", ""),
+                            text=hit.entity.get("text", ""),
                             embedding=[],  # Don't need full embedding for search results
-                            created_at=hit.entity.get('created_at'),
-                            tags=hit.entity.get('tags', '').split(',') if hit.entity.get('tags') else [],
-                            similarity_hash=''
+                            created_at=hit.entity.get("created_at"),
+                            tags=(
+                                hit.entity.get("tags", "").split(",")
+                                if hit.entity.get("tags")
+                                else []
+                            ),
+                            similarity_hash="",
                         )
 
-                    similarity = 1.0 - hit.distance  # Milvus returns distance, convert to similarity
+                    similarity = (
+                        1.0 - hit.distance
+                    )  # Milvus returns distance, convert to similarity
                     similar_units.append((unit, similarity))
 
             else:
@@ -737,17 +829,26 @@ class DocumentEmbedder:
                 results = self.collection.query(
                     query_embeddings=[query_embedding],
                     n_results=k,  # Use 8-15 range as per playbook
-                    where=where_clause if where_clause else None
+                    where=where_clause if where_clause else None,
                 )
 
                 # Convert ChromaDB results to EmbeddedUnit objects
-                if results['ids'] and results['ids'][0]:
-                    for i, unit_id in enumerate(results['ids'][0]):
+                if results["ids"] and results["ids"][0]:
+                    for i, unit_id in enumerate(results["ids"][0]):
                         # Find the embedded unit
-                        unit = next((u for u in self.embedded_units if u.unit_id == unit_id), None)
+                        unit = next(
+                            (u for u in self.embedded_units if u.unit_id == unit_id),
+                            None,
+                        )
                         if unit:
-                            distance = results['distances'][0][i] if results['distances'] else 0
-                            similarity = 1.0 - distance  # Convert distance to similarity
+                            distance = (
+                                results["distances"][0][i]
+                                if results["distances"]
+                                else 0
+                            )
+                            similarity = (
+                                1.0 - distance
+                            )  # Convert distance to similarity
                             similar_units.append((unit, similarity))
 
             return similar_units
@@ -760,39 +861,43 @@ class DocumentEmbedder:
         """Save embedded units to file."""
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             for unit in self.embedded_units:
                 unit_dict = {
-                    'unit_id': unit.unit_id,
-                    'doc_uri': unit.doc_uri,
-                    'doc_type': unit.doc_type,
-                    'entity_type': unit.entity_type,
-                    'title': unit.title,
-                    'text': unit.text,
-                    'embedding': unit.embedding,
-                    'created_at': unit.created_at,
-                    'tags': unit.tags,
-                    'similarity_hash': unit.similarity_hash
+                    "unit_id": unit.unit_id,
+                    "doc_uri": unit.doc_uri,
+                    "doc_type": unit.doc_type,
+                    "entity_type": unit.entity_type,
+                    "title": unit.title,
+                    "text": unit.text,
+                    "embedding": unit.embedding,
+                    "created_at": unit.created_at,
+                    "tags": unit.tags,
+                    "similarity_hash": unit.similarity_hash,
                 }
-                f.write(json.dumps(unit_dict, ensure_ascii=False) + '\\n')
+                f.write(json.dumps(unit_dict, ensure_ascii=False) + "\\n")
 
         print(f"💾 Saved {len(self.embedded_units)} embeddings to {output_path}")
 
-    def save_duplicate_clusters(self, output_path: str = "build/reports/duplicate_clusters.json") -> None:
+    def save_duplicate_clusters(
+        self, output_path: str = "build/reports/duplicate_clusters.json"
+    ) -> None:
         """Save duplicate clusters to file."""
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
         clusters_data = []
         for cluster in self.duplicate_clusters:
-            clusters_data.append({
-                'cluster_id': cluster.cluster_id,
-                'primary_unit_id': cluster.primary_unit_id,
-                'duplicate_unit_ids': cluster.duplicate_unit_ids,
-                'similarity_scores': cluster.similarity_scores,
-                'resolution': cluster.resolution
-            })
+            clusters_data.append(
+                {
+                    "cluster_id": cluster.cluster_id,
+                    "primary_unit_id": cluster.primary_unit_id,
+                    "duplicate_unit_ids": cluster.duplicate_unit_ids,
+                    "similarity_scores": cluster.similarity_scores,
+                    "resolution": cluster.resolution,
+                }
+            )
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(clusters_data, f, indent=2, ensure_ascii=False)
 
         print(f"💾 Saved {len(clusters_data)} duplicate clusters to {output_path}")
@@ -800,28 +905,36 @@ class DocumentEmbedder:
     def get_embedding_stats(self) -> Dict[str, any]:
         """Get statistics about embeddings and duplicates."""
         stats = {
-            'total_embedded_units': len(self.embedded_units),
-            'duplicate_clusters': len(self.duplicate_clusters),
-            'total_duplicates': sum(len(cluster.duplicate_unit_ids) for cluster in self.duplicate_clusters),
-            'resolution_breakdown': {},
-            'doc_type_distribution': {},
-            'entity_type_distribution': {},
-            'embedding_model': self.model_name,
-            'similarity_threshold': self.similarity_threshold,
-            'jaccard_threshold': self.jaccard_threshold
+            "total_embedded_units": len(self.embedded_units),
+            "duplicate_clusters": len(self.duplicate_clusters),
+            "total_duplicates": sum(
+                len(cluster.duplicate_unit_ids) for cluster in self.duplicate_clusters
+            ),
+            "resolution_breakdown": {},
+            "doc_type_distribution": {},
+            "entity_type_distribution": {},
+            "embedding_model": self.model_name,
+            "similarity_threshold": self.similarity_threshold,
+            "jaccard_threshold": self.jaccard_threshold,
         }
 
         # Resolution breakdown
         for cluster in self.duplicate_clusters:
             resolution = cluster.resolution
-            stats['resolution_breakdown'][resolution] = stats['resolution_breakdown'].get(resolution, 0) + 1
+            stats["resolution_breakdown"][resolution] = (
+                stats["resolution_breakdown"].get(resolution, 0) + 1
+            )
 
         # Type distributions
         for unit in self.embedded_units:
             doc_type = unit.doc_type
             entity_type = unit.entity_type
 
-            stats['doc_type_distribution'][doc_type] = stats['doc_type_distribution'].get(doc_type, 0) + 1
-            stats['entity_type_distribution'][entity_type] = stats['entity_type_distribution'].get(entity_type, 0) + 1
+            stats["doc_type_distribution"][doc_type] = (
+                stats["doc_type_distribution"].get(doc_type, 0) + 1
+            )
+            stats["entity_type_distribution"][entity_type] = (
+                stats["entity_type_distribution"].get(entity_type, 0) + 1
+            )
 
         return stats

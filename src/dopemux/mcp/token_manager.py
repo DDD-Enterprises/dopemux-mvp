@@ -22,30 +22,30 @@ Design Principles:
 - Flexible: Support for temporary budget increases and role changes
 """
 
-import asyncio
 import logging
 import sqlite3
-from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
 
 class BudgetStatus(Enum):
     """Budget status levels for different types of notifications"""
-    HEALTHY = "healthy"          # <50% used
-    MODERATE = "moderate"        # 50-75% used
-    WARNING = "warning"          # 75-90% used
-    CRITICAL = "critical"        # 90-95% used
-    EXCEEDED = "exceeded"        # >95% used
+
+    HEALTHY = "healthy"  # <50% used
+    MODERATE = "moderate"  # 50-75% used
+    WARNING = "warning"  # 75-90% used
+    CRITICAL = "critical"  # 90-95% used
+    EXCEEDED = "exceeded"  # >95% used
 
 
 @dataclass
 class BudgetState:
     """Current budget state for a session"""
+
     session_id: str
     role: Optional[str] = None
     total_budget: int = 0
@@ -94,7 +94,9 @@ class BudgetState:
     def is_near_cap(self) -> bool:
         return self.used_tokens >= (self.hard_cap * 0.9)
 
-    def time_to_budget_exhaustion(self, current_burn_rate: float) -> Optional[timedelta]:
+    def time_to_budget_exhaustion(
+        self, current_burn_rate: float
+    ) -> Optional[timedelta]:
         """Estimate time until budget exhaustion at current burn rate"""
         if current_burn_rate <= 0:
             return None
@@ -103,13 +105,16 @@ class BudgetState:
         if remaining <= 0:
             return timedelta(0)
 
-        seconds_remaining = remaining / (current_burn_rate / 3600)  # Convert to tokens per second
+        seconds_remaining = remaining / (
+            current_burn_rate / 3600
+        )  # Convert to tokens per second
         return timedelta(seconds=seconds_remaining)
 
 
 @dataclass
 class TokenUsageRecord:
     """Record of token usage for analytics and optimization"""
+
     timestamp: datetime
     session_id: str
     role: str
@@ -124,6 +129,7 @@ class TokenUsageRecord:
 @dataclass
 class BudgetOptimization:
     """Suggestion for budget optimization"""
+
     type: str  # "reduce_scope", "change_tool", "role_switch", "break_suggestion"
     description: str
     estimated_savings: int
@@ -145,11 +151,13 @@ class TokenBudgetManager:
         self.db_path = db_path or "/tmp/metamcp_tokens.db"
 
         # Budget rules from policy
-        self.budget_rules = policy_config.get('rules', {}).get('budgets', {})
-        self.default_budget = self.budget_rules.get('default_tokens', 60000)
-        self.hard_cap = self.budget_rules.get('hard_cap', 120000)
-        self.warning_threshold_pct = self.budget_rules.get('warning_threshold', 48000) / self.default_budget
-        self.emergency_reserve = self.budget_rules.get('emergency_reserve', 10000)
+        self.budget_rules = policy_config.get("rules", {}).get("budgets", {})
+        self.default_budget = self.budget_rules.get("default_tokens", 60000)
+        self.hard_cap = self.budget_rules.get("hard_cap", 120000)
+        self.warning_threshold_pct = (
+            self.budget_rules.get("warning_threshold", 48000) / self.default_budget
+        )
+        self.emergency_reserve = self.budget_rules.get("emergency_reserve", 10000)
 
         # Active session budgets
         self.session_budgets: Dict[str, BudgetState] = {}
@@ -170,7 +178,8 @@ class TokenBudgetManager:
         """Initialize SQLite database for persistent token usage tracking"""
         try:
             with sqlite3.connect(self.db_path) as conn:
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS token_usage (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         timestamp TEXT NOT NULL,
@@ -183,9 +192,11 @@ class TokenBudgetManager:
                         optimization_applied INTEGER NOT NULL,
                         tokens_saved INTEGER DEFAULT 0
                     )
-                """)
+                """
+                )
 
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS budget_states (
                         session_id TEXT PRIMARY KEY,
                         role TEXT,
@@ -194,17 +205,22 @@ class TokenBudgetManager:
                         reserved_tokens INTEGER DEFAULT 0,
                         last_updated TEXT NOT NULL
                     )
-                """)
+                """
+                )
 
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE INDEX IF NOT EXISTS idx_usage_session_time
                     ON token_usage(session_id, timestamp)
-                """)
+                """
+                )
 
-                conn.execute("""
+                conn.execute(
+                    """
                     CREATE INDEX IF NOT EXISTS idx_usage_role_tool
                     ON token_usage(role, tool_name)
-                """)
+                """
+                )
 
                 logger.info("Token usage database initialized")
 
@@ -212,12 +228,14 @@ class TokenBudgetManager:
             logger.error(f"Failed to initialize token database: {e}")
             raise
 
-    async def initialize_session_budget(self, session_id: str, role: str) -> BudgetState:
+    async def initialize_session_budget(
+        self, session_id: str, role: str
+    ) -> BudgetState:
         """Initialize budget for a new session with role-based allocation"""
         # Get role-specific budget from policy
-        role_profiles = self.policy_config.get('profiles', {})
+        role_profiles = self.policy_config.get("profiles", {})
         role_config = role_profiles.get(role, {})
-        role_budget = role_config.get('token_budget', self.default_budget)
+        role_budget = role_config.get("token_budget", self.default_budget)
 
         # Calculate thresholds
         warning_threshold = int(role_budget * self.warning_threshold_pct)
@@ -229,7 +247,7 @@ class TokenBudgetManager:
             used_tokens=0,
             reserved_tokens=self.emergency_reserve,
             warning_threshold=warning_threshold,
-            hard_cap=self.hard_cap
+            hard_cap=self.hard_cap,
         )
 
         self.session_budgets[session_id] = budget_state
@@ -237,7 +255,9 @@ class TokenBudgetManager:
         # Save to database
         await self._save_budget_state(budget_state)
 
-        logger.info(f"Initialized budget for session {session_id}, role {role}: {role_budget} tokens")
+        logger.info(
+            f"Initialized budget for session {session_id}, role {role}: {role_budget} tokens"
+        )
 
         return budget_state
 
@@ -248,31 +268,43 @@ class TokenBudgetManager:
             return await self.initialize_session_budget(session_id, new_role)
 
         # Get new role budget
-        role_profiles = self.policy_config.get('profiles', {})
+        role_profiles = self.policy_config.get("profiles", {})
         role_config = role_profiles.get(new_role, {})
-        new_total_budget = role_config.get('token_budget', self.default_budget)
+        new_total_budget = role_config.get("token_budget", self.default_budget)
 
         # Preserve current usage
         current_budget.role = new_role
         current_budget.total_budget = new_total_budget
-        current_budget.warning_threshold = int(new_total_budget * self.warning_threshold_pct)
+        current_budget.warning_threshold = int(
+            new_total_budget * self.warning_threshold_pct
+        )
         current_budget.last_updated = datetime.now()
 
         # Save updated state
         await self._save_budget_state(current_budget)
 
-        logger.info(f"Switched budget for session {session_id} to role {new_role}: {new_total_budget} tokens")
+        logger.info(
+            f"Switched budget for session {session_id} to role {new_role}: {new_total_budget} tokens"
+        )
 
         return current_budget
 
-    async def record_usage(self, session_id: str, tokens_used: int,
-                          tool_name: str = "unknown", method: str = "unknown",
-                          estimated_tokens: int = 0, optimization_applied: bool = False,
-                          tokens_saved: int = 0) -> BudgetState:
+    async def record_usage(
+        self,
+        session_id: str,
+        tokens_used: int,
+        tool_name: str = "unknown",
+        method: str = "unknown",
+        estimated_tokens: int = 0,
+        optimization_applied: bool = False,
+        tokens_saved: int = 0,
+    ) -> BudgetState:
         """Record token usage and update budget state"""
         budget_state = self.session_budgets.get(session_id)
         if not budget_state:
-            logger.warning(f"No budget state for session {session_id}, creating default")
+            logger.warning(
+                f"No budget state for session {session_id}, creating default"
+            )
             budget_state = await self.initialize_session_budget(session_id, "unknown")
 
         # Update usage
@@ -289,7 +321,7 @@ class TokenBudgetManager:
             tokens_used=tokens_used,
             estimated_tokens=estimated_tokens or tokens_used,
             optimization_applied=optimization_applied,
-            tokens_saved=tokens_saved
+            tokens_saved=tokens_saved,
         )
 
         self.usage_records.append(usage_record)
@@ -304,7 +336,9 @@ class TokenBudgetManager:
         # Check for budget warnings
         await self._check_budget_warnings(budget_state)
 
-        logger.debug(f"Recorded {tokens_used} tokens for session {session_id}: {budget_state.usage_percentage:.1f}% used")
+        logger.debug(
+            f"Recorded {tokens_used} tokens for session {session_id}: {budget_state.usage_percentage:.1f}% used"
+        )
 
         return budget_state
 
@@ -312,7 +346,9 @@ class TokenBudgetManager:
         """Get current budget status for a session"""
         return self.session_budgets.get(session_id)
 
-    async def check_budget_availability(self, session_id: str, required_tokens: int) -> Tuple[bool, str]:
+    async def check_budget_availability(
+        self, session_id: str, required_tokens: int
+    ) -> Tuple[bool, str]:
         """Check if sufficient budget is available for an operation"""
         budget_state = self.session_budgets.get(session_id)
         if not budget_state:
@@ -325,9 +361,14 @@ class TokenBudgetManager:
             return True, "Budget available (using reserves)"
 
         shortage = required_tokens - budget_state.remaining_tokens
-        return False, f"Insufficient budget: need {required_tokens}, have {budget_state.remaining_tokens}, short by {shortage}"
+        return (
+            False,
+            f"Insufficient budget: need {required_tokens}, have {budget_state.remaining_tokens}, short by {shortage}",
+        )
 
-    async def get_optimization_suggestions(self, session_id: str) -> List[BudgetOptimization]:
+    async def get_optimization_suggestions(
+        self, session_id: str
+    ) -> List[BudgetOptimization]:
         """Get personalized optimization suggestions based on usage patterns"""
         budget_state = self.session_budgets.get(session_id)
         if not budget_state:
@@ -352,65 +393,77 @@ class TokenBudgetManager:
         for record in recent_usage:
             tool_key = f"{record.tool_name}.{record.method}"
             if tool_key not in tool_usage:
-                tool_usage[tool_key] = {'count': 0, 'total_tokens': 0, 'avg_tokens': 0}
-            tool_usage[tool_key]['count'] += 1
-            tool_usage[tool_key]['total_tokens'] += record.tokens_used
+                tool_usage[tool_key] = {"count": 0, "total_tokens": 0, "avg_tokens": 0}
+            tool_usage[tool_key]["count"] += 1
+            tool_usage[tool_key]["total_tokens"] += record.tokens_used
 
         # Calculate averages
         for tool_stats in tool_usage.values():
-            tool_stats['avg_tokens'] = tool_stats['total_tokens'] / tool_stats['count']
+            tool_stats["avg_tokens"] = tool_stats["total_tokens"] / tool_stats["count"]
 
         # Suggest optimizations based on usage patterns
         high_usage_tools = [
-            tool for tool, stats in tool_usage.items()
-            if stats['avg_tokens'] > 2000 and stats['count'] > 2
+            tool
+            for tool, stats in tool_usage.items()
+            if stats["avg_tokens"] > 2000 and stats["count"] > 2
         ]
 
         for tool in high_usage_tools:
             stats = tool_usage[tool]
-            suggestions.append(BudgetOptimization(
-                type="reduce_scope",
-                description=f"Consider reducing scope for {tool} (averaging {stats['avg_tokens']} tokens per call)",
-                estimated_savings=int(stats['avg_tokens'] * 0.3),
-                implementation_difficulty="easy",
-                adhd_impact="positive"
-            ))
+            suggestions.append(
+                BudgetOptimization(
+                    type="reduce_scope",
+                    description=f"Consider reducing scope for {tool} (averaging {stats['avg_tokens']} tokens per call)",
+                    estimated_savings=int(stats["avg_tokens"] * 0.3),
+                    implementation_difficulty="easy",
+                    adhd_impact="positive",
+                )
+            )
 
         # Role-based suggestions
         if budget_state.status in [BudgetStatus.WARNING, BudgetStatus.CRITICAL]:
             current_burn_rate = self.burn_rates.get(session_id, 0)
             if current_burn_rate > 0:
-                time_remaining = budget_state.time_to_budget_exhaustion(current_burn_rate)
+                time_remaining = budget_state.time_to_budget_exhaustion(
+                    current_burn_rate
+                )
                 if time_remaining and time_remaining < timedelta(hours=1):
-                    suggestions.append(BudgetOptimization(
-                        type="break_suggestion",
-                        description=f"Take a break? Budget will be exhausted in {time_remaining}",
-                        estimated_savings=0,
-                        implementation_difficulty="easy",
-                        adhd_impact="positive"
-                    ))
+                    suggestions.append(
+                        BudgetOptimization(
+                            type="break_suggestion",
+                            description=f"Take a break? Budget will be exhausted in {time_remaining}",
+                            estimated_savings=0,
+                            implementation_difficulty="easy",
+                            adhd_impact="positive",
+                        )
+                    )
 
         # Role switching suggestions
         if budget_state.status == BudgetStatus.CRITICAL:
             # Suggest switching to a lower-budget role
             current_role = budget_state.role
-            if current_role in ['architect', 'debugger']:  # High-budget roles
-                suggestions.append(BudgetOptimization(
-                    type="role_switch",
-                    description="Consider switching to 'reviewer' or 'developer' role to conserve budget",
-                    estimated_savings=0,
-                    implementation_difficulty="medium",
-                    adhd_impact="neutral"
-                ))
+            if current_role in ["architect", "debugger"]:  # High-budget roles
+                suggestions.append(
+                    BudgetOptimization(
+                        type="role_switch",
+                        description="Consider switching to 'reviewer' or 'developer' role to conserve budget",
+                        estimated_savings=0,
+                        implementation_difficulty="medium",
+                        adhd_impact="neutral",
+                    )
+                )
 
         # Cache suggestions
         self.optimization_cache[cache_key] = suggestions
 
         return suggestions
 
-    async def get_usage_analytics(self, session_id: Optional[str] = None,
-                                 role: Optional[str] = None,
-                                 days: int = 7) -> Dict[str, Any]:
+    async def get_usage_analytics(
+        self,
+        session_id: Optional[str] = None,
+        role: Optional[str] = None,
+        days: int = 7,
+    ) -> Dict[str, Any]:
         """Get comprehensive usage analytics"""
         # Build query conditions
         conditions = []
@@ -489,24 +542,29 @@ class TokenBudgetManager:
                     FROM token_usage
                     WHERE {where_clause} AND optimization_applied = 1
                 """
-                optimization_result = conn.execute(optimization_query, params).fetchone()
+                optimization_result = conn.execute(
+                    optimization_query, params
+                ).fetchone()
 
                 return {
-                    'period_days': days,
-                    'total_stats': dict(total_result) if total_result else {},
-                    'tool_usage': [dict(row) for row in tool_results],
-                    'role_usage': [dict(row) for row in role_results],
-                    'optimization_stats': dict(optimization_result) if optimization_result else {},
-                    'current_sessions': len(self.session_budgets),
-                    'active_burn_rates': dict(self.burn_rates)
+                    "period_days": days,
+                    "total_stats": dict(total_result) if total_result else {},
+                    "tool_usage": [dict(row) for row in tool_results],
+                    "role_usage": [dict(row) for row in role_results],
+                    "optimization_stats": (
+                        dict(optimization_result) if optimization_result else {}
+                    ),
+                    "current_sessions": len(self.session_budgets),
+                    "active_burn_rates": dict(self.burn_rates),
                 }
 
         except Exception as e:
             logger.error(f"Failed to get usage analytics: {e}")
             return {}
 
-    async def estimate_token_cost(self, tool_name: str, method: str,
-                                 params: Dict[str, Any]) -> int:
+    async def estimate_token_cost(
+        self, tool_name: str, method: str, params: Dict[str, Any]
+    ) -> int:
         """Estimate token cost for a tool call based on historical data"""
         # Get historical data for this tool/method combination
         try:
@@ -535,12 +593,15 @@ class TokenBudgetManager:
 
         return max(int(base_estimate * multiplier), 50)  # Minimum 50 tokens
 
-    async def _get_recent_usage(self, session_id: str, hours: int = 1) -> List[TokenUsageRecord]:
+    async def _get_recent_usage(
+        self, session_id: str, hours: int = 1
+    ) -> List[TokenUsageRecord]:
         """Get recent usage records for a session"""
         cutoff_time = datetime.now() - timedelta(hours=hours)
 
         return [
-            record for record in self.usage_records
+            record
+            for record in self.usage_records
             if record.session_id == session_id and record.timestamp >= cutoff_time
         ]
 
@@ -552,7 +613,9 @@ class TokenBudgetManager:
 
         # Calculate tokens per hour
         total_tokens = sum(record.tokens_used for record in recent_usage)
-        time_span = (recent_usage[-1].timestamp - recent_usage[0].timestamp).total_seconds() / 3600
+        time_span = (
+            recent_usage[-1].timestamp - recent_usage[0].timestamp
+        ).total_seconds() / 3600
 
         if time_span > 0:
             self.burn_rates[session_id] = total_tokens / time_span
@@ -560,50 +623,57 @@ class TokenBudgetManager:
     async def _check_budget_warnings(self, budget_state: BudgetState) -> None:
         """Check and issue budget warnings if necessary"""
         if budget_state.status == BudgetStatus.WARNING:
-            logger.warning(f"Budget warning for session {budget_state.session_id}: {budget_state.usage_percentage:.1f}% used")
+            logger.warning(
+                f"Budget warning for session {budget_state.session_id}: {budget_state.usage_percentage:.1f}% used"
+            )
             # In practice, this would trigger UI notifications
 
         elif budget_state.status == BudgetStatus.CRITICAL:
-            logger.error(f"Budget critical for session {budget_state.session_id}: {budget_state.usage_percentage:.1f}% used")
+            logger.error(
+                f"Budget critical for session {budget_state.session_id}: {budget_state.usage_percentage:.1f}% used"
+            )
             # In practice, this would trigger more prominent notifications
 
         elif budget_state.status == BudgetStatus.EXCEEDED:
-            logger.error(f"Budget exceeded for session {budget_state.session_id}: {budget_state.usage_percentage:.1f}% used")
+            logger.error(
+                f"Budget exceeded for session {budget_state.session_id}: {budget_state.usage_percentage:.1f}% used"
+            )
             # In practice, this would trigger immediate action
 
     def _get_heuristic_estimate(self, tool_name: str, method: str) -> int:
         """Get heuristic token estimate when no historical data is available"""
         # Base costs per tool (from historical analysis and documentation)
         base_costs = {
-            'claude-context': 1200,
-            'sequential-thinking': 4000,
-            'zen': 2500,
-            'exa': 1500,
-            'task-master-ai': 800,
-            'context7': 600,
-            'serena': 400,
-            'conport': 300,
-            'cli': 200,
-            'playwright': 1000
+            "claude-context": 1200,
+            "sequential-thinking": 4000,
+            "zen": 2500,
+            "exa": 1500,
+            "task-master-ai": 800,
+            "context7": 600,
+            "serena": 400,
+            "conport": 300,
+            "cli": 200,
+            "playwright": 1000,
         }
 
         return base_costs.get(tool_name, 500)
 
-    def _calculate_parameter_multiplier(self, tool_name: str, method: str,
-                                       params: Dict[str, Any]) -> float:
+    def _calculate_parameter_multiplier(
+        self, tool_name: str, method: str, params: Dict[str, Any]
+    ) -> float:
         """Calculate multiplier based on parameters"""
         multiplier = 1.0
 
-        if tool_name == 'claude-context':
-            max_results = params.get('maxResults', 10)
+        if tool_name == "claude-context":
+            max_results = params.get("maxResults", 10)
             multiplier *= min(max_results / 3.0, 3.0)  # Scale with results, cap at 3x
 
-        elif tool_name == 'sequential-thinking':
-            max_depth = params.get('maxDepth', 5)
+        elif tool_name == "sequential-thinking":
+            max_depth = params.get("maxDepth", 5)
             multiplier *= min(max_depth / 5.0, 2.0)  # Scale with depth, cap at 2x
 
-        elif tool_name == 'exa':
-            num_results = params.get('numResults', 10)
+        elif tool_name == "exa":
+            num_results = params.get("numResults", 10)
             multiplier *= min(num_results / 10.0, 2.0)
 
         return multiplier
@@ -612,22 +682,25 @@ class TokenBudgetManager:
         """Save usage record to database"""
         try:
             with sqlite3.connect(self.db_path) as conn:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT INTO token_usage
                     (timestamp, session_id, role, tool_name, method, tokens_used,
                      estimated_tokens, optimization_applied, tokens_saved)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, [
-                    record.timestamp.isoformat(),
-                    record.session_id,
-                    record.role,
-                    record.tool_name,
-                    record.method,
-                    record.tokens_used,
-                    record.estimated_tokens,
-                    1 if record.optimization_applied else 0,
-                    record.tokens_saved
-                ])
+                """,
+                    [
+                        record.timestamp.isoformat(),
+                        record.session_id,
+                        record.role,
+                        record.tool_name,
+                        record.method,
+                        record.tokens_used,
+                        record.estimated_tokens,
+                        1 if record.optimization_applied else 0,
+                        record.tokens_saved,
+                    ],
+                )
 
         except Exception as e:
             logger.error(f"Failed to save usage record: {e}")
@@ -636,18 +709,21 @@ class TokenBudgetManager:
         """Save budget state to database"""
         try:
             with sqlite3.connect(self.db_path) as conn:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT OR REPLACE INTO budget_states
                     (session_id, role, total_budget, used_tokens, reserved_tokens, last_updated)
                     VALUES (?, ?, ?, ?, ?, ?)
-                """, [
-                    budget_state.session_id,
-                    budget_state.role,
-                    budget_state.total_budget,
-                    budget_state.used_tokens,
-                    budget_state.reserved_tokens,
-                    budget_state.last_updated.isoformat()
-                ])
+                """,
+                    [
+                        budget_state.session_id,
+                        budget_state.role,
+                        budget_state.total_budget,
+                        budget_state.used_tokens,
+                        budget_state.reserved_tokens,
+                        budget_state.last_updated.isoformat(),
+                    ],
+                )
 
         except Exception as e:
             logger.error(f"Failed to save budget state: {e}")
@@ -657,22 +733,27 @@ class TokenBudgetManager:
         try:
             with sqlite3.connect(self.db_path) as conn:
                 conn.row_factory = sqlite3.Row
-                result = conn.execute("""
+                result = conn.execute(
+                    """
                     SELECT * FROM budget_states WHERE session_id = ?
-                """, [session_id]).fetchone()
+                """,
+                    [session_id],
+                ).fetchone()
 
                 if result:
                     budget_state = BudgetState(
-                        session_id=result['session_id'],
-                        role=result['role'],
-                        total_budget=result['total_budget'],
-                        used_tokens=result['used_tokens'],
-                        reserved_tokens=result.get('reserved_tokens', 0),
-                        last_updated=datetime.fromisoformat(result['last_updated'])
+                        session_id=result["session_id"],
+                        role=result["role"],
+                        total_budget=result["total_budget"],
+                        used_tokens=result["used_tokens"],
+                        reserved_tokens=result.get("reserved_tokens", 0),
+                        last_updated=datetime.fromisoformat(result["last_updated"]),
                     )
 
                     # Recalculate derived fields
-                    budget_state.warning_threshold = int(budget_state.total_budget * self.warning_threshold_pct)
+                    budget_state.warning_threshold = int(
+                        budget_state.total_budget * self.warning_threshold_pct
+                    )
                     budget_state.hard_cap = self.hard_cap
 
                     self.session_budgets[session_id] = budget_state

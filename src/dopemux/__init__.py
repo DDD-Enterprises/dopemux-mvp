@@ -10,7 +10,6 @@ __author__ = "Dopemux Team"
 __email__ = "team@dopemux.dev"
 
 # Core modules
-from . import cli
-from . import config
+from . import cli, config
 
 __all__ = ["cli", "config", "__version__"]
