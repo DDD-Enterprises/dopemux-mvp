@@ -19,11 +19,12 @@ class LeantimeIntegrationTest:
         self.api_url = api_url
         self.api_token = api_token
         self.session = None
+        self._request_id = 0
 
     async def __aenter__(self):
         headers = {}
         if self.api_token:
-            headers['Authorization'] = f'Bearer {self.api_token}'
+            headers['x-api-key'] = self.api_token  # Leantime uses x-api-key header
         headers['Content-Type'] = 'application/json'
         headers['User-Agent'] = 'Dopemux-Leantime-Test/1.0'
 
@@ -36,6 +37,31 @@ class LeantimeIntegrationTest:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self.session:
             await self.session.close()
+
+    def _next_request_id(self):
+        """Generate next JSON-RPC request ID"""
+        self._request_id += 1
+        return self._request_id
+
+    async def _jsonrpc_request(self, method, params=None):
+        """Send JSON-RPC 2.0 request to Leantime"""
+        request_data = {
+            "jsonrpc": "2.0",
+            "id": self._next_request_id(),
+            "method": method,
+            "params": params or {}
+        }
+
+        try:
+            async with self.session.post(f"{self.api_url}/api/jsonrpc", json=request_data) as response:
+                response_data = await response.json()
+
+                if 'error' in response_data:
+                    raise Exception(f"JSON-RPC Error: {response_data['error']}")
+
+                return response_data.get('result'), response.status
+        except Exception as e:
+            return None, None
 
     async def test_basic_connectivity(self):
         """Test basic HTTP connectivity to Leantime"""
@@ -55,7 +81,7 @@ class LeantimeIntegrationTest:
             return False
 
     async def test_api_authentication(self):
-        """Test API authentication"""
+        """Test API authentication using JSON-RPC"""
         print("🔐 Testing API authentication...")
 
         if not self.api_token:
@@ -63,41 +89,44 @@ class LeantimeIntegrationTest:
             return False
 
         try:
-            # Test API endpoint - try different common endpoints
-            endpoints_to_try = [
-                "/api/v1/users/me",
-                "/api/users/me",
-                "/api/user",
-                "/api/v1/user"
-            ]
+            # Test authentication with a simple JSON-RPC call
+            print("   📡 Testing JSON-RPC authentication...")
 
-            for endpoint in endpoints_to_try:
-                try:
-                    async with self.session.get(f"{self.api_url}{endpoint}") as response:
-                        if response.status == 200:
-                            data = await response.json()
-                            print(f"   ✅ Authentication successful via {endpoint}")
-                            print(f"   ✅ User: {data.get('name', 'Unknown')}")
-                            return True
-                        elif response.status == 401:
-                            print(f"   ❌ Authentication failed at {endpoint}")
-                        elif response.status == 404:
-                            continue  # Try next endpoint
-                        else:
-                            print(f"   ⚠️  Unexpected status {response.status} at {endpoint}")
-                except Exception as e:
-                    print(f"   ⚠️  Error testing {endpoint}: {e}")
-                    continue
+            # Try to get current user info using Leantime's JSON-RPC API
+            result, status = await self._jsonrpc_request("leantime.rpc.Users.getUser")
 
-            print("   ❌ Could not find working API endpoint")
-            return False
+            if result is not None:
+                print("   ✅ JSON-RPC authentication successful")
+                print(f"   ✅ API responding properly")
+                return True
+            elif status == 401:
+                print("   ❌ Authentication failed - Invalid API key")
+                return False
+            else:
+                # Try alternative methods if the first one fails
+                test_methods = [
+                    "leantime.rpc.users.getUser",
+                    "leantime.rpc.Users.getCurrentUser",
+                    "leantime.rpc.users.getCurrentUser"
+                ]
+
+                for method in test_methods:
+                    print(f"   🔄 Trying method: {method}")
+                    result, status = await self._jsonrpc_request(method)
+
+                    if result is not None:
+                        print(f"   ✅ Authentication successful with {method}")
+                        return True
+
+                print("   ❌ No working authentication method found")
+                return False
 
         except Exception as e:
             print(f"   ❌ Authentication test failed: {e}")
             return False
 
     async def test_project_management(self):
-        """Test basic project management functionality"""
+        """Test basic project management functionality using JSON-RPC"""
         print("📋 Testing project management...")
 
         if not self.api_token:
@@ -105,35 +134,35 @@ class LeantimeIntegrationTest:
             return False
 
         try:
-            # Try to list projects
-            endpoints_to_try = [
-                "/api/v1/projects",
-                "/api/projects",
-                "/api/project"
+            # Try to list projects using Leantime's JSON-RPC API
+            print("   📡 Testing project retrieval via JSON-RPC...")
+
+            project_methods = [
+                "leantime.rpc.Projects.getAllProjects",
+                "leantime.rpc.projects.getAllProjects",
+                "leantime.rpc.Projects.getProjects",
+                "leantime.rpc.projects.getProjects"
             ]
 
-            for endpoint in endpoints_to_try:
-                try:
-                    async with self.session.get(f"{self.api_url}{endpoint}") as response:
-                        if response.status == 200:
-                            data = await response.json()
-                            projects = data if isinstance(data, list) else data.get('data', [])
-                            print(f"   ✅ Found {len(projects)} projects")
+            for method in project_methods:
+                print(f"   🔄 Trying method: {method}")
+                result, status = await self._jsonrpc_request(method)
 
-                            if projects:
-                                project = projects[0]
-                                print(f"   ✅ Sample project: {project.get('name', 'Unknown')}")
+                if result is not None:
+                    print(f"   ✅ Projects retrieved successfully with {method}")
 
-                            return True
-                        elif response.status == 404:
-                            continue
-                        else:
-                            print(f"   ⚠️  Status {response.status} at {endpoint}")
-                except Exception as e:
-                    print(f"   ⚠️  Error at {endpoint}: {e}")
-                    continue
+                    # Parse project data
+                    projects = result if isinstance(result, list) else [result]
+                    print(f"   ✅ Found {len(projects)} projects")
 
-            print("   ❌ Could not access projects API")
+                    if projects:
+                        project = projects[0]
+                        project_name = project.get('name') or project.get('title') or 'Unknown'
+                        print(f"   ✅ Sample project: {project_name}")
+
+                    return True
+
+            print("   ❌ Could not access projects via any JSON-RPC method")
             return False
 
         except Exception as e:
@@ -141,7 +170,7 @@ class LeantimeIntegrationTest:
             return False
 
     async def test_task_management(self):
-        """Test task management functionality"""
+        """Test task management functionality using JSON-RPC"""
         print("📝 Testing task management...")
 
         if not self.api_token:
@@ -149,37 +178,37 @@ class LeantimeIntegrationTest:
             return False
 
         try:
-            # Try to list tasks/tickets
-            endpoints_to_try = [
-                "/api/v1/tickets",
-                "/api/tickets",
-                "/api/tasks",
-                "/api/v1/tasks",
-                "/api/todo"
+            # Try to list tasks/tickets using Leantime's JSON-RPC API
+            print("   📡 Testing task retrieval via JSON-RPC...")
+
+            task_methods = [
+                "leantime.rpc.Tickets.getAllTickets",
+                "leantime.rpc.tickets.getAllTickets",
+                "leantime.rpc.Tickets.getTickets",
+                "leantime.rpc.tickets.getTickets",
+                "leantime.rpc.Tasks.getAllTasks",
+                "leantime.rpc.tasks.getAllTasks"
             ]
 
-            for endpoint in endpoints_to_try:
-                try:
-                    async with self.session.get(f"{self.api_url}{endpoint}") as response:
-                        if response.status == 200:
-                            data = await response.json()
-                            tasks = data if isinstance(data, list) else data.get('data', [])
-                            print(f"   ✅ Found {len(tasks)} tasks via {endpoint}")
+            for method in task_methods:
+                print(f"   🔄 Trying method: {method}")
+                result, status = await self._jsonrpc_request(method)
 
-                            if tasks:
-                                task = tasks[0]
-                                print(f"   ✅ Sample task: {task.get('headline', task.get('title', 'Unknown'))}")
+                if result is not None:
+                    print(f"   ✅ Tasks retrieved successfully with {method}")
 
-                            return True
-                        elif response.status == 404:
-                            continue
-                        else:
-                            print(f"   ⚠️  Status {response.status} at {endpoint}")
-                except Exception as e:
-                    print(f"   ⚠️  Error at {endpoint}: {e}")
-                    continue
+                    # Parse task data
+                    tasks = result if isinstance(result, list) else [result]
+                    print(f"   ✅ Found {len(tasks)} tasks")
 
-            print("   ❌ Could not access tasks API")
+                    if tasks:
+                        task = tasks[0]
+                        task_name = task.get('headline') or task.get('title') or task.get('name') or 'Unknown'
+                        print(f"   ✅ Sample task: {task_name}")
+
+                    return True
+
+            print("   ❌ Could not access tasks via any JSON-RPC method")
             return False
 
         except Exception as e:

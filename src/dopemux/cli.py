@@ -621,6 +621,99 @@ def autoresponder_setup(ctx):
             sys.exit(1)
 
 @cli.command()
+@click.argument('directory', default='.')
+@click.option('--output', '-o', help='Output directory for analysis results')
+@click.option('--embedding-model', '-m', default='voyage-context-3', help='Embedding model to use')
+@click.option('--milvus-uri', help='Milvus database URI (file path for Lite mode)')
+@click.option('--max-files', type=int, help='Maximum number of files to process')
+@click.option('--batch-size', type=int, default=10, help='Batch size for processing')
+@click.option('--extensions', help='Comma-separated list of file extensions to include')
+@click.option('--exclude', help='Comma-separated list of patterns to exclude')
+@click.pass_context
+def analyze(ctx, directory: str, output: Optional[str], embedding_model: str,
+           milvus_uri: Optional[str], max_files: Optional[int], batch_size: int,
+           extensions: Optional[str], exclude: Optional[str]):
+    """
+    🔍 Analyze codebase with multi-angle document processing
+
+    Processes documents in the specified directory, extracting features,
+    components, subsystems, and research insights with semantic embeddings
+    for intelligent code navigation and ADHD-friendly analysis.
+    """
+    from .analysis import DocumentProcessor, ProcessingConfig
+
+    # Prepare configuration
+    source_path = Path(directory).resolve()
+    if not source_path.exists():
+        console.print(f"[red]❌ Directory does not exist: {source_path}[/red]")
+        sys.exit(1)
+
+    # Set output directory
+    if output:
+        output_path = Path(output).resolve()
+    else:
+        output_path = source_path / '.dopemux' / 'analysis'
+
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    # Parse extensions
+    file_extensions = None
+    if extensions:
+        file_extensions = [f".{ext.strip().lstrip('.')}" for ext in extensions.split(',')]
+
+    # Parse exclusion patterns
+    exclude_patterns = None
+    if exclude:
+        exclude_patterns = [pattern.strip() for pattern in exclude.split(',')]
+
+    # Create configuration
+    config = ProcessingConfig(
+        source_directory=source_path,
+        output_directory=output_path,
+        max_files=max_files,
+        file_extensions=file_extensions,
+        exclude_patterns=exclude_patterns,
+        embedding_model=embedding_model,
+        milvus_uri=milvus_uri,
+        batch_size=batch_size,
+        show_progress=True,
+        gentle_feedback=True
+    )
+
+    # Initialize and run processor
+    console.print(f"[blue]🧠 Starting ADHD-optimized analysis of {source_path}[/blue]")
+    console.print(f"[dim]Output: {output_path}[/dim]")
+
+    try:
+        processor = DocumentProcessor(config)
+        results = processor.analyze_directory()
+
+        if results['success']:
+            console.print(f"[green]✅ Analysis complete! Results saved to {output_path}[/green]")
+            console.print(f"[blue]📊 Processing time: {results['processing_time']:.1f}s[/blue]")
+
+            # Show usage suggestions
+            console.print(Panel(
+                f"🎯 Next steps:\n\n"
+                f"• Browse results in {output_path}\n"
+                f"• Use semantic search with embeddings\n"
+                f"• Explore feature and component registries\n"
+                f"• Review evidence links for traceability",
+                title="🚀 Ready to Explore",
+                border_style="green"
+            ))
+        else:
+            console.print("[red]❌ Analysis failed[/red]")
+            sys.exit(1)
+
+    except Exception as e:
+        console.print(f"[red]❌ Analysis error: {e}[/red]")
+        if ctx.obj.get('verbose'):
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
+
+@cli.command()
 @click.option('--detailed', '-d', is_flag=True, help='Show detailed health information')
 @click.option('--service', '-s', help='Check specific service only')
 @click.option('--fix', '-f', is_flag=True, help='Attempt to fix unhealthy services')

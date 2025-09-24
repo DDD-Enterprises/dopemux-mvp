@@ -13,7 +13,7 @@ from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch, mock_open
 from pathlib import Path
 
-from src.integrations.taskmaster_bridge import (
+from integrations.taskmaster_bridge import (
     TaskMasterMCPClient,
     TaskMasterTask,
     PRDAnalysis,
@@ -21,8 +21,8 @@ from src.integrations.taskmaster_bridge import (
     ComplexityLevel,
     create_taskmaster_bridge
 )
-from src.core.config import Config
-from src.core.exceptions import DopemuxIntegrationError, AIServiceError
+from core.config import Config
+from core.exceptions import DopemuxIntegrationError, AIServiceError
 
 
 class TestTaskMasterTask:
@@ -767,4 +767,4 @@ class TestFactoryFunction:
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "--cov=src.integrations.taskmaster_bridge", "--cov-report=term-missing"])
+    pytest.main([__file__, "-v", "--cov=integrations.taskmaster_bridge", "--cov-report=term-missing"])

@@ -16,10 +16,10 @@ import hashlib
 
 from .leantime_bridge import LeantimeMCPClient, LeantimeTask, LeantimeProject, TaskStatus, TaskPriority
 from .taskmaster_bridge import TaskMasterMCPClient, TaskMasterTask, PRDAnalysis
-from ..core.exceptions import DopemuxIntegrationError, SyncError
-from ..core.config import Config
-from ..core.monitoring import MetricsCollector
-from ..utils.adhd_optimizations import ADHDTaskOptimizer
+from core.exceptions import DopemuxIntegrationError, SyncError
+from core.config import Config
+from core.monitoring import MetricsCollector
+from utils.adhd_optimizations import ADHDTaskOptimizer
 
 
 logger = logging.getLogger(__name__)
