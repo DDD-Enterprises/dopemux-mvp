@@ -6,6 +6,8 @@ Imports conversation histories from Claude Code and Codex CLI into the unified m
 Normalizes different tool outputs into consistent JSONL format for ConPort ingestion.
 """
 
+import asyncio
+import hashlib
 import json
 import logging
 import re
@@ -13,12 +15,9 @@ import sqlite3
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Generator, List, Optional, Any
-import hashlib
+from typing import Any, Dict, Generator, List, Optional
 
 import asyncpg
-import asyncio
-
 
 logger = logging.getLogger("conport.importers")
 
@@ -34,46 +33,70 @@ class ConPortImporter:
         """Connect to ConPort database."""
         self.pool = await asyncpg.create_pool(self.database_url)
 
-    async def start_import_run(self, source: str, file_path: str, total_items: Optional[int] = None) -> str:
+    async def start_import_run(
+        self, source: str, file_path: str, total_items: Optional[int] = None
+    ) -> str:
         """Start a new import run and return the run ID."""
         run_id = str(uuid.uuid4())
         async with self.pool.acquire() as conn:
-            await conn.execute("""
+            await conn.execute(
+                """
                 INSERT INTO import_runs (id, source, file_path, items_total, started_at)
                 VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
-            """, run_id, source, file_path, total_items)
+            """,
+                run_id,
+                source,
+                file_path,
+                total_items,
+            )
         return run_id
 
-    async def update_import_progress(self, run_id: str, processed: int, error: Optional[str] = None):
+    async def update_import_progress(
+        self, run_id: str, processed: int, error: Optional[str] = None
+    ):
         """Update import run progress."""
         async with self.pool.acquire() as conn:
             if error:
-                await conn.execute("""
+                await conn.execute(
+                    """
                     UPDATE import_runs
                     SET items_processed = $2, status = 'failed', error_message = $3, completed_at = CURRENT_TIMESTAMP
                     WHERE id = $1
-                """, run_id, processed, error)
+                """,
+                    run_id,
+                    processed,
+                    error,
+                )
             else:
-                await conn.execute("""
+                await conn.execute(
+                    """
                     UPDATE import_runs
                     SET items_processed = $2
                     WHERE id = $1
-                """, run_id, processed)
+                """,
+                    run_id,
+                    processed,
+                )
 
     async def complete_import_run(self, run_id: str, processed: int):
         """Mark import run as completed."""
         async with self.pool.acquire() as conn:
-            await conn.execute("""
+            await conn.execute(
+                """
                 UPDATE import_runs
                 SET items_processed = $2, status = 'completed', completed_at = CURRENT_TIMESTAMP
                 WHERE id = $1
-            """, run_id, processed)
+            """,
+                run_id,
+                processed,
+            )
 
     async def upsert_node(self, node_data: Dict[str, Any]) -> bool:
         """Upsert a node directly to PostgreSQL."""
         try:
             async with self.pool.acquire() as conn:
-                await conn.execute("""
+                await conn.execute(
+                    """
                     INSERT INTO nodes (id, type, text, metadata, repo, author, created_at, updated_at)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
                     ON CONFLICT (id) DO UPDATE SET
@@ -84,23 +107,26 @@ class ConPortImporter:
                         author = EXCLUDED.author,
                         updated_at = CURRENT_TIMESTAMP
                 """,
-                node_data["id"],
-                node_data["type"],
-                node_data["text"],
-                json.dumps(node_data.get("metadata", {})),
-                node_data.get("repo"),
-                node_data.get("author"),
-                node_data.get("created_at", datetime.now())
+                    node_data["id"],
+                    node_data["type"],
+                    node_data["text"],
+                    json.dumps(node_data.get("metadata", {})),
+                    node_data.get("repo"),
+                    node_data.get("author"),
+                    node_data.get("created_at", datetime.now()),
                 )
             return True
         except Exception as e:
             logger.error(f"Failed to upsert node {node_data['id']}: {e}")
             return False
 
-    async def create_thread(self, thread_id: str, title: str, repo: str, participants: List[str]):
+    async def create_thread(
+        self, thread_id: str, title: str, repo: str, participants: List[str]
+    ):
         """Create a conversation thread."""
         async with self.pool.acquire() as conn:
-            await conn.execute("""
+            await conn.execute(
+                """
                 INSERT INTO conversation_threads (id, title, repo, participants, created_at, updated_at)
                 VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                 ON CONFLICT (id) DO UPDATE SET
@@ -108,13 +134,19 @@ class ConPortImporter:
                     repo = EXCLUDED.repo,
                     participants = EXCLUDED.participants,
                     updated_at = CURRENT_TIMESTAMP
-            """, thread_id, title, repo, participants)
+            """,
+                thread_id,
+                title,
+                repo,
+                participants,
+            )
 
     async def upsert_message(self, message_data: Dict[str, Any]) -> bool:
         """Upsert a message to PostgreSQL."""
         try:
             async with self.pool.acquire() as conn:
-                await conn.execute("""
+                await conn.execute(
+                    """
                     INSERT INTO messages (id, thread_id, role, content, tool_calls, metadata, source, created_at)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                     ON CONFLICT (id) DO UPDATE SET
@@ -125,14 +157,14 @@ class ConPortImporter:
                         metadata = EXCLUDED.metadata,
                         source = EXCLUDED.source
                 """,
-                message_data["id"],
-                message_data["thread_id"],
-                message_data["role"],
-                message_data["content"],
-                json.dumps(message_data.get("tool_calls")),
-                json.dumps(message_data.get("metadata", {})),
-                message_data["source"],
-                message_data.get("created_at", datetime.now())
+                    message_data["id"],
+                    message_data["thread_id"],
+                    message_data["role"],
+                    message_data["content"],
+                    json.dumps(message_data.get("tool_calls")),
+                    json.dumps(message_data.get("metadata", {})),
+                    message_data["source"],
+                    message_data.get("created_at", datetime.now()),
                 )
             return True
         except Exception as e:
@@ -146,31 +178,37 @@ class ClaudeCodeImporter(ConPortImporter):
     def __init__(self, database_url: str):
         super().__init__(database_url)
 
-    def parse_claude_code_logs(self, log_path: Path) -> Generator[Dict[str, Any], None, None]:
+    def parse_claude_code_logs(
+        self, log_path: Path
+    ) -> Generator[Dict[str, Any], None, None]:
         """Parse Claude Code logs into normalized format."""
         try:
             # Claude Code typically stores conversations in SQLite
-            if log_path.suffix == '.db':
+            if log_path.suffix == ".db":
                 yield from self._parse_sqlite_logs(log_path)
-            elif log_path.suffix == '.jsonl':
+            elif log_path.suffix == ".jsonl":
                 yield from self._parse_jsonl_logs(log_path)
             else:
                 logger.warning(f"Unsupported Claude Code log format: {log_path.suffix}")
         except Exception as e:
             logger.error(f"Failed to parse Claude Code logs: {e}")
 
-    def _parse_sqlite_logs(self, db_path: Path) -> Generator[Dict[str, Any], None, None]:
+    def _parse_sqlite_logs(
+        self, db_path: Path
+    ) -> Generator[Dict[str, Any], None, None]:
         """Parse SQLite Claude Code conversation database."""
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
 
         try:
             # Get conversations
-            conversations = conn.execute("""
+            conversations = conn.execute(
+                """
                 SELECT id, title, created_at, metadata
                 FROM conversations
                 ORDER BY created_at
-            """).fetchall()
+            """
+            ).fetchall()
 
             for conv in conversations:
                 conv_id = f"claude-code-{conv['id']}"
@@ -181,17 +219,26 @@ class ClaudeCodeImporter(ConPortImporter):
                     "id": conv_id,
                     "title": conv["title"] or "Claude Code Session",
                     "source": "claude-code",
-                    "created_at": datetime.fromisoformat(conv["created_at"]) if conv["created_at"] else datetime.now(),
-                    "metadata": json.loads(conv["metadata"]) if conv["metadata"] else {}
+                    "created_at": (
+                        datetime.fromisoformat(conv["created_at"])
+                        if conv["created_at"]
+                        else datetime.now()
+                    ),
+                    "metadata": (
+                        json.loads(conv["metadata"]) if conv["metadata"] else {}
+                    ),
                 }
 
                 # Get messages for this conversation
-                messages = conn.execute("""
+                messages = conn.execute(
+                    """
                     SELECT id, role, content, tool_calls, created_at, metadata
                     FROM messages
                     WHERE conversation_id = ?
                     ORDER BY created_at
-                """, (conv['id'],)).fetchall()
+                """,
+                    (conv["id"],),
+                ).fetchall()
 
                 for msg in messages:
                     msg_id = f"claude-code-msg-{msg['id']}"
@@ -202,7 +249,13 @@ class ClaudeCodeImporter(ConPortImporter):
                         try:
                             content_obj = json.loads(content)
                             if isinstance(content_obj, list):
-                                content = " ".join([item.get("text", "") for item in content_obj if item.get("type") == "text"])
+                                content = " ".join(
+                                    [
+                                        item.get("text", "")
+                                        for item in content_obj
+                                        if item.get("type") == "text"
+                                    ]
+                                )
                         except json.JSONDecodeError:
                             pass  # content is already a string
 
@@ -212,18 +265,28 @@ class ClaudeCodeImporter(ConPortImporter):
                         "thread_id": conv_id,
                         "role": msg["role"],
                         "content": content,
-                        "tool_calls": json.loads(msg["tool_calls"]) if msg["tool_calls"] else None,
+                        "tool_calls": (
+                            json.loads(msg["tool_calls"]) if msg["tool_calls"] else None
+                        ),
                         "source": "claude-code",
-                        "created_at": datetime.fromisoformat(msg["created_at"]) if msg["created_at"] else datetime.now(),
-                        "metadata": json.loads(msg["metadata"]) if msg["metadata"] else {}
+                        "created_at": (
+                            datetime.fromisoformat(msg["created_at"])
+                            if msg["created_at"]
+                            else datetime.now()
+                        ),
+                        "metadata": (
+                            json.loads(msg["metadata"]) if msg["metadata"] else {}
+                        ),
                     }
 
         finally:
             conn.close()
 
-    def _parse_jsonl_logs(self, jsonl_path: Path) -> Generator[Dict[str, Any], None, None]:
+    def _parse_jsonl_logs(
+        self, jsonl_path: Path
+    ) -> Generator[Dict[str, Any], None, None]:
         """Parse JSONL Claude Code logs."""
-        with open(jsonl_path, 'r') as f:
+        with open(jsonl_path, "r") as f:
             for line_num, line in enumerate(f, 1):
                 try:
                     data = json.loads(line.strip())
@@ -235,8 +298,12 @@ class ClaudeCodeImporter(ConPortImporter):
                             "id": f"claude-code-{data['id']}",
                             "title": data.get("title", "Claude Code Session"),
                             "source": "claude-code",
-                            "created_at": datetime.fromisoformat(data["created_at"]) if "created_at" in data else datetime.now(),
-                            "metadata": data.get("metadata", {})
+                            "created_at": (
+                                datetime.fromisoformat(data["created_at"])
+                                if "created_at" in data
+                                else datetime.now()
+                            ),
+                            "metadata": data.get("metadata", {}),
                         }
                     elif data.get("type") == "message":
                         yield {
@@ -247,8 +314,12 @@ class ClaudeCodeImporter(ConPortImporter):
                             "content": data["content"],
                             "tool_calls": data.get("tool_calls"),
                             "source": "claude-code",
-                            "created_at": datetime.fromisoformat(data["timestamp"]) if "timestamp" in data else datetime.now(),
-                            "metadata": data.get("metadata", {})
+                            "created_at": (
+                                datetime.fromisoformat(data["timestamp"])
+                                if "timestamp" in data
+                                else datetime.now()
+                            ),
+                            "metadata": data.get("metadata", {}),
                         }
 
                 except json.JSONDecodeError as e:
@@ -256,7 +327,9 @@ class ClaudeCodeImporter(ConPortImporter):
                 except Exception as e:
                     logger.error(f"Error processing line {line_num}: {e}")
 
-    async def import_claude_code_history(self, log_path: Path, repo: str = "unknown") -> bool:
+    async def import_claude_code_history(
+        self, log_path: Path, repo: str = "unknown"
+    ) -> bool:
         """Import Claude Code conversation history."""
         logger.info(f"Starting Claude Code import from {log_path}")
 
@@ -270,23 +343,22 @@ class ClaudeCodeImporter(ConPortImporter):
                 if item["type"] == "thread":
                     # Create conversation thread
                     await self.create_thread(
-                        item["id"],
-                        item["title"],
-                        repo,
-                        ["user", "assistant"]
+                        item["id"], item["title"], repo, ["user", "assistant"]
                     )
                     threads_created.add(item["id"])
 
                     # Also create as a node for graph traversal
-                    await self.upsert_node({
-                        "id": item["id"],
-                        "type": "thread",
-                        "text": item["title"],
-                        "repo": repo,
-                        "author": "claude-code",
-                        "metadata": item["metadata"],
-                        "created_at": item["created_at"]
-                    })
+                    await self.upsert_node(
+                        {
+                            "id": item["id"],
+                            "type": "thread",
+                            "text": item["title"],
+                            "repo": repo,
+                            "author": "claude-code",
+                            "metadata": item["metadata"],
+                            "created_at": item["created_at"],
+                        }
+                    )
 
                 elif item["type"] == "message":
                     # Ensure thread exists
@@ -295,7 +367,7 @@ class ClaudeCodeImporter(ConPortImporter):
                             item["thread_id"],
                             "Claude Code Session",
                             repo,
-                            ["user", "assistant"]
+                            ["user", "assistant"],
                         )
                         threads_created.add(item["thread_id"])
 
@@ -303,20 +375,22 @@ class ClaudeCodeImporter(ConPortImporter):
                     await self.upsert_message(item)
 
                     # Also create as node for semantic search
-                    await self.upsert_node({
-                        "id": item["id"],
-                        "type": "message",
-                        "text": item["content"][:1000],  # Limit text length
-                        "repo": repo,
-                        "author": item["role"],
-                        "metadata": {
-                            "thread_id": item["thread_id"],
-                            "role": item["role"],
-                            "tool_calls": item.get("tool_calls"),
-                            **item.get("metadata", {})
-                        },
-                        "created_at": item["created_at"]
-                    })
+                    await self.upsert_node(
+                        {
+                            "id": item["id"],
+                            "type": "message",
+                            "text": item["content"][:1000],  # Limit text length
+                            "repo": repo,
+                            "author": item["role"],
+                            "metadata": {
+                                "thread_id": item["thread_id"],
+                                "role": item["role"],
+                                "tool_calls": item.get("tool_calls"),
+                                **item.get("metadata", {}),
+                            },
+                            "created_at": item["created_at"],
+                        }
+                    )
 
                 processed += 1
                 if processed % 100 == 0:
@@ -339,27 +413,35 @@ class CodexCLIImporter(ConPortImporter):
     def __init__(self, database_url: str):
         super().__init__(database_url)
 
-    def parse_codex_history(self, history_path: Path) -> Generator[Dict[str, Any], None, None]:
+    def parse_codex_history(
+        self, history_path: Path
+    ) -> Generator[Dict[str, Any], None, None]:
         """Parse Codex CLI history files."""
         try:
-            if history_path.suffix == '.jsonl':
+            if history_path.suffix == ".jsonl":
                 yield from self._parse_jsonl_history(history_path)
-            elif history_path.suffix == '.log':
+            elif history_path.suffix == ".log":
                 yield from self._parse_log_history(history_path)
             else:
-                logger.warning(f"Unsupported Codex history format: {history_path.suffix}")
+                logger.warning(
+                    f"Unsupported Codex history format: {history_path.suffix}"
+                )
         except Exception as e:
             logger.error(f"Failed to parse Codex history: {e}")
 
-    def _parse_jsonl_history(self, jsonl_path: Path) -> Generator[Dict[str, Any], None, None]:
+    def _parse_jsonl_history(
+        self, jsonl_path: Path
+    ) -> Generator[Dict[str, Any], None, None]:
         """Parse JSONL Codex CLI history."""
-        with open(jsonl_path, 'r') as f:
+        with open(jsonl_path, "r") as f:
             for line_num, line in enumerate(f, 1):
                 try:
                     data = json.loads(line.strip())
 
                     if data.get("type") == "command":
-                        cmd_id = f"codex-cmd-{hashlib.md5(f'{data.get('timestamp', line_num)}-{data.get('command', '')}'.encode()).hexdigest()[:12]}"
+                        timestamp = data.get("timestamp", line_num)
+                        command = data.get("command", "")
+                        cmd_id = f"codex-cmd-{hashlib.md5(f'{timestamp}-{command}'.encode()).hexdigest()[:12]}"
 
                         yield {
                             "type": "run",
@@ -369,12 +451,16 @@ class CodexCLIImporter(ConPortImporter):
                             "exit_code": data.get("exit_code", 0),
                             "working_dir": data.get("working_dir", ""),
                             "source": "codex-cli",
-                            "created_at": datetime.fromisoformat(data["timestamp"]) if "timestamp" in data else datetime.now(),
+                            "created_at": (
+                                datetime.fromisoformat(data["timestamp"])
+                                if "timestamp" in data
+                                else datetime.now()
+                            ),
                             "metadata": {
                                 "duration": data.get("duration"),
                                 "environment": data.get("environment", {}),
-                                "exit_code": data.get("exit_code", 0)
-                            }
+                                "exit_code": data.get("exit_code", 0),
+                            },
                         }
 
                 except json.JSONDecodeError as e:
@@ -382,12 +468,14 @@ class CodexCLIImporter(ConPortImporter):
                 except Exception as e:
                     logger.error(f"Error processing line {line_num}: {e}")
 
-    def _parse_log_history(self, log_path: Path) -> Generator[Dict[str, Any], None, None]:
+    def _parse_log_history(
+        self, log_path: Path
+    ) -> Generator[Dict[str, Any], None, None]:
         """Parse plain text Codex CLI history logs."""
-        command_pattern = re.compile(r'^\[([^\]]+)\] \$ (.+)$')
-        output_pattern = re.compile(r'^\[([^\]]+)\] (.+)$')
+        command_pattern = re.compile(r"^\[([^\]]+)\] \$ (.+)$")
+        output_pattern = re.compile(r"^\[([^\]]+)\] (.+)$")
 
-        with open(log_path, 'r') as f:
+        with open(log_path, "r") as f:
             current_command = None
             output_lines = []
 
@@ -399,7 +487,9 @@ class CodexCLIImporter(ConPortImporter):
                 if cmd_match:
                     # Yield previous command if exists
                     if current_command:
-                        cmd_id = f"codex-cmd-{hashlib.md5(f'{current_command['timestamp']}-{current_command['command']}'.encode()).hexdigest()[:12]}"
+                        timestamp = current_command["timestamp"]
+                        command = current_command["command"]
+                        cmd_id = f"codex-cmd-{hashlib.md5(f'{timestamp}-{command}'.encode()).hexdigest()[:12]}"
                         yield {
                             "type": "run",
                             "id": cmd_id,
@@ -407,7 +497,7 @@ class CodexCLIImporter(ConPortImporter):
                             "output": "\n".join(output_lines),
                             "source": "codex-cli",
                             "created_at": current_command["timestamp"],
-                            "metadata": {"line_number": current_command["line_num"]}
+                            "metadata": {"line_number": current_command["line_num"]},
                         }
 
                     # Start new command
@@ -420,7 +510,7 @@ class CodexCLIImporter(ConPortImporter):
                     current_command = {
                         "command": command,
                         "timestamp": timestamp,
-                        "line_num": line_num
+                        "line_num": line_num,
                     }
                     output_lines = []
 
@@ -432,7 +522,9 @@ class CodexCLIImporter(ConPortImporter):
 
             # Yield final command
             if current_command:
-                cmd_id = f"codex-cmd-{hashlib.md5(f'{current_command['timestamp']}-{current_command['command']}'.encode()).hexdigest()[:12]}"
+                timestamp = current_command["timestamp"]
+                command = current_command["command"]
+                cmd_id = f"codex-cmd-{hashlib.md5(f'{timestamp}-{command}'.encode()).hexdigest()[:12]}"
                 yield {
                     "type": "run",
                     "id": cmd_id,
@@ -440,10 +532,12 @@ class CodexCLIImporter(ConPortImporter):
                     "output": "\n".join(output_lines),
                     "source": "codex-cli",
                     "created_at": current_command["timestamp"],
-                    "metadata": {"line_number": current_command["line_num"]}
+                    "metadata": {"line_number": current_command["line_num"]},
                 }
 
-    async def import_codex_history(self, history_path: Path, repo: str = "unknown") -> bool:
+    async def import_codex_history(
+        self, history_path: Path, repo: str = "unknown"
+    ) -> bool:
         """Import Codex CLI command history."""
         logger.info(f"Starting Codex CLI import from {history_path}")
 
@@ -455,24 +549,28 @@ class CodexCLIImporter(ConPortImporter):
                 if item["type"] == "run":
                     # Create run node for semantic search
                     text = f"Command: {item['command']}"
-                    if item.get('output'):
-                        text += f"\nOutput: {item['output'][:500]}"  # Limit output length
+                    if item.get("output"):
+                        text += (
+                            f"\nOutput: {item['output'][:500]}"  # Limit output length
+                        )
 
-                    await self.upsert_node({
-                        "id": item["id"],
-                        "type": "run",
-                        "text": text,
-                        "repo": repo,
-                        "author": "codex-cli",
-                        "metadata": {
-                            "command": item["command"],
-                            "output": item.get("output", ""),
-                            "exit_code": item.get("exit_code"),
-                            "working_dir": item.get("working_dir"),
-                            **item.get("metadata", {})
-                        },
-                        "created_at": item["created_at"]
-                    })
+                    await self.upsert_node(
+                        {
+                            "id": item["id"],
+                            "type": "run",
+                            "text": text,
+                            "repo": repo,
+                            "author": "codex-cli",
+                            "metadata": {
+                                "command": item["command"],
+                                "output": item.get("output", ""),
+                                "exit_code": item.get("exit_code"),
+                                "working_dir": item.get("working_dir"),
+                                **item.get("metadata", {}),
+                            },
+                            "created_at": item["created_at"],
+                        }
+                    )
 
                 processed += 1
                 if processed % 50 == 0:
@@ -493,9 +591,16 @@ async def main():
     """CLI for running importers."""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Import conversation histories into ConPort memory system")
+    parser = argparse.ArgumentParser(
+        description="Import conversation histories into ConPort memory system"
+    )
     parser.add_argument("--database-url", required=True, help="PostgreSQL database URL")
-    parser.add_argument("--source", choices=["claude-code", "codex-cli"], required=True, help="Source type")
+    parser.add_argument(
+        "--source",
+        choices=["claude-code", "codex-cli"],
+        required=True,
+        help="Source type",
+    )
     parser.add_argument("--file", required=True, help="Path to history file")
     parser.add_argument("--repo", default="unknown", help="Repository name")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose logging")
@@ -534,4 +639,5 @@ async def main():
 
 if __name__ == "__main__":
     import sys
+
     sys.exit(asyncio.run(main()))
