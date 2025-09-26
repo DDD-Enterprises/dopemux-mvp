@@ -5,6 +5,8 @@ Simplified MetaMCP Server for Claude Code integration
 This is a simplified version that provides role-aware tool access without
 requiring the full MetaMCP broker infrastructure to be running. It demonstrates
 the concept and can be enhanced later.
+
+Enhanced with ADHD attention-aware tool selection.
 """
 
 import asyncio
@@ -12,6 +14,11 @@ import json
 import sys
 import logging
 from typing import Dict, List, Any, Optional
+
+# ADHD accommodations: Simple, user-controlled approach
+# Note: Complex AttentionManager disabled after analysis showed it increases cognitive load
+# Focusing on user agency and simplicity instead of algorithmic attention detection
+ATTENTION_MANAGER_AVAILABLE = False  # Intentionally disabled for simpler approach
 
 # Configure logging
 logging.basicConfig(level=logging.WARNING)  # Reduce log noise for Claude Code
@@ -31,9 +38,68 @@ class SimpleMetaMCPServer:
             "token_budget": 10000,
             "tokens_used": 0
         }
+        # Simple ADHD accommodation: User-controlled tool limiting
+        self.tool_profile = "standard"  # minimal/standard/full
+        self.tool_limits = {
+            "minimal": 3,     # For overwhelmed/scattered days
+            "standard": 5,    # Normal working mode
+            "full": None      # Power user mode, no limit
+        }
+
+        # Docker MCP server endpoints
+        self.mcp_servers = {
+            "zen": "http://localhost:3003",
+            "context7": "http://localhost:3002",
+            "exa": "http://localhost:3008"
+        }
+
+        # Session bookmarking for context preservation
+        self.session_bookmarks = {}
+        self.current_bookmark = None
+
+        # ADHD Finishing Helpers - "There is NOW and there is NEVER"
+        self.active_projects = {}  # Track almost-done work
+        self.completion_reminders = {}  # Visual field reminders
+
+        # Gentle timer for break reminders
+        from datetime import datetime
+        self.session_start_time = datetime.now()
+        self.last_break_reminder = None
+
+    def add_helpful_visual_indicators(self, tool: Dict[str, Any]) -> str:
+        """Add helpful visual indicators that ADHD developers actually want"""
+        name = tool.get("name", "").lower()
+
+        # Helpful categorization with visual cues (emojis are good for ADHD!)
+        if name in ["switch_role", "get_metamcp_status", "bookmark_session", "restore_session", "list_bookmarks"]:
+            return "🟢 Quick"  # Fast, immediate tools
+        elif name in ["track_almost_done", "finish_line_check", "mark_completed"]:
+            return "🎯 Finish"  # Completion helpers - critical for ADHD!
+        elif name in ["search_code", "web_search", "get_docs", "run_command", "manage_tasks"]:
+            return "🟡 Standard"  # Normal work tools
+        elif name in ["analyze_architecture", "debug_analysis", "review_session", "design_patterns"]:
+            return "🟠 Focused"  # Requires sustained attention
+        else:
+            return "🔴 Deep"  # Complex, long tasks
+
+    def check_break_reminder(self) -> Optional[str]:
+        """Check if it's time for a gentle break reminder"""
+        from datetime import datetime, timedelta
+
+        now = datetime.now()
+        session_minutes = (now - self.session_start_time).total_seconds() / 60
+
+        # Simple Pomodoro: remind every 25 minutes
+        if session_minutes > 25 and (session_minutes % 25) < 1:
+            # Only remind once per 25-minute cycle
+            if self.last_break_reminder is None or (now - self.last_break_reminder).total_seconds() > 1200:  # 20 min cooldown
+                self.last_break_reminder = now
+                return "🍅 25 minutes completed! Consider taking a short break to recharge."
+
+        return None
 
     def get_role_tools(self) -> List[Dict[str, Any]]:
-        """Get tool definitions for the current role"""
+        """Get tool definitions for the current role with attention-aware filtering"""
 
         # Base tools available to all roles
         base_tools = [
@@ -59,6 +125,117 @@ class SimpleMetaMCPServer:
                     "type": "object",
                     "properties": {},
                     "additionalProperties": False
+                }
+            },
+            {
+                "name": "set_tool_profile",
+                "description": "Change tool complexity profile for ADHD accommodation",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "profile": {
+                            "type": "string",
+                            "enum": ["minimal", "standard", "full"],
+                            "description": "Tool profile: minimal (3 tools), standard (5 tools), full (all tools)"
+                        }
+                    },
+                    "required": ["profile"]
+                }
+            },
+            {
+                "name": "bookmark_session",
+                "description": "Save current working context for easy resumption",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "Name for this bookmark (e.g., 'debugging-auth', 'feature-review')"
+                        },
+                        "note": {
+                            "type": "string",
+                            "description": "Optional note about what you were working on"
+                        },
+                        "current_file": {
+                            "type": "string",
+                            "description": "File you're currently working in (optional)"
+                        }
+                    },
+                    "required": ["name"]
+                }
+            },
+            {
+                "name": "restore_session",
+                "description": "Restore a previously bookmarked working context",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "Name of the bookmark to restore"
+                        }
+                    },
+                    "required": ["name"]
+                }
+            },
+            {
+                "name": "list_bookmarks",
+                "description": "Show all saved session bookmarks",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": False
+                }
+            },
+            {
+                "name": "track_almost_done",
+                "description": "Track project that's almost finished - make it visible!",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "project": {
+                            "type": "string",
+                            "description": "Project name (e.g., 'auth-bug-fix', 'user-dashboard')"
+                        },
+                        "progress": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "description": "Completion percentage (1-100)"
+                        },
+                        "next_step": {
+                            "type": "string",
+                            "description": "Specific next action to finish it"
+                        },
+                        "deadline": {
+                            "type": "string",
+                            "description": "When this needs to be done (optional)"
+                        }
+                    },
+                    "required": ["project", "progress", "next_step"]
+                }
+            },
+            {
+                "name": "finish_line_check",
+                "description": "Show all almost-done projects - visual reminder!",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": False
+                }
+            },
+            {
+                "name": "mark_completed",
+                "description": "Celebrate! Mark project as DONE",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "project": {
+                            "type": "string",
+                            "description": "Project name to mark complete"
+                        }
+                    },
+                    "required": ["project"]
                 }
             }
         ]
@@ -234,6 +411,30 @@ class SimpleMetaMCPServer:
         if self.current_role in role_specific_tools:
             tools.extend(role_specific_tools[self.current_role])
 
+        # Apply simple ADHD accommodation: User-controlled tool limiting
+        tool_limit = self.tool_limits.get(self.tool_profile)
+
+        if tool_limit and len(tools) > tool_limit:
+            # Simple prioritization: base tools first, then role-specific
+            prioritized_tools = []
+
+            # Always include base tools (they're essential)
+            prioritized_tools.extend(base_tools)
+
+            # Add role-specific tools up to the limit
+            remaining_slots = tool_limit - len(base_tools)
+            if remaining_slots > 0 and self.current_role in role_specific_tools:
+                role_tools = role_specific_tools[self.current_role][:remaining_slots]
+                prioritized_tools.extend(role_tools)
+
+            tools = prioritized_tools
+
+        # Add helpful visual indicators (emojis are good for ADHD!)
+        for tool in tools:
+            visual_indicator = self.add_helpful_visual_indicators(tool)
+            tool["description"] = f"{visual_indicator} {tool['description']}"
+
+        logger.info(f"Applied tool profile '{self.tool_profile}': {len(tools)} tools available")
         return tools
 
     async def handle_mcp_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -339,6 +540,50 @@ class SimpleMetaMCPServer:
 
             elif tool_name == "get_metamcp_status":
                 available_tools = [tool['name'] for tool in self.get_role_tools()]
+                tool_limit = self.tool_limits.get(self.tool_profile, "No limit")
+
+                # Check for gentle break reminder
+                break_reminder = self.check_break_reminder()
+
+                # Calculate session time
+                from datetime import datetime
+                session_minutes = int((datetime.now() - self.session_start_time).total_seconds() / 60)
+
+                status_text = f"**MetaMCP Status**\n\n" +\
+                             f"**Current Role:** {self.current_role}\n" +\
+                             f"**Tool Profile:** {self.tool_profile.title()} ({tool_limit} tools max)\n" +\
+                             f"**Available Tools:** {len(available_tools)} tools\n" +\
+                             f"**Session Time:** {session_minutes} minutes\n" +\
+                             f"**Token Usage:** {self.session_info['tokens_used']}/{self.session_info['token_budget']} ({(self.session_info['tokens_used']/self.session_info['token_budget']*100):.1f}%)\n"
+
+                # Add current bookmark if available
+                if self.current_bookmark:
+                    status_text += f"**Current Bookmark:** {self.current_bookmark} ⭐\n"
+
+                status_text += f"\n**ADHD Accommodations:**\n" +\
+                              f"✓ User-controlled tool limiting\n" +\
+                              f"✓ Session bookmarking\n" +\
+                              f"✓ Simple, clear descriptions\n" +\
+                              f"✓ Gentle break reminders\n"
+
+                # Add break reminder if it's time
+                if break_reminder:
+                    status_text += f"\n**{break_reminder}**\n"
+
+                # CRITICAL: Show almost-done projects in status (visual field reminder!)
+                if self.active_projects:
+                    urgent_projects = [name for name, details in self.active_projects.items() if details['progress'] >= 75]
+                    if urgent_projects:
+                        status_text += f"\n**🔥 FINISH LINE ALERT - DON'T LET THESE SLIP AWAY!**\n"
+                        for project in urgent_projects[:2]:  # Show top 2 most urgent
+                            details = self.active_projects[project]
+                            progress_bar = "█" * (details['progress'] // 10) + "░" * (10 - details['progress'] // 10)
+                            status_text += f"   • **{project}**: {details['progress']}% [{progress_bar}] - {details['next_step'][:50]}...\n"
+                        if len(urgent_projects) > 2:
+                            status_text += f"   • +{len(urgent_projects) - 2} more almost-done projects\n"
+                        status_text += f"\n💡 **ADHD Reminder:** There is NOW and NEVER - make these NOW!\n"
+
+                status_text += f"\n*Use `set_tool_profile` to change complexity | `finish_line_check` for all almost-done work*"
 
                 return {
                     "jsonrpc": "2.0",
@@ -347,13 +592,356 @@ class SimpleMetaMCPServer:
                         "content": [
                             {
                                 "type": "text",
-                                "text": f"**MetaMCP Status**\n\n" +
-                                       f"**Current Role:** {self.current_role}\n" +
-                                       f"**Available Tools:** {', '.join(available_tools)}\n" +
-                                       f"**Token Usage:** {self.session_info['tokens_used']}/{self.session_info['token_budget']} ({(self.session_info['tokens_used']/self.session_info['token_budget']*100):.1f}%)\n" +
-                                       f"**Session ID:** {self.session_info['session_id']}\n\n" +
-                                       f"**ADHD Features:**\n• Role-based tool limiting ✅\n• Token budget awareness ✅\n• Context preservation ✅\n• Gentle notifications ✅\n\n" +
-                                       f"**Benefits:**\n• Reduced cognitive load\n• No decision paralysis\n• 95% token reduction vs full tool access\n• Intelligent escalation available"
+                                "text": status_text
+                            }
+                        ]
+                    }
+                }
+
+            elif tool_name == "set_tool_profile":
+                new_profile = arguments.get('profile')
+                if new_profile in self.tool_limits:
+                    old_profile = self.tool_profile
+                    self.tool_profile = new_profile
+
+                    # Get updated tool count
+                    updated_tools = self.get_role_tools()
+                    tool_limit = self.tool_limits.get(new_profile, "No limit")
+
+                    profile_descriptions = {
+                        "minimal": "Perfect for overwhelmed days - just the essentials",
+                        "standard": "Balanced mode for normal work sessions",
+                        "full": "Power user mode with access to all tools"
+                    }
+
+                    return {
+                        "jsonrpc": "2.0",
+                        "id": request_id,
+                        "result": {
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": f"**🎯 Tool Profile Updated**\n\n" +
+                                           f"**Changed from:** {old_profile.title()} → **{new_profile.title()}**\n" +
+                                           f"**Description:** {profile_descriptions[new_profile]}\n" +
+                                           f"**Tool Limit:** {tool_limit if tool_limit else 'No limit'}\n" +
+                                           f"**Available Tools:** {len(updated_tools)} tools\n\n" +
+                                           f"*Your tool selection will refresh on the next request.*"
+                                }
+                            ]
+                        }
+                    }
+                else:
+                    return {
+                        "jsonrpc": "2.0",
+                        "id": request_id,
+                        "error": {
+                            "code": -32602,
+                            "message": f"Invalid profile: {new_profile}. Choose: minimal, standard, or full"
+                        }
+                    }
+
+            elif tool_name == "bookmark_session":
+                bookmark_name = arguments.get('name')
+                note = arguments.get('note', '')
+                current_file = arguments.get('current_file', '')
+
+                from datetime import datetime
+                bookmark = {
+                    "name": bookmark_name,
+                    "timestamp": datetime.now().isoformat(),
+                    "note": note,
+                    "current_file": current_file,
+                    "role": self.current_role,
+                    "tool_profile": self.tool_profile,
+                    "session_info": self.session_info.copy()
+                }
+
+                self.session_bookmarks[bookmark_name] = bookmark
+                self.current_bookmark = bookmark_name
+
+                return {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"**📌 Session Bookmarked**\n\n" +
+                                       f"**Name:** {bookmark_name}\n" +
+                                       f"**Time:** {datetime.now().strftime('%H:%M')}\n" +
+                                       f"**Role:** {self.current_role.title()}\n" +
+                                       f"**Profile:** {self.tool_profile.title()}\n" +
+                                       (f"**File:** {current_file}\n" if current_file else "") +
+                                       (f"**Note:** {note}\n" if note else "") +
+                                       f"\n*Use `restore_session` to resume this context later.*"
+                            }
+                        ]
+                    }
+                }
+
+            elif tool_name == "restore_session":
+                bookmark_name = arguments.get('name')
+
+                if bookmark_name not in self.session_bookmarks:
+                    available = list(self.session_bookmarks.keys())
+                    return {
+                        "jsonrpc": "2.0",
+                        "id": request_id,
+                        "error": {
+                            "code": -32602,
+                            "message": f"Bookmark '{bookmark_name}' not found. Available: {', '.join(available) if available else 'None'}"
+                        }
+                    }
+
+                bookmark = self.session_bookmarks[bookmark_name]
+
+                # Restore context
+                self.current_role = bookmark['role']
+                self.tool_profile = bookmark['tool_profile']
+                self.current_bookmark = bookmark_name
+
+                from datetime import datetime
+                saved_time = datetime.fromisoformat(bookmark['timestamp'])
+                time_ago = datetime.now() - saved_time
+                hours_ago = int(time_ago.total_seconds() // 3600)
+                mins_ago = int((time_ago.total_seconds() % 3600) // 60)
+
+                time_str = ""
+                if hours_ago > 0:
+                    time_str = f"{hours_ago}h {mins_ago}m ago"
+                else:
+                    time_str = f"{mins_ago}m ago"
+
+                return {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"**🔄 Session Restored**\n\n" +
+                                       f"**Name:** {bookmark['name']}\n" +
+                                       f"**Saved:** {time_str}\n" +
+                                       f"**Role:** {bookmark['role'].title()}\n" +
+                                       f"**Profile:** {bookmark['tool_profile'].title()}\n" +
+                                       (f"**File:** {bookmark['current_file']}\n" if bookmark.get('current_file') else "") +
+                                       (f"**Note:** {bookmark['note']}\n" if bookmark.get('note') else "") +
+                                       f"\n*Your context has been restored. Ready to continue where you left off!*"
+                            }
+                        ]
+                    }
+                }
+
+            elif tool_name == "list_bookmarks":
+                if not self.session_bookmarks:
+                    return {
+                        "jsonrpc": "2.0",
+                        "id": request_id,
+                        "result": {
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": "**📌 Session Bookmarks**\n\n*No bookmarks saved yet.*\n\nUse `bookmark_session` to save your current working context."
+                                }
+                            ]
+                        }
+                    }
+
+                from datetime import datetime
+                bookmark_list = "**📌 Session Bookmarks**\n\n"
+
+                for name, bookmark in self.session_bookmarks.items():
+                    saved_time = datetime.fromisoformat(bookmark['timestamp'])
+                    time_ago = datetime.now() - saved_time
+                    hours_ago = int(time_ago.total_seconds() // 3600)
+                    mins_ago = int((time_ago.total_seconds() % 3600) // 60)
+
+                    time_str = f"{hours_ago}h {mins_ago}m ago" if hours_ago > 0 else f"{mins_ago}m ago"
+
+                    current_marker = " ⭐" if name == self.current_bookmark else ""
+
+                    bookmark_list += f"**{name}**{current_marker}\n"
+                    bookmark_list += f"   • Saved: {time_str}\n"
+                    bookmark_list += f"   • Role: {bookmark['role'].title()}\n"
+                    if bookmark.get('current_file'):
+                        bookmark_list += f"   • File: {bookmark['current_file']}\n"
+                    if bookmark.get('note'):
+                        bookmark_list += f"   • Note: {bookmark['note']}\n"
+                    bookmark_list += f"\n"
+
+                bookmark_list += f"*Use `restore_session <name>` to resume any context.*"
+
+                return {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": bookmark_list
+                            }
+                        ]
+                    }
+                }
+
+            elif tool_name == "track_almost_done":
+                project = arguments.get('project')
+                progress = arguments.get('progress')
+                next_step = arguments.get('next_step')
+                deadline = arguments.get('deadline', '')
+
+                from datetime import datetime
+
+                # Track the almost-done project
+                self.active_projects[project] = {
+                    "progress": progress,
+                    "next_step": next_step,
+                    "deadline": deadline,
+                    "last_updated": datetime.now().isoformat(),
+                    "created": datetime.now().isoformat()
+                }
+
+                # Create visual urgency based on progress
+                urgency_emoji = "🔥" if progress >= 90 else "⚡" if progress >= 75 else "🎯"
+                progress_bar = "█" * (progress // 10) + "░" * (10 - progress // 10)
+
+                return {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"**{urgency_emoji} Almost Done Project Tracked!**\n\n" +
+                                       f"**Project:** {project}\n" +
+                                       f"**Progress:** {progress}% [{progress_bar}]\n" +
+                                       f"**Next Step:** {next_step}\n" +
+                                       (f"**Deadline:** {deadline}\n" if deadline else "") +
+                                       f"**Added:** Just now\n\n" +
+                                       f"🎯 **This is now in your visual field!**\n" +
+                                       f"*Use `finish_line_check` to see all almost-done work*\n\n" +
+                                       f"💡 **ADHD Tip:** In ADHD there is NOW and NEVER - let's make this NOW!"
+                            }
+                        ]
+                    }
+                }
+
+            elif tool_name == "finish_line_check":
+                if not self.active_projects:
+                    return {
+                        "jsonrpc": "2.0",
+                        "id": request_id,
+                        "result": {
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": "**🎯 Finish Line Check**\n\n" +
+                                           "✨ **No almost-done projects tracked!**\n\n" +
+                                           "This is actually great - either everything's complete or nothing's been started yet.\n\n" +
+                                           "*Use `track_almost_done` when you have projects close to finishing.*"
+                                }
+                            ]
+                        }
+                    }
+
+                from datetime import datetime
+
+                # Sort by urgency (highest progress first, then by deadline)
+                sorted_projects = sorted(
+                    self.active_projects.items(),
+                    key=lambda x: (-x[1]['progress'], x[1].get('deadline', 'zzz'))
+                )
+
+                finish_line_text = "**🎯 FINISH LINE CHECK - Visual Field Reminder**\n\n"
+                finish_line_text += "**🔥 ALMOST DONE PROJECTS (Don't let these slip away!):**\n\n"
+
+                for project, details in sorted_projects:
+                    progress = details['progress']
+                    progress_bar = "█" * (progress // 10) + "░" * (10 - progress // 10)
+
+                    # Visual urgency
+                    if progress >= 95:
+                        urgency = "🔥🔥🔥 SO CLOSE!"
+                    elif progress >= 85:
+                        urgency = "🔥🔥 ALMOST THERE!"
+                    elif progress >= 75:
+                        urgency = "⚡ PUSH THROUGH!"
+                    else:
+                        urgency = "🎯 Keep going"
+
+                    # Time since last update
+                    last_updated = datetime.fromisoformat(details['last_updated'])
+                    hours_since = (datetime.now() - last_updated).total_seconds() / 3600
+
+                    time_warning = ""
+                    if hours_since > 24:
+                        time_warning = f" ⚠️ {int(hours_since // 24)}d ago!"
+                    elif hours_since > 8:
+                        time_warning = f" ⚠️ {int(hours_since)}h ago!"
+
+                    finish_line_text += f"**{project}** {urgency}{time_warning}\n"
+                    finish_line_text += f"   Progress: {progress}% [{progress_bar}]\n"
+                    finish_line_text += f"   Next: {details['next_step']}\n"
+                    if details.get('deadline'):
+                        finish_line_text += f"   Deadline: {details['deadline']}\n"
+                    finish_line_text += f"\n"
+
+                finish_line_text += f"**💡 ADHD Reality Check:**\n"
+                finish_line_text += f"• There is NOW and there is NEVER\n"
+                finish_line_text += f"• Out of sight = Out of mind (that's why this exists!)\n"
+                finish_line_text += f"• Finishing is harder than starting for ADHD brains\n\n"
+                finish_line_text += f"*Pick ONE project above and do the next step RIGHT NOW*"
+
+                return {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": finish_line_text
+                            }
+                        ]
+                    }
+                }
+
+            elif tool_name == "mark_completed":
+                project = arguments.get('project')
+
+                if project not in self.active_projects:
+                    available_projects = list(self.active_projects.keys())
+                    return {
+                        "jsonrpc": "2.0",
+                        "id": request_id,
+                        "error": {
+                            "code": -32602,
+                            "message": f"Project '{project}' not found. Available: {', '.join(available_projects) if available_projects else 'None'}"
+                        }
+                    }
+
+                # Remove from active projects and celebrate!
+                completed_project = self.active_projects.pop(project)
+                progress = completed_project['progress']
+
+                celebration = "🎉🎉🎉" if progress >= 90 else "🎉🎉" if progress >= 75 else "🎉"
+
+                return {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"**{celebration} PROJECT COMPLETED! {celebration}**\n\n" +
+                                       f"**🏆 {project.upper()} IS DONE!**\n\n" +
+                                       f"**Final Progress:** {progress}% ➜ 100% ✅\n" +
+                                       f"**You did it!** You crossed the finish line!\n\n" +
+                                       f"🧠 **ADHD Victory:**\n" +
+                                       f"• You overcame the 'finishing is hard' challenge\n" +
+                                       f"• You proved there CAN be completion, not just 'never'\n" +
+                                       f"• This deserves real celebration!\n\n" +
+                                       f"🎯 **Take a moment to appreciate this win** - your ADHD brain needs positive reinforcement for completion!"
                             }
                         ]
                     }
@@ -361,6 +949,7 @@ class SimpleMetaMCPServer:
 
             # Simulate other tool calls
             elif tool_name in ["search_code", "web_search", "run_command", "manage_tasks", "analyze_architecture", "debug_analysis", "get_docs", "review_session", "design_patterns", "deployment_status"]:
+
                 # Simulate different responses based on tool
                 if tool_name == "search_code":
                     query = arguments.get('query', 'unknown')
