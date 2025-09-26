@@ -1,54 +1,59 @@
 const { spawn } = require('child_process');
-const http = require('http');
 
 const port = process.env.MCP_SERVER_PORT || 3007;
 
-console.log('🔍 Starting Claude Context MCP Server...');
+console.log('🔍 Starting Claude Context MCP Server with Zilliz Cloud...');
 
-const mcpProcess = spawn('npx', ['@zilliz/claude-context-mcp@latest'], {
-  stdio: ['pipe', 'pipe', 'pipe'],
+console.log('Environment variables:');
+console.log('- MILVUS_ADDRESS:', process.env.MILVUS_ADDRESS);
+console.log('- MILVUS_TOKEN:', process.env.MILVUS_TOKEN ? 'SET (length: ' + process.env.MILVUS_TOKEN.length + ')' : 'NOT SET');
+console.log('- VOYAGEAI_API_KEY:', process.env.VOYAGEAI_API_KEY ? 'SET' : 'NOT SET');
+
+// Start with mcp-proxy using the official @zilliz/claude-context-mcp package
+const mcpProxyArgs = [
+  'mcp-proxy',
+  '--transport', 'streamablehttp',
+  '--port', port.toString(),
+  '--host', '0.0.0.0',
+  '--allow-origin', '*',
+  '--',
+  'npx', '@zilliz/claude-context-mcp@latest'
+];
+
+console.log('Running command: uvx', mcpProxyArgs.join(' '));
+
+const mcpProxy = spawn('uvx', mcpProxyArgs, {
+  stdio: ['inherit', 'inherit', 'inherit'],
   env: {
     ...process.env,
-    EMBEDDING_PROVIDER: process.env.EMBEDDING_PROVIDER,
-    EMBEDDING_MODEL: process.env.EMBEDDING_MODEL,
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    EMBEDDING_PROVIDER: process.env.EMBEDDING_PROVIDER || 'VoyageAI',
+    EMBEDDING_MODEL: process.env.EMBEDDING_MODEL || 'voyage-code-3',
     VOYAGEAI_API_KEY: process.env.VOYAGEAI_API_KEY,
-    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    VOYAGEAI_RERANK_MODEL: process.env.VOYAGEAI_RERANK_MODEL || 'rerank-2.5',
     MILVUS_ADDRESS: process.env.MILVUS_ADDRESS,
-    MILVUS_TOKEN: process.env.MILVUS_TOKEN
+    MILVUS_TOKEN: process.env.MILVUS_TOKEN,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    NODE_ENV: 'production'
   }
 });
 
-const server = http.createServer((req, res) => {
-  if (req.url === '/health') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-      status: 'healthy',
-      mcp_running: !mcpProcess.killed,
-      embedding_provider: process.env.EMBEDDING_PROVIDER,
-      embedding_model: process.env.EMBEDDING_MODEL,
-      has_openai_key: !!process.env.OPENAI_API_KEY,
-      has_voyageai_key: !!process.env.VOYAGEAI_API_KEY,
-      milvus_address: process.env.MILVUS_ADDRESS
-    }));
-  } else {
-    res.writeHead(404);
-    res.end('Not Found');
-  }
+mcpProxy.on('exit', (code) => {
+  console.log(`🔍 Claude Context MCP Server exited with code ${code}`);
+  process.exit(code);
 });
 
-mcpProcess.stdout.on('data', data => {
-  console.log('[CLAUDE-CONTEXT OUT]', data.toString().trim());
+mcpProxy.on('error', (err) => {
+  console.error('🔍 Claude Context MCP Server error:', err);
+  process.exit(1);
 });
 
-mcpProcess.stderr.on('data', data => {
-  console.error('[CLAUDE-CONTEXT ERR]', data.toString().trim());
+// Handle process termination
+process.on('SIGINT', () => {
+  console.log('🔍 Claude Context MCP Server shutting down...');
+  process.exit(0);
 });
 
-mcpProcess.on('exit', (code) => {
-  console.log(`[CLAUDE-CONTEXT] Process exited with code ${code}`);
-});
-
-server.listen(port, '0.0.0.0', () => {
-  console.log(`🔍 Claude Context MCP Server wrapper running on port ${port}`);
+process.on('SIGTERM', () => {
+  console.log('🔍 Claude Context MCP Server shutting down...');
+  process.exit(0);
 });

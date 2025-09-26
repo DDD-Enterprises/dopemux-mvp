@@ -6,7 +6,9 @@ services:
 
   # Context7 - ALWAYS FIRST for documentation and API references
   context7:
-    image: mcp/context7:latest
+    build:
+      context: ./context7
+      dockerfile: Dockerfile
     container_name: mcp-context7
     restart: unless-stopped
     networks:
@@ -14,10 +16,11 @@ services:
     environment:
       - CONTEXT7_API_KEY=${CONTEXT7_API_KEY}
       - CONTEXT7_ENDPOINT=${CONTEXT7_ENDPOINT}
+      - MCP_SERVER_PORT=3002
     ports:
-      - "3002:8080"
+      - "3002:3002"
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 8080"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3002/health || nc -z localhost 3002"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -106,7 +109,7 @@ services:
     ports:
       - "3004:3004"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3004/mcp || nc -z localhost 3004"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -158,11 +161,11 @@ services:
     ports:
       - "3006:3006"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3006/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3006/mcp || nc -z localhost 3006"]
       timeout: 10s
       retries: 3
       interval: 30s
-      start_period: 60s
+      start_period: 30s
     volumes:
       - mcp_serena_data:/app/data
     labels:
@@ -170,79 +173,13 @@ services:
       - "mcp.priority=medium"
       - "mcp.description=Code navigation and refactoring"
 
-  # Milvus dependencies
-  etcd:
-    container_name: milvus-etcd
-    image: quay.io/coreos/etcd:v3.5.5
-    environment:
-      - ETCD_AUTO_COMPACTION_MODE=revision
-      - ETCD_AUTO_COMPACTION_RETENTION=1000
-      - ETCD_QUOTA_BACKEND_BYTES=4294967296
-      - ETCD_SNAPSHOT_COUNT=50000
-    volumes:
-      - etcd_data:/etcd
-    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
-    healthcheck:
-      test: ["CMD", "etcdctl", "endpoint", "health"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
-    networks:
-      - mcp-network
-
-  minio:
-    container_name: milvus-minio
-    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
-    environment:
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
-    ports:
-      - "9001:9001"
-      - "9000:9000"
-    volumes:
-      - minio_data:/minio_data
-    command: minio server /minio_data --console-address ":9001"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
-    networks:
-      - mcp-network
-
-  # Milvus - Vector database for claude-context
-  milvus:
-    image: milvusdb/milvus:latest
-    container_name: milvus-standalone
-    restart: unless-stopped
-    networks:
-      - mcp-network
-    ports:
-      - "19530:19530"
-      - "9091:9091"
-    volumes:
-      - milvus_data:/var/lib/milvus
-    environment:
-      - ETCD_ENDPOINTS=etcd:2379
-      - MINIO_ADDRESS=minio:9000
-    command: milvus run standalone
-    depends_on:
-      etcd:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9091/healthz || exit 1"]
-      timeout: 10s
-      retries: 5
-      interval: 30s
-      start_period: 90s
 
   # Claude Context - Semantic code search within repositories
   claude-context:
     build:
       context: ./claude-context
       dockerfile: Dockerfile
+    platform: linux/amd64
     container_name: mcp-claude-context
     restart: unless-stopped
     networks:
@@ -250,16 +187,14 @@ services:
     environment:
       - EMBEDDING_PROVIDER=VoyageAI
       - EMBEDDING_MODEL=voyage-code-3
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - VOYAGEAI_API_KEY=${VOYAGEAI_API_KEY}
       - VOYAGEAI_RERANK_MODEL=rerank-2.5
-      - MILVUS_ADDRESS=milvus:19530
-      - MILVUS_TOKEN=
+      - MILVUS_ADDRESS=${MILVUS_ADDRESS}
+      - MILVUS_TOKEN=${MILVUS_TOKEN}
       - MCP_SERVER_PORT=3007
     ports:
       - "3007:3007"
-    depends_on:
-      milvus:
-        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3007/health || exit 1"]
       timeout: 10s
@@ -277,42 +212,6 @@ services:
 
   # === RESEARCH SERVERS (Priority: Low - Fallback Only) ===
 
-  # DocRAG - Document semantic search with Milvus and Voyage AI
-  docrag:
-    build:
-      context: ./docrag-service
-      dockerfile: Dockerfile
-    container_name: mcp-docrag
-    restart: unless-stopped
-    networks:
-      - mcp-network
-    environment:
-      - VOYAGEAI_API_KEY=${VOYAGEAI_API_KEY}
-      - VOYAGE__API_KEY=${VOYAGEAI_API_KEY}
-      - MILVUS__HOST=milvus
-      - MILVUS__PORT=19530
-      - DOCRAG_PORT=3009
-      - ENABLE_HYBRID_SEARCH=true
-      - ENABLE_RERANKING=true
-      - LOG_LEVEL=INFO
-    ports:
-      - "3009:3009"
-    depends_on:
-      milvus:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3009/health"]
-      timeout: 10s
-      retries: 3
-      interval: 30s
-      start_period: 60s
-    volumes:
-      - mcp_docrag_data:/app/data
-      - /Users/hue/code/dopemux-mvp:/workspace/dopemux-mvp:ro
-    labels:
-      - "mcp.role=research"
-      - "mcp.priority=medium"
-      - "mcp.description=Document semantic search"
 
   # Exa - Web research (ONLY when context7 lacks information)
   exa:
@@ -341,29 +240,29 @@ services:
 
   # === QUALITY & UTILITY SERVERS (Priority: Medium) ===
 
-  # MorphLLM Fast Apply - Pattern-based transformations and bulk edits
-  morphllm-fast-apply:
-    build:
-      context: ./morphllm-fast-apply
-      dockerfile: Dockerfile
-    container_name: mcp-morphllm-fast-apply
-    restart: unless-stopped
-    networks:
-      - mcp-network
-    environment:
-      - MCP_SERVER_PORT=3011
-    ports:
-      - "3011:3011"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3011/health"]
-      timeout: 10s
-      retries: 3
-      interval: 30s
-      start_period: 30s
-    labels:
-      - "mcp.role=quality"
-      - "mcp.priority=medium"
-      - "mcp.description=Pattern-based transformations and bulk edits"
+  # MorphLLM Fast Apply - DISABLED (package not found in registry)
+  # morphllm-fast-apply:
+  #   build:
+  #     context: ./morphllm-fast-apply
+  #     dockerfile: Dockerfile
+  #   container_name: mcp-morphllm-fast-apply
+  #   restart: unless-stopped
+  #   networks:
+  #     - mcp-network
+  #   environment:
+  #     - MCP_SERVER_PORT=3011
+  #   ports:
+  #     - "3011:3011"
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:3011/health"]
+  #     timeout: 10s
+  #     retries: 3
+  #     interval: 30s
+  #     start_period: 30s
+  #   labels:
+  #     - "mcp.role=quality"
+  #     - "mcp.priority=medium"
+  #     - "mcp.description=Pattern-based transformations and bulk edits"
 
   # Desktop Commander - Desktop automation and system control
   desktop-commander:
@@ -457,15 +356,3 @@ volumes:
   mcp_claude_context_cache:
     driver: local
     name: mcp_claude_context_cache
-  mcp_docrag_data:
-    driver: local
-    name: mcp_docrag_data
-  milvus_data:
-    driver: local
-    name: milvus_data
-  etcd_data:
-    driver: local
-    name: etcd_data
-  minio_data:
-    driver: local
-    name: minio_data
