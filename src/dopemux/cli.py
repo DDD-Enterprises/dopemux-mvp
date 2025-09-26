@@ -194,15 +194,14 @@ def start(
             progress.update(task, description="Starting fresh session")
             console.print("[blue]🆕 Starting new session[/blue]")
 
+        # Check if dangerous mode has expired
+        _check_dangerous_mode_expiry()
+
         # Handle dangerous mode activation
         is_dangerous_mode = dangerous or dangerously_skip_permissions
         if is_dangerous_mode:
             progress.update(task, description="⚠️  Activating dangerous mode...")
             _activate_dangerous_mode()
-            console.print("[red bold]⚠️  DANGEROUS MODE ACTIVE[/red bold]")
-            console.print(
-                "[red]All safety restrictions disabled - USE ONLY IN ISOLATED ENVIRONMENTS[/red]"
-            )
 
         # Launch Claude Code
         progress.update(task, description="Launching Claude Code...")
@@ -1054,22 +1053,109 @@ def _get_attention_emoji(state: Optional[str]) -> str:
 
 def _activate_dangerous_mode():
     """
-    Activate dangerous mode by setting environment variables.
+    Activate dangerous mode with proper security safeguards.
 
     This temporarily overrides the default safe mode settings for the current
     session only. Changes are not persisted to the .env file.
+
+    Security Features:
+    - Time-limited session (1 hour max)
+    - Explicit user confirmation required
+    - Clear warnings about risks
+    - Environment isolation
     """
-    # Set dangerous mode environment variables
+    # Check if already in dangerous mode
+    if os.getenv("DOPEMUX_DANGEROUS_MODE") == "true":
+        expires_str = os.getenv("DOPEMUX_DANGEROUS_EXPIRES", "0")
+        expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
+
+        if time.time() < expires_timestamp:
+            console.print("[yellow]⚠️  Dangerous mode already active[/yellow]")
+            remaining_minutes = int((expires_timestamp - time.time()) / 60)
+            console.print(f"[dim]Expires in {remaining_minutes} minutes[/dim]")
+            return
+        else:
+            # Expired, clear old settings
+            _deactivate_dangerous_mode()
+
+    # Show serious warning
+    console.print(Panel(
+        "[red bold]⚠️  DANGER: This will disable ALL security restrictions![/red bold]\n\n"
+        "[yellow]This mode will:[/yellow]\n"
+        "• Skip all permission checks\n"
+        "• Disable role enforcement\n"
+        "• Bypass budget limits\n"
+        "• Allow unrestricted tool access\n\n"
+        "[red]Use ONLY in isolated, trusted environments![/red]\n"
+        "[yellow]Session will expire automatically in 1 hour.[/yellow]",
+        title="🚨 Security Warning",
+        border_style="red"
+    ))
+
+    # Require explicit confirmation
+    if not click.confirm("\nDo you understand the risks and want to proceed?", default=False):
+        console.print("[green]Dangerous mode cancelled. Staying in safe mode.[/green]")
+        return
+
+    if not click.confirm("Are you in an isolated, trusted environment?", default=False):
+        console.print("[green]Dangerous mode cancelled for security.[/green]")
+        return
+
+    # Set time-limited dangerous mode (1 hour)
+    expiry_time = time.time() + 3600  # 1 hour
+
     os.environ["DOPEMUX_DANGEROUS_MODE"] = "true"
+    os.environ["DOPEMUX_DANGEROUS_EXPIRES"] = str(expiry_time)
+    os.environ["DOPEMUX_DANGEROUS_PID"] = str(os.getpid())  # Track process
+
+    # Set security bypass flags
     os.environ["HOOKS_ENABLE_ADAPTIVE_SECURITY"] = "0"
     os.environ["CLAUDE_CODE_SKIP_PERMISSIONS"] = "true"
     os.environ["METAMCP_ROLE_ENFORCEMENT"] = "false"
     os.environ["METAMCP_APPROVAL_REQUIRED"] = "false"
     os.environ["METAMCP_BUDGET_ENFORCEMENT"] = "false"
 
-    # Also set traditional dangerous flags for compatibility
+    # Traditional dangerous flags for compatibility
     os.environ["CLAUDE_DANGEROUS"] = "true"
     os.environ["SKIP_PERMISSIONS"] = "true"
+
+    # Log for audit trail (but not sensitive info)
+    expiry_str = datetime.fromtimestamp(expiry_time).strftime("%H:%M:%S")
+    console.print(f"[red bold]⚠️  DANGEROUS MODE ACTIVE until {expiry_str}[/red bold]")
+
+
+def _deactivate_dangerous_mode():
+    """Deactivate dangerous mode and clean up environment."""
+    dangerous_vars = [
+        "DOPEMUX_DANGEROUS_MODE",
+        "DOPEMUX_DANGEROUS_EXPIRES",
+        "DOPEMUX_DANGEROUS_PID",
+        "HOOKS_ENABLE_ADAPTIVE_SECURITY",
+        "CLAUDE_CODE_SKIP_PERMISSIONS",
+        "METAMCP_ROLE_ENFORCEMENT",
+        "METAMCP_APPROVAL_REQUIRED",
+        "METAMCP_BUDGET_ENFORCEMENT",
+        "CLAUDE_DANGEROUS",
+        "SKIP_PERMISSIONS"
+    ]
+
+    for var in dangerous_vars:
+        os.environ.pop(var, None)
+
+    console.print("[green]✅ Dangerous mode deactivated[/green]")
+
+
+def _check_dangerous_mode_expiry():
+    """Check if dangerous mode has expired and clean up if needed."""
+    if os.getenv("DOPEMUX_DANGEROUS_MODE") == "true":
+        expires_str = os.getenv("DOPEMUX_DANGEROUS_EXPIRES", "0")
+        expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
+
+        if time.time() >= expires_timestamp:
+            console.print("[yellow]⏰ Dangerous mode expired, returning to safe mode[/yellow]")
+            _deactivate_dangerous_mode()
+            return True
+    return False
 
 
 def main():

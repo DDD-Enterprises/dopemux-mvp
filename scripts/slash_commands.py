@@ -11,17 +11,46 @@ import json
 import subprocess
 import argparse
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
-# Add the src directory to the path so we can import Dopemux modules
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+# Import Dopemux modules with proper error handling
+def setup_dopemux_imports():
+    """Setup Dopemux imports with proper path handling."""
+    project_root = Path(__file__).parent.parent
+    src_dir = project_root / "src"
+
+    if not src_dir.exists():
+        raise ImportError(f"Source directory not found: {src_dir}")
+
+    # Only add to path if not already there
+    src_str = str(src_dir)
+    if src_str not in sys.path:
+        sys.path.insert(0, src_str)
+
+    try:
+        from dopemux.health import HealthChecker, HealthStatus
+        from dopemux.adhd.context_manager import ContextManager
+        return HealthChecker, HealthStatus, ContextManager
+    except ImportError as e:
+        # Clean up path on failure
+        if src_str in sys.path:
+            sys.path.remove(src_str)
+        raise ImportError(f"Could not import Dopemux modules: {e}")
 
 try:
-    from dopemux.health import HealthChecker, HealthStatus
+    HealthChecker, HealthStatus, ContextManager = setup_dopemux_imports()
 except ImportError as e:
-    print(f"Error: Could not import Dopemux modules: {e}")
+    print(f"Error: {e}")
     print("Make sure you're running this from the Dopemux project root")
     sys.exit(1)
+
+# Import our session formatter
+try:
+    from session_formatter import SessionFormatter
+except ImportError:
+    # Fallback if running from different directory
+    sys.path.insert(0, str(Path(__file__).parent))
+    from session_formatter import SessionFormatter
 
 
 class SlashCommandProcessor:
@@ -30,6 +59,8 @@ class SlashCommandProcessor:
     def __init__(self, project_path: Optional[Path] = None):
         self.project_path = project_path or Path.cwd()
         self.health_checker = HealthChecker(self.project_path)
+        self.context_manager = ContextManager(self.project_path)
+        self.session_formatter = SessionFormatter()
 
     def process_command(self, command: str, args: list = None) -> Dict[str, Any]:
         """Process a slash command and return structured results."""
@@ -50,13 +81,23 @@ class SlashCommandProcessor:
                 return self._handle_system_status()
             elif command == "adhd-status":
                 return self._handle_adhd_status()
+            # Session Management Commands
+            elif command == "save":
+                return self._handle_save_session(args)
+            elif command == "restore":
+                return self._handle_restore_session(args)
+            elif command == "sessions":
+                return self._handle_list_sessions(args)
+            elif command == "session-details":
+                return self._handle_session_details(args)
             else:
                 return {
                     "success": False,
                     "error": f"Unknown command: {command}",
                     "available_commands": [
                         "health", "health-quick", "health-fix",
-                        "mcp-status", "docker-status", "system-status", "adhd-status"
+                        "mcp-status", "docker-status", "system-status", "adhd-status",
+                        "save", "restore", "sessions", "session-details"
                     ]
                 }
         except Exception as e:
@@ -180,6 +221,213 @@ class SlashCommandProcessor:
             "details": adhd_health.details
         }
 
+    # Session Management Commands
+
+    def _handle_save_session(self, args: List[str]) -> Dict[str, Any]:
+        """Handle session save command with ADHD-friendly output."""
+        try:
+            # Parse arguments
+            message = None
+            force = False
+            tags = []
+
+            i = 0
+            while i < len(args):
+                if args[i] in ["--message", "-m"] and i + 1 < len(args):
+                    message = args[i + 1]
+                    i += 2
+                elif args[i] in ["--force", "-f"]:
+                    force = True
+                    i += 1
+                elif args[i] in ["--tag", "-t"] and i + 1 < len(args):
+                    tags.append(args[i + 1])
+                    i += 2
+                else:
+                    i += 1
+
+            # Save session using context manager
+            session_id = self.context_manager.save_context(message=message, force=force)
+
+            # Get session data for formatting
+            sessions = self.context_manager.list_sessions(limit=1)
+            session_data = sessions[0] if sessions else {"session_id": session_id}
+
+            # Add tags if provided
+            if tags:
+                session_data["tags"] = tags
+
+            return {
+                "success": True,
+                "command": "save",
+                "session_id": session_id,
+                "session_data": session_data,
+                "formatted_output": self.session_formatter.format_save_confirmation(session_data)
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "command": "save"
+            }
+
+    def _handle_restore_session(self, args: List[str]) -> Dict[str, Any]:
+        """Handle session restore command with preview."""
+        try:
+            session_id = None
+            preview_only = "--preview" in args or "-p" in args
+
+            # Parse session ID
+            for arg in args:
+                if not arg.startswith("-"):
+                    session_id = arg
+                    break
+
+            if session_id:
+                # Restore specific session
+                context_data = self.context_manager.restore_session(session_id)
+                if not context_data:
+                    return {
+                        "success": False,
+                        "error": f"Session {session_id} not found",
+                        "command": "restore"
+                    }
+            else:
+                # Restore latest session
+                context_data = self.context_manager.restore_latest()
+                if not context_data:
+                    return {
+                        "success": False,
+                        "error": "No sessions found to restore",
+                        "command": "restore"
+                    }
+
+            if preview_only:
+                formatted_output = self.session_formatter.format_restore_preview(context_data)
+            else:
+                # Show confirmation after restore
+                formatted_output = f"✅ **Session Restored Successfully!**\\n\\n"
+                formatted_output += f"🎯 **Goal**: {context_data.get('current_goal', 'No goal set')}\\n"
+                formatted_output += f"📁 **Files**: {len(context_data.get('open_files', []))} files restored\\n"
+                formatted_output += f"⏰ **From**: {context_data.get('timestamp', 'unknown time')}"
+
+            return {
+                "success": True,
+                "command": "restore",
+                "session_data": context_data,
+                "formatted_output": formatted_output
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "command": "restore"
+            }
+
+    def _handle_list_sessions(self, args: List[str]) -> Dict[str, Any]:
+        """Handle session listing with visual gallery."""
+        try:
+            limit = 10
+            search_term = None
+            tag_filter = None
+
+            # Parse arguments
+            i = 0
+            while i < len(args):
+                if args[i] in ["--limit", "-l"] and i + 1 < len(args):
+                    try:
+                        limit = int(args[i + 1])
+                    except ValueError:
+                        pass
+                    i += 2
+                elif args[i] in ["--search", "-s"] and i + 1 < len(args):
+                    search_term = args[i + 1]
+                    i += 2
+                elif args[i] in ["--tag", "-t"] and i + 1 < len(args):
+                    tag_filter = args[i + 1]
+                    i += 2
+                else:
+                    i += 1
+
+            # Get sessions from context manager
+            sessions = self.context_manager.list_sessions(limit=limit * 2)  # Get more for filtering
+
+            # Apply search filter
+            if search_term:
+                filtered_sessions = []
+                search_lower = search_term.lower()
+                for session in sessions:
+                    if (search_lower in session.get("current_goal", "").lower() or
+                        search_lower in session.get("message", "").lower()):
+                        filtered_sessions.append(session)
+                sessions = filtered_sessions[:limit]
+
+            # Apply tag filter (if we had tags implemented)
+            if tag_filter:
+                # This would filter by tags when we implement tagging
+                pass
+
+            # Format using session formatter
+            formatted_output = self.session_formatter.format_session_gallery(sessions, limit)
+
+            return {
+                "success": True,
+                "command": "sessions",
+                "sessions": sessions,
+                "formatted_output": formatted_output
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "command": "sessions"
+            }
+
+    def _handle_session_details(self, args: List[str]) -> Dict[str, Any]:
+        """Handle detailed session view."""
+        try:
+            if not args:
+                return {
+                    "success": False,
+                    "error": "Session ID required",
+                    "command": "session-details"
+                }
+
+            session_id = args[0]
+            sessions = self.context_manager.list_sessions(limit=50)
+
+            # Find matching session
+            session_data = None
+            for session in sessions:
+                if session["id"].startswith(session_id):
+                    session_data = session
+                    break
+
+            if not session_data:
+                return {
+                    "success": False,
+                    "error": f"Session {session_id} not found",
+                    "command": "session-details"
+                }
+
+            formatted_output = self.session_formatter.format_session_details(session_data)
+
+            return {
+                "success": True,
+                "command": "session-details",
+                "session_data": session_data,
+                "formatted_output": formatted_output
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "command": "session-details"
+            }
+
     def _generate_health_summary(self, health_data: Dict[str, Any]) -> str:
         """Generate a human-readable health summary."""
         healthy_count = sum(1 for h in health_data.values() if h["status"] == "healthy")
@@ -234,6 +482,22 @@ def format_for_claude_code(result: Dict[str, Any]) -> str:
         service_name = command.replace("-", " ").title()
         return f"{result['emoji']} **{service_name}**: {result['message']}"
 
+    # Session Management Commands
+    elif command in ["save", "restore", "sessions", "session-details"]:
+        if result.get("formatted_output"):
+            return result["formatted_output"]
+        else:
+            # Fallback formatting for session commands
+            if command == "save":
+                return f"💾 **Session Saved**: {result.get('session_id', 'unknown')[:8]}"
+            elif command == "restore":
+                return f"🔄 **Session Restored**: {result.get('session_data', {}).get('current_goal', 'Unknown goal')}"
+            elif command == "sessions":
+                session_count = len(result.get('sessions', []))
+                return f"📚 **Found {session_count} sessions**"
+            elif command == "session-details":
+                return f"📍 **Session Details**: {result.get('session_data', {}).get('current_goal', 'Unknown')}"
+
     return json.dumps(result, indent=2)
 
 
@@ -246,15 +510,32 @@ def main():
                        help="Output format")
     parser.add_argument("--project-path", type=Path, help="Project path")
 
-    args = parser.parse_args()
+    # Parse known args to handle session command arguments properly
+    args, unknown = parser.parse_known_args()
+
+    # Combine parsed args with unknown args for command processing
+    all_args = args.args + unknown
 
     processor = SlashCommandProcessor(args.project_path)
-    result = processor.process_command(args.command, args.args)
+    result = processor.process_command(args.command, all_args)
 
     if args.format == "json":
         print(json.dumps(result, indent=2))
     else:
-        print(format_for_claude_code(result))
+        # For session commands, use the Rich formatted output directly
+        session_commands = ["save", "restore", "sessions", "session-details"]
+        if result.get("formatted_output") and any(cmd in args.command for cmd in session_commands):
+            from rich.console import Console
+            console = Console()
+
+            # Check if it's a Rich object
+            if hasattr(result["formatted_output"], '__rich_console__') or hasattr(result["formatted_output"], '__rich__'):
+                console.print(result["formatted_output"])
+            else:
+                # Fallback to regular formatting
+                print(format_for_claude_code(result))
+        else:
+            print(format_for_claude_code(result))
 
 
 if __name__ == "__main__":

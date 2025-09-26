@@ -7,6 +7,7 @@ files, cursor positions, mental model, and decision history.
 
 import hashlib
 import json
+import shlex
 import sqlite3
 import subprocess
 import time
@@ -38,6 +39,9 @@ class ContextSnapshot:
         self.context_switches = kwargs.get("context_switches", 0)
         self.unsaved_changes = kwargs.get("unsaved_changes", False)
         self.message = kwargs.get("message", "")
+        self.tags = kwargs.get("tags", [])
+        self.auto_description = kwargs.get("auto_description", "")
+        self.session_type = kwargs.get("session_type", "general")
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for storage."""
@@ -56,6 +60,9 @@ class ContextSnapshot:
             "context_switches": self.context_switches,
             "unsaved_changes": self.unsaved_changes,
             "message": self.message,
+            "tags": self.tags,
+            "auto_description": self.auto_description,
+            "session_type": self.session_type,
         }
 
     @classmethod
@@ -101,6 +108,79 @@ class ContextManager:
         self._current_session_id = str(uuid.uuid4())
         console.print("[green]✓ Context manager initialized[/green]")
 
+    def _validate_project_path(self, file_path: Path) -> bool:
+        """
+        Ensure file path is within project boundaries to prevent directory traversal.
+
+        Args:
+            file_path: Path to validate
+
+        Returns:
+            True if path is safe and within project, False otherwise
+        """
+        try:
+            # Resolve both paths to handle symlinks and relative paths
+            resolved_file = file_path.resolve()
+            resolved_project = self.project_path.resolve()
+
+            # Check if file path is within project boundaries
+            resolved_file.relative_to(resolved_project)
+            return True
+
+        except (ValueError, OSError):
+            # ValueError: path is outside project
+            # OSError: path doesn't exist or permission issues
+            console.print(f"[red]Security: Blocked access to path outside project: {file_path}[/red]")
+            return False
+
+    def _run_git_command(self, args: List[str], timeout: int = 10) -> Optional[str]:
+        """
+        Securely run git command with input validation and timeout.
+
+        Args:
+            args: Git command arguments (without 'git')
+            timeout: Command timeout in seconds
+
+        Returns:
+            Command output if successful, None if failed
+        """
+        # Validate git command arguments
+        allowed_commands = {
+            "branch", "status", "log", "show", "diff", "rev-parse", "config"
+        }
+
+        if not args or args[0] not in allowed_commands:
+            console.print(f"[red]Security: Git command not allowed: {args}[/red]")
+            return None
+
+        # Build secure command
+        cmd = ["git"] + args
+
+        try:
+            # Run with security constraints
+            result = subprocess.run(
+                cmd,
+                cwd=str(self.project_path),  # Ensure we're in project directory
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                check=False  # Don't raise on non-zero exit
+            )
+
+            if result.returncode == 0:
+                return result.stdout.strip()
+            else:
+                # Log error but don't expose it to prevent information leakage
+                console.print(f"[yellow]Git command failed (code {result.returncode})[/yellow]")
+                return None
+
+        except subprocess.TimeoutExpired:
+            console.print(f"[red]Git command timed out after {timeout}s[/red]")
+            return None
+        except Exception as e:
+            console.print(f"[red]Git command error: {type(e).__name__}[/red]")
+            return None
+
     def _init_storage(self) -> None:
         """Initialize SQLite database."""
         with sqlite3.connect(self.db_path) as conn:
@@ -127,7 +207,23 @@ class ContextManager:
                     last_active TEXT NOT NULL,
                     total_duration INTEGER DEFAULT 0,
                     context_switches INTEGER DEFAULT 0,
-                    focus_score REAL DEFAULT 0.0
+                    focus_score REAL DEFAULT 0.0,
+                    tags TEXT DEFAULT '[]',
+                    auto_description TEXT DEFAULT '',
+                    session_type TEXT DEFAULT 'general'
+                )
+            """
+            )
+
+            # Create session tags table for better tag management
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS session_tags (
+                    session_id TEXT NOT NULL,
+                    tag TEXT NOT NULL,
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (session_id, tag),
+                    FOREIGN KEY (session_id) REFERENCES context_snapshots(session_id) ON DELETE CASCADE
                 )
             """
             )
@@ -334,6 +430,258 @@ class ContextManager:
             console.print(f"[red]Error cleaning up sessions: {e}[/red]")
             return 0
 
+    def generate_smart_description(self, context: ContextSnapshot) -> str:
+        """Generate smart description based on git changes and context."""
+        git_state = context.git_state
+
+        # Check git status for recent changes
+        if git_state.get("status"):
+            status_lines = git_state["status"].split("\n")
+            modified_files = []
+            added_files = []
+            deleted_files = []
+
+            for line in status_lines:
+                line = line.strip()
+                if line.startswith("M "):
+                    modified_files.append(line[2:])
+                elif line.startswith("A "):
+                    added_files.append(line[2:])
+                elif line.startswith("D "):
+                    deleted_files.append(line[2:])
+
+            # Generate description based on changes
+            if added_files:
+                if len(added_files) == 1:
+                    return f"Added {Path(added_files[0]).name}"
+                else:
+                    return f"Added {len(added_files)} new files"
+            elif modified_files:
+                # Determine primary file type
+                extensions = [Path(f).suffix for f in modified_files]
+                common_ext = max(set(extensions), key=extensions.count) if extensions else ""
+
+                if len(modified_files) == 1:
+                    return f"Modified {Path(modified_files[0]).name}"
+                elif common_ext == ".py":
+                    return f"Updated Python code ({len(modified_files)} files)"
+                elif common_ext in [".js", ".ts", ".tsx"]:
+                    return f"Updated JavaScript/TypeScript ({len(modified_files)} files)"
+                elif common_ext == ".md":
+                    return f"Updated documentation ({len(modified_files)} files)"
+                else:
+                    return f"Modified {len(modified_files)} files"
+            elif deleted_files:
+                return f"Removed {len(deleted_files)} files"
+
+        # Fallback to goal-based description
+        goal = context.current_goal
+        if goal and goal != "Continue development":
+            return goal[:50] + ("..." if len(goal) > 50 else "")
+
+        # Check last commit for context
+        last_commit = git_state.get("last_commit", "")
+        if last_commit and len(last_commit.split()) > 1:
+            # Extract meaningful part of commit message
+            commit_msg = " ".join(last_commit.split()[1:])
+            return f"Continue: {commit_msg[:40]}..."
+
+        return "Development session"
+
+    def auto_tag_session(self, context: ContextSnapshot) -> List[str]:
+        """Automatically generate tags based on session context."""
+        tags = []
+
+        # Analyze git changes for automatic tagging
+        git_state = context.git_state
+        if git_state.get("status"):
+            status = git_state["status"].lower()
+
+            # File type tags
+            if ".py" in status:
+                tags.append("python")
+            if any(ext in status for ext in [".js", ".ts", ".tsx", ".jsx"]):
+                tags.append("javascript")
+            if ".md" in status or "readme" in status:
+                tags.append("docs")
+            if "test" in status or ".test." in status:
+                tags.append("testing")
+            if any(ext in status for ext in [".yml", ".yaml", ".json", "config"]):
+                tags.append("config")
+
+        # Analyze file paths for context
+        open_files = context.open_files
+        file_paths = []
+        for file_info in open_files:
+            if isinstance(file_info, dict):
+                path = file_info.get("path", "")
+            else:
+                path = str(file_info)
+            file_paths.append(path.lower())
+
+        combined_paths = " ".join(file_paths)
+
+        # Feature detection
+        if any(keyword in combined_paths for keyword in ["feature", "feat", "new"]):
+            tags.append("feature")
+        if any(keyword in combined_paths for keyword in ["fix", "bug", "error"]):
+            tags.append("bugfix")
+        if any(keyword in combined_paths for keyword in ["test", "spec", "__test__"]):
+            tags.append("testing")
+        if any(keyword in combined_paths for keyword in ["doc", "readme", "guide"]):
+            tags.append("documentation")
+        if any(keyword in combined_paths for keyword in ["refactor", "clean"]):
+            tags.append("refactor")
+
+        # Analyze message for manual tags
+        message = context.message.lower() if context.message else ""
+        if message:
+            if any(keyword in message for keyword in ["wip", "progress", "working"]):
+                tags.append("wip")
+            if any(keyword in message for keyword in ["done", "complete", "finish"]):
+                tags.append("complete")
+            if any(keyword in message for keyword in ["break", "pause", "save"]):
+                tags.append("checkpoint")
+
+        # Time-based tags
+        hour = datetime.now().hour
+        if 6 <= hour < 12:
+            tags.append("morning")
+        elif 12 <= hour < 17:
+            tags.append("afternoon")
+        elif 17 <= hour < 22:
+            tags.append("evening")
+        else:
+            tags.append("late-night")
+
+        # Focus duration tags
+        focus_duration = context.focus_duration
+        if focus_duration > 45:
+            tags.append("deep-work")
+        elif focus_duration > 20:
+            tags.append("focused")
+        elif focus_duration > 0:
+            tags.append("quick-session")
+
+        return list(set(tags))  # Remove duplicates
+
+    def detect_session_type(self, context: ContextSnapshot) -> str:
+        """Detect session type based on context and changes."""
+        message = context.message.lower() if context.message else ""
+        git_state = context.git_state
+
+        # Check commit message patterns
+        if git_state.get("last_commit"):
+            last_commit = git_state["last_commit"].lower()
+            if any(word in last_commit for word in ["feat:", "feature:", "add:"]):
+                return "feature"
+            elif any(word in last_commit for word in ["fix:", "bug:", "hotfix:"]):
+                return "bugfix"
+            elif any(word in last_commit for word in ["docs:", "doc:"]):
+                return "documentation"
+            elif any(word in last_commit for word in ["test:", "tests:"]):
+                return "testing"
+            elif any(word in last_commit for word in ["refactor:", "clean:"]):
+                return "refactor"
+            elif any(word in last_commit for word in ["config:", "setup:"]):
+                return "configuration"
+
+        # Check message for type indicators
+        if any(keyword in message for keyword in ["implement", "add", "create", "new"]):
+            return "feature"
+        elif any(keyword in message for keyword in ["fix", "bug", "error", "issue"]):
+            return "bugfix"
+        elif any(keyword in message for keyword in ["doc", "readme", "guide", "explain"]):
+            return "documentation"
+        elif any(keyword in message for keyword in ["test", "coverage", "spec"]):
+            return "testing"
+        elif any(keyword in message for keyword in ["refactor", "clean", "optimize"]):
+            return "refactor"
+        elif any(keyword in message for keyword in ["debug", "investigate", "explore"]):
+            return "debugging"
+        elif any(keyword in message for keyword in ["review", "check", "validate"]):
+            return "review"
+
+        # Check files being worked on
+        open_files = context.open_files
+        test_files = 0
+        doc_files = 0
+        config_files = 0
+
+        for file_info in open_files:
+            if isinstance(file_info, dict):
+                path = file_info.get("path", "")
+            else:
+                path = str(file_info)
+
+            path_lower = path.lower()
+            if "test" in path_lower or path_lower.endswith((".test.py", ".spec.js")):
+                test_files += 1
+            elif path_lower.endswith((".md", ".rst", ".txt")):
+                doc_files += 1
+            elif any(config_word in path_lower for config_word in ["config", "settings", ".env", ".yml", ".yaml"]):
+                config_files += 1
+
+        # Determine type based on file patterns
+        total_files = len(open_files)
+        if total_files > 0:
+            if test_files / total_files > 0.5:
+                return "testing"
+            elif doc_files / total_files > 0.5:
+                return "documentation"
+            elif config_files / total_files > 0.5:
+                return "configuration"
+
+        return "general"  # Default type
+
+    def add_session_tags(self, session_id: str, tags: List[str]) -> None:
+        """Add tags to a session."""
+        with sqlite3.connect(self.db_path) as conn:
+            for tag in tags:
+                conn.execute(
+                    """INSERT OR IGNORE INTO session_tags (session_id, tag)
+                       VALUES (?, ?)""",
+                    (session_id, tag)
+                )
+
+    def get_session_tags(self, session_id: str) -> List[str]:
+        """Get tags for a session."""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.execute(
+                "SELECT tag FROM session_tags WHERE session_id = ?",
+                (session_id,)
+            )
+            return [row[0] for row in cursor.fetchall()]
+
+    def search_sessions_by_tag(self, tag: str, limit: int = 20) -> List[Dict[str, Any]]:
+        """Search sessions by tag."""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.execute(
+                """SELECT DISTINCT cs.session_id, cs.timestamp, cs.data
+                   FROM context_snapshots cs
+                   JOIN session_tags st ON cs.session_id = st.session_id
+                   WHERE st.tag = ? AND cs.working_directory = ?
+                   ORDER BY cs.timestamp DESC LIMIT ?""",
+                (tag, str(self.project_path), limit)
+            )
+
+            sessions = []
+            for row in cursor.fetchall():
+                session_id, timestamp, data_json = row
+                data = json.loads(data_json)
+                sessions.append({
+                    "id": session_id,
+                    "timestamp": timestamp,
+                    "current_goal": data.get("current_goal", "No goal set"),
+                    "open_files": data.get("open_files", []),
+                    "git_branch": data.get("git_state", {}).get("branch", "unknown"),
+                    "focus_duration": data.get("focus_duration", 0),
+                    "message": data.get("message", ""),
+                    "tags": self.get_session_tags(session_id)
+                })
+
+            return sessions
+
     def _capture_current_state(self) -> ContextSnapshot:
         """Capture current development state."""
         # Get open files (this would integrate with editor)
@@ -346,7 +694,7 @@ class ContextManager:
         recent_commands = self._get_recent_commands()
 
         # Create context snapshot
-        return ContextSnapshot(
+        context = ContextSnapshot(
             session_id=self._current_session_id or str(uuid.uuid4()),
             working_directory=str(self.project_path),
             open_files=open_files,
@@ -362,6 +710,13 @@ class ContextManager:
             unsaved_changes=self._has_unsaved_changes(),
         )
 
+        # Add smart features
+        context.auto_description = self.generate_smart_description(context)
+        context.session_type = self.detect_session_type(context)
+        context.tags = self.auto_tag_session(context)
+
+        return context
+
     def _get_open_files(self) -> List[Dict[str, Any]]:
         """Get list of currently open files."""
         # This would integrate with the editor to get actual open files
@@ -369,8 +724,12 @@ class ContextManager:
         open_files = []
 
         try:
-            # Find recently modified files
+            # Find recently modified files with security validation
             for file_path in self.project_path.rglob("*"):
+                # Validate path is within project boundaries
+                if not self._validate_project_path(file_path):
+                    continue
+
                 if (
                     file_path.is_file()
                     and not any(part.startswith(".") for part in file_path.parts)
@@ -400,40 +759,25 @@ class ContextManager:
         return open_files[:10]  # Limit to 10 most recent
 
     def _get_git_state(self) -> Dict[str, Any]:
-        """Get current git repository state."""
+        """Get current git repository state with secure git operations."""
         git_state = {}
 
         try:
             # Get current branch
-            result = subprocess.run(
-                ["git", "branch", "--show-current"],
-                cwd=self.project_path,
-                capture_output=True,
-                text=True,
-            )
-            if result.returncode == 0:
-                git_state["branch"] = result.stdout.strip()
+            branch = self._run_git_command(["branch", "--show-current"])
+            if branch:
+                git_state["branch"] = branch
 
             # Get status
-            result = subprocess.run(
-                ["git", "status", "--porcelain"],
-                cwd=self.project_path,
-                capture_output=True,
-                text=True,
-            )
-            if result.returncode == 0:
-                git_state["status"] = result.stdout.strip()
-                git_state["has_changes"] = bool(result.stdout.strip())
+            status = self._run_git_command(["status", "--porcelain"])
+            if status is not None:
+                git_state["status"] = status
+                git_state["has_changes"] = bool(status)
 
             # Get last commit
-            result = subprocess.run(
-                ["git", "log", "-1", "--oneline"],
-                cwd=self.project_path,
-                capture_output=True,
-                text=True,
-            )
-            if result.returncode == 0:
-                git_state["last_commit"] = result.stdout.strip()
+            last_commit = self._run_git_command(["log", "-1", "--oneline"])
+            if last_commit:
+                git_state["last_commit"] = last_commit
 
         except Exception as e:
             console.print(f"[yellow]Warning: Could not get git state: {e}[/yellow]")
@@ -496,6 +840,21 @@ class ContextManager:
                     len(data_json),
                 ),
             )
+
+            # Store tags in separate table
+            if context.tags:
+                # Clear existing tags for this session
+                conn.execute(
+                    "DELETE FROM session_tags WHERE session_id = ?",
+                    (context.session_id,)
+                )
+                # Insert new tags
+                for tag in context.tags:
+                    conn.execute(
+                        """INSERT INTO session_tags (session_id, tag)
+                           VALUES (?, ?)""",
+                        (context.session_id, tag)
+                    )
 
     def _update_session_metadata(self, session_id: str) -> None:
         """Update session metadata."""
