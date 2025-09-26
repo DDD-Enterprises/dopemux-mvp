@@ -2,10 +2,12 @@
 #!/usr/bin/env python3
 """Ensure every docs/*.md has required YAML front-matter.
 - Adds missing front-matter
-- Updates last_review to today if stale
-- Fills owner if missing (default @hu3mann)
+- Repairs malformed YAML (e.g., unquoted @handles)
+- Updates last_review to today if missing
+- Fills owner if missing (default "@hu3mann")
 Usage:
-  python scripts/docs_frontmatter_guard.py --fix
+  python scripts/docs_frontmatter_guard.py        # dry run (non-zero exit if changes needed)
+  python scripts/docs_frontmatter_guard.py --fix  # apply fixes in-place
 """
 import sys, re, os, datetime, yaml, io
 
@@ -14,14 +16,31 @@ DEFAULT_OWNER = "@hu3mann"
 REQUIRED = ["id","title","type","owner","last_review","next_review"]
 
 def parse_frontmatter(text):
+    """Parse frontmatter block, attempting light repairs when YAML is malformed.
+
+    Returns (data, body, repaired):
+      - data: dict or None when no/invalid frontmatter
+      - body: content without the frontmatter block (if detected)
+      - repaired: True when we fixed frontmatter formatting (e.g., quoted @owner)
+    """
     if text.startswith('---\n'):
         end = text.find('\n---\n', 4)
         if end != -1:
             fm = text[4:end]
             body = text[end+5:]
-            data = yaml.safe_load(fm) or {}
-            return data, body
-    return None, text
+            try:
+                data = yaml.safe_load(fm) or {}
+                return data, body, False
+            except Exception:
+                # Try to repair common issues: unquoted @handles
+                repaired_fm = re.sub(r"(^|\n)(\s*owner\s*:\s*)(@[^\n]+)", r"\1\2" + '"' + r"\3" + '"', fm)
+                try:
+                    data = yaml.safe_load(repaired_fm) or {}
+                    return data, body, True
+                except Exception:
+                    # Give up: treat as missing frontmatter but strip the broken block
+                    return None, body, False
+    return None, text, False
 
 def build_frontmatter(data):
     buf = io.StringIO()
@@ -31,8 +50,8 @@ def build_frontmatter(data):
 def ensure_fm(path, fix=False):
     with open(path, 'r', encoding='utf-8') as f:
         text = f.read()
-    data, body = parse_frontmatter(text)
-    changed = False
+    data, body, repaired = parse_frontmatter(text)
+    changed = bool(repaired)
     if data is None:
         # Create new front-matter
         slug = os.path.splitext(os.path.basename(path))[0]
@@ -63,6 +82,10 @@ def ensure_fm(path, fix=False):
                 elif k == "next_review":
                     data[k] = str(TODAY + datetime.timedelta(days=90))
                 changed = True
+        # Normalize owner quoting for @handles
+        if isinstance(data.get("owner"), str) and data["owner"].startswith("@"):
+            # ensure a plain string value
+            data["owner"] = data["owner"]
     if changed and fix:
         fm = build_frontmatter(data)
         with open(path, 'w', encoding='utf-8') as f:
