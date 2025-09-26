@@ -1,23 +1,98 @@
 repos:
+  # Knowledge Graph Documentation Enforcement
+  - repo: local
+    hooks:
+      # Frontmatter validation (enable existing)
+      - id: docs-frontmatter-guard
+        name: Validate YAML frontmatter in docs
+        entry: python scripts/docs_frontmatter_guard.py --fix
+        language: system
+        files: ^docs/.*\.md$
+
+      # Graph schema validation
+      - id: docs-graph-validator
+        name: Validate documentation against knowledge graph schema
+        entry: python scripts/docs_validator.py
+        language: system
+        files: ^docs/.*\.md$
+        pass_filenames: true
+
+      # Prohibited file pattern check
+      - id: docs-prohibited-patterns
+        name: Block prohibited documentation patterns (README, NOTES, TODO, etc.)
+        entry: bash -c
+        args:
+          - |
+            set -e
+            prohibited_found=false
+            for pattern in "README*.md" "NOTES*.md" "TODO*.md" "TEMP*.md" "*temp*.md" "*scratch*.md"; do
+              if find docs/ -name "$pattern" 2>/dev/null | grep -q .; then
+                echo "❌ Found prohibited file pattern: $pattern"
+                find docs/ -name "$pattern" | sed 's/^/  /'
+                prohibited_found=true
+              fi
+            done
+            if [ "$prohibited_found" = true ]; then
+              echo "Use structured workflow: RFC→ADR→arc42"
+              exit 1
+            fi
+            echo "✅ No prohibited patterns found"
+        language: system
+        files: ^docs/.*\.md$
+        pass_filenames: false
+
+      # Prelude token count validation for embeddings
+      - id: docs-prelude-tokens
+        name: Validate prelude ≤100 tokens for efficient embeddings
+        entry: python -c
+        args:
+          - |
+            import sys, yaml, os
+            errors = []
+            for file in sys.argv[1:]:
+                if not file.endswith('.md'): continue
+                try:
+                    with open(file, 'r') as f: content = f.read()
+                    if not content.startswith('---'): continue
+                    end = content.find('\n---\n', 4)
+                    if end == -1: continue
+                    fm = yaml.safe_load(content[4:end])
+                    prelude = fm.get('prelude', '')
+                    if prelude:
+                        tokens = int(len(prelude.split()) * 1.3)
+                        if tokens > 100:
+                            errors.append(f'{file}: prelude ~{tokens} tokens (max 100)')
+                except Exception as e:
+                    errors.append(f'{file}: error - {e}')
+            if errors:
+                print('❌ Prelude token errors:')
+                for error in errors: print(f'  {error}')
+                sys.exit(1)
+            print('✅ All preludes within token limit')
+        language: system
+        files: ^docs/.*\.md$
+        pass_filenames: true
+
+  # Existing linting tools
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.41.0
     hooks:
       - id: markdownlint
         args: ["--config", ".markdownlint.jsonc", "docs/**/*.md"]
-  # - repo: https://github.com/errata-ai/vale
-  #   rev: v3.7.1
-  #   hooks:
-  #     - id: vale
-  #       args: ["docs/"]
+
   - repo: https://github.com/lycheeverse/lychee
     rev: v0.15.1
     hooks:
       - id: lychee
         args: ["--config", ".lychee.toml", "--no-progress", "docs/**/*.md"]
-  # - repo: local
-  #   hooks:
-  #     - id: docs-frontmatter-guard
-  #       name: Ensure required YAML front-matter
-  #       entry: python scripts/docs_frontmatter_guard.py --fix
-  #       language: system
-  #       files: ^docs/.*\.md$
+
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        files: ^docs/.*\.md$
+      - id: end-of-file-fixer
+        files: ^docs/.*\.md$
+      - id: check-yaml
+        files: ^config/.*\.ya?ml$

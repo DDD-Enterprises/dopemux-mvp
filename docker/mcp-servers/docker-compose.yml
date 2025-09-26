@@ -109,7 +109,7 @@ services:
     ports:
       - "3004:3004"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3004/mcp || nc -z localhost 3004"]
+      test: ["CMD-SHELL", "nc -z localhost 3004"]
       timeout: 10s
       retries: 3
       interval: 30s
