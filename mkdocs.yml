@@ -4,10 +4,24 @@ theme:
 plugins:
   - search
 nav:
-  - Tutorials: docs/01-tutorials/
-  - How-to: docs/02-how-to/
-  - Reference: docs/03-reference/
-  - Explanation: docs/04-explanation/
+  - Tutorials: 01-tutorials/
+  - How-to: 02-how-to/
+  - Reference: 03-reference/
+  - Explanation: 04-explanation/
+  - ADRs: 90-adr/
+  - RFCs: 91-rfc/
+  - Runbooks: 92-runbooks/
   - Architecture:
-      - C4: docs/94-architecture/c4/
-      - arc42: docs/94-architecture/arc42/01-intro-and-goals.md
+      - Overview: 94-architecture/readme.md
+      - C4 Overview: 94-architecture/c4-readme.md
+      - C4 Context: 94-architecture/c4-l0-context.md
+      - C4 Container: 94-architecture/c4-l1-container.md
+      - C4 Component: 94-architecture/c4-l2-component.md
+      - C4 Code: 94-architecture/c4-l3-code.md
+      - arc42: 94-architecture/arc42-dopemux-semantic-search.md
+      - Runtime View: 94-architecture/runtime-view.md
+      - Deployment View: 94-architecture/deployment-view.md
+      - RAG:
+          - Overview: 94-architecture/rag/rag-system-overview.md
+          - Hybrid Retrieval: 94-architecture/rag/hybrid-retrieval-design.md
+      - Zero-Touch Sync: 94-architecture/zero-touch-sync-architecture.md
