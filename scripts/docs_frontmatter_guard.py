@@ -9,7 +9,7 @@ Usage:
 """
 import sys, re, os, datetime, yaml, io
 
-TODAY = datetime.date(2025, 9, 19)
+TODAY = datetime.date.today()
 DEFAULT_OWNER = "@hu3mann"
 REQUIRED = ["id","title","type","owner","last_review","next_review"]
 
