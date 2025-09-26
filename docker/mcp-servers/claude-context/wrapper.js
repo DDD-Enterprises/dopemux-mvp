@@ -9,8 +9,10 @@ console.log('- MILVUS_ADDRESS:', process.env.MILVUS_ADDRESS);
 console.log('- MILVUS_TOKEN:', process.env.MILVUS_TOKEN ? 'SET (length: ' + process.env.MILVUS_TOKEN.length + ')' : 'NOT SET');
 console.log('- VOYAGEAI_API_KEY:', process.env.VOYAGEAI_API_KEY ? 'SET' : 'NOT SET');
 
-// Start with mcp-proxy using the official @zilliz/claude-context-mcp package
-const mcpProxyArgs = [
+// Run the MCP server with HTTP transport via mcp-proxy
+console.log('Starting MCP server with HTTP transport...');
+
+const proxyArgs = [
   'mcp-proxy',
   '--transport', 'streamablehttp',
   '--port', port.toString(),
@@ -20,9 +22,9 @@ const mcpProxyArgs = [
   'npx', '@zilliz/claude-context-mcp@latest'
 ];
 
-console.log('Running command: uvx', mcpProxyArgs.join(' '));
+console.log('Running command: uvx', proxyArgs.join(' '));
 
-const mcpProxy = spawn('uvx', mcpProxyArgs, {
+const mcpServer = spawn('uvx', proxyArgs, {
   stdio: ['inherit', 'inherit', 'inherit'],
   env: {
     ...process.env,
@@ -37,12 +39,12 @@ const mcpProxy = spawn('uvx', mcpProxyArgs, {
   }
 });
 
-mcpProxy.on('exit', (code) => {
+mcpServer.on('exit', (code) => {
   console.log(`🔍 Claude Context MCP Server exited with code ${code}`);
   process.exit(code);
 });
 
-mcpProxy.on('error', (err) => {
+mcpServer.on('error', (err) => {
   console.error('🔍 Claude Context MCP Server error:', err);
   process.exit(1);
 });
