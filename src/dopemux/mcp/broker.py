@@ -28,6 +28,9 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
+from aiohttp import web
+import json
+
 import yaml
 
 from .hooks import OptimizationResult, PreToolHookManager
@@ -192,9 +195,66 @@ class MetaMCPBroker:
         # Background tasks
         self._background_tasks: Set[asyncio.Task] = set()
 
+        # HTTP server components
+        self.app: Optional[web.Application] = None
+        self.app_runner: Optional[web.AppRunner] = None
+        self.http_site: Optional[web.TCPSite] = None
+
         logger.info(
             f"MetaMCP Broker initialized: {self.config.name} v{self.config.version}"
         )
+
+    # HTTP Route Handlers
+    async def health_handler(self, request: web.Request) -> web.Response:
+        """Health check endpoint"""
+        health_data = {
+            "status": "healthy",
+            "broker_status": self.status.value,
+            "active_sessions": len(self.active_sessions),
+            "connected_servers": len(self.server_manager.connections) if self.server_manager else 0,
+            "timestamp": datetime.now().isoformat(),
+            "version": self.config.version,
+            "adhd_optimizations": self.config.adhd_optimizations
+        }
+        return web.json_response(health_data)
+
+    async def status_handler(self, request: web.Request) -> web.Response:
+        """Detailed status endpoint"""
+        # Get server stats
+        server_stats = {}
+        if self.server_manager:
+            server_stats = await self.server_manager.get_server_stats()
+
+        status_data = {
+            "broker": {
+                "name": self.config.name,
+                "version": self.config.version,
+                "status": self.status.value,
+                "host": self.config.host,
+                "port": self.config.port
+            },
+            "sessions": {
+                "active": len(self.active_sessions),
+                "details": [{
+                    "session_id": session_id,
+                    "role": session.role,
+                    "mounted_tools": len(session.mounted_tools),
+                    "created": session.created_at.isoformat()
+                } for session_id, session in self.active_sessions.items()]
+            },
+            "servers": server_stats
+        }
+        return web.json_response(status_data)
+
+    def _create_http_app(self) -> web.Application:
+        """Create and configure the HTTP application"""
+        app = web.Application()
+
+        # Add routes
+        app.router.add_get('/health', self.health_handler)
+        app.router.add_get('/status', self.status_handler)
+
+        return app
 
     async def start(self) -> None:
         """Start the MetaMCP broker and all subsystems"""
@@ -213,8 +273,12 @@ class MetaMCPBroker:
             # Start background tasks
             await self._start_background_tasks()
 
+            # Start HTTP server
+            await self._start_http_server()
+
             self.status = BrokerStatus.READY
             logger.info("MetaMCP Broker started successfully")
+            logger.info(f"✅ HTTP server listening on {self.config.host}:{self.config.port}")
 
             # Record startup metrics
             self.metrics.record_startup()
@@ -227,6 +291,9 @@ class MetaMCPBroker:
     async def stop(self) -> None:
         """Gracefully stop the MetaMCP broker"""
         logger.info("Stopping MetaMCP Broker...")
+
+        # Stop HTTP server
+        await self._stop_http_server()
 
         # Cancel background tasks
         for task in self._background_tasks:
@@ -618,6 +685,50 @@ class MetaMCPBroker:
             self._background_tasks.add(checkpoint_task)
 
         logger.info(f"Started {len(self._background_tasks)} background tasks")
+
+    async def _start_http_server(self) -> None:
+        """Initialize and start the HTTP server"""
+        try:
+            # Create HTTP application
+            self.app = self._create_http_app()
+
+            # Create AppRunner for async control
+            self.app_runner = web.AppRunner(self.app)
+            await self.app_runner.setup()
+
+            # Create TCP site
+            self.http_site = web.TCPSite(
+                self.app_runner,
+                self.config.host,
+                self.config.port
+            )
+
+            # Start the site
+            await self.http_site.start()
+
+            logger.info(f"HTTP server started on {self.config.host}:{self.config.port}")
+
+        except Exception as e:
+            logger.error(f"Failed to start HTTP server: {e}")
+            raise
+
+    async def _stop_http_server(self) -> None:
+        """Gracefully stop the HTTP server"""
+        try:
+            if self.http_site:
+                await self.http_site.stop()
+                logger.info("HTTP site stopped")
+
+            if self.app_runner:
+                await self.app_runner.cleanup()
+                logger.info("HTTP server cleaned up")
+
+            self.http_site = None
+            self.app_runner = None
+            self.app = None
+
+        except Exception as e:
+            logger.error(f"Error stopping HTTP server: {e}")
 
     async def _health_monitor_loop(self) -> None:
         """Background health monitoring"""
