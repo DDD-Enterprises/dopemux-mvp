@@ -506,10 +506,40 @@ class ConfigManager:
                 default = ""
 
             value = os.getenv(var_name, default)
-            self._env_cache[var_name] = value
-            return value
+
+            # Cache but don't cache sensitive values in plain text
+            if self._is_sensitive_var(var_name):
+                # Store a flag instead of the actual value for logging purposes
+                self._env_cache[var_name] = "[REDACTED]" if value else ""
+                return value  # Return actual value for use
+            else:
+                self._env_cache[var_name] = value
+                return value
         else:
             return obj
+
+    def _is_sensitive_var(self, var_name: str) -> bool:
+        """Check if environment variable contains sensitive information."""
+        sensitive_patterns = [
+            "API_KEY", "SECRET", "TOKEN", "PASSWORD", "PRIVATE",
+            "CREDENTIAL", "AUTH", "KEY", "PASS"
+        ]
+        var_upper = var_name.upper()
+        return any(pattern in var_upper for pattern in sensitive_patterns)
+
+    def _sanitize_config_for_logging(self, config_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a sanitized version of config safe for logging."""
+        def sanitize_value(key: str, value: Any) -> Any:
+            if isinstance(value, dict):
+                return {k: sanitize_value(k, v) for k, v in value.items()}
+            elif isinstance(value, list):
+                return [sanitize_value(f"{key}[{i}]", item) for i, item in enumerate(value)]
+            elif isinstance(value, str) and self._is_sensitive_var(key):
+                return "[REDACTED]" if value else ""
+            else:
+                return value
+
+        return {k: sanitize_value(k, v) for k, v in config_dict.items()}
 
     def ensure_directories(self) -> None:
         """Ensure all required directories exist."""
