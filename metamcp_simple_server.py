@@ -13,6 +13,7 @@ import asyncio
 import json
 import sys
 import logging
+import aiohttp
 from typing import Dict, List, Any, Optional
 
 # ADHD accommodations: Simple, user-controlled approach
@@ -56,6 +57,9 @@ class SimpleMetaMCPServer:
         # Session bookmarking for context preservation
         self.session_bookmarks = {}
         self.current_bookmark = None
+
+        # HTTP session for MCP server connections
+        self.http_session = None
 
         # ADHD Finishing Helpers - "There is NOW and there is NEVER"
         self.active_projects = {}  # Track almost-done work
@@ -436,6 +440,31 @@ class SimpleMetaMCPServer:
 
         logger.info(f"Applied tool profile '{self.tool_profile}': {len(tools)} tools available")
         return tools
+
+    async def call_mcp_server(self, server_name: str, method: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Make HTTP request to containerized MCP server"""
+        if server_name not in self.mcp_servers:
+            return {"error": f"Unknown MCP server: {server_name}"}
+
+        if not self.http_session:
+            self.http_session = aiohttp.ClientSession()
+
+        url = self.mcp_servers[server_name]
+        payload = {
+            "jsonrpc": "2.0",
+            "method": method,
+            "params": params or {},
+            "id": 1
+        }
+
+        try:
+            async with self.http_session.post(url, json=payload) as response:
+                if response.status == 200:
+                    return await response.json()
+                else:
+                    return {"error": f"HTTP {response.status} from {server_name}"}
+        except Exception as e:
+            return {"error": f"Failed to call {server_name}: {str(e)}"}
 
     async def handle_mcp_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
         """Handle incoming MCP requests"""
