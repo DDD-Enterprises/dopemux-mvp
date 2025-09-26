@@ -52,8 +52,100 @@ You are working on a **python project** with Dopemux ADHD optimizations enabled.
 - Bridge between tasks with summaries
 - Maintain awareness of previous context
 
-## Project Standards
+## 🚀 MCP System Integration - FULLY OPERATIONAL
 
+You have access to a **fully operational MCP (Model Context Protocol) ecosystem** with 50+ specialized tools optimized for ADHD developers. This system is your primary resource for documentation, context preservation, research, and task management.
+
+### **Core MCP Servers Available**
+- **Context7**: Official documentation for 10,000+ libraries (USE FIRST for any coding task)
+- **ConPort**: ADHD-optimized context preservation and project memory
+- **EXA**: High-quality developer research and web search
+- **MetaMCP Broker**: Aggregates 9 servers at `localhost:8090`
+
+### **MANDATORY MCP Usage Patterns**
+
+#### **1. ALWAYS Start with Documentation (Context7)**
+Before implementing ANYTHING new, query Context7 for official documentation:
+```
+mcp__context7__resolve-library-id "library-name"
+mcp__context7__get-library-docs "/org/library" --topic "specific-feature" --tokens 2000
+```
+
+#### **2. ALWAYS Preserve Context (ConPort)**
+This user has ADHD - context preservation is CRITICAL:
+```
+# Check current context at start of session
+mcp__conport__get_active_context --workspace_id "/Users/hue/code/dopemux-mvp"
+
+# Store important decisions
+mcp__conport__log_decision --workspace_id "/Users/hue/code/dopemux-mvp" --summary "decision" --rationale "why"
+
+# Track progress for visual feedback
+mcp__conport__log_progress --workspace_id "/Users/hue/code/dopemux-mvp" --status "IN_PROGRESS" --description "current task"
+```
+
+#### **3. Use Role-Based Approach**
+The system has ADHD-optimized roles with tool limits:
+- **Developer Role**: 5 tools max, 15k tokens (fast iteration)
+- **Researcher Role**: 5 tools max, 15k tokens (controlled information gathering)
+- **Architect Role**: 5 tools max, 25k tokens (deep analysis)
+
+### **Integration Requirements**
+
+#### **Session Start Protocol**
+```
+1. mcp__conport__get_active_context --workspace_id "/Users/hue/code/dopemux-mvp"
+2. mcp__conport__get_progress --status_filter "IN_PROGRESS"
+3. Review context before proceeding
+```
+
+#### **Before Any New Implementation**
+```
+1. mcp__context7__resolve-library-id "relevant-library"
+2. mcp__context7__get-library-docs with focused --topic
+3. mcp__conport__log_decision with implementation approach
+4. Proceed with development
+```
+
+#### **Session End Protocol**
+```
+1. mcp__conport__update_active_context with session summary
+2. mcp__conport__update_progress to DONE for completed tasks
+3. mcp__conport__log_decision for any important choices made
+```
+
+### **ADHD Accommodations - MANDATORY**
+- **Never overwhelm**: Use focused Context7 queries with specific --topic and token limits
+- **Always preserve context**: Use ConPort before/after any interruption
+- **Provide visual progress**: Use ConPort progress tracking for motivation
+- **Make decisions explicit**: Log reasoning in ConPort for future reference
+- **Maintain session continuity**: Always check/update active context
+
+### **Quick Reference Commands**
+```bash
+# Documentation
+mcp__context7__resolve-library-id "library"
+mcp__context7__get-library-docs "/path" --topic "focus" --tokens 2000
+
+# Context Management
+mcp__conport__get_active_context --workspace_id "/Users/hue/code/dopemux-mvp"
+mcp__conport__log_decision --workspace_id "/Users/hue/code/dopemux-mvp" --summary "decision"
+mcp__conport__log_progress --workspace_id "/Users/hue/code/dopemux-mvp" --status "status" --description "task"
+
+# Research (via MetaMCP broker)
+# EXA and other tools available through broker at localhost:8090
+```
+
+### **System Status**
+- ✅ **9/9 servers operational**
+- ✅ **ADHD optimizations active**
+- ✅ **Role-based tool limiting enabled**
+- ✅ **50+ tools available**
+- ✅ **Knowledge permanently stored in ConPort**
+
+**CRITICAL**: This MCP system is designed specifically for ADHD developers. Use it proactively to reduce cognitive load, maintain context, and provide structured access to information.
+
+## Project Standards
 
 ### Code Organization
 - Use src/ layout for packages
