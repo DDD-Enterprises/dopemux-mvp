@@ -343,11 +343,8 @@ services:
 # === NETWORKS ===
 networks:
   mcp-network:
-    driver: bridge
+    external: true
     name: mcp-network
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
   # Connect to existing Leantime network for PM integration
   leantime-net:
     external: true
@@ -356,10 +353,10 @@ networks:
 # === VOLUMES ===
 volumes:
   mcp_logs:
-    driver: local
+    external: true
     name: mcp_logs
   mcp_cache:
-    driver: local
+    external: true
     name: mcp_cache
   mcp_context7_cache:
     driver: local

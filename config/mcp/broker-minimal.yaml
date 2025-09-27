@@ -62,7 +62,7 @@ servers:
   # AI reasoning - RUNNING (via stdio)
   sequential-thinking:
     transport: "stdio"
-    command: ["docker", "exec", "-i", "mcp-mas-sequential-thinking", "python", "docker_server.py"]
+    command: ["docker", "exec", "-i", "mcp-mas-sequential-thinking", "mcp-server-mas-sequential-thinking"]
     startup_timeout: 15
     health_check:
       method: "ping"
