@@ -171,3 +171,5 @@ Temporary Items
 *.swo
 *~docker/mcp-servers/mcp-server-mas-sequential-thinking/
 docker/mcp-servers/zen/zen-mcp-server/
+gptr-mcp/
+metamcp/
