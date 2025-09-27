@@ -1,0 +1,27 @@
+## Dopemux PM Unattended Install (Leantime + Task‑Master)
+# Safe defaults without secrets. You can override values or run the
+# interactive installer to provide AI keys during setup.
+
+# Core
+install_mode: docker
+leantime_port: 8080
+mysql_port: 3306
+redis_port: 6379
+
+# Database
+mysql_database: dopemux_leantime
+mysql_user: dopemux_user
+
+# App
+lean_sitename: Dopemux Leantime
+lean_app_url: http://localhost:8080
+
+# Security and optimizations
+adhd_mode_enabled: true
+context_preservation: true
+notification_batching: true
+
+# AI integration (no keys by default; add via interactive mode or edit later)
+taskmaster_enabled: true
+ai_providers: {}
+
