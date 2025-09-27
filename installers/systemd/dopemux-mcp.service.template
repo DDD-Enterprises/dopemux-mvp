@@ -1,0 +1,15 @@
+[Unit]
+Description=Dopemux MCP Servers (Docker Compose)
+After=docker.service network.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=__PROJECT_ROOT__/docker/mcp-servers
+ExecStart=/bin/bash -lc '__PROJECT_ROOT__/scripts/auto-start/docker-wait-up.sh'
+ExecStop=/bin/bash -lc "docker compose down || docker-compose down"
+
+[Install]
+WantedBy=multi-user.target
+
