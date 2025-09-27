@@ -24,6 +24,8 @@ from .adhd import AttentionMonitor, ContextManager, TaskDecomposer
 from .claude import ClaudeConfigurator, ClaudeLauncher
 from .config import ConfigManager
 from .health import HealthChecker
+import subprocess
+from subprocess import CalledProcessError
 
 console = Console()
 
@@ -140,6 +142,11 @@ def init(ctx, directory: str, force: bool, template: str):
     is_flag=True,
     help="⚠️  Skip all permission checks (same as --dangerous)",
 )
+@click.option(
+    "--mcp-up",
+    is_flag=True,
+    help="Start MCP Docker servers before launching Claude Code",
+)
 @click.pass_context
 def start(
     ctx,
@@ -148,6 +155,7 @@ def start(
     debug: bool,
     dangerous: bool,
     dangerously_skip_permissions: bool,
+    mcp_up: bool,
 ):
     """
     🚀 Start Claude Code with ADHD-optimized configuration
@@ -202,6 +210,17 @@ def start(
         if is_dangerous_mode:
             progress.update(task, description="⚠️  Activating dangerous mode...")
             _activate_dangerous_mode()
+
+        # Optionally start MCP servers
+        if mcp_up:
+            try:
+                console.print("[blue]🔌 Starting MCP servers (docker compose)...[/blue]")
+                subprocess.run(
+                    ["bash", "-lc", "cd docker/mcp-servers && ./start-all-mcp-servers.sh"],
+                    check=True,
+                )
+            except CalledProcessError:
+                console.print("[red]❌ Failed to start MCP servers (continuing anyway)")
 
         # Launch Claude Code
         progress.update(task, description="Launching Claude Code...")
@@ -850,6 +869,94 @@ def analyze(
 
             traceback.print_exc()
         sys.exit(1)
+
+
+@cli.group()
+def mcp():
+    """Manage MCP Docker servers (start/stop/status/logs)."""
+
+
+@mcp.command("up")
+@click.option("--all", "all_services", is_flag=True, help="Start all MCP servers")
+@click.option("--services", "services", help="Comma-separated services to start")
+def mcp_up_cmd(all_services: bool, services: str):
+    """Start MCP servers via docker-compose."""
+    try:
+        cmd = "cd docker/mcp-servers && "
+        if all_services or not services:
+            cmd += "./start-all-mcp-servers.sh"
+        else:
+            svc_list = " ".join(s.strip() for s in services.split(",") if s.strip())
+            cmd += f"docker-compose up -d --build {svc_list}"
+        console.print(f"[blue]🔌 {cmd}[/blue]")
+        subprocess.run(["bash","-lc", cmd], check=True)
+        console.print("[green]✅ MCP servers started[/green]")
+    except CalledProcessError:
+        console.print("[red]❌ Failed to start MCP servers[/red]")
+        sys.exit(1)
+
+
+@mcp.command("down")
+def mcp_down_cmd():
+    """Stop all MCP servers."""
+    try:
+        subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose down"], check=True)
+        console.print("[green]✅ MCP servers stopped[/green]")
+    except CalledProcessError:
+        console.print("[red]❌ Failed to stop MCP servers[/red]")
+        sys.exit(1)
+
+
+@mcp.command("status")
+def mcp_status_cmd():
+    """Show docker-compose status for MCP servers."""
+    try:
+        subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose ps"], check=False)
+    except CalledProcessError:
+        sys.exit(1)
+
+
+@mcp.command("logs")
+@click.option("--service", "service", help="Service to tail logs for")
+def mcp_logs_cmd(service: str):
+    """Tail logs for an MCP service or all."""
+    try:
+        if service:
+            cmd = f"cd docker/mcp-servers && docker-compose logs -f {service}"
+        else:
+            cmd = "cd docker/mcp-servers && docker-compose logs -f"
+        console.print(f"[blue]📄 {cmd}[/blue]")
+        subprocess.run(["bash","-lc", cmd], check=False)
+    except CalledProcessError:
+        sys.exit(1)
+
+
+@cli.group()
+def servers():
+    """Alias for 'dopemux mcp' commands."""
+
+
+@servers.command("up")
+@click.option("--all", "all_services", is_flag=True, help="Start all MCP servers")
+@click.option("--services", "services", help="Comma-separated services to start")
+def servers_up_cmd(all_services: bool, services: str):
+    mcp_up_cmd(all_services, services)
+
+
+@servers.command("down")
+def servers_down_cmd():
+    mcp_down_cmd()
+
+
+@servers.command("status")
+def servers_status_cmd():
+    mcp_status_cmd()
+
+
+@servers.command("logs")
+@click.option("--service", "service", help="Service to tail logs for")
+def servers_logs_cmd(service: str):
+    mcp_logs_cmd(service)
 
 
 @cli.command()
