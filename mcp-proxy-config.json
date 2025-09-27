@@ -3,17 +3,8 @@
     "mas-sequential-thinking": {
       "command": ["docker", "exec", "-i", "mcp-mas-sequential-thinking", "mcp-server-mas-sequential-thinking"]
     },
-    "context7": {
-      "command": ["docker", "exec", "-i", "mcp-claude-context", "npx", "@modelcontextprotocol/server-context7"]
-    },
-    "exa": {
-      "command": ["docker", "exec", "-i", "mcp-exa", "python", "server.py"]
-    },
-    "zen": {
-      "command": ["docker", "exec", "-i", "mcp-zen", "python", "-m", "zen_mcp_server"]
-    },
-    "serena": {
-      "command": ["docker", "exec", "-i", "mcp-serena", "python", "server.py"]
+    "gptr-researcher-stdio": {
+      "command": ["docker", "exec", "-i", "mcp-gptr-stdio", "python", "/app/scripts/gpt-researcher/mcp_server.py"]
     }
   }
 }
