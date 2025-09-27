@@ -43,6 +43,11 @@ In Claude Code, try:
 
 You should see the available dopemux commands.
 
+Tip: To start Claude and the MCP servers in one step from a terminal (outside Claude), run:
+```
+dopemux start --mcp-up
+```
+
 ## Available Slash Commands
 
 ### Session Management
@@ -55,6 +60,19 @@ You should see the available dopemux commands.
 - `/dopemux stop <instance>` - Stop specific instance
 - `/dopemux switch <instance>` - Switch to instance worktree
 - `/dopemux list` - List all available instances
+
+### MCP Server Control
+- `/dopemux servers up` - Start all MCP servers (docker compose)
+- `/dopemux servers down` - Stop all MCP servers
+- `/dopemux servers status` - Show server status
+- `/dopemux servers logs [service]` - Tail logs for a service
+
+Examples:
+```
+/dopemux servers up                 # same as: dopemux mcp up --all
+/dopemux servers status             # same as: dopemux mcp status
+/dopemux servers logs gptr-mcp      # same as: dopemux mcp logs --service gptr-mcp
+```
 
 ## ADHD-Optimized Workflow
 
