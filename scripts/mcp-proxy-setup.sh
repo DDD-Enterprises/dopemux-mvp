@@ -50,7 +50,7 @@ check_mcp_proxy() {
 check_containers() {
     log_info "Checking Docker containers..."
 
-    local containers=("mcp-mas-sequential-thinking" "mcp-claude-context" "mcp-exa" "mcp-zen" "mcp-serena")
+    local containers=("mcp-mas-sequential-thinking" "mcp-claude-context" "mcp-exa" "mcp-zen" "mcp-serena" "mcp-gptr-mcp" "mcp-gptr-stdio")
     local running_containers=()
 
     for container in "${containers[@]}"; do
@@ -93,6 +93,16 @@ test_docker_exec() {
             log_error "Node.js not found in mcp-claude-context"
         fi
     fi
+
+    # Test gptr-stdio
+    if docker ps --format '{{.Names}}' | grep -q "^mcp-gptr-stdio$"; then
+        log_info "Testing mcp-gptr-stdio..."
+        if timeout 8 docker exec mcp-gptr-stdio python -c "import mcp, gpt_researcher; print('ok')" &>/dev/null; then
+            log_success "Python deps for stdio present (mcp + gpt_researcher)"
+        else
+            log_error "Missing Python deps in mcp-gptr-stdio (mcp/gpt_researcher)"
+        fi
+    fi
 }
 
 # Generate proxy configuration
@@ -105,14 +115,8 @@ generate_config() {
     "mas-sequential-thinking": {
       "command": "docker exec -i mcp-mas-sequential-thinking mcp-server-mas-sequential-thinking"
     },
-    "exa": {
-      "command": "docker exec -i mcp-exa python server.py"
-    },
-    "zen": {
-      "command": "docker exec -i mcp-zen python -m zen_mcp_server"
-    },
-    "serena": {
-      "command": "docker exec -i mcp-serena python server.py"
+    "gptr-researcher-stdio": {
+      "command": "docker exec -i mcp-gptr-stdio python /app/scripts/gpt-researcher/mcp_server.py"
     }
   }
 }
@@ -147,6 +151,7 @@ start_proxy() {
         log_info "Starting proxy with individual server configuration..."
         nohup mcp-proxy \
             --named-server mas-sequential-thinking 'docker exec -i mcp-mas-sequential-thinking mcp-server-mas-sequential-thinking' \
+            --named-server gptr-researcher-stdio 'docker exec -i mcp-gptr-stdio python /app/scripts/gpt-researcher/mcp_server.py' \
             --port "$PROXY_PORT" \
             --allow-origin '*' \
             > "$LOG_FILE" 2>&1 &
@@ -175,9 +180,7 @@ test_proxy() {
 
     local endpoints=(
         "mas-sequential-thinking"
-        "exa"
-        "zen"
-        "serena"
+        "gptr-researcher-stdio"
     )
 
     for endpoint in "${endpoints[@]}"; do
@@ -198,14 +201,53 @@ configure_claude() {
 
     # Remove old configurations
     claude mcp remove mas-sequential-thinking 2>/dev/null || true
-    claude mcp remove context7 2>/dev/null || true
+    claude mcp remove gptr-mcp 2>/dev/null || true
+    claude mcp remove gptr-researcher-stdio-proxy 2>/dev/null || true
+    claude mcp remove claude-context 2>/dev/null || true
     claude mcp remove exa 2>/dev/null || true
+    claude mcp remove zen 2>/dev/null || true
+    claude mcp remove serena 2>/dev/null || true
 
     # Add proxy configurations
     log_info "Adding proxy servers to Claude Code..."
 
-    claude mcp add -t sse mas-sequential-thinking-proxy "http://${PROXY_HOST}:${PROXY_PORT}/servers/mas-sequential-thinking/sse"
-    log_success "Added mas-sequential-thinking-proxy"
+    # Prefer direct HTTP for MAS (served by internal mcp-proxy in container)
+    if docker ps --format '{{.Names}}' | grep -q "^mcp-mas-sequential-thinking$"; then
+        claude mcp add -t http mas-sequential-thinking "http://${PROXY_HOST}:3001"
+        log_success "Added mas-sequential-thinking (HTTP)"
+    fi
+
+    # Add GPT Researcher via stdio proxy (SSE)
+    if docker ps --format '{{.Names}}' | grep -q "^mcp-gptr-stdio$"; then
+        claude mcp add -t sse gptr-researcher-stdio-proxy "http://${PROXY_HOST}:${PROXY_PORT}/servers/gptr-researcher-stdio/sse"
+        log_success "Added gptr-researcher-stdio-proxy"
+    fi
+
+    # Add GPT Researcher (HTTP direct)
+    if docker ps --format '{{.Names}}' | grep -q "^mcp-gptr-mcp$"; then
+        claude mcp add -t http gptr-mcp "http://127.0.0.1:3009"
+        log_success "Added gptr-mcp (HTTP)"
+    else
+        log_warning "mcp-gptr-mcp not running; skipping Claude add for gptr-mcp"
+    fi
+
+    # Add direct HTTP servers (no proxy): claude-context, exa, zen, serena
+    if docker ps --format '{{.Names}}' | grep -q "^mcp-claude-context$"; then
+        claude mcp add -t http claude-context "http://127.0.0.1:3007"
+        log_success "Added claude-context (HTTP)"
+    fi
+    if docker ps --format '{{.Names}}' | grep -q "^mcp-exa$"; then
+        claude mcp add -t http exa "http://127.0.0.1:3008"
+        log_success "Added exa (HTTP)"
+    fi
+    if docker ps --format '{{.Names}}' | grep -q "^mcp-zen$"; then
+        claude mcp add -t http zen "http://127.0.0.1:3003"
+        log_success "Added zen (HTTP)"
+    fi
+    if docker ps --format '{{.Names}}' | grep -q "^mcp-serena$"; then
+        claude mcp add -t http serena "http://127.0.0.1:3006"
+        log_success "Added serena (HTTP)"
+    fi
 
     # Test if other servers are running before adding them
     if docker ps --format '{{.Names}}' | grep -q "^mcp-exa$"; then
