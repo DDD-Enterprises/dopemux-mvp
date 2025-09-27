@@ -97,6 +97,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.conport
 .venv
 env/
 venv/
@@ -130,6 +131,9 @@ dmypy.json
 session_data/
 attention_logs/
 context_snapshots/
+.taskmaster/
+.worktrees/
+context_portal/conport_vector_data/
 
 # Claude Code specific
 .claude/settings.local.json
