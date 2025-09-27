@@ -1,0 +1,342 @@
+#!/usr/bin/env python3
+"""
+ADHD Attention Manager - Cognitive Load and Attention State Detection
+Provides intelligent tool selection based on current attention patterns and executive function state
+"""
+
+import time
+import json
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Tuple
+from enum import Enum
+from dataclasses import dataclass, asdict
+import logging
+
+logger = logging.getLogger(__name__)
+
+class AttentionState(Enum):
+    """Current attention and cognitive load state"""
+    HYPERFOCUS = "hyperfocus"          # Deep focus, high cognitive capacity
+    FOCUSED = "focused"                # Good focus, normal capacity
+    SCATTERED = "scattered"            # Divided attention, reduced capacity
+    DISTRACTED = "distracted"          # Poor focus, minimal capacity
+    OVERLOADED = "overloaded"          # Cognitive overload, need break
+    TRANSITIONING = "transitioning"    # Moving between states
+
+class CognitiveLoad(Enum):
+    """Cognitive complexity level"""
+    MINIMAL = "minimal"     # Simple, automatic tasks
+    LOW = "low"            # Basic tasks, familiar patterns
+    MEDIUM = "medium"      # Moderate complexity, some decision-making
+    HIGH = "high"          # Complex analysis, heavy thinking
+    MAXIMUM = "maximum"    # Deep reasoning, architecture decisions
+
+@dataclass
+class AttentionMetrics:
+    """Metrics for attention state assessment"""
+    session_duration: float           # Minutes in current session
+    task_switches: int               # Number of context switches
+    error_rate: float                # Recent error/retry rate
+    response_time: float             # Average response time to prompts
+    break_frequency: float           # Time since last break
+    decision_paralysis_indicators: int # Repeated queries, hesitation patterns
+    timestamp: datetime
+
+class AttentionManager:
+    """Manages attention state detection and tool filtering for ADHD optimization"""
+
+    def __init__(self):
+        self.current_state = AttentionState.FOCUSED  # Default assumption
+        self.session_start = datetime.now()
+        self.last_activity = datetime.now()
+        self.metrics_history: List[AttentionMetrics] = []
+        self.tool_usage_history: List[Dict] = []
+        self.break_reminders_sent = 0
+
+        # ADHD-specific thresholds (configurable per user)
+        self.thresholds = {
+            "hyperfocus_duration": 90,      # Minutes before suggesting break
+            "scattered_switches": 5,        # Task switches indicating scattered state
+            "overload_errors": 3,          # Error rate indicating overload
+            "break_reminder_interval": 25,  # Pomodoro-style breaks
+            "decision_paralysis_queries": 3 # Repeated similar queries
+        }
+
+    def update_activity(self, activity_type: str, details: Dict = None):
+        """Record user activity to assess attention patterns"""
+        self.last_activity = datetime.now()
+
+        activity_record = {
+            "timestamp": self.last_activity,
+            "type": activity_type,
+            "details": details or {},
+            "session_duration": self._get_session_duration()
+        }
+
+        # Maintain rolling window of recent activities
+        self.tool_usage_history.append(activity_record)
+        if len(self.tool_usage_history) > 100:  # Keep last 100 activities
+            self.tool_usage_history = self.tool_usage_history[-100:]
+
+        # Update attention state based on patterns
+        self._assess_attention_state()
+
+    def _get_session_duration(self) -> float:
+        """Get current session duration in minutes"""
+        return (datetime.now() - self.session_start).total_seconds() / 60
+
+    def _assess_attention_state(self) -> AttentionState:
+        """Assess current attention state based on recent activity patterns"""
+        duration = self._get_session_duration()
+        recent_activities = self._get_recent_activities(minutes=10)
+
+        # Calculate key metrics
+        task_switches = self._count_context_switches(recent_activities)
+        error_rate = self._calculate_error_rate(recent_activities)
+        decision_paralysis = self._detect_decision_paralysis(recent_activities)
+        time_since_break = duration % 25  # Pomodoro cycle
+
+        # State assessment logic
+        if duration > self.thresholds["hyperfocus_duration"] and task_switches < 2:
+            self.current_state = AttentionState.HYPERFOCUS
+        elif task_switches > self.thresholds["scattered_switches"]:
+            self.current_state = AttentionState.SCATTERED
+        elif error_rate > self.thresholds["overload_errors"]:
+            self.current_state = AttentionState.OVERLOADED
+        elif decision_paralysis > self.thresholds["decision_paralysis_queries"]:
+            self.current_state = AttentionState.DISTRACTED
+        elif time_since_break > 25:
+            self.current_state = AttentionState.TRANSITIONING
+        else:
+            self.current_state = AttentionState.FOCUSED
+
+        logger.debug(f"Attention state assessed: {self.current_state.value}")
+        return self.current_state
+
+    def _get_recent_activities(self, minutes: int = 10) -> List[Dict]:
+        """Get activities from the last N minutes"""
+        cutoff = datetime.now() - timedelta(minutes=minutes)
+        return [
+            activity for activity in self.tool_usage_history
+            if activity["timestamp"] > cutoff
+        ]
+
+    def _count_context_switches(self, activities: List[Dict]) -> int:
+        """Count context switches (different tool types) in activity list"""
+        if len(activities) < 2:
+            return 0
+
+        switches = 0
+        prev_tool = None
+        for activity in activities:
+            current_tool = activity.get("details", {}).get("tool_type")
+            if prev_tool and current_tool != prev_tool:
+                switches += 1
+            prev_tool = current_tool
+        return switches
+
+    def _calculate_error_rate(self, activities: List[Dict]) -> float:
+        """Calculate error/retry rate from recent activities"""
+        if not activities:
+            return 0.0
+
+        errors = len([a for a in activities if a.get("type") == "error"])
+        return errors / len(activities)
+
+    def _detect_decision_paralysis(self, activities: List[Dict]) -> int:
+        """Detect repeated similar queries indicating decision paralysis"""
+        query_types = [a.get("details", {}).get("query_type") for a in activities]
+        query_types = [q for q in query_types if q]  # Remove None values
+
+        if not query_types:
+            return 0
+
+        # Count most frequent query type
+        from collections import Counter
+        most_common = Counter(query_types).most_common(1)
+        return most_common[0][1] if most_common else 0
+
+    def get_appropriate_tools(self, all_tools: List[Dict]) -> Tuple[List[Dict], str]:
+        """Filter tools based on current attention state and cognitive load"""
+        state = self._assess_attention_state()
+
+        # Tool filtering logic based on attention state
+        if state == AttentionState.HYPERFOCUS:
+            # Allow complex tools, user can handle high cognitive load
+            complexity_limit = CognitiveLoad.MAXIMUM
+            max_tools = 8
+            reason = "Hyperfocus detected - full tool access enabled"
+
+        elif state == AttentionState.FOCUSED:
+            # Standard tool set, good balance
+            complexity_limit = CognitiveLoad.HIGH
+            max_tools = 5
+            reason = "Focused state - standard tool set available"
+
+        elif state == AttentionState.SCATTERED:
+            # Limit to familiar, simple tools
+            complexity_limit = CognitiveLoad.MEDIUM
+            max_tools = 3
+            reason = "Scattered attention - simplified tool set to reduce overwhelm"
+
+        elif state == AttentionState.DISTRACTED:
+            # Only essential, very simple tools
+            complexity_limit = CognitiveLoad.LOW
+            max_tools = 2
+            reason = "Distracted state - minimal tools to support focus"
+
+        elif state == AttentionState.OVERLOADED:
+            # Crisis mode - only immediate help tools
+            complexity_limit = CognitiveLoad.MINIMAL
+            max_tools = 1
+            reason = "Cognitive overload - break recommended, emergency tools only"
+
+        else:  # TRANSITIONING
+            # Conservative tool set during state changes
+            complexity_limit = CognitiveLoad.MEDIUM
+            max_tools = 3
+            reason = "Transitioning state - conservative tool selection"
+
+        # Filter and rank tools
+        filtered_tools = []
+        for tool in all_tools:
+            tool_complexity = self._assess_tool_complexity(tool)
+            if self._complexity_level_value(tool_complexity) <= self._complexity_level_value(complexity_limit):
+                # Add cognitive load indicator to tool
+                enhanced_tool = tool.copy()
+                enhanced_tool["cognitive_load"] = tool_complexity.value
+                enhanced_tool["attention_friendly"] = True
+                filtered_tools.append(enhanced_tool)
+
+        # Limit number of tools to prevent choice paralysis
+        if len(filtered_tools) > max_tools:
+            # Prioritize by familiarity and simplicity
+            filtered_tools = sorted(filtered_tools,
+                                   key=lambda t: self._get_tool_priority_score(t))[:max_tools]
+
+        return filtered_tools, reason
+
+    def _assess_tool_complexity(self, tool: Dict) -> CognitiveLoad:
+        """Assess cognitive complexity of a tool based on its characteristics"""
+        tool_name = tool.get("name", "").lower()
+        description = tool.get("description", "").lower()
+
+        # High complexity indicators
+        high_complexity_keywords = [
+            "analysis", "reasoning", "complex", "architecture", "debug",
+            "consensus", "planning", "review", "deep", "comprehensive"
+        ]
+
+        # Medium complexity indicators
+        medium_complexity_keywords = [
+            "search", "documentation", "code", "implementation", "configuration"
+        ]
+
+        # Low complexity indicators
+        low_complexity_keywords = [
+            "echo", "status", "version", "health", "simple", "basic", "test"
+        ]
+
+        text_to_check = f"{tool_name} {description}"
+
+        if any(keyword in text_to_check for keyword in high_complexity_keywords):
+            return CognitiveLoad.HIGH
+        elif any(keyword in text_to_check for keyword in medium_complexity_keywords):
+            return CognitiveLoad.MEDIUM
+        elif any(keyword in text_to_check for keyword in low_complexity_keywords):
+            return CognitiveLoad.LOW
+        else:
+            return CognitiveLoad.MEDIUM  # Default to medium
+
+    def _complexity_level_value(self, complexity: CognitiveLoad) -> int:
+        """Convert complexity enum to numeric value for comparison"""
+        complexity_values = {
+            CognitiveLoad.MINIMAL: 1,
+            CognitiveLoad.LOW: 2,
+            CognitiveLoad.MEDIUM: 3,
+            CognitiveLoad.HIGH: 4,
+            CognitiveLoad.MAXIMUM: 5
+        }
+        return complexity_values[complexity]
+
+    def _get_tool_priority_score(self, tool: Dict) -> int:
+        """Calculate priority score for tool selection (lower = higher priority)"""
+        # Prioritize by complexity (simpler = higher priority in attention challenges)
+        complexity_score = self._complexity_level_value(
+            CognitiveLoad(tool.get("cognitive_load", "medium"))
+        )
+
+        # Bonus for frequently used tools (if we had usage history)
+        familiarity_bonus = 0
+
+        # Bonus for essential tools
+        essential_tools = ["echo", "status", "version", "health"]
+        essential_bonus = 0 if any(name in tool.get("name", "").lower()
+                                 for name in essential_tools) else 2
+
+        return complexity_score + essential_bonus - familiarity_bonus
+
+    def get_break_recommendation(self) -> Optional[Dict]:
+        """Check if user needs a break and provide recommendation"""
+        duration = self._get_session_duration()
+
+        # Pomodoro-style break recommendations
+        if duration > 25 and duration % 25 < 1:  # Every 25 minutes
+            return {
+                "type": "pomodoro_break",
+                "message": "🍅 25 minutes completed! Take a 5-minute break to maintain focus.",
+                "break_duration": 5,
+                "activities": ["Stand up", "Hydrate", "Look away from screen", "Brief walk"]
+            }
+
+        # Hyperfocus break warnings
+        if self.current_state == AttentionState.HYPERFOCUS and duration > 90:
+            return {
+                "type": "hyperfocus_break",
+                "message": "⚠️ Extended hyperfocus detected. Take a longer break to prevent burnout.",
+                "break_duration": 15,
+                "activities": ["Eat something", "Go outside", "Physical movement", "Social interaction"]
+            }
+
+        # Overload break requirement
+        if self.current_state == AttentionState.OVERLOADED:
+            return {
+                "type": "overload_break",
+                "message": "🔴 Cognitive overload detected. Break required before continuing.",
+                "break_duration": 10,
+                "activities": ["Deep breathing", "Progressive muscle relaxation", "Clear your mind"]
+            }
+
+        return None
+
+    def get_status_summary(self) -> Dict:
+        """Get comprehensive status summary for monitoring"""
+        duration = self._get_session_duration()
+        recent_activities = len(self._get_recent_activities(minutes=10))
+
+        return {
+            "attention_state": self.current_state.value,
+            "session_duration_minutes": round(duration, 1),
+            "activities_last_10min": recent_activities,
+            "break_recommendation": self.get_break_recommendation(),
+            "next_break_in_minutes": max(0, 25 - (duration % 25)),
+            "session_health": self._assess_session_health(),
+            "timestamp": datetime.now().isoformat()
+        }
+
+    def _assess_session_health(self) -> str:
+        """Assess overall session health"""
+        duration = self._get_session_duration()
+        state = self.current_state
+
+        if state == AttentionState.OVERLOADED:
+            return "poor"
+        elif state in [AttentionState.FOCUSED, AttentionState.HYPERFOCUS] and duration < 120:
+            return "excellent"
+        elif state == AttentionState.SCATTERED and duration < 60:
+            return "fair"
+        else:
+            return "good"
+
+# Global instance for use across MCP server
+attention_manager = AttentionManager()
