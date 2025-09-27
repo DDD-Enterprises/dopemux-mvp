@@ -1,0 +1,253 @@
+{
+  "Developer:CodeImplementation": {
+    "source_weights": {
+      "ProjectCode": 0.6,
+      "ProjectDocs": 0.4
+    },
+    "rerank_instruction": "Prioritize code snippets, implementation details, and concrete examples. Surface working code over documentation. Focus on executable patterns, API usage, and best practices. Include relevant test examples if available.",
+    "filters": {
+      "include_modules": ["src/", "lib/", "app/"],
+      "exclude_modules": ["test/", "docs/"],
+      "exclude_doc_types": ["ADR"],
+      "language_filter": []
+    },
+    "fusion_weights": {
+      "code_dense": 0.5,
+      "code_sparse": 0.5
+    },
+    "context_limits": {
+      "max_candidates": 64,
+      "max_results": 12,
+      "max_tokens": 2800
+    },
+    "must_include": {
+      "latest_adr": false,
+      "related_commits": true,
+      "error_patterns": false
+    }
+  },
+
+  "Developer:Debugging": {
+    "source_weights": {
+      "ProjectCode": 0.7,
+      "ProjectDocs": 0.3
+    },
+    "rerank_instruction": "Emphasize error handling code, debugging utilities, logging implementations, and troubleshooting patterns. Prioritize code that demonstrates error conditions, exception handling, and diagnostic tools. Include runbooks only if they contain technical debugging steps.",
+    "filters": {
+      "include_modules": ["src/", "lib/", "test/"],
+      "include_doc_types": ["Runbook", "PostMortem"],
+      "language_filter": []
+    },
+    "fusion_weights": {
+      "code_dense": 0.4,
+      "code_sparse": 0.6
+    },
+    "context_limits": {
+      "max_candidates": 48,
+      "max_results": 10,
+      "max_tokens": 2500
+    },
+    "must_include": {
+      "error_patterns": true,
+      "related_commits": true,
+      "latest_adr": false
+    }
+  },
+
+  "Developer:CodeReview": {
+    "source_weights": {
+      "ProjectCode": 0.8,
+      "ProjectDocs": 0.2
+    },
+    "rerank_instruction": "Focus on code patterns, style guidelines, security best practices, and existing implementations of similar functionality. Prioritize examples of good practices and anti-patterns. Include coding standards and architectural patterns.",
+    "filters": {
+      "include_modules": ["src/", "lib/"],
+      "include_doc_types": ["Spec", "README"],
+      "recency_days": 90
+    },
+    "context_limits": {
+      "max_candidates": 48,
+      "max_results": 8,
+      "max_tokens": 2000
+    },
+    "must_include": {
+      "latest_adr": false,
+      "related_commits": false,
+      "error_patterns": false
+    }
+  },
+
+  "Architect:SystemDesign": {
+    "source_weights": {
+      "ProjectDocs": 0.8,
+      "ProjectCode": 0.2
+    },
+    "rerank_instruction": "Surface high-level architecture documents, design patterns, system interaction diagrams, and architectural decision records. Include relevant code only as examples of architectural patterns. Emphasize design rationale, trade-offs, and system-wide implications.",
+    "filters": {
+      "include_doc_types": ["ADR", "RFC", "Spec", "README"],
+      "exclude_modules": ["test/", "scripts/"],
+      "include_modules": ["src/core/", "src/services/"]
+    },
+    "fusion_weights": {
+      "docs_dense": 0.7,
+      "docs_sparse": 0.3
+    },
+    "context_limits": {
+      "max_candidates": 64,
+      "max_results": 12,
+      "max_tokens": 3000
+    },
+    "must_include": {
+      "latest_adr": true,
+      "related_commits": false,
+      "error_patterns": false
+    }
+  },
+
+  "Architect:TechnologyEvaluation": {
+    "source_weights": {
+      "ProjectDocs": 0.9,
+      "ProjectCode": 0.1
+    },
+    "rerank_instruction": "Prioritize technology comparisons, evaluation criteria, proof of concepts, and decision rationale. Focus on architectural trade-offs, performance characteristics, and integration considerations. Include benchmarks and comparative analysis.",
+    "filters": {
+      "include_doc_types": ["ADR", "RFC", "Spec"],
+      "exclude_modules": ["src/"],
+      "recency_days": 180
+    },
+    "context_limits": {
+      "max_candidates": 48,
+      "max_results": 8,
+      "max_tokens": 2500
+    },
+    "must_include": {
+      "latest_adr": true,
+      "related_commits": false,
+      "error_patterns": false
+    }
+  },
+
+  "SRE:IncidentResponse": {
+    "source_weights": {
+      "ProjectDocs": 0.5,
+      "ProjectCode": 0.5
+    },
+    "rerank_instruction": "Include operational runbooks, incident response procedures, monitoring configurations, and deployment code. Prioritize actionable troubleshooting steps, system recovery procedures, and diagnostic tools. Focus on production systems and operational guidance.",
+    "filters": {
+      "include_doc_types": ["Runbook", "PostMortem"],
+      "include_modules": ["infra/", "deploy/", "monitoring/", "scripts/"]
+    },
+    "fusion_weights": {
+      "docs_dense": 0.6,
+      "docs_sparse": 0.4,
+      "code_dense": 0.4,
+      "code_sparse": 0.6
+    },
+    "context_limits": {
+      "max_candidates": 48,
+      "max_results": 10,
+      "max_tokens": 2500
+    },
+    "must_include": {
+      "error_patterns": true,
+      "related_commits": false,
+      "latest_adr": false
+    }
+  },
+
+  "SRE:PerformanceAnalysis": {
+    "source_weights": {
+      "ProjectCode": 0.6,
+      "ProjectDocs": 0.4
+    },
+    "rerank_instruction": "Focus on performance-critical code, monitoring configurations, benchmarking results, and optimization techniques. Include profiling data, performance test results, and system metrics. Prioritize code that affects system performance.",
+    "filters": {
+      "include_modules": ["src/", "monitoring/", "benchmarks/"],
+      "include_doc_types": ["Runbook", "PostMortem"],
+      "language_filter": ["python", "go", "rust", "javascript"]
+    },
+    "context_limits": {
+      "max_candidates": 64,
+      "max_results": 12,
+      "max_tokens": 3000
+    },
+    "must_include": {
+      "error_patterns": false,
+      "related_commits": true,
+      "latest_adr": false
+    }
+  },
+
+  "PM:FeatureDiscussion": {
+    "source_weights": {
+      "ProjectDocs": 0.9,
+      "ProjectCode": 0.1
+    },
+    "rerank_instruction": "Focus exclusively on user-facing feature descriptions, product requirements, specifications, and business rationale. Avoid technical implementation details and raw code. Emphasize user stories, acceptance criteria, and product impact.",
+    "filters": {
+      "include_doc_types": ["Spec", "Requirement", "README"],
+      "exclude_modules": ["src/", "lib/", "test/"]
+    },
+    "fusion_weights": {
+      "docs_dense": 0.8,
+      "docs_sparse": 0.2
+    },
+    "context_limits": {
+      "max_candidates": 48,
+      "max_results": 8,
+      "max_tokens": 2000
+    },
+    "must_include": {
+      "latest_adr": false,
+      "related_commits": false,
+      "error_patterns": false
+    }
+  },
+
+  "PM:RequirementsAnalysis": {
+    "source_weights": {
+      "ProjectDocs": 0.95,
+      "ProjectCode": 0.05
+    },
+    "rerank_instruction": "Prioritize requirement specifications, user stories, acceptance criteria, and feature definitions. Focus on business logic, user workflows, and functional requirements. Include examples of similar features and their specifications.",
+    "filters": {
+      "include_doc_types": ["Spec", "Requirement", "ADR"],
+      "exclude_modules": ["src/", "test/"]
+    },
+    "context_limits": {
+      "max_candidates": 32,
+      "max_results": 6,
+      "max_tokens": 1800
+    },
+    "must_include": {
+      "latest_adr": false,
+      "related_commits": false,
+      "error_patterns": false
+    }
+  },
+
+  "Default:General": {
+    "source_weights": {
+      "ProjectDocs": 0.6,
+      "ProjectCode": 0.4
+    },
+    "rerank_instruction": "Provide balanced coverage of documentation and code relevant to the query. Prioritize clear explanations and practical examples.",
+    "filters": {},
+    "fusion_weights": {
+      "docs_dense": 0.65,
+      "docs_sparse": 0.35,
+      "code_dense": 0.55,
+      "code_sparse": 0.45
+    },
+    "context_limits": {
+      "max_candidates": 64,
+      "max_results": 10,
+      "max_tokens": 2500
+    },
+    "must_include": {
+      "latest_adr": false,
+      "related_commits": false,
+      "error_patterns": false
+    }
+  }
+}
