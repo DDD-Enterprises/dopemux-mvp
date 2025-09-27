@@ -1,0 +1,31 @@
+{
+  "name": "gpt-researcher",
+  "description": "Deep research capabilities with tree exploration and multi-agent analysis",
+  "command": "gptr-mcp",
+  "args": [],
+  "env": {
+    "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+    "TAVILY_API_KEY": "${TAVILY_API_KEY}",
+    "RETRIEVER": "tavily",
+    "GPTR_LOG_LEVEL": "INFO"
+  },
+  "capabilities": {
+    "research": {
+      "tools": [
+        "quick_search",
+        "deep_research",
+        "research_resource",
+        "write_report",
+        "get_research_sources",
+        "get_research_context"
+      ],
+      "max_concurrent": 3,
+      "timeout": 600
+    }
+  },
+  "health_check": {
+    "endpoint": "/health",
+    "interval": 30,
+    "timeout": 10
+  }
+}
