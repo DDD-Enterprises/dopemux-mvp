@@ -1,0 +1,209 @@
+# Dopemux RAG Pipeline Configuration
+# This file defines system-wide parameters for the RAG pipeline
+
+# Voyage AI Configuration
+voyage:
+  api_key_env: "VOYAGE_API_KEY"
+  embedding_models:
+    docs: "voyage-context-3"
+    code: "voyage-code-3"
+  reranking_models:
+    production: "rerank-2.5"
+    fast: "rerank-2.5-lite"
+  dimensions: 1024
+  batch_size: 100
+  timeout_seconds: 30
+
+# Milvus Configuration
+milvus:
+  connection:
+    host: "localhost"
+    port: 19530
+    user: ""
+    password: ""
+    timeout: 30
+
+  collections:
+    docs:
+      name: "ProjectDocs"
+      description: "Project documentation chunks"
+      max_entities: 1000000
+    code:
+      name: "ProjectCode"
+      description: "Project code chunks"
+      max_entities: 500000
+
+  indices:
+    vector:
+      type: "HNSW"
+      metric_type: "COSINE"
+      params:
+        M: 16
+        efConstruction: 200
+        efSearch: 128
+    sparse:
+      type: "SPARSE_INVERTED_INDEX"
+      metric_type: "BM25"
+      params:
+        bm25_k1: 1.2
+        bm25_b: 0.75
+        bm25_k3: 8.0
+
+# ConPort Memory Integration
+conport:
+  url: "http://localhost:8080"
+  timeout: 10
+  max_retries: 3
+  batch_size: 50
+  buffer:
+    max_size: 1000
+    retry_interval: 300  # 5 minutes
+
+# Ingestion Pipeline
+ingestion:
+  chunking:
+    docs:
+      max_tokens: 400
+      overlap_tokens: 50
+      min_chunk_tokens: 50
+    code:
+      max_lines: 100
+      overlap_lines: 10
+      min_chunk_lines: 5
+
+  preprocessing:
+    enable_preludes: true
+    prelude_max_tokens: 100
+    language_detection: true
+    content_filtering: true
+
+# Retrieval Pipeline
+retrieval:
+  stage1:
+    docs:
+      max_candidates: 64
+      fusion_weights:
+        dense: 0.65
+        sparse: 0.35
+    code:
+      max_candidates: 48
+      fusion_weights:
+        dense: 0.55
+        sparse: 0.45
+
+  stage2:
+    max_results: 12
+    context_max_tokens: 2500
+    enable_compression: true
+    compression_ratio: 0.8
+
+# Performance Settings
+performance:
+  query_timeout: 30
+  max_concurrent_queries: 20
+  cache:
+    enable_query_cache: true
+    query_cache_ttl: 3600  # 1 hour
+    enable_embedding_cache: true
+    embedding_cache_size: 10000
+
+  circuit_breaker:
+    failure_threshold: 5
+    recovery_timeout: 60
+    half_open_max_calls: 3
+
+# Feature Flags
+features:
+  enable_memory_logging: true
+  enable_session_enhancement: true
+  enable_performance_tracking: true
+  enable_context_compression: true
+  enable_query_expansion: false
+  enable_result_caching: true
+
+# Monitoring and Observability
+monitoring:
+  metrics:
+    enable_prometheus: false
+    port: 9090
+  logging:
+    level: "INFO"
+    file: "/var/log/rag/pipeline.log"
+    max_size: "100MB"
+    backup_count: 5
+  health_checks:
+    interval: 30
+    timeout: 5
+
+# Environment-Specific Overrides
+environments:
+  development:
+    milvus:
+      connection:
+        host: "localhost"
+        port: 19530
+    conport:
+      url: "http://localhost:8080"
+    retrieval:
+      stage1:
+        docs:
+          max_candidates: 32
+        code:
+          max_candidates: 24
+    performance:
+      max_concurrent_queries: 5
+    monitoring:
+      logging:
+        level: "DEBUG"
+
+  production:
+    milvus:
+      connection:
+        host: "milvus-prod.internal"
+        port: 19530
+        timeout: 60
+    conport:
+      url: "https://conport-prod.internal"
+      timeout: 30
+    retrieval:
+      stage1:
+        docs:
+          max_candidates: 64
+        code:
+          max_candidates: 48
+    performance:
+      max_concurrent_queries: 50
+      cache:
+        embedding_cache_size: 50000
+    monitoring:
+      metrics:
+        enable_prometheus: true
+      logging:
+        level: "WARNING"
+
+# Quality Assurance
+quality:
+  evaluation:
+    enable_continuous_eval: true
+    eval_sample_rate: 0.1  # 10% of queries
+    quality_thresholds:
+      min_relevance_score: 0.3
+      min_success_rate: 0.95
+      max_empty_result_rate: 0.05
+
+  alerts:
+    latency_p95_threshold: 2000  # ms
+    error_rate_threshold: 0.01   # 1%
+    empty_result_threshold: 0.05 # 5%
+
+# Resource Limits
+resources:
+  memory:
+    max_heap_size: "8GB"
+    max_cache_size: "2GB"
+  cpu:
+    max_threads: 16
+    thread_pool_size: 8
+  storage:
+    max_disk_usage: "100GB"
+    cleanup_threshold: 0.9

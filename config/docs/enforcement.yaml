@@ -1,0 +1,239 @@
+# Documentation Enforcement Configuration
+# Defines rules and constraints for knowledge graph documentation system
+
+# Allowed documentation paths - only these directories can contain docs
+allowed_paths:
+  - "docs/90-adr/"        # Architectural Decision Records
+  - "docs/91-rfc/"        # Request for Comments (proposals)
+  - "docs/92-runbooks/"   # Operational procedures
+  - "docs/94-architecture/" # arc42 system architecture
+  - "docs/01-tutorials/"  # Learning-oriented guides
+  - "docs/02-how-to/"     # Problem-oriented guides
+  - "docs/03-reference/"  # Information-oriented docs
+  - "docs/04-explanation/" # Understanding-oriented docs
+
+# File patterns that are explicitly prohibited
+prohibited_patterns:
+  - "README*.md"          # No project READMEs (use proper docs structure)
+  - "NOTES*.md"           # No informal notes (use RFCs or ADRs)
+  - "TODO*.md"            # No TODO files (use task graph nodes)
+  - "TEMP*.md"            # No temporary files
+  - "DRAFT*.md"           # No draft prefixes (use status in frontmatter)
+  - "*[Tt]emp*.md"        # No temp variations
+  - "*scratch*.md"        # No scratch files
+  - "*test*.md"           # No test documentation outside tests/
+  - "*.backup.md"         # No backup files
+  - "*~*.md"              # No editor backup files
+
+# Knowledge graph requirements
+graph_requirements:
+  max_prelude_tokens: 100
+  required_node_properties:
+    - "id"
+    - "title"
+    - "type"
+    - "date"
+    - "prelude"
+  required_edges:
+    - "AUTHORED_BY"
+  optional_edges:
+    - "RELATES_TO"
+    - "DERIVES_FROM"
+    - "SUPERSEDES"
+    - "BLOCKED_BY"
+
+  # Embedding configuration
+  embedding_model: "text-embedding-ada-002"
+  embedding_dimensions: 1536
+  chunk_size: 100  # Max tokens per prelude
+
+# Valid document types and their schemas
+document_types:
+  adr:  # Architectural Decision Record
+    required_fields:
+      - "status"
+      - "prelude"
+      - "graph_metadata"
+    valid_statuses:
+      - "proposed"
+      - "accepted"
+      - "rejected"
+      - "superseded"
+    required_sections:
+      - "Context"
+      - "Decision"
+      - "Consequences"
+    node_type: "Decision"
+
+  rfc:  # Request for Comments
+    required_fields:
+      - "status"
+      - "prelude"
+    valid_statuses:
+      - "draft"
+      - "review"
+      - "accepted"
+      - "rejected"
+      - "superseded"
+    required_sections:
+      - "Problem"
+      - "Options"
+      - "Proposed Direction"
+    node_type: "Pattern"
+
+  caveat:  # Issue/warning documentation
+    required_fields:
+      - "severity"
+      - "impact"
+      - "prelude"
+    valid_severities:
+      - "low"
+      - "medium"
+      - "high"
+      - "critical"
+    required_sections:
+      - "Issue"
+      - "Impact"
+      - "Mitigation"
+    node_type: "Caveat"
+
+  pattern:  # Reusable solution pattern
+    required_fields:
+      - "usage_context"
+      - "prelude"
+    required_sections:
+      - "Problem"
+      - "Solution"
+      - "Example"
+    node_type: "Pattern"
+
+  runbook:  # Operational procedure
+    required_fields:
+      - "owner"
+      - "last_review"
+      - "next_review"
+    required_sections:
+      - "Purpose"
+      - "Steps"
+      - "Troubleshooting"
+    node_type: "DocPage"
+
+# ADHD accommodations for documentation
+adhd_accommodations:
+  # Visual structure requirements
+  max_cognitive_load: "medium"  # low, medium, high
+  require_progressive_disclosure: true
+  require_visual_indicators: true
+  max_sections_before_toc: 5
+
+  # Content structure
+  max_paragraph_length: 150  # characters
+  require_bullet_points: true
+  require_clear_headings: true
+
+  # Top-3 results format for retrieval
+  top3_format:
+    fields:
+      - "title"
+      - "why"        # 1-line explanation
+      - "link"       # file path
+      - "actions"    # available actions list
+    max_why_length: 80  # characters
+
+  # Attention state guidance
+  attention_states:
+    focused:
+      show_full_content: true
+      include_implementation_details: true
+    scattered:
+      show_summary_only: true
+      max_response_words: 500
+      use_bullet_points: true
+
+# Pre-commit hook configuration
+pre_commit:
+  hooks:
+    - frontmatter_validation
+    - graph_schema_check
+    - prelude_token_count
+    - orphan_detection
+    - cross_reference_validation
+
+  # Automatic fixes that can be applied
+  auto_fixes:
+    - add_missing_frontmatter
+    - fix_date_formats
+    - quote_yaml_strings
+    - normalize_section_headers
+
+  # Warnings (don't block commit)
+  warnings:
+    - missing_recommended_sections
+    - long_paragraphs
+    - missing_cross_references
+
+# Integration with external systems
+integrations:
+  conport:
+    auto_create_nodes: true
+    sync_on_save: true
+    workspace_id: "/Users/hue/code/dopemux-mvp"
+
+  neo4j:
+    enabled: false  # Enable when graph database is set up
+    connection: "bolt://localhost:7687"
+
+  vector_store:
+    enabled: true
+    provider: "local"  # or "pinecone", "weaviate"
+    collection_name: "dopemux_docs"
+
+# Retrieval and search configuration
+retrieval:
+  # Fusion parameters for BM25 + vector search
+  bm25_weight: 0.6
+  vector_weight: 0.4
+  rrf_k: 60  # Reciprocal Rank Fusion parameter
+
+  # Performance targets
+  p95_latency_ms: 250
+  max_results: 50
+  rerank_top_k: 10
+
+  # Pre-change briefing recipe
+  pre_change_briefing:
+    stage1: "bm25_and_vector"
+    stage2: "graph_neighborhood"
+    expand_hops: 2
+    include_node_types:
+      - "Decision"
+      - "Caveat"
+      - "Pattern"
+
+# Error handling and reporting
+error_handling:
+  fail_on_errors: true
+  fail_on_warnings: false
+  log_level: "INFO"
+
+  # Report formats
+  output_formats:
+    - "console"
+    - "json"
+    - "github_annotations"  # For CI/CD
+
+# Validation rules by context
+validation_contexts:
+  pre_commit:
+    strict_mode: true
+    auto_fix: true
+
+  ci_cd:
+    strict_mode: true
+    auto_fix: false
+    generate_report: true
+
+  interactive:
+    strict_mode: false
+    auto_fix: true
+    show_suggestions: true

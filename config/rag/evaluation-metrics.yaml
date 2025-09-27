@@ -1,0 +1,324 @@
+# RAG System Evaluation Metrics Configuration
+
+# Quality Metrics
+quality_metrics:
+  retrieval:
+    # Information Retrieval Metrics
+    precision_at_k:
+      k_values: [1, 3, 5, 10]
+      target_p1: 0.90
+      target_p3: 0.85
+      target_p5: 0.80
+      target_p10: 0.75
+
+    recall_at_k:
+      k_values: [5, 10, 20]
+      target_r5: 0.70
+      target_r10: 0.85
+      target_r20: 0.95
+
+    ndcg:
+      k_values: [5, 10, 20]
+      target_ndcg5: 0.85
+      target_ndcg10: 0.80
+      target_ndcg20: 0.75
+
+    mean_reciprocal_rank:
+      target_mrr: 0.85
+
+    empty_hit_rate:
+      target_max: 0.05  # Less than 5% empty results
+
+  reranking:
+    # Reranking Quality
+    rerank_improvement:
+      min_ndcg_improvement: 0.05  # 5% improvement
+      min_precision_improvement: 0.03
+
+    rank_correlation:
+      target_kendall_tau: 0.7
+      target_spearman_rho: 0.8
+
+  end_to_end:
+    # Answer Quality (requires human evaluation)
+    answer_relevance:
+      target_score: 0.85
+      evaluation_method: "llm_judge"  # or "human_eval"
+
+    answer_completeness:
+      target_score: 0.80
+
+    answer_accuracy:
+      target_score: 0.90
+
+    citation_accuracy:
+      target_score: 0.95
+
+# Performance Metrics
+performance_metrics:
+  latency:
+    # Response Time Targets (milliseconds)
+    stage1_retrieval:
+      p50_target: 50
+      p95_target: 150
+      p99_target: 300
+
+    stage2_reranking:
+      p50_target: 800
+      p95_target: 1500
+      p99_target: 2500
+
+    end_to_end:
+      p50_target: 1000
+      p95_target: 2000
+      p99_target: 5000
+
+    memory_logging:
+      p50_target: 10
+      p95_target: 50
+      p99_target: 100
+
+  throughput:
+    queries_per_second:
+      min_sustained: 10
+      burst_capacity: 50
+
+    concurrent_queries:
+      max_supported: 20
+
+  resource_utilization:
+    memory:
+      max_usage_percent: 80
+      cache_hit_rate_target: 0.7
+
+    cpu:
+      max_usage_percent: 70
+      avg_usage_target: 30
+
+    gpu:  # For reranking if applicable
+      max_usage_percent: 85
+      utilization_target: 60
+
+# Reliability Metrics
+reliability_metrics:
+  availability:
+    uptime_target: 0.999  # 99.9%
+    max_downtime_per_month: 43.2  # minutes
+
+  error_rates:
+    total_error_rate_max: 0.01  # 1%
+    timeout_rate_max: 0.005     # 0.5%
+    client_error_rate_max: 0.02 # 2%
+
+  recovery:
+    circuit_breaker_threshold: 5
+    recovery_time_target: 60  # seconds
+
+# Role-Specific Quality Targets
+role_specific_metrics:
+  Developer:CodeImplementation:
+    precision_at_5: 0.85
+    code_relevance_weight: 0.7
+    doc_relevance_weight: 0.3
+
+  Developer:Debugging:
+    precision_at_5: 0.90  # Higher precision needed for debugging
+    error_pattern_recall: 0.95
+    runbook_coverage: 0.80
+
+  Architect:SystemDesign:
+    precision_at_5: 0.80
+    adr_coverage: 0.90
+    design_pattern_relevance: 0.85
+
+  SRE:IncidentResponse:
+    precision_at_3: 0.95  # Critical for incident response
+    runbook_recall: 0.95
+    response_time_p95: 1000  # ms - faster response needed
+
+  PM:FeatureDiscussion:
+    precision_at_5: 0.75
+    business_relevance: 0.90
+    technical_detail_filter: 0.95  # Should filter out technical details
+
+# Evaluation Datasets
+evaluation_datasets:
+  synthetic:
+    # Generated test queries
+    developer_queries:
+      count: 100
+      categories: ["implementation", "debugging", "api_usage", "patterns"]
+
+    architect_queries:
+      count: 50
+      categories: ["design", "patterns", "decisions", "trade_offs"]
+
+    sre_queries:
+      count: 75
+      categories: ["incidents", "monitoring", "deployment", "performance"]
+
+    pm_queries:
+      count: 40
+      categories: ["features", "requirements", "user_stories", "specs"]
+
+  real_world:
+    # Sample from actual user queries (anonymized)
+    sample_rate: 0.1  # 10% of queries
+    min_samples_per_role: 20
+    evaluation_frequency: "weekly"
+
+# Continuous Evaluation
+continuous_evaluation:
+  schedule:
+    full_evaluation: "weekly"
+    quick_evaluation: "daily"
+    real_time_monitoring: true
+
+  triggers:
+    performance_degradation: 0.1  # 10% drop triggers evaluation
+    error_spike: 0.05             # 5% error rate spike
+    new_content_threshold: 1000   # Re-evaluate after 1000 new chunks
+
+  reporting:
+    dashboard_update_interval: 300  # 5 minutes
+    alert_thresholds:
+      critical: 0.2    # 20% degradation
+      warning: 0.1     # 10% degradation
+      info: 0.05       # 5% degradation
+
+# A/B Testing Framework
+ab_testing:
+  enabled: true
+
+  test_configurations:
+    fusion_weights:
+      control: {"docs_dense": 0.65, "docs_sparse": 0.35}
+      variants:
+        - {"docs_dense": 0.7, "docs_sparse": 0.3}
+        - {"docs_dense": 0.6, "docs_sparse": 0.4}
+
+    reranker_models:
+      control: "rerank-2.5"
+      variants: ["rerank-2.5-lite"]
+
+    context_limits:
+      control: {"max_results": 10}
+      variants: [{"max_results": 8}, {"max_results": 12}]
+
+  statistical_power:
+    min_sample_size: 100
+    significance_level: 0.05
+    power: 0.8
+
+# Benchmark Comparisons
+benchmarks:
+  baseline_systems:
+    - name: "simple_vector_search"
+      description: "Vector search only, no hybrid"
+
+    - name: "bm25_only"
+      description: "BM25 search only"
+
+    - name: "no_reranking"
+      description: "Hybrid search without reranking"
+
+  comparison_metrics:
+    - "precision_at_5"
+    - "ndcg_at_10"
+    - "latency_p95"
+    - "answer_relevance"
+
+# Data Quality Metrics
+data_quality:
+  content_freshness:
+    max_age_days: 30
+    stale_content_threshold: 0.1  # 10% stale content triggers alert
+
+  index_health:
+    entity_count_growth_rate: 0.2  # Expected monthly growth
+    embedding_consistency_check: "weekly"
+    duplicate_detection_threshold: 0.95  # Cosine similarity
+
+  memory_graph_quality:
+    node_connectivity: 0.8  # 80% of nodes should have connections
+    relationship_accuracy: 0.9
+    graph_completeness: 0.85
+
+# Custom Evaluation Functions
+custom_evaluators:
+  domain_specific:
+    code_quality_assessment:
+      enabled: true
+      metrics: ["syntax_validity", "best_practices", "security_patterns"]
+
+    documentation_completeness:
+      enabled: true
+      metrics: ["coverage", "clarity", "examples"]
+
+  business_impact:
+    user_satisfaction:
+      method: "feedback_scores"
+      target_score: 4.0  # out of 5
+
+    task_completion_rate:
+      target_rate: 0.9
+
+    time_to_resolution:
+      target_reduction: 0.3  # 30% faster than baseline
+
+# Reporting Configuration
+reporting:
+  formats:
+    - "json"
+    - "html"
+    - "prometheus_metrics"
+
+  outputs:
+    daily_summary: "/var/log/rag/daily_evaluation.json"
+    weekly_report: "/var/log/rag/weekly_evaluation.html"
+    real_time_metrics: "http://localhost:9090/metrics"
+
+  stakeholder_reports:
+    engineering:
+      focus: ["performance", "reliability", "technical_quality"]
+      frequency: "weekly"
+
+    product:
+      focus: ["user_satisfaction", "task_completion", "feature_effectiveness"]
+      frequency: "monthly"
+
+    operations:
+      focus: ["availability", "error_rates", "resource_utilization"]
+      frequency: "daily"
+
+# Alert Configuration
+alerts:
+  channels:
+    - type: "slack"
+      webhook: "${SLACK_WEBHOOK_URL}"
+      severity_threshold: "warning"
+
+    - type: "email"
+      recipients: ["rag-team@company.com"]
+      severity_threshold: "critical"
+
+    - type: "pagerduty"
+      service_key: "${PAGERDUTY_SERVICE_KEY}"
+      severity_threshold: "critical"
+
+  rules:
+    - name: "high_latency"
+      condition: "latency_p95 > 3000"
+      severity: "warning"
+
+    - name: "low_precision"
+      condition: "precision_at_5 < 0.7"
+      severity: "critical"
+
+    - name: "high_error_rate"
+      condition: "error_rate > 0.05"
+      severity: "critical"
+
+    - name: "service_unavailable"
+      condition: "availability < 0.99"
+      severity: "critical"
