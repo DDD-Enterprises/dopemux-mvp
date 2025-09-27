@@ -1,0 +1,11 @@
+# Ignore everything in .conport by default
+*
+
+# Keep this ignore file
+!.gitignore
+
+# Keep docs we want tracked
+!CONPORT_FIX_RECORD.md
+!CONPORT_LOCAL_GUIDE.md
+
+# Everything else (logs, pids, ports, sessions) remains ignored
