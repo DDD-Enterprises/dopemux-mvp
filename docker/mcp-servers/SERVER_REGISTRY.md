@@ -68,6 +68,15 @@ max_thinking_steps: 10
 enable_context_preservation: true
 ```
 
+**Start/Inspect:**
+```bash
+cd docker/mcp-servers
+./start-mas.sh                         # Build, start, and health-check
+docker-compose logs -f mas-sequential-thinking   # Tail logs
+# Broker stdio command (what the broker runs):
+docker exec -i mcp-mas-sequential-thinking mcp-server-mas-sequential-thinking
+```
+
 ## 🔄 Workflow Servers (Priority: Medium)
 
 ### ConPort - Project Memory & Decision Tracking
@@ -192,12 +201,11 @@ optimization: "min_query_length: 10, max_results: 3"
 
 ## 🔗 Network Architecture
 
-### MCP Network (Internal)
+### MCP Network (External)
 ```yaml
 network: "mcp-network"
-driver: "bridge"
-subnet: "172.20.0.0/16"
-purpose: "Internal MCP server communication"
+type: "external"
+purpose: "Shared network for MCP servers across projects"
 ```
 
 ### Leantime Network (External Bridge)
@@ -236,9 +244,9 @@ cd /Users/hue/code/dopemux-mvp/docker/mcp-servers
 
 ### Individual Server Control
 ```bash
-docker-compose up -d context7           # Start Context7
-docker-compose restart zen              # Restart Zen
-docker-compose logs -f sequential-thinking  # View logs
+docker-compose up -d context7                 # Start Context7
+docker-compose restart zen                    # Restart Zen
+docker-compose logs -f mas-sequential-thinking  # View MAS logs
 ```
 
 ### Health Check All Critical Servers
