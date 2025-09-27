@@ -1,0 +1,47 @@
+{
+  "mcpServers": {
+    "conport": {
+      "command": "uvx",
+      "args": [
+        "mcp-proxy",
+        "--transport",
+        "streamablehttp",
+        "http://127.0.0.1:3007/mcp"
+      ],
+      "env": {},
+      "type": "stdio"
+    },
+    "metamcp-broker": {
+      "command": "uvx",
+      "args": [
+        "mcp-proxy",
+        "--transport",
+        "streamablehttp",
+        "http://localhost:8090/mcp"
+      ],
+      "env": {},
+      "type": "stdio"
+    },
+    "task-master-ai": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "--package=task-master-ai",
+        "task-master-ai"
+      ],
+      "env": {},
+      "type": "stdio"
+    },
+    "gpt-researcher": {
+      "command": "python",
+      "args": [
+        "/Users/hue/code/dopemux-mvp/gptr-mcp/server.py"
+      ],
+      "env": {
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "TAVILY_API_KEY": "${TAVILY_API_KEY}"
+      },
+      "type": "stdio"
+    }
+  }
+}
