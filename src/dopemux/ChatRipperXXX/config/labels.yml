@@ -1,0 +1,469 @@
+# ChatX Label Taxonomy
+# Status: Master | Last Updated: 2025-08-16 PT
+# This file defines a two-tier taxonomy:
+#   - `coarse` labels: CLOUD-SAFE abstractions (MAY be included in prompts after a passing Policy Shield preflight).
+#   - `fine_local_only` labels: LOCAL-ONLY detail (MUST NEVER leave device).
+# Pipelines MAY ignore unknown keys; everything beyond `desc` and `synonyms` is advisory for detectors/analytics.
+
+schema_version: 1.2
+
+cloud_policy:
+  coarse_cloud_allowed: true
+  fine_cloud_allowed: false
+  influence_classes: [none, stimulants, psychedelics, empathogens, dissociatives, depressants_ghb, opioids, cannabis, alcohol, poly]
+
+conventions:
+  polarity_values: [buffer, risk, neutral]
+  severity_scale: [low, medium, high]
+  notes:
+    - "polarity=risk acts as a retrieval/deprioritization signal in some analytics; 'buffer' acts as a protective factor."
+    - "severity is heuristic and MAY be used for ranking/triage; it is NOT a clinical assessment."
+
+coarse:
+  intimacy_connection:
+    desc: Emotional/physical closeness (interest, warmth, intimacy, affection).
+    synonyms: [closeness, connection, intimacy, affection, cuddles, warmth, together, "quality time", be_with_you]
+    polarity: buffer
+    severity: low
+  attention_availability:
+    desc: Presence/effort/being there; responsiveness and attentional bandwidth.
+    synonyms: [present, responsive, availability, attention, "showing up", unresponsive, ignoring]
+    polarity: risk
+    severity: medium
+  rejection_experience:
+    desc: Moments of feeling rejected (coarse; no named parties).
+    synonyms: [rejected, brushed_off, turned_down, cold_shoulder]
+    polarity: risk
+    severity: medium
+  detachment:
+    desc: Feeling distant/checked out (coarse).
+    synonyms: [distant, checked_out, cold, detached, numb]
+    polarity: risk
+    severity: medium
+  time_scarcity:
+    desc: No time, reschedules, cancellations, scheduling crunch.
+    synonyms: [busy, slammed, overbooked, reschedule, cancellation, double_booked, no_time]
+    polarity: risk
+    severity: medium
+  stress_levels:
+    desc: General stress/overwhelm (unspecified).
+    synonyms: [stressed, overwhelmed, frazzled, pressure, anxious]
+    polarity: risk
+    severity: medium
+  work_stress:
+    desc: Job deadlines, travel, hours, burnout (work).
+    synonyms: [deadline, business_trip, late_shift, overtime, boss, meeting, shift]
+    polarity: risk
+    severity: medium
+  financial_stress:
+    desc: Money strain, bills, rent, debt.
+    synonyms: [broke, rent, debt, invoice, paycheck, tip, deposit, rate, bills, budgeting]
+    polarity: risk
+    severity: medium
+  health:
+    desc: Health constraints (coarse; no diagnoses).
+    synonyms: [sick, injury, surgery, therapy, doctor, hospital, meds]
+    polarity: risk
+    severity: medium
+  sleep_fatigue:
+    desc: Tiredness, insomnia, poor sleep, jetlag.
+    synonyms: [tired, exhausted, insomnia, nap, jetlag, no_sleep]
+    polarity: risk
+    severity: low
+  distance_ldr:
+    desc: Long-distance relationship constraints and travel timing.
+    synonyms: [long_distance, ldr, flights, visits, miles_apart]
+    polarity: risk
+    severity: medium
+  third_party_effects:
+    desc: Family/friends/exes influence; triangulation; roommate drama (no names).
+    synonyms: [parents, sibling, ex, roommate, friend_group, "third party"]
+    polarity: risk
+    severity: medium
+  trust_mistrust:
+    desc: Suspicion, secrecy, reassurance seeking, credibility challenges.
+    synonyms: [trust, doubt, suspicion, honesty, transparency, proof, lying]
+    polarity: risk
+    severity: high
+  jealousy:
+    desc: Jealousy themes (coarse).
+    synonyms: [jealous, envy, rival, talking_to_others]
+    polarity: risk
+    severity: medium
+  boundary_consent:
+    desc: Limits set/tested/violated/repaired; explicit consent and boundaries.
+    synonyms: [boundary, boundaries, limit, consent, safeword, comfort_zone, line_crossed, "not ok", "not okay"]
+    polarity: risk
+    severity: high
+  values_conflict:
+    desc: Value/worldview clashes (religion, politics, life goals) without specifics.
+    synonyms: [values, worldview, priorities, deal_breaker, belief, beliefs]
+    polarity: risk
+    severity: medium
+  logistics:
+    desc: Coordination, chores, planning, travel, childcare handoffs.
+    synonyms: [calendar, planning, coordination, itinerary, packing, chores, pickup, dropoff, ride]
+    polarity: neutral
+    severity: low
+  life_events:
+    desc: Moves, job changes, bereavement, graduations, milestones.
+    synonyms: [moved, funeral, wedding, graduation, promotion, fired, birthday]
+    polarity: neutral
+    severity: medium
+  holidays_seasons:
+    desc: Holidays, seasonal effects (winter blues, summer travel).
+    synonyms: [holiday, christmas, thanksgiving, hanukkah, new_year, summer, winter, halloween, easter]
+    polarity: neutral
+    severity: low
+  technology_friction:
+    desc: Ghosting, blocks, read receipts, device/app problems.
+    synonyms: [blocked, ghosted, read_receipts, left_on_read, phone_died, mute, delivered, screenshot]
+    polarity: risk
+    severity: low
+  parenting_family_load:
+    desc: Childcare/caretaking demands, co-parenting logistics.
+    synonyms: [babysit, daycare, custody, coparent, pickup, dropoff, school, caretaking]
+    polarity: neutral
+    severity: medium
+  shared_activity:
+    desc: Dates, rituals, hobbies, shared interests (buffer).
+    synonyms: [date_night, movie, hike, gym, cook, cooking, game_night, dinner, walk, ritual]
+    polarity: buffer
+    severity: low
+  repair_attempts:
+    desc: Apologies/commitments to fix; reconciliation moves.
+    synonyms: [apology, sorry, make_it_right, try_again, promise, follow_through]
+    polarity: buffer
+    severity: low
+  commitment_level:
+    desc: Stated/implicit commitment strength (coarse).
+    synonyms: [commit, committed, partner, exclusive, "make it official"]
+    polarity: neutral
+    severity: low
+  effort_balance:
+    desc: Perceived fairness of effort/resources (coarse cue).
+    synonyms: [effort, pull_weight, one_sided, fair, unfair, balanced, imbalance]
+    polarity: risk
+    severity: medium
+  distraction_external:
+    desc: External distractions affecting attention (coarse).
+    synonyms: [distracted, scrolling, gaming, busy_with]
+    polarity: risk
+    severity: low
+
+  # --- Professional/sex-work contexts (coarse; cloud-safe abstractions) ---
+  sex_work_context:
+    desc: Work context present (e.g., bookings/clients) without explicit details.
+    synonyms: [booking, client, screening, deposit, rate, tour, date]
+    polarity: neutral
+    severity: medium
+  client_dynamics:
+    desc: Patterns with clients (boundaries, repeats, gifts).
+    synonyms: [regular, repeat, gift, tip, "PSE/GFE (redacted)"]
+    polarity: neutral
+    severity: medium
+  booking_negotiation:
+    desc: Scheduling, screening, deposits, rates talk.
+    synonyms: [deposit, rate, cancellation, reschedule, screening, clock]
+    polarity: neutral
+    severity: medium
+  boundary_professional_personal:
+    desc: Work/personal boundary management.
+    synonyms: [boundaries, off_the_clock, personal, professional]
+    polarity: risk
+    severity: medium
+  privacy_safety_risk:
+    desc: Screening, doxxing fears, anonymity, travel safety.
+    synonyms: [screening, references, blacklist, doxx, anonymity, burner, verification]
+    polarity: risk
+    severity: high
+  income_workload_pressure:
+    desc: Money/volume pressure; burnout.
+    synonyms: [quota, bookings, slow, drought, fully_booked]
+    polarity: risk
+    severity: medium
+  reputation_platform_issues:
+    desc: Account/review/platform stress.
+    synonyms: [account, verification, platform, shadowban, review]
+    polarity: risk
+    severity: medium
+
+  # --- Substance influence (coarse cloud-safe classes) ---
+  substance_influence_generic:
+    desc: Generic references to substance influence without class detail.
+    synonyms: [party, drunk, high, wasted, hangover]
+    polarity: risk
+    severity: medium
+  substance_influence_stimulants:
+    desc: Stimulant influence present (coarse abstraction).
+    synonyms: [stims, speedy, wired]
+    polarity: risk
+    severity: medium
+  substance_influence_psychedelics:
+    desc: Psychedelic influence present (coarse abstraction).
+    synonyms: [trip, tripping, visuals, microdose]
+    polarity: risk
+    severity: medium
+  substance_influence_empathogens:
+    desc: Empathogen influence present (coarse abstraction).
+    synonyms: [rolling, empathic, loved_up]
+    polarity: risk
+    severity: medium
+  substance_influence_dissociatives:
+    desc: Dissociative influence present (coarse abstraction).
+    synonyms: [dissociated, hole, floaty]
+    polarity: risk
+    severity: medium
+  substance_influence_depressants_ghb:
+    desc: Depressant (GHB/GBL) influence present (coarse, cloud-safe).
+    synonyms: [g_hole, gholes, g_water, gina]
+    polarity: risk
+    severity: high
+  substance_influence_opioids:
+    desc: Opioid influence present (coarse abstraction).
+    synonyms: [nodding, on_pain_meds]
+    polarity: risk
+    severity: high
+  substance_influence_cannabis:
+    desc: Cannabis influence present (coarse abstraction).
+    synonyms: [stoned, baked, high]
+    polarity: neutral
+    severity: low
+  substance_influence_alcohol:
+    desc: Alcohol influence present (coarse abstraction).
+    synonyms: [drunk, tipsy, hangover, binge]
+    polarity: risk
+    severity: medium
+  substance_influence_poly:
+    desc: Multiple substances or unclear mixture (coarse).
+    synonyms: [poly, mixed, combo, crossfaded]
+    polarity: risk
+    severity: high
+  chemsex_context:
+    desc: Co-occurrence of sexual context with substance placeholders.
+    synonyms: [chemsex]
+    polarity: risk
+    severity: high
+
+  # --- Relationship structures and dynamics (coarse) ---
+  orientation_context:
+    desc: Mentions of orientation context at a high level (never redacted).
+    synonyms: [straight, gay, lesbian, bi, queer, pan, ace, questioning]
+    polarity: neutral
+    severity: low
+  relationship_structure_monogamy:
+    desc: Monogamous relationship structure.
+    synonyms: [monogamy, monogamous, exclusive]
+    polarity: neutral
+    severity: low
+  relationship_structure_open:
+    desc: Open relationship structure.
+    synonyms: [open_relationship, ENM]
+    polarity: neutral
+    severity: low
+  relationship_structure_polyamory:
+    desc: Polyamorous structure.
+    synonyms: [poly, polycule]
+    polarity: neutral
+    severity: low
+  relationship_structure_swinging:
+    desc: Swinging / swaps context.
+    synonyms: [swinging, swap, stag_vixen]
+    polarity: neutral
+    severity: low
+  relationship_dynamic_hotwife:
+    desc: Hotwife dynamic (coarse abstraction).
+    synonyms: [hotwife]
+    polarity: neutral
+    severity: low
+  relationship_dynamic_cuckold:
+    desc: Cuckold dynamic (coarse abstraction).
+    synonyms: [cuckold]
+    polarity: neutral
+    severity: low
+  kink_context:
+    desc: Kink/BDSM context present (coarse abstraction; no explicit details).
+    synonyms: [kink, scene, play, bdsm, dom_sub]
+    polarity: neutral
+    severity: medium
+
+  # --- Conflict/repair (coarse) ---
+  conflict_tension:
+    desc: Elevated tension without a full “fight” episode.
+    synonyms: [argument, tense, bickering]
+    polarity: risk
+    severity: medium
+  fight_episode_context:
+    desc: Fight/argument episode context (pairs with Episodes detector).
+    synonyms: [blowup, fight, screamed]
+    polarity: risk
+    severity: high
+  reconciliation:
+    desc: Explicit reconciliation/de-escalation (buffer).
+    synonyms: [made_up, reconciled, truce]
+    polarity: buffer
+    severity: low
+
+fine_local_only:
+  # These enrich local analytics and NEVER leave device. Grouped for clarity.
+
+  sexuality_desire:
+    horniness_level: {desc: "Momentary sexual desire intensity (scalar/ordinal)."}
+    desire_for_touch: {desc: "Wants physical affection/touch now/period."}
+    desire_for_sex: {desc: "Wants sexual activity now/period."}
+    sexual_frequency: {desc: "Actual/desired frequency; mismatch tracking."}
+    sexual_satisfaction: {desc: "Satisfaction with sexual connection (analytics only)."}
+    sexual_deprivation: {desc: "Reported lack of sex; deprivation framing."}
+    touch_deprivation: {desc: "Reported lack of touch/affection."}
+    feels_sexy_level: {desc: "Self-perceived sexiness/attractiveness."}
+    attraction_to_partner: {desc: "Stated attraction toward partner (strength/valence)."}
+    attraction_to_others: {desc: "Stated attraction toward others; comparison/distraction."}
+    kink_context_detail: {desc: "Kink/BDSM context (high level)."} 
+    kink_practice_detail: {desc: "Specific practices/roles (never to cloud)."}
+    sex_trade_detail: {desc: "Escorting/client specifics, rates, bookings, locations (never to cloud)."}
+    sex_work_booking_ref: {desc: "Opaque booking refs; times/places kept local."}
+
+  boundaries_consent_triggers:
+    boundary_set_detail: {desc: "Exact boundary phrasing/content."}
+    boundary_violation_detail: {desc: "Specific violation details, who/what/where."}
+    consent_context_detail: {desc: "Explicit consent discussions (text spans)."}
+    trigger_cancellation: {desc: "Episode triggered by cancellation."}
+    trigger_rejection: {desc: "Episode triggered by perceived/explicit rejection."}
+    trigger_neglect: {desc: "Episode triggered by neglect/low attention."}
+    trigger_jealousy: {desc: "Episode triggered by jealousy cue."}
+    trigger_third_party: {desc: "Episode triggered by third-party involvement."}
+    trigger_boundary_violation: {desc: "Episode triggered by boundary crossing."}
+    trigger_substance_use: {desc: "Episode triggered by substance context."}
+    trigger_technology: {desc: "Episode triggered by ghosting/read-receipts/blocks."}
+
+  relationship_definers:
+    relationship_role_state: {desc: "Friend zone vs lovers vs partners continuum (local analytics)."} 
+    commitment_level_detail: {desc: "Fine-grain commitment statements/edges."}
+    detachment_detail: {desc: "Specific detaching behaviors/phrases."}
+    togetherness_detail: {desc: "Requests for more time/space; specifics."}
+    shared_space_smothering: {desc: "Feeling smothered or over-exposed in shared space."}
+    need_for_space: {desc: "Stated need for personal space/time (fine granularity)."}
+    comfort_vs_sexiness: {desc: "Comfort vs feeling sexy tensions."}
+    romantic_intensity_self: {desc: "How much I feel/love the other (stated/intensity)."}
+    romantic_intensity_partner: {desc: "How much partner feels/loves me (as perceived)."}
+    other_relationship_intensity: {desc: "Intensity of other romantic ties affecting ours."}
+
+  effort_resources:
+    effort_contribution_self: {desc: "Stated effort/resources I contribute."}
+    effort_contribution_partner: {desc: "Perceived effort/resources partner contributes."}
+    effort_balance_score: {desc: "Implied balance/imbalance at time t."}
+    resources_money_time_attention: {desc: "Specific resource classes invoked."}
+
+  emotions_states:
+    depression_apathy: {desc: "Depressed/apathic state mentions (sensitive)."} 
+    anxiety_level: {desc: "Anxiety/rumination mentions (sensitive)."}
+    confidence_self: {desc: "Self-confidence; social/sexual/relational."}
+    confidence_relational: {desc: "Confidence in the relationship."}
+    openness_vulnerability: {desc: "Vulnerability/honesty episodes (fine detail)."} 
+    reassurance_requests: {desc: "Explicit reassurance-seeking phrasing."}
+
+  influence_and_power:
+    influence_positive_me: {desc: "My influence on partner positive (claimed/observed)."}
+    influence_negative_me: {desc: "My influence on partner negative."}
+    influence_positive_partner: {desc: "Partner influence on me positive."}
+    influence_negative_partner: {desc: "Partner influence on me negative."}
+    manipulation_pressure_me: {desc: "I applied pressure/manipulation (as stated or perceived)."} 
+    manipulation_pressure_partner: {desc: "Partner applied pressure/manipulation."}
+
+  substances_specifics:
+    stimulant_cocaine: {desc: "Cocaine use references (local only).", synonyms: [coke, blow, yayo]}
+    stimulant_amphetamine: {desc: "Amphetamine/Adderall (non-medical) references.", synonyms: [adderall, amphet]}
+    stimulant_methamphetamine: {desc: "Methamphetamine references.", synonyms: [meth, ice, tina]}
+    psychedelic_psilocybin: {desc: "Psilocybin/mushrooms references.", synonyms: [shrooms, boomers]}
+    psychedelic_lsd: {desc: "LSD/acid references.", synonyms: [acid, tabs]}
+    dissociative_ketamine: {desc: "Ketamine references.", synonyms: [k, k-hole]}
+    empathogen_mdma: {desc: "MDMA/ecstasy references.", synonyms: [mdma, molly, x]}
+    depressant_ghb: {desc: "GHB references.", synonyms: [ghb, g, g_water, gina]}
+    depressant_gbl: {desc: "GBL references.", synonyms: [gbl]}
+    opioid_heroin: {desc: "Heroin references.", synonyms: [dope, smack]}
+    opioid_rx: {desc: "Rx opioid misuse.", synonyms: [oxy, perc, vicodin]}
+    cannabis_generic: {desc: "Cannabis references.", synonyms: [weed, pot, thc, joint]}
+    alcohol_binge: {desc: "Binge drinking references.", synonyms: [blackout, hammered]}
+    poly_combo: {desc: "Mixed substances.", synonyms: [crossfaded, combo]}
+    g_slang: {desc: "GHB slang variants.", synonyms: [gholes, g_hole, g’d]}
+
+  identity_third_parties:
+    third_party_named_person: {desc: "Named individuals (always local)."}
+    third_party_role_detail: {desc: "Role/relationship of that person."}
+
+  technology_detail:
+    ghosting_detail: {desc: "Exact timeframe/phrasing of ghosting accusations."}
+    blocking_detail: {desc: "Blocks/unblocks specifics."}
+    read_receipts_detail: {desc: "Mentions of read receipts timing."}
+
+  episodes_and_repair:
+    repair_attempt_detail: {desc: "Exact apology/repair text; promises/commitments."}
+    follow_through_detail: {desc: "Evidence of kept/failed commitments."}
+
+  orientation_kink_detail:
+    orientation_hetero: {desc: "Heterosexual orientation mention (local only)."}
+    orientation_gay: {desc: "Gay orientation mention (local only)."}
+    orientation_lesbian: {desc: "Lesbian orientation mention (local only)."}
+    orientation_bi: {desc: "Bisexual orientation mention (local only)."}
+    orientation_pan: {desc: "Pansexual orientation mention (local only)."}
+    orientation_queer: {desc: "Queer orientation mention (local only)."}
+    orientation_questioning: {desc: "Orientation questioning/self-discovery."}
+    bdsm_role_dom: {desc: "Dominant role context (local only)."}
+    bdsm_role_sub: {desc: "Submissive role context (local only)."}
+    bdsm_role_switch: {desc: "Switch role context (local only)."}
+    bondage_detail: {desc: "Bondage-related detail (local only)."}
+    impact_play_detail: {desc: "Impact play detail (local only)."}
+    power_exchange_context: {desc: "Power exchange dynamics detail (local only)."}
+    consent_boundary_negotiation: {desc: "Consent/boundary negotiation specifics."}
+    aftercare_presence: {desc: "Aftercare discussed or provided."}
+    cnc_roleplay_flag: {desc: "Consensual non-consent roleplay flag (local only)."}
+    sex_activity_kink_detail: {desc: "Sexual/kink act details (local only)."}
+    sex_explicit_practices: {desc: "Explicit sexual practice details (local only)."}
+
+  misc_local_detail:
+    scheduling_coordination_detail: {desc: "Explicit scheduling/coordination details."}
+    illegal_activity_detail: {desc: "Illegal activity details (local only)."} 
+    crime_threat: {desc: "Threat of crime/violence details."}
+    violence_detail: {desc: "Violence incident details."}
+    emotional_dysregulation_raw: {desc: "Raw mentions of dysregulation."}
+    self_regulation_attempt: {desc: "Self-regulation attempts."}
+    health_diagnosis_detail: {desc: "Specific diagnosis/medication details."}
+    pet_care_incident_detail: {desc: "Pet care incidents affecting relationship."}
+
+mappings:
+  # Placeholder → Coarse mapping for Policy Shield (pre-cloud)
+  placeholders:
+    SUBSTANCE_USE_STIMULANTS: substance_influence_stimulants
+    SUBSTANCE_USE_PSYCHEDELICS: substance_influence_psychedelics
+    SUBSTANCE_USE_EMPATHOGENS: substance_influence_empathogens
+    SUBSTANCE_USE_DISSOCIATIVES: substance_influence_dissociatives
+    SUBSTANCE_USE_DEPRESSANTS_GHB: substance_influence_depressants_ghb
+    SUBSTANCE_USE_OPIOIDS: substance_influence_opioids
+    SUBSTANCE_USE_CANNABIS: substance_influence_cannabis
+    SUBSTANCE_USE_ALCOHOL: substance_influence_alcohol
+    SUBSTANCE_USE_POLY: substance_influence_poly
+    SEX_KINK_CONTEXT: kink_context
+    SEX_WORK_TRADE: sex_work_context
+    ILLEGAL_ACTIVITY_GENERAL: privacy_safety_risk
+  cooccurs:
+    chemsex_context: [kink_context, substance_influence_*]
+    fight_episode_context: [conflict_tension, boundary_consent]
+    repair_attempts: [reconciliation, intimacy_connection]
+  aliases:
+    substances: substance_influence_generic
+    togetherness: intimacy_connection
+    attention_availare_bility: attention_availability
+
+quality_hints:
+  false_positive_notes:
+    jealousy: ["'jealous of a celebrity/character' may be non-relational."]
+    technology_friction: ["airplane mode / carrier outage is not interpersonal friction."]
+    boundary_consent: ["'not okay with pineapple on pizza' is not a consent boundary."]
+  negation_phrases:
+    generic: ["not", "never", "no longer", "stopped", "didn't"]
+    temporal_downplay: ["just", "only", "kinda", "sort of"]
+  mutual_exclusion:
+    - [relationship_structure_monogamy, relationship_structure_open, relationship_structure_polyamory, relationship_structure_swinging]
+  boosts:
+    retrieval_positive: [intimacy_connection, reconciliation, shared_activity]
+    retrieval_risk: [boundary_consent, trust_mistrust, jealousy, fight_episode_context, privacy_safety_risk]

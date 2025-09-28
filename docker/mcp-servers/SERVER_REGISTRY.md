@@ -53,7 +53,7 @@ tools: ["chat", "thinkdeep", "planner", "consensus", "debug", "codereview"]
 - **Role**: `critical_path`
 - **Source**: `https://github.com/FradSer/mcp-server-mas-sequential-thinking.git`
 - **Description**: Multi-agent system for complex reasoning and architectural analysis
-- **Health Check**: `http://localhost:3001/health`
+- **Health Check**: Port liveness `3001` (no `/health`)
 
 **Key Features:**
 - Multi-step hypothesis testing
@@ -71,10 +71,10 @@ enable_context_preservation: true
 **Start/Inspect:**
 ```bash
 cd docker/mcp-servers
-./start-mas.sh                         # Build, start, and health-check
-docker-compose logs -f mas-sequential-thinking   # Tail logs
-# Broker stdio command (what the broker runs):
-docker exec -i mcp-mas-sequential-thinking mcp-server-mas-sequential-thinking
+./start-mas.sh                                        # Build and start
+docker-compose logs -f mas-sequential-thinking        # Tail logs
+# Broker (HTTP): http://localhost:3001
+# Liveness test (port): nc -z localhost 3001 && echo "up" || echo "down"
 ```
 
 ## 🔄 Workflow Servers (Priority: Medium)
@@ -84,14 +84,27 @@ docker exec -i mcp-mas-sequential-thinking mcp-server-mas-sequential-thinking
 - **Port**: `3004`
 - **Role**: `workflow`
 - **Package**: `context-portal-mcp` (uvx)
-- **Description**: Knowledge graphs for decisions, progress, and architecture
+- **Description**: Foundational graph store for decisions, progress, and architectural context
 - **Health Check**: `http://localhost:3004/health`
 
+**Authority Scope:**
+- **Decision Storage**: Authoritative repository for all architectural and implementation decisions
+- **Knowledge Graph**: Primary source for project context, relationships, and decision history
+- **Cross-Session Memory**: Persistent context across interruptions, sessions, and team members
+- **Pattern Recognition**: Historical analysis of decisions and their outcomes
+
 **Key Features:**
-- Cross-session persistence
-- Decision rationale tracking
-- Project context memory
-- Knowledge graph storage
+- Foundational graph store for entire ecosystem
+- Decision rationale tracking with full context
+- Cross-session persistence and context restoration
+- Knowledge graph relationships between decisions, tasks, code, and patterns
+- ADHD-optimized context preservation
+
+**Foundational Role:**
+- **Serves ALL Systems**: Task-Master, Task-Orchestrator, Leantime, Serena, Integration Bridge
+- **Persistent Memory**: Maintains context across the entire Two-Plane Architecture
+- **Decision Authority**: Single source of truth for "why we made this choice"
+- **Context Bridge**: Connects decisions to code changes, tasks, and outcomes
 
 ### Task Master AI - Task Management & PRD Processing
 - **Container**: `mcp-task-master-ai`
@@ -101,25 +114,99 @@ docker exec -i mcp-mas-sequential-thinking mcp-server-mas-sequential-thinking
 - **Description**: Natural language task management and PRD parsing
 - **Health Check**: `http://localhost:3005/health`
 
+**Authority Scope:**
+- **PRD Analysis**: Authoritative for parsing and understanding PRDs
+- **Task Creation**: Primary source for initial task breakdown
+- **Requirements Interpretation**: AI-powered analysis of natural language requirements
+- **Task Hierarchy**: Initial structure and relationship definition
+
 **Key Features:**
 - PRD parsing and task generation
 - Complexity analysis and dependency tracking
 - Natural language task management
-- Progress tracking and reporting
+- AI-powered requirement analysis
 
-### Serena - Code Navigation & Refactoring
+**Integration Boundaries:**
+- **Hands off to**: Task-Orchestrator for dependency analysis and execution planning
+- **Coordinates with**: ConPort for decision logging, Integration Bridge for workflow orchestration
+- **Does NOT**: Manage task status (Leantime authority), handle code context (Serena authority)
+
+### Task Orchestrator - Dependency Analysis & Task Orchestration
+- **Container**: `mcp-task-orchestrator`
+- **Port**: `3014`
+- **Role**: `workflow`
+- **Repository**: `https://github.com/jpicklyk/task-orchestrator`
+- **Description**: Advanced dependency analysis and task orchestration with 37 specialized tools
+- **Health Check**: `http://localhost:3014/health`
+- **Technology**: Kotlin, specialized orchestration algorithms
+
+**Authority Scope:**
+- **Dependency Analysis**: Authoritative for task dependency relationships and conflict resolution
+- **Execution Planning**: Primary source for task scheduling and workflow optimization
+- **File Context**: Provides code file and symbol context for development tasks
+- **Complexity Scoring**: Authoritative for task complexity analysis (1-10 scale)
+
+**Key Features:**
+- Dependency analysis and conflict resolution
+- Task scheduling and execution planning
+- 37 specialized orchestration tools
+- Cross-project dependency tracking
+- File context provision for Serena LSP
+
+**Integration Boundaries:**
+- **Receives from**: Task-Master-AI for initial task breakdown
+- **Hands off to**: Leantime Bridge for status management and team coordination
+- **Provides to**: Serena LSP for file and symbol context during development
+- **Coordinates with**: Integration Bridge for execution workflow, ConPort for dependency decisions
+- **Does NOT**: Create or modify tasks (Task-Master authority), manage status (Leantime authority)
+
+### Serena - ADHD-Optimized Code Navigation & Project Memory
 - **Container**: `mcp-serena`
 - **Port**: `3006`
 - **Role**: `workflow`
-- **Package**: `serena` (Python module)
-- **Description**: LSP functionality, symbol operations, and project memory
+- **Package**: `serena` (Python module via uvx or pip)
+- **Description**: Full LSP server with ADHD accommodations for code navigation and developer working memory
 - **Health Check**: `http://localhost:3006/health`
+- **Source**: `/services/serena/server.py` (MCP wrapper with event integration)
+
+**Authority Scope:**
+- **Code Navigation**: Authoritative for semantic code search, symbol navigation, and file exploration
+- **LSP Operations**: Full Language Server Protocol implementation (completion, diagnostics, hover, references)
+- **Developer Memory**: Working memory preservation, session context, navigation breadcrumbs
+- **Code Intelligence**: Refactoring suggestions, complexity analysis, architectural insights
+- **ADHD Accommodations**: Attention-aware UI, progressive disclosure, cognitive load management
 
 **Key Features:**
-- Semantic code navigation
-- Intelligent refactoring suggestions
-- Project context understanding
-- Session persistence across development
+- Full LSP server capabilities (completion, diagnostics, go-to-definition, find references)
+- Semantic code navigation with progressive disclosure
+- Intelligent refactoring suggestions categorized by complexity/risk
+- Project context understanding with depth limiting (default: 3 levels)
+- Session persistence and navigation breadcrumbs
+- ADHD accommodations: max 10 search results, gentle guidance
+- Event bus integration for attention coordination
+
+**Integration Boundaries:**
+- **Receives from**: Task-Orchestrator for file and symbol context when working on specific tasks
+- **Coordinates with**: ConPort for decision logging during code changes, Event Bus for attention state
+- **Provides to**: Developers through LSP protocol, Integration Bridge for progress updates
+- **Does NOT**: Create or manage tasks (Task-Master/Orchestrator authority), determine project priorities (Leantime authority)
+
+**ADHD Configuration:**
+```yaml
+max_search_results: 10          # Prevent overwhelming results
+context_depth: 3                # Limit context complexity
+progressive_disclosure: true    # Show essential info first
+navigation_breadcrumbs: true    # Track navigation history
+intelligent_suggestions: true   # Categorize by complexity
+gentle_guidance: true          # Supportive feedback
+```
+
+**Cognitive Plane Role:**
+```yaml
+focus: "HOW a developer works (vs WHAT needs to be done)"
+capabilities: ["code_understanding", "navigation_assistance", "working_memory", "attention_management"]
+complements: ["Task-Master-AI (WHAT)", "Task-Orchestrator (WHEN)", "Leantime (STATUS)"]
+```
 
 ### Claude Context - Semantic Code Search
 - **Container**: `mcp-claude-context`
@@ -134,6 +221,44 @@ docker exec -i mcp-mas-sequential-thinking mcp-server-mas-sequential-thinking
 - Context understanding and symbol navigation
 - Integration with Milvus vector database
 - Repository-wide pattern detection
+
+## 🧠 Research Servers (Deep Research)
+
+### GPT Researcher - Autonomous Deep Research
+- **Container**: `mcp-gptr-mcp`
+- **Port**: `3009`
+- **Role**: `research`
+- **Source**: `https://github.com/assafelovic/gptr-mcp`
+- **Description**: Autonomous deep research with multi-agent exploration and comprehensive reports
+- **Health Check**: `http://localhost:3009/health`
+
+**Key Features:**
+- Tree-like exploration (depth/breadth controls)
+- Source gathering and citation
+- Report generation (markdown/HTML/JSON)
+- Useful for longer investigations and synthesis
+
+**Start/Inspect:**
+```bash
+cd docker/mcp-servers
+./start-gptr.sh                           # Build, start, and health-check
+docker-compose logs -f gptr-mcp           # Tail logs
+```
+
+### GPT Researcher (STDIO) - Proxy Exec Container
+- **Container**: `mcp-gptr-stdio`
+- **Port**: n/a (stdio via exec)
+- **Role**: `research`
+- **Description**: Keeps a light container running so the proxy can exec the stdio MCP server
+
+**Start/Inspect:**
+```bash
+cd docker/mcp-servers
+./start-gptr-stdio.sh                      # Build helper container
+docker exec -it mcp-gptr-stdio python /app/scripts/gpt-researcher/mcp_server.py  # Manual run
+# Proxy named-server (used by scripts):
+#  gptr-researcher-stdio -> docker exec -i mcp-gptr-stdio python /app/scripts/gpt-researcher/mcp_server.py
+```
 
 ## 🔧 Quality & Utility Servers (Priority: Medium-Low)
 
@@ -186,18 +311,69 @@ optimization: "min_query_length: 10, max_results: 3"
 
 ## 📋 External Integrations
 
+### Integration Bridge - Two-Plane Coordinator
+- **Container**: `mcp-integration-bridge`
+- **Port**: `3016`
+- **Role**: `critical_path`
+- **Package**: Custom FastAPI service
+- **Description**: Central coordination layer for Two-Plane Architecture task management
+- **Health Check**: `http://localhost:3016/health`
+- **Source**: `/services/mcp-integration-bridge/`
+
+**Key Features:**
+- Coordinates Project Management Plane (Task-Master + Task-Orchestrator + Leantime)
+- Interfaces with Cognitive Plane (Serena + ConPort)
+- Multi-instance coordination via shared database
+- ADHD-friendly progress tracking and celebrations
+- Template-based workflow creation
+- Real-time dependency resolution
+
+**Two-Plane Integration:**
+```yaml
+project_management_plane:
+  - task_master_ai: "PRD breakdown and analysis"
+  - task_orchestrator: "Dependency analysis with 37 tools"
+  - leantime_bridge: "Status authority and team dashboards"
+
+cognitive_plane:
+  - serena: "LSP server with ADHD code navigation"
+  - conport: "Decision memory and knowledge graph"
+
+coordination: "Integration Bridge manages data flow between planes"
+```
+
+### Leantime Bridge - Status Authority
+- **Container**: `mcp-leantime-bridge`
+- **Port**: `3015`
+- **Role**: `workflow`
+- **Package**: Custom Python MCP bridge
+- **Description**: Master authority for task status and team coordination
+- **Health Check**: `http://localhost:3015/health`
+
+**Authority Scope:**
+- **Task Status**: Authoritative source for planned/active/blocked/completed
+- **Team Dashboards**: Primary interface for project visibility
+- **Milestone Tracking**: Sprint and project milestone management
+- **Assignments**: Task ownership and team coordination
+
+**Integration Features:**
+- Bidirectional sync with Task-Master-AI and Task-Orchestrator
+- Status broadcast to all systems via Integration Bridge
+- Team dashboard and reporting capabilities
+- Conflict resolution for cross-system updates
+
 ### Leantime - Project Management
 - **Network**: `leantime-net` (external)
 - **Port**: `8080`
 - **Role**: `pm_integration`
-- **Description**: Bidirectional task management and project coordination
+- **Description**: External Leantime instance for comprehensive project management
 - **Health Check**: `http://localhost:8080`
 
 **Integration Features:**
-- Task import/export workflows
-- Status synchronization
-- Ownership rules and conflict resolution
-- Progress tracking and reporting
+- Connected via Leantime Bridge (Port 3015)
+- Web interface for team collaboration
+- Advanced project management features
+- Reporting and analytics dashboard
 
 ## 🔗 Network Architecture
 
@@ -218,11 +394,11 @@ purpose: "PM system integration"
 ## 📊 Server Monitoring & Health
 
 ### Health Check Endpoints
-All servers provide standardized health checks:
+Most servers expose `/health`. MAS uses a port-liveness check:
 ```bash
 curl http://localhost:3002/health  # Context7
 curl http://localhost:3003/health  # Zen
-curl http://localhost:3001/health  # Sequential Thinking
+nc -z localhost 3001 && echo "MAS up" || echo "MAS down"  # Sequential Thinking (no /health)
 # ... etc for all servers
 ```
 
@@ -252,7 +428,11 @@ docker-compose logs -f mas-sequential-thinking  # View MAS logs
 ### Health Check All Critical Servers
 ```bash
 for port in 3001 3002 3003; do
-  curl -sf "http://localhost:$port/health" && echo "✅ Port $port healthy" || echo "❌ Port $port unhealthy"
+  if [ "$port" -eq 3001 ]; then
+    nc -z localhost 3001 && echo "✅ MAS (3001) up" || echo "❌ MAS (3001) down"
+  else
+    curl -sf "http://localhost:$port/health" && echo "✅ Port $port healthy" || echo "❌ Port $port unhealthy"
+  fi
 done
 ```
 

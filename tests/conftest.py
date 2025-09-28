@@ -9,8 +9,9 @@ from unittest.mock import patch
 
 import pytest
 
-from dopemux.adhd import AttentionMonitor, ContextManager, TaskDecomposer
-from dopemux.config import ConfigManager
+from dopemux.event_bus import RedisStreamsAdapter, InMemoryAdapter
+from dopemux.attention_mediator import AttentionMediator
+from dopemux.instance_registry import InstanceRegistry
 
 
 @pytest.fixture

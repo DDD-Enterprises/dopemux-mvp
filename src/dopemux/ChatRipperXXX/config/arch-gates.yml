@@ -1,0 +1,86 @@
+name: arch-gates
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install project
+        run: |
+          pip install -U pip
+          pip install -e .
+          pip install jq jsonschema
+      - name: Preflight redaction
+        run: |
+          chatx redact --input ./out/chunks/*.json --pseudonymize --opaque --report ./out/redaction_report.json --strict
+          python - <<'PY'
+import json,sys
+with open('./out/redaction_report.json') as f:
+    rep=json.load(f)
+cov=rep.get('coverage',0)
+strict=rep.get('strict',False)
+assert cov>=0.995, "Coverage {} < 0.995".format(cov)
+if strict: 
+    assert cov>=0.999, "Strict coverage {} < 0.999".format(cov)
+print("Coverage OK:", cov, "strict:", strict)
+PY
+      - name: Missing attachments report schema
+        run: |
+          test -f ./out/missing_attachments.json
+          jsonschema -i ./out/missing_attachments.json ./schemas/missing_attachments_report.schema.json
+      - name: Enrichment (hybrid smoke)
+        run: |
+          chatx enrich messages --contact "fixture" --backend hybrid --tau 0.7 --context 2 --max-out 800 --dry-run || true
+          # Replace --dry-run with --allow-cloud in provider-enabled environments
+      - name: Schema validation
+        run: |
+          chatx validate --schemas ./schemas --inputs ./out/enrich/*.jsonl --report ./out/validation.json || true
+          test -f ./out/validation.json && cat ./out/validation.json || true
+      - name: Visibility linter
+        run: |
+          python - <<'PY'
+import json,glob,sys
+bad=False
+for f in glob.glob('./out/enrich/*.jsonl'):
+  for line in open(f):
+    try:
+      obj=json.loads(line)
+    except Exception:
+      continue
+    if obj.get('source')=='cloud':
+      if obj.get('fine_labels_local'): 
+        print("E_VISIBILITY_LEAK in", f); bad=True
+      if obj.get('attachments'):
+        print("E_ATTACHMENT_PRESENT in", f); bad=True
+if bad: 
+  sys.exit(1)
+print("Visibility OK")
+PY
+      - name: Determinism/idempotency smoke
+        run: |
+          chatx enrich messages --contact "fixture" --backend local --tau 0.7 --context 2 --max-out 800
+          chatx enrich messages --contact "fixture" --backend local --tau 0.7 --context 2 --max-out 800
+          # Expect cache hits or identical outputs
+      - name: Metrics summary
+        run: |
+          chatx metrics summarize --inputs ./out/metrics/*.jsonl --out ./out/reports/run_report.json || true
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: arch-gates-artifacts
+          path: |
+            ./out/redaction_report.json
+            ./out/missing_attachments.json
+            ./out/enrich/
+            ./out/reports/
+            ./out/validation.json

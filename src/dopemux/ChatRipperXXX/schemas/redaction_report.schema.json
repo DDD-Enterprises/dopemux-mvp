@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xtractxact.dev/schemas/redaction_report.schema.json",
+  "title": "Redaction Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["coverage", "strict", "hardfail_triggered", "messages_total", "placeholders", "coarse_label_counts"],
+  "properties": {
+    "coverage": {"type": "number", "minimum": 0, "maximum": 1, "description": "Observed redaction coverage over target fields."},
+    "strict": {"type": "boolean"},
+    "hardfail_triggered": {"type": "boolean"},
+    "messages_total": {"type": "integer", "minimum": 0},
+    "tokens_redacted": {"type": "integer", "minimum": 0},
+    "placeholders": {"type": "object", "additionalProperties": {"type": "integer"}, "description": "Counts by placeholder ID (e.g., SUBSTANCE_USE_PSYCHEDELICS)."},
+    "coarse_label_counts": {"type": "object", "additionalProperties": {"type": "integer"}},
+    "visibility_leaks": {"type": "array", "items": {"type": "string"}, "description": "Non-empty if any visibility violations detected."},
+    "notes": {"type": "array", "items": {"type": "string"}}
+  }
+}

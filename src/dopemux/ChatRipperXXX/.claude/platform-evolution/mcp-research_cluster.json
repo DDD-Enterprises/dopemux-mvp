@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "exa": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "exa-mcp"
+      ],
+      "env": {
+        "EXA_API_KEY": "your_exa_key"
+      }
+    }
+  },
+  "cluster": {
+    "name": "research_cluster",
+    "context7_enforced": true,
+    "token_budget": 20000
+  }
+}

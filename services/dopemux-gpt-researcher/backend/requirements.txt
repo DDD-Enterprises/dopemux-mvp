@@ -1,0 +1,49 @@
+# Dopemux GPT Researcher Backend Dependencies
+# ADHD-optimized research service with real-time streaming
+
+# === Web Framework ===
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+websockets==12.0
+
+# === Data Models & Validation ===
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# === Async & Concurrency ===
+asyncio-mqtt==0.14.0
+aiofiles==23.2.1
+
+# === HTTP Client & Requests ===
+httpx==0.25.2
+aiohttp==3.9.1
+
+# === Data Processing ===
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+
+# === Logging & Monitoring ===
+structlog==23.2.0
+python-json-logger==2.0.7
+
+# === Database & Storage (for ConPort integration) ===
+sqlalchemy==2.0.23
+alembic==1.13.1
+
+# === Environment & Configuration ===
+python-dotenv==1.0.0
+
+# === Development & Testing ===
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-mock==3.12.0
+
+# === GPT Researcher Integration ===
+# Note: gpt-researcher will be installed via Dockerfile
+# to ensure we get the latest version and handle version conflicts
+
+# === Search Engine Integrations ===
+# These will be added as the multi-search integration is implemented
+# exa-py (for Exa search)
+# tavily-python (for Tavily search)
+# perplexity-api (for Perplexity search)

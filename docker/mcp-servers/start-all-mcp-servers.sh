@@ -48,9 +48,9 @@ docker-compose up -d --build conport task-master-ai serena claude-context
 echo "⏳ Waiting for workflow servers to stabilize..."
 sleep 10
 
-# Start quality & utility servers
-echo "🛠️  Starting quality & utility servers..."
-docker-compose up -d --build exa morphllm-fast-apply desktop-commander
+# Start research + quality & utility servers
+echo "🧠 Starting research + quality & utility servers..."
+docker-compose up -d --build gptr-mcp gptr-mcp-stdio exa morphllm-fast-apply desktop-commander
 
 echo ""
 echo "⏳ Final startup wait..."
@@ -70,6 +70,19 @@ for server in "${servers[@]}"; do
     name="${server%:*}"
     port="${server#*:}"
 
+    if curl -sf "http://localhost:$port/health" &>/dev/null; then
+        echo "✅ $name - Healthy"
+    else
+        echo "❌ $name - Unhealthy (port $port)"
+    fi
+done
+
+echo ""
+echo "🔎 Research servers:"
+research_servers=("gptr-mcp:3009")
+for server in "${research_servers[@]}"; do
+    name="${server%:*}"
+    port="${server#*:}"
     if curl -sf "http://localhost:$port/health" &>/dev/null; then
         echo "✅ $name - Healthy"
     else
@@ -99,6 +112,7 @@ echo "   Serena:       http://localhost:3006"
 echo "   Claude Ctx:   http://localhost:3007"
 echo ""
 echo "🔧 Quality & Utility Servers:"
+echo "   GPT Research: http://localhost:3009"
 echo "   Exa:          http://localhost:3008"
 echo "   MorphLLM:     http://localhost:3011"
 echo "   Desktop Cmd:  http://localhost:3012"

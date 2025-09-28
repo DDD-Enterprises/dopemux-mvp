@@ -59,13 +59,13 @@ servers:
       method: "ping"  # Use ping instead of HTTP health check
       interval: 30
 
-  # AI reasoning - RUNNING (via stdio)
+  # AI reasoning - now via HTTP (internal bridge)
   sequential-thinking:
-    transport: "stdio"
-    command: ["docker", "exec", "-i", "mcp-mas-sequential-thinking", "mcp-server-mas-sequential-thinking"]
+    transport: "http"
+    url: "http://localhost:3001"
     startup_timeout: 15
     health_check:
-      method: "ping"
+      method: "ping"  # Port-liveness check handled externally
       interval: 45
 
   # Multi-model reasoning and analysis - HEALTHY (16 tools)

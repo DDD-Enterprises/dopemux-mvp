@@ -13,12 +13,12 @@ sleep 5
 echo "📋 Status:"
 docker-compose ps mas-sequential-thinking || true
 
-echo "🏥 Health check:"
-if curl -sf http://localhost:3001/health >/dev/null; then
-  echo "✅ mas-sequential-thinking healthy at http://localhost:3001/health"
+echo "🏥 Liveness check (port 3001):"
+if nc -z localhost 3001 >/dev/null 2>&1; then
+  echo "✅ mas-sequential-thinking listening on port 3001"
+  echo "ℹ️  Note: MAS does not expose /health; broker uses ping"
 else
-  echo "❌ Health endpoint not responding yet"
+  echo "❌ Port 3001 not open yet"
   echo "📄 Tailing logs (Ctrl+C to exit)"
   docker-compose logs -f mas-sequential-thinking
 fi
-
