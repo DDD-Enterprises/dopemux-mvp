@@ -175,3 +175,7 @@ Temporary Items
 docker/mcp-servers/zen/zen-mcp-server/
 gptr-mcp/
 metamcp/
+
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md
