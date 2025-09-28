@@ -1,0 +1,140 @@
+# Platform Evolution - Multi-Agent Architecture Configuration
+# Context7-First Development Platform
+
+version: "1.0"
+platform_name: "Claude Code Platform Evolution"
+
+# Core Principle: Context7 MUST be used for all code analysis and generation
+context7_integration:
+  mandatory: true
+  priority: "highest"
+  requirement: "All agents performing code analysis or generation must query Context7 first"
+  fallback_behavior: "If Context7 unavailable, agents must acknowledge lack of authoritative docs"
+
+# Agent Cluster Architecture
+agent_clusters:
+  
+  research_cluster:
+    name: "Research & Documentation Agents"
+    token_budget: 25000
+    primary_function: "Gather requirements, research patterns, provide authoritative documentation"
+    agents:
+      - name: "context7_agent"
+        mcp_servers: ["context7"]
+        role: "Primary documentation and API reference provider"
+        mandatory_for: ["code_analysis", "code_generation", "api_documentation"]
+        priority: 1
+      - name: "exa_agent" 
+        mcp_servers: ["exa"]
+        role: "Web research and real-time information"
+        priority: 2
+      - name: "perplexity_agent"
+        mcp_servers: ["perplexity"]
+        role: "Enhanced research and pattern discovery"
+        priority: 3
+    container_config:
+      image: "claude-code-research:latest"
+      resources:
+        memory: "4Gi"
+        cpu: "2"
+      
+  implementation_cluster:
+    name: "Code Implementation Agents"
+    token_budget: 35000
+    primary_function: "Code writing, editing, and architectural implementation"
+    mandatory_context7: true  # CRITICAL: Always consult Context7 before code changes
+    agents:
+      - name: "serena_agent"
+        mcp_servers: ["serena", "context7"]  # Context7 paired with Serena
+        role: "Code editing and symbolic operations"
+        pre_action_requirement: "Query Context7 for relevant API docs before any code changes"
+        priority: 1
+      - name: "taskmaster_agent"
+        mcp_servers: ["task-master-ai", "context7"]
+        role: "Task breakdown and project management"
+        priority: 2
+      - name: "sequential_thinking_agent"
+        mcp_servers: ["sequential-thinking", "context7"]
+        role: "Complex reasoning and problem solving"
+        priority: 3
+    container_config:
+      image: "claude-code-implementation:latest"
+      resources:
+        memory: "6Gi"
+        cpu: "3"
+
+  quality_cluster:
+    name: "Quality Assurance Agents" 
+    token_budget: 20000
+    primary_function: "Testing, validation, and quality enforcement"
+    agents:
+      - name: "zen_reviewer"
+        mcp_servers: ["zen", "context7"]  # Context7 for code review standards
+        role: "Code review and quality analysis"
+        context7_requirement: "Reference official docs for best practices during review"
+        priority: 1
+      - name: "testing_agent"
+        mcp_servers: ["context7"]  # Context7 for testing framework docs
+        role: "Test generation and validation"
+        priority: 2
+    container_config:
+      image: "claude-code-quality:latest"
+      resources:
+        memory: "4Gi"
+        cpu: "2"
+
+  coordination_cluster:
+    name: "Coordination & Memory Agents"
+    token_budget: 13000
+    primary_function: "Cross-agent coordination and persistent memory"
+    agents:
+      - name: "conport_agent"
+        mcp_servers: ["conport"]
+        role: "Project memory and decision tracking"
+        priority: 1
+      - name: "openmemory_agent"
+        mcp_servers: ["openmemory"]
+        role: "Personal preferences and cross-session memory"
+        priority: 2
+    container_config:
+      image: "claude-code-coordination:latest"
+      resources:
+        memory: "2Gi"
+        cpu: "1"
+
+# Context7 Integration Rules
+context7_rules:
+  code_analysis:
+    - "Before analyzing any code, query Context7 for relevant API documentation"
+    - "Reference official library patterns and examples from Context7"
+    - "Validate proposed solutions against Context7 documentation"
+  
+  code_generation:
+    - "MANDATORY: Query Context7 before writing any code using external libraries"
+    - "Use Context7 examples and patterns as the foundation for implementation"
+    - "Cross-reference generated code with Context7 best practices"
+  
+  integration_points:
+    - "All agents with code responsibilities must have Context7 access"
+    - "Context7 queries are prioritized over general web search"
+    - "Agent decisions should reference Context7 documentation when available"
+
+# Agent Communication Protocol
+communication:
+  shared_memory: "conport"
+  coordination_hub: "crystal_desktop_app"
+  inter_agent_messaging: "mcp_bridge"
+  context7_sharing: "All agents can access Context7 findings via ConPort"
+
+# Monitoring and Analytics
+monitoring:
+  token_usage: "ccflare_dashboard"
+  agent_performance: "crystal_monitoring"
+  context7_integration: "Track Context7 query frequency and utilization"
+  
+# Safety and Isolation
+safety:
+  containerization: "docker_compose"
+  network_isolation: true
+  resource_limits: true
+  rollback_capability: true

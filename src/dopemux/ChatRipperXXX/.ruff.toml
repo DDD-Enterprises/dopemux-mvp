@@ -1,0 +1,12 @@
+line-length = 100
+exclude = ["tests"]
+
+[lint]
+select = ["E", "F"]
+ignore = ["W293", "E501", "F401"]
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.per-file-ignores]
+"src/chatx/cli/main.py" = ["B008"]

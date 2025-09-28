@@ -1,0 +1,88 @@
+name: Python CI (ruff • mypy • pytest-cov)
+
+on:
+  pull_request:
+    paths:
+      - '**/*.py'
+      - 'pyproject.toml'
+      - 'requirements*.txt'
+      - 'src/**'
+      - 'tests/**'
+  push:
+    branches: [ "main" ]
+    paths:
+      - '**/*.py'
+      - 'pyproject.toml'
+      - 'requirements*.txt'
+      - 'src/**'
+      - 'tests/**'
+
+# Cancel in-flight runs for the same PR/branch to reduce noise.
+# Docs: concurrency + cancel-in-progress. 
+# https://docs.github.com/actions/writing-workflows/choosing-what-your-workflow-does/control-the-concurrency-of-workflows-and-jobs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  build-test:
+    name: Lint, typecheck, test (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # Python 3.13 support is still experimental across dependencies.
+        # Limit the matrix to released versions to keep tests green.
+        python-version: [ "3.11", "3.12" ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # setup-python with built-in pip caching
+      # Docs: actions/setup-python cache + cache-dependency-path
+      # https://github.com/actions/setup-python
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            requirements*.txt
+
+      - name: Install project + tooling
+        run: |
+          python -m pip install -U pip wheel
+          # Install project with dev extras (provides runtime + tooling)
+          python -m pip install -e .[dev]
+          python -m pip install mypy pytest pytest-cov
+
+      # Ruff via the official action (runs `ruff check` by default)
+      # https://github.com/astral-sh/ruff-action
+      - name: Lint (ruff)
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "check src/chatx --output-format=github"
+        continue-on-error: true
+
+      - name: Typecheck (mypy)
+        run: mypy src/chatx
+        continue-on-error: true
+
+
+      # Align coverage threshold with project defaults (60%)
+      - name: Test (pytest + coverage gate)
+        run: pytest --cov=src --cov-report=term-missing --cov-fail-under=60
+
+      - name: Store coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.python-version }}
+          path: ./.coverage

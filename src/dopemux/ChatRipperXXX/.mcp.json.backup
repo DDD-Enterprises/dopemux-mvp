@@ -1,0 +1,57 @@
+{
+  "mcpServers": {
+    "conport": {
+      "command": "uvx",
+      "args": ["conport"],
+      "env": {}
+    },
+    "openmemory": {
+      "command": "npx",
+      "args": ["-y", "openmemory"],
+      "env": {}
+    },
+    "task-master-ai": {
+      "command": "npx", 
+      "args": ["-y", "--package=task-master-ai", "task-master-ai"],
+      "env": {
+        "ANTHROPIC_API_KEY": "your_key_here",
+        "PERPLEXITY_API_KEY": "your_key_here"
+      }
+    },
+    "serena": {
+      "command": "python",
+      "args": ["-m", "serena.mcp_server"],
+      "env": {}
+    },
+    "claude-context": {
+      "command": "npx",
+      "args": ["-y", "claude-context"],
+      "env": {}
+    },
+    "exa": {
+      "command": "npx",
+      "args": ["-y", "exa-mcp"],
+      "env": {
+        "EXA_API_KEY": "your_exa_key"
+      }
+    },
+    "zen": {
+      "command": "npx", 
+      "args": ["-y", "zen-mcp"],
+      "env": {
+        "ANTHROPIC_API_KEY": "your_key_here",
+        "OPENAI_API_KEY": "your_key_here"
+      }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "sequential-thinking"],
+      "env": {}
+    },
+    "cli": {
+      "command": "npx",
+      "args": ["-y", "cli-mcp"],
+      "env": {}
+    }
+  }
+}

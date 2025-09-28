@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# When applying mailbox patches via `git am`, run the same UTF-8 checks
+# before the commit is created.
+
+if [[ -x ".git/hooks/pre-commit" ]]; then
+  exec .git/hooks/pre-commit
+else
+  # Fallback: mirror the pre-commit UTF-8 check inline.
+  mapfile -d '' files < <(git diff --cached --name-only --diff-filter=ACMRT -z)
+  fail=0
+  for f in "${files[@]}"; do
+    [[ -e "$f" ]] || continue
+    if ! iconv -f UTF-8 -t UTF-8 "$f" > /dev/null 2>&1; then
+      echo "UTF-8 validation failed (pre-applypatch): $f" >&2
+      fail=1
+    fi
+  done
+  [[ $fail -eq 0 ]] || exit 1
+fi
+
+exit 0
