@@ -1,0 +1,206 @@
+version: "1.0.0"
+description: "ConPort integration configuration for MCP optimization system"
+
+conport_config:
+  workspace_id: "claude-mcp-optimized"
+  memory_categories:
+    - decisions
+    - progress
+    - glossary
+    - system_patterns
+    - custom_data
+
+integration_mappings:
+  # Todo System Integration
+  todos:
+    category: "custom_data"
+    key_pattern: "todo_{timestamp_id}"
+    data_structure:
+      task_id: "{id}"
+      title: "{title}"
+      priority: "{priority}"
+      status: "{status}"
+      context: "{context}"
+      dependencies: "{dependencies}"
+      created: "{created}"
+      updated: "{updated}"
+    auto_sync: true
+    sync_triggers:
+      - "task_created"
+      - "task_updated"
+      - "task_completed"
+
+  # MCP Server Usage Tracking
+  mcp_usage:
+    category: "custom_data"
+    key_pattern: "mcp_usage_{date}"
+    data_structure:
+      server_name: "{server}"
+      total_calls: "{total_calls}"
+      success_rate: "{success_rate}"
+      avg_latency: "{avg_latency}"
+      tokens_used: "{tokens_used}"
+    aggregation: "daily"
+    retention_days: 90
+
+  # Context Optimization Data
+  context_optimization:
+    category: "system_patterns"
+    patterns:
+      - name: "memory_first_workflow"
+        description: "Start with OpenMemory query, use Sequential Thinking for analysis"
+        success_rate: 0
+        usage_count: 0
+      - name: "research_driven_implementation"
+        description: "Use Exa for best practices, ConPort for research storage"
+        success_rate: 0
+        usage_count: 0
+      - name: "multi_model_validation"
+        description: "Cross-validate decisions with multiple models"
+        success_rate: 0
+        usage_count: 0
+
+  # Workflow Pattern Tracking
+  workflow_patterns:
+    category: "progress"
+    tracking:
+      - name: "development_cycles"
+        description: "Track complete development workflow usage"
+        metrics:
+          total_started: 0
+          completed_successfully: 0
+          average_completion_time: 0
+      - name: "context_usage"
+        description: "Monitor context efficiency across workflows"
+        metrics:
+          average_usage: 0
+          max_usage: 0
+          compaction_events: 0
+
+decision_patterns:
+  # Architectural Decisions
+  architecture:
+    category: "decisions"
+    patterns:
+      - name: "mcp_server_choice"
+        description: "Decisions about which MCP server to use for specific tasks"
+      - name: "context_optimization_approach"
+        description: "Decisions about context management strategies"
+      - name: "workflow_pattern_selection"
+        description: "Choices between different workflow approaches"
+
+  # Implementation Decisions
+  implementation:
+    category: "decisions"
+    patterns:
+      - name: "code_generation_strategy"
+        description: "Decisions about code generation approaches"
+      - name: "error_handling_patterns"
+        description: "Standardized error handling approaches"
+      - name: "testing_strategies"
+        description: "Testing approach decisions"
+
+progress_tracking:
+  # System Development Progress
+  system_development:
+    category: "progress"
+    tasks:
+      - name: "mcp_optimization_phase1"
+        description: "Foundation setup and directory structure"
+        status: "completed"
+        parent_id: null
+        subtasks: []
+      - name: "mcp_optimization_phase2"
+        description: "Core implementation and monitoring"
+        status: "in_progress"
+        parent_id: null
+        subtasks:
+          - name: "todo_system_implementation"
+            description: "Advanced markdown todo system"
+            status: "completed"
+          - name: "workflow_patterns"
+            description: "Optimized MCP workflow patterns"
+            status: "completed"
+          - name: "performance_monitoring"
+            description: "Comprehensive monitoring system"
+            status: "completed"
+      - name: "mcp_optimization_phase3"
+        description: "Workflow optimization and integration"
+        status: "pending"
+        parent_id: null
+        subtasks:
+          - name: "conport_integration"
+            description: "Ensure ConPort integration throughout system"
+            status: "in_progress"
+          - name: "workflow_optimization"
+            description: "Optimize all workflow processes"
+            status: "pending"
+
+auto_link_rules:
+  # Automatic Relationship Creation
+  relationships:
+    - source: "decisions"
+      target: "progress"
+      relationship: "influences"
+      description: "Decisions influence project progress"
+    - source: "system_patterns"
+      target: "custom_data"
+      relationship: "generates"
+      description: "System patterns generate usage data"
+    - source: "progress"
+      target: "decisions"
+      relationship: "requires"
+      description: "Progress updates may require new decisions"
+
+notification_rules:
+  # Automated Notifications
+  alerts:
+    - condition: "task_blocked"
+      category: "progress"
+      action: "notify_stakeholders"
+      message: "Task blocked: {task_title} - {blocking_reason}"
+    - condition: "performance_degraded"
+      category: "custom_data"
+      action: "log_alert"
+      message: "Performance degradation detected in {component}"
+    - condition: "context_limit_approaching"
+      category: "custom_data"
+      action: "trigger_compaction"
+      message: "Context usage approaching limit: {usage_percent}%"
+
+sync_configuration:
+  # Data Synchronization Settings
+  sync_intervals:
+    todos: "5m"
+    mcp_usage: "1h"
+    context_optimization: "1d"
+    workflow_patterns: "4h"
+
+  batch_sizes:
+    todos: 10
+    mcp_usage: 50
+    context_optimization: 5
+    workflow_patterns: 20
+
+  conflict_resolution:
+    strategy: "latest_wins"
+    backup_on_conflict: true
+    notify_on_conflict: true
+
+privacy_settings:
+  # Data Privacy Configuration
+  data_retention:
+    decisions: "365d"
+    progress: "90d"
+    custom_data: "30d"
+    system_patterns: "180d"
+
+  data_sharing:
+    internal_only: true
+    anonymize_sensitive: true
+    audit_access: true
+
+  compliance:
+    gdpr_compliant: true
+    data_minimization: true
+    right_to_erasure: true

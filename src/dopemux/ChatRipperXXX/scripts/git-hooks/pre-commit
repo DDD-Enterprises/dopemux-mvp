@@ -1,0 +1,33 @@
+#!/usr/bin/env zsh
+set -euo pipefail
+
+# Block commits that include staged files which are not valid UTF-8.
+# Uses iconv to validate; any failure aborts the commit.
+
+# Get staged files into array (zsh compatible)
+files=()
+while IFS= read -r -d '' file; do
+  files+=("$file")
+done < <(git diff --cached --name-only --diff-filter=ACMRT -z)
+
+# Exit early if no staged files
+if [[ ${#files[@]} -eq 0 ]]; then
+  exit 0
+fi
+
+fail=0
+for f in "${files[@]}"; do
+  # Skip empty entries and deleted or missing paths
+  [[ -n "$f" && -e "$f" ]] || continue
+  # Validate UTF-8 (iconv returns nonzero on invalid input)
+  if ! iconv -f UTF-8 -t UTF-8 "$f" > /dev/null 2>&1; then
+    echo "UTF-8 validation failed: $f" >&2
+    fail=1
+  fi
+done
+
+if [[ $fail -ne 0 ]]; then
+  echo "Aborting commit: non-UTF-8 file(s) detected (see above)." >&2
+  exit 1
+fi
+exit 0

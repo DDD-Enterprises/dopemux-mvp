@@ -1,0 +1,32 @@
+{
+  "name": "dopemux-cli-dashboard",
+  "version": "1.0.0",
+  "description": "Terminal-based coordination dashboard for Dopemux using React Ink",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "dopemux-dashboard": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.tsx",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "ink": "^4.4.1",
+    "ink-big-text": "^2.0.0",
+    "ink-gradient": "^3.0.0",
+    "ink-spinner": "^5.0.0",
+    "ink-table": "^3.0.0",
+    "react": "^18.2.0",
+    "redis": "^4.6.0",
+    "ws": "^8.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/ws": "^8.5.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

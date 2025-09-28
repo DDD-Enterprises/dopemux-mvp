@@ -1,0 +1,9 @@
+{
+  "conventional": true,
+  "emoji": false,
+  "language": "en",
+  "max_subject_length": 72,
+  "max_body_length": 0,
+  "fallback_to_prompt": true,
+  "prompt": "Generate a clear Conventional Commit message (type: feat, fix, chore, docs, refactor, test, perf, ci, build). Start with type(scope): subject. Include a short body with rationale if helpful."
+}

@@ -1,0 +1,32 @@
+{
+  "mcpServers": {
+    "conport": {
+      "command": "uvx",
+      "args": [
+        "conport"
+      ],
+      "env": {}
+    },
+    "openmemory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "openmemory"
+      ],
+      "env": {}
+    },
+    "cli": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "cli-mcp"
+      ],
+      "env": {}
+    }
+  },
+  "cluster": {
+    "name": "coordination_cluster",
+    "context7_enforced": false,
+    "token_budget": 10000
+  }
+}

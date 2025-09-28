@@ -75,9 +75,6 @@ dopemux = "dopemux.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.setuptools.package-dir]
-"" = "src"
-
 [tool.black]
 line-length = 88
 target-version = ['py38']

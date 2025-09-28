@@ -85,11 +85,11 @@ servers:
       interval: 60
 
   sequential-thinking:
-    transport: "stdio"
-    command: ["docker", "exec", "-i", "mcp-mas-sequential-thinking", "mcp-server-mas-sequential-thinking"]
+    transport: "http"
+    url: "http://localhost:3001"
     startup_timeout: 15
     health_check:
-      method: "ping"
+      method: "ping"  # rely on port up; wrapper bridge
       interval: 45
 
   # Task and project management - LIVE CONNECTIONS
@@ -130,10 +130,10 @@ servers:
       endpoint: "/health"
       interval: 30
 
-  docrag:
+  gptr-mcp:
     transport: "http"
     url: "http://localhost:3009"
-    startup_timeout: 10
+    startup_timeout: 15
     health_check:
       method: "health"
       endpoint: "/health"
@@ -147,7 +147,7 @@ role_mappings:
     pre_warm: true  # Keep connections ready
 
   researcher:
-    primary_servers: ["exa", "claude-context"]
+    primary_servers: ["gptr-mcp", "exa", "claude-context"]
     escalation_servers: ["sequential-thinking", "zen"]
     pre_warm: false  # Load on demand
 

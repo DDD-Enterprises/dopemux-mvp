@@ -50,6 +50,43 @@ detect_running_instances() {
     printf '%s\n' "${running_instances[@]}"
 }
 
+# Function to detect main hub instance
+detect_main_instance() {
+    # Check for running containers with mcp.role=hub label
+    if command -v docker &> /dev/null; then
+        docker ps --filter "label=mcp.role=hub" --format "{{.Label \"mcp.instance\"}}" 2>/dev/null | head -1
+    fi
+}
+
+# Function to check if main instance shared services are healthy
+check_main_instance_health() {
+    local main_instance="$1"
+    local services=("conport:3004" "milvus:19530" "redis:6379")
+    local all_healthy=true
+
+    log_info "Checking main instance '$main_instance' shared services..."
+
+    for service in "${services[@]}"; do
+        local service_name="${service%:*}"
+        local port="${service#*:}"
+
+        if ! nc -z localhost "$port" 2>/dev/null; then
+            log_warning "❌ $service_name (port $port) not responding"
+            all_healthy=false
+        else
+            log_info "✅ $service_name (port $port) healthy"
+        fi
+    done
+
+    if [[ "$all_healthy" == true ]]; then
+        log_success "All shared services healthy on main instance '$main_instance'"
+        return 0
+    else
+        log_error "Some shared services unhealthy on main instance '$main_instance'"
+        return 1
+    fi
+}
+
 # Function to get next available port
 get_next_port() {
     local base_port=3000
@@ -117,37 +154,72 @@ show_status() {
         log_success "${#running_instances[@]} instance(s) running:"
         echo
 
-        # Show detailed instance info
-        for instance in "${running_instances[@]}"; do
-            echo -e "${CYAN}📦 Instance: $instance${NC}"
+        # Show hub instance first
+        local main_instance
+        main_instance=$(detect_main_instance)
 
-            # Get container info
-            local containers
-            mapfile -t containers < <(docker ps --filter "label=mcp.instance=$instance" --format "{{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null)
-
-            if [[ ${#containers[@]} -gt 0 ]]; then
-                echo "  🐳 Containers:"
-                for container_info in "${containers[@]}"; do
-                    IFS=$'\t' read -r name status ports <<< "$container_info"
-                    echo "    ▶ $name ($status)"
-                    if [[ -n "$ports" ]]; then
-                        echo "      🔌 Ports: $ports"
-                    fi
-                done
-            fi
-
-            # Get worktree info
-            local worktree_path="$WORKTREE_ROOT/$instance"
-            if [[ -d "$worktree_path" ]]; then
-                cd "$worktree_path" 2>/dev/null || continue
-                local branch=$(git branch --show-current 2>/dev/null || echo "unknown")
-                local commit=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-                echo "  🌳 Worktree: $worktree_path"
-                echo "  🌿 Branch: $branch ($commit)"
-            fi
+        if [[ -n "$main_instance" ]]; then
+            echo -e "${GREEN}🏢 HUB Instance: $main_instance${NC}"
+            show_instance_details "$main_instance" "hub"
             echo
+        fi
+
+        # Show spoke instances
+        local spoke_instances=()
+        for instance in "${running_instances[@]}"; do
+            if [[ "$instance" != "$main_instance" ]]; then
+                spoke_instances+=("$instance")
+            fi
+        done
+
+        if [[ ${#spoke_instances[@]} -gt 0 ]]; then
+            echo -e "${BLUE}🔌 SPOKE Instances:${NC}"
+            for instance in "${spoke_instances[@]}"; do
+                show_instance_details "$instance" "spoke"
+            done
+        fi
+    fi
+}
+
+# Function to show detailed instance info
+show_instance_details() {
+    local instance="$1"
+    local role="${2:-unknown}"
+
+    # Get container info
+    local containers
+    mapfile -t containers < <(docker ps --filter "label=mcp.instance=$instance" --format "{{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null)
+
+    if [[ ${#containers[@]} -gt 0 ]]; then
+        echo "  🐳 Containers:"
+        for container_info in "${containers[@]}"; do
+            IFS=$'\t' read -r name status ports <<< "$container_info"
+            echo "    ▶ $name ($status)"
+            if [[ -n "$ports" ]]; then
+                echo "      🔌 Ports: $ports"
+            fi
         done
     fi
+
+    # Get worktree info
+    local worktree_path="$WORKTREE_ROOT/$instance"
+    if [[ -d "$worktree_path" ]]; then
+        cd "$worktree_path" 2>/dev/null || {
+            echo "  ⚠️  Worktree path inaccessible: $worktree_path"
+            return
+        }
+        local branch=$(git branch --show-current 2>/dev/null || echo "unknown")
+        local commit=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+        echo "  🌳 Worktree: $worktree_path"
+        echo "  🌿 Branch: $branch ($commit)"
+
+        if [[ "$role" == "hub" ]]; then
+            echo "  🏢 Role: Main Hub (provides shared services)"
+        elif [[ "$role" == "spoke" ]]; then
+            echo "  🔌 Role: Child Spoke (connects to hub)"
+        fi
+    fi
+    echo
 }
 
 # Function to start an instance
@@ -155,14 +227,17 @@ start_instance() {
     local instance_name="${1:-}"
     local branch="${2:-main}"
 
+    # Detect current state
+    local running_instances
+    mapfile -t running_instances < <(detect_running_instances)
+    local main_instance
+    main_instance=$(detect_main_instance)
+
     # If no instance name provided, auto-generate based on running instances
     if [[ -z "$instance_name" ]]; then
-        local running_instances
-        mapfile -t running_instances < <(detect_running_instances)
-
         if [[ ${#running_instances[@]} -eq 0 ]]; then
-            instance_name="default"
-            log_info "No running instances detected, creating 'default' instance"
+            instance_name="main"
+            log_info "No running instances detected, creating 'main' hub instance"
         else
             # Auto-generate next instance name
             local counter=1
@@ -171,30 +246,53 @@ start_instance() {
             done
             instance_name="dev${counter}"
             log_info "Detected running instances: ${running_instances[*]}"
-            log_info "Creating new instance: $instance_name"
+            log_info "Creating new child instance: $instance_name"
         fi
     fi
 
     # Check if instance is already running
-    local running_instances
-    mapfile -t running_instances < <(detect_running_instances)
-
     if [[ " ${running_instances[*]} " =~ " $instance_name " ]]; then
         log_warning "Instance '$instance_name' is already running"
         log_info "Use 'dopemux switch $instance_name' to open its worktree"
         return 0
     fi
 
-    # Get next available port
+    # Determine if this will be hub or spoke
+    local instance_role="spoke"
     local port_base
-    port_base=$(get_next_port)
 
-    log_header "Starting Dopemux instance: $instance_name"
-    log_info "Port base: $port_base"
-    log_info "Branch: $branch"
+    if [[ -z "$main_instance" ]]; then
+        # This will be the first instance - make it the hub
+        instance_role="hub"
+        port_base=8000  # Hub uses 8000-8099 for shared services
+        log_header "Starting Dopemux HUB instance: $instance_name"
+        log_info "🏢 Role: Main Hub (provides shared services)"
+        log_info "📡 Port range: 8000-8099 (shared services)"
+        log_info "🌿 Branch: $branch"
+    else
+        # This will be a spoke instance
+        port_base=$(get_next_port)
+        log_header "Starting Dopemux SPOKE instance: $instance_name"
+        log_info "🔌 Role: Child Spoke (connects to hub)"
+        log_info "🏢 Hub instance: $main_instance"
+        log_info "📡 Port base: $port_base"
+        log_info "🌿 Branch: $branch"
 
-    # Use the launch-instance script
+        # Check hub health before starting spoke
+        if ! check_main_instance_health "$main_instance"; then
+            log_error "Cannot start spoke instance - hub services unhealthy"
+            log_info "Try: dopemux stop $main_instance && dopemux start $main_instance"
+            exit 1
+        fi
+    fi
+
+    # Use the launch-instance script with role information
     cd "$SCRIPT_DIR"
+
+    # Set environment variables for launch script
+    export DOPEMUX_INSTANCE_ROLE="$instance_role"
+    export DOPEMUX_MAIN_INSTANCE="$main_instance"
+
     ./launch-instance.sh "$instance_name" "$port_base" "$branch"
 
     # Start the instance
@@ -203,11 +301,25 @@ start_instance() {
         log_info "Starting services..."
         ./"$instance_dir/start.sh"
         log_success "Instance '$instance_name' started successfully!"
-        log_info "Access URLs:"
-        echo "  🌐 Context7: http://localhost:$((port_base + 2))"
-        echo "  🤖 Zen: http://localhost:$((port_base + 3))"
-        echo "  🔍 Claude Context: http://localhost:$((port_base + 7))"
-        echo "  💾 Milvus: http://localhost:$((port_base + 18))"
+
+        if [[ "$instance_role" == "hub" ]]; then
+            log_info "🏢 Hub Services:"
+            echo "  💾 ConPort: http://localhost:3004"
+            echo "  🔍 Milvus: http://localhost:19530"
+            echo "  📡 Redis: localhost:6379"
+            echo "  🌐 Context7: http://localhost:3002"
+            echo "  🤖 Zen: http://localhost:3003"
+            echo
+            log_info "⚡ Other instances can now connect to this hub"
+        else
+            log_info "🔌 Spoke Services (connected to hub):"
+            echo "  🌐 Context7: http://localhost:$((port_base + 2))"
+            echo "  🤖 Zen: http://localhost:$((port_base + 3))"
+            echo "  🔍 Claude Context: http://localhost:$((port_base + 7))"
+            echo "  💾 Shared ConPort: http://localhost:3004 (via hub)"
+            echo "  🎯 Shared Milvus: http://localhost:19530 (via hub)"
+        fi
+
         echo
         log_info "Worktree path: $WORKTREE_ROOT/$instance_name"
         log_info "Use 'dopemux switch $instance_name' to open the worktree"

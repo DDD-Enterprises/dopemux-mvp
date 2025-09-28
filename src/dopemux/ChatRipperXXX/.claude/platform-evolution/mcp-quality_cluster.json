@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "zen": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "zen-mcp"
+      ],
+      "env": {
+        "ANTHROPIC_API_KEY": "your_key_here",
+        "OPENAI_API_KEY": "your_key_here"
+      }
+    }
+  },
+  "cluster": {
+    "name": "quality_cluster",
+    "context7_enforced": false,
+    "token_budget": 15000
+  }
+}

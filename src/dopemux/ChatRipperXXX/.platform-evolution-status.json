@@ -1,0 +1,67 @@
+{
+  "platform": {
+    "mode": "distributed",
+    "context7_enforced": true,
+    "version": "1.0.0",
+    "uptime_start": null,
+    "status": "running"
+  },
+  "system_metrics": {
+    "cpu_percent": 7.6,
+    "memory_percent": 70.3,
+    "disk_usage": 20.9,
+    "load_average": [
+      1.4013671875,
+      1.6884765625,
+      1.99853515625
+    ],
+    "timestamp": "2025-09-07T18:16:55.400968+00:00"
+  },
+  "containers": {
+    "containers": [],
+    "total_containers": 0,
+    "running_containers": 0,
+    "healthy": true
+  },
+  "context7": {
+    "available": false,
+    "response_time_ms": null,
+    "last_check": "2025-09-07T18:16:57.054985+00:00",
+    "error": ""
+  },
+  "monitoring_dashboard": {
+    "available": false,
+    "response_time_ms": null,
+    "last_check": "2025-09-07T18:16:57.062207+00:00",
+    "error": "HTTPConnectionPool(host='localhost', port=8080): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10a5cce90>: Failed to establish a new connection: [Errno 61] Connection refused'))"
+  },
+  "token_usage": {
+    "clusters": {
+      "research_cluster": {
+        "budget": 20000,
+        "used": 0,
+        "efficiency": 0.85
+      },
+      "implementation_cluster": {
+        "budget": 25000,
+        "used": 0,
+        "efficiency": 0.9
+      },
+      "quality_cluster": {
+        "budget": 15000,
+        "used": 0,
+        "efficiency": 0.8
+      },
+      "coordination_cluster": {
+        "budget": 10000,
+        "used": 0,
+        "efficiency": 0.95
+      }
+    },
+    "total_budget": 70000,
+    "total_used": 0,
+    "utilization_percent": 0.0,
+    "last_updated": "2025-09-07T18:16:57.062224+00:00"
+  },
+  "last_updated": "2025-09-07T18:16:57.062225+00:00"
+}

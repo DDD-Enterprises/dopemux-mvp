@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "gpt-researcher": {
+      "command": "python",
+      "args": [
+        "/Users/hue/code/dopemux-mvp/services/dopemux-gpt-researcher/mcp-server/server.py"
+      ],
+      "env": {
+        "WORKSPACE_PATH": "/Users/hue/code/dopemux-mvp",
+        "EXA_API_KEY": "${EXA_API_KEY}",
+        "TAVILY_API_KEY": "${TAVILY_API_KEY}",
+        "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}",
+        "DEBUG": "false"
+      }
+    }
+  }
+}

@@ -29,6 +29,11 @@ help:
 	@echo "  docs           Build documentation"
 	@echo "  serve-docs     Serve documentation locally"
 	@echo ""
+	@echo "Docs Audit:"
+	@echo "  docs-audit     Scan docs, create report + triage + rename plan (dry)"
+	@echo "  docs-audit-frontmatter-apply  Insert minimal frontmatter where missing"
+	@echo "  docs-audit-apply-rename PLAN=reports/docs-audit/rename_plan.csv  Apply renames"
+	@echo ""
 	@echo "Project Management (Leantime + Task-Master):"
 	@echo "  pm-install     Interactive installer (Leantime + Task-Master)"
 	@echo "  pm-install-unattended  Unattended install with default config"
@@ -112,6 +117,21 @@ docs:
 
 serve-docs:
 	@echo "Documentation server not yet implemented"
+
+# ---- Docs Audit helpers ----
+docs-audit:
+	python3 scripts/docs_audit/audit_docs.py scan --roots docs CCDOCS CHECKPOINT archive --out reports/docs-audit
+	python3 scripts/docs_audit/audit_docs.py report --out reports/docs-audit
+	python3 scripts/docs_audit/audit_docs.py triage-template --out reports/docs-audit
+	python3 scripts/docs_audit/audit_docs.py plan-rename --out reports/docs-audit --template "{date} - {title}.md"
+	@echo "\n✓ Docs audit complete. See reports/docs-audit/"
+
+docs-audit-frontmatter-apply:
+	python3 scripts/docs_audit/audit_docs.py enforce-frontmatter --out reports/docs-audit --apply
+
+docs-audit-apply-rename:
+	@if [ -z "$(PLAN)" ]; then echo "Usage: make docs-audit-apply-rename PLAN=reports/docs-audit/rename_plan.csv"; exit 1; fi
+	python3 scripts/docs_audit/audit_docs.py apply-rename --plan $(PLAN)
 
 # ---- Project Management (Leantime + Task-Master) ----
 pm-install:

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "mas-sequential-thinking": {
+      "command": "docker exec -i mcp-mas-sequential-thinking mcp-server-mas-sequential-thinking"
+    },
+    "gptr-researcher-stdio": {
+      "command": "docker exec -i mcp-gptr-stdio python /app/scripts/gpt-researcher/mcp_server.py"
+    }
+  }
+}

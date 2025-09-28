@@ -1,0 +1,45 @@
+{
+  "mcpServers": {
+    "task-master-ai": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "--package=task-master-ai",
+        "task-master-ai"
+      ],
+      "env": {
+        "ANTHROPIC_API_KEY": "your_key_here",
+        "PERPLEXITY_API_KEY": "your_key_here"
+      }
+    },
+    "serena": {
+      "command": "python",
+      "args": [
+        "-m",
+        "serena.mcp_server"
+      ],
+      "env": {}
+    },
+    "claude-context": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "claude-context"
+      ],
+      "env": {}
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "sequential-thinking"
+      ],
+      "env": {}
+    }
+  },
+  "cluster": {
+    "name": "implementation_cluster",
+    "context7_enforced": true,
+    "token_budget": 25000
+  }
+}

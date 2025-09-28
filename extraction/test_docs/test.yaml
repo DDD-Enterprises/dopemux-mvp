@@ -1,0 +1,4 @@
+adhd_profile:
+  focus_duration: 25
+  break_interval: 5
+project_type: python

@@ -123,7 +123,7 @@ services:
       interval: 30s
       start_period: 30s
     volumes:
-      - ${VOLUME_PREFIX:-mcp}_conport_data:/app/data
+      - mcp_shared_conport_data:/app/data
       - mcp_shared_dopemux_sessions:/workspace/.dopemux
       - mcp_shared_claude_sessions:/workspace/.claude
     labels:
@@ -430,6 +430,11 @@ volumes:
     driver: local
     name: mcp_shared_claude_sessions
 
+  # Project memory and decisions - shared knowledge layer (foundation)
+  mcp_shared_conport_data:
+    driver: local
+    name: mcp_shared_conport_data
+
   # === INSTANCE-SPECIFIC VOLUMES ===
   # Logs and configs - isolated per instance
   ${VOLUME_PREFIX:-mcp}_logs:
@@ -445,10 +450,7 @@ volumes:
     driver: local
     name: ${VOLUME_PREFIX:-mcp}_zen_config
 
-  # Project memory and decisions - isolated per instance
-  ${VOLUME_PREFIX:-mcp}_conport_data:
-    driver: local
-    name: ${VOLUME_PREFIX:-mcp}_conport_data
+  # Task data - isolated per instance
   ${VOLUME_PREFIX:-mcp}_task_master_data:
     driver: local
     name: ${VOLUME_PREFIX:-mcp}_task_master_data

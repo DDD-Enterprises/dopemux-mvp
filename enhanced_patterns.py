@@ -54,8 +54,33 @@ DOPEMUX_PATTERNS: Dict[str, str] = {
     "task_features": r"(?:task|todo|work)\s+(?:decomposition|breakdown|management|tracking)\s*[:\-]?\s*([^.\n]{10,150})"
 }
 
+# Markdown-specific patterns for structured documents
+MARKDOWN_PATTERNS: Dict[str, str] = {
+    # Bold key-value pairs: **Key**: Value
+    "markdown_bold_kv": r'\*\*([^*]+?)\*\*\s*:\s*([^\n]+)',
+
+    # Headers as section identifiers
+    "markdown_headers": r'^(#{1,6})\s+(.+?)(?:\s*#*)?$',
+
+    # List items with optional bold keys
+    "markdown_list_items": r'^[\s]*[-*+]\s+(?:\*\*([^*]+?)\*\*\s*:\s*)?(.+?)$',
+
+    # ADHD-specific bold patterns common in documentation
+    "adhd_focus_settings": r'\*\*(?:Focus|Attention|Concentration)[\s\w]*\*\*\s*:\s*([^\n]+)',
+    "adhd_break_settings": r'\*\*(?:Break|Interval|Pause)[\s\w]*\*\*\s*:\s*([^\n]+)',
+    "adhd_accommodations": r'\*\*(?:Accommodation|Adaptation|Support)[\s\w]*\*\*\s*:\s*([^\n]+)',
+    "adhd_task_settings": r'\*\*(?:Task|Todo|Chunking|Decomposition)[\s\w]*\*\*\s*:\s*([^\n]+)',
+
+    # Development guidelines in markdown lists
+    "dev_guidelines": r'^[\s]*[-*+]\s+(Use|Follow|Prefer|Write|Include|Avoid)\s+([^\n]+)',
+    "dev_principles": r'^[\s]*[-*+]\s+\*\*([^*]+?)\*\*\s*:\s*([^\n]+)',
+
+    # Configuration sections
+    "config_sections": r'^#{2,4}\s+(.*(?:Config|Settings|Options|Properties).*)',
+}
+
 # Combine all patterns
-ALL_ENHANCED_PATTERNS = {**ENHANCED_EXTRACTION_PATTERNS, **DOPEMUX_PATTERNS}
+ALL_ENHANCED_PATTERNS = {**ENHANCED_EXTRACTION_PATTERNS, **DOPEMUX_PATTERNS, **MARKDOWN_PATTERNS}
 
 # Compiled patterns for performance
 COMPILED_ENHANCED_PATTERNS: Dict[str, Pattern[str]] = {
@@ -63,9 +88,17 @@ COMPILED_ENHANCED_PATTERNS: Dict[str, Pattern[str]] = {
     for name, pattern in ALL_ENHANCED_PATTERNS.items()
 }
 
-def enhanced_calculate_confidence(entity_text: str, content: str) -> float:
-    """Enhanced confidence calculation for natural language patterns."""
+def enhanced_calculate_confidence(entity_text: str, content: str, pattern_name: str = "") -> float:
+    """Enhanced confidence calculation for natural language and markdown patterns."""
     base_confidence = 0.75  # Higher base for natural language
+
+    # Boost for markdown-specific patterns (more structured)
+    if pattern_name.startswith('markdown_') or pattern_name.startswith('adhd_'):
+        base_confidence += 0.1
+
+    # Extra boost for ADHD markdown patterns (high confidence due to structure)
+    if pattern_name.startswith('adhd_'):
+        base_confidence += 0.15
 
     # Boost for ADHD/domain-specific content
     domain_keywords = ["adhd", "neurodivergent", "mcp", "dopemux", "claude", "session", "task"]
@@ -80,6 +113,10 @@ def enhanced_calculate_confidence(entity_text: str, content: str) -> float:
     # Boost for architectural terms
     arch_keywords = ["architecture", "design", "system", "component", "interface", "api"]
     if any(keyword in content.lower() for keyword in arch_keywords):
+        base_confidence += 0.05
+
+    # Boost for structured markdown formatting
+    if any(marker in entity_text for marker in ['**', '#', '-', '*', '+']):
         base_confidence += 0.05
 
     # Length-based confidence (natural language tends to be longer)

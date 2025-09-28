@@ -1,0 +1,18 @@
+{
+  "current_session": {
+    "session_id": null,
+    "start_time": null,
+    "token_budget": 200000,
+    "current_usage": 0,
+    "tool_calls": [],
+    "predictions": [],
+    "optimizations_applied": []
+  },
+  "historical_sessions": [],
+  "performance_metrics": {
+    "average_session_tokens": 0,
+    "most_used_tools": [],
+    "optimization_success_rate": 0,
+    "token_savings_achieved": 0
+  }
+}

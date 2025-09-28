@@ -1,0 +1,99 @@
+{
+  "defaultMode": "plan",
+  "permissions": {
+    "allow": [
+      "Read(/**)",
+      "Edit(project:src/**)",
+      "Edit(project:tests/**)",
+      "Bash(python:*)",
+      "Bash(pip:*)",
+      "Bash(pytest:*)",
+      "Bash(ruff:*)",
+      "Bash(mypy:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ],
+    "ask": [
+      "Bash(git push:*)"
+    ],
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(sudo:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash(sudo:*)|Bash(rm:*)|Bash(curl:*)|Bash(wget:*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/pre_tool_guard.py"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__zen__.*|mcp__conport__get_active_context",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/pre_context_budget.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write|mcp__serena__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/hooks/privacy_validation.py"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post_quality_gate.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "outputStyle": "Explanatory",
+  "slashCommands": {
+    "/git-commit": ".claude/commands/git/git-commit.md",
+    "/pr-create": ".claude/commands/gh/pr-create.md",
+    "/pr-checks": ".claude/commands/gh/pr-checks.md",
+    "/pr-merge": ".claude/commands/gh/pr-merge.md",
+    "/issue-create": ".claude/commands/gh/issue-create.md",
+    "/bootstrap": ".claude/commands/bootstrap.md",
+    "/research": ".claude/commands/research.md",
+    "/story": ".claude/commands/story.md",
+    "/plan": ".claude/commands/plan.md",
+    "/implement": ".claude/commands/implement.md",
+    "/debug": ".claude/commands/debug.md",
+    "/ship": ".claude/commands/ship.md",
+    "/switch": ".claude/commands/switch.md",
+    "/tdd": ".claude/commands/tdd-loop.md",
+    "/code-search": ".claude/commands/code-search.md",
+    "/plan-tasks": ".claude/commands/plan-tasks.md",
+    "/tasks": ".claude/commands/tm/list.md",
+    "/next-task": ".claude/commands/tm/next/next-task.md",
+    "/task-done": ".claude/commands/tm/set-status/to-done.md",
+    "/expand-task": ".claude/commands/tm/expand/expand-task.md",
+    "/log-dec": ".claude/commands/decision.md",
+    "/get-decisions": ".claude/commands/get-decisions.md",
+    "/search-decisions": ".claude/commands/search-decisions.md",
+    "/mem-query": ".claude/commands/mem-query.md",
+    "/zen": ".claude/commands/zen.md",
+    "/zen-continue": ".claude/commands/zen-continue.md",
+    "/privacy-scan": ".claude/commands/privacy-scan.md",
+    "/forensic-validation": ".claude/commands/forensic-validation.md"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xtractxact.dev/schemas/enrichment_message.schema.json",
+  "title": "Enrichment (Per Message)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["msg_id", "speech_act", "intent", "stance", "tone", "emotion_primary", "certainty", "directness", "boundary_signal", "repair_attempt", "inferred_meaning", "map_refs", "confidence_llm", "source", "provenance"],
+  "properties": {
+    "msg_id": {"type": "string"},
+    "speech_act": {"type": "string"},
+    "intent": {"type": "string"},
+    "stance": {"type": "string", "enum": ["supportive", "neutral", "challenging"]},
+    "tone": {"type": "string"},
+    "emotion_primary": {"type": "string", "enum": ["joy", "anger", "fear", "sadness", "disgust", "surprise", "neutral"]},
+    "certainty": {"type": "object", "required": ["val"], "properties": {"val": {"type": "number", "minimum": 0, "maximum": 1}}},
+    "directness": {"type": "object", "required": ["val"], "properties": {"val": {"type": "number", "minimum": 0, "maximum": 1}}},
+    "boundary_signal": {"type": "string", "enum": ["none", "set", "test", "violate", "reinforce"]},
+    "repair_attempt": {"type": "boolean"},
+    "inferred_meaning": {"type": "string", "maxLength": 200},
+    "map_refs": {"type": "array", "items": {"type": "string"}},
+    "coarse_labels": {"type": "array", "items": {"type": "string"}},
+    "fine_labels_local": {"type": "array", "items": {"type": "string"}, "description": "LOCAL-ONLY; MUST NOT be sent to cloud."},
+    "influence_class": {"type": ["string", "null"], "description": "Enum in labels.yml cloud-safe influence classes"},
+    "influence_score": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "relationship_structure": {"type": "array", "items": {"type": "string"}},
+    "relationship_dynamic": {"type": "array", "items": {"type": "string"}},
+    "notes": {"type": ["string", "null"]},
+    "confidence_llm": {"type": "number", "minimum": 0, "maximum": 1},
+    "source": {"type": "string", "enum": ["local", "cloud"]},
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_v", "run_id", "model_id", "prompt_hash"],
+      "properties": {
+        "schema_v": {"type": "string"},
+        "run_id": {"type": "string"},
+        "model_id": {"type": "string"},
+        "prompt_hash": {"type": "string"}
+      }
+    },
+    "shield": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional record of preflight/coverage context."
+    }
+  }
+}

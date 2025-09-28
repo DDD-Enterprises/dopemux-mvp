@@ -1,23 +1,60 @@
 {
   "mcpServers": {
-    "conport": {
-      "command": "uvx",
+    "conport_wrapped": {
+      "command": "python",
       "args": [
-        "mcp-proxy",
-        "--transport",
-        "streamablehttp",
-        "http://127.0.0.1:3007/mcp"
+        "/Users/hue/code/dopemux-mvp/scripts/mcp_event_wrapper.py",
+        "--server", "conport",
+        "--instance", "${DOPEMUX_INSTANCE_ID:-A}",
+        "--redis-host", "localhost",
+        "--redis-port", "6379"
       ],
-      "env": {},
+      "env": {
+        "DOPEMUX_INSTANCE_ID": "${DOPEMUX_INSTANCE_ID:-A}"
+      },
       "type": "stdio"
     },
-    "metamcp-broker": {
+    "metamcp-broker_wrapped": {
+      "command": "python",
+      "args": [
+        "/Users/hue/code/dopemux-mvp/scripts/mcp_event_wrapper.py",
+        "--server", "metamcp-broker",
+        "--instance", "${DOPEMUX_INSTANCE_ID:-A}",
+        "--redis-host", "localhost",
+        "--redis-port", "6379"
+      ],
+      "env": {
+        "DOPEMUX_INSTANCE_ID": "${DOPEMUX_INSTANCE_ID:-A}"
+      },
+      "type": "stdio"
+    },
+    "gpt-researcher_wrapped": {
+      "command": "python",
+      "args": [
+        "/Users/hue/code/dopemux-mvp/scripts/mcp_event_wrapper.py",
+        "--server", "gpt-researcher",
+        "--instance", "${DOPEMUX_INSTANCE_ID:-A}",
+        "--redis-host", "localhost",
+        "--redis-port", "6379"
+      ],
+      "env": {
+        "WORKSPACE_PATH": "/Users/hue/code/dopemux-mvp",
+        "EXA_API_KEY": "${EXA_API_KEY}",
+        "TAVILY_API_KEY": "${TAVILY_API_KEY}",
+        "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}",
+        "DEBUG": "false",
+        "DOPEMUX_INSTANCE_ID": "${DOPEMUX_INSTANCE_ID:-A}"
+      },
+      "type": "stdio"
+    },
+    "serena": {
       "command": "uvx",
       "args": [
         "mcp-proxy",
         "--transport",
         "streamablehttp",
-        "http://localhost:8090/mcp"
+        "http://127.0.0.1:3006/sse"
       ],
       "env": {},
       "type": "stdio"
@@ -32,15 +69,14 @@
       "env": {},
       "type": "stdio"
     },
-    "gpt-researcher": {
-      "command": "python",
+    "mas-sequential-thinking": {
+      "command": "docker",
       "args": [
-        "/Users/hue/code/dopemux-mvp/gptr-mcp/server.py"
+        "exec",
+        "mcp-mas-sequential-thinking",
+        "mcp-server-mas-sequential-thinking"
       ],
-      "env": {
-        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-        "TAVILY_API_KEY": "${TAVILY_API_KEY}"
-      },
+      "env": {},
       "type": "stdio"
     }
   }

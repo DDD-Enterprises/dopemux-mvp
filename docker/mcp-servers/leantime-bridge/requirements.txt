@@ -1,0 +1,46 @@
+# Leantime MCP Bridge Dependencies
+
+# MCP Protocol Support
+mcp>=1.0.0
+
+# HTTP and API clients
+aiohttp>=3.9.0
+httpx>=0.27.0
+requests>=2.31.0
+
+# JSON-RPC client for Leantime API
+jsonrpcclient>=4.0.3
+jsonrpcserver>=5.0.9
+
+# Async support
+asyncio-mqtt>=0.16.0
+aiofiles>=23.2.1
+
+# Data validation and serialization
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# Logging and monitoring
+structlog>=23.2.0
+prometheus-client>=0.19.0
+
+# Authentication and security
+pyjwt>=2.8.0
+cryptography>=41.0.0
+
+# Configuration management
+python-dotenv>=1.0.0
+click>=8.1.7
+
+# Database for caching (optional)
+aiosqlite>=0.19.0
+redis>=5.0.0
+
+# Date/time handling
+python-dateutil>=2.8.2
+pytz>=2023.3
+
+# Testing (dev dependencies)
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.12.0

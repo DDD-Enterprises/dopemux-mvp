@@ -114,6 +114,8 @@ venv.bak/
 
 # mkdocs documentation
 /site
+# Audit reports
+reports/docs-audit/
 
 # mypy
 .mypy_cache/
