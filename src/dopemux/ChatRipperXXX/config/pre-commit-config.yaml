@@ -1,8 +1,0 @@
-repos:
-  - repo: local
-    hooks:
-      - id: chatx-labels-lint
-        name: ChatX labels linter
-        entry: python scripts/lint_labels.py --labels config/labels.yml --placeholders PROJECT_DESIGN_FILES/placeholders.yml --outdir lint-reports
-        language: system
-        files: ^(config/labels\.yml|PROJECT_DESIGN_FILES/placeholders\.yml)$
