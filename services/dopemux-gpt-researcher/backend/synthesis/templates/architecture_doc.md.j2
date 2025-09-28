@@ -1,0 +1,50 @@
+# Architecture Document
+
+**Date:** {{ date }}
+**Confidence Score:** {{ avg_confidence | format_confidence }}
+
+## Architectural Decisions
+
+{% for decision in decisions %}
+{% if decision.metadata.decision_type == 'technical' %}
+### {{ decision.content }}
+
+**Rationale:**
+{% for reason in decision.metadata.rationale %}
+- {{ reason }}
+{% endfor %}
+
+**Alternatives:**
+{% for alt in decision.metadata.alternatives %}
+- {{ alt }}
+{% endfor %}
+
+---
+
+{% endif %}
+{% endfor %}
+
+## System Constraints
+
+{% for constraint in constraints %}
+{% if constraint.metadata.constraint_type == 'technical' %}
+### {{ constraint.content }}
+
+**Impact:** {{ constraint.metadata.impact }}
+**Severity:** {{ constraint.metadata.severity | format_priority }}
+
+{% endif %}
+{% endfor %}
+
+## Security Architecture
+
+{% for sec in security %}
+### {{ sec.content }}
+
+**Type:** {{ sec.metadata.security_type | title }}
+**Implementation:** {{ sec.metadata.implementation | items | join(', ') }}
+
+{% endfor %}
+
+---
+*Generated from {{ total_fields }} extracted fields*

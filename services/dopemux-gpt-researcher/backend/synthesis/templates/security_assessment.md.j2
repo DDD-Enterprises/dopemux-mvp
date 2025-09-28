@@ -1,0 +1,45 @@
+# Security Assessment
+
+**Date:** {{ date }}
+**Confidence Score:** {{ avg_confidence | format_confidence }}
+
+## Security Requirements
+
+{% for sec in security | sort_by_confidence %}
+### {{ sec.content }}
+
+**Type:** {{ sec.metadata.security_type | title }}
+**Threat Level:** {{ sec.metadata.threat_level | format_priority }}
+**Data Classification:** {{ sec.metadata.data_classification | title }}
+
+{% if sec.metadata.compliance_framework %}
+**Compliance Requirements:** {{ sec.metadata.compliance_framework | join(', ') }}
+{% endif %}
+
+---
+
+{% endfor %}
+
+## Risk Analysis
+
+{% for risk in risks %}
+{% if risk.metadata.risk_type == 'security' %}
+### {{ risk.content }}
+
+**Probability:** {{ risk.metadata.probability | title }}
+**Impact:** {{ risk.metadata.impact_level | format_priority }}
+**Severity:** {{ risk.metadata.severity | format_priority }}
+
+{% endif %}
+{% endfor %}
+
+## Compliance Framework
+
+{% for constraint in constraints %}
+{% if constraint.metadata.constraint_type == 'regulatory' %}
+- {{ constraint.content }}
+{% endif %}
+{% endfor %}
+
+---
+*Generated from {{ total_fields }} extracted fields*

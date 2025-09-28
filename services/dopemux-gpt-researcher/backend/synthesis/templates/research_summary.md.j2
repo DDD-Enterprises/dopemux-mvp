@@ -1,0 +1,35 @@
+# Research Summary
+
+**Date:** {{ date }}
+**Confidence Score:** {{ avg_confidence | format_confidence }}
+
+## Research Findings
+
+{% for item in research | sort_by_confidence %}
+### {{ item.content }}
+
+**Research Type:** {{ item.metadata.research_type | title }}
+**Source:** {{ item.metadata.source }}
+**Methodology:** {{ item.metadata.methodology }}
+
+{% if item.metadata.sample_size %}
+**Sample Size:** {{ item.metadata.sample_size }}
+{% endif %}
+
+{% if item.metadata.confidence_level %}
+**Statistical Confidence:** {{ item.metadata.confidence_level }}
+{% endif %}
+
+{% if item.metadata.limitations %}
+**Limitations:**
+{% for limitation in item.metadata.limitations %}
+- {{ limitation }}
+{% endfor %}
+{% endif %}
+
+---
+
+{% endfor %}
+
+---
+*Generated from {{ total_fields }} extracted fields*
