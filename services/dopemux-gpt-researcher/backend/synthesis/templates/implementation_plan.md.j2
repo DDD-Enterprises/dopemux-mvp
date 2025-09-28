@@ -1,0 +1,72 @@
+# Implementation Plan
+
+**Date:** {{ date }}
+**Confidence Score:** {{ avg_confidence | format_confidence }}
+
+## Overview
+
+Implementation plan derived from conversation analysis.
+
+## Implementation Phases
+
+{% for feature in features %}
+### Phase {{ loop.index }}: {{ feature.content | title }}
+
+**Complexity:** {{ feature.metadata.complexity | title }}
+**Priority:** {{ feature.metadata.priority | format_priority }}
+
+{% if feature.metadata.dependencies %}
+**Prerequisites:**
+{% for dep in feature.metadata.dependencies %}
+- {{ dep }}
+{% endfor %}
+{% endif %}
+
+{% if feature.metadata.acceptance_criteria %}
+**Success Criteria:**
+{% for criteria in feature.metadata.acceptance_criteria %}
+- {{ criteria }}
+{% endfor %}
+{% endif %}
+
+---
+
+{% endfor %}
+
+## Technical Decisions
+
+{% for decision in decisions %}
+### {{ decision.content }}
+
+**Implementation Impact:** {{ decision.metadata.scope | title }}
+**Dependencies:** {{ decision.metadata.dependencies | join(', ') }}
+
+{% endfor %}
+
+## Risk Mitigation
+
+{% for risk in risks %}
+### {{ risk.content }}
+
+**Severity:** {{ risk.metadata.severity | format_priority }}
+**Owner:** {{ risk.metadata.owner }}
+
+{% if risk.metadata.mitigation %}
+**Mitigation Plan:**
+{% for mit in risk.metadata.mitigation %}
+- {{ mit }}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+
+## Resource Requirements
+
+{% for constraint in constraints %}
+{% if constraint.metadata.constraint_type in ['resource', 'financial', 'temporal'] %}
+- **{{ constraint.metadata.constraint_type | title }}:** {{ constraint.content }}
+{% endif %}
+{% endfor %}
+
+---
+*Generated from {{ total_fields }} extracted fields*

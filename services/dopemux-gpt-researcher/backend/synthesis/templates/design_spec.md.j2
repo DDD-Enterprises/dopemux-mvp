@@ -1,0 +1,71 @@
+# Technical Design Specification
+
+**Date:** {{ date }}
+**Confidence Score:** {{ avg_confidence | format_confidence }}
+**Stakeholders:** {{ unique_stakeholders | format_stakeholders }}
+
+## Overview
+
+This document outlines the technical design based on conversation analysis.
+
+## System Architecture
+
+{% for decision in decisions %}
+{% if 'architecture' in decision.content.lower() or 'system' in decision.content.lower() %}
+### {{ decision.content }}
+
+**Rationale:** {{ decision.metadata.rationale | join(', ') }}
+{% if decision.metadata.dependencies %}
+**Dependencies:** {{ decision.metadata.dependencies | join(', ') }}
+{% endif %}
+
+{% endif %}
+{% endfor %}
+
+## Components
+
+{% for feature in features %}
+### {{ feature.content | title }}
+
+{% if feature.metadata.technical_requirements %}
+**Technical Requirements:**
+{% for req in feature.metadata.technical_requirements %}
+- {{ req }}
+{% endfor %}
+{% endif %}
+
+{% if feature.metadata.dependencies %}
+**Dependencies:**
+{% for dep in feature.metadata.dependencies %}
+- {{ dep }}
+{% endfor %}
+{% endif %}
+
+---
+
+{% endfor %}
+
+## Security Considerations
+
+{% for sec in security | sort_by_confidence %}
+### {{ sec.content }}
+
+**Type:** {{ sec.metadata.security_type | title }}
+**Threat Level:** {{ sec.metadata.threat_level | format_priority }}
+
+{% if sec.metadata.compliance_framework %}
+**Compliance:** {{ sec.metadata.compliance_framework | join(', ') }}
+{% endif %}
+
+---
+
+{% endfor %}
+
+## Constraints & Limitations
+
+{% for constraint in constraints %}
+- **{{ constraint.content }}** ({{ constraint.metadata.constraint_type | title }})
+{% endfor %}
+
+---
+*Generated from {{ total_fields }} extracted fields*

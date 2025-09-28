@@ -1,0 +1,35 @@
+# Stakeholder Map
+
+**Date:** {{ date }}
+**Confidence Score:** {{ avg_confidence | format_confidence }}
+
+## Stakeholder Overview
+
+{% for stakeholder in stakeholders | sort_by_confidence %}
+### {{ stakeholder.content }}
+
+**Type:** {{ stakeholder.metadata.stakeholder_type | title }}
+**Role:** {{ stakeholder.metadata.role }}
+**Department:** {{ stakeholder.metadata.department }}
+**Influence Level:** {{ stakeholder.metadata.influence_level | format_priority }}
+
+{% if stakeholder.metadata.responsibilities %}
+**Responsibilities:**
+{% for resp in stakeholder.metadata.responsibilities %}
+- {{ resp }}
+{% endfor %}
+{% endif %}
+
+{% if stakeholder.metadata.contact_info %}
+**Contact Information:**
+{% for key, value in stakeholder.metadata.contact_info.items() %}
+- {{ key | title }}: {{ value }}
+{% endfor %}
+{% endif %}
+
+---
+
+{% endfor %}
+
+---
+*Generated from {{ total_fields }} extracted fields*

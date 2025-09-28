@@ -1,0 +1,70 @@
+# Business Plan
+
+**Date:** {{ date }}
+**Confidence Score:** {{ avg_confidence | format_confidence }}
+
+## Executive Summary
+
+{{ features | extract_content(300) }}
+
+## Market Opportunity
+
+{% for research in research %}
+{% if 'market' in research.content.lower() or 'opportunity' in research.content.lower() %}
+- {{ research.content }}
+{% endif %}
+{% endfor %}
+
+## Product Features
+
+{% for feature in features %}
+### {{ feature.content | title }}
+
+{% if feature.metadata.business_value %}
+**Business Value:**
+{% for value in feature.metadata.business_value %}
+- {{ value }}
+{% endfor %}
+{% endif %}
+
+**Priority:** {{ feature.metadata.priority | format_priority }}
+
+{% endfor %}
+
+## Stakeholder Analysis
+
+{% for stakeholder in stakeholders %}
+### {{ stakeholder.content }}
+
+**Role:** {{ stakeholder.metadata.role }}
+**Influence:** {{ stakeholder.metadata.influence_level | format_priority }}
+
+{% if stakeholder.metadata.responsibilities %}
+**Responsibilities:**
+{% for resp in stakeholder.metadata.responsibilities %}
+- {{ resp }}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+
+## Risk Assessment
+
+{% for risk in risks %}
+### {{ risk.content }}
+
+**Type:** {{ risk.metadata.risk_type | title }}
+**Probability:** {{ risk.metadata.probability | title }}
+**Impact:** {{ risk.metadata.impact_level | format_priority }}
+
+{% if risk.metadata.mitigation %}
+**Mitigation:**
+{% for mit in risk.metadata.mitigation %}
+- {{ mit }}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+
+---
+*Generated from {{ total_fields }} extracted fields*
