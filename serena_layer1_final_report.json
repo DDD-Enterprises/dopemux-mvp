@@ -1,0 +1,78 @@
+{
+  "final_status": "\u2705 MOSTLY FUNCTIONAL",
+  "success_rate": 0.7916666666666666,
+  "tests_passed": 19,
+  "total_tests": 24,
+  "recommendation": "Layer 1 core features working - minor issues to address",
+  "detailed_results": {
+    "workspace": {
+      "workspace_detected": "/Users/hue/code/dopemux-mvp",
+      "auto_detection": false,
+      "dopemux_project": true,
+      "indicators_found": [
+        ".git",
+        ".claude",
+        "services"
+      ]
+    },
+    "tree_sitter": {
+      "tree_sitter_available": true,
+      "languages_supported": [
+        "python",
+        "javascript",
+        "rust",
+        "go"
+      ],
+      "files_analyzed": {
+        "services/serena/server.py": {
+          "language": "python",
+          "lines_of_code": 613,
+          "file_size_bytes": 24759,
+          "tree_sitter_supported": true
+        }
+      }
+    },
+    "performance": {
+      "performance_monitoring": true,
+      "test_operations": {
+        "cache_hit": {
+          "duration_ms": 1.1987686157226562,
+          "within_target": true,
+          "cache_hit": true
+        },
+        "fast_operation": {
+          "duration_ms": 50.92000961303711,
+          "within_target": true,
+          "cache_hit": false
+        },
+        "target_operation": {
+          "duration_ms": 181.1830997467041,
+          "within_target": true,
+          "cache_hit": false
+        },
+        "slow_operation": {
+          "duration_ms": 351.11093521118164,
+          "within_target": false,
+          "cache_hit": false
+        }
+      },
+      "average_duration_ms": 146.1,
+      "target_compliance": "75.0%",
+      "adhd_insights_available": true
+    },
+    "adhd": {
+      "progressive_disclosure": true,
+      "complexity_categorization": true,
+      "focus_mode_activation": true,
+      "attention_state_tracking": true,
+      "session_management": true
+    },
+    "integration": {
+      "workspace_detection": true,
+      "component_initialization": true,
+      "navigation_ready": true,
+      "adhd_optimizations": true,
+      "performance_targets": true
+    }
+  }
+}
