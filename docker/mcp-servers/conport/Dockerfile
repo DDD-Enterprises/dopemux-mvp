@@ -9,18 +9,19 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv and aiohttp for direct HTTP server
-RUN pip install uv aiohttp
+# Install dependencies for enhanced server with database persistence
+RUN pip install uv aiohttp asyncpg redis
 
-# Copy the direct server (bypasses mcp-proxy complexity)
-COPY direct_server.py .
+# Copy the enhanced server with PostgreSQL + Redis persistence
+COPY enhanced_server.py .
+COPY schema.sql .
 
 # Expose port
 EXPOSE 3004
 
-# Health check - test the direct HTTP server
+# Health check - test the enhanced HTTP server
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:3004/health || exit 1
 
-# Run the direct HTTP server
-CMD ["python", "direct_server.py"]
+# Run the enhanced HTTP server with real persistence
+CMD ["python", "enhanced_server.py"]
