@@ -17,6 +17,16 @@ from enum import Enum
 import aiohttp
 import redis.asyncio as redis
 
+# Import our new specialized engines (using absolute imports to fix module loading)
+try:
+    from multi_team_coordination import MultiTeamCoordinationEngine, TeamProfile, CrossTeamDependency, CoordinationPriority
+    from predictive_risk_assessment import PredictiveRiskAssessmentEngine, RiskProfile, RiskLevel
+    from external_dependency_integration import ExternalDependencyIntegrationEngine, ExternalDependency, DependencyType
+    SPECIALIZED_ENGINES_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Specialized engines not available: {e}")
+    SPECIALIZED_ENGINES_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
