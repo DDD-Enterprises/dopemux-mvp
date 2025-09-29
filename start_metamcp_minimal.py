@@ -27,7 +27,7 @@ async def main():
             name="dopemux-metamcp-minimal",
             version="1.0.0",
             host="localhost",
-            port=8090,
+            port=8091,
             broker_config_path="config/mcp/broker-minimal.yaml",
             policy_config_path="config/mcp/policy.yaml",
             role_based_mounting=True,
@@ -39,7 +39,7 @@ async def main():
         broker = MetaMCPBroker(config)
         await broker.start()
 
-        logger.info("✅ Minimal MetaMCP Broker started on localhost:8090")
+        logger.info("✅ Minimal MetaMCP Broker started on localhost:8091")
         logger.info("🔄 Running - Press Ctrl+C to stop")
 
         # Keep running

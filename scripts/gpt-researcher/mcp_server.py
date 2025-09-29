@@ -14,10 +14,23 @@ Based on the analysis in CHECKPOINT/gpt-researcher/, this server provides:
 - get_research_context: Retrieve full research context
 """
 
+import os
+
+# Clear deprecated environment variables and set required ones
+deprecated_vars = ['EMBEDDING_PROVIDER', 'EMBEDDING_MODEL', 'EMBEDDING_DIMENSION']
+for var in deprecated_vars:
+    if var in os.environ:
+        del os.environ[var]
+
+# Set required environment variables for GPT-Researcher
+os.environ['EMBEDDING'] = 'openai:text-embedding-3-large'
+os.environ['FAST_LLM'] = 'openai:gpt-4o-mini'
+os.environ['SMART_LLM'] = 'openai:gpt-4o'
+os.environ['RETRIEVER'] = 'tavily'
+
 import asyncio
 import json
 import logging
-import os
 from typing import Any, Dict, List, Optional
 
 # MCP Server imports
