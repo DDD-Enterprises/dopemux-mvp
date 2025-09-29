@@ -14,7 +14,7 @@ broker:
   name: "dopemux-metamcp-broker-minimal"
   version: "1.0.0"
   host: "localhost"
-  port: 8090
+  port: 8091
   max_concurrent_tools: 5
   tool_timeout_seconds: 30
   role_switch_timeout_seconds: 5
