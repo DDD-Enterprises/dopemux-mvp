@@ -1,0 +1,26 @@
+{
+  "serena_layer1_version": "2.0.0-layer1",
+  "deployment_timestamp": "2025-09-28T21:44:27.436953",
+  "workspace": "/Users/hue/code/dopemux-mvp",
+  "features_enabled": [
+    "\ud83d\uddc4\ufe0f Redis navigation cache with <2ms performance",
+    "\ud83e\udde0 ADHD features: focus modes, progressive disclosure, complexity scoring",
+    "\ud83e\udded Enhanced LSP navigation with workspace auto-detection"
+  ],
+  "usage_instructions": [
+    "\ud83d\ude80 Start navigation: python -m serena.v2.enhanced_lsp",
+    "\ud83c\udfaf Enable focus mode: Use focus_manager.set_focus_mode()",
+    "\ud83d\udd0d Enhanced search: Use claude_context.enhanced_semantic_search()",
+    "\ud83d\udcca Monitor performance: Check enhanced_lsp.health_check()",
+    "\ud83d\udcda Documentation: See docs/serena-adhd-navigation-guide.md"
+  ],
+  "adhd_optimizations": [
+    "\ud83c\udfaf <200ms navigation response targets",
+    "\ud83d\udccb Progressive disclosure (max 10 initial results)",
+    "\ud83c\udf21\ufe0f Real-time complexity scoring and warnings",
+    "\ud83c\udf9b\ufe0f Focus modes for attention management",
+    "\ud83c\udf5e Navigation breadcrumb preservation",
+    "\ud83d\udcbe Automatic context saving and restoration",
+    "\u26a1 Intelligent prefetching for smooth exploration"
+  ]
+}

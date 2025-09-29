@@ -17,6 +17,8 @@ from typing import Any, Dict, List, Optional, Union, Callable
 from .navigation_cache import NavigationCache
 from .adhd_features import ADHDCodeNavigator
 from .focus_manager import FocusManager
+from .performance_monitor import PerformanceMonitor, PerformanceTarget
+from .tree_sitter_analyzer import TreeSitterAnalyzer
 
 logger = logging.getLogger(__name__)
 
@@ -113,13 +115,23 @@ class EnhancedLSPWrapper:
         workspace_path: Path,
         cache: NavigationCache,
         adhd_navigator: ADHDCodeNavigator,
-        focus_manager: FocusManager
+        focus_manager: FocusManager,
+        performance_monitor: PerformanceMonitor = None,
+        tree_sitter_analyzer: TreeSitterAnalyzer = None
     ):
         self.config = config
-        self.workspace_path = workspace_path
+        self.workspace_path = self._detect_and_validate_workspace(workspace_path)
         self.cache = cache
         self.adhd_navigator = adhd_navigator
         self.focus_manager = focus_manager
+
+        # Performance monitoring with <200ms targets
+        self.performance_monitor = performance_monitor or PerformanceMonitor(
+            target=PerformanceTarget(target_ms=200.0, warning_ms=150.0, critical_ms=500.0)
+        )
+
+        # Tree-sitter analyzer for enhanced code structure analysis
+        self.tree_sitter_analyzer = tree_sitter_analyzer or TreeSitterAnalyzer()
 
         # LSP server processes
         self.lsp_servers: Dict[str, subprocess.Popen] = {}
@@ -133,7 +145,9 @@ class EnhancedLSPWrapper:
             "requests_sent": 0,
             "cache_hits": 0,
             "average_response_time": 0.0,
-            "active_servers": 0
+            "active_servers": 0,
+            "performance_violations": 0,
+            "workspace_auto_detected": False
         }
 
     async def initialize(self) -> None:
@@ -144,7 +158,8 @@ class EnhancedLSPWrapper:
         await asyncio.gather(
             self.cache.initialize(),
             self.adhd_navigator.initialize(self.workspace_path),
-            self.focus_manager.initialize()
+            self.focus_manager.initialize(),
+            self.tree_sitter_analyzer.initialize()
         )
 
         # Start language servers for detected languages
@@ -153,6 +168,65 @@ class EnhancedLSPWrapper:
             await self._start_language_server(language)
 
         logger.info(f"✅ Enhanced LSP ready with {len(self.lsp_servers)} language servers")
+
+    def _detect_and_validate_workspace(self, workspace_path: Path) -> Path:
+        """Auto-detect and validate the correct workspace for ADHD context preservation."""
+        try:
+            # If workspace_path is provided and valid, use it
+            if workspace_path and workspace_path.exists() and workspace_path.is_dir():
+                logger.info(f"📂 Using provided workspace: {workspace_path}")
+                return workspace_path.resolve()
+
+            # Auto-detect workspace from current working directory
+            current_dir = Path.cwd()
+
+            # Look for common project indicators
+            project_indicators = [
+                ".git",
+                "package.json",
+                "pyproject.toml",
+                "Cargo.toml",
+                "go.mod",
+                ".claude",
+                "dopemux-mvp",  # Specific to your project
+                "src",
+                "services"
+            ]
+
+            detected_workspace = None
+
+            # Start from current directory and walk up
+            for parent in [current_dir] + list(current_dir.parents):
+                # Check for project indicators
+                for indicator in project_indicators:
+                    indicator_path = parent / indicator
+                    if indicator_path.exists():
+                        detected_workspace = parent
+                        self.stats["workspace_auto_detected"] = True
+                        logger.info(f"🎯 Auto-detected workspace: {detected_workspace} (found {indicator})")
+                        break
+
+                if detected_workspace:
+                    break
+
+            # If still no workspace found, use current directory
+            if not detected_workspace:
+                detected_workspace = current_dir
+                logger.warning(f"⚠️ No project indicators found, using current directory: {detected_workspace}")
+
+            # Special handling for dopemux-mvp project structure
+            if "dopemux-mvp" in str(detected_workspace):
+                # Ensure we're at the project root
+                while detected_workspace.name != "dopemux-mvp" and detected_workspace.parent != detected_workspace:
+                    detected_workspace = detected_workspace.parent
+                logger.info(f"🎯 Dopemux project detected, using root: {detected_workspace}")
+
+            return detected_workspace.resolve()
+
+        except Exception as e:
+            logger.error(f"Workspace detection failed: {e}")
+            # Fallback to current directory
+            return Path.cwd().resolve()
 
     async def _detect_project_languages(self) -> List[str]:
         """Detect programming languages used in the project."""
@@ -341,32 +415,35 @@ class EnhancedLSPWrapper:
         use_cache: bool = True
     ) -> Optional[LSPResponse]:
         """Find definition with caching and ADHD optimizations."""
-        # Auto-detect language if not provided
-        if not language:
-            language = self._detect_file_language(file_path)
-
-        if not language or language not in self.lsp_servers:
-            logger.warning(f"No LSP server available for {file_path}")
-            return None
-
-        # Check cache first
-        cache_key = f"definition:{file_path}:{line}:{character}"
-        if use_cache:
-            cached_result = await self.cache.get_navigation_result(cache_key)
-            if cached_result:
-                logger.debug(f"🎯 Cache hit: definition for {Path(file_path).name}:{line}")
-                return LSPResponse(
-                    result=cached_result,
-                    language=language,
-                    method="textDocument/definition",
-                    duration=0.001,  # Cache hit
-                    cached=True
-                )
-
-        # Make LSP request
-        start_time = time.time()
+        # Start performance tracking
+        operation_id = self.performance_monitor.start_operation("find_definition")
 
         try:
+            # Auto-detect language if not provided
+            if not language:
+                language = self._detect_file_language(file_path)
+
+            if not language or language not in self.lsp_servers:
+                logger.warning(f"No LSP server available for {file_path}")
+                self.performance_monitor.end_operation(operation_id, success=False)
+                return None
+
+            # Check cache first
+            cache_key = f"definition:{file_path}:{line}:{character}"
+            if use_cache:
+                cached_result = await self.cache.get_navigation_result(cache_key)
+                if cached_result:
+                    logger.debug(f"🎯 Cache hit: definition for {Path(file_path).name}:{line}")
+                    self.performance_monitor.end_operation(operation_id, success=True, cache_hit=True)
+                    return LSPResponse(
+                        result=cached_result,
+                        language=language,
+                        method="textDocument/definition",
+                        duration=0.001,  # Cache hit
+                        cached=True
+                    )
+
+            # Make LSP request
             async with self.request_semaphore:
                 # Wait for server to be ready
                 await self.server_ready[language].wait()
@@ -424,15 +501,21 @@ class EnhancedLSPWrapper:
                 if self.focus_manager.is_focus_mode_active():
                     lsp_response = await self.adhd_navigator.filter_for_focus_mode(lsp_response)
 
+                # End performance tracking with success
+                self.performance_monitor.end_operation(operation_id, success=True, cache_hit=False)
+
                 logger.debug(f"🎯 Definition found for {Path(file_path).name}:{line} in {duration:.3f}s")
                 return lsp_response
 
         except asyncio.TimeoutError:
+            self.performance_monitor.end_operation(operation_id, success=False)
             logger.warning(f"Definition request timed out for {file_path}:{line}")
             return None
         except Exception as e:
+            self.performance_monitor.end_operation(operation_id, success=False)
             logger.error(f"Definition request failed: {e}")
             return None
+
 
     async def find_references(
         self,
@@ -588,18 +671,23 @@ class EnhancedLSPWrapper:
 
                 symbols = response.get("result", [])
 
+                # Enhance symbols with Tree-sitter analysis
+                enhanced_symbols = await self._enhance_symbols_with_tree_sitter(
+                    symbols, file_path, language
+                )
+
                 # ADHD optimization: hierarchical filtering based on focus mode
                 if focus_mode:
-                    symbols = await self.adhd_navigator.filter_symbols_for_focus(symbols)
+                    enhanced_symbols = await self.adhd_navigator.filter_symbols_for_focus(enhanced_symbols)
 
-                # Calculate complexity
-                complexity_score = self._calculate_symbol_complexity(symbols)
+                # Calculate complexity (now includes Tree-sitter insights)
+                complexity_score = self._calculate_symbol_complexity(enhanced_symbols)
 
                 # Cache result
-                await self.cache.cache_navigation_result(cache_key, symbols, self.config.cache_ttl)
+                await self.cache.cache_navigation_result(cache_key, enhanced_symbols, self.config.cache_ttl)
 
                 return LSPResponse(
-                    result=symbols,
+                    result=enhanced_symbols,
                     language=language,
                     method="textDocument/documentSymbol",
                     duration=duration,
@@ -624,6 +712,59 @@ class EnhancedLSPWrapper:
                 extension_map[ext] = lang
 
         return extension_map.get(file_ext)
+
+    async def _enhance_symbols_with_tree_sitter(
+        self,
+        lsp_symbols: List[Dict[str, Any]],
+        file_path: str,
+        language: str
+    ) -> List[Dict[str, Any]]:
+        """Enhance LSP symbols with Tree-sitter structural analysis."""
+        try:
+            # Skip enhancement if Tree-sitter is not available for this language
+            if not self.tree_sitter_analyzer.detect_language(file_path):
+                logger.debug(f"Tree-sitter not available for {file_path}, using LSP-only symbols")
+                return lsp_symbols
+
+            # Perform Tree-sitter analysis on the file
+            tree_analysis = await self.tree_sitter_analyzer.analyze_file(file_path)
+
+            if not tree_analysis:
+                logger.debug(f"Tree-sitter analysis failed for {file_path}, using LSP-only symbols")
+                return lsp_symbols
+
+            # Enhance LSP symbols with Tree-sitter insights
+            enhanced_symbols = self.tree_sitter_analyzer.enhance_lsp_symbols(
+                lsp_symbols, tree_analysis
+            )
+
+            # Add file-level insights for ADHD users
+            if enhanced_symbols:
+                file_insights = {
+                    "file_complexity": {
+                        "score": tree_analysis.overall_complexity,
+                        "level": tree_analysis.complexity_level.value,
+                        "adhd_recommendations": tree_analysis.adhd_recommendations[:3]  # Top 3
+                    },
+                    "tree_sitter_enhanced": True,
+                    "analysis_timestamp": tree_analysis.timestamp.isoformat()
+                }
+
+                # Add to first symbol as metadata
+                if enhanced_symbols:
+                    enhanced_symbols[0]["_file_analysis"] = file_insights
+
+            logger.debug(
+                f"🌳 Enhanced {len(enhanced_symbols)} symbols for {Path(file_path).name} "
+                f"(complexity: {tree_analysis.overall_complexity:.2f})"
+            )
+
+            return enhanced_symbols
+
+        except Exception as e:
+            logger.error(f"Symbol enhancement failed for {file_path}: {e}")
+            # Return original symbols on failure
+            return lsp_symbols
 
     def _calculate_definition_complexity(self, definitions: List[Dict]) -> float:
         """Calculate complexity score for definition results."""
@@ -697,6 +838,7 @@ class EnhancedLSPWrapper:
                 self.cache.health_check(),
                 self.adhd_navigator.health_check(),
                 self.focus_manager.health_check(),
+                self.tree_sitter_analyzer.health_check(),
                 return_exceptions=True
             )
 
@@ -704,6 +846,7 @@ class EnhancedLSPWrapper:
             cache_health = health_results[1] if not isinstance(health_results[1], Exception) else {"status": "error"}
             adhd_health = health_results[2] if not isinstance(health_results[2], Exception) else {"status": "error"}
             focus_health = health_results[3] if not isinstance(health_results[3], Exception) else {"status": "error"}
+            tree_sitter_health = health_results[4] if not isinstance(health_results[4], Exception) else {"status": "error"}
 
             # Overall status
             error_count = sum(1 for result in health_results if isinstance(result, Exception))
@@ -720,9 +863,10 @@ class EnhancedLSPWrapper:
                     "lsp_servers": lsp_health,
                     "cache": cache_health,
                     "adhd_features": adhd_health,
-                    "focus_manager": focus_health
+                    "focus_manager": focus_health,
+                    "tree_sitter_analyzer": tree_sitter_health
                 },
-                "version": "v2_phase1",
+                "version": "v2_layer1",
                 "timestamp": datetime.now(timezone.utc).isoformat()
             }
 

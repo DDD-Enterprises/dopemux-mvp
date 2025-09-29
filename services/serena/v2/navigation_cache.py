@@ -11,7 +11,7 @@ import logging
 import hashlib
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Tuple
 
 import redis.asyncio as redis
 from pydantic import BaseModel
@@ -379,6 +379,328 @@ class NavigationCache:
         """Get cached file diagnostics."""
         cache_key = self._generate_cache_key("diagnostics", file_path)
         return await self.get_navigation_result(cache_key)
+
+    # Tree-sitter Analysis Caching
+
+    async def cache_tree_sitter_analysis(
+        self,
+        file_path: str,
+        analysis_result: Any,  # CodeStructureAnalysis
+        file_mtime: float = None
+    ) -> bool:
+        """Cache Tree-sitter analysis results with file modification time tracking."""
+        cache_key = self._generate_cache_key("tree_sitter", file_path, "analysis")
+
+        try:
+            # Get file modification time
+            if file_mtime is None:
+                try:
+                    file_stat = Path(file_path).stat()
+                    file_mtime = file_stat.st_mtime
+                except Exception:
+                    file_mtime = 0
+
+            # Serialize analysis result
+            cache_data = {
+                "analysis": {
+                    "file_path": analysis_result.file_path,
+                    "language": analysis_result.language,
+                    "elements": [
+                        {
+                            "name": elem.name,
+                            "type": elem.type,
+                            "start_line": elem.start_line,
+                            "end_line": elem.end_line,
+                            "complexity_score": elem.complexity_score,
+                            "complexity_level": elem.complexity_level.value,
+                            "metadata": elem.metadata,
+                            "adhd_insights": elem.adhd_insights
+                        }
+                        for elem in analysis_result.elements
+                    ],
+                    "overall_complexity": analysis_result.overall_complexity,
+                    "complexity_level": analysis_result.complexity_level.value,
+                    "lines_of_code": analysis_result.lines_of_code,
+                    "analysis_duration_ms": analysis_result.analysis_duration_ms,
+                    "adhd_recommendations": analysis_result.adhd_recommendations,
+                    "timestamp": analysis_result.timestamp.isoformat()
+                },
+                "file_mtime": file_mtime,
+                "cached_at": datetime.now(timezone.utc).isoformat(),
+                "cache_version": "tree_sitter_v1"
+            }
+
+            # Cache with extended TTL for Tree-sitter results
+            tree_sitter_ttl = 1800  # 30 minutes - longer because parsing is expensive
+            await self.client.setex(
+                cache_key,
+                tree_sitter_ttl,
+                json.dumps(cache_data, default=str)
+            )
+
+            logger.debug(f"🌳 Cached Tree-sitter analysis for {Path(file_path).name}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to cache Tree-sitter analysis: {e}")
+            return False
+
+    async def get_tree_sitter_analysis(self, file_path: str) -> Optional[Dict[str, Any]]:
+        """Get cached Tree-sitter analysis if file hasn't been modified."""
+        cache_key = self._generate_cache_key("tree_sitter", file_path, "analysis")
+
+        try:
+            cached_data = await self.client.get(cache_key)
+            if not cached_data:
+                return None
+
+            data = json.loads(cached_data)
+
+            # Check if file has been modified since caching
+            try:
+                current_mtime = Path(file_path).stat().st_mtime
+                cached_mtime = data.get("file_mtime", 0)
+
+                if current_mtime > cached_mtime:
+                    # File has been modified, invalidate cache
+                    await self.client.delete(cache_key)
+                    logger.debug(f"🌳 Tree-sitter cache invalidated for {Path(file_path).name} (file modified)")
+                    return None
+
+            except Exception:
+                # If we can't check file mtime, assume cache is stale
+                await self.client.delete(cache_key)
+                return None
+
+            logger.debug(f"🎯 Tree-sitter cache hit for {Path(file_path).name}")
+            return data.get("analysis")
+
+        except Exception as e:
+            logger.error(f"Failed to get Tree-sitter analysis: {e}")
+            return None
+
+    async def cache_enhanced_symbols(
+        self,
+        file_path: str,
+        enhanced_symbols: List[Dict[str, Any]],
+        file_mtime: float = None
+    ) -> bool:
+        """Cache enhanced symbols (LSP + Tree-sitter combined)."""
+        cache_key = self._generate_cache_key("enhanced_symbols", file_path)
+
+        try:
+            if file_mtime is None:
+                try:
+                    file_stat = Path(file_path).stat()
+                    file_mtime = file_stat.st_mtime
+                except Exception:
+                    file_mtime = 0
+
+            cache_data = {
+                "enhanced_symbols": enhanced_symbols,
+                "file_mtime": file_mtime,
+                "cached_at": datetime.now(timezone.utc).isoformat(),
+                "enhancement_version": "lsp_tree_sitter_v1"
+            }
+
+            # Cache with standard TTL
+            await self.client.setex(
+                cache_key,
+                self.config.symbol_ttl,
+                json.dumps(cache_data, default=str)
+            )
+
+            logger.debug(f"🔄 Cached enhanced symbols for {Path(file_path).name}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to cache enhanced symbols: {e}")
+            return False
+
+    async def get_enhanced_symbols(self, file_path: str) -> Optional[List[Dict[str, Any]]]:
+        """Get cached enhanced symbols if file hasn't been modified."""
+        cache_key = self._generate_cache_key("enhanced_symbols", file_path)
+
+        try:
+            cached_data = await self.client.get(cache_key)
+            if not cached_data:
+                return None
+
+            data = json.loads(cached_data)
+
+            # Check file modification time
+            try:
+                current_mtime = Path(file_path).stat().st_mtime
+                cached_mtime = data.get("file_mtime", 0)
+
+                if current_mtime > cached_mtime:
+                    await self.client.delete(cache_key)
+                    logger.debug(f"🔄 Enhanced symbols cache invalidated for {Path(file_path).name}")
+                    return None
+
+            except Exception:
+                await self.client.delete(cache_key)
+                return None
+
+            logger.debug(f"🎯 Enhanced symbols cache hit for {Path(file_path).name}")
+            return data.get("enhanced_symbols")
+
+        except Exception as e:
+            logger.error(f"Failed to get enhanced symbols: {e}")
+            return None
+
+    # Batch Caching for Performance
+
+    async def batch_cache_tree_sitter_analyses(
+        self,
+        analyses: List[Tuple[str, Any]]  # List of (file_path, analysis_result)
+    ) -> int:
+        """Batch cache multiple Tree-sitter analyses for performance."""
+        cached_count = 0
+
+        try:
+            # Prepare pipeline for batch operations
+            pipeline = self.client.pipeline()
+
+            for file_path, analysis_result in analyses:
+                try:
+                    cache_key = self._generate_cache_key("tree_sitter", file_path, "analysis")
+
+                    # Get file mtime
+                    try:
+                        file_mtime = Path(file_path).stat().st_mtime
+                    except Exception:
+                        file_mtime = 0
+
+                    # Prepare cache data (same as individual method)
+                    cache_data = {
+                        "analysis": {
+                            "file_path": analysis_result.file_path,
+                            "language": analysis_result.language,
+                            "elements": [
+                                {
+                                    "name": elem.name,
+                                    "type": elem.type,
+                                    "start_line": elem.start_line,
+                                    "end_line": elem.end_line,
+                                    "complexity_score": elem.complexity_score,
+                                    "complexity_level": elem.complexity_level.value,
+                                    "metadata": elem.metadata,
+                                    "adhd_insights": elem.adhd_insights
+                                }
+                                for elem in analysis_result.elements
+                            ],
+                            "overall_complexity": analysis_result.overall_complexity,
+                            "complexity_level": analysis_result.complexity_level.value,
+                            "lines_of_code": analysis_result.lines_of_code,
+                            "analysis_duration_ms": analysis_result.analysis_duration_ms,
+                            "adhd_recommendations": analysis_result.adhd_recommendations,
+                            "timestamp": analysis_result.timestamp.isoformat()
+                        },
+                        "file_mtime": file_mtime,
+                        "cached_at": datetime.now(timezone.utc).isoformat(),
+                        "cache_version": "tree_sitter_v1"
+                    }
+
+                    # Add to pipeline
+                    pipeline.setex(
+                        cache_key,
+                        1800,  # 30 minutes TTL
+                        json.dumps(cache_data, default=str)
+                    )
+
+                except Exception as e:
+                    logger.error(f"Failed to prepare batch cache for {file_path}: {e}")
+                    continue
+
+            # Execute pipeline
+            results = await pipeline.execute()
+            cached_count = sum(1 for result in results if result)
+
+            logger.info(f"🌳 Batch cached {cached_count}/{len(analyses)} Tree-sitter analyses")
+            return cached_count
+
+        except Exception as e:
+            logger.error(f"Batch Tree-sitter caching failed: {e}")
+            return 0
+
+    # Cache Statistics and Management
+
+    async def get_tree_sitter_cache_stats(self) -> Dict[str, Any]:
+        """Get Tree-sitter specific cache statistics."""
+        try:
+            tree_sitter_pattern = f"{self.config.key_prefix}:tree_sitter:*"
+            enhanced_symbols_pattern = f"{self.config.key_prefix}:enhanced_symbols:*"
+
+            tree_sitter_keys = await self.client.keys(tree_sitter_pattern)
+            enhanced_symbols_keys = await self.client.keys(enhanced_symbols_pattern)
+
+            return {
+                "tree_sitter_analyses_cached": len(tree_sitter_keys),
+                "enhanced_symbols_cached": len(enhanced_symbols_keys),
+                "total_tree_sitter_cache_items": len(tree_sitter_keys) + len(enhanced_symbols_keys),
+                "cache_efficiency": {
+                    "tree_sitter_hit_rate": "Requires tracking in application layer",
+                    "enhanced_symbols_hit_rate": "Requires tracking in application layer"
+                },
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+
+        except Exception as e:
+            logger.error(f"Failed to get Tree-sitter cache stats: {e}")
+            return {"error": str(e)}
+
+    async def cleanup_tree_sitter_cache(
+        self,
+        max_age_hours: int = 24,
+        file_paths: List[str] = None
+    ) -> int:
+        """Clean up Tree-sitter cache entries."""
+        try:
+            cleaned_count = 0
+
+            if file_paths:
+                # Clean specific files
+                for file_path in file_paths:
+                    analysis_key = self._generate_cache_key("tree_sitter", file_path, "analysis")
+                    symbols_key = self._generate_cache_key("enhanced_symbols", file_path)
+
+                    deleted = await self.client.delete(analysis_key, symbols_key)
+                    cleaned_count += deleted
+
+            else:
+                # Clean by age
+                cutoff_time = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
+
+                patterns = [
+                    f"{self.config.key_prefix}:tree_sitter:*",
+                    f"{self.config.key_prefix}:enhanced_symbols:*"
+                ]
+
+                for pattern in patterns:
+                    keys = await self.client.keys(pattern)
+
+                    for key in keys:
+                        try:
+                            data = await self.client.get(key)
+                            if data:
+                                parsed_data = json.loads(data)
+                                cached_at = parsed_data.get("cached_at")
+                                if cached_at:
+                                    cached_time = datetime.fromisoformat(cached_at)
+                                    if cached_time < cutoff_time:
+                                        await self.client.delete(key)
+                                        cleaned_count += 1
+                        except (json.JSONDecodeError, ValueError):
+                            await self.client.delete(key)
+                            cleaned_count += 1
+
+            logger.info(f"🧹 Cleaned up {cleaned_count} Tree-sitter cache entries")
+            return cleaned_count
+
+        except Exception as e:
+            logger.error(f"Tree-sitter cache cleanup failed: {e}")
+            return 0
 
     # Intelligent Prefetching
 

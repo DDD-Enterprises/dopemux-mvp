@@ -1,0 +1,138 @@
+{
+  "overall_success_rate": 0.825,
+  "scenario_results": {
+    "scenarios_tested": 4,
+    "scenarios_successful": 3,
+    "success_rate": 0.75,
+    "detailed_results": [
+      {
+        "success": false,
+        "error": "[Errno 21] Is a directory: '/Users/hue/code/dopemux-mvp/docker/mcp-servers/task-orchestrator'"
+      },
+      {
+        "success": true,
+        "modules_found": 15,
+        "modules_analyzed": 5,
+        "analysis_data": {
+          "navigation_cache.py": {
+            "lines": 997,
+            "complexity_score": 1.0,
+            "category": "\ud83d\udfe0 Complex - use focus mode",
+            "async_operations": 83
+          },
+          "enhanced_lsp.py": {
+            "lines": 1008,
+            "complexity_score": 1.0,
+            "category": "\ud83d\udfe0 Complex - use focus mode",
+            "async_operations": 77
+          },
+          "performance_monitor.py": {
+            "lines": 549,
+            "complexity_score": 1.0,
+            "category": "\ud83d\udfe0 Complex - use focus mode",
+            "async_operations": 11
+          },
+          "code_structure_analyzer.py": {
+            "lines": 886,
+            "complexity_score": 1.0,
+            "category": "\ud83d\udfe0 Complex - use focus mode",
+            "async_operations": 24
+          },
+          "redis_optimizer.py": {
+            "lines": 510,
+            "complexity_score": 1.0,
+            "category": "\ud83d\udfe0 Complex - use focus mode",
+            "async_operations": 44
+          }
+        },
+        "progressive_disclosure_triggered": true
+      },
+      {
+        "success": true,
+        "workflow_results": {
+          "focus_activation": true,
+          "progressive_disclosure": true,
+          "context_switching": true,
+          "session_management": true
+        },
+        "attention_state": "scattered",
+        "focus_mode_used": "medium",
+        "context_switches_handled": 4
+      },
+      {
+        "success": true,
+        "performance_results": [
+          {
+            "operation": "find_definition",
+            "duration_ms": 81.13884925842285,
+            "cache_hit": false,
+            "within_target": true
+          },
+          {
+            "operation": "find_definition",
+            "duration_ms": 1.1799335479736328,
+            "cache_hit": true,
+            "within_target": true
+          },
+          {
+            "operation": "document_symbols",
+            "duration_ms": 121.06490135192871,
+            "cache_hit": false,
+            "within_target": true
+          },
+          {
+            "operation": "find_references",
+            "duration_ms": 151.07202529907227,
+            "cache_hit": false,
+            "within_target": true
+          },
+          {
+            "operation": "find_definition",
+            "duration_ms": 1.1751651763916016,
+            "cache_hit": true,
+            "within_target": true
+          },
+          {
+            "operation": "document_symbols",
+            "duration_ms": 2.296924591064453,
+            "cache_hit": true,
+            "within_target": true
+          },
+          {
+            "operation": "workspace_search",
+            "duration_ms": 180.45377731323242,
+            "cache_hit": false,
+            "within_target": true
+          },
+          {
+            "operation": "find_definition",
+            "duration_ms": 91.09187126159668,
+            "cache_hit": false,
+            "within_target": true
+          }
+        ],
+        "average_duration_ms": 78.7,
+        "cache_hit_rate": 0.375,
+        "target_compliance": 1.0,
+        "adhd_performance_rating": "\ud83d\ude80 Excellent for ADHD users",
+        "adhd_suitable": true
+      }
+    ]
+  },
+  "capability_results": {
+    "success": true,
+    "capabilities": {
+      "workspace_auto_detection": true,
+      "file_complexity_analysis": true,
+      "progressive_disclosure": true,
+      "focus_mode_management": true,
+      "performance_monitoring": true,
+      "adhd_optimizations": true
+    },
+    "adhd_features_working": true,
+    "total_capabilities": 6,
+    "working_capabilities": 6
+  },
+  "timestamp": "2025-09-28 21:46:32",
+  "workspace": "/Users/hue/code/dopemux-mvp"
+}
