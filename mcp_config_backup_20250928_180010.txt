@@ -1,0 +1,8 @@
+Checking MCP server health...
+
+conport: /Users/hue/code/dopemux-mvp/services/conport/venv/bin/conport-mcp --mode stdio --workspace_id /Users/hue/code/dopemux-mvp - ✓ Connected
+context7: npx @upstash/context7-mcp - ✓ Connected
+exa: npx @modelcontextprotocol/server-everything - ✓ Connected
+zen: uvx --from git+https://github.com/BeehiveInnovations/zen-mcp-server.git zen-mcp-server - ✓ Connected
+gptr-researcher-stdio-proxy: http://127.0.0.1:8080/servers/gptr-researcher-stdio/sse (SSE) - ✓ Connected
+mas-sequential-thinking: /Users/hue/code/dopemux-mvp/scripts/mas-stdio-wrapper.sh  - ✓ Connected

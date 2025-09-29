@@ -148,7 +148,7 @@ services:
     image: leantime/leantime:latest
     container_name: dopemux-leantime
     ports:
-      - "8080:80"
+      - "8080:8080"
     environment:
       LEAN_DB_HOST: mysql-leantime
       LEAN_DB_USER: ${MYSQL_USER:-leantime}
@@ -157,6 +157,7 @@ services:
       LEAN_SESSION_PASSWORD: ${LEAN_SESSION_PASSWORD:-dopemux_session_secure_2024}
       LEAN_REDIS_URL: redis-leantime:6379
       LEAN_REDIS_AUTH: ${REDIS_PASSWORD:-dopemux_redis}
+      LEAN_API_ENABLED: ${LEAN_API_ENABLED:-true}
     depends_on:
       - mysql-leantime
       - redis-leantime
