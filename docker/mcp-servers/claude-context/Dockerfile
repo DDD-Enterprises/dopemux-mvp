@@ -8,27 +8,20 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-# Install pnpm globally
-RUN npm install -g pnpm@latest
+# No additional npm packages needed
 
 # Install uv for Python package management (uvx is provided by uv)
 RUN pip3 install --break-system-packages uv
 
 WORKDIR /app
 
-# Copy the entire dope-context source from services submodule
-COPY services/claude-context/ /app/
+# Copy the claude-context source files
+COPY . /app/
 
-# Install dependencies and build the project
-RUN pnpm install
-
-# Build the MCP server package
-RUN pnpm build:mcp
-
-# Make the built MCP server executable
-RUN chmod +x /app/packages/mcp/dist/index.js
+# Make wrapper executable
+RUN chmod +x /app/wrapper.js
 
 EXPOSE 3007
 
-# Run the MCP server directly via node (stdio transport)
-CMD ["node", "/app/packages/mcp/dist/index.js"]
+# Run the wrapper which handles MCP server startup
+CMD ["node", "/app/wrapper.js"]
