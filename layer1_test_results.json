@@ -1,0 +1,26 @@
+{
+  "basic_components": {
+    "tree_sitter_init": true,
+    "navigation_cache_init": false,
+    "performance_monitor_init": true,
+    "workspace_detection": true,
+    "component_health": {
+      "navigation_cache": "\ud83d\ude80 Excellent",
+      "adhd_features": "\ud83d\ude80 Active"
+    }
+  },
+  "tree_sitter_analysis": {
+    "error": "name 'time' is not defined"
+  },
+  "performance_monitoring": {
+    "fast_operation": {
+      "duration_ms": 50.28414726257324,
+      "under_target": true
+    },
+    "cached_operation": {
+      "duration_ms": 1.1680126190185547,
+      "cache_hit": true
+    },
+    "report_generated": true
+  }
+}

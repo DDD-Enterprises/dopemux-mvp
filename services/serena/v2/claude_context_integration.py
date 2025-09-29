@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 from dataclasses import dataclass
 
-import aiohttp
+from .mcp_client import McpClient, McpResponse
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +22,11 @@ logger = logging.getLogger(__name__)
 class ClaudeContextConfig:
     """Configuration for claude-context integration."""
     mcp_endpoint: str = "http://localhost:3000"  # claude-context MCP endpoint
-    timeout: float = 10.0
-    max_concurrent_requests: int = 5
+    timeout: float = 5.0
+    max_concurrent_requests: int = 3
     cache_results: bool = True
     cache_ttl: int = 600  # 10 minutes
+    performance_target_ms: float = 200.0  # Target response time for ADHD optimization
 
 
 @dataclass
@@ -76,43 +77,50 @@ class ClaudeContextIntegration:
         self.navigation_cache = navigation_cache
         self.lsp_wrapper = lsp_wrapper
 
-        # HTTP session for claude-context API calls
-        self.session: Optional[aiohttp.ClientSession] = None
-        self.request_semaphore = asyncio.Semaphore(config.max_concurrent_requests)
+        # MCP client for claude-context communication
+        self.mcp_client: Optional[McpClient] = None
 
         # Enhancement state
         self.enhancement_stats = {
             "searches_enhanced": 0,
             "symbols_analyzed": 0,
             "navigation_additions": 0,
-            "cache_hits": 0
+            "cache_hits": 0,
+            "mcp_calls_made": 0,
+            "performance_violations": 0,
+            "prefetch_operations": 0,
+            "prefetch_hits": 0
         }
+
+        # Intelligent prefetching
+        self.prefetch_enabled = True
+        self.prefetch_queue = asyncio.Queue(maxsize=10)
+        self.prefetch_task = None
+        self.recent_navigation_patterns = []
+        self.current_context_files = set()  # Files in current work context
 
     async def initialize(self) -> None:
         """Initialize claude-context integration."""
         logger.info("🔗 Initializing claude-context integration...")
 
-        # Create HTTP session for API calls
-        self.session = aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=self.config.timeout)
+        # Create MCP client for claude-context communication
+        self.mcp_client = McpClient(
+            server_endpoint=self.config.mcp_endpoint,
+            timeout=self.config.timeout,
+            max_concurrent_requests=self.config.max_concurrent_requests,
+            performance_target_ms=self.config.performance_target_ms
         )
 
-        # Test claude-context connectivity
-        await self._test_claude_context_connection()
+        # Initialize MCP client (includes connectivity test)
+        await self.mcp_client.initialize()
 
-        logger.info("✅ Claude-context integration ready!")
+        # Start intelligent prefetching background task
+        if self.prefetch_enabled:
+            self.prefetch_task = asyncio.create_task(self._prefetch_worker())
+            logger.info("🔮 Intelligent prefetching started")
 
-    async def _test_claude_context_connection(self) -> bool:
-        """Test connection to claude-context service."""
-        try:
-            # This would test the claude-context MCP endpoint
-            # For now, assume it's available
-            logger.info("🟢 Claude-context connection verified")
-            return True
+        logger.info("✅ Claude-context MCP integration ready!")
 
-        except Exception as e:
-            logger.error(f"Claude-context connection failed: {e}")
-            return False
 
     # Enhanced Semantic Search
 
@@ -148,7 +156,9 @@ class ClaudeContextIntegration:
                     return [SemanticSearchResult(**result) for result in cached_results]
 
             # Call claude-context for semantic search
-            semantic_results = await self._call_claude_context_search(query, workspace_path, limit)
+            semantic_results = await self._call_claude_context_search(
+                query, workspace_path, limit, extension_filter=None
+            )
 
             if not semantic_results:
                 return []
@@ -182,43 +192,69 @@ class ClaudeContextIntegration:
         self,
         query: str,
         workspace_path: str,
-        limit: int
+        limit: int,
+        extension_filter: List[str] = None
     ) -> List[Dict[str, Any]]:
         """Call claude-context MCP server for semantic search."""
         try:
-            async with self.request_semaphore:
-                # This would make an MCP call to claude-context
-                # For now, simulate the call structure
+            if not self.mcp_client:
+                raise Exception("MCP client not initialized")
 
-                search_request = {
-                    "jsonrpc": "2.0",
-                    "id": f"search_{datetime.now().timestamp()}",
-                    "method": "tools/call",
-                    "params": {
-                        "name": "semantic_search",
-                        "arguments": {
-                            "query": query,
-                            "workspace": workspace_path,
-                            "limit": limit,
-                            "include_snippets": True
-                        }
+            # Ensure workspace is indexed before searching
+            indexing_status = await self.mcp_client.get_indexing_status(workspace_path)
+
+            if not indexing_status.success or not indexing_status.data:
+                # Try to index the workspace first
+                logger.info(f"📋 Indexing workspace: {workspace_path}")
+                index_response = await self.mcp_client.index_codebase(
+                    workspace_path=workspace_path,
+                    force=False,
+                    splitter="ast"  # Use AST splitter for better code understanding
+                )
+
+                if not index_response.success:
+                    logger.error(f"Failed to index workspace: {index_response.error}")
+                    return []
+
+            # Perform semantic search
+            search_response = await self.mcp_client.search_code(
+                workspace_path=workspace_path,
+                query=query,
+                limit=limit,
+                extension_filter=extension_filter
+            )
+
+            self.enhancement_stats["mcp_calls_made"] += 1
+
+            # Track performance violations
+            if search_response.duration_ms > self.config.performance_target_ms:
+                self.enhancement_stats["performance_violations"] += 1
+
+            if search_response.success and search_response.data:
+                results = search_response.data
+
+                # Convert to expected format if needed
+                formatted_results = []
+                for result in results:
+                    formatted_result = {
+                        "content": result.get("content", ""),
+                        "file_path": result.get("file_path", result.get("path", "")),
+                        "relevance_score": result.get("score", result.get("relevance_score", 0.5)),
+                        "chunk_id": result.get("chunk_id", result.get("id", "")),
+                        "line_start": result.get("line_start"),
+                        "line_end": result.get("line_end")
                     }
-                }
+                    formatted_results.append(formatted_result)
 
-                # Simulate claude-context response structure
-                # In real implementation, this would be an actual MCP call
-                mock_results = [
-                    {
-                        "content": f"Mock semantic result {i+1} for query: {query}",
-                        "file_path": f"/mock/file_{i+1}.py",
-                        "relevance_score": 0.9 - (i * 0.1),
-                        "chunk_id": f"chunk_{i+1}"
-                    }
-                    for i in range(min(limit, 3))  # Mock 3 results
-                ]
+                logger.debug(
+                    f"🔍 Claude-context search: {len(formatted_results)} results for '{query[:30]}...'"
+                    f" ({search_response.duration_ms:.1f}ms)"
+                )
+                return formatted_results
 
-                logger.debug(f"📡 Claude-context returned {len(mock_results)} semantic results")
-                return mock_results
+            else:
+                logger.warning(f"Claude-context search failed: {search_response.error}")
+                return []
 
         except Exception as e:
             logger.error(f"Claude-context search call failed: {e}")
@@ -570,6 +606,256 @@ class ClaudeContextIntegration:
             query, workspace_path, current_file, limit
         )
 
+    # Intelligent Prefetching for ADHD Navigation
+
+    async def _prefetch_worker(self) -> None:
+        """Background worker for intelligent prefetching."""
+        logger.debug("🔮 Prefetch worker started")
+
+        try:
+            while True:
+                try:
+                    # Wait for prefetch request with timeout
+                    prefetch_request = await asyncio.wait_for(
+                        self.prefetch_queue.get(),
+                        timeout=5.0
+                    )
+
+                    await self._execute_prefetch_request(prefetch_request)
+                    self.prefetch_queue.task_done()
+
+                except asyncio.TimeoutError:
+                    # No prefetch requests, continue monitoring
+                    continue
+                except Exception as e:
+                    logger.error(f"Prefetch worker error: {e}")
+                    await asyncio.sleep(1.0)
+
+        except asyncio.CancelledError:
+            logger.debug("🔮 Prefetch worker stopped")
+
+    async def _execute_prefetch_request(self, request: Dict[str, Any]) -> None:
+        """Execute a prefetch request in the background."""
+        try:
+            request_type = request.get("type")
+            priority = request.get("priority", "low")
+
+            if request_type == "semantic_search":
+                await self._prefetch_semantic_search(request)
+            elif request_type == "related_files":
+                await self._prefetch_related_files(request)
+            elif request_type == "similar_functions":
+                await self._prefetch_similar_functions(request)
+
+            self.enhancement_stats["prefetch_operations"] += 1
+            logger.debug(f"🔮 Prefetch completed: {request_type}")
+
+        except Exception as e:
+            logger.error(f"Prefetch execution failed: {e}")
+
+    async def _prefetch_semantic_search(self, request: Dict[str, Any]) -> None:
+        """Prefetch semantic search results."""
+        query = request.get("query")
+        workspace_path = request.get("workspace_path")
+
+        if not query or not workspace_path:
+            return
+
+        # Check if already cached
+        cache_key = f"enhanced_search:{hash(query)}:10"
+        cached_result = await self.navigation_cache.get_navigation_result(cache_key)
+
+        if cached_result:
+            # Already cached, count as prefetch hit
+            self.enhancement_stats["prefetch_hits"] += 1
+            return
+
+        # Perform search with reduced priority
+        try:
+            results = await self.enhanced_semantic_search(
+                query=query,
+                workspace_path=workspace_path,
+                limit=5,  # Smaller limit for prefetch
+                include_navigation=True,
+                adhd_optimized=True
+            )
+
+            logger.debug(f"🔮 Prefetched search: '{query[:30]}...' - {len(results)} results")
+
+        except Exception as e:
+            logger.debug(f"Prefetch search failed: {e}")
+
+    async def _prefetch_related_files(self, request: Dict[str, Any]) -> None:
+        """Prefetch related files based on current navigation context."""
+        current_file = request.get("current_file")
+        workspace_path = request.get("workspace_path")
+
+        if not current_file or not workspace_path:
+            return
+
+        try:
+            # Generate related file search queries
+            file_stem = Path(current_file).stem
+            file_queries = [
+                f"similar to {file_stem}",
+                f"imports from {file_stem}",
+                f"uses {file_stem}",
+                f"related to {file_stem}"
+            ]
+
+            # Prefetch searches for related files
+            for query in file_queries[:2]:  # Limit to 2 to avoid overwhelming
+                await self._prefetch_semantic_search({
+                    "query": query,
+                    "workspace_path": workspace_path
+                })
+
+        except Exception as e:
+            logger.debug(f"Related files prefetch failed: {e}")
+
+    async def _prefetch_similar_functions(self, request: Dict[str, Any]) -> None:
+        """Prefetch similar functions based on current symbol context."""
+        function_name = request.get("function_name")
+        workspace_path = request.get("workspace_path")
+
+        if not function_name or not workspace_path:
+            return
+
+        try:
+            # Search for similar functions
+            similar_query = f"function similar to {function_name}"
+            await self._prefetch_semantic_search({
+                "query": similar_query,
+                "workspace_path": workspace_path
+            })
+
+        except Exception as e:
+            logger.debug(f"Similar functions prefetch failed: {e}")
+
+    def schedule_prefetch(
+        self,
+        request_type: str,
+        priority: str = "low",
+        **kwargs
+    ) -> bool:
+        """Schedule a prefetch operation for background execution."""
+        if not self.prefetch_enabled or not self.prefetch_task:
+            return False
+
+        try:
+            prefetch_request = {
+                "type": request_type,
+                "priority": priority,
+                "timestamp": datetime.now(timezone.utc),
+                **kwargs
+            }
+
+            # Try to add to queue without blocking
+            try:
+                self.prefetch_queue.put_nowait(prefetch_request)
+                logger.debug(f"🔮 Scheduled prefetch: {request_type}")
+                return True
+            except asyncio.QueueFull:
+                logger.debug("Prefetch queue full, skipping request")
+                return False
+
+        except Exception as e:
+            logger.error(f"Failed to schedule prefetch: {e}")
+            return False
+
+    def update_navigation_context(
+        self,
+        current_file: str,
+        workspace_path: str,
+        symbol_name: str = None,
+        navigation_action: str = "navigate"
+    ) -> None:
+        """Update navigation context and trigger intelligent prefetching."""
+        try:
+            # Add to current context
+            self.current_context_files.add(current_file)
+
+            # Track navigation pattern
+            navigation_entry = {
+                "file": current_file,
+                "symbol": symbol_name,
+                "action": navigation_action,
+                "timestamp": datetime.now(timezone.utc)
+            }
+
+            self.recent_navigation_patterns.append(navigation_entry)
+
+            # Keep pattern history manageable (ADHD optimization)
+            if len(self.recent_navigation_patterns) > 20:
+                self.recent_navigation_patterns = self.recent_navigation_patterns[-15:]
+
+            # Trigger prefetching based on navigation patterns
+            self._trigger_intelligent_prefetching(current_file, workspace_path, symbol_name)
+
+        except Exception as e:
+            logger.error(f"Failed to update navigation context: {e}")
+
+    def _trigger_intelligent_prefetching(
+        self,
+        current_file: str,
+        workspace_path: str,
+        symbol_name: str = None
+    ) -> None:
+        """Trigger intelligent prefetching based on navigation patterns."""
+        try:
+            # Pattern 1: Related files in same directory
+            self.schedule_prefetch(
+                "related_files",
+                priority="medium",
+                current_file=current_file,
+                workspace_path=workspace_path
+            )
+
+            # Pattern 2: Similar functions if symbol provided
+            if symbol_name:
+                self.schedule_prefetch(
+                    "similar_functions",
+                    priority="low",
+                    function_name=symbol_name,
+                    workspace_path=workspace_path
+                )
+
+            # Pattern 3: Contextual searches based on file name
+            file_stem = Path(current_file).stem
+            if len(file_stem) > 3:  # Meaningful file names only
+                contextual_queries = [
+                    f"tests for {file_stem}",
+                    f"documentation {file_stem}",
+                    f"examples {file_stem}"
+                ]
+
+                for query in contextual_queries[:1]:  # Just one contextual search
+                    self.schedule_prefetch(
+                        "semantic_search",
+                        priority="low",
+                        query=query,
+                        workspace_path=workspace_path
+                    )
+
+        except Exception as e:
+            logger.debug(f"Prefetch triggering failed: {e}")
+
+    def check_prefetch_hit(self, query: str, workspace_path: str) -> bool:
+        """Check if a search result was prefetched (for analytics)."""
+        cache_key = f"enhanced_search:{hash(query)}:10"
+
+        # This is a heuristic - if it's in cache and we recently prefetched, count as hit
+        # Real implementation would need more sophisticated tracking
+
+        # Simple check: if any recent prefetch patterns match this query
+        query_lower = query.lower()
+        for pattern in self.recent_navigation_patterns[-5:]:  # Last 5 patterns
+            if pattern.get("file", "").lower() in query_lower:
+                self.enhancement_stats["prefetch_hits"] += 1
+                return True
+
+        return False
+
     # Utility Methods
 
     async def _get_file_content_preview(self, file_path: str) -> str:
@@ -594,15 +880,30 @@ class ClaudeContextIntegration:
     async def get_integration_health(self) -> Dict[str, Any]:
         """Get integration health status."""
         try:
-            claude_context_healthy = await self._test_claude_context_connection()
+            if not self.mcp_client:
+                return {
+                    "status": "🔴 Not Initialized",
+                    "error": "MCP client not initialized"
+                }
+
+            # Get MCP client health
+            mcp_health = await self.mcp_client.health_check()
+            claude_context_healthy = mcp_health.get("server_healthy", False)
 
             return {
                 "claude_context_connection": "🟢 Connected" if claude_context_healthy else "🔴 Disconnected",
                 "enhancement_stats": self.enhancement_stats,
+                "mcp_performance": {
+                    "average_response_time_ms": mcp_health.get("stats", {}).get("average_response_time_ms", 0),
+                    "performance_target_ms": self.config.performance_target_ms,
+                    "target_violations": self.enhancement_stats["performance_violations"],
+                    "success_rate": mcp_health.get("success_rate", 0)
+                },
                 "configuration": {
                     "endpoint": self.config.mcp_endpoint,
                     "timeout": self.config.timeout,
-                    "caching_enabled": self.config.cache_results
+                    "caching_enabled": self.config.cache_results,
+                    "performance_target_ms": self.config.performance_target_ms
                 },
                 "status": "🚀 Enhancing" if claude_context_healthy else "⚠️ Limited"
             }
@@ -613,8 +914,18 @@ class ClaudeContextIntegration:
 
     async def close(self) -> None:
         """Close claude-context integration."""
-        if self.session:
-            await self.session.close()
+        # Stop prefetching
+        if self.prefetch_task:
+            self.prefetch_task.cancel()
+            try:
+                await self.prefetch_task
+            except asyncio.CancelledError:
+                pass
+
+        # Close MCP client
+        if self.mcp_client:
+            await self.mcp_client.close()
+
         logger.info("🔌 Claude-context integration closed")
 
 
