@@ -1172,6 +1172,18 @@ app.add_middleware(
 # Add ConPort middleware for ADHD context preservation
 app.middleware("http")(ConPortMiddleware(app, conport_client))
 
+# Include Knowledge Graph endpoints (Phase 10)
+try:
+    from kg_endpoints import router as kg_router
+    from kg_authority import add_kg_authority_middleware
+
+    app.include_router(kg_router)
+    add_kg_authority_middleware(app)
+    logger.info("✅ Knowledge Graph endpoints registered at /kg/*")
+    logger.info("✅ KG Authority middleware active (Two-Plane enforcement)")
+except ImportError as e:
+    logger.warning(f"⚠️  Knowledge Graph endpoints not available: {e}")
+
 # Pydantic models for API requests
 class PRDParseRequest(BaseModel):
     prd_content: str
