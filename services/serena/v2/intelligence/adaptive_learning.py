@@ -75,6 +75,11 @@ class NavigationSequence:
     effectiveness_score: float = 0.0
     completion_status: str = "incomplete"
     attention_span_seconds: int = 0
+    context_data: Dict[str, Any] = None
+
+    def __post_init__(self):
+        if self.context_data is None:
+            self.context_data = {}
 
     @property
     def average_complexity(self) -> float:
