@@ -1,0 +1,52 @@
+{
+  "test_run_timestamp": "2025-10-02T12:41:42.383963",
+  "total_tests": 7,
+  "passed_tests": 2,
+  "failed_tests": 0,
+  "test_results": [
+    {
+      "name": "database_performance",
+      "status": "passed",
+      "metrics": {
+        "average_query_time_ms": 0.78,
+        "max_query_time_ms": 1.2,
+        "min_query_time_ms": 0.66,
+        "adhd_compliant": true,
+        "performance_rating": "\ud83d\ude80 Excellent",
+        "test_count": 10
+      }
+    },
+    {
+      "name": "graph_operations_performance",
+      "status": "passed",
+      "metrics": {
+        "tests_run": [
+          {
+            "name": "get_element_1",
+            "time_ms": 2.3,
+            "adhd_compliant": true
+          },
+          {
+            "name": "find_elements_main",
+            "time_ms": 2.15,
+            "adhd_compliant": true
+          },
+          {
+            "name": "get_performance_metrics",
+            "time_ms": 4.49,
+            "adhd_compliant": true
+          }
+        ],
+        "all_under_200ms": true,
+        "average_time_ms": 2.98,
+        "adhd_compliant": true
+      }
+    }
+  ],
+  "performance_summary": {
+    "all_under_200ms": true,
+    "average_time_ms": 0.0,
+    "adhd_compliant": true
+  },
+  "success_rate": 0.2857142857142857
+}
