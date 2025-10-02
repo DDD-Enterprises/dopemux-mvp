@@ -6,11 +6,13 @@ ADHD-optimized 3-tier progressive disclosure query patterns.
 """
 
 from .overview import OverviewQueries
-from .exploration import ExplorationQueries
-from .deep_context import DeepContextQueries
+
+# Phase 5 & 6 - Coming soon
+# from .exploration import ExplorationQueries
+# from .deep_context import DeepContextQueries
 
 __all__ = [
     'OverviewQueries',
-    'ExplorationQueries',
-    'DeepContextQueries'
+    # 'ExplorationQueries',  # Phase 5
+    # 'DeepContextQueries'  # Phase 6
 ]
