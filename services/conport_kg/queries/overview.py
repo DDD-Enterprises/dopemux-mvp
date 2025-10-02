@@ -138,6 +138,39 @@ class OverviewQueries:
 
         return decisions
 
+    def search_by_tag(self, tag: str, limit: int = 3) -> List[Dict]:
+        """
+        Search decisions by tag (Top-3 pattern)
+
+        ADHD Optimization: Limits to 3 for quick scanning
+        Tags are stored as JSONB array in AGE
+        """
+
+        cypher = f"""
+            SELECT * FROM cypher('conport_knowledge', $$
+                MATCH (d:Decision)
+                WHERE '{tag}' = ANY(d.tags)
+                RETURN d.id, d.summary, d.timestamp
+                ORDER BY d.timestamp DESC
+                LIMIT {limit}
+            $$) as (id agtype, summary agtype, timestamp agtype);
+        """
+
+        results = self._execute_cypher(cypher)
+
+        decisions = []
+        for row in results:
+            if '|' in row:
+                parts = [p.strip() for p in row.split('|')]
+                if len(parts) >= 3:
+                    decisions.append({
+                        'id': parts[0],
+                        'summary': parts[1].strip('"'),
+                        'timestamp': parts[2]
+                    })
+
+        return decisions
+
 
 if __name__ == "__main__":
     # Test Tier 1 queries
