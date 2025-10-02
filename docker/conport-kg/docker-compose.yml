@@ -1,0 +1,107 @@
+# CONPORT-KG-2025 Production Docker Compose Configuration
+# Status: READY TO USE - Implementation DEFERRED
+#
+# To deploy:
+#   docker-compose -f docker/conport-kg/docker-compose.yml up -d
+#
+# To stop:
+#   docker-compose -f docker/conport-kg/docker-compose.yml down
+
+version: '3.8'
+
+services:
+  # PostgreSQL AGE Database
+  postgres-age:
+    image: apache/age:PG14_latest
+    container_name: conport-kg-postgres-age
+    ports:
+      - "5455:5432"
+    environment:
+      POSTGRES_DB: dopemux_knowledge_graph
+      POSTGRES_USER: dopemux_age
+      POSTGRES_PASSWORD: ${AGE_PASSWORD:-dopemux_age_dev_password}
+      # AGE extension configuration
+      POSTGRES_INITDB_ARGS: "-c shared_preload_libraries=age"
+    volumes:
+      - age-data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "dopemux_age", "-d", "dopemux_knowledge_graph"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - conport-kg-network
+
+  # Integration Bridge (HTTP API)
+  integration-bridge:
+    build:
+      context: ../../services/mcp-integration-bridge
+      dockerfile: Dockerfile
+    container_name: conport-kg-integration-bridge
+    ports:
+      - "3016:3016"
+    environment:
+      # Port configuration
+      - PORT_BASE=3000
+
+      # Database connection
+      - AGE_HOST=postgres-age
+      - AGE_PORT=5432
+      - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
+
+      # Feature flags
+      - KG_DIRECT_CONNECTION=true
+
+      # Instance configuration
+      - DOPEMUX_INSTANCE=production
+    depends_on:
+      postgres-age:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3016/kg/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - conport-kg-network
+    # Mount query API code (read-only)
+    volumes:
+      - ../../services/conport_kg:/app/services/conport_kg:ro
+
+  # Redis (OPTIONAL - for event bus and caching)
+  redis:
+    image: redis:7-alpine
+    container_name: conport-kg-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - conport-kg-network
+
+# Persistent volumes
+volumes:
+  age-data:
+    name: conport-kg-age-data
+    driver: local
+  redis-data:
+    name: conport-kg-redis-data
+    driver: local
+
+# Network isolation
+networks:
+  conport-kg-network:
+    name: conport-kg-network
+    driver: bridge
