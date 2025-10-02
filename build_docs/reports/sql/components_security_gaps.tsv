@@ -1,0 +1,1096 @@
+component_id	name	subsystem_id	security_notes	threat_model_refs
+COMP-5-3-extensibility	**5.3 Extensibility**			
+COMP-adhd-accommodation-f	**ADHD Accommodation Features**			
+COMP-ai-llm-services	**AI/LLM Services**			
+COMP-application-session-	**Application Session Management**		& Privacy Layer        # Enforces access controls and privacy	
+COMP-container-health-mon	**Container Health Monitoring**			
+COMP-core-lifecycle-comma	**Core Lifecycle Commands**			
+COMP-current-status	**Current Status**:			
+COMP-developer-role	**Developer Role**			
+COMP-developer-role-imple	**Developer Role** (Implementation Focus)			
+COMP-development-environm	**Development Environment**			
+COMP-docker-configuration	**Docker Configuration:**			
+COMP-exa-web-research	**EXA (Web Research)**			
+COMP-embedding-configurat	**Embedding Configuration:**			
+COMP-environment-health	**Environment Health**		**: Reports if keys are set without exposing values	
+COMP-error-message-patter	**Error Message Patterns**			
+COMP-example-scenarios	**Example Scenarios**			
+COMP-for-developers	**For Developers**			
+COMP-immediate-actions-re	**Immediate Actions Required**:			
+COMP-immediate-enhancemen	**Immediate Enhancements**			
+COMP-impact	**Impact**:			
+COMP-integration-layer	**Integration Layer**			
+COMP-integration-status	**Integration Status**			
+COMP-mcp-ecosystem	**MCP Ecosystem**			
+COMP-metamcp-core	**MetaMCP Core**			
+COMP-next-restart-will-pr	**Next Restart Will Preserve**:			
+COMP-optimization-tactics	**Optimization Tactics**			
+COMP-phase-4-implementati	**Phase 4: Implementation**			
+COMP-plugin-system	**Plugin System**			
+COMP-prerequisites	**Prerequisites**			
+COMP-production-readiness	**Production Readiness** ✅ CONFIRMED			
+COMP-project-knowledge-ba	**Project Knowledge Base**		authentication	
+COMP-status-bar-script-ar	**Status Bar Script Architecture**			
+COMP-token-efficiency	**Token Efficiency**			
+COMP-universal-knowledge-	**Universal Knowledge Base**		_standards.json         # Current security best practices	
+COMP-voyageai-configurati	**VoyageAI Configuration**:			
+COMP-impact-metrics	**📊 IMPACT METRICS**			
+COMP-sc-design	/sc:design			
+COMP-sc-document	/sc:document			
+COMP-todo-add	/todo-add		authentication	
+COMP-todo-block	/todo-block			
+COMP-todo-search	/todo-search		authentication	
+COMP-1-1-goals	1.1 Goals			
+COMP-1-1-response-time-de	1.1 Response Time Degradation			
+COMP-1-3-assumptions	1.3 Assumptions			
+COMP-1-4-task-scheduler-c	1.4 Task Scheduler Component			
+COMP-10-morphllm-fast-app	10. **MorphLLM Fast Apply** (Port 3011)			
+COMP-11-security-posture-	11) Security posture (Phase 1)			
+COMP-16-leantime-api-webh	16. Leantime API Webhook Reliability			
+COMP-4-1-default-cc-defau	4.1 `default` (cc‑default)			
+COMP-4-2-top-level-decomp	4.2 Top-level Decomposition			
+COMP-4-4-longcontext	4.4 `longContext`			
+COMP-5-layer-architecture	5-Layer Architecture:			
+COMP-5-1-performance-targ	5.1 Performance Targets			
+COMP-6-1-high-level-yaml	6.1 High‑level YAML			
+COMP-6-5-quality-gate-api	6.5 Quality gate API (language‑agnostic)			
+COMP-adhd-accommodation	ADHD Accommodation:			
+COMP-adhd-specific-consid	ADHD-Specific Considerations			
+COMP-adr-default-embeddin	ADR: Default Embeddings/Index Provider (External)			
+COMP-ai-assistant-windows	AI Assistant Windows			
+COMP-api-endpoints	API Endpoints			
+COMP-api-functionality	API Functionality			
+COMP-api-security	API Security		= HTTPBearer(); import HTTPBearer	
+COMP-api-security-measure	API Security Measures		oauth; encryption; modules (HSM)"	
+COMP-api-specification	API Specification			
+COMP-api-token-problems	API Token Problems		Authorization	
+COMP-api-usage-tracking	API Usage Tracking			
+COMP-api-access	API access			
+COMP-acceptance-criteria	Acceptance Criteria			
+COMP-access-control	Access Control			
+COMP-activate-deep-focus-	Activate deep focus mode			
+COMP-adaptive-ui-based-on	Adaptive UI Based on Energy Levels			
+COMP-add-to-communication	Add to communication_simulator_test.py			
+COMP-after-full-implement	After Full Implementation:			
+COMP-after-any-interrupti	After any interruption (meeting, break, distraction)			
+COMP-after-restart	After restart			
+COMP-an-open-source-revol	An open-source revolution meets terminal-based productivity			
+COMP-application-layer	Application Layer		authentication	
+COMP-assumptions-new-upda	Assumptions (new/updated)		OAuth	
+COMP-authentication-issue	Authentication Issues			
+COMP-authentication-metho	Authentication Methods			
+COMP-auto-save-overhead	Auto-Save Overhead			
+COMP-auto-save-validation	Auto-Save Validation			
+COMP-automatic-task-break	Automatic Task Breakdown		authentication; JWT	
+COMP-automation-pipeline	Automation Pipeline:			
+COMP-b-tui-dashboard-mock	B. **TUI Dashboard Mockup**			
+COMP-base-provider-interf	Base Provider Interface			
+COMP-base-urls	Base URLs:			
+COMP-benefits	Benefits			
+COMP-brain-dump-mode	Brain Dump Mode:			
+COMP-break-into	Break into:		JWT	
+COMP-correct-approach	CORRECT approach			
+COMP-cache-performance-te	Cache performance test			
+COMP-check-active-work	Check active work			
+COMP-check-recent-progres	Check recent progress			
+COMP-check-token-tracking	Check token tracking		Authorization	
+COMP-check-token-validity	Check token validity:		Authorization	
+COMP-check-where-you-left	Check where you left off			
+COMP-circuit-breaker-patt	Circuit Breaker Pattern			
+COMP-claude-context-magic	Claude-Context Magic		authentication	
+COMP-cognitive-enhancemen	Cognitive Enhancement			
+COMP-cognitive-load-reduc	Cognitive Load Reduction			
+COMP-collect-instance-inf	Collect instance info			
+COMP-common-api-setting-n	Common API Setting Names:		Authentication	
+COMP-common-issues	Common Issues			
+COMP-component-tags	Component Tags			
+COMP-concurrency-testing	Concurrency Testing			
+COMP-connected-to-metamcp	Connected to MetaMCP:			
+COMP-containerized-kubern	Containerized Kubernetes Deployment		authentication	
+COMP-context-aware-assist	Context-Aware Assistance			
+COMP-context7-documentati	Context7 (Documentation Authority)			
+COMP-context7-agent-the-k	Context7 Agent: "The Know-It-All (But Helpful)"			
+COMP-context7-capabilitie	Context7 Capabilities:			
+COMP-context7-first-philo	Context7-First Philosophy (CRITICAL INSIGHT)			
+COMP-conversational-inter	Conversational Interface			
+COMP-cost-monitoring	Cost Monitoring			
+COMP-create-linked-progre	Create linked progress			
+COMP-current-problem	Current Problem		authentication	
+COMP-database-infrastruct	Database Infrastructure ✅ READY			
+COMP-datastores	Datastores ✅			
+COMP-debug-instance-infor	Debug Instance Information			
+COMP-debugging-categories	Debugging Categories			
+COMP-deployment-method	Deployment Method			
+COMP-document-queries	Document Queries		policy for API access"	
+COMP-document-types-creat	Document Types Created			
+COMP-dopemux-specific-ada	Dopemux-Specific Adaptations Needed			
+COMP-emotional-regulation	Emotional Regulation			
+COMP-enhancedlspwrapper	EnhancedLSPWrapper			
+COMP-enterprise-deploymen	Enterprise Deployment Diagram		Authentication	
+COMP-error-handling-ensur	Error handling ensures production reliability			
+COMP-evidence-based-found	Evidence-Based Foundation:			
+COMP-example-prompts	Example Prompts			
+COMP-example-usage	Example Usage		authentication; OAuth	
+COMP-expected-performance	Expected Performance Improvements			
+COMP-expected-50ms	Expected: < 50ms			
+COMP-external-dependencie	External Dependencies			
+COMP-feature-types-suppor	Feature Types Supported			
+COMP-find-decisions-progr	Find decisions/progress by keywords		authentication	
+COMP-find-progress-on-spe	Find progress on specific features			
+COMP-first-request-databa	First request (database)			
+COMP-focus-mode-interface	Focus Mode Interface		OAuth	
+COMP-follow-interactive-p	Follow interactive prompts:			
+COMP-functional-validatio	Functional Validation			
+COMP-get-api-active-work-	GET /api/active-work/{workspace_id}		authentication	
+COMP-get-api-context-work	GET /api/context/{workspace_id}			
+COMP-get-api-decisions	GET /api/decisions			
+COMP-get-api-progress	GET /api/progress		authentication	
+COMP-get-api-recent-activ	GET /api/recent-activity/{workspace_id}		authentication	
+COMP-get-api-search-works	GET /api/search/{workspace_id}		authentication; JWT	
+COMP-gemini-provider	Gemini Provider			
+COMP-get-completion-stati	Get completion statistics			
+COMP-get-dashboard	Get dashboard			
+COMP-get-initial-timestam	Get initial timestamp			
+COMP-get-updated-timestam	Get updated timestamp			
+COMP-getting-started-tuto	Getting Started Tutorial ✅			
+COMP-goals	Goals			
+COMP-health-check-api	Health Check API			
+COMP-health-indicators	Health Indicators			
+COMP-health-monitoring	Health Monitoring			
+COMP-hook-capabilities	Hook Capabilities:			
+COMP-immediate-high-prior	IMMEDIATE (High Priority)			
+COMP-incorrect-approach-n	INCORRECT approach (never do this)			
+COMP-immediate-day-1	Immediate (Day 1)			
+COMP-immediate-actions-th	Immediate Actions (This Week)			
+COMP-import-namespace-con	Import namespace configurations		Authorization	
+COMP-initialize-client	Initialize client			
+COMP-interface-contract	Interface Contract			
+COMP-issue-health-check-t	Issue: "Health Check Timeout"			
+COMP-kubernetes-deploymen	Kubernetes Deployment			
+COMP-later	Later			
+COMP-layer-4-user-interfa	Layer 4: User Interface			
+COMP-leantime-api-trouble	Leantime API Troubleshooting Guide		authentication	
+COMP-leantime-bridge-src-	Leantime Bridge (`src/integrations/leantime_bridge.py`)			
+COMP-leantime-bridge-api-	Leantime Bridge API (Port 3015)			
+COMP-leantime	Leantime ✅			
+COMP-leantimemcpclient	LeantimeMCPClient			
+COMP-letta-api-endpoint	Letta API endpoint			
+COMP-list-available-templ	List Available Templates			
+COMP-log-task-progress	Log Task Progress		authentication	
+COMP-log-initial-progress	Log initial progress			
+COMP-log-progress	Log progress			
+COMP-log-test-progress	Log test progress			
+COMP-long-term-1-year	Long Term (1 year)			
+COMP-lower-priority-enhan	Lower Priority (Enhancement Features)			
+COMP-mas-liveness-check	MAS liveness check			
+COMP-medium-term-evolutio	Medium-term Evolution (Phase 2-3)			
+COMP-memory-first-workflo	Memory-First Workflow:			
+COMP-message-routing	Message Routing			
+COMP-metamcp	MetaMCP ✅			
+COMP-migration-support	Migration Support			
+COMP-monitoring-dashboard	Monitoring Dashboard			
+COMP-negative	Negative			
+COMP-negative-consequence	Negative Consequences:			
+COMP-neutral	Neutral			
+COMP-normal-operation	Normal Operation			
+COMP-openapi-specificatio	OpenAPI Specifications ✅		Authentication; OAuth	
+COMP-operational-readines	Operational Readiness ✅			
+COMP-orchestrator-dopemux	Orchestrator ("Dopemux"):			
+COMP-post-api-context-wor	POST /api/context/{workspace_id}			
+COMP-post-api-decisions	POST /api/decisions			
+COMP-post-api-progress	POST /api/progress		authentication	
+COMP-put-api-progress-pro	PUT /api/progress/{progress_id}			
+COMP-parse-prd	Parse PRD			
+COMP-parse-prd-to-tasks	Parse PRD to Tasks			
+COMP-pattern-matching	Pattern Matching			
+COMP-performance-sla	Performance SLA			
+COMP-performance-validati	Performance Validation API			
+COMP-performance-check	Performance check			
+COMP-personalized-accommo	Personalized Accommodations			
+COMP-plugin-architectures	Plugin architectures enable extensibility			
+COMP-port-allocation	Port Allocation			
+COMP-positive	Positive			
+COMP-primary-frameworks	Primary Frameworks			
+COMP-primary-goals	Primary Goals			
+COMP-primary-stakeholders	Primary Stakeholders			
+COMP-privacy-protection	Privacy Protection			
+COMP-progress-tracking	Progress Tracking		authentication	
+COMP-progressive-task-dis	Progressive Task Disclosure			
+COMP-project-specific-bin	Project-specific bindings			
+COMP-project-specific-set	Project-specific settings		authentication	
+COMP-pull-request-gates	Pull Request Gates			
+COMP-quality-assurance	Quality Assurance			
+COMP-quick-start	Quick Start			
+COMP-quick-catch-up-after	Quick catch-up after interruption			
+COMP-quick-start-commands	Quick start commands			
+COMP-real-time-events	Real-Time Events		Authorization; authentication	
+COMP-request-limits	Request Limits			
+COMP-required-api-keys	Required API Keys			
+COMP-required-tags	Required Tags		`: Security-related decisions	
+COMP-research-validated-m	Research-Validated Market Need			
+COMP-role-specific-instru	Role-Specific Instructions			
+COMP-solid	SOLID			
+COMP-safety-first-approac	Safety-First Approach:			
+COMP-second-request-redis	Second request (Redis cache)			
+COMP-security-considerati	Security Considerations		Encryption	
+COMP-security-features	Security Features		Authentication; JWT	
+COMP-security-layers	Security Layers		Authentication; Encryption; Authorization	
+COMP-security-measures	Security Measures		encryption; JWT; **: Rate limiting, input validation, JWT authentication	
+COMP-see-active-work	See active work			
+COMP-see-what-needs-your-	See what needs your attention (priority-sorted)			
+COMP-self-check-validatio	Self-Check Validation			
+COMP-send-to-capture-daem	Send to capture daemon (non-blocking)			
+COMP-service-level-integr	Service-Level Integration:			
+COMP-service-to-service-a	Service-to-Service Authentication			
+COMP-set-up-api-specific-	Set up API-specific tasks		authentication	
+COMP-short-term-weeks-2-4	Short-term (Weeks 2-4)			
+COMP-should-return-someth	Should return something other than "Invalid API Key"			
+COMP-smart-notification-b	Smart Notification Batching			
+COMP-standard-error-respo	Standard error response format			
+COMP-start-working-sessio	Start working session			
+COMP-state-dependent-need	State-Dependent Needs			
+COMP-steps	Steps:			
+COMP-story-c06-perf-cost-	Story C06 — Perf/Cost: Bulk Sync			
+COMP-story-g01-openapi-st	Story G01 — OpenAPI Stub			
+COMP-story-g06-accessibil	Story G06 — Accessibility: API Docs			
+COMP-story-g07-perf-cost-	Story G07 — Perf/Cost: API Rate Limits			
+COMP-supported-clients	Supported Clients			
+COMP-todo	TODO			
+COMP-task-lifecycle-event	Task Lifecycle Events			
+COMP-task-orchestrator-ap	Task-Orchestrator API (Port 3014)			
+COMP-task-specific-prompt	Task-specific prompt templates			
+COMP-temporarily-disabled	Temporarily Disabled (By Design)			
+COMP-terminal-multiplexin	Terminal Multiplexing Interface			
+COMP-test-4-progress-trac	Test 4: Progress Tracking			
+COMP-test-api-response-ti	Test API response times			
+COMP-test-categories-gene	Test Categories Generated			
+COMP-test-prd-parsing-end	Test PRD parsing endpoint			
+COMP-test-basic-api-conne	Test basic API connectivity		Authorization	
+COMP-test-dashboard-endpo	Test dashboard endpoint			
+COMP-test-endpoint	Test endpoint			
+COMP-try-different-authen	Try different authentication headers:			
+COMP-ui-layout-specificat	UI Layout Specifications ✅			
+COMP-ui-preferences	UI preferences			
+COMP-unit-tests	Unit Tests ✅			
+COMP-universal-tagging-ru	Universal Tagging Rules			
+COMP-unload	Unload			
+COMP-update-task-on-insta	Update task on Instance B			
+COMP-update-to-100-should	Update to 100% (should auto-complete)			
+COMP-user-interface	User Interface			
+COMP-validation	Validation			
+COMP-verify-auto-completi	Verify auto-completion worked			
+COMP-verify-namespace-map	Verify namespace mapping		Authorization	
+COMP-verify-recovery	Verify recovery			
+COMP-verify-shared-databa	Verify shared database access			
+COMP-verify-task-visible-	Verify task visible on Instance B			
+COMP-verify-update-reflec	Verify update reflected immediately			
+COMP-via-python-api	Via Python API			
+COMP-voyage-ai-limits	Voyage AI Limits			
+COMP-weak-dependencies	Weak Dependencies			
+COMP-week-1-current	Week 1 (CURRENT)			
+COMP-week-1-deliverables	Week 1 Deliverables			
+COMP-week-12-production-r	Week 12: Production Readiness			
+COMP-week-2	Week 2			
+COMP-what-you-ll-learn	What You'll Learn			
+COMP-why-leantime	Why Leantime?			
+COMP-your-api-keys	Your API keys			
+COMP-your-first-ai-intera	Your First AI Interaction			
+COMP-zed-editor-agent-cli	Zed Editor (Agent Client Protocol)			
+COMP-init-voyage-api-key-	`__init__(voyage_api_key, milvus_host, milvus_port)`			
+COMP-dopemux-task-descrip	`dopemux task [description]`		authentication	
+COMP-dopemux-attention-co	`dopemux:attention:context_switch`			
+COMP-dopemux-attention-st	`dopemux:attention:state`			
+COMP-dopemux-code-analysi	`dopemux:code:analysis`			
+COMP-dopemux-code-changes	`dopemux:code:changes`			
+COMP-dopemux-decisions-lo	`dopemux:decisions:logged`			
+COMP-dopemux-health-statu	`dopemux:health:status`			
+COMP-dopemux-tasks-depend	`dopemux:tasks:dependencies`			
+COMP-dopemux-tasks-lifecy	`dopemux:tasks:lifecycle`			
+COMP-adhd-personalization	adhd-personalization/src/workflow_adapter.py			
+COMP-backend-architect	backend-architect		, fault tolerance	
+COMP-claude-flow-compatib	claude_flow_compatibility.py			
+COMP-config-conport-rag-i	config/conport/rag-integration.yaml			
+COMP-dopemux-adhd-config-	dopemux_adhd_config.yaml			
+COMP-frontend-architect	frontend-architect			
+COMP-letta-config-py	letta_config.py			
+COMP-milvus-yaml-tls-sett	milvus.yaml TLS settings			
+COMP-optimization-src-cac	optimization/src/cache_warmer.py			
+COMP-scripts-benchmark-ra	scripts/benchmark_rag.py		authentication	
+COMP-scripts-check-memory	scripts/check_memory_health.py			
+COMP-scripts-health-monit	scripts/health_monitor.py			
+COMP-src-conport-tools-en	src/conport/tools/enhanced_tools.py			
+COMP-src-dopemux-capture-	src/dopemux/capture/privacy.py		JWT	
+COMP-src-rag-ingestion-py	src/rag/ingestion.py			
+COMP-src-rag-memory-integ	src/rag/memory_integration.py			
+COMP-src-rag-memory-logge	src/rag/memory_logger.py			
+COMP-test-integration-py	test_integration.py		Authentication; authentication; JWT	
+COMP-tmux-interface-sessi	tmux Interface (Session Multiplexing)			
+COMP-zen-mcp	zen-mcp			
+COMP-config-dopemux-confi	~/.config/dopemux/config.yaml			
+COMP-remember	✨ Remember			
+COMP-metamcp-endpoint	🌐 **MetaMCP Endpoint**		OAuth	
+COMP-runbook-metadata	📝 Runbook Metadata			
+COMP-authentication	🔐 Authentication		authentication; Authorization; OAuth	
+COMP-security-notes	🔐 Security Notes			
+COMP-security	🔒 Security			
+COMP-available-http-endpo	🔗 **Available HTTP Endpoints**			
+COMP-references	🔗 References			
+COMP-roadmap	🗺️ Roadmap			
+COMP-credits	🙏 Credits			
+COMP-getting-started	🚀 Getting Started			
+COMP-navigation-intellige	🚀 Navigation Intelligence API			
+COMP-configuration	🛠️ **Configuration**		Authentication; OAuth	
+COMP-contributing	🧑‍💻 Contributing			
+COMP-navigation-tips	🧭 Navigation Tips			
+COMP-1-zen-default-quick-	1. **zen** (Default Quick Consultation)	SUB-1-AGENT-ORCHEST		
+COMP-1-cli-interface-prim	1. CLI Interface (Primary)	SUB-1-AGENT-ORCHEST		
+COMP-1-cli-interface-src-	1. CLI Interface (`src/dopemux/cli.py`)	SUB-1-AGENT-ORCHEST		
+COMP-1-chat-window	1. Chat Window	SUB-1-AGENT-ORCHEST		
+COMP-1-health-endpoint-mi	1. Health Endpoint Mismatch	SUB-1-AGENT-ORCHEST		
+COMP-1-in-progress-work-t	1. In-Progress Work Tracking	SUB-1-AGENT-ORCHEST		
+COMP-1-task-entity-schema	1. Task Entity Schema	SUB-1-AGENT-ORCHEST		
+COMP-agent-base-class	Agent Base Class	SUB-1-AGENT-ORCHEST		
+COMP-agent-status-dashboa	Agent Status Dashboard	SUB-1-AGENT-ORCHEST		
+COMP-task-decomposition-e	Task Decomposition Engine	SUB-1-AGENT-ORCHEST	authentication; JWT	
+COMP-unified-container-or	Unified Container Orchestration	SUB-1-AGENT-ORCHEST		
+COMP-3-serena-server-port	**3. SERENA SERVER** (port 3006) - **Symbol-Level Navigation**	SUB-12-EXA-WEB-SEAR		
+COMP-4-2-codebase-modules	**4.2 Codebase & Modules**	SUB-12-EXA-WEB-SEAR		
+COMP-exa-web-research-age	**Exa (Web Research Agent)**	SUB-12-EXA-WEB-SEAR		
+COMP-phase-2-research-ana	**Phase 2: Research & Analysis**	SUB-12-EXA-WEB-SEAR		
+COMP-1-architectural-visi	1. Architectural Vision & Goals	SUB-12-EXA-WEB-SEAR		
+COMP-1-context7-documenta	1. Context7 - Documentation & Reference	SUB-12-EXA-WEB-SEAR		
+COMP-1-core-business-goal	1. Core Business Goals & User Problems	SUB-12-EXA-WEB-SEAR		
+COMP-1-research-question-	1. Research Question or Hypothesis	SUB-12-EXA-WEB-SEAR		
+COMP-10-context7-document	10. Context7 - Documentation Retrieval	SUB-12-EXA-WEB-SEAR		
+COMP-11-risks-mitigations	11. Risks & Mitigations	SUB-12-EXA-WEB-SEAR		
+COMP-12-sc-document	12. **/sc:document**	SUB-12-EXA-WEB-SEAR		
+COMP-12-exa-web-search-re	12. Exa - Web Search & Research	SUB-12-EXA-WEB-SEAR		
+COMP-13-risks-mitigations	13) Risks & mitigations	SUB-12-EXA-WEB-SEAR		
+COMP-2-key-concepts-termi	2) Key Concepts & Terminology	SUB-12-EXA-WEB-SEAR		
+COMP-2-core-components-se	2. Core Components & Services	SUB-12-EXA-WEB-SEAR	authorization; authentication; JWT	
+COMP-2-exa-research-tools	2. Exa Research Tools (4 tools - ~2,000 tokens)	SUB-12-EXA-WEB-SEAR		
+COMP-2-key-actors-persona	2. Key Actors & Personas	SUB-12-EXA-WEB-SEAR		
+COMP-2-research-knowledge	2. `/research` - Knowledge Acquisition	SUB-12-EXA-WEB-SEAR		
+COMP-3-system-scope-conte	3. System Scope & Context (C4 L0)	SUB-12-EXA-WEB-SEAR		
+COMP-3-2-category-2-agent	3.2 Category 2: Agent Orchestration & AI Integration	SUB-12-EXA-WEB-SEAR		
+COMP-3-4-category-4-neuro	3.4 Category 4: Neurodivergent UX & ADHD Support	SUB-12-EXA-WEB-SEAR		
+COMP-3-7-category-7-integ	3.7 Category 7: Integration & Deployment	SUB-12-EXA-WEB-SEAR	"As a CTO, I want enterprise-grade security that protects sensitive data and meets compliance requirements"; _compliance: "Comprehensive security with GDPR, HIPAA, and SOX compliance"; "	
+COMP-4-conclusions-implic	4. Conclusions & Implications	SUB-12-EXA-WEB-SEAR		
+COMP-4-context7-documenta	4. Context7 Documentation Tools (2 tools - 1,343 tokens)	SUB-12-EXA-WEB-SEAR		
+COMP-4-key-algorithms-pro	4. Key Algorithms & Protocols	SUB-12-EXA-WEB-SEAR		
+COMP-5-design-principles-	5. Design Principles & Constraints	SUB-12-EXA-WEB-SEAR	by Design," "API-first development.")*	
+COMP-5-technical-constrai	5. Technical Constraints & Decisions	SUB-12-EXA-WEB-SEAR		
+COMP-5-unique-user-facing	5. Unique User-Facing Features & Implementations	SUB-12-EXA-WEB-SEAR		
+COMP-5-implement-test-dri	5. `/implement` - Test-Driven Development	SUB-12-EXA-WEB-SEAR		
+COMP-7-critical-risks-mit	7. Critical Risks & Mitigation Strategies	SUB-12-EXA-WEB-SEAR		
+COMP-9-openmemory-mem0-pr	9. OpenMemory (mem0) - Priority: MEDIUM	SUB-12-EXA-WEB-SEAR		
+COMP-code-search-current-	Code Search (Current Implementation)	SUB-12-EXA-WEB-SEAR		
+COMP-context-goal	Context & Goal	SUB-12-EXA-WEB-SEAR		
+COMP-core-research-develo	Core Research & Development:	SUB-12-EXA-WEB-SEAR		
+COMP-development-implemen	Development & Implementation Agents:	SUB-12-EXA-WEB-SEAR		
+COMP-documentation-api-de	Documentation & API Design	SUB-12-EXA-WEB-SEAR		
+COMP-ops-reliability	Ops & Reliability	SUB-12-EXA-WEB-SEAR		
+COMP-optimization-researc	Optimization Research (Enhancement)	SUB-12-EXA-WEB-SEAR		
+COMP-phase-4-monitoring-r	Phase 4: Monitoring & Reliability (Week 4)	SUB-12-EXA-WEB-SEAR		
+COMP-research-cluster-25k	Research Cluster (25k token budget)	SUB-12-EXA-WEB-SEAR		
+COMP-research-validation	Research Validation	SUB-12-EXA-WEB-SEAR		
+COMP-risks-mitigations	Risks & Mitigations	SUB-12-EXA-WEB-SEAR		
+COMP-search-by-keyword	Search by keyword	SUB-12-EXA-WEB-SEAR	authentication	
+COMP-secondary-persona-ma	Secondary Persona: Marcus - Development Team Lead	SUB-12-EXA-WEB-SEAR		
+COMP-security-compliance	Security & Compliance ✅	SUB-12-EXA-WEB-SEAR	Authentication; **: Services only expose necessary ports; Authorization	
+COMP-security-privacy	Security & Privacy	SUB-12-EXA-WEB-SEAR		
+COMP-states-adaptations	States & Adaptations	SUB-12-EXA-WEB-SEAR		
+COMP-test-6-search-functi	Test 6: Search Functionality	SUB-12-EXA-WEB-SEAR		
+COMP-unified-search-3-6-m	Unified Search (3–6 Month Target)	SUB-12-EXA-WEB-SEAR	auth: "OIDC+API keys"	
+COMP-week-3-ux-enhancemen	Week 3: UX Enhancement & Interactivity	SUB-12-EXA-WEB-SEAR		
+COMP-mcp-capture-middlewa	mcp-capture-middleware.py - Capture Claude interactions	SUB-12-EXA-WEB-SEAR		
+COMP-exa-your-testing-uti	🔧 EXA - Your Testing & Utility Toolkit	SUB-12-EXA-WEB-SEAR		
+COMP-13-docgen-disabled-b	13. **docgen** (Disabled by Default)	SUB-13-SC-TROUBLESH		
+COMP-backend-services	Backend Services	SUB-2-CORE-COMPONEN	Authentication; JWT	
+COMP-critical-path-servic	Critical Path Services ✅	SUB-2-CORE-COMPONEN		
+COMP-primary-tools-always	**Primary Tools (Always Active)**	SUB-2-EXA-RESEARCH-		
+COMP-2-sc-implement	2. **/sc:implement**	SUB-2-EXA-RESEARCH-		
+COMP-2-benefits	2. **Benefits**	SUB-2-EXA-RESEARCH-		
+COMP-2-core-benefits	2. **Core Benefits**	SUB-2-EXA-RESEARCH-		
+COMP-2-created-metamcp-se	2. **Created MetaMCP Server Interface**	SUB-2-EXA-RESEARCH-		
+COMP-2-chat-collaborative	2. **chat** (Collaborative Development)	SUB-2-EXA-RESEARCH-		
+COMP-2-context7-first-int	2. Context7-First Integration (MANDATORY)	SUB-2-EXA-RESEARCH-		
+COMP-2-diff-window	2. Diff Window	SUB-2-EXA-RESEARCH-		
+COMP-2-import-configurati	2. Import configurations	SUB-2-EXA-RESEARCH-		
+COMP-2-integration-framew	2. Integration Framework	SUB-2-EXA-RESEARCH-	Model**: Least privilege with comprehensive audit logging; authentication	
+COMP-2-leantime-adhd-feat	2. Leantime ADHD Features and API Coverage	SUB-2-EXA-RESEARCH-		
+COMP-2-link-decision-to-i	2. Link decision to implementation files	SUB-2-EXA-RESEARCH-		
+COMP-2-methodology	2. Methodology	SUB-2-EXA-RESEARCH-		
+COMP-2-pymilvus-api-chang	2. PyMilvus API Changes ✅ FIXED	SUB-2-EXA-RESEARCH-		
+COMP-docker-service-check	**Docker Service Checks**	SUB-2-SERVICE-LOOKU		
+COMP-1-login-and-initial-	1. Login and Initial Configuration	SUB-2-SERVICE-LOOKU		
+COMP-4-attention-and-hype	4. Attention and Hyperfocus Management	SUB-2-SERVICE-LOOKU		
+COMP-4-celebration-and-re	4. Celebration and Reward System	SUB-2-SERVICE-LOOKU		
+COMP-4-metamcp-security-a	4. MetaMCP Security and Workspace Configuration	SUB-2-SERVICE-LOOKU	model: client authentication, tool access authorization; considerations; best practices for MCP server deployments	
+COMP-5-claude-code-deskto	5. Claude Code Desktop Extensions and MCP Integration	SUB-2-SERVICE-LOOKU		
+COMP-5-test-execution-and	5. Test Execution and Validation ✅	SUB-2-SERVICE-LOOKU		
+COMP-adhd-friendly-and-ac	ADHD-friendly and accessibility design principles	SUB-2-SERVICE-LOOKU		
+COMP-acronyms-and-abbrevi	Acronyms and Abbreviations	SUB-2-SERVICE-LOOKU		
+COMP-agent-types-and-spec	Agent Types and Specializations	SUB-2-SERVICE-LOOKU	Auditor**: Vulnerability scanning, OWASP compliance; _auditor]	
+COMP-alerting-and-inciden	Alerting and Incident Response	SUB-2-SERVICE-LOOKU		
+COMP-authentication-and-s	Authentication and Security Framework	SUB-2-SERVICE-LOOKU	JWT; relies on a **multi-layered OAuth 2.0 implementation** with JWT tokens for stateless validation. The recommended architecture includes:; OAuth	
+COMP-calendar-sync-servic	Calendar-Sync Service	SUB-2-SERVICE-LOOKU		
+COMP-capture-command-resu	Capture command result and context	SUB-2-SERVICE-LOOKU		
+COMP-chat-and-diff-interf	Chat and Diff Interfaces	SUB-2-SERVICE-LOOKU		
+COMP-color-schemes-stylin	Color schemes, styling, and themes create cohesive experiences	SUB-2-SERVICE-LOOKU		
+COMP-common-issues-and-so	Common Issues and Solutions	SUB-2-SERVICE-LOOKU		
+COMP-conclusion-and-strat	Conclusion and strategic recommendations	SUB-2-SERVICE-LOOKU		
+COMP-connection-pooling-a	Connection Pooling and Caching	SUB-2-SERVICE-LOOKU		
+COMP-core-service-record	Core Service Record	SUB-2-SERVICE-LOOKU		
+COMP-core-technology-stac	Core Technology Stack and Implementation	SUB-2-SERVICE-LOOKU	authentication	
+COMP-create-linked-decisi	Create linked decision and progress	SUB-2-SERVICE-LOOKU		
+COMP-final-documentation-	Final Documentation and Launch	SUB-2-SERVICE-LOOKU		
+COMP-integration-capabili	Integration capabilities and event-driven features	SUB-2-SERVICE-LOOKU		
+COMP-internal-dns-resolut	Internal DNS resolution examples	SUB-2-SERVICE-LOOKU		
+COMP-performance-and-exte	Performance and extensibility define long-term viability	SUB-2-SERVICE-LOOKU		
+COMP-performance-trade-of	Performance trade-offs and benchmarks	SUB-2-SERVICE-LOOKU		
+COMP-real-world-performan	Real-world performance and production readiness	SUB-2-SERVICE-LOOKU	features, and full documentation proving enterprise readiness.	
+COMP-risks-and-mitigation	Risks and Mitigations	SUB-2-SERVICE-LOOKU		
+COMP-scalability-targets-	Scalability targets and implementation roadmap	SUB-2-SERVICE-LOOKU	authentication	
+COMP-security-and-testing	Security and testing drive quality assurance	SUB-2-SERVICE-LOOKU	implementation employs systemd features for process isolation, with configurable network policies and comprehensive audit logging. Sandboxing configuration allows fine-grained control over file system access, memory limits, and CPU quotas. API key management uses secure OS keyring storage, preventing credential exposure in configuration files.; scanning using tools like Trivy and SAST-scan. Performance benchmarking ensures CLI startup under 500ms and average command execution under 2 seconds.	
+COMP-service-registry-exa	Service Registry Example	SUB-2-SERVICE-LOOKU		
+COMP-token-efficiency-and	Token efficiency and cost considerations	SUB-2-SERVICE-LOOKU		
+COMP-verify-env-file-exis	Verify .env file exists and is readable	SUB-2-SERVICE-LOOKU		
+COMP-visual-hierarchy-and	Visual Hierarchy and Progressive Disclosure	SUB-2-SERVICE-LOOKU		
+COMP-week-15-security-and	Week 15: Security and Monitoring	SUB-2-SERVICE-LOOKU	_scan(); scanning; Implementation:**	
+COMP-connecting-claude-de	🖥️ Connecting Claude Desktop and Other STDIO-only Clients	SUB-2-SERVICE-LOOKU	authentication; OAuth	
+COMP-3-context7-port-3002	3. **Context7** (Port 3002)	SUB-3-AI-POWERED-TO		
+COMP-3-core-features	3. **Core Features**	SUB-3-AI-POWERED-TO		
+COMP-3-api-version-mismat	3. API Version Mismatch (25% Likely)	SUB-3-AI-POWERED-TO		
+COMP-3-claude-squad-termi	3. Claude Squad (Terminal-Based):	SUB-3-AI-POWERED-TO		
+COMP-3-comprehensive-auto	3. Comprehensive Automation:	SUB-3-AI-POWERED-TO		
+COMP-3-generation-window	3. Generation Window	SUB-3-AI-POWERED-TO		
+COMP-3-later-why-did-we-c	3. Later: "Why did we choose this architecture?"	SUB-3-AI-POWERED-TO		
+COMP-3-orchestration-laye	3. Orchestration Layer	SUB-3-AI-POWERED-TO	authentication	
+COMP-3-privacy-validation	3. Privacy Validation Framework	SUB-3-AI-POWERED-TO		
+COMP-3-professional-effic	3. Professional Efficiency	SUB-3-AI-POWERED-TO		
+COMP-3-technology-stack	3. Technology Stack	SUB-3-AI-POWERED-TO		
+COMP-3-test-api-integrati	3. Test API Integration	SUB-3-AI-POWERED-TO		
+COMP-3-test-connection	3. Test connection	SUB-3-AI-POWERED-TO		
+COMP-3-unit-test-implemen	3. Unit Test Implementation ✅	SUB-3-AI-POWERED-TO		
+COMP-3-voyage-rerank-2-5-	3. Voyage Rerank-2.5 vs Alternatives	SUB-3-AI-POWERED-TO		
+COMP-9-superclaude-comman	9. SuperClaude Command Pattern Analysis	SUB-3-AI-POWERED-TO		
+COMP-adhd-systems-compone	ADHD Systems Component Analysis	SUB-3-AI-POWERED-TO		
+COMP-design-decisions-fro	Design Decisions from Expert Analysis	SUB-3-AI-POWERED-TO		
+COMP-failed-server-analys	Failed Server Analysis	SUB-3-AI-POWERED-TO		
+COMP-framework-ecosystem-	Framework ecosystem analysis reveals clear technology leaders	SUB-3-AI-POWERED-TO		
+COMP-phase-2-component-an	Phase 2: Component Analysis (Core Implementation)	SUB-3-AI-POWERED-TO		
+COMP-tmux-integration-and	tmux integration and CLI feasibility analysis	SUB-3-AI-POWERED-TO		
+COMP-4-upgraded-to-better	4. **Upgraded to Better Embedding Models**	SUB-4-KEY-ALGORITHM		
+COMP-4-embedding-strategy	4. Embedding Strategy ✅ ROBUST	SUB-4-KEY-ALGORITHM		
+COMP-4-2-workflow-specifi	**4.2 Workflow-Specific Agents**	SUB-5-2-CROSS-DOMAI		
+COMP-1-adhd-first-api-des	1. ADHD-First API Design	SUB-5-DESIGN-PRINCI		
+COMP-5-consensus-multi-mo	5. **consensus** (Multi-Model Opinions)	SUB-5-DESIGN-PRINCI		
+COMP-5-cited-technologies	5. Cited Technologies or Concepts	SUB-5-DESIGN-PRINCI		
+COMP-5-happy-coder-mobile	5. Happy Coder (Mobile-First):	SUB-5-DESIGN-PRINCI		
+COMP-5-terminal-multiplex	5. Terminal Multiplexing Interface	SUB-5-DESIGN-PRINCI		
+COMP-5-terminal-native-de	5. Terminal-Native Design	SUB-5-DESIGN-PRINCI		
+COMP-5-user-experience-de	5. User Experience Design	SUB-5-DESIGN-PRINCI		
+COMP-adhd-first-design-ph	ADHD-First Design Philosophy	SUB-5-DESIGN-PRINCI		
+COMP-adhd-optimized-inter	ADHD-Optimized Interface Design Specification	SUB-5-DESIGN-PRINCI		
+COMP-api-interface-design	API Interface Design	SUB-5-DESIGN-PRINCI		
+COMP-design-principles	Design Principles	SUB-5-DESIGN-PRINCI		
+COMP-infrastructure	Infrastructure	SUB-5-DESIGN-PRINCI		
+COMP-security-constraints	Security Constraints	SUB-5-DESIGN-PRINCI		
+COMP-visual-design-elemen	Visual Design Elements	SUB-5-DESIGN-PRINCI		
+COMP-visual-design-princi	Visual Design Principles	SUB-5-DESIGN-PRINCI		
+COMP-detailed-design	🎪 Detailed Design	SUB-5-DESIGN-PRINCI		
+COMP-6-2-leantime-json-rp	6.2 Leantime JSON‑RPC examples	SUB-6-2-EXECUTION-R		
+COMP-6-2-notes	6.2 Notes	SUB-6-2-EXECUTION-R		
+COMP-implementation-goals	**🎯 Implementation Goals Achieved**	SUB-6-IMPLEMENTATIO		
+COMP-6-implementation-pla	6. Implementation Plan Summary	SUB-6-IMPLEMENTATIO		
+COMP-6-metamcp-orchestrat	6. MetaMCP Orchestrator	SUB-6-IMPLEMENTATIO		
+COMP-6-phased-rollout	6. Phased Rollout	SUB-6-IMPLEMENTATIO		
+COMP-agent-implementation	Agent Implementation	SUB-6-IMPLEMENTATIO		
+COMP-code-implementation	Code Implementation	SUB-6-IMPLEMENTATIO		
+COMP-context7-client-impl	Context7 Client Implementation	SUB-6-IMPLEMENTATIO		
+COMP-executive-summary	Executive Summary	SUB-6-IMPLEMENTATIO		
+COMP-implementation	Implementation	SUB-6-IMPLEMENTATIO		
+COMP-implementation-risks	Implementation Risks	SUB-6-IMPLEMENTATIO		
+COMP-implementation-strat	Implementation Strategy:	SUB-6-IMPLEMENTATIO		
+COMP-open-source-implemen	Open Source Implementation Costs	SUB-6-IMPLEMENTATIO		
+COMP-research-driven-impl	Research-Driven Implementation Pattern	SUB-6-IMPLEMENTATIO		
+COMP-rollout-plan	Rollout Plan	SUB-6-IMPLEMENTATIO		
+COMP-week-1-implementatio	Week 1 Implementation	SUB-6-IMPLEMENTATIO		
+COMP-week-7-slash-command	Week 7: Slash Command Implementation	SUB-6-IMPLEMENTATIO		
+COMP-ready-to-start-imple	✅ Ready to Start Implementation	SUB-6-IMPLEMENTATIO	and compliance requirements defined	
+COMP-implementation-phase	🏗️ Implementation Phases	SUB-6-IMPLEMENTATIO		
+COMP-7-sc-design	7. **/sc:design**	SUB-7-CRITICAL-RISK		
+COMP-7-risks	7. Risks	SUB-7-CRITICAL-RISK	linting before it can be committed.	
+COMP-critical-alerts	Critical Alerts	SUB-7-CRITICAL-RISK		
+COMP-critical-alerts-page	Critical Alerts (Page Immediately)	SUB-7-CRITICAL-RISK		
+COMP-critical-corrections	Critical Corrections	SUB-7-CRITICAL-RISK		
+COMP-market-risks	Market Risks	SUB-7-CRITICAL-RISK		
+COMP-mitigation	Mitigation	SUB-7-CRITICAL-RISK		
+COMP-operational-risks	Operational Risks	SUB-7-CRITICAL-RISK		
+COMP-time-blindness-mitig	Time Blindness Mitigation	SUB-7-CRITICAL-RISK		
+COMP-token-optimization-s	Token Optimization Strategies	SUB-7-CRITICAL-RISK		
+COMP-user-adoption-risks	User Adoption Risks	SUB-7-CRITICAL-RISK		
+COMP-critical-fix-applied	🔧 Critical Fix Applied	SUB-7-CRITICAL-RISK		
+COMP-8-1-testing-strategy	8.1 Testing Strategy	SUB-8-1-DOMAIN-MODE		
+COMP-agent-model	Agent Model	SUB-8-1-DOMAIN-MODE		
+COMP-embedding-model-sele	Embedding Model Selection	SUB-8-1-DOMAIN-MODE		
+COMP-model-api-keys	Model API Keys	SUB-8-1-DOMAIN-MODE		
+COMP-model-capabilities	Model Capabilities	SUB-8-1-DOMAIN-MODE		
+COMP-task-model	Task Model	SUB-8-1-DOMAIN-MODE		
+COMP-threat-model-expert-	Threat Model (Expert-Validated)	SUB-8-1-DOMAIN-MODE		
+COMP-9-1-potential-additi	9.1 Potential Additions	SUB-9-1-POTENTIAL-A		
+COMP-adhd-optimization-ap	ADHD Optimization API	SUB-ADVANCED-OPTIMI		
+COMP-batch-processing-opt	Batch Processing Optimization	SUB-ADVANCED-OPTIMI		
+COMP-embedding-batch-opti	Embedding Batch Optimization	SUB-ADVANCED-OPTIMI		
+COMP-enable-adhd-optimiza	Enable ADHD optimization middleware	SUB-ADVANCED-OPTIMI		
+COMP-test-prd-to-tasks-wo	Test PRD-to-tasks workflow	SUB-ADVANCED-WORKFL		
+COMP-workflow-dsl-schema	Workflow DSL Schema	SUB-ADVANCED-WORKFL		
+COMP-workflow-integration	Workflow Integration:	SUB-ADVANCED-WORKFL		
+COMP-communication-protoc	Communication Protocol	SUB-AGENT-COORDINAT	authentication	
+COMP-test-each-server-s-h	Test each server's health endpoint	SUB-AGENT-NODES-EAC		
+COMP-find-all-decisions-a	Find all decisions about authentication	SUB-ALL-FLAGS-WITH-	authentication	
+COMP-find-all-decisions-r	Find all decisions related to database technology	SUB-ALL-FLAGS-WITH-		
+COMP-flags-system	Flags System	SUB-ALL-FLAGS-WITH-		
+COMP-example-1-graph-trav	**Example 1: Graph Traversal - Decision Impact Analysis**	SUB-ALTERNATIVE-1-C		
+COMP-3-1-complex-problem-	3.1 Complex Problem Solving with Agent Coordination	SUB-ALTERNATIVE-1-C		
+COMP-all-flags-with-exact	All Flags with Exact Effects	SUB-ALTERNATIVE-1-C		
+COMP-compatibility-with-p	Compatibility with planned Dopemux components	SUB-ALTERNATIVE-1-C		
+COMP-documentation-driven	Documentation-driven development with AI	SUB-ALTERNATIVE-1-C		
+COMP-edit-the-generated-e	Edit the generated .env file with your API keys	SUB-ALTERNATIVE-1-C		
+COMP-file-1-research-inte	FILE 1: research/integrations/awesome-claude-code-research-chatgpt5.md	SUB-ALTERNATIVE-1-C	feature that learns what is normal in the current project context ￼ ￼. It takes into account whether it’s a Python, Node, or Docker project to adjust thresholds (e.g. npm install might be allowed without asking in a Node.js project) ￼. Over time, as you confirm certain commands are safe, it will stop nagging for those. All decisions are logged in a security_audit.json for transparency ￼. The benefit here is huge: you can trust the AI agent to only execute safe operations, and it gets smarter about what’s acceptable, thereby minimizing interruptions once it has learned. This balances freedom and safety, letting the AI handle routine environment tasks while giving the developer veto power over anything unusual.; and optimization hook outputs and examples ￼ ￼, demonstrating how the system learns and adapts to keep operations safe and efficient.; auditor” agent to review changes for vulnerabilities, or a “tester” agent to generate additional tests, etc. It’s an add-on concept that builds on the multi-agent theme.	
+COMP-integration-with-ext	Integration with External Tools	SUB-ALTERNATIVE-1-C		
+COMP-log-the-decision-wit	Log the decision with full rationale	SUB-ALTERNATIVE-1-C		
+COMP-modular-monolithic-d	Modular monolithic design with plugin system proves optimal	SUB-ALTERNATIVE-1-C		
+COMP-multi-server-aggrega	Multi-server aggregation with namespace management	SUB-ALTERNATIVE-1-C		
+COMP-option-1-leantime-on	Option 1: Leantime-Only Approach	SUB-ALTERNATIVE-1-C		
+COMP-pattern-1-task-activ	Pattern 1: Task Activation Flow	SUB-ALTERNATIVE-1-C		
+COMP-phase-1-development-	Phase 1: Development Platform Core Components	SUB-ALTERNATIVE-1-C		
+COMP-phase-1-direct-http-	Phase 1: Direct HTTP Server (Implemented ✅)	SUB-ALTERNATIVE-1-C		
+COMP-phase-1-foundation-4	Phase 1: Foundation (4-6 weeks)	SUB-ALTERNATIVE-1-C	authorization; authentication	
+COMP-phase-1-foundation-m	Phase 1: Foundation (Months 1-4)	SUB-ALTERNATIVE-1-C		
+COMP-phase-1-foundation-w	Phase 1: Foundation (Weeks 1-4)	SUB-ALTERNATIVE-1-C	authentication; OAuth	
+COMP-phase-1-mvp-developm	Phase 1: MVP Development (Months 1-6)	SUB-ALTERNATIVE-1-C		
+COMP-phase-1-metamcp-brid	Phase 1: MetaMCP Bridge Integration	SUB-ALTERNATIVE-1-C		
+COMP-principle-1-leverage	Principle 1: Leverage Don't Duplicate	SUB-ALTERNATIVE-1-C		
+COMP-priority-1-enable-ap	Priority 1: Enable API (5 minutes)	SUB-ALTERNATIVE-1-C		
+COMP-production-ready-fra	Production-ready frameworks with distinct specializations	SUB-ALTERNATIVE-1-C		
+COMP-step-1-create-tasks-	Step 1: Create tasks with context	SUB-ALTERNATIVE-1-C		
+COMP-test-1-dashboard-end	Test 1: Dashboard endpoint load	SUB-ALTERNATIVE-1-C		
+COMP-test-1-parse-prd	Test 1: Parse PRD	SUB-ALTERNATIVE-1-C	authentication; OAuth	
+COMP-test-api-with-real-t	Test API with real token	SUB-ALTERNATIVE-1-C	Authorization	
+COMP-the-foundation-start	The foundation starts with Ratatui	SUB-ALTERNATIVE-1-C		
+COMP-week-1-development-e	Week 1: Development Environment Setup	SUB-ALTERNATIVE-1-C		
+COMP-week-1-foundation-se	Week 1: Foundation Setup	SUB-ALTERNATIVE-1-C		
+COMP-alternative-approach	🔄 Alternative Approach: Session-Based API	SUB-ALTERNATIVE-1-C	authentication	
+COMP-context7-library-doc	**Context7 (Library Documentation Engine)**	SUB-ARC42-DOCUMENTA		
+COMP-api-documentation	API Documentation	SUB-ARC42-DOCUMENTA		
+COMP-any-library-usage-mu	Any library usage MUST check documentation	SUB-ARC42-DOCUMENTA		
+COMP-check-api-status	Check API status	SUB-ARC42-DOCUMENTA		
+COMP-context7-status-indi	Context7 Status Indicator	SUB-ARC42-DOCUMENTA		
+COMP-documentation-hierar	Documentation Hierarchy	SUB-ARC42-DOCUMENTA		
+COMP-documentation-to-cre	Documentation to Create/Update	SUB-ARC42-DOCUMENTA		
+COMP-full-status-output	Full Status Output	SUB-ARC42-DOCUMENTA	authentication; JWT	
+COMP-update-task-status	Update Task Status	SUB-ARC42-DOCUMENTA		
+COMP-documentation	📚 Documentation	SUB-ARC42-DOCUMENTA		
+COMP-related-documentatio	📚 Related Documentation	SUB-ARC42-DOCUMENTA		
+COMP-c	C	SUB-ARCHITECTURE-CO		
+COMP-t	T	SUB-ARCHITECTURE-CO		
+COMP-4-client-integration	4. Client Integration Matrix	SUB-AUTHORITY-MATRI		
+COMP-raci-matrix	RACI Matrix	SUB-AUTHORITY-MATRI		
+COMP-core-components	Core Components	SUB-COMPONENTS-REFE		
+COMP-core-components-iden	Core Components Identified	SUB-COMPONENTS-REFE		
+COMP-error-code-reference	Error Code Reference	SUB-COMPONENTS-REFE		
+COMP-reference-documentat	Reference Documentation	SUB-COMPONENTS-REFE		
+COMP-components-working	✅ Components Working	SUB-COMPONENTS-REFE	jwt	
+COMP-integration-componen	✅ Integration Components	SUB-COMPONENTS-REFE		
+COMP-conclusion	Conclusion	SUB-CONCLUSION	, compliance, and scalability for organizational deployment; and performance.	
+COMP-7-2-anthropic-subscr	7.2 Anthropic Subscription (Claude Code / Native)	SUB-CONFIGURATION-A		
+COMP-code-change-events	Code Change Events	SUB-CONFIGURATION-A		
+COMP-mark-task-as-complet	Mark task as completed	SUB-CONFIGURATION-A		
+COMP-metamcp-server-as-pr	MetaMCP Server as Primary Interface	SUB-CONFIGURATION-A		
+COMP-update-progress-as-y	Update progress as you work (25%, 50%, 75%, 100%)	SUB-CONFIGURATION-A		
+COMP-vs-code-extension-in	VS Code Extension Interface	SUB-CONFIGURATION-A		
+COMP-decision-4-use-metam	✅ **Decision 4: Use MetaMCP as Single Aggregation Point**	SUB-CONFIGURATION-A	**: Role-based access control	
+COMP-4-technology-stack-d	4. Technology Stack Decisions	SUB-CORE-ARCHITECTU		
+COMP-check-recent-decisio	Check recent decisions	SUB-CORE-ARCHITECTU		
+COMP-find-tasks-connected	Find tasks connected to recent decisions	SUB-CORE-ARCHITECTU		
+COMP-get-recent-decisions	Get recent decisions (ADHD: "Why did we choose this?")	SUB-CORE-ARCHITECTU		
+COMP-log-architectural-de	Log Architectural Decisions	SUB-CORE-ARCHITECTU		
+COMP-command-categories	Command Categories:	SUB-CORE-COMMAND-ST		
+COMP-command-features	Command Features:	SUB-CORE-COMMAND-ST		
+COMP-command-interface	Command Interface	SUB-CORE-COMMAND-ST		
+COMP-command-line-interfa	Command Line Interface	SUB-CORE-COMMAND-ST		
+COMP-core-files-delivered	**Core Files Delivered**	SUB-CORE-DOCUMENTAT		
+COMP-test-files-created-1	Test Files Created (14 files)	SUB-CORE-DOCUMENTAT		
+COMP-cli-platform-design-	**CLI Platform Design Principles**	SUB-CORE-PLATFORM		
+COMP-5-core-algorithms	5. Core Algorithms	SUB-CORE-PLATFORM		
+COMP-6-1-core-technology-	6.1 Core Technology Decisions	SUB-CORE-PLATFORM		
+COMP-core-api-endpoints	Core API Endpoints	SUB-CORE-PLATFORM		
+COMP-core-architectural-d	Core Architectural Decisions	SUB-CORE-PLATFORM		
+COMP-core-decisions-final	Core Decisions (FINAL)	SUB-CORE-PLATFORM		
+COMP-core-design-principl	Core Design Principles	SUB-CORE-PLATFORM		
+COMP-core-extension-frame	Core Extension Framework	SUB-CORE-PLATFORM		
+COMP-core-infrastructure-	Core Infrastructure Integration:	SUB-CORE-PLATFORM		
+COMP-core-navigation-api	Core Navigation API	SUB-CORE-PLATFORM		
+COMP-core-persona	Core Persona:	SUB-CORE-PLATFORM	-first with incremental adoption to avoid cognitive overload	
+COMP-five-core-agentic-ai	Five Core Agentic AI Patterns:	SUB-CORE-PLATFORM		
+COMP-platform-2-life-auto	Platform 2 (Life Automation) Readiness	SUB-CORE-PLATFORM		
+COMP-platform-integration	Platform Integration	SUB-CORE-PLATFORM		
+COMP-core-infrastructure	✅ Core Infrastructure	SUB-CORE-PLATFORM	jwt	
+COMP-6-1-configuration-fi	6.1 Configuration files	SUB-CORS-CONFIGURAT		
+COMP-7-1-security-configu	7.1 Security Configuration	SUB-CORS-CONFIGURAT		
+COMP-configuration-notes	Configuration Notes	SUB-CORS-CONFIGURAT		
+COMP-create-monitoring-co	Create monitoring configuration	SUB-CORS-CONFIGURAT		
+COMP-kubernetes-cluster-c	Kubernetes Cluster Configuration	SUB-CORS-CONFIGURAT		
+COMP-letta-configuration	Letta Configuration	SUB-CORS-CONFIGURAT		
+COMP-provider-configurati	Provider Configuration	SUB-CORS-CONFIGURAT		
+COMP-environment-variable	Environment Variables	SUB-CRITICAL-ENVIRO		
+COMP-set-required-environ	Set required environment variables	SUB-CRITICAL-ENVIRO		
+COMP-1-active-metamcp-ser	**1. Active MetaMCP Server (Currently Running in Claude Code)**	SUB-DATA-ORGANIZATI		
+COMP-5-2-data-flows	**5.2 Data Flows**	SUB-DATA-ORGANIZATI		
+COMP-1-data-model-graph-t	1) Data Model (graph truth + vector recall)	SUB-DATA-ORGANIZATI		
+COMP-1-api-not-enabled-in	1. API Not Enabled in Admin Settings (90% Likely)	SUB-DATA-ORGANIZATI		
+COMP-3-interactions-data-	3. Interactions & Data Flow	SUB-DATA-ORGANIZATI		
+COMP-3-key-findings-data	3. Key Findings & Data	SUB-DATA-ORGANIZATI		
+COMP-6-data-integration-p	6. Data & Integration Points	SUB-DATA-ORGANIZATI		
+COMP-after-enabling-api-i	After enabling API in admin settings, test:	SUB-DATA-ORGANIZATI	Authorization	
+COMP-check-what-was-in-pr	Check what was in progress	SUB-DATA-ORGANIZATI		
+COMP-conport-capabilities	ConPort Capabilities Analysis	SUB-DATA-ORGANIZATI		
+COMP-conport-enhanced-api	ConPort Enhanced API Reference	SUB-DATA-ORGANIZATI	Authentication	
+COMP-conport-enhanced-ope	ConPort Enhanced Operations Runbook	SUB-DATA-ORGANIZATI		
+COMP-conport-graph-store-	ConPort Graph Store API (Port 3004)	SUB-DATA-ORGANIZATI		
+COMP-conport-integration-	ConPort Integration (MCP)	SUB-DATA-ORGANIZATI		
+COMP-data-security-500-59	Data & Security (500-599)	SUB-DATA-ORGANIZATI		
+COMP-data-flow-direction	Data Flow Direction	SUB-DATA-ORGANIZATI		
+COMP-data-models	Data Models	SUB-DATA-ORGANIZATI		
+COMP-data-protection-impl	Data Protection ✅ IMPLEMENTED	SUB-DATA-ORGANIZATI	authentication	
+COMP-data-transition	Data Transition	SUB-DATA-ORGANIZATI		
+COMP-ensure-we-have-searc	Ensure we have searchable data	SUB-DATA-ORGANIZATI	authentication; requirement for user data protection and access control",; ", "users"]	
+COMP-example-conport-deci	Example ConPort Decision Entry	SUB-DATA-ORGANIZATI		
+COMP-in-leantime-settings	In Leantime Settings Menu:	SUB-DATA-ORGANIZATI	Settings"	
+COMP-issue-failed-to-conn	Issue: "Failed to connect" in Claude Code MCP list	SUB-DATA-ORGANIZATI		
+COMP-phase-1-core-data-co	Phase 1: Core Data Contracts (Week 1)	SUB-DATA-ORGANIZATI		
+COMP-task-planning-and-or	Task Planning and Organization	SUB-DATA-ORGANIZATI		
+COMP-verify-all-data-surv	Verify all data survived	SUB-DATA-ORGANIZATI		
+COMP-with-conport	With ConPort	SUB-DATA-ORGANIZATI		
+COMP-shared-data-efficien	🔄 **Shared Data (Efficient Resource Usage)**	SUB-DATA-ORGANIZATI		
+COMP-decision	Decision	SUB-DECISION		
+COMP-decision-logging-25m	Decision logging: ~25ms	SUB-DECISION		
+COMP-log-decision	Log decision	SUB-DECISION		
+COMP-verify-decision-surv	Verify decision survived restart	SUB-DECISION		
+COMP-dynamic-interface-ad	Dynamic Interface Adaptation	SUB-DYNAMIC-CONTEXT		
+COMP-multi-tool-mcp-archi	**Multi-Tool MCP Architecture**	SUB-ENHANCED-ROLE-S		
+COMP-2-2-mcp-server-depen	2.2 MCP Server Dependency Risk	SUB-ENHANCED-ROLE-S		
+COMP-3-2-mcp-server-roste	3.2 MCP server roster	SUB-ENHANCED-ROLE-S		
+COMP-4-zero-effort-captur	4. Zero-Effort Capture System	SUB-ENHANCED-ROLE-S		
+COMP-7-performance-optimi	7. Performance Optimization System	SUB-ENHANCED-ROLE-S		
+COMP-adhd-profile-system	ADHD Profile System	SUB-ENHANCED-ROLE-S		
+COMP-design-system-integr	Design System Integration	SUB-ENHANCED-ROLE-S		
+COMP-external-system-conn	External System Connectors	SUB-ENHANCED-ROLE-S		
+COMP-high-level-system-to	High-Level System Topology	SUB-ENHANCED-ROLE-S		
+COMP-mcp-integration-capa	MCP Integration Capabilities	SUB-ENHANCED-ROLE-S	features**: IP whitelisting, rate limiting, and granular permission management; authentication	
+COMP-mcp-integration-stat	MCP Integration Status	SUB-ENHANCED-ROLE-S		
+COMP-mcp-integration-oper	MCP Integration ✅ OPERATIONAL	SUB-ENHANCED-ROLE-S		
+COMP-mcp-server-classific	MCP Server Classification System:	SUB-ENHANCED-ROLE-S		
+COMP-mcp-server-implement	MCP Server Implementation	SUB-ENHANCED-ROLE-S		
+COMP-mcp-server-ports-seq	MCP Server Ports (Sequential 3002-3016)	SUB-ENHANCED-ROLE-S		
+COMP-mcp-server-setup	MCP Server Setup	SUB-ENHANCED-ROLE-S		
+COMP-mcp-services-layer	MCP Services Layer	SUB-ENHANCED-ROLE-S		
+COMP-metamcp-broker-syste	MetaMCP Broker System	SUB-ENHANCED-ROLE-S		
+COMP-official-mcp-server-	Official MCP Server vs Our Implementation	SUB-ENHANCED-ROLE-S	features	
+COMP-supported-mcp-server	Supported MCP Server Types	SUB-ENHANCED-ROLE-S		
+COMP-system-boundary	System Boundary	SUB-ENHANCED-ROLE-S		
+COMP-system-philosophy	System Philosophy	SUB-ENHANCED-ROLE-S		
+COMP-system-unavailabilit	System Unavailability Handling	SUB-ENHANCED-ROLE-S		
+COMP-visual-hierarchy-sys	Visual Hierarchy System	SUB-ENHANCED-ROLE-S	Authentication; JWT	
+COMP-usage-examples	Usage Examples	SUB-EXAMPLES	authentication	
+COMP-gentle-user-experien	🎨 Gentle User Experience	SUB-EXTENSIBILITY-F		
+COMP-developer-experience	🔧 Developer Experience	SUB-EXTENSIBILITY-F		
+COMP-api-keys	API Keys	SUB-FILE-1-RESEARCH		
+COMP-file-navigation-meet	File navigation meets modern UX expectations	SUB-FILE-1-RESEARCH		
+COMP-top-level-cli-interf	**Top-Level CLI Interface**	SUB-FILE-3-RESEARCH		
+COMP-comprehensive-health	**🏥 Comprehensive Health Monitoring**	SUB-FILE-3-RESEARCH		
+COMP-1-1-top-level-cli-in	1.1 Top-Level CLI Interface	SUB-FILE-3-RESEARCH		
+COMP-10-cli-commands	10. CLI Commands	SUB-FILE-3-RESEARCH		
+COMP-codex-cli-command-li	Codex CLI (Command-Line Automation)	SUB-FILE-3-RESEARCH		
+COMP-comprehensive-automa	Comprehensive Automation Scripts (`scripts/`):	SUB-FILE-3-RESEARCH		
+COMP-create-task-on-insta	Create task on Instance A	SUB-FILE-3-RESEARCH		
+COMP-features	Features	SUB-FILE-3-RESEARCH		
+COMP-verify-update-visibl	Verify update visible on Instance A	SUB-FILE-3-RESEARCH		
+COMP-comprehensive-covera	📊 Comprehensive Coverage	SUB-FILE-3-RESEARCH		
+COMP-adhd-suitability-exc	**ADHD Suitability:** ✅ Excellent for preventing API hallucination, saves mental energy	SUB-FOR-TWO-PLANE-A		
+COMP-plugin-architecture-	**Plugin Architecture (V1)**	SUB-FOR-TWO-PLANE-A		
+COMP-1-core-architecture-	1. Core Architecture Decision	SUB-FOR-TWO-PLANE-A		
+COMP-1-2-7-category-archi	1.2 7-Category Architecture	SUB-FOR-TWO-PLANE-A	and compliance frameworks	
+COMP-2-file-based-ipc-for	2. **File-Based IPC for MVP**	SUB-FOR-TWO-PLANE-A		
+COMP-2-core-architecture-	2. Core Architecture & System Components	SUB-FOR-TWO-PLANE-A	authentication	
+COMP-2-2-integration-arch	2.2 Integration Architecture	SUB-FOR-TWO-PLANE-A		
+COMP-6-2-api-architecture	6.2 API Architecture	SUB-FOR-TWO-PLANE-A	"HMAC signature verification and IP allowlisting"	
+COMP-adhd-optimized-integ	ADHD-Optimized Integration Architecture	SUB-FOR-TWO-PLANE-A		
+COMP-api-integration-arch	API Integration Architecture	SUB-FOR-TWO-PLANE-A		
+COMP-add-endpoint-configu	Add endpoint configuration for each role	SUB-FOR-TWO-PLANE-A		
+COMP-architecture-approac	Architecture Approach	SUB-FOR-TWO-PLANE-A		
+COMP-architecture-impleme	Architecture Implementation:	SUB-FOR-TWO-PLANE-A		
+COMP-architecture-layers	Architecture Layers	SUB-FOR-TWO-PLANE-A		
+COMP-architecture-option-	Architecture Option Analysis	SUB-FOR-TWO-PLANE-A	-conscious deployments. Its model-agnostic design supports any LLM provider through standardized APIs, with particularly strong MCP (Model Context Protocol) integration for extending capabilities.; authentication; OAuth	
+COMP-architecture-overvie	Architecture Overview	SUB-FOR-TWO-PLANE-A		
+COMP-architecture-and-des	Architecture and Design Patterns	SUB-FOR-TWO-PLANE-A		
+COMP-architecture-for-cus	Architecture for Custom System	SUB-FOR-TWO-PLANE-A		
+COMP-architecture-for-dop	Architecture for dopemux Integration	SUB-FOR-TWO-PLANE-A		
+COMP-architecture-pattern	Architecture patterns enable future extensibility	SUB-FOR-TWO-PLANE-A		
+COMP-ccflare-s-innovative	CCFlare's innovative proxy architecture	SUB-FOR-TWO-PLANE-A		
+COMP-caching-architecture	Caching Architecture	SUB-FOR-TWO-PLANE-A		
+COMP-caching-strategies-f	Caching strategies for frequently accessed definitions	SUB-FOR-TWO-PLANE-A		
+COMP-check-recent-complet	Check recent completions for motivation	SUB-FOR-TWO-PLANE-A		
+COMP-claude-code-s-flexib	Claude Code's flexible architecture enables powerful extensions	SUB-FOR-TWO-PLANE-A	vulnerabilities from running in the host environment by default.	
+COMP-configure-for-dopemu	Configure for Dopemux integration	SUB-FOR-TWO-PLANE-A		
+COMP-containerized-archit	Containerized Architecture	SUB-FOR-TWO-PLANE-A	Authentication	
+COMP-content-for-referenc	Content for Reference (03-reference/)	SUB-FOR-TWO-PLANE-A		
+COMP-context7-provides-up	Context7 provides up-to-date docs for 500+ libraries	SUB-FOR-TWO-PLANE-A		
+COMP-core-system-architec	Core System Architecture	SUB-FOR-TWO-PLANE-A		
+COMP-create-docker-compos	Create docker-compose for development	SUB-FOR-TWO-PLANE-A		
+COMP-custom-template-for-	Custom template for web API projects	SUB-FOR-TWO-PLANE-A	authentication	
+COMP-customize-for-produc	Customize for production	SUB-FOR-TWO-PLANE-A	_opt:	
+COMP-data-flow-architectu	Data Flow Architecture	SUB-FOR-TWO-PLANE-A		
+COMP-database-and-storage	Database and Storage Architecture	SUB-FOR-TWO-PLANE-A		
+COMP-design-for-discovera	Design for discoverability and progressive complexity	SUB-FOR-TWO-PLANE-A		
+COMP-documentation-requir	Documentation Required for Phase 2:	SUB-FOR-TWO-PLANE-A		
+COMP-dopemux-terminal-ide	Dopemux Terminal IDE Architecture	SUB-FOR-TWO-PLANE-A		
+COMP-enterprise-api-adapt	Enterprise API Adaptation for AI Agents	SUB-FOR-TWO-PLANE-A		
+COMP-file-3-research-find	FILE 3: research/findings/Building a Comprehensive Agentic CLI Platform for Dev and Life Automation.pdf	SUB-FOR-TWO-PLANE-A	concerns (especially since you; issues, and then feeds back suggestions.; in mind: store API keys safely (maybe use a vault or at least environment	
+COMP-for-development-team	For Development Teams	SUB-FOR-TWO-PLANE-A	Integration**: Built-in vulnerability scanning and compliance checking	
+COMP-high-level-system-ar	High-Level System Architecture	SUB-FOR-TWO-PLANE-A	Authentication	
+COMP-identified-for-futur	Identified for Future Development	SUB-FOR-TWO-PLANE-A	Architecture and Compliance	
+COMP-implementation-roadm	Implementation roadmap for Dopemux integration	SUB-FOR-TWO-PLANE-A		
+COMP-layered-architecture	Layered Architecture	SUB-FOR-TWO-PLANE-A		
+COMP-leantime-mcp-server-	Leantime MCP Server architecture and capabilities	SUB-FOR-TWO-PLANE-A	Authentication	
+COMP-log-decision-about-c	Log decision about code architecture	SUB-FOR-TWO-PLANE-A		
+COMP-log-decision-to-use-	Log decision to use Leantime for task status	SUB-FOR-TWO-PLANE-A		
+COMP-login-with-username-	Login with username/password, then use session cookies for API calls	SUB-FOR-TWO-PLANE-A		
+COMP-memory-and-state-man	Memory and state management uses comprehensive SQLite architecture	SUB-FOR-TWO-PLANE-A		
+COMP-multi-tier-memory-ar	Multi-Tier Memory Architecture with Letta	SUB-FOR-TWO-PLANE-A	authentication	
+COMP-multi-model-api-keys	Multi-model API keys for zen-mcp	SUB-FOR-TWO-PLANE-A		
+COMP-multi-stage-dockerfi	Multi-stage Dockerfile for Dopemux API	SUB-FOR-TWO-PLANE-A		
+COMP-oauth-integration-fo	OAuth Integration for LLM Providers	SUB-FOR-TWO-PLANE-A	oauth; authorization; OAuth	
+COMP-openai-codex-cli-cap	OpenAI Codex CLI capabilities and technical architecture	SUB-FOR-TWO-PLANE-A	authentication	
+COMP-proven-architecture-	Proven Architecture Principles:	SUB-FOR-TWO-PLANE-A		
+COMP-restful-and-graphql-	RESTful and GraphQL API for ADHD-Accommodated Development Platform	SUB-FOR-TWO-PLANE-A		
+COMP-resolution-for-leant	Resolution for Leantime:	SUB-FOR-TWO-PLANE-A		
+COMP-rich-textual-tui-int	Rich/Textual TUI integration for agent visualization	SUB-FOR-TWO-PLANE-A		
+COMP-service-architecture	Service Architecture	SUB-FOR-TWO-PLANE-A		
+COMP-system-architecture	System Architecture	SUB-FOR-TWO-PLANE-A		
+COMP-system-architecture-	System Architecture Diagram	SUB-FOR-TWO-PLANE-A	Authentication	
+COMP-use-no-mcp-flag-only	Use --no-mcp flag only if you need to skip MCP servers for debugging	SUB-FOR-TWO-PLANE-A		
+COMP-week-3-agent-archite	Week 3: Agent Architecture Implementation	SUB-FOR-TWO-PLANE-A	_analyst': 'Vulnerability assessment and hardening',; analysis',	
+COMP-two-plane-architectu	⚡ Two-Plane Architecture	SUB-FOR-TWO-PLANE-A		
+COMP-4-1-role-based-devel	**4.1 Role-Based Development Agents**	SUB-FRAMEWORK-ECOSY	Engineers**: Vulnerability assessment, threat modeling; threat model	
+COMP-adhd-optimized-visua	**ADHD-Optimized Visual Development Environment**	SUB-FRAMEWORK-ECOSY		
+COMP-core-development-sta	**Core Development Stack**	SUB-FRAMEWORK-ECOSY		
+COMP-7-1-phase-by-phase-d	7.1 Phase-by-Phase Development	SUB-FRAMEWORK-ECOSY	monitoring"	
+COMP-adhd-optimized-ui-fr	ADHD-Optimized UI Framework	SUB-FRAMEWORK-ECOSY		
+COMP-api-integration-fram	API Integration Framework	SUB-FRAMEWORK-ECOSY		
+COMP-claude-code-primary-	Claude Code (Primary Development Interface)	SUB-FRAMEWORK-ECOSY		
+COMP-comprehensive-techni	Comprehensive technical stack leverages Go ecosystem	SUB-FRAMEWORK-ECOSY	Authentication	
+COMP-current-development-	Current Development Landscape Challenges	SUB-FRAMEWORK-ECOSY		
+COMP-development-feature-	Development Feature Areas	SUB-FRAMEWORK-ECOSY		
+COMP-development-workflow	Development Workflow (300-399)	SUB-FRAMEWORK-ECOSY		
+COMP-free-tier-enables-ex	Free tier enables exploration	SUB-FRAMEWORK-ECOSY		
+COMP-letta-framework-inte	Letta Framework Integration	SUB-FRAMEWORK-ECOSY		
+COMP-memory-first-develop	Memory-First Development Pattern	SUB-FRAMEWORK-ECOSY		
+COMP-phase-6-ecosystem-ex	Phase 6: Ecosystem Expansion (Year 2)	SUB-FRAMEWORK-ECOSY		
+COMP-rest-api-enables-lan	REST API enables language-agnostic access	SUB-FRAMEWORK-ECOSY		
+COMP-superclaude-framewor	Superclaude Framework	SUB-FRAMEWORK-ECOSY		
+COMP-conclusion-memory-au	🎉 **Conclusion: Memory-Augmented Development is Operational**	SUB-FRAMEWORK-ECOSY		
+COMP-revolutionary-adhd-d	🎉 **Revolutionary ADHD Development Interface**	SUB-FRAMEWORK-ECOSY		
+COMP-future-enhancement-r	Future Enhancement Roadmap	SUB-FUTURE-ENHANCEM		
+COMP-near-term-enhancemen	Near-Term Enhancements	SUB-FUTURE-ENHANCEM		
+COMP-8-hybrid-search-rera	8. Hybrid Search Reranking Optimization	SUB-HYBRID-SCORE-FU		
+COMP-option-c-hybrid-appr	Option C: Hybrid Approach (Recommended)	SUB-HYBRID-SCORE-FU		
+COMP-health-checks	Health Checks	SUB-INSTALLATION-FL		
+COMP-installation-flow	Installation Flow	SUB-INSTALLATION-FL	authentication	
+COMP-installation-steps	Installation Steps:	SUB-INSTALLATION-FL	Authorization	
+COMP-backup-strategy-read	Backup Strategy ✅ READY	SUB-INTEGRATION-STR		
+COMP-decomposition-strate	Decomposition Strategy	SUB-INTEGRATION-STR	authentication; JWT	
+COMP-port-allocation-stra	Port Allocation Strategy	SUB-INTEGRATION-STR		
+COMP-rate-limiting-strate	Rate Limiting Strategy	SUB-INTEGRATION-STR	authentication	
+COMP-versioning-strategy	Versioning Strategy	SUB-INTEGRATION-STR		
+COMP-smart-volume-strateg	🔄 Smart Volume Strategy	SUB-INTEGRATION-STR		
+COMP-key-technical-decisi	**Key Technical Decisions**	SUB-LEANTIME-S-TECH		
+COMP-4-integration-bridge	4. Integration Bridge	SUB-LEANTIME-S-TECH	Authentication	
+COMP-4-1-github-integrati	4.1 GitHub Integration	SUB-LEANTIME-S-TECH		
+COMP-api-integration	API Integration	SUB-LEANTIME-S-TECH		
+COMP-api-integration-deta	API Integration Details	SUB-LEANTIME-S-TECH		
+COMP-add-metamcp-endpoint	Add MetaMCP endpoint integration	SUB-LEANTIME-S-TECH		
+COMP-analytics-integratio	Analytics Integration	SUB-LEANTIME-S-TECH		
+COMP-broker-integration	Broker integration	SUB-LEANTIME-S-TECH		
+COMP-claude-code-integrat	Claude Code Integration	SUB-LEANTIME-S-TECH		
+COMP-context7-integration	Context7 Integration Workflow	SUB-LEANTIME-S-TECH		
+COMP-critical-licensing-c	Critical licensing constraint blocks direct integration	SUB-LEANTIME-S-TECH		
+COMP-day-3-4-ccflare-inte	Day 3-4: CCFlare Integration	SUB-LEANTIME-S-TECH		
+COMP-integration-bridge-a	Integration Bridge API (Port 3016)	SUB-LEANTIME-S-TECH		
+COMP-integration-complexi	Integration Complexity	SUB-LEANTIME-S-TECH		
+COMP-integration-errors	Integration Errors	SUB-LEANTIME-S-TECH	authentication	
+COMP-integration-health-c	Integration Health Checks	SUB-LEANTIME-S-TECH		
+COMP-integration-manageme	Integration Management (300-399)	SUB-LEANTIME-S-TECH	maintenance	
+COMP-integration-points	Integration Points	SUB-LEANTIME-S-TECH		
+COMP-integration-retry-po	Integration Retry Policies	SUB-LEANTIME-S-TECH		
+COMP-integration-solution	Integration Solutions	SUB-LEANTIME-S-TECH		
+COMP-integration-strategy	Integration Strategy:	SUB-LEANTIME-S-TECH		
+COMP-integration-testing-	Integration Testing API	SUB-LEANTIME-S-TECH		
+COMP-integration-tests	Integration Tests	SUB-LEANTIME-S-TECH		
+COMP-integration-touchpoi	Integration Touchpoints	SUB-LEANTIME-S-TECH		
+COMP-lazygit-integration	Lazygit Integration	SUB-LEANTIME-S-TECH		
+COMP-leantime-integration	Leantime Integration (JSON-RPC over HTTP)	SUB-LEANTIME-S-TECH		
+COMP-leantime-s-neurodive	Leantime's Neurodiversity Magic	SUB-LEANTIME-S-TECH		
+COMP-oauth-integration-st	OAuth Integration Strategy	SUB-LEANTIME-S-TECH	oauth; authentication; OAuth	
+COMP-opentelemetry-integr	OpenTelemetry Integration	SUB-LEANTIME-S-TECH	Authorization	
+COMP-phase-4-ux-integrati	Phase 4: UX Integration (Week 7-8)	SUB-LEANTIME-S-TECH		
+COMP-robust-api-integrati	Robust API Integration	SUB-LEANTIME-S-TECH		
+COMP-serena-lsp-integrati	Serena LSP Integration API (Port 3006)	SUB-LEANTIME-S-TECH		
+COMP-task-master-integrat	Task-Master Integration (MCP)	SUB-LEANTIME-S-TECH		
+COMP-technical-performanc	Technical Performance	SUB-LEANTIME-S-TECH		
+COMP-track-integration-pr	Track integration progress	SUB-LEANTIME-S-TECH		
+COMP-universal-design-int	Universal Design Integration	SUB-LEANTIME-S-TECH		
+COMP-week-14-leantime-int	Week 14: Leantime Integration	SUB-LEANTIME-S-TECH		
+COMP-pomodoro-integration	🍅 Pomodoro Integration	SUB-LEANTIME-S-TECH		
+COMP-technical-investigat	🔧 Technical Investigation Notes	SUB-LEANTIME-S-TECH		
+COMP-import-server-config	Import server configurations	SUB-MCP-SERVER-FLAG		
+COMP-focus-management-fea	**Focus Management Features**	SUB-MEMORY-SYSTEM-I		
+COMP-1-flow-state-preserv	1. Flow State Preservation	SUB-MEMORY-SYSTEM-I		
+COMP-1-pm-layer-project-m	1. PM Layer (Project Management Truth)	SUB-MEMORY-SYSTEM-I		
+COMP-5-1-focus-management	5.1 Focus Management Features	SUB-MEMORY-SYSTEM-I		
+COMP-attention-management	Attention Management	SUB-MEMORY-SYSTEM-I		
+COMP-attention-state-mana	Attention State Management	SUB-MEMORY-SYSTEM-I		
+COMP-consent-management	Consent Management	SUB-MEMORY-SYSTEM-I		
+COMP-current-state	Current State	SUB-MEMORY-SYSTEM-I		
+COMP-management-interface	Management Interfaces ✅	SUB-MEMORY-SYSTEM-I		
+COMP-token-budget-managem	Token Budget Management	SUB-MEMORY-SYSTEM-I		
+COMP-table-of-contents	📋 Table of Contents	SUB-MISSING-SECTION	Authentication; Features](#-security-features); authentication	
+COMP-multi-model-support	Multi-Model Support	SUB-MULTI-MODEL-ORC		
+COMP-adhd-friendly-ux-des	**ADHD-Friendly UX Design**	SUB-MULTI-TIER-AGEN		
+COMP-api-design	**API Design** ✅	SUB-MULTI-TIER-AGEN		
+COMP-2-1-complete-feature	2.1 Complete Feature Development Cycle	SUB-NEXT-PHASE-COMP	authentication	
+COMP-complete-task	Complete task	SUB-NEXT-PHASE-COMP		
+COMP-complete-the-task	Complete the task	SUB-NEXT-PHASE-COMP		
+COMP-deployment-complete	Deployment complete	SUB-NEXT-PHASE-COMP		
+COMP-get-next-actionable-	Get Next Actionable Tasks	SUB-NEXT-PHASE-COMP		
+COMP-immediate-next-steps	Immediate Next Steps	SUB-NEXT-PHASE-COMP		
+COMP-pattern-1-complete-t	Pattern 1: Complete Task Creation Flow (Two-Plane Architecture)	SUB-NEXT-PHASE-COMP		
+COMP-step-2-complete-task	Step 2: Complete task and track streak	SUB-NEXT-PHASE-COMP		
+COMP-implementation-statu	🎯 **Implementation Status**	SUB-NEXT-PHASE-COMP		
+COMP-core-functionality-c	🎯 Core Functionality Coverage	SUB-NEXT-PHASE-COMP		
+COMP-executive-function-s	🎯 Executive Function Support	SUB-NEXT-PHASE-COMP		
+COMP-expected-working-res	🎯 Expected Working Result	SUB-NEXT-PHASE-COMP		
+COMP-use-cases	🎯 Use Cases	SUB-NEXT-PHASE-COMP	, etc. (coming soon)	
+COMP-next-steps	🚀 Next Steps	SUB-NEXT-PHASE-COMP		
+COMP-4-api-key-issues	4. API Key Issues	SUB-O3-EXPERT-ANALY		
+COMP-api-key-authenticati	API Key Authentication (Service-to-Service)	SUB-O3-EXPERT-ANALY		
+COMP-api-key-length-valid	API key length validation	SUB-O3-EXPERT-ANALY		
+COMP-at-least-one-api-key	At least one API key is required	SUB-O3-EXPERT-ANALY		
+COMP-community-insights	Community Insights	SUB-O3-EXPERT-ANALY		
+COMP-critical-expert-insi	Critical Expert Insights	SUB-O3-EXPERT-ANALY		
+COMP-expert-security-insi	Expert Security Insight	SUB-O3-EXPERT-ANALY		
+COMP-key-features	Key Features:	SUB-O3-EXPERT-ANALY	**: OAuth 2.0, rate limiting, and comprehensive audit logging; OAuth	
+COMP-key-integration-poin	Key Integration Points:	SUB-O3-EXPERT-ANALY		
+COMP-key-metrics-research	Key Metrics (Research-Validated)	SUB-O3-EXPERT-ANALY		
+COMP-key-performance-indi	Key Performance Indicators	SUB-O3-EXPERT-ANALY		
+COMP-key-recommendations	Key Recommendations	SUB-O3-EXPERT-ANALY		
+COMP-key-success-factors	Key Success Factors	SUB-O3-EXPERT-ANALY		
+COMP-api-key-auth-trouble	🔧 API Key Auth Troubleshooting	SUB-O3-EXPERT-ANALY	Authorization	
+COMP-open-questions	Open Questions	SUB-OPEN-QUESTIONS		
+COMP-task-list-output	Task List Output	SUB-OUTPUT-OPTIMIZA	authentication	
+COMP-adhd-dashboard-overv	ADHD Dashboard Overview	SUB-OVERVIEW		
+COMP-api-overview	API Overview	SUB-OVERVIEW		
+COMP-overview	Overview	SUB-OVERVIEW		
+COMP-1-fixed-voyageai-int	1. **Fixed VoyageAI Integration**	SUB-PERSONAL-DATA-L		
+COMP-mvp-months-1-4	MVP (Months 1-4)	SUB-PHASE-3-INTEGRA		
+COMP-phase-1-completion-c	Phase 1 Completion Criteria	SUB-PHASE-3-INTEGRA		
+COMP-phase-1-focus-immedi	Phase 1 Focus (IMMEDIATE)	SUB-PHASE-3-INTEGRA		
+COMP-phase-2-prerequisite	Phase 2 Prerequisites:	SUB-PHASE-3-INTEGRA		
+COMP-phase-4-validation	Phase 4: Validation	SUB-PHASE-3-INTEGRA		
+COMP-working-memory-offlo	**Working Memory Offloading**	SUB-PROJECT-MEMORY-		
+COMP-1-core-project-objec	1. Core Project Objective & Key Performance Indicators (KPIs)	SUB-PROJECT-MEMORY-		
+COMP-1-store-a-project-de	1. Store a project decision with context	SUB-PROJECT-MEMORY-		
+COMP-3-functional-require	3. Functional Requirements & Features	SUB-PROJECT-MEMORY-		
+COMP-4-non-functional-req	4. Non-Functional Requirements (NFRs)	SUB-PROJECT-MEMORY-	** All API endpoints must be authenticated via JWT tokens issued by `AuthService`. No PII is to be stored in the system. The system must comply with internal data handling policies.; JWT	
+COMP-6-1-usability-requir	6.1 Usability Requirements	SUB-PROJECT-MEMORY-		
+COMP-6-2-compatibility-re	6.2 Compatibility Requirements	SUB-PROJECT-MEMORY-		
+COMP-7-leantime-agile-pro	7. Leantime - Agile Project Management	SUB-PROJECT-MEMORY-		
+COMP-7-1-security-require	7.1 Security Requirements	SUB-PROJECT-MEMORY-	oauth; encryption; jwt	
+COMP-cache-requirements-a	Cache Requirements Analysis	SUB-PROJECT-MEMORY-		
+COMP-dopemux-memory-syste	Dopemux Memory System - HTTP API Demo & Usage Guide	SUB-PROJECT-MEMORY-		
+COMP-dopemux-will-analyze	Dopemux will analyze project and suggest template:	SUB-PROJECT-MEMORY-		
+COMP-get-project-dashboar	Get Project Dashboard	SUB-PROJECT-MEMORY-		
+COMP-infrastructure-requi	Infrastructure Requirements	SUB-PROJECT-MEMORY-		
+COMP-integration-requirem	Integration Requirements	SUB-PROJECT-MEMORY-		
+COMP-leantime-project-man	Leantime Project Management Integration	SUB-PROJECT-MEMORY-		
+COMP-memory-augmentation	Memory Augmentation	SUB-PROJECT-MEMORY-	Authentication	
+COMP-memory-operations-ap	Memory Operations API	SUB-PROJECT-MEMORY-		
+COMP-memory-system-overvi	Memory System Overview	SUB-PROJECT-MEMORY-		
+COMP-performance-requirem	Performance Requirements	SUB-PROJECT-MEMORY-		
+COMP-personal-memory-requ	Personal Memory Requirements	SUB-PROJECT-MEMORY-		
+COMP-pre-launch-requireme	Pre-Launch Requirements	SUB-PROJECT-MEMORY-		
+COMP-preservation-require	Preservation Requirements	SUB-PROJECT-MEMORY-		
+COMP-project-context	Project Context	SUB-PROJECT-MEMORY-		
+COMP-project-model	Project Model	SUB-PROJECT-MEMORY-		
+COMP-project-structure	Project Structure	SUB-PROJECT-MEMORY-		
+COMP-project-structure-ex	Project Structure (Expert-Refined)	SUB-PROJECT-MEMORY-	/; /                      # Security test suite; Authentication	
+COMP-project-context-flow	Project context flows through vector databases	SUB-PROJECT-MEMORY-		
+COMP-python-web-api-proje	Python Web API Project	SUB-PROJECT-MEMORY-		
+COMP-requirements-analysi	Requirements Analysis	SUB-PROJECT-MEMORY-		
+COMP-security-requirement	Security Requirements	SUB-PROJECT-MEMORY-	JWT; Authentication; Encryption	
+COMP-setup-new-python-api	Setup new Python API project with ADHD optimizations	SUB-PROJECT-MEMORY-		
+COMP-strategic-recommenda	Strategic recommendations align with dopemux requirements	SUB-PROJECT-MEMORY-		
+COMP-user-journey-adding-	User Journey: Adding DOPEMUX to existing project	SUB-PROJECT-MEMORY-		
+COMP-user-journey-creatin	User Journey: Creating new project with DOPEMUX	SUB-PROJECT-MEMORY-	authentication; JWT	
+COMP-validated-memory-est	Validated memory estimates	SUB-PROJECT-MEMORY-		
+COMP-component-library-st	Component Library Structure	SUB-PROJECT-STRUCTU		
+COMP-directory-structure	Directory Structure	SUB-PROJECT-STRUCTU		
+COMP-documentation-struct	Documentation Structure	SUB-PROJECT-STRUCTU		
+COMP-persona-implementati	Persona Implementation Structure	SUB-PROJECT-STRUCTU	> efficiency"; > compliance > performance > convenience"; identity: "Security-first, OWASP compliance"	
+COMP-phase-structure-ensu	Phase structure ensures iterative development	SUB-PROJECT-STRUCTU	implementation, and CI/CD pipeline setup. Each phase includes specific technical deliverables, risk assessments, and mitigation strategies.	
+COMP-source-structure	Source Structure:	SUB-PURPOSE-STRUCTU		
+COMP-example-2-creating-n	**Example 2: Creating New Relationships**	SUB-QUERY-EXISTING-		
+COMP-18-progressive-discl	18. Progressive Disclosure Interface Patterns	SUB-QUERY-EXISTING-		
+COMP-5-final-configuratio	5. **Final Configuration with New API Keys**	SUB-QUERY-EXISTING-		
+COMP-7-leantime-api-and-w	7. Leantime API and Webhook Integration Patterns	SUB-QUERY-EXISTING-	authentication	
+COMP-9-zed-acp-integratio	9. Zed ACP Integration Patterns	SUB-QUERY-EXISTING-	model and sandboxing for agent operations; boundaries between editor and agent operations; "	
+COMP-adhd-optimized-fasta	ADHD-optimized FastAPI patterns	SUB-QUERY-EXISTING-		
+COMP-api-design-patterns-	API design patterns optimize context service access	SUB-QUERY-EXISTING-	authentication	
+COMP-agentic-ai-design-pa	Agentic AI Design Patterns	SUB-QUERY-EXISTING-		
+COMP-before-restart	Before restart	SUB-QUERY-EXISTING-		
+COMP-cached-query-second-	Cached query (second request)	SUB-QUERY-EXISTING-		
+COMP-check-api-access-pat	Check API access patterns	SUB-QUERY-EXISTING-		
+COMP-claude-specific-moni	Claude-specific monitoring ecosystem reveals diverse approaches	SUB-QUERY-EXISTING-		
+COMP-component-interactio	Component Interaction Patterns	SUB-QUERY-EXISTING-		
+COMP-database-query-first	Database query (first request)	SUB-QUERY-EXISTING-		
+COMP-emergent-coordinatio	Emergent coordination patterns	SUB-QUERY-EXISTING-		
+COMP-existing-edge-types-	Existing Edge Types (Preserved)	SUB-QUERY-EXISTING-		
+COMP-hierarchical-coordin	Hierarchical coordination patterns	SUB-QUERY-EXISTING-	. The system employs a **Queen Agent Pattern** where a master coordinator manages specialized workers across seven distributed system topologies, from simple hierarchical structures to complex mesh networks with adaptive topology switching.	
+COMP-issue-high-query-lat	Issue: High Query Latency	SUB-QUERY-EXISTING-		
+COMP-modern-ux-patterns-p	Modern UX patterns prioritize visual state over command memorization	SUB-QUERY-EXISTING-		
+COMP-new-adhd-specific-en	New ADHD-Specific Endpoints	SUB-QUERY-EXISTING-		
+COMP-new-components	New Components	SUB-QUERY-EXISTING-		
+COMP-new-node-types-13-ad	New Node Types (13 Additional)	SUB-QUERY-EXISTING-		
+COMP-popular-python-tmux-	Popular Python tmux applications reveal key patterns	SUB-QUERY-EXISTING-		
+COMP-practical-integratio	Practical integration patterns enable real-world deployment	SUB-QUERY-EXISTING-		
+COMP-store-successful-imp	Store successful implementation patterns	SUB-QUERY-EXISTING-		
+COMP-tool-design-patterns	Tool design patterns that minimize context	SUB-QUERY-EXISTING-		
+COMP-with-existing-system	With Existing Systems	SUB-QUERY-EXISTING-		
+COMP-opinion-dopemux-law-	**Opinion, Dopemux Law-Driven:**	SUB-RFC-TEMPLATE-DO		
+COMP-create-workflow-from	Create Workflow from Template	SUB-RFC-TEMPLATE-DO	Authentication	
+COMP-dopemux-api-document	Dopemux API Documentation	SUB-RFC-TEMPLATE-DO		
+COMP-dopemux-workflow-orc	Dopemux workflow orchestration implementation	SUB-RFC-TEMPLATE-DO		
+COMP-effective-template-s	Effective template structures	SUB-RFC-TEMPLATE-DO		
+COMP-test-4-template-work	Test 4: Template workflow	SUB-RFC-TEMPLATE-DO	authentication	
+COMP-example-3-filtered-r	**Example 3: Filtered Relationship Queries**	SUB-SECTION-3-CONTE		
+COMP-phase-3-ui-integrati	**Phase 3: UI Integration**	SUB-SECTION-3-CONTE		
+COMP-phase-3-user-experie	**Phase 3: User Experience** (Design complete)	SUB-SECTION-3-CONTE		
+COMP-3-2-technical-contex	3.2 Technical Context	SUB-SECTION-3-CONTE		
+COMP-4-context-window	4. Context Window	SUB-SECTION-3-CONTE		
+COMP-4-long-context-route	4. Long Context Route	SUB-SECTION-3-CONTE		
+COMP-attention-context-fi	Attention Context Filtering	SUB-SECTION-3-CONTE		
+COMP-context	Context	SUB-SECTION-3-CONTE		
+COMP-context-preservation	Context Preservation Across Systems	SUB-SECTION-3-CONTE		
+COMP-context-synchronizat	Context Synchronization Strategy	SUB-SECTION-3-CONTE		
+COMP-context-token-flow	Context Token Flow	SUB-SECTION-3-CONTE		
+COMP-context-retrieval-15	Context retrieval: ~15ms	SUB-SECTION-3-CONTE		
+COMP-dynamic-context-asse	Dynamic Context Assembly	SUB-SECTION-3-CONTE		
+COMP-essential-context-qu	Essential Context Questions	SUB-SECTION-3-CONTE		
+COMP-get-current-context	Get Current Context	SUB-SECTION-3-CONTE		
+COMP-get-full-context-ins	Get full context instantly (Redis cached)	SUB-SECTION-3-CONTE		
+COMP-mcd-main-context-doc	MCD (Main Context Document) Model	SUB-SECTION-3-CONTE		
+COMP-mcp-integration-prov	MCP integration provides standardized context protocols	SUB-SECTION-3-CONTE		
+COMP-manual-context-savin	Manual context saving	SUB-SECTION-3-CONTE	JWT	
+COMP-pattern-3-status-upd	Pattern 3: Status Update Propagation	SUB-SECTION-3-CONTE		
+COMP-phase-3-advanced-fea	Phase 3: Advanced Features (Architecture Supports)	SUB-SECTION-3-CONTE		
+COMP-quick-context-check-	Quick context check (ADHD: "Where was I?")	SUB-SECTION-3-CONTE		
+COMP-quick-context-recove	Quick context recovery	SUB-SECTION-3-CONTE		
+COMP-set-initial-context	Set initial context	SUB-SECTION-3-CONTE		
+COMP-test-3-decision-logg	Test 3: Decision Logging	SUB-SECTION-3-CONTE		
+COMP-test-3-template-crea	Test 3: Template creation load	SUB-SECTION-3-CONTE		
+COMP-test-3-update-task-s	Test 3: Update task status	SUB-SECTION-3-CONTE		
+COMP-test-context-surviva	Test context survival	SUB-SECTION-3-CONTE		
+COMP-update-context-auto-	Update Context (Auto-Saves Every 30s)	SUB-SECTION-3-CONTE		
+COMP-update-context	Update context	SUB-SECTION-3-CONTE		
+COMP-update-context-after	Update context after code exploration	SUB-SECTION-3-CONTE	authentication	
+COMP-update-context-to-re	Update context to reflect decision made	SUB-SECTION-3-CONTE		
+COMP-verify-context-was-s	Verify context was saved	SUB-SECTION-3-CONTE		
+COMP-decision-3-build-doc	✅ **Decision 3: Build Doc-Context MCP Server**	SUB-SECTION-3-CONTE		
+COMP-sample-devlog-block-	**Sample Devlog Block (YAML, block-indexed)**	SUB-SECTION-5-BUILD		
+COMP-test-5-get-actionabl	Test 5: Get actionable tasks	SUB-SECTION-5-BUILD		
+COMP-what-we-re-building	What We're Building	SUB-SECTION-5-BUILD		
+COMP-2-completion-detecti	2. Completion Detection Engine	SUB-SENSITIVE-CONTE		
+COMP-context-switch-detec	Context switch detection via directory changes	SUB-SENSITIVE-CONTE		
+COMP-full-semantic-search	Full semantic search across all content	SUB-SENSITIVE-CONTE		
+COMP-search-by-tag-conten	Search by tag content	SUB-SENSITIVE-CONTE	&type=decisions" | jq '.results.decisions | length'	
+COMP-sensitive-content-de	Sensitive Content Detection	SUB-SENSITIVE-CONTE		
+COMP-privacy-filter-py-fi	privacy-filter.py - Filter sensitive information before storage	SUB-SENSITIVE-CONTE	JWT	
+COMP-1-performance-metric	1. Performance Metrics	SUB-SUCCESS-METRICS		
+COMP-check-prometheus-met	Check Prometheus metrics	SUB-SUCCESS-METRICS		
+COMP-critical-success-fac	Critical Success Factors	SUB-SUCCESS-METRICS		
+COMP-event-stream-metrics	Event Stream Metrics	SUB-SUCCESS-METRICS		
+COMP-performance-metrics	Performance Metrics	SUB-SUCCESS-METRICS		
+COMP-prometheus-metrics	Prometheus metrics	SUB-SUCCESS-METRICS		
+COMP-proven-metrics	Proven Metrics	SUB-SUCCESS-METRICS		
+COMP-quality-metrics	Quality Metrics	SUB-SUCCESS-METRICS		
+COMP-restore-success-outp	Restore Success Output	SUB-SUCCESS-METRICS	authentication; JWT	
+COMP-success-criteria	Success Criteria	SUB-SUCCESS-METRICS		
+COMP-zen-mcp-performance-	zen-mcp Performance Metrics	SUB-SUCCESS-METRICS		
+COMP-observability-stack	Observability Stack	SUB-TECHNOLOGY-STAC		
+COMP-primary-testing-stac	Primary Testing Stack	SUB-TECHNOLOGY-STAC		
+COMP-technology-stack-con	Technology Stack (CONFIRMED)	SUB-TECHNOLOGY-STAC		
+COMP-25-minutes-of-work	... 25 minutes of work ...	SUB-THE-12-SECTIONS		
+COMP-1-leantime-db-pm-sou	1. Leantime DB (PM Source of Truth)	SUB-THE-12-SECTIONS		
+COMP-advantages-of-letta-	Advantages of Letta Framework:	SUB-THE-12-SECTIONS		
+COMP-conclusion-building-	Conclusion: building the optimal tmux experience	SUB-THE-12-SECTIONS		
+COMP-explore-the-impact-o	Explore the impact of a specific decision	SUB-THE-12-SECTIONS		
+COMP-file-2-research-inte	FILE 2: research/integrations/Analysis of Claude Code Integration (Features, Workflows & Benefits).pdf	SUB-THE-12-SECTIONS	feature that learns what is normal in the current; and optimization hook outputs and examples , demonstrating how the system learns; Before the AI executes any tool or shell command, the configured	
+COMP-run-the-example	Run the example	SUB-THE-12-SECTIONS		
+COMP-see-the-full-impleme	See the full implementation chain	SUB-THE-12-SECTIONS		
+COMP-start-the-server	Start the server	SUB-THE-12-SECTIONS		
+COMP-the-dopemux-solution	The DOPEMUX Solution	SUB-THE-12-SECTIONS		
+COMP-the-mcp-integration-	The MCP integration landscape reveals critical gaps	SUB-THE-12-SECTIONS	authentication	
+COMP-the-problem-we-re-so	The Problem We're Solving	SUB-THE-12-SECTIONS		
+COMP-trace-all-downstream	Trace all downstream effects of a decision	SUB-THE-12-SECTIONS		
+COMP-understanding-the-in	Understanding the Interface	SUB-THE-12-SECTIONS		
+COMP-use-the-metamcp-web-	Use the MetaMCP Web UI or API	SUB-THE-12-SECTIONS	Authorization	
+COMP-leantime-s-technical	Leantime's technical foundation enables flexible integration	SUB-THE-FOUNDATION-	Authentication	
+COMP-critical-path-server	**Critical Path Servers (Highest Priority)**	SUB-TIER-2-SPECIALI		
+COMP-context-optimizer-mc	Context Optimizer MCP Server: Specialized NPM solution	SUB-TIER-2-SPECIALI		
+COMP-expected-3-6-servers	Expected: 3/6 servers showing ✓ Connected	SUB-TIER-2-SPECIALI		
+COMP-option-2-claude-task	Option 2: Claude-Task-Master-Only Approach	SUB-TIER-2-SPECIALI		
+COMP-pattern-2-developer-	Pattern 2: Developer Work Activation	SUB-TIER-2-SPECIALI		
+COMP-phase-2-advanced-fea	Phase 2: Advanced Features (Foundation Ready)	SUB-TIER-2-SPECIALI		
+COMP-phase-2-client-integ	Phase 2: Client Integration (Implemented ✅)	SUB-TIER-2-SPECIALI		
+COMP-phase-2-core-impleme	Phase 2: Core Implementation (Main Development)	SUB-TIER-2-SPECIALI		
+COMP-phase-2-enhanced-int	Phase 2: Enhanced Integration (Foundation Ready)	SUB-TIER-2-SPECIALI		
+COMP-phase-2-integration-	Phase 2: Integration Bridge	SUB-TIER-2-SPECIALI	Authentication	
+COMP-priority-2-test-api-	Priority 2: Test API (2 minutes)	SUB-TIER-2-SPECIALI	Authorization	
+COMP-test-2-context-persi	Test 2: Context Persistence	SUB-TIER-2-SPECIALI		
+COMP-test-2-get-dashboard	Test 2: Get dashboard	SUB-TIER-2-SPECIALI		
+COMP-previously-problemat	✅ PREVIOUSLY PROBLEMATIC SERVERS (NOW FIXED)	SUB-TIER-2-SPECIALI		
+COMP-traceability	Traceability	SUB-TRACEABILITY		
+COMP-unified-user-experie	Unified User Experience	SUB-UNIFIED-CONTEXT		
+COMP-9b09278c	Unnamed Component	SUB-UNNAMED		
+COMP-ed80a26a	Unnamed Component	SUB-UNNAMED		
+COMP-fb90bbb8	Unnamed Component	SUB-UNNAMED		
+COMP-d5bb2929	Unnamed Component	SUB-UNNAMED	Audit |; _FIXES_2025-09-26.md` | Security Fixes - September 26, 2025 |; Analysis Automation |XXX	
+COMP-abb38d2b	Unnamed Component	SUB-UNNAMED		
+COMP-9c90b57d	Unnamed Component	SUB-UNNAMED		
+COMP-46cc59d9	Unnamed Component	SUB-UNNAMED		
+COMP-1a14066e	Unnamed Component	SUB-UNNAMED		
+COMP-56d38543	Unnamed Component	SUB-UNNAMED		
+COMP-ce0206ec	Unnamed Component	SUB-UNNAMED	The system must employ state-of-the-art security measures to protect this data from unauthorized access. The potential for misuse of data that details an individual's productivity patterns and emotional responses at work is substantial.32Transparency and Consent: Users must be provided with clear, easy-to-understand information about what data is being collected, how it is being used to train the AI models, and who has access to it. The system should operate on an explicit consent model, allowing users to opt in or out of data collection for model improvement.43Bias Mitigation: AI models can inherit and amplify biases present in their training data.41 The system must be regularly audited for biases that could lead to inequitable or harmful recommendations.For a system designed to support a neurodivergent population, building a foundation of psychological safety is non-negotiable. A failure of trust, whether through a data breach or an opaque, unreliable AI, would not just be a product failure; it could be actively harmful to the user's well-being. Therefore, the design of error handling, feedback mechanisms, and transparent privacy controls is not a secondary "polish" step but a core, foundational element of the system's therapeutic and functional value.Section 7: Recommendations and Future Outlook7.1 Summary of the "Cognitive Co-Pilot" BlueprintThe analysis of Leantime and Claude-Task-Master reveals a clear pathway toward a next-generation project management system tailored for the cognitive needs of individuals with ADHD. The proposed "Cognitive Co-Pilot" is not an incremental improvement but a new paradigm built on four foundational principles:Conversational Inception: Replacing the intimidating "blank page" with a guided, natural language dialogue to define project scope and goals, thereby overcoming the primary barrier of task initiation.Automated Decomposition: Leveraging a powerful AI Planning Engine to translate the conversational input into a fully structured, sequenced, and visualized project plan, externalizing the most complex executive functions.Visual Engagement: Presenting the AI-generated plan within a human-centric, Leantime-inspired interface that uses visual tools, time blocking, and motivational feedback to support day-to-day execution and reduce cognitive load.Adaptive Feedback: Creating a continuous learning loop where user interactions and emotional feedback progressively personalize the AI, making its future planning efforts more accurate, realistic, and motivationally aligned with the user's unique cognitive profile.7.2 Phased Implementation RoadmapDeveloping the full vision of the Cognitive Co-Pilot is a significant undertaking. A phased, iterative approach is recommended to validate core assumptions and deliver value incrementally.Phase 1: Minimum Viable Product (MVP): The primary goal of the MVP is to validate the core workflow of conversational inception and automated visualization. This would involve:A simple web interface with a text input for a project goal.A back-end call to an LLM API (like Claude or a similar model) with a carefully crafted prompt to decompose the goal into a structured list of tasks (e.g., in JSON format).Rendering this structured output on a basic, non-interactive Kanban board.This phase would prove the viability of solving the "blank page problem" and the "PRD Paradox" in a single, streamlined user action.Phase 2: Developing the Engagement Layer: This phase focuses on building out the rich, interactive front-end inspired by Leantime. Key developments would include:Full drag-and-drop functionality on the Kanban board.Implementation of Timeline/Gantt and List views.Integration with user calendars for time blocking.Introduction of the emoji-based feedback mechanism for tasks.At this stage, the system becomes a highly functional, visually-driven project management tool, with the AI serving as a powerful "project starter."Phase 3: Building the Adaptive Learning Components: This phase involves developing the back-end infrastructure to support long-term personalization.Create a secure user data model to store interaction history (task completion times, emoji ratings, etc.).Implement a fine-tuning or Retrieval-Augmented Generation (RAG) pipeline that allows the Planning Engine to incorporate this user-specific data when generating new project plans.The AI's time estimations and task sequencing will begin to adapt to the individual user.Phase 4: Introducing Proactive Intelligence: With a robust adaptive model in place, this phase focuses on building proactive features.Develop the "What's Next?" suggestion feature.Implement the logic for proactive motivational nudging based on the user's learned patterns.Enhance the conversational capabilities to allow for mid-project adjustments and replanning via natural language.7.3 The Future of Neuro-Adaptive Project ManagementThe Cognitive Co-Pilot model represents a significant step towards what could be termed "neuro-adaptive" software—systems that don't just accommodate cognitive differences but actively adapt their functionality to an individual's specific neurological profile. The future of this field is promising and could extend far beyond the current blueprint.Advancements in multimodal AI could allow users to initiate projects by submitting a collection of resources—a sketch on a whiteboard, a voice memo, a series of web links—which the AI could synthesize into a coherent plan. With explicit user consent and robust privacy frameworks, future iterations could integrate with wearable technology to gain anonymized insights into a user's focus and energy levels, allowing the system to suggest high-focus work during peak cognitive periods and breaks during troughs.Ultimately, the principles behind the Cognitive Co-Pilot have the potential to be transformative. By leveraging AI to externalize the most challenging executive functions, such a system can do more than just help users manage tasks. It can reduce the anxiety and self-doubt that often accompany productivity challenges, foster a greater sense of agency and accomplishment, and empower neurodivergent individuals to more fully translate their unique creativity and insights into tangible outcomes. This technology is not about "fixing" a deficit; it is about building a more accessible and equitable world by creating tools that work in harmony with the full spectrum of human cognition.	
+COMP-4800f0db	Unnamed Component	SUB-UNNAMED		
+COMP-3c2deb9a	Unnamed Component	SUB-UNNAMED	in mind: store API keys safely (maybe use a vault or at least environment	
+COMP-04e33646	Unnamed Component	SUB-UNNAMED	feature that learns what is normal in the current project context ￼ ￼. It takes into account whether it’s a Python, Node, or Docker project to adjust thresholds (e.g. npm install might be allowed without asking in a Node.js project) ￼. Over time, as you confirm certain commands are safe, it will stop nagging for those. All decisions are logged in a security_audit.json for transparency ￼. The benefit here is huge: you can trust the AI agent to only execute safe operations, and it gets smarter about what’s acceptable, thereby minimizing interruptions once it has learned. This balances freedom and safety, letting the AI handle routine environment tasks while giving the developer veto power over anything unusual.; and optimization hook outputs and examples ￼ ￼, demonstrating how the system learns and adapts to keep operations safe and efficient.; auditor” agent to review changes for vulnerabilities, or a “tester” agent to generate additional tests, etc. It’s an add-on concept that builds on the multi-agent theme.	
+COMP-d8f9eb09	Unnamed Component	SUB-UNNAMED		
+COMP-5ee7b398	Unnamed Component	SUB-UNNAMED	-review agent for audits); hooks that might block the AI unnecessarily; analysis agent + performance agent running simultaneously). Great when speed and breadth are paramount.	Focused development cycles where tight integration with project context is needed (e.g. following a detailed task list, ensuring alignment with existing backlog and documentation). Suited for day-to-day development on a codebase: implementing features one at a time with heavy context from past work, and adhering strictly to project-specific quality checks. Also preferable when the task is small or doesn’t parallelize well – the overhead of a swarm isn’t justified for a simple bug fix or minor tweak.	
+COMP-1563c0a7	Unnamed Component	SUB-UNNAMED		
+COMP-choose-when	Choose When	SUB-WHEN-CONVERTING	authentication	
+COMP-user-journey-convert	User Journey: Converting chaotic thoughts into organized tasks	SUB-WHEN-CONVERTING	Authentication; JWT	
+COMP-when-stuck	When stuck	SUB-WHEN-CONVERTING		
+COMP-when-to-use-each-ser	When to Use Each Server	SUB-WHEN-CONVERTING		
+COMP-claude-flow-claude-c	claude-flow → Claude Code execution flow	SUB-WHEN-CONVERTING		

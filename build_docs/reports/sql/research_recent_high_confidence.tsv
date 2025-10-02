@@ -1,0 +1,4 @@
+research_id	title	research_type	recency_days	source_quality	confidence
+RS-33648233	Unit Testing Framework	Tech Spike	0	Medium	0.8
+RS-10280516	Untitled Research	Benchmark	6	Medium	0.8
+RS-72494579	Untitled Research	Benchmark	29	High	0.82

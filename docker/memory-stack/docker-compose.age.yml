@@ -1,0 +1,42 @@
+# PostgreSQL AGE for CONPORT-KG-2025
+# Epic DB-001: Database Foundation
+# Decision graph database for ConPort decision genealogy
+
+services:
+  postgres-age:
+    image: apache/age:latest
+    container_name: dopemux-postgres-age
+    ports:
+      - "5455:5432"  # Using 5455 to avoid conflict with existing PostgreSQL on 5432
+    environment:
+      POSTGRES_USER: dopemux_age
+      POSTGRES_PASSWORD: ${AGE_DB_PASSWORD:-dopemux_age_dev_password}
+      POSTGRES_DB: dopemux_knowledge_graph
+      # PostgreSQL configuration for graph workloads
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
+    volumes:
+      - age_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+    restart: unless-stopped
+    networks:
+      - dopemux-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    labels:
+      - "com.dopemux.service=postgres-age"
+      - "com.dopemux.epic=DB-001"
+      - "com.dopemux.project=CONPORT-KG-2025"
+
+volumes:
+  age_data:
+    driver: local
+    labels:
+      - "com.dopemux.data=knowledge-graph"
+
+networks:
+  dopemux-network:
+    external: true
