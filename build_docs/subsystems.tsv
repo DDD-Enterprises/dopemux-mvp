@@ -1,0 +1,669 @@
+subsystem_id	name	domain	description	containers	owning_team	upstream	dependent_on	data_stores	events	rto	rpo	sla	external_interfaces	security_posture	owner	adr_ids	rfc_ids	source_uri	source_lines	created_at	updated_at	tags
+SUB-AUTHORITY-MATRI	Authority Matrix	| Authoritative System | Cross-Plane Access |	"| Authority Domain | Authoritative System | Cross-Plane Access |
+|------------------|---------------------|-------------------|
+| Status Updates | Leantime | Via Integration Bridge |
+| Task Decomposition | Task-Master | Via Integration Bridge |
+| Code Navigation | Serena LSP | Direct |
+| Decision Me"												Architecture Team			docs/DOPEMUX_ARCHITECTURE_OVERVIEW.md	1-12	2025-10-02T03:01:42.459522	2025-10-02T03:01:42.459524	architecture
+SUB-MISSING-SECTION	📋 **Missing Sections (6/12)**	terms |	"| Section | Status | Next Action |
+|---------|--------|-------------|
+| **02** | ❌ Missing | Create architecture constraints documentation |
+| **04** | ❌ Missing | Document high-level solution strategy |
+| **05** | ❌ Missing | Organize building blocks (use existing C4 diagrams) |
+| **10** | ❌ Missin"												Architecture Team			docs/94-architecture/readme.md	1-10	2025-10-02T03:01:42.527807	2025-10-02T03:01:42.527808	testing|architecture
+SUB-NEXT-PHASE-COMP	🎯 Next Phase: Complete Arc42	terms and ADHD concepts)	"**Priority Order for Missing Sections:**
+1. **Section 05**: Building Block View (organize existing C4 diagrams)
+2. **Section 02**: Architecture Constraints (technical and ADHD-specific)
+3. **Section 04**: Solution Strategy (technology choices and approaches)
+4. **Section 10**: Quality Requirements ("												Architecture Team			docs/94-architecture/readme.md	1-9	2025-10-02T03:01:42.529181	2025-10-02T03:01:42.529182	testing|performance|architecture
+SUB-FOR-TWO-PLANE-A	For Two-Plane Architecture	2. **Integration Ready**: Prepared for Integration Bridge coordination	"1. **Authority Enforcement**: ConPort owns decision/memory domain
+2. **Integration Ready**: Prepared for Integration Bridge coordination
+3. **Cross-Plane Context**: Shared memory across PM/Cognitive planes
+4. **Workflow Continuity**: Seamless PLAN ↔ ACT mode transitions"												Architecture Team			docs/94-architecture/conport-enhanced-persistence.md	1-5	2025-10-02T03:01:42.543281	2025-10-02T03:01:42.543282	
+SUB-HYBRID-SCORE-FU	Hybrid Score Fusion	-specific queries	"**Weighted Linear Combination**:
+```
+final_score = w_dense × (1 - cosine_distance) + w_sparse × normalized_bm25_score
+```
+
+**Fusion Weights by Content Type**:
+- **Documents**: 0.65 dense / 0.35 sparse
+- **Code**: 0.55 dense / 0.45 sparse
+
+**Rationale**:
+- Documentation benefits more from semantic un"												Architecture Team			docs/94-architecture/rag/hybrid-retrieval-design.md	1-15	2025-10-02T03:01:42.545501	2025-10-02T03:01:42.545503	testing
+SUB-SENSITIVE-CONTE	Sensitive Content Detection	-specific terms	"```python
+class SensitiveContentFilter:
+    """"""Remove or mask sensitive information""""""
+
+    SENSITIVE_PATTERNS = [
+        # API keys and secrets
+        r'[A-Za-z0-9]{32,}',  # Long random strings
+        r'(?i)(api_key|secret|token|password)\s*[=:]\s*[""\']?([^""\'\s]+)',
+
+        # Email addresses "												Architecture Team			docs/94-architecture/09-decisions/adr-0011-privacy-first-ai.md	1-64	2025-10-02T03:01:42.647857	2025-10-02T03:01:42.647859	api
+SUB-PROJECT-MEMORY-	Project Memory Requirements	understanding, business logic, constraints	"- **Architectural decisions**: Design choices, patterns, and rationale
+- **Implementation context**: Code patterns, successful approaches, lessons learned
+- **Project-specific knowledge**: Domain understanding, business logic, constraints
+- **Team collaboration**: Shared decisions, conventions, and "												Architecture Team			docs/94-architecture/09-decisions/adr-0505-conport-integration.md	1-7	2025-10-02T03:01:42.701671	2025-10-02T03:01:42.701672	architecture
+SUB-DATA-ORGANIZATI	Data Organization in ConPort	knowledge, business rules, and project constraints	"- **`decisions/`**: Architectural decisions with full context and rationale
+- **`patterns/`**: Successful code patterns and implementation approaches
+- **`context/`**: Domain knowledge, business rules, and project constraints
+- **`evolution/`**: Change history and learning from past decisions
+- **`c"												Architecture Team			docs/94-architecture/09-decisions/adr-0505-conport-integration.md	1-6	2025-10-02T03:01:42.702754	2025-10-02T03:01:42.702755	
+SUB-QUERY-EXISTING-	Query existing project patterns before suggesting new approaches	"=""authentication"")"	"existing_patterns = conport.query_patterns(domain=""authentication"")
+research_context = conport.get_context(topic=""security_requirements"")
+```"												Architecture Team			docs/94-architecture/09-decisions/adr-0505-conport-integration.md	1-4	2025-10-02T03:01:42.702901	2025-10-02T03:01:42.702902	
+SUB-ALTERNATIVE-1-C	Alternative 1: Continue with OpenAI embeddings	specialization	"- **Pros**: No migration complexity, established reliability
+- **Cons**: 12-14% lower accuracy, no domain specialization"												Architecture Team			docs/94-architecture/09-decisions/adr-0013-rag-search-architecture.md	1-3	2025-10-02T03:01:42.712377	2025-10-02T03:01:42.712378	
+SUB-THE-12-SECTIONS	The 12 Sections of arc42		"| Section | Purpose | ADHD-Optimized Tips |
+|---------|---------|-------------------|
+| **1. Introduction & Goals** | Business/functional goals, quality goals, stakeholders | Keep high-level; limit quality goals to 3-5; make them measurable |
+| **2. Constraints** | Technical, regulatory, organizatio"						duplication |				s, environment | Use diagrams for clarity; delimit boundary explicitly |		Architecture Team			docs/03-reference/documentation-standards.md	1-16	2025-10-02T03:01:42.859171	2025-10-02T03:01:42.859173	testing|security|architecture
+SUB-WHEN-CONVERTING	When Converting RFC → ADR		"- [ ] ADR front-matter includes `derived_from: rfc-XXXX`
+- [ ] Decision and consequences clearly documented
+- [ ] arc42 sections updated (Solution Strategy, Building Blocks, Decisions)
+- [ ] Links added from feature hubs or main docs"												Architecture Team			docs/03-reference/documentation-standards.md	1-5	2025-10-02T03:01:42.862842	2025-10-02T03:01:42.862844	
+SUB-13-SC-TROUBLESH	13. **/sc:troubleshoot**	experts	"**Syntax**: `/sc:troubleshoot ""issue"" [--logs path] [--focus performance|security] [--systematic]`
+**Investigation Process**:
+1. Evidence collection
+2. Pattern analysis
+3. Root cause identification
+4. Solution recommendations
+**Auto-activates**: Debug specialist and domain experts"												Architecture Team			docs/03-reference/superclaude-and-zen-mcp-research.md	1-8	2025-10-02T03:01:42.874174	2025-10-02T03:01:42.874175	performance|security
+SUB-ALL-FLAGS-WITH-	All Flags with Exact Effects	-Specific Flags**:	"**Thinking & Analysis Flags**:
+- `--think`: Multi-file context analysis (8K tokens)
+- `--think-hard`: Architecture-level analysis (16K tokens)
+- `--ultrathink`: System-wide critical analysis (32K tokens)
+- `--plan`: Show execution plan before running
+- `--seq`: Sequential MCP for multi-step (adds 5-"			)									Architecture Team			docs/03-reference/superclaude-and-zen-mcp-research.md	1-29	2025-10-02T03:01:42.879134	2025-10-02T03:01:42.879136	api|architecture
+SUB-3-1-CONSTRUCTIV	3.1 Constructive Feedback Framing	"}. Ready for the next challenge?"""	"```python
+class RSDFeedbackSystem:
+    def __init__(self):
+        self.positive_framing_templates = [
+            ""Your {achievement} shows strong {skill}. To build on this..."",
+            ""Great progress on {area}! The next opportunity is..."",
+            ""You've successfully {accomplishment}. Co"					ackSystem:, ack), ack(self, feedback: dict, user_profile: UserProfile) -> dict:, ack option							Architecture Team			docs/03-reference/adhd-feature-specification.md	1-34	2025-10-02T03:01:42.891581	2025-10-02T03:01:42.891582	
+SUB-UNNAMED	Unnamed Subsystem		"---
+id: external-docs-shortlist
+title: External Docs Shortlist
+type: reference
+owner: '@hu3mann'
+last_review: '2025-09-26'
+next_review: '2025-12-25'
+---
+This shortlist collects high-quality markdown documents found outside the main docs/ tree for review.
+
+Scoring heuristic favors length, structure ("	/README.md` | DocRAG Service |				_RESEARCH.md` | ARM64 Vector Database Research - Milvus Replacement |							Architecture Team			docs/03-reference/external-docs-shortlist.md	1-114	2025-10-02T03:01:43.007091	2025-10-02T03:01:43.007093	database|architecture|testing|api|security
+SUB-PROJECT-STRUCTU	Project Structure	s.yaml              # Domain configurations	"```
+dopemux-mvp/
+├── docker/
+│   ├── docker-compose.yml              # Master orchestration
+│   ├── infrastructure/
+│   │   ├── postgres/
+│   │   │   ├── Dockerfile
+│   │   │   ├── init.sql               # Schema initialization
+│   │   │   └── indexes.sql            # Performance indexes
+│   │   ├──"	/				postgres, redis							Architecture Team			docs/03-reference/implementation-specification.md	1-83	2025-10-02T03:01:43.016787	2025-10-02T03:01:43.016789	database|performance
+SUB-12-EXA-WEB-SEAR	12. Exa - Web Search & Research	Control**: Include/exclude specific domains	"**Purpose**: AI-powered web research using official Exa API for high-quality development resources
+
+**Docker Configuration**:
+```dockerfile
+FROM python:3.11-slim
+RUN pip install exa-py>=1.0.0 fastmcp>=0.1.0 uvicorn[standard]>=0.30.0
+WORKDIR /app
+COPY exa_server.py .
+ENV EXA_API_KEY=${EXA_API_KEY}
+EN"	reliability					workflow interruption						Architecture Team			docs/03-reference/mcp/mcp-server-specifications.md	1-38	2025-10-02T03:01:43.057487	2025-10-02T03:01:43.057488	testing|api
+SUB-3-AI-POWERED-TO	3. AI-Powered Tool Analysis	': 'development'	"**For each discovered tool, AI analyzes**:
+
+```python
+tool_analysis = {
+    'identification': {
+        'name': 'search_code',
+        'server': 'github-mcp',
+        'version': '1.2.3'
+    },
+
+    'purpose_classification': {
+        'primary': 'code_search',
+        'secondary': ['repository_analys"												Architecture Team			docs/03-reference/mcp/mcp-dynamic-discovery-system.md	1-52	2025-10-02T03:01:43.067652	2025-10-02T03:01:43.067653	
+SUB-TIER-2-SPECIALI	**Tier 2: Specialized Servers (Domain-Specific)**		"```yaml
+specialized_servers:
+  sequential-thinking:
+    purpose: ""Complex reasoning and hypothesis testing""
+    triggers: [""debug"", ""architectural_analysis"", ""multi_step_reasoning""]
+    fallback: ""zen chat with structured prompts""
+
+  task-master-ai:
+    purpose: ""Task management and PRD processing""
+"												Architecture Team			docs/03-reference/mcp/mcp-integration-patterns.md	1-23	2025-10-02T03:01:43.073206	2025-10-02T03:01:43.073207	testing
+SUB-2-EXA-RESEARCH-	2. Exa Research Tools (4 tools - ~2,000 tokens)	s: Domain whitelist	"```yaml
+mcp__exa__search_web:
+  tokens: ~500
+  description: AI-powered neural web search with autoprompt optimization
+  parameters:
+    - query: Search query string
+    - num_results: Number of results (default: 10)
+    - use_autoprompt: Enable AI query enhancement (default: true)
+    - include_doma"	network_mode: HTTP transport on port 3008		mcp__exa__get_contents:									Architecture Team			docs/03-reference/mcp/tools-inventory.md	1-45	2025-10-02T03:01:43.085943	2025-10-02T03:01:43.085944	api
+SUB-COMPONENTS-REFE	Components Reference		"Authoritative home for subsystem/component documentation.
+
+- MetaMCP: components/metamcp/readme.md
+- MCP Servers: ../mcp/readme.md
+- RAG: ../rag/
+- Implementation: ../implementation/"												Architecture Team			docs/03-reference/components/readme.md	1-8	2025-10-02T03:01:43.168416	2025-10-02T03:01:43.168418	
+SUB-2-SERVICE-LOOKU	2. Service Lookup and Resolution	async getAuthorityService(domain: string): Promise<ServiceRecord | null> {	"```typescript
+class ServiceResolver {
+  constructor(private redis: Redis) {}
+
+  // Find services by capability
+  async findServicesByCapability(
+    capability: string,
+    options: {
+      status_filter?: ServiceStatus[]
+      max_response_time?: number
+      require_adhd_support?: boolean
+    } = "	"= await this.getAllServices(), [index % healthyServices.length], ServiceRecord[],, .status === ""healthy"", .reduce((best, current) =>"				Redis, redis							Architecture Team			docs/03-reference/components/service-discovery.md	1-82	2025-10-02T03:01:43.175715	2025-10-02T03:01:43.175720	
+SUB-OVERVIEW	Overview	sockets for optimal performance and simplified resource management.	The Multi-Instance component extends MetaMCP broker to coordinate multiple concurrent Claude Code instances, each isolated with git worktrees and role-specific MCP tool mounting. Uses SQLite-first approach with Unix domain sockets for optimal performance and simplified resource management.												Architecture Team			docs/03-reference/components/multi-instance/multi-instance-coordination-system.md	1-3	2025-10-02T03:01:43.224430	2025-10-02T03:01:43.224431	performance
+SUB-2-UNIX-SOCKET-M	2. Unix Socket Manager	socket allocation and nginx reverse proxy configuration.	"Handles Unix domain socket allocation and nginx reverse proxy configuration.
+
+```python"												Architecture Team			docs/03-reference/components/multi-instance/multi-instance-coordination-system.md	1-4	2025-10-02T03:01:43.225090	2025-10-02T03:01:43.225091	
+SUB-SRC-DOPEMUX-MCP	src/dopemux/mcp/socket_manager.py	sockets for inter-process communication.	"class SocketManager:
+    """"""
+    Manages Unix domain sockets for inter-process communication.
+    Eliminates port allocation conflicts and provides automatic cleanup.
+    """"""
+
+    def __init__(self, socket_base=""/tmp/dopemux""):
+        self.socket_base = socket_base
+        self.active_sockets = {}
+"												Architecture Team			docs/03-reference/components/multi-instance/multi-instance-coordination-system.md	1-27	2025-10-02T03:01:43.225521	2025-10-02T03:01:43.225522	
+SUB-SUPPORTED-PROVI	🏢 **Supported Providers**	.auth0.com/.well-known/openid-configuration`	"MetaMCP has been tested with popular OIDC providers:
+
+- **Auth0**: `https://your-domain.auth0.com/.well-known/openid-configuration`
+- **Keycloak**: `https://your-keycloak.com/realms/your-realm/.well-known/openid-configuration`
+- **Azure AD**: `https://login.microsoftonline.com/your-tenant-id/v2.0/.w"												Architecture Team			docs/03-reference/components/metamcp/overview.md	1-9	2025-10-02T03:01:43.237989	2025-10-02T03:01:43.237991	
+SUB-CORE-PLATFORM	Core Platform	sockets	"- **Orchestrator**: Python 3.11+ with asyncio for concurrent agent management
+- **Agent Runtime**: Docker containers with resource limits and security boundaries
+- **IPC Protocol**: Versioned JSONL over Unix domain sockets
+- **State Management**: SQLite + Redis for multi-level persistence
+- **Config"	with resource limits and security boundaries				Redis							Architecture Team			docs/02-how-to/dopemux-implementation-guide-v2.md	1-6	2025-10-02T03:01:43.285287	2025-10-02T03:01:43.285288	security
+SUB-CORS-CONFIGURAT	CORS Configuration	.com`	"- Current setup uses `--allow-origin '*'` for development
+- Production should specify allowed origins
+- Example: `--allow-origin https://your-domain.com`"												Architecture Team			docs/02-how-to/mcp-proxy-setup-guide.md	1-4	2025-10-02T03:01:43.376919	2025-10-02T03:01:43.376921	
+SUB-9-1-POTENTIAL-A	9.1 Potential Additions	-specific MCP tools	"- **Voice Interface**: Natural language commands via speech
+- **Mobile Monitoring**: Remote dashboard access
+- **Custom Plugins**: Domain-specific MCP tools
+- **Advanced Analytics**: ML-based performance optimization
+- **Collaborative Mode**: Multi-user development support"												Architecture Team			docs/02-how-to/dopemux-architecture-implementation-guide.md	1-6	2025-10-02T03:01:43.386121	2025-10-02T03:01:43.386123	performance
+SUB-SECTION-3-CONTE	Section 3: Context & Scope		"- [ ] **System boundary explicit** and well-defined
+- [ ] **External interfaces documented** with protocols
+- [ ] **Context diagram present** and current
+- [ ] **Scope limitations clear** (what's NOT included)"										s documented** with protocols		Architecture Team			docs/02-how-to/documentation-review-checklist.md	1-5	2025-10-02T03:01:43.415207	2025-10-02T03:01:43.415208	architecture
+SUB-SECTION-5-BUILD	Section 5: Building Block View		"- [ ] **Component responsibilities clear** and non-overlapping
+- [ ] **Interfaces well-defined** with contracts
+- [ ] **Hierarchy logical** and easy to follow
+- [ ] **C4 Level 1/2 diagrams** present and current"												Architecture Team			docs/02-how-to/documentation-review-checklist.md	1-5	2025-10-02T03:01:43.415470	2025-10-02T03:01:43.415471	
+SUB-CONFIG-RAG-PROD	config/rag/production.env	.com	"VOYAGE_API_KEY=your_production_key
+MILVUS_HOST=your-milvus-cluster.com
+MILVUS_PORT=19530
+CONPORT_URL=https://conport.your-domain.com
+LOG_LEVEL=INFO"												Architecture Team			docs/02-how-to/rag/setup-rag-pipeline.md	1-6	2025-10-02T03:01:43.493747	2025-10-02T03:01:43.493749	
+SUB-DECISION	Decision	sockets, based on O3 expert analysis recommendations.	We will implement multi-instance Claude Code architecture using a **SQLite-first approach** with Unix domain sockets, based on O3 expert analysis recommendations.												Architecture Team			docs/90-adr/adr-0014-multi-instance-architecture-sqlite-first.md	1-3	2025-10-02T03:01:43.495837	2025-10-02T03:01:43.495838	architecture
+SUB-CORE-ARCHITECTU	Core Architecture Decisions	sockets with nginx reverse proxy	"1. **Database Strategy**: Test optimized SQLite WAL mode before PostgreSQL migration
+2. **Inter-Process Communication**: Unix domain sockets with nginx reverse proxy
+3. **Resource Management**: Finalizer context manager pattern for guaranteed cleanup
+4. **Connection Pooling**: Environment-configurab"					Strategy**: Test optimized SQLite WAL mode before PostgreSQL migration, PostgreSQL							Architecture Team			docs/90-adr/adr-0014-multi-instance-architecture-sqlite-first.md	1-7	2025-10-02T03:01:43.496087	2025-10-02T03:01:43.496088	database|performance|testing
+SUB-O3-EXPERT-ANALY	O3 Expert Analysis Key Insights	sockets eliminate entire port management problem	"1. **SQLite Performance**: WAL mode with proper tuning may handle 20+ connections, avoiding PostgreSQL complexity
+2. **Port Elimination**: Unix domain sockets eliminate entire port management problem
+3. **Resource Safety**: Finalizer pattern prevents resource leaks automatically
+4. **Connection Effi"					PostgreSQL	resource leaks automatically						Architecture Team			docs/90-adr/adr-0014-multi-instance-architecture-sqlite-first.md	1-7	2025-10-02T03:01:43.496773	2025-10-02T03:01:43.496774	performance
+SUB-CORE-VALUE-PROP	Core Value Propositions	Mastery**: Single system for development, content, health, finance, dating, etc.	"1. **Zero Context Loss**: ConPort's implicit memory means you never lose your place
+2. **Intelligent Orchestration**: Role-based tool loading keeps token usage under 10k while providing full capabilities
+3. **ADHD-First Design**: 25-minute checkpoints, hyperfocus support, gentle time awareness
+4. **"												Architecture Team			docs/04-explanation/basedataanddesign.md	1-7	2025-10-02T03:01:43.541141	2025-10-02T03:01:43.541143	testing|architecture
+SUB-SUCCESS-METRICS	Success Metrics	Integration**: Seamless operation across 5+ life domains	"- **Context Switch Time**: <5 seconds between any workflow
+- **Token Efficiency**: <10k active tokens at any time (90% reduction from 100k+)
+- **ADHD Support**: 95% user satisfaction with neurodiversity accommodations
+- **Workflow Completion**: 80% of workflows completed without manual intervention
+"												Architecture Team			docs/04-explanation/basedataanddesign.md	1-7	2025-10-02T03:01:43.541389	2025-10-02T03:01:43.541390	
+SUB-ENHANCED-ROLE-S	Enhanced Role System with All MCP Servers		"```python
+COMPLETE_ROLE_DEFINITIONS = {
+    'researcher': {
+        'description': 'Information gathering and analysis',
+        'servers': {
+            'mas-sequential-thinking': ['sequentialthinking'],
+            'exa': ['exa_search'],
+            'context7': ['resolve-library-id', 'get-library-"												Architecture Team			docs/04-explanation/basedataanddesign.md	1-106	2025-10-02T03:01:43.561575	2025-10-02T03:01:43.561576	testing|architecture
+SUB-TRACEABILITY	Traceability		"- PRD: Lanes Orchestration
+- arc42: V1 Context/Container — Lanes subsystem"	— Lanes subsystem											Architecture Team			docs/04-explanation/01-lane-create.md	1-4	2025-10-02T03:01:43.565813	2025-10-02T03:01:43.565814	
+SUB-8-1-DOMAIN-MODE	8.1 Domain Model	_model}	{domain_model}												Architecture Team			docs/04-explanation/arc42-template.md	1-2	2025-10-02T03:01:43.604184	2025-10-02T03:01:43.604185	
+SUB-12-1-DOMAIN-TER	12.1 Domain Terms	_terms}	{domain_terms}												Architecture Team			docs/04-explanation/arc42-template.md	1-2	2025-10-02T03:01:43.604500	2025-10-02T03:01:43.604501	
+SUB-THE-FOUNDATION-	The foundation starts with Ratatui		**Ratatui**, the Rust-based terminal UI framework, stands out as the optimal foundation for Dopemux's interface layer. With its immediate rendering architecture and zero-cost abstractions, Ratatui delivers the **sub-10ms response times** critical for IDE experiences. The framework provides comprehen						the crashes and leaks that plague long-running terminal applications, while the type system enables complex state management without runtime overhead. Ratatui's **25,000+ GitHub stars** and active development community ensure long-term viability, with regular updates and extensive documentation supporting implementation.						Architecture Team			docs/04-explanation/terminal-app-frameworks.md	1-5	2025-10-02T03:01:43.615822	2025-10-02T03:01:43.615823	architecture
+SUB-FRAMEWORK-ECOSY	Framework ecosystem enables rapid development		The broader ecosystem provides essential building blocks across multiple languages. **Bubble Tea** for Go offers an Elm-inspired architecture with **27,000+ stars** and adoption by Microsoft Azure, CockroachDB, and NVIDIA. Its functional approach with the Bubbles component library provides spinners,					, and NVIDIA. Its functional approach with the Bubbles component library provides spinners, tables, and form inputs ready for integration. 							Architecture Team			docs/04-explanation/terminal-app-frameworks.md	1-7	2025-10-02T03:01:43.619258	2025-10-02T03:01:43.619260	architecture
+SUB-LEANTIME-S-TECH	Leantime's technical foundation enables flexible integration	-driven design organizes functionality into distinct modules (Auth, Projects, Tickets, Users) while maintaining a clean separation of concerns. The file structure follows Laravel conventions with `/app/Plugins/` for extensions, `/app/Core/` for system files, and `/app/Domain/` for business logic modules.	Leantime runs on a **Laravel 11+ MVC architecture** with PHP 8.2+ requirements, utilizing MySQL 8.0+ or MariaDB 10.6+ for data persistence. The platform's domain-driven design organizes functionality into distinct modules (Auth, Projects, Tickets, Users) while maintaining a clean separation of conce	methods, enabling operations like:				10.6+ for data persistence. The platform's domain-driven design organizes functionality into distinct modules (Auth, Projects, Tickets, Users) while maintaining a clean separation of concerns. The file structure follows Laravel conventions with `/app/Plugins/` for extensions, `/app/Core/` for system files, and `/app/Domain/` for business logic modules., MySQL	registration, and Laravel-compatible components. Plugins reside in `/app/Plugins/` with PSR-4 autoloading, enabling developers to extend functionality without modifying core code. The marketplace offers pre-built plugins including Pomodoro timers, custom fields, and AI integration.						Architecture Team			docs/04-explanation/leantime-adhd-integration.md	1-26	2025-10-02T03:01:43.632017	2025-10-02T03:01:43.632018	database|api|security|architecture
+SUB-RFC-TEMPLATE-DO	RFC Template - Dopemux	>  # adhd-accommodation, mcp-integration, memory-architecture, etc.	"*Copy this template for new RFC documents. Remove this instruction block when creating your RFC.*
+
+---
+id: rfc-2025-XXX-feature-name
+title: <Descriptive Title of Proposal>
+type: rfc
+status: draft   # draft | review | accepted | rejected | superseded
+author: @<your-github-handle>
+created: YYYY-MM-DD
+"												Architecture Team			docs/04-explanation/rfc-template.md	1-29	2025-10-02T03:01:43.721248	2025-10-02T03:01:43.721249	architecture
+SUB-2-CORE-COMPONEN	2. Core Components & Services	entities.]	"Awaiting document content. The following is a placeholder for the expected format:
+
+*   **[Component Name 1]:** [Briefly states its primary responsibility. e.g., Handles user authentication and authorization.]
+*   **[Component Name 2]:** [Briefly states its primary responsibility. e.g., Serves as th"	.]											Architecture Team			docs/04-explanation/system-bible.md	1-8	2025-10-02T03:01:43.737003	2025-10-02T03:01:43.737004	
+SUB-5-DESIGN-PRINCI	5. Design Principles & Constraints	"-Driven Design (DDD),"" ""Security by Design,"" ""API-first development."")*"	"*   **Guiding Principles:**
+    *   Not specified. *(Awaiting document content. Examples could include: ""Stateless services first,"" ""Infrastructure as Code (IaC),"" ""Domain-Driven Design (DDD),"" ""Security by Design,"" ""API-first development."")*
+
+*   **Key Constraints:**
+    *   Not specified. *(Awaiti"	"first,"" ""Infrastructure as Code (IaC),"" ""Domain-Driven Design (DDD),"" ""Security by Design,"" ""API-first development."")*"											Architecture Team			docs/04-explanation/system-bible.md	1-15	2025-10-02T03:01:43.738898	2025-10-02T03:01:43.738899	api|security|architecture
+SUB-2-CORE-ARCHITEC	2. Core Architecture & System Components		*   **Overall Architecture:** A multi-agent system composed of 64 specialized agents orchestrated by a central control plane. The architecture utilizes a hierarchical, multi-tiered memory system (L1, L2, L3) to manage state, context, and long-term knowledge. Communication is routed through a central					of summarized insights, user preferences, and project-level knowledge graphs., PostgreSQL, Redis, for high-performance semantic search over recent conversations and project files.							Architecture Team			docs/04-explanation/system-bible.md	1-13	2025-10-02T03:01:43.810679	2025-10-02T03:01:43.810680	database|performance|architecture|testing|api
+SUB-6-IMPLEMENTATIO	6. Implementation Plan Summary		"*   **Timeline:** A 16-week, 3-phase plan is specified for the MVP.
+*   **Initial Phase Deliverables:**
+    *   **Phase 1 (Weeks 1-6): Core Infrastructure & Memory.**
+        *   Deliverable: A functional Letta Memory subsystem (L1 Redis, L2 Qdrant, L3 PostgreSQL).
+        *   Deliverable: A prototy"					Redis, PostgreSQL							Architecture Team			docs/04-explanation/system-bible.md	1-12	2025-10-02T03:01:43.811953	2025-10-02T03:01:43.811954	architecture
+SUB-7-CRITICAL-RISK	7. Critical Risks & Mitigation Strategies	"s"" with strict read/write ACLs. A dedicated ""Memory Guardian Agent"" is responsible for cross-domain validation and memory promotion."	"*   **Risk 1: Cognitive Dissonance Storms:** A feedback loop where multiple agents disagree, reinforcing their opposing positions and halting progress.
+    *   **Mitigation:** Implement a ""Cool-down Protocol"" that temporarily halts interaction on a contentious task and a ""Consensus Forcing Function"""					ack loop where multiple agents disagree, reinforcing their opposing positions and halting progress.							Architecture Team			docs/04-explanation/system-bible.md	1-13	2025-10-02T03:01:43.839189	2025-10-02T03:01:43.839193	performance|architecture
+SUB-4-KEY-ALGORITHM	4. Key Algorithms & Protocols	"-specific agents that execute parts of the plan (e.g., a ""refactoring"" agent)."	"*   **Hybrid Search Algorithm:** A weighted retrieval algorithm used by Letta Memory, combining results from different search modalities:
+    *   70% vector similarity search
+    *   20% full-text keyword search (BM25)
+    *   10% graph-based pathfinding (Neo4j)
+*   **Context Compression:** Utilizes"				Letta Memory, combining results from different search modalities:								Architecture Team			docs/04-explanation/system-bible.md	1-12	2025-10-02T03:01:43.862096	2025-10-02T03:01:43.862097	performance|architecture
+SUB-FUTURE-ENHANCEM	Future Enhancements	-specific RFC templates as needed	"1. **Team Training**: Conduct workshops on RFC → ADR → arc42 workflow
+2. **Workflow Optimization**: Create additional automation for common patterns
+3. **Metrics Tracking**: Implement documentation health and RFC lifecycle metrics
+4. **Template Expansion**: Create domain-specific RFC templates as ne"												Architecture Team			docs/04-explanation/integration-pack-summary.md	1-5	2025-10-02T03:01:43.870408	2025-10-02T03:01:43.870410	
+SUB-6-2-EXECUTION-R	6.2 Execution Risks	"expertise"""	"**Technical Execution Risks**:
+```yaml
+platform_complexity_risk:
+  risk: ""Platform complexity leads to development delays or quality issues""
+  probability: ""Medium""
+  impact: ""High (delayed time to market, quality issues)""
+  mitigation:
+    - phased_development: ""Phased development with incremental "												Architecture Team			docs/04-explanation/dopemux-business-strategy.md	1-24	2025-10-02T03:01:43.940026	2025-10-02T03:01:43.940029	testing|architecture
+SUB-MCP-INTEGRATION	MCP integration provides standardized context protocols	-specific composites, and provide federated search across backends.	**Server integration follows adapter patterns** translating between MCP interfaces and existing systems: database adapters for SQL/NoSQL access, API adapters for REST/GraphQL services, and file system adapters for directory access. Composite servers aggregate multiple sources, combine related tools 	, and file system adapters for directory access. Composite servers aggregate multiple sources, combine related tools into domain-specific composites, and provide federated search across backends.				adapters for SQL/NoSQL access, API adapters for REST/GraphQL services, and file system adapters for directory access. Composite servers aggregate multiple sources, combine related tools into domain-specific composites, and provide federated search across backends.							Architecture Team			docs/04-explanation/context-management-redis-caching.md	1-5	2025-10-02T03:01:43.961055	2025-10-02T03:01:43.961056	database|api|architecture
+SUB-EVENT-DRIVEN-PA	Event-driven patterns provide scalability and flexibility	, consumer groups for parallel processing, schema registry for Avro/JSON management, and compaction keeping only latest state. RabbitMQ provides topic exchanges for routing, dead letter queues for failures, and message TTL for stale event expiration.	**Event sourcing for context updates** implements append-only logs of changes, event replay for reconstruction, snapshotting for performance, and temporal queries for history. CQRS patterns separate command sides for mutations from query sides for optimized reads, with real-time projection updates f					integration** leverages Apache Kafka with topic design partitioned by tenant/domain, consumer groups for parallel processing, schema registry for Avro/JSON management, and compaction keeping only latest state. RabbitMQ provides topic exchanges for routing, dead letter queues for failures, and message TTL for stale event expiration., Kafka	expiration., sourcing for context updates** implements append-only logs of changes, event replay for reconstruction, snapshotting for performance, and temporal queries for history. CQRS patterns separate command sides for mutations from query sides for optimized reads, with real-time projection updates from event streams maintaining eventual consistency.						Architecture Team			docs/04-explanation/context-management-redis-caching.md	1-5	2025-10-02T03:01:43.962129	2025-10-02T03:01:43.962130	performance|architecture
+SUB-PERSONAL-DATA-L	**Personal Data Lake Integration**	insights and automation	"- **Unified data storage**: Chat logs, emails, documents, analytics
+- **AI-accessible format**: Structured for agent consumption
+- **Privacy-first design**: Local storage with optional cloud sync
+- **Context enrichment**: Agents pull relevant personal context
+- **Pattern recognition**: Cross-domain "					with optional cloud sync, **: Chat logs, emails, documents, analytics							Architecture Team			docs/04-explanation/dopemux-critical-research-extraction.md	1-6	2025-10-02T03:01:44.163159	2025-10-02T03:01:44.163160	architecture
+SUB-IMPLEMENTATION-	**Implementation Priorities**	pattern recognition	"1. **Phase 1: Core MCP Architecture**
+   - Implement adaptive security hooks
+   - Build basic agent orchestration
+   - Create memory persistence layer
+
+2. **Phase 2: Development Workflow**
+   - Slice-based command system
+   - Quality gate automation
+   - Git/CI integration
+
+3. **Phase 3: Personal Au"												Architecture Team			docs/04-explanation/dopemux-critical-research-extraction.md	1-31	2025-10-02T03:01:44.165126	2025-10-02T03:01:44.165127	testing|security|architecture
+SUB-ARCHITECTURE-OP	Architecture Option Analysis	exploration.	"After extensive research, I've identified three viable architectural paths, each with distinct characteristics:
+
+**Option 1: Extended Claude Code Architecture**
+
+Claude Code provides a mature foundation with native subagent support through its Task Tool, allowing parallel execution of up to 10 light"						ing cross-contamination while enabling deep domain exploration.						Architecture Team			docs/04-explanation/dpmx-ccvsclinevscustom-pt2.md	1-36	2025-10-02T03:01:44.245846	2025-10-02T03:01:44.245847	api|security|architecture
+SUB-OPEN-QUESTIONS	Open Questions	-specific protocol?	"1. **Hybrid Approach Viability**: Should Dopemux implement a hybrid using Claude Code for complex reasoning and Cline for security-sensitive deployments?
+
+2. **Memory Persistence Strategy**: Would a unified memory layer using something like LanceDB or Chroma provide better performance than a tiered "					or Chroma provide better performance than a tiered approach?							Architecture Team			docs/04-explanation/dpmx-ccvsclinevscustom-pt2.md	1-9	2025-10-02T03:01:44.250227	2025-10-02T03:01:44.250228	performance|api|security
+SUB-MEMORY-SYSTEM-I	Memory system integration and state management architecture	context (industry knowledge, business rules), historical context (condensed interaction memory), and environmental context (system state, live data, time awareness).	"**Three-Tier Memory Architecture**
+Advanced implementations use a **multi-level memory system** with short-term memory for thread-scoped conversational context, working memory for temporary reasoning and planning cycles, and long-term memory using vector databases with semantic search capabilities. "					s with semantic search capabilities. This architecture supports sophisticated context orchestration across user-scoped, session-scoped, and application-level memory isolation., Kafka	-driven multi-agent coordination** through orchestrator-worker patterns using Kafka partitions for automatic load balancing, hierarchical agent patterns with recursive orchestrator-worker application, and blackboard patterns for shared knowledge collaboration. These systems use immutable log architectures as the single source of truth for system state.						Architecture Team			docs/04-explanation/integrating-claude-code-with-codex-cli.md	1-10	2025-10-02T03:01:44.270290	2025-10-02T03:01:44.270291	architecture
+SUB-S	S	functionality (memory, AI, security, etc.).	"**Sequential-Thinking**
+: MCP server providing multi-step reasoning and systematic problem analysis. Used for complex debugging and architectural decisions.
+
+**Serena**
+: MCP server providing LSP (Language Server Protocol) functionality, symbol operations, and project memory for code navigation and "	in Dopemux's hub-and-spoke architecture. Each spoke handles specific domain functionality (memory, AI, security, etc.)., **											Architecture Team			docs/04-explanation/glossary.md	1-13	2025-10-02T03:01:44.274857	2025-10-02T03:01:44.274858	security|architecture
+SUB-1-AGENT-ORCHEST	1. Agent Orchestration Engine	sockets	"- **Container Runtime**: Docker-based agent isolation with resource limits
+- **Message Protocol**: Versioned JSONL over Unix domain sockets
+- **State Management**: Immutable message bus with append-only logging
+- **Error Recovery**: Automatic fallback with state restoration capabilities"	Runtime**: Docker-based agent isolation with resource limits											Architecture Team			docs/04-explanation/dopemux-prd-v2.md	1-5	2025-10-02T03:01:44.283157	2025-10-02T03:01:44.283158	
+SUB-3-MULTI-AGENT-P	3. Multi-Agent Platforms	-specific	"- **AutoGen**: Research-focused without production readiness
+- **LangGraph**: Framework without complete product experience
+- **Custom Solutions**: High complexity without user experience focus
+- **Competitive Advantage**: Production-ready + UX-focused + domain-specific
+
+---"												Architecture Team			docs/04-explanation/dopemux-prd-v2.md	1-7	2025-10-02T03:01:44.285226	2025-10-02T03:01:44.285227	
+SUB-ARC42-DOCUMENTA	arc42 Documentation Status		"| Section | Status | Completeness | Implementation Ready |
+|---------|--------|-------------|---------------------|
+| 01-Introduction | ✅ Complete | 100% | ✅ Yes |
+| 02-Constraints | ✅ Complete | 100% | ✅ Yes |
+| 03-Context | ✅ Complete | 100% | ✅ Yes |
+| 04-Solution Strategy | ✅ Complete | 100% | ✅"												Architecture Team			docs/04-explanation/phase2-completion-summary.md	1-18	2025-10-02T03:01:44.334904	2025-10-02T03:01:44.334905	testing
+SUB-CLAUDE-AGENTS-N	.claude/agents/[name].md	- Heavy (25k+): MO1, ST1 - orchestration only	"---
+name: code-reviewer-cr1
+description: PROACTIVE code review. MUST BE USED after changes.
+tools: Read, Grep, Bash  # Minimal for token efficiency (<3k)
+model: sonnet  # haiku=simple, sonnet=balanced, opus=complex
+---
+You are CR1, ensuring code quality...
+[Review checklist, output format, boundarie"												Architecture Team			docs/04-explanation/dopemux-claude-optimized.md	1-15	2025-10-02T03:01:44.390410	2025-10-02T03:01:44.390411	testing
+SUB-STRUCTURE-TYPE	Structure Type	-Driven Design with Microservices Architecture**	"**Domain-Driven Design with Microservices Architecture**
+
+The project is organized around business domains while maintaining clear service boundaries for scalability and maintainability."	boundaries for scalability and maintainability., Architecture**											Architecture Team			docs/04-explanation/dopemux-mcd.md	1-4	2025-10-02T03:01:44.469435	2025-10-02T03:01:44.469437	architecture
+SUB-DIRECTORY-STRUC	Directory Structure	logic	"```
+dopemux/
+├── research/                    # Research and analysis documents
+│   ├── architecture/           # Architecture proposals and decisions
+│   ├── integrations/          # Integration research (Claude Code, etc.)
+│   ├── findings/              # Research findings and insights
+│   └── pat"	integrations											Architecture Team			docs/04-explanation/dopemux-mcd.md	1-67	2025-10-02T03:01:44.470776	2025-10-02T03:01:44.470778	testing|api|architecture
+SUB-UNIFIED-CONTEXT	Unified Context Management	Context Sharing**	"**Cross-Domain Context Sharing**
+```python
+class UnifiedContextManager:
+    async def sync_contexts(self, development_context: DevContext, life_context: LifeContext):
+        # Identify relevant connections between development and personal contexts
+        connections = await self.find_context_conne"												Architecture Team			docs/04-explanation/dopemux-life-automation-features.md	1-29	2025-10-02T03:01:44.608006	2025-10-02T03:01:44.608007	
+SUB-PHASE-3-INTEGRA	Phase 3: Integrated Ecosystem (Months 7-9)	context integration	"- Cross-domain context integration
+- Holistic productivity optimization
+- Advanced business analytics
+- Comprehensive automation workflows"												Architecture Team			docs/04-explanation/dopemux-life-automation-features.md	1-5	2025-10-02T03:01:44.608944	2025-10-02T03:01:44.608945	
+SUB-CONCLUSION	Conclusion	s	"The personal life automation features represent DOPEMUX's true competitive differentiation. While coding assistants are becoming commoditized, **a platform that seamlessly integrates development work with personal life automation is unprecedented**.
+
+These features transform DOPEMUX from ""another AI"												Architecture Team			docs/04-explanation/dopemux-life-automation-features.md	1-17	2025-10-02T03:01:44.609774	2025-10-02T03:01:44.609775	
+SUB-CRITICAL-ENVIRO	Critical Environment Variables	.com	"```env
+LEAN_DB_HOST=mysql_leantime
+LEAN_DB_USER=lean
+LEAN_DB_PASSWORD=<secure_password>
+LEAN_DB_DATABASE=leantime
+LEAN_SESSION_PASSWORD=<secure_session_key>
+LEAN_APP_URL=https://your-dopemux-domain.com
+PUID=1000  # User permissions
+PGID=1000  # Group permissions
+```"					_PASSWORD=<secure_password>, _DATABASE=leantime, _USER=lean, _HOST=mysql_leantime							Architecture Team			docs/04-explanation/leantime-integration-plan.md	1-11	2025-10-02T03:01:44.850399	2025-10-02T03:01:44.850401	
+SUB-INSTALLATION-FL	Installation Flow	/subdomain configuration	"```bash
+dopemux install leantime
+```
+
+**Step-by-step process:**
+1. **System Check**
+   - Docker availability
+   - Port conflicts (80, 443, 3306)
+   - Disk space requirements
+   - Network connectivity
+
+2. **Configuration Generation**
+   - Secure password generation
+   - SSL certificate setup
+   - Env"	health checks, Deployment**, with health checks				connectivity, schema							Architecture Team			docs/04-explanation/leantime-integration-plan.md	1-36	2025-10-02T03:01:44.851565	2025-10-02T03:01:44.851567	database|api|architecture
+SUB-NEXT-STEPS	Next Steps	configuration	"1. **Proof of Concept**: Basic Docker Compose setup
+2. **Installer Script**: Python-based installation automation
+3. **Integration Testing**: API connectivity and auth sync
+4. **ADHD Feature Integration**: Context sharing and attention metrics
+5. **Production Hardening**: Security, monitoring, and m"												Architecture Team			docs/04-explanation/leantime-integration-plan.md	1-12	2025-10-02T03:01:44.852762	2025-10-02T03:01:44.852763	testing|api|security
+SUB-ADVANCED-OPTIMI	Advanced optimization strategies	-specific documentation standards tailored to your technology stack and business requirements.	Mature teams should explore **flow engineering** beyond single prompts, implementing multi-stage development processes with validation loops. Deploy multi-agent systems for complex projects where specialized AI agents handle different aspects. Develop custom prompt optimization using techniques like												Architecture Team			docs/04-explanation/ai-doc-files.md	1-5	2025-10-02T03:01:44.867931	2025-10-02T03:01:44.867932	
+SUB-FILE-BASED-DISC	File-based discovery architecture	/frontend/component.md # /project:domain:frontend:component	"The extensibility system reveals a **file-based service discovery pattern** that eliminates traditional registry complexity. Commands auto-discover through filesystem organization:
+
+```
+.claude/commands/
+├── agents/coordinator.md        # /project:agents:coordinator  
+├── workflows/deployment.md    "	discovery pattern** that eliminates traditional registry complexity. Commands auto-discover through filesystem organization:											Architecture Team			docs/04-explanation/awesome-claude-code-analysis.md	1-12	2025-10-02T03:01:44.899032	2025-10-02T03:01:44.899033	architecture
+SUB-EMERGENT-COORDI	Emergent coordination patterns	experts through repeated task handling. Claude-Flow's 64-agent ecosystem demonstrates **collective intelligence through Byzantine fault tolerance** and **swarm memory management** with distributed conflict resolution.	**The most significant innovation is emergent specialization** where agents naturally evolve into domain experts through repeated task handling. Claude-Flow's 64-agent ecosystem demonstrates **collective intelligence through Byzantine fault tolerance** and **swarm memory management** with distribute												Architecture Team			docs/04-explanation/awesome-claude-code-analysis.md	1-5	2025-10-02T03:01:44.901733	2025-10-02T03:01:44.901734	api
+SUB-CONFIGURATION-A	Configuration as code excellence	-specific, and project scaffolding scenarios. This creates **shared knowledge management** that scales from individual developers to enterprise teams.	**Claude Swarm's YAML configuration approach** demonstrates configuration-as-code best practices with **environment variable interpolation**, **multi-directory access arrays**, and **mixed provider support**. The ability to coordinate Claude and OpenAI agents within single workflows shows **provider												Architecture Team			docs/04-explanation/awesome-claude-code-analysis.md	1-5	2025-10-02T03:01:44.902092	2025-10-02T03:01:44.902093	architecture
+SUB-MULTI-MODEL-ORC	Multi-Model Orchestration	)	"**Primary Models Integration**:
+```python
+class MultiModelOrchestrator:
+    def __init__(self):
+        self.models = {
+            'claude-3.5-sonnet': {
+                'strengths': ['reasoning', 'code_analysis', 'architecture'],
+                'token_limit': 200000,
+                'cost_per_1k'"												Architecture Team			docs/04-explanation/claude-flow-orchestration.md	1-33	2025-10-02T03:01:44.922262	2025-10-02T03:01:44.922263	architecture
+SUB-AGENT-COORDINAT	Agent Coordination Protocol	"}:{priority}:{estimated_tokens}:{deadline}"""	"**Communication Framework**:
+```yaml
+coordination_protocol:
+  message_types:
+    task_request:
+      format: ""TASK:{domain}:{priority}:{estimated_tokens}:{deadline}""
+      routing: ""meta_orchestrator → domain_specialist → execution_worker""
+
+    result_delivery:
+      format: ""RESULT:{task_id}:{statu"												Architecture Team			docs/04-explanation/claude-flow-orchestration.md	1-39	2025-10-02T03:01:44.922941	2025-10-02T03:01:44.922942	testing
+SUB-5-2-CROSS-DOMAI	**5.2 Cross-Domain Integration Agents**		"- **Personal Automation Agents**: Life management and productivity
+- **Content Creation Agents**: Documentation, communication, marketing
+- **Analytics Agents**: Performance metrics and insights generation
+
+---"												Architecture Team			docs/04-explanation/dopemux-software-development-agent-types.md	1-6	2025-10-02T03:01:44.932628	2025-10-02T03:01:44.932629	performance
+SUB-MULTI-TIER-AGEN	**Multi-Tier Agent System Design**	-specific knowledge bases	"Based on research, DOPEMUX should implement:
+
+1. **Core Development Layer**: Claude Code + Cline + specialized coding agents
+2. **Quality Assurance Layer**: Testing, security, and review agents
+3. **DevOps Automation Layer**: CI/CD, deployment, and infrastructure agents
+4. **Orchestration Layer**: C"												Architecture Team			docs/04-explanation/dopemux-software-development-agent-types.md	1-9	2025-10-02T03:01:44.932901	2025-10-02T03:01:44.932902	testing|security
+SUB-CORE-COMMAND-ST	Core Command Structure	specialist activation	"SuperClaude uses a sophisticated context injection system where commands are NOT executed as software, but rather trigger behavioral modifications through specialized `.md` context files.
+
+**Primary Command Types:**
+```bash
+/sc:[command]           # Primary workflow triggers
+@agent-[specialist]     "												Architecture Team			docs/04-explanation/superclaude-command-analysis.md	1-9	2025-10-02T03:01:44.974534	2025-10-02T03:01:44.974535	architecture
+SUB-ANALYSIS-IMPROV	Analysis & Improvement Phase	-specific analysis	"/sc:analyze --focus security         # Domain-specific analysis
+/sc:improve --preview               # Preview improvements
+/sc:optimize --performance          # Performance enhancement
+```"												Architecture Team			docs/04-explanation/superclaude-command-analysis.md	1-5	2025-10-02T03:01:44.974916	2025-10-02T03:01:44.974917	performance|security
+SUB-BEHAVIORAL-CONT	Behavioral Context Injection	-Specific Contexts**: Specialized knowledge injection per command	"SuperClaude modifies Claude's behavior through:
+
+1. **Context File Loading**: Commands trigger reading of specialized `.md` files
+2. **Behavioral Personas**: 9 cognitive personas (architect, security, qa, etc.)
+3. **Workflow State Management**: Multi-step process tracking and continuation
+4. **Domai"												Architecture Team			docs/04-explanation/superclaude-command-analysis.md	1-8	2025-10-02T03:01:44.975341	2025-10-02T03:01:44.975342	testing|security
+SUB-PURPOSE-STRUCTU	Purpose & Structure:	knowledge**: Team guidelines and conventions	"- **Per-project context**: Coding standards, project structure
+- **Per-language context**: Language-specific instructions
+- **Domain knowledge**: Team guidelines and conventions
+- **Contextual priming**: AI accuracy improvement"												Architecture Team			docs/04-explanation/dopemux-comprehensive-details-extraction.md	1-5	2025-10-02T03:01:45.094349	2025-10-02T03:01:45.094350	
+SUB-BENEFITS	Benefits:	-specific knowledge	"- **Improved AI accuracy**: Domain-specific knowledge
+- **Team adherence**: Project conventions enforcement
+- **Reduced setup**: Automated context loading
+
+---"												Architecture Team			docs/04-explanation/dopemux-comprehensive-details-extraction.md	1-6	2025-10-02T03:01:45.094468	2025-10-02T03:01:45.094469	
+SUB-CLAUDEKIT-FEATU	claudekit Features:	-specific AI consultants	"- **Auto-save checkpointing**: Session state preservation
+- **Code-review subagents**: Specialized review automation
+- **SDK experts**: Domain-specific AI consultants
+- **Enterprise suitability**: Team and cost management"												Architecture Team			docs/04-explanation/dopemux-comprehensive-details-extraction.md	1-5	2025-10-02T03:01:45.095163	2025-10-02T03:01:45.095164	
+SUB-FILESYSTEM-ORGA	Filesystem Organization:	/frontend/component.md # /project:domain:frontend:component	"```
+.claude/commands/
+├── agents/coordinator.md        # /project:agents:coordinator  
+├── workflows/deployment.md      # /project:workflows:deployment
+└── domain/frontend/component.md # /project:domain:frontend:component
+```"												Architecture Team			docs/04-explanation/dopemux-comprehensive-details-extraction.md	1-7	2025-10-02T03:01:45.097005	2025-10-02T03:01:45.097006	
+SUB-CLAUDE-MD-HIERA	CLAUDE.md Hierarchical Context:	-specific, project scaffolding**	"- **30+ specialized configuration patterns**
+- **Language-specific, domain-specific, project scaffolding**
+- **Shared knowledge management** from individual to enterprise
+- **Scalable context systems**
+
+---
+
+---"												Architecture Team			docs/04-explanation/dopemux-comprehensive-details-extraction.md	1-9	2025-10-02T03:01:45.098392	2025-10-02T03:01:45.098393	
+SUB-CONTEXTUAL-PRIM	Contextual Priming System:	instructions	"- **Per-project/per-language context files**: Coding standards, project structure, domain instructions
+- **Team guidelines embedding**: Explicit instructions for AI accuracy and convention adherence
+- **Domain knowledge integration**: Ensuring Claude Code operates with context-specific understanding"												Architecture Team			docs/04-explanation/dopemux-comprehensive-details-extraction.md	1-4	2025-10-02T03:01:45.113998	2025-10-02T03:01:45.113999	
+SUB-DISCOVERY-PATTE	Discovery Pattern:	/frontend/component.md # /project:domain:frontend:component	"```
+.claude/commands/
+├── agents/coordinator.md        # /project:agents:coordinator  
+├── workflows/deployment.md      # /project:workflows:deployment
+└── domain/frontend/component.md # /project:domain:frontend:component
+```"												Architecture Team			docs/04-explanation/dopemux-comprehensive-details-extraction.md	1-7	2025-10-02T03:01:45.115669	2025-10-02T03:01:45.115670	
+SUB-EMERGENT-SPECIA	Emergent Specialization:	experts** through repeated task handling	"- **Agents naturally evolve into domain experts** through repeated task handling
+- **Collective intelligence through Byzantine fault tolerance**
+- **Swarm memory management** with distributed conflict resolution"												Architecture Team			docs/04-explanation/dopemux-comprehensive-details-extraction.md	1-4	2025-10-02T03:01:45.117136	2025-10-02T03:01:45.117137	
+SUB-ADVANCED-WORKFL	Advanced Workflow Patterns:	3. **Result Synthesis**: Main agent combines and validates subagent outputs	"1. **Concurrent Task Processing**: Multiple agents on different problem aspects
+2. **Specialized Role Assignment**: Dedicated agents per concern domain
+3. **Result Synthesis**: Main agent combines and validates subagent outputs
+4. **Quality Assurance Pipeline**: Automated cross-validation between ag"												Architecture Team			docs/04-explanation/dopemux-comprehensive-details-extraction.md	1-5	2025-10-02T03:01:45.117943	2025-10-02T03:01:45.117944	testing
+SUB-CODE-REVIEW-MET	Code Review Methodology:	focus** for better results	"- **Structured categories**: Quality, security, performance, architecture
+- **Targeted prompts** beat generic reviews
+- **Specific domain focus** for better results"												Architecture Team			docs/04-explanation/dopemux-comprehensive-details-extraction.md	1-4	2025-10-02T03:01:45.125415	2025-10-02T03:01:45.125416	testing|performance|security|architecture
+SUB-FILE-1-RESEARCH	FILE 1: research/integrations/awesome-claude-code-research-chatgpt5.md	(forensic chat analysis), the Claude integration also includes custom commands to aid privacy checks:	"**Complete Content (43662 characters):**
+
+Analysis of Claude Code Integration (Features, Workflows & Benefits)
+
+Claude Code is a CLI-based AI coding assistant and agent platform by Anthropic ￼. The ChatX repository has integrated a clone of the “Awesome Claude Code” project, which adds numerous feat"	for memory. OpenMemory could be a local database or vector store that persists information across sessions. ConPort might use a local database or file (perhaps backed by something like SQLite or a graph DB given the dependencies ￼) to store project knowledge. They expose functions like log_decision, get_decisions, search_* which the AI uses via MCP commands (we see commands /get-decisions, etc. in config ￼). These memory agents mean the AI can do things like “What were the key decisions on this project?” and retrieve them. The benefit is enhanced context: even if weeks pass, the AI can recall “Oh, we decided to not use cloud APIs in this project due to privacy”, and avoid suggesting anything that violates that. This kind of long-term memory is typically missing from stateless AI models, so OpenMemory/ConPort fill that gap, making the AI more aware and aligned with project history., . Claude Code can spin up MCP servers on demand for tasks like semantic code search, web research, filesystem operations, GitHub operations, and more ￼ ￼. This means the AI can leverage dedicated “agents” for different contexts, rather than relying on a single monolithic model for everything. For example, Claude-Context provides semantic code search within the repo, Context7 fetches official API docs, Exa handles web searches, Serena applies IDE-like edits via an LSP, and TaskMaster AI manages project tasks ￼. This multi-agent design greatly extends the assistant’s capabilities (code analysis, internet access, etc.) while keeping each tool focused and optimized., or custom automation., . For example, if needed, it might query GPT-4 via OpenAI API as a supplement. This is speculative but supported by the presence of multiple API keys configuration ￼. In practice, this means the AI can combine strengths: Claude’s conversational coding skill plus maybe GPT-4’s stricter logic or a domain-specific model’s expertise. It’s like having multiple AI consultants and picking the best one for the question at hand., – all in service of making the developer’s life easier.		, e.g.:, like curl/wget, reading secrets) ￼ ￼. Custom hook scripts enforce these rules at runtime. In the ChatX integration, a PreToolUse hook intercepts any shell or tool command the AI tries to run and checks it against policy ￼. For example, attempts to run sudo or rm -rf are auto-blocked, and a git push will prompt for user approval ￼. These guardrails protect the system and codebase from destructive or unauthorized actions by the AI.		, which is listed as a dependency ￼). The benefit is that the AI has better “code awareness” and can navigate the project like an expert who knows the codebase, reducing context-switching for the human., or vector store that persists information across sessions. ConPort might use a local database or file (perhaps backed by something like SQLite or a graph DB given the dependencies ￼) to store project knowledge. They expose functions like log_decision, get_decisions, search_* which the AI uses via MCP commands (we see commands /get-decisions, etc. in config ￼). These memory agents mean the AI can do things like “What were the key decisions on this project?” and retrieve them. The benefit is enhanced context: even if weeks pass, the AI can recall “Oh, we decided to not use cloud APIs in this project due to privacy”, and avoid suggesting anything that violates that. This kind of long-term memory is typically missing from stateless AI models, so OpenMemory/ConPort fill that gap, making the AI more aware and aligned with project history., ox, one might prioritize the tool guardrails and quality hooks; if it’s about maintaining a large complex codebase, the Context7 doc integration and memory logging will be invaluable; if project management is key, the TaskMaster agent could be included to keep development aligned with plans. The modular nature of Claude Code’s design means these pieces can be considered somewhat independently and adapted as needed.	common mistakes and maximizes the AI’s utility., ing mistakes like writing to the wrong file or missing occurrences when refactoring. The benefit is more reliable code edits – closer to how an IDE refactoring tool would operate than a blind text substitution. The developer sees fewer “dumb” errors from AI edits and can trust changes are scoped correctly. (Serena likely runs as a local server; the settings show PostToolUse hooks monitoring mcp__serena__* events ￼, which confirms Serena operations are tracked for quality)., the AI from accidentally burning through context window tokens (which could be costly or slow) when a smarter query would do. By dynamically adjusting the AI’s tool usage (with rules that it learns to follow), the system claims a 15–25% token reduction in practice ￼ ￼, making the AI assistance more scalable.				functions like log_decision, get_decisions, search_* which the AI uses via MCP commands (we see commands /get-decisions, etc. in config ￼). These memory agents mean the AI can do things like “What were the key decisions on this project?” and retrieve them. The benefit is enhanced context: even if weeks pass, the AI can recall “Oh, we decided to not use cloud APIs in this project due to privacy”, and avoid suggesting anything that violates that. This kind of long-term memory is typically missing from stateless AI models, so OpenMemory/ConPort fill that gap, making the AI more aware and aligned with project history.		Architecture Team			docs/04-explanation/dopemux-comprehensive-details-extraction.md	1-139	2025-10-02T03:01:45.175340	2025-10-02T03:01:45.175341	database|performance|architecture|testing|api|security
+SUB-FILE-2-RESEARCH	FILE 2: research/integrations/Analysis of Claude Code Integration (Features, Workflows & Benefits).pdf	(forensic  chat  analysis),  the  Claude  integration  also  includes  custom	"**Complete Content (46366 characters):**
+
+
+=== PAGE 1 ===
+Analysis of Claude Code Integration (Features,
+Workflows & Benefits)
+Claude Code  is a CLI-based AI coding assistant and agent platform by Anthropic . The ChatX  repository
+has integrated a clone of the “Awesome Claude Code” project, which ad"	,, for memory. OpenMemory could be a local database or vector, . The benefit is that the AI behaves like a developer who can Google, – all in service of making the developer’s life easier ., such as		, e.g.:•, like  curl/wget , reading		or vector, ,, given  the  dependencies )  to  store  project, ox, one might prioritize the tool	mistakes , optimizes resource use, and enforces best practices consistently. This means the developer can, reading secret files , but the entire LLM, common mistakes and maximizes the AI’s utility.				functions like log_decision , get_decisions , search_*  which the		Architecture Team			docs/04-explanation/dopemux-comprehensive-details-extraction.md	1-743	2025-10-02T03:01:45.238250	2025-10-02T03:01:45.238252	database|performance|architecture|testing|api|security
+SUB-FILE-3-RESEARCH	FILE 3: research/findings/Building a Comprehensive Agentic CLI Platform for Dev and Life Automation.pdf	experts provide feedback, all tracked in a dataset . It also provides dashboarding for metrics	"**Complete Content (78302 characters):**
+
+
+=== PAGE 1 ===
+Building a Comprehensive Agentic CLI Platform
+for Dev and Life Automation
+Goals and Requirements of the Agentic Platform
+Before diving into tools, it's important to outline the core needs  of the envisioned system. The project aims
+to integra"	or features you want to highlight,, , it depends on if they offer history export). You could also use browser automation:, could save some effort – it’s basically a ready-made long-, like Zep for sophisticated long-term memory ., or at least		and tool calls and deploy it. If you wanted a, – that’s where, ) so you can later analyze		"them for a single agent to do sequentially. The manager could then compile, ack ""X agent's suggestion was not helpful because...""  which, ack. This might be too much friction for daily use, but, schema”,"	things from going haywire unseen. Aider uses OpenAI models (like GPT-4/GPT-3.5) for its, , or JSON records for each chat message) and unstructured embeddings (vector indexes, info overload, but having the ability to drill down addresses curiosity when you’re ready to				d.  If  using  cloud-based  vector  DB  (like  Pinecone),  consider  the  privacy  implications		Architecture Team			docs/04-explanation/dopemux-comprehensive-details-extraction.md	1-1090	2025-10-02T03:01:45.334375	2025-10-02T03:01:45.334381	database|performance|architecture|testing|api|security
+SUB-TECHNOLOGY-STAC	Technology Stack	**Frontend**: React + TypeScript, Material-UI, Socket.io for real-time	"**Backend**: Node.js + TypeScript, Express.js, Bull queue, PostgreSQL, Redis
+**Agents**: Python + MCP integration, specialized per domain
+**Frontend**: React + TypeScript, Material-UI, Socket.io for real-time
+**Infrastructure**: Docker, Kubernetes, Prometheus monitoring"					Redis, PostgreSQL, , PostgreSQL, Redis							Architecture Team			docs/04-explanation/dopemux-prd.md	1-5	2025-10-02T03:01:45.375856	2025-10-02T03:01:45.375858	
+SUB-4-CONPORT-GRAPH	4. ConPort Graph (Project Memory)	})	"**Owner**: ConPort MCP server
+**Purpose**: Structured project knowledge and decision lineage
+
+**Write Patterns**:
+- **Role Checkpoints**: Memory writes during transitions
+- **Decision Logging**: ADRs, trade-offs, constraints
+- **User Trait Learning**: ADHD patterns and preferences
+
+**Read Patterns**"												Architecture Team			docs/04-explanation/02-datastore-orchestration-raci.md	1-34	2025-10-02T03:01:45.523998	2025-10-02T03:01:45.523999	testing|architecture
+SUB-INTEGRATION-STR	Integration strategy maximizes synergy between Claude Code and claude-flow	.	The hybrid approach leverages claude-flow for high-level orchestration while using Claude Code for detailed implementation. Project initialization begins with `npx claude-flow@alpha init` followed by Claude Code configuration. The hive-mind spawns specialized swarms for different project aspects whi					approach. Claude-flow's memory system stores high-level context and coordination state. Claude Code sessions reference this shared memory for continuity. The MCP server bridge enables tool communication through standardized protocols.	system overload with configurable agent caps. Monitoring tracks both claude-flow swarm metrics and Claude Code session performance. The integrated approach achieves superior results through complementary tool strengths.						Architecture Team			docs/04-explanation/implementation-claudecode-claudeflow.md	1-7	2025-10-02T03:01:45.530895	2025-10-02T03:01:45.530896	database|performance|architecture
+SUB-DOCUMENTS-REQUI	**Documents Requiring Updates** (Recommended):	integration	"1. `DOPEMUX_PRD.md` - Add life automation scope to market analysis and feature requirements
+2. `DOPEMUX_FEATURE_DESIGN.md` - Incorporate specific framework choices and integration patterns
+3. `DOPEMUX_MCD.md` - Add sections for personal automation context and cross-domain integration
+
+---"												Architecture Team			docs/04-explanation/dopemux-gap-analysis.md	1-6	2025-10-02T03:01:45.542322	2025-10-02T03:01:45.542323	
+SUB-ADR-TEMPLATE-DO	ADR Template - Dopemux MADR Style	>  # adhd-accommodation, mcp-integration, memory-architecture, etc.	"*Copy this template for new ADR documents. Remove this instruction block when creating your ADR.*
+
+---
+id: adr-XXX-descriptive-name
+title: <Title of Architectural Decision>
+type: adr
+status: proposed   # proposed | accepted | rejected | superseded
+date: YYYY-MM-DD
+author: @<your-github-handle>
+deriv"												Architecture Team			docs/04-explanation/adr-template.md	1-27	2025-10-02T03:01:45.544237	2025-10-02T03:01:45.544238	architecture
+SUB-6-PRE-TOOL-OPTI	**6. Pre-Tool Optimization Hooks**	filtering	"**File**: `src/dopemux/mcp/hooks.py`
+**Status**: ✅ Production-ready with policy-based optimization
+**Purpose**: Budget-aware query optimization achieving 15-25% token savings
+
+```python
+class PreToolHookManager:
+    # Optimizations:
+    - claude-context: Limit results, file types, sizes
+    - sequen"												Architecture Team			docs/04-explanation/code-archive-complete.md	1-15	2025-10-02T03:01:45.554192	2025-10-02T03:01:45.554194	
+SUB-EXTENSIBILITY-F	Extensibility, flexibility, and developer experience	-specific agents. The AgentStore ecosystem provides plug-and-play components while the assembly line paradigm allows sequential or parallel execution. However, developer experience is more formal with structured communication protocols and industry-standard documentation generation rather than conversational interfaces.	**Claude-flow provides the richest extensibility** through 87 MCP tools, 17+ specialized development modes, and neural network integration with 27 cognitive models. The framework supports multiple coordination topologies (mesh, hierarchical, ring, star) and includes comprehensive hooks for automatio												Architecture Team			docs/04-explanation/cf-metagpt.md	1-9	2025-10-02T03:01:45.565949	2025-10-02T03:01:45.565950	architecture
+SUB-COMPATIBILITY-W	Compatibility with planned Dopemux components	collaboration.	**Claude-flow shows the highest compatibility** with both Eliza and CrewAI components. The Eliza Plugin for Flow (`@elizaos-plugins/plugin-flow`) provides native blockchain functionality with natural language commands. Both systems use Node.js/TypeScript with aligned plugin architectures. CrewAI int					Redis							Architecture Team			docs/04-explanation/cf-metagpt.md	1-9	2025-10-02T03:01:45.571588	2025-10-02T03:01:45.571589	api|architecture
+SUB-CORE-COMPONENTS	Core Components	-specific expert agents	"- **SuperClaude Framework**: Behavioral modes, rules, and intelligent automation
+- **MCP Server Ecosystem**: 15+ specialized external services
+- **Agent System**: 16 domain-specific expert agents
+- **Memory System**: Persistent knowledge and session management
+- **Command System**: 20+ specialized s"	- **Agent System**: 16 domain-specific expert agents											Architecture Team			docs/04-explanation/claude-code-complete-config.md	1-9	2025-10-02T03:01:45.625456	2025-10-02T03:01:45.625457	architecture
+SUB-CODE-ORGANIZATI	Code Organization	, not file type	"**Priority**: 🟢 **Triggers**: Creating files, structuring projects, naming decisions
+
+- **Naming Convention Consistency**: Follow language/framework standards (camelCase for JS, snake_case for Python)
+- **Descriptive Names**: Files, functions, variables must clearly describe their purpose
+- **Logica"												Architecture Team			docs/04-explanation/claude-code-complete-config.md	1-13	2025-10-02T03:01:45.628293	2025-10-02T03:01:45.628294	security
+SUB-MCP-SERVER-FLAG	MCP Server Flags	problems	"**--c7 / --context7**
+- Trigger: Library imports, framework questions, official documentation needs
+- Behavior: Enable Context7 for curated documentation lookup and pattern guidance
+
+**--seq / --sequential**
+- Trigger: Complex debugging, system design, multi-component analysis
+- Behavior: Enable Seq"												Architecture Team			docs/04-explanation/claude-code-complete-config.md	1-33	2025-10-02T03:01:45.635709	2025-10-02T03:01:45.635710	testing|performance|architecture
+SUB-OUTPUT-OPTIMIZA	Output Optimization Flags	-specific optimization needs	"**--uc / --ultracompressed**
+- Trigger: Context pressure, efficiency requirements, large operations
+- Behavior: Symbol communication system, 30-50% token reduction
+
+**--scope [file|module|project|system]**
+- Trigger: Analysis boundary needs
+- Behavior: Define operational scope and analysis depth
+
+**"												Architecture Team			docs/04-explanation/claude-code-complete-config.md	1-13	2025-10-02T03:01:45.637143	2025-10-02T03:01:45.637145	testing|performance|security|architecture
+SUB-TECHNICAL-DOMAI	Technical Domains	| Usage |	"| Symbol | Domain | Usage |
+|--------|---------|-------|
+| ⚡ | Performance | Speed, optimization |
+| 🔍 | Analysis | Search, investigation |
+| 🔧 | Configuration | Setup, tools |
+| 🛡️ | Security | Protection, safety |
+| 📦 | Deployment | Package, bundle |
+| 🎨 | Design | UI, frontend |
+| 🏗️ | Architectu"												Architecture Team			docs/04-explanation/claude-code-complete-config.md	1-10	2025-10-02T03:01:45.641084	2025-10-02T03:01:45.641085	performance|security|architecture
+SUB-EXAMPLES	Examples	-specific symbol systems	"```
+Standard: ""The authentication system has a security vulnerability in the user validation function""
+Token Efficient: ""auth.js:45 → 🛡️ sec risk in user val()""
+
+Standard: ""Build process completed successfully, now running tests, then deploying""
+Token Efficient: ""build ✅ » test 🔄 » deploy ⏳""
+
+Standa"												Architecture Team			docs/04-explanation/claude-code-complete-config.md	1-18	2025-10-02T03:01:45.641551	2025-10-02T03:01:45.641552	testing|performance|security|architecture
+SUB-SC-ANALYZE	/sc:analyze	code analysis with MCP coordination	"**Purpose**: Multi-domain code analysis with MCP coordination
+**Features**: Architecture analysis, performance review, security audit
+**Integration**: zen.analyze + sequential-thinking + context7"												Architecture Team			docs/04-explanation/claude-code-complete-config.md	1-4	2025-10-02T03:01:45.647617	2025-10-02T03:01:45.647618	performance|security|architecture
+SUB-ANALYSIS-PLANNI	Analysis & Planning	code analysis	"- `/sc:analyze` - Multi-domain code analysis
+- `/sc:brainstorm` - Interactive requirements discovery
+- `/sc:estimate` - Development time/complexity estimation
+- `/sc:explain` - Educational explanations"												Architecture Team			docs/04-explanation/claude.md	1-5	2025-10-02T03:01:45.664477	2025-10-02T03:01:45.664478	
+SUB-KEY-RECOMMENDAT	Key Recommendations	queries.	1. **Use VoyageAI's specialized models** for best accuracy: `voyage-code-3` for code and `voyage-context-3` for docs (they beat OpenAI-v3 by >12–14%). **Now**: swap Claude-Context to Voyage models (or Nomic open-models) via env vars. **3–6mo**: unify code/docs in one hybrid Milvus index with shared 	for multi-domain queries.		., . Plan for cache invalidation when docs or code change.		Redis, semantic results (e.g. with Redis) on stable queries (cosine ≥0.82) with TTL (e.g. 24h) to save API calls. Plan for cache invalidation when docs or code change., /workspace). Scale by migrating to Postgres+pgvector or a graph DB if relationships/queries need growth. Expose ConPort content to RAG by indexing decision entries into doc index or adding a semantic_search_conport tool., Postgres					ConPort content to RAG by indexing decision entries into doc index or adding a semantic_search_conport tool.		Architecture Team			docs/04-explanation/architecture/rag-search-architecture.md	1-17	2025-10-02T03:01:45.776554	2025-10-02T03:01:45.776556	database|performance|architecture|testing|api
+SUB-TECHNICAL-RISKS	Technical Risks	shift may degrade quality (monitor via eval)	"- **Embedding model drift**: Model updates or domain shift may degrade quality (monitor via eval)
+- **Index growth**: Large code/docbase can slow search or lower recall (plan periodic reindexing, sharding)
+- **Cache staleness**: Outdated cached results if code/docs change (invalidate on updates or u"					staleness**: Outdated cached results if code/docs change (invalidate on updates or use short TTL)							Architecture Team			docs/04-explanation/architecture/rag-search-architecture.md	1-5	2025-10-02T03:01:45.780168	2025-10-02T03:01:45.780169	testing
+SUB-DYNAMIC-CONTEXT	Dynamic Context Assembly	_context:	"```yaml
+context_assembly_system:
+  context_layers:
+    immediate_context:
+      scope: ""Current task and immediate dependencies""
+      content: ""Active files, functions, variables, immediate goals""
+      refresh_rate: ""Real-time""
+      cognitive_load: ""Minimal - always available""
+
+    task_context:
+"												Architecture Team			docs/04-explanation/architecture/multi-level-memory-architecture.md	1-44	2025-10-02T03:01:45.807545	2025-10-02T03:01:45.807546	architecture
+SUB-AGENT-NODES-EAC	Agent nodes - each specialized for domain		"workflow.add_node(""planner"", planning_agent)
+workflow.add_node(""researcher"", research_agent)  
+workflow.add_node(""coder"", coding_agent)
+workflow.add_node(""tester"", testing_agent)
+workflow.add_node(""reviewer"", review_agent)"												Architecture Team			docs/04-explanation/architecture/dopemux-technical-architecture-v2.md	1-6	2025-10-02T03:01:45.832479	2025-10-02T03:01:45.832480	
+SUB-CONTEXT-MANAGEM	Context Management	> # Switch life domain	"dopemux context         # Show current context
+dopemux switch <domain> # Switch life domain
+dopemux checkpoint      # Save current state
+dopemux restore         # Restore from checkpoint"												Architecture Team			docs/04-explanation/architecture/adhd-optimized-architecture.md	1-5	2025-10-02T03:01:45.945257	2025-10-02T03:01:45.945258	
+SUB-ARC42-ARCHITECT	Arc42 Architecture Documentation (100% Complete)		"Located in: `./docs/DMPX IMPORT/dopemux-docs/architecture/`
+
+| Section | Status | Implementation Ready |
+|---------|--------|---------------------|
+| [01-Introduction](./DMPX%20IMPORT/dopemux-docs/architecture/01-introduction/) | ✅ Complete | ✅ Ready |
+| [02-Constraints](./DMPX%20IMPORT/dopemux-docs"												Architecture Team			docs/04-explanation/architecture/master-architecture.md	1-17	2025-10-02T03:01:45.962800	2025-10-02T03:01:45.962801	testing|architecture
+SUB-INTEGRATION-WIT	Integration with PM System		"Once PM integration is running, we'll use the PM system for:
+- **Level 1 Planning**: Epic-level features from arc42 building blocks
+- **Level 2 Planning**: Phase milestones from implementation roadmap
+- **Level 3 Planning**: Sprint-level tasks from slice-based workflows
+- **Level 4 Planning**: Indiv"												Architecture Team			docs/04-explanation/architecture/master-architecture.md	1-8	2025-10-02T03:01:45.965791	2025-10-02T03:01:45.965793	architecture
+SUB-CORE-DOCUMENTAT	📚 Core Documentation Files	integration	"1. **[ADHD_OPTIMIZED_ARCHITECTURE.md](./ADHD_OPTIMIZED_ARCHITECTURE.md)**
+   - System design principles
+   - ADHD-first features
+   - Role-based architecture
+   - Life domain integration
+   - Success metrics
+
+2. **[MCP_SERVER_SPECIFICATIONS.md](./MCP_SERVER_SPECIFICATIONS.md)**
+   - Detailed specifi"												Architecture Team			docs/04-explanation/architecture/complete-architecture-summary.md	1-41	2025-10-02T03:01:45.966931	2025-10-02T03:01:45.966932	architecture
+SUB-5-LIFE-DOMAIN-I	5. **Life Domain Integration**		"- Development (Git, code, testing)
+- Content Creation (scripts, publishing)
+- Health & Fitness (tracking, scheduling)
+- Finance & Trading (analysis, alerts)
+- Social & Dating (calendar, reminders)"												Architecture Team			docs/04-explanation/architecture/complete-architecture-summary.md	1-6	2025-10-02T03:01:45.967642	2025-10-02T03:01:45.967643	testing
+SUB-ARCHITECTURE-CO	Architecture Components:	- Independent scaling and deployment capabilities	"**Central Orchestration Hub**:
+- FastAPI-based coordination service
+- Real-time event routing and task distribution
+- Comprehensive system state management
+- Plugin ecosystem for extensibility
+
+**Spoke Services**:
+- Specialized microservices for each of the 7 categories
+- Agent clusters organized by"	**:, for each of the 7 categories, - Real-time event routing and task distribution					routing and task distribution						Architecture Team			docs/04-explanation/architecture/adr-001-architecture-paradigm.md	1-19	2025-10-02T03:01:45.973382	2025-10-02T03:01:45.973383	architecture

@@ -30,7 +30,9 @@ class DocumentProcessor:
     """
 
     def __init__(self, docs_directory="docs", output_directory="build",
-                 milvus_host="localhost", milvus_port=19530):
+                 milvus_host="localhost", milvus_port=19530,
+                 skip_embeddings: bool = True,
+                 max_files: int | None = None):
         from pathlib import Path
 
         self.docs_dir = Path(docs_directory)
@@ -39,6 +41,8 @@ class DocumentProcessor:
 
         self.milvus_host = milvus_host
         self.milvus_port = milvus_port
+        self.skip_embeddings = skip_embeddings
+        self.max_files = max_files
 
         # Initialize components
         self.normalizer = AtomicUnitsNormalizer()
@@ -55,6 +59,8 @@ class DocumentProcessor:
 
         # Step 2: Simple file inventory
         all_files = self._get_all_files()
+        if self.max_files is not None:
+            all_files = all_files[: self.max_files]
         print(f"📁 Found {len(all_files)} files to process")
 
         # Step 3: Extract and normalize to AtomicUnits
@@ -68,16 +74,18 @@ class DocumentProcessor:
         # Step 4: Build registries
         registry_counts = self.registry_builder.build_registries(atomic_units)
 
-        # Step 5: Max-performance embeddings with Voyage Context-3 + Milvus + Reranker
-        try:
-            print("🚀 Upgrading to max-performance embeddings...")
-            embedder, embedding_results = await upgrade_embeddings_to_max_performance(
-                atomic_units, self.output_dir
-            )
-            print("✅ Max-performance embeddings complete!")
-        except Exception as e:
-            print(f"⚠️ Max-performance embeddings failed (continuing without): {e}")
-            embedding_results = {"error": str(e)}
+        # Step 5: Optional embeddings
+        embedding_results = {"skipped": True}
+        if not self.skip_embeddings:
+            try:
+                print("🚀 Upgrading to max-performance embeddings...")
+                embedder, embedding_results = await upgrade_embeddings_to_max_performance(
+                    atomic_units, self.output_dir
+                )
+                print("✅ Max-performance embeddings complete!")
+            except Exception as e:
+                print(f"⚠️ Max-performance embeddings failed (continuing without): {e}")
+                embedding_results = {"error": str(e)}
 
         print("✅ Document processing pipeline complete!")
         return {

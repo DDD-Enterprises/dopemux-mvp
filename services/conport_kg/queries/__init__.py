@@ -1,0 +1,16 @@
+"""
+ConPort Knowledge Graph Query Interface
+Part of CONPORT-KG-2025 (Decision #113)
+
+ADHD-optimized 3-tier progressive disclosure query patterns.
+"""
+
+from .overview import OverviewQueries
+from .exploration import ExplorationQueries
+from .deep_context import DeepContextQueries
+
+__all__ = [
+    'OverviewQueries',
+    'ExplorationQueries',
+    'DeepContextQueries'
+]
