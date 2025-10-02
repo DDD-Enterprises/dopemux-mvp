@@ -1711,7 +1711,7 @@ class RegistryBuilder:
             for subsystem in self.subsystems.values():
                 cursor.execute("""
                     INSERT OR REPLACE INTO subsystems VALUES (
-                        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                     )
                 """, tuple(asdict(subsystem).values()))
 
@@ -1732,7 +1732,7 @@ class RegistryBuilder:
             for research in self.research.values():
                 cursor.execute("""
                     INSERT OR REPLACE INTO research VALUES (
-                        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                     )
                 """, tuple(asdict(research).values()))
 
@@ -1768,6 +1768,59 @@ class RegistryBuilder:
                        CASE WHEN slo_latency IS NULL OR slo_latency = '' THEN 'Missing' ELSE 'Present' END as latency_slo
                 FROM components;
             """)
+
+            # Additional helpful views
+            cursor.execute("""
+                CREATE VIEW IF NOT EXISTS research_recent_high_confidence AS
+                SELECT research_id, title, research_type, recency_days, source_quality, confidence
+                FROM research
+                WHERE (recency_days IS NOT NULL AND recency_days <= 90)
+                  AND (confidence IS NOT NULL AND confidence >= 0.8)
+                ORDER BY recency_days ASC, confidence DESC;
+            """)
+
+            cursor.execute("""
+                CREATE VIEW IF NOT EXISTS components_security_gaps AS
+                SELECT component_id, name, subsystem_id, security_notes, threat_model_refs
+                FROM components
+                WHERE (security_notes IS NULL OR security_notes = '')
+                   OR (threat_model_refs IS NULL OR threat_model_refs = '');
+            """)
+
+            cursor.execute("""
+                CREATE VIEW IF NOT EXISTS components_missing_slos AS
+                SELECT component_id, name, subsystem_id
+                FROM components
+                WHERE (slo_availability IS NULL OR slo_availability = '')
+                   OR (slo_latency IS NULL OR slo_latency = '');
+            """)
+
+            cursor.execute("""
+                CREATE VIEW IF NOT EXISTS evidence_density_by_component AS
+                SELECT c.component_id, c.name, COUNT(el.to_id) AS evidence_incoming
+                FROM components c
+                LEFT JOIN evidence_links el ON el.to_id = c.component_id
+                GROUP BY c.component_id, c.name
+                ORDER BY evidence_incoming DESC;
+            """)
+
+            cursor.execute("""
+                CREATE VIEW IF NOT EXISTS evidence_density_by_feature AS
+                SELECT f.feature_id, f.title, COUNT(el.to_id) AS evidence_incoming
+                FROM features f
+                LEFT JOIN evidence_links el ON el.to_id = f.feature_id
+                GROUP BY f.feature_id, f.title
+                ORDER BY evidence_incoming DESC;
+            """)
+
+            # Helpful indexes
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_components_subsystem ON components(subsystem_id);")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_components_name ON components(name);")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_features_priority ON features(priority);")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_research_confidence ON research(confidence);")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_research_recency ON research(recency_days);")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_evidence_from ON evidence_links(from_id);")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_evidence_to ON evidence_links(to_id);")
 
             conn.commit()
             conn.close()
