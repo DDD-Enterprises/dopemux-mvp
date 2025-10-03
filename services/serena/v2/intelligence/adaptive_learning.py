@@ -765,7 +765,21 @@ class AdaptiveLearningEngine:
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             """
 
-            pattern_data = [asdict(action) for action in sequence.actions]
+            # Convert actions to dict with datetime serialization
+            pattern_data = []
+            for action in sequence.actions:
+                action_dict = asdict(action)
+                # Convert datetime to ISO format string for JSON serialization
+                if isinstance(action_dict.get('timestamp'), datetime):
+                    action_dict['timestamp'] = action_dict['timestamp'].isoformat()
+                pattern_data.append(action_dict)
+
+            # Calculate average complexity for storage (schema expects single REAL, not array)
+            avg_complexity = (
+                statistics.mean(sequence.complexity_progression)
+                if sequence.complexity_progression
+                else 0.0
+            )
 
             await self.database.execute_query(insert_query, (
                 sequence.user_session_id,
@@ -775,7 +789,7 @@ class AdaptiveLearningEngine:
                 "exploration",  # Pattern type
                 sequence.context_switches,
                 sequence.total_duration_ms,
-                json.dumps(sequence.complexity_progression),
+                avg_complexity,  # Average complexity (REAL type)
                 sequence.effectiveness_score,
                 sequence.completion_status,
                 sequence.attention_span_seconds,

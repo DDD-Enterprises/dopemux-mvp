@@ -1,0 +1,161 @@
+# Claude-Context v2 Configuration Defaults
+# All values based on defensible defaults from research and testing
+
+embedding:
+  models:
+    code: voyage-code-3           # Optimized for code retrieval
+    text: voyage-3-large          # General text, multilingual (1024d)
+    contextualized: voyage-context-3  # Long docs with document-level context
+  dimension: 1024                  # Full dimensionality (512/256 via Matryoshka for cost opt)
+  metric: dot                      # DOT product (Voyage vectors are unit-normalized, so dot=cosine)
+  rate_limit:
+    rpm: 60                        # Requests per minute (VoyageAI default)
+    rpd: 600                       # Requests per day (VoyageAI default)
+  batch_size: 8                    # Texts per API request (common in LangChain wrappers)
+  retry:
+    max_attempts: 3
+    backoff_base: 2                # Exponential: 2^n seconds
+
+chunking:
+  standard:
+    size_tokens: 500               # Sweet spot in 400-600 range
+    overlap_percent: 12            # Middle of 10-15% recommended range
+    preserve_boundaries: true      # Keep semantic units (functions, paragraphs)
+  contextualized:
+    size_tokens: 500
+    overlap_percent: 0             # No overlap for voyage-context-3
+    pass_as_list: true             # Send chunks as list for document-level context
+
+vector_store:
+  engine: qdrant                   # Confirmed ARM M4 Pro compatible
+  mode: memory                     # :memory: for dev, path for prod
+  path: ./data/qdrant              # Persistent storage location
+
+  hnsw:
+    m: 16                          # Edges per node (Qdrant default)
+    ef_construct: 200              # Build-time neighbors (higher than default 100)
+    ef: 150                        # Search-time neighbors (3x topK for good recall)
+
+  collections:
+    code_vectors:
+      vectors:
+        content_vec:
+          size: 1024
+          distance: Dot
+        title_vec:
+          size: 1024
+          distance: Dot
+        breadcrumb_vec:
+          size: 1024
+          distance: Dot
+      payload_schema:
+        file_path: keyword
+        doc_type: keyword
+        workspace_id: keyword
+        language: keyword
+        timestamp: integer
+
+    doc_vectors:                   # Phase 2 / v2
+      vectors:
+        content_vec:
+          size: 1024
+          distance: Dot
+      payload_schema:
+        file_path: keyword
+        doc_type: keyword
+
+search:
+  dense:
+    top_k: 50                      # MVP candidate set (100 in v2)
+    multi_vector_strategy: weighted
+    weights:
+      content: 0.7                 # Primary signal
+      title: 0.2                   # Filename/function name boost
+      breadcrumb: 0.1              # Path context
+    filters:                       # Available payload filters
+      - workspace_id
+      - doc_type
+      - language
+      - timestamp
+
+  bm25:                            # Phase 2 / v2 only
+    k1: 1.2                        # Lucene/Elastic default
+    b: 0.75                        # Lucene/Elastic default
+    enabled: false                 # Defer to v2
+
+  fusion:                          # Phase 2 / v2 only
+    method: rrf                    # Reciprocal Rank Fusion
+    k: 60                          # RRF parameter (Elastic Labs default)
+    window: 100                    # Candidate window size
+    enabled: false                 # Defer to v2
+
+reranking:
+  model: voyage-rerank-2.5         # Latest instruction-following reranker
+  enabled: true
+  candidates_in: 50                # From dense search
+  results_out: 10                  # Final results to user
+  limits:
+    max_docs: 1000                 # VoyageAI API limit
+    max_tokens_per_doc: 32000      # Per-doc limit (minus query)
+    max_tokens_total: 600000       # Total request limit
+  truncation: true                 # Auto-truncate docs exceeding limits
+
+preprocessing:
+  code:
+    use_tree_sitter: true          # Leverage Serena's Tree-sitter
+    extract_ast: true              # Function/class boundaries
+    include_docstrings: true
+    include_comments: true
+    languages:                     # Supported initially
+      - python
+      - typescript
+      - javascript
+      - go
+      - rust
+
+  docs:
+    formats:
+      - markdown
+      - text
+      - yaml
+      - json
+    extract_headings: true
+    preserve_structure: true
+
+  metadata:
+    extract_breadcrumbs: true      # Path hierarchy
+    git_blame: false               # Defer to v2 (performance)
+    language_detection: true
+    timestamp: true
+
+performance:
+  latency_targets:
+    code_search_p95: 500           # milliseconds
+    doc_search_p95: 1200           # with reranking
+  cache:                           # Phase 2 / v2
+    enabled: false
+    semantic_similarity: 0.82      # cosine threshold for cache hits
+    ttl_hours: 24
+
+adhd_optimizations:
+  max_results_display: 10          # Prevent overwhelming with choices
+  progressive_disclosure: true     # Show summary first, details on request
+  visual_progress: true            # Show indexing/search progress
+  quick_preview: true              # First 200 chars of each result
+
+tuning:
+  # Ordered by expected impact on quality
+  priority_order:
+    1: ef                          # Search-time HNSW parameter
+    2: chunk_size                  # Token count per chunk
+    3: rerank_candidates           # Top-N before reranking
+    4: dimension                   # Cost vs quality via Matryoshka
+    5: overlap                     # Marginal gains
+
+  benchmarks:
+    test_queries: 10               # Manual relevance judgments
+    metrics:
+      - recall_at_10
+      - ndcg_at_10
+      - latency_p95
+      - cost_per_query
