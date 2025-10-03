@@ -25,7 +25,7 @@ import aiohttp
 import asyncpg
 import redis.asyncio as redis
 from mcp import types
-from mcp.client import Client
+from mcp.client.session import ClientSession as Client
 from mcp.client.stdio import stdio_client
 from fastapi import FastAPI, HTTPException, Depends, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
