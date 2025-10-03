@@ -20,7 +20,8 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
 from . import __version__
-from .adhd import AttentionMonitor, ContextManager, TaskDecomposer
+from .adhd import AttentionMonitor, ContextManager
+# TaskDecomposer removed - replaced by ConPort + SuperClaude /dx: commands
 from .claude import ClaudeConfigurator, ClaudeLauncher
 from .config import ConfigManager
 from .health import HealthChecker
@@ -456,18 +457,32 @@ def task(
     ctx, description: Optional[str], duration: int, priority: str, list_tasks: bool
 ):
     """
-    📋 Manage tasks with ADHD-friendly decomposition
+    📋 DEPRECATED - Use SuperClaude /dx: commands instead
 
-    Break down complex tasks into manageable 25-minute chunks with
-    progress tracking and attention-aware scheduling.
+    This command has been replaced by:
+    - /dx:implement - Start ADHD-optimized implementation session
+    - /dx:session start/end/break - Session management
+    - /dx:load - Load tasks from ConPort
+    - /dx:stats - View ADHD metrics and progress
+
+    See: docs/90-adr/ADR-XXXX-path-c-migration.md
     """
-    project_path = Path.cwd()
-
-    if not (project_path / ".dopemux").exists():
-        console.print("[red]No Dopemux project found in current directory[/red]")
-        sys.exit(1)
-
-    decomposer = TaskDecomposer(project_path)
+    console.print("[yellow]" + "="*60 + "[/yellow]")
+    console.print("[red]⚠️  DEPRECATED COMMAND[/red]")
+    console.print("[yellow]" + "="*60 + "[/yellow]")
+    console.print()
+    console.print("The 'dopemux task' command has been replaced by SuperClaude /dx: commands:")
+    console.print()
+    console.print("  [cyan]/dx:implement[/cyan] - Start ADHD-optimized implementation session")
+    console.print("  [cyan]/dx:session start[/cyan] - Begin work session")
+    console.print("  [cyan]/dx:load[/cyan] - Load tasks from ConPort")
+    console.print("  [cyan]/dx:stats[/cyan] - View ADHD metrics and progress")
+    console.print()
+    console.print("Migration completed: October 2025")
+    console.print("See: [blue]docs/90-adr/ADR-XXXX-path-c-migration.md[/blue]")
+    console.print()
+    console.print("[yellow]" + "="*60 + "[/yellow]")
+    sys.exit(0)
 
     if list_tasks:
         tasks = decomposer.list_tasks()

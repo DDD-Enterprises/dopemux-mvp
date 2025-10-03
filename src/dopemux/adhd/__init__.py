@@ -7,7 +7,8 @@ including context preservation, attention monitoring, and task decomposition.
 
 from .attention_monitor import AttentionMonitor
 from .context_manager import ContextManager
-from .task_decomposer import TaskDecomposer
+# task_decomposer removed - replaced by ConPort progress_entry + services/adhd_engine
+# See Decision #152 and docs/90-adr/ADR-XXXX-path-c-migration.md
 
 # Note: AttentionManager archived after analysis showed it increased cognitive load
 # New approach: Simple, user-controlled ADHD accommodations in MetaMCP server
