@@ -17,17 +17,17 @@
 - `retrospective_item`: Lessons learned (keep_doing/stop_doing/start_doing/action)
 - `custom_data`: Project glossary, specifications, research
 
-#### Leantime Authority: Status & Visibility
-- All status updates (`planned` → `active` → `blocked` → `done`)
-- Team dashboards and reporting
-- Milestone tracking and roadmap visibility
+#### ConPort Progress Authority: Task Status & Tracking
+- All task status updates via `progress_entry` (TODO → IN_PROGRESS → BLOCKED → DONE)
+- Task metadata via `custom_data` (ADHD metrics, energy, complexity)
+- Task dependencies via `link_conport_items`
 
-#### Task-Master Authority: Subtasks & Hierarchy
-- Task decomposition from PRDs
-- Subtask relationships and dependencies
-- Next-action determination and complexity scoring
+#### SuperClaude Authority: PRD Decomposition
+- PRD parsing via `/dx:prd-parse` with Zen planner
+- Human review workflow (Approach C quality gate)
+- ADHD metadata injection before ConPort import
 
-#### mem4sprint Authority: Sprint Structure
+#### mem4sprint Authority: Sprint Structure (ConPort custom_data)
 - `sprint_goal`: High-level objectives for sprint (S-YYYY.MM format)
 - `sprint_subtask`: Specific work items linked to goals
 - `story`: User-facing requirements with acceptance criteria

@@ -15,9 +15,9 @@
 - Developer interruption recovery and context restoration
 
 **Serena NEVER:**
-- Updates task status (Leantime authority)
-- Creates task hierarchies (Task-Master authority)
-- Stores architectural decisions (ConPort authority)
+- Modifies task data (ConPort progress_entry authority)
+- Stores architectural decisions (ConPort decision authority)
+- Parses PRDs or decomposes requirements (SuperClaude authority)
 
 ## Core LSP Capabilities
 
