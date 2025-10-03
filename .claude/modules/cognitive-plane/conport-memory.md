@@ -15,9 +15,9 @@
 - Cross-system relationship tracking
 
 **ConPort NEVER:**
-- Updates task status (Leantime authority)
-- Creates task hierarchies (Task-Master authority)
-- Performs code navigation (Serena authority)
+- Provides LSP operations (Serena LSP authority)
+- Parses PRD documents (SuperClaude `/dx:prd-parse` authority)
+- Calculates ADHD metrics in real-time (Python ADHD Engine authority)
 
 ## Core Memory Operations
 
