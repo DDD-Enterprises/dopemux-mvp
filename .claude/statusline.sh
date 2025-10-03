@@ -34,29 +34,34 @@ if [ -d "$current_dir/.git" ]; then
     git_branch=$(git branch --show-current 2>/dev/null)
 fi
 
-# Get ConPort active context (focus + session)
+# Get ConPort status (active context + connection health)
+CONPORT_STATUS="📴"  # Disconnected
 FOCUS=""
 SESSION_INFO=""
 if command -v uvx >/dev/null 2>&1; then
     conport_output=$(timeout 0.8s uvx --from context-portal-mcp conport-mcp \
         get-active-context --workspace-id "$current_dir" 2>/dev/null)
 
-    # Extract focus (truncate to 35 chars)
-    focus_raw=$(echo "$conport_output" | jq -r '.current_focus // ""' 2>/dev/null)
-    if [ -n "$focus_raw" ] && [ "$focus_raw" != "null" ]; then
-        FOCUS=$(echo "$focus_raw" | cut -c1-35)
-        [ ${#focus_raw} -gt 35 ] && FOCUS="${FOCUS}..."
-    fi
+    if [ $? -eq 0 ] && [ -n "$conport_output" ]; then
+        CONPORT_STATUS="📊"  # Connected
 
-    # Calculate session time in 25min chunks
-    session_start=$(echo "$conport_output" | jq -r '.session_start // ""' 2>/dev/null)
-    if [ -n "$session_start" ] && [ "$session_start" != "null" ]; then
-        now=$(date +%s)
-        start_epoch=$(date -j -f "%Y-%m-%dT%H:%M:%S" "${session_start%.*}" +%s 2>/dev/null || echo "$now")
-        session_min=$(( (now - start_epoch) / 60 ))
-        chunks=$(( session_min / 25 ))
-        remain=$(( session_min % 25 ))
-        SESSION_INFO="${chunks}×25+${remain}m"
+        # Extract focus (truncate to 35 chars)
+        focus_raw=$(echo "$conport_output" | jq -r '.current_focus // ""' 2>/dev/null)
+        if [ -n "$focus_raw" ] && [ "$focus_raw" != "null" ]; then
+            FOCUS=$(echo "$focus_raw" | cut -c1-35)
+            [ ${#focus_raw} -gt 35 ] && FOCUS="${FOCUS}..."
+        fi
+
+        # Calculate session time in 25min chunks
+        session_start=$(echo "$conport_output" | jq -r '.session_start // ""' 2>/dev/null)
+        if [ -n "$session_start" ] && [ "$session_start" != "null" ]; then
+            now=$(date +%s)
+            start_epoch=$(date -j -f "%Y-%m-%dT%H:%M:%S" "${session_start%.*}" +%s 2>/dev/null || echo "$now")
+            session_min=$(( (now - start_epoch) / 60 ))
+            chunks=$(( session_min / 25 ))
+            remain=$(( session_min % 25 ))
+            SESSION_INFO="${chunks}×25+${remain}m"
+        fi
     fi
 fi
 
@@ -83,11 +88,15 @@ fi
 # Build statusline
 printf "\033[1;36m%s\033[0m" "$dir"
 
+# Git branch + changes
 if [ -n "$git_branch" ]; then
-    printf " \033[33m%s\033[0m" "$git_branch"
+    printf " \033[33m%s%s\033[0m" "$git_branch" "$git_changes"
 fi
 
 printf " \033[2m|\033[0m"
+
+# ConPort status
+printf " %s" "$CONPORT_STATUS"
 
 # Focus (if available)
 if [ -n "$FOCUS" ]; then
@@ -99,8 +108,10 @@ if [ -n "$SESSION_INFO" ]; then
     printf " \033[36m[%s]\033[0m" "$SESSION_INFO"
 fi
 
-# ADHD Engine + metrics
-printf " \033[2m|\033[0m %s" "$ADHD_STATUS"
+printf " \033[2m|\033[0m"
+
+# ADHD Engine + energy
+printf " %s" "$ADHD_STATUS"
 if [ -n "$ADHD_METRICS" ]; then
     printf "%s" "$ADHD_METRICS"
 fi
