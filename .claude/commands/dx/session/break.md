@@ -1,7 +1,7 @@
 ---
 description: "Take 5-minute ADHD-friendly break"
 allowed-tools: ["Bash", "mcp__conport__get_active_context", "mcp__conport__update_active_context"]
-model: "sonnet-4.5"
+model: "claude-sonnet-4-5-20250929"
 ---
 
 # /dx:session break - Take a Break

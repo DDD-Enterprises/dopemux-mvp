@@ -1,7 +1,7 @@
 ---
 description: "Show current session status and ADHD metrics"
 allowed-tools: ["Bash", "mcp__conport__get_active_context", "mcp__conport__get_progress"]
-model: "sonnet-4.5"
+model: "claude-sonnet-4-5-20250929"
 ---
 
 # /dx:session status - Current Session State

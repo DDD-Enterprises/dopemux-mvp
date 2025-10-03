@@ -1,7 +1,7 @@
 ---
 description: "Load session context from ConPort"
 allowed-tools: ["mcp__conport__get_active_context", "mcp__conport__get_progress", "mcp__conport__get_recent_activity_summary"]
-model: "sonnet-4.5"
+model: "claude-sonnet-4-5-20250929"
 ---
 
 # /dx:load - Load Session Context

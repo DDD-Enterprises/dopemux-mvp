@@ -2,8 +2,24 @@
 
 **Architecture Version**: 2.0 (Simplified)
 **Authority**: Task storage, ADHD optimization, progress tracking
-**Decision Reference**: #132 (Simplified architecture - skip jpicklyk)
-**Storage**: ConPort PostgreSQL AGE (not external orchestrators)
+**Migration Status**: Path C Complete (Decisions #140, #147, #148, #152)
+**Storage**: ConPort PostgreSQL AGE + SQLite (not external orchestrators)
+
+---
+
+## ⚠️ Migration Notice (October 2025)
+
+**Path C Migration Complete**: The task-orchestrator service has been **extracted and simplified** per Decision #140.
+
+**What Changed**:
+- ADHD Engine extracted → `services/adhd_engine/` (standalone FastAPI service)
+- Task storage unified → ConPort progress_entry + custom_data
+- User interface → SuperClaude `/dx:` commands
+- Old task-orchestrator → DEPRECATED (see `services/task-orchestrator/DEPRECATED.md`)
+
+**See**: `docs/90-adr/ADR-XXXX-path-c-migration.md` for complete migration documentation.
+
+---
 
 ## Architectural Decision
 

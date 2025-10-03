@@ -1,7 +1,7 @@
 ---
 description: "End session and update task status"
 allowed-tools: ["Bash", "mcp__conport__get_active_context", "mcp__conport__update_progress", "mcp__conport__update_active_context", "mcp__conport__get_progress"]
-model: "sonnet-4.5"
+model: "claude-sonnet-4-5-20250929"
 ---
 
 # /dx:session end - Complete Session
