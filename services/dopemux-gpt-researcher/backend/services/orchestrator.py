@@ -292,7 +292,9 @@ class ResearchTaskOrchestrator:
         This is Phase 1 of the ADHD workflow - transparent planning
         """
         task = self._get_task(task_id)
-        task.transition_to(TaskStatus.PLANNING)
+        # Only transition to PLANNING if not already there
+        if task.status != TaskStatus.PLANNING:
+            task.transition_to(TaskStatus.PLANNING)
 
         try:
             # Use original planner with enhanced prompt
@@ -354,7 +356,12 @@ class ResearchTaskOrchestrator:
             task.create_checkpoint({"paused_at_question": question_index})
             return None
 
-        task.transition_to(TaskStatus.EXECUTING)
+        # Handle state transitions: PLANNING → REVIEWING → EXECUTING
+        if task.status == TaskStatus.PLANNING:
+            task.transition_to(TaskStatus.REVIEWING)
+        if task.status == TaskStatus.REVIEWING:
+            task.transition_to(TaskStatus.EXECUTING)
+
         question.status = TaskStatus.EXECUTING
 
         try:

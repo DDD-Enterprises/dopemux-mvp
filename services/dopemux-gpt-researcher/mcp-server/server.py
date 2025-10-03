@@ -257,6 +257,58 @@ class MCPServer:
                 request_id, -32603, f"Tool execution error: {str(e)}"
             )
 
+    async def _execute_full_research_workflow(self, task) -> Dict[str, Any]:
+        """Execute the complete research workflow from plan to completion"""
+        try:
+            # Step 1: Generate research plan
+            logger.info(f"Generating research plan for task {task.id}")
+            research_plan = await self.orchestrator.generate_research_plan(task.id)
+            logger.info(f"Research plan generated with {len(research_plan)} questions")
+
+            # Step 2: Execute each research step
+            all_results = []
+            for i in range(len(research_plan)):
+                logger.info(f"Executing research step {i+1}/{len(research_plan)}")
+                result = await self.orchestrator.execute_research_step(task.id, i)
+                if result:
+                    all_results.append({
+                        'question': research_plan[i].question,
+                        'answer': result.answer,
+                        'confidence': result.confidence,
+                        'sources': [s.url if hasattr(s, 'url') else str(s) for s in result.sources]
+                    })
+
+            # Step 3: Complete research
+            logger.info(f"Completing research for task {task.id}")
+            completed_task = await self.orchestrator.complete_research(task.id)
+
+            # Step 4: Format results
+            summary = "\n\n".join([
+                f"**{r['question']}**\n{r['answer']}"
+                for r in all_results
+            ]) if all_results else "No results found"
+
+            return {
+                'results': all_results,
+                'summary': summary,
+                'key_findings': [r['answer'][:200] + "..." if len(r['answer']) > 200 else r['answer'] for r in all_results],
+                'sources': [src for r in all_results for src in r['sources']],
+                'total_questions': len(research_plan),
+                'confidence': sum(r['confidence'] for r in all_results) / len(all_results) if all_results else 0.0
+            }
+
+        except Exception as e:
+            logger.error(f"Error in research workflow: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                'results': [],
+                'summary': f'Research workflow failed: {str(e)}',
+                'key_findings': [],
+                'sources': [],
+                'error': str(e)
+            }
+
     async def _quick_search(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """Perform a quick search"""
         query = args['query']
@@ -266,30 +318,45 @@ class MCPServer:
             return {'error': 'Orchestrator not initialized'}
 
         try:
-            # Create a quick search task
+            # Create a quick search task with correct API
             task = await self.orchestrator.create_research_task(
-                topic=query,
-                research_type='exploratory',  # Use string instead of enum
-                depth='shallow',
+                user_id='mcp-user',
+                prompt=query,
+                research_type=ResearchType.DOCUMENTATION_RESEARCH,
                 adhd_config=ADHDConfiguration(
-                    break_interval_minutes=5,
-                    focus_duration_minutes=10,
-                    notification_style='minimal'
-                )
+                    pomodoro_enabled=True,
+                    work_duration_minutes=10,
+                    break_duration_minutes=5,
+                    max_concurrent_sources=3
+                ),
+                user_context={'source': 'mcp', 'quick_search': True}
             )
         except Exception as e:
             logger.error(f"Error creating task: {e}")
+            import traceback
+            traceback.print_exc()
             return {'error': f'Failed to create research task: {str(e)}'}
 
-        # Execute search
-        results = await self.orchestrator.execute_task(task['task_id'])
+        # Execute search workflow
+        try:
+            results = await self._execute_full_research_workflow(task)
 
-        return {
-            'query': query,
-            'task_id': task['task_id'],
-            'results': results.get('results', [])[:max_results],
-            'summary': results.get('summary', 'No summary available')
-        }
+            # Limit results for quick search
+            limited_results = results.get('results', [])[:max_results]
+
+            return {
+                'query': query,
+                'task_id': str(task.id),
+                'results': limited_results,
+                'summary': results.get('summary', 'No summary available'),
+                'status': 'completed' if not results.get('error') else 'failed'
+            }
+        except Exception as e:
+            logger.error(f"Error executing task: {e}")
+            import traceback
+            traceback.print_exc()
+            return {'error': f'Failed to execute research task: {str(e)}'}
+
 
     async def _deep_research(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """Perform deep research on a topic"""
@@ -301,43 +368,57 @@ class MCPServer:
             return {'error': 'Orchestrator not initialized'}
 
         try:
-            # Map research type to string values
+            # Map research type to backend ResearchType enum
             type_map = {
-                'general': 'exploratory',
-                'technical': 'technical',
-                'academic': 'comparative'
+                'general': ResearchType.FEATURE_RESEARCH,
+                'technical': ResearchType.TECHNOLOGY_EVALUATION,
+                'academic': ResearchType.DOCUMENTATION_RESEARCH
             }
 
-            # Create research task
+            # Create research task with correct API
             task = await self.orchestrator.create_research_task(
-                topic=topic,
-                research_type=type_map.get(research_type, 'exploratory'),  # Use string
-                depth='deep',
+                user_id='mcp-user',
+                prompt=topic,
+                research_type=type_map.get(research_type, ResearchType.FEATURE_RESEARCH),
                 adhd_config=ADHDConfiguration(
-                    break_interval_minutes=5,
-                    focus_duration_minutes=max_time,
-                    notification_style='gentle'
-                )
+                    pomodoro_enabled=True,
+                    work_duration_minutes=max_time,
+                    break_duration_minutes=5,
+                    max_concurrent_sources=5
+                ),
+                user_context={'source': 'mcp', 'deep_research': True}
             )
         except Exception as e:
             logger.error(f"Error creating deep research task: {e}")
+            import traceback
+            traceback.print_exc()
             return {'error': f'Failed to create research task: {str(e)}'}
 
         # Store active task
-        self.active_tasks[task['task_id']] = task
+        self.active_tasks[str(task.id)] = task
 
-        # Execute research
-        results = await self.orchestrator.execute_task(task['task_id'])
+        # Execute research workflow
+        try:
+            results = await self._execute_full_research_workflow(task)
 
-        return {
-            'topic': topic,
-            'task_id': task['task_id'],
-            'research_type': research_type,
-            'results': results.get('results', []),
-            'summary': results.get('summary', ''),
-            'key_findings': results.get('key_findings', []),
-            'sources': results.get('sources', [])
-        }
+            return {
+                'topic': topic,
+                'task_id': str(task.id),
+                'research_type': research_type,
+                'results': results.get('results', []),
+                'summary': results.get('summary', ''),
+                'key_findings': results.get('key_findings', []),
+                'sources': results.get('sources', []),
+                'total_questions': results.get('total_questions', 0),
+                'confidence': results.get('confidence', 0.0),
+                'status': 'completed' if not results.get('error') else 'failed'
+            }
+        except Exception as e:
+            logger.error(f"Error executing deep research: {e}")
+            import traceback
+            traceback.print_exc()
+            return {'error': f'Failed to execute research task: {str(e)}'}
+
 
     async def _documentation_search(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """Search technical documentation"""
