@@ -23,15 +23,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import redis.asyncio as redis
 
-from .models import (
+from models import (
     EnergyLevel,
     AttentionState,
     CognitiveLoadLevel,
     ADHDProfile,
     AccommodationRecommendation
 )
-from .config import settings
-from .activity_tracker import ActivityTracker
+from config import settings
+from activity_tracker import ActivityTracker
 
 logger = logging.getLogger(__name__)
 
