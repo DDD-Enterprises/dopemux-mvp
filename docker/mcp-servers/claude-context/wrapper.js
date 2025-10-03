@@ -33,8 +33,8 @@ const mcpServer = spawn('uvx', proxyArgs, {
     VOYAGEAI_API_KEY: process.env.VOYAGEAI_API_KEY,
     VOYAGEAI_RERANK_MODEL: process.env.VOYAGEAI_RERANK_MODEL || 'rerank-2.5',
     MILVUS_ADDRESS: process.env.MILVUS_ADDRESS,
-    MILVUS_TOKEN: process.env.MILVUS_TOKEN,
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    MILVUS_TOKEN: process.env.MILVUS_TOKEN || '',  // Empty for self-hosted Milvus
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY || 'dummy-key-not-used',  // Fallback when using VoyageAI
     NODE_ENV: 'production'
   }
 });

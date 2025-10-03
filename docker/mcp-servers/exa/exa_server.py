@@ -8,6 +8,7 @@ Based on Exa API documentation from /exa-labs/exa-py
 
 import json
 import os
+import sys
 import traceback
 from typing import List, Optional, Dict, Any
 import asyncio
@@ -351,14 +352,21 @@ def find_similar(
         return json.dumps({"error": error_msg}, indent=2)
 
 if __name__ == "__main__":
-    port = int(os.getenv("MCP_SERVER_PORT", 3008))
-    print(f"🔍 Starting Exa MCP Server on port {port}")
+    # Check if we should run in stdio mode for mcp-proxy
+    run_mode = os.getenv("MCP_RUN_MODE", "stdio")
 
-    # Use FastMCP's built-in HTTP server
-    import asyncio
-    asyncio.run(mcp.run_http_async(
-        host="0.0.0.0",
-        port=port,
-        show_banner=True,
-        transport="http"
-    ))
+    if run_mode == "stdio":
+        print("🔍 Starting Exa MCP Server in stdio mode", file=sys.stderr)
+        import asyncio
+        asyncio.run(mcp.run())
+    else:
+        # Legacy HTTP mode
+        port = int(os.getenv("MCP_SERVER_PORT", 3008))
+        print(f"🔍 Starting Exa MCP Server on port {port}")
+        import asyncio
+        asyncio.run(mcp.run_http_async(
+            host="0.0.0.0",
+            port=port,
+            show_banner=True,
+            transport="http"
+        ))
