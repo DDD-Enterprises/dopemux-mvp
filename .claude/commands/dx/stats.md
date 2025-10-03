@@ -1,7 +1,7 @@
 ---
 description: "ADHD metrics dashboard - energy, attention, progress"
 allowed-tools: ["Bash", "mcp__conport__get_progress", "mcp__conport__get_active_context"]
-model: "sonnet-4.5"
+model: "claude-sonnet-4-5-20250929"
 ---
 
 # /dx:stats - ADHD Metrics Dashboard

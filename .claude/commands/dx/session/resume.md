@@ -1,7 +1,7 @@
 ---
 description: "Resume session after break with context restoration"
 allowed-tools: ["mcp__conport__get_active_context", "mcp__conport__update_active_context", "mcp__conport__get_progress"]
-model: "sonnet-4.5"
+model: "claude-sonnet-4-5-20250929"
 ---
 
 # /dx:session resume - Resume After Break

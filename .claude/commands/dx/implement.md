@@ -8,7 +8,7 @@ allowed-tools: [
   "mcp__context7__*",
   "mcp__zen__thinkdeep", "mcp__zen__debug", "mcp__zen__codereview"
 ]
-model: "sonnet-4.5"
+model: "claude-sonnet-4-5-20250929"
 ---
 
 # /dx:implement - ADHD Implementation Session
