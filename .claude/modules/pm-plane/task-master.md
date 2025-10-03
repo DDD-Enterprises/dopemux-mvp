@@ -1,4 +1,18 @@
-# Task-Master-AI Module
+# ⚠️ DEPRECATED: Task-Master-AI Module
+
+**STATUS**: **DEPRECATED** - No longer used in simplified architecture
+**REPLACED BY**: SuperClaude `/dx:prd-parse` with Zen planner
+**DECISION**: #132, #133 (Simplified architecture - skip Task-Master-AI)
+
+---
+
+**Why Deprecated**: Task-Master-AI PRD parsing is redundant with SuperClaude's `/dx:prd-parse` command which uses Zen planner for decomposition and includes human review workflow (Approach C quality gate). SuperClaude provides superior integration with the Dopemux MCP stack.
+
+**Migration**: Use `/dx:prd-parse` instead - see `.claude/modules/superclaude-integration.md` and `.claude/modules/custom-commands.md`
+
+---
+
+# Task-Master-AI Module (Historical Reference Only)
 
 **Module Version**: 1.0.0
 **Authority**: PRD Parsing and Task Decomposition
