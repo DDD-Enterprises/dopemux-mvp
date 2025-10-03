@@ -1,7 +1,7 @@
 ---
 description: "Save current session context to ConPort"
 allowed-tools: ["mcp__conport__update_active_context", "mcp__conport__log_decision"]
-model: "sonnet-4.5"
+model: "claude-sonnet-4-5-20250929"
 ---
 
 # /dx:save - Save Session Context

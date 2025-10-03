@@ -2,7 +2,7 @@
 description: "Quick ADHD task assessment"
 arguments: "[task_id_or_description]"
 allowed-tools: ["Bash", "mcp__conport__get_progress"]
-model: "sonnet-4.5"
+model: "claude-sonnet-4-5-20250929"
 ---
 
 # /dx:assess - Quick ADHD Task Assessment

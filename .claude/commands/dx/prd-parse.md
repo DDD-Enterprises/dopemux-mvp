@@ -2,7 +2,7 @@
 description: "Parse PRD into ADHD-optimized tasks using Zen planner"
 arguments: "<prd_file_path>"
 allowed-tools: ["Read", "mcp__zen__planner", "mcp__conport__log_progress", "mcp__conport__link_conport_items", "mcp__conport__batch_log_items"]
-model: "sonnet-4.5"
+model: "claude-sonnet-4-5-20250929"
 ---
 
 # /dx:prd-parse - PRD to ConPort Tasks
