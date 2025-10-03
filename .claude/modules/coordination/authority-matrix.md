@@ -1,8 +1,9 @@
 # Authority Matrix Module
 
-**Module Version**: 1.0.0
+**Module Version**: 2.0.0 (Simplified Architecture)
 **Purpose**: Clear System Authority Boundaries Reference
 **Usage**: Quick reference for preventing authority violations
+**Decision Reference**: #132, #133, #134 (Simplified architecture)
 
 ## 🚨 CRITICAL AUTHORITY BOUNDARIES
 
@@ -10,200 +11,208 @@
 
 | System | OWNS (Exclusive Authority) | NEVER Does |
 |--------|---------------------------|------------|
-| **Leantime** | Task status updates (planned→active→blocked→done)<br/>Team dashboards and reporting<br/>Milestone tracking and roadmap visibility<br/>Stakeholder communication | Task decomposition<br/>Architectural decisions<br/>Code navigation |
-| **Task-Master** | PRD parsing and analysis<br/>AI-driven task decomposition<br/>Subtask hierarchy creation<br/>Complexity scoring | Status updates<br/>Decision storage<br/>Code exploration |
-| **Task-Orchestrator** | Dependency analysis<br/>37 specialized orchestration tools<br/>Risk assessment and mitigation<br/>Workflow optimization | Initial task creation<br/>Status management<br/>Architectural decisions |
-| **Serena** | Code navigation and LSP operations<br/>Symbol search and analysis<br/>Session memory (breadcrumbs)<br/>Developer interruption recovery | Task management<br/>Status updates<br/>Decision storage |
-| **ConPort** | Architectural decisions and rationale<br/>Knowledge graph maintenance<br/>Progress logging (not status)<br/>Context preservation | Task status authority<br/>Task hierarchy creation<br/>LSP operations |
-| **Integration Bridge** | Cross-plane coordination<br/>Event routing<br/>Authority boundary enforcement<br/>Multi-instance coordination | Direct system operations<br/>Business logic<br/>Data storage |
+| **ConPort (PostgreSQL AGE)** | Task storage (progress_entry)<br/>Task metadata (custom_data)<br/>Dependencies (link_conport_items)<br/>Architectural decisions<br/>Knowledge graph queries<br/>Context preservation (product & active) | PRD parsing<br/>ADHD metric calculation<br/>LSP operations<br/>Real-time session management |
+| **SuperClaude** | PRD parsing via `/dx:prd-parse`<br/>25 standard commands execution<br/>15 specialized agents<br/>`/dx:` custom command routing<br/>Human review workflow (Approach C) | Task storage<br/>Decision logging<br/>Code navigation<br/>ADHD state tracking |
+| **Python ADHD Engine** | Energy tracking & matching<br/>Cognitive load calculation (0-1)<br/>Break monitoring (25/60/90min)<br/>Attention state analysis<br/>Smart task recommendation<br/>Hyperfocus protection | Task storage<br/>PRD parsing<br/>LSP operations<br/>Knowledge graph management |
+| **Serena LSP** | LSP protocol operations<br/>Code navigation & completion<br/>Symbol search & analysis<br/>Semantic code understanding<br/>Tree-sitter parsing<br/>Navigation caching | Task management<br/>Decision storage<br/>PRD decomposition<br/>Session timing |
+| **React Ink Dashboard** | Visual task progress display<br/>ADHD metric visualization<br/>Real-time event rendering<br/>User interaction (task selection)<br/>Break reminders & notifications | Task data storage<br/>Business logic<br/>Authority decisions<br/>Data persistence |
+| **Integration Bridge** | Async event routing (Redis Streams)<br/>Event bus pub/sub coordination<br/>MetaMCP role enforcement<br/>Multi-instance isolation | Task storage<br/>Decision logic<br/>PRD parsing<br/>ADHD calculations |
 
 ## 🔄 Communication Flow Patterns
 
-### Allowed Communication Paths
+### Allowed Communication Paths (Simplified Architecture)
 
 ```
-Project Management Plane ↔ Integration Bridge ↔ Cognitive Plane
-    ↕                              ↕                    ↕
-Task-Master                 Event Routing            Serena
-Task-Orchestrator          Authority Enforcement     ConPort
-Leantime
+┌─────────────┐     ┌──────────────────┐     ┌─────────────┐
+│ SuperClaude │────>│ Python Validator │────>│   ConPort   │
+│/dx:prd-parse│     │ (ADHD metadata)  │     │ (batch imp) │
+└─────────────┘     └──────────────────┘     └─────────────┘
+                                                     │
+                                                     v
+                                              ┌──────────────┐
+                                              │ Integration  │
+                                              │    Bridge    │
+                                              │ (event pub)  │
+                                              └──────────────┘
+                                                     │
+                          ┌──────────────────────────┼──────────────┐
+                          v                          v              v
+                   ┌─────────────┐          ┌────────────┐  ┌──────────┐
+                   │   ADHD      │          │  Dashboard │  │  Serena  │
+                   │   Engine    │          │  (React)   │  │   LSP    │
+                   └─────────────┘          └────────────┘  └──────────┘
 ```
 
-### PROHIBITED Direct Communication
-❌ **Serena ↔ Task-Master** (different planes)
-❌ **ConPort ↔ Leantime** (different authorities)
-❌ **Task-Orchestrator ↔ Serena** (different planes)
+### Implementation Flow Example
+
+```
+1. User: /dx:implement
+   └─> ADHD Engine queries ConPort for optimal task
+       └─> ConPort returns task with metadata
+           └─> ADHD Engine starts 25min session
+               └─> Integration Bridge publishes "session_started"
+                   ├─> Dashboard shows timer
+                   └─> ConPort updates active_context
+
+2. Every 5 minutes: Auto-save
+   └─> ConPort.update_progress(task_id, status)
+       └─> Integration Bridge publishes "progress_updated"
+           └─> Dashboard updates progress bar
+
+3. At 25 minutes: Break reminder
+   └─> ADHD Engine triggers break
+       └─> Integration Bridge publishes "break_reminder"
+           └─> Dashboard shows notification: "Great work! Time for 5min break"
+               └─> ConPort logs break in custom_data
+```
 
 ## ⚡ Event Flow Authority
 
 ### Task Lifecycle Events
-```
-1. Task Created: Task-Master → Integration Bridge → ConPort → Serena
-2. Status Changed: Leantime → Integration Bridge → ConPort (log only)
-3. Code Changed: Serena → ConPort → Integration Bridge → Leantime
-4. Decision Made: ConPort → Integration Bridge (broadcast) → All systems
-```
 
-### Authority for Each Event Type
-
-| Event Type | Authoritative Source | Can Update | Can Read |
-|------------|---------------------|------------|----------|
-| **Task Status** | Leantime | Leantime only | All systems |
-| **Task Hierarchy** | Task-Master | Task-Master only | All systems |
-| **Decisions** | ConPort | ConPort only | All systems |
-| **Code Changes** | Serena | Serena only | All systems |
-| **Dependencies** | Task-Orchestrator | Task-Orchestrator only | All systems |
+| Event Type | Authoritative Source | Can Update | Can Read | Event Flow |
+|------------|---------------------|------------|----------|-----------|
+| **Task Storage** | ConPort | ConPort only | All systems | ConPort → Integration Bridge → All subscribers |
+| **Task Creation** | SuperClaude + Human | SuperClaude validates → ConPort stores | All systems | SuperClaude → Validator → ConPort → Bridge → All |
+| **Decisions** | ConPort | ConPort only | All systems | ConPort → Bridge → All |
+| **ADHD State** | Python ADHD Engine | ADHD Engine only | Dashboard, ConPort | ADHD Engine → Bridge → Dashboard |
+| **Code Navigation** | Serena LSP | Serena only | ADHD Engine (for context) | Serena → (optional) ConPort decision → Bridge |
+| **Session State** | ADHD Engine | ADHD Engine updates → ConPort stores | Dashboard, ConPort | ADHD Engine → ConPort → Bridge → Dashboard |
 
 ## 🛡️ Violation Prevention
 
 ### Common Violations to Prevent
 
-**Status Update Violations:**
-```bash
-# ❌ WRONG - Direct status update from non-Leantime system
-task_orchestrator.update_task_status("active")
+❌ **Serena modifying task status**
+- **Why wrong**: Serena is for code navigation, ConPort owns task data
+- **Correct**: Serena reads ConPort for context, never modifies tasks
 
-# ✅ CORRECT - Route through Integration Bridge to Leantime
-integration_bridge.route_status_change("task-id", "active", "task-orchestrator")
+❌ **SuperClaude directly storing decisions**
+- **Why wrong**: SuperClaude parses PRDs, ConPort stores decisions
+- **Correct**: SuperClaude generates JSON → Human approves → ConPort stores
+
+❌ **ADHD Engine storing task data**
+- **Why wrong**: ADHD Engine recommends, ConPort stores
+- **Correct**: ADHD Engine queries ConPort → recommends → user selects → ConPort updates
+
+❌ **Dashboard modifying ConPort directly**
+- **Why wrong**: Dashboard is view layer only
+- **Correct**: Dashboard triggers user action → Python service → ConPort update → Bridge event → Dashboard re-render
+
+❌ **Integration Bridge storing data**
+- **Why wrong**: Bridge is routing only, not storage
+- **Correct**: Bridge routes events, ConPort/Serena/ADHD Engine store data
+
+### Authority Enforcement Checks
+
+```python
+# Integration Bridge enforces these rules
+def check_authority(operation: str, requester: str) -> bool:
+    AUTHORITY_RULES = {
+        "update_task_status": ["conport"],
+        "store_decision": ["conport"],
+        "parse_prd": ["superclaude"],
+        "calculate_adhd_metrics": ["adhd_engine"],
+        "lsp_operations": ["serena"],
+        "route_events": ["integration_bridge"],
+    }
+
+    allowed_systems = AUTHORITY_RULES.get(operation, [])
+    if requester not in allowed_systems:
+        raise AuthorityViolationError(
+            f"{requester} cannot perform {operation}. "
+            f"Only {allowed_systems} have authority."
+        )
+    return True
 ```
 
-**Decision Storage Violations:**
-```bash
-# ❌ WRONG - Storing decisions outside ConPort
-leantime.log_architectural_decision("Use microservices")
+## 🎯 Quick Decision Guide
 
-# ✅ CORRECT - Store decisions in ConPort with proper authority
-mcp__conport__log_decision --workspace_id "/Users/hue/code/dopemux-mvp" \
-  --summary "Use microservices architecture" \
-  --rationale "Supports multi-instance scaling requirements"
+**Need to store a task?** → ConPort `log_progress`
+**Need to parse a PRD?** → SuperClaude `/dx:prd-parse`
+**Need to calculate energy level?** → Python ADHD Engine
+**Need code navigation?** → Serena LSP
+**Need to log a decision?** → ConPort `log_decision`
+**Need to route events?** → Integration Bridge
+**Need to show UI?** → React Ink Dashboard
+
+**Need to coordinate multiple systems?** → Integration Bridge publishes event → All subscribers react
+
+## 📊 Authority Decision Tree
+
+```
+┌─ Need to interact with tasks?
+│
+├─ Store/Update task data?
+│  └─> ConPort (progress_entry + custom_data)
+│
+├─ Parse PRD into tasks?
+│  └─> SuperClaude /dx:prd-parse → Human review → ConPort batch import
+│
+├─ Recommend which task to work on?
+│  └─> Python ADHD Engine queries ConPort → recommends → user selects
+│
+└─ Display tasks in UI?
+   └─> React Ink Dashboard subscribes to Integration Bridge events
+
+┌─ Need to interact with code?
+│
+├─ Navigate/search code?
+│  └─> Serena LSP (go-to-definition, find-references, etc.)
+│
+├─ Store architectural decision about code?
+│  └─> ConPort log_decision (Serena NEVER stores decisions)
+│
+└─ Analyze code complexity for ADHD?
+   └─> Serena provides code context → Python ADHD Engine calculates
+
+┌─ Need to manage ADHD accommodations?
+│
+├─ Calculate energy/attention state?
+│  └─> Python ADHD Engine (owns all ADHD calculations)
+│
+├─ Store ADHD metadata about tasks?
+│  └─> ConPort custom_data category "task_metadata"
+│
+├─ Track session timing?
+│  └─> Python ADHD Engine (25min timer) → ConPort (stores history)
+│
+└─ Show break reminders?
+   └─> Python ADHD Engine triggers → Integration Bridge → Dashboard displays
 ```
 
-**Cross-Plane Communication Violations:**
-```bash
-# ❌ WRONG - Direct communication between planes
-serena.request_task_breakdown()
+## 🔐 MetaMCP Role-Based Boundaries
 
-# ✅ CORRECT - Route through Integration Bridge
-integration_bridge.route_request("serena", "task-master", "task_breakdown")
-```
+Integration Bridge enforces tool-level access per role:
 
-## 🎯 ADHD-Optimized Authority Patterns
+| Role | Max Tools | Allowed Operations | Authority Enforcement |
+|------|-----------|-------------------|---------------------|
+| **QUICKFIX** | 8 tools | Basic code fixes, simple task updates | Limited ConPort + Serena access |
+| **ACT** | 10 tools | Full implementation, code nav, progress tracking | Full Serena + ConPort progress |
+| **PLAN** | 9 tools | Architecture, consensus, decision logging | Zen + ConPort decisions |
+| **RESEARCH** | 10 tools | Deep research, analysis, investigation | Zen + Exa + GPT-Researcher |
+| **ALL** | 60+ tools | Full access (use sparingly - cognitive overload) | All systems |
 
-### Progressive Authority Disclosure
-```bash
-# Level 1: Essential authorities only
-ESSENTIAL_AUTHORITIES = {
-    "Leantime": "Status updates",
-    "ConPort": "Decisions",
-    "Serena": "Code navigation"
-}
+**ADHD Principle**: Limit tools per role to reduce cognitive load while maintaining necessary capabilities.
 
-# Level 2: Full authority matrix (on request)
-# Level 3: Event flow patterns (on request)
-# Level 4: Violation prevention (on request)
-```
+---
 
-### Authority Conflict Resolution
+**Migration Notes:**
 
-**Principle**: Always defer to the authoritative system
-```bash
-RESOLVE_AUTHORITY_CONFLICT() {
-    CONFLICT_TYPE="$1"
-    SYSTEMS=("$@")
+**What Changed from v1.0:**
+- ❌ Removed: Two-Plane architecture (PM Plane vs Cognitive Plane)
+- ❌ Removed: Leantime (status authority)
+- ❌ Removed: Task-Master-AI (PRD parsing)
+- ❌ Removed: jpicklyk Task-Orchestrator (37 tools)
+- ✅ Simplified: ConPort as single source of truth for tasks AND decisions
+- ✅ Added: SuperClaude for PRD parsing with human review
+- ✅ Added: Python ADHD Engine for cognitive optimization
+- ✅ Kept: Integration Bridge (now simpler event routing, not cross-plane coordination)
+- ✅ Kept: Serena LSP (code intelligence)
 
-    case "$CONFLICT_TYPE" in
-        "status_disagreement")
-            echo "🏆 Leantime is authoritative for status - deferring to Leantime"
-            ;;
-        "decision_conflict")
-            echo "🏆 ConPort is authoritative for decisions - checking ConPort"
-            ;;
-        "task_hierarchy_dispute")
-            echo "🏆 Task-Master is authoritative for hierarchies - validating with Task-Master"
-            ;;
-    esac
-}
-```
+---
 
-## 📋 Quick Reference Commands
-
-### Authority Validation
-```bash
-# Check if system has authority for operation
-CHECK_AUTHORITY() {
-    SYSTEM="$1"
-    OPERATION="$2"
-
-    case "$SYSTEM:$OPERATION" in
-        "leantime:update_status") echo "✅ AUTHORIZED" ;;
-        "task-master:create_hierarchy") echo "✅ AUTHORIZED" ;;
-        "conport:log_decision") echo "✅ AUTHORIZED" ;;
-        "serena:navigate_code") echo "✅ AUTHORIZED" ;;
-        *) echo "❌ NOT AUTHORIZED - Check authority matrix" ;;
-    esac
-}
-```
-
-### Communication Path Validation
-```bash
-# Validate communication path
-VALIDATE_COMMUNICATION_PATH() {
-    SOURCE="$1"
-    TARGET="$2"
-
-    # Check if cross-plane
-    SOURCE_PLANE=$(get_system_plane "$SOURCE")
-    TARGET_PLANE=$(get_system_plane "$TARGET")
-
-    if [ "$SOURCE_PLANE" != "$TARGET_PLANE" ]; then
-        if [ "$SOURCE" != "integration-bridge" ] && [ "$TARGET" != "integration-bridge" ]; then
-            echo "❌ VIOLATION: Cross-plane communication must go through Integration Bridge"
-            echo "   Correct path: $SOURCE → Integration Bridge → $TARGET"
-            return 1
-        fi
-    fi
-
-    echo "✅ VALID: Communication path authorized"
-    return 0
-}
-```
-
-## 🚀 Emergency Authority Override
-
-### When Authority is Unclear
-1. **Default to Integration Bridge**: Route through central coordinator
-2. **Log the Uncertainty**: Record in ConPort for future clarification
-3. **Ask for Clarification**: Prompt user to confirm authority
-4. **Update Matrix**: Add new patterns to authority matrix
-
-### Authority Matrix Updates
-```bash
-# When new systems are added or authority changes
-UPDATE_AUTHORITY_MATRIX() {
-    NEW_SYSTEM="$1"
-    AUTHORITY_DOMAIN="$2"
-
-    mcp__conport__log_decision --workspace_id "/Users/hue/code/dopemux-mvp" \
-      --summary "Authority matrix updated: $NEW_SYSTEM owns $AUTHORITY_DOMAIN" \
-      --rationale "System integration requires clear authority boundaries" \
-      --tags ["authority-matrix", "system-integration"]
-}
-```
-
-## 🎨 Visual Authority Reference
-
-### System Ownership Colors
-- 🟦 **Leantime**: Blue (Status and visibility)
-- 🟩 **Task-Master**: Green (Creation and hierarchy)
-- 🟨 **Task-Orchestrator**: Yellow (Dependencies and optimization)
-- 🟪 **Serena**: Purple (Code and navigation)
-- 🟧 **ConPort**: Orange (Decisions and memory)
-- ⚪ **Integration Bridge**: White (Coordination and routing)
-
-### Authority Hierarchy
-```
-1. 🏆 System-Specific Authority (absolute)
-2. 🔄 Integration Bridge Coordination (routing)
-3. 📝 ConPort Decision Logging (historical)
-4. 👤 User Override (last resort)
-```
+**See Also:**
+- `.claude/modules/coordination/integration-bridge.md` - Event routing details
+- `.claude/modules/superclaude-integration.md` - SuperClaude configuration
+- `.claude/modules/pm-plane/task-orchestrator.md` - ConPort task management

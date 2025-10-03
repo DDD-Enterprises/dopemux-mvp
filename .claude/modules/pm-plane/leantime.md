@@ -1,7 +1,21 @@
-# Leantime Bridge Module
+# ⚠️ DEPRECATED: Leantime Bridge Module
+
+**STATUS**: **DEPRECATED** - No longer used in simplified architecture
+**REPLACED BY**: ConPort `progress_entry` for task status tracking
+**DECISION**: #132 (Simplified architecture - ConPort is single source of truth)
+
+---
+
+**Why Deprecated**: Leantime status authority (planned→active→blocked→done) is now handled directly in ConPort via `progress_entry` with statuses: TODO, IN_PROGRESS, BLOCKED, DONE. This eliminates cross-system synchronization complexity while maintaining full task management capabilities.
+
+**Migration**: Use ConPort MCP tools directly - see `.claude/modules/pm-plane/task-orchestrator.md`
+
+---
+
+# Leantime Bridge Module (Historical Reference Only)
 
 **Module Version**: 1.0.0
-**Authority**: Task Status and Team Visibility
+**Authority**: Task Status and Team Visibility (DEPRECATED)
 **Modes**: ACT and PLAN
 **Integration**: Official MCP + Custom ADHD Bridge
 

@@ -3,7 +3,7 @@
 **Module Version**: 1.0.0
 **Purpose**: Event schemas and async handling patterns
 **Scope**: Cross-system event coordination and propagation
-**Integration**: Two-Plane Architecture event flows
+**Integration**: Simplified event-driven architecture (ConPort + SuperClaude + Python ADHD Engine)
 
 ## Core Event Flow Patterns
 
@@ -11,16 +11,16 @@
 ```
 🚨 CRITICAL: All cross-plane communication MUST go through Integration Bridge
 
-Project Management Plane ←→ Integration Bridge ←→ Cognitive Plane
+SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashboard/Serena
 ```
 
 ### Event Flow Sequences
 
 #### Task Lifecycle Events
 ```
-1. Task Created: Task-Master → Integration Bridge → ConPort → Serena
-2. Status Changed: Leantime → Integration Bridge → ConPort (log only)
-3. Code Changed: Serena → ConPort → Integration Bridge → Leantime
+1. Tasks Imported: SuperClaude `/dx:prd-parse` → ConPort → Integration Bridge → Dashboard/ADHD Engine
+2. Task Status Changed: ConPort `update_progress` → Integration Bridge → Dashboard
+3. Code Changed: Serena → ConPort (optional decision logging)
 4. Decision Made: ConPort → Integration Bridge (broadcast) → All systems
 ```
 
@@ -270,13 +270,13 @@ VALIDATE_EVENT_AUTHORITY() {
     case "$EVENT_TYPE" in
         "status_changed")
             if [ "$SOURCE_SYSTEM" != "leantime" ]; then
-                echo "❌ Authority violation: Only Leantime can emit status_changed events"
+                echo "❌ Authority violation: Only ConPort can emit status_changed events"
                 return 1
             fi
             ;;
         "task_created")
             if [ "$SOURCE_SYSTEM" != "task-master" ]; then
-                echo "❌ Authority violation: Only Task-Master can emit task_created events"
+                echo "❌ Authority violation: Only SuperClaude/ConPort can emit tasks_imported events"
                 return 1
             fi
             ;;

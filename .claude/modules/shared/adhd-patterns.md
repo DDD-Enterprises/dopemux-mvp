@@ -489,3 +489,202 @@ COORDINATE_EXTERNAL_MEMORY() {
     esac
 }
 ```
+
+## SuperClaude /dx: Command ADHD Accommodations
+
+### Session Management Commands (Critical ADHD Support)
+
+#### `/dx:load` - Zero-Cost Context Restoration
+**ADHD Value**: Eliminates "what was I doing?" cognitive drain
+
+```bash
+# Gentle re-orientation after interruptions
+/dx:load
+
+# Output pattern optimized for ADHD:
+# 1. Visual structure (headers, bullets, emojis)
+# 2. Max 3 options (reduce decision paralysis)
+# 3. Gentle language ("where you left off" not "resume work")
+# 4. Time anchors ("last 24h") for temporal awareness
+# 5. Context bridging (connect previous → current state)
+```
+
+**ADHD Accommodations**:
+- ✅ **Automatic re-orientation**: No need to remember context
+- ✅ **Gentle welcome back**: Encouraging, non-judgmental tone
+- ✅ **Visual clarity**: Clear headers, progress indicators
+- ✅ **Decision reduction**: Max 3 next action options
+- ✅ **Time awareness**: "Last 24h" anchors for time blindness
+
+#### `/dx:save` - Interruption Safety Net
+**ADHD Value**: Safe context switching without anxiety
+
+```bash
+# Quick save before meetings/breaks
+/dx:save
+# Prompts ONLY 3 questions (minimal friction):
+# 1. Current focus: (1 sentence)
+# 2. Session notes: (2-3 sentences)
+# 3. Next steps: (bullet points)
+
+# Immediate confirmation builds trust:
+# "✅ Session Saved! Safe to switch contexts now."
+```
+
+**ADHD Accommodations**:
+- ✅ **Minimal friction**: Only 3 structured prompts
+- ✅ **Clear questions**: Reduce cognitive load
+- ✅ **Immediate feedback**: Visual confirmation builds trust
+- ✅ **Time stamping**: Helps with time awareness
+
+### Implementation Command (Primary Development Workflow)
+
+#### `/dx:implement` - ADHD-Optimized Coding Sessions
+**ADHD Value**: Energy matching, break management, hyperfocus protection
+
+```bash
+# Start ADHD-optimized implementation session
+/dx:implement
+
+# Workflow:
+# 1. Check current energy/attention/cognitive load
+# 2. Smart task selection (match energy to task complexity)
+# 3. Start 25min timer with auto-save every 5min
+# 4. Gentle break reminder at 25min
+# 5. Hyperfocus warning at 60min
+# 6. Mandatory break at 90min
+```
+
+**ADHD Accommodations**:
+- ✅ **Energy matching**: Tasks recommended by current energy level
+- ✅ **25min sessions**: Prevent burnout, maintain attention quality
+- ✅ **Auto-save every 5min**: Never lose work, safe interruptions
+- ✅ **Gentle break reminders**: "Great work! Time for break" (not punitive)
+- ✅ **Hyperfocus protection**: Warns at 60min, forces at 90min (health)
+- ✅ **Max 3 task options**: Reduce decision paralysis
+- ✅ **Visual timer**: Progress indicators, status updates
+- ✅ **Celebration**: "Great work!" positive reinforcement
+
+**Break Reminder Pattern**:
+```
+⏰ Great work! Time for a 5-minute break
+
+You've been focused for 25 minutes. Taking a break helps:
+- Prevent burnout
+- Maintain attention quality
+- Process what you learned
+
+Choose:
+1. Take 5min break (recommended)
+2. Continue for 10 more min (then mandatory break)
+3. Save and switch tasks
+```
+
+**Hyperfocus Protection Pattern**:
+```
+⚠️ Hyperfocus Alert: 60 minutes straight!
+Please take a break soon to avoid burnout.
+
+🛑 Mandatory Break: 90 minutes is the limit!
+For your health and code quality, taking 10-min break now.
+Your work has been auto-saved.
+```
+
+### Planning Command
+
+#### `/dx:prd-parse` - Structured PRD Decomposition
+**ADHD Value**: Prevents overwhelm, creates manageable chunks
+
+```bash
+/dx:prd-parse "requirements.md"
+
+# ADHD-optimized decomposition:
+# 1. All tasks 15-90min chunks (ADHD optimal)
+# 2. ADHD metadata: complexity (0-1), energy (low/med/high)
+# 3. Human review gate (catch errors, build confidence)
+# 4. Dependency visualization (understand blocking)
+# 5. Break point suggestions (pre-planned pauses)
+```
+
+**ADHD Accommodations**:
+- ✅ **15-90min chunks**: All tasks broken into ADHD-optimal sizes
+- ✅ **Human review gate**: Catch errors before committing (reduce anxiety)
+- ✅ **Energy metadata**: Enables smart task selection in `/dx:implement`
+- ✅ **Complexity scoring**: Know difficulty upfront, reduce surprises
+- ✅ **Break point suggestions**: Pre-planned pauses for complex tasks
+- ✅ **Dependency visualization**: Clear blocking relationships
+
+### Analysis Commands
+
+#### `/dx:analyze` - Structured Investigation
+**ADHD Value**: Reduce overwhelm via multi-step structure
+
+**ADHD Accommodations**:
+- ✅ **Structured thinking**: Multi-step prevents information overload
+- ✅ **Expert validation**: Multiple models for confidence building
+- ✅ **Automatic logging**: Capture insights in ConPort (external memory)
+
+#### `/dx:review` - Multi-Model Code Review
+**ADHD Value**: Confidence building, multiple perspectives
+
+**ADHD Accommodations**:
+- ✅ **Multiple models**: Validation from different perspectives
+- ✅ **Comprehensive coverage**: Quality, security, performance, ADHD patterns
+- ✅ **Automatic logging**: Decisions captured for future reference
+
+### Workflow Integration Patterns
+
+#### Daily Development Session Pattern
+```bash
+# Morning: Restore context
+/dx:load
+# → Gentle re-orientation
+# → Choose: Continue, Switch, or Review
+
+# Start implementation
+/dx:implement
+# → Energy-aware task selection
+# → 25min timer + auto-save
+
+# (25min later: automatic break reminder)
+# "Great work! Time for 5min break ☕"
+
+# Continue or switch
+/dx:implement
+# → Resume same task or select new one
+
+# End of day: Save progress
+/dx:save "Completed auth, next: API integration"
+# → Confirmation: "✅ Session saved!"
+```
+
+#### PRD to Implementation Pattern
+```bash
+# Step 1: Parse PRD
+/dx:prd-parse "requirements/auth.md"
+# → Zen planner decomposition
+# → Human review JSON
+# → ConPort batch import
+
+# Step 2: Design architecture
+/dx:design "JWT vs session tokens?"
+# → Zen consensus (3 models)
+# → Decision logged to ConPort
+
+# Step 3: Implementation
+/dx:implement
+# → ADHD engine selects optimal task
+# → 25min session with breaks
+
+# Step 4: Code review
+/dx:review "src/auth/*.py"
+# → Zen multi-model validation
+# → Issues logged to ConPort
+```
+
+---
+
+**See Also:**
+- `.claude/modules/superclaude-integration.md` - SuperClaude overview
+- `.claude/modules/custom-commands.md` - Detailed /dx: command reference
+- `.claude/modules/coordination/authority-matrix.md` - Authority boundaries
