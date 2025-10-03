@@ -2,7 +2,7 @@
 description: "Start ADHD session with energy check"
 arguments: "[task_id]"
 allowed-tools: ["Bash", "mcp__conport__get_progress", "mcp__conport__update_progress", "mcp__conport__update_active_context"]
-model: "sonnet-4.5"
+model: "claude-sonnet-4-5-20250929"
 ---
 
 # /dx:session start - Begin ADHD Session

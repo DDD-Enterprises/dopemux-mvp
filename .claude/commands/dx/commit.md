@@ -7,7 +7,7 @@ allowed-tools: [
   "mcp__conport__log_decision",
   "mcp__conport__update_active_context"
 ]
-model: "sonnet-4.5"
+model: "claude-sonnet-4-5-20250929"
 ---
 
 # /dx:commit - Validated Commit & PR
