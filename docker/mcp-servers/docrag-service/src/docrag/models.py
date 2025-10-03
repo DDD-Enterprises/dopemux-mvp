@@ -132,6 +132,20 @@ class SearchResult(BaseModel):
     rerank_score: Optional[float] = None
 
 
+class CodeSearchResult(BaseModel):
+    """Search result for code search (specialized)."""
+    id: str
+    score: float
+    file_path: str
+    function_name: Optional[str] = None
+    language: str
+    content: str
+    context_snippet: Optional[str] = None
+    complexity: float = 0.0
+    start_line: int = 0
+    end_line: int = 0
+
+
 class SearchResponse(BaseModel):
     """Search response with results and metadata."""
     results: List[SearchResult]
