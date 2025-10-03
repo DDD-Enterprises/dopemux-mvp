@@ -1,0 +1,238 @@
+# Multi-Index Configuration for Claude-Context v2
+# Four separate indices with specialized preprocessing and retrieval strategies
+
+indices:
+  code:
+    collection_name: code_index
+    embedding:
+      model: voyage-code-3
+      dimension: 1024
+      input_type: document
+    vectors:
+      - name: content_vec
+        source: contextualized_code  # Context + code
+      - name: title_vec
+        source: function_name
+      - name: breadcrumb_vec
+        source: qualified_path  # file.module.Class.method
+
+    preprocessing:
+      chunker: tree_sitter_ast
+      chunk_size_tokens: [200, 400]  # Min-max range
+      overlap: 0  # AST boundaries are clean
+      context_generation:
+        enabled: true
+        method: claude  # Claude API for code-specific context
+        batch_size: 10  # Chunks per Claude call
+        max_tokens: 100
+        prompt_template: |
+          Generate 50-100 token context for this code from {file_path}:
+
+          Function: {function_name}
+          Docstring: {docstring}
+          Imports: {imports}
+
+          Explain: module role, purpose, related components.
+
+    search:
+      top_k: 100  # For "implementation" profile
+      ef: 150  # 3x top_k for recall
+      multi_vector_weights:
+        content: 0.7
+        title: 0.2
+        breadcrumb: 0.1
+
+  docs:
+    collection_name: docs_index
+    embedding:
+      model: voyage-context-3  # Native document-level context
+      dimension: 1024
+      input_type: document
+    vectors:
+      - name: content_vec
+        source: markdown_chunk
+
+    preprocessing:
+      chunker: heading_aware_semantic
+      chunk_size_tokens: 500
+      overlap: 0  # voyage-context-3 requires no overlap
+      pass_as_list: true  # Entire document chunks in one API call
+      context_generation:
+        enabled: false  # voyage-context-3 handles internally
+      metadata:
+        extract_heading_hierarchy: true
+        adjacent_chunks: true  # Store chunk-1, chunk+1 indices
+        doc_type_classification: true  # tutorial/reference/explanation/how-to
+
+    search:
+      top_k: 60
+      ef: 120
+      filters:
+        - doc_type
+        - last_updated
+
+  api:
+    collection_name: api_index
+    embedding:
+      model: voyage-context-3
+      dimension: 1024
+      input_type: document
+    vectors:
+      - name: content_vec
+        source: formatted_endpoint
+
+    preprocessing:
+      chunker: endpoint_boundary
+      sources:
+        - type: context7
+          enabled: true
+        - type: openapi
+          enabled: true
+        - type: scraped
+          enabled: false  # Phase 2
+      context_generation:
+        enabled: false  # voyage-context-3 handles
+      metadata:
+        extract_parameters: true
+        extract_examples: true
+        version_tracking: true
+
+    search:
+      top_k: 40
+      ef: 80
+      filters:
+        - service_name
+        - version
+        - http_method
+
+  chat:
+    collection_name: chat_index
+    embedding:
+      model: voyage-3-large
+      dimension: 1024
+      input_type: document
+    vectors:
+      - name: turn_vec
+        source: prelude_plus_turn
+      - name: segment_vec
+        source: prelude_plus_segment
+      - name: summary_vec
+        source: rolling_summary
+
+    preprocessing:
+      segmentation:
+        min_turns: 6
+        max_turns: 20
+        topic_shift_threshold: 0.7  # Cosine similarity between turns
+      prelude_generation:
+        enabled: true
+        method: claude
+        max_tokens: 120
+        batch_size: 5
+        prompt_template: |
+          Generate 50-120 token prelude for this conversation segment:
+
+          Turns: {turn_count}
+          First turn: {first_turn_preview}
+          Entities: {entities}
+
+          Include: topic, goal, key facts, participants, open questions.
+      entity_extraction:
+        enabled: true
+        types: [ticket, repo, service, person, decision]
+      rolling_summaries:
+        interval_turns: 30  # Generate summary every 30 turns
+        max_tokens: 200
+
+    search:
+      top_k: 20
+      ef: 40
+      search_level: segment  # turn/segment/summary
+      filters:
+        - thread_id
+        - participants
+        - entities
+
+# Global Fusion Configuration
+fusion:
+  method: rrf  # reciprocal_rank_fusion
+  k: 60
+  window: 100
+  alternative_method: weighted  # For fine-tuning
+
+  task_profiles:
+    implementation:
+      weights: {code: 0.6, api: 0.2, docs: 0.15, chat: 0.05}
+      caps: {code: 8, api: 4, docs: 4, chat: 2}
+
+    debugging:
+      weights: {code: 0.7, chat: 0.15, docs: 0.1, api: 0.05}
+      caps: {code: 10, chat: 3, docs: 3, api: 2}
+
+    documentation:
+      weights: {docs: 0.5, api: 0.25, code: 0.2, chat: 0.05}
+      caps: {docs: 10, api: 5, code: 5, chat: 2}
+
+    learning:
+      weights: {docs: 0.4, api: 0.3, chat: 0.2, code: 0.1}
+      caps: {docs: 8, api: 6, chat: 4, code: 4}
+
+# Reranking Configuration
+reranking:
+  model: voyage-rerank-2.5
+  enabled: true
+  candidates_in: 100  # From fusion
+  results_out: 50  # After rerank
+  final_limit: 10  # To user/LLM
+
+  limits:
+    max_docs_per_request: 1000
+    max_tokens_per_doc: 32000
+    max_tokens_total: 600000
+
+  batching:
+    enabled: true
+    batch_size: 100  # Process in batches if >100 candidates
+
+# Rate Limiting & Batching
+rate_limits:
+  voyage_api:
+    rpm: 60  # Requests per minute
+    rpd: 600  # Requests per day
+    retry:
+      max_attempts: 3
+      backoff_base: 2  # Exponential: 2^n seconds
+
+  claude_api:
+    rpm: 50  # Conservative for context generation
+    batch_size: 10  # Contexts per API call
+
+# Performance Targets
+performance:
+  latency:
+    code_search_p95: 500  # milliseconds
+    doc_search_p95: 800
+    full_search_p95: 1200  # With reranking
+
+  quality:
+    recall_at_10: 0.85  # Target
+    ndcg_at_10: 0.80  # Target
+
+  cost:
+    cost_per_query: 0.001  # ~$0.001 per search
+    max_monthly_budget: 50  # USD
+
+# Caching (Phase 3)
+caching:
+  enabled: false  # Defer to Phase 3
+  backend: redis
+  semantic_threshold: 0.82  # Cosine similarity for cache hits
+  ttl_hours: 24
+  key_format: "query:{normalized_query}:profile:{profile}"
+
+# ADHD Optimizations
+adhd:
+  max_results_display: 10
+  progressive_disclosure: true
+  visual_progress_indicators: true
+  result_preview_chars: 200
