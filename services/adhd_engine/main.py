@@ -15,9 +15,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
 
-from .engine import ADHDAccommodationEngine
-from .api import routes
-from .config import settings
+from engine import ADHDAccommodationEngine
+from api import routes
+from config import settings
 
 # Configure logging
 logging.basicConfig(

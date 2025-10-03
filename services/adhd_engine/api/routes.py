@@ -9,8 +9,8 @@ from typing import Any
 from datetime import datetime, timezone
 import logging
 
-from . import schemas
-from ..models import ADHDProfile, EnergyLevel, AttentionState
+import api.schemas as schemas
+from models import ADHDProfile, EnergyLevel, AttentionState
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
