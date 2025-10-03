@@ -19,10 +19,10 @@ router = APIRouter()
 # Dependency injection for engine instance
 def get_engine():
     """Get global engine instance."""
-    from ..main import engine
-    if not engine:
+    import main
+    if not main.engine:
         raise HTTPException(status_code=503, detail="Engine not initialized")
-    return engine
+    return main.engine
 
 
 @router.post("/assess-task", response_model=schemas.TaskAssessmentResponse)
