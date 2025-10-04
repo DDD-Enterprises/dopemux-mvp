@@ -1,7 +1,7 @@
 ---
 title: "Feature 2: Multi-Session Support"
-date: 2025-10-04
-author: Claude Code
+date: "2025-10-04"
+author: "Claude Code"
 type: reference
 status: ready-for-implementation
 confidence: very-high
