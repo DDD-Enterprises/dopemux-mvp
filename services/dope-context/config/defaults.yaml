@@ -106,12 +106,19 @@ preprocessing:
     extract_ast: true              # Function/class boundaries
     include_docstrings: true
     include_comments: true
-    languages:                     # Supported initially
-      - python
+    languages:                     # All supported languages
+      - python                     # All Python versions (2.x, 3.x)
       - typescript
       - javascript
+      - tsx                        # TypeScript React
+      - jsx                        # JavaScript React
       - go
       - rust
+      - c
+      - cpp                        # C++
+      - php
+      - java
+      - ruby
 
   docs:
     formats:
