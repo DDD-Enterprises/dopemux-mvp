@@ -90,38 +90,30 @@ class CodeChunker:
             )
 
     def _init_tree_sitter(self):
-        """Initialize Tree-sitter parsers."""
+        """Initialize Tree-sitter parsers (v0.21+ API)."""
         try:
             # Python
-            self.languages["python"] = Language(tspython.language(), "python")
-            py_parser = Parser()
-            py_parser.language = self.languages["python"]
-            self.parsers["python"] = py_parser
-            self.parsers["py"] = py_parser
+            py_lang = tspython.language()
+            self.parsers["python"] = Parser(py_lang)
+            self.parsers["py"] = Parser(py_lang)
+            self.languages["python"] = py_lang
 
             # JavaScript
-            self.languages["javascript"] = Language(
-                tsjavascript.language(), "javascript"
-            )
-            js_parser = Parser()
-            js_parser.language = self.languages["javascript"]
-            self.parsers["javascript"] = js_parser
-            self.parsers["js"] = js_parser
+            js_lang = tsjavascript.language()
+            self.parsers["javascript"] = Parser(js_lang)
+            self.parsers["js"] = Parser(js_lang)
+            self.languages["javascript"] = js_lang
 
             # TypeScript
-            self.languages["typescript"] = Language(
-                tstypescript.language_typescript(), "typescript"
-            )
-            ts_parser = Parser()
-            ts_parser.language = self.languages["typescript"]
-            self.parsers["typescript"] = ts_parser
-            self.parsers["ts"] = ts_parser
+            ts_lang = tstypescript.language_typescript()
+            self.parsers["typescript"] = Parser(ts_lang)
+            self.parsers["ts"] = Parser(ts_lang)
+            self.languages["typescript"] = ts_lang
 
             # TSX
-            self.languages["tsx"] = Language(tstypescript.language_tsx(), "tsx")
-            tsx_parser = Parser()
-            tsx_parser.language = self.languages["tsx"]
-            self.parsers["tsx"] = tsx_parser
+            tsx_lang = tstypescript.language_tsx()
+            self.parsers["tsx"] = Parser(tsx_lang)
+            self.languages["tsx"] = tsx_lang
 
             logger.info("Tree-sitter parsers initialized for 4 languages")
 

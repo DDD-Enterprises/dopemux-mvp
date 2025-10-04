@@ -320,16 +320,26 @@ class IndexingPipeline:
         # 2. Ensure collection exists
         await self.vector_search.create_collection()
 
-        # 3. Process files
+        # 3. Process files with rate limiting
         all_documents = []
 
-        for file_path in files:
-            logger.info(f"Processing {file_path.name}...")
+        # Rate limiting: Anthropic API limits
+        # - 50 requests/minute = 1.2s between requests
+        # - 50k tokens/minute = ~833 tokens/sec
+        # Conservative: 2s delay per file ensures we stay well under both limits
+        delay_per_file = 2.0  # seconds
+
+        for idx, file_path in enumerate(files):
+            logger.info(f"Processing [{idx+1}/{len(files)}] {file_path.name}...")
 
             docs = await self._process_file(file_path)
             all_documents.extend(docs)
 
             self.progress.processed_files += 1
+
+            # Rate limiting delay (except for last file)
+            if idx < len(files) - 1:
+                await asyncio.sleep(delay_per_file)
 
             # Progress callback
             if progress_callback:
