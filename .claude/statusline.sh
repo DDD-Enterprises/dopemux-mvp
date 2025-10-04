@@ -5,6 +5,11 @@
 # Read JSON input
 input=$(cat)
 
+# Debug logging (uncomment to diagnose token extraction issues)
+# echo "$input" > /tmp/statusline_debug.json
+# echo "$(date) - context_used: $(echo "$input" | jq -r '.context.used // .tokens.used // .usage.input_tokens // .token_count.input // 0' 2>/dev/null)" >> /tmp/statusline_debug.log
+# echo "$(date) - context_total: $(echo "$input" | jq -r '.context.total // .tokens.total // .usage.max_tokens // .token_count.max' 2>/dev/null)" >> /tmp/statusline_debug.log
+
 # Extract with safe defaults
 current_dir=$(echo "$input" | jq -r '.workspace.current_dir // "."' 2>/dev/null)
 [ -z "$current_dir" ] && current_dir="."
@@ -15,14 +20,69 @@ model_name=$(echo "$input" | jq -r '.model.display_name // .model.name // "Sonne
 claude_version=$(echo "$input" | jq -r '.version // "2.x"' 2>/dev/null)
 [ -z "$claude_version" ] && claude_version="2.x"
 
-context_used=$(echo "$input" | jq -r '.context.used // 0' 2>/dev/null)
-[ -z "$context_used" ] && context_used=0
+# Extract transcript path for token calculation
+transcript_path=$(echo "$input" | jq -r '.transcript_path // ""' 2>/dev/null)
 
-context_total=$(echo "$input" | jq -r '.context.total // 1000000' 2>/dev/null)
-[ -z "$context_total" ] && context_total=1000000
+# Calculate cumulative token usage from transcript (fast, accurate)
+if [ -f "$transcript_path" ]; then
+    # Get most recent cache_read (current cached prompt size)
+    cache_read=$(tac "$transcript_path" | jq -r '.message.usage.cache_read_input_tokens // 0' 2>/dev/null | grep -v '^0$' | head -1)
+    [ -z "$cache_read" ] && cache_read=0
 
-# Calculate context percentage
-context_pct=$((context_used * 100 / context_total))
+    # Sum all output_tokens (conversation history)
+    output_total=$(jq -r '.message.usage.output_tokens // 0' "$transcript_path" 2>/dev/null | awk '{sum+=$1} END {print int(sum)}')
+    [ -z "$output_total" ] && output_total=0
+
+    # Get latest input_tokens (current user message)
+    latest_input=$(tac "$transcript_path" | jq -r '.message.usage.input_tokens // 0' 2>/dev/null | grep -v '^0$' | head -1)
+    [ -z "$latest_input" ] && latest_input=0
+
+    # Context = current cached prompt + all outputs + current input
+    # Note: cache_read already includes previous inputs, so we only add the LATEST input
+    context_used=$((cache_read + output_total + latest_input))
+else
+    # Fallback: try JSON paths (likely won't work, but try anyway)
+    context_used=$(echo "$input" | jq -r '.context.used // .tokens.used // 0' 2>/dev/null)
+    [ -z "$context_used" ] || [ "$context_used" = "null" ] && context_used=0
+fi
+
+# Detect context window from model ID (more reliable than display_name)
+model_id=$(echo "$input" | jq -r '.model.id // ""' 2>/dev/null)
+context_total=200000  # Default for most models
+
+case "$model_id" in
+    *"opus"*)
+        # Opus models: 200K
+        context_total=200000
+        ;;
+    *"sonnet-4-5"*|*"sonnet-4.5"*)
+        # Sonnet 4.5: Check if extended context variant
+        # Most are 200K, some regions have 1M
+        # Use JSON if provided, otherwise assume 200K
+        json_total=$(echo "$input" | jq -r '.context.total // .tokens.total // 0' 2>/dev/null)
+        if [ "$json_total" -gt 200000 ]; then
+            context_total=$json_total
+        else
+            context_total=200000
+        fi
+        ;;
+    *"sonnet"*|*"haiku"*)
+        # Other Claude models: 200K
+        context_total=200000
+        ;;
+    *)
+        # Unknown model: try JSON, fallback to 200K
+        json_total=$(echo "$input" | jq -r '.context.total // .tokens.total // 0' 2>/dev/null)
+        [ "$json_total" -gt 0 ] && context_total=$json_total || context_total=200000
+        ;;
+esac
+
+# Calculate context percentage (avoid division by zero)
+if [ "$context_total" -gt 0 ]; then
+    context_pct=$((context_used * 100 / context_total))
+else
+    context_pct=0
+fi
 
 # Directory and git
 dir=$(basename "$current_dir")
@@ -34,33 +94,51 @@ if [ -d "$current_dir/.git" ]; then
     git_branch=$(git branch --show-current 2>/dev/null)
 fi
 
-# Get ConPort status (active context + connection health)
-CONPORT_STATUS="📴"  # Disconnected
+# Get ConPort status via direct SQLite query (ultra-fast, no HTTP needed)
+CONPORT_STATUS="⚠️"  # Disconnected
 FOCUS=""
 SESSION_INFO=""
-if command -v uvx >/dev/null 2>&1; then
-    conport_output=$(timeout 0.8s uvx --from context-portal-mcp conport-mcp \
-        get-active-context --workspace-id "$current_dir" 2>/dev/null)
 
-    if [ $? -eq 0 ] && [ -n "$conport_output" ]; then
-        CONPORT_STATUS="📊"  # Connected
+# ConPort SQLite database path
+conport_db="$current_dir/context_portal/context.db"
 
-        # Extract focus (truncate to 35 chars)
-        focus_raw=$(echo "$conport_output" | jq -r '.current_focus // ""' 2>/dev/null)
-        if [ -n "$focus_raw" ] && [ "$focus_raw" != "null" ]; then
+if [ -f "$conport_db" ] && command -v sqlite3 >/dev/null 2>&1; then
+    # Query active_context table (singleton, no workspace_id needed)
+    conport_data=$(sqlite3 "$conport_db" "SELECT content FROM active_context LIMIT 1" 2>/dev/null)
+
+    if [ -n "$conport_data" ]; then
+        CONPORT_STATUS="✅"  # Connected
+
+        # Extract current_focus from JSON (use jq if available, otherwise basic parsing)
+        focus_raw=$(echo "$conport_data" | jq -r '.current_focus // ""' 2>/dev/null)
+        if [ -n "$focus_raw" ] && [ "$focus_raw" != "null" ] && [ "$focus_raw" != "" ]; then
             FOCUS=$(echo "$focus_raw" | cut -c1-35)
             [ ${#focus_raw} -gt 35 ] && FOCUS="${FOCUS}..."
         fi
 
-        # Calculate session time in 25min chunks
-        session_start=$(echo "$conport_output" | jq -r '.session_start // ""' 2>/dev/null)
-        if [ -n "$session_start" ] && [ "$session_start" != "null" ]; then
+        # Calculate session time (sexy, intuitive format)
+        session_start=$(echo "$conport_data" | jq -r '.session_start // ""' 2>/dev/null)
+        if [ -n "$session_start" ] && [ "$session_start" != "null" ] && [ "$session_start" != "" ]; then
             now=$(date +%s)
-            start_epoch=$(date -j -f "%Y-%m-%dT%H:%M:%S" "${session_start%.*}" +%s 2>/dev/null || echo "$now")
-            session_min=$(( (now - start_epoch) / 60 ))
-            chunks=$(( session_min / 25 ))
-            remain=$(( session_min % 25 ))
-            SESSION_INFO="${chunks}×25+${remain}m"
+            # Remove Z suffix and any fractional seconds for parsing
+            clean_time="${session_start%Z}"
+            clean_time="${clean_time%.*}"
+            start_epoch=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$clean_time" +%s 2>/dev/null || echo "$now")
+            session_sec=$(( now - start_epoch ))
+
+            # Only show positive elapsed time
+            if [ "$session_sec" -gt 0 ]; then
+                session_min=$(( session_sec / 60 ))
+                hours=$(( session_min / 60 ))
+                mins=$(( session_min % 60 ))
+
+                # Format: "1h 23m" or just "23m" if under 1 hour
+                if [ "$hours" -gt 0 ]; then
+                    SESSION_INFO="${hours}h ${mins}m"
+                else
+                    SESSION_INFO="${mins}m"
+                fi
+            fi
         fi
     fi
 fi
@@ -80,27 +158,27 @@ adhd_health=$(timeout 0.4s curl -s http://localhost:8095/health 2>/dev/null)
 if [ $? -eq 0 ] && [ -n "$adhd_health" ]; then
     ADHD_STATUS="🧠"
 
-    # Extract energy level
+    # Extract energy level - lightning bolt + direction
     energy=$(echo "$adhd_health" | jq -r '.current_state.energy_levels.current_user // ""' 2>/dev/null)
     if [ -n "$energy" ] && [ "$energy" != "null" ]; then
         case "$energy" in
-            "hyperfocus") ENERGY_SYMBOL="⚡" ;;
-            "high") ENERGY_SYMBOL="↑" ;;
-            "medium") ENERGY_SYMBOL="=" ;;  # Always show
-            "low") ENERGY_SYMBOL="↓" ;;
-            "very_low") ENERGY_SYMBOL="⇣" ;;
+            "hyperfocus") ENERGY_SYMBOL="⚡⚡" ;;  # Double lightning for hyperfocus
+            "high") ENERGY_SYMBOL="⚡↑" ;;
+            "medium") ENERGY_SYMBOL="⚡=" ;;  # Balanced/level
+            "low") ENERGY_SYMBOL="⚡↓" ;;
+            "very_low") ENERGY_SYMBOL="⚡⇣" ;;
         esac
     fi
 
-    # Extract attention state (NEW)
+    # Extract attention state - eye + state indicator
     attention=$(echo "$adhd_health" | jq -r '.current_state.attention_states.current_user // ""' 2>/dev/null)
     if [ -n "$attention" ] && [ "$attention" != "null" ]; then
         case "$attention" in
-            "hyperfocused") ATTENTION_SYMBOL="·👁️✨" ;;  # Always celebrate hyperfocus!
-            "focused") ATTENTION_SYMBOL="·👁️" ;;  # Always show (good state worth seeing)
-            "transitioning") [ "$term_width" -ge 90 ] && ATTENTION_SYMBOL="·👁️~" ;;  # Show if space
-            "scattered") ATTENTION_SYMBOL="·👁️🌀" ;;  # Always show warning
-            "overwhelmed") ATTENTION_SYMBOL="·👁️💥" ;;  # Always show alert
+            "hyperfocused") ATTENTION_SYMBOL="👁️✨" ;;  # Eye with sparkles for hyperfocus
+            "focused") ATTENTION_SYMBOL="👁️●" ;;  # Eye with solid dot for focused
+            "transitioning") [ "$term_width" -ge 90 ] && ATTENTION_SYMBOL="👁️~" ;;  # Eye with wave for shifting
+            "scattered") ATTENTION_SYMBOL="👁️🌀" ;;  # Eye with spiral for scattered
+            "overwhelmed") ATTENTION_SYMBOL="👁️💥" ;;  # Eye with explosion for overwhelmed
         esac
     fi
 
@@ -118,10 +196,10 @@ if [ $? -eq 0 ] && [ -n "$adhd_health" ]; then
         fi
     fi
 
-    # Check for active protection (NEW)
+    # Check for active protection
     hyperfocus_protections=$(echo "$adhd_health" | jq -r '.accommodation_stats.hyperfocus_protections // 0' 2>/dev/null)
     if [ "$hyperfocus_protections" -gt 0 ] && [ "$attention" = "hyperfocused" ]; then
-        ACCOMMODATIONS="·🛡️"
+        ACCOMMODATIONS="🛡️"  # Shield for hyperfocus protection
     fi
 fi
 
@@ -150,28 +228,32 @@ fi
 
 printf " \033[2m|\033[0m"
 
-# ADHD Engine + energy + attention + warnings
+# ADHD Engine - compact emoji state
 printf " %s" "$ADHD_STATUS"
 if [ -n "$ENERGY_SYMBOL" ]; then
-    printf "%s" "$ENERGY_SYMBOL"
+    printf " %s" "$ENERGY_SYMBOL"
 fi
 if [ -n "$ATTENTION_SYMBOL" ]; then
-    printf "%s" "$ATTENTION_SYMBOL"
+    printf " %s" "$ATTENTION_SYMBOL"
+fi
+if [ -n "$ACCOMMODATIONS" ]; then
+    printf " %s" "$ACCOMMODATIONS"
 fi
 if [ -n "$BREAK_WARNING" ]; then
     printf "%s" "$BREAK_WARNING"
 fi
-if [ -n "$ACCOMMODATIONS" ]; then
-    printf "%s" "$ACCOMMODATIONS"
-fi
 
-# Context usage (color coded)
+# Context usage (show tokens + percentage, color coded)
+# Convert to K format for readability (e.g., 86K/200K)
+used_k=$(( context_used / 1000 ))
+total_k=$(( context_total / 1000 ))
+
 if [ "$context_pct" -lt 60 ]; then
-    printf " \033[32m%d%%\033[0m" "$context_pct"
+    printf " \033[32m%dK/%dK (%d%%)\033[0m" "$used_k" "$total_k" "$context_pct"
 elif [ "$context_pct" -lt 80 ]; then
-    printf " \033[33m%d%%\033[0m" "$context_pct"
+    printf " \033[33m%dK/%dK (%d%%)\033[0m" "$used_k" "$total_k" "$context_pct"
 else
-    printf " \033[31m%d%%\033[0m" "$context_pct"
+    printf " \033[31m%dK/%dK (%d%%)\033[0m" "$used_k" "$total_k" "$context_pct"
 fi
 
 # Model
