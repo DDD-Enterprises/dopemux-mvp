@@ -3,7 +3,6 @@ Document processing and chunking utilities.
 """
 
 import hashlib
-import magic
 import re
 from pathlib import Path
 from typing import List, Optional, Tuple
@@ -14,6 +13,12 @@ from docx import Document as DocxDocument
 from markdown import markdown
 from PyPDF2 import PdfReader
 
+try:
+    import magic
+    MAGIC_AVAILABLE = True
+except ImportError:
+    MAGIC_AVAILABLE = False
+
 from .models import ChunkMetadata, DocumentChunk, DocumentType
 
 
@@ -23,7 +28,7 @@ class DocumentProcessor:
     def __init__(self, encoding_name: str = "cl100k_base"):
         """Initialize document processor."""
         self.encoding = tiktoken.get_encoding(encoding_name)
-        self.magic = magic.Magic(mime=True)
+        self.magic = magic.Magic(mime=True) if MAGIC_AVAILABLE else None
 
     def detect_document_type(self, file_path: str) -> DocumentType:
         """Detect document type from file path and content."""
@@ -44,19 +49,20 @@ class DocumentProcessor:
         if suffix in extension_map:
             return extension_map[suffix]
 
-        # Fallback to MIME type detection
-        try:
-            mime_type = self.magic.from_file(file_path)
-            if "pdf" in mime_type:
-                return DocumentType.PDF
-            elif "html" in mime_type:
-                return DocumentType.HTML
-            elif "text" in mime_type:
-                return DocumentType.TEXT
-            elif "officedocument" in mime_type and "wordprocessing" in mime_type:
-                return DocumentType.DOCX
-        except Exception:
-            pass
+        # Fallback to MIME type detection (if magic available)
+        if self.magic is not None:
+            try:
+                mime_type = self.magic.from_file(file_path)
+                if "pdf" in mime_type:
+                    return DocumentType.PDF
+                elif "html" in mime_type:
+                    return DocumentType.HTML
+                elif "text" in mime_type:
+                    return DocumentType.TEXT
+                elif "officedocument" in mime_type and "wordprocessing" in mime_type:
+                    return DocumentType.DOCX
+            except Exception:
+                pass
 
         return DocumentType.UNKNOWN
 
