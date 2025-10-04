@@ -302,14 +302,18 @@ class WorktreeRecoveryMenu:
             current_worktree = {}
 
             for line in result.stdout.splitlines():
-                if line.startswith("worktree "):
-                    if current_worktree:
-                        # Create option from previous worktree
-                        if current_worktree.get("path") != self.workspace_id:  # Skip main
-                            options.append(self._create_option_from_git(current_worktree, len(options) + 1))
-                    current_worktree = {"path": line.split(" ", 1)[1]}
+                line = line.strip()
+                if not line:
+                    # Blank line separates worktrees
+                    if current_worktree and current_worktree.get("path") != self.workspace_id:
+                        options.append(self._create_option_from_git(current_worktree, len(options) + 1))
+                    current_worktree = {}
+                elif line.startswith("worktree "):
+                    current_worktree["path"] = line.split(" ", 1)[1]
                 elif line.startswith("branch "):
-                    current_worktree["branch"] = line.split("/")[-1]  # refs/heads/feature -> feature
+                    # Format: "branch refs/heads/feature/test" -> "feature/test"
+                    branch_ref = line.split(" ", 1)[1]
+                    current_worktree["branch"] = branch_ref.replace("refs/heads/", "")
 
             # Handle last worktree
             if current_worktree and current_worktree.get("path") != self.workspace_id:
