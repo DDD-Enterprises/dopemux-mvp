@@ -202,3 +202,6 @@ THREAD_WORK_SUMMARY.md
 *_SUMMARY.md
 build_recovered/
 ARCHIVED_RECOVERY/
+*.tsv
+backup/
+processing_inputs/
