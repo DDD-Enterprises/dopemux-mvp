@@ -94,6 +94,12 @@ if [ -d "$current_dir/.git" ]; then
     git_branch=$(git branch --show-current 2>/dev/null)
 fi
 
+# Worktree indicator (show tree icon for multi-instance branches)
+WORKTREE_ICON=""
+if [ -n "${DOPEMUX_INSTANCE_ID:-}" ]; then
+    WORKTREE_ICON=" 🌳"  # Tree for linked worktrees
+fi
+
 # Get ConPort status via direct SQLite query (ultra-fast, no HTTP needed)
 CONPORT_STATUS="⚠️"  # Disconnected
 FOCUS=""
@@ -209,6 +215,11 @@ printf "\033[1;36m%s\033[0m" "$dir"
 # Git branch + changes
 if [ -n "$git_branch" ]; then
     printf " \033[33m%s%s\033[0m" "$git_branch" "$git_changes"
+fi
+
+# Worktree icon (if multi-instance)
+if [ -n "$WORKTREE_ICON" ]; then
+    printf "%s" "$WORKTREE_ICON"
 fi
 
 printf " \033[2m|\033[0m"
