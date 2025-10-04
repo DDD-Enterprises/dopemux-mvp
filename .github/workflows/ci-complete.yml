@@ -87,7 +87,7 @@ jobs:
       - name: 🔗 Check links (lychee)
         uses: lycheeverse/lychee-action@v1
         with:
-          args: --config .lychee.toml docs/**/*.md
+          args: --config .lychee.toml .claude/docs/**/*.md README.md
 
       - name: 📖 Documentation Summary
         if: always()
