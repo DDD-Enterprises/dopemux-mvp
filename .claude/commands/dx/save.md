@@ -21,6 +21,7 @@ Save complete development session: work context, git state, open files, decision
 ## Step 1: Auto-Capture Current State
 
 **Capture Git State** (automatically):
+
 ```bash
 Use Bash:
 git branch --show-current > /tmp/dx_save_branch
@@ -30,6 +31,7 @@ git diff --stat > /tmp/dx_save_diff
 ```
 
 **Count Recent Activity**:
+
 - Changed files: Count from git status
 - Recent commits: Last 5 commits
 - Current branch: For restoration
@@ -43,6 +45,7 @@ Store list of active files.
 ## Step 2: Gather Work Context
 
 Ask user (with smart prompting):
+
 ```
 Session Save - Quick Context Capture
 ═══════════════════════════════════════════
@@ -61,6 +64,7 @@ Any blockers or issues? (optional)
 ```
 
 **Smart Suggestions**:
+
 - If recent commits: Suggest "Working on [commit messages]"
 - If ConPort focus exists: Pre-fill with current_focus
 - If git diff shows files: "Modified [file names]"
@@ -70,6 +74,7 @@ Any blockers or issues? (optional)
 ## Step 3: Check for Decisions
 
 **Automatically detect decision-worthy work**:
+
 ```bash
 Use Grep to check recent commits and changes:
 - Architecture changes (new services, major refactors)
@@ -78,10 +83,12 @@ Use Grep to check recent commits and changes:
 ```
 
 If detected:
+
 - Show: "Looks like you made architectural decisions. Log to ConPort? (y/n)"
 - If yes: Guide through decision logging with mcp__conport__log_decision
 
 If no architectural changes:
+
 - Skip decision logging (don't ask if not needed)
 
 ---
@@ -89,6 +96,7 @@ If no architectural changes:
 ## Step 4: Capture ADHD Metrics
 
 **Query ADHD Engine** (if running):
+
 ```bash
 Use Bash:
 curl -s http://localhost:8095/api/v1/energy-level/current_user
@@ -96,11 +104,13 @@ curl -s http://localhost:8095/api/v1/attention-state/current_user
 ```
 
 Extract:
+
 - Final energy level
 - Final attention state
 - Session quality indicators
 
 **Calculate Session Stats**:
+
 - Session duration (from active_context.session_start)
 - 25-minute chunks completed
 - Break compliance (did user take breaks?)
@@ -110,6 +120,7 @@ Extract:
 ## Step 5: Save to ConPort
 
 **Update Active Context** with comprehensive state:
+
 ```
 mcp__conport__update_active_context with:
   workspace_id: "/Users/hue/code/dopemux-mvp"
@@ -137,6 +148,7 @@ mcp__conport__update_active_context with:
 ```
 
 **If tasks were completed**, create progress entries:
+
 ```
 For each completed item mentioned:
   mcp__conport__log_progress with status="DONE" and description
@@ -147,6 +159,7 @@ For each completed item mentioned:
 ## Step 6: Create Session Backup File
 
 **Write session snapshot** (for extra safety):
+
 ```bash
 Use Write to create: .dopemux/sessions/session-TIMESTAMP.json
 Content: {
@@ -167,6 +180,7 @@ Content: {
 ## Step 7: Success Summary
 
 Show comprehensive save confirmation:
+
 ```
 ✅ Session Saved - Complete State Preserved
 ═══════════════════════════════════════════
@@ -201,11 +215,13 @@ Safe to close! Everything is saved. 💙
 ## Step 8: Cleanup & Recommendations
 
 **Check session length**:
+
 - If > 90 minutes: "Great long session! Consider taking a longer break."
 - If < 25 minutes: "Short session - that's okay! Progress is progress."
 - If 25-50 minutes: "Perfect ADHD-friendly session length!"
 
 **Remind about break** (if needed):
+
 - Calculate time since last break
 - If > 60 minutes: "Remember to take a break! Your brain needs it."
 
@@ -214,16 +230,19 @@ Safe to close! Everything is saved. 💙
 ## Error Handling
 
 **If ConPort unavailable**:
+
 - Still create session file in .dopemux/sessions/
 - Show: "⚠️ ConPort unavailable - saved locally only"
 - Show: "Sync to ConPort next session with /dx:load"
 
 **If ADHD Engine unavailable**:
+
 - Skip ADHD metrics
 - Continue with context save
 - Note in save file: "adhd_metrics": "unavailable"
 
 **If git not initialized**:
+
 - Skip git state capture
 - Still save work context
 - Note: "Not a git repository"
@@ -248,4 +267,3 @@ Safe to close! Everything is saved. 💙
 **Be reassuring**: Emphasize that everything is safe
 **Be ADHD-friendly**: Celebrate saving as good habit
 **Suggest rest**: If long session, encourage break
-

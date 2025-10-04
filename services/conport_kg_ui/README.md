@@ -10,11 +10,13 @@ ADHD-optimized terminal interface for CONPORT-KG-2025 decision genealogy navigat
 ## Features
 
 **3-Tier Progressive Disclosure**:
+
 - **Tier 1**: Decision Browser (Top-3 ADHD pattern)
 - **Tier 2**: Genealogy Explorer (1-hop → 2-hop expansion)
 - **Tier 3**: Deep Context Viewer (complete analysis)
 
 **ADHD Optimizations**:
+
 - Top-3 pattern prevents overwhelm
 - Progressive disclosure (user controls expansion)
 - Green/cyan/yellow color theme
@@ -22,6 +24,7 @@ ADHD-optimized terminal interface for CONPORT-KG-2025 decision genealogy navigat
 - Cognitive load indicators
 
 **Performance**:
+
 - <10ms HTTP overhead
 - 2-5ms backend queries
 - Instant UI responsiveness
@@ -34,6 +37,7 @@ ADHD-optimized terminal interface for CONPORT-KG-2025 decision genealogy navigat
 ### Prerequisites
 
 1. Integration Bridge running:
+
 ```bash
 cd services/mcp-integration-bridge
 python main.py
@@ -41,6 +45,7 @@ python main.py
 ```
 
 2. PostgreSQL AGE database operational:
+
 ```bash
 docker ps | grep postgres-age
 # Should show: dopemux-postgres-age (healthy)
@@ -56,11 +61,13 @@ npm install
 ### Run
 
 **Development mode** (with auto-reload):
+
 ```bash
 npm run dev
 ```
 
 **Production mode**:
+
 ```bash
 npm run build
 npm start
@@ -84,6 +91,7 @@ Showing 3 of 3 recent decisions
 ```
 
 **Controls**:
+
 - `↑↓` - Navigate through list
 - `Enter` - View selected decision in Genealogy Explorer
 - `q` - Quit application
@@ -105,12 +113,14 @@ Total network: 1 decisions
 ```
 
 **Controls**:
+
 - `e` - Expand to show 2-hop neighbors
 - `f` - View full context (Tier 3)
 - `b` - Back to Decision Browser
 - `q` - Quit application
 
 **After pressing 'e'**:
+
 ```
 2-hop neighbors (3):
   ⇒ #114: Complete CONPORT-KG-2025 Interface Architecture...
@@ -142,6 +152,7 @@ Total network: 1
 ```
 
 **Controls**:
+
 - `b` - Back to Genealogy Explorer
 - `q` - Quit application
 
@@ -246,6 +257,7 @@ node dist/cli.js
 **Cause**: Integration Bridge not running
 
 **Solution**:
+
 ```bash
 # Start Integration Bridge
 cd services/mcp-integration-bridge
@@ -260,6 +272,7 @@ curl http://localhost:3016/kg/health
 **Cause**: Wrong port or Integration Bridge not started
 
 **Solution**:
+
 ```bash
 # Check Integration Bridge port
 ps aux | grep "python.*main.py"
@@ -271,6 +284,7 @@ lsof -i :3016
 ### TypeScript Compilation Errors
 
 **Solution**:
+
 ```bash
 # Clean and rebuild
 rm -rf dist node_modules
@@ -283,17 +297,20 @@ npm run build
 ## ADHD Features
 
 ### Top-3 Pattern
+
 - Decision Browser shows maximum 3 items
 - Prevents decision paralysis
 - Clear scanning pattern
 
 ### Progressive Disclosure
+
 - Start with minimal info (1-hop)
 - User expands when ready (press 'e')
 - Can't accidentally overload
 - Clear expansion hints
 
 ### Visual Design
+
 - **Green**: Headers and important info
 - **Cyan**: Selected items and labels
 - **Yellow**: Hints and relationship types
@@ -301,6 +318,7 @@ npm run build
 - **Dim**: Help text and secondary info
 
 ### Keyboard Navigation
+
 - Single-letter commands (e, f, b, q)
 - Arrow keys for lists (↑↓)
 - Enter for selection
@@ -311,6 +329,7 @@ npm run build
 ## Performance
 
 **Query Times** (from backend benchmarks):
+
 - Tier 1 (Overview): p95 2.52ms
 - Tier 2 (Exploration): p95 3.44ms
 - Tier 3 (Deep Context): p95 4.76ms
@@ -323,6 +342,7 @@ npm run build
 ## Next Steps
 
 After Phase 9 complete:
+
 - **Phase 11**: Production deployment with Docker
 - **Future**: WebSocket streaming for real-time updates
 - **Future**: Search interface for full-text queries

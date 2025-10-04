@@ -9,6 +9,7 @@
 ## Purpose
 
 The Integration Bridge provides **event-driven coordination** between:
+
 - ConPort (task & decision storage)
 - SuperClaude (PRD parsing via `/dx:prd-parse`)
 - Python ADHD Engine (cognitive optimization)
@@ -19,6 +20,7 @@ It is **NOT** a Two-Plane coordinator - that architecture was simplified. It's n
 ## Authority Boundaries
 
 **Integration Bridge ONLY Authority:**
+
 - Async event routing between services
 - Redis Streams queue management
 - Event bus coordination (pub/sub)
@@ -26,6 +28,7 @@ It is **NOT** a Two-Plane coordinator - that architecture was simplified. It's n
 - MetaMCP role-based tool filtering enforcement
 
 **Integration Bridge NEVER:**
+
 - Stores task data (ConPort authority)
 - Parses PRDs (SuperClaude authority)
 - Calculates ADHD metrics (Python ADHD Engine authority)
@@ -35,6 +38,7 @@ It is **NOT** a Two-Plane coordinator - that architecture was simplified. It's n
 ## Event Coordination Patterns
 
 ### Simplified Event Flow
+
 ```bash
 # PRD to Task Creation Flow
 1. User runs: /dx:prd-parse "requirements.md"
@@ -58,6 +62,7 @@ It is **NOT** a Two-Plane coordinator - that architecture was simplified. It's n
 ```
 
 ### Redis Streams Architecture
+
 ```python
 # Event Bus Implementation
 import redis
@@ -128,6 +133,7 @@ async for msg_id, msg_data in bus.subscribe("dopemux:events", "dashboard"):
 ## REST API Endpoints
 
 ### Integration Bridge HTTP API
+
 ```bash
 # Base URL: http://localhost:3016 (or PORT_BASE+16)
 
@@ -228,5 +234,6 @@ EVENT_STREAM = f"dopemux:{INSTANCE_NAME}:events"
 ---
 
 **See Also:**
+
 - `.claude/modules/coordination/authority-matrix.md` - Authority boundaries reference
 - `.claude/modules/shared/event-patterns.md` - Event design patterns

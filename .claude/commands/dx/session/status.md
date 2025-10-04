@@ -17,6 +17,7 @@ If current_task exists, get task details with mcp__conport__get_progress.
 ## Step 2: Get ADHD Metrics
 
 Query ADHD Engine:
+
 ```bash
 curl -s http://localhost:8095/api/v1/energy-level/current_user | python -m json.tool
 curl -s http://localhost:8095/api/v1/attention-state/current_user | python -m json.tool
@@ -25,6 +26,7 @@ curl -s http://localhost:8095/api/v1/attention-state/current_user | python -m js
 ## Step 3: Display Status
 
 Show formatted status:
+
 ```
 Session Status
 ═══════════════════════════════════════════
@@ -51,8 +53,10 @@ Actions:
 ## Error Handling
 
 If no active session:
+
 - Show: "No active session. Use /dx:implement or /dx:session start to begin."
 
 If ADHD Engine unavailable:
+
 - Show energy/attention as "Unknown"
 - Continue with rest of status display

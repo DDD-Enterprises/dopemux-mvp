@@ -5,6 +5,7 @@
 **BREAKTHROUGH COMPLETE**: Major compatibility issues resolved, API server fully operational!
 
 ### ✅ Recent Fixes Applied
+
 - **Pydantic v2 Compatibility**: All `.dict()` calls replaced with `.model_dump()`
 - **ResearchTask Object Handling**: Fixed bracket notation access patterns
 - **ADHDConfiguration Mapping**: Corrected field mappings for break/work duration
@@ -13,6 +14,7 @@
 - **End-to-End Workflow**: Complete research workflow tested and operational
 
 ### 🎯 Current Status
+
 - **Phase 1 MCP Server**: ✅ Production ready
 - **Phase 2 API Server**: ✅ Operational with ADHD features
 - **Session Persistence**: ✅ Working (24 active sessions restored)
@@ -26,16 +28,19 @@ The Phase 2 API provides programmatic access to GPT-Researcher with advanced ADH
 ## Quick Start
 
 1. **Start the API**:
+
 ```bash
 cd backend
 ./start_api.sh
 ```
 
 2. **Access API Documentation**:
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+
+- Swagger UI: <http://localhost:8000/docs>
+- ReDoc: <http://localhost:8000/redoc>
 
 3. **Test the API**:
+
 ```bash
 python test_api.py
 ```
@@ -45,9 +50,11 @@ python test_api.py
 ### Health & Status
 
 #### GET /health
+
 Check API health and status.
 
 **Response:**
+
 ```json
 {
   "status": "healthy",
@@ -60,9 +67,11 @@ Check API health and status.
 ```
 
 #### GET /api/v1/status
+
 Get API capabilities and limits.
 
 **Response:**
+
 ```json
 {
   "version": "0.2.0",
@@ -83,9 +92,11 @@ Get API capabilities and limits.
 ### Research Operations
 
 #### POST /api/v1/research
+
 Create a new research task with ADHD optimizations.
 
 **Request Body:**
+
 ```json
 {
   "topic": "Python async best practices",
@@ -103,6 +114,7 @@ Create a new research task with ADHD optimizations.
 ```
 
 **Response:**
+
 ```json
 {
   "task_id": "uuid-here",
@@ -120,9 +132,11 @@ Create a new research task with ADHD optimizations.
 ```
 
 #### GET /api/v1/research/{task_id}
+
 Get research task status and results.
 
 **Response:**
+
 ```json
 {
   "task_id": "uuid",
@@ -142,14 +156,17 @@ Get research task status and results.
 ```
 
 #### DELETE /api/v1/research/{task_id}
+
 Cancel a research task.
 
 ### Session Management
 
 #### GET /api/v1/sessions/{session_id}
+
 Get session information and history.
 
 **Response:**
+
 ```json
 {
   "session_id": "uuid",
@@ -169,9 +186,11 @@ Get session information and history.
 ```
 
 #### POST /api/v1/sessions/{session_id}/pause
+
 Pause a session for break or interruption.
 
 **Response:**
+
 ```json
 {
   "message": "Session paused",
@@ -181,9 +200,11 @@ Pause a session for break or interruption.
 ```
 
 #### POST /api/v1/sessions/{session_id}/resume
+
 Resume a paused session with context reminder.
 
 **Response:**
+
 ```json
 {
   "message": "Session resumed",
@@ -196,9 +217,11 @@ Resume a paused session with context reminder.
 ## WebSocket for Real-time Updates
 
 ### WS /ws/{task_id}
+
 Connect to receive real-time progress updates for a research task.
 
 **Connection:**
+
 ```javascript
 const ws = new WebSocket('ws://localhost:8000/ws/task-uuid');
 
@@ -211,6 +234,7 @@ ws.onmessage = (event) => {
 **Message Types:**
 
 1. **Connected**:
+
 ```json
 {
   "type": "connected",
@@ -220,6 +244,7 @@ ws.onmessage = (event) => {
 ```
 
 2. **Progress Update**:
+
 ```json
 {
   "type": "progress",
@@ -234,6 +259,7 @@ ws.onmessage = (event) => {
 ```
 
 3. **Completion**:
+
 ```json
 {
   "type": "completed",
@@ -244,6 +270,7 @@ ws.onmessage = (event) => {
 ```
 
 4. **Error**:
+
 ```json
 {
   "type": "error",
@@ -320,16 +347,19 @@ DEBUG=false
 ## Testing
 
 ### Unit Tests
+
 ```bash
 pytest tests/
 ```
 
 ### Integration Tests
+
 ```bash
 python test_api.py
 ```
 
 ### WebSocket Test
+
 ```bash
 python -c "
 import asyncio
@@ -357,6 +387,7 @@ The API uses standard HTTP status codes:
 - **503**: Service unavailable
 
 Error responses include detailed messages:
+
 ```json
 {
   "detail": "Specific error description"
@@ -381,17 +412,20 @@ Error responses include detailed messages:
 ## Deployment
 
 ### Development
+
 ```bash
 ./start_api.sh --debug
 ```
 
 ### Production
+
 ```bash
 # Use proper process manager
 uvicorn api.main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
 ### Docker
+
 ```dockerfile
 FROM python:3.11-slim
 WORKDIR /app

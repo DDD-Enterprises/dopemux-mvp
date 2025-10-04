@@ -9,6 +9,7 @@ Multi-project support with perfect workspace isolation, hybrid search (dense + s
 ## Features
 
 ### Code Search
+
 - **AST-Aware Chunking**: Tree-sitter for semantic boundaries (functions, classes)
 - **Contextual Embeddings**: Claude-generated contexts (35-67% quality improvement)
 - **Multi-Vector**: Separate embeddings for content, title, breadcrumb
@@ -16,18 +17,21 @@ Multi-project support with perfect workspace isolation, hybrid search (dense + s
 - **Neural Reranking**: Voyage rerank-2.5 with progressive disclosure
 
 ### Document Search
+
 - **Multi-Format**: PDF, Markdown, HTML, DOCX, plain text
 - **Smart Chunking**: 1000 chars with overlap, preserves structure
 - **Semantic Search**: voyage-context-3 embeddings
 - **Multi-Vector**: Same 3-vector strategy as code
 
 ### Multi-Project Support
+
 - **Perfect Isolation**: Collection-per-workspace (no data leakage)
 - **Auto-Detection**: Detects workspace from git root or cwd
 - **Incremental Sync**: SHA256-based change detection (Merkle DAG)
 - **Snapshot System**: Stores file hashes in ~/.dope-context/
 
 ### ADHD Optimizations
+
 - **Progressive Disclosure**: Top-10 display + 40 cached
 - **Complexity Scoring**: 0.0-1.0 cognitive load estimation
 - **Cost Tracking**: Full API cost monitoring
@@ -235,11 +239,13 @@ FileSynchronizer.check_changes()
 ### Indexing Tools
 
 **index_workspace**(workspace_path, include_patterns?, exclude_patterns?, max_files?)
+
 - Index code files for semantic search
 - Auto-detects workspace, creates collection
 - Returns: indexing progress summary
 
 **index_docs**(workspace_path, include_patterns?)
+
 - Index documents (PDF, Markdown, HTML, DOCX)
 - Creates docs collection for workspace
 - Returns: docs processed count
@@ -247,16 +253,19 @@ FileSynchronizer.check_changes()
 ### Search Tools
 
 **search_code**(query, top_k=10, profile="implementation", use_reranking=True, filter_language?, workspace_path?)
+
 - Hybrid code search with reranking
 - Auto-detects workspace from cwd
 - Returns: list of code results with scores
 
 **docs_search**(query, top_k=10, filter_doc_type?, workspace_path?)
+
 - Semantic document search
 - Auto-detects workspace
 - Returns: list of doc results
 
 **search_all**(query, top_k=10, workspace_path?)
+
 - Unified search across code + docs
 - Splits top_k between both (e.g., 5 code + 5 docs)
 - Returns: {workspace, code_results, docs_results}
@@ -264,21 +273,25 @@ FileSynchronizer.check_changes()
 ### Sync Tools
 
 **sync_workspace**(workspace_path, include_patterns?)
+
 - Detect code file changes (incremental)
 - SHA256-based change detection
 - Returns: change statistics
 
 **sync_docs**(workspace_path, include_patterns?)
+
 - Detect document changes
 - Returns: change statistics
 
 ### Management Tools
 
 **get_index_status**()
+
 - Get collection statistics
 - Returns: vectors count, costs
 
 **clear_index**()
+
 - Delete collection (cleanup)
 
 ---

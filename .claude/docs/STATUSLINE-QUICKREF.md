@@ -7,12 +7,14 @@
 ## Symbol Legend
 
 ### Connection Status
+
 | Symbol | Meaning |
 |--------|---------|
 | 📊 | ConPort connected - context preserved |
 | 📴 | ConPort disconnected - context at risk |
 
 ### Energy Levels
+
 | Symbol | State | Best For |
 |--------|-------|----------|
 | ⚡ | Hyperfocus | Complex architecture, deep debugging |
@@ -22,6 +24,7 @@
 | ⇣ | Very Low | **Take a break!** |
 
 ### Attention States
+
 | Symbol | State | Action |
 |--------|-------|--------|
 | ·👁️✨ | Hyperfocused | Celebrate! Protect this state |
@@ -31,17 +34,20 @@
 | ·👁️💥 | Overwhelmed | **Stop. Break time.** |
 
 ### Break Warnings
+
 | Symbol | Urgency | Action |
 |--------|---------|--------|
 | ☕ (yellow) | Soon | Finish task (5-10min), then break |
 | ☕! (red) | **NOW** | Stop immediately, 10-15min break |
 
 ### Accommodations
+
 | Symbol | Meaning |
 |--------|---------|
 | ·🛡️ | Hyperfocus protection active |
 
 ### Token Usage Colors
+
 | Color | Range | Meaning | Action |
 |-------|-------|---------|--------|
 | 🟢 Green | 0-60% | Plenty of context | Work freely |
@@ -53,6 +59,7 @@
 ## Common Commands
 
 ### Start Session
+
 ```bash
 mcp__conport__update_active_context \
   --workspace_id $(pwd) \
@@ -63,6 +70,7 @@ mcp__conport__update_active_context \
 ```
 
 ### Change Focus (Keep Timer)
+
 ```bash
 mcp__conport__update_active_context \
   --workspace_id $(pwd) \
@@ -70,6 +78,7 @@ mcp__conport__update_active_context \
 ```
 
 ### Log Decision
+
 ```bash
 mcp__conport__log_decision \
   --workspace_id $(pwd) \
@@ -79,6 +88,7 @@ mcp__conport__log_decision \
 ```
 
 ### Reset Session Timer
+
 ```bash
 mcp__conport__update_active_context \
   --workspace_id $(pwd) \
@@ -90,6 +100,7 @@ mcp__conport__update_active_context \
 ## Troubleshooting Quick Fixes
 
 ### 📴 ConPort Disconnected
+
 ```bash
 # Check database exists
 ls -la context_portal/context.db
@@ -99,6 +110,7 @@ mcp__conport__get_active_context --workspace_id $(pwd)
 ```
 
 ### 0K/200K Token Usage
+
 ```bash
 # Enable debug
 # Edit .claude/statusline.sh, uncomment lines 9-11
@@ -108,6 +120,7 @@ cat /tmp/statusline_debug.json | jq .
 ```
 
 ### No Session Time
+
 ```bash
 # Reset to current time
 mcp__conport__update_active_context \
@@ -116,6 +129,7 @@ mcp__conport__update_active_context \
 ```
 
 ### 💤 ADHD Engine Sleeping
+
 ```bash
 # Start service
 cd services/adhd-engine
@@ -139,16 +153,19 @@ uvicorn main:app --port 8095 --reload
 ## Context Window Management
 
 ### 🟢 Green Zone (0-60%)
+
 - ✅ Work freely
 - ✅ Log decisions as you go
 - ✅ No urgency
 
 ### 🟡 Yellow Zone (60-80%)
+
 - ⚠️ Finish current subtask
 - ⚠️ Log important decisions NOW
 - ⚠️ Prepare for potential session end
 
 **Action:**
+
 ```bash
 mcp__conport__log_decision \
   --workspace_id $(pwd) \
@@ -158,11 +175,13 @@ mcp__conport__log_decision \
 ```
 
 ### 🔴 Red Zone (80-100%)
+
 - 🚨 **SAVE IMMEDIATELY**
 - 🚨 Log ALL critical context
 - 🚨 Consider new session
 
 **Emergency Save:**
+
 ```bash
 # Log everything important RIGHT NOW
 mcp__conport__log_decision \
@@ -177,6 +196,7 @@ mcp__conport__log_decision \
 ## Break Protocol
 
 ### When You See ☕ (Yellow)
+
 1. Check timer: How long have you been working?
 2. Finish current small task (< 10 minutes)
 3. Log progress to ConPort
@@ -187,6 +207,7 @@ mcp__conport__log_decision \
    - Hydrate
 
 ### When You See ☕! (Red)
+
 1. **STOP IMMEDIATELY** - Don't finish "just one more thing"
 2. Save all work
 3. Log critical context

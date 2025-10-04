@@ -5,6 +5,7 @@ A comprehensive 6-phase pipeline that transforms conversational data into formal
 ## 🎯 Overview
 
 This advanced pipeline takes unstructured chat conversations and produces formal documentation including:
+
 - **Product Requirements Documents (PRD)**
 - **Architecture Decision Records (ADR)**
 - **Technical Design Specifications**
@@ -14,6 +15,7 @@ This advanced pipeline takes unstructured chat conversations and produces formal
 ## 🚀 Pipeline Architecture
 
 ### Phase 1: Semantic Chunking
+
 - **Module**: `processing/semantic_chunker.py`
 - **Purpose**: Break conversations into semantically coherent chunks
 - **Features**:
@@ -23,6 +25,7 @@ This advanced pipeline takes unstructured chat conversations and produces formal
   - TF-IDF similarity analysis for topic detection
 
 ### Phase 2: Vector Embedding
+
 - **Module**: `embeddings/voyage_client.py`
 - **Purpose**: Generate vector embeddings using Voyage AI
 - **Features**:
@@ -33,6 +36,7 @@ This advanced pipeline takes unstructured chat conversations and produces formal
   - Cost tracking and optimization
 
 ### Phase 3: Classification
+
 - **Purpose**: Multi-label content categorization
 - **Classifications**:
   - **Content Type**: feature, bug, decision, question, implementation
@@ -41,6 +45,7 @@ This advanced pipeline takes unstructured chat conversations and produces formal
   - **Status**: proposed, approved, in_progress, completed
 
 ### Phase 4: Entity Extraction
+
 - **Purpose**: Extract entities, patterns, and relationships
 - **Extractions**:
   - **People**: Conversation participants
@@ -50,6 +55,7 @@ This advanced pipeline takes unstructured chat conversations and produces formal
   - **Technical Elements**: APIs, databases, architectures
 
 ### Phase 5: Knowledge Graph
+
 - **Purpose**: Build structured knowledge representation
 - **Components**:
   - **Nodes**: Entities, chunks, concepts
@@ -58,6 +64,7 @@ This advanced pipeline takes unstructured chat conversations and produces formal
   - **Export**: Neo4j-compatible format
 
 ### Phase 6: Document Synthesis
+
 - **Purpose**: Generate formal documentation
 - **Templates**:
   - **PRD**: Goals, requirements, success metrics
@@ -145,18 +152,21 @@ output/
 The pipeline includes specific features for ADHD-friendly processing:
 
 ### Phased Processing
+
 - **Checkpoints**: Each phase requires user confirmation
 - **Progress Visualization**: Real-time progress bars and estimates
 - **Interrupt/Resume**: State persistence allows stopping and continuing
 - **Clear Status**: Detailed status reporting at each step
 
 ### Cognitive Load Management
+
 - **Maximum 3 decisions per checkpoint**
 - **Smart defaults with optional overrides**
 - **Visual progress indicators**
 - **Clear next steps and guidance**
 
 ### Time Management
+
 - **Estimated durations for each phase**
 - **Actual timing tracking**
 - **Break suggestions for long phases**
@@ -195,6 +205,7 @@ client = VoyageClient(
 ## 🔬 Advanced Features
 
 ### Vector Similarity Search
+
 ```python
 # Find similar conversation chunks
 similar_chunks = voyage_client.find_similar(
@@ -205,6 +216,7 @@ similar_chunks = voyage_client.find_similar(
 ```
 
 ### Custom Classification Rules
+
 ```python
 # Add custom classification patterns
 custom_patterns = {
@@ -215,6 +227,7 @@ custom_patterns = {
 ```
 
 ### Knowledge Graph Queries
+
 ```python
 # Query the knowledge graph
 def find_related_entities(entity_id):
@@ -265,6 +278,7 @@ python enhanced_chatlog_extractor.py input.txt --verbose
 ## 📝 Examples
 
 See the `examples/` directory for:
+
 - Sample conversation files
 - Expected output formats
 - Integration examples

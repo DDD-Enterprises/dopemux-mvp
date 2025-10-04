@@ -1,5 +1,7 @@
 # /doc:pull
+
 Given a query like a ticket ID, file path, or feature name:
+
 1) Use available MCP servers to gather context:
    - claude-context: top passages from docs/ and src/ for the query
    - ConPort: relevant ADRs & active decisions

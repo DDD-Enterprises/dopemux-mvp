@@ -50,6 +50,7 @@ dopemux-mvp main | ✅ Implementing auth system [2h 15m] | 🧠 ⚡= 👁️● 
 ### 🎨 What Each Component Looks Like
 
 #### 📁 Directory & 🌿 Branch
+
 ```
 dopemux-mvp main
 dopemux-mvp feature/auth-system
@@ -57,12 +58,14 @@ my-project bugfix/login-redirect
 ```
 
 #### 🔗 Connection Status
+
 | Display | Meaning | Your Action |
 |---------|---------|-------------|
 | 📊 | **Connected** - ConPort active | ✅ Work freely, context preserved |
 | 📴 | **Disconnected** - ConPort offline | ⚠️ Fix ConPort, context at risk |
 
 #### 🎯 Current Focus (max 35 chars)
+
 ```
 📊 Implementing JWT tokens
 📊 Debugging production login i...
@@ -70,6 +73,7 @@ my-project bugfix/login-redirect
 ```
 
 #### ⏱️ Session Time
+
 ```
 [15m]           → Under 1 hour
 [1h 23m]        → Over 1 hour
@@ -77,6 +81,7 @@ my-project bugfix/login-redirect
 ```
 
 #### ⚡ Energy Levels
+
 | Display | State | Best For 🎯 |
 |---------|-------|-------------|
 | **⚡⚡** | Hyperfocus - Peak energy | 🔥 Complex architecture, deep debugging, system design |
@@ -86,6 +91,7 @@ my-project bugfix/login-redirect
 | **⚡⇣** | Very Low - Depleted | 🛑 **TAKE A BREAK!** |
 
 #### 👁️ Attention States
+
 | Display | State | What It Means | Your Action 💡 |
 |---------|-------|---------------|----------------|
 | **👁️✨** | Hyperfocused - Deep flow | 🎉 Celebrate! Protect this precious state |
@@ -95,11 +101,13 @@ my-project bugfix/login-redirect
 | **👁️💥** | Overwhelmed - Overload | 🚨 **STOP! Break time NOW** |
 
 #### 🛡️ Accommodations (Optional)
+
 | Symbol | Meaning | Effect |
 |--------|---------|--------|
 | 🛡️ | Hyperfocus protection | 🔕 Interruptions minimized, warnings delayed |
 
 #### ☕ Break Warnings (Optional)
+
 | Display | Urgency | What To Do 🎯 |
 |---------|---------|----------------|
 | ☕ (yellow) | **Soon** - within 10-15 min | ✋ Finish current task, then 5-min break |
@@ -114,6 +122,7 @@ my-project bugfix/login-redirect
 - 🔴 **80-100%** (Red) - Near autocompact, save decisions now
 
 **Real-time calculation:**
+
 - Parses Claude Code transcript file for actual usage
 - Shows both raw tokens and percentage: `128K/200K (64%)`
 - Auto-adapts to all Claude models (Opus 200K, Sonnet 200K/1M, Haiku 200K)
@@ -160,6 +169,7 @@ mcp__conport__update_active_context \
 ### Verify Setup
 
 Your statusline should now show:
+
 - 📊 Connected to ConPort
 - 🎯 "Setting up Dopemux" as current focus
 - ⏱️ Session time counting up
@@ -182,6 +192,7 @@ Your statusline should now show:
 - **Knowledge Graph** - Relationships between decisions, tasks, patterns
 
 **Key Features:**
+
 - SQLite-based for sub-5ms queries
 - Full-text and semantic search
 - Session continuity across interruptions
@@ -200,6 +211,7 @@ Your statusline should now show:
 - **Accommodation Stats** - Track what helps you be productive
 
 **How it helps:**
+
 - Adapts task complexity to energy level
 - Suggests breaks before burnout
 - Protects deep focus states
@@ -268,6 +280,7 @@ mcp__conport__log_decision \
 **Watch your statusline token percentage:**
 
 🟢 **Green Zone (0-60%)**
+
 ```bash
 # Work freely, context plenty
 # Log decisions as you make them
@@ -275,6 +288,7 @@ mcp__conport__log_decision \
 ```
 
 🟡 **Yellow Zone (60-80%)**
+
 ```bash
 # Wrap up current subtask
 # Log key decisions now
@@ -288,6 +302,7 @@ mcp__conport__log_decision \
 ```
 
 🔴 **Red Zone (80-100%)**
+
 ```bash
 # SAVE IMMEDIATELY
 # Log all important context
@@ -299,11 +314,13 @@ mcp__conport__log_decision \
 ### Respecting Break Warnings
 
 **When statusline shows ☕ (yellow):**
+
 - Finish current task (5-10 min)
 - Log progress to ConPort
 - Take 5-minute break
 
 **When statusline shows ☕! (red):**
+
 - Stop immediately
 - Save all work
 - Take 10-15 minute break
@@ -330,16 +347,19 @@ mcp__conport__log_decision \
 Dopemux uses a **two-plane architecture** for separation of concerns:
 
 ### Project Management Plane
+
 - **Leantime** - Status authority (planned → active → blocked → done)
 - **Task-Master** - PRD parsing, AI task decomposition
 - **Task-Orchestrator** - 37 specialized tools, dependency analysis
 
 ### Cognitive Plane
+
 - **Serena LSP** - Code intelligence with ADHD accommodations
 - **ConPort** - Knowledge graph, decision logging, memory
 - **ADHD Engine** - Energy tracking, attention management
 
 ### Integration Bridge
+
 - Cross-plane event routing
 - Authority enforcement
 - Conflict resolution
@@ -369,6 +389,7 @@ Dopemux uses a **two-plane architecture** for separation of concerns:
 **Cause:** ConPort database not accessible
 
 **Fix:**
+
 ```bash
 # Check database exists
 ls -la context_portal/context.db
@@ -382,6 +403,7 @@ mcp__conport__get_active_context --workspace_id $(pwd)
 **Cause:** Transcript file not accessible
 
 **Fix:**
+
 ```bash
 # Enable debug mode
 # Edit .claude/statusline.sh, uncomment debug lines
@@ -396,6 +418,7 @@ tail -20 /tmp/statusline_debug.log
 **Cause:** Invalid session_start timestamp
 
 **Fix:**
+
 ```bash
 # Reset session start to now
 mcp__conport__update_active_context \
@@ -408,6 +431,7 @@ mcp__conport__update_active_context \
 **Cause:** Service not running
 
 **Fix:**
+
 ```bash
 # Start ADHD Engine
 cd services/adhd-engine
@@ -433,6 +457,7 @@ uvicorn main:app --port 8095 --reload
 Dopemux is designed by and for developers with ADHD. Contributions welcome!
 
 **Areas of focus:**
+
 - ADHD accommodation patterns
 - Statusline improvements
 - Energy/attention tracking
@@ -446,6 +471,7 @@ Dopemux is designed by and for developers with ADHD. Contributions welcome!
 ### Version 2.0 (2025-10-04)
 
 **Statusline Improvements:**
+
 - ✅ Real token usage tracking from transcript files
 - ✅ Auto-detect context window for all Claude models
 - ✅ Raw token counts: `128K/200K (64%)`
@@ -456,11 +482,13 @@ Dopemux is designed by and for developers with ADHD. Contributions welcome!
 - ✅ Hyperfocus protection
 
 **Performance:**
+
 - ✅ ConPort: 2ms queries (25x faster than target)
 - ✅ Statusline: 150ms refresh (6.6x faster)
 - ✅ Token calc: 30ms (3x faster)
 
 **New Features:**
+
 - ✅ Direct SQLite access for ConPort
 - ✅ Progressive disclosure based on terminal width
 - ✅ Context window optimization guidance
@@ -487,6 +515,7 @@ MIT License - See LICENSE file for details
 Built with insights from the ADHD development community and powered by Claude AI.
 
 **Special thanks to:**
+
 - The ADHD developer community for sharing their experiences
 - Anthropic for Claude Code and Claude API
 - Contributors to ADHD accommodation research

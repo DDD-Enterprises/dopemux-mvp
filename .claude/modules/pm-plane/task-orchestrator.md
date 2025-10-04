@@ -12,6 +12,7 @@
 **Path C Migration Complete**: The task-orchestrator service has been **extracted and simplified** per Decision #140.
 
 **What Changed**:
+
 - ADHD Engine extracted → `services/adhd_engine/` (standalone FastAPI service)
 - Task storage unified → ConPort progress_entry + custom_data
 - User interface → SuperClaude `/dx:` commands
@@ -24,6 +25,7 @@
 ## Architectural Decision
 
 Per Decision #132, we use **ConPort + SuperClaude + Python ADHD Engine** instead of external orchestrators:
+
 - **No jpicklyk** (ConPort PostgreSQL AGE is superior to SQLite)
 - **No Task-Master-AI** (SuperClaude `/dx:prd-parse` handles PRD decomposition)
 - **Python ADHD Engine** provides unique cognitive optimization value
@@ -31,6 +33,7 @@ Per Decision #132, we use **ConPort + SuperClaude + Python ADHD Engine** instead
 ## Authority Boundaries
 
 **ConPort (PostgreSQL AGE) Owns:**
+
 - Task storage via `progress_entry` (TODO/IN_PROGRESS/DONE/BLOCKED)
 - Task metadata via `custom_data` category "task_metadata"
 - Dependencies via `link_conport_items` (BLOCKS, DEPENDS_ON, RELATES_TO)
@@ -38,6 +41,7 @@ Per Decision #132, we use **ConPort + SuperClaude + Python ADHD Engine** instead
 - Decision logging for task-related architectural choices
 
 **Python ADHD Engine Owns:**
+
 - Energy tracking and matching tasks to current energy levels
 - Cognitive load calculation (0-1 scale)
 - Break monitoring (25min sessions, 60min warnings, 90min mandatory)
@@ -46,6 +50,7 @@ Per Decision #132, we use **ConPort + SuperClaude + Python ADHD Engine** instead
 - Hyperfocus protection
 
 **SuperClaude Owns:**
+
 - PRD parsing via `/dx:prd-parse` with Zen planner
 - Human review workflow (Approach C for quality)
 - JSON schema validation before ConPort import
@@ -54,6 +59,7 @@ Per Decision #132, we use **ConPort + SuperClaude + Python ADHD Engine** instead
 ## ConPort Task Storage Schema
 
 ### Task Structure
+
 ```bash
 # Tasks stored as progress_entry
 mcp__conport__log_progress \
@@ -89,6 +95,7 @@ mcp__conport__link_conport_items \
 ```
 
 ### Graph Queries (PostgreSQL AGE)
+
 ```cypher
 -- Find all unblocked TODO tasks
 MATCH (t:Task {status: 'TODO'})
@@ -113,6 +120,7 @@ RETURN t1, t2
 ## Python ADHD Engine Integration
 
 ### Energy-Aware Task Selection
+
 ```python
 # ADHD engine queries ConPort for optimal task selection
 from services.adhd_engine import TaskSelector
@@ -133,6 +141,7 @@ optimal_tasks = selector.recommend_tasks(
 ```
 
 ### 25-Minute Focus Sessions
+
 ```python
 # Session management with auto-save
 from services.adhd_engine import SessionManager
@@ -159,6 +168,7 @@ session.mandate_break_at_90min()  # Force break for health
 ## Production Features
 
 ### Task Locking (Prevent Conflicts)
+
 ```sql
 -- PostgreSQL row-level locking for concurrent access
 SELECT * FROM progress_entries
@@ -168,6 +178,7 @@ LIMIT 1
 ```
 
 ### Retry Logic & Dead-Letter Queue
+
 ```python
 # Track retry attempts in custom_data
 {
@@ -184,6 +195,7 @@ if task["retry_count"] >= task["max_retries"]:
 ```
 
 ### Real-Time Dashboard Updates
+
 ```python
 # PostgreSQL LISTEN/NOTIFY for live updates
 import asyncpg
@@ -217,11 +229,13 @@ async for notification in conn.notifications():
 ## Migration Notes
 
 **What We Replaced:**
+
 - ❌ jpicklyk task-orchestrator (37 tools, SQLite limits, Kotlin/JVM complexity)
 - ❌ Task-Master-AI (PRD parsing redundant with SuperClaude)
 - ❌ External workflow orchestration (added unnecessary complexity)
 
 **What We Kept:**
+
 - ✅ ConPort PostgreSQL AGE (production-grade graph database)
 - ✅ ADHD intelligence (Python engine - our unique value-add)
 - ✅ SuperClaude command framework (25 commands, 15 agents)
@@ -230,6 +244,7 @@ async for notification in conn.notifications():
 ---
 
 **See Also:**
+
 - `.claude/modules/superclaude-integration.md` - SuperClaude configuration
 - `.claude/modules/custom-commands.md` - `/dx:` command reference
 - `.claude/modules/adhd-patterns.md` - ADHD session management patterns
