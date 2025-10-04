@@ -8,6 +8,7 @@
 ## Core ADHD Principles
 
 ### Fundamental Accommodations
+
 - **Context Preservation**: Always maintain awareness of where the user left off
 - **Gentle Guidance**: Use encouraging, non-judgmental language with clear next steps
 - **Decision Reduction**: Present maximum 3 options to reduce cognitive overwhelm
@@ -17,6 +18,7 @@
 ## Attention State Detection
 
 ### Attention States
+
 ```bash
 # Detect attention state via behavioral metrics and user indicators
 DETECT_ATTENTION_STATE() {
@@ -44,6 +46,7 @@ DETECT_ATTENTION_STATE() {
 ### Attention-Aware Response Adaptation
 
 #### Scattered Attention Mode
+
 ```bash
 ADAPT_FOR_SCATTERED() {
     echo "🧠 Attention State: Scattered - Optimizing for quick wins"
@@ -66,6 +69,7 @@ ADAPT_FOR_SCATTERED() {
 ```
 
 #### Focused Attention Mode
+
 ```bash
 ADAPT_FOR_FOCUSED() {
     echo "🧠 Attention State: Focused - Providing comprehensive support"
@@ -88,6 +92,7 @@ ADAPT_FOR_FOCUSED() {
 ```
 
 #### Hyperfocus Mode
+
 ```bash
 ADAPT_FOR_HYPERFOCUS() {
     echo "🧠 Attention State: Hyperfocus - Supporting deep work"
@@ -113,6 +118,7 @@ ADAPT_FOR_HYPERFOCUS() {
 ## Context Preservation Patterns
 
 ### Session Continuity
+
 ```bash
 # Preserve mental model across interruptions
 PRESERVE_SESSION_CONTEXT() {
@@ -165,6 +171,7 @@ RESTORE_SESSION_CONTEXT() {
 ```
 
 ### Context Switch Support
+
 ```bash
 # Handle transitions between different types of work
 HANDLE_CONTEXT_SWITCH() {
@@ -200,6 +207,7 @@ HANDLE_CONTEXT_SWITCH() {
 ## Cognitive Load Management
 
 ### Information Chunking
+
 ```bash
 # Break complex information into digestible chunks
 CHUNK_INFORMATION() {
@@ -232,6 +240,7 @@ CHUNK_INFORMATION() {
 ```
 
 ### Decision Simplification
+
 ```bash
 # Reduce decision paralysis with limited options
 SIMPLIFY_DECISIONS() {
@@ -262,6 +271,7 @@ SIMPLIFY_DECISIONS() {
 ## Progress Visualization
 
 ### Visual Progress Indicators
+
 ```bash
 # Provide motivating progress visualization
 SHOW_PROGRESS() {
@@ -310,6 +320,7 @@ SHOW_PROGRESS() {
 ```
 
 ### Completion Celebrations
+
 ```bash
 # Provide ADHD-friendly completion celebrations
 CELEBRATE_COMPLETION() {
@@ -369,6 +380,7 @@ INCREMENT_COMPLETION_STREAK() {
 ## Executive Function Support
 
 ### Activation Energy Reduction
+
 ```bash
 # Reduce barriers to starting tasks
 REDUCE_ACTIVATION_ENERGY() {
@@ -399,6 +411,7 @@ REDUCE_ACTIVATION_ENERGY() {
 ```
 
 ### Task Sequencing
+
 ```bash
 # Optimize task order for ADHD productivity
 OPTIMIZE_TASK_SEQUENCE() {
@@ -429,6 +442,7 @@ OPTIMIZE_TASK_SEQUENCE() {
 ## Memory and Organization Support
 
 ### Working Memory Aids
+
 ```bash
 # Support working memory limitations
 SUPPORT_WORKING_MEMORY() {
@@ -462,6 +476,7 @@ SUPPORT_WORKING_MEMORY() {
 ```
 
 ### External Memory Integration
+
 ```bash
 # Coordinate with ConPort for external memory
 COORDINATE_EXTERNAL_MEMORY() {
@@ -495,6 +510,7 @@ COORDINATE_EXTERNAL_MEMORY() {
 ### Session Management Commands (Critical ADHD Support)
 
 #### `/dx:load` - Zero-Cost Context Restoration
+
 **ADHD Value**: Eliminates "what was I doing?" cognitive drain
 
 ```bash
@@ -510,6 +526,7 @@ COORDINATE_EXTERNAL_MEMORY() {
 ```
 
 **ADHD Accommodations**:
+
 - ✅ **Automatic re-orientation**: No need to remember context
 - ✅ **Gentle welcome back**: Encouraging, non-judgmental tone
 - ✅ **Visual clarity**: Clear headers, progress indicators
@@ -517,6 +534,7 @@ COORDINATE_EXTERNAL_MEMORY() {
 - ✅ **Time awareness**: "Last 24h" anchors for time blindness
 
 #### `/dx:save` - Interruption Safety Net
+
 **ADHD Value**: Safe context switching without anxiety
 
 ```bash
@@ -532,6 +550,7 @@ COORDINATE_EXTERNAL_MEMORY() {
 ```
 
 **ADHD Accommodations**:
+
 - ✅ **Minimal friction**: Only 3 structured prompts
 - ✅ **Clear questions**: Reduce cognitive load
 - ✅ **Immediate feedback**: Visual confirmation builds trust
@@ -540,6 +559,7 @@ COORDINATE_EXTERNAL_MEMORY() {
 ### Implementation Command (Primary Development Workflow)
 
 #### `/dx:implement` - ADHD-Optimized Coding Sessions
+
 **ADHD Value**: Energy matching, break management, hyperfocus protection
 
 ```bash
@@ -556,6 +576,7 @@ COORDINATE_EXTERNAL_MEMORY() {
 ```
 
 **ADHD Accommodations**:
+
 - ✅ **Energy matching**: Tasks recommended by current energy level
 - ✅ **25min sessions**: Prevent burnout, maintain attention quality
 - ✅ **Auto-save every 5min**: Never lose work, safe interruptions
@@ -566,6 +587,7 @@ COORDINATE_EXTERNAL_MEMORY() {
 - ✅ **Celebration**: "Great work!" positive reinforcement
 
 **Break Reminder Pattern**:
+
 ```
 ⏰ Great work! Time for a 5-minute break
 
@@ -581,6 +603,7 @@ Choose:
 ```
 
 **Hyperfocus Protection Pattern**:
+
 ```
 ⚠️ Hyperfocus Alert: 60 minutes straight!
 Please take a break soon to avoid burnout.
@@ -593,6 +616,7 @@ Your work has been auto-saved.
 ### Planning Command
 
 #### `/dx:prd-parse` - Structured PRD Decomposition
+
 **ADHD Value**: Prevents overwhelm, creates manageable chunks
 
 ```bash
@@ -607,6 +631,7 @@ Your work has been auto-saved.
 ```
 
 **ADHD Accommodations**:
+
 - ✅ **15-90min chunks**: All tasks broken into ADHD-optimal sizes
 - ✅ **Human review gate**: Catch errors before committing (reduce anxiety)
 - ✅ **Energy metadata**: Enables smart task selection in `/dx:implement`
@@ -617,17 +642,21 @@ Your work has been auto-saved.
 ### Analysis Commands
 
 #### `/dx:analyze` - Structured Investigation
+
 **ADHD Value**: Reduce overwhelm via multi-step structure
 
 **ADHD Accommodations**:
+
 - ✅ **Structured thinking**: Multi-step prevents information overload
 - ✅ **Expert validation**: Multiple models for confidence building
 - ✅ **Automatic logging**: Capture insights in ConPort (external memory)
 
 #### `/dx:review` - Multi-Model Code Review
+
 **ADHD Value**: Confidence building, multiple perspectives
 
 **ADHD Accommodations**:
+
 - ✅ **Multiple models**: Validation from different perspectives
 - ✅ **Comprehensive coverage**: Quality, security, performance, ADHD patterns
 - ✅ **Automatic logging**: Decisions captured for future reference
@@ -635,6 +664,7 @@ Your work has been auto-saved.
 ### Workflow Integration Patterns
 
 #### Daily Development Session Pattern
+
 ```bash
 # Morning: Restore context
 /dx:load
@@ -659,6 +689,7 @@ Your work has been auto-saved.
 ```
 
 #### PRD to Implementation Pattern
+
 ```bash
 # Step 1: Parse PRD
 /dx:prd-parse "requirements/auth.md"
@@ -685,6 +716,7 @@ Your work has been auto-saved.
 ---
 
 **See Also:**
+
 - `.claude/modules/superclaude-integration.md` - SuperClaude overview
 - `.claude/modules/custom-commands.md` - Detailed /dx: command reference
 - `.claude/modules/coordination/authority-matrix.md` - Authority boundaries

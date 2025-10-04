@@ -30,6 +30,7 @@ Breaking this down:
 ### 1. ConPort Knowledge Graph Integration
 
 **Status Indicators:**
+
 - 📊 **Connected** - ConPort active, context preserved
 - 📴 **Disconnected** - ConPort unavailable (context at risk)
 
@@ -37,6 +38,7 @@ Breaking this down:
 Shows your active task from ConPort's `active_context.current_focus` (max 35 chars + ellipsis)
 
 **How it works:**
+
 - Direct SQLite query to `context_portal/context.db`
 - Sub-5ms response time (200x faster than HTTP)
 - Auto-updates every statusline refresh
@@ -44,6 +46,7 @@ Shows your active task from ConPort's `active_context.current_focus` (max 35 cha
 ### 2. Session Time Tracking
 
 **Format:**
+
 - Under 1 hour: `[23m]`
 - Over 1 hour: `[2h 15m]`
 
@@ -54,6 +57,7 @@ Shows your active task from ConPort's `active_context.current_focus` (max 35 cha
 ### 3. ADHD Engine Status
 
 **Energy Levels:**
+
 - ⚡⚡ **Hyperfocus** - Peak energy state (double lightning)
 - ⚡↑ **High** - Above baseline energy
 - ⚡= **Medium** - Balanced, level state (equals sign)
@@ -61,6 +65,7 @@ Shows your active task from ConPort's `active_context.current_focus` (max 35 cha
 - ⚡⇣ **Very Low** - Needs break or recovery
 
 **Attention States:**
+
 - 👁️✨ **Hyperfocused** - Deep flow state (eye + sparkles)
 - 👁️● **Focused** - Good attention state (eye + solid dot)
 - 👁️~ **Transitioning** - Attention shifting (eye + wave)
@@ -68,13 +73,16 @@ Shows your active task from ConPort's `active_context.current_focus` (max 35 cha
 - 👁️💥 **Overwhelmed** - Cognitive overload (eye + explosion)
 
 **Break Warnings:**
+
 - ☕ **Yellow** - Break suggested soon (coffee cup)
 - ☕! **Red** - Break urgently needed (coffee cup + exclamation)
 
 **Hyperfocus Protection:**
+
 - 🛡️ **Active** - Protection engaged during hyperfocus (shield)
 
 **How it works:**
+
 - Single `/health` call to ADHD Engine (localhost:8095)
 - 400ms timeout for non-blocking operation
 - Progressive disclosure based on terminal width
@@ -82,27 +90,32 @@ Shows your active task from ConPort's `active_context.current_focus` (max 35 cha
 ### 4. Accurate Token Usage
 
 **Format:** `128K/200K (64%)`
+
 - **First number**: Tokens used in current session
 - **Second number**: Model's context window size
 - **Percentage**: Usage relative to window
 
 **Color Coding:**
+
 - 🟢 **Green (0-60%)** - Plenty of context available
 - 🟡 **Yellow (60-80%)** - Context filling up
 - 🔴 **Red (80-100%)** - Near autocompact threshold
 
 **Calculation Method:**
+
 ```bash
 # Accurate cumulative tracking across all turns
 context_used = cache_read_input_tokens (latest) + Σ output_tokens (all turns) + input_tokens (latest)
 ```
 
 **Why this works:**
+
 - `cache_read_input_tokens` = System prompt + conversation context (lags by 1 turn)
 - `Σ output_tokens` = All Claude responses in conversation
 - `input_tokens (latest)` = Most recent user message, fills the 1-turn lag
 
 **Model Detection:**
+
 - Auto-detects from model ID: `claude-sonnet-4-5-20250929`
 - Handles all Claude models: Opus (200K), Sonnet (200K/1M), Haiku (200K)
 - Future-proof: adapts to new models automatically
@@ -112,6 +125,7 @@ context_used = cache_read_input_tokens (latest) + Σ output_tokens (all turns) +
 ## Configuration
 
 ### Location
+
 `.claude/statusline.sh`
 
 ### Claude Code Integration
@@ -133,6 +147,7 @@ The statusline requires ConPort for focus tracking and session time:
 1. **Database location:** `context_portal/context.db` (SQLite)
 2. **Required table:** `active_context` with JSON `content` field
 3. **Start session:**
+
    ```bash
    mcp__conport__update_active_context \
      --workspace_id /Users/hue/code/dopemux-mvp \
@@ -145,10 +160,12 @@ Optional but recommended for ADHD accommodations:
 
 1. **Service location:** `http://localhost:8095/health`
 2. **Start engine:**
+
    ```bash
    cd services/adhd-engine
    uvicorn main:app --port 8095
    ```
+
 3. **Features enabled:** Energy tracking, attention states, break reminders
 
 ## Technical Details
@@ -185,6 +202,7 @@ context_pct=$((context_used * 100 / context_total))
 ```
 
 **Why this works:**
+
 - `cache_read_input_tokens` = cached prompt (system + conversation, lags 1 turn)
 - `Σ output_tokens` = all Claude responses in conversation
 - `input_tokens (latest)` = most recent user input, compensates for cache lag
@@ -194,11 +212,13 @@ context_pct=$((context_used * 100 / context_total))
 ### Dependencies
 
 **Required:**
+
 - `jq` - JSON parsing
 - `sqlite3` - ConPort database queries
 - `bash` ≥ 4.0 - Script execution
 
 **Optional:**
+
 - `curl` - ADHD Engine queries
 - `git` - Branch display
 - ConPort database - Focus and session tracking
@@ -224,22 +244,26 @@ tail -20 /tmp/statusline_debug.log
 ### Version 2.0 (2025-10-04)
 
 **Token Usage Improvements:**
+
 - ✅ Added raw token counts: `128K/200K` alongside percentage
 - ✅ Fixed token calculation using transcript file parsing
 - ✅ Auto-detect context window from model ID
 - ✅ Support all Claude models (Opus, Sonnet, Haiku, variants)
 
 **Display Improvements:**
+
 - ✅ Better medium energy symbol: `•` (was `=`)
 - ✅ Intuitive session time: `[2h 15m]` (was `2×25+12m`)
 - ✅ Current focus from ConPort (was static test data)
 
 **Performance Improvements:**
+
 - ✅ Direct SQLite access for ConPort (2ms vs 400ms HTTP)
 - ✅ Optimized token calculation (30ms vs 100ms+)
 - ✅ Single ADHD Engine health call (vs multiple endpoints)
 
 **New Features:**
+
 - ✅ Attention state indicators (👁️✨, 👁️, 👁️~, 👁️🌀, 👁️💥)
 - ✅ Break warning system (☕ yellow, ☕! red)
 - ✅ Hyperfocus protection indicator (🛡️)
@@ -255,10 +279,13 @@ tail -20 /tmp/statusline_debug.log
 
 **Cause:** Transcript file not accessible or empty
 **Fix:**
+
 1. Check Claude Code is creating transcript:
+
    ```bash
    ls -la ~/.claude/projects/*/
    ```
+
 2. Verify jq is installed: `which jq`
 3. Enable debug mode and check logs
 
@@ -266,20 +293,26 @@ tail -20 /tmp/statusline_debug.log
 
 **Cause:** ConPort database not found or empty
 **Fix:**
+
 1. Check database exists:
+
    ```bash
    ls -la context_portal/context.db
    ```
+
 2. Initialize ConPort:
+
    ```bash
    mcp__conport__get_active_context --workspace_id $(pwd)
    ```
+
 3. Verify sqlite3 installed: `which sqlite3`
 
 ### Session time not showing
 
 **Cause:** Invalid or future `session_start` timestamp
 **Fix:**
+
 ```bash
 # Set session start to current time
 mcp__conport__update_active_context \
@@ -291,6 +324,7 @@ mcp__conport__update_active_context \
 
 **Cause:** ADHD Engine service not running
 **Fix:**
+
 ```bash
 # Start ADHD Engine
 cd services/adhd-engine
@@ -302,6 +336,7 @@ uvicorn main:app --port 8095 --reload
 ### ADHD Workflow Integration
 
 1. **Session Start:**
+
    ```bash
    # Set focus and start timer
    mcp__conport__update_active_context \
@@ -313,6 +348,7 @@ uvicorn main:app --port 8095 --reload
    ```
 
 2. **Focus Changes:**
+
    ```bash
    # Update focus without resetting timer
    mcp__conport__update_active_context \
@@ -402,6 +438,7 @@ Found a bug or have a feature request? The statusline is part of Dopemux's ADHD 
 **File location:** `.claude/statusline.sh`
 **Documentation:** `.claude/docs/STATUSLINE.md`
 **Related systems:**
+
 - ConPort: `docker/mcp-servers/conport/`
 - ADHD Engine: `services/adhd-engine/`
 

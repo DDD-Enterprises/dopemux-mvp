@@ -69,6 +69,7 @@
 ## 🧠 Key Context for MAS Sequential Thinking
 
 ### Primary Question for MAS
+
 "Design a complete tool orchestration system that maps every tool from 12+ MCP servers into role-based workflows with automatic triggering through hooks and context detection. The system should provide magical implicit coordination where tools load exactly when needed, context is always perfect, and the user experiences seamless development with zero manual overhead."
 
 ### Specific Areas to Explore with MAS
@@ -96,6 +97,7 @@
 ## 📁 Architecture Components Defined
 
 ### Roles (11 Total)
+
 1. researcher - Information gathering with MAS, Exa, Context7
 2. implementer - Code generation with Morphllm, Claude-Context
 3. reviewer - Quality assurance with Zen consensus
@@ -109,12 +111,14 @@
 11. knowledge_curator - Memory and learning capture
 
 ### Memory Stores (4 Layers)
+
 1. Claude-flow SQLite - Fast working memory
 2. ConPort - Project-specific persistent memory
 3. OpenMemory - Cross-session memory
 4. Letta - Long-term intelligent memory
 
 ### Hook Types
+
 1. Session lifecycle (start, end, checkpoint)
 2. Operation hooks (pre/post edit, command, task)
 3. ADHD checkpoints (25-minute intervals)
@@ -124,6 +128,7 @@
 ## 🔧 Required MCP Servers
 
 ### Core Servers (Must Have)
+
 1. ConPort - Memory hub
 2. Zen MCP - Multi-model orchestration
 3. Task-Master AI - Task management
@@ -132,12 +137,14 @@
 6. Morphllm-Fast-Apply - Code editing
 
 ### Enhancement Servers (Important)
+
 7. Leantime - Project management
 8. Context7 - Documentation
 9. Exa - Web research
 10. OpenMemory - Cross-session persistence
 
 ### Integration Servers (Nice to Have)
+
 11. Desktop-Commander - UI automation
 12. GitHub MCP - Repository integration
 

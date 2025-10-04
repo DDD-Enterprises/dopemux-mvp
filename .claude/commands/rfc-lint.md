@@ -1,4 +1,5 @@
 # /rfc:lint
+
 Lint an RFC using the LLM checklist + local linters.
 
 1) Load RFC content; run the RFC/ADR checklist (front-matter, required sections).

@@ -24,20 +24,26 @@ Start an ADHD-optimized 25-minute focused implementation session with intelligen
 ### Step 1.1: Get Task
 
 **If task_id provided in $ARGUMENTS**:
+
 - Query ConPort for specific task:
+
   ```bash
   Use mcp__conport__get_progress with workspace_id "/Users/hue/code/dopemux-mvp" and limit 100
   ```
+
 - Find task matching provided ID or description substring
 
 **If no task_id provided**:
+
 - Query ConPort for TODO tasks:
+
   ```bash
   Use mcp__conport__get_progress with:
     workspace_id: "/Users/hue/code/dopemux-mvp"
     status_filter: "TODO"
     limit: 10
   ```
+
 - Show available tasks with brief descriptions
 
 ### Step 1.2: Assess Task Suitability (ADHD Engine Integration)
@@ -51,6 +57,7 @@ For the selected task:
    - Use your judgment based on description
 
 2. **Call ADHD Engine for assessment**:
+
    ```bash
    Use Bash tool:
    curl -s -X POST http://localhost:8095/api/v1/assess-task \
@@ -68,6 +75,7 @@ For the selected task:
    ```
 
 3. **Display ADHD Assessment Results**:
+
    ```
    ═══════════════════════════════════════════
    ADHD Task Assessment
@@ -93,6 +101,7 @@ For the selected task:
    - If suitability >= 0.6 or user confirms: Proceed
 
 **Error Handling**: If ADHD Engine unavailable:
+
 - Show: "⚠️ ADHD assessment unavailable (is adhd-engine running?)"
 - Show: "Proceeding with standard 25-minute session"
 - Continue to Phase 2
@@ -127,6 +136,7 @@ Use mcp__conport__update_active_context with:
 ### Step 2.3: Display Session Start
 
 Show to user:
+
 ```
 🚀 Implementation Session Started
 ═══════════════════════════════════════════
@@ -162,16 +172,19 @@ You are now in focused implementation mode. Follow these ADHD-supportive guideli
 ### ADHD Accommodations
 
 **If Feeling Stuck**:
+
 - Break the current step into even smaller pieces
 - Start with the easiest part
 - It's okay to make progress incrementally
 
 **If Distracted**:
+
 - Acknowledge the distraction
 - Gently return focus to the task
 - No judgment - this is normal
 
 **If Overwhelmed**:
+
 - Pause and reassess
 - Consider if task complexity was underestimated
 - It's okay to break early and adjust approach
@@ -179,6 +192,7 @@ You are now in focused implementation mode. Follow these ADHD-supportive guideli
 ### Progress Checkpoints
 
 After each major step (file created, test passing, feature working):
+
 - Briefly note progress
 - Optionally save to ConPort with progress note
 - Celebrate small wins internally
@@ -192,6 +206,7 @@ After each major step (file created, test passing, feature working):
 ### Step 4.1: Check Completion Status
 
 Ask user:
+
 ```
 Session checkpoint reached!
 
@@ -217,6 +232,7 @@ Use mcp__conport__update_progress with:
 ### Step 4.3: Break Reminder
 
 Show break recommendation:
+
 ```
 ☕ Time for a 5-Minute Break!
 ═══════════════════════════════════════════
@@ -239,6 +255,7 @@ You've earned this break! 💙
 ### Step 4.4: Celebration (if DONE)
 
 If status is DONE:
+
 ```
 ✅ ✅ ✅ AWESOME! TASK COMPLETE! ✅ ✅ ✅
 
@@ -271,15 +288,18 @@ Use mcp__conport__update_active_context with:
 ## Error Handling
 
 **If ConPort MCP unavailable**:
+
 - Show: "⚠️ ConPort unavailable - progress won't be saved"
 - Continue session anyway (user's choice)
 - Suggest: "Save work manually and retry later"
 
 **If ADHD Engine unavailable**:
+
 - Already handled in Phase 1
 - Session continues without assessment
 
 **If user interrupts mid-session**:
+
 - That's okay! ADHD-friendly design
 - Work is saved if user used Write/Edit tools
 - Can resume with /dx:session resume

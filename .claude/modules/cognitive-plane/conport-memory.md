@@ -8,6 +8,7 @@
 ## Authority Boundaries
 
 **ConPort ONLY Authority:**
+
 - Architectural decisions and implementation rationale
 - Project knowledge graph maintenance
 - Progress tracking and decision history
@@ -15,6 +16,7 @@
 - Cross-system relationship tracking
 
 **ConPort NEVER:**
+
 - Provides LSP operations (Serena LSP authority)
 - Parses PRD documents (SuperClaude `/dx:prd-parse` authority)
 - Calculates ADHD metrics in real-time (Python ADHD Engine authority)
@@ -22,6 +24,7 @@
 ## Core Memory Operations
 
 ### Context Management
+
 ```bash
 # Get current project and active contexts
 mcp__conport__get_product_context --workspace_id "/Users/hue/code/dopemux-mvp"
@@ -33,6 +36,7 @@ mcp__conport__update_active_context --workspace_id "/Users/hue/code/dopemux-mvp"
 ```
 
 ### Decision & Progress Tracking
+
 ```bash
 # Log architectural and implementation decisions
 mcp__conport__log_decision --workspace_id "/Users/hue/code/dopemux-mvp" \
@@ -49,6 +53,7 @@ mcp__conport__update_progress --workspace_id "/Users/hue/code/dopemux-mvp" \
 ```
 
 ### Knowledge Graph Operations
+
 ```bash
 # Create semantic links between entities
 mcp__conport__link_conport_items --workspace_id "/Users/hue/code/dopemux-mvp" \
@@ -64,6 +69,7 @@ mcp__conport__get_linked_items --workspace_id "/Users/hue/code/dopemux-mvp" \
 ## ADHD-Optimized Patterns
 
 ### Automatic Context Preservation
+
 ```bash
 # Session initialization sequence (MANDATORY AT SESSION START)
 INITIALIZE_CONPORT_CONTEXT() {
@@ -91,6 +97,7 @@ LOAD_EXISTING_CONTEXT() {
 ```
 
 ### Proactive Logging Triggers
+
 ```bash
 # Automatic decision logging when user makes architectural choices
 AUTO_LOG_DECISION() {
@@ -125,6 +132,7 @@ AUTO_LOG_PROGRESS() {
 ## Search and Discovery
 
 ### Semantic Search
+
 ```bash
 # Natural language queries for conceptual searches
 mcp__conport__semantic_search_conport --workspace_id "/Users/hue/code/dopemux-mvp" \
@@ -132,6 +140,7 @@ mcp__conport__semantic_search_conport --workspace_id "/Users/hue/code/dopemux-mv
 ```
 
 ### Full-Text Search
+
 ```bash
 # Keyword-based searches
 mcp__conport__search_decisions_fts --workspace_id "/Users/hue/code/dopemux-mvp" \
@@ -148,6 +157,7 @@ mcp__conport__search_project_glossary_fts --workspace_id "/Users/hue/code/dopemu
 ## Integration with Other Systems
 
 ### ConPort ↔ Serena Integration
+
 ```bash
 # Link code exploration sessions to architectural decisions
 LINK_CODE_TO_DECISION() {
@@ -162,6 +172,7 @@ LINK_CODE_TO_DECISION() {
 ```
 
 ### ConPort ↔ Task Management Integration
+
 ```bash
 # Create task references while preserving authority boundaries
 CREATE_TASK_REFERENCE() {
@@ -177,6 +188,7 @@ CREATE_TASK_REFERENCE() {
 ## Dynamic Context Retrieval
 
 ### Context-Aware Response Enhancement
+
 ```bash
 # Automatically retrieve relevant context for user queries
 ENHANCE_RESPONSE_WITH_CONTEXT() {
@@ -203,6 +215,7 @@ ENHANCE_RESPONSE_WITH_CONTEXT() {
 ## Error Handling and Resilience
 
 ### Graceful Degradation
+
 ```bash
 # Handle ConPort unavailability
 HANDLE_CONPORT_UNAVAILABLE() {
@@ -229,6 +242,7 @@ CONPORT_WITH_CIRCUIT_BREAKER() {
 ## ConPort Sync Routine
 
 ### Manual Sync Command
+
 ```bash
 # User-triggered sync for session analysis
 CONPORT_SYNC() {
@@ -245,6 +259,7 @@ CONPORT_SYNC() {
 ## Visual Progress and Motivation
 
 ### ADHD-Friendly Progress Indicators
+
 ```bash
 # Show visual progress for motivation
 SHOW_PROGRESS() {

@@ -29,6 +29,7 @@ mcp__conport__get_progress --workspace_id "/Users/hue/code/dopemux-mvp" --limit 
 ## Step 4: Display Context
 
 Show formatted context:
+
 ```
 Session Context Loaded
 ═══════════════════════════════════════════

@@ -17,11 +17,12 @@
 **Module Version**: 1.0.0
 **Authority**: PRD Parsing and Task Decomposition
 **Mode**: PLAN only
-**Repository**: https://github.com/eyaltoledano/claude-task-master
+**Repository**: <https://github.com/eyaltoledano/claude-task-master>
 
 ## Authority Boundaries
 
 **Task-Master Owns:**
+
 - PRD parsing and analysis
 - AI-driven task decomposition from requirements
 - Subtask hierarchy creation
@@ -29,6 +30,7 @@
 - Task dependency identification
 
 **Task-Master NEVER:**
+
 - Updates task status (Leantime authority)
 - Creates ConPort decisions (ConPort authority)
 - Provides code navigation (Serena authority)
@@ -36,6 +38,7 @@
 ## Core Commands
 
 ### PRD Analysis & Decomposition
+
 ```bash
 # Parse PRD and create task hierarchy (PLAN mode only)
 # Hand off PRD to Task-Master for AI-driven analysis
@@ -57,6 +60,7 @@ mcp__conport__log_custom_data --workspace_id "/Users/hue/code/dopemux-mvp" \
 ## Integration Patterns
 
 ### Task-Master → ConPort Handoff
+
 ```bash
 # Receive decomposition results from Task-Master
 RECEIVE_FROM_TASKMASTER() {

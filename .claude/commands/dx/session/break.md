@@ -15,6 +15,7 @@ Use mcp__conport__get_active_context to see current task.
 ## Step 2: Log Break
 
 Optional - call ADHD Engine to log break:
+
 ```bash
 curl -s -X POST http://localhost:8095/api/v1/recommend-break \
   -H "Content-Type: application/json" \
@@ -30,6 +31,7 @@ mcp__conport__update_active_context --workspace_id "/Users/hue/code/dopemux-mvp"
 ## Step 4: Break Guidance
 
 Show:
+
 ```
 ☕ 5-Minute Break Time!
 ═══════════════════════════════════════════
