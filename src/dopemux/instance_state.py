@@ -243,6 +243,44 @@ class InstanceStateManager:
             if state.status == 'orphaned' and Path(state.worktree_path).exists()
         ]
 
+    async def find_orphaned_instances_filtered(
+        self,
+        max_age_days: int = 7,
+        limit: int = 10,
+        sort_by_recent: bool = True
+    ) -> List[InstanceState]:
+        """
+        Find orphaned instances with age and count filtering.
+
+        ADHD Optimization: Limits results to reduce decision paralysis.
+
+        Args:
+            max_age_days: Only include instances newer than this many days (default: 7)
+            limit: Maximum number of instances to return (default: 10, ADHD max: 3 for menus)
+            sort_by_recent: Sort by most recent first (default: True)
+
+        Returns:
+            Filtered list of orphaned InstanceState objects
+        """
+        from datetime import timedelta
+
+        # Get all orphaned instances
+        orphaned = await self.find_orphaned_instances()
+
+        # Filter by age
+        cutoff_date = datetime.now() - timedelta(days=max_age_days)
+        filtered = [
+            state for state in orphaned
+            if state.last_active >= cutoff_date
+        ]
+
+        # Sort by most recent first if requested
+        if sort_by_recent:
+            filtered.sort(key=lambda s: s.last_active, reverse=True)
+
+        # Limit count
+        return filtered[:limit]
+
     async def cleanup_instance_state(self, instance_id: str) -> bool:
         """
         Remove instance state from persistence.
