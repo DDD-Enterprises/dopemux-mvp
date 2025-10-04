@@ -9,7 +9,8 @@ ConPort MCP server was failing with "Failed to reconnect to conport" errors, pre
 
 ## Root Cause Analysis
 
-### Primary Issues Found:
+### Primary Issues Found
+
 1. **Duplicate Conflicting Configurations** (Critical)
    - Global config with invalid `"command": "stdio"`
    - Project config with correct path and workspace_id
@@ -27,11 +28,13 @@ ConPort MCP server was failing with "Failed to reconnect to conport" errors, pre
 ## Solution Implemented
 
 ### Phase 1: Configuration Fix
+
 - ✅ Removed broken global conport config from `.claude.json`
 - ✅ Recreated clean MCP configurations using `claude mcp add-json`
 - ✅ Verified correct project config with proper workspace_id
 
 **Correct Configuration**:
+
 ```json
 "conport": {
   "type": "stdio",
@@ -41,15 +44,18 @@ ConPort MCP server was failing with "Failed to reconnect to conport" errors, pre
 ```
 
 ### Phase 2: Installation Cleanup
+
 - ✅ Removed system-wide uv installation: `uv tool uninstall context-portal-mcp`
 - ✅ Verified only project venv installation remains
 
 ### Phase 3: Process Stability Fix
+
 - ✅ Added stdio mode bypass in `main.py:977-987`
 - ✅ Skip database pre-warming when `args.mode == "stdio"`
 - ✅ Prevent high CPU usage and process crashes under MCP management
 
 **Code Change**:
+
 ```python
 # Skip pre-warming in stdio mode to prevent high CPU usage and process crashes
 if effective_workspace_id and args.mode != "stdio":
@@ -59,6 +65,7 @@ elif args.mode == "stdio":
 ```
 
 ### Phase 4: Validation
+
 - ✅ `claude mcp list` shows "✓ Connected"
 - ✅ Manual stdio test starts cleanly without CPU spikes
 - ✅ No process crashes or hanging during startup
@@ -80,12 +87,15 @@ which conport-mcp  # Should return "not found"
 ## Prevention Measures
 
 ### CLAUDE.md Integration
+
 Added to project CLAUDE.md:
+
 - ConPort configuration requirements
 - Warning about duplicate config conflicts
 - Proper workspace_id setup instructions
 
 ### Future Troubleshooting
+
 1. **Always check for duplicate configs** if conport fails
 2. **Use project venv, not system-wide installations**
 3. **Stdio mode bypass is essential** for MCP stability
