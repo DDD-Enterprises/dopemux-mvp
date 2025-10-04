@@ -1,10 +1,18 @@
+---
+title: "Feature 1: Untracked Work Detection"
+date: 2025-10-04
+author: Claude Code
+type: reference
+status: ready-for-implementation
+adhd_score: 9.5
+---
+
 # Feature 1: Untracked Work Detection - Final Specification
+
 ## ADHD-Critical Completion Encouragement System
 
 **Version:** 2.0 (Consensus-Enhanced)
-**ADHD Alignment Score:** 9.5/10
 **Status:** Ready for Implementation
-**Created:** 2025-10-04
 
 ---
 
