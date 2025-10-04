@@ -312,7 +312,7 @@ class WorktreeRecoveryMenu:
                 line = line.strip()
                 if not line:
                     # Blank line separates worktrees
-                    if current_worktree and current_worktree.get("path") != self.workspace_id:
+                    if self._should_include_worktree(current_worktree):
                         options.append(self._create_option_from_git(current_worktree, len(options) + 1))
                     current_worktree = {}
                 elif line.startswith("worktree "):
@@ -323,7 +323,7 @@ class WorktreeRecoveryMenu:
                     current_worktree["branch"] = branch_ref.replace("refs/heads/", "")
 
             # Handle last worktree
-            if current_worktree and current_worktree.get("path") != self.workspace_id:
+            if self._should_include_worktree(current_worktree):
                 options.append(self._create_option_from_git(current_worktree, len(options) + 1))
 
             logger.info(f"📋 Found {len(options)} worktrees via git fallback")
@@ -332,6 +332,22 @@ class WorktreeRecoveryMenu:
         except Exception as e:
             logger.warning(f"⚠️ Git worktree fallback failed: {e}")
             return []
+
+    def _should_include_worktree(self, worktree_data: dict) -> bool:
+        """Check if worktree should be included in recovery options."""
+        if not worktree_data:
+            return False
+
+        # Exclude main worktree by path
+        if worktree_data.get("path") == self.workspace_id:
+            return False
+
+        # Exclude main/master branches (these are typically the main worktree)
+        branch = worktree_data.get("branch", "")
+        if branch in ("main", "master"):
+            return False
+
+        return True
 
     def _create_option_from_git(self, worktree_data: dict, index: int) -> RecoveryOption:
         """Create RecoveryOption from git worktree data."""
