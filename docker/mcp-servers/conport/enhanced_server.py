@@ -16,6 +16,9 @@ import subprocess
 from pathlib import Path
 from datetime import datetime, timedelta
 
+# Worktree multi-instance support
+from instance_detector import SimpleInstanceDetector
+
 # Database and caching dependencies
 try:
     from aiohttp import web, ClientSession
@@ -166,35 +169,41 @@ class EnhancedConPortServer:
             }, status=503)
 
     async def get_context(self, request):
-        """Get active context for workspace with Redis caching"""
+        """Get active context for workspace with worktree instance support"""
         workspace_id = request.match_info['workspace_id']
 
         try:
+            # Worktree multi-instance: Get instance-specific context
+            current_instance_id = SimpleInstanceDetector.get_instance_id()
+
             # Try Redis cache first (ADHD speed optimization)
-            cache_key = f"context:{workspace_id}"
+            cache_key = f"context:{workspace_id}:{current_instance_id}"
             cached = await self.redis.get(cache_key)
 
             if cached:
-                logger.info(f"📋 Context cache hit for workspace: {workspace_id}")
+                logger.info(f"📋 Context cache hit for workspace: {workspace_id} (instance: {current_instance_id})")
                 return web.json_response(json.loads(cached))
 
-            # Fetch from database
+            # Fetch from database (instance-aware query)
             async with self.db_pool.acquire() as conn:
                 row = await conn.fetchrow("""
-                    SELECT workspace_id, active_context, last_activity,
+                    SELECT workspace_id, instance_id, active_context, last_activity,
                            session_time, focus_state, session_milestone,
                            updated_at
                     FROM workspace_contexts
                     WHERE workspace_id = $1
-                """, workspace_id)
+                      AND (instance_id IS NULL AND $2::text IS NULL
+                           OR instance_id = $2)
+                """, workspace_id, current_instance_id)
 
                 if row:
                     context = dict(row)
                     context['updated_at'] = context['updated_at'].isoformat()
                 else:
-                    # Create default context for new workspace
+                    # Create default context for new workspace/instance
                     context = {
                         'workspace_id': workspace_id,
+                        'instance_id': current_instance_id,
                         'active_context': 'New ADHD-optimized session',
                         'last_activity': 'Session initialized',
                         'session_time': '0 minutes',
@@ -203,9 +212,9 @@ class EnhancedConPortServer:
 
                     await conn.execute("""
                         INSERT INTO workspace_contexts
-                        (workspace_id, active_context, last_activity, session_time, focus_state)
-                        VALUES ($1, $2, $3, $4, $5)
-                    """, workspace_id, context['active_context'], context['last_activity'],
+                        (workspace_id, instance_id, active_context, last_activity, session_time, focus_state)
+                        VALUES ($1, $2, $3, $4, $5, $6)
+                    """, workspace_id, current_instance_id, context['active_context'], context['last_activity'],
                         context['session_time'], context['focus_state'])
 
             # Cache in Redis for fast access
@@ -219,13 +228,16 @@ class EnhancedConPortServer:
             return web.json_response({'error': str(e)}, status=500)
 
     async def update_context(self, request):
-        """Update active context for workspace"""
+        """Update active context for workspace with worktree instance support"""
         workspace_id = request.match_info['workspace_id']
         data = await request.json()
 
         try:
+            # Worktree multi-instance: Update instance-specific context
+            current_instance_id = SimpleInstanceDetector.get_instance_id()
+
             async with self.db_pool.acquire() as conn:
-                # Update database
+                # Update database (instance-aware)
                 await conn.execute("""
                     UPDATE workspace_contexts
                     SET active_context = COALESCE($2, active_context),
@@ -235,30 +247,35 @@ class EnhancedConPortServer:
                         session_milestone = COALESCE($6, session_milestone),
                         updated_at = NOW()
                     WHERE workspace_id = $1
+                      AND (instance_id IS NULL AND $7::text IS NULL
+                           OR instance_id = $7)
                 """, workspace_id,
                     data.get('active_context'),
                     data.get('last_activity'),
                     data.get('session_time'),
                     data.get('focus_state'),
-                    data.get('session_milestone'))
+                    data.get('session_milestone'),
+                    current_instance_id)
 
                 # Get updated context
                 row = await conn.fetchrow("""
-                    SELECT workspace_id, active_context, last_activity,
+                    SELECT workspace_id, instance_id, active_context, last_activity,
                            session_time, focus_state, session_milestone,
                            updated_at
                     FROM workspace_contexts
                     WHERE workspace_id = $1
-                """, workspace_id)
+                      AND (instance_id IS NULL AND $2::text IS NULL
+                           OR instance_id = $2)
+                """, workspace_id, current_instance_id)
 
                 updated_context = dict(row)
                 updated_context['updated_at'] = updated_context['updated_at'].isoformat()
 
-            # Update Redis cache
-            cache_key = f"context:{workspace_id}"
+            # Update Redis cache (instance-specific key)
+            cache_key = f"context:{workspace_id}:{current_instance_id}"
             await self.redis.setex(cache_key, self.context_cache_ttl, json.dumps(updated_context))
 
-            logger.info(f"📝 Updated context for workspace {workspace_id}")
+            logger.info(f"📝 Updated context for workspace {workspace_id} (instance: {current_instance_id})")
 
             return web.json_response({
                 'status': 'success',
@@ -367,22 +384,37 @@ class EnhancedConPortServer:
             return web.json_response({'error': str(e)}, status=500)
 
     async def log_progress(self, request):
-        """Log progress on current work"""
+        """Log progress on current work with worktree instance routing"""
         data = await request.json()
 
         try:
             progress_id = str(uuid.uuid4())
+            status = data.get('status', 'PLANNED')
+            workspace_id = data.get('workspace_id')
+
+            # Worktree multi-instance routing
+            # IN_PROGRESS/PLANNED → isolated to current instance
+            # COMPLETED/BLOCKED/CANCELLED → shared across all instances
+            current_instance_id = SimpleInstanceDetector.get_instance_id()
+
+            if SimpleInstanceDetector.is_isolated_status(status):
+                # Isolated: Only visible in this worktree
+                final_instance_id = current_instance_id
+            else:
+                # Shared: Visible in all worktrees
+                final_instance_id = None
 
             async with self.db_pool.acquire() as conn:
                 await conn.execute("""
                     INSERT INTO progress_entries
-                    (id, workspace_id, description, status, percentage,
+                    (id, workspace_id, instance_id, description, status, percentage,
                      linked_decision_id, priority, estimated_hours)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 """, progress_id,
-                    data.get('workspace_id'),
+                    workspace_id,
+                    final_instance_id,
                     data.get('description'),
-                    data.get('status', 'PLANNED'),
+                    status,
                     data.get('percentage', 0),
                     data.get('linked_decision_id'),
                     data.get('priority', 'medium'),
@@ -420,28 +452,34 @@ class EnhancedConPortServer:
             return web.json_response({'error': str(e)}, status=500)
 
     async def get_progress(self, request):
-        """Get current progress entries"""
+        """Get current progress entries with worktree instance filtering"""
         workspace_id = request.query.get('workspace_id')
         status_filter = request.query.get('status_filter')
         limit = int(request.query.get('limit', 10))
 
         try:
-            cache_key = f"progress:{workspace_id}:{status_filter}:{limit}"
+            # Worktree multi-instance support
+            current_instance_id = SimpleInstanceDetector.get_instance_id()
+
+            cache_key = f"progress:{workspace_id}:{status_filter}:{limit}:{current_instance_id}"
             cached = await self.redis.get(cache_key)
 
             if cached:
                 return web.json_response(json.loads(cached))
 
+            # Multi-instance query:
+            # Show shared tasks (instance_id IS NULL) + current instance tasks
             query = """
                 SELECT * FROM progress_entries
                 WHERE ($1::text IS NULL OR workspace_id = $1)
                   AND ($2::text IS NULL OR status = $2)
+                  AND (instance_id IS NULL OR instance_id = $3)
                 ORDER BY created_at DESC
-                LIMIT $3
+                LIMIT $4
             """
 
             async with self.db_pool.acquire() as conn:
-                rows = await conn.fetch(query, workspace_id, status_filter, limit)
+                rows = await conn.fetch(query, workspace_id, status_filter, current_instance_id, limit)
 
                 progress_items = []
                 for row in rows:
@@ -471,28 +509,63 @@ class EnhancedConPortServer:
             return web.json_response({'error': str(e)}, status=500)
 
     async def update_progress(self, request):
-        """Update existing progress entry"""
+        """Update existing progress entry with worktree instance transition handling"""
         progress_id = request.match_info['progress_id']
         data = await request.json()
 
         try:
-            async with self.db_pool.acquire() as conn:
-                # Update progress entry
-                await conn.execute("""
-                    UPDATE progress_entries
-                    SET status = COALESCE($2, status),
-                        percentage = COALESCE($3, percentage),
-                        description = COALESCE($4, description),
-                        priority = COALESCE($5, priority),
-                        actual_hours = COALESCE($6, actual_hours),
-                        updated_at = NOW()
-                    WHERE id = $1
-                """, progress_id,
-                    data.get('status'),
-                    data.get('percentage'),
-                    data.get('description'),
-                    data.get('priority'),
-                    data.get('actual_hours'))
+            new_status = data.get('status')
+
+            # Worktree multi-instance: Handle status transitions
+            # When transitioning TO shared status (COMPLETED/BLOCKED):
+            #   → Clear instance_id (make visible to all worktrees)
+            # When transitioning TO isolated status (IN_PROGRESS/PLANNED):
+            #   → Set instance_id (make visible only in this worktree)
+            if new_status:
+                current_instance_id = SimpleInstanceDetector.get_instance_id()
+
+                if SimpleInstanceDetector.is_isolated_status(new_status):
+                    # Transitioning to isolated status
+                    final_instance_id = current_instance_id
+                else:
+                    # Transitioning to shared status
+                    final_instance_id = None
+
+                # Update with instance_id transition
+                async with self.db_pool.acquire() as conn:
+                    await conn.execute("""
+                        UPDATE progress_entries
+                        SET status = $2,
+                            instance_id = $3,
+                            percentage = COALESCE($4, percentage),
+                            description = COALESCE($5, description),
+                            priority = COALESCE($6, priority),
+                            actual_hours = COALESCE($7, actual_hours),
+                            updated_at = NOW()
+                        WHERE id = $1
+                    """, progress_id,
+                        new_status,
+                        final_instance_id,
+                        data.get('percentage'),
+                        data.get('description'),
+                        data.get('priority'),
+                        data.get('actual_hours'))
+            else:
+                # No status change - update other fields only
+                async with self.db_pool.acquire() as conn:
+                    await conn.execute("""
+                        UPDATE progress_entries
+                        SET percentage = COALESCE($2, percentage),
+                            description = COALESCE($3, description),
+                            priority = COALESCE($4, priority),
+                            actual_hours = COALESCE($5, actual_hours),
+                            updated_at = NOW()
+                        WHERE id = $1
+                    """, progress_id,
+                        data.get('percentage'),
+                        data.get('description'),
+                        data.get('priority'),
+                        data.get('actual_hours'))
 
                 # Get updated progress entry
                 row = await conn.fetchrow("""
