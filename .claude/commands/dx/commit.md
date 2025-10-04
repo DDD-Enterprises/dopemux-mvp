@@ -78,6 +78,7 @@ Confidence: [confidence level]
 ### Step 1.3: Address Critical Issues
 
 If CRITICAL or HIGH severity issues found:
+
 - Show: "⚠️ Critical issues detected. These should be addressed before committing."
 - List issues with file:line references
 - Ask: "Fix issues now? (y/n/skip)"
@@ -91,6 +92,7 @@ If CRITICAL or HIGH severity issues found:
 ### Step 2.1: Check for Documentation Updates Needed
 
 Use Grep to find modified code files:
+
 ```bash
 git diff --cached --name-only | grep -E '\.(py|ts|js|go|rs)$'
 ```
@@ -98,6 +100,7 @@ git diff --cached --name-only | grep -E '\.(py|ts|js|go|rs)$'
 For each modified code file, check if documentation exists and needs updates:
 
 **Check for**:
+
 - README.md in same directory
 - docs/ entries referencing the file
 - ADR entries if architectural changes
@@ -106,17 +109,20 @@ For each modified code file, check if documentation exists and needs updates:
 ### Step 2.2: Validate Existing Documentation
 
 Use Grep to check documentation frontmatter:
+
 ```bash
 grep -r "^---" docs/ --include="*.md" -A 10
 ```
 
 Verify all docs have required frontmatter:
+
 - id: Unique identifier
 - title: Clear title
 - date: YYYY-MM-DD format
 - owner: Responsibility assignment
 
 **If missing frontmatter**:
+
 - Show: "📝 Documentation frontmatter missing or incomplete"
 - List files needing updates
 - Offer to add frontmatter automatically
@@ -124,12 +130,14 @@ Verify all docs have required frontmatter:
 ### Step 2.3: Check ADHD Metadata
 
 For new features, verify ADHD metadata exists:
+
 - Task complexity scores
 - Estimated durations
 - Energy requirements
 - Break points for long tasks
 
 **If missing**:
+
 - Show: "🧠 ADHD metadata missing for new features"
 - Suggest: "Add ADHD metadata to task descriptions in ConPort"
 
@@ -147,16 +155,19 @@ pytest services/adhd_engine/tests/ --cov=services/adhd_engine --cov-report=term-
 ### Step 3.2: Check Coverage Threshold
 
 Parse coverage output:
+
 - Extract overall coverage percentage
 - Identify files with <80% coverage
 - Check if new files have tests
 
 **Coverage Requirements**:
+
 - Overall: >60% acceptable, >80% ideal
 - New files: Must have tests
 - Critical files (engine.py, api/routes.py): >70%
 
 **If coverage below threshold**:
+
 - Show: "⚠️ Test coverage below threshold"
 - List files needing more tests
 - Ask: "Add tests now? (y/n/skip)"
@@ -170,9 +181,11 @@ Parse coverage output:
 ### Step 4.1: Generate Commit Message
 
 **If $ARGUMENTS provided** (commit message):
+
 - Use provided message as summary
 
 **Else**, generate from Zen analysis:
+
 - Summary: Brief description of changes (50 chars)
 - Body: Detailed explanation including:
   - What changed and why
@@ -182,6 +195,7 @@ Parse coverage output:
   - Any ADHD accommodations added
 
 **Commit Message Format**:
+
 ```
 feat|fix|docs|refactor: Brief summary (50 chars)
 
@@ -209,6 +223,7 @@ EOF
 ```
 
 Verify commit succeeded:
+
 ```bash
 git log -1 --oneline
 ```
@@ -222,12 +237,14 @@ git log -1 --oneline
 Ask user: "Create pull request? (y/n)"
 
 If no:
+
 - Show: "✅ Commit complete. Changes on current branch."
 - Exit command
 
 ### Step 5.2: Gather PR Information
 
 Ask user:
+
 ```
 Pull Request Creation
 ═══════════════════════════════════════════
@@ -243,6 +260,7 @@ PR Description: (auto-generated from commit + Zen analysis)
 ### Step 5.3: Generate PR Description
 
 **Auto-generated PR template**:
+
 ```markdown
 ## Summary
 
@@ -305,6 +323,7 @@ EOF
 ### Step 5.5: Log to ConPort
 
 Log PR creation as decision:
+
 ```
 mcp__conport__log_decision with:
   workspace_id: "/Users/hue/code/dopemux-mvp"
@@ -315,6 +334,7 @@ mcp__conport__log_decision with:
 ```
 
 Update active context:
+
 ```
 mcp__conport__update_active_context --patch_content '{
   "last_pr": {"title": "TITLE", "url": "URL", "created": "TIMESTAMP"},
@@ -327,6 +347,7 @@ mcp__conport__update_active_context --patch_content '{
 ## Phase 6: Success Summary
 
 Show final result:
+
 ```
 ✅ Commit & PR Complete!
 ═══════════════════════════════════════════
@@ -354,21 +375,25 @@ Great work! 🎉
 ## Error Handling
 
 **If Zen precommit fails**:
+
 - Show validation errors
 - Offer to fix or skip
 - Continue if user chooses skip
 
 **If tests fail**:
+
 - Show test failures
 - Ask: "Fix tests now? (y/n/skip)"
 - Commit only if user confirms skip
 
 **If gh CLI not installed**:
+
 - Show: "GitHub CLI not found. Install with: brew install gh"
 - Show: "Or create PR manually at: [GitHub URL]"
 - Continue without PR creation
 
 **If no remote branch**:
+
 - Ask: "Push branch to remote? (y/n)"
 - Execute: `git push -u origin BRANCH_NAME`
 

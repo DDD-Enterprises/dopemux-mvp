@@ -11,6 +11,7 @@ Display comprehensive ADHD metrics and development progress.
 ## Step 1: Get ADHD State
 
 Query ADHD Engine:
+
 ```bash
 curl -s http://localhost:8095/api/v1/energy-level/current_user | python -m json.tool
 curl -s http://localhost:8095/api/v1/attention-state/current_user | python -m json.tool
@@ -20,11 +21,13 @@ curl -s http://localhost:8095/health | python -m json.tool
 ## Step 2: Get Progress Metrics
 
 Query ConPort for completion data:
+
 ```
 mcp__conport__get_progress --workspace_id "/Users/hue/code/dopemux-mvp" --limit 50
 ```
 
 Calculate:
+
 - Total tasks
 - Completed tasks (status=DONE)
 - In-progress tasks
@@ -39,6 +42,7 @@ mcp__conport__get_active_context --workspace_id "/Users/hue/code/dopemux-mvp"
 ## Step 4: Display Dashboard
 
 Show comprehensive metrics:
+
 ```
 ADHD Metrics Dashboard
 ═══════════════════════════════════════════
@@ -86,6 +90,7 @@ Keep up the great work! 💪
 ## Error Handling
 
 If ADHD Engine unavailable:
+
 - Show: "⚠️ ADHD metrics unavailable"
 - Still show ConPort progress metrics
 - Suggest starting engine

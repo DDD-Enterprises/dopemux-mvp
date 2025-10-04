@@ -1,4 +1,5 @@
 # /rfc:promote
+
 Promote an accepted RFC to an ADR and link both.
 
 1) Ensure RFC status is `accepted` (or ask for confirmation).
