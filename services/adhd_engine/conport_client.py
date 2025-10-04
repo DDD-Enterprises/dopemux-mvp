@@ -24,39 +24,62 @@ logger = logging.getLogger(__name__)
 
 class ConPortSQLiteClient:
     """
-    Read-only SQLite client for ConPort data access.
+    SQLite client for ConPort data access (read + write for Week 3).
 
-    Connects to ConPort's SQLite database in read-only mode to prevent
-    write conflicts. Provides typed access to progress entries and custom data.
+    Week 3: Extended to support writes for ADHD state persistence
+    Week 7+: Migrate to ConPort HTTP API service (proper boundaries)
+
+    Connects to ConPort's SQLite database. Read operations use read-only mode,
+    write operations use read-write mode. Provides typed access to progress
+    entries and custom data.
     """
 
-    def __init__(self, db_path: str, workspace_id: str):
+    def __init__(self, db_path: str, workspace_id: str, read_only: bool = True):
         """
         Initialize ConPort SQLite client.
 
         Args:
             db_path: Absolute path to context.db (e.g., /conport_data/context.db in Docker)
             workspace_id: Workspace identifier (e.g., /Users/hue/code/dopemux-mvp)
+            read_only: Use read-only mode (default True for safety)
         """
         self.db_path = db_path
         self.workspace_id = workspace_id
+        self.read_only = read_only
 
         # Verify database exists
         if not Path(db_path).exists():
             logger.warning(f"⚠️ ConPort database not found at {db_path}")
             logger.warning("   ActivityTracker will use default data until database is available")
         else:
-            logger.info(f"✅ ConPort database found: {db_path}")
+            mode_str = "read-only" if read_only else "read-write"
+            logger.info(f"✅ ConPort database found: {db_path} (mode: {mode_str})")
 
-    def _get_connection(self) -> sqlite3.Connection:
-        """Get read-only SQLite connection."""
+    def _get_connection(self, write_mode: bool = False) -> sqlite3.Connection:
+        """
+        Get SQLite connection (read-only or read-write).
+
+        Args:
+            write_mode: Force read-write mode for this connection
+
+        Returns:
+            SQLite connection
+        """
         try:
-            # Read-only connection prevents accidental writes
-            conn = sqlite3.connect(
-                f"file:{self.db_path}?mode=ro",
-                uri=True,
-                timeout=5.0
-            )
+            # Use read-only mode unless explicitly requesting writes
+            if self.read_only and not write_mode:
+                conn = sqlite3.connect(
+                    f"file:{self.db_path}?mode=ro",
+                    uri=True,
+                    timeout=5.0
+                )
+            else:
+                # Read-write mode for writes
+                conn = sqlite3.connect(
+                    self.db_path,
+                    timeout=5.0
+                )
+
             conn.row_factory = sqlite3.Row  # Dict-like row access
             return conn
 
@@ -243,3 +266,90 @@ class ConPortSQLiteClient:
                 "accessible": False,
                 "error": str(e)
             }
+
+    # Week 3 Write Operations
+
+    def write_custom_data(
+        self,
+        category: str,
+        key: str,
+        value: Any
+    ) -> bool:
+        """
+        Write custom data to ConPort (Week 3 integration).
+
+        Args:
+            category: Data category (e.g., 'adhd_state', 'cognitive_load')
+            key: Unique key within category
+            value: JSON-serializable value to store
+
+        Returns:
+            True if write succeeded, False otherwise
+        """
+        conn = self._get_connection(write_mode=True)
+
+        try:
+            # Serialize value to JSON
+            value_json = json.dumps(value) if not isinstance(value, str) else value
+
+            # Upsert (INSERT OR REPLACE)
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO custom_data (category, key, value, timestamp)
+                VALUES (?, ?, ?, ?)
+                """,
+                (category, key, value_json, datetime.now(timezone.utc).isoformat())
+            )
+            conn.commit()
+
+            logger.debug(f"✅ Wrote custom_data: {category}/{key}")
+            return True
+
+        except sqlite3.Error as e:
+            logger.error(f"Failed to write custom_data {category}/{key}: {e}")
+            conn.rollback()
+            return False
+
+        finally:
+            conn.close()
+
+    def log_progress_entry(
+        self,
+        status: str,
+        description: str,
+        parent_id: Optional[int] = None
+    ) -> Optional[int]:
+        """
+        Create progress entry in ConPort (Week 3 integration).
+
+        Args:
+            status: Status (TODO, IN_PROGRESS, DONE, BLOCKED)
+            description: Task description
+            parent_id: Optional parent task ID
+
+        Returns:
+            New progress entry ID if successful, None otherwise
+        """
+        conn = self._get_connection(write_mode=True)
+
+        try:
+            cursor = conn.execute(
+                """
+                INSERT INTO progress_entries (status, description, parent_id, timestamp)
+                VALUES (?, ?, ?, ?)
+                """,
+                (status, description, parent_id, datetime.now(timezone.utc).isoformat())
+            )
+            conn.commit()
+
+            entry_id = cursor.lastrowid
+            logger.debug(f"✅ Created progress entry #{entry_id}: {description[:50]}")
+            return entry_id
+
+        except sqlite3.Error as e:
+            logger.error(f"Failed to create progress entry: {e}")
+            conn.rollback()
+            return None
+
+        finally:
+            conn.close()
