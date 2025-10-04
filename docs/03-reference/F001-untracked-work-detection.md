@@ -1,7 +1,7 @@
 ---
 title: "Feature 1: Untracked Work Detection"
-date: 2025-10-04
-author: Claude Code
+date: "2025-10-04"
+author: "Claude Code"
 type: reference
 status: ready-for-implementation
 adhd_score: 9.5
