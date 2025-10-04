@@ -179,3 +179,26 @@ metamcp/
 
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
+
+# Session and development artifacts
+.sessions/
+CCDOCS/
+.env.leantime
+.env.unified
+context_portal/context.db
+context_portal/context.db-journal
+conport_backup_*.json
+conport_sqlite_export.json
+deleted_docs_list.txt
+.claude/SESSION_STATE_*.md
+.claude/session_*.md
+.claude/session.md
+.claude/claude_config_original.json
+.claude/claude_config_wrapped.json
+SESSION_*.md
+THREAD_WORK_SUMMARY.md
+*_COMPLETE.md
+*_STATUS.md
+*_SUMMARY.md
+build_recovered/
+ARCHIVED_RECOVERY/
