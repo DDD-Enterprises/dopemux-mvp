@@ -1,10 +1,18 @@
+---
+title: "Feature 2: Multi-Session Support"
+date: 2025-10-04
+author: Claude Code
+type: reference
+status: ready-for-implementation
+confidence: very-high
+---
+
 # Feature 2: Multi-Session + Git Worktree Support - Final Specification
+
 ## ADHD-Optimized Parallel Work Without Context Loss
 
 **Version:** 1.0 (Production-Ready)
-**Confidence:** Very High
 **Status:** Ready for Implementation
-**Created:** 2025-10-04
 
 ---
 
