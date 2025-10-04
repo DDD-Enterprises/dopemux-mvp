@@ -80,11 +80,12 @@ repos:
       - id: markdownlint
         args: ["--config", ".markdownlint.jsonc", "docs/**/*.md"]
 
-  - repo: https://github.com/lycheeverse/lychee
-    rev: v0.15.1
-    hooks:
-      - id: lychee
-        args: ["--config", ".lychee.toml", "--no-progress", "docs/**/*.md"]
+  # Lychee link checking handled by separate GitHub Action (docs job)
+  # - repo: https://github.com/lycheeverse/lychee
+  #   rev: v0.15.1
+  #   hooks:
+  #     - id: lychee
+  #       args: ["--config", ".lychee.toml", "--no-progress", "docs/**/*.md"]
 
   # General file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
