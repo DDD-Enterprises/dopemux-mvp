@@ -43,9 +43,11 @@ class ActivityTracker:
             conport_db_path: Path to ConPort SQLite database
         """
         self.redis = redis_client
+        # Week 3: Enable write mode for persistent tracking
         self.conport = ConPortSQLiteClient(
             db_path=conport_db_path,
-            workspace_id=settings.workspace_id
+            workspace_id=settings.workspace_id,
+            read_only=False  # Week 3: Enable writes for state persistence
         )
 
         # In-memory cache (5min TTL) to prevent excessive SQLite queries

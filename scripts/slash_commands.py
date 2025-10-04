@@ -7,6 +7,7 @@ that can be called directly from Claude Code sessions.
 """
 
 import sys
+import os
 import json
 import subprocess
 import argparse
@@ -39,6 +40,8 @@ def setup_dopemux_imports():
 
 try:
     HealthChecker, HealthStatus, ContextManager = setup_dopemux_imports()
+    # Import instance management
+    from dopemux.instance_manager import InstanceManager, detect_instances_sync
 except ImportError as e:
     print(f"Error: {e}")
     print("Make sure you're running this from the Dopemux project root")
@@ -61,6 +64,8 @@ class SlashCommandProcessor:
         self.health_checker = HealthChecker(self.project_path)
         self.context_manager = ContextManager(self.project_path)
         self.session_formatter = SessionFormatter()
+        self.instance_manager = InstanceManager(self.project_path)
+        self.current_instance_id = os.environ.get('DOPEMUX_INSTANCE_ID', 'A')
 
     def process_command(self, command: str, args: list = None) -> Dict[str, Any]:
         """Process a slash command and return structured results."""
@@ -90,6 +95,17 @@ class SlashCommandProcessor:
                 return self._handle_list_sessions(args)
             elif command == "session-details":
                 return self._handle_session_details(args)
+            # Instance Management Commands
+            elif command == "instance":
+                return self._handle_instance_command(args)
+            elif command == "instance-new":
+                return self._handle_instance_new(args)
+            elif command == "instance-switch":
+                return self._handle_instance_switch(args)
+            elif command == "instance-list":
+                return self._handle_instance_list(args)
+            elif command == "instance-prune":
+                return self._handle_instance_prune(args)
             else:
                 return {
                     "success": False,
@@ -97,7 +113,8 @@ class SlashCommandProcessor:
                     "available_commands": [
                         "health", "health-quick", "health-fix",
                         "mcp-status", "docker-status", "system-status", "adhd-status",
-                        "save", "restore", "sessions", "session-details"
+                        "save", "restore", "sessions", "session-details",
+                        "instance", "instance-new", "instance-switch", "instance-list", "instance-prune"
                     ]
                 }
         except Exception as e:
@@ -426,6 +443,372 @@ class SlashCommandProcessor:
                 "success": False,
                 "error": str(e),
                 "command": "session-details"
+            }
+
+    # Instance Management Handlers
+
+    def _handle_instance_command(self, args: List[str]) -> Dict[str, Any]:
+        """Handle instance subcommands (new, switch, list, prune, current)."""
+        if not args:
+            # Show current instance info
+            return self._handle_instance_current()
+
+        subcommand = args[0]
+        subargs = args[1:]
+
+        if subcommand == "new":
+            return self._handle_instance_new(subargs)
+        elif subcommand == "switch":
+            return self._handle_instance_switch(subargs)
+        elif subcommand == "list":
+            return self._handle_instance_list(subargs)
+        elif subcommand == "prune":
+            return self._handle_instance_prune(subargs)
+        elif subcommand == "current":
+            return self._handle_instance_current()
+        else:
+            return {
+                "success": False,
+                "error": f"Unknown instance subcommand: {subcommand}",
+                "available_subcommands": ["new", "switch", "list", "prune", "current"]
+            }
+
+    def _handle_instance_current(self) -> Dict[str, Any]:
+        """Show current instance information."""
+        try:
+            instance_id = os.environ.get('DOPEMUX_INSTANCE_ID', '')
+            workspace_id = os.environ.get('DOPEMUX_WORKSPACE_ID', str(self.project_path))
+            port_base = os.environ.get('DOPEMUX_PORT_BASE', '3000')
+
+            # Detect git branch
+            try:
+                result = subprocess.run(
+                    ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                git_branch = result.stdout.strip()
+            except:
+                git_branch = 'unknown'
+
+            current_dir = os.getcwd()
+            is_worktree = 'worktrees' in current_dir
+
+            formatted = f"""🏗️  **Current Instance**
+
+**Instance ID**: {instance_id or 'A (main)'}
+**Port Base**: {port_base}
+**Git Branch**: {git_branch}
+**Working Directory**: {current_dir}
+**Worktree**: {'Yes' if is_worktree else 'No (main)'}
+**Workspace Root**: {workspace_id}
+
+**Service Ports**:
+- ConPort: {int(port_base) + 7}
+- Serena: {int(port_base) + 6}
+- Task-Master: {int(port_base) + 5}
+"""
+
+            return {
+                "success": True,
+                "command": "instance-current",
+                "instance_id": instance_id or 'A',
+                "port_base": port_base,
+                "git_branch": git_branch,
+                "is_worktree": is_worktree,
+                "formatted_output": formatted
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "command": "instance-current"
+            }
+
+    def _handle_instance_new(self, args: List[str]) -> Dict[str, Any]:
+        """Create and switch to a new instance."""
+        try:
+            if not args:
+                return {
+                    "success": False,
+                    "error": "Branch name required. Usage: /instance new <branch-name>",
+                    "command": "instance-new"
+                }
+
+            branch_name = args[0]
+
+            # Detect running instances
+            running = detect_instances_sync(self.project_path)
+
+            # Get next available instance
+            try:
+                instance_id, port_base = self.instance_manager.get_next_available_instance(running)
+            except RuntimeError as e:
+                return {
+                    "success": False,
+                    "error": str(e),
+                    "command": "instance-new"
+                }
+
+            # Create worktree
+            worktree_path = self.instance_manager.create_worktree(instance_id, branch_name)
+
+            # Get environment variables
+            env_vars = self.instance_manager.get_instance_env_vars(
+                instance_id,
+                port_base,
+                worktree_path
+            )
+
+            # Update current process environment
+            for key, value in env_vars.items():
+                os.environ[key] = value
+
+            # Change working directory
+            os.chdir(str(worktree_path))
+
+            formatted = f"""✅ **New Instance Created**
+
+**Instance ID**: {instance_id}
+**Port Base**: {port_base}
+**Branch**: {branch_name}
+**Worktree Path**: {worktree_path}
+
+Environment variables updated. Current directory changed to worktree.
+
+**Next steps**:
+1. Services will use instance-specific ports
+2. ConPort data isolated (IN_PROGRESS tasks private)
+3. Run `/instance list` to see all instances
+"""
+
+            return {
+                "success": True,
+                "command": "instance-new",
+                "instance_id": instance_id,
+                "port_base": port_base,
+                "branch_name": branch_name,
+                "worktree_path": str(worktree_path),
+                "formatted_output": formatted
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "command": "instance-new"
+            }
+
+    def _handle_instance_switch(self, args: List[str]) -> Dict[str, Any]:
+        """Switch to an existing instance."""
+        try:
+            if not args:
+                return {
+                    "success": False,
+                    "error": "Instance ID required. Usage: /instance switch <instance-id>",
+                    "command": "instance-switch"
+                }
+
+            target_instance_id = args[0].upper()
+
+            # Determine worktree path
+            if target_instance_id == 'A':
+                worktree_path = self.project_path
+                port_base = 3000
+            else:
+                worktree_path = self.instance_manager._get_worktree_path(target_instance_id)
+                if not worktree_path or not worktree_path.exists():
+                    return {
+                        "success": False,
+                        "error": f"Worktree for instance {target_instance_id} does not exist. Use `/instance new` to create it.",
+                        "command": "instance-switch"
+                    }
+
+                port_base = self.instance_manager._instance_id_to_port(target_instance_id)
+
+            # Get environment variables
+            env_vars = self.instance_manager.get_instance_env_vars(
+                target_instance_id,
+                port_base,
+                worktree_path if target_instance_id != 'A' else None
+            )
+
+            # Update current process environment
+            for key, value in env_vars.items():
+                os.environ[key] = value
+
+            # Change working directory
+            os.chdir(str(worktree_path))
+
+            # Detect git branch
+            try:
+                result = subprocess.run(
+                    ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                git_branch = result.stdout.strip()
+            except:
+                git_branch = 'unknown'
+
+            formatted = f"""🔄 **Switched to Instance {target_instance_id}**
+
+**Port Base**: {port_base}
+**Git Branch**: {git_branch}
+**Working Directory**: {worktree_path}
+
+Environment variables updated. Current directory changed.
+
+**Service Ports**:
+- ConPort: {port_base + 7}
+- Serena: {port_base + 6}
+- Task-Master: {port_base + 5}
+"""
+
+            return {
+                "success": True,
+                "command": "instance-switch",
+                "instance_id": target_instance_id,
+                "port_base": port_base,
+                "git_branch": git_branch,
+                "worktree_path": str(worktree_path),
+                "formatted_output": formatted
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "command": "instance-switch"
+            }
+
+    def _handle_instance_list(self, args: List[str]) -> Dict[str, Any]:
+        """List all instances (running + available worktrees)."""
+        try:
+            # Detect running instances
+            running = detect_instances_sync(self.project_path)
+
+            # List git worktrees
+            worktrees = self.instance_manager.list_worktrees()
+
+            formatted_parts = []
+
+            if running:
+                formatted_parts.append("**Running Instances:**\n")
+                for inst in running:
+                    status = "✅ Healthy" if inst.is_healthy else "⚠️  Unknown"
+                    formatted_parts.append(
+                        f"- **{inst.instance_id}** (port {inst.port_base}) - {inst.git_branch or 'unknown'} - {status}\n"
+                    )
+            else:
+                formatted_parts.append("**No running instances detected**\n")
+
+            formatted_parts.append("\n**Available Worktrees:**\n")
+            if worktrees:
+                for wt_id, wt_path, wt_branch in worktrees:
+                    is_current = (os.getcwd() == str(wt_path))
+                    current_marker = "👉 " if is_current else "   "
+                    formatted_parts.append(
+                        f"{current_marker}**{wt_id}**: {wt_branch} ({wt_path})\n"
+                    )
+            else:
+                formatted_parts.append("- No worktrees found\n")
+
+            formatted_parts.append("\n**Commands:**\n")
+            formatted_parts.append("- `/instance new <branch>` - Create new instance\n")
+            formatted_parts.append("- `/instance switch <id>` - Switch to instance\n")
+            formatted_parts.append("- `/instance prune` - Cleanup dead instances\n")
+
+            return {
+                "success": True,
+                "command": "instance-list",
+                "running_instances": [
+                    {
+                        "instance_id": inst.instance_id,
+                        "port_base": inst.port_base,
+                        "branch": inst.git_branch,
+                        "healthy": inst.is_healthy
+                    }
+                    for inst in running
+                ],
+                "worktrees": [
+                    {"id": wt_id, "path": str(wt_path), "branch": wt_branch}
+                    for wt_id, wt_path, wt_branch in worktrees
+                ],
+                "formatted_output": "".join(formatted_parts)
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "command": "instance-list"
+            }
+
+    def _handle_instance_prune(self, args: List[str]) -> Dict[str, Any]:
+        """Auto-prune dead/orphaned instances."""
+        try:
+            # Get all worktrees
+            worktrees = self.instance_manager.list_worktrees()
+
+            # Detect running instances
+            running = detect_instances_sync(self.project_path)
+            running_ids = {inst.instance_id for inst in running}
+
+            # Find stopped instances (worktrees exist but not running)
+            stopped_instances = [
+                (wt_id, wt_path) for wt_id, wt_path, _ in worktrees
+                if wt_id not in running_ids and wt_id != 'A'
+            ]
+
+            if not stopped_instances:
+                formatted = "✅ **No dead instances to prune**\n\nAll worktrees are either running or main worktree (A)."
+                return {
+                    "success": True,
+                    "command": "instance-prune",
+                    "pruned_count": 0,
+                    "formatted_output": formatted
+                }
+
+            # Prune each stopped instance
+            pruned = []
+            failed = []
+
+            for wt_id, wt_path in stopped_instances:
+                if self.instance_manager.cleanup_worktree(wt_id):
+                    pruned.append((wt_id, wt_path))
+                else:
+                    failed.append((wt_id, wt_path))
+
+            formatted_parts = [f"🧹 **Instance Prune Results**\n\n"]
+
+            if pruned:
+                formatted_parts.append(f"**Removed {len(pruned)} dead instance(s):**\n")
+                for wt_id, wt_path in pruned:
+                    formatted_parts.append(f"- ✅ Instance {wt_id}: {wt_path}\n")
+
+            if failed:
+                formatted_parts.append(f"\n**Failed to remove {len(failed)} instance(s):**\n")
+                for wt_id, wt_path in failed:
+                    formatted_parts.append(f"- ❌ Instance {wt_id}: {wt_path}\n")
+
+            return {
+                "success": True,
+                "command": "instance-prune",
+                "pruned_count": len(pruned),
+                "failed_count": len(failed),
+                "pruned_instances": [{"id": wt_id, "path": str(wt_path)} for wt_id, wt_path in pruned],
+                "formatted_output": "".join(formatted_parts)
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "command": "instance-prune"
             }
 
     def _generate_health_summary(self, health_data: Dict[str, Any]) -> str:
