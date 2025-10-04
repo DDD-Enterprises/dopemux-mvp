@@ -32,6 +32,7 @@ from models import (
 )
 from config import settings
 from activity_tracker import ActivityTracker
+from conport_client import ConPortSQLiteClient
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +86,9 @@ class ADHDAccommodationEngine:
         # Activity tracker (initialized in initialize())
         self.activity_tracker: Optional[ActivityTracker] = None
 
+        # ConPort client for Week 3 persistent tracking (initialized in initialize())
+        self.conport: Optional[ConPortSQLiteClient] = None
+
     async def initialize(self) -> None:
         """Initialize ADHD accommodation engine."""
         logger.info("🧠 Initializing ADHD Accommodation Engine...")
@@ -104,6 +108,14 @@ class ADHDAccommodationEngine:
             conport_db_path=conport_db_path
         )
         logger.info("✅ ActivityTracker initialized with ConPort SQLite")
+
+        # Initialize ConPort client for Week 3 state persistence
+        self.conport = ConPortSQLiteClient(
+            db_path=conport_db_path,
+            workspace_id=settings.workspace_id,
+            read_only=False  # Week 3: Enable writes for persistent tracking
+        )
+        logger.info("✅ ConPort SQLite client initialized (Week 3 write mode)")
 
         # Load existing user profiles
         await self._load_user_profiles()
@@ -963,12 +975,34 @@ class ADHDAccommodationEngine:
         Calculate system-wide cognitive load.
 
         Week 1: Uses in-memory history
-        Week 3: Will aggregate across users via ConPort
+        Week 3: Aggregates across users via ConPort custom_data
         """
+        # Week 3: Read all users' cognitive load from ConPort
+        if self.conport:
+            try:
+                cognitive_loads = self.conport.get_custom_data(category="cognitive_load")
+
+                if cognitive_loads:
+                    # Average across all users' recent loads
+                    loads = [data.get("load", 1.0) for data in cognitive_loads.values()]
+                    avg_load = sum(loads) / len(loads) if loads else 1.0
+
+                    # Also persist current system load for historical tracking
+                    self.conport.write_custom_data(
+                        category="system_metrics",
+                        key="cognitive_load_avg",
+                        value={"load": avg_load, "user_count": len(loads)}
+                    )
+
+                    return avg_load
+
+            except Exception as e:
+                logger.warning(f"Failed to aggregate cognitive load from ConPort: {e}")
+
+        # Fallback to in-memory (Week 1 behavior)
         if not self.cognitive_load_history:
             return 1.0
 
-        # Calculate from recent history (last hour)
         recent_loads = [load for timestamp, load in self.cognitive_load_history[-10:]]
         if recent_loads:
             return sum(recent_loads) / len(recent_loads)
@@ -979,19 +1013,72 @@ class ADHDAccommodationEngine:
         Handle system-wide cognitive overload.
 
         Week 1: Logs warning
-        Week 3: Will create recommendations in ConPort
+        Week 3: Creates break recommendations in ConPort progress_entries
         """
         total_load = await self._calculate_system_cognitive_load()
         logger.warning(f"⚠️ COGNITIVE OVERLOAD DETECTED: {total_load:.2f}")
+
+        # Week 3: Create break recommendation in ConPort
+        if self.conport and total_load > 0.8:  # Overload threshold
+            try:
+                # Create high-priority break task
+                entry_id = self.conport.log_progress_entry(
+                    status="TODO",
+                    description=f"🧠 BREAK RECOMMENDED - System cognitive load: {total_load:.1%}. "
+                                f"Consider taking a 5-10 minute break to prevent burnout."
+                )
+
+                if entry_id:
+                    logger.info(f"✅ Created break recommendation #{entry_id} in ConPort")
+                    self.accommodation_stats["breaks_suggested"] += 1
+
+            except Exception as e:
+                logger.error(f"Failed to create break recommendation in ConPort: {e}")
 
     async def _adjust_task_recommendations_for_protection(self, user_id: str) -> None:
         """
         Adjust task recommendations for hyperfocus protection.
 
         Week 1: Logs action
-        Week 3: Will update ConPort ADHD state
+        Week 3: Updates ConPort ADHD state with current energy/attention/accommodations
         """
         logger.info(f"🛡️ Adjusting recommendations for {user_id} (hyperfocus protection)")
+
+        # Week 3: Persist current ADHD state to ConPort
+        if self.conport:
+            try:
+                # Get current user state
+                energy_level = self.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
+                attention_state = self.current_attention_states.get(user_id, AttentionState.NORMAL)
+                accommodations = self.active_accommodations.get(user_id, [])
+
+                # Build state snapshot
+                state_data = {
+                    "energy_level": energy_level.value if hasattr(energy_level, 'value') else str(energy_level),
+                    "attention_state": attention_state.value if hasattr(attention_state, 'value') else str(attention_state),
+                    "hyperfocus_protection_active": True,
+                    "active_accommodations": [
+                        {
+                            "type": acc.accommodation_type,
+                            "priority": acc.priority.value if hasattr(acc.priority, 'value') else str(acc.priority)
+                        }
+                        for acc in accommodations[:5]  # Limit to 5 for space
+                    ] if accommodations else [],
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }
+
+                # Write to ConPort
+                self.conport.write_custom_data(
+                    category="adhd_state",
+                    key=f"user_{user_id}",
+                    value=state_data
+                )
+
+                logger.debug(f"✅ Persisted ADHD state for {user_id} to ConPort")
+                self.accommodation_stats["hyperfocus_protections"] += 1
+
+            except Exception as e:
+                logger.error(f"Failed to persist ADHD state to ConPort: {e}")
 
     # Health and Performance
 
