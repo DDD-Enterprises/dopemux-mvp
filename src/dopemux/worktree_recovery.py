@@ -137,10 +137,56 @@ class WorktreeRecoveryMenu:
         print("\n" + "=" * 70)
         print("💡 Tip: Choose a session to restore context and continue where you left off")
 
+    async def get_user_input_async(self, prompt: str, timeout: int) -> Optional[str]:
+        """
+        Get user input asynchronously with timeout.
+
+        Args:
+            prompt: Input prompt to display
+            timeout: Timeout in seconds
+
+        Returns:
+            User input or None on timeout
+        """
+        import sys
+        import selectors
+
+        print(prompt, end='', flush=True)
+
+        # Use selector for async-compatible input
+        selector = selectors.DefaultSelector()
+        selector.register(sys.stdin, selectors.EVENT_READ)
+
+        loop = asyncio.get_event_loop()
+
+        try:
+            # Wait for input with timeout
+            start_time = asyncio.get_event_loop().time()
+            while True:
+                remaining = timeout - (asyncio.get_event_loop().time() - start_time)
+                if remaining <= 0:
+                    raise asyncio.TimeoutError()
+
+                # Check if input is ready (non-blocking)
+                events = selector.select(timeout=0.1)
+                if events:
+                    user_input = sys.stdin.readline().strip()
+                    return user_input
+
+                await asyncio.sleep(0.1)  # Yield to event loop
+
+        except asyncio.TimeoutError:
+            print()  # Newline after timeout
+            return None
+        finally:
+            selector.unregister(sys.stdin)
+            selector.close()
+
     async def get_user_choice(
         self,
         options: List[RecoveryOption],
-        timeout: Optional[int] = None
+        timeout: Optional[int] = None,
+        allow_show_all: bool = False
     ) -> Optional[RecoveryOption]:
         """
         Get user's recovery choice with timeout.
@@ -148,9 +194,10 @@ class WorktreeRecoveryMenu:
         Args:
             options: Available recovery options
             timeout: Timeout in seconds (None = use instance default)
+            allow_show_all: Whether to allow 'a' for show all
 
         Returns:
-            Selected RecoveryOption or None (stay in main)
+            Selected RecoveryOption, None (stay in main), or 'show_all' marker
         """
         if not options:
             return None
@@ -158,25 +205,154 @@ class WorktreeRecoveryMenu:
         timeout_val = timeout if timeout is not None else self.timeout_seconds
 
         try:
-            # TODO: Implement async input with timeout
-            # For now, placeholder for actual implementation
-            logger.info(f"Awaiting user input (timeout: {timeout_val}s)...")
-            # Will implement actual async input in next step
-            return None
+            prompt = f"Your choice (0-{len(options)}"
+            if allow_show_all:
+                prompt += ", a"
+            prompt += f") [{timeout_val}s timeout]: "
+
+            user_input = await self.get_user_input_async(prompt, timeout_val)
+
+            if user_input is None:
+                # Timeout - use safe default
+                logger.info("⏱️ Timeout - staying in main worktree")
+                return None
+
+            # Handle "show all" request
+            if user_input.lower() == 'a' and allow_show_all:
+                return "show_all"  # Marker for show all
+
+            # Parse numeric choice
+            try:
+                choice_num = int(user_input)
+
+                # Choice 0 = stay in main
+                if choice_num == 0:
+                    logger.info("🏠 User chose to stay in main worktree")
+                    return None
+
+                # Validate range
+                if 1 <= choice_num <= len(options):
+                    selected = options[choice_num - 1]
+                    logger.info(f"✅ User selected: {selected.git_branch}")
+                    return selected
+                else:
+                    print(f"❌ Invalid choice: {choice_num}. Using default (main).")
+                    return None
+
+            except ValueError:
+                print(f"❌ Invalid input: '{user_input}'. Using default (main).")
+                return None
 
         except asyncio.TimeoutError:
             logger.info("⏱️ Timeout - staying in main worktree")
             return None
 
+    async def find_all_recoverable_sessions(self) -> List[RecoveryOption]:
+        """
+        Find ALL recoverable worktree sessions (up to 10).
+
+        Used for "show all" progressive disclosure.
+
+        Returns:
+            List of RecoveryOption objects (max 10)
+        """
+        orphaned = await self.manager.find_orphaned_instances_filtered(
+            max_age_days=self.max_age_days,
+            limit=10,  # Show up to 10 when user requests "show all"
+            sort_by_recent=True
+        )
+
+        options = []
+        for idx, state in enumerate(orphaned, start=1):
+            options.append(RecoveryOption(
+                instance_id=state.instance_id,
+                worktree_path=state.worktree_path,
+                git_branch=state.git_branch,
+                last_active=state.last_active,
+                last_focus=state.last_focus_context,
+                display_index=idx
+            ))
+
+        return options
+
+    async def fallback_to_git_worktree_list(self) -> List[RecoveryOption]:
+        """
+        Fallback to git worktree list when ConPort unavailable.
+
+        Graceful degradation: Use git directly to find worktrees.
+
+        Returns:
+            List of RecoveryOption objects from git worktree list
+        """
+        try:
+            result = subprocess.run(
+                ["git", "worktree", "list", "--porcelain"],
+                cwd=self.workspace_id,
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+
+            if result.returncode != 0:
+                logger.warning("⚠️ git worktree list failed - no recovery options")
+                return []
+
+            # Parse git worktree list output
+            options = []
+            current_worktree = {}
+
+            for line in result.stdout.splitlines():
+                if line.startswith("worktree "):
+                    if current_worktree:
+                        # Create option from previous worktree
+                        if current_worktree.get("path") != self.workspace_id:  # Skip main
+                            options.append(self._create_option_from_git(current_worktree, len(options) + 1))
+                    current_worktree = {"path": line.split(" ", 1)[1]}
+                elif line.startswith("branch "):
+                    current_worktree["branch"] = line.split("/")[-1]  # refs/heads/feature -> feature
+
+            # Handle last worktree
+            if current_worktree and current_worktree.get("path") != self.workspace_id:
+                options.append(self._create_option_from_git(current_worktree, len(options) + 1))
+
+            logger.info(f"📋 Found {len(options)} worktrees via git fallback")
+            return options[:3]  # ADHD max 3 for initial display
+
+        except Exception as e:
+            logger.warning(f"⚠️ Git worktree fallback failed: {e}")
+            return []
+
+    def _create_option_from_git(self, worktree_data: dict, index: int) -> RecoveryOption:
+        """Create RecoveryOption from git worktree data."""
+        return RecoveryOption(
+            instance_id=f"git-{index}",
+            worktree_path=worktree_data["path"],
+            git_branch=worktree_data.get("branch", "unknown"),
+            last_active=datetime.now(),  # No timestamp from git
+            last_focus=None,
+            display_index=index
+        )
+
     async def show_recovery_menu(self) -> Optional[str]:
         """
-        Show recovery menu and get user selection.
+        Show recovery menu and get user selection with progressive disclosure.
+
+        ADHD Optimization:
+        - Show 3 most recent initially
+        - Allow "show all" to expand to 10
+        - 30s timeout with safe default (main)
+        - Graceful degradation to git worktree list
 
         Returns:
             Selected worktree path or None (stay in main)
         """
         # Find recoverable sessions
         options = await self.find_recoverable_sessions()
+
+        # Fallback to git worktree list if ConPort unavailable
+        if not options:
+            logger.warning("⚠️ ConPort unavailable - trying git worktree fallback")
+            options = await self.fallback_to_git_worktree_list()
 
         if not options:
             logger.debug("No orphaned sessions found - proceeding to main")
@@ -185,18 +361,34 @@ class WorktreeRecoveryMenu:
         # Check if there are more sessions
         has_more = await self.check_has_more_sessions()
 
-        # Display menu
-        self.display_menu(options, has_more)
+        while True:  # Loop for "show all" handling
+            # Display menu
+            self.display_menu(options, has_more)
 
-        # Get user choice
-        choice = await self.get_user_choice(options)
+            # Get user choice
+            choice = await self.get_user_choice(options, allow_show_all=has_more)
 
-        if choice:
-            logger.info(f"✅ User selected: {choice.git_branch}")
-            return choice.worktree_path
-        else:
-            logger.info("🏠 Staying in main worktree")
-            return None
+            # Handle "show all" request
+            if choice == "show_all":
+                logger.info("📋 Expanding to show all recoverable sessions...")
+                all_options = await self.find_all_recoverable_sessions()
+                if all_options:
+                    options = all_options
+                    has_more = False  # No more to show
+                    print()  # Blank line before re-display
+                    continue
+                else:
+                    print("⚠️ No additional sessions found.")
+                    has_more = False
+                    continue
+
+            # Handle normal choice
+            if choice:
+                logger.info(f"✅ User selected: {choice.git_branch}")
+                return choice.worktree_path
+            else:
+                logger.info("🏠 Staying in main worktree")
+                return None
 
 
 # Synchronous wrapper for CLI usage
