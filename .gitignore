@@ -205,3 +205,26 @@ ARCHIVED_RECOVERY/
 *.tsv
 backup/
 processing_inputs/
+
+# ===================================================================
+# Dopemux: Multi-Project Documentation Architecture
+# ===================================================================
+
+# Claude conversation artifacts (temporary, per-session)
+.claude/scratch/
+
+# ConPort local state (per-developer, not committed)
+context_portal/*.db
+context_portal/*.db-*
+context_portal/*.db-shm
+context_portal/*.db-wal
+
+# Keep committed structure
+!context_portal/.gitkeep
+!context_portal/migrations/
+
+# Keep committed .claude config
+!.claude/CLAUDE.md
+!.claude/statusline.sh
+!.claude/modules/
+!.claude/templates/
