@@ -10,17 +10,18 @@ With: Batching, progress tracking, cost monitoring, error handling
 """
 
 import asyncio
+import hashlib
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Set
 from datetime import datetime
-from uuid import uuid4
 
 from ..preprocessing.code_chunker import CodeChunker, CodeChunk, ChunkingConfig
 from ..context.claude_generator import ClaudeContextGenerator
 from ..embeddings.voyage_embedder import VoyageEmbedder
 from ..search.dense_search import MultiVectorSearch
+from ..sync.incremental_indexer import IncrementalIndexer, ChunkMetadata, ChunkSnapshot
 
 
 logger = logging.getLogger(__name__)
@@ -140,8 +141,25 @@ class IndexingPipeline:
         self.embedder = embedder
         self.vector_search = vector_search
         self.config = config
+        self.incremental_indexer = IncrementalIndexer(config.workspace_path)
 
         self.progress = IndexingProgress()
+
+    def _generate_chunk_id(self, file_path: Path, chunk: CodeChunk) -> str:
+        """
+        Generate deterministic chunk ID for tracking.
+
+        Uses hash of file_path + start_line + end_line for consistency.
+
+        Args:
+            file_path: File path
+            chunk: Code chunk
+
+        Returns:
+            Deterministic chunk ID (hex string)
+        """
+        id_str = f"{file_path}:{chunk.start_line}:{chunk.end_line}"
+        return hashlib.sha256(id_str.encode()).hexdigest()[:16]
 
     def _discover_files(self) -> List[Path]:
         """
@@ -176,12 +194,12 @@ class IndexingPipeline:
         logger.info(f"Discovered {len(filtered_files)} files to index")
         return filtered_files
 
-    async def _process_file(self, file_path: Path) -> List[Dict]:
+    async def _process_file(self, file_path: Path) -> tuple[List[Dict], List[ChunkMetadata]]:
         """
         Process single file through pipeline.
 
         Returns:
-            List of indexed documents ready for Qdrant
+            Tuple of (documents for Qdrant, chunk metadata for tracking)
         """
         try:
             # 1. Chunk file
@@ -189,7 +207,7 @@ class IndexingPipeline:
 
             if not chunks:
                 logger.debug(f"No chunks extracted from {file_path}")
-                return []
+                return [], []
 
             logger.debug(f"Extracted {len(chunks)} chunks from {file_path}")
 
@@ -269,9 +287,14 @@ class IndexingPipeline:
             )
             self.progress.embedding_cost_usd += embedding_cost
 
-            # 5. Create documents for Qdrant
+            # 5. Create documents for Qdrant with deterministic chunk IDs
             documents = []
+            chunk_metadata = []
+
             for i, chunk in enumerate(chunks):
+                # Generate deterministic chunk ID for incremental updates
+                chunk_id = self._generate_chunk_id(file_path, chunk)
+
                 doc = {
                     "content_vector": content_embeddings[i].embedding,
                     "title_vector": title_embeddings[i].embedding,
@@ -287,17 +310,28 @@ class IndexingPipeline:
                         "complexity": chunk.complexity,
                         "workspace_id": self.config.workspace_id,
                     },
-                    "point_id": str(uuid4()),  # Qdrant requires UUID or int
+                    "point_id": chunk_id,  # Deterministic ID for incremental updates
                 }
                 documents.append(doc)
 
+                # Track chunk metadata for incremental indexing
+                chunk_meta = ChunkMetadata(
+                    chunk_id=chunk_id,
+                    file_path=str(file_path.relative_to(self.config.workspace_path)),
+                    start_line=chunk.start_line,
+                    end_line=chunk.end_line,
+                    content_hash=self.incremental_indexer._hash_content(chunk.content),
+                    symbol_name=chunk.symbol_name,
+                )
+                chunk_metadata.append(chunk_meta)
+
             self.progress.total_chunks += len(chunks)
-            return documents
+            return documents, chunk_metadata
 
         except Exception as e:
             logger.error(f"Failed to process {file_path}: {e}")
             self.progress.errors += 1
-            return []
+            return [], []
 
     async def index_workspace(
         self,
@@ -326,7 +360,10 @@ class IndexingPipeline:
         # 2. Ensure collection exists
         await self.vector_search.create_collection()
 
-        # 3. Process files with rate limiting
+        # 3. Initialize chunk snapshot for incremental indexing
+        chunk_snapshot = ChunkSnapshot(workspace_path=str(self.config.workspace_path))
+
+        # 4. Process files with rate limiting
         all_documents = []
 
         # Rate limiting: Anthropic API limits
@@ -338,8 +375,22 @@ class IndexingPipeline:
         for idx, file_path in enumerate(files):
             logger.info(f"Processing [{idx+1}/{len(files)}] {file_path.name}...")
 
-            docs = await self._process_file(file_path)
+            docs, chunk_meta = await self._process_file(file_path)
             all_documents.extend(docs)
+
+            # Update chunk snapshot with file metadata
+            if chunk_meta:
+                file_hash = self.incremental_indexer._hash_content(
+                    file_path.read_text(encoding="utf-8")
+                )
+                relative_path = str(file_path.relative_to(self.config.workspace_path))
+
+                self.incremental_indexer.update_chunk_mapping(
+                    snapshot=chunk_snapshot,
+                    file_path=relative_path,
+                    file_hash=file_hash,
+                    chunks=chunk_meta,
+                )
 
             self.progress.processed_files += 1
 
@@ -385,6 +436,13 @@ class IndexingPipeline:
 
         self.progress.end_time = datetime.now()
 
+        # 6. Save chunk snapshot for incremental updates
+        self.incremental_indexer.save_chunk_snapshot(chunk_snapshot)
+        logger.info(
+            f"Saved chunk snapshot: {len(chunk_snapshot.files)} files, "
+            f"{sum(len(f.chunks) for f in chunk_snapshot.files.values())} chunks"
+        )
+
         logger.info(
             f"Indexing complete: {self.progress.indexed_chunks} chunks "
             f"from {self.progress.processed_files} files "
@@ -406,7 +464,7 @@ class IndexingPipeline:
         Returns:
             Number of chunks indexed
         """
-        docs = await self._process_file(file_path)
+        docs, chunk_meta = await self._process_file(file_path)
 
         if docs:
             batch_points = [
@@ -421,6 +479,26 @@ class IndexingPipeline:
             ]
 
             await self.vector_search.insert_points_batch(batch_points)
+
+            # Update chunk snapshot for incremental indexing
+            if chunk_meta:
+                snapshot = self.incremental_indexer.load_chunk_snapshot()
+                if snapshot is None:
+                    snapshot = ChunkSnapshot(workspace_path=str(self.config.workspace_path))
+
+                file_hash = self.incremental_indexer._hash_content(
+                    file_path.read_text(encoding="utf-8")
+                )
+                relative_path = str(file_path.relative_to(self.config.workspace_path))
+
+                self.incremental_indexer.update_chunk_mapping(
+                    snapshot=snapshot,
+                    file_path=relative_path,
+                    file_hash=file_hash,
+                    chunks=chunk_meta,
+                )
+
+                self.incremental_indexer.save_chunk_snapshot(snapshot)
 
         return len(docs)
 
