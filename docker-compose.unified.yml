@@ -267,6 +267,8 @@ services:
       - "3006:3006"
     environment:
       - MCP_SERVER_PORT=3006
+    volumes:
+      - ~/.serena:/root/.serena  # Persist config and project registrations
     networks:
       - dopemux-network
     restart: unless-stopped
