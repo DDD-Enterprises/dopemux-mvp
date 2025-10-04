@@ -7,18 +7,21 @@
 This task-orchestrator service has been **decomposed and migrated** to:
 
 ### 1. ADHD Engine Service
+
 **Location**: `services/adhd_engine/`
 **Replaces**: `adhd_engine.py` (962 lines)
 **Purpose**: ADHD accommodation intelligence (energy tracking, attention monitoring, break management)
 **Access**: HTTP API on port 8095 or Docker: `dopemux-adhd-engine`
 
 ### 2. ConPort Task Storage
+
 **Location**: `services/conport/` (SQLite database)
 **Replaces**: Task orchestration, task storage, dependency tracking
 **Purpose**: Single source of truth for all tasks and decisions
 **Access**: ConPort MCP tools in Claude Code
 
 ### 3. SuperClaude Commands
+
 **Location**: `.claude/commands/dx/`
 **Replaces**: CLI task management, session workflows
 **Purpose**: ADHD-optimized development commands
@@ -61,6 +64,7 @@ Until then, code is preserved for reference but should NOT be used in production
 ## For Developers
 
 If you need functionality from this service:
+
 1. Check if it exists in `services/adhd_engine/` (most ADHD features)
 2. Check ConPort MCP tools (task storage, decisions)
 3. Check SuperClaude `/dx:` commands (workflows)

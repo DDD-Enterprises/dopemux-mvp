@@ -29,16 +29,19 @@ docker-compose logs -f adhd-engine
 ## API Endpoints
 
 **Assessment**:
+
 - `POST /api/v1/assess-task` - Assess task suitability for user's ADHD state
 - `GET /api/v1/energy-level/{user_id}` - Get current energy level
 - `GET /api/v1/attention-state/{user_id}` - Get attention state
 
 **Management**:
+
 - `POST /api/v1/recommend-break` - Get break recommendation
 - `POST /api/v1/user-profile` - Create/update user ADHD profile
 - `PUT /api/v1/activity/{user_id}` - Log user activity event
 
 **Monitoring**:
+
 - `GET /health` - Service health and monitor status
 - `GET /docs` - Interactive API documentation (Swagger)
 
@@ -63,6 +66,7 @@ ADHD Engine (Port 8095)
 See `.env.example` for all configuration options.
 
 Key settings:
+
 - `REDIS_URL`: Redis connection URL
 - `INTEGRATION_BRIDGE_URL`: Integration Bridge for ConPort data
 - `WORKSPACE_ID`: Workspace path

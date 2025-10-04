@@ -17,6 +17,7 @@ Get task details using current_task ID.
 ## Step 2: Check Completion Status
 
 Ask user:
+
 ```
 Session Checkpoint
 ═══════════════════════════════════════════
@@ -49,6 +50,7 @@ mcp__conport__update_progress with:
 ## Step 5: Break Recommendation
 
 Call ADHD Engine:
+
 ```bash
 curl -s -X POST http://localhost:8095/api/v1/recommend-break \
   -H "Content-Type: application/json" \
@@ -60,6 +62,7 @@ Show break suggestion with recommendations from response.
 ## Step 6: Celebration (if DONE)
 
 If status is DONE, show celebration:
+
 ```
 ✅ ✅ ✅ AWESOME! TASK COMPLETE! ✅ ✅ ✅
 ═══════════════════════════════════════════

@@ -13,6 +13,7 @@
 ## Implementation
 
 This command executes:
+
 ```bash
 dopemux start --dangerous
 ```
@@ -37,6 +38,7 @@ Which temporarily activates dangerous mode for the current session by setting th
 ## CLI Alternatives
 
 You can also activate dangerous mode via:
+
 ```bash
 # Long flag
 dopemux start --dangerous
@@ -51,6 +53,7 @@ DOPEMUX_DANGEROUS_MODE=true dopemux start
 ## Safety Notes
 
 In dangerous mode, the AI can:
+
 - Execute any system commands (`sudo`, `rm -rf`, etc.)
 - Modify critical system files
 - Make unrestricted network requests
@@ -65,11 +68,13 @@ In dangerous mode, the AI can:
 ## Reverting
 
 To return to safe mode:
+
 ```bash
 /safe
 ```
 
 Or restart without flags:
+
 ```bash
 dopemux start  # (defaults to safe mode)
 ```

@@ -7,6 +7,7 @@
 ## 📊 Current Session Accomplishments
 
 ### ✅ **Completed Work**
+
 1. **Complete MCP Server Documentation**
    - [`SERVER_REGISTRY.md`](./docker/mcp-servers/SERVER_REGISTRY.md) - All 11 servers documented
    - [`MCP_ORCHESTRATION_SUMMARY.md`](./docker/mcp-servers/MCP_ORCHESTRATION_SUMMARY.md) - Architecture overview
@@ -28,6 +29,7 @@
 ### 🔍 **Current State Analysis**
 
 #### **Existing stdio MCP Servers (in Claude Code)**
+
 ```json
 // From ~/.claude/settings.json
 "mcpServers": {
@@ -43,6 +45,7 @@
 ```
 
 #### **Docker Servers Ready for Deployment**
+
 ```yaml
 # Priority-based server organization
 critical_path: [context7:3002, zen:3003, sequential:3001]
@@ -54,9 +57,11 @@ external: [leantime:8080]
 ### ⚠️ **Identified Issues Needing Debug**
 
 1. **Sequential Thinking Server Timeout**
+
    ```
    Error: MCP error -32001: Request timed out
    ```
+
    - **Likely causes**: Configuration, dependency, or environment issues
    - **Debug priority**: High (critical path server)
 
@@ -73,6 +78,7 @@ external: [leantime:8080]
 ### **Phase 1: stdio Server Debugging (Next Session Focus)**
 
 #### **1. Sequential Thinking Server Fix**
+
 ```bash
 # Debug commands to run:
 cd /Users/hue/code/dopemux-mvp
@@ -92,6 +98,7 @@ LLM_PROVIDER=openai OPENAI_API_KEY=$OPENAI_API_KEY mcp-server-mas-sequential-thi
 ```
 
 #### **2. Verify All stdio Servers**
+
 ```bash
 # Test each server individually
 uvx --from context-portal-mcp conport-mcp --mode stdio
@@ -102,6 +109,7 @@ npx -y exa-mcp
 ```
 
 #### **3. Claude Code MCP Server Verification**
+
 - Restart Claude Code to reload MCP servers
 - Check MCP server status in Claude Code
 - Verify environment variable expansion
@@ -109,6 +117,7 @@ npx -y exa-mcp
 ### **Phase 2: Docker Transition Preparation**
 
 #### **1. HTTP-to-stdio Bridge Development**
+
 Location: `/Users/hue/code/dopemux-mvp/src/dopemux/mcp/`
 
 ```python
@@ -129,6 +138,7 @@ class MCPBridge:
 ```
 
 #### **2. Docker Performance Optimization**
+
 ```yaml
 # Optimization targets
 build_time: <30s per container
@@ -140,6 +150,7 @@ memory_usage: <512MB per container
 ## 📁 **Key Files for Next Session**
 
 ### **Configuration Files**
+
 ```
 ~/.claude/settings.json                    # Current MCP server config
 /Users/hue/code/dopemux-mvp/docker/mcp-servers/
@@ -150,6 +161,7 @@ memory_usage: <512MB per container
 ```
 
 ### **Documentation References**
+
 ```
 docs/master-architecture.md                # Overall architecture vision
 docs/METAMCP_ORCHESTRATION_ROADMAP.md     # 12-week implementation plan
@@ -159,6 +171,7 @@ docs/DMPX IMPORT/dopemux-docs/architecture/09-decisions/
 ```
 
 ### **Implementation Locations**
+
 ```
 src/dopemux/
 ├── cli.py                                 # Main CLI entry point
@@ -173,6 +186,7 @@ src/dopemux/
 ## 🔧 **Debug Session Commands Ready**
 
 ### **Quick Health Check Script**
+
 ```bash
 #!/bin/bash
 # Save as: check-mcp-health.sh
@@ -199,6 +213,7 @@ docker-compose ps && echo "✅ Compose working" || echo "❌ Compose issues"
 ```
 
 ### **Sequential Thinking Debug Script**
+
 ```bash
 #!/bin/bash
 # Save as: debug-sequential-thinking.sh
@@ -226,18 +241,21 @@ python -c "import agno, exa_py, groq, mcp" && echo "✅ Dependencies OK" || echo
 ## 🎯 **Next Session Goals**
 
 ### **Immediate (First 30 minutes)**
+
 1. Run health check scripts
 2. Fix sequential-thinking timeout issue
 3. Verify all stdio servers are functional
 4. Test MCP server loading in Claude Code
 
 ### **Short-term (Session 1-2 hours)**
+
 1. Create HTTP-to-stdio bridge foundation
 2. Implement basic MetaMCP routing
 3. Test Docker container startup optimization
 4. Begin Context7-first routing implementation
 
 ### **Session Success Criteria**
+
 - ✅ All stdio MCP servers responding without timeouts
 - ✅ Sequential thinking server functional
 - ✅ Basic MetaMCP routing prototype working
@@ -248,12 +266,14 @@ python -c "import agno, exa_py, groq, mcp" && echo "✅ Dependencies OK" || echo
 **Mental Model**: Transitioning from stdio-based MCP servers to Docker orchestration while maintaining ADHD-friendly workflows and implementing Context7-first routing as specified in ADR-012.
 
 **Decision History**:
+
 - Removed cli/devdocs servers as requested
 - Added morphllm-fast-apply and desktop-commander
 - Prioritized Context7-first routing for documentation-driven development
 - Designed ADHD-optimized startup sequencing (critical → workflow → utility)
 
 **Progress Indicators**:
+
 - Documentation: 100% complete ✅
 - Docker Architecture: 100% complete ✅
 - stdio Debugging: 0% - needs immediate attention ⚠️

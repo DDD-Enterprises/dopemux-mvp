@@ -84,22 +84,27 @@
 ### Common Violations to Prevent
 
 ❌ **Serena modifying task status**
+
 - **Why wrong**: Serena is for code navigation, ConPort owns task data
 - **Correct**: Serena reads ConPort for context, never modifies tasks
 
 ❌ **SuperClaude directly storing decisions**
+
 - **Why wrong**: SuperClaude parses PRDs, ConPort stores decisions
 - **Correct**: SuperClaude generates JSON → Human approves → ConPort stores
 
 ❌ **ADHD Engine storing task data**
+
 - **Why wrong**: ADHD Engine recommends, ConPort stores
 - **Correct**: ADHD Engine queries ConPort → recommends → user selects → ConPort updates
 
 ❌ **Dashboard modifying ConPort directly**
+
 - **Why wrong**: Dashboard is view layer only
 - **Correct**: Dashboard triggers user action → Python service → ConPort update → Bridge event → Dashboard re-render
 
 ❌ **Integration Bridge storing data**
+
 - **Why wrong**: Bridge is routing only, not storage
 - **Correct**: Bridge routes events, ConPort/Serena/ADHD Engine store data
 
@@ -200,6 +205,7 @@ Integration Bridge enforces tool-level access per role:
 **Migration Notes:**
 
 **What Changed from v1.0:**
+
 - ❌ Removed: Two-Plane architecture (PM Plane vs Cognitive Plane)
 - ❌ Removed: Leantime (status authority)
 - ❌ Removed: Task-Master-AI (PRD parsing)
@@ -213,6 +219,7 @@ Integration Bridge enforces tool-level access per role:
 ---
 
 **See Also:**
+
 - `.claude/modules/coordination/integration-bridge.md` - Event routing details
 - `.claude/modules/superclaude-integration.md` - SuperClaude configuration
 - `.claude/modules/pm-plane/task-orchestrator.md` - ConPort task management

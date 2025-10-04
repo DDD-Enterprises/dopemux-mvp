@@ -7,11 +7,13 @@ Production deployment instructions for Docker, Docker Compose, and Claude Code i
 ## Prerequisites
 
 ### Required
+
 - Python 3.11+
 - Docker & Docker Compose (for Qdrant)
 - Voyage AI API key ([get one here](https://www.voyageai.com/))
 
 ### Optional
+
 - Anthropic API key (improves context quality by 35-67%)
 
 ---
@@ -342,6 +344,7 @@ async def search_code(...):
 ### API Key Management
 
 **Never commit keys to git:**
+
 ```bash
 # Add to .gitignore
 .env
@@ -350,12 +353,14 @@ async def search_code(...):
 ```
 
 **Use environment variables:**
+
 ```bash
 # Load from secure storage
 export VOYAGE_API_KEY=$(cat /secure/voyage.key)
 ```
 
 **Docker secrets** (Docker Swarm/Kubernetes):
+
 ```yaml
 services:
   dope-context:
@@ -384,6 +389,7 @@ RUN mkdir -p /root/.dope-context/snapshots && \
 ### Network Security
 
 **Production Qdrant:**
+
 ```yaml
 qdrant:
   environment:
@@ -392,6 +398,7 @@ qdrant:
 ```
 
 **Access Control:**
+
 ```python
 # Add API key to Qdrant client
 client = AsyncQdrantClient(
@@ -443,6 +450,7 @@ sync_workspace("/path/to/workspace")
 ### Shared Qdrant, Per-User Workspaces
 
 **Architecture:**
+
 ```
 Qdrant Instance (shared)
 ├─ user1_code_workspace_a
@@ -452,6 +460,7 @@ Qdrant Instance (shared)
 ```
 
 **Configuration:**
+
 ```python
 # Add user ID to collection name
 def get_collection_names(workspace_path, user_id):
@@ -465,6 +474,7 @@ def get_collection_names(workspace_path, user_id):
 ### Kubernetes Deployment
 
 **Deployment YAML:**
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -560,6 +570,7 @@ async def migrate_to_per_workspace():
 ### Server Won't Start
 
 **Check logs:**
+
 ```bash
 # If running via Docker
 docker logs dope-context-mcp
@@ -569,6 +580,7 @@ python src/mcp/server.py 2>&1 | tee server.log
 ```
 
 **Common issues:**
+
 1. Missing API keys: Check `VOYAGE_API_KEY`
 2. Qdrant not running: `docker ps | grep qdrant`
 3. Port conflicts: Change `QDRANT_PORT`

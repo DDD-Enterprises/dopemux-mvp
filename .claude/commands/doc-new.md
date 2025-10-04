@@ -1,12 +1,15 @@
 # /doc:new
+
 Create a new documentation file with correct path, naming, and YAML front-matter.
 
 **Usage examples**
+
 - `/doc:new how-to add-oauth-step-up "How to add OAuth step-up"`
 - `/doc:new reference auth-api "Auth API Reference"`
 - `/doc:new runbook api-latency-spike "Runbook — API latency spike"`
 
 **What you do**
+
 1) Parse: `/doc:new <type> <slug> "<Title>"` where `<type>` ∈ tutorial|how-to|reference|explanation|runbook|rfc.
 2) Compute target path:
    - tutorial → docs/01-tutorials/{slug or "tutorial-" + slug}.md
@@ -26,5 +29,6 @@ Create a new documentation file with correct path, naming, and YAML front-matter
 5) After creating, list the relative path and remind me to run: `pre-commit run -a` and `python scripts/docs_manifest.py`.
 
 **Notes**
+
 - Never duplicate an existing file; if exists, propose updating it instead.
 - Link the new file to any relevant Feature Hub using `feature_id:` in the YAML.
