@@ -162,7 +162,6 @@ class VoyageReranker:
                 documents=documents,
                 model=self.model,
                 top_k=None,  # Return all with scores
-                return_documents=return_documents,
             )
 
             # Track cost
