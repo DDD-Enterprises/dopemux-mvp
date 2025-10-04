@@ -32,6 +32,7 @@ from ..pipeline.docs_pipeline import DocIndexingPipeline
 from ..search.docs_search import DocumentSearch
 from ..utils.workspace import get_workspace_root, get_collection_names, get_snapshot_dir
 from ..sync.file_synchronizer import FileSynchronizer, ChangeSet
+from ..utils.metrics_tracker import get_tracker
 
 
 logger = logging.getLogger(__name__)
@@ -196,11 +197,21 @@ async def index_workspace(
     """
     Index a workspace directory for code search.
 
+    🎯 **WHEN TO USE**:
+    - **First time setup**: Enable semantic search for a new project
+    - **Major updates**: Reindex after significant code changes
+    - **Search failures**: Fix "codebase not indexed" errors
+
+    ⚙️ **CONFIGURATION**:
+    - Default patterns: ["*.py", "*.js", "*.ts", "*.tsx"]
+    - Auto-excludes: tests, __pycache__, node_modules, .git
+    - ADHD-friendly: Runs in background, search works during indexing
+
     Args:
-        workspace_path: Path to workspace root
+        workspace_path: Absolute path to workspace root
         include_patterns: File patterns to include (e.g., ["*.py", "*.ts"])
         exclude_patterns: File patterns to exclude (e.g., ["*test*"])
-        max_files: Maximum files to index (optional)
+        max_files: Maximum files to index (optional, for large repos)
 
     Returns:
         Indexing progress summary
@@ -222,6 +233,14 @@ async def _search_code_impl(
     # Detect workspace
     workspace = Path(workspace_path) if workspace_path else get_workspace_root()
     code_collection, _ = get_collection_names(workspace)
+
+    # Log metrics for benchmarking
+    get_tracker().log_search(
+        tool_name="search_code",
+        query=query,
+        workspace=str(workspace),
+        top_k=top_k
+    )
 
     logger.info(f"Searching workspace: {workspace} → collection: {code_collection}")
 
@@ -344,11 +363,26 @@ async def search_code(
     """
     Search indexed code with hybrid dense + sparse search.
 
+    🎯 **WHEN TO USE** (Search BEFORE these tasks):
+    - **Understanding code**: Find how features are implemented
+    - **Making changes**: Gather context before modifying code
+    - **Debugging issues**: Locate problematic code sections or bugs
+    - **Code review**: Understand patterns and existing implementations
+    - **Refactoring**: Find all related code pieces that need updates
+    - **Feature development**: Learn from similar existing features
+    - **Answering questions**: Get relevant code examples and context
+    - **Impact analysis**: Find what depends on code you're changing
+
+    🧠 **ADHD OPTIMIZATION**:
+    - Max 10 results by default (prevents overwhelm)
+    - Progressive disclosure (essential info first)
+    - Reranking enabled (best results at top)
+
     Auto-detects workspace from current directory (or use workspace_path).
 
     Args:
-        query: Search query (natural language)
-        top_k: Number of results to return (ADHD: max 10 default)
+        query: Natural language search query
+        top_k: Number of results to return (default 10, max 50 for ADHD)
         profile: Search profile (implementation, debugging, exploration)
         use_reranking: Whether to rerank with Voyage (default: True)
         filter_language: Filter by language (python, javascript, typescript)
@@ -482,6 +516,14 @@ async def _docs_search_impl(
     workspace = Path(workspace_path) if workspace_path else get_workspace_root()
     _, docs_collection = get_collection_names(workspace)
 
+    # Log metrics for benchmarking
+    get_tracker().log_search(
+        tool_name="docs_search",
+        query=query,
+        workspace=str(workspace),
+        top_k=top_k
+    )
+
     logger.info(f"Searching docs: {workspace} → collection: {docs_collection}")
 
     # Create workspace-specific components
@@ -541,16 +583,23 @@ async def docs_search(
     """
     Search indexed documents (PDF, Markdown, HTML, text).
 
+    🎯 **WHEN TO USE**:
+    - **Learning architecture**: Find design docs, ADRs, and system overviews
+    - **API reference**: Locate endpoint documentation and API guides
+    - **Setup guides**: Find installation, configuration, and deployment docs
+    - **Troubleshooting**: Search error messages, FAQs, and solutions
+    - **Requirements**: Find PRDs, feature specifications, and user stories
+
     Auto-detects workspace from current directory (or use workspace_path).
 
     Args:
-        query: Search query (natural language)
-        top_k: Number of results
+        query: Natural language search query
+        top_k: Number of results to return (default 10)
         filter_doc_type: Filter by document type (md, pdf, html, txt)
         workspace_path: Optional workspace path (auto-detects if None)
 
     Returns:
-        List of document search results
+        List of document search results with text and scores
     """
     return await _docs_search_impl(query, top_k, filter_doc_type, workspace_path)
 
@@ -562,6 +611,14 @@ async def _search_all_impl(
 ) -> Dict:
     """Implementation of unified search_all tool."""
     workspace = Path(workspace_path) if workspace_path else get_workspace_root()
+
+    # Log metrics for benchmarking
+    get_tracker().log_search(
+        tool_name="search_all",
+        query=query,
+        workspace=str(workspace),
+        top_k=top_k
+    )
 
     logger.info(f"Unified search in workspace: {workspace}")
 
@@ -595,15 +652,21 @@ async def search_all(
     """
     Unified search across BOTH code and docs.
 
+    🎯 **WHEN TO USE**:
+    - **Complete context**: Need both implementation and documentation together
+    - **Feature exploration**: Understand code alongside design docs
+    - **Onboarding**: Learn codebase with docs as guide
+    - **Cross-reference**: Verify code matches documented behavior
+
     Auto-detects workspace from current directory (or use workspace_path).
 
     Args:
-        query: Search query
-        top_k: Total results (split between code and docs)
+        query: Natural language search query
+        top_k: Total results (split between code and docs, default 10)
         workspace_path: Optional workspace path (auto-detects if None)
 
     Returns:
-        Combined results with workspace, code_results, and docs_results
+        Combined results with workspace, code_results, docs_results, total_results
     """
     return await _search_all_impl(query, top_k, workspace_path)
 
@@ -728,6 +791,46 @@ async def sync_docs(
         Change statistics
     """
     return await _sync_docs_impl(workspace_path, include_patterns)
+
+
+@mcp.tool()
+async def get_search_metrics(since_timestamp: Optional[str] = None) -> Dict:
+    """
+    Get search usage metrics for benchmarking.
+
+    🎯 **USE CASE**: Measure how often LLM uses semantic search
+
+    Args:
+        since_timestamp: Optional ISO timestamp (e.g., "2025-10-04T12:00:00")
+                        Only include metrics after this time
+
+    Returns:
+        {
+            "total_searches": int,
+            "explicit_searches": int,  # User said "find" or "search"
+            "implicit_searches": int,  # LLM searched automatically
+            "explicit_percentage": float,
+            "implicit_percentage": float,
+            "scenarios": {scenario: count},
+            "tools": {tool_name: count},
+            "sample_queries": {scenario: [query1, query2, query3]}
+        }
+    """
+    return get_tracker().get_summary(since_timestamp=since_timestamp)
+
+
+@mcp.tool()
+async def clear_search_metrics() -> Dict:
+    """
+    Clear all search metrics (for fresh baseline).
+
+    🎯 **USE CASE**: Reset metrics before/after enhancement testing
+
+    Returns:
+        Success message
+    """
+    get_tracker().clear_metrics()
+    return {"status": "success", "message": "All search metrics cleared"}
 
 
 if __name__ == "__main__":
