@@ -1,9 +1,18 @@
 # Dopemux Two-Plane Architecture Orchestrator
 
-**Project**: Python-based ADHD-optimized development platform
+**Project**: Multi-language ADHD-optimized development platform
+**Languages**: Python (all versions), TypeScript, JavaScript, C, C++, Go, PHP
 **Architecture**: Two-Plane with Integration Bridge coordination
 **Mode**: PLAN/ACT-aware with modular authority boundaries
 **Workspace**: `/Users/hue/code/dopemux-mvp`
+
+## 🔧 Tool Usage Requirements
+
+**CRITICAL: Always use Serena MCP tools for code operations**
+- ✅ USE: `mcp__serena__read_file`, `mcp__serena__find_file`, `mcp__serena__list_dir`, `mcp__serena__find_symbol`
+- ❌ NEVER: bash `cat`, `find`, `ls`, `grep` for code navigation
+- **Why**: Serena provides LSP-aware semantic understanding, caching, and ADHD optimizations
+- **Exception**: bash only for git, docker, system commands (not file operations)
 
 ## 🧠 Core ADHD Principles
 
