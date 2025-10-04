@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Set
 from datetime import datetime
+from uuid import uuid4
 
 from ..preprocessing.code_chunker import CodeChunker, CodeChunk, ChunkingConfig
 from ..context.claude_generator import ClaudeContextGenerator
@@ -280,7 +281,7 @@ class IndexingPipeline:
                         "complexity": chunk.complexity,
                         "workspace_id": self.config.workspace_id,
                     },
-                    "point_id": f"{file_path.stem}_{chunk.start_line}_{chunk.end_line}",
+                    "point_id": str(uuid4()),  # Qdrant requires UUID or int
                 }
                 documents.append(doc)
 
