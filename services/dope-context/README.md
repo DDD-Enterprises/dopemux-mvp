@@ -52,7 +52,7 @@ Multi-project support with perfect workspace isolation, hybrid search (dense + s
 ### Installation
 
 ```bash
-cd services/claude-context-v2  # TODO: Rename to dope-context
+cd services/dope-context
 
 # Install dependencies
 pip install -r requirements.txt
@@ -76,7 +76,7 @@ claude mcp add dope-context \
   -e ANTHROPIC_API_KEY=your-key \
   -e QDRANT_URL=localhost \
   -e QDRANT_PORT=6333 \
-  -- python /Users/hue/code/dopemux-mvp/services/claude-context-v2/src/mcp/server.py
+  -- python /Users/hue/code/dopemux-mvp/services/dope-context/src/mcp/server.py
 ```
 
 Or manually edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
@@ -86,7 +86,7 @@ Or manually edit `~/Library/Application Support/Claude/claude_desktop_config.jso
   "mcpServers": {
     "dope-context": {
       "command": "python",
-      "args": ["/Users/hue/code/dopemux-mvp/services/claude-context-v2/src/mcp/server.py"],
+      "args": ["/Users/hue/code/dopemux-mvp/services/dope-context/src/mcp/server.py"],
       "env": {
         "VOYAGE_API_KEY": "your-voyage-api-key",
         "ANTHROPIC_API_KEY": "your-anthropic-api-key",
