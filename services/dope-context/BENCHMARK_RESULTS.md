@@ -38,9 +38,10 @@ Target:           <500ms  → ✅ PASS
 
 **No immediate tuning needed** - performance exceeds targets significantly.
 
-### Optional Optimizations (if needed later):
+### Optional Optimizations (if needed later)
 
 **1. HNSW Parameters** (config/defaults.yaml:34-37)
+
 ```yaml
 Current:
   m: 16              # Edges per node
@@ -52,6 +53,7 @@ If search gets slower with more data:
 ```
 
 **2. Search Profiles** (dense_search.py:39-73)
+
 ```python
 Current top_k values:
   implementation: 100  # Could reduce to 50 for faster
@@ -60,6 +62,7 @@ Current top_k values:
 ```
 
 **3. Reranking** (defaults.yaml:92-101)
+
 ```yaml
 Currently enabled: true
 If latency becomes critical:

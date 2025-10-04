@@ -58,6 +58,7 @@ Continue planner steps until complete task breakdown received.
 For each task from Zen planner:
 
 Calculate cognitive_load:
+
 ```python
 cognitive_load = (complexity * 0.4) + (duration/60 * 0.3) + task_type_factor(0.1-0.4)
 ```
@@ -65,6 +66,7 @@ cognitive_load = (complexity * 0.4) + (duration/60 * 0.3) + task_type_factor(0.1
 Ensure duration <= 90 minutes (if longer, flag for further chunking).
 
 Add ADHD fields:
+
 - `complexity_score`: From Zen estimate
 - `estimated_minutes`: Duration
 - `energy_required`: low/medium/high based on complexity
@@ -74,6 +76,7 @@ Add ADHD fields:
 ## Step 4: HUMAN REVIEW (Critical - Approach C)
 
 Display task summary table:
+
 ```
 PRD Task Breakdown - Review Before Import
 ═══════════════════════════════════════════
@@ -99,11 +102,13 @@ Your choice?
 ```
 
 If user selects Edit:
+
 - Allow modifications to any task
 - Re-display table
 - Ask for approval again
 
 If user selects Cancel:
+
 - Show: "Import cancelled. No changes made to ConPort."
 - Exit command
 
@@ -141,6 +146,7 @@ mcp__conport__link_conport_items with:
 ## Step 7: Success Summary
 
 Show:
+
 ```
 ✅ PRD Import Complete!
 ═══════════════════════════════════════════
@@ -160,14 +166,17 @@ Happy building! 🚀
 ## Error Handling
 
 **If Zen planner unavailable**:
+
 - Show: "Zen planner unavailable. Manual task breakdown needed."
 - Guide user through manual task creation
 
 **If PRD file not found**:
+
 - Show: "PRD file not found at: [path]"
 - Ask for correct path
 
 **If ConPort batch import fails**:
+
 - Show which tasks failed
 - Offer to retry or import individually
 

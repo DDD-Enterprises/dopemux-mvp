@@ -60,6 +60,7 @@ Prevents data leakage across projects while supporting multiple workspaces on on
 ## Index 1: Code (voyage-code-3)
 
 ### Qdrant Collection Schema
+
 ```python
 {
     'name': 'code_index',
@@ -88,6 +89,7 @@ Prevents data leakage across projects while supporting multiple workspaces on on
 ```
 
 ### Preprocessing Pipeline
+
 ```python
 async def process_code_file(file_path: str):
     # 1. Tree-sitter AST parsing (leverage Serena)
@@ -131,12 +133,14 @@ async def process_code_file(file_path: str):
 ```
 
 **Chunking Strategy**:
+
 - Boundary: Function/class definitions (natural AST boundaries)
 - Size: 200-400 tokens (functions larger than 400 tok are split logically)
 - Overlap: None (AST boundaries are clean)
 - Context: Claude-generated 50-100 tokens prepended
 
 **Search Configuration**:
+
 - Top-K: 100 candidates (for "implementation" profile)
 - Multi-vector weights: content=0.7, title=0.2, breadcrumb=0.1
 - ef parameter: 150 (3x top-K for good recall)
@@ -146,6 +150,7 @@ async def process_code_file(file_path: str):
 ## Index 2: Docs (voyage-context-3)
 
 ### Qdrant Collection Schema
+
 ```python
 {
     'name': 'docs_index',
@@ -170,6 +175,7 @@ async def process_code_file(file_path: str):
 ```
 
 ### Preprocessing Pipeline
+
 ```python
 async def process_doc_file(file_path: str):
     # 1. Parse markdown to section hierarchy
@@ -220,12 +226,14 @@ async def process_doc_file(file_path: str):
 ```
 
 **Chunking Strategy**:
+
 - Boundary: Markdown heading boundaries (semantic units)
 - Size: 500 tokens (middle of 400-600 range)
 - Overlap: 0% (voyage-context-3 handles context internally)
 - Context: Document-level context from voyage-context-3 (no Claude calls needed)
 
 **Key Difference from Code**:
+
 - NO Claude API calls for context generation (voyage-context-3 does it)
 - Chunks must be passed as ordered list from same document
 - Model encodes position and document context automatically
@@ -235,6 +243,7 @@ async def process_doc_file(file_path: str):
 ## Index 3: API Docs (voyage-context-3)
 
 ### Qdrant Collection Schema
+
 ```python
 {
     'name': 'api_index',
@@ -261,6 +270,7 @@ async def process_doc_file(file_path: str):
 ```
 
 ### Preprocessing Pipeline
+
 ```python
 async def process_api_docs(source: str, source_type: str):
     if source_type == 'context7':
@@ -313,6 +323,7 @@ async def process_api_docs(source: str, source_type: str):
 ```
 
 **Chunking Strategy**:
+
 - Boundary: Per endpoint/method
 - Size: Variable (full endpoint definition + examples)
 - Context: Service-level context from voyage-context-3
@@ -323,6 +334,7 @@ async def process_api_docs(source: str, source_type: str):
 ## Index 4: Chat (voyage-3-large + Claude prelude)
 
 ### Qdrant Collection Schema
+
 ```python
 {
     'name': 'chat_index',
@@ -347,6 +359,7 @@ async def process_api_docs(source: str, source_type: str):
 ```
 
 ### Preprocessing Pipeline
+
 ```python
 async def process_chat_log(conversation_file: str):
     # 1. Parse conversation into turns
@@ -406,6 +419,7 @@ Prelude should include: topic, goal, key facts, participants, open questions."""
 ```
 
 **Chunking Strategy**:
+
 - Boundary: Topic shifts (detected via embeddings or explicit markers)
 - Segment size: 6-20 turns
 - Prelude: Claude-generated 50-120 tokens
@@ -416,6 +430,7 @@ Prelude should include: topic, goal, key facts, participants, open questions."""
 ## Task Profile-Based Fusion
 
 ### Profile Definitions
+
 ```python
 TASK_PROFILES = {
     'implementation': {
@@ -446,6 +461,7 @@ TASK_PROFILES = {
 ```
 
 ### Fusion Algorithm
+
 ```python
 async def fused_search(query: str, profile: str = 'implementation'):
     config = TASK_PROFILES[profile]
@@ -483,6 +499,7 @@ async def fused_search(query: str, profile: str = 'implementation'):
 ## Context Generation Strategies
 
 ### Code Context (Claude-generated)
+
 ```python
 CONTEXT_PROMPT = """Generate a 50-100 token context for this code chunk:
 
@@ -503,6 +520,7 @@ contexts = await claude_batch_complete(prompts, max_tokens=100)
 ```
 
 ### Docs Context (voyage-context-3 Native)
+
 ```python
 # No separate context generation needed
 # voyage-context-3 encodes document-level context when you pass chunks as ordered list
@@ -523,6 +541,7 @@ embeddings = await voyage_client.embed(
 ```
 
 ### Chat Prelude (Claude-generated)
+
 ```python
 PRELUDE_PROMPT = """Generate a 50-120 token prelude for this conversation segment:
 
@@ -549,6 +568,7 @@ prelude = await claude_complete(PRELUDE_PROMPT, max_tokens=120)
 ### One-Time Indexing Costs
 
 **Code Index** (250 functions):
+
 - Context generation: 250 × (500 input + 100 output) = 150K tokens
 - Claude cost: ~$0.08
 - Embeddings: 250 × 3 vectors (content, title, breadcrumb) = 750 embeds
@@ -556,18 +576,21 @@ prelude = await claude_complete(PRELUDE_PROMPT, max_tokens=120)
 - **Subtotal: $0.10**
 
 **Docs Index** (200 docs, 400 chunks):
+
 - Context generation: $0 (voyage-context-3 native)
 - Embeddings: 400 chunks, batched per-document
 - VoyageAI cost: ~$0.03
 - **Subtotal: $0.03**
 
 **API Index** (100 endpoints):
+
 - Context generation: $0 (voyage-context-3)
 - Embeddings: 100 endpoints
 - VoyageAI cost: ~$0.01
 - **Subtotal: $0.01**
 
 **Chat Index** (100 segments):
+
 - Prelude generation: 100 × (600 input + 120 output) = 72K tokens
 - Claude cost: ~$0.04
 - Embeddings: 100 segments × 3 vectors (turn, segment, summary)
@@ -577,6 +600,7 @@ prelude = await claude_complete(PRELUDE_PROMPT, max_tokens=120)
 **Total One-Time Cost**: ~$0.20 (lower than initial $0.50 estimate)
 
 ### Incremental Update Costs
+
 - New file: ~$0.0004 (context + embeddings)
 - Modified file: Regenerate affected chunks only
 - Deleted file: Remove from index (no cost)
@@ -586,6 +610,7 @@ prelude = await claude_complete(PRELUDE_PROMPT, max_tokens=120)
 ## Integration with Dopemux Systems
 
 ### ConPort Knowledge Graph
+
 ```python
 # Log indexing decisions
 await conport.log_decision(
@@ -614,6 +639,7 @@ await conport.link_conport_items(
 ```
 
 ### Serena LSP Coordination
+
 ```python
 # Use Serena's Tree-sitter for code chunking
 from serena.tree_sitter import parse_file, extract_symbols
@@ -627,6 +653,7 @@ combined = merge_semantic_and_symbol_results(semantic_results, symbol_results)
 ```
 
 ### Dopemux Event Bus
+
 ```python
 # Publish indexing progress
 await event_bus.publish('indexing.progress', {
@@ -651,6 +678,7 @@ await event_bus.publish('search.completed', {
 ## Implementation Priority
 
 **Phase 1 (MVP - Week 1)**:
+
 1. Code index only (voyage-code-3 + Claude context)
 2. Simple dense search (no BM25 yet)
 3. Basic reranking (top-50 → top-10)

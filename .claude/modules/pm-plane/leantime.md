@@ -22,12 +22,14 @@
 ## Authority Boundaries
 
 **Leantime ONLY Authority:**
+
 - Task status updates (planned → active → blocked → done)
 - Team dashboards and reporting
 - Milestone tracking and roadmap visibility
 - Stakeholder reporting and communication
 
 **Leantime NEVER:**
+
 - Creates task hierarchies (Task-Master authority)
 - Stores architectural decisions (ConPort authority)
 - Provides code navigation (Serena authority)
@@ -35,6 +37,7 @@
 ## Status Management Commands
 
 ### Core Status Operations
+
 ```bash
 # Sync task status TO Leantime (authoritative)
 SYNC_TO_LEANTIME() {
@@ -63,6 +66,7 @@ SYNC_TO_LEANTIME() {
 ```
 
 ### Status Conflict Resolution
+
 ```bash
 # Handle conflicts where systems disagree on status
 CHECK_STATUS_CONFLICTS() {
@@ -94,12 +98,14 @@ CHECK_STATUS_CONFLICTS() {
 ## Official MCP Tools Available
 
 ### Core Project Management
+
 - **create_milestone** - Creates project milestones
 - **create_timesheet** - Time tracking functionality
 - **create_todo** - Task creation
 - **update_todo** - Task modification
 
 ### Event Triggers (Webhooks)
+
 - new_todo, new_comment, new_goal, new_idea
 - new_milestone, new_project, new_timesheet
 - updated_* versions of all above
@@ -107,6 +113,7 @@ CHECK_STATUS_CONFLICTS() {
 ## ADHD Integration Features
 
 ### Team Dashboard Optimization
+
 ```bash
 # ADHD-friendly dashboard sync
 SYNC_ADHD_DASHBOARD() {
@@ -130,6 +137,7 @@ SYNC_ADHD_DASHBOARD() {
 ```
 
 ### Status Communication Patterns
+
 - **Visual Progress Indicators**: `[████░░░░] 4/8 complete ✅`
 - **Celebration Moments**: `🎉 Amazing! Task completed!`
 - **Clear Next Actions**: Always show what to work on next
@@ -138,6 +146,7 @@ SYNC_ADHD_DASHBOARD() {
 ## Integration Workflows
 
 ### Morning Standup Sync
+
 ```bash
 # Sync overnight Leantime changes to local context
 MORNING_LEANTIME_SYNC() {
@@ -151,6 +160,7 @@ MORNING_LEANTIME_SYNC() {
 ```
 
 ### End-of-Day Reporting
+
 ```bash
 # Push day's progress to Leantime dashboards
 EOD_LEANTIME_SYNC() {

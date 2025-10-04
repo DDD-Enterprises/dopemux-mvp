@@ -11,6 +11,7 @@ Complete documentation for all 9 MCP tools.
 Index code files in a workspace for semantic search.
 
 **Signature:**
+
 ```python
 index_workspace(
     workspace_path: str,
@@ -21,12 +22,14 @@ index_workspace(
 ```
 
 **Parameters:**
+
 - `workspace_path` (required): Absolute path to workspace root
 - `include_patterns`: File patterns to include (default: `["*.py", "*.js", "*.ts", "*.tsx"]`)
 - `exclude_patterns`: Patterns to exclude (default: `["*test*", "*__pycache__*"]`)
 - `max_files`: Maximum files to process (optional, for testing)
 
 **Returns:**
+
 ```json
 {
   "files": "150/150",
@@ -39,6 +42,7 @@ index_workspace(
 ```
 
 **Example:**
+
 ```python
 # Basic indexing
 result = index_workspace("/Users/you/my-project")
@@ -53,6 +57,7 @@ result = index_workspace(
 ```
 
 **Notes:**
+
 - Creates collection: `code_{workspace_hash}`
 - Uses Tree-sitter for AST-aware chunking
 - Generates Claude contexts (requires ANTHROPIC_API_KEY)
@@ -66,6 +71,7 @@ result = index_workspace(
 Index documents (PDF, Markdown, HTML, DOCX, text) in workspace.
 
 **Signature:**
+
 ```python
 index_docs(
     workspace_path: str,
@@ -74,10 +80,12 @@ index_docs(
 ```
 
 **Parameters:**
+
 - `workspace_path` (required): Absolute path to workspace root
 - `include_patterns`: File patterns (default: `["*.md", "*.txt", "*.pdf", "*.html"]`)
 
 **Returns:**
+
 ```json
 {
   "docs_processed": 25,
@@ -87,6 +95,7 @@ index_docs(
 ```
 
 **Example:**
+
 ```python
 # Index all docs
 result = index_docs("/Users/you/my-project")
@@ -99,6 +108,7 @@ result = index_docs(
 ```
 
 **Notes:**
+
 - Creates collection: `docs_{workspace_hash}`
 - Simple chunking (1000 chars, 100 overlap) for MVP
 - Embeds with voyage-context-3
@@ -113,6 +123,7 @@ result = index_docs(
 Hybrid semantic + keyword search for code.
 
 **Signature:**
+
 ```python
 search_code(
     query: str,
@@ -125,6 +136,7 @@ search_code(
 ```
 
 **Parameters:**
+
 - `query` (required): Natural language search query
 - `top_k`: Number of results (default: 10, ADHD-optimized)
 - `profile`: Search profile - `"implementation"`, `"debugging"`, or `"exploration"`
@@ -135,21 +147,25 @@ search_code(
 **Search Profiles:**
 
 **implementation** (default):
+
 - top_k: 100 candidates
 - Weights: content 70%, title 20%, breadcrumb 10%
 - Use for: Finding implementation examples
 
 **debugging**:
+
 - top_k: 50 candidates
 - Weights: content 50%, title 40%, breadcrumb 10%
 - Use for: Finding specific functions by name
 
 **exploration**:
+
 - top_k: 200 candidates
 - Weights: content 60%, title 20%, breadcrumb 20%
 - Use for: Broad codebase exploration
 
 **Returns:**
+
 ```json
 [
   {
@@ -166,6 +182,7 @@ search_code(
 ```
 
 **Example:**
+
 ```python
 # Simple search
 results = search_code("async database connection pooling")
@@ -192,6 +209,7 @@ results = search_code(
 Semantic search for documents.
 
 **Signature:**
+
 ```python
 docs_search(
     query: str,
@@ -202,12 +220,14 @@ docs_search(
 ```
 
 **Parameters:**
+
 - `query` (required): Natural language query
 - `top_k`: Number of results (default: 10)
 - `filter_doc_type`: Filter by type - `"md"`, `"pdf"`, `"html"`, `"txt"`
 - `workspace_path`: Workspace path (auto-detects if None)
 
 **Returns:**
+
 ```json
 [
   {
@@ -220,6 +240,7 @@ docs_search(
 ```
 
 **Example:**
+
 ```python
 # Search all docs
 results = docs_search("API rate limiting configuration")
@@ -238,6 +259,7 @@ results = docs_search(
 Unified search across BOTH code and documents.
 
 **Signature:**
+
 ```python
 search_all(
     query: str,
@@ -247,11 +269,13 @@ search_all(
 ```
 
 **Parameters:**
+
 - `query` (required): Search query
 - `top_k`: Total results (split 50/50 between code and docs)
 - `workspace_path`: Workspace path (auto-detects if None)
 
 **Returns:**
+
 ```json
 {
   "workspace": "/Users/you/my-project",
@@ -275,6 +299,7 @@ search_all(
 ```
 
 **Example:**
+
 ```python
 # Find code AND documentation
 results = search_all("user authentication flow")
@@ -296,6 +321,7 @@ for doc_result in results["docs_results"]:
 Detect code file changes for incremental indexing.
 
 **Signature:**
+
 ```python
 sync_workspace(
     workspace_path: str,
@@ -304,10 +330,12 @@ sync_workspace(
 ```
 
 **Parameters:**
+
 - `workspace_path` (required): Absolute workspace path
 - `include_patterns`: File patterns to track (default: code files)
 
 **Returns:**
+
 ```json
 {
   "workspace": "/Users/you/my-project",
@@ -320,6 +348,7 @@ sync_workspace(
 ```
 
 **Example:**
+
 ```python
 # Check for changes
 changes = sync_workspace("/Users/you/my-project")
@@ -330,6 +359,7 @@ if changes["changes"] > 0:
 ```
 
 **How It Works:**
+
 1. Loads previous snapshot from `~/.dope-context/snapshots/{hash}/snapshot.json`
 2. Scans workspace, computes SHA256 for each file
 3. Compares hashes to detect changes
@@ -337,6 +367,7 @@ if changes["changes"] > 0:
 5. Returns change statistics
 
 **Notes:**
+
 - First run: All files marked as "added"
 - Fast: Only hashes files, doesn't embed
 - Atomic: Snapshot writes are atomic (no corruption)
@@ -349,6 +380,7 @@ if changes["changes"] > 0:
 Detect document changes for incremental indexing.
 
 **Signature:**
+
 ```python
 sync_docs(
     workspace_path: str,
@@ -357,6 +389,7 @@ sync_docs(
 ```
 
 **Parameters:**
+
 - `workspace_path` (required): Absolute workspace path
 - `include_patterns`: File patterns (default: `["*.md", "*.pdf", "*.html", "*.txt"]`)
 
@@ -364,6 +397,7 @@ sync_docs(
 Same format as `sync_workspace`
 
 **Example:**
+
 ```python
 # Check for doc changes
 changes = sync_docs("/Users/you/my-project")
@@ -381,11 +415,13 @@ if changes["changes"] > 0:
 Get index statistics and cost summary.
 
 **Signature:**
+
 ```python
 get_index_status() -> Dict
 ```
 
 **Returns:**
+
 ```json
 {
   "collection_name": "code_3ca12e07",
@@ -408,6 +444,7 @@ get_index_status() -> Dict
 ```
 
 **Example:**
+
 ```python
 status = get_index_status()
 print(f"Indexed {status['total_vectors']} code chunks")
@@ -421,11 +458,13 @@ print(f"Total cost: ${status['embedding_cost_summary']['total_cost_usd']:.4f}")
 Delete index collection (cleanup/reset).
 
 **Signature:**
+
 ```python
 clear_index() -> Dict
 ```
 
 **Returns:**
+
 ```json
 {
   "status": "success",
@@ -434,6 +473,7 @@ clear_index() -> Dict
 ```
 
 **Example:**
+
 ```python
 # Reset index
 clear_index()
@@ -510,6 +550,7 @@ All tools return structured errors:
 ```
 
 Common errors:
+
 - `WorkspaceNotFound`: Invalid workspace path
 - `CollectionNotFound`: Workspace not indexed yet (run index_workspace first)
 - `APIKeyMissing`: VOYAGE_API_KEY not set
@@ -533,6 +574,7 @@ Common errors:
 ### Search Profiles
 
 **Implementation Profile** (default):
+
 ```python
 {
     "top_k": 100,
@@ -544,6 +586,7 @@ Common errors:
 ```
 
 **Debugging Profile**:
+
 ```python
 {
     "top_k": 50,
@@ -555,6 +598,7 @@ Common errors:
 ```
 
 **Exploration Profile**:
+
 ```python
 {
     "top_k": 200,
@@ -572,6 +616,7 @@ Common errors:
 ### Batching Strategy
 
 The pipeline automatically batches for efficiency:
+
 - **Context Generation**: 10 chunks per Claude API call
 - **Embeddings**: 8 texts per Voyage API call
 - **Qdrant Inserts**: 100 points per batch
@@ -614,6 +659,7 @@ custom_profile = SearchProfile(
 See [PERFORMANCE_TUNING.md](PERFORMANCE_TUNING.md) for detailed optimization guide.
 
 **Typical Performance:**
+
 - Search latency: <500ms p95 (code), <400ms (docs)
 - Indexing throughput: 2-5 files/second
 - Sync check: 100-500ms (depends on file count)

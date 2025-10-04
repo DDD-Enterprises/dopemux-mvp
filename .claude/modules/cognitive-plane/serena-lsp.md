@@ -8,6 +8,7 @@
 ## Authority Boundaries
 
 **Serena ONLY Authority:**
+
 - Code navigation and semantic understanding
 - LSP operations (completion, diagnostics, go-to-definition, find references)
 - Symbol search and workspace navigation
@@ -15,6 +16,7 @@
 - Developer interruption recovery and context restoration
 
 **Serena NEVER:**
+
 - Modifies task data (ConPort progress_entry authority)
 - Stores architectural decisions (ConPort decision authority)
 - Parses PRDs or decomposes requirements (SuperClaude authority)
@@ -22,6 +24,7 @@
 ## Core LSP Capabilities
 
 ### Full Language Server Protocol Support
+
 - **Code Completion**: Intelligent autocomplete with context awareness
 - **Diagnostics**: Real-time error detection and warnings
 - **Go-to-Definition**: Navigate to symbol definitions
@@ -30,6 +33,7 @@
 - **Cross-file Analysis**: Understand code relationships
 
 ### ADHD-Optimized Features
+
 ```bash
 # Serena ADHD Configuration
 - Max Search Results: Limited to 10 to prevent overwhelming results
@@ -43,6 +47,7 @@
 ## Memory Architecture
 
 ### Persistent Memory Storage
+
 ```
 .serena/
 ├── memories/           # Persistent memory files
@@ -52,6 +57,7 @@
 ```
 
 ### Session Memory Management
+
 ```bash
 # Automatic context restoration after interruptions
 RESTORE_SERENA_CONTEXT() {
@@ -66,6 +72,7 @@ RESTORE_SERENA_CONTEXT() {
 ## Integration Commands
 
 ### Code Navigation for Task Context
+
 ```bash
 # When Task-Orchestrator provides file context for current task
 LOAD_TASK_CONTEXT() {
@@ -83,6 +90,7 @@ LOAD_TASK_CONTEXT() {
 ```
 
 ### Cross-Plane Integration
+
 ```bash
 # Code change events flow to other systems
 HANDLE_CODE_CHANGE() {
@@ -104,6 +112,7 @@ HANDLE_CODE_CHANGE() {
 ## ADHD Accommodation Patterns
 
 ### Attention State Adaptation
+
 ```bash
 # Adjust behavior based on attention level
 ADAPT_TO_ATTENTION() {
@@ -130,6 +139,7 @@ ADAPT_TO_ATTENTION() {
 ```
 
 ### Context Switching Support
+
 ```bash
 # Preserve mental model across interruptions
 SAVE_INTERRUPTION_CONTEXT() {
@@ -150,6 +160,7 @@ SAVE_INTERRUPTION_CONTEXT() {
 ## Integration with Other Memory Systems
 
 ### Serena ↔ ConPort Coordination
+
 ```bash
 # Link code exploration to architectural decisions
 LINK_EXPLORATION_TO_DECISION() {
@@ -164,6 +175,7 @@ LINK_EXPLORATION_TO_DECISION() {
 ```
 
 ### Progressive Disclosure Coordination
+
 ```bash
 # Coordinate context depth across all memory systems
 COORDINATE_CONTEXT_DEPTH() {

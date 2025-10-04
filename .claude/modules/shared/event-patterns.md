@@ -8,6 +8,7 @@
 ## Core Event Flow Patterns
 
 ### Mandatory Event Routing Rules
+
 ```
 🚨 CRITICAL: All cross-plane communication MUST go through Integration Bridge
 
@@ -17,6 +18,7 @@ SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashbo
 ### Event Flow Sequences
 
 #### Task Lifecycle Events
+
 ```
 1. Tasks Imported: SuperClaude `/dx:prd-parse` → ConPort → Integration Bridge → Dashboard/ADHD Engine
 2. Task Status Changed: ConPort `update_progress` → Integration Bridge → Dashboard
@@ -25,6 +27,7 @@ SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashbo
 ```
 
 #### Event Priority Levels
+
 - **Critical**: System failures, security alerts
 - **High**: Task blockers, status changes affecting dependencies
 - **Medium**: Progress updates, decision logging
@@ -35,6 +38,7 @@ SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashbo
 ### Task Lifecycle Events
 
 #### Task Created Event
+
 ```json
 {
   "event_type": "task_created",
@@ -61,6 +65,7 @@ SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashbo
 ```
 
 #### Status Change Event
+
 ```json
 {
   "event_type": "status_changed",
@@ -85,6 +90,7 @@ SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashbo
 ```
 
 #### Code Change Event
+
 ```json
 {
   "event_type": "code_changed",
@@ -111,6 +117,7 @@ SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashbo
 ### Decision Events
 
 #### Decision Logged Event
+
 ```json
 {
   "event_type": "decision_logged",
@@ -136,6 +143,7 @@ SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashbo
 ## Async Handling Patterns
 
 ### Event Queue Management
+
 ```bash
 # Priority-based event processing
 PROCESS_EVENT_QUEUE() {
@@ -170,6 +178,7 @@ PROCESS_EVENT_QUEUE() {
 ```
 
 ### Circuit Breaker Pattern
+
 ```bash
 # Prevent event overwhelm and cascade failures
 EVENT_CIRCUIT_BREAKER() {
@@ -197,6 +206,7 @@ EVENT_CIRCUIT_BREAKER() {
 ```
 
 ### Eventual Consistency Handling
+
 ```bash
 # Handle out-of-order events and eventual consistency
 HANDLE_EVENTUAL_CONSISTENCY() {
@@ -226,6 +236,7 @@ HANDLE_EVENTUAL_CONSISTENCY() {
 ## Event Validation
 
 ### Schema Validation
+
 ```bash
 # Validate event against schema
 VALIDATE_EVENT() {
@@ -258,6 +269,7 @@ VALIDATE_EVENT() {
 ```
 
 ### Authority Validation
+
 ```bash
 # Ensure events come from authoritative sources
 VALIDATE_EVENT_AUTHORITY() {
@@ -301,6 +313,7 @@ VALIDATE_EVENT_AUTHORITY() {
 ## Event Monitoring and Debugging
 
 ### Event Tracing
+
 ```bash
 # Trace event propagation across systems
 TRACE_EVENT() {
@@ -319,6 +332,7 @@ TRACE_EVENT() {
 ```
 
 ### Event Metrics
+
 ```bash
 # Track event processing metrics
 TRACK_EVENT_METRICS() {
@@ -336,6 +350,7 @@ TRACK_EVENT_METRICS() {
 ## ADHD-Optimized Event Handling
 
 ### Attention-Aware Event Processing
+
 ```bash
 # Adapt event processing to user's attention state
 ADAPT_EVENT_PROCESSING() {
@@ -363,6 +378,7 @@ ADAPT_EVENT_PROCESSING() {
 ```
 
 ### Event Celebration Patterns
+
 ```bash
 # Provide ADHD-friendly feedback for significant events
 CELEBRATE_EVENT() {

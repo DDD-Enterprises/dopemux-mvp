@@ -12,6 +12,7 @@ Get rapid ADHD suitability assessment for a task.
 ## Step 1: Get Task
 
 If $ARGUMENTS provided:
+
 - Use mcp__conport__get_progress to find task
 Else:
 - Ask user for task description
@@ -20,11 +21,13 @@ Else:
 ## Step 2: Assess with ADHD Engine
 
 Estimate task parameters:
+
 - Complexity: 0.3 (simple) to 0.8 (complex)
 - Duration: 25 minutes default
 - Description: From ConPort or user input
 
 Call ADHD Engine:
+
 ```bash
 curl -s -X POST http://localhost:8095/api/v1/assess-task \
   -H "Content-Type: application/json" \
@@ -43,6 +46,7 @@ curl -s -X POST http://localhost:8095/api/v1/assess-task \
 ## Step 3: Display Results
 
 Show formatted assessment:
+
 ```
 ADHD Task Assessment
 ═══════════════════════════════════════════
@@ -73,6 +77,7 @@ Ready to start? Use /dx:implement [task_id]
 ## Error Handling
 
 If ADHD Engine unavailable:
+
 - Show: "⚠️ ADHD Engine not running. Start with: docker-compose up adhd-engine"
 - Provide basic assessment based on complexity only
 

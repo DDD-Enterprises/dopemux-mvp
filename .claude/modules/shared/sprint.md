@@ -12,22 +12,26 @@
 ### Entity Types & Authority Boundaries
 
 #### ConPort Authority: Decisions & Patterns
+
 - `decision`: Architectural and implementation choices with rationale
 - `system_pattern`: Reusable patterns and approaches
 - `retrospective_item`: Lessons learned (keep_doing/stop_doing/start_doing/action)
 - `custom_data`: Project glossary, specifications, research
 
 #### ConPort Progress Authority: Task Status & Tracking
+
 - All task status updates via `progress_entry` (TODO → IN_PROGRESS → BLOCKED → DONE)
 - Task metadata via `custom_data` (ADHD metrics, energy, complexity)
 - Task dependencies via `link_conport_items`
 
 #### SuperClaude Authority: PRD Decomposition
+
 - PRD parsing via `/dx:prd-parse` with Zen planner
 - Human review workflow (Approach C quality gate)
 - ADHD metadata injection before ConPort import
 
 #### mem4sprint Authority: Sprint Structure (ConPort custom_data)
+
 - `sprint_goal`: High-level objectives for sprint (S-YYYY.MM format)
 - `sprint_subtask`: Specific work items linked to goals
 - `story`: User-facing requirements with acceptance criteria
@@ -44,6 +48,7 @@
 ### Core Sprint Entities
 
 #### Sprint Goal Template
+
 ```json
 {
   "type": "sprint_goal",
@@ -56,6 +61,7 @@
 ```
 
 #### Sprint Subtask Template
+
 ```json
 {
   "type": "sprint_subtask",
@@ -69,6 +75,7 @@
 ```
 
 #### Story Template
+
 ```json
 {
   "type": "story",
@@ -83,6 +90,7 @@
 ```
 
 #### Artifact Template
+
 ```json
 {
   "type": "artifact",
@@ -99,6 +107,7 @@
 ### Extended Entity Templates
 
 #### Bug Template
+
 ```json
 {
   "type": "bug",
@@ -112,6 +121,7 @@
 ```
 
 #### Blocker Template
+
 ```json
 {
   "type": "blocker",
@@ -124,6 +134,7 @@
 ```
 
 #### Risk Template
+
 ```json
 {
   "type": "risk",
@@ -139,15 +150,18 @@
 ## PLAN/ACT Mode Management
 
 ### PLAN Mode (active_context.mode = "PLAN")
+
 **Triggers:** Sprint planning, architecture discussions, story breakdown, goal setting
 
 **Behaviors:**
+
 - Load recent contexts and relevant entities
 - Synthesize approaches and ask clarifying questions
 - Log decisions with rationale
 - Focus on strategic thinking
 
 **Commands:**
+
 ```bash
 # Set planning mode
 mcp__conport__update_active_context --workspace_id "/Users/hue/code/dopemux-mvp" \
@@ -155,15 +169,18 @@ mcp__conport__update_active_context --workspace_id "/Users/hue/code/dopemux-mvp"
 ```
 
 ### ACT Mode (active_context.mode = "ACT")
+
 **Triggers:** Feature implementation, bug fixing, testing, code review
 
 **Behaviors:**
+
 - Retrieve current goal and subtasks
 - Execute minimal changes with documentation
 - Link artifacts, tests, and decisions
 - Focus on execution
 
 **Commands:**
+
 ```bash
 # Set execution mode
 mcp__conport__update_active_context --workspace_id "/Users/hue/code/dopemux-mvp" \
@@ -173,6 +190,7 @@ mcp__conport__update_active_context --workspace_id "/Users/hue/code/dopemux-mvp"
 ## Sprint Workflow Patterns
 
 ### Sprint Initialization Workflow
+
 ```bash
 # 1. Set planning mode
 mcp__conport__update_active_context --workspace_id "/Users/hue/code/dopemux-mvp" \
@@ -196,6 +214,7 @@ mcp__conport__link_conport_items --workspace_id "/Users/hue/code/dopemux-mvp" \
 ```
 
 ### Development Workflow
+
 ```bash
 # 1. Switch to ACT mode
 mcp__conport__update_active_context --workspace_id "/Users/hue/code/dopemux-mvp" \
@@ -226,6 +245,7 @@ mcp__conport__link_conport_items --workspace_id "/Users/hue/code/dopemux-mvp" \
 ## Sprint Query Patterns
 
 ### Find Current Sprint Items
+
 ```bash
 # Get all items for current sprint
 mcp__conport__search_custom_data_value_fts --workspace_id "/Users/hue/code/dopemux-mvp" \
@@ -241,6 +261,7 @@ mcp__conport__search_decisions_fts --workspace_id "/Users/hue/code/dopemux-mvp" 
 ```
 
 ### Sprint Analytics
+
 ```bash
 # Sprint velocity
 mcp__conport__get_custom_data --workspace_id "/Users/hue/code/dopemux-mvp" \
@@ -254,6 +275,7 @@ mcp__conport__search_custom_data_value_fts --workspace_id "/Users/hue/code/dopem
 ## ADHD Optimizations
 
 ### Visual Progress Indicators
+
 ```bash
 # Sprint burndown
 SHOW_SPRINT_PROGRESS() {
@@ -272,6 +294,7 @@ SHOW_SPRINT_PROGRESS() {
 ```
 
 ### Next Action Recommendations
+
 ```bash
 # Find next actions (planned items)
 SUGGEST_NEXT_ACTIONS() {
@@ -286,6 +309,7 @@ SUGGEST_NEXT_ACTIONS() {
 ## Relationship System
 
 ### Supported Relationships
+
 - `BLOCKED_BY`: Item cannot proceed due to dependency
 - `IMPLEMENTS`: Implementation relationship (subtask → story)
 - `VERIFIES`: Testing relationship (test → artifact)
@@ -299,6 +323,7 @@ SUGGEST_NEXT_ACTIONS() {
 - `TRACKS`: Monitoring relationship (metric → goal)
 
 ### Relationship Linking
+
 ```bash
 # Link sprint entities
 mcp__conport__link_conport_items --workspace_id "/Users/hue/code/dopemux-mvp" \

@@ -7,6 +7,7 @@ Optimization strategies for search latency, indexing throughput, and cost effici
 ## Performance Targets
 
 ### Latency Targets
+
 - Code search (no rerank): <500ms p95
 - Code search (with rerank): <1200ms p95
 - Docs search: <400ms p95
@@ -14,11 +15,13 @@ Optimization strategies for search latency, indexing throughput, and cost effici
 - Indexing: 2-5 files/second
 
 ### Quality Targets
+
 - Code search precision@10: >0.85
 - Docs search precision@10: >0.80
 - Context relevance: >0.90
 
 ### Cost Targets
+
 - Initial indexing: <$0.50 per typical codebase
 - Per-search cost: <$0.001 (with caching)
 - Incremental sync: $0 (local hashing only)
@@ -30,6 +33,7 @@ Optimization strategies for search latency, indexing throughput, and cost effici
 ### 1. HNSW Parameters
 
 **Default Settings:**
+
 ```python
 hnsw_config = {
     "m": 16,           # Connections per node
@@ -44,30 +48,35 @@ search_params = {
 **Tuning Guide:**
 
 **For Faster Search (Lower Quality):**
+
 ```python
 # Reduce ef (search-time parameter)
 "ef": 64  # ~2x faster, ~5% quality drop
 ```
 
 **For Better Quality (Slower Search):**
+
 ```python
 # Increase ef
 "ef": 300  # ~2x slower, ~3% quality improvement
 ```
 
 **For Faster Indexing:**
+
 ```python
 # Reduce ef_construct
 "ef_construct": 100  # ~2x faster build, ~5% quality drop
 ```
 
 **For Better Index Quality:**
+
 ```python
 # Increase ef_construct
 "ef_construct": 400  # ~2x slower build, ~3% quality improvement
 ```
 
 **Trade-offs:**
+
 - `m`: Higher = better quality + more memory, rarely tune (16 is good)
 - `ef_construct`: Build-time only, affects indexing speed
 - `ef`: Search-time, affects every query latency
@@ -75,17 +84,20 @@ search_params = {
 **Recommendations by Use Case:**
 
 **Development (Speed Priority):**
+
 ```python
 ef_construct=100, ef=64
 # Fast indexing, fast search, acceptable quality
 ```
 
 **Production (Quality Priority):**
+
 ```python
 ef_construct=200, ef=150  # Current defaults (balanced)
 ```
 
 **High-Precision (Max Quality):**
+
 ```python
 ef_construct=400, ef=300
 # Slower but best quality
@@ -98,21 +110,25 @@ ef_construct=400, ef=300
 **Choose Profile Based on Query Type:**
 
 **implementation** - Finding code examples:
+
 - High content weight (70%)
 - Broad search (top_k=100)
 - Best for: "how to implement X"
 
 **debugging** - Finding specific functions:
+
 - High title weight (40%)
 - Narrower search (top_k=50)
 - Best for: "where is calculateScore defined"
 
 **exploration** - Understanding codebase:
+
 - Balanced weights
 - Widest search (top_k=200)
 - Best for: "show me authentication flow"
 
 **Custom Profile Example:**
+
 ```python
 # For API endpoint search
 api_profile = SearchProfile(
@@ -140,6 +156,7 @@ api_profile = SearchProfile(
 ❌ Cost-sensitive applications
 
 **Reranking Settings:**
+
 ```python
 # Default (ADHD-optimized)
 top_n_display = 10  # Show immediately
@@ -155,6 +172,7 @@ max_cache = 50
 ```
 
 **Cost Analysis:**
+
 ```
 Without reranking: $0.00012 per query (embeddings only)
 With reranking:    $0.00017 per query (+$0.00005)
@@ -167,6 +185,7 @@ With reranking:    $0.00017 per query (+$0.00005)
 ### 4. Multi-Vector Weighting
 
 **Default Weights:**
+
 ```python
 content_weight = 0.7    # Contextualized code
 title_weight = 0.2      # Function/class name
@@ -176,6 +195,7 @@ breadcrumb_weight = 0.1 # File path + symbol
 **Optimization Strategies:**
 
 **Code-Heavy Queries** ("show me async implementations"):
+
 ```python
 content_weight = 0.8
 title_weight = 0.15
@@ -183,6 +203,7 @@ breadcrumb_weight = 0.05
 ```
 
 **Name-Focused Queries** ("find calculateUserScore"):
+
 ```python
 content_weight = 0.4
 title_weight = 0.5  # Emphasize names
@@ -190,6 +211,7 @@ breadcrumb_weight = 0.1
 ```
 
 **File-Location Queries** ("auth code in src/auth"):
+
 ```python
 content_weight = 0.5
 title_weight = 0.2
@@ -203,6 +225,7 @@ breadcrumb_weight = 0.3  # Emphasize file paths
 ### 1. Batching
 
 **Current Defaults:**
+
 ```python
 context_batch_size = 10      # Claude API calls
 embedding_batch_size = 8     # Voyage API calls
@@ -210,6 +233,7 @@ qdrant_batch_size = 100      # Qdrant inserts
 ```
 
 **For Faster Indexing:**
+
 ```python
 # Increase batching (trades latency for throughput)
 context_batch_size = 20      # 2x fewer API calls
@@ -218,6 +242,7 @@ qdrant_batch_size = 200      # Fewer network round trips
 ```
 
 **For Lower Memory:**
+
 ```python
 # Decrease batching
 context_batch_size = 5
@@ -226,6 +251,7 @@ qdrant_batch_size = 50
 ```
 
 **Latency vs Throughput Trade-off:**
+
 ```
 Small batches: Lower latency, more API calls, slower overall
 Large batches: Higher latency, fewer API calls, faster overall
@@ -255,11 +281,13 @@ async def index_workspace_parallel(self, max_concurrency=3):
 ```
 
 **Concurrency Guidelines:**
+
 - 1-3 workers: Safe for API rate limits
 - 4-10 workers: Fast but watch rate limits
 - 10+ workers: Risk hitting rate limits
 
 **Current Rate Limits (Voyage):**
+
 - Embedding: 300 RPM
 - Reranking: 60 RPM
 
@@ -268,6 +296,7 @@ async def index_workspace_parallel(self, max_concurrency=3):
 ### 3. Caching Strategy
 
 **Embedding Cache:**
+
 ```python
 # Default: 24 hours
 VoyageEmbedder(cache_ttl_hours=24)
@@ -280,6 +309,7 @@ VoyageEmbedder(cache_ttl_hours=6)  # 6 hours
 ```
 
 **Context Cache:**
+
 ```python
 # Default: 720 hours (30 days)
 ClaudeContextGenerator(cache_ttl_hours=720)
@@ -289,6 +319,7 @@ ClaudeContextGenerator(cache_ttl_hours=2160)  # 90 days
 ```
 
 **Cache Hit Rates:**
+
 - First index: 0% (cold cache)
 - Reindex after small changes: 90-95%
 - Search queries: 40-60% (depends on query diversity)
@@ -298,6 +329,7 @@ ClaudeContextGenerator(cache_ttl_hours=2160)  # 90 days
 ### 4. Chunk Size Optimization
 
 **Code Chunking** (AST-based):
+
 ```python
 # Current: AST boundaries (natural chunk sizes)
 # Functions: typically 50-300 tokens
@@ -307,6 +339,7 @@ ClaudeContextGenerator(cache_ttl_hours=2160)  # 90 days
 ```
 
 **Document Chunking:**
+
 ```python
 # Default
 chunk_size = 1000 chars  # ~250 tokens
@@ -322,6 +355,7 @@ chunk_overlap = 50 chars
 ```
 
 **Chunk Size Trade-offs:**
+
 ```
 Smaller chunks:
 + Faster embedding
@@ -343,11 +377,13 @@ Larger chunks:
 ### Embedding Costs
 
 **Voyage Pricing:**
+
 - voyage-code-3: $0.12 per 1M tokens
 - voyage-context-3: $0.12 per 1M tokens
 - rerank-2.5: $0.05 per 1000 requests
 
 **Typical Codebase (5K files, 500K LOC):**
+
 ```
 Indexing:
 - Chunking: ~50K chunks
@@ -362,10 +398,12 @@ With caching on reindex:
 **Context Generation Costs:**
 
 **Claude Haiku Pricing:**
+
 - Input: $0.25 per 1M tokens
 - Output: $1.25 per 1M tokens
 
 **Typical Costs:**
+
 ```
 Per chunk context (100 tokens output):
 - Input: ~200 tokens (chunk + prompt)
@@ -378,6 +416,7 @@ Per chunk context (100 tokens output):
 **Cost Reduction Strategies:**
 
 **1. Skip Context Generation:**
+
 ```bash
 # Don't set ANTHROPIC_API_KEY
 # Falls back to simple context
@@ -386,6 +425,7 @@ Per chunk context (100 tokens output):
 ```
 
 **2. Selective Context Generation:**
+
 ```python
 # Only generate contexts for exported/public functions
 # Filter in pipeline based on AST analysis
@@ -393,6 +433,7 @@ Per chunk context (100 tokens output):
 ```
 
 **3. Increase Cache TTL:**
+
 ```python
 # Embeddings: 7 days instead of 24 hours
 VoyageEmbedder(cache_ttl_hours=168)
@@ -402,6 +443,7 @@ ClaudeContextGenerator(cache_ttl_hours=2160)
 ```
 
 **4. Disable Reranking:**
+
 ```python
 search_code("query", use_reranking=False)
 # Saves: $0.00005 per search
@@ -415,6 +457,7 @@ search_code("query", use_reranking=False)
 ### Current Memory Usage
 
 **Per Workspace:**
+
 - In-memory cache: ~50-200MB (depends on cache size)
 - Qdrant client: ~10MB
 - Temporary processing: ~100MB
@@ -424,6 +467,7 @@ search_code("query", use_reranking=False)
 ### Optimization Strategies
 
 **1. Limit Cache Size:**
+
 ```python
 # Custom embedder with smaller cache
 class LimitedCacheEmbedder(VoyageEmbedder):
@@ -440,12 +484,14 @@ class LimitedCacheEmbedder(VoyageEmbedder):
 ```
 
 **2. Clear Caches Periodically:**
+
 ```python
 embedder.clear_cache()
 context_generator.clear_cache()
 ```
 
 **3. Use Shared Embedder:**
+
 ```python
 # Instead of creating embedder per tool call
 # Share one embedder instance globally (already done in current implementation)
@@ -458,6 +504,7 @@ context_generator.clear_cache()
 ### 1. Collection Configuration
 
 **Current Settings:**
+
 ```python
 {
     "vectors": {
@@ -473,6 +520,7 @@ context_generator.clear_cache()
 **Optimization Options:**
 
 **For Smaller Memory Footprint:**
+
 ```python
 # Use quantization
 "quantization_config": {
@@ -485,6 +533,7 @@ context_generator.clear_cache()
 ```
 
 **For Faster Builds:**
+
 ```python
 # Reduce ef_construct
 "hnsw_config": {"m": 16, "ef_construct": 100}
@@ -511,6 +560,7 @@ qdrant_batch_size = 500  # Fewer API calls
 ### 3. Search Optimization
 
 **Use Scroll API for Large Result Sets:**
+
 ```python
 # Instead of search with large top_k
 # Use scroll for pagination (when top_k > 100)
@@ -533,6 +583,7 @@ async def search_large(self, query_vector, limit=1000):
 ### 1. Code-Aware Tokenizer
 
 **Current Tokenizer:**
+
 ```python
 def code_aware_tokenizer(text):
     # Splits: camelCase, snake_case, numbers
@@ -540,6 +591,7 @@ def code_aware_tokenizer(text):
 ```
 
 **Optimization: Add Stemming:**
+
 ```python
 from nltk.stem import PorterStemmer
 
@@ -553,6 +605,7 @@ def optimized_tokenizer(text):
 ```
 
 **Optimization: Add Stop Words:**
+
 ```python
 STOP_WORDS = {"the", "a", "an", "is", "are", "def", "class", "function"}
 
@@ -568,6 +621,7 @@ def filtered_tokenizer(text):
 **Current**: BM25Okapi defaults (k1=1.5, b=0.75)
 
 **Tuning for Code Search:**
+
 ```python
 from rank_bm25 import BM25Okapi, BM25Plus
 
@@ -599,16 +653,19 @@ def reciprocal_rank_fusion(rankings, k=60):
 ### Tuning k Parameter
 
 **Lower k (k=20):**
+
 - Top-ranked results get more weight
 - Use when: Dense search is very accurate
 - Effect: More aggressive fusion
 
 **Higher k (k=100):**
+
 - More balanced fusion
 - Use when: Dense and sparse have similar quality
 - Effect: Smoother combination
 
 **Recommended:**
+
 ```
 k=60 for balanced (current default)
 k=40 for dense-heavy (trust embeddings more)
@@ -616,6 +673,7 @@ k=80 for even fusion (trust both equally)
 ```
 
 **Experimentation:**
+
 ```python
 # Test different k values
 for k in [20, 40, 60, 80, 100]:
@@ -632,6 +690,7 @@ for k in [20, 40, 60, 80, 100]:
 **Three-Tier Caching:**
 
 **L1: In-Memory Cache (Current)**
+
 ```python
 VoyageEmbedder(cache_ttl_hours=24)
 # Fast: <1ms lookup
@@ -640,6 +699,7 @@ VoyageEmbedder(cache_ttl_hours=24)
 ```
 
 **L2: Redis Cache (Optional)**
+
 ```python
 class RedisEmbeddingCache:
     def get(self, cache_key):
@@ -654,6 +714,7 @@ class RedisEmbeddingCache:
 ```
 
 **L3: Qdrant Lookup (Alternative)**
+
 ```python
 # Instead of caching, deduplicate by content hash
 # If chunk SHA256 exists, reuse existing vector
@@ -733,6 +794,7 @@ client = AsyncQdrantClient(api_client=api_client)
 ### 2. Batch Operations
 
 **Always Batch When Possible:**
+
 ```python
 # Bad: Sequential
 for text in texts:
@@ -746,6 +808,7 @@ embeddings = await embedder.embed_batch(texts)
 ### 3. Parallel Search
 
 **For search_all (code + docs):**
+
 ```python
 # Already implemented:
 code_task = search_code(query)
@@ -762,6 +825,7 @@ code_results, docs_results = await asyncio.gather(code_task, docs_task)
 ### 1. Cost Tracking
 
 **Built-in Cost Tracking:**
+
 ```python
 status = get_index_status()
 
@@ -773,6 +837,7 @@ print(f"Cache hit rate: {status['embedding_cost_summary']['cache_rate']}")
 ### 2. Latency Monitoring
 
 **Add Timing Decorators:**
+
 ```python
 import time
 
@@ -793,6 +858,7 @@ async def search_code(...):
 ### 3. Performance Profiling
 
 **Use pytest-benchmark:**
+
 ```python
 def test_search_performance(benchmark):
     result = benchmark(
@@ -803,6 +869,7 @@ def test_search_performance(benchmark):
 ```
 
 **Use cProfile for hotspots:**
+
 ```bash
 python -m cProfile -o profile.stats src/mcp/server.py
 python -m pstats profile.stats
@@ -819,21 +886,25 @@ python -m pstats profile.stats
 ### Horizontal Scaling
 
 **Single Qdrant Instance:**
+
 - Handles: 10-50 workspaces
 - Limit: Memory and collection count
 
 **Qdrant Cluster:**
+
 - Handles: 100+ workspaces
 - Setup: Qdrant distributed mode
 - Sharding: Automatic across nodes
 
 **Multiple Qdrant Instances:**
+
 - Route workspaces to different Qdrant servers
 - Use consistent hashing for distribution
 
 ### Vertical Scaling
 
 **Increase Qdrant Resources:**
+
 ```yaml
 # docker-compose.yml
 qdrant:
@@ -854,16 +925,19 @@ qdrant:
 ### Current Performance (M4 Pro, 32GB RAM)
 
 **Indexing:**
+
 - Small project (50 files): 25 seconds
 - Medium project (500 files): 4.2 minutes
 - Large project (2000 files): 18 minutes
 
 **Search:**
+
 - Code search (no rerank): 280ms p50, 450ms p95
 - Code search (with rerank): 650ms p50, 1100ms p95
 - Docs search: 220ms p50, 380ms p95
 
 **Sync:**
+
 - 500 files: 180ms
 - 2000 files: 650ms
 - 10000 files: 2.8 seconds
@@ -871,6 +945,7 @@ qdrant:
 ### Optimization Impact
 
 **ef Parameter:**
+
 ```
 ef=64:  250ms p95 (-44% latency, -5% quality)
 ef=150: 450ms p95 (baseline)
@@ -878,12 +953,14 @@ ef=300: 820ms p95 (+82% latency, +3% quality)
 ```
 
 **Reranking:**
+
 ```
 Disabled: 450ms p95 (baseline)
 Enabled:  1100ms p95 (+144% latency, +12% quality)
 ```
 
 **Batch Size:**
+
 ```
 Embedding batch=4:  6.5 min for 500 files
 Embedding batch=8:  4.2 min for 500 files (current)
@@ -943,12 +1020,14 @@ ClaudeContextGenerator(cache_ttl_hours=720)
 ### Slow Indexing
 
 **Check:**
+
 1. API rate limits (Voyage: 300 RPM)
 2. Network latency to Qdrant
 3. File I/O (slow disk?)
 4. Large files (increase max_file_size filter)
 
 **Solutions:**
+
 - Increase batch sizes
 - Add parallel processing
 - Skip context generation
@@ -957,12 +1036,14 @@ ClaudeContextGenerator(cache_ttl_hours=720)
 ### Slow Searches
 
 **Check:**
+
 1. Collection size (>100K vectors?)
 2. ef parameter (too high?)
 3. Reranking enabled?
 4. Network latency
 
 **Solutions:**
+
 - Reduce ef to 64-100
 - Disable reranking
 - Use debugging profile (fewer candidates)
@@ -971,11 +1052,13 @@ ClaudeContextGenerator(cache_ttl_hours=720)
 ### High Memory Usage
 
 **Check:**
+
 1. Cache sizes
 2. Multiple workspace instances
 3. Large collections
 
 **Solutions:**
+
 - Reduce cache TTL
 - Limit max_cache_entries
 - Clear caches periodically
@@ -1000,6 +1083,6 @@ pytest tests/test_performance.py -v
 
 ## References
 
-- Qdrant HNSW Guide: https://qdrant.tech/documentation/guides/quantization/
-- Voyage AI Docs: https://docs.voyageai.com/
-- RRF Paper: https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf
+- Qdrant HNSW Guide: <https://qdrant.tech/documentation/guides/quantization/>
+- Voyage AI Docs: <https://docs.voyageai.com/>
+- RRF Paper: <https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf>

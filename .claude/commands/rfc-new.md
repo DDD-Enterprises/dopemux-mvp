@@ -1,4 +1,5 @@
 # /rfc:new
+
 Create an RFC skeleton with YAML front-matter and sections.
 
 1) Parse: `/rfc:new "Title" [--feature feat-id]`.

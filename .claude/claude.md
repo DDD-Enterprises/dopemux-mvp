@@ -9,6 +9,7 @@
 ## 🔧 Tool Usage Requirements
 
 **CRITICAL: Always use Serena MCP tools for code operations**
+
 - ✅ USE: `mcp__serena__read_file`, `mcp__serena__find_file`, `mcp__serena__list_dir`, `mcp__serena__find_symbol`
 - ❌ NEVER: bash `cat`, `find`, `ls`, `grep` for code navigation
 - **Why**: Serena provides LSP-aware semantic understanding, caching, and ADHD optimizations
@@ -25,18 +26,24 @@
 ## ⚡ Two-Plane Architecture
 
 ### Project Management Plane
+
 **Authorities**: Status updates, team visibility, task decomposition, dependencies
+
 - **Leantime**: Status authority (planned→active→blocked→done), team dashboards
 - **Task-Master**: PRD parsing, AI task decomposition, subtask hierarchies
 - **Task-Orchestrator**: 37 specialized tools, dependency analysis, risk assessment
 
 ### Cognitive Plane
+
 **Authorities**: Decisions, code navigation, memory, context preservation
+
 - **Serena LSP**: Full LSP server with ADHD accommodations (max 10 results, 3-level context depth)
 - **ConPort**: Decision logging, knowledge graph, automatic context preservation
 
 ### Coordination Layer
+
 **Integration Bridge**: Cross-plane communication at PORT_BASE+16
+
 - **Authority Enforcement**: No direct cross-plane communication allowed
 - **Event Routing**: Task-Master → Integration Bridge → ConPort → Serena
 - **Conflict Resolution**: Authoritative systems always win (Leantime for status, ConPort for decisions)
@@ -44,11 +51,13 @@
 ## 🎯 Mode-Aware Operation
 
 **PLAN Mode**: Architecture, sprint planning, story breakdown
+
 - Load PM plane modules + decision modules
 - Focus on strategic thinking and synthesis
 - Log decisions with rationale in ConPort
 
 **ACT Mode**: Implementation, debugging, testing
+
 - Load cognitive plane + execution modules
 - Focus on concrete changes and linking artifacts
 - Track progress and create deliverables
@@ -58,6 +67,7 @@
 ## 🚀 Integration Points
 
 ### ConPort Memory Management (AUTOMATIC)
+
 ```bash
 # Workspace ID for ALL ConPort calls
 WORKSPACE_ID="/Users/hue/code/dopemux-mvp"
@@ -68,6 +78,7 @@ mcp__conport__get_recent_activity_summary --workspace_id "$WORKSPACE_ID" --hours
 ```
 
 ### Sprint Management (mem4sprint)
+
 ```bash
 # Set mode and create sprint structure
 mcp__conport__update_active_context --workspace_id "$WORKSPACE_ID" --patch_content '{"mode": "PLAN", "sprint_id": "S-2025.09"}'
@@ -75,6 +86,7 @@ mcp__conport__log_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_
 ```
 
 ### Authority Routing
+
 - **Status Updates**: Route to Leantime only
 - **Task Decomposition**: Route to Task-Master only
 - **Decisions**: Log in ConPort only

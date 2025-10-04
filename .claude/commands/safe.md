@@ -11,6 +11,7 @@
 ```
 
 This command will:
+
 1. Disable dangerous mode settings
 2. Enable all approval requirements
 3. Restore role-based tool access restrictions
@@ -29,6 +30,7 @@ This command will:
 ## Equivalent To
 
 This is equivalent to running Claude Code with normal security:
+
 ```bash
 claude  # (default safe mode)
 ```
@@ -36,6 +38,7 @@ claude  # (default safe mode)
 ## Security Features
 
 In safe mode, the system will:
+
 - Require approval for system-level operations
 - Block dangerous commands like `sudo`, `rm -rf`
 - Limit tool access based on your current role
@@ -46,6 +49,7 @@ In safe mode, the system will:
 ## Role-Based Access
 
 Tools are mounted based on your role:
+
 - **Developer**: Code editing, testing, basic analysis
 - **Researcher**: Information gathering, documentation access
 - **Architect**: System design tools, analysis frameworks
@@ -54,11 +58,13 @@ Tools are mounted based on your role:
 ## Switching Back
 
 To return to dangerous mode (development only):
+
 ```bash
 /dangerous
 ```
 
 Or use the profile management script:
+
 ```bash
 ./scripts/set-profile.sh set dangerous
 ```
