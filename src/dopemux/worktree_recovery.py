@@ -151,6 +151,13 @@ class WorktreeRecoveryMenu:
         import sys
         import selectors
 
+        # Check if stdin is a real file (pytest replaces it with DontReadFromInput)
+        try:
+            sys.stdin.fileno()
+        except (AttributeError, ValueError):
+            # stdin is not a real file (e.g., in pytest) - return None immediately
+            return None
+
         print(prompt, end='', flush=True)
 
         # Use selector for async-compatible input

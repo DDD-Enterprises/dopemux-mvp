@@ -182,6 +182,31 @@ def start(
         else:
             sys.exit(1)
 
+    # Worktree Recovery Menu (ADHD-optimized session recovery)
+    # Show menu if orphaned worktree sessions exist
+    from .worktree_recovery import show_recovery_menu_sync
+    import os
+
+    try:
+        selected_worktree = show_recovery_menu_sync(
+            workspace_id=str(project_path),
+            conport_port=3007  # Default ConPort port for instance A
+        )
+
+        if selected_worktree:
+            # User selected a worktree to recover
+            console.print(f"\n[blue]🔄 Recovering worktree session: {selected_worktree}[/blue]")
+
+            # Change to the selected worktree
+            os.chdir(selected_worktree)
+            project_path = Path(selected_worktree)
+
+            console.print(f"[green]✅ Switched to worktree: {project_path.name}[/green]")
+            console.print(f"[dim]   Path: {project_path}[/dim]\n")
+    except Exception as e:
+        console.print(f"[yellow]⚠️ Recovery menu unavailable: {e}[/yellow]")
+        # Continue with normal startup - recovery is optional
+
     # Multi-instance detection and coordination
     instance_manager = InstanceManager(project_path)
     running_instances = detect_instances_sync(project_path)
