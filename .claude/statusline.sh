@@ -65,23 +65,63 @@ if command -v uvx >/dev/null 2>&1; then
     fi
 fi
 
-# ADHD Engine status with energy/attention if available
+# ADHD Engine comprehensive status (single /health call for efficiency)
 ADHD_STATUS="💤"
-ADHD_METRICS=""
-if timeout 0.3s curl -s http://localhost:8095/health >/dev/null 2>&1; then
+ENERGY_SYMBOL=""
+ATTENTION_SYMBOL=""
+BREAK_WARNING=""
+ACCOMMODATIONS=""
+
+# Get terminal width for progressive disclosure
+term_width=$(tput cols 2>/dev/null || echo 120)
+
+# Query ADHD Engine health (single call, all data)
+adhd_health=$(timeout 0.4s curl -s http://localhost:8095/health 2>/dev/null)
+if [ $? -eq 0 ] && [ -n "$adhd_health" ]; then
     ADHD_STATUS="🧠"
 
-    # Try to get energy level (very quick)
-    energy=$(timeout 0.2s curl -s http://localhost:8095/api/v1/energy-level/current_user 2>/dev/null | \
-        jq -r '.energy_level // ""' 2>/dev/null)
+    # Extract energy level
+    energy=$(echo "$adhd_health" | jq -r '.current_state.energy_levels.current_user // ""' 2>/dev/null)
     if [ -n "$energy" ] && [ "$energy" != "null" ]; then
         case "$energy" in
-            "hyperfocus") ADHD_METRICS="⚡" ;;
-            "high") ADHD_METRICS="↑" ;;
-            "medium") ADHD_METRICS="=" ;;
-            "low") ADHD_METRICS="↓" ;;
-            "very_low") ADHD_METRICS="⇣" ;;
+            "hyperfocus") ENERGY_SYMBOL="⚡" ;;
+            "high") ENERGY_SYMBOL="↑" ;;
+            "medium") ENERGY_SYMBOL="=" ;;  # Always show
+            "low") ENERGY_SYMBOL="↓" ;;
+            "very_low") ENERGY_SYMBOL="⇣" ;;
         esac
+    fi
+
+    # Extract attention state (NEW)
+    attention=$(echo "$adhd_health" | jq -r '.current_state.attention_states.current_user // ""' 2>/dev/null)
+    if [ -n "$attention" ] && [ "$attention" != "null" ]; then
+        case "$attention" in
+            "hyperfocused") ATTENTION_SYMBOL="·👁️✨" ;;  # Always celebrate hyperfocus!
+            "focused") ATTENTION_SYMBOL="·👁️" ;;  # Always show (good state worth seeing)
+            "transitioning") [ "$term_width" -ge 90 ] && ATTENTION_SYMBOL="·👁️~" ;;  # Show if space
+            "scattered") ATTENTION_SYMBOL="·👁️🌀" ;;  # Always show warning
+            "overwhelmed") ATTENTION_SYMBOL="·👁️💥" ;;  # Always show alert
+        esac
+    fi
+
+    # Check break recommendations (NEW)
+    breaks_suggested=$(echo "$adhd_health" | jq -r '.accommodation_stats.breaks_suggested // 0' 2>/dev/null)
+    active_accommodations=$(echo "$adhd_health" | jq -r '.current_state.active_accommodations.current_user // 0' 2>/dev/null)
+
+    # Check if break needed by looking at active accommodations or stats
+    if [ "$active_accommodations" -gt 0 ] || [ "$breaks_suggested" -gt 0 ]; then
+        # Check if it's urgent (would need to query Redis, so use heuristic)
+        if [ "$energy" = "very_low" ] || [ "$energy" = "low" ]; then
+            BREAK_WARNING=" \033[31m☕!\033[0m"  # Red urgent
+        else
+            BREAK_WARNING=" \033[33m☕\033[0m"   # Yellow soon
+        fi
+    fi
+
+    # Check for active protection (NEW)
+    hyperfocus_protections=$(echo "$adhd_health" | jq -r '.accommodation_stats.hyperfocus_protections // 0' 2>/dev/null)
+    if [ "$hyperfocus_protections" -gt 0 ] && [ "$attention" = "hyperfocused" ]; then
+        ACCOMMODATIONS="·🛡️"
     fi
 fi
 
@@ -110,10 +150,19 @@ fi
 
 printf " \033[2m|\033[0m"
 
-# ADHD Engine + energy
+# ADHD Engine + energy + attention + warnings
 printf " %s" "$ADHD_STATUS"
-if [ -n "$ADHD_METRICS" ]; then
-    printf "%s" "$ADHD_METRICS"
+if [ -n "$ENERGY_SYMBOL" ]; then
+    printf "%s" "$ENERGY_SYMBOL"
+fi
+if [ -n "$ATTENTION_SYMBOL" ]; then
+    printf "%s" "$ATTENTION_SYMBOL"
+fi
+if [ -n "$BREAK_WARNING" ]; then
+    printf "%s" "$BREAK_WARNING"
+fi
+if [ -n "$ACCOMMODATIONS" ]; then
+    printf "%s" "$ACCOMMODATIONS"
 fi
 
 # Context usage (color coded)
