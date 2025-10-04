@@ -8,8 +8,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from datetime import datetime
 
-# Note: Imports will need adjustment after document_processor is cleaned up
-# from ..preprocessing.document_processor import DocumentProcessor
+from ..preprocessing.document_processor import DocumentProcessor
 from ..embeddings.voyage_embedder import VoyageEmbedder
 from ..search.docs_search import DocumentSearch
 
@@ -47,6 +46,7 @@ class DocIndexingPipeline:
         self.doc_search = doc_search
         self.workspace_path = workspace_path
         self.workspace_id = workspace_id
+        self.doc_processor = DocumentProcessor()
 
         # Stats
         self.docs_processed = 0
@@ -71,13 +71,15 @@ class DocIndexingPipeline:
             Number of chunks indexed
         """
         try:
-            # 1. Read document
-            # For MVP, simple text file reading
-            # TODO: Use DocumentProcessor for PDF/DOCX/HTML/Markdown
-            text = file_path.read_text(encoding="utf-8")
+            # 1. Extract text using DocumentProcessor (handles PDF/DOCX/HTML/Markdown)
+            doc_chunks = self.doc_processor.process_document(
+                str(file_path),
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap
+            )
 
-            # 2. Simple chunking (for MVP)
-            chunks = self._simple_chunk(text, chunk_size, chunk_overlap)
+            # 2. Extract text content from DocumentChunk objects
+            chunks = [chunk.text for chunk in doc_chunks]
 
             if not chunks:
                 return 0
@@ -138,31 +140,6 @@ class DocIndexingPipeline:
             logger.error(f"Failed to index {file_path}: {e}")
             self.errors += 1
             return 0
-
-    def _simple_chunk(
-        self,
-        text: str,
-        chunk_size: int,
-        overlap: int,
-    ) -> List[str]:
-        """
-        Simple chunking with overlap.
-
-        For MVP. TODO: Use DocumentProcessor's smarter chunking.
-        """
-        chunks = []
-        start = 0
-
-        while start < len(text):
-            end = start + chunk_size
-            chunk = text[start:end]
-
-            if chunk.strip():
-                chunks.append(chunk)
-
-            start = end - overlap
-
-        return chunks
 
     async def index_workspace(
         self,
