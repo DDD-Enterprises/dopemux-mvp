@@ -148,11 +148,13 @@ async def test_process_file(mock_components, sample_config, tmp_path):
     )
 
     # Process file
-    docs = await pipeline._process_file(test_file)
+    docs, chunk_metadata = await pipeline._process_file(test_file)
 
     assert len(docs) == 1
+    assert len(chunk_metadata) == 1
     assert docs[0]["payload"]["function_name"] == "foo"
     assert docs[0]["payload"]["file_path"] == str(test_file)
+    assert chunk_metadata[0].symbol_name == "foo"
 
 
 @pytest.mark.asyncio
@@ -289,10 +291,11 @@ async def test_pipeline_without_context_generator(
         config=sample_config,
     )
 
-    docs = await pipeline._process_file(test_file)
+    docs, chunk_metadata = await pipeline._process_file(test_file)
 
     # Should still work with fallback contexts
     assert len(docs) == 1
+    assert len(chunk_metadata) == 1
     assert "Code from" in docs[0]["payload"]["context_snippet"]
 
 
