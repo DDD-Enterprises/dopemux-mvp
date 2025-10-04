@@ -36,7 +36,13 @@ class IndexingConfig:
         default_factory=lambda: ["*.py", "*.js", "*.ts", "*.tsx"]
     )
     exclude_patterns: List[str] = field(
-        default_factory=lambda: ["*test*", "*__pycache__*", "*.pyc"]
+        default_factory=lambda: [
+            "*test*", "*__pycache__*", "*.pyc",
+            "*/venv/*", "*/.venv/*", "*/site-packages/*",
+            "*/archive/*", "*/ARCHIVED_*/*", "*/backup/*",
+            "*/processing_inputs/*", "*/.worktrees/*",
+            "*/node_modules/*", "*/dist/*", "*/build/*"
+        ]
     )
     max_files: Optional[int] = None
 
