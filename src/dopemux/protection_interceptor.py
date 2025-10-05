@@ -18,6 +18,7 @@ Usage:
 
 from pathlib import Path
 from typing import Optional, Tuple
+from datetime import datetime
 import sys
 import logging
 
@@ -179,11 +180,26 @@ def _create_worktree_interactive(
         console.print("[yellow]⚠️ No name selected - staying in main[/yellow]")
         return False
 
-    # Create the worktree
-    success = _execute_worktree_creation(workspace_path, worktree_name)
+    # Ask about change migration
+    console.print("\n[cyan]💭 Would you like to migrate your uncommitted changes to the new worktree?[/cyan]")
+    console.print("  • [green]Yes (recommended)[/green] - Stash changes and apply in new worktree")
+    console.print("  • [dim]No[/dim] - Create empty worktree (changes stay in main)\n")
+
+    try:
+        migrate_choice = console.input("[cyan]Migrate changes? [Y/n]: [/cyan]").strip().lower()
+    except (KeyboardInterrupt, EOFError):
+        console.print("\n[dim]Cancelled - staying in main[/dim]")
+        return False
+
+    migrate_changes = migrate_choice != "n"  # Default to Yes
+
+    # Create the worktree with optional migration
+    success = _execute_worktree_creation(workspace_path, worktree_name, migrate_changes=migrate_changes)
 
     if success:
         console.print(f"\n[green]✅ Worktree created: {worktree_name}[/green]")
+        if migrate_changes:
+            console.print("[green]✓ Changes migrated successfully[/green]")
         console.print("[dim]Restart dopemux to switch to new worktree[/dim]\n")
         return True  # Exit to allow user to restart
     else:
@@ -229,25 +245,148 @@ def _parse_name_choice(
     return custom_name
 
 
-def _execute_worktree_creation(
-    workspace_path: str,
-    worktree_name: str
-) -> bool:
+def _stash_changes(workspace_path: str) -> Optional[str]:
     """
-    Execute git worktree creation.
+    Stash uncommitted changes including untracked files.
+
+    Returns:
+        Stash name if successful, None otherwise
+    """
+    import subprocess
+
+    try:
+        stash_name = f"dopemux-migration-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+
+        # Stash with untracked files
+        result = subprocess.run(
+            ["git", "stash", "push", "-u", "-m", stash_name],
+            cwd=workspace_path,
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+
+        if result.returncode != 0:
+            logger.error(f"Git stash failed: {result.stderr}")
+            console.print(f"[red]Failed to stash changes: {result.stderr.strip()}[/red]")
+            return None
+
+        console.print(f"[green]✓ Stashed changes: {stash_name}[/green]")
+        return stash_name
+
+    except subprocess.TimeoutExpired:
+        logger.error("Git stash timed out")
+        console.print("[red]Git stash timed out[/red]")
+        return None
+    except Exception as e:
+        logger.error(f"Failed to stash changes: {e}")
+        console.print(f"[red]Error stashing: {e}[/red]")
+        return None
+
+
+def _pop_stash(workspace_path: str, stash_name: str) -> bool:
+    """
+    Pop stashed changes in new worktree.
 
     Returns:
         True if successful, False otherwise
     """
     import subprocess
 
+    try:
+        # Find stash by name
+        result = subprocess.run(
+            ["git", "stash", "list"],
+            cwd=workspace_path,
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+
+        # Find stash index
+        stash_index = None
+        for line in result.stdout.splitlines():
+            if stash_name in line:
+                # Format: "stash@{0}: On main: dopemux-migration-..."
+                stash_index = line.split(":")[0].strip()
+                break
+
+        if not stash_index:
+            logger.warning(f"Stash not found: {stash_name}")
+            console.print(f"[yellow]⚠️ Could not find stash: {stash_name}[/yellow]")
+            return False
+
+        # Pop the stash
+        result = subprocess.run(
+            ["git", "stash", "pop", stash_index],
+            cwd=workspace_path,
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+
+        if result.returncode != 0:
+            # Check if it's a conflict
+            if "CONFLICT" in result.stdout or "CONFLICT" in result.stderr:
+                console.print("[yellow]⚠️ Merge conflicts detected - please resolve manually[/yellow]")
+                console.print(f"[dim]Run 'git status' to see conflicts[/dim]")
+                return True  # Partial success - stash applied but has conflicts
+            else:
+                logger.error(f"Git stash pop failed: {result.stderr}")
+                console.print(f"[red]Failed to apply stash: {result.stderr.strip()}[/red]")
+                return False
+
+        console.print(f"[green]✓ Applied changes from stash[/green]")
+        return True
+
+    except subprocess.TimeoutExpired:
+        logger.error("Git stash pop timed out")
+        console.print("[red]Git stash pop timed out[/red]")
+        return False
+    except Exception as e:
+        logger.error(f"Failed to pop stash: {e}")
+        console.print(f"[red]Error applying stash: {e}[/red]")
+        return False
+
+
+def _execute_worktree_creation(
+    workspace_path: str,
+    worktree_name: str,
+    migrate_changes: bool = False
+) -> bool:
+    """
+    Execute git worktree creation with optional change migration.
+
+    Args:
+        workspace_path: Absolute path to workspace root
+        worktree_name: Name for new worktree/branch
+        migrate_changes: If True, stash changes and apply in new worktree
+
+    Returns:
+        True if successful, False otherwise
+    """
+    import subprocess
+    import os
+    from datetime import datetime
+
     workspace = Path(workspace_path)
 
     # Create worktree in sibling directory
     worktree_path = workspace.parent / worktree_name
 
+    stash_name = None
+
     try:
-        # Create worktree with new branch
+        # Step 1: Stash changes if migration requested
+        if migrate_changes:
+            console.print("\n[cyan]📦 Migrating changes to new worktree...[/cyan]")
+            stash_name = _stash_changes(workspace_path)
+            if not stash_name:
+                console.print("[yellow]⚠️ Could not stash changes - creating empty worktree[/yellow]")
+                migrate_changes = False  # Skip migration
+
+        # Step 2: Create worktree with new branch
+        console.print(f"[cyan]🌳 Creating worktree: {worktree_name}[/cyan]")
         result = subprocess.run(
             ["git", "worktree", "add", str(worktree_path), "-b", worktree_name],
             cwd=workspace_path,
@@ -259,21 +398,73 @@ def _execute_worktree_creation(
         if result.returncode != 0:
             logger.error(f"Git worktree add failed: {result.stderr}")
             console.print(f"[red]Git error: {result.stderr.strip()}[/red]")
+
+            # Rollback: Pop stash if we stashed
+            if stash_name:
+                console.print("[cyan]Rolling back stash...[/cyan]")
+                subprocess.run(
+                    ["git", "stash", "pop"],
+                    cwd=workspace_path,
+                    capture_output=True,
+                    timeout=5
+                )
             return False
 
-        # Move uncommitted changes to new worktree (optional - user can stash/commit later)
-        # For now, just create the worktree - user can move changes manually
+        console.print(f"[green]✓ Created worktree at: {worktree_path}[/green]")
 
-        console.print(f"[green]Created worktree at: {worktree_path}[/green]")
+        # Step 3: Apply stash in new worktree if migration requested
+        if migrate_changes and stash_name:
+            console.print(f"[cyan]📥 Applying changes in new worktree...[/cyan]")
+
+            # Switch to new worktree
+            original_dir = os.getcwd()
+            try:
+                os.chdir(worktree_path)
+
+                # Pop stash in new worktree
+                success = _pop_stash(str(worktree_path), stash_name)
+
+                # Switch back
+                os.chdir(original_dir)
+
+                if not success:
+                    console.print("[yellow]⚠️ Changes not fully migrated - check stash manually[/yellow]")
+                    return True  # Worktree created, but migration incomplete
+
+            except Exception as e:
+                os.chdir(original_dir)  # Ensure we switch back
+                logger.error(f"Failed during migration: {e}")
+                console.print(f"[yellow]⚠️ Migration error: {e}[/yellow]")
+                return True  # Worktree created, but migration failed
+
         return True
 
     except subprocess.TimeoutExpired:
         logger.error("Git worktree add timed out")
         console.print("[red]Git command timed out[/red]")
+
+        # Rollback stash if needed
+        if stash_name:
+            subprocess.run(
+                ["git", "stash", "pop"],
+                cwd=workspace_path,
+                capture_output=True,
+                timeout=5
+            )
         return False
+
     except Exception as e:
         logger.error(f"Failed to create worktree: {e}")
         console.print(f"[red]Error: {e}[/red]")
+
+        # Rollback stash if needed
+        if stash_name:
+            subprocess.run(
+                ["git", "stash", "pop"],
+                cwd=workspace_path,
+                capture_output=True,
+                timeout=5
+            )
         return False
 
 
