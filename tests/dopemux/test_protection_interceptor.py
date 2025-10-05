@@ -19,6 +19,8 @@ from src.dopemux.protection_interceptor import (
     _create_worktree_interactive,
     _parse_name_choice,
     _execute_worktree_creation,
+    _stash_changes,
+    _pop_stash,
 )
 from src.dopemux.main_worktree_detector import ProtectionTrigger
 from src.dopemux.uncommitted_detector import ChangesSummary
@@ -393,9 +395,10 @@ def test_parse_name_choice_custom():
 
 def test_execute_worktree_creation_success(git_repo):
     """Test successful git worktree creation."""
-    worktree_name = "test-feature-unique"
+    import uuid
+    worktree_name = f"test-feature-{uuid.uuid4().hex[:8]}"
 
-    result = _execute_worktree_creation(str(git_repo), worktree_name)
+    result = _execute_worktree_creation(str(git_repo), worktree_name, migrate_changes=False)
 
     # Should succeed
     assert result is True
@@ -452,3 +455,247 @@ def test_check_and_protect_main_forwards_args(mock_check, git_repo):
         enforce=True,
         offer_creation=True
     )
+
+
+# Change Migration Tests
+
+
+def test_stash_changes_success(git_repo):
+    """Test successful stashing of uncommitted changes."""
+    # Create uncommitted changes
+    (git_repo / "new_file.txt").write_text("Uncommitted")
+    (git_repo / "README.md").write_text("# Modified")
+
+    stash_name = _stash_changes(str(git_repo))
+
+    # Should return stash name
+    assert stash_name is not None
+    assert "dopemux-migration-" in stash_name
+
+    # Verify working directory is clean
+    result = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=git_repo,
+        capture_output=True,
+        text=True
+    )
+    assert result.stdout.strip() == ""
+
+
+def test_stash_changes_with_untracked(git_repo):
+    """Test stashing includes untracked files."""
+    # Create untracked file
+    (git_repo / "untracked.txt").write_text("Untracked file")
+
+    stash_name = _stash_changes(str(git_repo))
+
+    assert stash_name is not None
+
+    # Verify untracked file was stashed
+    assert not (git_repo / "untracked.txt").exists()
+
+
+def test_stash_changes_empty_repo(git_repo):
+    """Test stashing with no changes creates empty stash."""
+    # No changes - git stash creates empty stash
+    stash_name = _stash_changes(str(git_repo))
+
+    # Git allows empty stash creation
+    assert stash_name is not None
+
+
+def test_pop_stash_success(git_repo):
+    """Test successful stash pop in worktree."""
+    # Create and stash changes
+    (git_repo / "file.txt").write_text("Content")
+    stash_result = subprocess.run(
+        ["git", "stash", "push", "-u", "-m", "test-stash"],
+        cwd=git_repo,
+        capture_output=True,
+        text=True
+    )
+    assert stash_result.returncode == 0
+
+    # Pop the stash
+    success = _pop_stash(str(git_repo), "test-stash")
+
+    assert success is True
+
+    # Verify file was restored
+    assert (git_repo / "file.txt").exists()
+    assert (git_repo / "file.txt").read_text() == "Content"
+
+
+def test_pop_stash_not_found(git_repo):
+    """Test pop with non-existent stash name."""
+    success = _pop_stash(str(git_repo), "nonexistent-stash")
+
+    # Should return False (stash not found)
+    assert success is False
+
+
+def test_execute_worktree_creation_with_migration(git_repo):
+    """Test worktree creation with change migration."""
+    import uuid
+
+    # Create uncommitted changes
+    (git_repo / "modified.txt").write_text("Modified content")
+    (git_repo / "new.txt").write_text("New file")
+
+    worktree_name = f"migration-test-{uuid.uuid4().hex[:8]}"
+
+    # Create worktree with migration
+    result = _execute_worktree_creation(
+        str(git_repo),
+        worktree_name,
+        migrate_changes=True
+    )
+
+    assert result is True
+
+    # Verify worktree was created
+    worktree_path = git_repo.parent / worktree_name
+    assert worktree_path.exists()
+
+    # Verify changes were migrated (files should exist in worktree)
+    assert (worktree_path / "modified.txt").exists()
+    assert (worktree_path / "new.txt").exists()
+
+    # Verify original worktree is clean
+    result = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=git_repo,
+        capture_output=True,
+        text=True
+    )
+    assert result.stdout.strip() == ""
+
+
+def test_execute_worktree_creation_without_migration(git_repo):
+    """Test worktree creation without change migration."""
+    import uuid
+
+    # Create uncommitted changes
+    (git_repo / "file.txt").write_text("Content")
+
+    worktree_name = f"no-migration-test-{uuid.uuid4().hex[:8]}"
+
+    # Create worktree without migration
+    result = _execute_worktree_creation(
+        str(git_repo),
+        worktree_name,
+        migrate_changes=False
+    )
+
+    assert result is True
+
+    # Verify worktree was created
+    worktree_path = git_repo.parent / worktree_name
+    assert worktree_path.exists()
+
+    # Verify changes were NOT migrated (file should not exist in worktree)
+    assert not (worktree_path / "file.txt").exists()
+
+    # Verify changes still in original worktree
+    assert (git_repo / "file.txt").exists()
+
+
+def test_execute_worktree_creation_migration_rollback_on_failure(git_repo):
+    """Test that stash is rolled back if worktree creation fails."""
+    # Create changes
+    (git_repo / "file.txt").write_text("Content")
+
+    # Try to create worktree with existing branch name
+    subprocess.run(
+        ["git", "branch", "existing-branch"],
+        cwd=git_repo,
+        check=True,
+        capture_output=True
+    )
+
+    result = _execute_worktree_creation(
+        str(git_repo),
+        "existing-branch",  # Will fail - branch exists
+        migrate_changes=True
+    )
+
+    # Should fail
+    assert result is False
+
+    # Verify changes were rolled back (file should still exist)
+    assert (git_repo / "file.txt").exists()
+
+
+@patch('src.dopemux.protection_interceptor.console.input')
+@patch('src.dopemux.protection_interceptor._execute_worktree_creation')
+def test_create_worktree_interactive_with_migration_yes(mock_execute, mock_input, git_repo):
+    """Test interactive creation with migration (user says yes)."""
+    # Mock name choice
+    mock_input.side_effect = ["1", "y"]  # Choose first suggestion, yes to migration
+    mock_execute.return_value = True
+
+    trigger = ProtectionTrigger(
+        workspace_path=str(git_repo),
+        git_branch="main",
+        changes=ChangesSummary(True, 1, 0, 0, 0, 1),
+        trigger_reason="test",
+        suggested_action="test"
+    )
+
+    result = _create_worktree_interactive(str(git_repo), trigger)
+
+    # Should call execute with migrate_changes=True
+    assert mock_execute.call_args[1]["migrate_changes"] is True
+
+
+@patch('src.dopemux.protection_interceptor.console.input')
+@patch('src.dopemux.protection_interceptor._execute_worktree_creation')
+def test_create_worktree_interactive_with_migration_no(mock_execute, mock_input, git_repo):
+    """Test interactive creation without migration (user says no)."""
+    # Mock name choice
+    mock_input.side_effect = ["1", "n"]  # Choose first suggestion, no to migration
+    mock_execute.return_value = True
+
+    trigger = ProtectionTrigger(
+        workspace_path=str(git_repo),
+        git_branch="main",
+        changes=ChangesSummary(True, 1, 0, 0, 0, 1),
+        trigger_reason="test",
+        suggested_action="test"
+    )
+
+    result = _create_worktree_interactive(str(git_repo), trigger)
+
+    # Should call execute with migrate_changes=False
+    assert mock_execute.call_args[1]["migrate_changes"] is False
+
+
+def test_migration_preserves_staged_and_unstaged(git_repo):
+    """Test migration preserves both staged and unstaged changes."""
+    import uuid
+
+    # Create staged change
+    (git_repo / "staged.txt").write_text("Staged")
+    subprocess.run(["git", "add", "staged.txt"], cwd=git_repo, check=True, capture_output=True)
+
+    # Create unstaged change
+    (git_repo / "README.md").write_text("# Unstaged modification")
+
+    # Create untracked file
+    (git_repo / "untracked.txt").write_text("Untracked")
+
+    worktree_name = f"preserve-test-{uuid.uuid4().hex[:8]}"
+
+    result = _execute_worktree_creation(
+        str(git_repo),
+        worktree_name,
+        migrate_changes=True
+    )
+
+    assert result is True
+
+    # Verify all changes were migrated
+    worktree_path = git_repo.parent / worktree_name
+    assert (worktree_path / "staged.txt").exists()
+    assert (worktree_path / "README.md").read_text() == "# Unstaged modification"
+    assert (worktree_path / "untracked.txt").exists()
