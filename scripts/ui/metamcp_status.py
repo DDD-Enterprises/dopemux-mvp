@@ -174,6 +174,32 @@ class MetaMCPStatusBar:
 
         return f"#[fg={color}]{icon} {tools_count} tools#[default]"
 
+    def format_energy_level(self, energy_level: str) -> str:
+        """Format energy level with ADHD-friendly indicators."""
+        energy_display = {
+            'very_low': {'icon': '🔴', 'color': '#D0021B', 'label': 'VERY LOW'},
+            'low': {'icon': '🟠', 'color': '#FF9500', 'label': 'LOW'},
+            'medium': {'icon': '🟡', 'color': '#F5A623', 'label': 'MED'},
+            'high': {'icon': '🟢', 'color': '#7ED321', 'label': 'HIGH'},
+            'hyperfocus': {'icon': '⚡', 'color': '#BD10E0', 'label': 'HYPER'}
+        }
+
+        display = energy_display.get(energy_level, energy_display['medium'])
+        return f"#[fg={display['color']}]{display['icon']} {display['label']}#[default]"
+
+    def format_attention_state(self, attention_state: str) -> str:
+        """Format attention state with visual indicators."""
+        attention_display = {
+            'scattered': {'icon': '💭', 'color': '#9B9B9B', 'label': 'SCAT'},
+            'transitioning': {'icon': '🔄', 'color': '#F5A623', 'label': 'TRAN'},
+            'focused': {'icon': '🎯', 'color': '#7ED321', 'label': 'FOCUS'},
+            'hyperfocused': {'icon': '🔥', 'color': '#BD10E0', 'label': 'HYPER'},
+            'overwhelmed': {'icon': '😵', 'color': '#D0021B', 'label': 'OVER'}
+        }
+
+        display = attention_display.get(attention_state, attention_display['focused'])
+        return f"#[fg={display['color']}]{display['icon']} {display['label']}#[default]"
+
     def format_adhd_indicators(self, adhd_features: bool) -> str:
         """Format ADHD accommodation status."""
         if adhd_features:
@@ -200,6 +226,8 @@ class MetaMCPStatusBar:
         session_duration = status.get('session_duration', 0)
         health = status.get('health', 'unknown')
         adhd_features = status.get('adhd_features', True)
+        energy_level = status.get('energy_level', 'medium')
+        attention_state = status.get('attention_state', 'focused')
 
         # Build status bar components
         components = [
@@ -207,7 +235,8 @@ class MetaMCPStatusBar:
             self.format_token_usage(token_usage, token_budget),
             self.format_session_duration(session_duration),
             self.format_health_status(health, tools_count),
-            self.format_adhd_indicators(adhd_features),
+            self.format_energy_level(energy_level),
+            self.format_attention_state(attention_state),
             self.get_current_time()
         ]
 
