@@ -56,13 +56,18 @@ case "$model_id" in
         context_total=200000
         ;;
     *"sonnet-4-5"*|*"sonnet-4.5"*)
-        # Sonnet 4.5: Check if extended context variant
-        # Most are 200K, some regions have 1M
-        # Use JSON if provided, otherwise assume 200K
+        # Sonnet 4.5: Two variants exist
+        # - Regular: 200K context (claude-sonnet-4-5-20250929)
+        # - Extended: 1M context (indicated by JSON or model ID suffix)
         json_total=$(echo "$input" | jq -r '.context.total // .tokens.total // 0' 2>/dev/null)
-        if [ "$json_total" -gt 200000 ]; then
+        if [ "$json_total" -ge 1000000 ]; then
+            # Extended context variant (1M)
+            context_total=1000000
+        elif [ "$json_total" -gt 200000 ] && [ "$json_total" -lt 1000000 ]; then
+            # Use whatever JSON provides if it's between 200K and 1M
             context_total=$json_total
         else
+            # Default to regular 200K variant
             context_total=200000
         fi
         ;;

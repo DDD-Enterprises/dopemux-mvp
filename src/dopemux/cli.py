@@ -2476,7 +2476,7 @@ def _check_dangerous_mode_expiry():
     return False
 
 
-@cli.command()
+@cli.command("extract-chatlog")
 @click.argument("directory", default=".")
 @click.option("--output", "-o", help="Output directory for extraction results")
 @click.option("--confidence", "-c", type=float, default=0.5, help="Minimum confidence threshold (0.0-1.0)")
@@ -2485,7 +2485,7 @@ def _check_dangerous_mode_expiry():
 @click.option("--archive", "-a", help="Archive directory for processed files")
 @click.option("--workspace-id", help="ConPort workspace ID for persistence")
 @click.pass_context
-def extract(
+def extract_chatlog(
     ctx,
     directory: str,
     output: Optional[str],

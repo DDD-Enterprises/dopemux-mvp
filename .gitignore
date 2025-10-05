@@ -228,3 +228,21 @@ context_portal/*.db-wal
 !.claude/statusline.sh
 !.claude/modules/
 !.claude/templates/
+
+# Test result artifacts
+*_test_results.json
+*_validation_results.json
+*_layer*_*.json
+
+# Scripts artifacts
+scripts/*.log
+scripts/*.pid
+
+# Old indexing/reindexing scripts (consolidated)
+index_*.js
+reindex_*.js
+
+# Backup directories
+claudedocs.backup.*/
+build_recovered/
+DOCS_TO_PROCESS/
