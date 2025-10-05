@@ -20,6 +20,7 @@ from fastmcp import FastMCP
 from ..preprocessing.code_chunker import CodeChunker, ChunkingConfig
 from ..context.claude_generator import ClaudeContextGenerator
 from ..embeddings.voyage_embedder import VoyageEmbedder
+from ..embeddings.contextualized_embedder import ContextualizedEmbedder
 from ..search.dense_search import MultiVectorSearch, SearchProfile
 from ..search.hybrid_search import HybridSearch, BM25Index
 from ..rerank.voyage_reranker import VoyageReranker
@@ -52,7 +53,7 @@ _bm25_index: Optional[BM25Index] = None
 # Docs pipeline (new)
 _docs_pipeline: Optional[DocIndexingPipeline] = None
 _docs_search: Optional[DocumentSearch] = None
-_docs_embedder: Optional[VoyageEmbedder] = None
+_docs_embedder: Optional[ContextualizedEmbedder] = None
 
 
 def _initialize_components():
@@ -109,10 +110,10 @@ def _initialize_components():
         config=config,
     )
 
-    # Initialize docs components
-    _docs_embedder = VoyageEmbedder(
+    # Initialize docs components (contextualized embeddings)
+    _docs_embedder = ContextualizedEmbedder(
         api_key=voyage_key,
-        default_model="voyage-context-3",
+        cache_ttl_hours=24,
     )
 
     _docs_search = DocumentSearch(
@@ -468,9 +469,9 @@ async def _index_docs_impl(
         port=int(os.getenv("QDRANT_PORT", "6333")),
     )
 
-    docs_embedder = VoyageEmbedder(
+    docs_embedder = ContextualizedEmbedder(
         api_key=os.getenv("VOYAGE_API_KEY"),
-        default_model="voyage-context-3",
+        cache_ttl_hours=24,
     )
 
     docs_pipeline = DocIndexingPipeline(
@@ -533,34 +534,25 @@ async def _docs_search_impl(
         port=int(os.getenv("QDRANT_PORT", "6333")),
     )
 
-    docs_embedder = VoyageEmbedder(
+    docs_embedder = ContextualizedEmbedder(
         api_key=os.getenv("VOYAGE_API_KEY"),
-        default_model="voyage-context-3",
+        cache_ttl_hours=24,
     )
 
-    # Embed query with voyage-context-3 (3 vectors for multi-vector search)
-    query_content = await docs_embedder.embed(
-        text=query,
+    # Embed query with voyage-context-3 (contextualized)
+    result = await docs_embedder.embed_document(
+        chunks=[query],  # Single "chunk" for query
         model="voyage-context-3",
         input_type="query",
+        output_dimension=1024,
     )
 
-    query_title = await docs_embedder.embed(
-        text=query,
-        model="voyage-context-3",
-        input_type="query",
-    )
-
-    query_breadcrumb = await docs_embedder.embed(
-        text=query,
-        model="voyage-context-3",
-        input_type="query",
-    )
-
+    # Use same vector for all three (voyage-context-3 has full context)
+    query_embedding = result.embeddings[0]
     query_vectors = {
-        "content": query_content.embedding,
-        "title": query_title.embedding,
-        "breadcrumb": query_breadcrumb.embedding,
+        "content": query_embedding,
+        "title": query_embedding,
+        "breadcrumb": query_embedding,
     }
 
     # Apply filter
