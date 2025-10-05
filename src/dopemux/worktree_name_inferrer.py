@@ -288,27 +288,38 @@ class WorktreeNameInferrer:
         """
         Check if worktree name is available (not already in use).
 
+        Checks both:
+        - Existing worktree branches
+        - All git branches (even those without worktrees)
+
         Args:
             name: Proposed worktree name
 
         Returns:
             True if name is available
         """
-        # List existing worktrees
-        output = self._run_git_command(["worktree", "list", "--porcelain"])
-        if not output:
-            return True  # Assume available if can't check
+        existing_names = set()
 
-        # Parse worktree list for branch names
-        existing_branches = []
-        for line in output.splitlines():
-            if line.startswith("branch "):
-                branch_ref = line.split(" ", 1)[1]
-                branch_name = branch_ref.replace("refs/heads/", "")
-                existing_branches.append(branch_name)
+        # Check existing worktrees
+        output = self._run_git_command(["worktree", "list", "--porcelain"])
+        if output:
+            for line in output.splitlines():
+                if line.startswith("branch "):
+                    branch_ref = line.split(" ", 1)[1]
+                    branch_name = branch_ref.replace("refs/heads/", "")
+                    existing_names.add(branch_name)
+
+        # Check all git branches (includes branches without worktrees)
+        branches_output = self._run_git_command(["branch", "--list"])
+        if branches_output:
+            for line in branches_output.splitlines():
+                # Remove leading '*' and whitespace
+                branch_name = line.strip().lstrip("* ").strip()
+                if branch_name:
+                    existing_names.add(branch_name)
 
         # Check if name conflicts
-        return name not in existing_branches
+        return name not in existing_names
 
     def resolve_conflict(self, base_name: str) -> str:
         """
