@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Optional, List, Tuple
 import subprocess
 import sys
+import os
 
 from rich.console import Console
 from rich.table import Table

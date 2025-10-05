@@ -538,8 +538,20 @@ async def _docs_search_impl(
         default_model="voyage-context-3",
     )
 
-    # Embed query with voyage-context-3
+    # Embed query with voyage-context-3 (3 vectors for multi-vector search)
     query_content = await docs_embedder.embed(
+        text=query,
+        model="voyage-context-3",
+        input_type="query",
+    )
+
+    query_title = await docs_embedder.embed(
+        text=query,
+        model="voyage-context-3",
+        input_type="query",
+    )
+
+    query_breadcrumb = await docs_embedder.embed(
         text=query,
         model="voyage-context-3",
         input_type="query",
@@ -547,8 +559,8 @@ async def _docs_search_impl(
 
     query_vectors = {
         "content": query_content.embedding,
-        "title": query_content.embedding,
-        "breadcrumb": query_content.embedding,
+        "title": query_title.embedding,
+        "breadcrumb": query_breadcrumb.embedding,
     }
 
     # Apply filter
