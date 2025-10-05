@@ -11,6 +11,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+import subprocess
 
 
 class MetaMCPQuery:
@@ -18,13 +19,50 @@ class MetaMCPQuery:
 
     def __init__(self):
         self.session_start = datetime.now()
+        self.project_root = Path(__file__).parent.parent
+        self.adhd_engine_port = 5448  # Task Orchestrator ADHD Engine port
+
+    def _query_adhd_engine(self) -> dict:
+        """Query ADHD Engine for current state."""
+        try:
+            # Try to query ADHD Engine health endpoint
+            import urllib.request
+            import urllib.error
+
+            url = f"http://localhost:{self.adhd_engine_port}/health"
+            req = urllib.request.Request(url, headers={'Content-Type': 'application/json'})
+
+            with urllib.request.urlopen(req, timeout=1) as response:
+                data = json.loads(response.read().decode())
+
+                # Extract current state for default user
+                current_state = data.get('current_state', {})
+                energy_levels = current_state.get('energy_levels', {})
+                attention_states = current_state.get('attention_states', {})
+
+                # Get state for first user or default
+                user_id = list(energy_levels.keys())[0] if energy_levels else 'default'
+
+                return {
+                    'energy_level': energy_levels.get(user_id, 'medium'),
+                    'attention_state': attention_states.get(user_id, 'focused'),
+                    'adhd_engine_connected': True
+                }
+
+        except (urllib.error.URLError, urllib.error.HTTPError, IndexError, KeyError, Exception):
+            # ADHD Engine not available, return defaults
+            return {
+                'energy_level': 'medium',
+                'attention_state': 'focused',
+                'adhd_engine_connected': False
+            }
 
     def get_status(self) -> dict:
         """Get current MetaMCP status information."""
-        # In a full implementation, this would query the actual MetaMCP broker
-        # For now, we'll simulate based on the active researcher role we saw
-
         session_duration = (datetime.now() - self.session_start).total_seconds() / 60
+
+        # Query ADHD Engine for real state
+        adhd_state = self._query_adhd_engine()
 
         status = {
             'role': 'researcher',
@@ -33,7 +71,9 @@ class MetaMCPQuery:
             'token_budget': 10000,
             'session_duration': int(session_duration),
             'health': 'healthy',
-            'adhd_features': True,
+            'adhd_features': adhd_state['adhd_engine_connected'],
+            'energy_level': adhd_state['energy_level'],
+            'attention_state': adhd_state['attention_state'],
             'available_tools': ['switch_role', 'get_metamcp_status', 'web_search', 'get_docs'],
             'last_update': datetime.now().isoformat()
         }
