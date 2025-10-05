@@ -3080,6 +3080,46 @@ def _show_update_plan(plan):
         console.print(f"\n[bold]Phases:[/bold] {' → '.join(phases)}")
 
 
+# =============================================================================
+# Worktree Management Commands (Epic 3)
+# =============================================================================
+
+@cli.group()
+def worktrees():
+    """🌳 Manage git worktrees for parallel development."""
+    pass
+
+
+@worktrees.command("list")
+@click.pass_context
+def worktrees_list_cmd(ctx):
+    """📋 List all git worktrees with status."""
+    from .worktree_commands import list_worktrees
+    list_worktrees()
+
+
+@worktrees.command("switch")
+@click.argument("branch")
+@click.option("--no-fuzzy", is_flag=True, help="Disable fuzzy matching")
+@click.pass_context
+def worktrees_switch_cmd(ctx, branch: str, no_fuzzy: bool):
+    """🔀 Switch to an existing worktree."""
+    from .worktree_commands import switch_worktree
+    workspace = Path.cwd()
+    switch_worktree(workspace, branch, fuzzy_match=not no_fuzzy)
+
+
+@worktrees.command("cleanup")
+@click.option("--force", "-f", is_flag=True, help="Remove dirty worktrees")
+@click.option("--dry-run", "-n", is_flag=True, help="Preview without removing")
+@click.pass_context
+def worktrees_cleanup_cmd(ctx, force: bool, dry_run: bool):
+    """🧹 Clean up unused worktrees."""
+    from .worktree_commands import cleanup_worktrees
+    workspace = Path.cwd()
+    cleanup_worktrees(workspace, force=force, dry_run=dry_run)
+
+
 def main():
     """Main entry point."""
     try:
