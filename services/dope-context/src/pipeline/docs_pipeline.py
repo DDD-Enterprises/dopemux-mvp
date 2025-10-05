@@ -9,7 +9,7 @@ from typing import Dict, List, Optional
 from datetime import datetime
 
 from ..preprocessing.document_processor import DocumentProcessor
-from ..embeddings.voyage_embedder import VoyageEmbedder
+from ..embeddings.contextualized_embedder import ContextualizedEmbedder
 from ..search.docs_search import DocumentSearch
 
 
@@ -28,7 +28,7 @@ class DocIndexingPipeline:
 
     def __init__(
         self,
-        embedder: VoyageEmbedder,
+        embedder: ContextualizedEmbedder,
         doc_search: DocumentSearch,
         workspace_path: Path,
         workspace_id: str = "default",
@@ -37,7 +37,7 @@ class DocIndexingPipeline:
         Initialize document indexing pipeline.
 
         Args:
-            embedder: Voyage embedder (configured for voyage-context-3)
+            embedder: Contextualized embedder (for voyage-context-3)
             doc_search: Document search instance
             workspace_path: Path to workspace
             workspace_id: Workspace identifier
@@ -87,28 +87,21 @@ class DocIndexingPipeline:
             # 3. Prepare texts for embedding
             doc_name = file_path.stem
 
-            content_texts = chunks
-            title_texts = [f"{doc_name} - Part {i+1}" for i in range(len(chunks))]
-            breadcrumb_texts = [f"{file_path.name}#{i}" for i in range(len(chunks))]
-
-            # 4. Embed with voyage-context-3
-            content_embeddings = await self.embedder.embed_batch(
-                texts=content_texts,
+            # 4. Embed with voyage-context-3 (contextualized embeddings)
+            # Content embeddings capture global document context + local chunk details
+            result = await self.embedder.embed_document(
+                chunks=chunks,
                 model="voyage-context-3",
                 input_type="document",
+                output_dimension=1024,
             )
 
-            title_embeddings = await self.embedder.embed_batch(
-                texts=title_texts,
-                model="voyage-context-3",
-                input_type="document",
-            )
+            content_embeddings = result.embeddings
 
-            breadcrumb_embeddings = await self.embedder.embed_batch(
-                texts=breadcrumb_texts,
-                model="voyage-context-3",
-                input_type="document",
-            )
+            # For multi-vector search: reuse content embeddings for title/breadcrumb
+            # (voyage-context-3 already captures full document context)
+            title_embeddings = content_embeddings
+            breadcrumb_embeddings = content_embeddings
 
             # 5. Prepare metadata
             chunk_dicts = [
@@ -125,9 +118,9 @@ class DocIndexingPipeline:
             await self.doc_search.index_document(
                 doc_id=str(file_path),
                 chunks=chunk_dicts,
-                content_vectors=[e.embedding for e in content_embeddings],
-                title_vectors=[e.embedding for e in title_embeddings],
-                breadcrumb_vectors=[e.embedding for e in breadcrumb_embeddings],
+                content_vectors=content_embeddings,
+                title_vectors=title_embeddings,
+                breadcrumb_vectors=breadcrumb_embeddings,
             )
 
             self.docs_processed += 1
