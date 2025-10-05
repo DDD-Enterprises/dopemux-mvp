@@ -207,6 +207,23 @@ def start(
         console.print(f"[yellow]⚠️ Recovery menu unavailable: {e}[/yellow]")
         # Continue with normal startup - recovery is optional
 
+    # Main Worktree Protection (ADHD-optimized guidance)
+    # Check if working in main with uncommitted changes
+    from .protection_interceptor import check_and_protect_main
+
+    try:
+        should_exit = check_and_protect_main(
+            workspace_path=str(project_path),
+            enforce=False  # Warn only (gentle guidance, not blocking)
+        )
+
+        if should_exit:
+            # User chose to exit (create worktree or clean up manually)
+            sys.exit(0)
+    except Exception as e:
+        console.print(f"[yellow]⚠️ Protection check unavailable: {e}[/yellow]")
+        # Continue with normal startup - protection is optional
+
     # Multi-instance detection and coordination
     instance_manager = InstanceManager(project_path)
     running_instances = detect_instances_sync(project_path)
