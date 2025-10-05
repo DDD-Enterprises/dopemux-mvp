@@ -93,6 +93,27 @@ mcp__conport__log_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_
 - **Code Navigation**: Use Serena LSP only
 - **Cross-Plane**: Through Integration Bridge only
 
+### Worktree Management
+
+**ADHD-Optimized Parallel Development**: Work on multiple branches without context-switching overhead
+
+```bash
+# List all worktrees with status
+dopemux worktrees list
+
+# Switch to an existing worktree
+dopemux worktrees switch <branch-name>
+
+# Clean up unused worktrees
+dopemux worktrees cleanup [--force] [--dry-run]
+```
+
+**ADHD Benefits**:
+- **Context Preservation**: Each worktree maintains independent state
+- **No Mental Switching**: Physical directory separation = clear mental boundaries
+- **Interrupt-Safe**: Pause one worktree, switch to another without losing progress
+- **Main Protection**: Built-in protection against direct work on main branch
+
 ## 📚 Detailed Information Locations
 
 When you need comprehensive details, refer to:
