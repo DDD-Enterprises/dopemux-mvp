@@ -100,7 +100,7 @@ class VoyageEmbedder:
         api_key: str,
         cache_ttl_hours: int = 24,
         max_batch_size: int = 128,
-        rate_limit_rpm: int = 300,
+        rate_limit_rpm: int = 2000,  # Voyage API limit for code-3
         default_model: str = "voyage-code-3",
     ):
         """
