@@ -1,0 +1,43 @@
+# Researcher Profile
+# Optimized for deep investigation, analysis, and documentation
+
+name: researcher
+display_name: "Researcher"
+description: "Deep investigation, multi-source research, and systematic analysis"
+
+# MCP Server Selection
+mcps:
+  - conport          # Memory and context (REQUIRED)
+  - zen              # Multi-model reasoning (thinkdeep, planner, consensus)
+  - gpt-researcher   # Deep web research with synthesis
+  - context7         # Official library documentation
+
+# ADHD Optimization
+adhd_config:
+  energy_preference: high
+  attention_mode: hyperfocused
+  session_duration: 90
+
+# Auto-Detection Rules
+auto_detection:
+  git_branches:
+    - "research/*"
+    - "analysis/*"
+    - "docs/*"
+    - "investigation/*"
+
+  directories:
+    - "docs/"
+    - "research/"
+    - "analysis/"
+    - "notes/"
+
+  file_patterns:
+    - "*.md"
+    - "*.pdf"
+    - "*.txt"
+    - "*.rst"
+
+  time_windows:
+    - "10:00-12:00"    # Late morning deep focus
+    - "14:00-17:00"    # Afternoon concentration
