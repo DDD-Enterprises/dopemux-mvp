@@ -1,0 +1,45 @@
+# Architect Profile
+# Optimized for system design and architectural planning
+
+name: architect
+display_name: "Architect"
+description: "System design, architectural planning, and strategic decisions"
+
+# MCP Server Selection
+mcps:
+  - conport          # Memory and context (REQUIRED)
+  - zen              # Multi-model reasoning (consensus, planner)
+  - serena           # Code navigation for architecture analysis
+  - claude-context   # Codebase search for pattern discovery
+
+# ADHD Optimization
+adhd_config:
+  energy_preference: high
+  attention_mode: focused
+  session_duration: 50
+
+# Auto-Detection Rules
+auto_detection:
+  git_branches:
+    - "design/*"
+    - "arch/*"
+    - "architecture/*"
+    - "spike/*"
+    - "poc/*"
+
+  directories:
+    - "docs/architecture/"
+    - "docs/design/"
+    - "docs/adr/"
+    - "design/"
+
+  file_patterns:
+    - "*.md"
+    - "*.yaml"
+    - "*.json"
+    - "*.puml"
+    - "*.mermaid"
+
+  time_windows:
+    - "09:00-11:00"    # Early morning clarity
+    - "15:00-17:00"    # Late afternoon synthesis
