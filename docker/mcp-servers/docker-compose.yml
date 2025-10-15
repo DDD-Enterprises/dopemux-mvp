@@ -134,8 +134,11 @@ services:
     restart: unless-stopped
     networks:
       - mcp-network
+      - dopemux-unified-network
     environment:
       - MCP_SERVER_PORT=3004
+      - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      - REDIS_URL=redis://dopemux-redis-primary:6379
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - GOOGLE_API_KEY=${GEMINI_API_KEY}
       - VOYAGEAI_API_KEY=${VOYAGEAI_API_KEY}
@@ -574,6 +577,9 @@ networks:
   mcp-network:
     external: true
     name: mcp-network
+  dopemux-unified-network:
+    external: true
+    name: dopemux-unified-network
   # Connect to existing Leantime network for PM integration
   leantime-net:
     external: true
