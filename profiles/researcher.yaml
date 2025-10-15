@@ -1,0 +1,40 @@
+# Researcher Profile
+# Deep investigation, analysis, and research
+
+name: researcher
+display_name: "Researcher"
+description: "Deep investigation and analysis with multi-model reasoning and web research"
+
+mcps:
+  - conport          # Memory (required)
+  - zen              # Multi-model reasoning (thinkdeep, planner, debug)
+  - gpt-researcher   # Deep web research
+  - context7         # Library documentation
+  - serena-v2        # Code analysis when needed
+
+adhd_config:
+  energy_preference: high
+  attention_mode: hyperfocused
+  session_duration: 90
+
+auto_detection:
+  git_branches:
+    - "research/*"
+    - "analysis/*"
+    - "docs/*"
+    - "investigation/*"
+
+  directories:
+    - "docs/"
+    - "research/"
+    - "analysis/"
+    - "notes/"
+
+  file_patterns:
+    - "*.md"
+    - "*.pdf"
+    - "*.txt"
+
+  time_windows:
+    - "10:00-12:00"    # Late morning deep work
+    - "14:00-17:00"    # Afternoon analysis
