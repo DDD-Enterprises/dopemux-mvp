@@ -54,13 +54,13 @@ class InstanceStateManager:
 
     CATEGORY = "instance_state"
 
-    def __init__(self, workspace_id: str, conport_port: int = 3007):
+    def __init__(self, workspace_id: str, conport_port: int = 3004):
         """
         Initialize state manager.
 
         Args:
             workspace_id: Absolute path to workspace root
-            conport_port: ConPort HTTP API port (default 3007 for instance A)
+            conport_port: ConPort HTTP API port (default 3004 for MCP ConPort)
         """
         self.workspace_id = workspace_id
         self.conport_url = f"http://localhost:{conport_port}"
@@ -326,7 +326,7 @@ class InstanceStateManager:
 def save_instance_state_sync(
     state: InstanceState,
     workspace_id: str,
-    conport_port: int = 3007
+    conport_port: int = 3004
 ) -> bool:
     """
     Synchronous wrapper for save_instance_state.
@@ -349,7 +349,7 @@ def save_instance_state_sync(
 def load_instance_state_sync(
     instance_id: str,
     workspace_id: str,
-    conport_port: int = 3007
+    conport_port: int = 3004
 ) -> Optional[InstanceState]:
     """
     Synchronous wrapper for load_instance_state.
@@ -371,7 +371,7 @@ def load_instance_state_sync(
 
 def list_all_instance_states_sync(
     workspace_id: str,
-    conport_port: int = 3007
+    conport_port: int = 3004
 ) -> List[InstanceState]:
     """
     Synchronous wrapper for list_all_instance_states.
@@ -393,7 +393,7 @@ def list_all_instance_states_sync(
 def cleanup_instance_state_sync(
     instance_id: str,
     workspace_id: str,
-    conport_port: int = 3007
+    conport_port: int = 3004
 ) -> bool:
     """
     Synchronous wrapper for cleanup_instance_state.

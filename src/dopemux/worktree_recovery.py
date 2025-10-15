@@ -56,7 +56,7 @@ class WorktreeRecoveryMenu:
     def __init__(
         self,
         workspace_id: str,
-        conport_port: int = 3007,
+        conport_port: int = 3004,
         max_age_days: int = 7,
         timeout_seconds: int = 30
     ):
@@ -421,7 +421,7 @@ class WorktreeRecoveryMenu:
 # Synchronous wrapper for CLI usage
 def show_recovery_menu_sync(
     workspace_id: str,
-    conport_port: int = 3007
+    conport_port: int = 3004
 ) -> Optional[str]:
     """
     Synchronous wrapper for show_recovery_menu.
