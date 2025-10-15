@@ -1,23 +1,21 @@
 # Developer Profile
-# Optimized for code implementation and debugging
+# Code implementation, debugging, and testing
 
 name: developer
 display_name: "Developer"
-description: "Code implementation, debugging, and testing with semantic search"
+description: "Code implementation and debugging with LSP navigation and semantic search"
 
-# MCP Server Selection
 mcps:
-  - conport          # Memory and context (REQUIRED)
-  - serena           # LSP code navigation
-  - claude-context   # Semantic code search
+  - conport          # Memory (required)
+  - serena-v2        # LSP navigation and code intelligence
+  - dope-context     # Semantic code search
+  - context7         # Library documentation
 
-# ADHD Optimization
 adhd_config:
   energy_preference: medium
   attention_mode: focused
   session_duration: 50
 
-# Auto-Detection Rules
 auto_detection:
   git_branches:
     - "feature/*"
@@ -34,10 +32,11 @@ auto_detection:
   file_patterns:
     - "*.py"
     - "*.ts"
+    - "*.tsx"
     - "*.js"
+    - "*.jsx"
     - "*.go"
     - "*.rs"
-    - "*.java"
 
   time_windows:
     - "09:00-12:00"    # Morning focus
