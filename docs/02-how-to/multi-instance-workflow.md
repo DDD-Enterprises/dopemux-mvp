@@ -71,6 +71,17 @@ dopemux start
 3. ✅ Services start (ConPort:3007, Serena:3006, Task-Master:3005)
 4. ✅ Environment: `DOPEMUX_INSTANCE_ID=""` (main worktree)
 
+### Routing Through LiteLLM Proxy
+
+```bash
+dopemux start --litellm
+```
+
+- Starts (or reuses) a LiteLLM proxy bound to the instance-specific port (A → 4100, B → 4130, etc.).
+- Writes proxy config to `.dopemux/litellm/<instance>/litellm.config.yaml` with a generated master key.
+- Automatically updates `OPENAI_BASE_URL` and `OPENAI_API_KEY` for the launched Claude Code session so traffic routes through the proxy.
+- Requires provider keys such as `OPENAI_API_KEY` (and optionally `XAI_API_KEY`) to be exported before launch.
+
 ### Starting Second Instance
 
 ```bash

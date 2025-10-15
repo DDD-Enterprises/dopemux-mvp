@@ -11,7 +11,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import click
 from rich.console import Console
@@ -25,15 +25,24 @@ from . import __version__
 from .adhd import AttentionMonitor, ContextManager
 # TaskDecomposer removed - replaced by ConPort + SuperClaude /dx: commands
 from .claude import ClaudeConfigurator, ClaudeLauncher
+from .claude_code_router import (
+    ClaudeCodeRouterError,
+    ClaudeCodeRouterManager,
+)
 from .config import ConfigManager
 from .health import HealthChecker
 from .instance_manager import InstanceManager, detect_instances_sync, detect_orphaned_instances_sync
-from .protection_interceptor import check_and_protect_main, consume_last_created_worktree
-from .profile_parser import ProfileParser
+from .litellm_proxy import LiteLLMProxyError, LiteLLMProxyManager
 from .profile_models import ProfileValidationError
+from .profile_parser import ProfileParser
+from .protection_interceptor import check_and_protect_main, consume_last_created_worktree
 import subprocess
 from subprocess import CalledProcessError
 import yaml
+
+
+if "-litellm" in sys.argv:
+    sys.argv = ["--litellm" if arg == "-litellm" else arg for arg in sys.argv]
 
 console = Console()
 
@@ -155,6 +164,18 @@ def init(ctx, directory: str, force: bool, template: str):
     is_flag=True,
     help="Skip starting MCP servers (not recommended for ADHD experience)",
 )
+@click.option(
+    "--litellm",
+    "use_litellm",
+    is_flag=True,
+    help="Route Claude Code traffic through LiteLLM proxy",
+)
+@click.option(
+    "--claude-router/--no-claude-router",
+    "use_claude_router",
+    default=True,
+    help="Start Claude Code Router per instance (requires global `ccr`)",
+)
 @click.pass_context
 def start(
     ctx,
@@ -164,6 +185,9 @@ def start(
     dangerous: bool,
     dangerously_skip_permissions: bool,
     no_mcp: bool,
+    use_litellm: bool,
+    use_claude_router: bool,
+    **legacy_kwargs,
 ):
     """
     🚀 Start Claude Code with ADHD-optimized configuration
@@ -175,6 +199,10 @@ def start(
         Automatically detects running instances and creates isolated worktrees
         for parallel ADHD-optimized development workflows.
     """
+    legacy_value = legacy_kwargs.get("claude_router")
+    if legacy_value is not None:
+        use_claude_router = legacy_value
+
     config_manager = ctx.obj["config_manager"]
     project_path = Path.cwd()
 
@@ -321,12 +349,124 @@ def start(
 
         console.print("[blue]🆕 Starting first instance (A) on port 3000[/blue]")
 
+    if not instance_id:
+        instance_id = 'A'
+    if not port_base:
+        port_base = 3000
+    if not worktree_path:
+        worktree_path = project_path
+
     # Inject instance environment variables
     if instance_env_vars:
         for key, value in instance_env_vars.items():
             os.environ[key] = value
 
         console.print("[dim]✅ Instance environment variables configured[/dim]")
+
+    litellm_proxy_info = None
+    litellm_enabled = use_litellm or use_claude_router
+
+    if litellm_enabled:
+        if not os.environ.get("OPENAI_API_KEY"):
+            console.print(
+                "[red]❌ OPENAI_API_KEY not set. Required for LiteLLM proxy configuration.[/red]"
+            )
+            sys.exit(1)
+
+        try:
+            litellm_manager = LiteLLMProxyManager(project_path, instance_id, port_base)
+            litellm_proxy_info = litellm_manager.ensure_started()
+            env_updates = litellm_manager.build_client_env(litellm_proxy_info)
+            for key, value in env_updates.items():
+                os.environ[key] = value
+
+            if litellm_proxy_info.already_running:
+                console.print(
+                    f"[green]✅ Reusing LiteLLM proxy at {litellm_proxy_info.base_url}[/green]"
+                )
+            else:
+                console.print(
+                    f"[green]✅ LiteLLM proxy ready at {litellm_proxy_info.base_url}[/green]"
+                )
+                console.print(
+                    f"[dim]   Config: {litellm_proxy_info.config_path}[/dim]"
+                )
+                console.print(
+                    f"[dim]   Logs: {litellm_proxy_info.log_path}[/dim]"
+                )
+
+        except LiteLLMProxyError as exc:
+            console.print(f"[red]❌ LiteLLM proxy failed: {exc}[/red]")
+            sys.exit(1)
+
+    router_info = None
+    if use_claude_router:
+        provider_url = None
+        provider_models: List[str] = []
+        provider_name = os.environ.get("CLAUDE_CODE_ROUTER_PROVIDER")
+        provider_key_env = os.environ.get(
+            "CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR",
+            "DOPEMUX_LITELLM_MASTER_KEY" if litellm_proxy_info else None,
+        )
+        provider_key: Optional[str] = None
+
+        if litellm_proxy_info:
+            provider_url = f"{litellm_proxy_info.base_url}/v1/chat/completions"
+            provider_name = provider_name or "litellm"
+            provider_models = ["openai-gpt-5", "openai-gpt-5-mini"]
+        else:
+            provider_url = os.environ.get("CLAUDE_CODE_ROUTER_UPSTREAM_URL")
+            models_env = os.environ.get("CLAUDE_CODE_ROUTER_MODELS", "")
+            provider_models = [m.strip() for m in models_env.split(",") if m.strip()]
+            if not provider_name:
+                provider_name = os.environ.get("CLAUDE_CODE_ROUTER_PROVIDER", "custom")
+            provider_key = os.environ.get("CLAUDE_CODE_ROUTER_UPSTREAM_KEY")
+
+        if not provider_url:
+            console.print(
+                "[red]❌ Claude Code Router upstream URL is not configured.[/red]"
+            )
+            console.print(
+                "[dim]Set CLAUDE_CODE_ROUTER_UPSTREAM_URL or enable --litellm.[/dim]"
+            )
+            sys.exit(1)
+
+        if not provider_models:
+            console.print(
+                "[red]❌ No models configured for Claude Code Router upstream.[/red]"
+            )
+            console.print(
+                "[dim]Set CLAUDE_CODE_ROUTER_MODELS or rely on --litellm defaults.[/dim]"
+            )
+            sys.exit(1)
+
+        router_manager = ClaudeCodeRouterManager(project_path, instance_id, port_base)
+
+        try:
+            router_info = router_manager.ensure_started(
+                provider_url=provider_url,
+                provider_models=provider_models,
+                provider_name=provider_name or "litellm",
+                provider_key=provider_key,
+                provider_key_env_var=provider_key_env,
+            )
+        except ClaudeCodeRouterError as exc:
+            console.print(f"[red]❌ Claude Code Router failed: {exc}[/red]")
+            sys.exit(1)
+
+        router_env = router_manager.build_client_env(router_info)
+        os.environ.update(router_env)
+
+        if router_info.already_running:
+            console.print(
+                f"[green]✅ Reusing Claude Code Router at {router_info.base_url}[/green]"
+            )
+        else:
+            console.print(
+                f"[green]✅ Claude Code Router ready at {router_info.base_url}[/green]"
+            )
+            console.print(f"[dim]   Config: {router_info.config_path}[/dim]")
+            console.print(f"[dim]   Logs: {router_info.log_path}[/dim]")
 
     with Progress(
         SpinnerColumn(),
