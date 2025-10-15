@@ -36,7 +36,7 @@ echo "🔨 Building and starting containers..."
 
 # Start critical path servers first (staggered for ADHD optimizations)
 echo "⚡ Starting critical path servers..."
-docker-compose up -d --build context7 zen mas-sequential-thinking
+docker-compose up -d --build context7 zen litellm mas-sequential-thinking
 
 echo "⏳ Waiting for critical servers to stabilize..."
 sleep 10
@@ -65,7 +65,7 @@ echo "🏥 Health check summary:"
 echo "========================"
 
 # Health check each critical server
-servers=("context7:3002" "zen:3003" "mas-sequential-thinking:3001")
+servers=("context7:3002" "zen:3003" "litellm:4000" "mas-sequential-thinking:3001")
 for server in "${servers[@]}"; do
     name="${server%:*}"
     port="${server#*:}"
@@ -103,6 +103,7 @@ echo ""
 echo "📚 Critical Path Servers:"
 echo "   Context7:     http://localhost:3002"
 echo "   Zen:          http://localhost:3003"
+echo "   LiteLLM:      http://localhost:4000"
 echo "   Sequential:   http://localhost:3001"
 echo ""
 echo "🔄 Workflow Servers:"
