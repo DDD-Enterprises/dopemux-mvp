@@ -26,6 +26,7 @@ from .claude import ClaudeConfigurator, ClaudeLauncher
 from .config import ConfigManager
 from .health import HealthChecker
 from .instance_manager import InstanceManager, detect_instances_sync, detect_orphaned_instances_sync
+from .protection_interceptor import check_and_protect_main, consume_last_created_worktree
 import subprocess
 from subprocess import CalledProcessError
 
@@ -190,7 +191,7 @@ def start(
     try:
         selected_worktree = show_recovery_menu_sync(
             workspace_id=str(project_path),
-            conport_port=3007  # Default ConPort port for instance A
+            conport_port=3004  # Default ConPort port for instance A
         )
 
         if selected_worktree:
@@ -209,15 +210,20 @@ def start(
 
     # Main Worktree Protection (ADHD-optimized guidance)
     # Check if working in main with uncommitted changes
-    from .protection_interceptor import check_and_protect_main
-
     try:
         should_exit = check_and_protect_main(
             workspace_path=str(project_path),
             enforce=False  # Warn only (gentle guidance, not blocking)
         )
 
-        if should_exit:
+        new_worktree = consume_last_created_worktree()
+        if new_worktree:
+            os.chdir(new_worktree)
+            project_path = Path.cwd()
+            console.print(f"[green]🔀 Switched to worktree: {project_path.name}")
+            console.print(f"[dim]   Path: {project_path}[/dim]")
+
+        if should_exit and not new_worktree:
             # User chose to exit (create worktree or clean up manually)
             sys.exit(0)
     except Exception as e:
@@ -419,7 +425,7 @@ def start(
         save_instance_state_sync(
             state,
             workspace_id=str(project_path.resolve()),
-            conport_port=3007  # Always save via instance A's ConPort
+            conport_port=3004  # Always save via instance A's ConPort
         )
         console.print("[dim]✅ Instance state saved for crash recovery[/dim]")
 
@@ -440,11 +446,11 @@ def start(
                 from datetime import datetime
 
                 workspace_id = str(project_path.resolve())
-                state = load_instance_state_sync(instance_id, workspace_id, conport_port=3007)
+                state = load_instance_state_sync(instance_id, workspace_id, conport_port=3004)
                 if state:
                     state.status = 'stopped'
                     state.last_active = datetime.now()
-                    save_instance_state_sync(state, workspace_id, conport_port=3007)
+                    save_instance_state_sync(state, workspace_id, conport_port=3004)
                     console.print("[dim]✅ Instance marked as stopped[/dim]")
 
             ctx.invoke(save)
@@ -586,7 +592,7 @@ def instances_list(ctx):
     orphaned_instances = detect_orphaned_instances_sync(
         project_path,
         workspace_id,
-        conport_port=3007  # Always query via instance A's ConPort
+        conport_port=3004  # Always query via instance A's ConPort
     )
 
     # Show running instances
@@ -699,7 +705,7 @@ def instances_resume(ctx, instance_id: str, restore_context: bool):
     # Load orphaned instance state
     from .instance_state import load_instance_state_sync
 
-    state = load_instance_state_sync(instance_id, workspace_id, conport_port=3007)
+    state = load_instance_state_sync(instance_id, workspace_id, conport_port=3004)
 
     if not state:
         console.print(f"[red]❌ No saved state found for instance {instance_id}[/red]")
@@ -775,7 +781,7 @@ def instances_resume(ctx, instance_id: str, restore_context: bool):
     state.status = 'active'
     from datetime import datetime
     state.last_active = datetime.now()
-    save_instance_state_sync(state, workspace_id, conport_port=3007)
+    save_instance_state_sync(state, workspace_id, conport_port=3004)
 
 
 @instances.command("cleanup")
@@ -835,7 +841,7 @@ def instances_cleanup(ctx, instance_id: Optional[str], all: bool, force: bool):
                 console.print(f"[green]✅ Removed worktree for instance {wt_id}[/green]")
 
                 # Also remove instance state from ConPort
-                if cleanup_instance_state_sync(wt_id, workspace_id, conport_port=3007):
+                if cleanup_instance_state_sync(wt_id, workspace_id, conport_port=3004):
                     console.print(f"[dim]✅ Removed instance state for {wt_id}[/dim]")
             else:
                 console.print(f"[red]❌ Failed to remove worktree for instance {wt_id}[/red]")
@@ -872,7 +878,7 @@ def instances_cleanup(ctx, instance_id: Optional[str], all: bool, force: bool):
             from .instance_state import cleanup_instance_state_sync
             workspace_id = str(project_path.resolve())
 
-            if cleanup_instance_state_sync(instance_id, workspace_id, conport_port=3007):
+            if cleanup_instance_state_sync(instance_id, workspace_id, conport_port=3004):
                 console.print(f"[dim]✅ Removed instance state from ConPort[/dim]")
         else:
             console.print(f"[red]❌ Failed to remove worktree for instance {instance_id}[/red]")
