@@ -29,8 +29,11 @@ from .config import ConfigManager
 from .health import HealthChecker
 from .instance_manager import InstanceManager, detect_instances_sync, detect_orphaned_instances_sync
 from .protection_interceptor import check_and_protect_main, consume_last_created_worktree
+from .profile_parser import ProfileParser
+from .profile_models import ProfileValidationError
 import subprocess
 from subprocess import CalledProcessError
+import yaml
 
 console = Console()
 
@@ -3217,6 +3220,247 @@ def _show_update_plan(plan):
 
 
 # =============================================================================
+# Profile Management Commands (Epic 1)
+# =============================================================================
+
+@cli.group()
+def profile():
+    """📋 Manage MCP profiles for context-aware tool selection."""
+    pass
+
+
+@profile.command("list")
+@click.option("--profile-dir", "-d", help="Profile directory path", type=click.Path(exists=True))
+@click.pass_context
+def profile_list_cmd(ctx, profile_dir: Optional[str]):
+    """📋 List all available profiles."""
+    try:
+        parser = ProfileParser(Path(profile_dir) if profile_dir else None)
+        profile_set = parser.load_all_profiles(fail_fast=False)
+
+        if not profile_set.profiles:
+            console.print("[yellow]No valid profiles found[/yellow]")
+            console.print(f"\nProfile directory: {parser.profile_dir}")
+            console.print("\nCreate profiles with the YAML schema documented in:")
+            console.print("  docs/PROFILE-YAML-SCHEMA.md")
+            sys.exit(1)
+
+        # Display profiles in a rich table
+        table = Table(title="📋 Available Profiles", show_header=True, header_style="bold cyan")
+        table.add_column("Name", style="green")
+        table.add_column("Display Name", style="cyan")
+        table.add_column("MCPs", style="yellow")
+        table.add_column("Description", style="white", no_wrap=False)
+
+        for p in profile_set.profiles:
+            mcp_count = len(p.mcps)
+            table.add_row(
+                p.name,
+                p.display_name,
+                f"{mcp_count} servers",
+                p.description
+            )
+
+        console.print(table)
+        console.print(f"\n[dim]Profile directory: {parser.profile_dir}[/dim]")
+        console.print(f"[dim]Total profiles: {len(profile_set.profiles)}[/dim]")
+
+        if profile_set.errors:
+            console.print(f"\n[yellow]⚠️  {len(profile_set.errors)} profile(s) failed to load[/yellow]")
+            for path, error in profile_set.errors:
+                console.print(f"  [red]✗[/red] {path.name}: {error}")
+
+    except FileNotFoundError as e:
+        console.print(f"[red]Error: {e}[/red]")
+        sys.exit(1)
+    except Exception as e:
+        console.print(f"[red]Unexpected error: {e}[/red]")
+        if ctx.obj.get("verbose"):
+            raise
+        sys.exit(1)
+
+
+@profile.command("show")
+@click.argument("profile_name")
+@click.option("--profile-dir", "-d", help="Profile directory path", type=click.Path(exists=True))
+@click.option("--raw", "-r", is_flag=True, help="Show raw YAML content")
+@click.pass_context
+def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bool):
+    """📄 Show detailed profile information."""
+    try:
+        parser = ProfileParser(Path(profile_dir) if profile_dir else None)
+        profile_paths = parser.discover_profiles()
+
+        # Find matching profile
+        profile_path = None
+        for path in profile_paths:
+            if path.stem == profile_name:
+                profile_path = path
+                break
+
+        if not profile_path:
+            console.print(f"[red]Profile '{profile_name}' not found[/red]")
+            console.print(f"\nAvailable profiles in {parser.profile_dir}:")
+            for path in profile_paths:
+                console.print(f"  • {path.stem}")
+            sys.exit(1)
+
+        # Show raw YAML if requested
+        if raw:
+            console.print(f"\n[cyan]Profile: {profile_name}[/cyan]")
+            console.print(f"[dim]Path: {profile_path}[/dim]\n")
+            with open(profile_path, 'r') as f:
+                console.print(f.read())
+            return
+
+        # Load and validate profile
+        p = parser.load_profile(profile_path)
+
+        # Display formatted profile info
+        console.print(f"\n[bold cyan]Profile: {p.display_name}[/bold cyan]")
+        console.print(f"[dim]Name: {p.name}[/dim]")
+        console.print(f"[dim]File: {profile_path}[/dim]\n")
+
+        console.print(f"[bold]Description:[/bold] {p.description}\n")
+
+        # MCP Servers
+        console.print("[bold]MCP Servers:[/bold]")
+        for mcp in p.mcps:
+            console.print(f"  • {mcp}")
+
+        # ADHD Config (if present)
+        if p.adhd_config:
+            console.print("\n[bold]ADHD Configuration:[/bold]")
+            console.print(f"  Energy preference: {p.adhd_config.energy_preference}")
+            console.print(f"  Attention mode: {p.adhd_config.attention_mode}")
+            console.print(f"  Session duration: {p.adhd_config.session_duration} minutes")
+
+        # Auto-detection rules (if present)
+        if p.auto_detection:
+            console.print("\n[bold]Auto-Detection Rules:[/bold]")
+            if p.auto_detection.git_branches:
+                console.print("  Git branches:")
+                for branch in p.auto_detection.git_branches:
+                    console.print(f"    • {branch}")
+            if p.auto_detection.directories:
+                console.print("  Directories:")
+                for dir in p.auto_detection.directories:
+                    console.print(f"    • {dir}")
+            if p.auto_detection.file_patterns:
+                console.print("  File patterns:")
+                for pattern in p.auto_detection.file_patterns:
+                    console.print(f"    • {pattern}")
+            if p.auto_detection.time_windows:
+                console.print("  Time windows:")
+                for window in p.auto_detection.time_windows:
+                    console.print(f"    • {window}")
+
+        console.print(f"\n[green]✓ Profile is valid[/green]")
+
+    except ProfileValidationError as e:
+        console.print(f"[red]Validation Error:[/red] {e.reason}")
+        if e.fix_suggestion:
+            console.print(f"[yellow]Suggestion:[/yellow] {e.fix_suggestion}")
+        sys.exit(1)
+    except FileNotFoundError as e:
+        console.print(f"[red]Error: {e}[/red]")
+        sys.exit(1)
+    except Exception as e:
+        console.print(f"[red]Unexpected error: {e}[/red]")
+        if ctx.obj.get("verbose"):
+            raise
+        sys.exit(1)
+
+
+@profile.command("validate")
+@click.argument("profile_name", required=False)
+@click.option("--profile-dir", "-d", help="Profile directory path", type=click.Path(exists=True))
+@click.option("--all", "-a", is_flag=True, help="Validate all profiles")
+@click.pass_context
+def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional[str], all: bool):
+    """✅ Validate profile YAML and configuration."""
+    try:
+        parser = ProfileParser(Path(profile_dir) if profile_dir else None)
+
+        if all:
+            # Validate all profiles
+            console.print("[cyan]Validating all profiles...[/cyan]\n")
+            profile_set = parser.load_all_profiles(fail_fast=False)
+
+            # Show results
+            table = Table(title="Validation Results", show_header=True, header_style="bold cyan")
+            table.add_column("Profile", style="cyan")
+            table.add_column("Status", style="white")
+            table.add_column("Message", style="white", no_wrap=False)
+
+            for p in profile_set.profiles:
+                table.add_row(p.name, "[green]✓ Valid[/green]", f"{len(p.mcps)} MCP servers")
+
+            for path, error in profile_set.errors:
+                error_msg = str(error)
+                if isinstance(error, ProfileValidationError):
+                    error_msg = f"{error.reason}"
+                table.add_row(path.stem, "[red]✗ Invalid[/red]", error_msg)
+
+            console.print(table)
+
+            # Summary
+            total = len(profile_set.profiles) + len(profile_set.errors)
+            valid = len(profile_set.profiles)
+            console.print(f"\n[bold]Summary:[/bold] {valid}/{total} profiles valid")
+
+            if profile_set.errors:
+                sys.exit(1)
+
+        else:
+            # Validate single profile
+            if not profile_name:
+                console.print("[red]Error: Provide a profile name or use --all[/red]")
+                console.print("Usage: dopemux profile validate <profile_name>")
+                console.print("   or: dopemux profile validate --all")
+                sys.exit(1)
+
+            profile_paths = parser.discover_profiles()
+            profile_path = None
+            for path in profile_paths:
+                if path.stem == profile_name:
+                    profile_path = path
+                    break
+
+            if not profile_path:
+                console.print(f"[red]Profile '{profile_name}' not found[/red]")
+                sys.exit(1)
+
+            console.print(f"[cyan]Validating profile: {profile_name}[/cyan]\n")
+
+            # Load and validate
+            p = parser.load_profile(profile_path)
+
+            console.print(f"[green]✓ YAML syntax is valid[/green]")
+            console.print(f"[green]✓ Profile schema is valid[/green]")
+            console.print(f"[green]✓ All {len(p.mcps)} MCP servers are configured[/green]")
+            if p.adhd_config:
+                console.print(f"[green]✓ ADHD configuration is valid[/green]")
+            if p.auto_detection:
+                console.print(f"[green]✓ Auto-detection rules are valid[/green]")
+
+            console.print(f"\n[bold green]Profile '{profile_name}' is valid ✓[/bold green]")
+
+    except ProfileValidationError as e:
+        console.print(f"[red]✗ Validation failed:[/red] {e.reason}")
+        if e.fix_suggestion:
+            console.print(f"[yellow]💡 Suggestion:[/yellow] {e.fix_suggestion}")
+        sys.exit(1)
+    except FileNotFoundError as e:
+        console.print(f"[red]Error: {e}[/red]")
+        sys.exit(1)
+    except Exception as e:
+        console.print(f"[red]Unexpected error: {e}[/red]")
+        if ctx.obj.get("verbose"):
+            raise
+        sys.exit(1)
+
+
 # Worktree Management Commands (Epic 3)
 # =============================================================================
 
