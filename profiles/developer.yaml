@@ -1,0 +1,43 @@
+# Developer Profile
+# Code implementation, debugging, and testing
+
+name: developer
+display_name: "Developer"
+description: "Code implementation and debugging with LSP navigation and semantic search"
+
+mcps:
+  - conport          # Memory (required)
+  - serena-v2        # LSP navigation and code intelligence
+  - dope-context     # Semantic code search
+  - context7         # Library documentation
+
+adhd_config:
+  energy_preference: medium
+  attention_mode: focused
+  session_duration: 50
+
+auto_detection:
+  git_branches:
+    - "feature/*"
+    - "fix/*"
+    - "refactor/*"
+    - "bugfix/*"
+
+  directories:
+    - "src/"
+    - "tests/"
+    - "lib/"
+    - "pkg/"
+
+  file_patterns:
+    - "*.py"
+    - "*.ts"
+    - "*.tsx"
+    - "*.js"
+    - "*.jsx"
+    - "*.go"
+    - "*.rs"
+
+  time_windows:
+    - "09:00-12:00"    # Morning focus
+    - "14:00-17:00"    # Afternoon focus

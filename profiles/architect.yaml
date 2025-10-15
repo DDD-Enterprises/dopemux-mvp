@@ -1,0 +1,42 @@
+# Architect Profile
+# System design, architectural planning, and technical decision-making
+
+name: architect
+display_name: "Architect"
+description: "System design and architectural planning with reasoning and code analysis"
+
+mcps:
+  - conport          # Memory (required)
+  - zen              # Multi-model reasoning (consensus, planner, codereview)
+  - serena-v2        # Code structure analysis
+  - dope-context     # Semantic code search
+  - context7         # Framework patterns
+
+adhd_config:
+  energy_preference: high
+  attention_mode: focused
+  session_duration: 50
+
+auto_detection:
+  git_branches:
+    - "design/*"
+    - "arch/*"
+    - "spike/*"
+    - "rfc/*"
+
+  directories:
+    - "docs/architecture/"
+    - "docs/design/"
+    - "docs/adr/"
+    - "docs/rfc/"
+
+  file_patterns:
+    - "*.md"
+    - "*.yaml"
+    - "*.json"
+    - "architecture.py"
+    - "design.ts"
+
+  time_windows:
+    - "09:00-11:00"    # Early morning clarity
+    - "15:00-17:00"    # Afternoon synthesis
