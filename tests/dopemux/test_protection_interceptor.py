@@ -5,6 +5,7 @@ Tests main worktree protection CLI integration, interactive prompts,
 worktree creation, and ADHD-optimized user guidance.
 """
 
+import os
 import pytest
 from pathlib import Path
 import tempfile
@@ -21,6 +22,7 @@ from src.dopemux.protection_interceptor import (
     _execute_worktree_creation,
     _stash_changes,
     _pop_stash,
+    consume_last_created_worktree,
 )
 from src.dopemux.main_worktree_detector import ProtectionTrigger
 from src.dopemux.uncommitted_detector import ChangesSummary
@@ -301,8 +303,8 @@ def test_create_worktree_interactive_success(mock_execute, mock_parse, mock_inpu
 
     result = _create_worktree_interactive(str(git_repo), trigger)
 
-    # Should exit after successful creation (to restart)
-    assert result is True
+    # Should continue after successful creation
+    assert result is False
     assert mock_execute.called
 
 
@@ -646,6 +648,7 @@ def test_create_worktree_interactive_with_migration_yes(mock_execute, mock_input
 
     # Should call execute with migrate_changes=True
     assert mock_execute.call_args[1]["migrate_changes"] is True
+    assert result is False
 
 
 @patch('src.dopemux.protection_interceptor.console.input')
@@ -668,6 +671,7 @@ def test_create_worktree_interactive_with_migration_no(mock_execute, mock_input,
 
     # Should call execute with migrate_changes=False
     assert mock_execute.call_args[1]["migrate_changes"] is False
+    assert result is False
 
 
 def test_migration_preserves_staged_and_unstaged(git_repo):
@@ -686,6 +690,11 @@ def test_migration_preserves_staged_and_unstaged(git_repo):
 
     worktree_name = f"preserve-test-{uuid.uuid4().hex[:8]}"
 
+    # Prepare Dopemux scaffolding to verify copy
+    (git_repo / ".dopemux").mkdir()
+    (git_repo / ".claude").mkdir()
+    (git_repo / "litellm.config.yaml").write_text("model_list: []\n")
+
     result = _execute_worktree_creation(
         str(git_repo),
         worktree_name,
@@ -699,3 +708,13 @@ def test_migration_preserves_staged_and_unstaged(git_repo):
     assert (worktree_path / "staged.txt").exists()
     assert (worktree_path / "README.md").read_text() == "# Unstaged modification"
     assert (worktree_path / "untracked.txt").exists()
+
+    # Scaffolding copied
+    assert (worktree_path / ".dopemux").exists()
+    assert (worktree_path / ".claude").exists()
+    litellm_path = worktree_path / "litellm.config.yaml"
+    assert litellm_path.exists()
+
+    # consume recorded worktree
+    assert consume_last_created_worktree() == worktree_path
+    assert consume_last_created_worktree() is None

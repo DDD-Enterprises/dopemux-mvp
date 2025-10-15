@@ -18,6 +18,9 @@ Usage:
 
 from pathlib import Path
 from typing import Optional, Tuple
+import os
+import shutil
+import tempfile
 from datetime import datetime
 import sys
 import logging
@@ -30,6 +33,31 @@ from rich.prompt import Confirm
 
 logger = logging.getLogger(__name__)
 console = Console()
+
+_last_created_worktree: Optional[Path] = None
+_COPY_DIRECTORIES = [
+    ".dopemux",
+    ".claude",
+    ".claude-flow",
+]
+
+# Copy (not symlink) these single files into the new worktree
+_COPY_FILES = [
+    "litellm.config.yaml",
+]
+
+
+def consume_last_created_worktree() -> Optional[Path]:
+    """Return and clear the most recently created worktree path."""
+    global _last_created_worktree
+    path = _last_created_worktree
+    _last_created_worktree = None
+    return path
+
+
+def _record_last_created_worktree(path: Path) -> None:
+    global _last_created_worktree
+    _last_created_worktree = path
 
 
 def check_main_protection_interactive(
@@ -200,8 +228,8 @@ def _create_worktree_interactive(
         console.print(f"\n[green]✅ Worktree created: {worktree_name}[/green]")
         if migrate_changes:
             console.print("[green]✓ Changes migrated successfully[/green]")
-        console.print("[dim]Restart dopemux to switch to new worktree[/dim]\n")
-        return True  # Exit to allow user to restart
+        console.print("[green]🎯 Continuing in new worktree[/green]\n")
+        return False
     else:
         console.print(f"\n[red]❌ Failed to create worktree: {worktree_name}[/red]")
         console.print("[yellow]⚠️ Staying in main - please create worktree manually[/yellow]")
@@ -375,6 +403,7 @@ def _execute_worktree_creation(
     worktree_path = workspace.parent / worktree_name
 
     stash_name = None
+    snapshot_path = _snapshot_scaffolding(workspace)
 
     try:
         # Step 1: Stash changes if migration requested
@@ -384,6 +413,8 @@ def _execute_worktree_creation(
             if not stash_name:
                 console.print("[yellow]⚠️ Could not stash changes - creating empty worktree[/yellow]")
                 migrate_changes = False  # Skip migration
+            elif snapshot_path:
+                _sync_project_scaffolding(snapshot_path, workspace)
 
         # Step 2: Create worktree with new branch
         console.print(f"[cyan]🌳 Creating worktree: {worktree_name}[/cyan]")
@@ -429,21 +460,28 @@ def _execute_worktree_creation(
 
                 if not success:
                     console.print("[yellow]⚠️ Changes not fully migrated - check stash manually[/yellow]")
+                    _record_last_created_worktree(worktree_path)
                     return True  # Worktree created, but migration incomplete
+                elif snapshot_path:
+                    _sync_project_scaffolding(snapshot_path, worktree_path, symlink_root=workspace)
 
             except Exception as e:
                 os.chdir(original_dir)  # Ensure we switch back
                 logger.error(f"Failed during migration: {e}")
                 console.print(f"[yellow]⚠️ Migration error: {e}[/yellow]")
+                _record_last_created_worktree(worktree_path)
                 return True  # Worktree created, but migration failed
 
+        if snapshot_path:
+            _sync_project_scaffolding(snapshot_path, worktree_path, symlink_root=workspace)
+
+        _record_last_created_worktree(worktree_path)
         return True
 
     except subprocess.TimeoutExpired:
         logger.error("Git worktree add timed out")
         console.print("[red]Git command timed out[/red]")
 
-        # Rollback stash if needed
         if stash_name:
             subprocess.run(
                 ["git", "stash", "pop"],
@@ -457,7 +495,6 @@ def _execute_worktree_creation(
         logger.error(f"Failed to create worktree: {e}")
         console.print(f"[red]Error: {e}[/red]")
 
-        # Rollback stash if needed
         if stash_name:
             subprocess.run(
                 ["git", "stash", "pop"],
@@ -466,6 +503,10 @@ def _execute_worktree_creation(
                 timeout=5
             )
         return False
+
+    finally:
+        if snapshot_path:
+            shutil.rmtree(snapshot_path, ignore_errors=True)
 
 
 # Synchronous helper for CLI integration
@@ -488,3 +529,80 @@ def check_and_protect_main(
         enforce=enforce,
         offer_creation=True
     )
+
+
+def _sync_project_scaffolding(source: Path, destination: Path, symlink_root: Optional[Path] = None) -> None:
+    """Copy essential Dopemux scaffolding files into a new worktree."""
+    for item in _COPY_DIRECTORIES:
+        src_path = source / item
+        if not src_path.exists():
+            continue
+
+        dest_path = destination / item
+        try:
+            if src_path.is_dir():
+                dest_path.mkdir(parents=True, exist_ok=True)
+                shutil.copytree(src_path, dest_path, dirs_exist_ok=True)
+            else:
+                dest_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src_path, dest_path)
+        except Exception as exc:  # pragma: no cover - best-effort copy
+            logger.warning("Failed to copy %s: %s", item, exc)
+
+    # Copy single-file scaffolding items
+    for file_name in _COPY_FILES:
+        src_file = source / file_name
+        if not src_file.exists():
+            continue
+        dest_file = destination / file_name
+        try:
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
+            if dest_file.exists() or dest_file.is_symlink():
+                try:
+                    dest_file.unlink()
+                except Exception:
+                    pass
+            shutil.copy2(src_file, dest_file)
+        except Exception as exc:  # pragma: no cover
+            logger.warning("Failed to copy %s: %s", file_name, exc)
+
+
+def _snapshot_scaffolding(source: Path) -> Optional[Path]:
+    """Capture scaffolding into a temporary directory and return its path."""
+    temp_dir = Path(tempfile.mkdtemp(prefix="dopemux-scaffold-"))
+    copied = False
+
+    for item in _COPY_DIRECTORIES:
+        src_path = source / item
+        if not src_path.exists():
+            continue
+
+        dest_path = temp_dir / item
+        try:
+            if src_path.is_dir():
+                dest_path.mkdir(parents=True, exist_ok=True)
+                shutil.copytree(src_path, dest_path, dirs_exist_ok=True)
+            else:
+                dest_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src_path, dest_path)
+            copied = True
+        except Exception as exc:  # pragma: no cover - best-effort copy
+            logger.warning("Failed to snapshot %s: %s", item, exc)
+
+    for file_name in _COPY_FILES:
+        src_file = source / file_name
+        if not src_file.exists():
+            continue
+        dest_file = temp_dir / file_name
+        try:
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src_file, dest_file)
+            copied = True
+        except Exception as exc:  # pragma: no cover
+            logger.warning("Failed to snapshot %s: %s", file_name, exc)
+
+    if not copied:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+        return None
+
+    return temp_dir
