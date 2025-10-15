@@ -138,6 +138,11 @@ class EnhancedConPortServer:
         # Search endpoints
         self.app.router.add_get('/api/search/{workspace_id}', self.search_content)
 
+        # Custom data endpoints (generic key-value store)
+        self.app.router.add_post('/api/custom_data', self.save_custom_data)
+        self.app.router.add_get('/api/custom_data', self.get_custom_data)
+        self.app.router.add_delete('/api/custom_data', self.delete_custom_data)
+
         # MCP compatibility endpoint
         self.app.router.add_post('/mcp', self.mcp_endpoint)
 
@@ -781,6 +786,164 @@ class EnhancedConPortServer:
                 break
             except Exception as e:
                 logger.error(f"❌ Auto-save error: {e}")
+
+    async def save_custom_data(self, request):
+        """Save or update custom data in key-value store"""
+        try:
+            data = await request.json()
+            workspace_id = data.get('workspace_id')
+            category = data.get('category')
+            key = data.get('key')
+            value = data.get('value')
+
+            if not all([workspace_id, category, key, value is not None]):
+                return web.json_response({
+                    'error': 'Missing required fields: workspace_id, category, key, value'
+                }, status=400)
+
+            async with self.db_pool.acquire() as conn:
+                await conn.execute("""
+                    INSERT INTO custom_data (workspace_id, category, key, value, updated_at)
+                    VALUES ($1, $2, $3, $4, NOW())
+                    ON CONFLICT (workspace_id, category, key)
+                    DO UPDATE SET value = $4, updated_at = NOW()
+                """, workspace_id, category, key, json.dumps(value))
+
+            # Invalidate cache
+            cache_key = f"custom_data:{workspace_id}:{category}:{key}"
+            await self.redis.delete(cache_key)
+
+            logger.info(f"💾 Custom data saved: {category}/{key}")
+
+            return web.json_response({
+                'status': 'saved',
+                'workspace_id': workspace_id,
+                'category': category,
+                'key': key
+            })
+
+        except Exception as e:
+            logger.error(f"Error saving custom data: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def get_custom_data(self, request):
+        """Retrieve custom data from key-value store"""
+        try:
+            workspace_id = request.query.get('workspace_id')
+            category = request.query.get('category')
+            key = request.query.get('key')
+
+            if not workspace_id:
+                return web.json_response({
+                    'error': 'Missing required parameter: workspace_id'
+                }, status=400)
+
+            async with self.db_pool.acquire() as conn:
+                if category and key:
+                    # Get specific item
+                    row = await conn.fetchrow("""
+                        SELECT category, key, value, created_at, updated_at
+                        FROM custom_data
+                        WHERE workspace_id = $1 AND category = $2 AND key = $3
+                    """, workspace_id, category, key)
+
+                    if not row:
+                        return web.json_response({
+                            'error': 'Not found'
+                        }, status=404)
+
+                    result = dict(row)
+                    result['value'] = json.loads(result['value']) if isinstance(result['value'], str) else result['value']
+                    result['created_at'] = result['created_at'].isoformat()
+                    result['updated_at'] = result['updated_at'].isoformat()
+
+                    return web.json_response(result)
+
+                elif category:
+                    # Get all items in category
+                    rows = await conn.fetch("""
+                        SELECT category, key, value, created_at, updated_at
+                        FROM custom_data
+                        WHERE workspace_id = $1 AND category = $2
+                        ORDER BY key
+                    """, workspace_id, category)
+
+                    items = []
+                    for row in rows:
+                        item = dict(row)
+                        item['value'] = json.loads(item['value']) if isinstance(item['value'], str) else item['value']
+                        item['created_at'] = item['created_at'].isoformat()
+                        item['updated_at'] = item['updated_at'].isoformat()
+                        items.append(item)
+
+                    return web.json_response({
+                        'workspace_id': workspace_id,
+                        'category': category,
+                        'items': items,
+                        'count': len(items)
+                    })
+
+                else:
+                    # Get all categories
+                    rows = await conn.fetch("""
+                        SELECT category, key, value, created_at, updated_at
+                        FROM custom_data
+                        WHERE workspace_id = $1
+                        ORDER BY category, key
+                    """, workspace_id)
+
+                    items = []
+                    for row in rows:
+                        item = dict(row)
+                        item['value'] = json.loads(item['value']) if isinstance(item['value'], str) else item['value']
+                        item['created_at'] = item['created_at'].isoformat()
+                        item['updated_at'] = item['updated_at'].isoformat()
+                        items.append(item)
+
+                    return web.json_response({
+                        'workspace_id': workspace_id,
+                        'items': items,
+                        'count': len(items)
+                    })
+
+        except Exception as e:
+            logger.error(f"Error retrieving custom data: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def delete_custom_data(self, request):
+        """Delete custom data from key-value store"""
+        try:
+            workspace_id = request.query.get('workspace_id')
+            category = request.query.get('category')
+            key = request.query.get('key')
+
+            if not all([workspace_id, category, key]):
+                return web.json_response({
+                    'error': 'Missing required parameters: workspace_id, category, key'
+                }, status=400)
+
+            async with self.db_pool.acquire() as conn:
+                result = await conn.execute("""
+                    DELETE FROM custom_data
+                    WHERE workspace_id = $1 AND category = $2 AND key = $3
+                """, workspace_id, category, key)
+
+            # Invalidate cache
+            cache_key = f"custom_data:{workspace_id}:{category}:{key}"
+            await self.redis.delete(cache_key)
+
+            logger.info(f"🗑️  Custom data deleted: {category}/{key}")
+
+            return web.json_response({
+                'status': 'deleted',
+                'workspace_id': workspace_id,
+                'category': category,
+                'key': key
+            })
+
+        except Exception as e:
+            logger.error(f"Error deleting custom data: {e}")
+            return web.json_response({'error': str(e)}, status=500)
 
     async def mcp_endpoint(self, request):
         """MCP compatibility endpoint for future integration"""
