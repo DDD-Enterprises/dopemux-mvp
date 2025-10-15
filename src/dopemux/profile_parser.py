@@ -162,7 +162,7 @@ class ProfileParser:
 
         # Validate unique names across all profiles
         try:
-            profile_set = ProfileSet(profiles=profiles)
+            profile_set = ProfileSet(profiles=profiles, errors=errors)
         except ValidationError as e:
             raise ProfileValidationError(
                 profile_name="profile_set",
