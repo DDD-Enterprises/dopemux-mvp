@@ -1,0 +1,24 @@
+# Full Profile
+# All MCP servers for complex multi-domain tasks
+
+name: full
+display_name: "Full Stack"
+description: "All MCP servers for complex multi-domain tasks requiring maximum capability"
+
+mcps:
+  - conport          # Memory (required)
+  - serena-v2        # Code navigation
+  - zen              # Multi-model reasoning
+  - context7         # Library documentation
+  - gpt-researcher   # Deep web research
+  - dope-context     # Semantic search
+  - desktop-commander # Desktop automation
+  - morph-llm        # Code transformation
+  - magic-mcp        # UI generation
+
+adhd_config:
+  energy_preference: any
+  attention_mode: any
+  session_duration: 50
+
+# No auto-detection rules - use this profile explicitly when needed
