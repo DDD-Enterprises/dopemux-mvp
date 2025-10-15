@@ -99,7 +99,7 @@ class InstanceStateManager:
             }
 
             async with self.session.post(
-                f"{self.conport_url}/custom_data",
+                f"{self.conport_url}/api/custom_data",
                 json=data,
                 timeout=aiohttp.ClientTimeout(total=5.0)
             ) as response:
@@ -135,7 +135,7 @@ class InstanceStateManager:
             }
 
             async with self.session.get(
-                f"{self.conport_url}/custom_data",
+                f"{self.conport_url}/api/custom_data",
                 params=params,
                 timeout=aiohttp.ClientTimeout(total=5.0)
             ) as response:
@@ -174,7 +174,7 @@ class InstanceStateManager:
             }
 
             async with self.session.get(
-                f"{self.conport_url}/custom_data",
+                f"{self.conport_url}/api/custom_data",
                 params=params,
                 timeout=aiohttp.ClientTimeout(total=5.0)
             ) as response:
@@ -302,7 +302,7 @@ class InstanceStateManager:
             }
 
             async with self.session.delete(
-                f"{self.conport_url}/custom_data",
+                f"{self.conport_url}/api/custom_data",
                 params=params,
                 timeout=aiohttp.ClientTimeout(total=5.0)
             ) as response:
