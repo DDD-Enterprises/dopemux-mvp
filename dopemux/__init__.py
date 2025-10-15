@@ -15,6 +15,9 @@ from .attention_mediator import AttentionMediator, FocusState, InterruptionToler
 from .instance_registry import InstanceRegistry, InstanceStatus
 from .producers import MCPEventProducer, ConPortEventProducer
 
+# Profile management
+from . import profile_models, profile_parser, claude_config
+
 __all__ = [
     # Core event system
     "DopemuxEvent",
@@ -36,5 +39,10 @@ __all__ = [
 
     # Event producers
     "MCPEventProducer",
-    "ConPortEventProducer"
+    "ConPortEventProducer",
+
+    # Profile management
+    "profile_models",
+    "profile_parser",
+    "claude_config"
 ]
