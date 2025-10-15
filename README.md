@@ -166,6 +166,26 @@ mcp__conport__update_active_context \
   }"
 ```
 
+### Claude Code Router integration
+
+```bash
+# Install claude-code-router and Claude Code CLIs globally
+./scripts/install_claude_code_router.sh
+
+# Start Dopemux with per-instance router + LiteLLM routing
+dopemux start --litellm
+```
+
+- Dopemux automatically provisions a dedicated Claude Code Router home under
+  `.dopemux/claude-code-router/<instance>` so multi-instance sessions never
+  fight over a shared `~/.claude-code-router` directory.
+- If you are routing to a custom upstream without LiteLLM, export the following
+  before `dopemux start`:
+  - `CLAUDE_CODE_ROUTER_UPSTREAM_URL` – full `/v1/chat/completions` endpoint
+  - `CLAUDE_CODE_ROUTER_UPSTREAM_KEY` – API key if required
+  - `CLAUDE_CODE_ROUTER_MODELS` – comma-separated model names (e.g. `deepseek-chat,deepseek-reasoner`)
+- Use `--no-claude-router` if you need to fall back to direct Anthropics access.
+
 ### Verify Setup
 
 Your statusline should now show:
