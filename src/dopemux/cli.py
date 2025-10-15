@@ -15,9 +15,11 @@ from typing import Optional
 
 import click
 from rich.console import Console
+from rich.live import Live
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
+from rich.text import Text
 
 from . import __version__
 from .adhd import AttentionMonitor, ContextManager
@@ -363,16 +365,7 @@ def start(
 
         # Start MCP servers by default (ADHD-optimized experience)
         if not no_mcp:
-            try:
-                console.print("[blue]🔌 Starting MCP servers (essential for ADHD experience)...[/blue]")
-                subprocess.run(
-                    ["bash", "-lc", "cd docker/mcp-servers && ./start-all-mcp-servers.sh"],
-                    check=True,
-                )
-                console.print("[green]✅ MCP servers started successfully[/green]")
-            except CalledProcessError:
-                console.print("[yellow]⚠️  Failed to start MCP servers (continuing with reduced functionality)[/yellow]")
-                console.print("[dim]   Tip: Run 'dopemux start --no-mcp' to skip this step[/dim]")
+            _start_mcp_servers_with_progress(project_path)
         else:
             console.print("[yellow]⚠️  Skipping MCP servers (reduced ADHD experience)[/yellow]")
 
@@ -2373,6 +2366,143 @@ def _get_attention_emoji(state: Optional[str]) -> str:
         "distracted": "😵‍💫",
     }
     return emoji_map.get(state, "❓")
+
+
+def _start_mcp_servers_with_progress(project_path: Path):
+    """
+    Start MCP servers with real-time output streaming and health check waiting.
+
+    ADHD-optimized:
+    - Real-time visual feedback reduces anxiety
+    - Clear status updates maintain engagement
+    - Health check waiting ensures everything is ready
+    """
+    import requests
+
+    mcp_dir = project_path / "docker" / "mcp-servers"
+
+    # Critical servers to health check
+    critical_servers = [
+        ("Context7", "http://localhost:3002/health"),
+        ("Zen", "http://localhost:3003/health"),
+        ("LiteLLM", "http://localhost:4000/health"),
+        ("Sequential", "http://localhost:3001/health"),
+    ]
+
+    console.print("\n[bold blue]🔌 Starting MCP Servers[/bold blue]")
+    console.print("[dim]This may take 30-60 seconds for first-time setup...[/dim]\n")
+
+    # Start docker-compose with real-time output
+    status_text = Text()
+    status_text.append("🚀 ", style="bold blue")
+    status_text.append("Launching containers...")
+
+    try:
+        with Live(status_text, console=console, refresh_per_second=4) as live:
+            # Start the containers
+            process = subprocess.Popen(
+                ["bash", "-c", f"cd {mcp_dir} && ./start-all-mcp-servers.sh"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1
+            )
+
+            # Stream output line by line
+            output_lines = []
+            for line in process.stdout:
+                line = line.rstrip()
+                if line:
+                    # Update status with last meaningful line
+                    if "Starting" in line:
+                        status_text = Text()
+                        status_text.append("🔨 ", style="bold blue")
+                        status_text.append(line)
+                        live.update(status_text)
+                    elif "✅" in line or "Healthy" in line:
+                        status_text = Text()
+                        status_text.append("✅ ", style="bold green")
+                        status_text.append(line)
+                        live.update(status_text)
+                    elif "⚡" in line:
+                        status_text = Text()
+                        status_text.append("⚡ ", style="bold yellow")
+                        status_text.append(line)
+                        live.update(status_text)
+
+                    output_lines.append(line)
+
+            process.wait()
+
+            if process.returncode != 0:
+                console.print("\n[red]❌ MCP server startup failed[/red]")
+                console.print("[dim]Last 10 lines of output:[/dim]")
+                for line in output_lines[-10:]:
+                    console.print(f"[dim]{line}[/dim]")
+                raise CalledProcessError(process.returncode, process.args)
+
+        # Wait for health checks
+        console.print("\n[bold blue]🏥 Waiting for services to become healthy...[/bold blue]")
+
+        max_wait = 45  # seconds
+        start_time = time.time()
+        all_healthy = False
+
+        health_status = {name: False for name, _ in critical_servers}
+
+        with Live(console=console, refresh_per_second=2) as live:
+            while time.time() - start_time < max_wait:
+                status_text = Text()
+                all_healthy = True
+
+                for name, url in critical_servers:
+                    try:
+                        response = requests.get(url, timeout=2)
+                        is_healthy = response.status_code == 200
+                        health_status[name] = is_healthy
+
+                        if is_healthy:
+                            status_text.append("✅ ", style="bold green")
+                        else:
+                            status_text.append("⏳ ", style="bold yellow")
+                            all_healthy = False
+
+                        status_text.append(f"{name}\n")
+                    except requests.RequestException:
+                        status_text.append("⏳ ", style="bold yellow")
+                        status_text.append(f"{name}\n")
+                        all_healthy = False
+                        health_status[name] = False
+
+                # Add elapsed time
+                elapsed = int(time.time() - start_time)
+                status_text.append(f"\n[dim]⏱️  {elapsed}s / {max_wait}s[/dim]")
+
+                live.update(Panel(status_text, title="[bold]Health Check Status[/bold]", border_style="blue"))
+
+                if all_healthy:
+                    break
+
+                time.sleep(2)
+
+        if all_healthy:
+            console.print("\n[bold green]✅ All MCP servers are healthy and ready![/bold green]\n")
+        else:
+            # Show which services failed
+            console.print("\n[yellow]⚠️  Some services are not healthy (continuing anyway):[/yellow]")
+            for name, is_healthy in health_status.items():
+                if not is_healthy:
+                    console.print(f"  [red]❌ {name}[/red]")
+                else:
+                    console.print(f"  [green]✅ {name}[/green]")
+            console.print("[dim]Tip: Check docker logs with: docker-compose -f docker/mcp-servers/docker-compose.yml logs[/dim]\n")
+
+    except CalledProcessError as e:
+        console.print("[yellow]⚠️  Failed to start MCP servers (continuing with reduced functionality)[/yellow]")
+        console.print("[dim]   Tip: Run 'dopemux start --no-mcp' to skip this step[/dim]")
+    except Exception as e:
+        console.print(f"[yellow]⚠️  Error during MCP startup: {e}[/yellow]")
+        console.print("[dim]   Continuing with reduced functionality...[/dim]")
 
 
 def _activate_dangerous_mode():
