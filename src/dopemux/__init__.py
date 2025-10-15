@@ -12,4 +12,7 @@ __email__ = "team@dopemux.dev"
 # Core modules
 from . import cli, config
 
-__all__ = ["cli", "config", "__version__"]
+# Profile management
+from . import profile_models, profile_parser
+
+__all__ = ["cli", "config", "profile_models", "profile_parser", "__version__"]
