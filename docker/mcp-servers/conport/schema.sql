@@ -97,6 +97,26 @@ CREATE INDEX idx_sessions_workspace_id ON session_snapshots(workspace_id);
 CREATE INDEX idx_sessions_start_time ON session_snapshots(session_start DESC);
 
 -- =====================================================================
+-- GENERIC CUSTOM DATA - Key-Value Store
+-- =====================================================================
+
+CREATE TABLE custom_data (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    workspace_id VARCHAR(255) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    key VARCHAR(255) NOT NULL,
+    value JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(workspace_id, category, key)
+);
+
+CREATE INDEX idx_custom_data_workspace_id ON custom_data(workspace_id);
+CREATE INDEX idx_custom_data_category ON custom_data(category);
+CREATE INDEX idx_custom_data_key ON custom_data(workspace_id, category, key);
+CREATE INDEX idx_custom_data_value ON custom_data USING GIN(value);
+
+-- =====================================================================
 -- KNOWLEDGE GRAPH RELATIONSHIPS
 -- =====================================================================
 
