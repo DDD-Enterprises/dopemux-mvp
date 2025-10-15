@@ -62,6 +62,38 @@ services:
       - "mcp.priority=highest"
       - "mcp.description=Multi-model orchestration"
 
+  # LiteLLM - Unified LLM proxy with routing and fallbacks
+  litellm:
+    build:
+      context: ../../
+      dockerfile: docker/mcp-servers/litellm/Dockerfile
+    container_name: mcp-litellm
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - LITELLM_LOG=INFO
+      - LITELLM_DROP_PARAMS=true
+    ports:
+      - "4000:4000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    volumes:
+      - ../../litellm.config.yaml:/app/config.yaml:ro
+      - mcp_litellm_data:/app/data
+    labels:
+      - "mcp.role=critical_path"
+      - "mcp.priority=high"
+      - "mcp.description=Unified LLM proxy with intelligent routing"
+
   # Sequential Thinking - Multi-step reasoning and architectural analysis
   mas-sequential-thinking:
     build:
@@ -612,3 +644,6 @@ volumes:
   mcp_dopemux_gpt_cache:
     driver: local
     name: mcp_dopemux_gpt_cache
+  mcp_litellm_data:
+    driver: local
+    name: mcp_litellm_data
