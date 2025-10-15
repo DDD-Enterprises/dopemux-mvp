@@ -246,3 +246,4 @@ reindex_*.js
 claudedocs.backup.*/
 build_recovered/
 DOCS_TO_PROCESS/
+.env.bak
