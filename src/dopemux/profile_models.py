@@ -174,6 +174,10 @@ class ProfileSet(BaseModel):
         min_length=1,
         description="List of profile definitions"
     )
+    errors: List[tuple] = Field(
+        default_factory=list,
+        description="List of (path, error) tuples for profiles that failed to load"
+    )
 
     @model_validator(mode='after')
     def validate_unique_names(self) -> 'ProfileSet':
