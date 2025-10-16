@@ -17,7 +17,7 @@ import threading
 import time
 import json
 import subprocess
-from .conport_client import get_conport_client
+from .conport_http_client import get_sync_http_client
 
 
 @dataclass
@@ -194,9 +194,9 @@ class CheckpointManager:
 
     def _save_to_conport_mcp(self, checkpoint_id: str, checkpoint: Checkpoint) -> None:
         """
-        Save checkpoint to ConPort via MCP.
+        Save checkpoint to ConPort via HTTP client.
 
-        Uses mcp__conport__log_custom_data for persistent storage.
+        Uses ConPortHTTPClientSync with circuit breaker for reliable persistence.
 
         Args:
             checkpoint_id: Unique checkpoint identifier
@@ -210,22 +210,20 @@ class CheckpointManager:
             checkpoint_data["timestamp"] = checkpoint.timestamp.isoformat()
             checkpoint_data["last_activity"] = checkpoint.last_activity.isoformat()
 
-            # Use ConPort client (supports both HTTP and MCP modes)
-            client = get_conport_client(self.workspace_id)
-            result = client.log_custom_data(
+            # Use sync HTTP client (thread-safe, with circuit breaker)
+            client = get_sync_http_client(self.workspace_id)
+            client.log_custom_data(
                 category="adhd_checkpoints",
                 key=checkpoint_id,
                 value=checkpoint_data
             )
 
-            if result.get("success"):
-                print(f"✅ Checkpoint saved to ConPort ({result.get('mode', 'unknown')} mode)")
-            else:
-                print(f"⚠️ ConPort save failed: {result.get('error', 'unknown')}")
+            # Silent operation - circuit breaker handles fallback automatically
+            # No spam for ADHD users
 
         except Exception as e:
-            # Silent failure - JSON file is already saved as fallback
-            print(f"⚠️ ConPort integration error: {e}")
+            # Silent failure - HTTP client already fell back to JSON
+            pass
 
     def load_latest_checkpoint(self) -> Optional[Checkpoint]:
         """
@@ -275,21 +273,24 @@ class CheckpointManager:
 
     def _load_from_conport_mcp(self) -> Optional[Checkpoint]:
         """
-        Load checkpoint from ConPort via MCP.
+        Load checkpoint from ConPort via HTTP client.
 
         Returns:
             Checkpoint if found, None otherwise
         """
         try:
-            # Use ConPort client
-            client = get_conport_client(self.workspace_id)
-            checkpoints = client.get_custom_data(
+            # Use sync HTTP client (with circuit breaker)
+            client = get_sync_http_client(self.workspace_id)
+            results = client.get_custom_data(
                 category="adhd_checkpoints",
                 limit=1
             )
 
-            if checkpoints and len(checkpoints) > 0:
-                data = checkpoints[0]
+            if results and len(results) > 0:
+                # Get data from first result (handle both HTTP and fallback formats)
+                checkpoint_entry = results[0]
+                data = checkpoint_entry.get("value", checkpoint_entry)
+
                 # Reconstruct checkpoint with datetime parsing
                 checkpoint = Checkpoint(
                     session_id=data["session_id"],
@@ -304,14 +305,12 @@ class CheckpointManager:
                     session_duration_seconds=data["session_duration_seconds"],
                     last_activity=datetime.fromisoformat(data["last_activity"]),
                 )
-                print(f"✅ Checkpoint loaded from ConPort")
                 return checkpoint
 
             return None
 
         except Exception as e:
             # Silent failure - fall back to JSON
-            print(f"⚠️ ConPort load failed: {e}")
             return None
 
     def update_state(

@@ -91,10 +91,10 @@ class ContextSharingProtocol:
         # Store in ConPort custom_data
         key = f"{self.session_id}_{artifact_type}_{datetime.now().timestamp()}"
 
-        # Use ConPort client
+        # Use ConPort HTTP client
         try:
-            from .conport_client import get_conport_client
-            client = get_conport_client(self.workspace_id)
+            from .conport_http_client import get_sync_http_client
+            client = get_sync_http_client(self.workspace_id)
             result = client.log_custom_data(
                 category="ai_artifacts",
                 key=key,
@@ -104,13 +104,12 @@ class ContextSharingProtocol:
                     "content": content,
                     "confidence": confidence,
                     "metadata": metadata or {},
-                    "session_id": self.session_id
+                    "session_id": self.session_id,
+                    "timestamp": datetime.now().isoformat()
                 }
             )
-            if result.get("success"):
-                print(f"📦 Published {artifact_type} from {agent_type} (confidence: {confidence:.0%}) to ConPort")
-            else:
-                print(f"📦 Published {artifact_type} from {agent_type} (confidence: {confidence:.0%}) [ConPort failed]")
+            # Silent operation - circuit breaker handles fallback
+            print(f"📦 Published {artifact_type} from {agent_type} (confidence: {confidence:.0%})")
         except Exception as e:
             print(f"📦 Published {artifact_type} from {agent_type} (confidence: {confidence:.0%}) [local only]")
 
@@ -143,10 +142,10 @@ class ContextSharingProtocol:
             ...     min_confidence=0.7
             ... )
         """
-        # Use ConPort client to query artifacts
+        # Use ConPort HTTP client to query artifacts
         try:
-            from .conport_client import get_conport_client
-            client = get_conport_client(self.workspace_id)
+            from .conport_http_client import get_sync_http_client
+            client = get_sync_http_client(self.workspace_id)
             results = client.get_custom_data(
                 category="ai_artifacts",
                 limit=limit
@@ -155,13 +154,15 @@ class ContextSharingProtocol:
             # Convert to AIArtifact objects
             artifacts = []
             for item in results:
+                # Handle both HTTP response format and fallback format
+                data = item.get("value", item)
                 artifacts.append(AIArtifact(
-                    artifact_type=item.get("artifact_type", "unknown"),
-                    agent_type=item.get("agent_type", "unknown"),
-                    content=item.get("content", ""),
-                    confidence=item.get("confidence", 0.0),
-                    timestamp=datetime.fromisoformat(item.get("timestamp", datetime.now().isoformat())),
-                    metadata=item.get("metadata", {})
+                    artifact_type=data.get("artifact_type", "unknown"),
+                    agent_type=data.get("agent_type", "unknown"),
+                    content=data.get("content", ""),
+                    confidence=data.get("confidence", 0.0),
+                    timestamp=datetime.fromisoformat(data.get("timestamp", datetime.now().isoformat())),
+                    metadata=data.get("metadata", {})
                 ))
             return artifacts
         except Exception as e:
@@ -186,14 +187,14 @@ class ContextSharingProtocol:
             ...     top_k=3
             ... )
         """
-        # Use ConPort client for semantic search
+        # Use ConPort HTTP client for semantic search
         try:
-            from .conport_client import get_conport_client
-            client = get_conport_client(self.workspace_id)
+            from .conport_http_client import get_sync_http_client
+            client = get_sync_http_client(self.workspace_id)
             results = client.semantic_search(
                 query=query,
                 top_k=top_k,
-                filter_types=["ai_artifacts"]
+                filter_types=["custom_data"]
             )
 
             # Convert to AIArtifact objects
