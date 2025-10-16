@@ -34,7 +34,14 @@ fi
 echo ""
 echo "🔨 Building and starting containers..."
 
-# Start critical path servers first (staggered for ADHD optimizations)
+# Start infrastructure first (vector database for dope-context)
+echo "🗄️  Starting infrastructure..."
+docker-compose up -d --build qdrant
+
+echo "⏳ Waiting for Qdrant to be ready..."
+sleep 5
+
+# Start critical path servers (staggered for ADHD optimizations)
 echo "⚡ Starting critical path servers..."
 docker-compose up -d --build context7 zen litellm mas-sequential-thinking
 
@@ -43,7 +50,7 @@ sleep 10
 
 # Start workflow servers
 echo "🔄 Starting workflow servers..."
-docker-compose up -d --build conport task-master-ai serena claude-context
+docker-compose up -d --build conport serena  # Removed task-master-ai (crashes)
 
 echo "⏳ Waiting for workflow servers to stabilize..."
 sleep 10

@@ -71,7 +71,9 @@ services:
     restart: unless-stopped
     networks:
       - mcp-network
+      - dopemux-unified-network
     environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - XAI_API_KEY=${XAI_API_KEY}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
@@ -81,7 +83,7 @@ services:
     ports:
       - "4000:4000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      test: ["CMD-SHELL", "curl -f -H 'Authorization: Bearer REDACTED_LITELLM_KEY' http://localhost:4000/health || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -110,7 +112,7 @@ services:
     ports:
       - "3011:3011"
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 3011 || exit 1"]
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost',3011)); s.close()"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -146,7 +148,7 @@ services:
     ports:
       - "3004:3004"
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 3004"]
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost',3004)); s.close()"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -159,37 +161,38 @@ services:
       - "mcp.description=Project memory and decision tracking"
 
   # Task Master AI - Task management and PRD processing
-  task-master-ai:
-    build:
-      context: ./task-master-ai
-      dockerfile: Dockerfile
-    container_name: mcp-task-master-ai
-    restart: unless-stopped
-    networks:
-      - mcp-network
-    env_file:
-      - ./task-master-ai/.env
-    environment:
-      - MCP_SERVER_PORT=3005
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
-    ports:
-      - "3005:3005"
-    healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 3005 || exit 1"]
-      timeout: 10s
-      retries: 3
-      interval: 30s
-      start_period: 60s
-    volumes:
-      - mcp_task_master_data:/app/data
-      - mcp_task_master_logs:/app/logs
-    labels:
-      - "mcp.role=workflow"
-      - "mcp.priority=medium"
-      - "mcp.description=AI-powered task management and PRD processing"
+  # DISABLED: External dependency issues causing crashes
+  # task-master-ai:
+  #   build:
+  #     context: ./task-master-ai
+  #     dockerfile: Dockerfile
+  #   container_name: mcp-task-master-ai
+  #   restart: unless-stopped
+  #   networks:
+  #     - mcp-network
+  #   env_file:
+  #     - ./task-master-ai/.env
+  #   environment:
+  #     - MCP_SERVER_PORT=3005
+  #     - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+  #     - OPENAI_API_KEY=${OPENAI_API_KEY}
+  #     - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+  #     - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+  #   ports:
+  #     - "3005:3005"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "nc -z localhost 3005 || exit 1"]
+  #      timeout: 10s
+  #      retries: 3
+  #      interval: 30s
+  #      start_period: 60s
+  #   volumes:
+  #     - mcp_task_master_data:/app/data
+  #     - mcp_task_master_logs:/app/logs
+  #   labels:
+  #     - "mcp.role=workflow"
+  #     - "mcp.priority=medium"
+  #     - "mcp.description=AI-powered task management and PRD processing"
 
   # Task Orchestrator - Advanced task orchestration and dependency management
   task-orchestrator:
@@ -572,6 +575,29 @@ services:
       - "mcp.priority=high"
       - "mcp.description=Structured reasoning and decision frameworks"
 
+  # Qdrant - Vector database for dope-context semantic search
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: mcp-qdrant
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - mcp_qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:6333/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "mcp.role=infrastructure"
+      - "mcp.priority=high"
+      - "mcp.description=Vector database for semantic code search"
+
 # === NETWORKS ===
 networks:
   mcp-network:
@@ -653,3 +679,6 @@ volumes:
   mcp_litellm_data:
     driver: local
     name: mcp_litellm_data
+  mcp_qdrant_data:
+    driver: local
+    name: mcp_qdrant_data
