@@ -92,27 +92,31 @@ class CodeChunker:
     def _init_tree_sitter(self):
         """Initialize Tree-sitter parsers (v0.21+ API)."""
         try:
-            # Python
-            py_lang = tspython.language()
-            self.parsers["python"] = Parser(py_lang)
-            self.parsers["py"] = Parser(py_lang)
+            # Python - wrap language in Language() for v0.21+ API
+            py_lang = Language(tspython.language())
+            py_parser = Parser(py_lang)
+            self.parsers["python"] = py_parser
+            self.parsers["py"] = py_parser
             self.languages["python"] = py_lang
 
             # JavaScript
-            js_lang = tsjavascript.language()
-            self.parsers["javascript"] = Parser(js_lang)
-            self.parsers["js"] = Parser(js_lang)
+            js_lang = Language(tsjavascript.language())
+            js_parser = Parser(js_lang)
+            self.parsers["javascript"] = js_parser
+            self.parsers["js"] = js_parser
             self.languages["javascript"] = js_lang
 
             # TypeScript
-            ts_lang = tstypescript.language_typescript()
-            self.parsers["typescript"] = Parser(ts_lang)
-            self.parsers["ts"] = Parser(ts_lang)
+            ts_lang = Language(tstypescript.language_typescript())
+            ts_parser = Parser(ts_lang)
+            self.parsers["typescript"] = ts_parser
+            self.parsers["ts"] = ts_parser
             self.languages["typescript"] = ts_lang
 
             # TSX
-            tsx_lang = tstypescript.language_tsx()
-            self.parsers["tsx"] = Parser(tsx_lang)
+            tsx_lang = Language(tstypescript.language_tsx())
+            tsx_parser = Parser(tsx_lang)
+            self.parsers["tsx"] = tsx_parser
             self.languages["tsx"] = tsx_lang
 
             logger.info("Tree-sitter parsers initialized for 4 languages")
@@ -147,7 +151,7 @@ class CodeChunker:
             tree = parser.parse(bytes(code, "utf-8"))
             return tree
         except Exception as e:
-            logger.error(f"Parse error for {language}: {e}")
+            logger.error(f"Parse error for {language}: {e}", exc_info=True)
             return None
 
     def _extract_symbol_name(self, node: Node) -> Optional[str]:

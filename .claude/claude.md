@@ -8,12 +8,27 @@
 
 ## 🔧 Tool Usage Requirements
 
-**CRITICAL: Always use Serena MCP tools for code operations**
+**CRITICAL: Always use MCP tools for code operations**
 
-- ✅ USE: `mcp__serena__read_file`, `mcp__serena__find_file`, `mcp__serena__list_dir`, `mcp__serena__find_symbol`
-- ❌ NEVER: bash `cat`, `find`, `ls`, `grep` for code navigation
-- **Why**: Serena provides LSP-aware semantic understanding, caching, and ADHD optimizations
+### Code Navigation & Search
+- ✅ **Serena LSP**: `mcp__serena__read_file`, `mcp__serena__find_symbol`, `mcp__serena__goto_definition`
+  - For: Symbol lookup, LSP navigation, definition jumping
+  - Why: LSP-aware, cached, ADHD-optimized
+
+- ✅ **Dope-Context**: `mcp__dope-context__search_code`, `mcp__dope-context__docs_search`, `mcp__dope-context__search_all`
+  - For: Semantic code/docs search, finding implementations, understanding features
+  - Why: AST-aware, complexity scoring, hybrid search with reranking
+  - Use BEFORE: Implementing features, debugging, refactoring, learning codebase
+
+- ❌ **NEVER**: bash `cat`, `find`, `ls`, `grep` for code operations
 - **Exception**: bash only for git, docker, system commands (not file operations)
+
+### Dope-Context Search Strategy
+**BEFORE any code work**:
+1. Search for similar implementations: `search_code("feature similar to X")`
+2. Check documentation: `docs_search("architecture patterns for X")`
+3. Get complete context: `search_all("X implementation and design")`
+4. Review complexity scores before diving deep
 
 ## 🧠 Core ADHD Principles
 
@@ -35,10 +50,11 @@
 
 ### Cognitive Plane
 
-**Authorities**: Decisions, code navigation, memory, context preservation
+**Authorities**: Decisions, code navigation, memory, context preservation, semantic search
 
 - **Serena LSP**: Full LSP server with ADHD accommodations (max 10 results, 3-level context depth)
 - **ConPort**: Decision logging, knowledge graph, automatic context preservation
+- **Dope-Context**: AST-aware semantic search (code + docs), complexity scoring, ADHD-optimized retrieval
 
 ### Coordination Layer
 
