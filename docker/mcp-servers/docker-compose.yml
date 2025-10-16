@@ -282,99 +282,6 @@ services:
       - "mcp.priority=medium"
       - "mcp.description=Code navigation and refactoring with project access"
 
-
-  # Milvus - Vector database for claude-context
-  milvus:
-    image: milvusdb/milvus:v2.4.16
-    command: ["milvus", "run", "standalone"]
-    container_name: mcp-milvus
-    restart: unless-stopped
-    networks:
-      - mcp-network
-    environment:
-      - ETCD_ENDPOINTS=milvus-etcd:2379
-      - MINIO_ADDRESS=milvus-minio:9000
-    ports:
-      - "19530:19530"
-    depends_on:
-      - milvus-etcd
-      - milvus-minio
-    volumes:
-      - mcp_milvus_data:/var/lib/milvus
-    labels:
-      - "mcp.role=storage"
-      - "mcp.priority=medium"
-      - "mcp.description=Vector database for semantic search"
-
-  # Etcd for Milvus
-  milvus-etcd:
-    image: quay.io/coreos/etcd:v3.5.5
-    container_name: mcp-milvus-etcd
-    restart: unless-stopped
-    networks:
-      - mcp-network
-    environment:
-      - ETCD_AUTO_COMPACTION_MODE=revision
-      - ETCD_AUTO_COMPACTION_RETENTION=1000
-      - ETCD_QUOTA_BACKEND_BYTES=4294967296
-      - ETCD_SNAPSHOT_COUNT=50000
-    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
-    volumes:
-      - mcp_etcd_data:/etcd
-
-  # MinIO for Milvus
-  milvus-minio:
-    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
-    container_name: mcp-milvus-minio
-    restart: unless-stopped
-    networks:
-      - mcp-network
-    environment:
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin
-    command: minio server /minio_data --console-address ":9001"
-    volumes:
-      - mcp_minio_data:/minio_data
-
-  # Claude Context - Semantic code search within repositories
-  claude-context:
-    build:
-      context: ../../
-      dockerfile: docker/mcp-servers/claude-context/Dockerfile
-    platform: linux/amd64
-    container_name: mcp-claude-context
-    restart: unless-stopped
-    networks:
-      - mcp-network
-    env_file:
-      - ../../.env
-    environment:
-      - EMBEDDING_PROVIDER=VoyageAI
-      - EMBEDDING_MODEL=voyage-code-3
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - VOYAGEAI_API_KEY=${VOYAGE_API_KEY}
-      - VOYAGEAI_RERANK_MODEL=rerank-2.5
-      - MILVUS_ADDRESS=milvus:19530
-      - MCP_SERVER_PORT=3007
-    ports:
-      - "3007:3007"
-    depends_on:
-      - milvus
-    healthcheck:
-      test: ["CMD-SHELL", "ps aux | grep 'node.*index.js' | grep -v grep || exit 1"]
-      timeout: 10s
-      retries: 3
-      interval: 30s
-      start_period: 30s
-    volumes:
-      - mcp_claude_context_data:/app/data
-      - mcp_claude_context_cache:/root/.context
-      - /Users/hue/code/dopemux-mvp:/workspace/dopemux-mvp:ro
-    labels:
-      - "mcp.role=research"
-      - "mcp.priority=medium"
-      - "mcp.description=Semantic code search"
-
   # === RESEARCH SERVERS (Priority: Low - Fallback Only) ===
 
   # Dopemux GPT Researcher - ADHD-optimized research with enhanced features
@@ -575,6 +482,28 @@ services:
       - "mcp.priority=high"
       - "mcp.description=Structured reasoning and decision frameworks"
 
+  # Redis Primary - Shared cache for MCP servers (ConPort, etc.)
+  redis-primary:
+    image: redis:7-alpine
+    container_name: dopemux-redis-primary
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - mcp_redis_primary_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 3s
+      retries: 5
+      interval: 10s
+    labels:
+      - "mcp.role=infrastructure"
+      - "mcp.priority=high"
+      - "mcp.description=Shared Redis cache for MCP servers"
+
   # Qdrant - Vector database for dope-context semantic search
   qdrant:
     image: qdrant/qdrant:latest
@@ -646,27 +575,12 @@ volumes:
   mcp_serena_data:
     driver: local
     name: mcp_serena_data
-  mcp_claude_context_data:
-    driver: local
-    name: mcp_claude_context_data
-  mcp_claude_context_cache:
-    driver: local
-    name: mcp_claude_context_cache
   mcp_gptr_data:
     driver: local
     name: mcp_gptr_data
   mcp_gptr_logs:
     driver: local
     name: mcp_gptr_logs
-  mcp_milvus_data:
-    driver: local
-    name: mcp_milvus_data
-  mcp_etcd_data:
-    driver: local
-    name: mcp_etcd_data
-  mcp_minio_data:
-    driver: local
-    name: mcp_minio_data
   mcp_dopemux_gpt_data:
     driver: local
     name: mcp_dopemux_gpt_data
@@ -682,3 +596,6 @@ volumes:
   mcp_qdrant_data:
     driver: local
     name: mcp_qdrant_data
+  mcp_redis_primary_data:
+    driver: local
+    name: mcp_redis_primary_data
