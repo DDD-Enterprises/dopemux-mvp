@@ -1,9 +1,9 @@
 # Dopemux Architecture Consolidation - Comprehensive Synthesis & Roadmap
 
-**Date**: 2025-10-05 (Updated after 5 systematic deep dives)
-**Analysis Method**: Zen thinkdeep systematic investigation - Decisions #4-8
-**Status**: ✅ Final Synthesis Complete - Ready for Implementation
-**Deep Dives Completed**: Storage (#4), Search/Retrieval (#5), ADHD (#6), MCP Consolidation (#7), Data Flow (#8)
+**Date**: 2025-10-16 (Updated after 7 systematic deep dives + 2025 infrastructure review)
+**Analysis Method**: Systematic investigation - Decisions #4-8, #31-32
+**Status**: ✅ Enhanced Synthesis Complete - Infrastructure Optimization Added
+**Deep Dives Completed**: Storage (#4), Search/Retrieval (#5), ADHD (#6), MCP Consolidation (#7), Data Flow (#8), Infrastructure Consolidation (#31), Call Pattern Optimization (#32)
 
 ---
 
@@ -11,21 +11,22 @@
 
 **Recommendation**: Implement **Shared Infrastructure Layer with Service Mesh** (Enhanced Option B) over 3-week phased approach
 
-**Key Metrics** (Validated through 5 Deep Dives):
-- 📊 **Effort**: 21 days total (9 + 7 + 5 days across 3 phases) - Extended from 16 days
+**Key Metrics** (Validated through 7 Deep Dives + Infrastructure Review):
+- 📊 **Effort**: 21 days total (9 + 7 + 5 days across 3 phases) + 6-9 days infrastructure cleanup (parallel)
 - 🎯 **Comprehensive Impact**:
   - **Embeddings**: +35-67% quality (384-dim → 1024-dim) [Decision #5]
   - **API Costs**: -75% through deduplication & pooling [Decision #8]
-  - **Latency**: -60% via service mesh [Decision #8]
+  - **Latency**: -60% via service mesh [Decision #8] + -20-30% via selective middleware [#32]
   - **Throughput**: +200% with async event-driven architecture [Decision #8]
   - **Code Duplication**: -60% via dopemux-core [Decision #7]
-  - **Container Footprint**: -16% (19→16 containers) [Decision #7]
-  - **Database Consolidation**: 2 PostgreSQL → 1 (or sync layer) [Decision #4]
-  - **Vector DBs**: 3 approaches → 1 Milvus [Decision #4]
+  - **Container Footprint**: -42% (19→11 containers) [#7: -3, #31: -8 containers]
+  - **Memory Savings**: ~2-3GB from infrastructure consolidation [Decision #31]
+  - **Database Consolidation**: 3 PostgreSQL → 1 (2 orphaned eliminated) [#31], Vector DBs: Milvus (3-service) → Qdrant (1-service) [#31]
   - **ADHD Consistency**: 100% (23+ scattered thresholds → centralized) [Decision #6]
-- ⚠️ **Critical Blockers**: 3 (PostgreSQL AGE compatibility, Integration Bridge completion, Unknown decision flow tracing)
-- ✅ **Quick Wins**: 5 identified (ConPort search removal, embedding upgrade, ADHD centralization, API pooling, Redis event activation)
-- 🔗 **Synergies**: 6 opportunities (unified graph, semantic nav, auto-indexing, service mesh, event-driven, decision flow tracing)
+  - **Port Conflicts**: Resolved (5455 conflict eliminated) [Decision #31]
+- ⚠️ **Critical Blockers**: 3 (PostgreSQL AGE compatibility [#4], Integration Bridge completion [#8], Unknown decision flow [#8])
+- ✅ **Quick Wins**: 8 identified (ConPort search removal, embedding upgrade, ADHD centralization, API pooling, Redis event activation, decommission orphaned DBs [#31], selective middleware [#32], standardize ConPort SDK [#32])
+- 🔗 **Synergies**: 8 opportunities (unified graph, semantic nav, auto-indexing, service mesh, event-driven, decision flow tracing, Docker DNS service discovery [#32], connection pooling [#32])
 
 ---
 
@@ -93,6 +94,29 @@
   6. ConPort Split-Brain: Writes to 2 PostgreSQL instances
   7. No Circuit Breakers: Single point of failure for external APIs
 **Recommendation**: Complete Integration Bridge (9d), implement service mesh (7d), activate Redis event bus (4d), document decision flow (4d). -75% API costs, -60% latency, +200% throughput
+
+### Decision #31: MCP Infrastructure Consolidation (2025-10-16) ✅
+**Method**: Direct infrastructure analysis of Docker Compose configurations
+**Key Findings**:
+- **PostgreSQL Duplication** (3 instances → 1): dopemux-postgres (ORPHANED), dopemux-postgres-age (ACTIVE), conport-kg-postgres-age (DEFERRED + port 5455 conflict)
+- **Redis Duplication** (4+ instances → 2-3): dopemux-redis-primary (unnamed), dopemux-redis-events, conport-kg-redis (DEFERRED), redis_leantime (appropriately isolated)
+- **Vector DB Complexity** (2 types → 1): Milvus (3-service stack: milvus+etcd+minio, high complexity) vs Qdrant (1-service, simple, modern)
+- **Root Cause**: Incomplete migration from old memory-stack to MCP-integrated ConPort
+**Recommendation**: 3-Phase consolidation - (1) Decommission orphaned PostgreSQL (2 containers eliminated, ZERO risk), (2) Consolidate Redis to dopemux-redis-shared + dopemux-redis-events (MEDIUM risk), (3) Migrate claude-context from Milvus to Qdrant (3 containers eliminated, MEDIUM-HIGH risk). **Total savings: 8 containers, 2-3GB memory, resolved port conflicts**
+
+### Decision #32: Data Flow & Call Pattern Optimization (2025-10-16) ✅
+**Method**: Direct analysis of Integration Bridge and cross-service communication patterns
+**Key Findings**:
+- **6 Anti-Patterns Identified**:
+  1. Fragile Service Discovery: Hardcoded `{CONTAINER_PREFIX}-task-master-ai:3005`, environment variable dependencies
+  2. Inconsistent ConPort Clients: 3 different implementations (ConPortSQLiteClient, HTTP client, ConPortKnowledgeGraphBridge)
+  3. HTTP N+1 Pattern: Individual HTTP calls, no batching/pooling, 30s timeouts
+  4. ConPortMiddleware Overhead: Wraps ALL HTTP requests (should be selective)
+  5. Multi-Instance Port Offset Complexity: PORT_BASE+16 system (Decision #29 cleanup incomplete)
+  6. Circular Dependency Risk: Serena → ConPort → Integration Bridge → Serena (potential 4-hop loop)
+- **Correct Patterns**: PM/Cognitive plane isolation ✅, KGAuthorityMiddleware ✅, Event bus coordination ✅
+- **Inefficient Patterns**: 3-hop PM→Integration Bridge→ConPort→PostgreSQL (better: direct with authority), HTTP overhead for every cross-plane query
+**Recommendation**: 4-Phase optimization - (1) Quick wins (remove multi-instance code, selective middleware, standardize ConPort SDK - 1-2 days, HIGH ROI), (2) Service discovery (Docker DNS, health check registry - 2-3 days, MEDIUM ROI), (3) HTTP optimization (connection pooling, batch endpoints, Redis caching - 3-4 days, MEDIUM-HIGH ROI), (4) Advanced (gRPC, GraphQL, Event Sourcing - future consideration)
 
 ---
 
