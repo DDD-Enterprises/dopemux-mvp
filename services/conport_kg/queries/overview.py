@@ -46,6 +46,38 @@ class OverviewQueries:
     Now uses AGEClient for <50ms performance (was 50-100ms with docker exec)
     """
 
+    @staticmethod
+    def _validate_limit(limit: int, max_limit: int = 100) -> int:
+        """
+        Validate and sanitize limit parameter to prevent SQL injection
+
+        Security: CRITICAL - Prevents SQL injection via LIMIT clause
+
+        Args:
+            limit: User-provided limit value
+            max_limit: Maximum allowed limit (default 100)
+
+        Returns:
+            Validated integer limit
+
+        Raises:
+            ValueError: If limit is invalid or out of range
+        """
+        # Ensure it's an integer (prevents SQL injection)
+        if not isinstance(limit, int):
+            try:
+                limit = int(limit)
+            except (ValueError, TypeError) as e:
+                raise ValueError(f"Invalid limit: must be integer, got {type(limit).__name__}") from e
+
+        # Range validation
+        if limit < 1:
+            raise ValueError(f"Invalid limit: must be >= 1, got {limit}")
+        if limit > max_limit:
+            raise ValueError(f"Invalid limit: must be <= {max_limit}, got {limit}")
+
+        return limit
+
     def __init__(self, age_url: str = None, use_direct: bool = None):
         """
         Initialize with AGEClient or fallback to docker exec
@@ -113,6 +145,8 @@ class OverviewQueries:
 
         Returns: List[DecisionCard] with typed data
         """
+        # Security: Validate limit to prevent SQL injection
+        limit = self._validate_limit(limit, max_limit=100)
 
         cypher = f"""
             SELECT * FROM cypher('conport_knowledge', $$
@@ -201,6 +235,8 @@ class OverviewQueries:
 
         Returns: List[DecisionCard] with typed data
         """
+        # Security: Validate limit to prevent SQL injection
+        limit = self._validate_limit(limit, max_limit=100)
 
         cypher = f"""
             SELECT * FROM cypher('conport_knowledge', $$
@@ -244,6 +280,8 @@ class OverviewQueries:
 
         Returns: List[DecisionCard] with typed data
         """
+        # Security: Validate limit to prevent SQL injection
+        limit = self._validate_limit(limit, max_limit=100)
 
         # AGE doesn't support ANY function, use array contains check
         cypher = f"""
