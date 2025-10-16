@@ -243,7 +243,7 @@ services:
     ports:
       - "3015:3015"
     depends_on:
-      - milvus
+      - qdrant
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3015/health || nc -z localhost 3015 || exit 1"]
       timeout: 10s
