@@ -17,6 +17,7 @@ import threading
 import time
 import json
 import subprocess
+from .conport_client import get_conport_client
 
 
 @dataclass
@@ -209,24 +210,22 @@ class CheckpointManager:
             checkpoint_data["timestamp"] = checkpoint.timestamp.isoformat()
             checkpoint_data["last_activity"] = checkpoint.last_activity.isoformat()
 
-            # Call ConPort MCP
-            # Note: This requires running in Claude Code with ConPort MCP active
-            # For standalone Python, would need HTTP call to Integration Bridge
+            # Use ConPort client (supports both HTTP and MCP modes)
+            client = get_conport_client(self.workspace_id)
+            result = client.log_custom_data(
+                category="adhd_checkpoints",
+                key=checkpoint_id,
+                value=checkpoint_data
+            )
 
-            # TODO: Uncomment when running in Claude Code context
-            # result = mcp__conport__log_custom_data(
-            #     workspace_id=self.workspace_id,
-            #     category="adhd_checkpoints",
-            #     key=checkpoint_id,
-            #     value=checkpoint_data
-            # )
-
-            # For now, just note that it would be saved
-            pass
+            if result.get("success"):
+                print(f"✅ Checkpoint saved to ConPort ({result.get('mode', 'unknown')} mode)")
+            else:
+                print(f"⚠️ ConPort save failed: {result.get('error', 'unknown')}")
 
         except Exception as e:
             # Silent failure - JSON file is already saved as fallback
-            pass
+            print(f"⚠️ ConPort integration error: {e}")
 
     def load_latest_checkpoint(self) -> Optional[Checkpoint]:
         """
@@ -282,21 +281,37 @@ class CheckpointManager:
             Checkpoint if found, None otherwise
         """
         try:
-            # TODO: Implement real ConPort MCP query
-            # checkpoints = mcp__conport__get_custom_data(
-            #     workspace_id=self.workspace_id,
-            #     category="adhd_checkpoints",
-            #     limit=1
-            # )
-            #
-            # if checkpoints:
-            #     data = checkpoints[0].value
-            #     return Checkpoint(**data)
+            # Use ConPort client
+            client = get_conport_client(self.workspace_id)
+            checkpoints = client.get_custom_data(
+                category="adhd_checkpoints",
+                limit=1
+            )
+
+            if checkpoints and len(checkpoints) > 0:
+                data = checkpoints[0]
+                # Reconstruct checkpoint with datetime parsing
+                checkpoint = Checkpoint(
+                    session_id=data["session_id"],
+                    timestamp=datetime.fromisoformat(data["timestamp"]),
+                    mode=data["mode"],
+                    energy_level=data["energy_level"],
+                    active_agents=data["active_agents"],
+                    chat_history=data["chat_history"],
+                    open_files=data["open_files"],
+                    cursor_positions=data["cursor_positions"],
+                    pending_tasks=data["pending_tasks"],
+                    session_duration_seconds=data["session_duration_seconds"],
+                    last_activity=datetime.fromisoformat(data["last_activity"]),
+                )
+                print(f"✅ Checkpoint loaded from ConPort")
+                return checkpoint
 
             return None
 
         except Exception as e:
             # Silent failure - fall back to JSON
+            print(f"⚠️ ConPort load failed: {e}")
             return None
 
     def update_state(
