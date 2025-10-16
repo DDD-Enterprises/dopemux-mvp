@@ -12,6 +12,7 @@ import httpx
 import asyncio
 import json
 import threading
+import aiofiles
 from typing import Optional, Any, Dict, List
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -46,7 +47,8 @@ class ConPortHTTPClient:
         self,
         workspace_id: str,
         bridge_url: Optional[str] = None,
-        fallback_dir: Optional[Path] = None
+        fallback_dir: Optional[Path] = None,
+        cleanup_old_files: bool = True
     ):
         """
         Initialize HTTP client.
@@ -55,6 +57,7 @@ class ConPortHTTPClient:
             workspace_id: Absolute path to workspace
             bridge_url: Integration Bridge URL (default: http://localhost:3016)
             fallback_dir: Directory for JSON fallback (default: /tmp/dopemux_fallback)
+            cleanup_old_files: Auto-cleanup fallback files >7 days old (default: True)
         """
         self.workspace_id = workspace_id
         self.bridge_url = bridge_url or "http://localhost:3016"
@@ -68,6 +71,10 @@ class ConPortHTTPClient:
 
         # Create async HTTP client with ADHD-optimized settings
         self.client = self._create_client()
+
+        # Schedule cleanup of old fallback files (async, non-blocking)
+        if cleanup_old_files:
+            asyncio.create_task(self._cleanup_old_fallbacks())
 
     def _create_client(self) -> httpx.AsyncClient:
         """Create httpx client with production settings."""
@@ -139,7 +146,11 @@ class ConPortHTTPClient:
             )
 
     async def _fallback_save(self, category: str, key: str, value: dict) -> Path:
-        """Save to JSON fallback."""
+        """
+        Save to JSON fallback (async).
+
+        Uses aiofiles for true async I/O - doesn't block event loop.
+        """
         file_path = self.fallback_dir / f"{category}_{key}.json"
         data = {
             "workspace_id": self.workspace_id,
@@ -148,23 +159,62 @@ class ConPortHTTPClient:
             "value": value,
             "timestamp": datetime.now().isoformat()
         }
-        file_path.write_text(json.dumps(data, indent=2))
+
+        # Async file write (doesn't block event loop)
+        async with aiofiles.open(file_path, 'w') as f:
+            await f.write(json.dumps(data, indent=2))
+
         return file_path
 
     async def _fallback_load(self, category: str, key: Optional[str] = None) -> List[dict]:
-        """Load from JSON fallback."""
+        """
+        Load from JSON fallback (async).
+
+        Uses aiofiles for true async I/O - doesn't block event loop.
+        """
         pattern = f"{category}_*.json" if key is None else f"{category}_{key}.json"
         files = list(self.fallback_dir.glob(pattern))
 
         results = []
         for file_path in sorted(files, reverse=True):
             try:
-                data = json.loads(file_path.read_text())
-                results.append(data)
+                # Async file read (doesn't block event loop)
+                async with aiofiles.open(file_path, 'r') as f:
+                    content = await f.read()
+                    data = json.loads(content)
+                    results.append(data)
             except Exception as e:
                 logger.warning(f"Failed to load fallback {file_path}: {e}")
 
         return results
+
+    async def _cleanup_old_fallbacks(self, days: int = 7):
+        """
+        Delete fallback files older than N days.
+
+        Prevents disk space exhaustion from accumulated fallback files.
+        Runs async to not block other operations.
+
+        Args:
+            days: Delete files older than this many days (default: 7)
+        """
+        try:
+            cutoff = datetime.now() - timedelta(days=days)
+            deleted_count = 0
+
+            for file_path in self.fallback_dir.glob("*.json"):
+                # Get file modification time
+                mtime = datetime.fromtimestamp(file_path.stat().st_mtime)
+
+                if mtime < cutoff:
+                    file_path.unlink()
+                    deleted_count += 1
+
+            if deleted_count > 0:
+                logger.info(f"Cleaned up {deleted_count} old fallback files (>{days} days)")
+
+        except Exception as e:
+            logger.warning(f"Fallback cleanup failed: {e}")
 
     async def log_custom_data(
         self,
@@ -461,9 +511,18 @@ class ConPortHTTPClientSync:
         self,
         workspace_id: str,
         bridge_url: Optional[str] = None,
-        fallback_dir: Optional[Path] = None
+        fallback_dir: Optional[Path] = None,
+        cleanup_old_files: bool = True
     ):
-        """Initialize sync HTTP client."""
+        """
+        Initialize sync HTTP client.
+
+        Args:
+            workspace_id: Absolute path to workspace
+            bridge_url: Integration Bridge URL (default: http://localhost:3016)
+            fallback_dir: Directory for JSON fallback (default: /tmp/dopemux_fallback)
+            cleanup_old_files: Auto-cleanup fallback files >7 days old (default: True)
+        """
         self.workspace_id = workspace_id
         self.bridge_url = bridge_url or "http://localhost:3016"
         self.fallback_dir = fallback_dir or Path("/tmp/dopemux_fallback")
@@ -476,6 +535,10 @@ class ConPortHTTPClientSync:
 
         # Create sync HTTP client
         self.client = self._create_client()
+
+        # Cleanup old fallback files on init (sync version runs in background thread)
+        if cleanup_old_files:
+            threading.Thread(target=self._cleanup_old_fallbacks, daemon=True).start()
 
     def _create_client(self) -> httpx.Client:
         """Create sync httpx client."""
@@ -688,6 +751,32 @@ class ConPortHTTPClientSync:
             self._record_failure()
             logger.warning(f"Semantic search failed: {e}")
             return []
+
+    def _cleanup_old_fallbacks(self, days: int = 7):
+        """
+        Delete fallback files older than N days (sync).
+
+        Prevents disk space exhaustion. Runs in background thread.
+
+        Args:
+            days: Delete files older than this many days (default: 7)
+        """
+        try:
+            cutoff = datetime.now() - timedelta(days=days)
+            deleted_count = 0
+
+            for file_path in self.fallback_dir.glob("*.json"):
+                mtime = datetime.fromtimestamp(file_path.stat().st_mtime)
+
+                if mtime < cutoff:
+                    file_path.unlink()
+                    deleted_count += 1
+
+            if deleted_count > 0:
+                logger.info(f"Cleaned up {deleted_count} old fallback files (>{days} days)")
+
+        except Exception as e:
+            logger.warning(f"Fallback cleanup failed: {e}")
 
     def close(self):
         """Close HTTP client."""
