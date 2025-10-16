@@ -162,7 +162,15 @@ class WorktreeRecoveryMenu:
 
         # Use selector for async-compatible input
         selector = selectors.DefaultSelector()
-        selector.register(sys.stdin, selectors.EVENT_READ)
+
+        # Register stdin - may fail with errno 22 if stdin is redirected/pipe/non-terminal
+        try:
+            selector.register(sys.stdin, selectors.EVENT_READ)
+        except OSError as e:
+            # errno 22 (Invalid argument) when stdin isn't a proper terminal
+            logger.debug(f"Cannot register stdin with selector: {e}")
+            selector.close()
+            return None
 
         loop = asyncio.get_event_loop()
 
@@ -433,5 +441,13 @@ def show_recovery_menu_sync(
     Returns:
         Selected worktree path or None
     """
-    menu = WorktreeRecoveryMenu(workspace_id, conport_port)
-    return asyncio.run(menu.show_recovery_menu())
+    async def _run_with_cleanup():
+        """Run menu and ensure cleanup of aiohttp sessions."""
+        menu = WorktreeRecoveryMenu(workspace_id, conport_port)
+        try:
+            return await menu.show_recovery_menu()
+        finally:
+            # Ensure aiohttp session is closed
+            await menu.manager._close_session()
+
+    return asyncio.run(_run_with_cleanup())

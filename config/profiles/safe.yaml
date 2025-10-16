@@ -34,7 +34,7 @@ rules:
 
   # Full query optimization
   trims:
-    claude-context:
+    dope-context:
       max_results: 3
       max_file_size: 50000
 
@@ -80,7 +80,7 @@ emergency:
     approval_timeout: 300  # 5 minutes to approve
     max_duration: 3600     # 1 hour maximum
     audit_required: true
-    available_tools: ["cli", "conport", "claude-context"]
+    available_tools: ["cli", "conport", "dope-context"]
 
 # Full monitoring for production
 monitoring:
