@@ -3633,6 +3633,20 @@ def worktrees_list_cmd(ctx):
     list_worktrees()
 
 
+@worktrees.command("current")
+@click.option("--no-cache", is_flag=True, help="Skip cache and detect fresh")
+@click.pass_context
+def worktrees_current_cmd(ctx, no_cache: bool):
+    """📍 Get current worktree path (cached for MCP efficiency)."""
+    from .worktree_commands import get_current_worktree
+    path = get_current_worktree(use_cache=not no_cache, quiet=False)
+    if path:
+        # Print just the path for easy shell scripting
+        print(path)
+    else:
+        sys.exit(1)
+
+
 @worktrees.command("switch")
 @click.argument("branch")
 @click.option("--no-fuzzy", is_flag=True, help="Disable fuzzy matching")
