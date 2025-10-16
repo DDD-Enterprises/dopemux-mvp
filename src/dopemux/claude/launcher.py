@@ -185,17 +185,19 @@ Alternative: Set CLAUDE_PATH environment variable
         config = self.config_manager.load_config()
 
         # Base Claude settings
+        # NOTE: env section is for MCP servers only - Claude Pro Max doesn't need API key
         claude_config = {
             "env": {
                 "MCP_TOOL_TIMEOUT": "40000",
                 "MAX_MCP_OUTPUT_TOKENS": "10000",
                 "DOPEMUX_PROJECT": str(project_path),
                 "DOPEMUX_ENABLED": "true",
-                # Add API keys from environment for Claude Code authentication
-                "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY", ""),
             },
             "mcpServers": {},
         }
+
+        # Do NOT add ANTHROPIC_API_KEY to Claude settings - Pro Max users authenticate through the app
+        # MCP servers will get API keys from subprocess environment instead
 
         # Add ADHD-specific environment variables
         adhd_profile = config.adhd_profile
@@ -263,19 +265,75 @@ Alternative: Set CLAUDE_PATH environment variable
         # Add Dopemux-specific variables
         env.update({"DOPEMUX_VERSION": "0.1.0", "DOPEMUX_ACTIVE": "true"})
 
-        # Ensure required API keys are available
-        required_keys = ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "EXA_API_KEY"]
+        # MCP servers may need API keys for their operations (e.g., LiteLLM fallback)
+        # Claude Pro Max users authenticate through the app itself, not via API key
+        # We still pass API keys in subprocess environment for MCP servers
+
+        # First, check if ANTHROPIC_API_KEY is already in the environment
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+
+        if api_key:
+            # Add to subprocess environment for MCP servers that might need it
+            env["ANTHROPIC_API_KEY"] = api_key
+            console.print(
+                "[dim]✓ ANTHROPIC_API_KEY available for MCP server fallback[/dim]"
+            )
+        else:
+            # Try to load from .env file if not in environment
+            try:
+                from dotenv import load_dotenv
+                load_dotenv()
+                api_key = os.getenv("ANTHROPIC_API_KEY")
+                if api_key:
+                    env["ANTHROPIC_API_KEY"] = api_key
+                    console.print(
+                        "[dim]✓ ANTHROPIC_API_KEY loaded from .env for MCP fallback[/dim]"
+                    )
+                else:
+                    console.print(
+                        "[dim]ℹ️  No ANTHROPIC_API_KEY found - MCP servers will rely on other providers[/dim]"
+                    )
+                    console.print("[dim]Claude Pro Max users: You're authenticated through the app ✓[/dim]")
+            except ImportError:
+                # dotenv not installed, just inform
+                console.print(
+                    "[dim]ℹ️  No ANTHROPIC_API_KEY set - MCP servers will use OpenAI/XAI fallback[/dim]"
+                )
+                console.print("[dim]Claude Pro Max users: You're authenticated through the app ✓[/dim]")
+
+        # Ensure other critical API keys are also added to subprocess environment
+        # These are needed by MCP servers for fallback when Claude Pro Max hits rate limits
+        other_keys = ["OPENAI_API_KEY", "EXA_API_KEY", "XAI_API_KEY"]
+
+        for key in other_keys:
+            key_value = os.getenv(key)
+            if key_value:
+                env[key] = key_value
+                console.print(f"[dim]✓ {key} added to environment for MCP fallback[/dim]")
+
+        # Check which API keys are available for MCP servers
+        required_keys = ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "EXA_API_KEY", "XAI_API_KEY"]
 
         missing_keys = []
+        available_keys = []
         for key in required_keys:
-            if key not in env or not env[key]:
+            if key in env and env[key]:
+                available_keys.append(key)
+            else:
                 missing_keys.append(key)
 
         if missing_keys:
+            # Only show as info, not warning - Pro Max users don't need these
             console.print(
-                f"[yellow]⚠️ Missing API keys: {', '.join(missing_keys)}[/yellow]"
+                f"[dim]ℹ️  API keys not set: {', '.join(missing_keys)}[/dim]"
             )
-            console.print("[dim]Some MCP servers may not function correctly[/dim]")
+            if "OPENAI_API_KEY" in missing_keys or "XAI_API_KEY" in missing_keys:
+                console.print("[dim]MCP fallback to OpenAI/xAI requires their API keys[/dim]")
+
+        if available_keys:
+            console.print(
+                f"[green]✓ MCP fallback ready with: {', '.join(available_keys)}[/green]"
+            )
 
         return env
 
@@ -387,7 +445,7 @@ Alternative: Set CLAUDE_PATH environment variable
                     )
 
             # Install Python packages
-            python_packages = ["task-master-ai", "context-portal-mcp"]
+            python_packages = ["context-portal-mcp"]  # Removed task-master-ai (crashes)
 
             for package in python_packages:
                 console.print(f"[blue]Installing {package}...[/blue]")
