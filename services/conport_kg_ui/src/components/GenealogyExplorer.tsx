@@ -48,7 +48,7 @@ export const GenealogyExplorer: React.FC<Props> = ({
   }, [decisionId, maxHops]);
 
   // Keyboard controls
-  useInput((input) => {
+  useInput((input: string) => {
     if (input === 'e' && maxHops === 1) {
       setMaxHops(2);  // Expand to 2-hop
     }
@@ -81,7 +81,9 @@ export const GenealogyExplorer: React.FC<Props> = ({
       <Box padding={1} flexDirection="column">
         <Text color="red" bold>Error loading genealogy</Text>
         <Text>{error || 'Unknown error'}</Text>
-        <Text dimColor marginTop={1}>Press 'b' to go back</Text>
+        <Box marginTop={1}>
+          <Text dimColor>Press 'b' to go back</Text>
+        </Box>
       </Box>
     );
   }
@@ -93,9 +95,11 @@ export const GenealogyExplorer: React.FC<Props> = ({
         Genealogy Explorer - Decision #{decisionId}
       </Text>
 
-      <Text dimColor marginTop={0}>
-        e: Expand to 2-hop | f: Full Context | b: Back | q: Quit
-      </Text>
+      <Box marginTop={0}>
+        <Text dimColor>
+          e: Expand to 2-hop | f: Full Context | b: Back | q: Quit
+        </Text>
+      </Box>
 
       {/* Center decision */}
       <Box marginTop={1} flexDirection="column">

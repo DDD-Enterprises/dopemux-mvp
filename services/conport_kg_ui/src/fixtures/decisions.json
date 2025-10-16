@@ -1,0 +1,114 @@
+{
+  "decisions": [
+    {
+      "id": 143,
+      "summary": "Replace mas-sequential-thinking with Zen MCP for multi-model reasoning",
+      "timestamp": "2025-10-15T10:30:00Z",
+      "related_count": 5,
+      "tags": ["mcp-integration", "empirical-testing", "architecture"],
+      "rationale": "Empirical testing showed mas-sequential-thinking returning MCP errors consistently, while Zen MCP (v9.0.3) is fully operational with o3-mini, gpt-5, and gpt-5-mini models. Zen provides thinkdeep, planner, consensus, debug, and codereview tools with multi-model validation.",
+      "implementation": "Updated SuperClaude commands to use zen/thinkdeep for analysis, zen/planner for implementation planning, zen/consensus for architectural decisions, zen/debug for troubleshooting, and zen/codereview for quality validation.",
+      "cognitive_load": "medium"
+    },
+    {
+      "id": 142,
+      "summary": "Integrate SuperClaude framework with Dopemux MCP servers",
+      "timestamp": "2025-10-14T15:45:00Z",
+      "related_count": 8,
+      "tags": ["superclaude", "mcp-integration", "workflow"],
+      "rationale": "SuperClaude provides 16 specialized personas and 25+ slash commands that need integration with Dopemux's enhanced MCP suite (Zen, ConPort, Serena, Context7, Exa, GPT-Researcher) for optimal ADHD-optimized development workflows.",
+      "implementation": "Created comprehensive MCP documentation in .claude/ directory, mapped SuperClaude commands to MCP tools, documented tool selection patterns, and established integration patterns for each workflow type.",
+      "cognitive_load": "high"
+    },
+    {
+      "id": 141,
+      "summary": "Implement ConPort Knowledge Graph for persistent context preservation",
+      "timestamp": "2025-10-13T09:20:00Z",
+      "related_count": 12,
+      "tags": ["conport", "knowledge-graph", "memory", "adhd"],
+      "rationale": "ADHD developers need reliable context preservation across interruptions. ConPort provides PostgreSQL-based knowledge graph with decision logging, progress tracking, system patterns, and relationship genealogy. Performance targets exceeded by 19-135x.",
+      "implementation": "Deployed PostgreSQL with AGE extension on port 5455, implemented 9 core API operations (decisions, progress, patterns, custom_data, semantic_search, linked_items), added ADHD metadata (complexity scoring, energy matching, cognitive load), and integrated with session lifecycle management.",
+      "cognitive_load": "high"
+    },
+    {
+      "id": 140,
+      "summary": "Add Serena v2 with Tree-sitter and LSP integration",
+      "timestamp": "2025-10-12T14:10:00Z",
+      "related_count": 6,
+      "tags": ["serena", "lsp", "code-intelligence", "adhd"],
+      "rationale": "ADHD developers need fast, progressive code navigation without cognitive overwhelm. Serena v2 combines LSP standard operations with Tree-sitter parsing, relationship graphs, and ADHD accommodations (max 10 results, 3-level depth, progressive disclosure).",
+      "implementation": "Integrated 26 LSP tools, added Tree-sitter for Python/JS/TS/Go/Rust, implemented PostgreSQL relationship tracking, Redis caching (1.76ms retrieval), complexity scoring (0.0-1.0), and auto-workspace detection (0.37ms).",
+      "cognitive_load": "medium"
+    },
+    {
+      "id": 139,
+      "summary": "Create ADHD-optimized worktree management system",
+      "timestamp": "2025-10-11T11:30:00Z",
+      "related_count": 4,
+      "tags": ["worktree", "git", "adhd", "context-switching"],
+      "rationale": "Context switching is cognitively expensive for ADHD developers. Git worktrees allow multiple branches in separate directories, enabling pause/resume without mental overhead of stashing and switching.",
+      "implementation": "Added 'dopemux worktrees' commands: list (show all with status), switch (move between worktrees), cleanup (remove unused with --force and --dry-run). Each worktree maintains independent state with clear physical boundaries.",
+      "cognitive_load": "low"
+    },
+    {
+      "id": 138,
+      "summary": "Design two-plane architecture with Integration Bridge coordination",
+      "timestamp": "2025-10-10T16:00:00Z",
+      "related_count": 15,
+      "tags": ["architecture", "two-plane", "authority", "coordination"],
+      "rationale": "Separate PM concerns (status, tasks, team visibility) from cognitive concerns (decisions, code, memory) with clear authority boundaries. Integration Bridge enforces no direct cross-plane communication, routing all events through authoritative systems.",
+      "implementation": "PM Plane: Leantime (status authority), Task-Master (PRD parsing), Task-Orchestrator (37 tools). Cognitive Plane: Serena (code navigation), ConPort (decisions/memory). Integration Bridge at PORT_BASE+16 for event routing and conflict resolution.",
+      "cognitive_load": "high"
+    }
+  ],
+  "relationships": [
+    {
+      "source_id": 143,
+      "target_id": 142,
+      "type": "extends",
+      "description": "Zen MCP integration extends SuperClaude framework integration",
+      "timestamp": "2025-10-15T10:35:00Z",
+      "direction": "outgoing"
+    },
+    {
+      "source_id": 142,
+      "target_id": 141,
+      "type": "implements",
+      "description": "SuperClaude integration implements ConPort for memory management",
+      "timestamp": "2025-10-14T15:50:00Z",
+      "direction": "outgoing"
+    },
+    {
+      "source_id": 142,
+      "target_id": 140,
+      "type": "implements",
+      "description": "SuperClaude integration implements Serena for code intelligence",
+      "timestamp": "2025-10-14T15:50:00Z",
+      "direction": "outgoing"
+    },
+    {
+      "source_id": 141,
+      "target_id": 138,
+      "type": "builds_upon",
+      "description": "ConPort builds upon two-plane architecture as cognitive plane component",
+      "timestamp": "2025-10-13T09:25:00Z",
+      "direction": "outgoing"
+    },
+    {
+      "source_id": 140,
+      "target_id": 138,
+      "type": "builds_upon",
+      "description": "Serena builds upon two-plane architecture as cognitive plane component",
+      "timestamp": "2025-10-12T14:15:00Z",
+      "direction": "outgoing"
+    },
+    {
+      "source_id": 139,
+      "target_id": 138,
+      "type": "supports",
+      "description": "Worktree system supports two-plane architecture by enabling parallel development",
+      "timestamp": "2025-10-11T11:35:00Z",
+      "direction": "outgoing"
+    }
+  ]
+}
