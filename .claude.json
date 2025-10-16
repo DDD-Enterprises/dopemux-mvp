@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "zen": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "python", "server.py"],
+      "cwd": "/Users/hue/code/dopemux-mvp/docker/mcp-servers/zen/zen-mcp-server",
+      "env": {
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY:-}",
+        "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
+        "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
+        "DEFAULT_MODEL": "auto"
+      }
+    }
+  }
+}
