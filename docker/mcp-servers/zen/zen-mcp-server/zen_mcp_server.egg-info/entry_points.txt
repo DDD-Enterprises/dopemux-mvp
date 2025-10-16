@@ -1,0 +1,2 @@
+[console_scripts]
+zen-mcp-server = server:run
