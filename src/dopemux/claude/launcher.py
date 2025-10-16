@@ -191,6 +191,8 @@ Alternative: Set CLAUDE_PATH environment variable
                 "MAX_MCP_OUTPUT_TOKENS": "10000",
                 "DOPEMUX_PROJECT": str(project_path),
                 "DOPEMUX_ENABLED": "true",
+                # Add API keys from environment for Claude Code authentication
+                "ANTHROPIC_API_KEY": os.getenv("ANTHROPIC_API_KEY", ""),
             },
             "mcpServers": {},
         }
