@@ -480,6 +480,44 @@ kill -9 <PID>
    psql -h localhost -p 5455 -U dopemux -d dopemux_memory -c "\dt"
    ```
 
+### MCP Services Can't Access Worktree Files
+
+**Problem**: Serena or GPT-Researcher report "file not found" errors when working in worktrees.
+
+**Root Cause**: MCP containers have hardcoded volume mounts to the main workspace only.
+
+**Solution** (Fixed in commit 40171ee):
+
+The fix mounts the parent directory (`/Users/hue/code`) instead of individual workspaces, giving all MCP services automatic access to all worktrees:
+
+```yaml
+# Serena - Before
+- /Users/hue/code/dopemux-mvp:/workspace/dopemux-mvp
+
+# Serena - After
+- /Users/hue/code:/workspaces:ro  # All worktrees accessible
+```
+
+**Verification:**
+
+```bash
+# Test Serena can see worktree
+docker exec mcp-serena ls /workspaces/ui-build
+
+# Test file access from worktree
+docker exec mcp-serena cat /workspaces/ui-build/.claude/claude.md
+```
+
+**Affected Services:**
+- ✅ **Serena** (code navigation, LSP) - Fixed
+- ✅ **GPT-Researcher** (document search) - Fixed
+- ℹ️ **dope-context** (code search) - Will inherit fix when deployed
+
+**Benefits:**
+- ✅ Zero container restarts when switching worktrees (ADHD-optimal)
+- ✅ Seamless parallel development across branches
+- ✅ Future-proof for dynamically created worktrees
+
 ## Limitations
 
 ### Current MVP (Phase 2E)
