@@ -135,7 +135,7 @@ def list_worktrees(workspace_path: Optional[Path] = None) -> None:
     This is a backward compatibility wrapper that calls the enhanced backend.
     """
     # Use the enhanced backend which has ADHD optimizations (shows 3 most recent by default)
-    list_worktrees_adhd(show_all=True)  # Show all for backward compatibility
+    list_worktrees_adhd(show_all=True, workspace_path=workspace_path)  # Show all for backward compatibility
 
 
 def switch_worktree(
@@ -157,7 +157,7 @@ def switch_worktree(
     This is a backward compatibility wrapper that calls the enhanced backend.
     """
     # Use the enhanced backend with safe switching
-    return switch_worktree_safe(target_name)
+    return switch_worktree_safe(target_name, workspace_path=workspace_path)
 
 
 def cleanup_worktrees(
@@ -176,4 +176,4 @@ def cleanup_worktrees(
     This is a backward compatibility wrapper that calls the enhanced backend.
     """
     # Use the enhanced backend with safe cleanup
-    cleanup_worktrees_safe(dry_run=dry_run)
+    cleanup_worktrees_safe(dry_run=dry_run, force=force, workspace_path=workspace_path)
