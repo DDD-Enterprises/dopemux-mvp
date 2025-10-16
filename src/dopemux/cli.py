@@ -284,7 +284,7 @@ def start(
         table.add_column("Instance", style="cyan")
         table.add_column("Port", style="magenta")
         table.add_column("Branch", style="green")
-        table.add_column("Path", style="dim")
+        table.add_column("Current Worktree", style="blue")
 
         for inst in running_instances:
             table.add_row(
@@ -754,8 +754,8 @@ def instances_list(ctx):
         table.add_column("Instance", style="cyan", no_wrap=True)
         table.add_column("Port", style="magenta", no_wrap=True)
         table.add_column("Branch", style="green")
-        table.add_column("Worktree Path", style="dim")
-        table.add_column("Status", style="blue")
+        table.add_column("Current Worktree", style="blue")
+        table.add_column("Status", style="green")
 
         for inst in running_instances:
             status = "✅ Healthy" if inst.is_healthy else "⚠️  Unknown"
