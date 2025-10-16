@@ -3466,6 +3466,105 @@ def profile_init_cmd(ctx, profile_name: Optional[str], output_dir: Optional[str]
         sys.exit(1)
 
 
+@profile.command("auto-enable")
+@click.option("--check-interval", "-i", type=int, help="Check interval in seconds (default: 300)")
+@click.option("--threshold", "-t", type=float, help="Confidence threshold (default: 0.85)")
+@click.pass_context
+def profile_auto_enable_cmd(ctx, check_interval: Optional[int], threshold: Optional[float]):
+    """🔍 Enable auto-detection with gentle profile suggestions."""
+    try:
+        from .auto_detection_service import AutoDetectionService, create_default_settings
+
+        # Create default config if it doesn't exist
+        config_file = Path.cwd() / ".dopemux" / "profile-settings.yaml"
+        if not config_file.exists():
+            create_default_settings(config_file)
+
+        # Load and update config
+        service = AutoDetectionService(config_file=config_file)
+
+        if check_interval:
+            service.config.check_interval_seconds = check_interval
+        if threshold:
+            service.config.confidence_threshold = threshold
+
+        service.config.enabled = True
+        service.config.save(config_file)
+
+        console.print("[green]✅ Auto-detection enabled[/green]")
+        console.print(f"   Check interval: {service.config.check_interval_seconds}s ({service.config.check_interval_seconds // 60} min)")
+        console.print(f"   Confidence threshold: {service.config.confidence_threshold:.0%}")
+        console.print(f"   Quiet hours: {service.config.quiet_hours_start}-{service.config.quiet_hours_end}")
+        console.print(f"\n[dim]💡 Service will suggest profile switches when confidence >{service.config.confidence_threshold:.0%}[/dim]")
+        console.print(f"[dim]💡 Edit settings: {config_file}[/dim]")
+
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+        if ctx.obj.get("verbose"):
+            raise
+        sys.exit(1)
+
+
+@profile.command("auto-disable")
+@click.pass_context
+def profile_auto_disable_cmd(ctx):
+    """⏸️  Disable auto-detection suggestions."""
+    try:
+        config_file = Path.cwd() / ".dopemux" / "profile-settings.yaml"
+
+        if not config_file.exists():
+            console.print("[yellow]Auto-detection not configured[/yellow]")
+            return
+
+        from .auto_detection_service import AutoDetectionConfig
+
+        config = AutoDetectionConfig(config_file)
+        config.enabled = False
+        config.save(config_file)
+
+        console.print("[green]✅ Auto-detection disabled[/green]")
+
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+        sys.exit(1)
+
+
+@profile.command("auto-status")
+@click.pass_context
+def profile_auto_status_cmd(ctx):
+    """📊 Show auto-detection configuration and status."""
+    try:
+        config_file = Path.cwd() / ".dopemux" / "profile-settings.yaml"
+
+        if not config_file.exists():
+            console.print("[yellow]Auto-detection not configured[/yellow]")
+            console.print(f"\n[dim]Run 'dopemux profile auto-enable' to set up[/dim]")
+            return
+
+        from .auto_detection_service import AutoDetectionConfig
+
+        config = AutoDetectionConfig(config_file)
+
+        status = "[green]Enabled[/green]" if config.enabled else "[red]Disabled[/red]"
+        console.print(f"\n[bold]Auto-Detection Status:[/bold] {status}")
+        console.print(f"\n[cyan]Settings:[/cyan]")
+        console.print(f"   Check interval: {config.check_interval_seconds}s ({config.check_interval_seconds // 60} min)")
+        console.print(f"   Confidence threshold: {config.confidence_threshold:.0%}")
+        console.print(f"   Debounce period: {config.debounce_minutes} min")
+        console.print(f"   Quiet hours: {config.quiet_hours_start}-{config.quiet_hours_end}")
+
+        if config.never_suggest:
+            console.print(f"\n[yellow]Never Suggest:[/yellow]")
+            for profile in sorted(config.never_suggest):
+                console.print(f"   • {profile}")
+
+        console.print(f"\n[dim]Config file: {config_file}[/dim]")
+
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+        sys.exit(1)
+
+
 @profile.command("show")
 @click.argument("profile_name")
 @click.option("--profile-dir", "-d", help="Profile directory path", type=click.Path(exists=True))
