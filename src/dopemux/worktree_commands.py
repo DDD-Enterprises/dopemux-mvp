@@ -2,6 +2,7 @@
 Git Worktree Management Commands for ADHD-Optimized Workflows.
 
 Provides simple, direct worktree operations:
+- current: Get current worktree path with caching (MCP-optimized)
 - switch: Change to an existing worktree
 - list: Show all worktrees with ADHD-friendly display
 - cleanup: Remove unused worktrees safely
@@ -17,6 +18,8 @@ from typing import Optional, List, Tuple
 import subprocess
 import sys
 import os
+import tempfile
+import time
 
 from rich.console import Console
 from rich.table import Table
@@ -30,6 +33,81 @@ from .worktree_manager_enhanced import (
 )
 
 console = Console()
+
+# Cache for current worktree detection (30 second TTL)
+_WORKTREE_CACHE = {
+    "path": None,
+    "timestamp": 0,
+    "ttl": 30  # seconds
+}
+
+
+def get_current_worktree(use_cache: bool = True, quiet: bool = False) -> Optional[str]:
+    """
+    Get the current worktree path with intelligent caching.
+
+    Optimized for MCP wrappers - reduces repeated git calls by caching
+    the result for 30 seconds. Perfect for preventing memory bloat from
+    spawning hundreds of git processes during MCP operations.
+
+    Args:
+        use_cache: Use cached value if available (default: True)
+        quiet: Suppress console output (default: False for CLI, True for wrappers)
+
+    Returns:
+        Absolute path to current worktree, or None if not in a git repo
+
+    Example:
+        # From MCP wrapper (cached, quiet):
+        workspace = get_current_worktree(quiet=True)
+
+        # From CLI (fresh, with output):
+        workspace = get_current_worktree(use_cache=False)
+    """
+    global _WORKTREE_CACHE
+
+    # Check cache if enabled
+    if use_cache:
+        now = time.time()
+        if (_WORKTREE_CACHE["path"] and
+            now - _WORKTREE_CACHE["timestamp"] < _WORKTREE_CACHE["ttl"]):
+            if not quiet:
+                console.print(f"[dim]📍 Current worktree (cached): {_WORKTREE_CACHE['path']}[/dim]")
+            return _WORKTREE_CACHE["path"]
+
+    # Detect worktree using git
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+
+        if result.returncode == 0:
+            worktree_path = result.stdout.strip()
+
+            # Update cache
+            _WORKTREE_CACHE["path"] = worktree_path
+            _WORKTREE_CACHE["timestamp"] = time.time()
+
+            if not quiet:
+                console.print(f"[green]📍 Current worktree: {worktree_path}[/green]")
+
+            return worktree_path
+        else:
+            if not quiet:
+                console.print("[yellow]⚠️  Not in a git repository[/yellow]")
+            return None
+
+    except subprocess.TimeoutExpired:
+        if not quiet:
+            console.print("[red]❌ Git command timed out[/red]")
+        return None
+    except Exception as e:
+        if not quiet:
+            console.print(f"[red]❌ Error detecting worktree: {e}[/red]")
+        return None
 
 
 def get_worktrees(workspace_path: Path) -> List[Tuple[str, str, str]]:
