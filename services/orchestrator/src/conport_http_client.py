@@ -145,12 +145,31 @@ class ConPortHTTPClient:
                 f"Will retry at {self.circuit.half_open_test_time.strftime('%H:%M:%S')}"
             )
 
+    def _validate_json_serializable(self, value: dict) -> bool:
+        """
+        Validate that dict can be JSON serialized.
+
+        Returns:
+            True if serializable, False otherwise
+        """
+        try:
+            json.dumps(value)
+            return True
+        except (TypeError, ValueError) as e:
+            logger.warning(f"Value not JSON-serializable: {e}")
+            return False
+
     async def _fallback_save(self, category: str, key: str, value: dict) -> Path:
         """
         Save to JSON fallback (async).
 
         Uses aiofiles for true async I/O - doesn't block event loop.
+        Validates JSON serializability before saving.
         """
+        # Validate JSON serializable
+        if not self._validate_json_serializable(value):
+            raise ValueError(f"Value not JSON-serializable: {type(value)}")
+
         file_path = self.fallback_dir / f"{category}_{key}.json"
         data = {
             "workspace_id": self.workspace_id,
@@ -232,7 +251,14 @@ class ConPortHTTPClient:
 
         Returns:
             Result dict with success status
+
+        Raises:
+            ValueError: If value is not JSON-serializable
         """
+        # Validate JSON serializable FIRST (before httpx tries)
+        if not self._validate_json_serializable(value):
+            raise ValueError(f"Value must be JSON-serializable, got: {type(value)}")
+
         # Check circuit breaker
         if not await self._check_circuit():
             logger.info(f"Circuit breaker open, using fallback for {category}/{key}")
@@ -334,17 +360,21 @@ class ConPortHTTPClient:
         """
         Semantic search across ConPort data.
 
+        NOTE: No fallback on circuit breaker open.
+        Semantic search requires vector database (can't fallback to JSON files).
+        Returns empty list when bridge unavailable - this is expected behavior.
+
         Args:
             query: Natural language query
             top_k: Number of results
             filter_types: Filter by item types
 
         Returns:
-            Search results
+            Search results (empty list if bridge unavailable)
         """
         # Check circuit breaker
         if not await self._check_circuit():
-            logger.info("Circuit breaker open, semantic search unavailable")
+            logger.info("Circuit breaker open, semantic search unavailable (no fallback)")
             return []
 
         # Try HTTP request
@@ -598,8 +628,30 @@ class ConPortHTTPClientSync:
                 f"Will retry at {self.circuit.half_open_test_time.strftime('%H:%M:%S')}"
             )
 
+    def _validate_json_serializable(self, value: dict) -> bool:
+        """
+        Validate that dict can be JSON serialized (sync version).
+
+        Returns:
+            True if serializable, False otherwise
+        """
+        try:
+            json.dumps(value)
+            return True
+        except (TypeError, ValueError) as e:
+            logger.warning(f"Value not JSON-serializable: {e}")
+            return False
+
     def _fallback_save(self, category: str, key: str, value: dict) -> Path:
-        """Save to JSON fallback (sync)."""
+        """
+        Save to JSON fallback (sync).
+
+        Validates JSON serializability before saving.
+        """
+        # Validate JSON serializable
+        if not self._validate_json_serializable(value):
+            raise ValueError(f"Value not JSON-serializable: {type(value)}")
+
         file_path = self.fallback_dir / f"{category}_{key}.json"
         data = {
             "workspace_id": self.workspace_id,
@@ -632,7 +684,16 @@ class ConPortHTTPClientSync:
         key: str,
         value: dict
     ) -> Dict[str, Any]:
-        """Save custom data (sync)."""
+        """
+        Save custom data (sync).
+
+        Raises:
+            ValueError: If value is not JSON-serializable
+        """
+        # Validate JSON serializable FIRST (before httpx tries)
+        if not self._validate_json_serializable(value):
+            raise ValueError(f"Value must be JSON-serializable, got: {type(value)}")
+
         if not self._check_circuit():
             logger.info(f"Circuit breaker open, using fallback for {category}/{key}")
             fallback_path = self._fallback_save(category, key, value)
@@ -719,16 +780,20 @@ class ConPortHTTPClientSync:
         """
         Semantic search across ConPort data (sync).
 
+        NOTE: No fallback on circuit breaker open.
+        Semantic search requires vector database (can't fallback to JSON files).
+        Returns empty list when bridge unavailable - this is expected behavior.
+
         Args:
             query: Natural language query
             top_k: Number of results
             filter_types: Filter by item types
 
         Returns:
-            Search results
+            Search results (empty list if bridge unavailable)
         """
         if not self._check_circuit():
-            logger.info("Circuit breaker open, semantic search unavailable")
+            logger.info("Circuit breaker open, semantic search unavailable (no fallback)")
             return []
 
         try:

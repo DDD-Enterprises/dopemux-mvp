@@ -94,13 +94,13 @@ class CommandParser:
             "indicators": ["is this good", "any issues", "code review", "for security", "for quality"],
         },
         CommandMode.DEBUG: {
-            # DEBUG second - also specific
-            "keywords": ["debug", "fix", "error", "bug", "not working", "failing", "broken"],
-            "indicators": ["why is", "error:", "failed"],
+            # DEBUG second - also specific, prioritize troubleshooting phrases
+            "keywords": ["debug", "fix", "error", "bug", "not working", "failing", "broken", "why is", "why isn't"],
+            "indicators": ["why is", "why isn't", "not persisting", "not saving", "error:", "failed", "doesn't work"],
         },
         CommandMode.RESEARCH: {
             "keywords": ["research", "find out", "investigate", "analyze", "explore", "search"],
-            "indicators": ["what", "how does", "why", "tell me about"],
+            "indicators": ["what", "how does", "tell me about"],  # Removed generic "why" (conflicts with DEBUG "why is")
         },
         CommandMode.PLAN: {
             "keywords": ["design", "plan", "architect", "structure", "organize"],
@@ -375,31 +375,36 @@ class CommandParser:
             - 0.3-0.6: Medium (standard tasks)
             - 0.6-1.0: High (complex tasks)
         """
-        score = 0.3  # Default to medium-low
+        score = 0.0  # Start at 0, build up based on indicators
 
         text_lower = text.lower()
 
-        # Scope indicators
+        # Scope indicators (max approach - take highest)
         scope_keywords = {
-            "file": 0.1,
-            "function": 0.1,
-            "module": 0.2,
-            "system": 0.3,
-            "entire": 0.4,
-            "all": 0.3,
-            "complete": 0.3,
-            "full": 0.2,
+            "file": 0.2,  # Increased from 0.1
+            "function": 0.2,  # Increased from 0.1
+            "module": 0.35,  # Increased from 0.2
+            "system": 0.45,  # Increased from 0.3
+            "entire": 0.5,  # Increased from 0.4
+            "all users": 0.6,  # High impact scope
+            "all": 0.5,  # Increased from 0.4
+            "complete": 0.5,  # Increased from 0.4
+            "full": 0.3,  # Increased from 0.2
         }
 
         for keyword, weight in scope_keywords.items():
             if keyword in text_lower:
                 score = max(score, weight)
 
-        # Action complexity
+        # Default for no scope indicators
+        if score == 0.0:
+            score = 0.3  # Default medium-low
+
+        # Action complexity (additive - can stack)
         complex_actions = ["refactor", "redesign", "migrate", "optimize", "debug"]
         for action in complex_actions:
             if action in text_lower:
-                score += 0.2
+                score += 0.3  # Increased from 0.2
 
         # Multi-file indicators
         if any(word in text_lower for word in ["multiple", "several", "across"]):
