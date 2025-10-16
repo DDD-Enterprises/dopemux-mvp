@@ -3388,7 +3388,11 @@ def profile():
 @click.option("--profile-dir", "-d", help="Profile directory path", type=click.Path(exists=True))
 @click.pass_context
 def profile_list_cmd(ctx, profile_dir: Optional[str]):
-    """📋 List all available profiles."""
+    """📋 List all available profiles.
+
+    Shows all profiles with their MCP server counts and descriptions.
+    Profiles can be applied with: dopemux profile apply <name>
+    """
     try:
         # Get profiles directory
         from .profile_commands import get_profiles_directory
@@ -3399,10 +3403,12 @@ def profile_list_cmd(ctx, profile_dir: Optional[str]):
         profile_set = parser.parse_directory(profiles_directory, pattern="*.yaml")
 
         if not profile_set.profiles:
-            console.print("[yellow]No valid profiles found[/yellow]")
-            console.print(f"\nProfile directory: {profiles_directory}")
-            console.print("\nCreate profiles with the YAML schema documented in:")
-            console.print("  docs/PROFILE-YAML-SCHEMA.md")
+            console.print("[yellow]⚠️  No valid profiles found[/yellow]")
+            console.print(f"\n[dim]Profile directory: {profiles_directory}[/dim]")
+            console.print("\n[cyan]💡 Get started:[/cyan]")
+            console.print(f"   • Create personalized profile: [white]dopemux profile init[/white]")
+            console.print(f"   • See examples: [white]dopemux profile --help[/white]")
+            console.print(f"   • Read guide: [white]docs/guides/PROFILE_USER_GUIDE.md[/white]")
             sys.exit(1)
 
         # Display profiles in a rich table
@@ -3424,6 +3430,12 @@ def profile_list_cmd(ctx, profile_dir: Optional[str]):
         console.print(table)
         console.print(f"\n[dim]Profile directory: {profiles_directory}[/dim]")
         console.print(f"[dim]Total profiles: {len(profile_set.profiles)}[/dim]")
+
+        # Add helpful tips
+        console.print(f"\n[cyan]💡 Quick Tips:[/cyan]")
+        console.print(f"   • View details: [white]dopemux profile show <name>[/white]")
+        console.print(f"   • Apply profile: [white]dopemux profile apply <name>[/white]")
+        console.print(f"   • Create custom: [white]dopemux profile init[/white]")
 
     except FileNotFoundError as e:
         console.print(f"[red]Error: {e}[/red]")
