@@ -1,0 +1,23 @@
+2025-10-16 01:09:45,610 - root - INFO - Logging to: /Users/hue/code/dopemux-mvp/docker/mcp-servers/zen/zen-mcp-server/logs/mcp_server.log
+2025-10-16 01:09:45,610 - root - INFO - Process PID: 74783
+2025-10-16 01:13:19,337 - root - INFO - Logging to: /Users/hue/code/dopemux-mvp/docker/mcp-servers/zen/zen-mcp-server/logs/mcp_server.log
+2025-10-16 01:13:19,337 - root - INFO - Process PID: 81346
+2025-10-16 01:14:52,509 - root - INFO - Logging to: /Users/hue/code/dopemux-mvp/docker/mcp-servers/zen/zen-mcp-server/logs/mcp_server.log
+2025-10-16 01:14:52,509 - root - INFO - Process PID: 82102
+2025-10-16 01:16:09,894 - root - INFO - Logging to: /Users/hue/code/dopemux-mvp/docker/mcp-servers/zen/zen-mcp-server/logs/mcp_server.log
+2025-10-16 01:16:09,894 - root - INFO - Process PID: 82723
+2025-10-16 01:16:09,896 - __main__ - INFO - Active tools: ['apilookup', 'challenge', 'chat', 'clink', 'codereview', 'consensus', 'debug', 'listmodels', 'planner', 'precommit', 'thinkdeep', 'version']
+2025-10-16 01:16:09,900 - __main__ - INFO - OpenAI API key found
+2025-10-16 01:16:09,900 - __main__ - INFO - X.AI API key found - GROK models available
+2025-10-16 01:16:09,900 - __main__ - INFO - Registered providers: openai, xai
+2025-10-16 01:16:09,900 - __main__ - INFO - Available providers: OpenAI, X.AI (GROK)
+2025-10-16 01:16:09,900 - __main__ - INFO - No model restrictions configured - all models allowed
+2025-10-16 01:16:09,900 - root - INFO - Using extended timeouts for custom endpoint: https://api.openai.com/v1
+2025-10-16 01:16:09,901 - root - INFO - Model allow-list not configured for X.AI - all models permitted. To restrict access, set XAI_ALLOWED_MODELS with comma-separated model names.
+2025-10-16 01:16:09,901 - root - INFO - Using extended timeouts for custom endpoint: https://api.x.ai/v1
+2025-10-16 01:16:09,901 - __main__ - INFO - Zen MCP Server starting up...
+2025-10-16 01:16:09,901 - __main__ - INFO - Log level: INFO
+2025-10-16 01:16:09,901 - __main__ - INFO - Model mode: AUTO (CLI will select the best model for each task)
+2025-10-16 01:16:09,901 - __main__ - INFO - Default thinking mode (ThinkDeep): high
+2025-10-16 01:16:09,901 - __main__ - INFO - Available tools: ['chat', 'clink', 'thinkdeep', 'planner', 'consensus', 'codereview', 'precommit', 'debug', 'challenge', 'apilookup', 'listmodels', 'version']
+2025-10-16 01:16:09,901 - __main__ - INFO - Server ready - waiting for tool requests...
