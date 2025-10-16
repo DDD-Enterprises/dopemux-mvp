@@ -25,7 +25,11 @@ export class KGClient {
   }
 
   async getRecentDecisions(limit: number = 3): Promise<DecisionCard[]> {
-    const response = await fetch(`${this.baseUrl}/decisions/recent?limit=${limit}`);
+    const response = await fetch(`${this.baseUrl}/decisions/recent?limit=${limit}`, {
+      headers: {
+        'X-Source-Plane': 'cognitive_plane'
+      }
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -36,7 +40,11 @@ export class KGClient {
   }
 
   async getDecisionSummary(id: number): Promise<DecisionSummary> {
-    const response = await fetch(`${this.baseUrl}/decisions/${id}/summary`);
+    const response = await fetch(`${this.baseUrl}/decisions/${id}/summary`, {
+      headers: {
+        'X-Source-Plane': 'cognitive_plane'
+      }
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -51,7 +59,11 @@ export class KGClient {
     limitPerHop: number = 10
   ): Promise<DecisionNeighborhood> {
     const url = `${this.baseUrl}/decisions/${id}/neighborhood?max_hops=${maxHops}&limit_per_hop=${limitPerHop}`;
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        'X-Source-Plane': 'cognitive_plane'
+      }
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -68,7 +80,11 @@ export class KGClient {
   }
 
   async getFullContext(id: number): Promise<FullDecisionContext> {
-    const response = await fetch(`${this.baseUrl}/decisions/${id}/context`);
+    const response = await fetch(`${this.baseUrl}/decisions/${id}/context`, {
+      headers: {
+        'X-Source-Plane': 'cognitive_plane'
+      }
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
