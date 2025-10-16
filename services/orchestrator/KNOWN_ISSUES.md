@@ -50,6 +50,34 @@ def __init__(..., cleanup_old_files: bool = True):
 
 ---
 
+## ✅ FIXED Issues (Quality Improvements)
+
+### ~~Issue #4: Semantic Search No Fallback~~ ✅ DOCUMENTED
+- **Location**: `conport_http_client.py:328-352` (async), `717-741` (sync)
+- **Severity**: MEDIUM → DOCUMENTED AS INTENTIONAL
+- **Clarification**: Semantic search requires vector database - cannot fallback to JSON files
+- **Behavior**: Returns `[]` on circuit open (documented in docstring)
+- **Rationale**: Consistent with design - fallback only for simple storage operations
+- **Commit**: Included in quality improvements commit
+
+### ~~Issue #6: No JSON Validation~~ ✅ FIXED
+- **Location**: `conport_http_client.py:148-160, 624-636` (validation methods)
+- **Severity**: MEDIUM → FIXED
+- **Fix Applied**: Added `_validate_json_serializable()` method
+- **Validates**: Before HTTP request AND before fallback save
+- **Error Handling**: Raises `ValueError` with clear message
+- **Testing**: Validated - catches non-serializable objects (datetime, etc.)
+- **Commit**: Included in quality improvements commit
+
+```python
+# Validation happens early
+def log_custom_data(..., value: dict):
+    if not self._validate_json_serializable(value):
+        raise ValueError(f"Value must be JSON-serializable")
+```
+
+---
+
 ## 🟡 MEDIUM Priority (Nice to Have)
 
 ### Issue #4: Semantic Search No Fallback
