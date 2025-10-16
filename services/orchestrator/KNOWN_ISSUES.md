@@ -16,42 +16,36 @@
 
 ---
 
-## 🔴 HIGH Priority (Should Fix Next)
+## ✅ FIXED Issues (Production Polish)
 
-### Issue #2: Blocking I/O in Async Method
-- **Location**: `conport_http_client.py:140-151` (`_fallback_save` in async class)
-- **Severity**: HIGH
-- **Description**: Uses `file_path.write_text()` (blocking) in async method
-- **Impact**: Blocks event loop during fallback saves (~5-10ms per save)
-- **Fix**: Use `aiofiles` library for true async file I/O
-- **Effort**: 1 hour (add dependency, update 2 methods)
-- **Workaround**: Fallback only triggers when bridge down (rare in production)
+### ~~Issue #2: Blocking I/O in Async Method~~ ✅ FIXED
+- **Location**: `conport_http_client.py:142-183` (async methods)
+- **Severity**: HIGH → FIXED
+- **Fix Applied**: Added `aiofiles` library for true async file I/O
+- **Methods Updated**: `_fallback_save()`, `_fallback_load()`
+- **Validation**: Tested successfully - event loop not blocked ✅
+- **Commit**: Included in production polish commit
 
 ```python
-# Current (blocking):
-file_path.write_text(json.dumps(data, indent=2))
-
-# Fixed (async):
+# Fixed implementation:
 async with aiofiles.open(file_path, 'w') as f:
     await f.write(json.dumps(data, indent=2))
 ```
 
-### Issue #3: No Fallback File Cleanup
-- **Location**: `/tmp/dopemux_fallback/` directory
-- **Severity**: HIGH
-- **Description**: Fallback JSON files accumulate indefinitely
-- **Impact**: Disk space exhaustion over time (~1MB per checkpoint × 2,880/day = 2.8GB/day max)
-- **Fix**: Add cleanup job (delete files >7 days old)
-- **Effort**: 30 minutes (add cleanup method, call on init)
-- **Workaround**: Manual cleanup: `rm /tmp/dopemux_fallback/*.json`
+### ~~Issue #3: No Fallback File Cleanup~~ ✅ FIXED
+- **Location**: `conport_http_client.py:185-211` (async), `755-779` (sync)
+- **Severity**: HIGH → FIXED
+- **Fix Applied**: Added `_cleanup_old_fallbacks()` method (7-day retention)
+- **Auto-runs**: On client initialization (background thread/task)
+- **Validation**: Tested - deletes files >7 days, keeps recent files ✅
+- **Commit**: Included in production polish commit
 
 ```python
-def _cleanup_old_fallbacks(self, days: int = 7):
-    """Delete fallback files older than N days."""
-    cutoff = datetime.now() - timedelta(days=days)
-    for file_path in self.fallback_dir.glob("*.json"):
-        if datetime.fromtimestamp(file_path.stat().st_mtime) < cutoff:
-            file_path.unlink()
+# Cleanup runs automatically on init
+def __init__(..., cleanup_old_files: bool = True):
+    ...
+    if cleanup_old_files:
+        threading.Thread(target=self._cleanup_old_fallbacks, daemon=True).start()
 ```
 
 ---
