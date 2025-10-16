@@ -71,8 +71,14 @@ class ProfileDetector:
         Args:
             profile_dir: Directory containing profile YAML files
         """
-        self.parser = ProfileParser(profile_dir)
-        self.profiles = self.parser.load_all_profiles(fail_fast=False)
+        from .profile_commands import get_profiles_directory
+
+        # Get profiles directory
+        profiles_directory = profile_dir or get_profiles_directory()
+
+        # Parse all profiles
+        self.parser = ProfileParser(validate_mcps=False)
+        self.profiles = self.parser.parse_directory(profiles_directory, pattern="*.yaml")
 
     def detect(self, context: Optional[DetectionContext] = None) -> ProfileMatch:
         """
