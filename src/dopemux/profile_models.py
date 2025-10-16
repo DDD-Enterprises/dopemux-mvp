@@ -16,6 +16,29 @@ from typing import List, Optional
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
+class ProfileValidationError(Exception):
+    """Custom exception for profile validation errors.
+
+    Provides structured error information with actionable fix suggestions
+    for better user experience.
+
+    Attributes:
+        reason: Human-readable explanation of what went wrong
+        fix_suggestion: Optional actionable suggestion to fix the error
+    """
+
+    def __init__(self, reason: str, fix_suggestion: Optional[str] = None):
+        """Initialize validation error with reason and optional fix suggestion.
+
+        Args:
+            reason: Explanation of the validation failure
+            fix_suggestion: Optional suggestion for how to fix the issue
+        """
+        self.reason = reason
+        self.fix_suggestion = fix_suggestion
+        super().__init__(reason)
+
+
 class EnergyPreference(str, Enum):
     """ADHD energy level preferences for profile matching."""
 
