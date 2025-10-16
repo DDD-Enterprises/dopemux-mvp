@@ -43,7 +43,7 @@ export const DeepContextViewer: React.FC<Props> = ({decisionId, onBack}) => {
   }, [decisionId]);
 
   // Keyboard controls
-  useInput((input) => {
+  useInput((input: string) => {
     if (input === 'b') {
       onBack();
     }
@@ -68,7 +68,9 @@ export const DeepContextViewer: React.FC<Props> = ({decisionId, onBack}) => {
       <Box padding={1} flexDirection="column">
         <Text color="red" bold>Error loading context</Text>
         <Text>{error || 'Unknown error'}</Text>
-        <Text dimColor marginTop={1}>Press 'b' to go back</Text>
+        <Box marginTop={1}>
+          <Text dimColor>Press 'b' to go back</Text>
+        </Box>
       </Box>
     );
   }
@@ -80,9 +82,11 @@ export const DeepContextViewer: React.FC<Props> = ({decisionId, onBack}) => {
         Deep Context - Decision #{decisionId}
       </Text>
 
-      <Text dimColor marginTop={0}>
-        b: Back | q: Quit
-      </Text>
+      <Box marginTop={0}>
+        <Text dimColor>
+          b: Back | q: Quit
+        </Text>
+      </Box>
 
       {/* Decision Summary */}
       <Box marginTop={1} flexDirection="column">
