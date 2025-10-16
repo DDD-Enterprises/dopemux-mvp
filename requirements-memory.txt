@@ -36,7 +36,7 @@ opentelemetry-instrumentation-sqlalchemy>=0.41b0
 mcp>=1.0.0
 
 # HTTP Server for Docker deployment
-aiohttp>=3.9.0
+aiohttp>=3.12.14  # Security: CVE-2025-53643, CVE-2024-52304, directory traversal, DoS fixes
 aiohttp-cors>=0.7.0
 
 # Utilities
