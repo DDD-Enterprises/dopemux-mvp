@@ -3390,12 +3390,17 @@ def profile():
 def profile_list_cmd(ctx, profile_dir: Optional[str]):
     """📋 List all available profiles."""
     try:
-        parser = ProfileParser(Path(profile_dir) if profile_dir else None)
-        profile_set = parser.load_all_profiles(fail_fast=False)
+        # Get profiles directory
+        from .profile_commands import get_profiles_directory
+        profiles_directory = Path(profile_dir) if profile_dir else get_profiles_directory()
+
+        # Parse all profiles in directory
+        parser = ProfileParser(validate_mcps=False)
+        profile_set = parser.parse_directory(profiles_directory, pattern="*.yaml")
 
         if not profile_set.profiles:
             console.print("[yellow]No valid profiles found[/yellow]")
-            console.print(f"\nProfile directory: {parser.profile_dir}")
+            console.print(f"\nProfile directory: {profiles_directory}")
             console.print("\nCreate profiles with the YAML schema documented in:")
             console.print("  docs/PROFILE-YAML-SCHEMA.md")
             sys.exit(1)
@@ -3417,16 +3422,42 @@ def profile_list_cmd(ctx, profile_dir: Optional[str]):
             )
 
         console.print(table)
-        console.print(f"\n[dim]Profile directory: {parser.profile_dir}[/dim]")
+        console.print(f"\n[dim]Profile directory: {profiles_directory}[/dim]")
         console.print(f"[dim]Total profiles: {len(profile_set.profiles)}[/dim]")
-
-        if profile_set.errors:
-            console.print(f"\n[yellow]⚠️  {len(profile_set.errors)} profile(s) failed to load[/yellow]")
-            for path, error in profile_set.errors:
-                console.print(f"  [red]✗[/red] {path.name}: {error}")
 
     except FileNotFoundError as e:
         console.print(f"[red]Error: {e}[/red]")
+        sys.exit(1)
+    except Exception as e:
+        console.print(f"[red]Unexpected error: {e}[/red]")
+        if ctx.obj.get("verbose"):
+            raise
+        sys.exit(1)
+
+
+@profile.command("init")
+@click.argument("profile_name", required=False)
+@click.option("--output-dir", "-o", help="Output directory for profile", type=click.Path())
+@click.pass_context
+def profile_init_cmd(ctx, profile_name: Optional[str], output_dir: Optional[str]):
+    """✨ Create a personalized profile using git history analysis."""
+    try:
+        from .profile_wizard import ProfileWizard
+
+        # Initialize wizard
+        wizard = ProfileWizard()
+
+        # Run interactive wizard
+        output_path = Path(output_dir) if output_dir else None
+        result_file = wizard.run(profile_name=profile_name, output_dir=output_path)
+
+        if result_file:
+            sys.exit(0)
+        else:
+            sys.exit(1)
+
+    except KeyboardInterrupt:
+        console.print("\n[yellow]❌ Profile creation cancelled[/yellow]")
         sys.exit(1)
     except Exception as e:
         console.print(f"[red]Unexpected error: {e}[/red]")
