@@ -124,17 +124,14 @@ class RerankResponse:
     Contains relevance scores and optional reranked documents.
     """
 
+    # Required fields (must come first)
     scores: List[float]
     model: str
-
-    # Optional reranked documents
-    documents: Optional[List[str]] = None
-
-    # Performance metrics
     processing_time_ms: float
-    request_id: Optional[str] = None
 
-    # Cost information
+    # Optional fields (all have defaults)
+    documents: Optional[List[str]] = None
+    request_id: Optional[str] = None
     estimated_cost_usd: float = 0.0
 
 
