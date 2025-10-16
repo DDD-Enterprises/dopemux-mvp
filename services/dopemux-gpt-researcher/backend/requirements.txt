@@ -16,11 +16,12 @@ aiofiles==23.2.1
 
 # === HTTP Client & Requests ===
 httpx==0.25.2
-aiohttp==3.9.1
+aiohttp>=3.12.14  # Security: CVE-2025-53643, CVE-2024-52304, directory traversal, DoS fixes
 
 # === Data Processing ===
-python-multipart==0.0.6
-python-jose[cryptography]==3.3.0
+python-multipart>=0.0.12  # Security: DoS and ReDoS fixes
+# Removed python-jose (CVE-2024-33663 critical vulnerability, abandoned since 2021)
+# Use PyJWT>=2.8.0 if JWT functionality needed
 
 # === Logging & Monitoring ===
 structlog==23.2.0
