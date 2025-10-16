@@ -7,6 +7,9 @@ Provides simple, direct worktree operations:
 - cleanup: Remove unused worktrees safely
 
 ADHD Optimization: Clear, predictable commands with gentle guidance.
+
+This module now uses the enhanced worktree manager backend for improved
+safety, conflict detection, and ADHD optimizations.
 """
 
 from pathlib import Path
@@ -18,6 +21,13 @@ import os
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
+
+# Import enhanced backend functions
+from .worktree_manager_enhanced import (
+    list_worktrees_adhd,
+    switch_worktree_safe,
+    cleanup_worktrees_safe,
+)
 
 console = Console()
 
@@ -121,48 +131,11 @@ def list_worktrees(workspace_path: Optional[Path] = None) -> None:
 
     Args:
         workspace_path: Path to git repository (default: current directory)
+
+    This is a backward compatibility wrapper that calls the enhanced backend.
     """
-    workspace = workspace_path or Path.cwd()
-
-    # Get worktrees
-    worktrees = get_worktrees(workspace)
-
-    if not worktrees:
-        console.print("[yellow]No worktrees found[/yellow]")
-        console.print("[dim]💡 Tip: Use 'git worktree add' or the protection interceptor to create worktrees[/dim]")
-        return
-
-    # Create ADHD-friendly table
-    table = Table(title="🌳 Git Worktrees", show_header=True)
-    table.add_column("Branch", style="green", no_wrap=True)
-    table.add_column("Path", style="cyan")
-    table.add_column("Status", style="dim")
-    table.add_column("Current", style="bold yellow")
-
-    for path, branch, is_current in worktrees:
-        status = get_worktree_status(path)
-
-        # Color-code status
-        if status == "clean":
-            status_display = "[green]✓ clean[/green]"
-        elif status == "dirty":
-            status_display = "[yellow]● dirty[/yellow]"
-        else:
-            status_display = "[dim]? unknown[/dim]"
-
-        # Mark current worktree
-        current_marker = "→" if is_current else ""
-
-        # Shorten path for readability
-        try:
-            short_path = Path(path).name if Path(path).parent == workspace.parent else path
-        except Exception:
-            short_path = path
-
-        table.add_row(branch, short_path, status_display, current_marker)
-
-    console.print(table)
-    console.print(f"\n[dim]💡 Tip: Use 'dopemux switch <branch>' to switch worktrees[/dim]")
+    # Use the enhanced backend which has ADHD optimizations (shows 3 most recent by default)
+    list_worktrees_adhd(show_all=True)  # Show all for backward compatibility
 
 
 def switch_worktree(
@@ -180,68 +153,11 @@ def switch_worktree(
 
     Returns:
         True if successful, False otherwise
+
+    This is a backward compatibility wrapper that calls the enhanced backend.
     """
-    # Get all worktrees
-    worktrees = get_worktrees(workspace_path)
-
-    if not worktrees:
-        console.print("[red]No worktrees found[/red]")
-        return False
-
-    # Find matching worktree
-    exact_match = None
-    fuzzy_matches = []
-
-    for path, branch, is_current in worktrees:
-        if branch == target_name:
-            exact_match = (path, branch, is_current)
-            break
-        elif fuzzy_match and target_name.lower() in branch.lower():
-            fuzzy_matches.append((path, branch, is_current))
-
-    # Determine target
-    target = None
-
-    if exact_match:
-        target = exact_match
-    elif len(fuzzy_matches) == 1:
-        target = fuzzy_matches[0]
-        console.print(f"[dim]Fuzzy matched '{target_name}' → '{target[1]}'[/dim]")
-    elif len(fuzzy_matches) > 1:
-        console.print(f"[yellow]Multiple matches found for '{target_name}':[/yellow]")
-        for i, (_, branch, _) in enumerate(fuzzy_matches, 1):
-            console.print(f"  {i}. {branch}")
-        console.print("\n[dim]Please specify the exact branch name[/dim]")
-        return False
-    else:
-        console.print(f"[red]No worktree found matching '{target_name}'[/red]")
-        console.print("\n[dim]Available worktrees:[/dim]")
-        for _, branch, _ in worktrees:
-            console.print(f"  • {branch}")
-        return False
-
-    # Check if already on target
-    if target[2]:  # is_current
-        console.print(f"[yellow]Already on worktree '{target[1]}'[/yellow]")
-        return True
-
-    # Switch to worktree
-    console.print(f"[cyan]Switching to worktree '{target[1]}'...[/cyan]")
-
-    try:
-        # Git doesn't have a "switch worktree" command, so we guide the user
-        console.print(f"\n[green]✓ Worktree path: {target[0]}[/green]")
-        console.print("\n[bold]To switch to this worktree:[/bold]")
-        console.print(f"  cd {target[0]}")
-        console.print("\n[dim]💡 Tip: Dopemux will automatically detect the worktree change[/dim]")
-
-        # Note: We can't actually change the shell's directory from Python
-        # The user needs to run `cd` themselves
-        return True
-
-    except Exception as e:
-        console.print(f"[red]Failed to switch: {e}[/red]")
-        return False
+    # Use the enhanced backend with safe switching
+    return switch_worktree_safe(target_name)
 
 
 def cleanup_worktrees(
@@ -256,107 +172,8 @@ def cleanup_worktrees(
         workspace_path: Path to git repository
         force: Skip confirmation prompts
         dry_run: Show what would be removed without removing
+
+    This is a backward compatibility wrapper that calls the enhanced backend.
     """
-    console.print("[cyan]🧹 Scanning for unused worktrees...[/cyan]\n")
-
-    # Get all worktrees
-    worktrees = get_worktrees(workspace_path)
-
-    if not worktrees:
-        console.print("[yellow]No worktrees found[/yellow]")
-        return
-
-    # Get current worktree
-    current_wt = None
-    for path, branch, is_current in worktrees:
-        if is_current:
-            current_wt = branch
-            break
-
-    # Find candidates for cleanup
-    cleanup_candidates = []
-
-    for path, branch, is_current in worktrees:
-        # Skip current worktree
-        if is_current:
-            continue
-
-        # Skip main/master
-        if branch in ("main", "master"):
-            console.print(f"[dim]Skipping main worktree: {branch}[/dim]")
-            continue
-
-        # Check if worktree is clean
-        status = get_worktree_status(path)
-
-        if status == "clean":
-            cleanup_candidates.append((path, branch, "clean"))
-        elif status == "dirty":
-            console.print(f"[yellow]⚠️  Worktree has uncommitted changes: {branch}[/yellow]")
-            console.print(f"[dim]   Path: {path}[/dim]")
-
-            if force:
-                console.print(f"[red]   Force mode: Will remove anyway[/red]")
-                cleanup_candidates.append((path, branch, "dirty"))
-            else:
-                console.print(f"[dim]   Skipping (use --force to remove anyway)[/dim]")
-
-    # Display cleanup candidates
-    if not cleanup_candidates:
-        console.print("[green]✓ No worktrees need cleanup[/green]")
-        return
-
-    console.print(f"\n[yellow]Found {len(cleanup_candidates)} worktree(s) to remove:[/yellow]\n")
-
-    table = Table()
-    table.add_column("Branch", style="cyan")
-    table.add_column("Path", style="dim")
-    table.add_column("Status", style="yellow")
-
-    for path, branch, status in cleanup_candidates:
-        try:
-            short_path = Path(path).name
-        except Exception:
-            short_path = path
-
-        status_display = "clean" if status == "clean" else "[red]dirty (forced)[/red]"
-        table.add_row(branch, short_path, status_display)
-
-    console.print(table)
-
-    # Dry run mode
-    if dry_run:
-        console.print("\n[dim]Dry run - no changes made[/dim]")
-        return
-
-    # Confirmation
-    if not force:
-        console.print("\n[yellow]⚠️  This will permanently remove these worktrees[/yellow]")
-
-        from rich.prompt import Confirm
-        if not Confirm.ask("Proceed with cleanup?", default=False):
-            console.print("[yellow]Cleanup cancelled[/yellow]")
-            return
-
-    # Remove worktrees
-    console.print("\n[cyan]Removing worktrees...[/cyan]")
-
-    for path, branch, status in cleanup_candidates:
-        try:
-            result = subprocess.run(
-                ["git", "worktree", "remove", path, "--force" if force else ""],
-                cwd=workspace_path,
-                capture_output=True,
-                text=True,
-                timeout=10
-            )
-
-            if result.returncode == 0:
-                console.print(f"[green]✓ Removed worktree: {branch}[/green]")
-            else:
-                console.print(f"[red]✗ Failed to remove {branch}: {result.stderr.strip()}[/red]")
-
-        except Exception as e:
-            console.print(f"[red]✗ Error removing {branch}: {e}[/red]")
-
-    console.print("\n[green]✓ Cleanup complete[/green]")
+    # Use the enhanced backend with safe cleanup
+    cleanup_worktrees_safe(dry_run=dry_run)
