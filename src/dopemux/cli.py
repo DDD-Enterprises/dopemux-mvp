@@ -3565,6 +3565,48 @@ def profile_auto_status_cmd(ctx):
         sys.exit(1)
 
 
+@profile.command("stats")
+@click.option("--days", "-d", type=int, default=30, help="Days of history to analyze (default: 30)")
+@click.pass_context
+def profile_stats_cmd(ctx, days: int):
+    """📊 Show profile usage analytics and trends."""
+    try:
+        from .profile_analytics import get_stats_sync, display_stats
+
+        workspace_id = str(Path.cwd())
+
+        # Get stats from ConPort
+        console.print(f"[cyan]📊 Analyzing profile usage (last {days} days)...[/cyan]\n")
+        stats = get_stats_sync(workspace_id, days_back=days)
+
+        # Display with visual dashboard
+        display_stats(stats, days_back=days)
+
+        # Optimization suggestions (if enough data)
+        if stats.total_switches >= 10:
+            console.print(f"\n[bold]💡 Optimization Suggestions:[/bold]")
+
+            # Suggest based on patterns
+            if stats.switch_accuracy < 70:
+                console.print(f"   • [yellow]Low accuracy ({stats.switch_accuracy:.0f}%)[/yellow]: Consider refining auto-detection rules")
+
+            if stats.auto_switches == 0 and stats.total_switches > 20:
+                console.print(f"   • [cyan]All manual switches[/cyan]: Try 'dopemux profile auto-enable' for suggestions")
+
+            if stats.suggestion_declined > stats.suggestion_accepted * 2:
+                console.print(f"   • [yellow]Many declined suggestions[/yellow]: Lower confidence threshold or adjust profile rules")
+
+            # Suggest creating a new profile for common patterns
+            if stats.most_used_profile and stats.usage_by_profile.get(stats.most_used_profile, 0) > stats.total_switches * 0.7:
+                console.print(f"   • [green]Stable workflow detected[/green]: Your '{stats.most_used_profile}' profile is well-matched!")
+
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+        if ctx.obj.get("verbose"):
+            raise
+        sys.exit(1)
+
+
 @profile.command("show")
 @click.argument("profile_name")
 @click.option("--profile-dir", "-d", help="Profile directory path", type=click.Path(exists=True))
