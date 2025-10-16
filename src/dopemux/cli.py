@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import List, Optional
 
 import click
+from dotenv import load_dotenv
 from rich.console import Console
 from rich.live import Live
 from rich.panel import Panel
@@ -22,6 +23,9 @@ from rich.table import Table
 from rich.text import Text
 
 from . import __version__
+
+# Load environment variables from .env file
+load_dotenv()
 from .adhd import AttentionMonitor, ContextManager
 # TaskDecomposer removed - replaced by ConPort + SuperClaude /dx: commands
 from .claude import ClaudeConfigurator, ClaudeLauncher
@@ -413,7 +417,8 @@ def start(
         if litellm_proxy_info:
             provider_url = f"{litellm_proxy_info.base_url}/v1/chat/completions"
             provider_name = provider_name or "litellm"
-            provider_models = ["openai-gpt-5", "openai-gpt-5-mini"]
+            # Use Claude Pro Max as primary, fallback to others on rate limit
+            provider_models = ["claude-sonnet-4.5", "openai-gpt-5", "xai-grok-4"]
         else:
             provider_url = os.environ.get("CLAUDE_CODE_ROUTER_UPSTREAM_URL")
             models_env = os.environ.get("CLAUDE_CODE_ROUTER_MODELS", "")
