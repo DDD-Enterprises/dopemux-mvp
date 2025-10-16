@@ -215,6 +215,173 @@ mcp__zen__codereview(
 - Use `thinking_mode="max"` for critical decisions
 - Use `model="gpt-5-pro"` or `model="o3-pro"` for maximum intelligence
 - Combine with ConPort decision logging for traceability
+- **Research → Analysis Pipeline**: GPT-Researcher → Zen consensus → ConPort decision
+
+### 🔬 Deep Research - GPT-Researcher + Ultrathink
+
+**Use for comprehensive research** requiring synthesis across 10-20 sources (5-10 minutes):
+
+```python
+# Comprehensive multi-source research
+research = mcp__gpt-researcher__deep_research(
+    query="PostgreSQL connection pooling best practices for Python microservices"
+)
+# Returns: research_id, synthesized findings, 10-20 sources with citations
+
+# Zen ultrathink consensus on findings
+decision = mcp__zen__consensus(
+    step=f"Evaluate: {research['context'][:500]}...",
+    models=[
+        {"model": "gpt-5-pro", "stance": "for"},
+        {"model": "o3-pro", "stance": "against"}
+    ],
+    findings="Research-backed analysis",
+    step_number=1, total_steps=3, next_step_required=True
+)
+
+# Log research-backed decision
+mcp__conport__log_decision(
+    workspace_id="/Users/hue/code/dopemux-mvp",
+    summary="Use PgBouncer for connection pooling",
+    rationale=f"Research: {research['research_id']}, Consensus: {decision}",
+    tags=["research-backed", "postgresql", "ultrathink-validated"]
+)
+```
+
+**When**: Complex questions, need synthesis, 5-10 min acceptable
+**vs Exa**: GPT-Researcher = depth/synthesis (10 min), Exa = speed (< 5 sec)
+
+### ⚡ Quick Search - Exa Neural + Context7
+
+**Use for fast searches** (< 5 seconds):
+
+```python
+# Fast neural search
+community = mcp__exa__search(
+    query="Next.js 14 app router best practices",
+    num_results=5, search_type="neural"
+)
+
+# Official docs
+official = mcp__context7__get-library-docs(
+    context7CompatibleLibraryID="/vercel/next.js",
+    topic="app router data fetching"
+)
+# Compare community + official = complete picture
+```
+
+**When**: Quick lookups, documentation, recent updates, < 5 sec
+**vs GPT-Researcher**: Exa = breadth/speed, GPT-Researcher = depth/synthesis
+
+### 🖥️ Desktop Automation - Desktop-Commander
+
+**Use for visual context, window management**:
+
+```python
+# Screenshot + decision logging
+mcp__desktop-commander__screenshot(filename="/tmp/arch.png")
+mcp__conport__log_decision(summary="Architecture", implementation_details="Diagram: /tmp/arch.png")
+
+# Auto-focus after navigation
+mcp__dope-context__search_code(query="auth")
+mcp__serena-v2__goto_definition(file_path="src/auth.py", line=42, column=10)
+mcp__desktop-commander__focus_window(title="VS Code")
+```
+
+**See**: `~/.claude/MCP_DesktopCommander.md` for complete docs
+**ADHD**: Visual memory aids, auto window switching, < 2s interrupt recovery
+
+## 🔄 Synergistic Workflows - ADHD-Optimized Multi-MCP
+
+### Workflow: Feature Implementation with Ultrathink
+
+**Research Phase** (10 min):
+```python
+# Quick overview
+exa_results = mcp__exa__search(query="OAuth PKCE examples", num_results=5)
+
+# Deep research
+research = mcp__gpt-researcher__deep_research(
+    query="OAuth 2.0 PKCE security best practices and patterns"
+)
+
+# Official docs
+docs = mcp__context7__get-library-docs(
+    context7CompatibleLibraryID="/oauth/oauth2", topic="PKCE flow"
+)
+
+# Ultrathink consensus
+consensus = mcp__zen__consensus(
+    step=f"Evaluate approach: Research={research['context'][:200]}...",
+    models=[
+        {"model": "gpt-5-pro", "stance": "for", "stance_prompt": "Security focus"},
+        {"model": "o3-pro", "stance": "against", "stance_prompt": "Complexity focus"}
+    ],
+    step_number=1, total_steps=3, next_step_required=True
+)
+```
+
+**Discovery Phase** (5 min):
+```python
+# Find existing patterns
+code = mcp__dope-context__search_code(
+    query="authentication flow implementations",
+    profile="implementation", top_k=10
+)
+
+# Navigate to code
+mcp__serena-v2__goto_definition(
+    file_path=code[0]["file_path"],
+    line=code[0]["start_line"], column=1
+)
+
+# Auto-focus editor
+mcp__desktop-commander__focus_window(title="VS Code")
+```
+
+**Implementation Phase** (25 min):
+```python
+# Log decision with visual evidence
+mcp__desktop-commander__screenshot(filename="/tmp/oauth-flow.png")
+mcp__conport__log_decision(
+    workspace_id="/Users/hue/code/dopemux-mvp",
+    summary="Implement OAuth PKCE",
+    rationale=f"Research: {research['research_id']}, Consensus validated",
+    implementation_details="Diagram: /tmp/oauth-flow.png",
+    tags=["oauth", "research-backed", "ultrathink-validated"]
+)
+
+# Track progress
+mcp__conport__log_progress(
+    workspace_id="/Users/hue/code/dopemux-mvp",
+    status="IN_PROGRESS",
+    description="Implement OAuth PKCE flow"
+)
+
+# Auto-save every 5 min
+mcp__conport__update_active_context(
+    workspace_id="/Users/hue/code/dopemux-mvp",
+    patch_content={"current_focus": "OAuth PKCE", "progress": "70%"}
+)
+```
+
+**Validation Phase** (10 min):
+```python
+# Ultrathink code review
+review = mcp__zen__codereview(
+    step="Security audit of OAuth PKCE",
+    relevant_files=["/Users/hue/code/dopemux-mvp/src/auth/oauth.py"],
+    review_type="security",
+    model="gpt-5-pro"  # Ultrathink for security
+)
+
+# Mark complete
+mcp__desktop-commander__screenshot(filename="/tmp/tests-passing.png")
+mcp__conport__update_progress(workspace_id="/Users/hue/code/dopemux-mvp", progress_id=task_id, status="DONE")
+```
+
+**ADHD Benefits**: Clear phases, visual progress, context preservation, research-backed confidence
+**Total Time**: ~50 min (vs 3-4 hours without MCP coordination)
 
 ### ❌ FORBIDDEN Operations
 
