@@ -1,0 +1,118 @@
+# Dopemux AI Agent Configuration
+# Auto-detection with sensible defaults for ADHD-optimized development
+
+# ═══════════════════════════════════════════════════════════════════
+# AI Agents Configuration
+# ═══════════════════════════════════════════════════════════════════
+
+agents:
+  # Claude Code - Best for code review and architecture
+  claude:
+    # Command will be auto-detected in PATH
+    # Fallback locations: ~/.local/bin/claude, /usr/local/bin/claude
+    command: claude
+    args: ["chat"]
+
+    # Model selection (optional, uses CLI default if not specified)
+    default_model: claude-sonnet-4.5
+
+    # Environment variables (uses system env by default)
+    env:
+      # Claude Pro Max users: authenticated via app, no API key needed
+      # API users: set ANTHROPIC_API_KEY in your shell
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:}  # Optional, empty default
+
+    # Auto-restart on crash (ADHD: minimize interruptions)
+    auto_restart: true
+    max_restarts: 3
+
+  # Gemini CLI - Best for research and analysis
+  gemini:
+    command: gemini
+    args: ["--output-format", "json"]
+
+    default_model: gemini-2.5-pro
+
+    env:
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}  # Required for Gemini
+
+    auto_restart: true
+    max_restarts: 3
+
+  # Grok via Zen MCP - Best for fast code generation (FREE during promo!)
+  grok:
+    type: mcp  # MCP provider (not CLI)
+    zen_model: grok-code-fast  # Intelligence: 18, FREE on OpenRouter!
+    capabilities: [code, analysis, fast]
+
+  # Optional: Codex (if installed)
+  # codex:
+  #   command: codex
+  #   args: ["chat"]
+  #   auto_restart: true
+
+# ═══════════════════════════════════════════════════════════════════
+# Task-Based Routing (Optional)
+# ═══════════════════════════════════════════════════════════════════
+
+task_routing:
+  # Route specific task types to optimal agents
+  research: gemini      # Cost-effective for web research
+  code: grok            # FREE and fast!
+  review: claude        # Best quality for code review
+  architecture: claude  # Best for system design
+  debug: claude         # Best for problem-solving
+
+# ═══════════════════════════════════════════════════════════════════
+# Advanced Settings (ADHD-Optimized Defaults)
+# ═══════════════════════════════════════════════════════════════════
+
+advanced:
+  # Maximum concurrent agents (prevent cognitive overload)
+  max_concurrent_agents: 3
+
+  # Auto-save checkpoint interval (seconds)
+  # Research: ADHD interruptions occur every 3-6 minutes
+  # 30s ensures max 30s of lost work
+  auto_save_interval: 30
+
+  # Health check interval (seconds)
+  health_check_interval: 60
+
+  # Agent startup timeout (seconds)
+  startup_timeout: 10
+
+  # Enable tmux mirroring for visibility (optional)
+  tmux_mirror: false
+
+# ═══════════════════════════════════════════════════════════════════
+# Notes
+# ═══════════════════════════════════════════════════════════════════
+#
+# PATH Resolution:
+#   Commands are first searched in $PATH, then in common install locations:
+#   - ~/.local/bin/
+#   - /usr/local/bin/
+#   - /opt/homebrew/bin/
+#
+# Environment Variables:
+#   Use ${VAR} syntax for system environment variables
+#   Use ${VAR:default} for optional variables with defaults
+#   Never commit API keys to version control!
+#
+# Configuration Priority:
+#   1. ./config/agents.yaml (project-specific)
+#   2. ~/.config/dopemux/agents.yaml (user default)
+#   3. Built-in defaults (zero-config fallback)
+#
+# Validation:
+#   - Config is validated on load with clear, actionable error messages
+#   - Missing CLIs are reported with install instructions
+#   - Required environment variables are checked
+#
+# ADHD Features:
+#   - Zero configuration works out-of-box for common cases
+#   - Clear error messages (not overwhelming)
+#   - Auto-save prevents context loss
+#   - Max 3 concurrent agents prevents cognitive overload
+#
