@@ -343,18 +343,16 @@ class ConfigManager:
                 "timeout": 30,
                 "auto_restart": True,
             },
-            "claude-context": {
+            "dope-context": {
                 "enabled": True,
-                "command": "npx",
-                "args": ["-y", "@zilliz/claude-context-mcp@latest"],
+                "command": "bash",
+                "args": ["services/dope-context/run_mcp.sh"],
                 "env": {
-                    "EMBEDDING_PROVIDER": "voyage",
-                    "EMBEDDING_MODEL": "voyage-code-2",
-                    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
-                    "MILVUS_ADDRESS": "localhost:19530",
-                    "HYBRID_SEARCH": "true",
-                    "BM25_WEIGHT": "0.3",
-                    "VECTOR_WEIGHT": "0.7",
+                    "VOYAGE_API_KEY": "${VOYAGE_API_KEY}",
+                    "OPENAI_API_KEY": "${OPENAI_API_KEY}",  # Use OpenAI for LLM calls
+                    # Pro Max: No ANTHROPIC_API_KEY needed - uses OpenAI instead
+                    "QDRANT_URL": "localhost",
+                    "QDRANT_PORT": "6333",
                 },
                 "timeout": 45,
                 "auto_restart": True,
@@ -381,11 +379,14 @@ class ConfigManager:
                 "args": ["-y", "zen-mcp"],
                 "env": {
                     "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-                    "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
+                    "XAI_API_KEY": "${XAI_API_KEY}",  # Added XAI for fallback
+                    # Pro Max users: No ANTHROPIC_API_KEY - uses OpenAI/XAI/Groq fallback
                     "GEMINI_API_KEY": "${GEMINI_API_KEY}",
                     "GROQ_API_KEY": "${GROQ_API_KEY}",
                     "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
                     "ZEN_DISABLED_TOOLS": "chat,explain,translate,summarize",
+                    "ZEN_DEFAULT_MODEL": "openai/gpt-4o",  # Use OpenAI as default
+                    "ZEN_FALLBACK_MODELS": "xai/grok-beta,groq/llama-3.1-70b",  # Fallback chain
                 },
                 "timeout": 60,
                 "auto_restart": True,

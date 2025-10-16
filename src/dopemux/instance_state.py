@@ -77,6 +77,16 @@ class InstanceStateManager:
             await self.session.close()
             self.session = None
 
+    async def __aenter__(self):
+        """Async context manager entry."""
+        await self._ensure_session()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit - ensures session cleanup."""
+        await self._close_session()
+        return False
+
     async def save_instance_state(self, state: InstanceState) -> bool:
         """
         Save instance state to ConPort.

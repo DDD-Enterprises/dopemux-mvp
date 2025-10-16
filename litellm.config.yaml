@@ -14,9 +14,9 @@ model_list:
     max_completion_tokens: 32768
     rpm: 500
     tpm: 2000000
-- model_name: xai-grok-4
+- model_name: xai-grok-4-fast-reasoning
   litellm_params:
-    model: xai/grok-4
+    model: xai/grok-2-1212
     api_key: os.environ/XAI_API_KEY
     api_base: https://api.x.ai/v1
     max_tokens: 16384
@@ -28,10 +28,10 @@ litellm_settings:
   fallbacks:
   - claude-sonnet-4.5:
     - openai-gpt-5
-    - xai-grok-4
+    - xai-grok-4-fast-reasoning
   - openai-gpt-5:
-    - xai-grok-4
-  - xai-grok-4:
+    - xai-grok-4-fast-reasoning
+  - xai-grok-4-fast-reasoning:
     - openai-gpt-5
 router_settings:
   routing_strategy: usage-based-routing-v2

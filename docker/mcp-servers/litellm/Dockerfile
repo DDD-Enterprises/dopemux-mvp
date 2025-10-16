@@ -7,6 +7,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     curl \
     netcat-traditional \
+    libatomic1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install LiteLLM with all optional dependencies
@@ -14,6 +15,9 @@ RUN pip install --no-cache-dir \
     litellm[proxy]==1.75.0 \
     prisma \
     pyyaml
+
+# Generate Prisma binaries
+RUN prisma generate --schema=/usr/local/lib/python3.11/site-packages/litellm/proxy/schema.prisma
 
 # Copy configuration
 COPY litellm.config.yaml /app/config.yaml
