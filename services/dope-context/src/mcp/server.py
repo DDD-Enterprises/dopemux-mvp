@@ -70,6 +70,12 @@ def _initialize_components():
     if not voyage_key:
         raise ValueError("VOYAGE_API_KEY environment variable required")
 
+    # Detect workspace and get collection names
+    workspace_root = get_workspace_root()
+    code_collection, docs_collection = get_collection_names(workspace_root)
+    logger.info(f"Using workspace: {workspace_root}")
+    logger.info(f"Code collection: {code_collection}, Docs collection: {docs_collection}")
+
     # Initialize components
     chunker = CodeChunker(config=ChunkingConfig())
 
@@ -82,7 +88,7 @@ def _initialize_components():
     _embedder = VoyageEmbedder(api_key=voyage_key)
 
     vector_search = MultiVectorSearch(
-        collection_name="code_index",
+        collection_name=code_collection,
         url=qdrant_url,
         port=qdrant_port,
     )
@@ -117,7 +123,7 @@ def _initialize_components():
     )
 
     _docs_search = DocumentSearch(
-        collection_name="docs_index",
+        collection_name=docs_collection,
         url=qdrant_url,
         port=qdrant_port,
     )
