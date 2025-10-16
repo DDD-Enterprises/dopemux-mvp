@@ -276,7 +276,7 @@ services:
     #   test: ["CMD", "sh", "-c", "exit 0"]
     volumes:
       - mcp_serena_data:/app/data
-      - /Users/hue/code/dopemux-mvp:/workspace/dopemux-mvp
+      - /Users/hue/code:/workspaces:ro  # Mount parent to support all worktrees
     labels:
       - "mcp.role=workflow"
       - "mcp.priority=medium"
@@ -294,7 +294,8 @@ services:
     networks:
       - mcp-network
     environment:
-      - WORKSPACE_ID=/workspace/dopemux-mvp
+      - WORKSPACE_PATH=${DOPEMUX_WORKSPACE_ID:-/workspaces/dopemux-mvp}  # Auto-detect from host
+      - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID:-/workspaces/dopemux-mvp}  # Backward compatibility
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - TAVILY_API_KEY=${TAVILY_API_KEY}
@@ -316,7 +317,7 @@ services:
       - mcp_dopemux_gpt_data:/app/data
       - mcp_dopemux_gpt_logs:/app/logs
       - mcp_dopemux_gpt_cache:/app/cache
-      - /Users/hue/code/dopemux-mvp:/workspace/dopemux-mvp:ro
+      - /Users/hue/code:/workspaces:ro  # Mount parent to support all worktrees
     depends_on:
       - conport
     labels:
