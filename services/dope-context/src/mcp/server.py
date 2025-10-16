@@ -281,19 +281,19 @@ async def _search_code_impl(
     search_profile = profile_map.get(profile, SearchProfile.implementation())
 
     # Embed query (3 vectors)
-    query_content = await _embedder.embed(
+    query_content = await embedder.embed(
         text=query,
         model="voyage-code-3",
         input_type="query",
     )
 
-    query_title = await _embedder.embed(
+    query_title = await embedder.embed(
         text=query,
         model="voyage-code-3",
         input_type="query",
     )
 
-    query_breadcrumb = await _embedder.embed(
+    query_breadcrumb = await embedder.embed(
         text=query,
         model="voyage-code-3",
         input_type="query",
@@ -311,7 +311,7 @@ async def _search_code_impl(
         filter_by["language"] = filter_language
 
     # Hybrid search
-    search_results = await _hybrid_search.search(
+    search_results = await hybrid_search.search(
         query_vectors=query_vectors,
         query_text=query,
         profile=search_profile,
@@ -320,7 +320,7 @@ async def _search_code_impl(
 
     # Rerank if requested
     if use_reranking and search_results:
-        rerank_response = await _reranker.rerank(
+        rerank_response = await reranker.rerank(
             query=query,
             results=search_results[:50],  # Rerank top-50
         )
