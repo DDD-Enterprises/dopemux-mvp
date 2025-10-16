@@ -1,3 +1,21 @@
+## Architecture Simplification - 2025-10-15
+
+### Removed
+- Multi-instance Docker support (docker-compose.multi-instance.yml)
+- MetaMCP broker configurations
+- Unified Docker compose configuration
+- Legacy migration scripts
+
+### Changed
+- Simplified to single-instance Docker architecture
+- Enhanced Git worktree support for parallel development
+
+### Preserved
+- Single-instance Docker functionality
+- All MCP server configurations
+- Core dopemux features
+
+
 # Changelog
 All notable changes will be documented in this file.
 
