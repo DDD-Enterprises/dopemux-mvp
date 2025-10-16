@@ -149,6 +149,12 @@ class KGOrchestrator:
 
         print(f"\n[KG Orchestrator] task.started: Task {task_id}")
 
+        # TODO: PERFORMANCE - N+1 Query Problem (Issue from audit 2025-10-16)
+        # Current: Loads decisions one-by-one (10 decisions = 10 queries)
+        # Fix: Add ExplorationQueries.get_multiple_neighborhoods(decision_refs) for batch loading
+        # Impact: 10x performance improvement for tasks with multiple decisions
+        # Priority: MEDIUM (not blocking production, but degrades performance)
+
         # Background: Pre-load decision contexts
         contexts = []
         for decision_id in decision_refs:
