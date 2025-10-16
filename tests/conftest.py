@@ -9,9 +9,10 @@ from unittest.mock import patch
 
 import pytest
 
-from dopemux.event_bus import RedisStreamsAdapter, InMemoryAdapter
-from dopemux.attention_mediator import AttentionMediator
-from dopemux.instance_registry import InstanceRegistry
+# Legacy imports - commenting out as these modules have been refactored
+# from dopemux.event_bus import RedisStreamsAdapter, InMemoryAdapter
+# from dopemux.attention_mediator import AttentionMediator
+# from dopemux.instance_registry import InstanceRegistry
 
 
 @pytest.fixture
