@@ -440,6 +440,54 @@ class MultiVectorSearch:
             "status": info.status,
         }
 
+    async def get_all_payloads(self, batch_size: int = 100) -> List[Dict]:
+        """
+        Retrieve all document payloads from collection (for BM25 index building).
+
+        Uses Qdrant scroll API for efficient batch retrieval.
+
+        Args:
+            batch_size: Number of documents per batch (default: 100)
+
+        Returns:
+            List of payload dictionaries with 'id', 'raw_code', 'function_name', etc.
+        """
+        all_payloads = []
+        offset = None
+
+        try:
+            while True:
+                # Scroll through collection
+                records, next_offset = await self.client.scroll(
+                    collection_name=self.collection_name,
+                    limit=batch_size,
+                    offset=offset,
+                    with_payload=True,
+                    with_vectors=False,  # Don't need vectors, just payloads
+                )
+
+                if not records:
+                    break
+
+                # Extract payloads and add IDs
+                for record in records:
+                    payload = dict(record.payload) if record.payload else {}
+                    payload['id'] = str(record.id)  # Add ID for BM25 doc_id mapping
+                    all_payloads.append(payload)
+
+                # Check if more results available
+                if next_offset is None:
+                    break
+
+                offset = next_offset
+
+            logger.info(f"Retrieved {len(all_payloads)} payloads from '{self.collection_name}'")
+            return all_payloads
+
+        except Exception as e:
+            logger.error(f"Failed to retrieve payloads: {e}")
+            raise
+
 
 # Example usage
 async def main():
