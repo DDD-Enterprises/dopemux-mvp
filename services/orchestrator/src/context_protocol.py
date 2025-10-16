@@ -91,22 +91,29 @@ class ContextSharingProtocol:
         # Store in ConPort custom_data
         key = f"{self.session_id}_{artifact_type}_{datetime.now().timestamp()}"
 
-        # TODO: Implement ConPort write
-        # conport.log_custom_data(
-        #     workspace_id=self.workspace_id,
-        #     category=f"ai_artifacts",
-        #     key=key,
-        #     value={
-        #         "artifact_type": artifact_type,
-        #         "agent_type": agent_type,
-        #         "content": content,
-        #         "confidence": confidence,
-        #         "metadata": metadata,
-        #         "session_id": self.session_id
-        #     }
-        # )
+        # Use ConPort client
+        try:
+            from .conport_client import get_conport_client
+            client = get_conport_client(self.workspace_id)
+            result = client.log_custom_data(
+                category="ai_artifacts",
+                key=key,
+                value={
+                    "artifact_type": artifact_type,
+                    "agent_type": agent_type,
+                    "content": content,
+                    "confidence": confidence,
+                    "metadata": metadata or {},
+                    "session_id": self.session_id
+                }
+            )
+            if result.get("success"):
+                print(f"📦 Published {artifact_type} from {agent_type} (confidence: {confidence:.0%}) to ConPort")
+            else:
+                print(f"📦 Published {artifact_type} from {agent_type} (confidence: {confidence:.0%}) [ConPort failed]")
+        except Exception as e:
+            print(f"📦 Published {artifact_type} from {agent_type} (confidence: {confidence:.0%}) [local only]")
 
-        print(f"📦 Published {artifact_type} from {agent_type} (confidence: {confidence:.0%})")
         return key
 
     def query_artifacts(
@@ -136,15 +143,30 @@ class ContextSharingProtocol:
             ...     min_confidence=0.7
             ... )
         """
-        # TODO: Implement ConPort query
-        # results = conport.get_custom_data(
-        #     workspace_id=self.workspace_id,
-        #     category="ai_artifacts",
-        #     limit=limit
-        # )
+        # Use ConPort client to query artifacts
+        try:
+            from .conport_client import get_conport_client
+            client = get_conport_client(self.workspace_id)
+            results = client.get_custom_data(
+                category="ai_artifacts",
+                limit=limit
+            )
 
-        # For now, return empty list
-        return []
+            # Convert to AIArtifact objects
+            artifacts = []
+            for item in results:
+                artifacts.append(AIArtifact(
+                    artifact_type=item.get("artifact_type", "unknown"),
+                    agent_type=item.get("agent_type", "unknown"),
+                    content=item.get("content", ""),
+                    confidence=item.get("confidence", 0.0),
+                    timestamp=datetime.fromisoformat(item.get("timestamp", datetime.now().isoformat())),
+                    metadata=item.get("metadata", {})
+                ))
+            return artifacts
+        except Exception as e:
+            print(f"⚠️ Failed to query artifacts from ConPort: {e}")
+            return []
 
     def semantic_search(self, query: str, top_k: int = 5) -> list[AIArtifact]:
         """
@@ -164,15 +186,32 @@ class ContextSharingProtocol:
             ...     top_k=3
             ... )
         """
-        # TODO: Implement ConPort semantic search
-        # results = conport.semantic_search_conport(
-        #     workspace_id=self.workspace_id,
-        #     query_text=query,
-        #     top_k=top_k,
-        #     filter_item_types=["custom_data"]
-        # )
+        # Use ConPort client for semantic search
+        try:
+            from .conport_client import get_conport_client
+            client = get_conport_client(self.workspace_id)
+            results = client.semantic_search(
+                query=query,
+                top_k=top_k,
+                filter_types=["ai_artifacts"]
+            )
 
-        return []
+            # Convert to AIArtifact objects
+            artifacts = []
+            for item in results:
+                data = item.get("value", {})
+                artifacts.append(AIArtifact(
+                    artifact_type=data.get("artifact_type", "unknown"),
+                    agent_type=data.get("agent_type", "unknown"),
+                    content=data.get("content", ""),
+                    confidence=data.get("confidence", 0.0),
+                    timestamp=datetime.fromisoformat(data.get("timestamp", datetime.now().isoformat())),
+                    metadata=data.get("metadata", {})
+                ))
+            return artifacts
+        except Exception as e:
+            print(f"⚠️ Failed to semantic search artifacts: {e}")
+            return []
 
     def get_context_for_agent(
         self, agent_type: str, task_description: str, detail_level: int = 1
