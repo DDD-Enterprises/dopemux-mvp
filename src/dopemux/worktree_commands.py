@@ -42,6 +42,60 @@ _WORKTREE_CACHE = {
 }
 
 
+def get_repo_root(fallback_cwd: bool = True) -> Optional[str]:
+    """
+    Get canonical repository root using git rev-parse.
+
+    This is the authoritative way to determine the repository root,
+    eliminating Path.cwd() dependency issues in worktree contexts.
+
+    Args:
+        fallback_cwd: If True and git fails, return Path.cwd() (default: True)
+
+    Returns:
+        Absolute path to repo root, or None if not in a git repo
+
+    Environment:
+        DOPEMUX_PROJECT_ROOT: Override for repo root (useful for testing)
+
+    Example:
+        # Normal usage:
+        repo_root = get_repo_root()
+
+        # With env override (testing):
+        os.environ['DOPEMUX_PROJECT_ROOT'] = '/custom/path'
+        repo_root = get_repo_root()  # Returns /custom/path
+    """
+    # Check for environment override first
+    env_root = os.environ.get('DOPEMUX_PROJECT_ROOT')
+    if env_root:
+        return str(Path(env_root).resolve())
+
+    # Use git to get canonical repo root
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+
+        if result.returncode == 0:
+            return result.stdout.strip()
+
+        # Git failed - fallback to cwd if requested
+        if fallback_cwd:
+            return str(Path.cwd().resolve())
+
+        return None
+
+    except Exception:
+        # Exception - fallback to cwd if requested
+        if fallback_cwd:
+            return str(Path.cwd().resolve())
+        return None
+
+
 def get_current_worktree(use_cache: bool = True, quiet: bool = False) -> Optional[str]:
     """
     Get the current worktree path with intelligent caching.
@@ -135,8 +189,9 @@ def get_worktrees(workspace_path: Path) -> List[Tuple[str, str, str]]:
         worktrees = []
         current_wt = {}
 
-        # Get current directory to determine which worktree we're in
-        current_dir = str(Path.cwd().resolve())
+        # Get current repo root to determine which worktree we're in
+        # Use git rev-parse instead of Path.cwd() for reliability
+        current_dir = get_repo_root(fallback_cwd=True)
 
         for line in result.stdout.splitlines():
             if line.startswith("worktree "):
