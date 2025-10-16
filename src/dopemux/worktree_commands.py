@@ -20,6 +20,7 @@ import sys
 import os
 import tempfile
 import time
+import threading
 
 from rich.console import Console
 from rich.table import Table
@@ -40,6 +41,10 @@ _WORKTREE_CACHE = {
     "timestamp": 0,
     "ttl": 30  # seconds
 }
+
+# Thread safety: Lock for atomic cache updates
+# Important for Serena container which is persistent across requests
+_CACHE_LOCK = threading.Lock()
 
 
 def get_repo_root(fallback_cwd: bool = True) -> Optional[str]:
@@ -120,14 +125,20 @@ def get_current_worktree(use_cache: bool = True, quiet: bool = False) -> Optiona
     """
     global _WORKTREE_CACHE
 
-    # Check cache if enabled
+    # Check cache if enabled (thread-safe read)
     if use_cache:
-        now = time.time()
-        if (_WORKTREE_CACHE["path"] and
-            now - _WORKTREE_CACHE["timestamp"] < _WORKTREE_CACHE["ttl"]):
+        cached_path = None
+        with _CACHE_LOCK:
+            now = time.time()
+            if (_WORKTREE_CACHE["path"] and
+                now - _WORKTREE_CACHE["timestamp"] < _WORKTREE_CACHE["ttl"]):
+                cached_path = _WORKTREE_CACHE["path"]
+
+        # Print outside lock to avoid holding lock during I/O
+        if cached_path:
             if not quiet:
-                console.print(f"[dim]📍 Current worktree (cached): {_WORKTREE_CACHE['path']}[/dim]")
-            return _WORKTREE_CACHE["path"]
+                console.print(f"[dim]📍 Current worktree (cached): {cached_path}[/dim]")
+            return cached_path
 
     # Detect worktree using git
     try:
@@ -141,9 +152,10 @@ def get_current_worktree(use_cache: bool = True, quiet: bool = False) -> Optiona
         if result.returncode == 0:
             worktree_path = result.stdout.strip()
 
-            # Update cache
-            _WORKTREE_CACHE["path"] = worktree_path
-            _WORKTREE_CACHE["timestamp"] = time.time()
+            # Update cache (thread-safe write)
+            with _CACHE_LOCK:
+                _WORKTREE_CACHE["path"] = worktree_path
+                _WORKTREE_CACHE["timestamp"] = time.time()
 
             if not quiet:
                 console.print(f"[green]📍 Current worktree: {worktree_path}[/green]")
