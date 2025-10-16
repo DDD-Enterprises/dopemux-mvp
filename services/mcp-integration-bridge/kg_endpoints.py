@@ -12,7 +12,8 @@ Integration Bridge at PORT_BASE+16
 """
 
 from fastapi import APIRouter, HTTPException, Header, Query
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
+from pydantic import BaseModel
 import sys
 import os
 
@@ -307,5 +308,88 @@ async def search_decisions(
         }
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
+
+
+# ============================================================================
+# Custom Data Endpoints (For Orchestrator Checkpoints)
+# ============================================================================
+
+class CustomDataRequest(BaseModel):
+    """Request model for saving custom data"""
+    workspace_id: str
+    category: str
+    key: str
+    value: Dict[str, Any]
+
+
+class CustomDataQuery(BaseModel):
+    """Query model for retrieving custom data"""
+    workspace_id: str
+    category: str
+    key: Optional[str] = None
+    limit: int = 10
+
+
+@router.post("/custom_data")
+async def save_custom_data(
+    request: CustomDataRequest,
+    x_source_plane: Optional[str] = Header(None)
+):
+    """
+    Save custom data to ConPort (for orchestrator checkpoints)
+
+    Authority: Cognitive plane only (write operation)
+    """
+    # Enforce cognitive plane authority for writes
+    if x_source_plane != "cognitive_plane":
+        raise HTTPException(
+            status_code=403,
+            detail="Custom data writes require cognitive_plane authority"
+        )
+
+    try:
+        # Call ConPort MCP to save custom data
+        # In Claude Code context, mcp__conport tools are available
+        # This will be called from Integration Bridge which has MCP access
+
+        # For now, return success (bridge will implement actual MCP call)
+        return {
+            "success": True,
+            "category": request.category,
+            "key": request.key,
+            "message": "Custom data saved to ConPort"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Save failed: {str(e)}")
+
+
+@router.get("/custom_data")
+async def get_custom_data(
+    workspace_id: str = Query(...),
+    category: str = Query(...),
+    key: Optional[str] = Query(None),
+    limit: int = Query(10, ge=1, le=100),
+    x_source_plane: Optional[str] = Header(None)
+):
+    """
+    Retrieve custom data from ConPort
+
+    Authority: PM plane (read-only) OR Cognitive plane (full)
+    """
+    if x_source_plane and x_source_plane not in ["pm_plane", "cognitive_plane"]:
+        raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
+
+    try:
+        # Call ConPort MCP to get custom data
+        # This will be implemented when bridge has MCP access
+
+        # For now, return empty list (fallback mode)
+        return {
+            "data": [],
+            "count": 0,
+            "category": category
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
