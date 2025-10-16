@@ -156,10 +156,13 @@ class IndexingPipeline:
             chunk: Code chunk
 
         Returns:
-            Deterministic chunk ID (hex string)
+            Deterministic chunk ID (UUID string)
         """
+        import uuid
         id_str = f"{file_path}:{chunk.start_line}:{chunk.end_line}"
-        return hashlib.sha256(id_str.encode()).hexdigest()[:16]
+        # Create UUID from hash (first 16 bytes of SHA256)
+        hash_bytes = hashlib.sha256(id_str.encode()).digest()[:16]
+        return str(uuid.UUID(bytes=hash_bytes))
 
     def _discover_files(self) -> List[Path]:
         """
