@@ -104,7 +104,7 @@ class TaskRecord(Base):
     parent_task_id = Column(String, nullable=True, index=True)
     dependencies = Column(JSON, nullable=True)  # List of task IDs
     tags = Column(JSON, nullable=True)  # List of tags
-    metadata = Column(JSON, nullable=True)  # Additional instance-specific data
+    task_metadata = Column('metadata', JSON, nullable=True)  # Additional instance-specific data
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     assigned_to = Column(String, nullable=True)
@@ -119,7 +119,7 @@ class ProjectRecord(Base):
     name = Column(String, nullable=False)
     description = Column(Text, nullable=True)
     status = Column(String, nullable=False, default="active")
-    metadata = Column(JSON, nullable=True)
+    project_metadata = Column('metadata', JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
