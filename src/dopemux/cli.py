@@ -460,7 +460,17 @@ def start(
             sys.exit(1)
 
         router_env = router_manager.build_client_env(router_info)
+
+        # CRITICAL: Save original ANTHROPIC_API_KEY before router overwrites it
+        # The router's API key is only for router's internal use, NOT for MCP servers
+        original_anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
+
         os.environ.update(router_env)
+
+        # CRITICAL: Restore original ANTHROPIC_API_KEY for MCP servers and Claude Code
+        # MCP servers need the REAL Anthropic API key, not the router's key
+        if original_anthropic_key:
+            os.environ["ANTHROPIC_API_KEY"] = original_anthropic_key
 
         if router_info.already_running:
             console.print(

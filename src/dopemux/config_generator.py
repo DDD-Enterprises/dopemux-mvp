@@ -233,7 +233,6 @@ class ConfigGenerator:
             "context7": 2,
             "gpt-researcher": 5,
             "dope-context": 8,
-            "claude-context": 5,
             "desktop-commander": 10,
             "morph-llm": 5,
             "magic-mcp": 3,
