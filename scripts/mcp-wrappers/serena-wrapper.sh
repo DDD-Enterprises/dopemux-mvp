@@ -1,10 +1,8 @@
 #!/bin/bash
-# ConPort MCP Wrapper - Auto-detects workspace for worktree support
+# Serena MCP Wrapper - Auto-detects workspace for worktree support
 # Usage: Called by Claude Desktop with stdin/stdout communication
 #
-# OPTIMIZED: Uses cached workspace detection to reduce git subprocess overhead.
-# Note: ConPort uses local Python (not Docker) because Docker container runs
-# HTTP server, while Claude Code needs stdio mode.
+# OPTIMIZED: Uses Docker container + cached detection for consistency
 
 # Detect the current workspace (worktree-aware with caching)
 detect_workspace() {
@@ -14,7 +12,7 @@ detect_workspace() {
         return
     fi
 
-    # Use dopemux CLI with caching (30s TTL - reduces git calls)
+    # Use dopemux CLI with caching (30s TTL)
     if command -v dopemux &> /dev/null; then
         local workspace=$(dopemux worktrees current 2>/dev/null)
         if [ -n "$workspace" ]; then
@@ -36,15 +34,15 @@ detect_workspace() {
     echo "/Users/hue/code/dopemux-mvp"
 }
 
-# Get workspace path (cached via dopemux CLI - reduces overhead)
+# Get workspace path (cached via dopemux CLI)
 WORKSPACE_PATH=$(detect_workspace)
 
-# Log for debugging (comment out for production to reduce stderr noise)
-# echo "[ConPort Wrapper] Detected workspace: $WORKSPACE_PATH" >&2
+# Log for debugging (optional - comment out for production)
+echo "[Serena Wrapper] Detected workspace: $WORKSPACE_PATH" >&2
 
-# Execute ConPort MCP via local Python (stdio mode)
-# Note: Each call spawns new process, but cached workspace detection reduces overhead by ~40%
-exec conport-mcp \
-    --workspace_id "$WORKSPACE_PATH" \
-    --mode stdio \
+# Execute Serena MCP via Docker (reuses running container)
+exec docker exec \
+    -e WORKSPACE_PATH="$WORKSPACE_PATH" \
+    -i mcp-serena \
+    python /app/wrapper.py \
     "$@"
