@@ -177,7 +177,7 @@ def init(ctx, directory: str, force: bool, template: str):
 @click.option(
     "--claude-router/--no-claude-router",
     "use_claude_router",
-    default=True,
+    default=False,  # Changed to False - OAuth-first design (no routing needed)
     help="Start Claude Code Router per instance (requires global `ccr`)",
 )
 @click.pass_context
