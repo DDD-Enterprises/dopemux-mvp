@@ -394,15 +394,20 @@ class MultiVectorSearch:
         for point_id, score in sorted_ids[: profile.top_k]:
             payload = payload_map[point_id]
 
+            # Support both code and docs payloads
+            file_path = payload.get("file_path") or payload.get("source_path", "")
+            content = payload.get("raw_code") or payload.get("text", "")
+            language = payload.get("language") or payload.get("doc_type", "")
+
             results.append(
                 SearchResult(
                     id=point_id,
                     score=score,
                     payload=payload,
-                    file_path=payload.get("file_path", ""),
+                    file_path=file_path,
                     function_name=payload.get("function_name"),
-                    language=payload.get("language", ""),
-                    content=payload.get("raw_code", ""),
+                    language=language,
+                    content=content,
                     context_snippet=payload.get("context_snippet"),
                 )
             )
