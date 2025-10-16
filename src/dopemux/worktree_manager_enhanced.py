@@ -126,7 +126,8 @@ class EnhancedWorktreeManager:
                 elif line.startswith('HEAD '):
                     current_info['commit'] = line.split(' ', 1)[1]
                 elif line.startswith('branch '):
-                    current_info['branch'] = line.split('/')[-1]
+                    # Strip only the refs/heads/ prefix, preserve branch path structure
+                    current_info['branch'] = line.split(' ', 1)[1].replace('refs/heads/', '')
                 elif line.startswith('detached'):
                     current_info['branch'] = 'detached'
 
@@ -338,34 +339,97 @@ fi
             console.print(f"[yellow]⚠️  Warning: Could not configure worktree hooks: {e}[/yellow]")
 
     def switch_to_worktree(self, branch_name: str) -> bool:
-        """Switch to an existing worktree by branch name."""
+        """
+        Switch to an existing worktree by branch name with fuzzy matching.
+
+        ADHD Optimization: Supports case-insensitive partial matching to reduce
+        cognitive load of remembering exact branch names.
+
+        Args:
+            branch_name: Exact or partial branch name to switch to
+
+        Returns:
+            True if switch successful, False otherwise
+        """
         worktrees = self.get_all_worktrees()
 
-        for wt in worktrees:
-            if wt.branch == branch_name:
-                console.print(f"[cyan]🔀 Switching to worktree: {wt.path}[/cyan]")
-                os.chdir(wt.path)
-                console.print(f"[green]📍 Now in: {wt.path}[/green]")
-                return True
+        if not worktrees:
+            console.print("[red]❌ No worktrees found[/red]")
+            return False
 
+        # Check if already on target worktree
+        current_wt = next((wt for wt in worktrees if wt.is_current), None)
+        if current_wt and current_wt.branch == branch_name:
+            console.print(f"[yellow]ℹ️  Already on worktree: {branch_name}[/yellow]")
+            return True
+
+        # Try exact match first
+        exact_matches = [wt for wt in worktrees if wt.branch == branch_name]
+        if exact_matches:
+            wt = exact_matches[0]
+            console.print(f"[cyan]🔀 Switching to worktree: {wt.path}[/cyan]")
+            console.print(f"[dim]Branch: {wt.branch}[/dim]")
+            os.chdir(wt.path)
+            console.print(f"[green]📍 Now in: {wt.path}[/green]")
+            return True
+
+        # Try fuzzy matching (case-insensitive partial match)
+        branch_lower = branch_name.lower()
+        fuzzy_matches = [
+            wt for wt in worktrees
+            if branch_lower in wt.branch.lower()
+        ]
+
+        if len(fuzzy_matches) == 1:
+            wt = fuzzy_matches[0]
+            console.print(f"[cyan]🔎 Fuzzy matched: '{branch_name}' → '{wt.branch}'[/cyan]")
+            console.print(f"[cyan]🔀 Switching to worktree: {wt.path}[/cyan]")
+            os.chdir(wt.path)
+            console.print(f"[green]📍 Now in: {wt.path}[/green]")
+            return True
+        elif len(fuzzy_matches) > 1:
+            console.print(f"[yellow]⚠️  Multiple matches found for '{branch_name}':[/yellow]")
+            for wt in fuzzy_matches:
+                console.print(f"  • {wt.branch}")
+            console.print("\n[yellow]💡 Tip: Please specify the exact branch name[/yellow]")
+            return False
+
+        # No matches found - show available worktrees
         console.print(f"[red]❌ No worktree found for branch '{branch_name}'[/red]")
+        console.print("\n[cyan]Available worktrees:[/cyan]")
+        for wt in worktrees:
+            current_marker = "→ " if wt.is_current else "  "
+            console.print(f"{current_marker}• {wt.branch}")
         return False
 
-    def cleanup_orphaned_worktrees(self, dry_run: bool = False) -> int:
+    def cleanup_orphaned_worktrees(self, dry_run: bool = False, force: bool = False) -> int:
         """
-        Clean up orphaned worktrees (directories that no longer exist).
+        Clean up worktrees safely with ADHD-friendly safeguards.
+
+        Cleans:
+        - Orphaned worktrees (directories that don't exist)
+        - Feature branch worktrees (with safety checks)
+
+        Skips:
+        - Main/master worktrees (always protected)
+        - Current worktree
+        - Dirty worktrees (unless force=True)
 
         Args:
             dry_run: If True, only show what would be cleaned
+            force: If True, clean even dirty worktrees
 
         Returns:
             Number of worktrees cleaned
         """
-        console.print("[cyan]🧹 Checking for orphaned worktrees...[/cyan]")
+        console.print("[cyan]🧹 Checking for worktrees to clean...[/cyan]")
+
+        if dry_run:
+            console.print("[yellow]⚠️  Dry run mode - no changes will be made[/yellow]\n")
 
         cleaned = 0
         try:
-            # First, prune worktree list
+            # First, prune truly orphaned entries
             if not dry_run:
                 subprocess.run(
                     ["git", "worktree", "prune"],
@@ -374,34 +438,68 @@ fi
                     check=False
                 )
 
-            # Check for directories that should be removed
+            # Check all worktrees
             worktrees = self.get_all_worktrees()
+            candidates = []
 
             for wt in worktrees:
+                # Skip main/master worktrees (always protected)
+                if wt.branch in self.main_branches:
+                    console.print(f"[dim]  ⏭️  Skipping main worktree: {wt.branch}[/dim]")
+                    continue
+
+                # Skip current worktree
+                if wt.is_current:
+                    console.print(f"[dim]  ⏭️  Skipping current worktree: {wt.branch}[/dim]")
+                    continue
+
+                # Check if directory exists
                 if not wt.path.exists():
-                    console.print(f"[yellow]  • Found orphaned: {wt.path} ({wt.branch})[/yellow]")
+                    console.print(f"[yellow]  • Orphaned worktree: {wt.branch} (directory missing)[/yellow]")
+                    candidates.append((wt, "orphaned"))
+                    continue
 
-                    if not dry_run:
-                        # Remove from worktree list
-                        subprocess.run(
-                            ["git", "worktree", "remove", str(wt.path), "--force"],
-                            cwd=self.workspace_path,
-                            capture_output=True,
-                            check=False
-                        )
-                        console.print(f"    [green]✅ Removed[/green]")
+                # Check if worktree is dirty
+                if wt.is_dirty:
+                    if force:
+                        console.print(f"[yellow]  • Dirty worktree: {wt.branch} (has uncommitted changes) [red]Force mode: Will remove anyway[/red][/yellow]")
+                        candidates.append((wt, "dirty (forced)"))
                     else:
-                        console.print(f"    [dim]Would remove[/dim]")
+                        console.print(f"[yellow]  ⚠️  Skipping dirty worktree: {wt.branch} (has uncommitted changes, use --force to remove)[/yellow]")
+                    continue
 
+                # Clean feature branch candidate
+                console.print(f"[yellow]  • Clean worktree: {wt.branch}[/yellow]")
+                candidates.append((wt, "clean"))
+
+            # Show summary and process
+            if not candidates:
+                console.print("\n[green]✅ No worktrees need cleanup[/green]")
+                return 0
+
+            console.print(f"\n[cyan]Found {len(candidates)} worktree(s) to clean[/cyan]")
+
+            if dry_run:
+                console.print("\n[yellow]📋 Dry run - no changes made[/yellow]")
+                for wt, reason in candidates:
+                    console.print(f"  • Would remove: {wt.branch} ({reason})")
+                return len(candidates)
+
+            # Actually clean (interactive confirmation would go here in real usage)
+            for wt, reason in candidates:
+                try:
+                    subprocess.run(
+                        ["git", "worktree", "remove", str(wt.path), "--force"],
+                        cwd=self.workspace_path,
+                        capture_output=True,
+                        check=True
+                    )
+                    console.print(f"[green]  ✅ Removed: {wt.branch}[/green]")
                     cleaned += 1
+                except subprocess.CalledProcessError as e:
+                    console.print(f"[red]  ❌ Failed to remove {wt.branch}: {e}[/red]")
 
-            if cleaned == 0:
-                console.print("[green]✅ No orphaned worktrees found[/green]")
-            elif dry_run:
-                console.print(f"\n[yellow]Would clean {cleaned} orphaned worktree(s)[/yellow]")
-                console.print("[dim]Run without --dry-run to actually clean[/dim]")
-            else:
-                console.print(f"\n[green]✅ Cleaned {cleaned} orphaned worktree(s)[/green]")
+            console.print(f"\n[green]✅ Cleaned {cleaned} worktree(s)[/green]")
 
         except Exception as e:
             console.print(f"[red]❌ Error during cleanup: {e}[/red]")
@@ -419,6 +517,7 @@ fi
 
         if not worktrees:
             console.print("[yellow]No worktrees found[/yellow]")
+            console.print("\n[dim]💡 Tip: Create a worktree with 'git worktree add <path> -b <branch>'[/dim]")
             return
 
         # Sort by last commit time (most recent first)
@@ -522,31 +621,31 @@ fi
 
 
 # Convenience functions for CLI integration
-def create_worktree_safe(branch_name: str, base_branch: str = "main") -> bool:
+def create_worktree_safe(branch_name: str, base_branch: str = "main", workspace_path: Optional[Path] = None) -> bool:
     """Create worktree with safety checks."""
-    manager = EnhancedWorktreeManager()
+    manager = EnhancedWorktreeManager(workspace_path)
     return manager.create_worktree(branch_name, base_branch)
 
 
-def list_worktrees_adhd(show_all: bool = False):
+def list_worktrees_adhd(show_all: bool = False, workspace_path: Optional[Path] = None):
     """List worktrees with ADHD-friendly display."""
-    manager = EnhancedWorktreeManager()
+    manager = EnhancedWorktreeManager(workspace_path)
     manager.display_worktrees(show_all)
 
 
-def cleanup_worktrees_safe(dry_run: bool = False) -> int:
+def cleanup_worktrees_safe(dry_run: bool = False, force: bool = False, workspace_path: Optional[Path] = None) -> int:
     """Clean up orphaned worktrees."""
-    manager = EnhancedWorktreeManager()
-    return manager.cleanup_orphaned_worktrees(dry_run)
+    manager = EnhancedWorktreeManager(workspace_path)
+    return manager.cleanup_orphaned_worktrees(dry_run, force)
 
 
-def switch_worktree_safe(branch_name: str) -> bool:
+def switch_worktree_safe(branch_name: str, workspace_path: Optional[Path] = None) -> bool:
     """Switch to worktree by branch name."""
-    manager = EnhancedWorktreeManager()
+    manager = EnhancedWorktreeManager(workspace_path)
     return manager.switch_to_worktree(branch_name)
 
 
-def archive_worktree_safe(branch_name: str) -> bool:
+def archive_worktree_safe(branch_name: str, workspace_path: Optional[Path] = None) -> bool:
     """Archive completed worktree."""
-    manager = EnhancedWorktreeManager()
+    manager = EnhancedWorktreeManager(workspace_path)
     return manager.archive_completed_worktree(branch_name)

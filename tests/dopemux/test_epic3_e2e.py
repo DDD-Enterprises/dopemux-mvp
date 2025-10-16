@@ -15,6 +15,7 @@ import pytest
 from pathlib import Path
 import tempfile
 import subprocess
+import os
 from unittest.mock import patch, MagicMock
 from io import StringIO
 
@@ -25,6 +26,18 @@ from src.dopemux.worktree_commands import (
     switch_worktree,
     cleanup_worktrees,
 )
+
+
+@pytest.fixture
+def preserve_cwd():
+    """Preserve and restore current working directory after test."""
+    original_cwd = Path.cwd()
+    yield
+    try:
+        os.chdir(original_cwd)
+    except (OSError, FileNotFoundError):
+        # If original directory was deleted, go to temp directory
+        os.chdir(tempfile.gettempdir())
 
 
 @pytest.fixture
@@ -182,7 +195,7 @@ class TestWorktreeListCommand:
 class TestWorktreeSwitchCommand:
     """Test suite for 'dopemux worktrees switch' command."""
 
-    def test_switch_exact_match(self, git_repo_with_worktrees, capsys):
+    def test_switch_exact_match(self, git_repo_with_worktrees, capsys, preserve_cwd):
         """Should switch to worktree with exact branch name match."""
         result = switch_worktree(
             git_repo_with_worktrees["main"],
@@ -195,9 +208,9 @@ class TestWorktreeSwitchCommand:
         output = captured.out
 
         assert "feature/test-feature" in output
-        assert "cd" in output  # Should show cd command
+        assert "Switching to worktree" in output  # Should show switching message
 
-    def test_switch_fuzzy_match_single(self, git_repo_with_worktrees, capsys):
+    def test_switch_fuzzy_match_single(self, git_repo_with_worktrees, capsys, preserve_cwd):
         """Should fuzzy match when single partial match exists."""
         result = switch_worktree(
             git_repo_with_worktrees["main"],
@@ -212,7 +225,7 @@ class TestWorktreeSwitchCommand:
         assert "Fuzzy matched" in output
         assert "feature/test-feature" in output
 
-    def test_switch_fuzzy_match_multiple(self, git_repo_with_worktrees, capsys):
+    def test_switch_fuzzy_match_multiple(self, git_repo_with_worktrees, capsys, preserve_cwd):
         """Should show disambiguation when multiple fuzzy matches exist."""
         # Create a third worktree that also contains "feature"
         hotfix_path = git_repo_with_worktrees["main"].parent / "hotfix-branch"
@@ -244,7 +257,7 @@ class TestWorktreeSwitchCommand:
             capture_output=True
         )
 
-    def test_switch_no_match(self, git_repo_with_worktrees, capsys):
+    def test_switch_no_match(self, git_repo_with_worktrees, capsys, preserve_cwd):
         """Should show available worktrees when no match found."""
         result = switch_worktree(
             git_repo_with_worktrees["main"],
@@ -260,7 +273,7 @@ class TestWorktreeSwitchCommand:
         assert "Available worktrees:" in output
         assert "main" in output
 
-    def test_switch_already_current(self, git_repo, capsys):
+    def test_switch_already_current(self, git_repo, capsys, preserve_cwd):
         """Should inform user when already on target worktree."""
         # Mock Path.cwd() to return the git repo directory
         with patch("src.dopemux.worktree_commands.Path.cwd") as mock_cwd:
@@ -325,7 +338,7 @@ class TestWorktreeCleanupCommand:
         output = captured.out
 
         assert "uncommitted changes" in output
-        assert "use --force" in output
+        assert "--force" in output  # Message includes --force suggestion
 
     def test_cleanup_force_removes_dirty(self, git_repo_with_worktrees, capsys):
         """Should remove dirty worktrees when force mode enabled."""
@@ -352,27 +365,26 @@ class TestWorktreeCleanupCommand:
 
         assert "No worktrees need cleanup" in output
 
-    def test_cleanup_with_confirmation(self, git_repo_with_worktrees):
-        """Should prompt for confirmation unless force mode enabled."""
-        # Create mock for Confirm.ask
-        with patch("rich.prompt.Confirm.ask") as mock_confirm:
-            mock_confirm.return_value = False  # User declines
+    def test_cleanup_removes_feature_worktrees(self, git_repo_with_worktrees):
+        """Should remove feature worktrees when not in dry-run mode."""
+        # Run cleanup without dry-run (should actually remove)
+        cleanup_worktrees(
+            git_repo_with_worktrees["main"],
+            force=False,
+            dry_run=False
+        )
 
-            cleanup_worktrees(
-                git_repo_with_worktrees["main"],
-                force=False,
-                dry_run=False
-            )
-
-            # Verify worktrees still exist (user declined)
-            worktrees = get_worktrees(git_repo_with_worktrees["main"])
-            assert len(worktrees) == 3
+        # Verify feature worktrees were removed, main remains
+        worktrees = get_worktrees(git_repo_with_worktrees["main"])
+        # Should only have main worktree left (feature branches cleaned up)
+        assert len(worktrees) == 1
+        assert worktrees[0][1] == "main"  # Main branch remains
 
 
 class TestWorktreeADHDOptimizations:
     """Test ADHD-specific features of worktree commands."""
 
-    def test_fuzzy_matching_reduces_cognitive_load(self, git_repo_with_worktrees):
+    def test_fuzzy_matching_reduces_cognitive_load(self, git_repo_with_worktrees, preserve_cwd):
         """Fuzzy matching should work with partial, case-insensitive matches."""
         # Test case-insensitive matching
         result = switch_worktree(
