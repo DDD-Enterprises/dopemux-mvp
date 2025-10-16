@@ -84,7 +84,33 @@ class DocIndexingPipeline:
             if not chunks:
                 return 0
 
-            # 3. Prepare texts for embedding
+            # 3. Validate chunk sizes (Voyage context-3 has 32K token limit)
+            import tiktoken
+            enc = tiktoken.get_encoding("cl100k_base")
+            MAX_TOKENS = 8000  # Safe limit leaving room for document context
+
+            validated_chunks = []
+            for chunk in chunks:
+                token_count = len(enc.encode(chunk))
+                if token_count > MAX_TOKENS:
+                    # Split large chunk into smaller pieces
+                    logger.warning(f"Chunk too large ({token_count} tokens), splitting...")
+                    words = chunk.split()
+                    current = []
+                    for word in words:
+                        test_chunk = " ".join(current + [word])
+                        if len(enc.encode(test_chunk)) > MAX_TOKENS:
+                            if current:
+                                validated_chunks.append(" ".join(current))
+                            current = [word]
+                        else:
+                            current.append(word)
+                    if current:
+                        validated_chunks.append(" ".join(current))
+                else:
+                    validated_chunks.append(chunk)
+
+            chunks = validated_chunks
             doc_name = file_path.stem
 
             # 4. Embed with voyage-context-3 (contextualized embeddings)

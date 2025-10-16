@@ -3,7 +3,9 @@ Document Search - Docs Index
 Multi-vector search for documents (PDFs, Markdown, HTML, DOCX) using Qdrant.
 """
 
+import hashlib
 import logging
+import uuid
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -77,7 +79,10 @@ class DocumentSearch:
         for i, (chunk, content_vec, title_vec, breadcrumb_vec) in enumerate(
             zip(chunks, content_vectors, title_vectors, breadcrumb_vectors)
         ):
-            point_id = f"{doc_id}_chunk_{i}"
+            # Generate UUID from hash for Qdrant compatibility
+            id_str = f"{doc_id}_chunk_{i}"
+            hash_bytes = hashlib.sha256(id_str.encode()).digest()[:16]
+            point_id = str(uuid.UUID(bytes=hash_bytes))
             payload = {
                 "doc_id": doc_id,
                 "chunk_index": i,
