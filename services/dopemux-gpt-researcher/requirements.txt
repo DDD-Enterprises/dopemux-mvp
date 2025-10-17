@@ -2,11 +2,11 @@
 fastapi>=0.104.1
 uvicorn[standard]>=0.24.0
 pydantic>=2.5.0
-python-multipart>=0.0.6
+python-multipart>=0.0.12  # Security: DoS and ReDoS fixes
 python-dotenv>=1.0.0
 
 # Async HTTP and WebSocket Support
-aiohttp>=3.9.0
+aiohttp>=3.12.14  # Security: CVE-2025-53643, CVE-2024-52304, directory traversal, DoS fixes
 websockets>=12.0
 
 # Search Engine APIs
