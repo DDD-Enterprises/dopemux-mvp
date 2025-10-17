@@ -22,7 +22,7 @@ WORKDIR /app
 FROM base as dependencies
 
 # Copy requirements and install Python dependencies
-COPY backend/requirements.txt .
+COPY research_api/requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
@@ -32,8 +32,8 @@ RUN pip install --no-cache-dir gpt-researcher
 # === Application Stage ===
 FROM dependencies as application
 
-# Copy backend source code
-COPY backend/ ./backend/
+# Copy research_api source code (renamed from backend to avoid package collision)
+COPY research_api/ ./research_api/
 COPY --chown=dopemux:dopemux . .
 
 # Create necessary directories
@@ -43,7 +43,7 @@ RUN mkdir -p /app/logs /app/data /app/cache && \
 # Switch to application user
 USER dopemux
 
-# Set Python path for imports (use /app so backend.main resolves to /app/backend/main.py)
+# Set Python path for imports
 ENV PYTHONPATH=/app:$PYTHONPATH
 
 # Expose the application port
@@ -53,5 +53,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Default command - run FastAPI server
-CMD ["python", "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Default command - run FastAPI server (no more package collision!)
+CMD ["python", "-m", "uvicorn", "research_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
