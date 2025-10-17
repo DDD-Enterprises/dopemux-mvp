@@ -1161,9 +1161,11 @@ app = FastAPI(
     description=f"Task management coordination for Dopemux instance: {INSTANCE_NAME}"
 )
 
+# CORS middleware with environment-based origin whitelist
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
