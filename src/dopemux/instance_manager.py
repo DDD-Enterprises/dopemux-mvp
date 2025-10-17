@@ -5,11 +5,14 @@ Coordinates instance detection, worktree creation, and environment setup
 for multi-instance ADHD-optimized development workflows.
 """
 
+import json
 import os
 import subprocess
-from dataclasses import dataclass
+import time
+from dataclasses import asdict, dataclass
+from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import aiohttp
 import asyncio
@@ -45,19 +48,37 @@ class InstanceManager:
         self.workspace_root = workspace_root.resolve()
         self.worktrees_dir = workspace_root / "worktrees"
 
-    async def detect_running_instances(self) -> List[RunningInstance]:
+        # Instance cache configuration (eliminates HTTP probing overhead)
+        self._cache_file = self.workspace_root / ".dopemux" / "instances_cache.json"
+        self._cache_ttl_seconds = 300  # 5 minutes
+        self._ensure_cache_dir()
+
+    async def detect_running_instances(self, use_cache: bool = True) -> List[RunningInstance]:
         """
-        Detect currently running Dopemux instances.
+        Detect currently running Dopemux instances with optional caching.
+
+        Args:
+            use_cache: If True, use cached results if fresh (default: True)
 
         Returns:
             List of detected running instances
         """
+        # Try cache first (eliminates 5s HTTP probing overhead!)
+        if use_cache:
+            cached = self._load_cache()
+            if cached is not None:
+                return cached
+
+        # Cache miss or disabled - do full detection
         running_instances = []
 
         for port_base in self.AVAILABLE_PORTS:
             instance = await self._probe_instance(port_base)
             if instance:
                 running_instances.append(instance)
+
+        # Save to cache
+        self._save_cache(running_instances)
 
         return running_instances
 
@@ -229,9 +250,13 @@ class InstanceManager:
         Returns:
             Dictionary of environment variables to set
         """
+        # Determine actual workspace path (worktree or main)
+        actual_workspace = worktree_path if worktree_path else self.workspace_root
+
         env_vars = {
             "DOPEMUX_INSTANCE_ID": instance_id if instance_id != 'A' else "",
-            "DOPEMUX_WORKSPACE_ID": str(self.workspace_root),
+            "DOPEMUX_WORKSPACE_ID": str(self.workspace_root),  # Main repo root
+            "DOPEMUX_WORKSPACE_ROOT": str(actual_workspace),  # Current worktree (SHARED DETECTION!)
             "DOPEMUX_PORT_BASE": str(port_base),
 
             # Service ports
@@ -306,9 +331,85 @@ class InstanceManager:
                 check=True,
                 capture_output=True
             )
+            # Invalidate cache after worktree removal
+            self._invalidate_cache()
             return True
         except subprocess.CalledProcessError:
             return False
+
+    # Cache Management Methods (Performance Optimization)
+    # ================================================================
+
+    def _ensure_cache_dir(self) -> None:
+        """Ensure cache directory exists."""
+        cache_dir = self._cache_file.parent
+        cache_dir.mkdir(parents=True, exist_ok=True)
+
+    def _load_cache(self) -> Optional[List[RunningInstance]]:
+        """Load instances from cache if fresh."""
+        if not self._cache_file.exists():
+            return None
+
+        try:
+            with open(self._cache_file, 'r') as f:
+                data = json.load(f)
+
+            # Check if cache is still fresh
+            cache_time = data.get('timestamp', 0)
+            age_seconds = time.time() - cache_time
+
+            if age_seconds > self._cache_ttl_seconds:
+                # Cache expired
+                return None
+
+            # Deserialize instances
+            instances = []
+            for inst_data in data.get('instances', []):
+                worktree_path = Path(inst_data['worktree_path']) if inst_data.get('worktree_path') else None
+                instances.append(RunningInstance(
+                    instance_id=inst_data['instance_id'],
+                    port_base=inst_data['port_base'],
+                    worktree_path=worktree_path,
+                    git_branch=inst_data.get('git_branch'),
+                    is_healthy=inst_data.get('is_healthy', True)
+                ))
+
+            return instances
+
+        except (json.JSONDecodeError, KeyError, ValueError):
+            # Corrupt cache - ignore and detect fresh
+            return None
+
+    def _save_cache(self, instances: List[RunningInstance]) -> None:
+        """Save detected instances to cache."""
+        try:
+            data = {
+                'timestamp': time.time(),
+                'instances': [
+                    {
+                        'instance_id': inst.instance_id,
+                        'port_base': inst.port_base,
+                        'worktree_path': str(inst.worktree_path) if inst.worktree_path else None,
+                        'git_branch': inst.git_branch,
+                        'is_healthy': inst.is_healthy
+                    }
+                    for inst in instances
+                ]
+            }
+
+            with open(self._cache_file, 'w') as f:
+                json.dump(data, f, indent=2)
+
+        except Exception:
+            # Silent failure - cache is optional optimization
+            pass
+
+    def _invalidate_cache(self) -> None:
+        """Invalidate cache (force fresh detection on next call)."""
+        try:
+            self._cache_file.unlink(missing_ok=True)
+        except Exception:
+            pass
 
 
 def detect_instances_sync(workspace_root: Path) -> List[RunningInstance]:

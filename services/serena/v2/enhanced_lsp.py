@@ -172,6 +172,14 @@ class EnhancedLSPWrapper:
     def _detect_and_validate_workspace(self, workspace_path: Path) -> Path:
         """Auto-detect and validate the correct workspace for ADHD context preservation."""
         try:
+            # 0. Check shared environment variable first (FASTEST - eliminates detection!)
+            env_workspace = os.getenv("DOPEMUX_WORKSPACE_ROOT")
+            if env_workspace:
+                env_path = Path(env_workspace).resolve()
+                if env_path.exists() and env_path.is_dir():
+                    logger.info(f"📂 Using shared workspace from env: {env_path}")
+                    return env_path
+
             # If workspace_path is provided and valid, use it
             if workspace_path and workspace_path.exists() and workspace_path.is_dir():
                 logger.info(f"📂 Using provided workspace: {workspace_path}")
