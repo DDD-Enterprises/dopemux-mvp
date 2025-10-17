@@ -43,8 +43,8 @@ RUN mkdir -p /app/logs /app/data /app/cache && \
 # Switch to application user
 USER dopemux
 
-# Set Python path for imports
-ENV PYTHONPATH=/app/backend:$PYTHONPATH
+# Set Python path for imports (use /app so backend.main resolves to /app/backend/main.py)
+ENV PYTHONPATH=/app:$PYTHONPATH
 
 # Expose the application port
 EXPOSE 8000
