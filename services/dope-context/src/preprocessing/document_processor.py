@@ -150,52 +150,85 @@ class DocumentProcessor:
         chunk_overlap: int = 100,
         preserve_structure: bool = True,
     ) -> List[str]:
-        """Chunk text into smaller pieces."""
+        """Chunk text into smaller pieces with proper structure preservation."""
         if len(text) <= chunk_size:
             return [text]
 
         chunks = []
 
-        if preserve_structure:
-            # Try to split by paragraphs first
-            paragraphs = text.split("\\n\\n")
-            current_chunk = ""
-
-            for paragraph in paragraphs:
-                # If paragraph is too long, split it further
-                if len(paragraph) > chunk_size:
-                    # Add current chunk if it exists
-                    if current_chunk:
-                        chunks.append(current_chunk.strip())
-                        current_chunk = ""
-
-                    # Split long paragraph by sentences
-                    sentences = re.split(r"(?<=[.!?])\\s+", paragraph)
-                    for sentence in sentences:
-                        if len(current_chunk + sentence) <= chunk_size:
-                            current_chunk += (" " if current_chunk else "") + sentence
-                        else:
-                            if current_chunk:
-                                chunks.append(current_chunk.strip())
-                            current_chunk = sentence
-                else:
-                    # Check if adding this paragraph exceeds chunk size
-                    if len(current_chunk + "\\n\\n" + paragraph) <= chunk_size:
-                        current_chunk += ("\\n\\n" if current_chunk else "") + paragraph
-                    else:
-                        if current_chunk:
-                            chunks.append(current_chunk.strip())
-                        current_chunk = paragraph
-
-            # Add final chunk
-            if current_chunk:
-                chunks.append(current_chunk.strip())
-        else:
+        if not preserve_structure:
             # Simple character-based chunking
             for i in range(0, len(text), chunk_size - chunk_overlap):
                 chunk = text[i : i + chunk_size]
                 if chunk.strip():
                     chunks.append(chunk.strip())
+            return chunks
+
+        # Structure-preserving chunking (FIXED)
+        paragraphs = text.split("\n\n")
+        current_chunk = ""
+
+        for paragraph in paragraphs:
+            paragraph = paragraph.strip()
+            if not paragraph:
+                continue
+
+            # If paragraph is small, try to add to current chunk
+            if len(paragraph) <= chunk_size:
+                test_addition = current_chunk + ("\n\n" if current_chunk else "") + paragraph
+                if len(test_addition) <= chunk_size:
+                    current_chunk = test_addition
+                    continue
+                else:
+                    # Current chunk is full, save it
+                    if current_chunk:
+                        chunks.append(current_chunk)
+                    current_chunk = paragraph
+                    continue
+
+            # Paragraph is too large, needs sentence-level splitting
+            # First, save current chunk if it exists
+            if current_chunk:
+                chunks.append(current_chunk)
+                current_chunk = ""
+
+            # Split paragraph by sentences
+            sentences = re.split(r"(?<=[.!?])\s+", paragraph)
+
+            for sentence in sentences:
+                sentence = sentence.strip()
+                if not sentence:
+                    continue
+
+                # Try to add sentence to current chunk
+                test_addition = current_chunk + (" " if current_chunk else "") + sentence
+
+                if len(test_addition) <= chunk_size:
+                    current_chunk = test_addition
+                else:
+                    # Current chunk is full
+                    if current_chunk:
+                        chunks.append(current_chunk)
+                    # Start new chunk with this sentence
+                    # If sentence itself > chunk_size, split by words
+                    if len(sentence) > chunk_size:
+                        words = sentence.split()
+                        word_chunk = ""
+                        for word in words:
+                            test_word = word_chunk + (" " if word_chunk else "") + word
+                            if len(test_word) <= chunk_size:
+                                word_chunk = test_word
+                            else:
+                                if word_chunk:
+                                    chunks.append(word_chunk)
+                                word_chunk = word
+                        current_chunk = word_chunk
+                    else:
+                        current_chunk = sentence
+
+        # Don't forget final chunk!
+        if current_chunk:
+            chunks.append(current_chunk)
 
         return chunks
 
