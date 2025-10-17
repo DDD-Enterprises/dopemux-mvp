@@ -81,30 +81,241 @@ class ADHDCodeNavigator:
     """
     ADHD-optimized code navigation with progressive disclosure and complexity awareness.
 
+    NOW INTEGRATED WITH ADHD ENGINE for dynamic, personalized accommodations!
+
     Features:
     - Progressive disclosure of complex code structures
-    - Complexity-based filtering and warnings
+    - Complexity-based filtering and warnings (DYNAMIC per user state)
     - Context preservation during navigation
     - Gentle guidance for overwhelming code sections
-    - Smart result limiting to prevent cognitive overload
+    - Smart result limiting based on real-time attention state
     """
 
-    def __init__(self):
-        self.max_initial_results = 10
-        self.complexity_threshold = 0.7
-        self.focus_mode_limit = 5
+    def __init__(self, user_id: str = "default"):
+        """
+        Initialize ADHD Code Navigator.
+
+        Args:
+            user_id: User identifier for personalized ADHD accommodations
+        """
+        self.user_id = user_id
         self.navigation_context = {}
 
-        # ADHD-friendly configuration
+        # Legacy hardcoded values (fallback when ADHD Engine unavailable or feature flag OFF)
+        self._default_max_initial_results = 10
+        self._default_complexity_threshold = 0.7
+        self._default_focus_mode_limit = 5
+        self._default_max_context_depth = 3
+
+        # ADHD-friendly configuration (static)
         self.show_complexity_indicators = True
         self.enable_progressive_disclosure = True
         self.enable_gentle_warnings = True
-        self.max_context_depth = 3
+
+        # ADHD Engine integration (initialized in initialize())
+        self.adhd_config = None
+        self.feature_flags = None
 
     async def initialize(self, workspace_path: Path) -> None:
-        """Initialize ADHD navigator for workspace."""
+        """
+        Initialize ADHD navigator for workspace.
+
+        Connects to ADHD Engine for dynamic accommodations if available.
+        """
         self.workspace_path = workspace_path
+
+        # Connect to ADHD Engine (if available)
+        try:
+            # Import here to avoid circular dependencies
+            import sys
+            sys.path.insert(0, str(Path(__file__).parent.parent.parent / "adhd_engine"))
+
+            from adhd_config_service import get_adhd_config_service
+            from feature_flags import ADHDFeatureFlags, FEATURE_ADHD_ENGINE_SERENA
+
+            self.adhd_config = await get_adhd_config_service()
+            self.feature_flags = ADHDFeatureFlags(self.adhd_config.redis_client)
+
+            logger.info("✅ ADHD Code Navigator connected to ADHD Engine")
+
+        except Exception as e:
+            logger.warning(f"⚠️ ADHD Engine unavailable, using defaults: {e}")
+            self.adhd_config = None
+            self.feature_flags = None
+
         logger.info("🧠 ADHD Code Navigator initialized")
+
+    async def get_max_initial_results(self) -> int:
+        """
+        Get max initial results dynamically from ADHD Engine.
+
+        Returns dynamic value based on attention state or fallback to default.
+        """
+        # Check feature flag
+        if self.feature_flags and self.adhd_config:
+            try:
+                from feature_flags import FEATURE_ADHD_ENGINE_SERENA
+
+                if await self.feature_flags.is_enabled(
+                    FEATURE_ADHD_ENGINE_SERENA,
+                    "serena",
+                    self.user_id
+                ):
+                    return await self.adhd_config.get_max_results(self.user_id)
+            except Exception as e:
+                logger.error(f"ADHD Engine query failed: {e}")
+
+        # Fallback to hardcoded default
+        return self._default_max_initial_results
+
+    async def get_complexity_threshold(self) -> float:
+        """Get complexity threshold dynamically from ADHD Engine."""
+        if self.feature_flags and self.adhd_config:
+            try:
+                from feature_flags import FEATURE_ADHD_ENGINE_SERENA
+
+                if await self.feature_flags.is_enabled(
+                    FEATURE_ADHD_ENGINE_SERENA,
+                    "serena",
+                    self.user_id
+                ):
+                    return await self.adhd_config.get_complexity_threshold(self.user_id)
+            except Exception as e:
+                logger.error(f"ADHD Engine query failed: {e}")
+
+        return self._default_complexity_threshold
+
+    async def get_focus_mode_limit(self) -> int:
+        """Get focus mode limit dynamically from ADHD Engine."""
+        if self.feature_flags and self.adhd_config:
+            try:
+                from feature_flags import FEATURE_ADHD_ENGINE_SERENA
+
+                if await self.feature_flags.is_enabled(
+                    FEATURE_ADHD_ENGINE_SERENA,
+                    "serena",
+                    self.user_id
+                ):
+                    return await self.adhd_config.get_focus_mode_limit(self.user_id)
+            except Exception as e:
+                logger.error(f"ADHD Engine query failed: {e}")
+
+        return self._default_focus_mode_limit
+
+    async def get_max_context_depth(self) -> int:
+        """Get max context depth dynamically from ADHD Engine."""
+        if self.feature_flags and self.adhd_config:
+            try:
+                from feature_flags import FEATURE_ADHD_ENGINE_SERENA
+
+                if await self.feature_flags.is_enabled(
+                    FEATURE_ADHD_ENGINE_SERENA,
+                    "serena",
+                    self.user_id
+                ):
+                    return await self.adhd_config.get_context_depth(self.user_id)
+            except Exception as e:
+                logger.error(f"ADHD Engine query failed: {e}")
+
+        return self._default_max_context_depth
+
+    async def filter_symbols_for_focus(self, symbols: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Filter symbols for focus mode - show only essential items."""
+        if not symbols:
+            return symbols
+
+        # In focus mode, prioritize:
+        # 1. Public functions/methods (kind 6, 12)
+        # 2. Classes (kind 5)
+        # 3. Important variables/constants (kind 13, 14)
+
+        essential_kinds = {5, 6, 12, 13, 14}  # Class, Function, Method, Variable, Constant
+        filtered_symbols = []
+
+        for symbol in symbols:
+            kind = symbol.get("kind", 0)
+            name = symbol.get("name", "")
+
+            # Include if essential kind
+            if kind in essential_kinds:
+                # Add complexity indicator for ADHD users
+                if self.show_complexity_indicators:
+                    complexity = CodeComplexityAnalyzer.calculate_function_complexity(symbol)
+                    complexity_label, complexity_desc = CodeComplexityAnalyzer.categorize_complexity(complexity)
+
+                    symbol["_adhd_metadata"] = {
+                        "complexity_score": complexity,
+                        "complexity_label": complexity_label,
+                        "complexity_description": complexity_desc,
+                        "focus_mode_filtered": True
+                    }
+
+                filtered_symbols.append(symbol)
+
+        # Sort by complexity (simple first) for ADHD users
+        filtered_symbols.sort(key=lambda s: s.get("_adhd_metadata", {}).get("complexity_score", 0.5))
+
+        # Limit results in focus mode (NOW DYNAMIC!)
+        focus_limit = await self.get_focus_mode_limit()
+        if len(filtered_symbols) > focus_limit:
+            truncated = filtered_symbols[:focus_limit]
+            logger.debug(f"🎯 Focus mode: showing {len(truncated)}/{len(filtered_symbols)} symbols")
+            return truncated
+
+        return filtered_symbols
+
+    async def apply_progressive_disclosure(
+        self,
+        results: List[Dict[str, Any]],
+        max_initial_items: int = None
+    ) -> List[Dict[str, Any]]:
+        """Apply progressive disclosure to large result sets (NOW DYNAMIC!)."""
+        # Get dynamic max from ADHD Engine
+        if max_initial_items is None:
+            max_initial_items = await self.get_max_initial_results()
+
+        max_items = max_initial_items
+
+        if len(results) <= max_items:
+            return results
+
+        # Sort by relevance/importance for ADHD users
+        sorted_results = self._sort_by_importance(results)
+
+        # Take initial set
+        initial_results = sorted_results[:max_items]
+
+        # Add metadata about remaining items
+        remaining_count = len(results) - max_items
+        disclosure_metadata = {
+            "_progressive_disclosure": {
+                "initial_count": len(initial_results),
+                "total_count": len(results),
+                "remaining_count": remaining_count,
+                "expansion_available": True,
+                "adhd_friendly_message": f"Showing {len(initial_results)} most relevant results. {remaining_count} more available - use 'show more' to expand."
+            }
+        }
+
+        # Add metadata to first result for UI consumption
+        if initial_results:
+            initial_results[0]["_disclosure_info"] = disclosure_metadata
+
+        logger.debug(f"📋 Progressive disclosure: {len(initial_results)}/{len(results)} results shown initially")
+        return initial_results
+
+    def _sort_by_importance(self, results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Sort results by importance for ADHD users."""
+        def importance_score(item):
+            score = 0.5  # Base score
+
+            # Boost based on item type/kind
+            kind = item.get("kind", 0)
+            name = item.get("name", "").lower()
+
+            # Functions and classes are typically more important
+            if kind in {5, 6, 12}:  # Class, Function, Method
+                score += 0.3
 
     async def filter_symbols_for_focus(self, symbols: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Filter symbols for focus mode - show only essential items."""
@@ -358,17 +569,24 @@ class ADHDCodeNavigator:
 
     async def health_check(self) -> Dict[str, Any]:
         """Health check for ADHD features."""
+        # Get current dynamic values
+        max_results = await self.get_max_initial_results()
+        complexity_threshold = await self.get_complexity_threshold()
+        focus_limit = await self.get_focus_mode_limit()
+
         return {
             "status": "🚀 Active",
+            "adhd_engine_connected": self.adhd_config is not None,
             "features_enabled": {
                 "complexity_indicators": self.show_complexity_indicators,
                 "progressive_disclosure": self.enable_progressive_disclosure,
                 "gentle_warnings": self.enable_gentle_warnings
             },
             "configuration": {
-                "max_initial_results": self.max_initial_results,
-                "complexity_threshold": self.complexity_threshold,
-                "focus_mode_limit": self.focus_mode_limit
+                "max_initial_results": max_results,
+                "complexity_threshold": complexity_threshold,
+                "focus_mode_limit": focus_limit,
+                "source": "adhd_engine" if self.adhd_config else "default"
             }
         }
 
@@ -452,13 +670,81 @@ class ProgressiveDisclosure:
 
 
 class CognitiveLoadManager:
-    """Manages cognitive load during code navigation."""
+    """
+    Manages cognitive load during code navigation.
 
-    def __init__(self):
+    NOW INTEGRATED WITH ADHD ENGINE for personalized thresholds!
+    """
+
+    def __init__(self, user_id: str = "default"):
+        """
+        Initialize Cognitive Load Manager.
+
+        Args:
+            user_id: User identifier for personalized load thresholds
+        """
+        self.user_id = user_id
         self.current_load = 0.0
         self.load_history = []
-        self.max_load_threshold = 0.8
-        self.break_suggestion_threshold = 0.9
+
+        # Legacy defaults (fallback)
+        self._default_max_load_threshold = 0.8
+        self._default_break_suggestion_threshold = 0.9
+
+        # ADHD Engine integration
+        self.adhd_config = None
+        self.feature_flags = None
+
+    async def initialize(self) -> None:
+        """Connect to ADHD Engine."""
+        try:
+            import sys
+            sys.path.insert(0, str(Path(__file__).parent.parent.parent / "adhd_engine"))
+
+            from adhd_config_service import get_adhd_config_service
+            from feature_flags import ADHDFeatureFlags
+
+            self.adhd_config = await get_adhd_config_service()
+            self.feature_flags = ADHDFeatureFlags(self.adhd_config.redis_client)
+
+            logger.info("✅ Cognitive Load Manager connected to ADHD Engine")
+
+        except Exception as e:
+            logger.warning(f"⚠️ ADHD Engine unavailable: {e}")
+
+    async def get_max_load_threshold(self) -> float:
+        """Get max load threshold dynamically from ADHD Engine."""
+        if self.feature_flags and self.adhd_config:
+            try:
+                from feature_flags import FEATURE_ADHD_ENGINE_SERENA
+
+                if await self.feature_flags.is_enabled(
+                    FEATURE_ADHD_ENGINE_SERENA,
+                    "serena",
+                    self.user_id
+                ):
+                    return await self.adhd_config.get_cognitive_load_threshold(self.user_id)
+            except Exception as e:
+                logger.error(f"ADHD Engine query failed: {e}")
+
+        return self._default_max_load_threshold
+
+    async def get_break_suggestion_threshold(self) -> float:
+        """Get break suggestion threshold dynamically from ADHD Engine."""
+        if self.feature_flags and self.adhd_config:
+            try:
+                from feature_flags import FEATURE_ADHD_ENGINE_SERENA
+
+                if await self.feature_flags.is_enabled(
+                    FEATURE_ADHD_ENGINE_SERENA,
+                    "serena",
+                    self.user_id
+                ):
+                    return await self.adhd_config.get_break_suggestion_threshold(self.user_id)
+            except Exception as e:
+                logger.error(f"ADHD Engine query failed: {e}")
+
+        return self._default_break_suggestion_threshold
 
     async def assess_navigation_load(
         self,
@@ -467,7 +753,7 @@ class CognitiveLoadManager:
         result_count: int,
         file_path: str = None
     ) -> Dict[str, Any]:
-        """Assess cognitive load for navigation action."""
+        """Assess cognitive load for navigation action (NOW WITH DYNAMIC THRESHOLDS!)."""
         try:
             # Calculate load contribution
             action_loads = {
@@ -491,11 +777,23 @@ class CognitiveLoadManager:
             # Update current load (with decay over time)
             self._update_cognitive_load(total_load)
 
+            # Get DYNAMIC thresholds from ADHD Engine
+            max_threshold = await self.get_max_load_threshold()
+            break_threshold = await self.get_break_suggestion_threshold()
+
+            # Check if break recommended from ADHD Engine
+            should_break = False
+            break_reason = ""
+            if self.adhd_config:
+                should_break, break_reason = await self.adhd_config.should_suggest_break(self.user_id)
+
             # Generate recommendations
             recommendations = []
-            if self.current_load > self.break_suggestion_threshold:
+            if should_break:
+                recommendations.append(f"☕ {break_reason}")
+            elif self.current_load > break_threshold:
                 recommendations.append("☕ Consider taking a break - cognitive load is high")
-            elif self.current_load > self.max_load_threshold:
+            elif self.current_load > max_threshold:
                 recommendations.append("🎯 Focus mode recommended to reduce information overload")
 
             # File-specific recommendations
@@ -507,7 +805,8 @@ class CognitiveLoadManager:
                 "load_contribution": total_load,
                 "load_level": self._categorize_load(self.current_load),
                 "recommendations": recommendations,
-                "break_suggested": self.current_load > self.break_suggestion_threshold
+                "break_suggested": should_break or self.current_load > break_threshold,
+                "adhd_engine_active": self.adhd_config is not None
             }
 
         except Exception as e:

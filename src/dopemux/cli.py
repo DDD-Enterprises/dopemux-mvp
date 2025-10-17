@@ -3831,15 +3831,52 @@ def worktrees_current_cmd(ctx, no_cache: bool):
         sys.exit(1)
 
 
+@worktrees.command("switch-path")
+@click.argument("branch")
+@click.pass_context
+def worktrees_switch_path_cmd(ctx, branch: str):
+    """📁 Output worktree path for shell integration (use with shell function)."""
+    from .worktree_commands import get_worktree_path
+
+    path = get_worktree_path(branch)
+
+    if path:
+        # Machine-readable output for shell integration
+        click.echo(path)
+        ctx.exit(0)
+    else:
+        # Error output to stderr
+        click.echo(f"Error: Worktree not found for branch '{branch}'", err=True)
+        click.echo("\nAvailable worktrees:", err=True)
+        # Show list for user
+        from .worktree_commands import list_worktrees
+        list_worktrees()
+        ctx.exit(1)
+
+
 @worktrees.command("switch")
 @click.argument("branch")
 @click.option("--no-fuzzy", is_flag=True, help="Disable fuzzy matching")
 @click.pass_context
 def worktrees_switch_cmd(ctx, branch: str, no_fuzzy: bool):
-    """🔀 Switch to an existing worktree."""
-    from .worktree_commands import switch_worktree
-    workspace = Path.cwd()
-    switch_worktree(workspace, branch, fuzzy_match=not no_fuzzy)
+    """[DEPRECATED] Use shell integration instead - see 'dopemux shell-setup'."""
+    click.secho("\n⚠️  WARNING: This command cannot change your shell's directory", fg="yellow", bold=True)
+    click.secho("This is a fundamental POSIX limitation, not a bug.\n", fg="yellow")
+
+    click.secho("Why it doesn't work:", fg="cyan")
+    click.echo("  • Python runs in a subprocess")
+    click.echo("  • Subprocesses cannot modify the parent shell's working directory")
+    click.echo("  • This affects ALL programming languages, not just Python\n")
+
+    click.secho("✅ Solution: Install shell integration", fg="green", bold=True)
+    click.echo("  1. Run: dopemux shell-setup bash >> ~/.bashrc")
+    click.echo("  2. Run: source ~/.bashrc")
+    click.echo(f"  3. Use: dwt {branch}\n")
+
+    click.secho("Alternative: Use the workaround command", fg="cyan")
+    click.echo(f"  cd $(dopemux worktrees switch-path {branch})\n")
+
+    ctx.exit(1)
 
 
 @worktrees.command("cleanup")
@@ -3851,6 +3888,65 @@ def worktrees_cleanup_cmd(ctx, force: bool, dry_run: bool):
     from .worktree_commands import cleanup_worktrees
     workspace = Path.cwd()
     cleanup_worktrees(workspace, force=force, dry_run=dry_run)
+
+
+# Shell Integration Command
+# =============================================================================
+
+@cli.command("shell-setup")
+@click.argument("shell_type", type=click.Choice(["bash", "zsh"], case_sensitive=False))
+@click.pass_context
+def shell_setup_cmd(ctx, shell_type: str):
+    """🐚 Output shell integration code for worktree switching.
+
+    This command outputs shell functions that enable proper worktree switching.
+    Python subprocesses cannot change the parent shell's directory, so we provide
+    shell functions that execute 'cd' in the shell's context.
+
+    Usage:
+        dopemux shell-setup bash >> ~/.bashrc && source ~/.bashrc
+        dopemux shell-setup zsh >> ~/.zshrc && source ~/.zshrc
+
+    Then use:
+        dwt <branch>   # Switch to worktree with fuzzy matching
+        dwtls          # List all worktrees
+        dwtcur         # Show current worktree
+    """
+    import importlib.resources
+
+    # Read the shell integration script
+    script_path = Path(__file__).parent.parent.parent / "scripts" / "shell_integration.sh"
+
+    if not script_path.exists():
+        click.secho(f"❌ Shell integration script not found: {script_path}", fg="red", err=True)
+        ctx.exit(1)
+
+    try:
+        content = script_path.read_text()
+
+        # Output header
+        click.echo(f"\n# Dopemux Shell Integration ({shell_type})")
+        click.echo(f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        click.echo("# Source: dopemux shell-setup\n")
+
+        # Output the integration code
+        click.echo(content)
+
+        # Usage instructions to stderr so they don't pollute the output
+        click.echo("\n# Installation complete! Restart your shell or run:", err=True)
+        if shell_type == "bash":
+            click.echo("#   source ~/.bashrc", err=True)
+        else:
+            click.echo("#   source ~/.zshrc", err=True)
+        click.echo("#", err=True)
+        click.echo("# Then use:", err=True)
+        click.echo("#   dwt <branch>   - Switch to worktree", err=True)
+        click.echo("#   dwtls          - List worktrees", err=True)
+        click.echo("#   dwtcur         - Current worktree", err=True)
+
+    except Exception as e:
+        click.secho(f"❌ Error reading shell integration: {e}", fg="red", err=True)
+        ctx.exit(1)
 
 
 def main():
