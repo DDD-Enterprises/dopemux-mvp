@@ -3,13 +3,13 @@
 # FastAPI and web framework
 fastapi>=0.104.1
 uvicorn[standard]>=0.24.0
-python-multipart>=0.0.6
+python-multipart>=0.0.12  # Security: DoS and ReDoS fixes
 
 # MCP Protocol Support
 mcp>=1.0.0
 
 # HTTP clients and async support
-aiohttp>=3.9.0
+aiohttp>=3.12.14  # Security: CVE-2025-53643, CVE-2024-52304, directory traversal, DoS fixes
 httpx>=0.27.0
 requests>=2.31.0
 

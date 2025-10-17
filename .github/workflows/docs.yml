@@ -10,6 +10,6 @@ jobs:
       - run: pip install pre-commit
       - run: pre-commit run -a
       - name: Broken-link check (lychee)
-        uses: lycheeverse/lychee-action@v1
+        uses: lycheeverse/lychee-action@v2  # Security: Fixed code injection vulnerability in v1
         with:
           args: --config .lychee.toml docs/**/*.md
