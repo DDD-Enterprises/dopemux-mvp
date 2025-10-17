@@ -14,9 +14,6 @@ from models import ADHDProfile, EnergyLevel, AttentionState
 from auth import verify_api_key
 
 logger = logging.getLogger(__name__)
-router = APIRouter(), EnergyLevel, AttentionState
-
-logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
