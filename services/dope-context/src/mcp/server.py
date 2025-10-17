@@ -741,6 +741,7 @@ async def _docs_search_impl(
     top_k: int = 10,
     filter_doc_type: Optional[str] = None,
     workspace_path: Optional[str] = None,
+    max_content_length: int = 2000,
 ) -> List[Dict]:
     """Implementation of docs_search tool."""
     # Detect workspace
@@ -808,9 +809,11 @@ async def _docs_search_impl(
     return [
         {
             "source_path": r.file_path,
-            "text": r.content,
+            "text": r.content[:max_content_length] + ("..." if len(r.content) > max_content_length else ""),
             "score": r.score,
             "doc_type": r.payload.get("doc_type", "unknown"),
+            "truncated": len(r.content) > max_content_length,
+            "original_length": len(r.content),
         }
         for r in results[:top_k]
     ]
@@ -822,6 +825,7 @@ async def docs_search(
     top_k: int = 10,
     filter_doc_type: Optional[str] = None,
     workspace_path: Optional[str] = None,
+    max_content_length: int = 2000,
 ) -> List[Dict]:
     """
     Search indexed documents (PDF, Markdown, HTML, text).
@@ -840,11 +844,13 @@ async def docs_search(
         top_k: Number of results to return (default 10)
         filter_doc_type: Filter by document type (md, pdf, html, txt)
         workspace_path: Optional workspace path (auto-detects if None)
+        max_content_length: Max characters per doc (default 2000, prevents token overflow)
 
     Returns:
-        List of document search results with text and scores
+        List of document search results with truncated text and scores.
+        Each result includes 'truncated' boolean and 'original_length' for reference.
     """
-    return await _docs_search_impl(query, top_k, filter_doc_type, workspace_path)
+    return await _docs_search_impl(query, top_k, filter_doc_type, workspace_path, max_content_length)
 
 
 async def _search_all_impl(
@@ -870,7 +876,7 @@ async def _search_all_impl(
         query, top_k // 2, use_reranking=False, workspace_path=str(workspace)
     )
     docs_results_task = _docs_search_impl(
-        query, top_k // 2, workspace_path=str(workspace)
+        query, top_k // 2, workspace_path=str(workspace), max_content_length=2000
     )
 
     code_results, docs_results = await asyncio.gather(
