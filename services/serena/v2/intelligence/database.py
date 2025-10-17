@@ -36,7 +36,7 @@ class DatabaseConfig:
     port: int = 5432
     database: str = "serena_intelligence"
     user: str = "serena"
-    password: str = "serena_dev_pass"
+    password: str = os.getenv("SERENA_DB_PASSWORD", "serena_dev_pass")  # Use env var in production
 
     # Connection pool settings for ADHD performance
     min_connections: int = 5
