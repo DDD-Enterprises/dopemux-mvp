@@ -46,6 +46,66 @@ mcp = FastMCP("dope-context")
 
 
 # ============================================================================
+# ADHD Engine Integration - Dynamic result limits based on user cognitive state
+# ============================================================================
+
+# Global ADHD config (initialized on first use)
+_adhd_config = None
+_adhd_feature_flags = None
+
+
+async def _get_adhd_config():
+    """Get or initialize ADHD config singleton."""
+    global _adhd_config, _adhd_feature_flags
+
+    if _adhd_config is None:
+        try:
+            import sys
+            sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "adhd_engine"))
+
+            from adhd_config_service import get_adhd_config_service
+            from feature_flags import ADHDFeatureFlags
+
+            _adhd_config = await get_adhd_config_service()
+            _adhd_feature_flags = ADHDFeatureFlags(_adhd_config.redis_client)
+
+            logger.info("✅ dope-context connected to ADHD Engine")
+        except Exception as e:
+            logger.warning(f"⚠️ ADHD Engine unavailable: {e}")
+
+    return _adhd_config, _adhd_feature_flags
+
+
+async def get_dynamic_top_k(user_id: str = "default", requested_top_k: int = 10) -> int:
+    """
+    Get dynamic top_k from ADHD Engine based on user's attention state.
+
+    Returns:
+        scattered: 5 results
+        focused: 15 results
+        hyperfocused: 40 results
+        fallback: requested_top_k (original behavior)
+    """
+    adhd_config, feature_flags = await _get_adhd_config()
+
+    if adhd_config and feature_flags:
+        try:
+            from feature_flags import FEATURE_ADHD_ENGINE_DOPE_CONTEXT
+
+            if await feature_flags.is_enabled(
+                FEATURE_ADHD_ENGINE_DOPE_CONTEXT,
+                "dope-context",
+                user_id
+            ):
+                return await adhd_config.get_max_results(user_id)
+        except Exception as e:
+            logger.error(f"ADHD Engine query failed: {e}")
+
+    # Fallback to requested value
+    return requested_top_k
+
+
+# ============================================================================
 # Component Caching Layer - Reduces overhead from ~500ms to ~50ms per search
 # ============================================================================
 
@@ -370,9 +430,13 @@ async def _search_code_impl(
     use_reranking: bool = True,
     filter_language: Optional[str] = None,
     workspace_path: Optional[str] = None,
+    user_id: str = "default",
 ) -> List[Dict]:
-    """Implementation of search_code tool."""
+    """Implementation of search_code tool (NOW WITH DYNAMIC TOP_K!)."""
     try:
+        # Get dynamic top_k from ADHD Engine
+        top_k = await get_dynamic_top_k(user_id, top_k)
+
         # Detect workspace
         workspace = Path(workspace_path) if workspace_path else get_workspace_root()
         code_collection, _ = get_collection_names(workspace)
