@@ -322,3 +322,27 @@ def cleanup_worktrees(
     """
     # Use the enhanced backend with safe cleanup
     cleanup_worktrees_safe(dry_run=dry_run, force=force, workspace_path=workspace_path)
+
+
+def get_worktree_path(
+    branch_name: str,
+    workspace_path: Optional[Path] = None
+) -> Optional[str]:
+    """
+    Get worktree path for shell integration (no directory change).
+
+    This function is designed for shell integration where the shell function
+    will execute cd. It provides the same fuzzy matching as switch_worktree
+    but only returns the path.
+
+    Args:
+        branch_name: Exact or partial branch name to find
+        workspace_path: Path to git repository (default: current directory)
+
+    Returns:
+        Absolute path to worktree if found, None otherwise
+    """
+    from .worktree_manager_enhanced import EnhancedWorktreeManager
+
+    manager = EnhancedWorktreeManager(workspace_path)
+    return manager.get_worktree_path_for_switch(branch_name)
