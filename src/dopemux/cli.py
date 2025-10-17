@@ -4026,6 +4026,59 @@ def shell_setup_cmd(ctx, shell_type: str):
         ctx.exit(1)
 
 
+# ============================================================================
+# Decision Management Commands (ConPort Enhancement Quick Wins)
+# ============================================================================
+
+@cli.group()
+def decisions():
+    """
+    📊 Decision tracking and analytics
+
+    Manage and analyze decisions logged in ConPort with ADHD-optimized
+    visualizations and review workflows.
+
+    \b
+    Quick Win Commands:
+        review    - Review decisions pending attention
+        stats     - Show decision statistics with charts
+        energy    - Energy level tracking commands
+
+    Part of ConPort Enhancement roadmap (Phase 1-5).
+    """
+    pass
+
+
+@decisions.group()
+def energy():
+    """
+    ⚡ Energy level tracking (ADHD optimization)
+
+    Track your energy levels throughout the day to discover patterns
+    and optimize decision-making timing.
+    """
+    pass
+
+
+# Import and register decision commands
+try:
+    from .commands.decisions_commands import (
+        review_decisions,
+        decision_stats,
+        log_energy,
+        energy_status
+    )
+
+    decisions.add_command(review_decisions, "review")
+    decisions.add_command(decision_stats, "stats")
+    energy.add_command(log_energy, "log")
+    energy.add_command(energy_status, "status")
+
+except ImportError as e:
+    # Graceful degradation if dependencies not installed
+    pass  # Commands won't be available but CLI still works
+
+
 def main():
     """Main entry point."""
     try:
