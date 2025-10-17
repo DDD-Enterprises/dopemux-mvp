@@ -2331,22 +2331,99 @@ def servers_logs_cmd(service: str):
 @click.option("--detailed", "-d", is_flag=True, help="Show detailed health information")
 @click.option("--service", "-s", help="Check specific service only")
 @click.option("--fix", "-f", is_flag=True, help="Attempt to fix unhealthy services")
+@click.option("--cleanup", "-c", is_flag=True, help="Clean up orphaned MCP processes")
 @click.option("--watch", "-w", is_flag=True, help="Continuous monitoring mode")
 @click.option(
     "--interval", "-i", type=int, default=30, help="Watch interval in seconds"
 )
 @click.pass_context
 def health(
-    ctx, detailed: bool, service: Optional[str], fix: bool, watch: bool, interval: int
+    ctx, detailed: bool, service: Optional[str], fix: bool, cleanup: bool, watch: bool, interval: int
 ):
     """
     🏥 Comprehensive health check for Dopemux ecosystem
 
     Monitors Dopemux core, Claude Code, MCP servers, Docker services,
     system resources, and ADHD feature effectiveness with ADHD-friendly reporting.
+
+    Use --cleanup to find and kill orphaned MCP server processes.
     """
     project_path = Path.cwd()
     health_checker = HealthChecker(project_path, console)
+
+    # Handle cleanup flag first
+    if cleanup:
+        console.print("[blue]🧹 Cleaning up orphaned MCP processes...[/blue]")
+
+        try:
+            # Find orphaned MCP processes
+            result = subprocess.run(
+                ["ps", "aux"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+
+            orphaned_pids = []
+            mcp_patterns = [
+                'conport-mcp',
+                'serena/v2/mcp_server.py',
+                'src.mcp.server',
+                'dopemux-gpt-researcher'
+            ]
+
+            for line in result.stdout.split('\n'):
+                # Check if it's an MCP process
+                if any(pattern in line for pattern in mcp_patterns):
+                    # Extract PID
+                    parts = line.split()
+                    if len(parts) > 1:
+                        pid = parts[1]
+                        # Check if parent process (Claude Code) is still running
+                        try:
+                            parent_check = subprocess.run(
+                                ["ps", "-o", "ppid=", "-p", pid],
+                                capture_output=True,
+                                text=True
+                            )
+                            ppid = parent_check.stdout.strip()
+                            if ppid:
+                                parent_cmd = subprocess.run(
+                                    ["ps", "-o", "comm=", "-p", ppid],
+                                    capture_output=True,
+                                    text=True
+                                )
+                                # If parent is not Claude Code, it's orphaned
+                                if 'claude' not in parent_cmd.stdout.lower():
+                                    orphaned_pids.append(pid)
+                        except Exception:
+                            # If we can't check parent, skip this process
+                            pass
+
+            if orphaned_pids:
+                console.print(f"[yellow]Found {len(orphaned_pids)} orphaned MCP processes[/yellow]")
+
+                if click.confirm("Kill these processes?", default=True):
+                    killed = 0
+                    for pid in orphaned_pids:
+                        try:
+                            os.kill(int(pid), signal.SIGTERM)
+                            killed += 1
+                        except (OSError, ValueError):
+                            pass
+
+                    console.print(f"[green]✅ Cleaned up {killed} orphaned processes[/green]")
+                else:
+                    console.print("[yellow]Cleanup cancelled[/yellow]")
+            else:
+                console.print("[green]✅ No orphaned MCP processes found[/green]")
+
+        except Exception as e:
+            console.print(f"[red]❌ Cleanup failed: {e}[/red]")
+
+        # Exit after cleanup unless combined with other flags
+        if not (detailed or service or fix or watch):
+            return
 
     if watch:
         console.print(
