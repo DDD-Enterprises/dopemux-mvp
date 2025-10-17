@@ -402,6 +402,54 @@ fi
             console.print(f"{current_marker}• {wt.branch}")
         return False
 
+    def get_worktree_path_for_switch(self, branch_name: str) -> Optional[str]:
+        """
+        Get worktree path for shell integration (no directory change).
+
+        This method provides the same fuzzy matching logic as switch_to_worktree
+        but returns the path instead of changing directories. Designed for shell
+        integration where the shell function will execute cd.
+
+        ADHD Optimization: Same case-insensitive partial matching to reduce
+        cognitive load of remembering exact branch names.
+
+        Args:
+            branch_name: Exact or partial branch name to find
+
+        Returns:
+            Absolute path to worktree if found, None otherwise
+        """
+        worktrees = self.get_all_worktrees()
+
+        if not worktrees:
+            return None
+
+        # Check if already on target worktree
+        current_wt = next((wt for wt in worktrees if wt.is_current), None)
+        if current_wt and current_wt.branch == branch_name:
+            return str(current_wt.path)
+
+        # Try exact match first
+        exact_matches = [wt for wt in worktrees if wt.branch == branch_name]
+        if exact_matches:
+            return str(exact_matches[0].path)
+
+        # Try fuzzy matching (case-insensitive partial match)
+        branch_lower = branch_name.lower()
+        fuzzy_matches = [
+            wt for wt in worktrees
+            if branch_lower in wt.branch.lower()
+        ]
+
+        if len(fuzzy_matches) == 1:
+            return str(fuzzy_matches[0].path)
+        elif len(fuzzy_matches) > 1:
+            # Multiple matches - return None and let caller handle error
+            return None
+
+        # No matches found
+        return None
+
     def cleanup_orphaned_worktrees(self, dry_run: bool = False, force: bool = False) -> int:
         """
         Clean up worktrees safely with ADHD-friendly safeguards.
