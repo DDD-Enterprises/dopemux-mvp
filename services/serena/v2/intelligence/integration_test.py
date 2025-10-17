@@ -64,7 +64,7 @@ class SerenaLayer1IntegrationTest:
             port=5432,
             database="serena_test",
             user="serena_test",
-            password="serena_test_pass"
+            password=os.getenv("SERENA_TEST_PASSWORD", "serena_test_pass")  # Use env var
         )
 
     async def run_full_integration_test(self) -> Dict[str, Any]:
