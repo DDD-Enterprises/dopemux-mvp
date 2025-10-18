@@ -1,6 +1,6 @@
 ---
 id: adr-197
-title: "ADR-197: Four-Stage Task/Epic Workflow System with Leantime Integration"
+title: 'ADR-197: Four-Stage Task/Epic Workflow System with Leantime Integration'
 type: adr
 owner: dopemux-core
 date: 2025-10-04
@@ -8,14 +8,15 @@ status: approved
 adhd_cognitive_load: 0.7
 adhd_attention_required: high
 tags:
-  - workflow
-  - task-management
-  - epic-management
-  - leantime-integration
-  - two-plane-architecture
-  - adhd-optimization
+- workflow
+- task-management
+- epic-management
+- leantime-integration
+- two-plane-architecture
+- adhd-optimization
+last_review: '2025-10-17'
+next_review: '2026-01-15'
 ---
-
 # ADR-197: Four-Stage Task/Epic Workflow System with Leantime Integration
 
 ## Status

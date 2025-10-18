@@ -1,3 +1,11 @@
+---
+id: ADHD-ENGINE-DEEP-DIVE-PART1
+title: Adhd Engine Deep Dive Part1
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # ADHD Engine Deep Dive - Part 1: Architecture & Philosophy
 
 **Series**: ADHD Engine Deep Dive (Part 1 of 4)
@@ -583,4 +591,3 @@ The answer involves real-time activity analysis, ConPort task metadata, Redis st
 
 **Word Count**: ~2,500 words
 **Next**: Part 2 - Energy Matching & Task Selection (3,000 words)
-

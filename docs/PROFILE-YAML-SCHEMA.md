@@ -1,3 +1,11 @@
+---
+id: PROFILE-YAML-SCHEMA
+title: Profile Yaml Schema
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # Profile YAML Schema Specification
 
 **Version**: 1.0.0

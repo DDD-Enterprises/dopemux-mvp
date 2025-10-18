@@ -1,3 +1,11 @@
+---
+id: python-tmux-research
+title: Python Tmux Research
+type: reference
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # Building dopemux: Comprehensive Design Patterns for Python-Based tmux Applications
 
 **Type**: Research synthesis and architectural patterns
