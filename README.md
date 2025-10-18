@@ -218,7 +218,7 @@ Your statusline should now show:
 - Session continuity across interruptions
 - Decision genealogy tracking
 
-[📖 ConPort Documentation](./docs/conport/)
+[📖 ConPort Documentation](./docs/04-explanation/conport-technical-deep-dive.md)
 
 ### ADHD Engine
 
@@ -237,7 +237,7 @@ Your statusline should now show:
 - Protects deep focus states
 - Learns your productivity patterns
 
-[📖 ADHD Engine Documentation](./services/adhd-engine/README.md)
+[📖 ADHD Engine Documentation](./services/adhd_engine/README.md)
 
 ### MCP Servers
 
@@ -465,7 +465,7 @@ uvicorn main:app --port 8095 --reload
 ## 📖 Documentation
 
 - **[Statusline Guide](./.claude/docs/STATUSLINE.md)** - Complete statusline documentation
-- **[ConPort Memory System](./docs/conport/)** - Knowledge graph and decision logging
+- **[ConPort Memory System](./docs/04-explanation/conport-technical-deep-dive.md)** - Knowledge graph and decision logging
 - **[ADHD Patterns](./.claude/modules/shared/adhd-patterns.md)** - ADHD accommodation patterns
 - **[MCP Integration](./.claude/)** - AI reasoning and tool integration
 - **[Architecture Guide](./.claude/CLAUDE.md)** - System architecture overview
