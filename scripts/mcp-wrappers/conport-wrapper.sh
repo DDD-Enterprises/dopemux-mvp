@@ -33,7 +33,8 @@ detect_workspace() {
     fi
 
     # Last resort: main dopemux-mvp location
-    echo "/Users/hue/code/dopemux-mvp"
+    # Fallback to git detection
+    git rev-parse --show-toplevel 2>/dev/null || echo "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 }
 
 # Get workspace path (cached via dopemux CLI - reduces overhead)

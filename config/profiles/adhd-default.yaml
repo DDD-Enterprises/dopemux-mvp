@@ -1,0 +1,63 @@
+# ADHD-Default Profile
+# Universal profile with maximum ADHD accommodations for any project type
+
+name: adhd-default
+description: Universal ADHD-optimized development (works with any language/framework)
+
+mcp_servers:
+  required:
+    - zen
+    - conport
+    - context7
+
+  enabled:
+    - serena-lsp
+    - dope-context
+    - litellm
+
+  disabled:
+    - leantime
+    - task-master
+    - desktop-commander
+
+# Maximum ADHD support
+adhd_config:
+  session_duration_minutes: 25
+  max_context_switches_per_session: 5
+  energy_tracking_enabled: true
+  break_reminders_enabled: true
+  hyperfocus_protection_minutes: 60    # Earlier warning for default profile
+
+  # Aggressive progressive disclosure
+  max_results_per_query: 8             # Even fewer results
+  max_decision_options: 3
+
+  # Frequent auto-save
+  auto_save_interval_seconds: 20       # More frequent (every 20s)
+
+  # Attention state monitoring
+  attention_monitoring_enabled: true
+  context_switch_warnings: true
+
+  # Gentle reminders
+  pomodoro_sound_enabled: false        # Visual only by default
+  break_notification_style: gentle     # Suggestion, not demand
+
+database_config:
+  conport:
+    mode: shared
+    path: "~/.dopemux/databases/conport-shared.db"
+  serena:
+    mode: local
+    path: ".dopemux/databases/serena-{hash}.db"
+  context:
+    mode: local
+    path: ".dopemux/databases/context-{hash}.db"
+
+tools:
+  universal_lsp: true  # Language-agnostic features
+
+markers:
+  # No strict requirements - works with any project
+  required_files: []
+  optional_files: []
