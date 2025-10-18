@@ -623,8 +623,7 @@ Multi-instance support enables ADHD-optimized parallel development with:
 **Next Steps:**
 
 - Start your first multi-instance workflow
-- Review [ConPort Worktree Guide](../worktree-guide.md)
-- Check [Instance Registry API](../../services/dopemux/instance_registry.py)
+- Review [ConPort Worktree Guide](../WORKTREE_SWITCHING_GUIDE.md)
 
 ---
 
