@@ -1,3 +1,11 @@
+---
+id: serena-v2-technical-deep-dive
+title: Serena V2 Technical Deep Dive
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # Serena v2: Deep Technical Analysis
 
 **Document Type**: Living Technical Reference

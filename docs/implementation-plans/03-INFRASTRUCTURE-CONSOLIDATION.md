@@ -1,3 +1,11 @@
+---
+id: 03-INFRASTRUCTURE-CONSOLIDATION
+title: 03 Infrastructure Consolidation
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # Implementation Plan: Infrastructure Consolidation
 
 **Task ID**: IP-003
