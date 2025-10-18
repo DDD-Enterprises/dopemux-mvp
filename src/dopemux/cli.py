@@ -2331,22 +2331,99 @@ def servers_logs_cmd(service: str):
 @click.option("--detailed", "-d", is_flag=True, help="Show detailed health information")
 @click.option("--service", "-s", help="Check specific service only")
 @click.option("--fix", "-f", is_flag=True, help="Attempt to fix unhealthy services")
+@click.option("--cleanup", "-c", is_flag=True, help="Clean up orphaned MCP processes")
 @click.option("--watch", "-w", is_flag=True, help="Continuous monitoring mode")
 @click.option(
     "--interval", "-i", type=int, default=30, help="Watch interval in seconds"
 )
 @click.pass_context
 def health(
-    ctx, detailed: bool, service: Optional[str], fix: bool, watch: bool, interval: int
+    ctx, detailed: bool, service: Optional[str], fix: bool, cleanup: bool, watch: bool, interval: int
 ):
     """
     🏥 Comprehensive health check for Dopemux ecosystem
 
     Monitors Dopemux core, Claude Code, MCP servers, Docker services,
     system resources, and ADHD feature effectiveness with ADHD-friendly reporting.
+
+    Use --cleanup to find and kill orphaned MCP server processes.
     """
     project_path = Path.cwd()
     health_checker = HealthChecker(project_path, console)
+
+    # Handle cleanup flag first
+    if cleanup:
+        console.print("[blue]🧹 Cleaning up orphaned MCP processes...[/blue]")
+
+        try:
+            # Find orphaned MCP processes
+            result = subprocess.run(
+                ["ps", "aux"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+
+            orphaned_pids = []
+            mcp_patterns = [
+                'conport-mcp',
+                'serena/v2/mcp_server.py',
+                'src.mcp.server',
+                'dopemux-gpt-researcher'
+            ]
+
+            for line in result.stdout.split('\n'):
+                # Check if it's an MCP process
+                if any(pattern in line for pattern in mcp_patterns):
+                    # Extract PID
+                    parts = line.split()
+                    if len(parts) > 1:
+                        pid = parts[1]
+                        # Check if parent process (Claude Code) is still running
+                        try:
+                            parent_check = subprocess.run(
+                                ["ps", "-o", "ppid=", "-p", pid],
+                                capture_output=True,
+                                text=True
+                            )
+                            ppid = parent_check.stdout.strip()
+                            if ppid:
+                                parent_cmd = subprocess.run(
+                                    ["ps", "-o", "comm=", "-p", ppid],
+                                    capture_output=True,
+                                    text=True
+                                )
+                                # If parent is not Claude Code, it's orphaned
+                                if 'claude' not in parent_cmd.stdout.lower():
+                                    orphaned_pids.append(pid)
+                        except Exception:
+                            # If we can't check parent, skip this process
+                            pass
+
+            if orphaned_pids:
+                console.print(f"[yellow]Found {len(orphaned_pids)} orphaned MCP processes[/yellow]")
+
+                if click.confirm("Kill these processes?", default=True):
+                    killed = 0
+                    for pid in orphaned_pids:
+                        try:
+                            os.kill(int(pid), signal.SIGTERM)
+                            killed += 1
+                        except (OSError, ValueError):
+                            pass
+
+                    console.print(f"[green]✅ Cleaned up {killed} orphaned processes[/green]")
+                else:
+                    console.print("[yellow]Cleanup cancelled[/yellow]")
+            else:
+                console.print("[green]✅ No orphaned MCP processes found[/green]")
+
+        except Exception as e:
+            console.print(f"[red]❌ Cleanup failed: {e}[/red]")
+
+        # Exit after cleanup unless combined with other flags
+        if not (detailed or service or fix or watch):
+            return
 
     if watch:
         console.print(
@@ -3831,15 +3908,52 @@ def worktrees_current_cmd(ctx, no_cache: bool):
         sys.exit(1)
 
 
+@worktrees.command("switch-path")
+@click.argument("branch")
+@click.pass_context
+def worktrees_switch_path_cmd(ctx, branch: str):
+    """📁 Output worktree path for shell integration (use with shell function)."""
+    from .worktree_commands import get_worktree_path
+
+    path = get_worktree_path(branch)
+
+    if path:
+        # Machine-readable output for shell integration
+        click.echo(path)
+        ctx.exit(0)
+    else:
+        # Error output to stderr
+        click.echo(f"Error: Worktree not found for branch '{branch}'", err=True)
+        click.echo("\nAvailable worktrees:", err=True)
+        # Show list for user
+        from .worktree_commands import list_worktrees
+        list_worktrees()
+        ctx.exit(1)
+
+
 @worktrees.command("switch")
 @click.argument("branch")
 @click.option("--no-fuzzy", is_flag=True, help="Disable fuzzy matching")
 @click.pass_context
 def worktrees_switch_cmd(ctx, branch: str, no_fuzzy: bool):
-    """🔀 Switch to an existing worktree."""
-    from .worktree_commands import switch_worktree
-    workspace = Path.cwd()
-    switch_worktree(workspace, branch, fuzzy_match=not no_fuzzy)
+    """[DEPRECATED] Use shell integration instead - see 'dopemux shell-setup'."""
+    click.secho("\n⚠️  WARNING: This command cannot change your shell's directory", fg="yellow", bold=True)
+    click.secho("This is a fundamental POSIX limitation, not a bug.\n", fg="yellow")
+
+    click.secho("Why it doesn't work:", fg="cyan")
+    click.echo("  • Python runs in a subprocess")
+    click.echo("  • Subprocesses cannot modify the parent shell's working directory")
+    click.echo("  • This affects ALL programming languages, not just Python\n")
+
+    click.secho("✅ Solution: Install shell integration", fg="green", bold=True)
+    click.echo("  1. Run: dopemux shell-setup bash >> ~/.bashrc")
+    click.echo("  2. Run: source ~/.bashrc")
+    click.echo(f"  3. Use: dwt {branch}\n")
+
+    click.secho("Alternative: Use the workaround command", fg="cyan")
+    click.echo(f"  cd $(dopemux worktrees switch-path {branch})\n")
+
+    ctx.exit(1)
 
 
 @worktrees.command("cleanup")
@@ -3851,6 +3965,153 @@ def worktrees_cleanup_cmd(ctx, force: bool, dry_run: bool):
     from .worktree_commands import cleanup_worktrees
     workspace = Path.cwd()
     cleanup_worktrees(workspace, force=force, dry_run=dry_run)
+
+
+# Shell Integration Command
+# =============================================================================
+
+@cli.command("shell-setup")
+@click.argument("shell_type", type=click.Choice(["bash", "zsh"], case_sensitive=False))
+@click.pass_context
+def shell_setup_cmd(ctx, shell_type: str):
+    """🐚 Output shell integration code for worktree switching.
+
+    This command outputs shell functions that enable proper worktree switching.
+    Python subprocesses cannot change the parent shell's directory, so we provide
+    shell functions that execute 'cd' in the shell's context.
+
+    Usage:
+        dopemux shell-setup bash >> ~/.bashrc && source ~/.bashrc
+        dopemux shell-setup zsh >> ~/.zshrc && source ~/.zshrc
+
+    Then use:
+        dwt <branch>   # Switch to worktree with fuzzy matching
+        dwtls          # List all worktrees
+        dwtcur         # Show current worktree
+    """
+    import importlib.resources
+
+    # Read the shell integration script
+    script_path = Path(__file__).parent.parent.parent / "scripts" / "shell_integration.sh"
+
+    if not script_path.exists():
+        click.secho(f"❌ Shell integration script not found: {script_path}", fg="red", err=True)
+        ctx.exit(1)
+
+    try:
+        content = script_path.read_text()
+
+        # Output header
+        click.echo(f"\n# Dopemux Shell Integration ({shell_type})")
+        click.echo(f"# Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        click.echo("# Source: dopemux shell-setup\n")
+
+        # Output the integration code
+        click.echo(content)
+
+        # Usage instructions to stderr so they don't pollute the output
+        click.echo("\n# Installation complete! Restart your shell or run:", err=True)
+        if shell_type == "bash":
+            click.echo("#   source ~/.bashrc", err=True)
+        else:
+            click.echo("#   source ~/.zshrc", err=True)
+        click.echo("#", err=True)
+        click.echo("# Then use:", err=True)
+        click.echo("#   dwt <branch>   - Switch to worktree", err=True)
+        click.echo("#   dwtls          - List worktrees", err=True)
+        click.echo("#   dwtcur         - Current worktree", err=True)
+
+    except Exception as e:
+        click.secho(f"❌ Error reading shell integration: {e}", fg="red", err=True)
+        ctx.exit(1)
+
+
+# ============================================================================
+# Decision Management Commands (ConPort Enhancement Quick Wins)
+# ============================================================================
+
+@cli.group()
+def decisions():
+    """
+    📊 Decision tracking and analytics
+
+    Manage and analyze decisions logged in ConPort with ADHD-optimized
+    visualizations and review workflows.
+
+    \b
+    Quick Win Commands:
+        review    - Review decisions pending attention
+        stats     - Show decision statistics with charts
+        energy    - Energy level tracking commands
+
+    Part of ConPort Enhancement roadmap (Phase 1-5).
+    """
+    pass
+
+
+@decisions.group()
+def energy():
+    """
+    ⚡ Energy level tracking (ADHD optimization)
+
+    Track your energy levels throughout the day to discover patterns
+    and optimize decision-making timing.
+    """
+    pass
+
+
+@decisions.group()
+def patterns():
+    """
+    🔍 Pattern detection and learning (Phase 3)
+
+    Auto-detect decision patterns from history:
+    - Tag clustering (co-occurring tags)
+    - Decision chains (sequential patterns)
+    - Timing patterns (time-of-day, duration)
+    - Energy correlation (energy vs quality)
+    """
+    pass
+
+
+# Import and register decision commands
+try:
+    from .commands.decisions_commands import (
+        review_decisions,
+        decision_stats,
+        log_energy,
+        energy_status,
+        show_decision,
+        list_decisions,
+        energy_analytics,
+        graph_decision,
+        update_outcome,
+        enhanced_stats,
+        query_decisions,
+        pattern_tags
+    )
+
+    # Decision management commands
+    decisions.add_command(review_decisions, "review")
+    decisions.add_command(decision_stats, "stats")
+    decisions.add_command(show_decision, "show")
+    decisions.add_command(list_decisions, "list")
+    decisions.add_command(graph_decision, "graph")
+    decisions.add_command(update_outcome, "update-outcome")
+    decisions.add_command(enhanced_stats, "stats-enhanced")
+    decisions.add_command(query_decisions, "query")
+
+    # Energy tracking commands
+    energy.add_command(log_energy, "log")
+    energy.add_command(energy_status, "status")
+    energy.add_command(energy_analytics, "analytics")
+
+    # Pattern detection commands (Phase 3)
+    patterns.add_command(pattern_tags, "tags")
+
+except ImportError as e:
+    # Graceful degradation if dependencies not installed
+    pass  # Commands won't be available but CLI still works
 
 
 def main():

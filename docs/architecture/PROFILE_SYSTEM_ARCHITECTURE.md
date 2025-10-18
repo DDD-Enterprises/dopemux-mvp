@@ -1,3 +1,11 @@
+---
+id: PROFILE_SYSTEM_ARCHITECTURE
+title: Profile_System_Architecture
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # Profile System Architecture
 
 **Developer documentation for extending and maintaining the Dopemux profile system.**

@@ -1,3 +1,11 @@
+---
+id: conport-kg-project-summary
+title: Conport Kg Project Summary
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # CONPORT-KG-2025 Project Summary
 
 **Epic**: DB-001 CONPORT-KG-2025 Database Foundation
