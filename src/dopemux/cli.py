@@ -4069,7 +4069,8 @@ try:
         energy_status,
         show_decision,
         list_decisions,
-        energy_analytics
+        energy_analytics,
+        graph_decision
     )
 
     # Decision management commands
@@ -4077,6 +4078,7 @@ try:
     decisions.add_command(decision_stats, "stats")
     decisions.add_command(show_decision, "show")
     decisions.add_command(list_decisions, "list")
+    decisions.add_command(graph_decision, "graph")
 
     # Energy tracking commands
     energy.add_command(log_energy, "log")

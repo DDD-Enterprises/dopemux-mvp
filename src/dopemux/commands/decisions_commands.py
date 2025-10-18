@@ -792,3 +792,219 @@ def energy_analytics(days: int, workspace: Optional[str]):
             await conn.close()
 
     asyncio.run(_analytics())
+
+
+# ============================================================================
+# PHASE 2: Decision Graph Visualization (~2 hours)
+# ============================================================================
+
+async def get_decision_relationships(
+    conn: asyncpg.Connection,
+    workspace_id: str,
+    decision_id: str,
+    max_depth: int = 3
+) -> dict:
+    """
+    Fetch decision genealogy (ancestors and descendants).
+
+    Returns structure with decision details and relationships.
+    """
+    # First, get the target decision
+    target_decision = await get_decision_by_id(conn, workspace_id, decision_id)
+
+    if not target_decision:
+        return None
+
+    # Get ancestors (decisions this one builds upon)
+    ancestors_query = """
+    WITH RECURSIVE ancestry AS (
+        -- Base case: start with target decision
+        SELECT
+            dr.source_decision_id as decision_id,
+            dr.relationship_type,
+            1 as depth
+        FROM ag_catalog.decision_relationships dr
+        WHERE dr.target_decision_id = $1
+
+        UNION
+
+        -- Recursive case: find ancestors of ancestors
+        SELECT
+            dr.source_decision_id,
+            dr.relationship_type,
+            a.depth + 1
+        FROM ag_catalog.decision_relationships dr
+        JOIN ancestry a ON dr.target_decision_id = a.decision_id
+        WHERE a.depth < $2
+    )
+    SELECT DISTINCT
+        a.decision_id,
+        a.relationship_type,
+        a.depth,
+        d.summary,
+        d.decision_type,
+        d.created_at
+    FROM ancestry a
+    JOIN decisions d ON d.id = a.decision_id
+    WHERE d.workspace_id = $3
+    ORDER BY a.depth, d.created_at
+    """
+
+    # Get descendants (decisions that build upon this one)
+    descendants_query = """
+    WITH RECURSIVE descendants AS (
+        -- Base case: start with target decision
+        SELECT
+            dr.target_decision_id as decision_id,
+            dr.relationship_type,
+            1 as depth
+        FROM ag_catalog.decision_relationships dr
+        WHERE dr.source_decision_id = $1
+
+        UNION
+
+        -- Recursive case: find descendants of descendants
+        SELECT
+            dr.target_decision_id,
+            dr.relationship_type,
+            d.depth + 1
+        FROM ag_catalog.decision_relationships dr
+        JOIN descendants d ON dr.source_decision_id = d.decision_id
+        WHERE d.depth < $2
+    )
+    SELECT DISTINCT
+        d.decision_id,
+        d.relationship_type,
+        d.depth,
+        dec.summary,
+        dec.decision_type,
+        dec.created_at
+    FROM descendants d
+    JOIN decisions dec ON dec.id = d.decision_id
+    WHERE dec.workspace_id = $3
+    ORDER BY d.depth, dec.created_at
+    """
+
+    try:
+        ancestors = await conn.fetch(ancestors_query, target_decision['id'], max_depth, workspace_id)
+        descendants = await conn.fetch(descendants_query, target_decision['id'], max_depth, workspace_id)
+
+        return {
+            "target": target_decision,
+            "ancestors": [dict(row) for row in ancestors],
+            "descendants": [dict(row) for row in descendants]
+        }
+    except Exception as e:
+        # Graceful fallback if relationships table doesn't exist yet
+        console.print(f"[yellow]⚠️  Relationships query failed (tables may be in different schema): {e}[/yellow]")
+        return {
+            "target": target_decision,
+            "ancestors": [],
+            "descendants": []
+        }
+
+
+def render_decision_tree(graph_data: dict) -> str:
+    """
+    Render ASCII decision genealogy tree.
+
+    Format:
+                    #140: Parent Decision
+                        ↓ builds_upon
+              ┌─────→ #143: Sibling A ←─────┐
+              │         ↓ extends           │
+    #144 ← #145: Target Decision   #146 → implements
+              │         (YOU ARE HERE)      │
+              └──────────────→ #147: Child
+    """
+    lines = []
+    target = graph_data["target"]
+    ancestors = graph_data["ancestors"]
+    descendants = graph_data["descendants"]
+
+    # Build tree representation
+    if ancestors:
+        lines.append("\n[bold]🌳 Decision Genealogy:[/bold]")
+        lines.append(f"   Target: #{str(target['id'])[:8]} - {target['summary'][:50]}\n")
+
+        # Show ancestors (what this builds upon)
+        lines.append("[dim]Ancestors (builds upon):[/dim]")
+        for anc in ancestors[:5]:  # Limit to 5 for ADHD
+            indent = "  " * anc['depth']
+            rel = anc['relationship_type']
+            lines.append(f"{indent}↑ {rel:12} #{str(anc['decision_id'])[:8]} - {anc['summary'][:40]}")
+
+    # Show target decision
+    lines.append(f"\n[bold cyan]→ TARGET: #{str(target['id'])[:8]}[/bold cyan]")
+    lines.append(f"  {target['summary']}")
+    lines.append(f"  [dim]({target['decision_type']}, {target['created_at'].strftime('%Y-%m-%d')})[/dim]")
+
+    # Show descendants (what builds on this)
+    if descendants:
+        lines.append("\n[dim]Descendants (extend this decision):[/dim]")
+        for desc in descendants[:5]:  # Limit to 5 for ADHD
+            indent = "  " * desc['depth']
+            rel = desc['relationship_type']
+            lines.append(f"{indent}↓ {rel:12} #{str(desc['decision_id'])[:8]} - {desc['summary'][:40]}")
+
+    if not ancestors and not descendants:
+        lines.append("\n[dim]No related decisions found (orphan decision)[/dim]")
+        lines.append("[dim]Link decisions using ConPort MCP: link_conport_items()[/dim]")
+
+    return "\n".join(lines)
+
+
+@click.command("graph")
+@click.argument("decision_id")
+@click.option("--depth", "-d", default=3, help="Relationship depth to traverse (default: 3)")
+@click.option("--workspace", "-w", help="Workspace path (default: current git root)")
+def graph_decision(decision_id: str, depth: int, workspace: Optional[str]):
+    """
+    🌳 Show decision genealogy graph
+
+    Phase 2 feature: Visualize decision relationships (ancestors/descendants)
+    showing how decisions build upon each other.
+
+    \b
+    Examples:
+        dopemux decisions graph c4b0b        # Show genealogy
+        dopemux decisions graph a6f86 -d 5   # Deeper traversal
+    """
+
+    async def _graph():
+        workspace_id = workspace or get_workspace_id()
+
+        conn = await get_conport_connection()
+        if not conn:
+            return
+
+        try:
+            graph_data = await get_decision_relationships(conn, workspace_id, decision_id, depth)
+
+            if not graph_data:
+                console.print(f"\n[yellow]❌ Decision not found: {decision_id}[/yellow]")
+                return
+
+            # Render tree
+            tree = render_decision_tree(graph_data)
+
+            console.print(Panel(
+                tree,
+                title=f"[bold]Decision Genealogy (depth={depth})[/bold]",
+                border_style="cyan"
+            ))
+
+            # Stats
+            anc_count = len(graph_data["ancestors"])
+            desc_count = len(graph_data["descendants"])
+
+            if anc_count > 0 or desc_count > 0:
+                console.print(f"\n[bold]📊 Graph Stats:[/bold]")
+                console.print(f"  Ancestors: {anc_count}")
+                console.print(f"  Descendants: {desc_count}")
+                console.print(f"  Total related: {anc_count + desc_count}")
+
+        finally:
+            await conn.close()
+
+    asyncio.run(_graph())
