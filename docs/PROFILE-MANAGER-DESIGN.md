@@ -1,3 +1,11 @@
+---
+id: PROFILE-MANAGER-DESIGN
+title: Profile Manager Design
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # Dopemux Profile Manager - Design Specification
 
 **Date**: 2025-10-05

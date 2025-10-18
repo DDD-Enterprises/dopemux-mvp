@@ -1,3 +1,11 @@
+---
+id: WORKTREE_SWITCHING_GUIDE
+title: Worktree_Switching_Guide
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # Worktree Switching - Installation & Usage Guide
 
 ## The Problem

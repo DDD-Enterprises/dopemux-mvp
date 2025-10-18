@@ -1,3 +1,11 @@
+---
+id: serena-v2-architecture-analysis
+title: Serena V2 Architecture Analysis
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # Serena v2 Complete Architecture Analysis
 
 **Analysis Date:** 2025-10-02
