@@ -1,3 +1,11 @@
+---
+id: PROCESS_CLEANUP_GUIDE
+title: Process_Cleanup_Guide
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # MCP Process Cleanup Guide
 
 **Created**: 2025-10-16

@@ -1,3 +1,11 @@
+---
+id: serena-v2-production-deployment
+title: Serena V2 Production Deployment
+type: how-to
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # 🚀 Serena v2 Production Deployment Guide
 
 **System**: ADHD-Optimized Code Navigation Intelligence

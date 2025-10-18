@@ -1,3 +1,11 @@
+---
+id: claude-oauth-setup
+title: Claude Oauth Setup
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # Claude Code OAuth Setup & Troubleshooting
 
 ## Overview

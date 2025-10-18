@@ -8,12 +8,13 @@ adhd_cognitive_load: 0.3
 adhd_attention_required: low
 adhd_interruption_safe: true
 tags:
-  - slash-commands
-  - multi-instance
-  - adhd-optimization
-  - quick-reference
+- slash-commands
+- multi-instance
+- adhd-optimization
+- quick-reference
+last_review: '2025-10-17'
+next_review: '2026-01-15'
 ---
-
 # Instance Switching Slash Commands
 
 Zero-friction instance switching from within Claude Code sessions.

@@ -1,3 +1,11 @@
+---
+id: ADHD-ENGINE-DEEP-DIVE-PART4
+title: Adhd Engine Deep Dive Part4
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # ADHD Engine Deep Dive - Part 4: Integration & Workflows
 
 **Series**: ADHD Engine Deep Dive (Part 4 of 4 - FINAL)
@@ -1031,4 +1039,3 @@ For implementation details, see:
 - ConPort integration: `/services/conport/`
 - Integration Bridge: `/services/mcp-integration-bridge/`
 - Documentation: `/docs/CONPORT-DEEP-DIVE.md`, `/docs/SERENA-V2-DEEP-DIVE.md`
-
