@@ -49,7 +49,7 @@ _CACHE_LOCK = threading.Lock()
 
 def get_repo_root(fallback_cwd: bool = True) -> Optional[str]:
     """
-    Get canonical repository root using git rev-parse.
+    Get canonical repository root using git rev-parse with environment override.
 
     This is the authoritative way to determine the repository root,
     eliminating Path.cwd() dependency issues in worktree contexts.
@@ -61,22 +61,32 @@ def get_repo_root(fallback_cwd: bool = True) -> Optional[str]:
         Absolute path to repo root, or None if not in a git repo
 
     Environment:
-        DOPEMUX_PROJECT_ROOT: Override for repo root (useful for testing)
+        DOPEMUX_WORKSPACE_ROOT: Current worktree (PRIORITY - set by dopemux start)
+        DOPEMUX_PROJECT_ROOT: Main repo root override (for testing)
+
+    Performance:
+        - With env var: 0ms (instant)
+        - Without: 10-50ms (git subprocess)
 
     Example:
-        # Normal usage:
-        repo_root = get_repo_root()
+        # With dopemux start (instant):
+        export DOPEMUX_WORKSPACE_ROOT="/Users/hue/code/ui-build"
+        repo_root = get_repo_root()  # Returns /Users/hue/code/ui-build (0ms!)
 
-        # With env override (testing):
-        os.environ['DOPEMUX_PROJECT_ROOT'] = '/custom/path'
-        repo_root = get_repo_root()  # Returns /custom/path
+        # Without (slower):
+        repo_root = get_repo_root()  # Runs git rev-parse (10-50ms)
     """
-    # Check for environment override first
+    # 0. Check shared workspace first (FASTEST - instant!)
+    env_workspace = os.environ.get('DOPEMUX_WORKSPACE_ROOT')
+    if env_workspace:
+        return str(Path(env_workspace).resolve())
+
+    # 1. Check legacy override
     env_root = os.environ.get('DOPEMUX_PROJECT_ROOT')
     if env_root:
         return str(Path(env_root).resolve())
 
-    # Use git to get canonical repo root
+    # 2. Use git to get canonical repo root
     try:
         result = subprocess.run(
             ["git", "rev-parse", "--show-toplevel"],
@@ -322,3 +332,27 @@ def cleanup_worktrees(
     """
     # Use the enhanced backend with safe cleanup
     cleanup_worktrees_safe(dry_run=dry_run, force=force, workspace_path=workspace_path)
+
+
+def get_worktree_path(
+    branch_name: str,
+    workspace_path: Optional[Path] = None
+) -> Optional[str]:
+    """
+    Get worktree path for shell integration (no directory change).
+
+    This function is designed for shell integration where the shell function
+    will execute cd. It provides the same fuzzy matching as switch_worktree
+    but only returns the path.
+
+    Args:
+        branch_name: Exact or partial branch name to find
+        workspace_path: Path to git repository (default: current directory)
+
+    Returns:
+        Absolute path to worktree if found, None otherwise
+    """
+    from .worktree_manager_enhanced import EnhancedWorktreeManager
+
+    manager = EnhancedWorktreeManager(workspace_path)
+    return manager.get_worktree_path_for_switch(branch_name)

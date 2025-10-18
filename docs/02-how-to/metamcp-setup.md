@@ -1,3 +1,11 @@
+---
+id: metamcp-setup
+title: Metamcp Setup
+type: how-to
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # MetaMCP Setup Guide - Phase 1A
 **Goal:** Configure 2 working modes (QUICKFIX + ACT) in 20 minutes
 
