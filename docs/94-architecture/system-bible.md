@@ -1,3 +1,11 @@
+---
+id: system-bible
+title: System Bible
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # System Bible: Consolidated Knowledge Base
 
 Of course. Based on the provided document `IMPLEMENTATION_Dopemux_Phase1.md`, here is the extracted technical blueprint.
