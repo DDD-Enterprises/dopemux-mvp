@@ -1367,3 +1367,244 @@ def query_decisions(filter_expression: str, limit: int, workspace: Optional[str]
             await conn.close()
 
     asyncio.run(_query())
+
+
+# ============================================================================
+# PHASE 3 SPRINT 1: Tag Pattern Detection (~2 hours)
+# ============================================================================
+
+async def detect_tag_clusters(
+    conn: asyncpg.Connection,
+    workspace_id: str,
+    min_support: int = 2
+) -> list:
+    """
+    Detect frequently co-occurring tag patterns using Apriori algorithm.
+
+    Returns tag clusters with occurrence counts, success rates, and recommendations.
+    """
+    # Fetch all decisions with tags
+    decisions = await conn.fetch("""
+        SELECT id, tags, outcome_status, confidence_level, decision_type
+        FROM decisions
+        WHERE workspace_id = $1
+        AND tags IS NOT NULL
+        AND array_length(tags, 1) > 0
+    """, workspace_id)
+
+    if len(decisions) < min_support:
+        return []
+
+    # Count tag frequencies (single tags)
+    from collections import Counter
+    tag_counts = Counter()
+    tag_pairs = Counter()
+
+    for decision in decisions:
+        tags = set(decision['tags'])
+
+        # Count individual tags
+        for tag in tags:
+            tag_counts[tag] += 1
+
+        # Count tag pairs
+        tags_list = sorted(tags)
+        for i, tag1 in enumerate(tags_list):
+            for tag2 in tags_list[i+1:]:
+                pair = (tag1, tag2)
+                tag_pairs[pair] += 1
+
+    # Filter by min_support
+    frequent_tags = {tag: count for tag, count in tag_counts.items()
+                     if count >= min_support}
+
+    frequent_pairs = {pair: count for pair, count in tag_pairs.items()
+                      if count >= min_support}
+
+    # Calculate association metrics
+    clusters = []
+
+    for (tag1, tag2), count in frequent_pairs.items():
+        # Confidence: P(tag2 | tag1)
+        confidence = count / tag_counts[tag1]
+
+        # Lift: How much more likely is tag2 given tag1?
+        lift = confidence / (tag_counts[tag2] / len(decisions))
+
+        # Success rate for this cluster
+        cluster_decisions = [d for d in decisions
+                             if tag1 in d['tags'] and tag2 in d['tags']]
+
+        successful = sum(1 for d in cluster_decisions
+                        if d['outcome_status'] == 'successful')
+        total_with_outcome = sum(1 for d in cluster_decisions
+                                if d['outcome_status'] is not None)
+
+        success_rate = successful / total_with_outcome if total_with_outcome > 0 else None
+
+        clusters.append({
+            "tags": [tag1, tag2],
+            "occurrence_count": count,
+            "confidence": confidence,
+            "lift": lift,
+            "success_rate": success_rate,
+            "sample_size": len(cluster_decisions),
+            "decisions_with_outcome": total_with_outcome
+        })
+
+    # Sort by occurrence count (most frequent first)
+    clusters.sort(key=lambda x: x['occurrence_count'], reverse=True)
+
+    return clusters[:10]  # ADHD limit: top 10
+
+
+async def store_pattern(
+    conn: asyncpg.Connection,
+    workspace_id: str,
+    pattern_type: str,
+    pattern_signature: dict,
+    stats: dict
+):
+    """Store or update a detected pattern."""
+    import json
+
+    await conn.execute("""
+        INSERT INTO decision_patterns (
+            workspace_id,
+            pattern_type,
+            pattern_signature,
+            pattern_name,
+            occurrence_count,
+            success_count,
+            pattern_confidence,
+            recommendations,
+            last_seen
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+        ON CONFLICT (workspace_id, pattern_type, pattern_signature)
+        DO UPDATE SET
+            occurrence_count = EXCLUDED.occurrence_count,
+            success_count = EXCLUDED.success_count,
+            pattern_confidence = EXCLUDED.pattern_confidence,
+            last_seen = NOW(),
+            updated_at = NOW()
+    """,
+        workspace_id,
+        pattern_type,
+        json.dumps(pattern_signature),
+        stats.get('pattern_name'),
+        stats.get('occurrence_count'),
+        stats.get('success_count'),
+        stats.get('pattern_confidence'),
+        json.dumps(stats.get('recommendations', []))
+    )
+
+
+@click.command("tags")
+@click.option("--min-support", "-m", default=2, help="Minimum occurrences for pattern (default: 2)")
+@click.option("--workspace", "-w", help="Workspace path")
+@click.option("--save", "-s", is_flag=True, help="Save detected patterns to database")
+def pattern_tags(min_support: int, workspace: Optional[str], save: bool):
+    """
+    🔍 Detect and display tag clustering patterns
+
+    Phase 3 Sprint 1: Auto-detect frequently co-occurring tags and
+    provide recommendations for new decisions.
+
+    \b
+    Examples:
+        dopemux decisions patterns tags                  # Show tag clusters
+        dopemux decisions patterns tags --min-support 3  # Require 3+ occurrences
+        dopemux decisions patterns tags --save           # Save to database
+    """
+
+    async def _detect():
+        workspace_id = workspace or get_workspace_id()
+
+        conn = await get_conport_connection()
+        if not conn:
+            return
+
+        try:
+            clusters = await detect_tag_clusters(conn, workspace_id, min_support)
+
+            if not clusters:
+                console.print(f"\n[yellow]No tag patterns found with min_support={min_support}.[/yellow]")
+                console.print("[dim]Try lowering --min-support or add more tagged decisions[/dim]")
+                return
+
+            # Display patterns
+            console.print(Panel.fit(
+                f"[bold cyan]🔍 Tag Pattern Analysis[/bold cyan]\n"
+                f"Workspace: {workspace_id} | Min Support: {min_support}",
+                border_style="cyan"
+            ))
+
+            console.print(f"\n[bold]📊 Detected {len(clusters)} Tag Clusters:[/bold]\n")
+
+            for i, cluster in enumerate(clusters, 1):
+                tags = " + ".join(cluster['tags'])
+                count = cluster['occurrence_count']
+                conf = cluster['confidence']
+                lift = cluster['lift']
+
+                # Visual indicators
+                if lift > 2.0:
+                    indicator = "🔥 Strong"
+                elif lift > 1.5:
+                    indicator = "⚡ Moderate"
+                else:
+                    indicator = "💡 Weak"
+
+                console.print(f"[bold cyan]{i}. {tags}[/bold cyan] {indicator}")
+                console.print(f"   Occurrences: {count}")
+                console.print(f"   Confidence: {conf:.0%} (when you use '{cluster['tags'][0]}', {conf:.0%} chance you also use '{cluster['tags'][1]}')")
+                console.print(f"   Lift: {lift:.2f}x (tags appear together {lift:.1f}x more than random)")
+
+                if cluster['success_rate'] is not None:
+                    sr = cluster['success_rate']
+                    console.print(f"   Success rate: {sr:.0%} ({cluster['decisions_with_outcome']}/{cluster['sample_size']} decisions completed)")
+                else:
+                    console.print(f"   Success rate: N/A (no outcomes tracked yet)")
+
+                console.print()
+
+            # Save patterns if requested
+            if save:
+                console.print("[bold]💾 Saving patterns to database...[/bold]")
+                saved = 0
+
+                for cluster in clusters:
+                    pattern_sig = {"tags": cluster['tags']}
+                    stats = {
+                        "pattern_name": " + ".join(cluster['tags']),
+                        "occurrence_count": cluster['occurrence_count'],
+                        "success_count": int(cluster['success_rate'] * cluster['decisions_with_outcome'])
+                                        if cluster['success_rate'] else 0,
+                        "pattern_confidence": cluster['confidence'],
+                        "recommendations": [
+                            f"When using '{cluster['tags'][0]}', consider also tagging with '{cluster['tags'][1]}' ({cluster['confidence']:.0%} co-occurrence)"
+                        ]
+                    }
+
+                    await store_pattern(conn, workspace_id, 'tag_cluster', pattern_sig, stats)
+                    saved += 1
+
+                console.print(f"✅ Saved {saved} patterns to decision_patterns table")
+
+            # Recommendations
+            console.print("[bold]💡 Recommendations:[/bold]")
+
+            if clusters:
+                top_cluster = clusters[0]
+                console.print(f"  • Most common pattern: '{' + '.join(top_cluster['tags'])}' ({top_cluster['occurrence_count']} occurrences)")
+                console.print(f"  • When tagging decisions, consider these frequent combinations")
+
+                # Suggest tags for next decision
+                console.print(f"\n[dim]Next time you tag a decision with '{clusters[0]['tags'][0]}', the system can suggest '{clusters[0]['tags'][1]}'[/dim]")
+
+        finally:
+            await conn.close()
+
+    asyncio.run(_detect())
+
