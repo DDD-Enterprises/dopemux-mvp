@@ -78,7 +78,9 @@ repos:
     rev: v0.41.0
     hooks:
       - id: markdownlint
-        args: ["--config", ".markdownlint.jsonc", "docs/**/*.md"]
+        args: ["--config", ".markdownlint.jsonc"]
+        files: ^docs/.*\.md$
+        exclude: node_modules/
 
   # Lychee link checking handled by separate GitHub Action (docs job)
   # - repo: https://github.com/lycheeverse/lychee
