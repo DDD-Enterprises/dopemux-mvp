@@ -1,3 +1,11 @@
+---
+id: RESEARCH-SESSION-STATE
+title: Research Session State
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # UI Design Research Session State
 
 **Date**: 2025-10-05
