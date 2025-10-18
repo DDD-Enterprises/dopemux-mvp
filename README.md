@@ -127,7 +127,7 @@ my-project bugfix/login-redirect
 - Shows both raw tokens and percentage: `128K/200K (64%)`
 - Auto-adapts to all Claude models (Opus 200K, Sonnet 200K/1M, Haiku 200K)
 
-[📖 Full Statusline Documentation](./.claude/docs/STATUSLINE.md)
+[📖 Full Statusline Documentation](./docs/INDEX.md)
 
 ---
 
@@ -250,7 +250,7 @@ Your statusline should now show:
 - **Serena LSP** - Semantic code intelligence
 - **Dope-Context** - Hybrid code search with reranking
 
-[📖 MCP Documentation](./.claude/)
+[📖 MCP Documentation](./docs/INDEX.md)
 
 ---
 
@@ -384,7 +384,7 @@ Dopemux uses a **two-plane architecture** for separation of concerns:
 - Authority enforcement
 - Conflict resolution
 
-[📖 Architecture Documentation](./.claude/CLAUDE.md)
+[📖 Architecture Documentation](./docs/94-architecture/system-bible.md)
 
 ---
 
@@ -458,17 +458,17 @@ cd services/adhd-engine
 uvicorn main:app --port 8095 --reload
 ```
 
-[📖 Full Troubleshooting Guide](./.claude/docs/STATUSLINE.md#troubleshooting)
+[📖 Full Troubleshooting Guide](./docs/INDEX.md)
 
 ---
 
 ## 📖 Documentation
 
-- **[Statusline Guide](./.claude/docs/STATUSLINE.md)** - Complete statusline documentation
+- **[Documentation Index](./docs/INDEX.md)** - Complete documentation overview
 - **[ConPort Memory System](./docs/04-explanation/conport-technical-deep-dive.md)** - Knowledge graph and decision logging
-- **[ADHD Patterns](./.claude/modules/shared/adhd-patterns.md)** - ADHD accommodation patterns
-- **[MCP Integration](./.claude/)** - AI reasoning and tool integration
-- **[Architecture Guide](./.claude/CLAUDE.md)** - System architecture overview
+- **[Serena Code Intelligence](./docs/04-explanation/serena-v2-technical-deep-dive.md)** - LSP-based semantic navigation
+- **[System Architecture](./docs/94-architecture/system-bible.md)** - Two-plane architecture overview
+- **[ADHD Engine](./docs/ADHD-ENGINE-DEEP-DIVE-PART1.md)** - Cognitive load management system
 
 ---
 
