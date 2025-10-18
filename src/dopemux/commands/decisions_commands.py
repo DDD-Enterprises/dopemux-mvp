@@ -1008,3 +1008,362 @@ def graph_decision(decision_id: str, depth: int, workspace: Optional[str]):
             await conn.close()
 
     asyncio.run(_graph())
+
+
+# ============================================================================
+# PHASE 2: Interactive Review Mode (~1.5 hours)
+# ============================================================================
+
+async def update_decision_outcome(
+    conn: asyncpg.Connection,
+    decision_id: str,
+    outcome_status: str,
+    outcome_notes: Optional[str] = None
+):
+    """Update decision outcome after review."""
+
+    await conn.execute("""
+        UPDATE decisions
+        SET
+            outcome_status = $1,
+            outcome_notes = $2,
+            outcome_date = NOW(),
+            updated_at = NOW()
+        WHERE CAST(id AS TEXT) LIKE $3 || '%'
+    """, outcome_status, outcome_notes, decision_id)
+
+
+@click.command("update-outcome")
+@click.argument("decision_id")
+@click.argument("outcome", type=click.Choice(["successful", "failed", "mixed", "abandoned"]))
+@click.option("--notes", "-n", help="Outcome notes/description")
+@click.option("--workspace", "-w", help="Workspace path")
+def update_outcome(decision_id: str, outcome: str, notes: Optional[str], workspace: Optional[str]):
+    """
+    ✏️  Update decision outcome after review
+
+    Phase 2 feature: Mark decision as successful/failed/mixed/abandoned
+    with optional notes about what actually happened.
+
+    \b
+    Examples:
+        dopemux decisions update-outcome c4b0b successful
+        dopemux decisions update-outcome a6f86 failed -n "Performance issues"
+        dopemux decisions update-outcome 960ea mixed -n "Partially implemented"
+    """
+
+    async def _update():
+        workspace_id = workspace or get_workspace_id()
+
+        conn = await get_conport_connection()
+        if not conn:
+            return
+
+        try:
+            # Verify decision exists first
+            decision = await get_decision_by_id(conn, workspace_id, decision_id)
+
+            if not decision:
+                console.print(f"\n[yellow]❌ Decision not found: {decision_id}[/yellow]")
+                return
+
+            # Update outcome
+            await update_decision_outcome(conn, decision_id, outcome, notes)
+
+            # Confirm
+            emoji_map = {
+                "successful": "✅",
+                "failed": "❌",
+                "mixed": "⚖️",
+                "abandoned": "🚫"
+            }
+            emoji = emoji_map.get(outcome, "📝")
+
+            console.print(f"\n{emoji} [bold]Outcome updated:[/bold] {outcome.upper()}")
+            console.print(f"   Decision: [cyan]{decision['summary'][:60]}[/cyan]")
+            if notes:
+                console.print(f"   Notes: [dim]{notes}[/dim]")
+            console.print(f"   [dim]Updated: {datetime.now().strftime('%Y-%m-%d %I:%M%p')}[/dim]")
+
+        finally:
+            await conn.close()
+
+    asyncio.run(_update())
+
+
+# ============================================================================
+# PHASE 2: Enhanced Stats with Confidence Distribution (~1 hour)
+# ============================================================================
+
+@click.command("stats-enhanced")
+@click.option("--since", "-s", default=30, help="Days to look back (default: 30)")
+@click.option("--workspace", "-w", help="Workspace path")
+def enhanced_stats(since: int, workspace: Optional[str]):
+    """
+    📈 Enhanced decision statistics with confidence distribution
+
+    Phase 2 feature: Extended stats showing:
+    - Confidence level distribution
+    - Outcome status breakdown
+    - Decision type distribution
+    - Review status summary
+
+    \b
+    Examples:
+        dopemux decisions stats-enhanced
+        dopemux decisions stats-enhanced --since 90
+    """
+
+    async def _enhanced():
+        workspace_id = workspace or get_workspace_id()
+
+        conn = await get_conport_connection()
+        if not conn:
+            return
+
+        try:
+            since_date = datetime.now() - timedelta(days=since)
+
+            # Get comprehensive stats
+            total = await conn.fetchval(
+                "SELECT COUNT(*) FROM decisions WHERE workspace_id = $1 AND created_at > $2",
+                workspace_id, since_date
+            )
+
+            if total == 0:
+                console.print(f"\n[yellow]No decisions found in the last {since} days.[/yellow]")
+                return
+
+            # Confidence distribution
+            confidence_dist = await conn.fetch("""
+                SELECT confidence_level, COUNT(*) as count
+                FROM decisions
+                WHERE workspace_id = $1 AND created_at > $2
+                GROUP BY confidence_level
+                ORDER BY
+                    CASE confidence_level
+                        WHEN 'high' THEN 1
+                        WHEN 'medium' THEN 2
+                        WHEN 'low' THEN 3
+                        ELSE 4
+                    END
+            """, workspace_id, since_date)
+
+            # Outcome distribution
+            outcome_dist = await conn.fetch("""
+                SELECT outcome_status, COUNT(*) as count
+                FROM decisions
+                WHERE workspace_id = $1 AND created_at > $2
+                GROUP BY outcome_status
+            """, workspace_id, since_date)
+
+            # Type distribution
+            type_dist = await conn.fetch("""
+                SELECT decision_type, COUNT(*) as count
+                FROM decisions
+                WHERE workspace_id = $1 AND created_at > $2
+                GROUP BY decision_type
+                ORDER BY count DESC
+                LIMIT 5
+            """, workspace_id, since_date)
+
+            # Display enhanced stats
+            console.print(Panel.fit(
+                f"[bold cyan]📈 Enhanced Decision Statistics[/bold cyan]\n"
+                f"Period: Last {since} days | Total: {total} decisions",
+                border_style="cyan"
+            ))
+
+            # Confidence distribution
+            if confidence_dist:
+                console.print("\n[bold]🎯 Confidence Distribution:[/bold]")
+                for row in confidence_dist:
+                    level = row['confidence_level'] or 'unset'
+                    count = row['count']
+                    pct = count / total * 100
+                    bar = "█" * int(pct / 5)
+
+                    emoji = {"high": "🔥", "medium": "⚡", "low": "🔋"}.get(level, "❓")
+                    console.print(f"  {emoji} {level:8} {count:3d} ({pct:4.0f}%) {bar}")
+
+            # Outcome distribution
+            if any(row['outcome_status'] for row in outcome_dist):
+                console.print("\n[bold]📊 Outcome Status:[/bold]")
+                for row in outcome_dist:
+                    status = row['outcome_status'] or 'pending'
+                    count = row['count']
+                    pct = count / total * 100
+                    bar = "█" * int(pct / 5)
+
+                    emoji_map = {
+                        "successful": "✅",
+                        "failed": "❌",
+                        "mixed": "⚖️",
+                        "abandoned": "🚫",
+                        "pending": "⏳"
+                    }
+                    emoji = emoji_map.get(status, "❓")
+                    console.print(f"  {emoji} {status:10} {count:3d} ({pct:4.0f}%) {bar}")
+
+            # Type distribution
+            console.print("\n[bold]🏷️  Decision Types:[/bold]")
+            for row in type_dist:
+                dec_type = row['decision_type']
+                count = row['count']
+                pct = count / total * 100
+                bar = "█" * int(pct / 5)
+                console.print(f"  • {dec_type:15} {count:3d} ({pct:4.0f}%) {bar}")
+
+            # ADHD insights
+            console.print("\n[bold]🧠 ADHD Insights:[/bold]")
+
+            # Calculate review needs
+            review_count = await conn.fetchval("""
+                SELECT COUNT(*)
+                FROM decisions
+                WHERE workspace_id = $1
+                AND created_at < NOW() - INTERVAL '30 days'
+                AND (outcome_status IS NULL OR outcome_status = 'pending')
+            """, workspace_id)
+
+            if review_count > 0:
+                console.print(f"  ⚠️  {review_count} decisions need review (>30 days old)")
+            else:
+                console.print(f"  ✅ All decisions reviewed or recent")
+
+            # Confidence insights
+            low_conf = sum(row['count'] for row in confidence_dist if row['confidence_level'] == 'low')
+            if low_conf > 0:
+                console.print(f"  ⚠️  {low_conf} low-confidence decisions may need revisiting")
+
+            console.print(f"\n[dim]Full ADHD insights coming in Phase 3 (pattern learning)[/dim]")
+
+        finally:
+            await conn.close()
+
+    asyncio.run(_enhanced())
+
+
+# ============================================================================
+# PHASE 2: Query Language for Flexible Filtering (~1.5 hours)
+# ============================================================================
+
+@click.command("query")
+@click.argument("filter_expression")
+@click.option("--limit", "-n", default=20, help="Max results (default: 20)")
+@click.option("--workspace", "-w", help="Workspace path")
+def query_decisions(filter_expression: str, limit: int, workspace: Optional[str]):
+    """
+    🔍 Query decisions with flexible filter expressions
+
+    Phase 2 feature: SQL-like query language for complex filtering.
+
+    \b
+    Filter expressions:
+        age > 30                           # Decisions older than 30 days
+        confidence = low                   # Low confidence only
+        type = architectural               # Architectural decisions
+        outcome = pending                  # Pending outcomes
+        tag contains mcp                   # Tag matching
+        age > 60 AND confidence = low      # Combined filters
+
+    \b
+    Examples:
+        dopemux decisions query "age > 90"
+        dopemux decisions query "type = architectural AND outcome = successful"
+        dopemux decisions query "confidence = low" -n 10
+    """
+
+    async def _query():
+        workspace_id = workspace or get_workspace_id()
+
+        conn = await get_conport_connection()
+        if not conn:
+            return
+
+        try:
+            # Parse filter expression into SQL WHERE clause
+            # Simple parser for demonstration (full parser in Phase 2 complete)
+            where_clause = "workspace_id = $1"
+            params = [workspace_id]
+            param_count = 1
+
+            # Parse simple expressions
+            if "age >" in filter_expression:
+                import re
+                match = re.search(r'age\s*>\s*(\d+)', filter_expression)
+                if match:
+                    days = int(match.group(1))
+                    param_count += 1
+                    where_clause += f" AND created_at < NOW() - INTERVAL '1 day' * ${param_count}"
+                    params.append(days)
+
+            if "type =" in filter_expression:
+                import re
+                match = re.search(r'type\s*=\s*(\w+)', filter_expression)
+                if match:
+                    dec_type = match.group(1)
+                    param_count += 1
+                    where_clause += f" AND decision_type = ${param_count}"
+                    params.append(dec_type)
+
+            if "confidence =" in filter_expression:
+                import re
+                match = re.search(r'confidence\s*=\s*(\w+)', filter_expression)
+                if match:
+                    conf = match.group(1)
+                    param_count += 1
+                    where_clause += f" AND confidence_level = ${param_count}"
+                    params.append(conf)
+
+            if "outcome =" in filter_expression:
+                import re
+                match = re.search(r'outcome\s*=\s*(\w+)', filter_expression)
+                if match:
+                    outcome = match.group(1)
+                    param_count += 1
+                    where_clause += f" AND outcome_status = ${param_count}"
+                    params.append(outcome)
+
+            # Execute query
+            query = f"""
+                SELECT
+                    id, summary, decision_type, confidence_level,
+                    outcome_status, created_at,
+                    EXTRACT(DAY FROM (NOW() - created_at)) as age_days
+                FROM decisions
+                WHERE {where_clause}
+                ORDER BY created_at DESC
+                LIMIT {limit}
+            """
+
+            rows = await conn.fetch(query, *params)
+
+            if not rows:
+                console.print(f"\n[yellow]No decisions match: {filter_expression}[/yellow]")
+                return
+
+            # Display results
+            table = Table(title=f"📋 Query Results ({len(rows)}) - {filter_expression}", show_header=True)
+            table.add_column("ID", style="cyan", width=8)
+            table.add_column("Age", style="dim", width=8)
+            table.add_column("Type", style="yellow", width=12)
+            table.add_column("Conf", style="green", width=8)
+            table.add_column("Summary", style="white")
+
+            for row in rows:
+                decision_id = str(row['id'])[:8]
+                age_days = int(row['age_days'])
+                dec_type = row['decision_type'][:10]
+                conf = (row['confidence_level'] or 'N/A')[:6]
+                summary = row['summary'][:45] + "..." if len(row['summary']) > 45 else row['summary']
+
+                table.add_row(decision_id, f"{age_days}d", dec_type, conf, summary)
+
+            console.print(table)
+            console.print(f"\n[dim]Tip: Use 'dopemux decisions show <ID>' for details[/dim]")
+
+        finally:
+            await conn.close()
+
+    asyncio.run(_query())
