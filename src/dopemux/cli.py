@@ -4066,13 +4066,22 @@ try:
         review_decisions,
         decision_stats,
         log_energy,
-        energy_status
+        energy_status,
+        show_decision,
+        list_decisions,
+        energy_analytics
     )
 
+    # Decision management commands
     decisions.add_command(review_decisions, "review")
     decisions.add_command(decision_stats, "stats")
+    decisions.add_command(show_decision, "show")
+    decisions.add_command(list_decisions, "list")
+
+    # Energy tracking commands
     energy.add_command(log_energy, "log")
     energy.add_command(energy_status, "status")
+    energy.add_command(energy_analytics, "analytics")
 
 except ImportError as e:
     # Graceful degradation if dependencies not installed
