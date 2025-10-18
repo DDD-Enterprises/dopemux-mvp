@@ -8,12 +8,13 @@ adhd_cognitive_load: 0.4
 adhd_attention_required: medium
 adhd_interruption_safe: true
 tags:
-  - multi-instance
-  - worktrees
-  - adhd-optimization
-  - parallel-development
+- multi-instance
+- worktrees
+- adhd-optimization
+- parallel-development
+last_review: '2025-10-17'
+next_review: '2026-01-15'
 ---
-
 # Multi-Instance Workflow Guide
 
 Zero context destruction through parallel ADHD-optimized development instances.
@@ -623,8 +624,7 @@ Multi-instance support enables ADHD-optimized parallel development with:
 **Next Steps:**
 
 - Start your first multi-instance workflow
-- Review [ConPort Worktree Guide](../worktree-guide.md)
-- Check [Instance Registry API](../../services/dopemux/instance_registry.py)
+- Review [ConPort Worktree Guide](../WORKTREE_SWITCHING_GUIDE.md)
 
 ---
 

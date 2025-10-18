@@ -1,3 +1,11 @@
+---
+id: ADHD-ENGINE-DEEP-DIVE-PART2
+title: Adhd Engine Deep Dive Part2
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # ADHD Engine Deep Dive - Part 2: Energy Matching & Task Selection
 
 **Series**: ADHD Engine Deep Dive (Part 2 of 4)
@@ -922,4 +930,3 @@ The answer involves real-time activity pattern analysis, Redis state tracking, b
 
 **Word Count**: ~3,000 words
 **Next**: Part 3 - Attention Management & Session Orchestration (3,000 words)
-

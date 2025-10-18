@@ -1,3 +1,11 @@
+---
+id: PROFILE_MIGRATION_GUIDE
+title: Profile_Migration_Guide
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # Profile Migration Guide
 
 **Welcome to Dopemux Profiles!** This guide will help you get started with personalized MCP configurations in just 2 minutes.

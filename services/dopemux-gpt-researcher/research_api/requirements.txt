@@ -42,6 +42,8 @@ pytest-mock==3.12.0
 # === GPT Researcher Integration ===
 # Note: gpt-researcher will be installed via Dockerfile
 # to ensure we get the latest version and handle version conflicts
+langgraph>=0.0.20  # Required by gpt-researcher multi-agent features
+langchain>=0.1.0   # Dependency of langgraph
 
 # === Search Engine Integrations ===
 # These will be added as the multi-search integration is implemented

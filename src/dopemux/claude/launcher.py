@@ -5,10 +5,13 @@ Handles detection, configuration, and launching of Claude Code with
 ADHD-optimized settings and MCP server integration.
 """
 
+import atexit
 import json
 import os
 import shutil
+import signal
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -39,7 +42,26 @@ class ClaudeLauncher:
         """Initialize launcher with configuration manager."""
         self.config_manager = config_manager
         self.claude_path: Optional[Path] = None
+
+        # Process tracking for cleanup
+        self._spawned_processes: List[subprocess.Popen] = []
+        self._temp_files: List[Path] = []
+        self._cleanup_registered = False
+
         self._detect_claude()
+
+        # Register cleanup handlers (only once per instance)
+        if not self._cleanup_registered:
+            atexit.register(self._cleanup)
+            # Note: Signal handlers are global, so we check if already registered
+            try:
+                signal.signal(signal.SIGTERM, self._signal_handler)
+                signal.signal(signal.SIGINT, self._signal_handler)
+                self._cleanup_registered = True
+            except (ValueError, OSError):
+                # Signal handlers can only be registered in main thread
+                # This is fine - atexit will still work
+                pass
 
     def _detect_claude(self) -> None:
         """Detect Claude Code installation."""
@@ -175,6 +197,10 @@ Alternative: Set CLAUDE_PATH environment variable
         else:
             # Interactive process
             process = subprocess.Popen(cmd, env=env)
+
+        # Track process and temp file for cleanup
+        self._spawned_processes.append(process)
+        self._temp_files.append(settings_file)
 
         return process
 
@@ -430,3 +456,36 @@ Alternative: Set CLAUDE_PATH environment variable
         except Exception as e:
             console.print(f"[red]Error installing dependencies: {e}[/red]")
             return False
+
+    def _cleanup(self) -> None:
+        """Clean up spawned Claude Code processes and temporary files."""
+        # Clean up processes (Claude Code will clean up its MCP servers)
+        for process in self._spawned_processes:
+            try:
+                if process.poll() is None:  # Still running
+                    process.terminate()
+                    try:
+                        process.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        # Force kill if doesn't terminate gracefully
+                        process.kill()
+                        process.wait(timeout=2)
+            except Exception:
+                # Silent cleanup - don't spam errors on exit
+                pass
+
+        # Clean up temporary settings files
+        for temp_file in self._temp_files:
+            try:
+                temp_file.unlink(missing_ok=True)
+            except Exception:
+                pass
+
+        # Clear tracking lists
+        self._spawned_processes.clear()
+        self._temp_files.clear()
+
+    def _signal_handler(self, signum: int, frame) -> None:
+        """Handle termination signals gracefully."""
+        self._cleanup()
+        sys.exit(0)
