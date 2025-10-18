@@ -33,6 +33,7 @@ from models import (
 from config import settings
 from activity_tracker import ActivityTracker
 from conport_client import ConPortSQLiteClient
+from bridge_integration import ConPortBridgeAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -86,8 +87,9 @@ class ADHDAccommodationEngine:
         # Activity tracker (initialized in initialize())
         self.activity_tracker: Optional[ActivityTracker] = None
 
-        # ConPort client for Week 3 persistent tracking (initialized in initialize())
-        self.conport: Optional[ConPortSQLiteClient] = None
+        # ConPort client for persistent tracking
+        # Feature-flagged: Use bridge (default) or direct SQLite (legacy)
+        self.conport: Optional[Any] = None  # Either ConPortSQLiteClient or ConPortBridgeAdapter
 
     async def initialize(self) -> None:
         """Initialize ADHD accommodation engine."""
