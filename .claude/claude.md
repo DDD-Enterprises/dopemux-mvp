@@ -482,22 +482,45 @@ mcp__conport__log_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_
 
 **ADHD-Optimized Parallel Development**: Work on multiple branches without context-switching overhead
 
+**REQUIRED: Shell Integration Setup (One-Time)**
+```bash
+# Install shell integration (required for worktree switching)
+dopemux shell-setup bash >> ~/.bashrc && source ~/.bashrc
+# OR for zsh:
+dopemux shell-setup zsh >> ~/.zshrc && source ~/.zshrc
+```
+
+**Usage**:
 ```bash
 # List all worktrees with status
 dopemux worktrees list
+# OR: dwtls (after shell integration)
 
-# Switch to an existing worktree
-dopemux worktrees switch <branch-name>
+# Switch to worktree (REQUIRES shell integration)
+dwt <branch-name>        # Fuzzy matching supported
+dwt ui                   # Matches "ui-build"
+dwt feature              # Matches "feature/test-worktree-isolation"
+
+# Show current worktree
+dopemux worktrees current
+# OR: dwtcur
 
 # Clean up unused worktrees
 dopemux worktrees cleanup [--force] [--dry-run]
 ```
+
+**Why Shell Integration?**
+Python subprocesses cannot change the parent shell's directory (POSIX limitation). The `dwt` command is a shell function that calls `dopemux worktrees switch-path` and executes `cd` in your shell's context.
 
 **ADHD Benefits**:
 - **Context Preservation**: Each worktree maintains independent state
 - **No Mental Switching**: Physical directory separation = clear mental boundaries
 - **Interrupt-Safe**: Pause one worktree, switch to another without losing progress
 - **Main Protection**: Built-in protection against direct work on main branch
+- **Simple Commands**: 3-letter `dwt` alias reduces cognitive load
+- **Fuzzy Matching**: No need to remember exact branch names
+
+**See**: `docs/WORKTREE_SWITCHING_GUIDE.md` for complete installation and troubleshooting
 
 ## 📚 Detailed Information Locations
 
