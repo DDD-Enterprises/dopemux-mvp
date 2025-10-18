@@ -276,7 +276,7 @@ services:
     #   test: ["CMD", "sh", "-c", "exit 0"]
     volumes:
       - mcp_serena_data:/app/data
-      - /Users/hue/code:/workspaces:ro  # Mount parent to support all worktrees
+      - ${DOPEMUX_CODE_PARENT:-~/code}:/workspaces:ro  # Mount parent to support all worktrees
     labels:
       - "mcp.role=workflow"
       - "mcp.priority=medium"
@@ -317,7 +317,7 @@ services:
       - mcp_dopemux_gpt_data:/app/data
       - mcp_dopemux_gpt_logs:/app/logs
       - mcp_dopemux_gpt_cache:/app/cache
-      - /Users/hue/code:/workspaces:ro  # Mount parent to support all worktrees
+      - ${DOPEMUX_CODE_PARENT:-~/code}:/workspaces:ro  # Mount parent to support all worktrees
     depends_on:
       - conport
     labels:
