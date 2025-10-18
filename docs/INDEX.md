@@ -60,7 +60,7 @@ docs/
 *Information-oriented technical references*
 
 ### MCP Server References
-- **[serena-v2-mcp-tools-reference.md](03-reference/serena-v2-mcp-tools-reference.md)** - Complete Serena MCP tools documentation
+- **[serena-v2-mcp-tools.md](serena-v2-mcp-tools.md)** - Complete Serena MCP tools documentation
 
 ### Configuration & Checklists
 - **[metamcp-configuration-checklist.md](03-reference/metamcp-configuration-checklist.md)** - Configuration validation checklist
@@ -137,7 +137,7 @@ docs/
 **Code Intelligence**:
 - Serena deployment → [02-how-to/serena-v2-deployment.md](02-how-to/serena-v2-deployment.md)
 - Serena deep dive → [04-explanation/serena-v2-technical-deep-dive.md](04-explanation/serena-v2-technical-deep-dive.md)
-- Serena tools reference → [03-reference/serena-v2-mcp-tools-reference.md](03-reference/serena-v2-mcp-tools-reference.md)
+- Serena tools reference → [serena-v2-mcp-tools.md](serena-v2-mcp-tools.md)
 
 **Knowledge Management**:
 - ConPort deep dive → [04-explanation/conport-technical-deep-dive.md](04-explanation/conport-technical-deep-dive.md)
