@@ -1,2 +1,17 @@
+# Paths to exclude from link checking
 exclude_path = ["docs/94-architecture/c4/"]
+
+# Exclude localhost URLs (documentation examples, dev servers)
+exclude = [
+  "http://localhost:.*",
+  "https://localhost:.*"
+]
+
+# Accept 404s for localhost (fallback if regex doesn't catch all)
+exclude_loopback = true
+
+# Maximum concurrent requests
 max_concurrency = 8
+
+# Accept certain status codes that are acceptable
+accept = [200, 201, 204, 429]
