@@ -1,3 +1,11 @@
+---
+id: 05-ORCHESTRATOR-TUI
+title: 05 Orchestrator Tui
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # Implementation Plan: Dopemux Orchestrator TUI
 
 **Task ID**: IP-005
