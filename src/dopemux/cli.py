@@ -4060,6 +4060,20 @@ def energy():
     pass
 
 
+@decisions.group()
+def patterns():
+    """
+    🔍 Pattern detection and learning (Phase 3)
+
+    Auto-detect decision patterns from history:
+    - Tag clustering (co-occurring tags)
+    - Decision chains (sequential patterns)
+    - Timing patterns (time-of-day, duration)
+    - Energy correlation (energy vs quality)
+    """
+    pass
+
+
 # Import and register decision commands
 try:
     from .commands.decisions_commands import (
@@ -4073,7 +4087,8 @@ try:
         graph_decision,
         update_outcome,
         enhanced_stats,
-        query_decisions
+        query_decisions,
+        pattern_tags
     )
 
     # Decision management commands
@@ -4090,6 +4105,9 @@ try:
     energy.add_command(log_energy, "log")
     energy.add_command(energy_status, "status")
     energy.add_command(energy_analytics, "analytics")
+
+    # Pattern detection commands (Phase 3)
+    patterns.add_command(pattern_tags, "tags")
 
 except ImportError as e:
     # Graceful degradation if dependencies not installed
