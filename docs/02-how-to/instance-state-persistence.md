@@ -2,11 +2,15 @@
 id: instance-state-persistence
 title: Instance State Persistence
 type: how-to
-owner: claude-code
-date: 2025-10-04
-tags: [multi-instance, conport, crash-recovery, adhd-optimization]
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
 ---
-
+sh-recovery
+- adhd-optimization
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # Instance State Persistence
 
 **Status**: ✅ Complete

@@ -1,6 +1,6 @@
 ---
 id: adr-180
-title: "ADR-180: Automatic Instance Resume After Crashes"
+title: 'ADR-180: Automatic Instance Resume After Crashes'
 type: adr
 owner: dopemux-core
 date: 2025-10-04
@@ -8,11 +8,12 @@ status: proposed
 adhd_cognitive_load: 0.5
 adhd_attention_required: medium
 tags:
-  - multi-instance
-  - session-recovery
-  - adhd-optimization
+- multi-instance
+- session-recovery
+- adhd-optimization
+last_review: '2025-10-17'
+next_review: '2026-01-15'
 ---
-
 # ADR-180: Automatic Instance Resume After Crashes
 
 ## Status
