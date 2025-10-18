@@ -1,3 +1,11 @@
+---
+id: 04-CONPORT-SEARCH-DELEGATION
+title: 04 Conport Search Delegation
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # Implementation Plan: ConPort Search Delegation
 
 **Task ID**: IP-004

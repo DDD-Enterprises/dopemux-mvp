@@ -1,3 +1,11 @@
+---
+id: DOPEMUX-MULTI-AI-ORCHESTRATOR-DESIGN
+title: Dopemux Multi Ai Orchestrator Design
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # Dopemux Multi-AI Orchestrator Visual Design
 **Mission Control for AI-Assisted Development**
 

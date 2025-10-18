@@ -1,3 +1,11 @@
+---
+id: WORKTREE_USE_CASES
+title: Worktree_Use_Cases
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-10-17'
+next_review: '2026-01-15'
+---
 # Worktree Use Cases - When and Why to Use Worktrees
 
 ## Quick Decision Guide
