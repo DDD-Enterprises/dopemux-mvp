@@ -464,3 +464,331 @@ def energy_status(days: int, workspace: Optional[str]):
             await conn.close()
 
     asyncio.run(_status())
+
+
+# ============================================================================
+# QUICK WIN B1: Decision Show Command (~1 hour)
+# ============================================================================
+
+async def get_decision_by_id(
+    conn: asyncpg.Connection,
+    workspace_id: str,
+    decision_id: str
+) -> Optional[dict]:
+    """Fetch a single decision with full details."""
+
+    query = """
+    SELECT
+        id,
+        summary,
+        rationale,
+        decision_type,
+        confidence_level,
+        tags,
+        created_at,
+        updated_at
+    FROM decisions
+    WHERE workspace_id = $1
+    AND CAST(id AS TEXT) LIKE $2 || '%'
+    LIMIT 1
+    """
+
+    try:
+        row = await conn.fetchrow(query, workspace_id, decision_id)
+        return dict(row) if row else None
+    except Exception as e:
+        console.print(f"[red]❌ Query error: {e}[/red]")
+        return None
+
+
+@click.command("show")
+@click.argument("decision_id")
+@click.option("--workspace", "-w", help="Workspace path (default: current git root)")
+def show_decision(decision_id: str, workspace: Optional[str]):
+    """
+    🔍 Show detailed decision information
+
+    Quick Win B1: Detailed view of a single decision with full rationale,
+    tags, timestamps, and metadata.
+
+    \b
+    Examples:
+        dopemux decisions show c4b0b       # Partial ID match
+        dopemux decisions show a6f86-...   # Full UUID
+    """
+
+    async def _show():
+        workspace_id = workspace or get_workspace_id()
+
+        conn = await get_conport_connection()
+        if not conn:
+            return
+
+        try:
+            decision = await get_decision_by_id(conn, workspace_id, decision_id)
+
+            if not decision:
+                console.print(f"\n[yellow]❌ Decision not found: {decision_id}[/yellow]")
+                console.print("[dim]Tip: Use partial ID (first 5 chars) or full UUID[/dim]")
+                return
+
+            # Display decision in rich panel
+            content = []
+            content.append(f"[bold cyan]Summary:[/bold cyan]")
+            content.append(f"{decision['summary']}\n")
+
+            content.append(f"[bold cyan]Rationale:[/bold cyan]")
+            content.append(f"{decision['rationale']}\n")
+
+            content.append(f"[bold cyan]Metadata:[/bold cyan]")
+            content.append(f"  Type: [yellow]{decision['decision_type']}[/yellow]")
+            content.append(f"  Confidence: [yellow]{decision['confidence_level']}[/yellow]")
+            content.append(f"  Created: [dim]{decision['created_at'].strftime('%Y-%m-%d %I:%M%p')}[/dim]")
+
+            age_days = (datetime.now(decision['created_at'].tzinfo) - decision['created_at']).days
+            content.append(f"  Age: [dim]{age_days} days[/dim]")
+
+            if decision['tags']:
+                tags_str = ", ".join(decision['tags'])
+                content.append(f"  Tags: [cyan]{tags_str}[/cyan]")
+
+            console.print(Panel(
+                "\n".join(content),
+                title=f"[bold]Decision {str(decision['id'])[:8]}[/bold]",
+                border_style="cyan"
+            ))
+
+            # Future enhancements placeholder
+            console.print("\n[dim]📊 Coming in Phase 1:[/dim]")
+            console.print("[dim]  • Alternatives considered[/dim]")
+            console.print("[dim]  • Success criteria[/dim]")
+            console.print("[dim]  • Outcome status[/dim]")
+            console.print("[dim]  • Related decisions (genealogy)[/dim]")
+
+        finally:
+            await conn.close()
+
+    asyncio.run(_show())
+
+
+# ============================================================================
+# QUICK WIN B2: Decision List Command (~1.5 hours)
+# ============================================================================
+
+@click.command("list")
+@click.option("--limit", "-n", default=20, help="Number of decisions to show (default: 20)")
+@click.option("--type", "-t", help="Filter by decision type")
+@click.option("--tag", help="Filter by tag")
+@click.option("--workspace", "-w", help="Workspace path (default: current git root)")
+def list_decisions(limit: int, type: Optional[str], tag: Optional[str], workspace: Optional[str]):
+    """
+    📋 List recent decisions with filtering
+
+    Quick Win B2: Searchable decision list with type and tag filtering.
+
+    \b
+    Examples:
+        dopemux decisions list                    # 20 most recent
+        dopemux decisions list -n 50              # 50 most recent
+        dopemux decisions list --type technical   # Technical decisions only
+        dopemux decisions list --tag adhd         # ADHD-related decisions
+    """
+
+    async def _list():
+        workspace_id = workspace or get_workspace_id()
+
+        conn = await get_conport_connection()
+        if not conn:
+            return
+
+        try:
+            # Build query with optional filters
+            query = """
+            SELECT
+                id,
+                summary,
+                decision_type,
+                tags,
+                created_at,
+                EXTRACT(DAY FROM (NOW() - created_at)) as age_days
+            FROM decisions
+            WHERE workspace_id = $1
+            """
+
+            params = [workspace_id]
+            param_count = 1
+
+            if type:
+                param_count += 1
+                query += f" AND decision_type = ${param_count}"
+                params.append(type)
+
+            if tag:
+                param_count += 1
+                query += f" AND ${param_count} = ANY(tags)"
+                params.append(tag)
+
+            query += f" ORDER BY created_at DESC LIMIT {limit}"
+
+            rows = await conn.fetch(query, *params)
+
+            if not rows:
+                console.print(f"\n[yellow]No decisions found.[/yellow]")
+                if type or tag:
+                    console.print("[dim]Try removing filters[/dim]")
+                return
+
+            # Display table
+            title_parts = [f"📋 Recent Decisions ({len(rows)})"]
+            if type:
+                title_parts.append(f"Type: {type}")
+            if tag:
+                title_parts.append(f"Tag: {tag}")
+
+            table = Table(title=" | ".join(title_parts), show_header=True)
+            table.add_column("ID", style="cyan", width=8)
+            table.add_column("Age", style="dim", width=8)
+            table.add_column("Type", style="yellow", width=15)
+            table.add_column("Summary", style="white")
+
+            for row in rows:
+                decision_id = str(row['id'])[:8]
+                age_days = int(row['age_days'])
+                age_str = f"{age_days}d ago"
+                dec_type = row['decision_type']
+                summary = row['summary'][:60] + "..." if len(row['summary']) > 60 else row['summary']
+
+                table.add_row(decision_id, age_str, dec_type, summary)
+
+            console.print(table)
+
+            console.print(f"\n[dim]Tip: Use 'dopemux decisions show <ID>' for full details[/dim]")
+
+        finally:
+            await conn.close()
+
+    asyncio.run(_list())
+
+
+# ============================================================================
+# QUICK WIN B3: Energy Analytics Command (~1 hour)
+# ============================================================================
+
+@click.command("analytics")
+@click.option("--days", "-d", default=30, help="Days to analyze (default: 30)")
+@click.option("--workspace", "-w", help="Workspace path (default: current git root)")
+def energy_analytics(days: int, workspace: Optional[str]):
+    """
+    📊 Analyze energy patterns and correlations
+
+    Quick Win B3: Simple energy pattern analysis showing:
+    - Energy level distribution
+    - Time-of-day patterns
+    - Most productive times
+
+    Foundation for Phase 4 decision-energy correlation.
+
+    \b
+    Examples:
+        dopemux decisions energy analytics         # Last 30 days
+        dopemux decisions energy analytics -d 90   # Last 90 days
+    """
+
+    async def _analytics():
+        workspace_id = workspace or get_workspace_id()
+
+        conn = await get_conport_connection()
+        if not conn:
+            return
+
+        try:
+            # Query all energy logs
+            rows = await conn.fetch("""
+                SELECT value, created_at
+                FROM custom_data
+                WHERE workspace_id = $1
+                AND category = 'adhd_energy'
+                AND created_at > NOW() - INTERVAL '1 day' * $2
+                ORDER BY created_at ASC
+            """, workspace_id, days)
+
+            if len(rows) < 3:
+                console.print(f"\n[yellow]Need at least 3 energy logs for pattern analysis.[/yellow]")
+                console.print(f"[dim]Found: {len(rows)} entries[/dim]")
+                console.print(f"[dim]Log more with: dopemux decisions energy log [low|medium|high][/dim]")
+                return
+
+            import json
+
+            # Parse energy data
+            energy_data = []
+            for row in rows:
+                value = row['value']
+                if isinstance(value, str):
+                    value = json.loads(value)
+                energy_data.append({
+                    "level": value.get('energy_level'),
+                    "timestamp": row['created_at'],
+                    "hour": row['created_at'].hour
+                })
+
+            # Calculate statistics
+            total = len(energy_data)
+            low_count = sum(1 for e in energy_data if e['level'] == 'low')
+            medium_count = sum(1 for e in energy_data if e['level'] == 'medium')
+            high_count = sum(1 for e in energy_data if e['level'] == 'high')
+
+            # Time-of-day analysis
+            hour_counts = {}
+            for entry in energy_data:
+                hour = entry['hour']
+                if hour not in hour_counts:
+                    hour_counts[hour] = {'low': 0, 'medium': 0, 'high': 0}
+                hour_counts[hour][entry['level']] += 1
+
+            # Find peak hours
+            high_hours = [(h, counts['high']) for h, counts in hour_counts.items() if counts['high'] > 0]
+            high_hours.sort(key=lambda x: x[1], reverse=True)
+
+            # Display analytics
+            console.print(Panel.fit(
+                f"[bold cyan]⚡ Energy Analytics[/bold cyan]\n"
+                f"Period: Last {days} days | Entries: {total}",
+                border_style="cyan"
+            ))
+
+            # Distribution
+            console.print("\n[bold]📊 Energy Distribution:[/bold]")
+            console.print(f"  🔥 High:   {high_count:2d} ({high_count/total*100:.0f}%) {'█' * int(high_count/total*20)}")
+            console.print(f"  ⚡ Medium: {medium_count:2d} ({medium_count/total*100:.0f}%) {'█' * int(medium_count/total*20)}")
+            console.print(f"  🔋 Low:    {low_count:2d} ({low_count/total*100:.0f}%) {'█' * int(low_count/total*20)}")
+
+            # Time patterns
+            if high_hours:
+                console.print("\n[bold]🌟 Peak Energy Times:[/bold]")
+                for hour, count in high_hours[:3]:
+                    time_str = f"{hour:02d}:00" if hour < 12 else f"{hour:02d}:00"
+                    period = "AM" if hour < 12 else "PM"
+                    display_hour = hour if hour <= 12 else hour - 12
+                    console.print(f"  • {display_hour:2d}:00 {period} - {count} high energy entries")
+
+            # ADHD recommendations
+            console.print("\n[bold]💡 ADHD Recommendations:[/bold]")
+
+            if high_count > 0:
+                console.print(f"  ✅ Schedule complex decisions during high-energy times")
+            else:
+                console.print(f"  ⚠️  No high-energy entries - may need more data or energy management")
+
+            if low_count > medium_count + high_count:
+                console.print(f"  ⚠️  Lots of low-energy entries - consider breaks, sleep, exercise")
+
+            console.print("\n[dim]📈 Phase 4 will add:[/dim]")
+            console.print("[dim]  • Decision quality correlation with energy[/dim]")
+            console.print("[dim]  • Predictive energy modeling[/dim]")
+            console.print("[dim]  • Optimal scheduling recommendations[/dim]")
+
+        finally:
+            await conn.close()
+
+    asyncio.run(_analytics())
