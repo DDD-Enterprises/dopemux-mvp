@@ -55,6 +55,7 @@ class OrchestrationTask:
     """Enhanced task representation for orchestration."""
     id: str
     leantime_id: Optional[int] = None
+    conport_id: Optional[int] = None  # ConPort progress_entry ID (Architecture 3.0 Component 2)
     title: str = ""
     description: str = ""
     status: TaskStatus = TaskStatus.PENDING
@@ -132,8 +133,10 @@ class EnhancedTaskOrchestrator:
         self.leantime_session: Optional[aiohttp.ClientSession] = None
         self.redis_client: Optional[redis.Redis] = None
 
-        # Task coordination state
-        self.orchestrated_tasks: Dict[str, OrchestrationTask] = {}
+        # Task coordination state - Architecture 3.0: ConPort is storage authority
+        # REMOVED: self.orchestrated_tasks dict (Authority violation - fixed in Component 2 Task 2.5)
+        # Tasks now queried from ConPort via conport_adapter
+        self.conport_adapter = None  # Initialized in _initialize_agent_pool with ConPortEventAdapter
         self.agent_pool: Dict[AgentType, Dict[str, Any]] = {}
         self.sync_queue: asyncio.Queue = asyncio.Queue()
 
@@ -234,6 +237,18 @@ class EnhancedTaskOrchestrator:
 
     async def _initialize_agent_pool(self) -> None:
         """Initialize AI agent pool for coordination."""
+        # Initialize ConPort adapter (Architecture 3.0 Component 2)
+        try:
+            from adapters.conport_adapter import ConPortEventAdapter
+            self.conport_adapter = ConPortEventAdapter(
+                workspace_id=self.workspace_id,
+                conport_client=None  # TODO: Wire actual ConPort MCP client in Component 3
+            )
+            logger.info("📊 ConPort adapter initialized (storage authority)")
+        except Exception as e:
+            logger.warning(f"ConPort adapter initialization failed: {e} - continuing without persistence")
+            self.conport_adapter = None
+
         self.agent_pool = {
             AgentType.CONPORT: {
                 "available": True,
@@ -356,8 +371,13 @@ class EnhancedTaskOrchestrator:
             # Apply ADHD optimizations
             orchestration_task = await self._apply_adhd_optimizations(orchestration_task)
 
-            # Store in orchestrated tasks
-            self.orchestrated_tasks[orchestration_task.id] = orchestration_task
+            # Store in ConPort (Architecture 3.0: ConPort is storage authority)
+            if self.conport_adapter:
+                conport_id = await self.conport_adapter.create_task_in_conport(orchestration_task)
+                orchestration_task.conport_id = conport_id
+                logger.debug(f"📊 Task stored in ConPort: {orchestration_task.title} (ID: {conport_id})")
+            else:
+                logger.warning(f"⚠️ ConPort adapter not initialized, task not persisted: {orchestration_task.id}")
 
             # Determine AI agent assignment
             assigned_agent = await self._assign_optimal_agent(orchestration_task)
@@ -693,12 +713,31 @@ class EnhancedTaskOrchestrator:
         except Exception:
             return 0.5  # Default moderate load
 
+    async def _get_task_count_from_conport(self) -> int:
+        """Get total task count from ConPort (Architecture 3.0 storage authority)."""
+        try:
+            if self.conport_adapter:
+                all_tasks = await self.conport_adapter.get_all_tasks_from_conport()
+                return len(all_tasks)
+            else:
+                return 0  # No adapter, no tasks
+        except Exception as e:
+            logger.error(f"Failed to get task count from ConPort: {e}")
+            return 0
+
     async def _check_break_requirements(self) -> None:
         """Check if any active tasks need break reminders."""
         try:
             current_time = datetime.now(timezone.utc)
 
-            for task in self.orchestrated_tasks.values():
+            # Query ConPort for IN_PROGRESS tasks (Architecture 3.0: ConPort is source of truth)
+            if self.conport_adapter:
+                active_tasks = await self.conport_adapter.get_all_tasks_from_conport(status_filter="IN_PROGRESS")
+            else:
+                logger.warning("⚠️ ConPort adapter not initialized, skipping break check")
+                return
+
+            for task in active_tasks:
                 if task.status == TaskStatus.IN_PROGRESS:
                     # Check if break is needed based on work duration
                     if task.agent_assignments:
@@ -905,7 +944,7 @@ class EnhancedTaskOrchestrator:
                     "ai_agents": {agent.value: info["available"] for agent, info in self.agent_pool.items()}
                 },
                 "metrics": self.metrics,
-                "orchestrated_tasks": len(self.orchestrated_tasks),
+                "orchestrated_tasks": await self._get_task_count_from_conport(),
                 "timestamp": datetime.now(timezone.utc).isoformat()
             }
 
