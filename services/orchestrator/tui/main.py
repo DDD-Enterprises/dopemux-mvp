@@ -32,8 +32,8 @@ from orchestrator.tmux.layout_manager import TmuxLayoutManager, EnergyLevel
 # Import command router for AI CLI execution
 from .command_router import get_command_router
 
-# Import ConPort progress tracker for ADHD context preservation
-from .conport_tracker import get_progress_tracker
+# Import TUI State Manager (coordinates all state: progress, breaks, energy, history)
+from .state_manager import get_state_manager
 
 
 class AIOutputPane(Static):
@@ -259,6 +259,37 @@ class CommandInput(Input):
         self.command_history: list[str] = []
         self.history_index: int = -1
 
+    async def on_key(self, event: events.Key) -> None:
+        """Handle key events for history navigation."""
+        # Get state manager from parent app
+        app = self.app
+        if not hasattr(app, 'state_manager'):
+            return
+
+        # Up arrow: Previous command
+        if event.key == "up":
+            prev_command = app.state_manager.get_history_navigation("up")
+            if prev_command:
+                # Remove @mention prefix if present (user can re-add)
+                if prev_command.startswith("@"):
+                    parts = prev_command.split(maxsplit=1)
+                    if len(parts) == 2:
+                        self.value = prev_command  # Keep full @mention format
+                    else:
+                        self.value = prev_command
+                else:
+                    self.value = prev_command
+                event.stop()
+                event.prevent_default()
+
+        # Down arrow: Next command
+        elif event.key == "down":
+            next_command = app.state_manager.get_history_navigation("down")
+            if next_command is not None:  # Empty string is valid (new command)
+                self.value = next_command
+                event.stop()
+                event.prevent_default()
+
 
 class DopemuxOrchestratorTUI(App):
     """
@@ -272,7 +303,7 @@ class DopemuxOrchestratorTUI(App):
     """
 
     TITLE = "Dopemux Orchestrator TUI"
-    SUB_TITLE = "Multi-AI Coordination • ADHD-Optimized • ConPort Enabled"
+    SUB_TITLE = "Multi-AI Coordination • ADHD-Optimized • Full State Management"
 
     CSS = """
     Screen {
@@ -345,8 +376,8 @@ class DopemuxOrchestratorTUI(App):
         # Highlight Claude as default target
         self.query_one("#pane_claude", AIOutputPane).set_active(True)
 
-        # Initialize ConPort progress tracker
-        asyncio.create_task(self.progress_tracker.initialize())
+        # Initialize TUI State Manager (coordinates all: progress, breaks, energy, history)
+        asyncio.create_task(self._initialize_state_manager())
 
         # Start background tasks
         self.set_timer(1, self.update_session_timer)
@@ -371,6 +402,20 @@ class DopemuxOrchestratorTUI(App):
         available_count = len(self.command_router.get_available_ais())
         self.query_one(StatusInfoPane).update_active_ais(available_count)
 
+
+    async def _initialize_state_manager(self):
+        """Initialize TUI State Manager and show results."""
+        result = await self.state_manager.initialize()
+
+        if result.get('warnings'):
+            for warning in result['warnings']:
+                self.query_one("#pane_claude", AIOutputPane).add_output(f"⚠️  {warning}")
+        else:
+            successful = result.get('successful_managers', 0)
+            total = result.get('total_managers', 0)
+            self.query_one("#pane_claude", AIOutputPane).add_output(
+                f"✅ All state managers initialized ({successful}/{total})"
+            )
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         """Handle command submission."""
         command = event.value.strip()
@@ -413,8 +458,9 @@ class DopemuxOrchestratorTUI(App):
             pane.set_status("error")
             return
 
-        # Log command start to ConPort
-        progress_id = await self.progress_tracker.log_command_start(ai, command)
+        # Coordinate command start (progress, history, break activity)
+        start_result = await self.state_manager.on_command_start(ai, command)
+        progress_id = start_result.get('progress_id')
 
         # Define callbacks for streaming output
         def on_output(line: str):
@@ -439,24 +485,27 @@ class DopemuxOrchestratorTUI(App):
             if return_code == 0:
                 pane.add_output(f"✅ Command completed successfully")
                 pane.set_status("ready")
-                await self.progress_tracker.update_command_progress(ai, "DONE", exit_code=return_code)
+                complete_result = await self.state_manager.on_command_complete(ai, return_code)
+                # Check for break suggestions
+                if complete_result.get('break_suggested'):
+                    pane.add_output(complete_result.get('break_message', '☕ Break recommended!'))
             else:
                 pane.add_output(f"❌ Command failed (exit code: {return_code})")
                 pane.set_status("error")
-                await self.progress_tracker.update_command_progress(ai, "DONE", exit_code=return_code, error_message=f"Exit code: {return_code}")
+                await self.state_manager.on_command_complete(ai, return_code, f"Exit code: {return_code}")
 
         except asyncio.TimeoutError:
             pane.add_output("⏰ Command timed out after 5 minutes")
             pane.set_status("error")
-            await self.progress_tracker.update_command_progress(ai, "BLOCKED", error_message="Timeout after 5 minutes")
+            await self.state_manager.on_command_complete(ai, -1, "Timeout after 5 minutes")
         except ValueError as e:
             pane.add_output(f"❌ {e}")
             pane.set_status("error")
-            await self.progress_tracker.update_command_progress(ai, "BLOCKED", error_message=str(e))
+            await self.state_manager.on_command_complete(ai, -1, str(e))
         except Exception as e:
             pane.add_output(f"❌ Unexpected error: {e}")
             pane.set_status("error")
-            await self.progress_tracker.update_command_progress(ai, "BLOCKED", error_message=str(e))
+            await self.state_manager.on_command_complete(ai, -1, str(e))
 
     async def execute_command_parallel(self, command: str) -> None:
         """Execute command on all AIs in parallel."""
@@ -474,10 +523,10 @@ class DopemuxOrchestratorTUI(App):
         self.query_one(StatusInfoPane).update_session_duration(minutes)
 
     def check_energy_level(self) -> None:
-        """Check ADHD Engine energy level and update UI."""
-        # TODO: Query actual ADHD Engine
-        # For now, keep current energy
-        self.query_one(StatusInfoPane).update_energy(self.energy_level)
+        """Check energy level via state manager and update UI."""
+        # Energy detection happens in update_progress_display
+        # This method kept for backward compatibility
+        pass
 
     def update_break_countdown(self) -> None:
         """Update break reminder countdown."""
@@ -485,22 +534,32 @@ class DopemuxOrchestratorTUI(App):
         # For now, show static 25 min
         self.query_one(ProgressTrackerPane).update_break_timer(25 * 60)
     def update_progress_display(self) -> None:
-        """Update progress display from ConPort tracker."""
-        # Get real-time progress stats from ConPort tracker
+        """Update all UI elements from TUI State Manager (single optimized call)."""
         async def _update():
-            stats = await self.progress_tracker.get_progress_stats()
+            # Single call gets all state (progress, break, energy, history)
+            ui_state = await self.state_manager.get_ui_state()
 
-            # Update tasks counter (completed commands = tasks done)
-            total_commands = stats['completed_commands'] + stats['active_commands']
+            # Update progress pane
+            progress = ui_state.get('progress', {})
+            total_commands = progress.get('completed_commands', 0) + progress.get('active_commands', 0)
             self.query_one(ProgressTrackerPane).update_tasks(
-                done=stats['completed_commands'],
-                total=max(total_commands, 1)  # Avoid division by zero
+                done=progress.get('completed_commands', 0),
+                total=max(total_commands, 1)
             )
 
-            # Update session progress based on success rate
             if total_commands > 0:
-                progress_percent = int((stats['completed_commands'] / total_commands) * 100)
+                progress_percent = int((progress.get('completed_commands', 0) / total_commands) * 100)
                 self.query_one(ProgressTrackerPane).update_session_progress(progress_percent)
+
+            # Update break timer from break manager
+            break_state = ui_state.get('break', {})
+            if 'elapsed_seconds' in break_state:
+                self.query_one(ProgressTrackerPane).update_break_timer(break_state['elapsed_seconds'])
+
+            # Update energy level from energy detector
+            energy_state = ui_state.get('energy', {})
+            if 'level' in energy_state:
+                self.query_one(StatusInfoPane).update_energy(energy_state['level'])
 
         # Run async update
         asyncio.create_task(_update())
@@ -549,8 +608,8 @@ class DopemuxOrchestratorTUI(App):
 
     async def action_quit(self) -> None:
         """Clean up and quit the application."""
-        # Finalize ConPort session before exiting
-        await self.progress_tracker.close()
+        # Finalize all managers via state manager
+        await self.state_manager.close()
         await super().action_quit()
 
 
