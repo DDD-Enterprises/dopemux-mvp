@@ -2614,6 +2614,188 @@ class SerenaV2MCPServer:
                 "fallback": "Use git status and ConPort manually"
             }, indent=2)
 
+    async def detect_untracked_work_enhanced_tool(
+        self,
+        session_number: int = 1,
+        show_details: bool = False
+    ) -> str:
+        """
+        Feature 1 Enhanced: Untracked work detection with E1-E4 enhancements
+
+        Combines base F001 detection with 4 critical enhancements:
+        - E1: False-starts dashboard (aggregate awareness)
+        - E2: Design-first prompting (ADR/RFC suggestions)
+        - E3: Abandoned work revival (finish vs. start new)
+        - E4: Prioritization context (overcommitment prevention)
+
+        ADHD Benefits:
+        - Gentle awareness without shame
+        - Decision support for "Is this urgent?"
+        - Revival of forgotten work
+        - Design-first to reduce false-starts
+
+        Args:
+            session_number: Session count (1, 2, 3+) for adaptive thresholds
+            show_details: Include detailed confidence breakdown
+
+        Returns:
+            JSON with detection + all relevant enhancements
+        """
+        start_time = datetime.now()
+
+        try:
+            # Import Feature 1 enhanced components
+            from untracked_work_detector import UntrackedWorkDetector
+
+            # Initialize detector (includes E1-E4)
+            detector = UntrackedWorkDetector(
+                workspace=self.workspace,
+                workspace_id=str(self.workspace)
+            )
+
+            # Run enhanced detection
+            # TODO: Integrate real ConPort MCP client
+            detection = await detector.detect_with_enhancements(
+                conport_client=None,
+                session_number=session_number
+            )
+
+            elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
+
+            # Build ADHD-optimized output
+            if not detection["has_untracked_work"]:
+                result = {
+                    "status": "all_clear",
+                    "message": "✅ All work is tracked or below threshold",
+                    "confidence_score": detection["confidence_score"],
+                    "threshold_used": detection["threshold_used"],
+                    "performance": {
+                        "latency_ms": round(elapsed_ms, 2)
+                    }
+                }
+            else:
+                # Untracked work detected - show enhancements!
+                enhancements = detection["enhancements"]
+
+                result = {
+                    "status": "untracked_work_detected",
+                    "message": f"⚠️  Untracked work: {detection['work_name']}",
+                    "work_summary": {
+                        "name": detection["work_name"],
+                        "confidence": detection["confidence_score"],
+                        "threshold": detection["threshold_used"],
+                        "files_changed": len(detection["git_detection"]["files"]),
+                        "branch": detection["git_detection"].get("branch")
+                    }
+                }
+
+                # E1: False-starts dashboard (always shown)
+                if enhancements.get("false_starts"):
+                    result["false_starts_dashboard"] = {
+                        "total_unfinished": enhancements["false_starts"]["summary"]["total_unfinished"],
+                        "status_breakdown": enhancements["false_starts"]["summary"]["status_breakdown"],
+                        "message": enhancements["false_starts"]["dashboard_message"]
+                    }
+
+                # E2: Design-first prompting (conditional)
+                if enhancements.get("design_first"):
+                    result["design_first_recommendation"] = {
+                        "should_create_design": True,
+                        "confidence": enhancements["design_first"]["detection"]["confidence"],
+                        "document_type": enhancements["design_first"]["detection"]["suggested_document_type"],
+                        "reasons": enhancements["design_first"]["detection"]["reasons"],
+                        "message": enhancements["design_first"]["prompt_message"]
+                    }
+
+                # E3: Abandoned work revival (conditional)
+                if enhancements.get("revival"):
+                    result["revival_suggestions"] = {
+                        "count": enhancements["revival"]["suggestions"]["suggestion_count"],
+                        "suggestions": enhancements["revival"]["suggestions"]["suggestions"],
+                        "message": enhancements["revival"]["revival_message"]
+                    }
+
+                # E4: Prioritization context (conditional)
+                if enhancements.get("priority"):
+                    result["prioritization_context"] = {
+                        "active_tasks": enhancements["priority"]["context"]["total_active"],
+                        "in_progress": enhancements["priority"]["context"]["in_progress_count"],
+                        "overcommitment_risk": enhancements["priority"]["context"]["overcommitment_risk"],
+                        "recommendation": enhancements["priority"]["context"]["urgent_recommendation"],
+                        "message": enhancements["priority"]["priority_message"]
+                    }
+
+                # Actions (same as base F001)
+                result["suggested_actions"] = {
+                    "options": [
+                        {
+                            "action": "track",
+                            "description": "Create ConPort task (pre-filled)",
+                            "recommended": True
+                        },
+                        {
+                            "action": "design_first",
+                            "description": "Create ADR/RFC first" if enhancements.get("design_first") else None,
+                            "recommended": bool(enhancements.get("design_first"))
+                        },
+                        {
+                            "action": "resume_abandoned",
+                            "description": "Resume abandoned work instead" if enhancements.get("revival") else None,
+                            "recommended": bool(enhancements.get("revival"))
+                        },
+                        {
+                            "action": "snooze",
+                            "description": "Remind later (1h | 4h | 1d)",
+                            "recommended": False
+                        },
+                        {
+                            "action": "ignore",
+                            "description": "Mark as experiment (won't remind)",
+                            "recommended": False
+                        }
+                    ],
+                    "adhd_guidance": "✨ The most productive choice isn't always starting new work"
+                }
+
+                # Add details if requested
+                if show_details:
+                    result["details"] = {
+                        "detection_signals": detection["detection_signals"],
+                        "pattern_boost": detection.get("pattern_boost_details"),
+                        "abandonment_data": detection.get("abandonment_data"),
+                        "files": detection["git_detection"]["files"][:10]  # ADHD limit
+                    }
+
+                result["performance"] = {
+                    "latency_ms": round(elapsed_ms, 2)
+                }
+
+            logger.info(
+                f"detect_untracked_work_enhanced: session={session_number} → "
+                f"{detection['has_untracked_work']} (confidence: {detection['confidence_score']:.2f}, "
+                f"enhancements: E1={bool(enhancements.get('false_starts'))}, "
+                f"E2={bool(enhancements.get('design_first'))}, "
+                f"E3={bool(enhancements.get('revival'))}, "
+                f"E4={bool(enhancements.get('priority'))}, "
+                f"{elapsed_ms:.1f}ms)"
+            )
+            return json.dumps(result, indent=2)
+
+        except ImportError as e:
+            # Feature 1 enhanced components not available
+            return json.dumps({
+                "error": "F001 Enhanced components not fully integrated",
+                "message": "Missing enhancement modules (E1-E4)",
+                "details": str(e),
+                "fallback": "Use detect_untracked_work_tool instead"
+            }, indent=2)
+        except Exception as e:
+            logger.error(f"detect_untracked_work_enhanced failed: {e}", exc_info=True)
+            return json.dumps({
+                "error": str(e),
+                "fallback": "Use base detect_untracked_work_tool or git status manually"
+            }, indent=2)
+
     async def suggest_branch_organization_tool(
         self,
         min_cluster_size: int = 2
