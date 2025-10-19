@@ -18,6 +18,12 @@ from conport_matcher import ConPortTaskMatcher
 from pattern_learner import PatternLearner
 from abandonment_tracker import AbandonmentTracker
 
+# F001 Enhancements (E1-E4)
+from false_starts_aggregator import FalseStartsAggregator
+from design_first_detector import DesignFirstDetector
+from revival_suggester import RevivalSuggester
+from priority_context_builder import PriorityContextBuilder
+
 logger = logging.getLogger(__name__)
 
 
@@ -43,10 +49,17 @@ class UntrackedWorkDetector:
         self.workspace = workspace
         self.workspace_id = workspace_id
 
+        # Base F001 components
         self.git_detector = GitWorkDetector(workspace)
         self.conport_matcher = ConPortTaskMatcher(workspace_id)
         self.pattern_learner = PatternLearner(workspace_id)  # F5: Pattern learning
         self.abandonment_tracker = AbandonmentTracker(workspace_id)  # F6: Abandonment tracking
+
+        # F001 Enhancements (E1-E4)
+        self.false_starts_aggregator = FalseStartsAggregator(workspace_id)  # E1: Dashboard
+        self.design_first_detector = DesignFirstDetector(workspace)  # E2: ADR/RFC prompting
+        self.revival_suggester = RevivalSuggester(workspace_id)  # E3: Abandoned revival
+        self.priority_context_builder = PriorityContextBuilder(workspace_id)  # E4: Prioritization
 
         # Feature 1 config from spec
         self.grace_period_minutes = 30  # Updated from 15 via consensus
@@ -402,4 +415,107 @@ class UntrackedWorkDetector:
                 "auto_generated": True
             },
             "suggested_complexity": complexity
+        }
+
+    async def detect_with_enhancements(
+        self,
+        conport_client=None,
+        session_number: int = 1
+    ) -> Dict:
+        """
+        Enhanced detection with E1-E4 features.
+
+        Runs base detection plus all 4 enhancements:
+        - E1: False-starts dashboard
+        - E2: Design-first prompting
+        - E3: Abandoned work revival
+        - E4: Prioritization context
+
+        Args:
+            conport_client: ConPort MCP client (required for E1, E3, E4)
+            session_number: Current session number
+
+        Returns:
+            {
+                ... base detection fields ...
+                "enhancements": {
+                    "false_starts": {...},  # E1
+                    "design_first": {...},  # E2
+                    "revival": {...},       # E3
+                    "priority": {...}       # E4
+                }
+            }
+        """
+        # Run base detection
+        base_detection = await self.detect(conport_client, session_number)
+
+        # Initialize enhancements result
+        enhancements = {
+            "false_starts": None,
+            "design_first": None,
+            "revival": None,
+            "priority": None
+        }
+
+        # Only run enhancements if untracked work detected
+        if base_detection["has_untracked_work"]:
+            git_detection = base_detection["git_detection"]
+            work_name = base_detection["work_name"]
+
+            # E1: False-starts dashboard
+            false_starts_summary = await self.false_starts_aggregator.get_false_starts_summary(
+                conport_client
+            )
+            enhancements["false_starts"] = {
+                "summary": false_starts_summary,
+                "dashboard_message": self.false_starts_aggregator.format_dashboard_message(
+                    false_starts_summary,
+                    work_name
+                )
+            }
+
+            # E2: Design-first prompting
+            design_detection = self.design_first_detector.should_prompt_for_design(
+                git_detection
+            )
+            if design_detection["should_prompt"]:
+                enhancements["design_first"] = {
+                    "detection": design_detection,
+                    "prompt_message": self.design_first_detector.format_design_prompt_message(
+                        design_detection,
+                        work_name
+                    )
+                }
+
+            # E3: Abandoned work revival
+            top_abandoned = false_starts_summary.get("top_abandoned", [])
+            revival_suggestions = self.revival_suggester.suggest_revivals(
+                top_abandoned,
+                git_detection,
+                max_suggestions=3
+            )
+            if revival_suggestions["has_suggestions"]:
+                enhancements["revival"] = {
+                    "suggestions": revival_suggestions,
+                    "revival_message": self.revival_suggester.format_revival_message(
+                        revival_suggestions["suggestions"]
+                    )
+                }
+
+            # E4: Prioritization context
+            priority_context = await self.priority_context_builder.get_priority_context(
+                conport_client
+            )
+            if priority_context["has_active_tasks"]:
+                enhancements["priority"] = {
+                    "context": priority_context,
+                    "priority_message": self.priority_context_builder.format_priority_message(
+                        priority_context
+                    )
+                }
+
+        # Combine base detection with enhancements
+        return {
+            **base_detection,
+            "enhancements": enhancements
         }
