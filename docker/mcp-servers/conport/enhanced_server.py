@@ -19,6 +19,9 @@ from datetime import datetime, timedelta
 # Worktree multi-instance support
 from instance_detector import SimpleInstanceDetector
 
+# Integration Bridge event publishing
+from integration_bridge_client import IntegrationBridgeClient
+
 # Database and caching dependencies
 try:
     from aiohttp import web, ClientSession
@@ -53,6 +56,7 @@ class EnhancedConPortServer:
         # Database connections
         self.db_pool = None
         self.redis = None
+        self.integration_bridge = None  # EventBus client for cross-service coordination
 
         # Configuration
         self.postgres_url = os.getenv(
@@ -93,6 +97,10 @@ class EnhancedConPortServer:
             await self.redis.ping()
             logger.info("✅ Redis connection established")
 
+            # Integration Bridge client for event publishing
+            self.integration_bridge = IntegrationBridgeClient()
+            await self.integration_bridge.initialize()
+
             # Start auto-save task for ADHD context preservation
             self.auto_save_task = asyncio.create_task(self.auto_save_loop())
 
@@ -104,6 +112,9 @@ class EnhancedConPortServer:
         """Cleanup database and Redis connections"""
         if self.auto_save_task:
             self.auto_save_task.cancel()
+
+        if self.integration_bridge:
+            await self.integration_bridge.close()
 
         if self.redis:
             await self.redis.close()
@@ -331,6 +342,15 @@ class EnhancedConPortServer:
                 await self.redis.delete(f"decisions:{workspace_id}")
                 await self.redis.delete(f"recent_activity:{workspace_id}")
 
+            # Publish decision_logged event to Integration Bridge
+            if self.integration_bridge:
+                await self.integration_bridge.publish_decision_logged(
+                    decision_id=decision_id,
+                    summary=data.get('summary'),
+                    workspace_id=workspace_id,
+                    tags=data.get('tags', [])
+                )
+
             logger.info(f"💡 Logged decision: {data.get('summary')}")
 
             return web.json_response({
@@ -444,6 +464,16 @@ class EnhancedConPortServer:
             if workspace_id:
                 await self.redis.delete(f"progress:{workspace_id}")
                 await self.redis.delete(f"active_work:{workspace_id}")
+
+            # Publish progress_updated event to Integration Bridge
+            if self.integration_bridge:
+                await self.integration_bridge.publish_progress_updated(
+                    progress_id=progress_id,
+                    status=status,
+                    description=data.get('description', ''),
+                    workspace_id=workspace_id,
+                    percentage=data.get('percentage', 0)
+                )
 
             logger.info(f"📊 Progress logged: {data.get('description')} ({data.get('status')})")
 
@@ -594,6 +624,16 @@ class EnhancedConPortServer:
             if workspace_id:
                 await self.redis.delete(f"progress:{workspace_id}")
                 await self.redis.delete(f"active_work:{workspace_id}")
+
+            # Publish progress_updated event to Integration Bridge
+            if self.integration_bridge:
+                await self.integration_bridge.publish_progress_updated(
+                    progress_id=progress_id,
+                    status=progress_entry['status'],
+                    description=progress_entry['description'],
+                    workspace_id=workspace_id,
+                    percentage=progress_entry.get('percentage', 0)
+                )
 
             logger.info(f"📊 Progress updated: {progress_entry['description']} → {progress_entry['status']}")
 

@@ -15,6 +15,7 @@ RUN pip install uv aiohttp asyncpg redis
 # Copy the enhanced server with PostgreSQL + Redis persistence
 COPY enhanced_server.py .
 COPY instance_detector.py .
+COPY integration_bridge_client.py .
 COPY schema.sql .
 
 # Expose port
