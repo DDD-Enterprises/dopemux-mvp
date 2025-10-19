@@ -25,7 +25,10 @@ export class KGClient {
   }
 
   async getRecentDecisions(limit: number = 3): Promise<DecisionCard[]> {
-    const response = await fetch(`${this.baseUrl}/decisions/recent?limit=${limit}`, {
+    const params = new URLSearchParams({
+      limit: limit.toString()
+    });
+    const response = await fetch(`${this.baseUrl}/decisions/recent?${params}`, {
       headers: {
         'X-Source-Plane': 'cognitive_plane'
       }
@@ -58,8 +61,11 @@ export class KGClient {
     maxHops: number = 1,
     limitPerHop: number = 10
   ): Promise<DecisionNeighborhood> {
-    const url = `${this.baseUrl}/decisions/${id}/neighborhood?max_hops=${maxHops}&limit_per_hop=${limitPerHop}`;
-    const response = await fetch(url, {
+    const params = new URLSearchParams({
+      max_hops: maxHops.toString(),
+      limit_per_hop: limitPerHop.toString()
+    });
+    const response = await fetch(`${this.baseUrl}/decisions/${id}/neighborhood?${params}`, {
       headers: {
         'X-Source-Plane': 'cognitive_plane'
       }
@@ -101,7 +107,11 @@ export class KGClient {
   }
 
   async searchByTag(tag: string, limit: number = 3): Promise<DecisionCard[]> {
-    const response = await fetch(`${this.baseUrl}/decisions/search?tag=${tag}&limit=${limit}`);
+    const params = new URLSearchParams({
+      tag: tag,
+      limit: limit.toString()
+    });
+    const response = await fetch(`${this.baseUrl}/decisions/search?${params}`);
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -112,7 +122,11 @@ export class KGClient {
   }
 
   async searchFullText(text: string, limit: number = 20): Promise<DecisionCard[]> {
-    const response = await fetch(`${this.baseUrl}/decisions/search?text=${text}&limit=${limit}`);
+    const params = new URLSearchParams({
+      text: text,
+      limit: limit.toString()
+    });
+    const response = await fetch(`${this.baseUrl}/decisions/search?${params}`);
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
