@@ -29,6 +29,9 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 from orchestrator.tmux.layout_manager import TmuxLayoutManager, EnergyLevel
 
+# Import command router for AI CLI execution
+from .command_router import get_command_router
+
 
 class AIOutputPane(Static):
     """
@@ -309,6 +312,7 @@ class DopemuxOrchestratorTUI(App):
         super().__init__(**kwargs)
         self.workspace_id = workspace_id or os.getcwd()
         self.layout_manager: Optional[TmuxLayoutManager] = None
+        self.command_router = get_command_router()
 
     def compose(self) -> ComposeResult:
         """Build the main UI layout."""
@@ -342,10 +346,21 @@ class DopemuxOrchestratorTUI(App):
         self.set_timer(5, self.check_energy_level)
         self.set_timer(1, self.update_break_countdown)
 
-        # Log startup
+        # Log startup and CLI status
         self.query_one("#pane_claude", AIOutputPane).add_output("Dopemux Orchestrator TUI initialized ✅")
+
+        # Show CLI availability status
+        cli_status = self.command_router.get_cli_status_report()
+        for line in cli_status.split('\n'):
+            self.query_one("#pane_claude", AIOutputPane).add_output(line)
+
+        # Initialize other panes
         self.query_one("#pane_gemini", AIOutputPane).add_output("Ready for commands")
         self.query_one("#pane_grok", AIOutputPane).add_output("Ready for commands")
+
+        # Update active AI count
+        available_count = len(self.command_router.get_available_ais())
+        self.query_one(StatusInfoPane).update_active_ais(available_count)
 
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         """Handle command submission."""
@@ -378,19 +393,52 @@ class DopemuxOrchestratorTUI(App):
             await self.execute_command(self.current_target, command)
 
     async def execute_command(self, ai: str, command: str) -> None:
-        """Execute command on specific AI."""
+        """Execute command on specific AI via CommandRouter."""
         pane = self.query_one(f"#pane_{ai}", AIOutputPane)
         pane.add_output(f"📤 {command}")
         pane.set_status("busy")
 
+        # Check if CLI is available
+        if not self.command_router.is_available(ai):
+            pane.add_output(f"❌ {ai} CLI not available. Install it first.")
+            pane.set_status("error")
+            return
+
+        # Define callbacks for streaming output
+        def on_output(line: str):
+            """Handle stdout from AI CLI."""
+            pane.add_output(line)
+
+        def on_error(line: str):
+            """Handle stderr/errors from AI CLI."""
+            pane.add_output(f"⚠️ {line}")
+
         try:
-            # TODO: Route to actual AI CLI (claude, gemini-cli, grok-cli)
-            # For now, simulate with placeholder
-            await asyncio.sleep(0.5)
-            pane.add_output(f"✅ Command received (simulation)")
-            pane.set_status("ready")
+            # Execute command via router with streaming callbacks
+            return_code, final_output = await self.command_router.execute_command(
+                ai=ai,
+                command=command,
+                output_callback=on_output,
+                error_callback=on_error,
+                timeout=300  # 5 minute timeout
+            )
+
+            # Show completion status
+            if return_code == 0:
+                pane.add_output(f"✅ Command completed successfully")
+                pane.set_status("ready")
+            else:
+                pane.add_output(f"❌ Command failed (exit code: {return_code})")
+                pane.set_status("error")
+
+        except asyncio.TimeoutError:
+            pane.add_output("⏰ Command timed out after 5 minutes")
+            pane.set_status("error")
+        except ValueError as e:
+            pane.add_output(f"❌ {e}")
+            pane.set_status("error")
         except Exception as e:
-            pane.add_output(f"❌ Error: {e}")
+            pane.add_output(f"❌ Unexpected error: {e}")
             pane.set_status("error")
 
     async def execute_command_parallel(self, command: str) -> None:
