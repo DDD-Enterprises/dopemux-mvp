@@ -321,6 +321,7 @@ class SerenaV2MCPServer:
         self.claude_context: Optional[Any] = None
         self.tree_sitter: Optional[Any] = None
         self.adhd_navigator: Optional[Any] = None
+        self.conport_client: Optional[Any] = None  # F001/F002: ConPort integration
 
         # Component state tracking
         self.lazy_components: Dict[str, bool] = {
@@ -329,6 +330,7 @@ class SerenaV2MCPServer:
             "claude_context": False,
             "tree_sitter": False,
             "adhd_features": False,
+            "conport": False,  # F001/F002: ConPort connection tracking
         }
 
         # Error tracking for diagnostics
@@ -422,6 +424,34 @@ class SerenaV2MCPServer:
             logger.info(f"Workspace file count timed out - assuming large workspace (>5K files)")
             self.workspace_python_file_count = 10000  # Assume large
             return self.workspace_python_file_count
+
+    async def _ensure_conport_client(self):
+        """
+        Lazy load ConPort database client.
+
+        F001/F002 Integration: Provides direct PostgreSQL access to ConPort.
+        """
+        if self.conport_client:
+            return
+
+        try:
+            from conport_db_client import ConPortDBClient
+
+            self.conport_client = ConPortDBClient(
+                host="localhost",
+                port=5455,
+                database="dopemux_knowledge_graph",
+                user="dopemux_age"
+            )
+
+            await self.conport_client.connect()
+            self.lazy_components["conport"] = True
+            logger.info("ConPort database client connected")
+
+        except Exception as e:
+            logger.warning(f"ConPort client initialization failed: {e}")
+            self.initialization_errors["conport"] = str(e)
+            self.conport_client = None
 
     def _resolve_path(self, relative_path: str) -> Path:
         """
@@ -2653,10 +2683,12 @@ class SerenaV2MCPServer:
                 workspace_id=str(self.workspace)
             )
 
-            # Run enhanced detection
-            # TODO: Integrate real ConPort MCP client
+            # Ensure ConPort client connected
+            await self._ensure_conport_client()
+
+            # Run enhanced detection with ConPort integration
             detection = await detector.detect_with_enhancements(
-                conport_client=None,
+                conport_client=self.conport_client,
                 session_number=session_number
             )
 
@@ -2830,11 +2862,13 @@ class SerenaV2MCPServer:
                 auto_detect=True
             )
 
-            # Start session (without ConPort for now)
-            # TODO: Integrate real ConPort MCP client
+            # Ensure ConPort client connected
+            await self._ensure_conport_client()
+
+            # Start session with ConPort integration
             session_state = await manager.initialize_session(
                 initial_focus=initial_focus,
-                conport_client=None,
+                conport_client=self.conport_client,
                 transcript_path=transcript_path
             )
 
@@ -2895,12 +2929,14 @@ class SerenaV2MCPServer:
 
             manager = SessionManager(workspace_path=self.workspace, auto_detect=True)
 
-            # Get dashboard (without ConPort for now)
-            # TODO: Integrate real ConPort MCP client
-            dashboard_text = await manager.get_startup_dashboard(conport_client=None)
+            # Ensure ConPort client connected
+            await self._ensure_conport_client()
+
+            # Get dashboard with ConPort integration
+            dashboard_text = await manager.get_startup_dashboard(conport_client=self.conport_client)
 
             # Get statistics
-            stats = await manager.lifecycle_manager.get_session_statistics(conport_client=None)
+            stats = await manager.lifecycle_manager.get_session_statistics(conport_client=self.conport_client)
 
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
