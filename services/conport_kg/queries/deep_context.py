@@ -14,6 +14,7 @@ Part of CONPORT-KG-2025 Phase 6 (Decision #117)
 
 import os
 import sys
+import re
 from typing import List, Dict, Optional
 
 # Add parent directory to path for imports
@@ -38,6 +39,38 @@ class DeepContextQueries:
     Comprehensive decision analysis when user requests full detail.
     No ADHD restrictions - user has explicitly chosen deep dive.
     """
+
+    @staticmethod
+    def _validate_limit(limit: int, max_limit: int = 100) -> int:
+        """
+        Validate and sanitize limit parameter to prevent SQL injection
+
+        Security: CRITICAL - Prevents SQL injection via LIMIT clause
+
+        Args:
+            limit: User-provided limit value
+            max_limit: Maximum allowed limit (default 100)
+
+        Returns:
+            Validated integer limit
+
+        Raises:
+            ValueError: If limit is invalid or out of range
+        """
+        # Ensure it's an integer (prevents SQL injection)
+        if not isinstance(limit, int):
+            try:
+                limit = int(limit)
+            except (ValueError, TypeError) as e:
+                raise ValueError(f"Invalid limit: must be integer, got {type(limit).__name__}") from e
+
+        # Range validation
+        if limit < 1:
+            raise ValueError(f"Invalid limit: must be >= 1, got {limit}")
+        if limit > max_limit:
+            raise ValueError(f"Invalid limit: must be <= {max_limit}, got {limit}")
+
+        return limit
 
     def __init__(self):
         """Initialize with AGEClient"""
@@ -194,10 +227,13 @@ class DeepContextQueries:
         Returns:
             List[DecisionCard] matching search
         """
+        # Security: Validate limit to prevent SQL injection
+        limit = self._validate_limit(limit, max_limit=100)
 
-        # Case-insensitive regex pattern
-        # Note: AGE regex uses =~ operator
-        pattern = f'.*{search_term}.*'
+        # Security: Escape regex special characters to prevent ReDoS
+        # This prevents catastrophic backtracking attacks like "(a+)+b"
+        escaped_term = re.escape(search_term)
+        pattern = f'.*{escaped_term}.*'
 
         cypher = f"""
             SELECT * FROM cypher('conport_knowledge', $$
