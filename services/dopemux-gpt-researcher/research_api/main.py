@@ -329,8 +329,22 @@ async def get_task_status(task_id: str):
 # === WebSocket Endpoints ===
 
 @app.websocket("/ws/progress/{user_id}")
-async def websocket_progress_endpoint(websocket: WebSocket, user_id: str, task_id: Optional[str] = None):
-    """WebSocket endpoint for real-time progress updates"""
+async def websocket_progress_endpoint(
+    websocket: WebSocket,
+    user_id: str,
+    task_id: Optional[str] = None,
+    api_key: Optional[str] = None
+):
+    """
+    WebSocket endpoint for real-time progress updates.
+
+    Security: API key authentication via query parameter
+    """
+    # Validate API key if configured
+    expected_key = os.getenv("GPT_RESEARCHER_API_KEY")
+    if expected_key and api_key != expected_key:
+        await websocket.close(code=1008, reason="Invalid API key")
+        return
     await websocket.accept()
 
     try:
