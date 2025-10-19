@@ -1,16 +1,27 @@
 """
 FastAPI routes for ADHD Accommodation Engine.
 
-Provides 7 REST endpoints for ADHD-optimized task management.
+Provides 6 API endpoints (/api/v1/*) for ADHD-optimized task management:
+- POST /assess-task - Task suitability assessment
+- GET /energy-level/{user_id} - Current energy level
+- GET /attention-state/{user_id} - Current attention state
+- POST /recommend-break - Personalized break recommendations
+- POST /user-profile - Create/update ADHD profile
+- PUT /activity/{user_id} - Log activity events
+
+Plus utility endpoints: GET / (info), GET /health (health check)
+
+All endpoints secured with X-API-Key authentication (configurable via ADHD_ENGINE_API_KEY).
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Security
 from typing import Any
 from datetime import datetime, timezone
 import logging
 
 import api.schemas as schemas
 from models import ADHDProfile, EnergyLevel, AttentionState
+from auth import verify_api_key
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -28,7 +39,7 @@ def get_engine():
 @router.post("/assess-task", response_model=schemas.TaskAssessmentResponse)
 async def assess_task(
     request: schemas.TaskAssessmentRequest,
-    engine = Depends(get_engine)
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
 ):
     """
     Assess task suitability for user's current ADHD state.
@@ -53,7 +64,7 @@ async def assess_task(
 
 
 @router.get("/energy-level/{user_id}", response_model=schemas.EnergyLevelResponse)
-async def get_energy_level(user_id: str, engine = Depends(get_engine)):
+async def get_energy_level(user_id: str, engine = Depends(get_engine), api_key: str = Security(verify_api_key)):
     """Get current energy level for user."""
     try:
         energy = engine.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
@@ -70,7 +81,7 @@ async def get_energy_level(user_id: str, engine = Depends(get_engine)):
 
 
 @router.get("/attention-state/{user_id}", response_model=schemas.AttentionStateResponse)
-async def get_attention_state(user_id: str, engine = Depends(get_engine)):
+async def get_attention_state(user_id: str, engine = Depends(get_engine), api_key: str = Security(verify_api_key)):
     """Get current attention state for user."""
     try:
         attention = engine.current_attention_states.get(user_id, AttentionState.FOCUSED)
@@ -95,7 +106,7 @@ async def get_attention_state(user_id: str, engine = Depends(get_engine)):
 @router.post("/recommend-break", response_model=schemas.BreakRecommendationResponse)
 async def recommend_break(
     request: schemas.BreakRecommendationRequest,
-    engine = Depends(get_engine)
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
 ):
     """Get personalized break recommendation."""
     try:
@@ -138,7 +149,7 @@ async def recommend_break(
 @router.post("/user-profile", response_model=schemas.UserProfileResponse)
 async def create_or_update_profile(
     request: schemas.UserProfileRequest,
-    engine = Depends(get_engine)
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
 ):
     """Create or update user ADHD profile."""
     try:
@@ -185,7 +196,7 @@ async def create_or_update_profile(
 async def update_activity(
     user_id: str,
     request: schemas.ActivityUpdateRequest,
-    engine = Depends(get_engine)
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
 ):
     """
     Log user activity event for ADHD tracking.
