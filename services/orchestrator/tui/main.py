@@ -32,6 +32,9 @@ from orchestrator.tmux.layout_manager import TmuxLayoutManager, EnergyLevel
 # Import command router for AI CLI execution
 from .command_router import get_command_router
 
+# Import ConPort progress tracker for ADHD context preservation
+from .conport_tracker import get_progress_tracker
+
 
 class AIOutputPane(Static):
     """
@@ -269,7 +272,7 @@ class DopemuxOrchestratorTUI(App):
     """
 
     TITLE = "Dopemux Orchestrator TUI"
-    SUB_TITLE = "Multi-AI Coordination • ADHD-Optimized"
+    SUB_TITLE = "Multi-AI Coordination • ADHD-Optimized • ConPort Enabled"
 
     CSS = """
     Screen {
@@ -310,6 +313,7 @@ class DopemuxOrchestratorTUI(App):
 
     def __init__(self, workspace_id: str = None, **kwargs):
         super().__init__(**kwargs)
+        self.progress_tracker = get_progress_tracker(self.workspace_id)
         self.workspace_id = workspace_id or os.getcwd()
         self.layout_manager: Optional[TmuxLayoutManager] = None
         self.command_router = get_command_router()
@@ -341,13 +345,18 @@ class DopemuxOrchestratorTUI(App):
         # Highlight Claude as default target
         self.query_one("#pane_claude", AIOutputPane).set_active(True)
 
+        # Initialize ConPort progress tracker
+        asyncio.create_task(self.progress_tracker.initialize())
+
         # Start background tasks
         self.set_timer(1, self.update_session_timer)
         self.set_timer(5, self.check_energy_level)
         self.set_timer(1, self.update_break_countdown)
+        self.set_timer(2, self.update_progress_display)  # Update progress every 2 seconds
 
         # Log startup and CLI status
         self.query_one("#pane_claude", AIOutputPane).add_output("Dopemux Orchestrator TUI initialized ✅")
+        self.query_one("#pane_claude", AIOutputPane).add_output("📊 ConPort progress tracking enabled")
 
         # Show CLI availability status
         cli_status = self.command_router.get_cli_status_report()
@@ -393,7 +402,7 @@ class DopemuxOrchestratorTUI(App):
             await self.execute_command(self.current_target, command)
 
     async def execute_command(self, ai: str, command: str) -> None:
-        """Execute command on specific AI via CommandRouter."""
+        """Execute command on specific AI via CommandRouter with ConPort progress tracking."""
         pane = self.query_one(f"#pane_{ai}", AIOutputPane)
         pane.add_output(f"📤 {command}")
         pane.set_status("busy")
@@ -403,6 +412,9 @@ class DopemuxOrchestratorTUI(App):
             pane.add_output(f"❌ {ai} CLI not available. Install it first.")
             pane.set_status("error")
             return
+
+        # Log command start to ConPort
+        progress_id = await self.progress_tracker.log_command_start(ai, command)
 
         # Define callbacks for streaming output
         def on_output(line: str):
@@ -423,23 +435,28 @@ class DopemuxOrchestratorTUI(App):
                 timeout=300  # 5 minute timeout
             )
 
-            # Show completion status
+            # Show completion status and update ConPort
             if return_code == 0:
                 pane.add_output(f"✅ Command completed successfully")
                 pane.set_status("ready")
+                await self.progress_tracker.update_command_progress(ai, "DONE", exit_code=return_code)
             else:
                 pane.add_output(f"❌ Command failed (exit code: {return_code})")
                 pane.set_status("error")
+                await self.progress_tracker.update_command_progress(ai, "DONE", exit_code=return_code, error_message=f"Exit code: {return_code}")
 
         except asyncio.TimeoutError:
             pane.add_output("⏰ Command timed out after 5 minutes")
             pane.set_status("error")
+            await self.progress_tracker.update_command_progress(ai, "BLOCKED", error_message="Timeout after 5 minutes")
         except ValueError as e:
             pane.add_output(f"❌ {e}")
             pane.set_status("error")
+            await self.progress_tracker.update_command_progress(ai, "BLOCKED", error_message=str(e))
         except Exception as e:
             pane.add_output(f"❌ Unexpected error: {e}")
             pane.set_status("error")
+            await self.progress_tracker.update_command_progress(ai, "BLOCKED", error_message=str(e))
 
     async def execute_command_parallel(self, command: str) -> None:
         """Execute command on all AIs in parallel."""
@@ -467,6 +484,26 @@ class DopemuxOrchestratorTUI(App):
         # TODO: Track actual work time and calculate remaining
         # For now, show static 25 min
         self.query_one(ProgressTrackerPane).update_break_timer(25 * 60)
+    def update_progress_display(self) -> None:
+        """Update progress display from ConPort tracker."""
+        # Get real-time progress stats from ConPort tracker
+        async def _update():
+            stats = await self.progress_tracker.get_progress_stats()
+
+            # Update tasks counter (completed commands = tasks done)
+            total_commands = stats['completed_commands'] + stats['active_commands']
+            self.query_one(ProgressTrackerPane).update_tasks(
+                done=stats['completed_commands'],
+                total=max(total_commands, 1)  # Avoid division by zero
+            )
+
+            # Update session progress based on success rate
+            if total_commands > 0:
+                progress_percent = int((stats['completed_commands'] / total_commands) * 100)
+                self.query_one(ProgressTrackerPane).update_session_progress(progress_percent)
+
+        # Run async update
+        asyncio.create_task(_update())
 
     # Action handlers
     def action_focus_claude(self) -> None:
@@ -509,6 +546,12 @@ class DopemuxOrchestratorTUI(App):
         """Manually refresh energy level from ADHD Engine."""
         self.check_energy_level()
         self.query_one("#pane_claude", AIOutputPane).add_output("🔄 Energy level refreshed")
+
+    async def action_quit(self) -> None:
+        """Clean up and quit the application."""
+        # Finalize ConPort session before exiting
+        await self.progress_tracker.close()
+        await super().action_quit()
 
 
 def run_orchestrator_tui(workspace_id: str = None):
