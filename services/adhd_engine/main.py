@@ -4,12 +4,15 @@ ADHD Accommodation Engine - FastAPI Application
 Standalone microservice extracted from task-orchestrator (Decision #140).
 
 Features:
-- 7 REST API endpoints for ADHD assessments
-- 6 background async monitors
+- 6 API endpoints (/api/v1/*) + 2 utility endpoints for ADHD assessments
+- 6 background async monitors (energy, attention, cognitive load, breaks, hyperfocus, context switching)
 - Redis persistence for user profiles and state
-- Integration Bridge connection for ConPort data (Day 4)
+- Integration Bridge connection for ConPort data (✅ COMPLETE as of 2025-10-16)
+- API key authentication (X-API-Key header)
+- Environment-based CORS configuration
 """
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -91,9 +94,11 @@ app = FastAPI(
 )
 
 # CORS middleware for browser access
+# Security: Use environment-based origin whitelist
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
