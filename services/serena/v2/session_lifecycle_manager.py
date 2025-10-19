@@ -402,10 +402,10 @@ class SessionLifecycleManager:
     ):
         """Store session to ConPort active_context."""
         try:
-            # For now, use update_active_context with session data
-            # TODO: Use dedicated session table when migration complete
+            # Store session with session_id parameter
             await conport_client.update_active_context(
                 workspace_id=session_state.workspace_id,
+                session_id=session_state.session_id,
                 content=session_state.to_dict()
             )
 
