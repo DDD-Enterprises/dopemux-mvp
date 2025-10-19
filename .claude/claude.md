@@ -478,6 +478,64 @@ mcp__conport__log_custom_data --workspace_id "$WORKSPACE_ID" --category "sprint_
 - **Code Navigation**: Use Serena LSP only
 - **Cross-Plane**: Through Integration Bridge only
 
+### F001 Enhanced: Untracked Work Detection
+
+**ADHD-Critical Feature**: Prevents false-starts and encourages task completion
+
+**MCP Tool**: `mcp__serena-v2__detect_untracked_work_enhanced`
+
+**Purpose**: Detects uncommitted work with no ConPort tracking and provides:
+1. **E1 - False-Starts Dashboard**: "Sure you want to make it 48?" gentle awareness
+2. **E2 - Design-First Prompting**: ADR/RFC suggestions for substantial features (5+ files, 3+ dirs)
+3. **E3 - Abandoned Work Revival**: Suggests resuming relevant abandoned work (relevance scoring)
+4. **E4 - Prioritization Context**: Shows current commitments + overcommitment risk
+
+**Usage**:
+```python
+# Session start detection
+result = mcp__serena-v2__detect_untracked_work_enhanced(
+    session_number=1,     # 1=first, 2=second, 3+=established
+    show_details=False    # Set true for confidence breakdown
+)
+
+# Parse results
+if result["status"] == "untracked_work_detected":
+    # E1: Always shown (false-starts dashboard)
+    dashboard = result["false_starts_dashboard"]["message"]
+
+    # E2: If 5+ files OR 3+ dirs OR architecture keywords
+    if "design_first_recommendation" in result:
+        design_prompt = result["design_first_recommendation"]["message"]
+
+    # E3: If relevant abandoned work found (0.3+ relevance)
+    if "revival_suggestions" in result:
+        revival = result["revival_suggestions"]["message"]
+
+    # E4: If active ConPort tasks exist
+    if "prioritization_context" in result:
+        priority = result["prioritization_context"]["message"]
+```
+
+**ADHD Benefits**:
+- **Reduces false-starts**: Dashboard creates awareness of unfinished work
+- **Encourages design**: Prompts for ADR/RFC before diving into complex features
+- **Finish vs. start**: Revival suggestions nudge toward completing existing work
+- **Overcommitment prevention**: Priority context shows current task load
+
+**Research-Validated**:
+- 2025 Cleveland Clinic: Task completion is primary ADHD management paradigm
+- 2024 CBT Meta-Analysis: External reminders + task breakdown = 87% improvement
+- 2024 Digital Interventions: Self-guided systems effective (g = −0.32)
+
+**Documentation**:
+- User Guide: `services/serena/v2/docs/F001_ENHANCED_USER_GUIDE.md`
+- Usage Examples: `services/serena/v2/docs/F001_USAGE_EXAMPLES.md`
+- Test Results: `services/serena/v2/F001_TEST_RESULTS.md`
+
+**See**: Decision #144 for implementation rationale
+
+---
+
 ### Worktree Management
 
 **ADHD-Optimized Parallel Development**: Work on multiple branches without context-switching overhead
