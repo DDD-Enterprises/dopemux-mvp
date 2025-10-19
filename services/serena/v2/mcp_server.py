@@ -2796,6 +2796,185 @@ class SerenaV2MCPServer:
                 "fallback": "Use base detect_untracked_work_tool or git status manually"
             }, indent=2)
 
+    async def initialize_session_tool(
+        self,
+        initial_focus: str = None,
+        transcript_path: str = None
+    ) -> str:
+        """
+        F002: Initialize new session with worktree detection and ConPort tracking
+
+        Creates unique session ID, detects worktree info, and starts session lifecycle.
+        All sessions for same workspace (including worktrees) share knowledge graph.
+
+        ADHD Benefits:
+        - Automatic context preservation across sessions
+        - Parallel work without mental context-switching
+        - Session isolation (own focus) + knowledge sharing (unified graph)
+
+        Args:
+            initial_focus: Initial session focus description
+            transcript_path: Optional Claude Code transcript path for ID generation
+
+        Returns:
+            JSON with session info and worktree details
+        """
+        start_time = datetime.now()
+
+        try:
+            from session_manager import SessionManager
+
+            # Initialize session manager with auto-detection
+            manager = SessionManager(
+                workspace_path=self.workspace,
+                auto_detect=True
+            )
+
+            # Start session (without ConPort for now)
+            # TODO: Integrate real ConPort MCP client
+            session_state = await manager.initialize_session(
+                initial_focus=initial_focus,
+                conport_client=None,
+                transcript_path=transcript_path
+            )
+
+            elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
+
+            result = {
+                "status": "session_initialized",
+                "session": {
+                    "session_id": session_state.session_id,
+                    "workspace_id": session_state.workspace_id,
+                    "worktree_path": session_state.worktree_path,
+                    "branch": session_state.branch,
+                    "current_focus": session_state.current_focus,
+                    "session_start": session_state.session_start.isoformat()
+                },
+                "worktree_info": manager.get_worktree_info().to_dict(),
+                "message": f"✅ Session {session_state.session_id[:20]}... started",
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                }
+            }
+
+            logger.info(f"initialize_session: {session_state.session_id} ({elapsed_ms:.1f}ms)")
+            return json.dumps(result, indent=2)
+
+        except Exception as e:
+            logger.error(f"initialize_session failed: {e}", exc_info=True)
+            return json.dumps({
+                "error": str(e),
+                "fallback": "Session not initialized - continue without multi-session support"
+            }, indent=2)
+
+    async def get_multi_session_dashboard_tool(self) -> str:
+        """
+        F002: Get multi-session startup dashboard
+
+        Shows all active sessions across worktrees with time anchors.
+        ADHD-optimized: grouped by worktree, max 10 sessions, clear summary.
+
+        Returns:
+            JSON with formatted dashboard and session statistics
+
+        Example Dashboard:
+            🔄 ACTIVE SESSIONS
+
+            Main worktree (main):
+               • [active] Code review
+
+            Worktree: feature-auth (feature/auth):
+               • [30m ago] JWT implementation
+
+            Total: 2 active session(s), 1 worktree(s)
+        """
+        start_time = datetime.now()
+
+        try:
+            from session_manager import SessionManager
+
+            manager = SessionManager(workspace_path=self.workspace, auto_detect=True)
+
+            # Get dashboard (without ConPort for now)
+            # TODO: Integrate real ConPort MCP client
+            dashboard_text = await manager.get_startup_dashboard(conport_client=None)
+
+            # Get statistics
+            stats = await manager.lifecycle_manager.get_session_statistics(conport_client=None)
+
+            elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
+
+            result = {
+                "status": "dashboard_ready",
+                "dashboard": dashboard_text,
+                "statistics": stats,
+                "worktree_info": manager.get_worktree_info().to_dict() if manager.get_worktree_info() else None,
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2)
+                }
+            }
+
+            logger.info(f"get_multi_session_dashboard: {stats.get('active_sessions', 0)} sessions ({elapsed_ms:.1f}ms)")
+            return json.dumps(result, indent=2)
+
+        except Exception as e:
+            logger.error(f"get_multi_session_dashboard failed: {e}", exc_info=True)
+            return json.dumps({
+                "error": str(e),
+                "fallback": "Dashboard unavailable - check session manager"
+            }, indent=2)
+
+    async def get_session_info_tool(self) -> str:
+        """
+        F002: Get current session information
+
+        Returns details about the current session including worktree,
+        branch, focus, and duration.
+
+        Returns:
+            JSON with current session details
+        """
+        start_time = datetime.now()
+
+        try:
+            from session_manager import SessionManager
+
+            manager = SessionManager(workspace_path=self.workspace, auto_detect=True)
+
+            # Get current session info
+            session_info = manager.get_current_session_info()
+            worktree_info = manager.get_worktree_info()
+
+            elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
+
+            if session_info:
+                result = {
+                    "status": "session_active",
+                    "session": session_info,
+                    "worktree": worktree_info.to_dict() if worktree_info else None,
+                    "performance": {
+                        "latency_ms": round(elapsed_ms, 2)
+                    }
+                }
+            else:
+                result = {
+                    "status": "no_session",
+                    "message": "No session initialized - call initialize_session first",
+                    "worktree": worktree_info.to_dict() if worktree_info else None,
+                    "performance": {
+                        "latency_ms": round(elapsed_ms, 2)
+                    }
+                }
+
+            logger.info(f"get_session_info: {session_info is not None} ({elapsed_ms:.1f}ms)")
+            return json.dumps(result, indent=2)
+
+        except Exception as e:
+            logger.error(f"get_session_info failed: {e}", exc_info=True)
+            return json.dumps({
+                "error": str(e)
+            }, indent=2)
+
     async def suggest_branch_organization_tool(
         self,
         min_cluster_size: int = 2
