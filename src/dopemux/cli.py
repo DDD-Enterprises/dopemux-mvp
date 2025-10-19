@@ -4114,6 +4114,43 @@ except ImportError as e:
     pass  # Commands won't be available but CLI still works
 
 
+# ============================================================================
+# Profile Management Commands (Multi-User Support)
+# ============================================================================
+
+@cli.group()
+def profile():
+    """
+    👤 Profile management (multi-project configuration)
+
+    Manage configuration profiles for different project types:
+    - python-ml: ML/AI development with Jupyter
+    - web-dev: Modern web development (React, Next.js, TypeScript)
+    - adhd-default: Universal ADHD-optimized settings
+
+    Profiles control MCP servers, ADHD accommodations, and database strategy.
+    """
+    pass
+
+
+# Import and register profile commands
+try:
+    from .profile_commands import (
+        list_profiles,
+        use_profile,
+        show_profile,
+        create_profile
+    )
+
+    profile.add_command(list_profiles, "list")
+    profile.add_command(use_profile, "use")
+    profile.add_command(show_profile, "show")
+    profile.add_command(create_profile, "create")
+
+except ImportError as e:
+    pass  # Profile commands not available
+
+
 def main():
     """Main entry point."""
     try:
