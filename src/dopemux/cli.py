@@ -79,74 +79,29 @@ def cli(ctx, config: Optional[str], verbose: bool):
 
 
 @cli.command()
-@click.argument("directory", default=".")
-@click.option("--force", "-f", is_flag=True, help="Overwrite existing configuration")
-@click.option(
-    "--template",
-    "-t",
-    default="python",
-    help="Project template (python, js, rust, etc.)",
-)
+@click.option("--profile", "-p", help="Profile to use (auto-detects if not specified)")
+@click.option("--force", "-f", is_flag=True, help="Overwrite existing .dopemux/ directory")
 @click.pass_context
-def init(ctx, directory: str, force: bool, template: str):
+def init(ctx, profile: Optional[str], force: bool):
     """
-    🚀 Initialize a new Dopemux project
+    🚀 Initialize dopemux in current project
 
-    Sets up .claude/ configuration and .dopemux/ directory with ADHD-optimized
-    settings for the specified project type.
+    Creates .dopemux/ directory with profile-based configuration.
+    Auto-detects project type and suggests appropriate profile.
+
+    \b
+    Examples:
+        dopemux init                    # Auto-detect and prompt
+        dopemux init -p python-ml       # Use specific profile
+        dopemux init --force            # Reinitialize existing project
     """
-    config_manager = ctx.obj["config_manager"]
-    project_path = Path(directory).resolve()
+    from .project_init import init_project
 
-    if not project_path.exists():
-        console.print(f"[red]Directory {project_path} does not exist[/red]")
+    workspace = Path.cwd().resolve()
+    success = init_project(workspace, profile, force)
+
+    if not success:
         sys.exit(1)
-
-    # Check if already initialized
-    dopemux_dir = project_path / ".dopemux"
-    claude_dir = project_path / ".claude"
-
-    if (dopemux_dir.exists() or claude_dir.exists()) and not force:
-        console.print(
-            "[yellow]Project already initialized. Use --force to overwrite.[/yellow]"
-        )
-        sys.exit(1)
-
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        # Create directories
-        task = progress.add_task("Creating project structure...", total=None)
-        dopemux_dir.mkdir(exist_ok=True)
-        claude_dir.mkdir(exist_ok=True)
-
-        # Initialize configuration
-        progress.update(task, description="Setting up configuration...")
-        configurator = ClaudeConfigurator(config_manager)
-        configurator.setup_project_config(project_path, template)
-
-        # Setup ADHD features
-        progress.update(task, description="Configuring ADHD features...")
-        context_manager = ContextManager(project_path)
-        context_manager.initialize()
-
-        progress.update(task, description="Complete!", completed=True)
-
-    console.print(
-        Panel(
-            f"✅ Dopemux initialized in {project_path}\n\n"
-            f"📁 Configuration: {claude_dir}\n"
-            f"🧠 ADHD features: {dopemux_dir}\n\n"
-            f"Next steps:\n"
-            f"• Run 'dopemux start' to launch Claude Code\n"
-            f"• Use 'dopemux save' to preserve context\n"
-            f"• Check 'dopemux status' for attention metrics",
-            title="🎉 Project Initialized",
-            border_style="green",
-        )
-    )
 
 
 @cli.command()
