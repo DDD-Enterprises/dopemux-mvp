@@ -22,6 +22,9 @@ from datetime import datetime
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# Add Integration Bridge client
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
 try:
     from queries.overview import OverviewQueries
     from queries.exploration import ExplorationQueries
@@ -29,6 +32,13 @@ try:
     from queries.models import DecisionCard
 except ImportError:
     print("⚠️  Query modules not yet available")
+
+try:
+    from src.integrations.bridge_client import IntegrationBridgeClient
+    BRIDGE_AVAILABLE = True
+except ImportError:
+    BRIDGE_AVAILABLE = False
+    print("⚠️  Integration Bridge client not available (will skip event publishing)")
 
 
 @dataclass
@@ -69,7 +79,11 @@ class KGOrchestrator:
         self.exploration = ExplorationQueries()
         self.deep_context = DeepContextQueries()
 
-        print("✅ KG Orchestrator initialized")
+        # Initialize Integration Bridge client for event publishing
+        self.bridge = IntegrationBridgeClient() if BRIDGE_AVAILABLE else None
+
+        status = "with Integration Bridge" if self.bridge else "without Integration Bridge (events disabled)"
+        print(f"✅ KG Orchestrator initialized {status}")
         print("   Event handlers: decision.logged, task.started, file.opened")
 
     async def on_decision_logged(self, event: KGEvent):
@@ -121,10 +135,24 @@ class KGOrchestrator:
                 'outgoing'
             )
 
-            if impl_decisions:
+            if impl_decisions and self.bridge:
                 print(f"   → Found {len(impl_decisions)} IMPLEMENTS relationships")
-                print(f"   → Would publish decision.requires_implementation event")
-                # TODO: Publish to Integration Bridge event bus
+                print(f"   → Publishing decision.requires_implementation event to Integration Bridge")
+
+                # Publish event to Integration Bridge
+                await self.bridge.save_custom_data(
+                    workspace_id=os.getenv("WORKSPACE_ID", "/Users/hue/code/dopemux-mvp"),
+                    category="automation_events",
+                    key=f"decision_{decision_id}_requires_implementation",
+                    value={
+                        "event_type": "decision.requires_implementation",
+                        "decision_id": decision_id,
+                        "implementation_decisions": [d.id for d in impl_decisions],
+                        "timestamp": event.timestamp,
+                        "priority": event.priority
+                    }
+                )
+                print(f"   ✅ Event published to Integration Bridge")
 
         except Exception as e:
             print(f"   ⚠️  IMPLEMENTS check failed: {e}")
