@@ -16,6 +16,9 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
 import sys
 import os
+# Import MCP client for ConPort integration
+from mcp_client import ConPortMCPClient
+
 
 # Add conport_kg to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'conport_kg'))
@@ -42,6 +45,16 @@ router = APIRouter(
 _overview_queries = None
 _exploration_queries = None
 _deep_context_queries = None
+_mcp_client = None
+
+
+async def get_mcp_client():
+    """Lazy initialization of MCP client for ConPort integration"""
+    global _mcp_client
+    if _mcp_client is None:
+        _mcp_client = ConPortMCPClient()
+        await _mcp_client.initialize()
+    return _mcp_client
 
 
 def get_query_classes():
@@ -350,16 +363,25 @@ async def save_custom_data(
         )
 
     try:
-        # Call ConPort MCP to save custom data
-        # In Claude Code context, mcp__conport tools are available
-        # This will be called from Integration Bridge which has MCP access
-
-        # For now, return success (bridge will implement actual MCP call)
+        # Get MCP client and save to ConPort
+        mcp_client = await get_mcp_client()
+        
+        result = await mcp_client.save_custom_data(
+            workspace_id=request.workspace_id,
+            category=request.category,
+            key=request.key,
+            value=request.value
+        )
+        
+        if not result.get("success"):
+            raise HTTPException(500, f"ConPort save failed: {result.get('error')}")
+        
         return {
             "success": True,
             "category": request.category,
             "key": request.key,
-            "message": "Custom data saved to ConPort"
+            "message": "Custom data saved to ConPort",
+            "timestamp": result.get("timestamp")
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Save failed: {str(e)}")
@@ -382,14 +404,21 @@ async def get_custom_data(
         raise HTTPException(status_code=403, detail=f"Invalid source plane: {x_source_plane}")
 
     try:
-        # Call ConPort MCP to get custom data
-        # This will be implemented when bridge has MCP access
-
-        # For now, return empty list (fallback mode)
+        # Get MCP client and retrieve from ConPort
+        mcp_client = await get_mcp_client()
+        
+        data = await mcp_client.get_custom_data(
+            workspace_id=workspace_id,
+            category=category,
+            key=key,
+            limit=limit
+        )
+        
         return {
-            "data": [],
-            "count": 0,
-            "category": category
+            "data": data,
+            "count": len(data),
+            "category": category,
+            "workspace_id": workspace_id
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
