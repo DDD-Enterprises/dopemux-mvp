@@ -1,7 +1,17 @@
 """
 FastAPI routes for ADHD Accommodation Engine.
 
-Provides 7 REST endpoints for ADHD-optimized task management.
+Provides 6 API endpoints (/api/v1/*) for ADHD-optimized task management:
+- POST /assess-task - Task suitability assessment
+- GET /energy-level/{user_id} - Current energy level
+- GET /attention-state/{user_id} - Current attention state
+- POST /recommend-break - Personalized break recommendations
+- POST /user-profile - Create/update ADHD profile
+- PUT /activity/{user_id} - Log activity events
+
+Plus utility endpoints: GET / (info), GET /health (health check)
+
+All endpoints secured with X-API-Key authentication (configurable via ADHD_ENGINE_API_KEY).
 """
 
 from fastapi import APIRouter, HTTPException, Depends, Security
