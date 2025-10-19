@@ -29,6 +29,7 @@ from mcp.client.session import ClientSession as Client
 from mcp.client.stdio import stdio_client
 from fastapi import FastAPI, HTTPException, Depends, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 import uvicorn
 from sqlalchemy import create_engine, Column, String, DateTime, Integer, Text, JSON
@@ -36,6 +37,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
 from tenacity import retry, stop_after_attempt, wait_exponential
+
+# Import EventBus for Redis Streams coordination
+from event_bus import EventBus, Event, EventType
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -1152,6 +1156,7 @@ class TaskIntegrationService:
 db_manager = DatabaseManager()
 cache_manager = CacheManager()
 mcp_manager = MCPClientManager()
+event_bus = EventBus(REDIS_URL, REDIS_PASSWORD)  # Redis Streams event coordination
 task_service = TaskIntegrationService(db_manager, cache_manager, mcp_manager)
 
 # FastAPI app
@@ -1218,10 +1223,12 @@ async def startup_event():
         await cache_manager.initialize()
         await mcp_manager.initialize()
         await conport_client.initialize()  # Initialize ConPort for ADHD context preservation
+        await event_bus.initialize()  # Initialize Redis Streams event coordination
 
         logger.info(f"🚀 MCP Integration Bridge started successfully for instance: {INSTANCE_NAME}")
         logger.info(f"📊 Running on port: {MCP_INTEGRATION_PORT}")
         logger.info(f"🧠 ConPort ADHD context preservation enabled")
+        logger.info(f"📡 EventBus ready for cross-service coordination")
 
     except Exception as e:
         logger.error(f"❌ Startup failed: {e}")
@@ -1230,6 +1237,7 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     """Clean up connections on shutdown"""
+    await event_bus.close()  # Stop all event subscribers
     await mcp_manager.close()
     await cache_manager.close()
     await db_manager.close()
@@ -1247,8 +1255,207 @@ async def health_check():
         "instance": INSTANCE_NAME,
         "port": MCP_INTEGRATION_PORT,
         "timestamp": datetime.utcnow().isoformat(),
-        "services": mcp_health
+        "services": mcp_health,
+        "event_bus": "ready"
     }
+
+# ============================================================================
+# EVENT BUS ENDPOINTS
+# ============================================================================
+
+class PublishEventRequest(BaseModel):
+    """Request to publish an event"""
+    stream: str = Field(default="dopemux:events", description="Redis Stream name")
+    event_type: str = Field(..., description="Event type (e.g., tasks_imported)")
+    data: Dict[str, Any] = Field(..., description="Event data payload")
+    source: Optional[str] = Field(None, description="Event source identifier")
+
+@app.post("/events")
+async def publish_event(request: PublishEventRequest):
+    """
+    Publish event to Redis Stream for cross-service coordination
+
+    Example:
+    ```
+    POST /events
+    {
+      "stream": "dopemux:events",
+      "event_type": "tasks_imported",
+      "data": {"task_count": 15, "sprint_id": "S-2025.10"}
+    }
+    ```
+    """
+    try:
+        event = Event(
+            type=request.event_type,
+            data=request.data,
+            source=request.source or f"integration-bridge-{INSTANCE_NAME}"
+        )
+
+        msg_id = await event_bus.publish(request.stream, event)
+
+        return {
+            "status": "published",
+            "message_id": msg_id,
+            "stream": request.stream,
+            "event_type": request.event_type,
+            "timestamp": event.timestamp
+        }
+
+    except Exception as e:
+        logger.error(f"❌ Event publish failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to publish event: {str(e)}")
+
+@app.get("/events/{stream}")
+async def get_stream_info(stream: str):
+    """
+    Get information about a Redis Stream
+
+    Returns stream length, consumer groups, and recent entries
+    """
+    try:
+        info = await event_bus.get_stream_info(stream)
+
+        return {
+            "stream": stream,
+            "info": info,
+            "instance": INSTANCE_NAME
+        }
+
+    except Exception as e:
+        logger.error(f"❌ Stream info retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get stream info: {str(e)}")
+
+# Convenience endpoints for common events
+
+@app.post("/events/tasks-imported")
+async def publish_tasks_imported(task_count: int, sprint_id: str):
+    """Publish tasks_imported event (convenience endpoint)"""
+    event = Event(
+        type=EventType.TASKS_IMPORTED,
+        data={"task_count": task_count, "sprint_id": sprint_id},
+        source=f"integration-bridge-{INSTANCE_NAME}"
+    )
+    msg_id = await event_bus.publish("dopemux:events", event)
+    return {"status": "published", "message_id": msg_id}
+
+@app.post("/events/session-started")
+async def publish_session_started(task_id: str, duration_minutes: int = 25):
+    """Publish session_started event (convenience endpoint)"""
+    event = Event(
+        type=EventType.SESSION_STARTED,
+        data={"task_id": task_id, "duration_minutes": duration_minutes},
+        source=f"integration-bridge-{INSTANCE_NAME}"
+    )
+    msg_id = await event_bus.publish("dopemux:events", event)
+    return {"status": "published", "message_id": msg_id}
+
+@app.post("/events/progress-updated")
+async def publish_progress_updated(task_id: str, status: str, progress: float):
+    """Publish progress_updated event (convenience endpoint)"""
+    event = Event(
+        type=EventType.PROGRESS_UPDATED,
+        data={"task_id": task_id, "status": status, "progress": progress},
+        source=f"integration-bridge-{INSTANCE_NAME}"
+    )
+    msg_id = await event_bus.publish("dopemux:events", event)
+    return {"status": "published", "message_id": msg_id}
+
+@app.get("/events/stream")
+async def subscribe_to_events(stream: str = "dopemux:events", consumer_group: str = "dashboard"):
+    """
+    Subscribe to event stream via Server-Sent Events (SSE)
+
+    Real-time event streaming for dashboard and other consumers
+
+    Example usage:
+    ```
+    GET /events/stream?stream=dopemux:events&consumer_group=dashboard
+    ```
+
+    Returns: text/event-stream with real-time events
+    """
+    async def event_generator():
+        """Generate SSE events from Redis Stream"""
+        consumer_name = f"sse-{uuid.uuid4().hex[:8]}"
+
+        try:
+            # Subscribe to event stream
+            async for msg_id, event in event_bus.subscribe(stream, consumer_group, consumer_name):
+                # Format as SSE
+                event_data = {
+                    "id": msg_id,
+                    "type": event.type,
+                    "data": event.data,
+                    "timestamp": event.timestamp,
+                    "source": event.source
+                }
+
+                yield f"data: {json.dumps(event_data)}\n\n"
+
+        except Exception as e:
+            logger.error(f"❌ SSE stream error: {e}")
+            yield f"event: error\ndata: {json.dumps({'error': str(e)})}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no"  # Disable nginx buffering
+        }
+    )
+
+@app.get("/events/history")
+async def get_event_history(stream: str = "dopemux:events", count: int = 100):
+    """
+    Get event history from Redis Stream
+
+    Returns recent events for debugging and audit purposes
+
+    Example usage:
+    ```
+    GET /events/history?stream=dopemux:events&count=50
+    ```
+    """
+    try:
+        if not event_bus.redis_client:
+            raise HTTPException(status_code=503, detail="EventBus not initialized")
+
+        # Read last N events from stream
+        events = await event_bus.redis_client.xrevrange(
+            stream,
+            count=min(count, 1000)  # Max 1000 for ADHD cognitive load management
+        )
+
+        history = []
+        for msg_id, msg_data in events:
+            try:
+                event = Event.from_redis_dict(msg_data)
+                history.append({
+                    "id": msg_id.decode(),
+                    "type": event.type,
+                    "data": event.data,
+                    "timestamp": event.timestamp,
+                    "source": event.source
+                })
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to parse event {msg_id}: {e}")
+
+        return {
+            "stream": stream,
+            "count": len(history),
+            "events": history,
+            "instance": INSTANCE_NAME
+        }
+
+    except Exception as e:
+        logger.error(f"❌ Event history retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get event history: {str(e)}")
+
+# ============================================================================
+# TASK MANAGEMENT ENDPOINTS
+# ============================================================================
 
 @app.post("/api/parse-prd")
 async def parse_prd(request: PRDParseRequest, http_request: Request):
