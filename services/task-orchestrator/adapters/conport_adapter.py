@@ -1,10 +1,15 @@
 """
-ConPort Event Adapter - Architecture 3.0 Component 2
+ConPort Event Adapter - Architecture 3.0 Components 2, 4, 5
 
-Implements bidirectional transformation between OrchestrationTask and ConPort progress_entry.
-Ensures ADHD metadata preservation and lossless data synchronization.
+Implements bidirectional transformation and cross-plane data flow:
+- Component 2: Schema transformations (OrchestrationTask ↔ ConPort progress_entry)
+- Component 4: Real-time sync (Task-Orchestrator → ConPort MCP pushing)
+- Component 5: Cross-plane queries (ConPort → Task-Orchestrator enrichment)
 
-Created: 2025-10-19 (Task 2.2)
+Ensures ADHD metadata preservation and lossless bidirectional synchronization.
+
+Created: 2025-10-19 (Components 2, 4)
+Enhanced: 2025-10-20 (Component 5)
 Specification: docs/implementation-plans/conport-event-schema-design.md
 """
 
@@ -916,6 +921,274 @@ class ConPortEventAdapter:
         except Exception as e:
             logger.error(f"Failed to adjust task recommendations: {e}")
             return False
+
+    # ------------------------------------------------------------------------
+    # Component 5: Cross-Plane Query Methods
+    # ------------------------------------------------------------------------
+
+    async def enrich_task_with_decisions(
+        self,
+        task: OrchestrationTask,
+        tags: List[str]
+    ) -> List[Dict]:
+        """
+        Query ConPort for decisions relevant to a task.
+
+        Use before task execution to provide decision context and guidance.
+
+        Args:
+            task: OrchestrationTask to enrich
+            tags: Tags to filter decisions (e.g., ["oauth", "authentication"])
+
+        Returns:
+            List of relevant decision dicts with summary, rationale, tags
+
+        Example:
+            Task: "Implement OAuth authentication"
+            Tags: ["oauth", "authentication", "security"]
+            Returns: [{"id": 145, "summary": "Use OAuth 2.0 PKCE", ...}]
+        """
+        if not self.conport_client:
+            logger.warning("⚠️ ConPort client not configured, cannot query decisions")
+            return []
+
+        try:
+            logger.info(f"🔍 Querying ConPort decisions for task '{task.title}' with tags: {tags}")
+
+            # Query ConPort for decisions matching any of the tags
+            result = await self.conport_client.get_decisions(
+                workspace_id=self.workspace_id,
+                tags_filter_include_any=tags,
+                limit=10
+            )
+
+            decisions = result.get("result", [])
+            logger.info(f"📚 Found {len(decisions)} relevant decisions")
+
+            # Optionally link decisions to task in ConPort
+            if decisions and hasattr(task, 'conport_id') and task.conport_id:
+                for decision in decisions[:3]:  # Link top 3 most relevant
+                    try:
+                        await self._link_conport_items(
+                            source_item_type="decision",
+                            source_item_id=str(decision['id']),
+                            target_item_type="progress_entry",
+                            target_item_id=str(task.conport_id),
+                            relationship_type="informs",
+                            description=f"Decision informs task implementation"
+                        )
+                    except Exception as e:
+                        logger.debug(f"Could not link decision {decision['id']} to task: {e}")
+
+            return decisions
+
+        except Exception as e:
+            logger.error(f"❌ Failed to query decisions: {e}")
+            return []
+
+    async def get_applicable_patterns(
+        self,
+        task_domain: str,
+        complexity: float
+    ) -> List[Dict]:
+        """
+        Find system patterns applicable to task domain and complexity.
+
+        Use to guide implementation with proven patterns.
+
+        Args:
+            task_domain: Domain tags (e.g., "adhd", "error-handling", "authentication")
+            complexity: Task complexity score (0.0-1.0)
+
+        Returns:
+            List of applicable pattern dicts with name, description, tags
+
+        Example:
+            Domain: "adhd,error-handling"
+            Complexity: 0.6
+            Returns: [{"name": "ADHD Error Message Structure", ...}]
+        """
+        if not self.conport_client:
+            logger.warning("⚠️ ConPort client not configured, cannot query patterns")
+            return []
+
+        try:
+            # Parse domain tags
+            domain_tags = [tag.strip() for tag in task_domain.split(",")]
+            logger.info(f"🔍 Querying ConPort patterns for domain: {domain_tags}, complexity: {complexity}")
+
+            # Query ConPort for patterns matching domain
+            result = await self.conport_client.get_system_patterns(
+                workspace_id=self.workspace_id,
+                tags_filter_include_any=domain_tags,
+                limit=5
+            )
+
+            # ConPort returns different format - extract patterns
+            if isinstance(result, dict):
+                patterns = result.get("patterns", result.get("result", []))
+            else:
+                patterns = []
+
+            logger.info(f"📐 Found {len(patterns)} applicable patterns")
+            return patterns
+
+        except Exception as e:
+            logger.error(f"❌ Failed to query patterns: {e}")
+            return []
+
+    async def get_current_adhd_state(self) -> Dict[str, str]:
+        """
+        Get current ADHD state (energy, attention) from ConPort active context.
+
+        Use to adapt task recommendations based on user's current state.
+
+        Returns:
+            Dict with {"energy": str, "attention": str, "mode": str}
+            Default: {"energy": "medium", "attention": "normal", "mode": "ACT"}
+
+        Example:
+            Returns: {"energy": "low", "attention": "scattered", "mode": "PLAN"}
+            Adapt: Suggest lower-complexity tasks, shorter sessions
+        """
+        if not self.conport_client:
+            logger.warning("⚠️ ConPort client not configured, using default ADHD state")
+            return {"energy": "medium", "attention": "normal", "mode": "ACT"}
+
+        try:
+            logger.debug("🔍 Querying ConPort active context for ADHD state")
+
+            result = await self.conport_client.get_active_context(
+                workspace_id=self.workspace_id
+            )
+
+            # Extract ADHD state from active context
+            energy = result.get("current_energy", "medium")
+            attention = result.get("current_attention", "normal")
+            mode = result.get("mode", "ACT")
+
+            adhd_state = {
+                "energy": energy,
+                "attention": attention,
+                "mode": mode
+            }
+
+            logger.info(f"🧠 Current ADHD state: energy={energy}, attention={attention}, mode={mode}")
+            return adhd_state
+
+        except Exception as e:
+            logger.error(f"❌ Failed to query ADHD state: {e}")
+            return {"energy": "medium", "attention": "normal", "mode": "ACT"}
+
+    async def get_task_dependencies_from_graph(
+        self,
+        task_id: str
+    ) -> List[Dict]:
+        """
+        Query knowledge graph for task dependencies via ConPort relationships.
+
+        Use to discover implicit dependencies through decision/pattern links.
+
+        Args:
+            task_id: ConPort progress entry ID
+
+        Returns:
+            List of related items with type, id, relationship, description
+
+        Example:
+            Task: "Component 6"
+            Returns: [
+                {"type": "decision", "id": 161, "relationship": "depends_on"},
+                {"type": "progress_entry", "id": 157, "relationship": "blocked_by"}
+            ]
+        """
+        if not self.conport_client:
+            logger.warning("⚠️ ConPort client not configured, cannot query dependencies")
+            return []
+
+        try:
+            logger.info(f"🔍 Querying ConPort knowledge graph for task {task_id}")
+
+            # Query linked items
+            result = await self.conport_client.get_linked_items(
+                workspace_id=self.workspace_id,
+                item_type="progress_entry",
+                item_id=task_id,
+                limit=20
+            )
+
+            # Extract linked items
+            if isinstance(result, dict):
+                linked_items = result.get("links", result.get("result", []))
+            else:
+                linked_items = []
+
+            logger.info(f"🕸️ Found {len(linked_items)} linked items")
+            return linked_items
+
+        except Exception as e:
+            logger.error(f"❌ Failed to query dependencies: {e}")
+            return []
+
+    async def find_similar_completed_tasks(
+        self,
+        task_description: str,
+        limit: int = 5
+    ) -> List[Dict]:
+        """
+        Find similar completed tasks via semantic search.
+
+        Use to learn from past implementations and avoid repeating mistakes.
+
+        Args:
+            task_description: Natural language description of current task
+            limit: Number of similar tasks to return (default 5)
+
+        Returns:
+            List of similar task dicts with description, status, outcome
+
+        Example:
+            Description: "Add real-time sync for ConPort"
+            Returns: [{
+                "id": 157,
+                "description": "Component 4: ConPort MCP Real-Time Sync",
+                "status": "DONE",
+                "score": 0.89
+            }]
+        """
+        if not self.conport_client:
+            logger.warning("⚠️ ConPort client not configured, cannot search tasks")
+            return []
+
+        try:
+            logger.info(f"🔍 Semantic search for similar tasks: '{task_description}'")
+
+            # Semantic search ConPort for similar progress entries
+            result = await self.conport_client.semantic_search_conport(
+                workspace_id=self.workspace_id,
+                query_text=task_description,
+                top_k=limit,
+                filter_item_types=["progress_entry"]
+            )
+
+            # Extract results
+            if isinstance(result, dict):
+                similar_tasks = result.get("results", [])
+            else:
+                similar_tasks = []
+
+            # Filter for DONE tasks only (learn from completed work)
+            completed_tasks = [
+                task for task in similar_tasks
+                if task.get("status") == "DONE"
+            ]
+
+            logger.info(f"✅ Found {len(completed_tasks)} similar completed tasks")
+            return completed_tasks
+
+        except Exception as e:
+            logger.error(f"❌ Failed to search similar tasks: {e}")
+            return []
 
     # ------------------------------------------------------------------------
     # Utility Methods
