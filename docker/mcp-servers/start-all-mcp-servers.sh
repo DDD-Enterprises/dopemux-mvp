@@ -93,6 +93,9 @@ SUFFIX="${DOPEMUX_INSTANCE_ID:+_}${DOPEMUX_INSTANCE_ID}"
 
 # Start infrastructure first (vector database for dope-context)
 echo "🗄️  Starting infrastructure..."
+# Databases/caches first
+safe_up redis-primary dopemux-redis-primary
+safe_up dopemux-postgres-age dopemux-postgres-age
 safe_up qdrant mcp-qdrant
 
 echo "⏳ Waiting for Qdrant to be ready..."
@@ -188,7 +191,7 @@ echo "🏥 Health check summary:"
 echo "========================"
 
 # Health check each critical server
-servers=("context7:3002" "zen:3003" "litellm:4000" "mas-sequential-thinking:3011")
+servers=("context7:3002" "zen:3003" "litellm:4000" "mas-sequential-thinking:3011" "conport:3004")
 for server in "${servers[@]}"; do
     name="${server%:*}"
     port="${server#*:}"
