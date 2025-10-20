@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     break_monitor_interval: int = 60
     hyperfocus_monitor_interval: int = 300
 
+    # Machine Learning Features (IP-005 Days 11-12)
+    enable_ml_predictions: bool = True  # Use ML predictions when confidence >= 0.5
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
