@@ -226,10 +226,13 @@ class LiteLLMProxyManager:
         general_settings = config_data.setdefault("general_settings", {})
         general_settings["master_key"] = master_key
 
-        database_url = general_settings.get("database_url", "sqlite:///litellm.db")
-        if database_url.startswith("sqlite:///"):
-            db_filename = Path(database_url.replace("sqlite:///", ""))
-            resolved_db = self.instance_dir / db_filename.name
+        # Always use a per-instance SQLite DB unless explicitly overridden.
+        # Using Postgres from the repo config would cause local CLI startup failures.
+        override_db = os.environ.get("DOPEMUX_LITELLM_DB_URL", "").strip()
+        if override_db:
+            general_settings["database_url"] = override_db
+        else:
+            resolved_db = self.instance_dir / "litellm.db"
             general_settings["database_url"] = f"sqlite:///{resolved_db}"
 
         config_path = self.instance_dir / "litellm.config.yaml"
