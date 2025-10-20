@@ -32,32 +32,58 @@ if [ ${#missing_keys[@]} -gt 0 ]; then
 fi
 
 echo ""
-echo "🔨 Building and starting containers..."
+echo "🔨 Building and starting containers (idempotent)..."
+
+# Helper: start a service safely, avoiding container-name conflicts
+safe_up() {
+  local service="$1"; shift
+  local cname="$1"; shift
+  if docker ps -a --format '{{.Names}}' | grep -q "^${cname}$"; then
+    if [ "$(docker inspect -f '{{.State.Running}}' "${cname}")" != "true" ]; then
+      echo "▶️  Starting existing container ${cname}"
+      docker start "${cname}" >/dev/null || true
+    else
+      echo "✅ ${cname} already running"
+    fi
+  else
+    echo "🚀 Creating ${cname} via docker-compose (${service})"
+    docker-compose up -d --build "${service}" || true
+  fi
+}
+
+SUFFIX="${DOPEMUX_INSTANCE_ID:+_}${DOPEMUX_INSTANCE_ID}"
 
 # Start infrastructure first (vector database for dope-context)
 echo "🗄️  Starting infrastructure..."
-docker-compose up -d --build qdrant
+safe_up qdrant mcp-qdrant
 
 echo "⏳ Waiting for Qdrant to be ready..."
 sleep 5
 
 # Start critical path servers (staggered for ADHD optimizations)
 echo "⚡ Starting critical path servers..."
-docker-compose up -d --build context7 zen litellm mas-sequential-thinking
+safe_up context7 mcp-context7
+safe_up zen mcp-zen
+safe_up litellm mcp-litellm
+safe_up mas-sequential-thinking mcp-mas-sequential-thinking
 
 echo "⏳ Waiting for critical servers to stabilize..."
 sleep 10
 
 # Start workflow servers
 echo "🔄 Starting workflow servers..."
-docker-compose up -d --build conport serena  # Removed task-master-ai (crashes)
+safe_up conport "mcp-conport${SUFFIX}"
+safe_up serena "mcp-serena${SUFFIX}"
 
 echo "⏳ Waiting for workflow servers to stabilize..."
 sleep 10
 
 # Start research + quality & utility servers
 echo "🧠 Starting research + quality & utility servers..."
-docker-compose up -d --build gptr-mcp gptr-mcp-stdio exa morphllm-fast-apply desktop-commander
+safe_up gptr-mcp mcp-gptr-mcp
+safe_up gptr-mcp-stdio mcp-gptr-stdio
+safe_up exa mcp-exa
+safe_up desktop-commander mcp-desktop-commander
 
 echo ""
 echo "⏳ Final startup wait..."
