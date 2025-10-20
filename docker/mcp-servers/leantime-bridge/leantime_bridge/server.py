@@ -20,6 +20,65 @@ from jsonrpcclient import request, parse, Ok
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# MCP Token Budget Constants
+MCP_MAX_TOKENS = 10000
+SAFE_TOKEN_BUDGET = 9000  # 10% headroom for safety
+
+def estimate_tokens(text: str) -> int:
+    """
+    Conservative token estimation: 1 token ≈ 4 chars.
+    Used to enforce MCP 10K token hard limit.
+    """
+    if text is None:
+        return 0
+    return len(str(text)) // 4
+
+def enforce_token_budget_on_text_content(
+    result: Sequence[types.TextContent],
+    tool_name: str,
+    max_tokens: int = SAFE_TOKEN_BUDGET
+) -> Sequence[types.TextContent]:
+    """
+    Enforce MCP token budget on TextContent results.
+
+    Truncates text content to fit within 9K token budget (90% of 10K hard limit).
+    Follows the MCP boundary pattern from Zen MCP implementation.
+
+    Args:
+        result: List of TextContent objects returned by tool
+        tool_name: Name of the tool that generated this result
+        max_tokens: Maximum tokens allowed (default 9000)
+
+    Returns:
+        Truncated TextContent list with token budget metadata
+    """
+    if not result or len(result) == 0:
+        return result
+
+    # Estimate token usage from first TextContent item
+    text_content = result[0].text
+    current_tokens = estimate_tokens(text_content)
+
+    # If under budget, return as-is
+    if current_tokens <= max_tokens:
+        logger.info(f"Tool {tool_name}: {current_tokens} tokens (under budget)")
+        return result
+
+    logger.warning(f"Tool {tool_name}: {current_tokens} tokens (over {max_tokens} budget) - truncating")
+
+    # Truncate text to fit budget
+    overhead_tokens = 200  # Reserve for metadata
+    available_tokens = max_tokens - overhead_tokens
+    chars_to_keep = available_tokens * 4  # 4 chars per token
+
+    truncated_text = text_content[:chars_to_keep] + f"\n\n... [truncated to fit MCP 10K token budget]\n\n_Original tokens: {current_tokens}_\n_Truncated tokens: {available_tokens}_"
+
+    # Return new TextContent with truncated text
+    return [types.TextContent(
+        type="text",
+        text=truncated_text
+    )]
+
 # Configuration
 LEANTIME_API_URL = os.getenv("LEANTIME_API_URL", "http://leantime:80")
 LEANTIME_API_TOKEN = os.getenv("LEANTIME_API_TOKEN", "")
@@ -195,58 +254,60 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[types.Text
 
     async with LeantimeClient(LEANTIME_API_URL, LEANTIME_API_TOKEN) as client:
         try:
+            result_content = None
+
             if name == "create_project":
                 result = await client.call_api("leantime.addProject", arguments)
-                return [types.TextContent(
+                result_content = [types.TextContent(
                     type="text",
                     text=f"Project created successfully: {json.dumps(result, indent=2)}"
                 )]
 
             elif name == "list_projects":
                 result = await client.call_api("leantime.getProjects", arguments)
-                return [types.TextContent(
+                result_content = [types.TextContent(
                     type="text",
                     text=f"Projects: {json.dumps(result, indent=2)}"
                 )]
 
             elif name == "create_ticket":
                 result = await client.call_api("leantime.addTicket", arguments)
-                return [types.TextContent(
+                result_content = [types.TextContent(
                     type="text",
                     text=f"Ticket created successfully: {json.dumps(result, indent=2)}"
                 )]
 
             elif name == "list_tickets":
                 result = await client.call_api("leantime.getTickets", arguments)
-                return [types.TextContent(
+                result_content = [types.TextContent(
                     type="text",
                     text=f"Tickets: {json.dumps(result, indent=2)}"
                 )]
 
             elif name == "update_ticket":
                 result = await client.call_api("leantime.editTicket", arguments)
-                return [types.TextContent(
+                result_content = [types.TextContent(
                     type="text",
                     text=f"Ticket updated successfully: {json.dumps(result, indent=2)}"
                 )]
 
             elif name == "get_project_stats":
                 result = await client.call_api("leantime.getProjectStats", arguments)
-                return [types.TextContent(
+                result_content = [types.TextContent(
                     type="text",
                     text=f"Project statistics: {json.dumps(result, indent=2)}"
                 )]
 
             elif name == "create_milestone":
                 result = await client.call_api("leantime.addMilestone", arguments)
-                return [types.TextContent(
+                result_content = [types.TextContent(
                     type="text",
                     text=f"Milestone created successfully: {json.dumps(result, indent=2)}"
                 )]
 
             elif name == "sync_with_external":
                 # This would implement synchronization logic with other MCP servers
-                return [types.TextContent(
+                result_content = [types.TextContent(
                     type="text",
                     text=f"Sync operation initiated: {json.dumps(arguments, indent=2)}"
                 )]
@@ -254,12 +315,17 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[types.Text
             else:
                 raise ValueError(f"Unknown tool: {name}")
 
+            # Enforce MCP token budget at boundary (10K hard limit)
+            return enforce_token_budget_on_text_content(result_content, name, max_tokens=SAFE_TOKEN_BUDGET)
+
         except Exception as e:
             logger.error(f"Tool call failed: {e}")
-            return [types.TextContent(
+            error_content = [types.TextContent(
                 type="text",
                 text=f"Error: {str(e)}"
             )]
+            # Even errors should respect token budget
+            return enforce_token_budget_on_text_content(error_content, name, max_tokens=SAFE_TOKEN_BUDGET)
 
 async def main():
     """Run the MCP server"""
