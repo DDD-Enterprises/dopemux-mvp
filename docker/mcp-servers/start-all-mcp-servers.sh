@@ -193,11 +193,18 @@ for server in "${servers[@]}"; do
     name="${server%:*}"
     port="${server#*:}"
 
-    if curl -sf "http://localhost:$port/health" &>/dev/null; then
-        echo "✅ $name - Healthy"
+  if [ "$name" = "litellm" ]; then
+    # LiteLLM requires auth header; use repo master key
+    if curl -sf -H "Authorization: Bearer REDACTED_LITELLM_KEY" "http://localhost:$port/health" &>/dev/null; then
+      echo "✅ $name - Healthy"
     else
-        echo "❌ $name - Unhealthy (port $port)"
+      echo "❌ $name - Unhealthy (port $port)"
     fi
+  elif curl -sf "http://localhost:$port/health" &>/dev/null; then
+    echo "✅ $name - Healthy"
+  else
+    echo "❌ $name - Unhealthy (port $port)"
+  fi
 done
 
 echo ""
