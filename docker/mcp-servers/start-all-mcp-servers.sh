@@ -94,6 +94,58 @@ echo "📊 Service status:"
 docker-compose ps
 
 echo ""
+echo "🔁 Ensuring LiteLLM has latest config..."
+
+ensure_litellm_config_applied() {
+  local config="../../litellm.config.yaml"
+  local cname="mcp-litellm"
+  if [ ! -f "$config" ]; then
+    echo "ℹ️  Skipping: $config not found"
+    return
+  fi
+  if ! docker inspect "$cname" >/dev/null 2>&1; then
+    echo "ℹ️  Skipping: container $cname not found"
+    return
+  fi
+  local started
+  started=$(docker inspect -f '{{.State.StartedAt}}' "$cname" 2>/dev/null || true)
+  if [ -z "$started" ]; then
+    echo "ℹ️  Skipping: could not determine container start time"
+    return
+  fi
+
+  local verdict
+  verdict=$(python3 - "$config" "$started" <<'PY'
+import os, sys, re, datetime
+cfg = sys.argv[1]
+started = sys.argv[2].strip()
+ts_file = os.path.getmtime(cfg)
+def parse_iso(s: str) -> float:
+    # Normalize RFC3339 to Python ISO
+    s = s.replace('Z', '+00:00')
+    # Trim fractional seconds to microseconds (max 6 digits)
+    s = re.sub(r"(\.\d{6})\d+", r"\1", s)
+    try:
+        dt = datetime.datetime.fromisoformat(s)
+        return dt.timestamp()
+    except Exception:
+        return 0.0
+ts_started = parse_iso(started)
+print('RELOAD' if ts_started and ts_file > ts_started else 'OK')
+PY
+  )
+
+  if [ "$verdict" = "RELOAD" ]; then
+    echo "🔄 Restarting $cname (config updated)"
+    docker-compose restart litellm || docker restart "$cname" || true
+  else
+    echo "✅ LiteLLM config is up to date"
+  fi
+}
+
+ensure_litellm_config_applied
+
+echo ""
 echo "🏥 Health check summary:"
 echo "========================"
 
