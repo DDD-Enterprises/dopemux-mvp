@@ -455,6 +455,10 @@ try:
         BanditRecommendation,
         create_bandit
     )
+    from dynamic_recommendation import (
+        DynamicRecommendationCounter,
+        get_adaptive_recommendation_count
+    )
     ML_AVAILABLE = True
 except ImportError as e:
     ML_AVAILABLE = False
@@ -688,7 +692,8 @@ class HybridTaskRecommender:
         self,
         ml_algorithm: str = "thompson_sampling",
         min_ml_confidence: float = 0.4,
-        ml_weight: float = 0.7  # 70% ML, 30% rules when ML confident
+        ml_weight: float = 0.7,  # 70% ML, 30% rules when ML confident
+        use_dynamic_count: bool = True  # Week 5: Adaptive recommendation count
     ):
         """
         Initialize hybrid recommender.
@@ -697,6 +702,7 @@ class HybridTaskRecommender:
             ml_algorithm: "thompson_sampling" or "ucb"
             min_ml_confidence: Minimum ML confidence to use ML predictions
             ml_weight: Weight for ML vs rules (0.7 = 70% ML, 30% rules)
+            use_dynamic_count: Enable adaptive recommendation count (Week 5)
         """
         self.rule_based = RuleBasedRecommender()
 
@@ -712,6 +718,13 @@ class HybridTaskRecommender:
             self.ml_based = None
             self.ml_available = False
 
+        # Week 5: Dynamic recommendation count
+        self.use_dynamic_count = use_dynamic_count and ML_AVAILABLE
+        if self.use_dynamic_count:
+            self.dynamic_counter = DynamicRecommendationCounter()
+        else:
+            self.dynamic_counter = None
+
         self.min_ml_confidence = min_ml_confidence
         self.ml_weight = ml_weight
 
@@ -720,6 +733,7 @@ class HybridTaskRecommender:
         self._ml_recommendations = 0
         self._rule_recommendations = 0
         self._hybrid_recommendations = 0
+        self._dynamic_count_adjustments = 0  # How many times we adjusted count
 
     async def recommend_tasks(
         self,
@@ -728,22 +742,37 @@ class HybridTaskRecommender:
         force_algorithm: Optional[str] = None  # "rules", "ml", "hybrid"
     ) -> List[TaskRecommendation]:
         """
-        Generate hybrid recommendations.
+        Generate hybrid recommendations with adaptive count (Week 5).
 
         Decision Logic:
-        1. If ML not available → rules only
-        2. If ML not trained (<10 outcomes) → rules only
-        3. If ML trained but low confidence → blend (hybrid)
-        4. If ML trained and high confidence → ML primary
+        1. Compute adaptive count from cognitive load (1-4)
+        2. If ML not available → rules only
+        3. If ML not trained (<10 outcomes) → rules only
+        4. If ML trained but low confidence → blend (hybrid)
+        5. If ML trained and high confidence → ML primary
 
         Args:
             context: Current ADHD/temporal state
-            limit: Max recommendations (default 3)
+            limit: Max recommendations (default 3, overridden by adaptive count if enabled)
             force_algorithm: Optional override ("rules", "ml", "hybrid")
 
         Returns:
             List of TaskRecommendation objects (source: HYBRID)
         """
+        # Week 5: Adaptive recommendation count
+        if self.use_dynamic_count and self.dynamic_counter:
+            adaptive_limit = self.dynamic_counter.get_recommendation_count(
+                cognitive_load=context.cognitive_load,
+                attention_level=context.attention_level,
+                energy_level=context.energy_level
+            )
+
+            # Track if we adjusted from default
+            if adaptive_limit != limit:
+                self._dynamic_count_adjustments += 1
+
+            limit = adaptive_limit
+
         self._total_recommendations += 1
 
         # Override if forced
@@ -821,18 +850,29 @@ class HybridTaskRecommender:
             )
 
     def get_statistics(self) -> Dict[str, Any]:
-        """Get hybrid recommender statistics."""
+        """Get hybrid recommender statistics (including Week 5 features)."""
         stats = {
             "total_recommendations": self._total_recommendations,
             "ml_recommendations": self._ml_recommendations,
             "rule_recommendations": self._rule_recommendations,
             "hybrid_recommendations": self._hybrid_recommendations,
-            "ml_available": self.ml_available
+            "ml_available": self.ml_available,
+            # Week 5 statistics
+            "dynamic_count_enabled": self.use_dynamic_count,
+            "dynamic_count_adjustments": self._dynamic_count_adjustments,
+            "dynamic_count_adjustment_rate": (
+                self._dynamic_count_adjustments / max(self._total_recommendations, 1)
+                if self._total_recommendations > 0 else 0
+            )
         }
 
         # Add ML training progress if available
         if self.ml_based and self.ml_available:
             stats["ml_training_progress"] = self.ml_based.get_training_progress()
+
+        # Add dynamic counter configuration if available
+        if self.dynamic_counter:
+            stats["dynamic_counter_config"] = self.dynamic_counter.get_statistics()
 
         return stats
 
