@@ -15,6 +15,7 @@ from typing import Dict, Any, Optional, List
 import subprocess
 from pathlib import Path
 from datetime import datetime, timedelta
+from urllib.parse import urlparse
 
 # Worktree multi-instance support
 from instance_detector import SimpleInstanceDetector
@@ -86,6 +87,13 @@ class EnhancedConPortServer:
                 command_timeout=60
             )
             logger.info("✅ PostgreSQL connection pool established")
+
+            # Ensure schema exists (one-time init)
+            try:
+                await self._ensure_schema()
+            except Exception as se:
+                logger.error(f"❌ Schema check/apply failed: {se}")
+                raise
 
             # Redis connection
             self.redis = await aioredis.from_url(
@@ -183,6 +191,59 @@ class EnhancedConPortServer:
                 'error': str(e),
                 'timestamp': asyncio.get_event_loop().time()
             }, status=503)
+
+    async def _ensure_schema(self) -> None:
+        """Ensure required tables exist; apply schema.sql via psql if missing."""
+        async with self.db_pool.acquire() as conn:
+            exists = await conn.fetchval("SELECT to_regclass('public.workspace_contexts');")
+        if exists:
+            logger.info("✅ Database schema present (workspace_contexts found)")
+            return
+
+        logger.info("🛠️  Database schema missing - applying /app/schema.sql")
+        # Parse DATABASE_URL for psql connection params
+        url = urlparse(self.postgres_url)
+        user = url.username or ""
+        password = url.password or ""
+        host = url.hostname or "localhost"
+        port = str(url.port or 5432)
+        db = (url.path or "/").lstrip("/") or "postgres"
+
+        env = os.environ.copy()
+        if password:
+            env["PGPASSWORD"] = password
+
+        # Apply schema using psql with ON_ERROR_STOP
+        proc = await asyncio.create_subprocess_exec(
+            "psql",
+            "-h",
+            host,
+            "-p",
+            port,
+            "-U",
+            user,
+            "-d",
+            db,
+            "-v",
+            "ON_ERROR_STOP=1",
+            "-f",
+            "/app/schema.sql",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
+            env=env,
+        )
+        stdout, _ = await proc.communicate()
+        output = stdout.decode(errors="ignore") if stdout else ""
+        if proc.returncode != 0:
+            logger.error(f"❌ psql schema apply failed (exit {proc.returncode})\n{output}")
+            raise RuntimeError("Schema apply failed")
+        logger.info("✅ Applied schema.sql successfully")
+        # Verify again
+        async with self.db_pool.acquire() as conn:
+            exists2 = await conn.fetchval("SELECT to_regclass('public.workspace_contexts');")
+        if not exists2:
+            raise RuntimeError("Schema verification failed after apply")
+        logger.info("✅ Schema verification OK")
 
     async def get_context(self, request):
         """Get active context for workspace with worktree instance support"""
