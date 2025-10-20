@@ -2615,7 +2615,7 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
         ("Context7", "http://localhost:3002/health"),
         ("Zen", "http://localhost:3003/health"),
         ("LiteLLM", "http://localhost:4000/health"),
-        ("Sequential", "http://localhost:3001/health"),
+        ("Sequential", "http://localhost:3011/health"),
     ]
 
     console.print("\n[bold blue]🔌 Starting MCP Servers[/bold blue]")
