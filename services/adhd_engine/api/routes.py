@@ -46,6 +46,8 @@ async def assess_task(
 
     Evaluates energy match, attention compatibility, and cognitive load.
     Provides personalized accommodation recommendations.
+
+    IP-005 Days 11-12: Enhanced with ML predictions when available.
     """
     try:
         result = await engine.assess_task_suitability(
@@ -55,6 +57,30 @@ async def assess_task(
 
         if "error" in result:
             raise HTTPException(status_code=500, detail=result["error"])
+
+        # Add ML predictions if predictive engine is available (IP-005 Days 11-12)
+        if engine.predictive_engine:
+            try:
+                energy_pred, energy_conf, energy_exp = await engine.predictive_engine.predict_energy_level(request.user_id)
+                result["ml_energy_prediction"] = schemas.MLPrediction(
+                    predicted_value=energy_pred,
+                    confidence=energy_conf,
+                    explanation=energy_exp,
+                    ml_used=energy_conf >= engine.predictive_engine.min_prediction_confidence
+                )
+            except Exception as e:
+                logger.warning(f"ML energy prediction failed: {e}")
+
+            try:
+                attention_pred, attention_conf, attention_exp = await engine.predictive_engine.predict_attention_state(request.user_id)
+                result["ml_attention_prediction"] = schemas.MLPrediction(
+                    predicted_value=attention_pred,
+                    confidence=attention_conf,
+                    explanation=attention_exp,
+                    ml_used=attention_conf >= engine.predictive_engine.min_prediction_confidence
+                )
+            except Exception as e:
+                logger.warning(f"ML attention prediction failed: {e}")
 
         return result
 
@@ -230,4 +256,96 @@ async def update_activity(
 
     except Exception as e:
         logger.error(f"Activity update failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ML Pattern & Prediction Endpoints (IP-005 Days 11-12)
+
+@router.get("/patterns/{user_id}", response_model=schemas.PatternsResponse)
+async def get_user_patterns(
+    user_id: str,
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
+):
+    """
+    Retrieve learned ADHD patterns for user.
+
+    Returns energy, attention, and break patterns learned from historical data.
+    IP-005 Days 11-12: Machine learning pattern learning capability.
+    """
+    try:
+        if not engine.predictive_engine:
+            raise HTTPException(status_code=503, detail="ML predictions not enabled")
+
+        patterns = await engine.predictive_engine.pattern_learner.load_patterns_from_conport(user_id)
+
+        # Convert dataclasses to dicts for JSON serialization
+        def pattern_to_dict(pattern):
+            """Convert dataclass to dict."""
+            if hasattr(pattern, '__dict__'):
+                return {k: str(v) if isinstance(v, datetime) else v for k, v in pattern.__dict__.items()}
+            return pattern
+
+        return schemas.PatternsResponse(
+            user_id=user_id,
+            energy_patterns=[pattern_to_dict(p) for p in patterns.get("energy", [])],
+            attention_patterns=[pattern_to_dict(p) for p in patterns.get("attention", [])],
+            break_patterns=[pattern_to_dict(p) for p in patterns.get("breaks", [])],
+            last_updated=datetime.now(timezone.utc)
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Pattern retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/predict", response_model=schemas.PredictionResponse)
+async def predict(
+    request: schemas.PredictionRequest,
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
+):
+    """
+    Get ML prediction for energy, attention, or break timing.
+
+    IP-005 Days 11-12: Proactive ADHD accommodations using pattern learning.
+    """
+    try:
+        if not engine.predictive_engine:
+            raise HTTPException(status_code=503, detail="ML predictions not enabled")
+
+        pred_engine = engine.predictive_engine
+
+        if request.prediction_type == "energy":
+            predicted_value, confidence, explanation = await pred_engine.predict_energy_level(
+                request.user_id,
+                request.context.get("current_time") if request.context else None
+            )
+        elif request.prediction_type == "attention":
+            predicted_value, confidence, explanation = await pred_engine.predict_attention_state(
+                request.user_id,
+                request.context
+            )
+        elif request.prediction_type == "break":
+            minutes_until_break, confidence, explanation = await pred_engine.predict_optimal_break_timing(
+                request.user_id,
+                request.context.get("minutes_since_break") if request.context else None
+            )
+            predicted_value = f"{minutes_until_break} minutes"
+        else:
+            raise HTTPException(status_code=400, detail=f"Invalid prediction_type: {request.prediction_type}")
+
+        return schemas.PredictionResponse(
+            prediction_type=request.prediction_type,
+            predicted_value=str(predicted_value),
+            confidence=confidence,
+            explanation=explanation,
+            ml_used=confidence >= pred_engine.min_prediction_confidence,
+            timestamp=datetime.now(timezone.utc)
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Prediction failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
