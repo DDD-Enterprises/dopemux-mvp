@@ -27,6 +27,95 @@ from models.research_task import ResearchType, ADHDConfiguration, ProjectContext
 from services.orchestrator import ResearchTaskOrchestrator
 from engines.search.search_orchestrator import SearchStrategy
 
+# MCP Token Budget Constants
+MCP_MAX_TOKENS = 10000
+SAFE_TOKEN_BUDGET = 9000  # 10% headroom for safety
+
+def estimate_tokens(text: str) -> int:
+    """
+    Conservative token estimation: 1 token ≈ 4 chars.
+    Used to enforce MCP 10K token hard limit.
+    """
+    if text is None:
+        return 0
+    return len(str(text)) // 4
+
+def enforce_token_budget(result: Dict[str, Any], tool_name: str, max_tokens: int = SAFE_TOKEN_BUDGET) -> Dict[str, Any]:
+    """
+    Enforce MCP token budget on research results.
+
+    Truncates result fields to fit within 9K token budget (90% of 10K hard limit).
+    Preserves most important information (task_id, status, summary) while
+    truncating verbose fields (results, sources, key_findings).
+
+    Args:
+        result: Research tool result dictionary
+        tool_name: Name of the tool that generated this result
+        max_tokens: Maximum tokens allowed (default 9000)
+
+    Returns:
+        Truncated result dictionary with token budget metadata
+    """
+    # Estimate current token usage
+    result_json = json.dumps(result, indent=2)
+    current_tokens = estimate_tokens(result_json)
+
+    # If under budget, return as-is
+    if current_tokens <= max_tokens:
+        logger.info(f"Tool {tool_name}: {current_tokens} tokens (under budget)")
+        return result
+
+    logger.warning(f"Tool {tool_name}: {current_tokens} tokens (over {max_tokens} budget) - truncating")
+
+    # Create truncated copy
+    truncated = result.copy()
+
+    # Progressive truncation strategy for research results
+    overhead_tokens = 500  # Reserve for structure
+    available_tokens = max_tokens - overhead_tokens
+
+    # Truncate verbose fields
+    if 'results' in truncated and isinstance(truncated['results'], list):
+        # Truncate individual result answers
+        for r in truncated['results']:
+            if 'answer' in r:
+                r['answer'] = r['answer'][:1000] + "... [truncated]" if len(r['answer']) > 1000 else r['answer']
+
+        # Limit number of results
+        max_results = 5
+        if len(truncated['results']) > max_results:
+            truncated['results'] = truncated['results'][:max_results]
+            truncated['results_truncated'] = True
+            truncated['original_result_count'] = len(result.get('results', []))
+
+    if 'sources' in truncated and isinstance(truncated['sources'], list):
+        # Limit number of sources
+        max_sources = 10
+        if len(truncated['sources']) > max_sources:
+            truncated['sources'] = truncated['sources'][:max_sources]
+            truncated['sources_truncated'] = True
+
+    if 'summary' in truncated and isinstance(truncated['summary'], str):
+        # Truncate summary
+        max_summary_chars = 2000
+        if len(truncated['summary']) > max_summary_chars:
+            truncated['summary'] = truncated['summary'][:max_summary_chars] + "\n\n... [truncated to fit MCP 10K token budget]"
+
+    if 'key_findings' in truncated and isinstance(truncated['key_findings'], list):
+        # Limit key findings
+        max_findings = 5
+        if len(truncated['key_findings']) > max_findings:
+            truncated['key_findings'] = truncated['key_findings'][:max_findings]
+
+    # Add metadata
+    truncated['_token_budget_enforced'] = True
+    truncated['_original_tokens'] = current_tokens
+    truncated['_truncated_tokens'] = estimate_tokens(json.dumps(truncated))
+
+    logger.info(f"Tool {tool_name}: Truncated from {current_tokens} to {truncated['_truncated_tokens']} tokens")
+
+    return truncated
+
 
 class MCPServer:
     """MCP Server implementation for GPT-Researcher"""
@@ -237,6 +326,9 @@ class MCPServer:
                 return self._create_error_response(
                     request_id, -32602, f"Unknown tool: {tool_name}"
                 )
+
+            # Enforce MCP token budget before returning (10K hard limit)
+            result = enforce_token_budget(result, tool_name, max_tokens=SAFE_TOKEN_BUDGET)
 
             return {
                 'jsonrpc': '2.0',
