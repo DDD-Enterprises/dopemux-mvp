@@ -32,6 +32,38 @@ if [ ${#missing_keys[@]} -gt 0 ]; then
 fi
 
 echo ""
+echo "🔨 Preparing Docker prerequisites..."
+
+# Ensure external networks exist
+ensure_network() {
+  local net="$1"
+  if ! docker network inspect "$net" >/dev/null 2>&1; then
+    echo "🌐 Creating network: $net"
+    docker network create "$net" >/dev/null
+  else
+    echo "✅ Network exists: $net"
+  fi
+}
+
+ensure_network mcp-network
+ensure_network dopemux-unified-network
+ensure_network leantime-net
+
+# Ensure external volumes exist
+ensure_volume() {
+  local vol="$1"
+  if ! docker volume inspect "$vol" >/dev/null 2>&1; then
+    echo "💾 Creating volume: $vol"
+    docker volume create "$vol" >/dev/null
+  else
+    echo "✅ Volume exists: $vol"
+  fi
+}
+
+ensure_volume mcp_logs
+ensure_volume mcp_cache
+
+echo ""
 echo "🔨 Building and starting containers (idempotent)..."
 
 # Helper: start a service safely, avoiding container-name conflicts
