@@ -28,6 +28,79 @@ logger = logging.getLogger(__name__)
 # Orchestrator HTTP server configuration
 PORT_BASE = int(os.getenv("PORT_BASE", "3000"))
 ORCHESTRATOR_URL = f"http://localhost:{PORT_BASE + 17}"  # 3017
+USE_MOCK_FALLBACK = os.getenv("USE_MOCK_FALLBACK", "true").lower() == "true"
+
+# Mock data for testing when orchestrator is unavailable
+_mock_tasks = {
+    "task-001": {
+        "task_id": "task-001",
+        "title": "Implement Component 5",
+        "description": "Cross-plane query endpoints",
+        "status": "IN_PROGRESS",
+        "progress": 0.6,
+        "priority": "high",
+        "complexity": 0.7,
+        "estimated_duration": 120,
+        "dependencies": [],
+        "tags": ["component-5", "architecture-3.0"]
+    },
+    "task-002": {
+        "task_id": "task-002",
+        "title": "Wire orchestrator endpoints",
+        "description": "Connect to real Task-Orchestrator service",
+        "status": "TODO",
+        "progress": 0.0,
+        "priority": "high",
+        "complexity": 0.5,
+        "estimated_duration": 90,
+        "dependencies": ["task-001"],
+        "tags": ["component-5", "integration"]
+    }
+}
+
+_mock_adhd_state = {
+    "energy_level": "medium",
+    "attention_level": "focused",
+    "time_since_break": 45,
+    "break_recommended": False,
+    "current_session_duration": 45
+}
+
+_mock_session = {
+    "session_id": "session-2025-10-20",
+    "active": True,
+    "started_at": datetime.now().isoformat(),
+    "duration_minutes": 45,
+    "break_count": 0,
+    "tasks_completed": 2
+}
+
+_mock_sprint = {
+    "sprint_id": "S-2025.10",
+    "name": "Architecture 3.0 Implementation",
+    "start_date": datetime(2025, 10, 1).isoformat(),
+    "end_date": datetime(2025, 10, 31).isoformat(),
+    "total_tasks": 20,
+    "completed_tasks": 11,
+    "in_progress_tasks": 3
+}
+
+_mock_recommendations = [
+    {
+        "task_id": "task-001",
+        "title": "Implement Component 5",
+        "reason": "Medium complexity matches current focus level",
+        "confidence": 0.85,
+        "priority": 1
+    },
+    {
+        "task_id": "task-002",
+        "title": "Wire orchestrator endpoints",
+        "reason": "Good follow-up task, builds on current work",
+        "confidence": 0.75,
+        "priority": 2
+    }
+]
 
 # Create router
 router = APIRouter(
@@ -136,8 +209,15 @@ async def list_tasks(
                     raise HTTPException(status_code=resp.status, detail=error_text)
 
     except aiohttp.ClientError as e:
-        logger.error(f"Failed to connect to orchestrator: {e}")
-        raise HTTPException(status_code=503, detail="Task-Orchestrator unavailable")
+        if USE_MOCK_FALLBACK:
+            logger.warning(f"Orchestrator unavailable, using mock data: {e}")
+            tasks = list(_mock_tasks.values())[:limit]
+            if status:
+                tasks = [t for t in tasks if t["status"] == status]
+            return tasks
+        else:
+            logger.error(f"Failed to connect to orchestrator: {e}")
+            raise HTTPException(status_code=503, detail="Task-Orchestrator unavailable")
     except Exception as e:
         logger.error(f"Failed to list tasks: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -170,8 +250,15 @@ async def get_task(task_id: str):
     except HTTPException:
         raise
     except aiohttp.ClientError as e:
-        logger.error(f"Failed to connect to orchestrator: {e}")
-        raise HTTPException(status_code=503, detail="Task-Orchestrator unavailable")
+        if USE_MOCK_FALLBACK:
+            logger.warning(f"Orchestrator unavailable, using mock data: {e}")
+            task = _mock_tasks.get(task_id)
+            if not task:
+                raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+            return task
+        else:
+            logger.error(f"Failed to connect to orchestrator: {e}")
+            raise HTTPException(status_code=503, detail="Task-Orchestrator unavailable")
     except Exception as e:
         logger.error(f"Failed to get task {task_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -204,8 +291,20 @@ async def get_task_status(task_id: str):
     except HTTPException:
         raise
     except aiohttp.ClientError as e:
-        logger.error(f"Failed to connect to orchestrator: {e}")
-        raise HTTPException(status_code=503, detail="Task-Orchestrator unavailable")
+        if USE_MOCK_FALLBACK:
+            logger.warning(f"Orchestrator unavailable, using mock data: {e}")
+            task = _mock_tasks.get(task_id)
+            if not task:
+                raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+            return TaskStatus(
+                task_id=task["task_id"],
+                status=task["status"],
+                progress=task.get("progress"),
+                updated_at=datetime.now()
+            )
+        else:
+            logger.error(f"Failed to connect to orchestrator: {e}")
+            raise HTTPException(status_code=503, detail="Task-Orchestrator unavailable")
     except Exception as e:
         logger.error(f"Failed to get task status {task_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -232,8 +331,12 @@ async def get_adhd_state():
                     raise HTTPException(status_code=resp.status, detail=error_text)
 
     except aiohttp.ClientError as e:
-        logger.error(f"Failed to connect to orchestrator: {e}")
-        raise HTTPException(status_code=503, detail="Task-Orchestrator unavailable")
+        if USE_MOCK_FALLBACK:
+            logger.warning(f"Orchestrator unavailable, using mock data: {e}")
+            return _mock_adhd_state
+        else:
+            logger.error(f"Failed to connect to orchestrator: {e}")
+            raise HTTPException(status_code=503, detail="Task-Orchestrator unavailable")
     except Exception as e:
         logger.error(f"Failed to get ADHD state: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -264,8 +367,12 @@ async def get_task_recommendations(
                     raise HTTPException(status_code=resp.status, detail=error_text)
 
     except aiohttp.ClientError as e:
-        logger.error(f"Failed to connect to orchestrator: {e}")
-        raise HTTPException(status_code=503, detail="Task-Orchestrator unavailable")
+        if USE_MOCK_FALLBACK:
+            logger.warning(f"Orchestrator unavailable, using mock data: {e}")
+            return _mock_recommendations[:limit]
+        else:
+            logger.error(f"Failed to connect to orchestrator: {e}")
+            raise HTTPException(status_code=503, detail="Task-Orchestrator unavailable")
     except Exception as e:
         logger.error(f"Failed to get recommendations: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -292,8 +399,12 @@ async def get_session_status():
                     raise HTTPException(status_code=resp.status, detail=error_text)
 
     except aiohttp.ClientError as e:
-        logger.error(f"Failed to connect to orchestrator: {e}")
-        raise HTTPException(status_code=503, detail="Task-Orchestrator unavailable")
+        if USE_MOCK_FALLBACK:
+            logger.warning(f"Orchestrator unavailable, using mock data: {e}")
+            return _mock_session
+        else:
+            logger.error(f"Failed to connect to orchestrator: {e}")
+            raise HTTPException(status_code=503, detail="Task-Orchestrator unavailable")
     except Exception as e:
         logger.error(f"Failed to get session status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -319,8 +430,12 @@ async def get_active_sprint():
                     raise HTTPException(status_code=resp.status, detail=error_text)
 
     except aiohttp.ClientError as e:
-        logger.error(f"Failed to connect to orchestrator: {e}")
-        raise HTTPException(status_code=503, detail="Task-Orchestrator unavailable")
+        if USE_MOCK_FALLBACK:
+            logger.warning(f"Orchestrator unavailable, using mock data: {e}")
+            return _mock_sprint
+        else:
+            logger.error(f"Failed to connect to orchestrator: {e}")
+            raise HTTPException(status_code=503, detail="Task-Orchestrator unavailable")
     except Exception as e:
         logger.error(f"Failed to get active sprint: {e}")
         raise HTTPException(status_code=500, detail=str(e))
