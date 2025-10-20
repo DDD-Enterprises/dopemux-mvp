@@ -79,7 +79,13 @@ safe_up() {
     fi
   else
     echo "🚀 Creating ${cname} via docker-compose (${service})"
-    docker-compose up -d --build "${service}" || true
+    # Prefer using existing local images first (offline-friendly), then fallback to build
+    if docker-compose up -d --no-build "${service}" 2>/dev/null; then
+      echo "✅ Started ${cname} using cached image"
+    else
+      echo "🧱 Cached image not found; building ${cname}"
+      docker-compose up -d --build "${service}" || true
+    fi
   fi
 }
 
