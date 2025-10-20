@@ -218,12 +218,23 @@ class CodeChunker:
         # Node types to extract (language-specific)
         target_types = {
             "python": ["function_definition", "class_definition", "module"],
+            "py": ["function_definition", "class_definition", "module"],  # Support .py extension
             "javascript": [
                 "function_declaration",
                 "class_declaration",
                 "arrow_function",
             ],
+            "js": [
+                "function_declaration",
+                "class_declaration",
+                "arrow_function",
+            ],
             "typescript": [
+                "function_declaration",
+                "class_declaration",
+                "arrow_function",
+            ],
+            "ts": [
                 "function_declaration",
                 "class_declaration",
                 "arrow_function",
