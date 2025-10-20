@@ -1182,16 +1182,21 @@ app.middleware("http")(ConPortMiddleware(app, conport_client))
 # Include Knowledge Graph endpoints (Phase 10)
 try:
     from kg_endpoints import router as kg_router
-from orchestrator_endpoints import router as orchestrator_router
     from kg_authority import add_kg_authority_middleware
-
     app.include_router(kg_router)
-    app.include_router(orchestrator_router)
     add_kg_authority_middleware(app)
     logger.info("✅ Knowledge Graph endpoints registered at /kg/*")
     logger.info("✅ KG Authority middleware active (Two-Plane enforcement)")
 except ImportError as e:
     logger.warning(f"⚠️  Knowledge Graph endpoints not available: {e}")
+
+# Include Task-Orchestrator query endpoints (Component 5)
+try:
+    from orchestrator_endpoints import router as orchestrator_router
+    app.include_router(orchestrator_router)
+    logger.info("✅ Task-Orchestrator query endpoints registered at /orchestrator/*")
+except ImportError as e:
+    logger.warning(f"⚠️  Task-Orchestrator query endpoints not available: {e}")
 
 # Pydantic models for API requests
 class PRDParseRequest(BaseModel):
