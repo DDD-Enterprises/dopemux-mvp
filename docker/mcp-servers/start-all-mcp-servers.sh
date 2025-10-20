@@ -98,7 +98,7 @@ echo "🏥 Health check summary:"
 echo "========================"
 
 # Health check each critical server
-servers=("context7:3002" "zen:3003" "litellm:4000" "mas-sequential-thinking:3001")
+servers=("context7:3002" "zen:3003" "litellm:4000" "mas-sequential-thinking:3011")
 for server in "${servers[@]}"; do
     name="${server%:*}"
     port="${server#*:}"
