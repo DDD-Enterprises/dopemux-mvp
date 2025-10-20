@@ -15,7 +15,7 @@ services:
       - POSTGRES_PASSWORD=dopemux_age_dev_password
       - POSTGRES_DB=dopemux_knowledge_graph
     volumes:
-      - ${POSTGRES_AGE_VOLUME:-mcp_postgres_age_data}:/var/lib/postgresql/data
+      - pg_age_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph || exit 1"]
       timeout: 5s
@@ -99,6 +99,9 @@ services:
       - XAI_API_KEY=${XAI_API_KEY}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      # Prisma / DB connection for LiteLLM spend/logging + admin APIs
+      # Override with LITELLM_DATABASE_URL in .env if needed
+      - DATABASE_URL=${LITELLM_DATABASE_URL:-postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm}
       - LITELLM_LOG=INFO
       - LITELLM_DROP_PARAMS=true
     ports:
@@ -112,6 +115,9 @@ services:
     volumes:
       - ../../litellm.config.yaml:/app/config.yaml:ro
       - mcp_litellm_data:/app/data
+    depends_on:
+      dopemux-postgres-age:
+        condition: service_healthy
     labels:
       - "mcp.role=critical_path"
       - "mcp.priority=high"
@@ -572,9 +578,10 @@ networks:
 
 # === VOLUMES ===
 volumes:
-  mcp_postgres_age_data:
-    driver: local
-    name: mcp_postgres_age_data
+  # Flexible Postgres AGE data volume; attach existing named volume via env
+  pg_age_data:
+    external: true
+    name: ${POSTGRES_AGE_VOLUME:-mcp_postgres_age_data}
   mcp_logs:
     external: true
     name: mcp_logs
