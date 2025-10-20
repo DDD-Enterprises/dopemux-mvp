@@ -35,9 +35,7 @@ from .predictive_orchestrator import (
 from .cognitive_load_balancer import (
     CognitiveLoadBalancer,
     CognitiveLoad,
-    LoadFactors,
-    LoadStatus,
-    UserLoadProfile
+    LoadStatus
 )
 
 # Week 3: Load Alert Manager
@@ -72,9 +70,7 @@ __all__ = [
     # Week 3: Cognitive Load Management
     "CognitiveLoadBalancer",
     "CognitiveLoad",
-    "LoadFactors",
     "LoadStatus",
-    "UserLoadProfile",
 
     # Week 3: Alert Management
     "LoadAlertManager",
