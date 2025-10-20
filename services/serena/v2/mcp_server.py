@@ -4211,8 +4211,7 @@ class SerenaV2MCPServer:
             start_line_num=start_line + 1
         )
 
-        result = "
-".join(numbered_lines)
+        result = "\n".join(numbered_lines)
 
         # Log with truncation info
         status = "TRUNCATED" if was_truncated else "complete"
