@@ -994,7 +994,7 @@ class EnhancedTaskOrchestrator:
             # Update task status in ConPort
             if self.conport_adapter:
                 logger.debug(f"📊 Updating task {task_id} status to IN_PROGRESS in ConPort")
-                # await self.conport_adapter.update_task_status(task_id, "IN_PROGRESS")
+                await self.conport_adapter.update_task_status(task_id, "IN_PROGRESS")
 
         except Exception as e:
             logger.error(f"Failed to handle session_started: {e}")
@@ -1008,8 +1008,8 @@ class EnhancedTaskOrchestrator:
 
             # Update task status in ConPort
             if self.conport_adapter:
-                logger.debug(f"📊 Updating task {task_id} status to PAUSED in ConPort")
-                # await self.conport_adapter.update_task_status(task_id, "PAUSED")
+                logger.debug(f"📊 Updating task {task_id} status to BLOCKED in ConPort")
+                await self.conport_adapter.update_task_status(task_id, "BLOCKED")
 
         except Exception as e:
             logger.error(f"Failed to handle session_paused: {e}")
@@ -1023,8 +1023,8 @@ class EnhancedTaskOrchestrator:
 
             # Update task status in ConPort
             if self.conport_adapter:
-                logger.debug(f"📊 Updating task {task_id} status to COMPLETED in ConPort")
-                # await self.conport_adapter.update_task_status(task_id, "COMPLETED")
+                logger.debug(f"📊 Updating task {task_id} status to DONE in ConPort")
+                await self.conport_adapter.update_task_status(task_id, "DONE")
 
         except Exception as e:
             logger.error(f"Failed to handle session_completed: {e}")
@@ -1041,7 +1041,7 @@ class EnhancedTaskOrchestrator:
             # Sync progress to ConPort
             if self.conport_adapter:
                 logger.debug(f"📊 Syncing progress for task {task_id} to ConPort")
-                # await self.conport_adapter.update_task_progress(task_id, status, progress)
+                await self.conport_adapter.update_task_progress(task_id, status.upper(), progress)
 
         except Exception as e:
             logger.error(f"Failed to handle progress_updated: {e}")
@@ -1057,7 +1057,7 @@ class EnhancedTaskOrchestrator:
             # Link decision to relevant tasks in ConPort
             if self.conport_adapter:
                 logger.debug(f"📊 Linking decision {decision_id} to related tasks in ConPort")
-                # await self.conport_adapter.link_decision_to_tasks(decision_id)
+                await self.conport_adapter.link_decision_to_tasks(decision_id)
 
         except Exception as e:
             logger.error(f"Failed to handle decision_logged: {e}")
@@ -1074,7 +1074,7 @@ class EnhancedTaskOrchestrator:
             # Adjust task recommendations based on ADHD state
             if self.conport_adapter:
                 logger.debug(f"📊 Adjusting task recommendations for ADHD state: {state}")
-                # await self.conport_adapter.adjust_task_recommendations(energy_level, attention_level)
+                await self.conport_adapter.adjust_task_recommendations(energy_level, attention_level)
 
         except Exception as e:
             logger.error(f"Failed to handle adhd_state_changed: {e}")
@@ -1087,10 +1087,10 @@ class EnhancedTaskOrchestrator:
 
             logger.info(f"📥 Break reminder: Task {task_id} - {duration_minutes} minute break recommended")
 
-            # Update task status to NEEDS_BREAK
+            # Update task status to IN_PROGRESS (ConPort doesn't have NEEDS_BREAK, keep as in_progress)
             if self.conport_adapter:
-                logger.debug(f"📊 Updating task {task_id} to NEEDS_BREAK in ConPort")
-                # await self.conport_adapter.update_task_status(task_id, "NEEDS_BREAK")
+                logger.debug(f"📊 Logging break reminder for task {task_id} in ConPort")
+                await self.conport_adapter.update_task_status(task_id, "IN_PROGRESS")
 
         except Exception as e:
             logger.error(f"Failed to handle break_reminder: {e}")
