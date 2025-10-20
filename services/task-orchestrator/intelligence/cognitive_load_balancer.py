@@ -84,6 +84,17 @@ class CognitiveLoad:
     calculated_at: datetime = field(default_factory=datetime.now)
     weights_used: Dict[str, float] = field(default_factory=dict)
 
+    @property
+    def breakdown(self) -> Dict[str, float]:
+        """Alias for contributors (for backward compatibility with demos/tests)."""
+        return {
+            "task_complexity_load": self.task_complexity_load,
+            "decision_count_load": self.decision_count_load,
+            "context_switch_load": self.context_switch_load,
+            "time_since_break_load": self.time_since_break_load,
+            "interruption_load": self.interruption_load
+        }
+
 
 class CognitiveLoadBalancer:
     """
@@ -119,8 +130,8 @@ class CognitiveLoadBalancer:
 
     def __init__(
         self,
-        workspace_id: str,
-        conport_client: Any,
+        workspace_id: Optional[str] = None,
+        conport_client: Optional[Any] = None,
         serena_client: Optional[Any] = None,
         task_orchestrator: Optional[Any] = None,
         context_switch_recovery: Optional[Any] = None,
@@ -131,13 +142,18 @@ class CognitiveLoadBalancer:
         Initialize Cognitive Load Balancer.
 
         Args:
-            workspace_id: Absolute workspace path
-            conport_client: ConPort MCP client
+            workspace_id: Absolute workspace path (None for demo mode)
+            conport_client: ConPort MCP client (None for demo mode)
             serena_client: Optional Serena client
             task_orchestrator: Optional Task-Orchestrator
             context_switch_recovery: Optional switch tracker
             metrics_collector: Optional metrics
             custom_weights: Optional per-user weight overrides
+
+        Note:
+            For demo/testing, you can omit workspace_id and conport_client.
+            Use calculate_cognitive_load() for simple calculations.
+            For production, provide all clients and use calculate_load().
         """
         self.workspace_id = workspace_id
         self.conport = conport_client
@@ -156,6 +172,95 @@ class CognitiveLoadBalancer:
         # Monitoring state
         self._monitoring = False
         self._last_load: Optional[CognitiveLoad] = None
+
+    def calculate_cognitive_load(
+        self,
+        energy_level: str,
+        attention_level: str,
+        context_switches_today: int,
+        time_of_day: int,
+        average_velocity: float,
+        task_complexity: float = 0.5,
+        decision_count: int = 0,
+        interruptions: int = 0
+    ) -> CognitiveLoad:
+        """
+        Simple synchronous cognitive load calculation for demos/tests.
+
+        This is a simplified version that doesn't require MCP clients.
+        For production use, prefer the async calculate_load() method.
+
+        Args:
+            energy_level: "high", "medium", or "low"
+            attention_level: "focused", "transitioning", or "scattered"
+            context_switches_today: Number of context switches
+            time_of_day: Hour (0-23)
+            average_velocity: Tasks completed per hour
+            task_complexity: Current task complexity (0.0-1.0)
+            decision_count: Active decisions
+            interruptions: Number of interruptions
+
+        Returns:
+            CognitiveLoad object with score and recommendations
+        """
+        # Energy contribution (40% weight)
+        energy_map = {"high": 0.2, "medium": 0.5, "low": 0.8}
+        energy_load = energy_map.get(energy_level, 0.5)
+
+        # Attention contribution (20% weight)
+        attention_map = {"focused": 0.2, "transitioning": 0.5, "scattered": 0.8}
+        attention_load = attention_map.get(attention_level, 0.5)
+
+        # Context switches (20% weight, normalized to 5 switches)
+        switch_load = min(context_switches_today / 5.0, 1.0)
+
+        # Time of day fatigue (10% weight, peaks at afternoon)
+        if time_of_day < 9:
+            time_load = 0.3  # Early morning
+        elif time_of_day < 14:
+            time_load = 0.1  # Morning (peak productivity)
+        elif time_of_day < 18:
+            time_load = 0.5  # Afternoon
+        else:
+            time_load = 0.8  # Evening fatigue
+
+        # Velocity deviation (10% weight, assume 6.5 is optimal)
+        velocity_diff = abs(average_velocity - 6.5) / 6.5
+        velocity_load = min(velocity_diff, 1.0)
+
+        # Weighted formula
+        total_load = (
+            0.4 * energy_load +
+            0.2 * attention_load +
+            0.2 * switch_load +
+            0.1 * time_load +
+            0.1 * velocity_load
+        )
+
+        # Classification
+        status = self._classify_load(total_load)
+
+        # Build result
+        load = CognitiveLoad(
+            score=total_load,
+            status=status,
+            contributors={
+                "energy_level": energy_level,
+                "attention_level": attention_level,
+                "context_switches": context_switches_today,
+                "time_of_day": time_of_day,
+                "average_velocity": average_velocity
+            },
+            recommendation=self._get_recommendation(total_load),
+            task_complexity_load=0.4 * task_complexity,
+            decision_count_load=0.2 * min(decision_count / 10.0, 1.0),
+            context_switch_load=0.2 * switch_load,
+            time_since_break_load=0.1 * time_load,
+            interruption_load=0.1 * min(interruptions / 5.0, 1.0),
+            weights_used=self.weights.copy()
+        )
+
+        return load
 
     async def calculate_load(self) -> CognitiveLoad:
         """
