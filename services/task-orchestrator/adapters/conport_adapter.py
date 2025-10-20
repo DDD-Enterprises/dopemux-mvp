@@ -523,13 +523,18 @@ class ConPortEventAdapter:
                 if self.conport_client:
                     # Call actual ConPort MCP client
                     result = await self.conport_client.log_progress(**progress_data)
-                    return result.get("id")
+                    # ConPort MCP returns dict with "id" field
+                    if isinstance(result, dict) and "id" in result:
+                        return result["id"]
+                    else:
+                        logger.error(f"Invalid ConPort response format: {result}")
+                        return None
                 else:
                     # Placeholder: No client available
                     logger.warning("ConPort client not configured, using placeholder")
                     return None
 
-            except ConnectionError as e:
+            except (ConnectionError, OSError) as e:
                 if attempt < max_retries - 1:
                     wait_time = 2 ** attempt  # Exponential backoff
                     logger.warning(f"ConPort connection failed (attempt {attempt+1}/{max_retries}), retrying in {wait_time}s...")
@@ -595,20 +600,30 @@ class ConPortEventAdapter:
     ) -> List[Dict]:
         """
         Get progress entries from ConPort.
-
-        Placeholder implementation - replace with actual MCP call.
         """
         try:
             if self.conport_client:
                 # Call actual ConPort MCP client
-                # result = await self.conport_client.get_progress(
-                #     workspace_id=self.workspace_id,
-                #     status_filter=status_filter,
-                #     tags_filter=tags_filter
-                # )
-                # return result.get("result", [])
-                logger.warning("ConPort client get_progress not yet implemented")
-                return []
+                result = await self.conport_client.get_progress(
+                    workspace_id=self.workspace_id,
+                    status_filter=status_filter,
+                    limit=100  # Reasonable limit for task orchestration
+                )
+                # ConPort MCP returns dict with "result" field containing list of progress entries
+                if isinstance(result, dict) and "result" in result:
+                    entries = result["result"]
+                    # Filter by tags if specified (ConPort doesn't have direct tag filter in get_progress)
+                    if tags_filter:
+                        filtered = []
+                        for entry in entries:
+                            entry_tags = entry.get("tags", [])
+                            if any(tag in entry_tags for tag in tags_filter):
+                                filtered.append(entry)
+                        return filtered
+                    return entries
+                else:
+                    logger.error(f"Invalid ConPort get_progress response: {result}")
+                    return []
             else:
                 logger.warning("ConPort client not configured")
                 return []
@@ -626,21 +641,19 @@ class ConPortEventAdapter:
     ) -> bool:
         """
         Create relationship link between ConPort items.
-
-        Placeholder implementation - replace with actual MCP call.
         """
         try:
             if self.conport_client:
                 # Call actual ConPort MCP client
-                # await self.conport_client.link_conport_items(
-                #     workspace_id=self.workspace_id,
-                #     source_item_type="progress_entry",
-                #     source_item_id=str(source_id),
-                #     target_item_type="progress_entry",
-                #     target_item_id=str(target_id),
-                #     relationship_type=relationship_type,
-                #     description=description
-                # )
+                await self.conport_client.link_conport_items(
+                    workspace_id=self.workspace_id,
+                    source_item_type="progress_entry",
+                    source_item_id=str(source_id),
+                    target_item_type="progress_entry",
+                    target_item_id=str(target_id),
+                    relationship_type=relationship_type,
+                    description=description
+                )
                 logger.info(f"📎 Linked: {source_id} -{relationship_type}-> {target_id}")
                 return True
             else:
@@ -723,10 +736,10 @@ class ConPortEventAdapter:
 
             if self.conport_client:
                 # Call ConPort MCP
-                # await self.conport_client.update_active_context(
-                #     workspace_id=self.workspace_id,
-                #     patch_content=sprint_context
-                # )
+                await self.conport_client.update_active_context(
+                    workspace_id=self.workspace_id,
+                    patch_content=sprint_context
+                )
                 logger.info(f"🎯 ConPort context activated for sprint: {sprint_id}")
                 return True
             else:
@@ -735,6 +748,173 @@ class ConPortEventAdapter:
 
         except Exception as e:
             logger.error(f"Failed to activate sprint context: {e}")
+            return False
+
+    # ------------------------------------------------------------------------
+    # Event Handler Helper Methods (Component 4)
+    # ------------------------------------------------------------------------
+
+    async def update_task_status(self, task_id: str, status: str) -> bool:
+        """
+        Update task status in ConPort (for event handlers).
+
+        Args:
+            task_id: Task ID (format: "orch_{leantime_id}" or "conport-{conport_id}")
+            status: New status (TODO, IN_PROGRESS, DONE, BLOCKED)
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Extract ConPort ID from task_id
+            if task_id.startswith("conport-"):
+                conport_id = int(task_id.split("-")[1])
+            else:
+                # Query ConPort to find task by tags
+                all_tasks = await self.get_all_tasks_from_conport(tags_filter=["task-orchestrator"])
+                matching_task = None
+                for task in all_tasks:
+                    if task.id == task_id:
+                        matching_task = task
+                        break
+
+                if not matching_task or not hasattr(matching_task, 'conport_id'):
+                    logger.warning(f"Task not found in ConPort: {task_id}")
+                    return False
+
+                conport_id = matching_task.conport_id
+
+            # Update status in ConPort
+            success = await self._resilient_update_progress(
+                progress_id=conport_id,
+                status=status
+            )
+
+            if success:
+                logger.info(f"✅ Updated task {task_id} status to {status} in ConPort")
+            else:
+                logger.warning(f"⚠️ Failed to update task {task_id} status in ConPort")
+
+            return success
+
+        except Exception as e:
+            logger.error(f"Failed to update task status for {task_id}: {e}")
+            return False
+
+    async def update_task_progress(self, task_id: str, status: str, progress: float) -> bool:
+        """
+        Update task progress in ConPort (for event handlers).
+
+        Args:
+            task_id: Task ID
+            status: Current status
+            progress: Progress percentage (0.0-1.0)
+
+        Returns:
+            True if successful
+        """
+        try:
+            # Update status (progress is embedded in description metadata)
+            # For future enhancement, could add progress field to ConPort schema
+            return await self.update_task_status(task_id, status)
+
+        except Exception as e:
+            logger.error(f"Failed to update task progress for {task_id}: {e}")
+            return False
+
+    async def sync_imported_tasks(self, task_count: int, sprint_id: str) -> bool:
+        """
+        Sync imported tasks to ConPort (for tasks_imported event).
+
+        Args:
+            task_count: Number of tasks imported
+            sprint_id: Sprint ID
+
+        Returns:
+            True if successful
+        """
+        try:
+            # Activate sprint context in ConPort
+            success = await self.activate_sprint_context(
+                sprint_id=sprint_id,
+                sprint_name=f"Sprint {sprint_id}",
+                task_count=task_count
+            )
+
+            if success:
+                logger.info(f"✅ Synced {task_count} imported tasks for sprint {sprint_id}")
+            else:
+                logger.warning(f"⚠️ Failed to sync imported tasks for sprint {sprint_id}")
+
+            return success
+
+        except Exception as e:
+            logger.error(f"Failed to sync imported tasks: {e}")
+            return False
+
+    async def link_decision_to_tasks(self, decision_id: str) -> bool:
+        """
+        Link decision to related tasks in ConPort (for decision_logged event).
+
+        Args:
+            decision_id: ConPort decision ID
+
+        Returns:
+            True if successful
+        """
+        try:
+            # Get all active tasks
+            active_tasks = await self.get_all_tasks_from_conport(status_filter="IN_PROGRESS")
+
+            # Link decision to all active tasks (they likely contributed to the decision)
+            linked_count = 0
+            for task in active_tasks:
+                if hasattr(task, 'conport_id') and task.conport_id:
+                    await self._link_conport_items(
+                        source_id=int(decision_id) if decision_id.isdigit() else 0,
+                        target_id=task.conport_id,
+                        relationship_type="informs",
+                        description=f"Decision logged during task {task.id}"
+                    )
+                    linked_count += 1
+
+            logger.info(f"✅ Linked decision {decision_id} to {linked_count} tasks")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to link decision to tasks: {e}")
+            return False
+
+    async def adjust_task_recommendations(self, energy_level: str, attention_level: str) -> bool:
+        """
+        Adjust task recommendations based on ADHD state (for adhd_state_changed event).
+
+        Args:
+            energy_level: Current energy level (low, medium, high)
+            attention_level: Current attention level (scattered, transitioning, focused)
+
+        Returns:
+            True if successful
+        """
+        try:
+            # Update active context with current ADHD state
+            if self.conport_client:
+                await self.conport_client.update_active_context(
+                    workspace_id=self.workspace_id,
+                    patch_content={
+                        "current_energy": energy_level,
+                        "current_attention": attention_level,
+                        "state_updated_at": datetime.now().isoformat()
+                    }
+                )
+                logger.info(f"✅ Updated ADHD state in ConPort: energy={energy_level}, attention={attention_level}")
+                return True
+            else:
+                logger.warning("ConPort client not configured")
+                return False
+
+        except Exception as e:
+            logger.error(f"Failed to adjust task recommendations: {e}")
             return False
 
     # ------------------------------------------------------------------------

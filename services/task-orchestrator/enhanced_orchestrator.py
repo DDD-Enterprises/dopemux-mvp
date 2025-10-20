@@ -977,9 +977,8 @@ class EnhancedTaskOrchestrator:
 
             # Sync to ConPort if adapter available
             if self.conport_adapter:
-                # This would call ConPort to create progress entries
                 logger.debug(f"📊 Syncing {task_count} tasks to ConPort for sprint {sprint_id}")
-                # await self.conport_adapter.sync_imported_tasks(task_count, sprint_id)
+                await self.conport_adapter.sync_imported_tasks(task_count, sprint_id)
 
         except Exception as e:
             logger.error(f"Failed to handle tasks_imported: {e}")
