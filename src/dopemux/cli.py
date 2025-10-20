@@ -2687,23 +2687,54 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
                 all_healthy = True
 
                 for name, url in critical_servers:
+                    is_healthy = False
                     try:
-                        response = requests.get(url, timeout=2)
-                        is_healthy = response.status_code == 200
-                        health_status[name] = is_healthy
-
-                        if is_healthy:
-                            status_text.append("✅ ", style="bold green")
+                        if name == "LiteLLM":
+                            # Authenticated health check using master key
+                            mk = os.getenv("DOPEMUX_LITELLM_MASTER_KEY")
+                            headers = {}
+                            if not mk:
+                                # Try to read from repo config
+                                try:
+                                    cfg_path = project_path / "litellm.config.yaml"
+                                    if cfg_path.exists():
+                                        with open(cfg_path, "r") as f:
+                                            cfg_data = yaml.safe_load(f) or {}
+                                        mk = ((cfg_data.get("general_settings") or {}).get("master_key"))
+                                except Exception:
+                                    mk = None
+                            if mk:
+                                headers = {"Authorization": f"Bearer {mk}"}
+                            response = requests.get(url, headers=headers, timeout=3)
+                            is_healthy = response.status_code == 200
+                        elif name == "Sequential":
+                            # Prefer socket probe; HTTP may not be implemented
+                            import socket as _socket
+                            host = "localhost"; port = 3011
+                            try:
+                                s = _socket.create_connection((host, port), timeout=1.5)
+                                s.close()
+                                is_healthy = True
+                            except OSError:
+                                # Fallback to HTTP probe
+                                try:
+                                    resp2 = requests.get(url, timeout=2)
+                                    is_healthy = resp2.status_code == 200
+                                except requests.RequestException:
+                                    is_healthy = False
                         else:
-                            status_text.append("⏳ ", style="bold yellow")
-                            all_healthy = False
-
-                        status_text.append(f"{name}\n")
+                            response = requests.get(url, timeout=2)
+                            is_healthy = response.status_code == 200
                     except requests.RequestException:
+                        is_healthy = False
+
+                    health_status[name] = is_healthy
+                    if is_healthy:
+                        status_text.append("✅ ", style="bold green")
+                    else:
                         status_text.append("⏳ ", style="bold yellow")
-                        status_text.append(f"{name}\n")
                         all_healthy = False
-                        health_status[name] = False
+                    status_text.append(f"{name}\n")
 
                 # Add elapsed time
                 elapsed = int(time.time() - start_time)
