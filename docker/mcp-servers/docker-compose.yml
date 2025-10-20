@@ -132,21 +132,22 @@ services:
     build:
       context: ./conport
       dockerfile: Dockerfile
-    container_name: mcp-conport
+    container_name: mcp-conport${DOPEMUX_INSTANCE_ID:+_}${DOPEMUX_INSTANCE_ID}  # Multi-instance naming
     restart: unless-stopped
     networks:
       - mcp-network
       - dopemux-unified-network
     environment:
-      - MCP_SERVER_PORT=3004
+      - MCP_SERVER_PORT=${CONPORT_PORT:-3004}  # Dynamic port from instance env
       - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
       - REDIS_URL=redis://dopemux-redis-primary:6379
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - GOOGLE_API_KEY=${GEMINI_API_KEY}
       - VOYAGEAI_API_KEY=${VOYAGEAI_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID}  # CRITICAL: Instance workspace isolation
     ports:
-      - "3004:3004"
+      - "${CONPORT_PORT:-3004}:${CONPORT_PORT:-3004}"  # Multi-instance port mapping
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost',3004)); s.close()"]
       timeout: 10s
@@ -265,14 +266,15 @@ services:
     build:
       context: ./serena
       dockerfile: Dockerfile
-    container_name: mcp-serena
+    container_name: mcp-serena${DOPEMUX_INSTANCE_ID:+_}${DOPEMUX_INSTANCE_ID}  # Multi-instance naming
     restart: unless-stopped
     networks:
       - mcp-network
     environment:
-      - MCP_SERVER_PORT=3006
+      - MCP_SERVER_PORT=${SERENA_PORT:-3006}  # Dynamic port from instance env
+      - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID}  # CRITICAL: Instance workspace isolation
     ports:
-      - "3006:3006"
+      - "${SERENA_PORT:-3006}:${SERENA_PORT:-3006}"  # Multi-instance port mapping
     # Health check disabled - server is functional but container lacks health check tools
     # healthcheck:
     #   test: ["CMD", "sh", "-c", "exit 0"]

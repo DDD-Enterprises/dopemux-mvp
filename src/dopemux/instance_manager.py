@@ -255,8 +255,12 @@ class InstanceManager:
 
         env_vars = {
             "DOPEMUX_INSTANCE_ID": instance_id if instance_id != 'A' else "",
-            "DOPEMUX_WORKSPACE_ID": str(self.workspace_root),  # Main repo root
-            "DOPEMUX_WORKSPACE_ROOT": str(actual_workspace),  # Current worktree (SHARED DETECTION!)
+            # CRITICAL FIX: Use actual_workspace (not self.workspace_root)
+            # MCP servers need the CURRENT workspace (worktree), not main repo
+            # This enables proper multi-instance isolation for ConPort, Serena, etc.
+            "DOPEMUX_WORKSPACE_ID": str(actual_workspace),  # Current workspace (worktree-aware!)
+            "DOPEMUX_WORKSPACE_ROOT": str(actual_workspace),  # Backward compat alias
+            "DOPEMUX_MAIN_REPO": str(self.workspace_root),  # Main repo root for reference
             "DOPEMUX_PORT_BASE": str(port_base),
 
             # Service ports
