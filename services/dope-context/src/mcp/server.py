@@ -20,7 +20,7 @@ from typing import Dict, List, Optional, Tuple
 from fastmcp import FastMCP
 
 from ..preprocessing.code_chunker import CodeChunker, ChunkingConfig
-from ..context.claude_generator import ClaudeContextGenerator
+from ..context.openai_generator import OpenAIContextGenerator
 from ..embeddings.voyage_embedder import VoyageEmbedder
 from ..embeddings.contextualized_embedder import ContextualizedEmbedder
 from ..search.dense_search import MultiVectorSearch, SearchProfile
@@ -36,6 +36,7 @@ from ..search.docs_search import DocumentSearch
 from ..utils.workspace import get_workspace_root, get_collection_names, get_snapshot_dir
 from ..sync.file_synchronizer import FileSynchronizer, ChangeSet
 from ..utils.metrics_tracker import get_tracker
+from ..utils.token_budget import truncate_code_results, truncate_docs_results
 
 
 logger = logging.getLogger(__name__)
@@ -230,7 +231,7 @@ def _initialize_components():
     global _docs_pipeline, _docs_search, _docs_embedder
 
     # Get API keys
-    anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+    openai_key = os.getenv("OPENAI_API_KEY")
     voyage_key = os.getenv("VOYAGE_API_KEY")
     qdrant_url = os.getenv("QDRANT_URL", "localhost")
     qdrant_port = int(os.getenv("QDRANT_PORT", "6333"))
@@ -248,10 +249,10 @@ def _initialize_components():
     chunker = CodeChunker(config=ChunkingConfig())
 
     context_generator = None
-    if anthropic_key:
-        context_generator = ClaudeContextGenerator(api_key=anthropic_key)
+    if openai_key:
+        context_generator = OpenAIContextGenerator(api_key=openai_key)
     else:
-        logger.warning("ANTHROPIC_API_KEY not set - context generation disabled")
+        logger.warning("OPENAI_API_KEY not set - context generation disabled")
 
     _embedder = VoyageEmbedder(api_key=voyage_key)
 
@@ -330,10 +331,10 @@ async def _index_workspace_impl(
     # Create workspace-specific pipeline
     chunker = CodeChunker()
 
-    anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+    openai_key = os.getenv("OPENAI_API_KEY")
     context_generator = None
-    if anthropic_key:
-        context_generator = ClaudeContextGenerator(api_key=anthropic_key)
+    if openai_key:
+        context_generator = OpenAIContextGenerator(api_key=openai_key)
 
     embedder = VoyageEmbedder(
         api_key=os.getenv("VOYAGE_API_KEY"),
@@ -430,6 +431,7 @@ async def _search_code_impl(
     use_reranking: bool = True,
     filter_language: Optional[str] = None,
     workspace_path: Optional[str] = None,
+    budget_tokens: int = 9000,
     user_id: str = "default",
 ) -> List[Dict]:
     """Implementation of search_code tool (NOW WITH DYNAMIC TOP_K!)."""
@@ -606,7 +608,7 @@ async def _search_code_impl(
                 # Return top-k from reranked
                 final_results = rerank_response.top_results[:top_k]
 
-                return [
+                raw_results = [
                     {
                         "file_path": r.search_result.file_path,
                         "function_name": r.search_result.function_name,
@@ -619,12 +621,28 @@ async def _search_code_impl(
                     }
                     for r in final_results
                 ]
+
+                # Apply token budget truncation
+                truncated_results, trunc_info = truncate_code_results(
+                    raw_results,
+                    budget_tokens=budget_tokens,  # Passed from caller (9K default, 4K for unified)
+                    per_item_max_chars=2000,  # ~500 tokens per code snippet
+                )
+
+                # Log truncation if it occurred
+                if trunc_info.truncated:
+                    logger.info(
+                        f"Token budget applied: {trunc_info.final_count}/{trunc_info.original_count} results, "
+                        f"{trunc_info.estimated_tokens} tokens ({trunc_info.budget_used_pct:.1f}% of budget)"
+                    )
+
+                return truncated_results
             except Exception as rerank_error:
                 logger.warning(f"Reranking failed, returning dense results: {rerank_error}")
                 # Fall through to return without reranking
 
         # Return without reranking (or reranking failed)
-        return [
+        raw_results = [
             {
                 "file_path": r.file_path,
                 "function_name": r.function_name,
@@ -636,6 +654,21 @@ async def _search_code_impl(
             }
             for r in search_results[:top_k]
         ]
+
+        # Apply token budget truncation
+        truncated_results, trunc_info = truncate_code_results(
+            raw_results,
+            budget_tokens=budget_tokens,
+            per_item_max_chars=2000,
+        )
+
+        if trunc_info.truncated:
+            logger.info(
+                f"Token budget applied: {trunc_info.final_count}/{trunc_info.original_count} results, "
+                f"{trunc_info.estimated_tokens} tokens ({trunc_info.budget_used_pct:.1f}% of budget)"
+            )
+
+        return truncated_results
 
     except Exception as execution_error:
         logger.error(f"Search execution failed: {execution_error}", exc_info=True)
@@ -806,6 +839,7 @@ async def _docs_search_impl(
     filter_doc_type: Optional[str] = None,
     workspace_path: Optional[str] = None,
     max_content_length: int = 2000,
+    budget_tokens: int = 9000,
 ) -> List[Dict]:
     """Implementation of docs_search tool."""
     # Detect workspace
@@ -870,7 +904,8 @@ async def _docs_search_impl(
         filter_by=filter_by if filter_by else None,
     )
 
-    return [
+    # Build raw results with per-item truncation
+    raw_results = [
         {
             "source_path": r.file_path,
             "text": r.content[:max_content_length] + ("..." if len(r.content) > max_content_length else ""),
@@ -881,6 +916,21 @@ async def _docs_search_impl(
         }
         for r in results[:top_k]
     ]
+
+    # Apply token budget truncation across entire result set
+    truncated_results, trunc_info = truncate_docs_results(
+        raw_results,
+        budget_tokens=budget_tokens,
+        per_item_max_chars=max_content_length,
+    )
+
+    if trunc_info.truncated:
+        logger.info(
+            f"Docs token budget applied: {trunc_info.final_count}/{trunc_info.original_count} results, "
+            f"{trunc_info.estimated_tokens} tokens ({trunc_info.budget_used_pct:.1f}% of budget)"
+        )
+
+    return truncated_results
 
 
 @mcp.tool()
@@ -935,12 +985,15 @@ async def _search_all_impl(
 
     logger.info(f"Unified search in workspace: {workspace}")
 
-    # Search both code and docs in parallel (same workspace)
+    # Search both code and docs in parallel (split budget to stay under 10K)
+    # Each gets 4K token budget (4K code + 4K docs + 1K overhead = 9K total)
     code_results_task = _search_code_impl(
-        query, top_k // 2, use_reranking=False, workspace_path=str(workspace)
+        query, top_k // 2, use_reranking=False, workspace_path=str(workspace),
+        budget_tokens=4000  # Half budget for unified search
     )
     docs_results_task = _docs_search_impl(
-        query, top_k // 2, workspace_path=str(workspace), max_content_length=2000
+        query, top_k // 2, workspace_path=str(workspace), max_content_length=1500,
+        budget_tokens=4000  # Half budget for unified search
     )
 
     code_results, docs_results = await asyncio.gather(
@@ -1029,8 +1082,8 @@ async def _sync_workspace_impl(
 
             # Create pipeline for incremental updates
             chunker = CodeChunker()
-            anthropic_key = os.getenv("ANTHROPIC_API_KEY")
-            context_generator = ClaudeContextGenerator(api_key=anthropic_key) if anthropic_key else None
+            openai_key = os.getenv("OPENAI_API_KEY")
+            context_generator = OpenAIContextGenerator(api_key=openai_key) if openai_key else None
             embedder = _get_cached_embedder(api_key=os.getenv("VOYAGE_API_KEY"))
 
             config = IndexingConfig(

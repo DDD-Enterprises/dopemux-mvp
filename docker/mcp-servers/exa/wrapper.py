@@ -22,9 +22,9 @@ class ExaServer:
         """Start the Exa MCP server with async subprocess management"""
         logger.info(f"🔍 Starting Exa MCP Server with Streamable HTTP on port {self.port}")
 
-        # Build command for mcp-proxy with Exa server
+        # Build command for mcp-proxy with Exa server (use system-installed mcp-proxy)
         cmd = [
-            'uvx', 'mcp-proxy',
+            'mcp-proxy',
             '--transport', 'streamablehttp',
             '--port', str(self.port),
             '--host', '0.0.0.0',
