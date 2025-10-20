@@ -124,5 +124,9 @@ async def main():
             logger.error(f"Error in main loop: {e}")
             continue
 
-if __name__ == '__main__':
+def run():
+    """Entry point for uvx/uv tool"""
     asyncio.run(main())
+
+if __name__ == '__main__':
+    run()
