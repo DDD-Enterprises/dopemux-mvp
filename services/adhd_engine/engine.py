@@ -35,6 +35,14 @@ from activity_tracker import ActivityTracker
 from conport_client import ConPortSQLiteClient
 from bridge_integration import ConPortBridgeAdapter
 
+# Machine Learning (IP-005 Days 11-12)
+try:
+    from ml.predictive_engine import PredictiveADHDEngine
+    ML_AVAILABLE = True
+except ImportError:
+    ML_AVAILABLE = False
+    logger.warning("ML module not available - using rule-based logic only")
+
 logger = logging.getLogger(__name__)
 
 
@@ -91,6 +99,9 @@ class ADHDAccommodationEngine:
         # Feature-flagged: Use bridge (default) or direct SQLite (legacy)
         self.conport: Optional[Any] = None  # Either ConPortSQLiteClient or ConPortBridgeAdapter
 
+        # Machine Learning predictive engine (IP-005 Days 11-12)
+        self.predictive_engine: Optional[Any] = None  # PredictiveADHDEngine if ML enabled
+
     async def initialize(self) -> None:
         """Initialize ADHD accommodation engine."""
         logger.info("🧠 Initializing ADHD Accommodation Engine...")
@@ -118,6 +129,13 @@ class ADHDAccommodationEngine:
             read_only=False  # Week 3: Enable writes for persistent tracking
         )
         logger.info("✅ ConPort SQLite client initialized (Week 3 write mode)")
+
+        # Initialize ML predictive engine (IP-005 Days 11-12)
+        if settings.enable_ml_predictions and ML_AVAILABLE:
+            self.predictive_engine = PredictiveADHDEngine(settings.workspace_id)
+            logger.info("✅ ML Predictive Engine enabled (IP-005 Days 11-12)")
+        else:
+            logger.info("ℹ️  ML predictions disabled - using rule-based logic only")
 
         # Load existing user profiles
         await self._load_user_profiles()
