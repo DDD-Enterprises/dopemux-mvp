@@ -344,10 +344,19 @@ class DopemuxOrchestratorTUI(App):
 
     def __init__(self, workspace_id: str = None, **kwargs):
         super().__init__(**kwargs)
-        self.progress_tracker = get_progress_tracker(self.workspace_id)
+        # Set workspace_id first (needed by other initializers)
         self.workspace_id = workspace_id or os.getcwd()
         self.layout_manager: Optional[TmuxLayoutManager] = None
         self.command_router = get_command_router()
+        
+        # Initialize TUI State Manager (coordinates progress, breaks, energy, history)
+        self.state_manager = get_state_manager(self.workspace_id)
+        
+        # Progress tracker (depends on workspace_id)
+        self.progress_tracker = get_progress_tracker(self.workspace_id)
+        
+        # Default active AI target
+        self.current_target = "claude"
 
     def compose(self) -> ComposeResult:
         """Build the main UI layout."""
@@ -551,18 +560,70 @@ class DopemuxOrchestratorTUI(App):
                 progress_percent = int((progress.get('completed_commands', 0) / total_commands) * 100)
                 self.query_one(ProgressTrackerPane).update_session_progress(progress_percent)
 
-            # Update break timer from break manager
+            # Update break timer from break manager (Day 9)
             break_state = ui_state.get('break', {})
-            if 'elapsed_seconds' in break_state:
-                self.query_one(ProgressTrackerPane).update_break_timer(break_state['elapsed_seconds'])
+            if break_state and not break_state.get('error'):
+                elapsed_seconds = break_state.get('elapsed_seconds', 0)
+                status_color = break_state.get('status_color', 'green')
+                break_suggested = break_state.get('break_suggested', False)
+                break_mandatory = break_state.get('break_mandatory', False)
+                
+                # Update break timer display
+                self.query_one(ProgressTrackerPane).update_break_timer(elapsed_seconds)
+                
+                # Day 9: Show break notification if needed
+                if break_suggested and not hasattr(self, '_break_notified'):
+                    self._break_notified = True
+                    self.query_one("#pane_claude", AIOutputPane).add_output(
+                        f"☕ Break suggested! You've been working for {break_state.get('elapsed_minutes', 0)} minutes"
+                    )
+                elif break_mandatory:
+                    self.query_one("#pane_claude", AIOutputPane).add_output(
+                        f"🛑 Break STRONGLY suggested! {break_state.get('elapsed_minutes', 0)} min elapsed (research-backed: breaks improve ADHD focus)"
+                    )
 
-            # Update energy level from energy detector
+            # Update energy level and apply UI adaptations (Day 10)
             energy_state = ui_state.get('energy', {})
-            if 'level' in energy_state:
-                self.query_one(StatusInfoPane).update_energy(energy_state['level'])
+            if energy_state and not energy_state.get('error'):
+                energy_level = energy_state.get('level', 'medium')
+                ui_adaptations = energy_state.get('ui_adaptations', {})
+                
+                # Update energy display
+                self.query_one(StatusInfoPane).update_energy(energy_level)
+                
+                # Day 10: Apply energy-based UI color adaptation
+                color_intensity = ui_adaptations.get('color_intensity', 1.0)
+                for ai_name in ["claude", "gemini", "grok"]:
+                    try:
+                        pane = self.query_one(f"#pane_{ai_name}", AIOutputPane)
+                        # Apply ADHD-optimized color feedback
+                        border_color = self._get_energy_border_color(energy_level, color_intensity)
+                        pane.styles.border = ("solid", border_color)
+                    except Exception as e:
+                        logger.warning(f"Could not apply energy color to {ai_name}: {e}")
 
         # Run async update
         asyncio.create_task(_update())
+
+    def _get_energy_border_color(self, energy_level: str, intensity: float) -> str:
+        """
+        Get border color based on energy level (ADHD visual feedback).
+        
+        Day 10: Energy-aware UI adaptation
+        Colors:
+        - very_low/low: Dim blue (calming, suggests rest)
+        - medium: Green (neutral, balanced)
+        - high: Bright green (energized)
+        - hyperfocus: Yellow (caution, take breaks!)
+        """
+        colors = {
+            "very_low": "#4080ff" if intensity > 0.7 else "#305080",  # Dim blue
+            "low": "#60a0ff" if intensity > 0.7 else "#406080",       # Light blue
+            "medium": "#40ff40" if intensity > 0.7 else "#308030",    # Green
+            "high": "#60ff60",                                         # Bright green
+            "hyperfocus": "#ffff40"                                    # Yellow warning
+        }
+        return colors.get(energy_level, "#40ff40")  # Default: green
 
     # Action handlers
     def action_focus_claude(self) -> None:
