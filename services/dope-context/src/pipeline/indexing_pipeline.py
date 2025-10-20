@@ -18,7 +18,7 @@ from typing import Dict, List, Optional, Set
 from datetime import datetime
 
 from ..preprocessing.code_chunker import CodeChunker, CodeChunk, ChunkingConfig
-from ..context.claude_generator import ClaudeContextGenerator
+from ..context.openai_generator import OpenAIContextGenerator
 from ..embeddings.voyage_embedder import VoyageEmbedder
 from ..search.dense_search import MultiVectorSearch
 from ..sync.incremental_indexer import IncrementalIndexer, ChunkMetadata, ChunkSnapshot
@@ -107,7 +107,7 @@ class IndexingPipeline:
 
     Components:
     1. CodeChunker - AST-aware chunking
-    2. ClaudeContextGenerator - Contextual snippets
+    2. OpenAIContextGenerator - Contextual snippets
     3. VoyageEmbedder - Multi-vector embeddings
     4. MultiVectorSearch - Qdrant storage
 
@@ -121,7 +121,7 @@ class IndexingPipeline:
     def __init__(
         self,
         chunker: CodeChunker,
-        context_generator: Optional[ClaudeContextGenerator],
+        context_generator: Optional[OpenAIContextGenerator],
         embedder: VoyageEmbedder,
         vector_search: MultiVectorSearch,
         config: IndexingConfig,
@@ -536,8 +536,8 @@ async def main():
     # Initialize components
     chunker = CodeChunker()
 
-    context_generator = ClaudeContextGenerator(
-        api_key=os.getenv("ANTHROPIC_API_KEY", "test"),
+    context_generator = OpenAIContextGenerator(
+        api_key=os.getenv("OPENAI_API_KEY", "test"),
     )
 
     embedder = VoyageEmbedder(

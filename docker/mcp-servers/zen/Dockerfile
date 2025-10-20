@@ -29,4 +29,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:3003/health || exit 1
 
 # Run the HTTP wrapper with activated environment
-CMD ["bash", "-c", "source .venv/bin/activate && python zen_http_wrapper.py"]
+# Use absolute path for venv activation for robustness across contexts
+CMD ["bash", "-c", "source /app/.venv/bin/activate && python zen_http_wrapper.py"]
