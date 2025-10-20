@@ -8,11 +8,21 @@ Foundation for Serena's code intelligence capabilities.
 import asyncio
 import json
 import logging
+import os
 import subprocess
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union, Callable
+
+# Add project root to path for shared modules
+project_root = Path(__file__).resolve().parents[3]  # services/serena/v2 -> root
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+# Import shared workspace detection (SINGLE SOURCE OF TRUTH)
+from src.dopemux.workspace_detection import get_workspace_root
 
 from .navigation_cache import NavigationCache
 from .adhd_features import ADHDCodeNavigator
@@ -170,66 +180,24 @@ class EnhancedLSPWrapper:
         logger.info(f"✅ Enhanced LSP ready with {len(self.lsp_servers)} language servers")
 
     def _detect_and_validate_workspace(self, workspace_path: Path) -> Path:
-        """Auto-detect and validate the correct workspace for ADHD context preservation."""
-        try:
-            # 0. Check shared environment variable first (FASTEST - eliminates detection!)
-            env_workspace = os.getenv("DOPEMUX_WORKSPACE_ROOT")
-            if env_workspace:
-                env_path = Path(env_workspace).resolve()
-                if env_path.exists() and env_path.is_dir():
-                    logger.info(f"📂 Using shared workspace from env: {env_path}")
-                    return env_path
+        """
+        Auto-detect and validate the correct workspace for ADHD context preservation.
 
-            # If workspace_path is provided and valid, use it
+        Uses shared workspace detection module (single source of truth).
+        This fixes the worktree bug: git worktrees have .git as FILE, not directory!
+        """
+        try:
+            # If explicit workspace provided and valid, use it
             if workspace_path and workspace_path.exists() and workspace_path.is_dir():
                 logger.info(f"📂 Using provided workspace: {workspace_path}")
                 return workspace_path.resolve()
 
-            # Auto-detect workspace from current working directory
-            current_dir = Path.cwd()
+            # Use shared workspace detection (handles env vars, git worktrees, etc.)
+            detected_workspace = get_workspace_root(start_path=None)
+            self.stats["workspace_auto_detected"] = True
+            logger.info(f"🎯 Auto-detected workspace via shared module: {detected_workspace}")
 
-            # Look for common project indicators
-            project_indicators = [
-                ".git",
-                "package.json",
-                "pyproject.toml",
-                "Cargo.toml",
-                "go.mod",
-                ".claude",
-                "dopemux-mvp",  # Specific to your project
-                "src",
-                "services"
-            ]
-
-            detected_workspace = None
-
-            # Start from current directory and walk up
-            for parent in [current_dir] + list(current_dir.parents):
-                # Check for project indicators
-                for indicator in project_indicators:
-                    indicator_path = parent / indicator
-                    if indicator_path.exists():
-                        detected_workspace = parent
-                        self.stats["workspace_auto_detected"] = True
-                        logger.info(f"🎯 Auto-detected workspace: {detected_workspace} (found {indicator})")
-                        break
-
-                if detected_workspace:
-                    break
-
-            # If still no workspace found, use current directory
-            if not detected_workspace:
-                detected_workspace = current_dir
-                logger.warning(f"⚠️ No project indicators found, using current directory: {detected_workspace}")
-
-            # Special handling for dopemux-mvp project structure
-            if "dopemux-mvp" in str(detected_workspace):
-                # Ensure we're at the project root
-                while detected_workspace.name != "dopemux-mvp" and detected_workspace.parent != detected_workspace:
-                    detected_workspace = detected_workspace.parent
-                logger.info(f"🎯 Dopemux project detected, using root: {detected_workspace}")
-
-            return detected_workspace.resolve()
+            return detected_workspace
 
         except Exception as e:
             logger.error(f"Workspace detection failed: {e}")
