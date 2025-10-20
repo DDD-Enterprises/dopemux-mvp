@@ -352,15 +352,15 @@ def find_similar(
         return json.dumps({"error": error_msg}, indent=2)
 
 if __name__ == "__main__":
-    # Check if we should run in stdio mode for mcp-proxy
-    run_mode = os.getenv("MCP_RUN_MODE", "stdio")
+    # Run in HTTP mode by default for Docker deployment
+    run_mode = os.getenv("MCP_RUN_MODE", "http")
 
     if run_mode == "stdio":
         print("🔍 Starting Exa MCP Server in stdio mode", file=sys.stderr)
         import asyncio
         asyncio.run(mcp.run())
     else:
-        # Legacy HTTP mode
+        # HTTP mode for Docker/production
         port = int(os.getenv("MCP_SERVER_PORT", 3008))
         print(f"🔍 Starting Exa MCP Server on port {port}")
         import asyncio
