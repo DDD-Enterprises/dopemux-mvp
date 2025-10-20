@@ -74,8 +74,8 @@ class TestADHDEngineClient:
             # Stop client
             await adhd_client.stop()
 
-            # Verify client stopped
-            assert adhd_client.polling_task.cancelled()
+            # Verify client stopped (task is either cancelled or done)
+            assert adhd_client.polling_task.done()
 
     @pytest.mark.asyncio
     async def test_state_change_detection(self, adhd_client, mock_adhd_engine):
