@@ -351,22 +351,24 @@ def find_similar(
         traceback.print_exc()
         return json.dumps({"error": error_msg}, indent=2)
 
-if __name__ == "__main__":
+def main():
+    """Entry point for uvx/pip installation"""
     # Run in HTTP mode by default for Docker deployment
     run_mode = os.getenv("MCP_RUN_MODE", "http")
 
     if run_mode == "stdio":
         print("🔍 Starting Exa MCP Server in stdio mode", file=sys.stderr)
-        import asyncio
         asyncio.run(mcp.run())
     else:
         # HTTP mode for Docker/production
         port = int(os.getenv("MCP_SERVER_PORT", 3008))
         print(f"🔍 Starting Exa MCP Server on port {port}")
-        import asyncio
         asyncio.run(mcp.run_http_async(
             host="0.0.0.0",
             port=port,
             show_banner=True,
             transport="http"
         ))
+
+if __name__ == "__main__":
+    main()
