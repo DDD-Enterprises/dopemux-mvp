@@ -172,8 +172,11 @@ mcp__conport__update_active_context \
 # Install claude-code-router and Claude Code CLIs globally
 ./scripts/install_claude_code_router.sh
 
-# Start Dopemux with per-instance router + LiteLLM routing
+# Start Dopemux with LiteLLM routing (Claude → grok-code-fast-1 → gpt-5)
 dopemux start --litellm
+
+# Start Dopemux with Claude OAuth (default; no LiteLLM)
+dopemux start
 ```
 
 - Dopemux automatically provisions a dedicated Claude Code Router home under
@@ -185,6 +188,13 @@ dopemux start --litellm
   - `CLAUDE_CODE_ROUTER_UPSTREAM_KEY` – API key if required
   - `CLAUDE_CODE_ROUTER_MODELS` – comma-separated model names (e.g. `deepseek-chat,deepseek-reasoner`)
 - Use `--no-claude-router` if you need to fall back to direct Anthropics access.
+
+Note on authentication modes:
+- Default (`dopemux start`): Claude Code uses OAuth (Claude Pro/Max). No API key passed to the app.
+- With `--litellm`: Dopemux runs a local LiteLLM proxy and sets `ANTHROPIC_API_BASE`/`ANTHROPIC_API_KEY`
+  for Claude Code to talk to the proxy. Requests try `claude-sonnet-4.5` first and automatically
+  fall back to `xai/grok-code-fast-1` (and `openai/gpt-5` if configured). Set `XAI_API_KEY` (recommended)
+  and/or `OPENAI_API_KEY` in your shell before starting.
 
 ### Verify Setup
 

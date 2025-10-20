@@ -39,7 +39,7 @@ DEFAULT_LITELLM_CONFIG = """model_list:
     litellm_params:
       model: xai/grok-4
       api_key: os.environ/XAI_API_KEY
-      api_base: https://api.x.ai
+      api_base: https://api.x.ai/v1
       temperature: 0.0
       max_tokens: 4096
 
@@ -47,7 +47,7 @@ DEFAULT_LITELLM_CONFIG = """model_list:
     litellm_params:
       model: xai/grok-code-fast-1
       api_key: os.environ/XAI_API_KEY
-      api_base: https://api.x.ai
+      api_base: https://api.x.ai/v1
       temperature: 0.0
       max_tokens: 4096
 
@@ -170,6 +170,13 @@ class LiteLLMProxyManager:
             "OPENAI_API_BASE": proxy_info.base_url,
             "OPENAI_BASE_URL": proxy_info.base_url,
             "OPENAI_API_KEY": proxy_info.master_key,
+            # Claude Code expects Anthropic-style env when routing via LiteLLM
+            # Set both common variants to maximize compatibility
+            "ANTHROPIC_API_BASE": proxy_info.base_url,
+            "ANTHROPIC_BASE_URL": proxy_info.base_url,
+            "ANTHROPIC_API_KEY": proxy_info.master_key,
+            # Dopemux hint for launcher to keep API key (disable OAuth stripping)
+            "DOPEMUX_CLAUDE_VIA_LITELLM": "1",
             "DOPEMUX_LITELLM_MASTER_KEY": proxy_info.master_key,
             "DOPEMUX_LITELLM_PORT": str(proxy_info.port),
             "DOPEMUX_LITELLM_HOST": proxy_info.host,
@@ -278,4 +285,3 @@ class LiteLLMProxyManager:
     def _write_state(self, pid: int) -> None:
         state_path = self.instance_dir / "litellm.state"
         state_path.write_text(str(pid))
-
