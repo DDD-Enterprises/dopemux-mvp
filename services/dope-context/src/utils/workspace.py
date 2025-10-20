@@ -4,61 +4,34 @@ Ensures proper multi-project isolation.
 """
 
 import hashlib
-import os
+import sys
 from pathlib import Path
 from typing import Optional, Tuple
 
+# Add project root to path for imports
+project_root = Path(__file__).resolve().parents[4]  # services/dope-context/src/utils -> root
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 
+# Import shared workspace detection (SINGLE SOURCE OF TRUTH)
+# This fixes the worktree bug: git worktrees have .git as FILE, not directory!
+from src.dopemux.workspace_detection import get_workspace_root as _get_workspace_root
+
+
+# Compatibility wrapper for existing dope-context code
 def get_workspace_root(cwd: Optional[Path] = None) -> Path:
     """
-    Detect workspace root directory with shared environment variable support.
+    Detect workspace root (dope-context compatibility wrapper).
 
-    Tries (in order):
-    1. DOPEMUX_WORKSPACE_ROOT environment variable (FASTEST - 0ms overhead!)
-    2. Git root (if in git repo)
-    3. Directory with pyproject.toml or package.json
-    4. Current working directory
+    Delegates to shared workspace detection module.
 
     Args:
         cwd: Starting directory (defaults to os.getcwd())
 
     Returns:
         Workspace root path
-
-    Performance:
-        - With env var: 0ms (instant)
-        - Without env var: 5-50ms (filesystem walks)
     """
-    # 0. Check shared environment variable first (eliminates ALL detection overhead!)
-    env_workspace = os.getenv("DOPEMUX_WORKSPACE_ROOT")
-    if env_workspace:
-        workspace_path = Path(env_workspace).resolve()
-        if workspace_path.exists() and workspace_path.is_dir():
-            return workspace_path
-
-    if cwd is None:
-        cwd = Path.cwd()
-
-    current = cwd.resolve()
-
-    # 1. Check for git root
-    while current != current.parent:
-        if (current / ".git").exists():
-            return current
-        current = current.parent
-
-    # 2. Check for project markers
-    current = cwd.resolve()
-    markers = ["pyproject.toml", "package.json", "Cargo.toml", "go.mod"]
-
-    while current != current.parent:
-        for marker in markers:
-            if (current / marker).exists():
-                return current
-        current = current.parent
-
-    # 3. Fallback to cwd
-    return cwd.resolve()
+    return _get_workspace_root(start_path=cwd)
 
 
 def workspace_to_hash(workspace_path: Path) -> str:
