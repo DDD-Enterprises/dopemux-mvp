@@ -3,6 +3,11 @@
 # MCP Protocol Support
 mcp>=1.0.0
 
+# HTTP Server (for MCP HTTP/SSE transport)
+uvicorn>=0.30.0
+starlette>=0.37.0
+sse-starlette>=2.0.0
+
 # HTTP and API clients
 aiohttp>=3.12.14  # Security: CVE-2025-53643, CVE-2024-52304, directory traversal, DoS fixes
 httpx>=0.27.0
