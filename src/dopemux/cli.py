@@ -383,8 +383,8 @@ def start(
         if litellm_proxy_info:
             provider_url = f"{litellm_proxy_info.base_url}/v1/chat/completions"
             provider_name = provider_name or "litellm"
-            # Use Claude Pro Max as primary, fallback to others on rate limit
-            provider_models = ["claude-sonnet-4.5", "openai-gpt-5", "xai-grok-4"]
+            # Use Claude as primary, with xAI Grok code-specialized fallback
+            provider_models = ["claude-sonnet-4.5", "xai-grok-code-fast", "openai-gpt-5"]
         else:
             provider_url = os.environ.get("CLAUDE_CODE_ROUTER_UPSTREAM_URL")
             models_env = os.environ.get("CLAUDE_CODE_ROUTER_MODELS", "")
