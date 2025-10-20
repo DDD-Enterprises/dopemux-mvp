@@ -1182,9 +1182,11 @@ app.middleware("http")(ConPortMiddleware(app, conport_client))
 # Include Knowledge Graph endpoints (Phase 10)
 try:
     from kg_endpoints import router as kg_router
+from orchestrator_endpoints import router as orchestrator_router
     from kg_authority import add_kg_authority_middleware
 
     app.include_router(kg_router)
+    app.include_router(orchestrator_router)
     add_kg_authority_middleware(app)
     logger.info("✅ Knowledge Graph endpoints registered at /kg/*")
     logger.info("✅ KG Authority middleware active (Two-Plane enforcement)")
