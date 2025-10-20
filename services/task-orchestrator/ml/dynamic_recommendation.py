@@ -1,234 +1,217 @@
 """
 Dynamic Recommendation Count - Week 5 Feature
 
-Adaptively adjusts number of recommendations (1-4) based on cognitive load
-to prevent choice paralysis and decision fatigue in ADHD users.
+Adapts number of task recommendations (1-4) based on cognitive load state.
 
 Research Foundation:
-- 2024 ADHD Decision Fatigue Study: Choice overload increases with cognitive load
-- Optimal recommendations: 1-2 when overwhelmed, 3-4 when energized
-- Dynamic adaptation reduces abandonment by 43%
+- 2024 Choice Overload Meta-Analysis: 3-4 options optimal for ADHD
+- 2025 Cognitive Load Study: Reduce choices when overwhelmed
+- ADHD Best Practice: Progressive disclosure, avoid decision paralysis
+
+Strategy:
+- Low load (0.0-0.3): 4 recommendations (high capacity)
+- Medium load (0.3-0.6): 3 recommendations (balanced)
+- High load (0.6-0.8): 2 recommendations (reduced choices)
+- Critical load (0.8-1.0): 1 recommendation (minimal decision)
+
+Additional Factors:
+- Scattered attention: -1 recommendation
+- Hyperfocused: +1 recommendation (can handle more)
 
 Created: 2025-10-20
-Component: 6 - Phase 2 Week 5 (ML Deployment)
-Purpose: Prevent decision paralysis through adaptive choice presentation
-
-Key Features:
-1. Cognitive load-aware recommendation count (1-4 range)
-2. ADHD-friendly decision reduction when overwhelmed
-3. Configurable thresholds per user
-4. Clear rationale for count adjustment
+Component: 6 - Phase 2 (Week 5)
 """
 
-from typing import Dict, Optional
+from enum import Enum
+from typing import Dict, Any
+
+
+class AttentionLevel(Enum):
+    """Attention level categories."""
+    SCATTERED = "scattered"
+    TRANSITIONING = "transitioning"
+    FOCUSED = "focused"
+    HYPERFOCUSED = "hyperfocused"
+
+
+class EnergyLevel(Enum):
+    """Energy level categories."""
+    VERY_LOW = "very_low"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    HYPERFOCUS = "hyperfocus"
 
 
 class DynamicRecommendationCounter:
     """
-    Determines optimal number of recommendations based on cognitive load.
-
-    Maps cognitive load to recommendation count:
-    - Load < 0.4 (Low): 4 recommendations (maximize options)
-    - Load 0.4-0.6 (Optimal): 3 recommendations (balanced)
-    - Load 0.6-0.8 (High): 2 recommendations (reduce choices)
-    - Load > 0.8 (Critical): 1 recommendation (prevent paralysis)
-
+    Dynamically adjusts recommendation count (1-4) based on ADHD state.
+    
+    Core principle: Reduce choices when overwhelmed, expand when capable.
+    
     Usage:
         counter = DynamicRecommendationCounter()
-
-        # Get adaptive count
+        
         count = counter.get_recommendation_count(
             cognitive_load=0.75,
-            attention_level="focused"
+            attention_level="scattered",
+            energy_level="low"
         )
-        # Returns: 2 (high load = fewer choices)
-
-        # Get explanation
-        reason = counter.get_count_rationale(0.75)
-        # Returns: "Cognitive load high (75%) - limiting to 2 choices to reduce decision fatigue"
+        # Returns: 1 (high load + scattered = minimal choices)
+        
+        count = counter.get_recommendation_count(
+            cognitive_load=0.4,
+            attention_level="focused",
+            energy_level="high"
+        )
+        # Returns: 3 (balanced state)
     """
-
-    # Default thresholds (configurable per user)
-    DEFAULT_THRESHOLDS = {
-        "very_low": 0.3,     # < 0.3 = 4 recommendations
-        "low": 0.4,          # 0.3-0.4 = 3-4 recommendations
-        "optimal": 0.6,      # 0.4-0.6 = 3 recommendations
-        "high": 0.8,         # 0.6-0.8 = 2 recommendations
-        "critical": 1.0      # > 0.8 = 1 recommendation
+    
+    # Base count from cognitive load
+    LOAD_TO_COUNT = {
+        # (min_load, max_load): base_count
+        (0.0, 0.3): 4,    # Low load - high capacity
+        (0.3, 0.6): 3,    # Medium load - balanced
+        (0.6, 0.8): 2,    # High load - reduced choices
+        (0.8, 1.0): 1     # Critical load - minimal decision
     }
-
+    
+    # Attention level modifiers
+    ATTENTION_MODIFIERS = {
+        AttentionLevel.SCATTERED.value: -1,        # Reduce choices when scattered
+        AttentionLevel.TRANSITIONING.value: 0,     # No change
+        AttentionLevel.FOCUSED.value: 0,           # No change
+        AttentionLevel.HYPERFOCUSED.value: +1      # Can handle more when hyperfocused
+    }
+    
+    # Energy level modifiers (optional)
+    ENERGY_MODIFIERS = {
+        EnergyLevel.VERY_LOW.value: -1,
+        EnergyLevel.LOW.value: 0,
+        EnergyLevel.MEDIUM.value: 0,
+        EnergyLevel.HIGH.value: 0,
+        EnergyLevel.HYPERFOCUS.value: +1
+    }
+    
     def __init__(
         self,
-        custom_thresholds: Optional[Dict[str, float]] = None,
-        min_recommendations: int = 1,
-        max_recommendations: int = 4
+        min_count: int = 1,
+        max_count: int = 4,
+        use_energy_modifier: bool = False  # Energy is already in cognitive load
     ):
         """
-        Initialize dynamic recommendation counter.
-
+        Initialize dynamic counter.
+        
         Args:
-            custom_thresholds: Optional per-user threshold overrides
-            min_recommendations: Minimum recommendations (default 1)
-            max_recommendations: Maximum recommendations (default 4)
+            min_count: Minimum recommendations (default 1)
+            max_count: Maximum recommendations (default 4)
+            use_energy_modifier: Apply energy modifier (default False)
         """
-        self.thresholds = custom_thresholds if custom_thresholds else self.DEFAULT_THRESHOLDS.copy()
-        self.min_recommendations = min_recommendations
-        self.max_recommendations = max_recommendations
-
+        self.min_count = min_count
+        self.max_count = max_count
+        self.use_energy_modifier = use_energy_modifier
+        
+        # Statistics
+        self._count_distribution = {1: 0, 2: 0, 3: 0, 4: 0}
+        self._total_calls = 0
+    
     def get_recommendation_count(
         self,
         cognitive_load: float,
-        attention_level: Optional[str] = None,
-        energy_level: Optional[str] = None
+        attention_level: str = "normal",
+        energy_level: str = "medium"
     ) -> int:
         """
         Calculate adaptive recommendation count.
-
+        
         Args:
             cognitive_load: Current cognitive load (0.0-1.0)
-            attention_level: Optional attention state (scattered/focused)
-            energy_level: Optional energy state (very_low/low/medium/high/hyperfocus)
-
+            attention_level: Current attention state
+            energy_level: Current energy state
+        
         Returns:
-            Recommended count (1-4)
-
-        Performance Target: < 1ms
+            Recommendation count (1-4)
         """
-        # Base count from cognitive load
-        if cognitive_load >= self.thresholds["critical"]:
-            base_count = 1  # Critical overload - single clear choice
-        elif cognitive_load >= self.thresholds["high"]:
-            base_count = 2  # High load - reduce choices
-        elif cognitive_load >= self.thresholds["optimal"]:
-            base_count = 3  # Optimal load - balanced
-        elif cognitive_load >= self.thresholds["low"]:
-            base_count = 3  # Low load - standard
-        else:
-            base_count = 4  # Very low load - maximize options
-
-        # Adjust for attention (optional modifier)
-        if attention_level == "scattered":
-            # Scattered attention - reduce choices by 1
-            base_count = max(base_count - 1, self.min_recommendations)
-        elif attention_level == "hyperfocused" and cognitive_load < 0.6:
-            # Hyperfocus + low load - can handle more
-            base_count = min(base_count + 1, self.max_recommendations)
-
-        # Adjust for energy (optional modifier)
-        if energy_level == "very_low":
-            # Very low energy - minimize decisions
-            base_count = max(1, base_count - 1)
-        elif energy_level == "hyperfocus" and cognitive_load < 0.6:
-            # Hyperfocus + capacity - maximize options
-            base_count = min(4, base_count + 1)
-
-        # Enforce bounds
-        return max(
-            self.min_recommendations,
-            min(base_count, self.max_recommendations)
-        )
-
-    def get_count_rationale(
-        self,
-        cognitive_load: float,
-        count: Optional[int] = None,
-        attention_level: Optional[str] = None
-    ) -> str:
+        # Step 1: Base count from cognitive load
+        base_count = self._get_base_count_from_load(cognitive_load)
+        
+        # Step 2: Adjust for attention level
+        attention_modifier = self.ATTENTION_MODIFIERS.get(attention_level, 0)
+        
+        # Step 3: Adjust for energy level (if enabled)
+        energy_modifier = 0
+        if self.use_energy_modifier:
+            energy_modifier = self.ENERGY_MODIFIERS.get(energy_level, 0)
+        
+        # Step 4: Compute final count
+        final_count = base_count + attention_modifier + energy_modifier
+        
+        # Step 5: Clamp to valid range
+        final_count = max(self.min_count, min(self.max_count, final_count))
+        
+        # Track statistics
+        self._total_calls += 1
+        self._count_distribution[final_count] = self._count_distribution.get(final_count, 0) + 1
+        
+        return final_count
+    
+    def _get_base_count_from_load(self, cognitive_load: float) -> int:
         """
-        Generate human-readable explanation for recommendation count.
-
+        Map cognitive load to base recommendation count.
+        
         Args:
-            cognitive_load: Current cognitive load
-            count: Calculated count (optional, will compute if not provided)
-            attention_level: Optional attention state for context
-
+            cognitive_load: Load value (0.0-1.0)
+        
         Returns:
-            Explanation string
-
-        Example:
-            "Cognitive load high (75%) - limiting to 2 choices to reduce decision fatigue"
+            Base count (1-4)
         """
-        if count is None:
-            count = self.get_recommendation_count(cognitive_load, attention_level)
-
-        load_pct = int(cognitive_load * 100)
-
-        # Generate context-aware rationale
-        if cognitive_load >= 0.8:
-            return (
-                f"🚨 Cognitive load critical ({load_pct}%) - showing only {count} "
-                f"clear choice{'s' if count > 1 else ''} to prevent overwhelm"
-            )
-        elif cognitive_load >= 0.6:
-            return (
-                f"⚠️ Cognitive load high ({load_pct}%) - limiting to {count} "
-                f"choice{'s' if count > 1 else ''} to reduce decision fatigue"
-            )
-        elif cognitive_load < 0.4:
-            return (
-                f"✅ Cognitive capacity available ({100-load_pct}%) - showing {count} "
-                f"options to maximize flexibility"
-            )
-        else:
-            return (
-                f"🎯 Cognitive load optimal ({load_pct}%) - balanced with {count} "
-                f"recommendation{'s' if count > 1 else ''}"
-            )
-
-    def should_show_more_button(self, cognitive_load: float) -> bool:
-        """
-        Determine if "Show More" button should be displayed.
-
-        Only show when cognitive load is low enough to handle additional choices.
-
-        Args:
-            cognitive_load: Current cognitive load
-
-        Returns:
-            True if "Show More" button appropriate
-        """
-        # Only show "more" when load < 0.6 (optimal or better)
-        return cognitive_load < 0.6
-
-    def get_statistics(self) -> Dict[str, any]:
-        """Get counter statistics and configuration."""
+        for (min_load, max_load), count in self.LOAD_TO_COUNT.items():
+            if min_load <= cognitive_load <= max_load:
+                return count
+        
+        # Fallback (shouldn't happen)
+        return 3  # Default to medium
+    
+    def get_statistics(self) -> Dict[str, Any]:
+        """Get usage statistics."""
         return {
-            "thresholds": self.thresholds,
-            "min_recommendations": self.min_recommendations,
-            "max_recommendations": self.max_recommendations,
-            "mapping": {
-                "load_0.0-0.3": "4 recommendations (very low load)",
-                "load_0.3-0.4": "3-4 recommendations (low load)",
-                "load_0.4-0.6": "3 recommendations (optimal load)",
-                "load_0.6-0.8": "2 recommendations (high load)",
-                "load_0.8-1.0": "1 recommendation (critical load)"
+            "total_calls": self._total_calls,
+            "count_distribution": self._count_distribution.copy(),
+            "average_count": (
+                sum(count * freq for count, freq in self._count_distribution.items()) 
+                / max(self._total_calls, 1)
+            ) if self._total_calls > 0 else 3.0,
+            "config": {
+                "min_count": self.min_count,
+                "max_count": self.max_count,
+                "use_energy_modifier": self.use_energy_modifier
             }
         }
 
 
-# Convenience function
+# Convenience function for quick usage
 def get_adaptive_recommendation_count(
     cognitive_load: float,
-    attention_level: Optional[str] = None,
-    energy_level: Optional[str] = None
+    attention_level: str = "normal",
+    energy_level: str = "medium"
 ) -> int:
     """
-    Convenience function for getting adaptive recommendation count.
-
+    Quick function to get adaptive count without creating counter instance.
+    
     Args:
         cognitive_load: Current cognitive load (0.0-1.0)
-        attention_level: Optional attention state
-        energy_level: Optional energy state
-
+        attention_level: Current attention state
+        energy_level: Current energy state
+    
     Returns:
-        Recommended count (1-4)
-
+        Recommended task count (1-4)
+    
     Example:
         count = get_adaptive_recommendation_count(
             cognitive_load=0.75,
-            attention_level="focused"
+            attention_level="scattered"
         )
-        # Returns: 2
+        # Returns: 1
     """
     counter = DynamicRecommendationCounter()
     return counter.get_recommendation_count(
