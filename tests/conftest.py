@@ -187,3 +187,220 @@ def mock_environment_variables():
 
     with patch.dict("os.environ", env_vars):
         yield env_vars
+
+
+# ========================================
+# Architecture 3.0 Fixtures
+# ========================================
+
+import redis
+import asyncio
+from typing import Dict, Any
+from tests.utils.test_data_generators import (
+    TaskGenerator,
+    ADHDStateGenerator,
+    EventGenerator,
+    RecommendationGenerator
+)
+from tests.utils.mock_factories import (
+    RedisStreamMockFactory,
+    IntegrationBridgeMockFactory,
+    PerformanceScenarioFactory,
+    ADHDWorkflowMockFactory
+)
+
+
+# Infrastructure Fixtures
+@pytest.fixture(scope="session")
+def redis_host() -> str:
+    """Redis host for integration testing."""
+    return "localhost"
+
+
+@pytest.fixture(scope="session")
+def redis_port() -> int:
+    """Redis port for integration testing."""
+    return 6379
+
+
+@pytest.fixture
+def redis_client_integration(redis_host, redis_port):
+    """Real Redis client for integration tests."""
+    client = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
+    yield client
+    # Cleanup test keys
+    test_keys = client.keys("test:*")
+    if test_keys:
+        client.delete(*test_keys)
+    client.close()
+
+
+@pytest.fixture
+def mock_redis_streams():
+    """Mock Redis Streams client for unit tests."""
+    return RedisStreamMockFactory.create_mock_client()
+
+
+# Test Data Fixtures
+@pytest.fixture
+def sample_task() -> Dict[str, Any]:
+    """Generate sample task with ADHD metadata."""
+    return TaskGenerator.generate_task()
+
+
+@pytest.fixture
+def sample_task_list() -> list[Dict[str, Any]]:
+    """Generate list of sample tasks."""
+    return TaskGenerator.generate_task_list(count=10)
+
+
+@pytest.fixture
+def high_complexity_task() -> Dict[str, Any]:
+    """Generate high-complexity task (ADHD challenge)."""
+    return TaskGenerator.generate_task(complexity=0.8)
+
+
+@pytest.fixture
+def low_complexity_task() -> Dict[str, Any]:
+    """Generate low-complexity task (ADHD-friendly)."""
+    return TaskGenerator.generate_task(complexity=0.2)
+
+
+@pytest.fixture
+def sample_adhd_state() -> Dict[str, Any]:
+    """Generate sample ADHD state."""
+    return ADHDStateGenerator.generate_state()
+
+
+@pytest.fixture
+def morning_high_energy_state() -> Dict[str, Any]:
+    """Morning high-energy ADHD state."""
+    return ADHDStateGenerator.generate_state(
+        energy_level="high",
+        attention_level="focused",
+        time_since_break=20
+    )
+
+
+@pytest.fixture
+def afternoon_dip_state() -> Dict[str, Any]:
+    """Afternoon energy dip ADHD state."""
+    return ADHDStateGenerator.generate_state(
+        energy_level="low",
+        attention_level="transitioning",
+        time_since_break=45
+    )
+
+
+@pytest.fixture
+def hyperfocus_state() -> Dict[str, Any]:
+    """Hyperfocus ADHD state."""
+    return ADHDStateGenerator.generate_state(
+        energy_level="hyperfocus",
+        attention_level="hyperfocused",
+        time_since_break=90
+    )
+
+
+@pytest.fixture
+def sample_event() -> Dict[str, Any]:
+    """Generate sample event for Redis Streams."""
+    return EventGenerator.generate_event()
+
+
+@pytest.fixture
+def sample_event_sequence() -> list[Dict[str, Any]]:
+    """Generate event sequence."""
+    return EventGenerator.generate_event_sequence(count=10)
+
+
+@pytest.fixture
+def sample_recommendations() -> list[Dict[str, Any]]:
+    """Generate task recommendations."""
+    return RecommendationGenerator.generate_recommendation_list(count=5)
+
+
+# Mock HTTP Fixtures
+@pytest.fixture
+def mock_integration_bridge_success():
+    """Mock Integration Bridge HTTP client (success)."""
+    return IntegrationBridgeMockFactory.create_mock_session(simulate_errors=False)
+
+
+@pytest.fixture
+def mock_integration_bridge_errors():
+    """Mock Integration Bridge HTTP client (503 errors)."""
+    return IntegrationBridgeMockFactory.create_mock_session(simulate_errors=True)
+
+
+@pytest.fixture
+def mock_integration_bridge_slow():
+    """Mock Integration Bridge HTTP client (250ms latency)."""
+    return IntegrationBridgeMockFactory.create_mock_session(latency_ms=250)
+
+
+@pytest.fixture
+def mock_integration_bridge_fast():
+    """Mock Integration Bridge HTTP client (50ms latency)."""
+    return IntegrationBridgeMockFactory.create_mock_session(latency_ms=50)
+
+
+# Performance Scenario Fixtures
+@pytest.fixture
+def fast_performance_scenario() -> Dict[str, Any]:
+    """Fast performance (meets ADHD targets)."""
+    return PerformanceScenarioFactory.create_fast_scenario()
+
+
+@pytest.fixture
+def slow_performance_scenario() -> Dict[str, Any]:
+    """Slow performance (exceeds ADHD targets)."""
+    return PerformanceScenarioFactory.create_slow_scenario()
+
+
+@pytest.fixture
+def variable_performance_scenario() -> Dict[str, Any]:
+    """Variable performance (P95 issues)."""
+    return PerformanceScenarioFactory.create_variable_scenario()
+
+
+# ADHD Workflow Fixtures
+@pytest.fixture
+def morning_workflow() -> Dict[str, Any]:
+    """Morning high-energy workflow."""
+    return ADHDWorkflowMockFactory.create_morning_high_energy_workflow()
+
+
+@pytest.fixture
+def afternoon_workflow() -> Dict[str, Any]:
+    """Afternoon energy dip workflow."""
+    return ADHDWorkflowMockFactory.create_afternoon_dip_workflow()
+
+
+@pytest.fixture
+def hyperfocus_workflow() -> Dict[str, Any]:
+    """Hyperfocus workflow."""
+    return ADHDWorkflowMockFactory.create_hyperfocus_workflow()
+
+
+# Pytest Configuration
+def pytest_configure(config):
+    """Configure pytest with custom markers."""
+    config.addinivalue_line("markers", "integration: integration test (requires infrastructure)")
+    config.addinivalue_line("markers", "unit: unit test (no external dependencies)")
+    config.addinivalue_line("markers", "performance: performance test (validates ADHD targets)")
+    config.addinivalue_line("markers", "slow: slow test (> 5 seconds)")
+    config.addinivalue_line("markers", "adhd: ADHD-specific test (energy/attention validation)")
+
+
+def pytest_collection_modifyitems(config, items):
+    """Auto-add markers based on test location/name."""
+    for item in items:
+        if "integration" in str(item.fspath):
+            item.add_marker(pytest.mark.integration)
+        if "unit" in str(item.fspath):
+            item.add_marker(pytest.mark.unit)
+        if "performance" in item.nodeid or "latency" in item.nodeid:
+            item.add_marker(pytest.mark.performance)
+        if "adhd" in item.nodeid.lower():
+            item.add_marker(pytest.mark.adhd)
