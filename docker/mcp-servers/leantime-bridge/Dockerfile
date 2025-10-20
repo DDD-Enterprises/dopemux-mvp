@@ -25,13 +25,14 @@ RUN mkdir -p /app/logs
 
 # Set up environment
 ENV PYTHONPATH=/app
+ENV MCP_SERVER_HOST=0.0.0.0
 ENV MCP_SERVER_PORT=3015
 ENV LEANTIME_API_URL=http://leantime:80
 ENV LEANTIME_API_TOKEN=""
 
-# Health check
+# Health check - verify SSE endpoint is accessible
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:${MCP_SERVER_PORT}/health || exit 1
+    CMD curl -f http://localhost:${MCP_SERVER_PORT}/sse --head || exit 1
 
 # Expose MCP server port
 EXPOSE 3015
@@ -39,8 +40,9 @@ EXPOSE 3015
 # Labels for Docker metadata
 LABEL mcp.role="workflow"
 LABEL mcp.priority="high"
-LABEL mcp.description="Leantime project management bridge"
+LABEL mcp.description="Leantime project management bridge (HTTP/SSE transport)"
 LABEL mcp.integration="leantime"
+LABEL mcp.transport="http-sse"
 
-# Run the MCP bridge server
-CMD ["python", "-m", "leantime_bridge.server"]
+# Run the HTTP MCP bridge server
+CMD ["python", "-m", "leantime_bridge.http_server"]
