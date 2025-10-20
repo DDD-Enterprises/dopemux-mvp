@@ -291,23 +291,35 @@ Alternative: Set CLAUDE_PATH environment variable
         # Add Dopemux-specific variables
         env.update({"DOPEMUX_VERSION": "0.1.0", "DOPEMUX_ACTIVE": "true"})
 
-        # CRITICAL: Do NOT pass ANTHROPIC_API_KEY to Claude Code subprocess
-        # Claude Pro Max users authenticate through OAuth in the app, not via API key
-        # If ANTHROPIC_API_KEY is in the environment, Claude Code switches to API key mode
-        # and fails with 401 errors when the key is invalid/expired
-
-        # Remove ANTHROPIC_API_KEY from Claude Code's subprocess environment
-        if "ANTHROPIC_API_KEY" in env:
-            del env["ANTHROPIC_API_KEY"]
+        # If Dopemux is routing Claude through LiteLLM, we intentionally keep
+        # ANTHROPIC_API_KEY and point Anthropic base to the proxy.
+        via_litellm = env.get("DOPEMUX_CLAUDE_VIA_LITELLM") in ("1", "true", "True")
+        if via_litellm:
+            # Ensure base URL is set for Claude Code to talk to LiteLLM
+            proxy_url = env.get("LITELLM_PROXY_URL") or env.get("OPENAI_API_BASE")
+            if proxy_url:
+                env.setdefault("ANTHROPIC_API_BASE", proxy_url)
+                env.setdefault("ANTHROPIC_BASE_URL", proxy_url)
             console.print(
-                "[dim]✓ Using Claude Pro Max OAuth (ANTHROPIC_API_KEY excluded from Claude Code)[/dim]"
+                "[dim]✓ Routing Claude via LiteLLM proxy (API key mode enabled)[/dim]"
             )
+        else:
+            # CRITICAL: Do NOT pass ANTHROPIC_API_KEY to Claude Code subprocess
+            # Claude Pro Max users authenticate through OAuth in the app, not via API key
+            # If ANTHROPIC_API_KEY is in the environment, Claude Code switches to API key mode
+            # and fails with 401 errors when the key is invalid/expired
+            if "ANTHROPIC_API_KEY" in env:
+                del env["ANTHROPIC_API_KEY"]
+                console.print(
+                    "[dim]✓ Using Claude Pro Max OAuth (ANTHROPIC_API_KEY excluded from Claude Code)[/dim]"
+                )
 
         # MCP servers will still get ANTHROPIC_API_KEY through their individual env configs
         # via ${ANTHROPIC_API_KEY} substitution in _resolve_env_vars()
         # This allows MCP servers to use the key while Claude Code uses OAuth
 
-        console.print("[dim]ℹ️  Claude Pro Max: Authenticate through the app[/dim]")
+        if not via_litellm:
+            console.print("[dim]ℹ️  Claude Pro Max: Authenticate through the app[/dim]")
 
         # Add other API keys for MCP server fallback
         # These are needed by MCP servers for fallback when Claude Pro Max hits rate limits
