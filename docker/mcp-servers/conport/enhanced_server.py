@@ -362,7 +362,71 @@ class EnhancedConPortServer:
             logger.error(f"❌ Error logging decision: {e}")
             return web.json_response({'error': str(e)}, status=500)
 
-    async def get_decisions(self, request):
+    def _estimate_tokens(self, text: str) -> int:
+        """Conservative token estimation: 1 token ≈ 4 chars."""
+        if text is None:
+            return 0
+        return len(str(text)) // 4
+
+    def _truncate_decisions(self, decisions: list, max_tokens: int = 9000) -> tuple[list, dict]:
+        """
+        Truncate decision list to fit token budget.
+
+        Returns (truncated_decisions, stats_dict)
+        """
+        result = []
+        estimated_tokens = 200  # Base overhead for JSON structure
+
+        for decision in decisions:
+            # Estimate tokens for this decision
+            decision_json = str(decision)  # Rough estimate via string conversion
+            item_tokens = self._estimate_tokens(decision_json)
+
+            if estimated_tokens + item_tokens > max_tokens:
+                # Would exceed budget, stop here
+                break
+
+            result.append(decision)
+            estimated_tokens += item_tokens
+
+        stats = {
+            'original_count': len(decisions),
+            'returned_count': len(result),
+            'estimated_tokens': estimated_tokens,
+            'truncated': len(result) < len(decisions)
+        }
+
+        return result, stats
+
+    def _truncate_progress(self, items: list, max_tokens: int = 9000) -> tuple[list, dict]:
+        """
+        Truncate progress entries to fit token budget.
+
+        Returns (truncated_items, stats_dict)
+        """
+        result = []
+        estimated_tokens = 200  # Base overhead
+
+        for item in items:
+            item_json = str(item)
+            item_tokens = self._estimate_tokens(item_json)
+
+            if estimated_tokens + item_tokens > max_tokens:
+                break
+
+            result.append(item)
+            estimated_tokens += item_tokens
+
+        stats = {
+            'original_count': len(items),
+            'returned_count': len(result),
+            'estimated_tokens': estimated_tokens,
+            'truncated': len(result) < len(items)
+        }
+
+        return result, stats
+
+        async def get_decisions(self, request):
         """Get decision history for workspace"""
         workspace_id = request.query.get('workspace_id')
         limit = int(request.query.get('limit', 10))
@@ -393,145 +457,17 @@ class EnhancedConPortServer:
                     decision['alternatives'] = json.loads(decision['alternatives'])
                     decisions.append(decision)
 
+            # Apply token budget truncation
+            decisions, trunc_stats = self._truncate_decisions(decisions, max_tokens=9000)
+
+            # Apply token budget truncation
+            progress_items, trunc_stats = self._truncate_progress(progress_items, max_tokens=9000)
+
             result = {
                 'workspace_id': workspace_id,
-                'decisions': decisions,
-                'count': len(decisions)
-            }
-
-            # Cache results
-            await self.redis.setex(cache_key, 300, json.dumps(result))
-
-            return web.json_response(result)
-
-        except Exception as e:
-            logger.error(f"❌ Error getting decisions: {e}")
-            return web.json_response({'error': str(e)}, status=500)
-
-    async def log_progress(self, request):
-        """Log progress on current work with worktree instance routing"""
-        data = await request.json()
-
-        try:
-            progress_id = str(uuid.uuid4())
-            status = data.get('status', 'PLANNED')
-            workspace_id = data.get('workspace_id')
-
-            # Worktree multi-instance routing
-            # IN_PROGRESS/PLANNED → isolated to current instance
-            # COMPLETED/BLOCKED/CANCELLED → shared across all instances
-            current_instance_id = SimpleInstanceDetector.get_instance_id()
-
-            if SimpleInstanceDetector.is_isolated_status(status):
-                # Isolated: Only visible in this worktree
-                final_instance_id = current_instance_id
-            else:
-                # Shared: Visible in all worktrees
-                final_instance_id = None
-
-            async with self.db_pool.acquire() as conn:
-                await conn.execute("""
-                    INSERT INTO progress_entries
-                    (id, workspace_id, instance_id, description, status, percentage,
-                     linked_decision_id, priority, estimated_hours)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-                """, progress_id,
-                    workspace_id,
-                    final_instance_id,
-                    data.get('description'),
-                    status,
-                    data.get('percentage', 0),
-                    data.get('linked_decision_id'),
-                    data.get('priority', 'medium'),
-                    data.get('estimated_hours'))
-
-                # Get the inserted progress entry
-                row = await conn.fetchrow("""
-                    SELECT * FROM progress_entries WHERE id = $1
-                """, progress_id)
-
-                progress_entry = dict(row)
-                progress_entry['id'] = str(progress_entry['id'])  # Convert UUID to string
-                if progress_entry['linked_decision_id']:
-                    progress_entry['linked_decision_id'] = str(progress_entry['linked_decision_id'])
-                progress_entry['created_at'] = progress_entry['created_at'].isoformat()
-                progress_entry['updated_at'] = progress_entry['updated_at'].isoformat()
-                if progress_entry['completed_at']:
-                    progress_entry['completed_at'] = progress_entry['completed_at'].isoformat()
-
-            # Invalidate caches
-            workspace_id = data.get('workspace_id')
-            if workspace_id:
-                await self.redis.delete(f"progress:{workspace_id}")
-                await self.redis.delete(f"active_work:{workspace_id}")
-
-            # Publish progress_updated event to Integration Bridge
-            if self.integration_bridge:
-                await self.integration_bridge.publish_progress_updated(
-                    progress_id=progress_id,
-                    status=status,
-                    description=data.get('description', ''),
-                    workspace_id=workspace_id,
-                    percentage=data.get('percentage', 0)
-                )
-
-            logger.info(f"📊 Progress logged: {data.get('description')} ({data.get('status')})")
-
-            return web.json_response({
-                'status': 'logged',
-                'progress': progress_entry
-            })
-
-        except Exception as e:
-            logger.error(f"❌ Error logging progress: {e}")
-            return web.json_response({'error': str(e)}, status=500)
-
-    async def get_progress(self, request):
-        """Get current progress entries with worktree instance filtering"""
-        workspace_id = request.query.get('workspace_id')
-        status_filter = request.query.get('status_filter')
-        limit = int(request.query.get('limit', 10))
-
-        try:
-            # Worktree multi-instance support
-            current_instance_id = SimpleInstanceDetector.get_instance_id()
-
-            cache_key = f"progress:{workspace_id}:{status_filter}:{limit}:{current_instance_id}"
-            cached = await self.redis.get(cache_key)
-
-            if cached:
-                return web.json_response(json.loads(cached))
-
-            # Multi-instance query:
-            # Show shared tasks (instance_id IS NULL) + current instance tasks
-            query = """
-                SELECT * FROM progress_entries
-                WHERE ($1::text IS NULL OR workspace_id = $1)
-                  AND ($2::text IS NULL OR status = $2)
-                  AND (instance_id IS NULL OR instance_id = $3)
-                ORDER BY created_at DESC
-                LIMIT $4
-            """
-
-            async with self.db_pool.acquire() as conn:
-                rows = await conn.fetch(query, workspace_id, status_filter, current_instance_id, limit)
-
-                progress_items = []
-                for row in rows:
-                    item = dict(row)
-                    item['id'] = str(item['id'])  # Convert UUID to string
-                    if item['linked_decision_id']:
-                        item['linked_decision_id'] = str(item['linked_decision_id'])
-                    item['created_at'] = item['created_at'].isoformat()
-                    item['updated_at'] = item['updated_at'].isoformat()
-                    if item['completed_at']:
-                        item['completed_at'] = item['completed_at'].isoformat()
-                    progress_items.append(item)
-
-            result = {
-                'progress_items': progress_items,
-                'filter': status_filter,
-                'count': len(progress_items)
+                'progress': progress_items,
+                'count': len(progress_items),
+                'truncation_stats': trunc_stats if trunc_stats['truncated'] else None
             }
 
             # Cache results
