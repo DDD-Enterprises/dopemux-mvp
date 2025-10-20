@@ -480,6 +480,20 @@ def start(
             progress.update(task, description="⚠️  Activating dangerous mode...")
             _activate_dangerous_mode()
 
+        # Auto-configure MCP servers for current worktree (Phase 2: Zero manual steps)
+        progress.update(task, description="Auto-configuring MCP servers...")
+        from .auto_configurator import WorktreeAutoConfigurator
+
+        auto_config = WorktreeAutoConfigurator()
+        workspace_to_configure = worktree_path or project_path
+        success, message = auto_config.configure_workspace(workspace_to_configure)
+
+        if success:
+            progress.update(task, description="✅ MCP auto-configuration complete")
+        else:
+            progress.update(task, description="⚠️ MCP auto-configuration skipped")
+            console.print(f"[dim]{message}[/dim]")
+
         # Start MCP servers by default (ADHD-optimized experience)
         if not no_mcp:
             # CRITICAL FIX: Pass instance_env_vars so MCP servers get workspace isolation
@@ -3893,7 +3907,19 @@ def worktrees_switch_path_cmd(ctx, branch: str):
     path = get_worktree_path(branch)
 
     if path:
-        # Machine-readable output for shell integration
+        # Auto-configure MCP servers for target worktree (Phase 2: Zero manual steps)
+        from .auto_configurator import WorktreeAutoConfigurator
+
+        auto_config = WorktreeAutoConfigurator()
+        success, message = auto_config.configure_workspace(Path(path))
+
+        # Show auto-config status to stderr (doesn't pollute path output)
+        if success:
+            click.echo("✅ MCP auto-configuration complete", err=True)
+        else:
+            click.echo(f"⚠️ MCP auto-configuration: {message}", err=True)
+
+        # Machine-readable output for shell integration (to stdout)
         click.echo(path)
         ctx.exit(0)
     else:
@@ -3920,7 +3946,33 @@ def worktrees_switch_cmd(ctx, branch: str, no_fuzzy: bool):
     click.echo("  • Subprocesses cannot modify the parent shell's working directory")
     click.echo("  • This affects ALL programming languages, not just Python\n")
 
+    # Offer automated shell integration installation (Phase 3: UX Polish)
     click.secho("✅ Solution: Install shell integration", fg="green", bold=True)
+
+    from .shell_integration_installer import ShellIntegrationInstaller
+
+    installer = ShellIntegrationInstaller()
+
+    if installer.is_supported() and not installer.is_installed():
+        click.echo("\n[Option 1] Automated installation (recommended):")
+        click.echo("  We can install shell integration automatically right now!")
+
+        if click.confirm("  Install automatically?", default=True):
+            success, message = installer.install(auto_confirm=True)
+
+            if success:
+                click.secho(f"\n🎉 {message}", fg="green", bold=True)
+                click.echo(f"\nActivate now: source ~/{'.' + installer.shell_name + 'rc'}")
+                click.echo(f"Then try: dwt {branch}\n")
+                ctx.exit(0)
+            else:
+                click.secho(f"\n❌ {message}", fg="red")
+                click.echo("Falling back to manual instructions...\n")
+        else:
+            click.echo("\n[Option 2] Manual installation:")
+    else:
+        click.echo("\n[Manual installation]:")
+
     click.echo("  1. Run: dopemux shell-setup bash >> ~/.bashrc")
     click.echo("  2. Run: source ~/.bashrc")
     click.echo(f"  3. Use: dwt {branch}\n")
@@ -3999,6 +4051,80 @@ def shell_setup_cmd(ctx, shell_type: str):
     except Exception as e:
         click.secho(f"❌ Error reading shell integration: {e}", fg="red", err=True)
         ctx.exit(1)
+
+
+# Worktree Diagnostics Command
+# =============================================================================
+
+@cli.command("doctor")
+@click.option("--worktree", is_flag=True, help="Run worktree-specific diagnostics")
+@click.option("--verbose", "-v", is_flag=True, help="Show detailed information")
+@click.pass_context
+def doctor_cmd(ctx, worktree: bool, verbose: bool):
+    """🏥 Run system diagnostics and health checks.
+
+    Comprehensive health check for Dopemux configuration, workspace detection,
+    MCP servers, and worktree system.
+
+    Examples:
+        dopemux doctor                # General health check
+        dopemux doctor --worktree     # Worktree system check
+        dopemux doctor --worktree -v  # Detailed worktree diagnostics
+    """
+    if worktree:
+        # Phase 1-3 worktree diagnostics
+        from .worktree_diagnostics import run_diagnostics
+
+        success = run_diagnostics(verbose=verbose)
+        sys.exit(0 if success else 1)
+    else:
+        # General Dopemux health check
+        console.print("\n[bold cyan]🏥 Dopemux System Diagnostics[/bold cyan]\n")
+        console.print("[yellow]Use --worktree flag for worktree-specific checks[/yellow]\n")
+
+        # Basic checks
+        checks = []
+
+        # 1. Check if dopemux is initialized
+        workspace = Path.cwd()
+        dopemux_dir = workspace / ".dopemux"
+        checks.append(("Dopemux initialized", dopemux_dir.exists()))
+
+        # 2. Check environment variables
+        checks.append(("ANTHROPIC_API_KEY set", bool(os.getenv("ANTHROPIC_API_KEY"))))
+        checks.append(("VOYAGE_API_KEY set", bool(os.getenv("VOYAGE_API_KEY"))))
+
+        # 3. Check Docker (for MCP servers)
+        try:
+            subprocess.run(["docker", "version"], capture_output=True, check=True, timeout=5)
+            checks.append(("Docker available", True))
+        except:
+            checks.append(("Docker available", False))
+
+        # Print results
+        from rich.table import Table
+        table = Table(show_header=False)
+        table.add_column("Check", style="bold")
+        table.add_column("Status")
+
+        passed = 0
+        for check_name, result in checks:
+            status = "[green]✅ Pass[/green]" if result else "[red]❌ Fail[/red]"
+            table.add_row(check_name, status)
+            if result:
+                passed += 1
+
+        console.print(table)
+
+        # Summary
+        console.print(f"\n[bold]Result: {passed}/{len(checks)} checks passed[/bold]")
+
+        if passed == len(checks):
+            console.print("[green]🎉 System healthy![/green]")
+        else:
+            console.print("[yellow]⚠️  Some checks failed. See above for details.[/yellow]")
+
+        sys.exit(0 if passed == len(checks) else 1)
 
 
 # ============================================================================
