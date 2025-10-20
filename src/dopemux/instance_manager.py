@@ -253,6 +253,10 @@ class InstanceManager:
         # Determine actual workspace path (worktree or main)
         actual_workspace = worktree_path if worktree_path else self.workspace_root
 
+        # Determine ConPort port: instance A uses shared 3004 for central state,
+        # other instances use dynamic mapping (port_base + 7).
+        conport_port = 3004 if instance_id == 'A' or not instance_id else (port_base + 7)
+
         env_vars = {
             "DOPEMUX_INSTANCE_ID": instance_id if instance_id != 'A' else "",
             # CRITICAL FIX: Use actual_workspace (not self.workspace_root)
@@ -266,7 +270,7 @@ class InstanceManager:
             # Service ports
             "TASK_MASTER_PORT": str(port_base + 5),
             "SERENA_PORT": str(port_base + 6),
-            "CONPORT_PORT": str(port_base + 7),
+            "CONPORT_PORT": str(conport_port),
 
             # Integration Bridge
             "INTEGRATION_BRIDGE_PORT": str(port_base + 16),
