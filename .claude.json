@@ -21,6 +21,79 @@
         "DEFAULT_MODEL": "auto"
       }
     },
+    "conport": {
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-conport",
+        "python3",
+        "/app/enhanced_server.py"
+      ],
+      "env": {
+        "WORKSPACE_ID": "/Users/hue/code/dopemux-mvp",
+        "GEMINI_API_KEY": "${GEMINI_API_KEY}",
+        "VOYAGEAI_API_KEY": "${VOYAGEAI_API_KEY}",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+      }
+    },
+    "serena-v2": {
+      "type": "sse",
+      "url": "http://localhost:3006/sse",
+      "env": {
+        "WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
+      }
+    },
+    "gpt-researcher": {
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-gptr-mcp",
+        "python",
+        "/app/gptr-mcp/server.py"
+      ],
+      "env": {
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "TAVILY_API_KEY": "${TAVILY_API_KEY}"
+      }
+    },
+    "exa": {
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-exa",
+        "python",
+        "/app/server.py"
+      ],
+      "env": {
+        "EXA_API_KEY": "${EXA_API_KEY}"
+      }
+    },
+    "dope-context": {
+      "type": "stdio",
+      "command": "bash",
+      "args": [
+        "/Users/hue/code/dopemux-mvp/services/dope-context/run_mcp.sh"
+      ],
+      "env": {
+        "VOYAGE_API_KEY": "${VOYAGEAI_API_KEY}",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"
+      }
+    },
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@context7/mcp-server"
+      ]
+    },
     "desktop-commander": {
       "type": "stdio",
       "command": "python3",
