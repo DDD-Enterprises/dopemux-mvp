@@ -74,6 +74,96 @@ from utils.env import env_override_enabled, get_env  # noqa: E402
 # Can be controlled via LOG_LEVEL environment variable (DEBUG, INFO, WARNING, ERROR)
 log_level = (get_env("LOG_LEVEL", "DEBUG") or "DEBUG").upper()
 
+# MCP Token Budget Enforcement (10K hard limit)
+MCP_MAX_TOKENS = 10000
+SAFE_TOKEN_BUDGET = 9000  # 10% headroom
+
+def estimate_tokens(text: str) -> int:
+    """Conservative token estimation: 1 token ≈ 4 chars."""
+    if text is None:
+        return 0
+    return len(str(text)) // 4
+
+def enforce_token_budget_on_tool_output(result: list, tool_name: str, max_tokens: int = SAFE_TOKEN_BUDGET):
+    """
+    Enforce token budget on tool output at MCP boundary.
+
+    Truncates content field of ToolOutput if it exceeds budget.
+    Preserves all other fields and adds truncation flag to metadata.
+
+    Args:
+        result: List of TextContent objects from tool.execute()
+        tool_name: Name of the tool for logging
+        max_tokens: Token budget (default 9000)
+
+    Returns:
+        Modified result list with budget enforcement applied
+    """
+    import json
+    from mcp.types import TextContent
+
+    if not result or not isinstance(result, list):
+        return result
+
+    modified_result = []
+    for item in result:
+        if not isinstance(item, TextContent):
+            modified_result.append(item)
+            continue
+
+        try:
+            # Parse ToolOutput JSON
+            tool_output = json.loads(item.text)
+
+            # Estimate tokens for entire response
+            estimated_tokens = estimate_tokens(item.text)
+
+            if estimated_tokens <= max_tokens:
+                # Under budget, no truncation needed
+                modified_result.append(item)
+                continue
+
+            # Over budget, truncate content field
+            content = tool_output.get('content', '')
+            content_tokens = estimate_tokens(content)
+
+            # Calculate how much we can keep
+            # Reserve tokens for: {"status":"...", "content_type":"...", "metadata":{...}}
+            overhead_tokens = 500  # Conservative estimate for JSON structure
+            available_for_content = max_tokens - overhead_tokens
+
+            if content_tokens > available_for_content:
+                # Truncate content to fit budget
+                chars_to_keep = available_for_content * 4  # 4 chars per token
+                truncated_content = content[:chars_to_keep] + "\n\n... [Response truncated to fit MCP 10K token budget. Original length: " + str(len(content)) + " chars]"
+                tool_output['content'] = truncated_content
+
+                # Add truncation flag to metadata
+                if 'metadata' not in tool_output:
+                    tool_output['metadata'] = {}
+                tool_output['metadata']['token_budget_truncated'] = True
+                tool_output['metadata']['original_tokens'] = estimated_tokens
+                tool_output['metadata']['truncated_tokens'] = estimate_tokens(json.dumps(tool_output))
+
+                # Create new TextContent with truncated output
+                modified_item = TextContent(type="text", text=json.dumps(tool_output))
+                modified_result.append(modified_item)
+
+                logger.info(
+                    f"Token budget enforced on {tool_name}: {estimated_tokens} → "
+                    f"{estimate_tokens(json.dumps(tool_output))} tokens"
+                )
+            else:
+                # Content fits, but other fields too large (rare)
+                modified_result.append(item)
+
+        except (json.JSONDecodeError, KeyError, AttributeError) as e:
+            # Not a ToolOutput or parsing failed, pass through
+            logger.debug(f"Token budget enforcement skipped for {tool_name}: {e}")
+            modified_result.append(item)
+
+    return modified_result
+
 # Create timezone-aware formatter
 
 
@@ -861,6 +951,9 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextCon
         # Execute tool with pre-resolved model context
         result = await tool.execute(arguments)
         logger.info(f"Tool '{name}' execution completed")
+
+        # Enforce MCP token budget at boundary (10K hard limit)
+        result = enforce_token_budget_on_tool_output(result, name, max_tokens=SAFE_TOKEN_BUDGET)
 
         # Log completion to activity file
         try:

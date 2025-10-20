@@ -2,16 +2,32 @@
   "mcpServers": {
     "zen": {
       "type": "stdio",
-      "command": "uv",
-      "args": ["run", "python", "server.py"],
-      "cwd": "/Users/hue/code/dopemux-mvp/docker/mcp-servers/zen/zen-mcp-server",
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-zen",
+        "bash",
+        "-c",
+        "source /app/.venv/bin/activate && python3 server.py"
+      ],
       "env": {
         "OPENAI_API_KEY": "${OPENAI_API_KEY}",
         "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY:-}",
-        "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
+        "GEMINI_API_KEY": "${GEMINI_API_KEY:-REDACTED_GEMINI_KEY}",
+        "GOOGLE_API_KEY": "${GOOGLE_API_KEY:-REDACTED_GEMINI_KEY}",
+        "XAI_API_KEY": "${XAI_API_KEY:-REDACTED_XAI_KEY}",
         "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
         "DEFAULT_MODEL": "auto"
       }
+    },
+    "desktop-commander": {
+      "type": "stdio",
+      "command": "python3",
+      "args": [
+        "/Users/hue/code/dopemux-mvp/docker/mcp-servers/desktop-commander/stdio_bridge.py"
+      ],
+      "env": {}
     }
   }
 }

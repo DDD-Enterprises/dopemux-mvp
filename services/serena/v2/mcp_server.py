@@ -4118,11 +4118,53 @@ class SerenaV2MCPServer:
         except Exception as e:
             return f"(context unavailable: {e})"
 
+    def _estimate_tokens(self, text: str) -> int:
+        """Conservative token estimation: 1 token ≈ 4 chars."""
+        return len(text) // 4
+
+    def _truncate_to_token_budget(
+        self,
+        lines: list[str],
+        max_tokens: int,
+        start_line_num: int = 1
+    ) -> tuple[list[str], bool]:
+        """
+        Truncate lines to fit token budget with line numbers.
+
+        Returns (truncated_lines, was_truncated)
+        """
+        result_lines = []
+        estimated_tokens = 50  # Base overhead for structure
+        truncated = False
+
+        for i, line in enumerate(lines):
+            # Format with line number (cat -n style)
+            line_num = start_line_num + i
+            formatted = f"{line_num:6d}→{line}"
+            line_tokens = self._estimate_tokens(formatted + "\n")
+
+            if estimated_tokens + line_tokens > max_tokens:
+                # Would exceed budget, stop here
+                truncated = True
+                # Add truncation notice
+                result_lines.append(
+                    f"{line_num:6d}→... [truncated: {len(lines) - i} more lines, "
+                    f"exceeded {max_tokens} token budget]"
+                )
+                break
+
+            result_lines.append(formatted)
+            estimated_tokens += line_tokens
+
+        return result_lines, truncated
+
     async def read_file_tool(
         self,
         relative_path: str,
         start_line: int = 0,
-        end_line: Optional[int] = None
+        end_line: Optional[int] = None,
+        max_lines: int = 500,  # ADHD-safe limit
+        max_tokens: int = 9000  # MCP budget (10K limit with headroom)
     ) -> str:
         """
         Read file with optional line range
@@ -4148,21 +4190,38 @@ class SerenaV2MCPServer:
         content = file_path.read_text()
         lines = content.splitlines()
 
-        # Apply line range
+        # Apply line range with max_lines enforcement
         if end_line is None:
-            selected_lines = lines[start_line:]
+            # No end specified, apply max_lines from start
+            actual_end = min(len(lines), start_line + max_lines)
+            selected_lines = lines[start_line:actual_end]
         else:
-            selected_lines = lines[start_line:end_line + 1]
+            # End specified, but still respect max_lines
+            requested_count = end_line - start_line + 1
+            if requested_count > max_lines:
+                actual_end = start_line + max_lines
+                selected_lines = lines[start_line:actual_end]
+            else:
+                selected_lines = lines[start_line:end_line + 1]
 
-        # Format with line numbers (cat -n style)
-        numbered_lines = []
-        for i, line in enumerate(selected_lines):
-            line_num = start_line + i + 1
-            numbered_lines.append(f"{line_num:6d}→{line}")
+        # Format with token budget enforcement
+        numbered_lines, was_truncated = self._truncate_to_token_budget(
+            selected_lines,
+            max_tokens=max_tokens,
+            start_line_num=start_line + 1
+        )
 
-        result = "\n".join(numbered_lines)
+        result = "
+".join(numbered_lines)
 
-        logger.info(f"read_file: {relative_path} ({len(selected_lines)} lines)")
+        # Log with truncation info
+        status = "TRUNCATED" if was_truncated else "complete"
+        estimated_tokens = self._estimate_tokens(result)
+        logger.info(
+            f"read_file: {relative_path} ({len(numbered_lines)} lines, "
+            f"{estimated_tokens} tokens, {status})"
+        )
+
         return result
 
     async def list_dir_tool(
