@@ -141,6 +141,9 @@ class LiteLLMProxyManager:
 
         proxy_env = os.environ.copy()
         proxy_env["LITELLM_MASTER_KEY"] = master_key
+        # Avoid Prisma requirement locally; disable DB/spend logging for CLI proxy
+        proxy_env.setdefault("LITELLM_DISABLE_DB", "true")
+        proxy_env.setdefault("LITELLM_DISABLE_SPEND_LOGGING", "true")
 
         try:
             process = self._launch_proxy_process(proxy_env, config_path, log_path)
@@ -277,7 +280,7 @@ class LiteLLMProxyManager:
             start_new_session=True,
         )
 
-    def _wait_until_ready(self, timeout: float = 10.0) -> bool:
+    def _wait_until_ready(self, timeout: float = 30.0) -> bool:
         deadline = time.time() + timeout
         while time.time() < deadline:
             if self._is_port_in_use():
