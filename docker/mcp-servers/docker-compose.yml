@@ -2,6 +2,29 @@
 # Based on ADR-007 (Routing Logic) and ADR-012 (MCP Integration Patterns)
 
 services:
+  # === DATABASE (External) ===
+
+  dopemux-postgres-age:
+    image: postgres:15-alpine
+    container_name: dopemux-postgres-age
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - POSTGRES_USER=dopemux_age
+      - POSTGRES_PASSWORD=dopemux_age_dev_password
+      - POSTGRES_DB=dopemux_knowledge_graph
+    ports:
+      - "5432:5432"
+    volumes:
+      - mcp_postgres_age_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph || exit 1"]
+      timeout: 5s
+      retries: 10
+      interval: 10s
+      start_period: 20s
+
   # === CRITICAL PATH SERVERS (Priority: High) ===
 
   # Context7 - ALWAYS FIRST for documentation and API references
@@ -137,6 +160,11 @@ services:
     networks:
       - mcp-network
       - dopemux-unified-network
+    depends_on:
+      dopemux-postgres-age:
+        condition: service_healthy
+      redis-primary:
+        condition: service_started
     environment:
       - MCP_SERVER_PORT=${CONPORT_PORT:-3004}  # Dynamic port from instance env
       - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
@@ -544,6 +572,9 @@ networks:
 
 # === VOLUMES ===
 volumes:
+  mcp_postgres_age_data:
+    driver: local
+    name: mcp_postgres_age_data
   mcp_logs:
     external: true
     name: mcp_logs
