@@ -330,9 +330,13 @@ def start(
     litellm_enabled = use_litellm or use_claude_router
 
     if litellm_enabled:
-        if not os.environ.get("OPENAI_API_KEY"):
+        # Require at least one upstream provider key for LiteLLM to be useful
+        if not (os.environ.get("XAI_API_KEY") or os.environ.get("OPENAI_API_KEY")):
             console.print(
-                "[red]❌ OPENAI_API_KEY not set. Required for LiteLLM proxy configuration.[/red]"
+                "[red]❌ No upstream API key set for LiteLLM.[/red]"
+            )
+            console.print(
+                "[dim]Set XAI_API_KEY (recommended) or OPENAI_API_KEY before using --litellm[/dim]"
             )
             sys.exit(1)
 
@@ -342,6 +346,9 @@ def start(
             env_updates = litellm_manager.build_client_env(litellm_proxy_info)
             for key, value in env_updates.items():
                 os.environ[key] = value
+
+            # Explicit hint for Claude Launcher to route via LiteLLM (API key mode)
+            os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "1"
 
             if litellm_proxy_info.already_running:
                 console.print(
