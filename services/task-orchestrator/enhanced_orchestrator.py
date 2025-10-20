@@ -8,6 +8,8 @@ Provides seamless ADHD-optimized development workflow orchestration.
 import asyncio
 import json
 import logging
+import os
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Callable
@@ -16,6 +18,17 @@ from enum import Enum
 
 import aiohttp
 import redis.asyncio as redis
+
+# Import Integration Bridge EventBus for event coordination (Component 3)
+try:
+    # Add integration bridge path
+    integration_bridge_path = os.path.join(os.path.dirname(__file__), '..', 'mcp-integration-bridge')
+    sys.path.insert(0, integration_bridge_path)
+    from event_bus import EventBus, Event, EventType
+    EVENTBUS_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"EventBus not available: {e}")
+    EVENTBUS_AVAILABLE = False
 
 # Import our new specialized engines (using absolute imports to fix module loading)
 try:
@@ -132,6 +145,7 @@ class EnhancedTaskOrchestrator:
         # Component connections
         self.leantime_session: Optional[aiohttp.ClientSession] = None
         self.redis_client: Optional[redis.Redis] = None
+        self.event_bus: Optional[EventBus] = None  # Integration Bridge EventBus (Component 3)
 
         # Task coordination state - Architecture 3.0: ConPort is storage authority
         # REMOVED: self.orchestrated_tasks dict (Authority violation - fixed in Component 2 Task 2.5)
@@ -231,6 +245,14 @@ class EnhancedTaskOrchestrator:
             await self.redis_client.ping()
             logger.info("🔗 Connected to Redis for coordination")
 
+            # Initialize Integration Bridge EventBus (Component 3)
+            if EVENTBUS_AVAILABLE:
+                self.event_bus = EventBus(self.redis_url, password=None)
+                await self.event_bus.initialize()
+                logger.info("🔗 Connected to Integration Bridge EventBus")
+            else:
+                logger.warning("⚠️ EventBus not available - Integration Bridge events disabled")
+
         except Exception as e:
             logger.error(f"Failed to connect to Redis: {e}")
             raise
@@ -287,6 +309,11 @@ class EnhancedTaskOrchestrator:
             self._implicit_automation_engine(),
             self._progress_correlator()
         ]
+
+        # Add Integration Bridge event subscriber (Component 3)
+        if self.event_bus:
+            workers.append(self._integration_bridge_subscriber())
+            logger.info("📡 Integration Bridge event subscriber enabled")
 
         self.workers = [asyncio.create_task(worker) for worker in workers]
         logger.info("👥 Background workers started")
@@ -893,6 +920,182 @@ class EnhancedTaskOrchestrator:
         # Placeholder - would integrate with Serena file monitoring
         pass
 
+    # Integration Bridge Event Subscription (Component 3)
+
+    async def _integration_bridge_subscriber(self) -> None:
+        """Subscribe to Integration Bridge events for bidirectional ConPort communication."""
+        logger.info("📡 Started Integration Bridge event subscriber")
+
+        while self.running:
+            try:
+                # Subscribe to dopemux:events stream
+                async for msg_id, event in self.event_bus.subscribe(
+                    stream="dopemux:events",
+                    consumer_group="task-orchestrator",
+                    consumer_name=f"orchestrator-{self.workspace_id.split('/')[-1]}"
+                ):
+                    await self._handle_integration_bridge_event(event)
+
+            except Exception as e:
+                logger.error(f"Integration Bridge subscription error: {e}")
+                await asyncio.sleep(30)  # Reconnect after 30 seconds
+
+    async def _handle_integration_bridge_event(self, event: Event) -> None:
+        """Handle events from Integration Bridge."""
+        try:
+            logger.debug(f"📥 Received event: {event.type} from {event.source}")
+
+            if event.type == EventType.TASKS_IMPORTED:
+                await self._handle_tasks_imported(event)
+            elif event.type == EventType.SESSION_STARTED:
+                await self._handle_session_started(event)
+            elif event.type == EventType.SESSION_PAUSED:
+                await self._handle_session_paused(event)
+            elif event.type == EventType.SESSION_COMPLETED:
+                await self._handle_session_completed(event)
+            elif event.type == EventType.PROGRESS_UPDATED:
+                await self._handle_progress_updated(event)
+            elif event.type == EventType.DECISION_LOGGED:
+                await self._handle_decision_logged(event)
+            elif event.type == EventType.ADHD_STATE_CHANGED:
+                await self._handle_adhd_state_changed(event)
+            elif event.type == EventType.BREAK_REMINDER:
+                await self._handle_break_reminder(event)
+            else:
+                logger.debug(f"Unhandled event type: {event.type}")
+
+        except Exception as e:
+            logger.error(f"Event handling failed: {e}")
+
+    async def _handle_tasks_imported(self, event: Event) -> None:
+        """Handle tasks_imported event from Integration Bridge."""
+        try:
+            task_count = event.data.get("task_count", 0)
+            sprint_id = event.data.get("sprint_id", "unknown")
+
+            logger.info(f"📥 Tasks imported: {task_count} tasks in sprint {sprint_id}")
+
+            # Sync to ConPort if adapter available
+            if self.conport_adapter:
+                # This would call ConPort to create progress entries
+                logger.debug(f"📊 Syncing {task_count} tasks to ConPort for sprint {sprint_id}")
+                # await self.conport_adapter.sync_imported_tasks(task_count, sprint_id)
+
+        except Exception as e:
+            logger.error(f"Failed to handle tasks_imported: {e}")
+
+    async def _handle_session_started(self, event: Event) -> None:
+        """Handle session_started event from Integration Bridge."""
+        try:
+            task_id = event.data.get("task_id", "")
+            duration_minutes = event.data.get("duration_minutes", 25)
+
+            logger.info(f"📥 Session started: Task {task_id} ({duration_minutes} minutes)")
+
+            # Update task status in ConPort
+            if self.conport_adapter:
+                logger.debug(f"📊 Updating task {task_id} status to IN_PROGRESS in ConPort")
+                # await self.conport_adapter.update_task_status(task_id, "IN_PROGRESS")
+
+        except Exception as e:
+            logger.error(f"Failed to handle session_started: {e}")
+
+    async def _handle_session_paused(self, event: Event) -> None:
+        """Handle session_paused event from Integration Bridge."""
+        try:
+            task_id = event.data.get("task_id", "")
+
+            logger.info(f"📥 Session paused: Task {task_id}")
+
+            # Update task status in ConPort
+            if self.conport_adapter:
+                logger.debug(f"📊 Updating task {task_id} status to PAUSED in ConPort")
+                # await self.conport_adapter.update_task_status(task_id, "PAUSED")
+
+        except Exception as e:
+            logger.error(f"Failed to handle session_paused: {e}")
+
+    async def _handle_session_completed(self, event: Event) -> None:
+        """Handle session_completed event from Integration Bridge."""
+        try:
+            task_id = event.data.get("task_id", "")
+
+            logger.info(f"📥 Session completed: Task {task_id}")
+
+            # Update task status in ConPort
+            if self.conport_adapter:
+                logger.debug(f"📊 Updating task {task_id} status to COMPLETED in ConPort")
+                # await self.conport_adapter.update_task_status(task_id, "COMPLETED")
+
+        except Exception as e:
+            logger.error(f"Failed to handle session_completed: {e}")
+
+    async def _handle_progress_updated(self, event: Event) -> None:
+        """Handle progress_updated event from Integration Bridge."""
+        try:
+            task_id = event.data.get("task_id", "")
+            status = event.data.get("status", "")
+            progress = event.data.get("progress", 0.0)
+
+            logger.info(f"📥 Progress updated: Task {task_id} -> {status} ({progress * 100:.0f}%)")
+
+            # Sync progress to ConPort
+            if self.conport_adapter:
+                logger.debug(f"📊 Syncing progress for task {task_id} to ConPort")
+                # await self.conport_adapter.update_task_progress(task_id, status, progress)
+
+        except Exception as e:
+            logger.error(f"Failed to handle progress_updated: {e}")
+
+    async def _handle_decision_logged(self, event: Event) -> None:
+        """Handle decision_logged event from Integration Bridge."""
+        try:
+            decision_summary = event.data.get("summary", "")
+            decision_id = event.data.get("decision_id", "")
+
+            logger.info(f"📥 Decision logged: {decision_summary} (ID: {decision_id})")
+
+            # Link decision to relevant tasks in ConPort
+            if self.conport_adapter:
+                logger.debug(f"📊 Linking decision {decision_id} to related tasks in ConPort")
+                # await self.conport_adapter.link_decision_to_tasks(decision_id)
+
+        except Exception as e:
+            logger.error(f"Failed to handle decision_logged: {e}")
+
+    async def _handle_adhd_state_changed(self, event: Event) -> None:
+        """Handle adhd_state_changed event from Integration Bridge."""
+        try:
+            state = event.data.get("state", "")
+            energy_level = event.data.get("energy_level", "medium")
+            attention_level = event.data.get("attention_level", "focused")
+
+            logger.info(f"📥 ADHD state changed: {state} (Energy: {energy_level}, Attention: {attention_level})")
+
+            # Adjust task recommendations based on ADHD state
+            if self.conport_adapter:
+                logger.debug(f"📊 Adjusting task recommendations for ADHD state: {state}")
+                # await self.conport_adapter.adjust_task_recommendations(energy_level, attention_level)
+
+        except Exception as e:
+            logger.error(f"Failed to handle adhd_state_changed: {e}")
+
+    async def _handle_break_reminder(self, event: Event) -> None:
+        """Handle break_reminder event from Integration Bridge."""
+        try:
+            task_id = event.data.get("task_id", "")
+            duration_minutes = event.data.get("duration_minutes", 5)
+
+            logger.info(f"📥 Break reminder: Task {task_id} - {duration_minutes} minute break recommended")
+
+            # Update task status to NEEDS_BREAK
+            if self.conport_adapter:
+                logger.debug(f"📊 Updating task {task_id} to NEEDS_BREAK in ConPort")
+                # await self.conport_adapter.update_task_status(task_id, "NEEDS_BREAK")
+
+        except Exception as e:
+            logger.error(f"Failed to handle break_reminder: {e}")
+
     async def _monitor_cognitive_load(self) -> None:
         """Monitor overall cognitive load across tasks."""
         # Placeholder - would analyze active task load
@@ -962,6 +1165,11 @@ class EnhancedTaskOrchestrator:
             for worker in self.workers:
                 worker.cancel()
             await asyncio.gather(*self.workers, return_exceptions=True)
+
+        # Close Integration Bridge EventBus (Component 3)
+        if self.event_bus:
+            await self.event_bus.close()
+            logger.info("📪 Integration Bridge EventBus closed")
 
         # Close connections
         if self.leantime_session:
