@@ -13,6 +13,13 @@ Standalone microservice providing intelligent ADHD-optimized task assessment and
 - Personalized user profiles
 - 6 background async monitors
 
+**IP-005 Days 11-12: Machine Learning Pattern Learning**
+- Time-decay weighted pattern extraction (30-day half-life)
+- Predictive energy/attention/break recommendations
+- Confidence-based ML predictions with rule-based fallback
+- ConPort persistence for learned patterns
+- 81% test coverage (21/26 tests passing)
+
 ## Quick Start
 
 ```bash
@@ -39,6 +46,11 @@ docker-compose logs -f adhd-engine
 - `POST /api/v1/recommend-break` - Get break recommendation
 - `POST /api/v1/user-profile` - Create/update user ADHD profile
 - `PUT /api/v1/activity/{user_id}` - Log user activity event
+
+**Machine Learning** (IP-005 Days 11-12):
+
+- `GET /api/v1/patterns/{user_id}` - Get learned ADHD patterns (energy/attention/breaks)
+- `POST /api/v1/predict` - Get ML prediction (energy, attention, or break timing)
 
 **Monitoring**:
 

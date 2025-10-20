@@ -5,6 +5,7 @@ Replaces direct SQLite access with HTTP API calls through the bridge.
 
 import sys
 import os
+from typing import Optional
 
 # Add parent to path for shared client
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))

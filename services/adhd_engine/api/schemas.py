@@ -44,6 +44,14 @@ class ADHDInsights(BaseModel):
     context_switch_impact: str  # low, medium, high
 
 
+class MLPrediction(BaseModel):
+    """Machine learning prediction with confidence (IP-005 Days 11-12)."""
+    predicted_value: str
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    explanation: str
+    ml_used: bool = Field(default=True, description="True if ML used, False if rule-based fallback")
+
+
 class TaskAssessmentResponse(BaseModel):
     """Response from task suitability assessment."""
     suitability_score: float = Field(..., ge=0.0, le=1.0)
@@ -55,6 +63,9 @@ class TaskAssessmentResponse(BaseModel):
     accommodations_needed: List[str]
     optimal_timing: Dict[str, Any]
     adhd_insights: ADHDInsights
+    # ML predictions (IP-005 Days 11-12)
+    ml_energy_prediction: Optional[MLPrediction] = Field(None, description="ML-based energy level prediction")
+    ml_attention_prediction: Optional[MLPrediction] = Field(None, description="ML-based attention state prediction")
 
 
 # Energy & Attention State
@@ -128,6 +139,34 @@ class ActivityUpdateResponse(BaseModel):
     energy_updated: bool
     attention_updated: bool
     message: str
+
+
+# ML Pattern & Prediction Endpoints (IP-005 Days 11-12)
+
+class PatternsResponse(BaseModel):
+    """User patterns learned by ML system."""
+    user_id: str
+    energy_patterns: List[Dict[str, Any]]
+    attention_patterns: List[Dict[str, Any]]
+    break_patterns: List[Dict[str, Any]]
+    last_updated: datetime
+
+
+class PredictionRequest(BaseModel):
+    """Request for ML predictions."""
+    user_id: str
+    prediction_type: str = Field(..., description="energy, attention, or break")
+    context: Optional[Dict[str, Any]] = Field(None, description="Additional context (session_type, time, etc.)")
+
+
+class PredictionResponse(BaseModel):
+    """ML prediction response."""
+    prediction_type: str
+    predicted_value: str
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    explanation: str
+    ml_used: bool
+    timestamp: datetime
 
 
 # Health Check
