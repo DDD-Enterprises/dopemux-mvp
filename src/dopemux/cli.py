@@ -162,8 +162,12 @@ def start(
     if legacy_value is not None:
         use_claude_router = legacy_value
 
+    from .workspace_utils import get_workspace_root
+
     config_manager = ctx.obj["config_manager"]
-    project_path = Path.cwd()
+    # CRITICAL FIX: Use git root detection instead of cwd
+    # This ensures correct workspace even from subdirectories and worktrees
+    project_path = get_workspace_root()
 
     # Check if project is initialized
     if not (project_path / ".dopemux").exists():
@@ -478,7 +482,8 @@ def start(
 
         # Start MCP servers by default (ADHD-optimized experience)
         if not no_mcp:
-            _start_mcp_servers_with_progress(project_path)
+            # CRITICAL FIX: Pass instance_env_vars so MCP servers get workspace isolation
+            _start_mcp_servers_with_progress(project_path, instance_env=instance_env_vars)
         else:
             console.print("[yellow]⚠️  Skipping MCP servers (reduced ADHD experience)[/yellow]")
 
@@ -2558,9 +2563,16 @@ def _get_attention_emoji(state: Optional[str]) -> str:
     return emoji_map.get(state, "❓")
 
 
-def _start_mcp_servers_with_progress(project_path: Path):
+def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[dict] = None):
     """
     Start MCP servers with real-time output streaming and health check waiting.
+
+    CRITICAL: Passes instance environment variables to MCP servers for workspace isolation.
+    Without this, all instances share the same workspace = broken ADHD context preservation!
+
+    Args:
+        project_path: Project root path
+        instance_env: Instance-specific environment variables (DOPEMUX_WORKSPACE_ID, etc.)
 
     ADHD-optimized:
     - Real-time visual feedback reduces anxiety
@@ -2570,6 +2582,12 @@ def _start_mcp_servers_with_progress(project_path: Path):
     import requests
 
     mcp_dir = project_path / "docker" / "mcp-servers"
+
+    # CRITICAL FIX: Merge instance env with current environment
+    # This ensures MCP servers get DOPEMUX_WORKSPACE_ID and other instance vars
+    env_for_subprocess = os.environ.copy()
+    if instance_env:
+        env_for_subprocess.update(instance_env)
 
     # Critical servers to health check
     critical_servers = [
@@ -2589,13 +2607,15 @@ def _start_mcp_servers_with_progress(project_path: Path):
 
     try:
         with Live(status_text, console=console, refresh_per_second=4) as live:
-            # Start the containers
+            # Start the containers with instance environment
+            # CRITICAL FIX: Pass env_for_subprocess so docker-compose gets DOPEMUX_WORKSPACE_ID
             process = subprocess.Popen(
                 ["bash", "-c", f"cd {mcp_dir} && ./start-all-mcp-servers.sh"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
-                bufsize=1
+                bufsize=1,
+                env=env_for_subprocess  # ← THE FIX! Passes instance vars to MCP servers
             )
 
             # Stream output line by line
