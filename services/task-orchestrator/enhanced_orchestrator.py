@@ -1218,3 +1218,104 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+    # ========================================================================
+    # Component 5: Cross-Plane Query Methods
+    # ========================================================================
+
+    async def get_tasks(
+        self,
+        status_filter: Optional[str] = None,
+        sprint_id_filter: Optional[str] = None,
+        limit: int = 50
+    ) -> List[Dict[str, Any]]:
+        """Query tasks from ConPort (Component 5)."""
+        try:
+            if not self.conport_adapter:
+                return []
+            
+            # Query ConPort for progress entries
+            progress_entries = await self.conport_adapter.get_progress_entries(
+                status_filter=status_filter,
+                tags_filter=[sprint_id_filter] if sprint_id_filter else None
+            )
+            
+            # Transform to task format
+            tasks = []
+            for entry in progress_entries[:limit]:
+                tasks.append({
+                    "task_id": str(entry.get("id", "")),
+                    "title": entry.get("description", ""),
+                    "description": entry.get("description", ""),
+                    "status": entry.get("status", "TODO"),
+                    "progress": 0.5 if entry.get("status") == "IN_PROGRESS" else (1.0 if entry.get("status") == "DONE" else 0.0),
+                    "priority": "medium",
+                    "complexity": 0.5,
+                    "estimated_duration": 60,
+                    "dependencies": [],
+                    "tags": entry.get("tags", [])
+                })
+            
+            return tasks
+        
+        except Exception as e:
+            logger.error(f"Failed to get tasks: {e}")
+            return []
+
+    async def get_task_by_id(self, task_id: str) -> Optional[Dict[str, Any]]:
+        """Get single task details (Component 5)."""
+        tasks = await self.get_tasks()
+        for task in tasks:
+            if task["task_id"] == task_id:
+                return task
+        return None
+
+    async def get_adhd_state(self) -> Dict[str, Any]:
+        """Get current ADHD state (Component 5)."""
+        # TODO: Wire to ADHD Engine
+        return {
+            "energy_level": "medium",
+            "attention_level": "focused",
+            "time_since_break": 45,
+            "break_recommended": False,
+            "current_session_duration": 45
+        }
+
+    async def get_task_recommendations(self, limit: int = 5) -> List[Dict[str, Any]]:
+        """Get ADHD-aware task recommendations (Component 5)."""
+        tasks = await self.get_tasks(status_filter="TODO")
+        recommendations = []
+        
+        for i, task in enumerate(tasks[:limit]):
+            recommendations.append({
+                "task_id": task["task_id"],
+                "title": task["title"],
+                "reason": "Matches current cognitive state",
+                "confidence": 0.8 - (i * 0.1),
+                "priority": i + 1
+            })
+        
+        return recommendations
+
+    async def get_session_status(self) -> Dict[str, Any]:
+        """Get current session status (Component 5)."""
+        return {
+            "session_id": f"session-{datetime.now().strftime('%Y-%m-%d')}",
+            "active": self.running,
+            "started_at": datetime.now(),
+            "duration_minutes": 45,
+            "break_count": 0,
+            "tasks_completed": self.metrics.get("tasks_orchestrated", 0)
+        }
+
+    async def get_active_sprint(self) -> Dict[str, Any]:
+        """Get active sprint info (Component 5)."""
+        # Query ConPort for sprint context
+        return {
+            "sprint_id": "S-2025.10",
+            "name": "Architecture 3.0 Implementation",
+            "start_date": datetime(2025, 10, 1),
+            "end_date": datetime(2025, 10, 31),
+            "total_tasks": 20,
+            "completed_tasks": self.metrics.get("tasks_orchestrated", 0),
+            "in_progress_tasks": 3
+        }

@@ -1,10 +1,14 @@
 """
-ConPort MCP Client Wrapper - Component 4
+ConPort MCP Client Wrapper - Components 4 & 5
 
 Provides async wrapper around ConPort MCP tools for Task-Orchestrator integration.
 Handles all ConPort MCP calls with proper error handling and logging.
 
-Created: 2025-10-19 (Component 4)
+Component 4: Write operations (log_progress, update_progress, link_items, etc.)
+Component 5: Read operations (get_decisions, get_patterns, semantic_search, etc.)
+
+Created: 2025-10-19 (Component 4 - Write operations)
+Enhanced: 2025-10-20 (Component 5 - Cross-plane query operations)
 """
 
 import logging
@@ -309,4 +313,307 @@ class ConPortMCPClient:
 
         except Exception as e:
             logger.error(f"ConPort log_decision failed: {e}")
+            raise
+
+    # ========================================================================
+    # Component 5: Cross-Plane Query Methods
+    # ========================================================================
+
+    async def get_decisions(
+        self,
+        workspace_id: str,
+        limit: Optional[int] = None,
+        tags_filter_include_any: Optional[List[str]] = None,
+        tags_filter_include_all: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Get decisions from ConPort.
+
+        Args:
+            workspace_id: Absolute path to workspace
+            limit: Optional limit on number of decisions
+            tags_filter_include_any: Filter decisions that include ANY of these tags
+            tags_filter_include_all: Filter decisions that include ALL of these tags
+
+        Returns:
+            Dict with {"result": [decisions]}
+
+        Raises:
+            Exception: If MCP call fails
+        """
+        try:
+            params = {"workspace_id": workspace_id}
+
+            if limit:
+                params["limit"] = limit
+
+            if tags_filter_include_any:
+                params["tags_filter_include_any"] = tags_filter_include_any
+
+            if tags_filter_include_all:
+                params["tags_filter_include_all"] = tags_filter_include_all
+
+            # Call ConPort MCP tool
+            result = await self.mcp_tools.mcp__conport__get_decisions(**params)
+
+            logger.debug(f"ConPort get_decisions: {len(result.get('result', []))} decisions")
+            return result
+
+        except Exception as e:
+            logger.error(f"ConPort get_decisions failed: {e}")
+            raise
+
+    async def get_system_patterns(
+        self,
+        workspace_id: str,
+        limit: Optional[int] = None,
+        tags_filter_include_any: Optional[List[str]] = None,
+        tags_filter_include_all: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Get system patterns from ConPort.
+
+        Args:
+            workspace_id: Absolute path to workspace
+            limit: Optional limit on number of patterns
+            tags_filter_include_any: Filter patterns that include ANY of these tags
+            tags_filter_include_all: Filter patterns that include ALL of these tags
+
+        Returns:
+            Dict with patterns data
+
+        Raises:
+            Exception: If MCP call fails
+        """
+        try:
+            params = {"workspace_id": workspace_id}
+
+            if limit:
+                params["limit"] = limit
+
+            if tags_filter_include_any:
+                params["tags_filter_include_any"] = tags_filter_include_any
+
+            if tags_filter_include_all:
+                params["tags_filter_include_all"] = tags_filter_include_all
+
+            # Call ConPort MCP tool
+            result = await self.mcp_tools.mcp__conport__get_system_patterns(**params)
+
+            logger.debug(f"ConPort get_system_patterns: Retrieved patterns")
+            return result
+
+        except Exception as e:
+            logger.error(f"ConPort get_system_patterns failed: {e}")
+            raise
+
+    async def get_linked_items(
+        self,
+        workspace_id: str,
+        item_type: str,
+        item_id: str,
+        relationship_type_filter: Optional[str] = None,
+        linked_item_type_filter: Optional[str] = None,
+        limit: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        Get items linked to a specific ConPort item.
+
+        Args:
+            workspace_id: Absolute path to workspace
+            item_type: Type of item (decision, progress_entry, system_pattern)
+            item_id: ID of item
+            relationship_type_filter: Optional filter by relationship type
+            linked_item_type_filter: Optional filter by linked item type
+            limit: Optional limit on results
+
+        Returns:
+            Dict with linked items
+
+        Raises:
+            Exception: If MCP call fails
+        """
+        try:
+            params = {
+                "workspace_id": workspace_id,
+                "item_type": item_type,
+                "item_id": item_id
+            }
+
+            if relationship_type_filter:
+                params["relationship_type_filter"] = relationship_type_filter
+
+            if linked_item_type_filter:
+                params["linked_item_type_filter"] = linked_item_type_filter
+
+            if limit:
+                params["limit"] = limit
+
+            # Call ConPort MCP tool
+            result = await self.mcp_tools.mcp__conport__get_linked_items(**params)
+
+            logger.debug(f"ConPort get_linked_items: {item_type}/{item_id}")
+            return result
+
+        except Exception as e:
+            logger.error(f"ConPort get_linked_items failed: {e}")
+            raise
+
+    async def semantic_search_conport(
+        self,
+        workspace_id: str,
+        query_text: str,
+        top_k: int = 5,
+        filter_item_types: Optional[List[str]] = None,
+        filter_tags_include_any: Optional[List[str]] = None,
+        filter_tags_include_all: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Semantic search across ConPort items.
+
+        Args:
+            workspace_id: Absolute path to workspace
+            query_text: Natural language query
+            top_k: Number of results (default 5, max 25)
+            filter_item_types: Optional filter by item types
+            filter_tags_include_any: Optional filter by tags (any)
+            filter_tags_include_all: Optional filter by tags (all)
+
+        Returns:
+            Dict with search results
+
+        Raises:
+            Exception: If MCP call fails
+        """
+        try:
+            params = {
+                "workspace_id": workspace_id,
+                "query_text": query_text,
+                "top_k": min(top_k, 25)  # Enforce max 25
+            }
+
+            if filter_item_types:
+                params["filter_item_types"] = filter_item_types
+
+            if filter_tags_include_any:
+                params["filter_tags_include_any"] = filter_tags_include_any
+
+            if filter_tags_include_all:
+                params["filter_tags_include_all"] = filter_tags_include_all
+
+            # Call ConPort MCP tool
+            result = await self.mcp_tools.mcp__conport__semantic_search_conport(**params)
+
+            logger.debug(f"ConPort semantic_search: '{query_text}' -> {len(result.get('results', []))} results")
+            return result
+
+        except Exception as e:
+            logger.error(f"ConPort semantic_search failed: {e}")
+            raise
+
+    async def get_active_context(
+        self,
+        workspace_id: str
+    ) -> Dict[str, Any]:
+        """
+        Get current active context from ConPort.
+
+        Returns current session state including ADHD metrics (energy, attention).
+
+        Args:
+            workspace_id: Absolute path to workspace
+
+        Returns:
+            Dict with active context data
+
+        Raises:
+            Exception: If MCP call fails
+        """
+        try:
+            params = {"workspace_id": workspace_id}
+
+            # Call ConPort MCP tool
+            result = await self.mcp_tools.mcp__conport__get_active_context(**params)
+
+            logger.debug(f"ConPort get_active_context: Retrieved current state")
+            return result
+
+        except Exception as e:
+            logger.error(f"ConPort get_active_context failed: {e}")
+            raise
+
+    async def search_decisions_fts(
+        self,
+        workspace_id: str,
+        query_term: str,
+        limit: int = 10
+    ) -> Dict[str, Any]:
+        """
+        Full-text search across decisions.
+
+        Args:
+            workspace_id: Absolute path to workspace
+            query_term: Search term
+            limit: Number of results (default 10)
+
+        Returns:
+            Dict with matching decisions
+
+        Raises:
+            Exception: If MCP call fails
+        """
+        try:
+            params = {
+                "workspace_id": workspace_id,
+                "query_term": query_term,
+                "limit": limit
+            }
+
+            # Call ConPort MCP tool
+            result = await self.mcp_tools.mcp__conport__search_decisions_fts(**params)
+
+            logger.debug(f"ConPort search_decisions_fts: '{query_term}' -> {len(result.get('results', []))} results")
+            return result
+
+        except Exception as e:
+            logger.error(f"ConPort search_decisions_fts failed: {e}")
+            raise
+
+    async def get_custom_data(
+        self,
+        workspace_id: str,
+        category: Optional[str] = None,
+        key: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Get custom data from ConPort.
+
+        Args:
+            workspace_id: Absolute path to workspace
+            category: Optional category filter
+            key: Optional key filter (requires category)
+
+        Returns:
+            Dict with custom data entries
+
+        Raises:
+            Exception: If MCP call fails
+        """
+        try:
+            params = {"workspace_id": workspace_id}
+
+            if category:
+                params["category"] = category
+
+            if key:
+                params["key"] = key
+
+            # Call ConPort MCP tool
+            result = await self.mcp_tools.mcp__conport__get_custom_data(**params)
+
+            logger.debug(f"ConPort get_custom_data: category={category}, key={key}")
+            return result
+
+        except Exception as e:
+            logger.error(f"ConPort get_custom_data failed: {e}")
             raise
