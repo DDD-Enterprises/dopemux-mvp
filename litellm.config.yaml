@@ -1,7 +1,8 @@
 model_list:
 - model_name: claude-sonnet-4.5
   litellm_params:
-    model: anthropic/claude-sonnet-4-5-20250929
+    # Use a valid Anthropic model id for API access
+    model: anthropic/claude-3-5-sonnet-latest
     api_key: os.environ/ANTHROPIC_API_KEY
     max_tokens: 32768
     rpm: 10000
