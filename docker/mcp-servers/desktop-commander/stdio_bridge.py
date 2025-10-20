@@ -90,10 +90,35 @@ async def main():
     logger.info("Desktop-Commander Stdio Bridge started")
     logger.info(f"Forwarding to: {DESKTOP_COMMANDER_URL}")
 
+    # Ensure stdin is available and properly configured for asyncio
+    import os
+    import fcntl
+
+    try:
+        # Verify stdin is a valid file descriptor
+        stdin_fd = sys.stdin.fileno()
+
+        # Set stdin to blocking mode for asyncio compatibility
+        flags = fcntl.fcntl(stdin_fd, fcntl.F_GETFL)
+        if flags & os.O_NONBLOCK:
+            fcntl.fcntl(stdin_fd, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)
+            logger.debug("Set stdin to blocking mode")
+
+    except (AttributeError, OSError, ValueError) as e:
+        logger.error(f"stdin is not available or not a valid file descriptor: {e}")
+        logger.error("This script must be run with stdin connected (not in background)")
+        return
+
     # Read from stdin and write to stdout
     reader = asyncio.StreamReader()
     protocol = asyncio.StreamReaderProtocol(reader)
-    await asyncio.get_event_loop().connect_read_pipe(lambda: protocol, sys.stdin)
+
+    try:
+        await asyncio.get_event_loop().connect_read_pipe(lambda: protocol, sys.stdin)
+    except Exception as e:
+        logger.error(f"Failed to connect stdin to asyncio: {e}")
+        logger.error("Make sure stdin is available and the script is run interactively")
+        return
 
     while True:
         try:

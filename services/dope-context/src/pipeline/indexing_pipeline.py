@@ -20,6 +20,7 @@ from datetime import datetime
 from ..preprocessing.code_chunker import CodeChunker, CodeChunk, ChunkingConfig
 from ..context.openai_generator import OpenAIContextGenerator
 from ..embeddings.voyage_embedder import VoyageEmbedder
+from ..embeddings.contextualized_embedder import ContextualizedEmbedder
 from ..search.dense_search import MultiVectorSearch
 from ..sync.incremental_indexer import IncrementalIndexer, ChunkMetadata, ChunkSnapshot
 
@@ -122,7 +123,8 @@ class IndexingPipeline:
         self,
         chunker: CodeChunker,
         context_generator: Optional[OpenAIContextGenerator],
-        embedder: VoyageEmbedder,
+        standard_embedder: VoyageEmbedder,
+        contextualized_embedder: ContextualizedEmbedder,
         vector_search: MultiVectorSearch,
         config: IndexingConfig,
     ):
@@ -132,13 +134,15 @@ class IndexingPipeline:
         Args:
             chunker: Code chunker instance
             context_generator: Context generator (optional for testing)
-            embedder: Voyage embedder instance
+            standard_embedder: Voyage embedder for title/breadcrumb vectors
+            contextualized_embedder: Contextualized embedder for content vector
             vector_search: Multi-vector search instance
             config: Pipeline configuration
         """
         self.chunker = chunker
         self.context_generator = context_generator
-        self.embedder = embedder
+        self.standard_embedder = standard_embedder
+        self.contextualized_embedder = contextualized_embedder
         self.vector_search = vector_search
         self.config = config
         self.incremental_indexer = IncrementalIndexer(config.workspace_path)
@@ -262,31 +266,34 @@ class IndexingPipeline:
                 for chunk in chunks
             ]
 
-            # 4. Embed all texts (batched)
-            content_embeddings = await self.embedder.embed_batch(
-                texts=content_texts,
-                model="voyage-code-3",
+            # 4. Embed all texts
+            # Content vector: Use contextualized embedding (document-aware, 14.24% better accuracy)
+            content_response = await self.contextualized_embedder.embed_document(
+                chunks=content_texts,  # All chunks from this file
+                model="voyage-context-3",
                 input_type="document",
+                output_dimension=1024,
             )
+            content_embeddings = content_response.embeddings
 
-            title_embeddings = await self.embedder.embed_batch(
+            # Title + Breadcrumb vectors: Use standard embedding (simple identifiers)
+            title_embeddings = await self.standard_embedder.embed_batch(
                 texts=title_texts,
                 model="voyage-code-3",
                 input_type="document",
             )
 
-            breadcrumb_embeddings = await self.embedder.embed_batch(
+            breadcrumb_embeddings = await self.standard_embedder.embed_batch(
                 texts=breadcrumb_texts,
                 model="voyage-code-3",
                 input_type="document",
             )
 
             # Track embedding cost
-            embedding_cost = sum(
-                resp.cost_usd
-                for resp in (
-                    content_embeddings + title_embeddings + breadcrumb_embeddings
-                )
+            embedding_cost = (
+                content_response.cost_usd +
+                sum(resp.cost_usd for resp in title_embeddings) +
+                sum(resp.cost_usd for resp in breadcrumb_embeddings)
             )
             self.progress.embedding_cost_usd += embedding_cost
 
@@ -299,7 +306,7 @@ class IndexingPipeline:
                 chunk_id = self._generate_chunk_id(file_path, chunk)
 
                 doc = {
-                    "content_vector": content_embeddings[i].embedding,
+                    "content_vector": content_embeddings[i],  # Already List[float]
                     "title_vector": title_embeddings[i].embedding,
                     "breadcrumb_vector": breadcrumb_embeddings[i].embedding,
                     "payload": {
@@ -516,13 +523,14 @@ class IndexingPipeline:
                 "cost_usd": round(self.progress.context_cost_usd, 4),
                 "summary": (
                     self.context_generator.get_cost_summary()
-                    if self.context_generator
+                    if self.context_generator and hasattr(self.context_generator, 'get_cost_summary')
                     else {}
                 ),
             },
             "embeddings": {
                 "cost_usd": round(self.progress.embedding_cost_usd, 4),
-                "summary": self.embedder.get_cost_summary(),
+                "contextualized_summary": self.contextualized_embedder.get_cost_summary(),
+                "standard_summary": self.standard_embedder.get_cost_summary(),
             },
             "total_cost_usd": round(self.progress.total_cost_usd, 4),
         }
@@ -540,7 +548,13 @@ async def main():
         api_key=os.getenv("OPENAI_API_KEY", "test"),
     )
 
-    embedder = VoyageEmbedder(
+    # Standard embedder for title + breadcrumb
+    standard_embedder = VoyageEmbedder(
+        api_key=os.getenv("VOYAGE_API_KEY", "test"),
+    )
+
+    # Contextualized embedder for content (14.24% better accuracy)
+    contextualized_embedder = ContextualizedEmbedder(
         api_key=os.getenv("VOYAGE_API_KEY", "test"),
     )
 
@@ -560,7 +574,8 @@ async def main():
     pipeline = IndexingPipeline(
         chunker=chunker,
         context_generator=context_generator,
-        embedder=embedder,
+        standard_embedder=standard_embedder,
+        contextualized_embedder=contextualized_embedder,
         vector_search=vector_search,
         config=config,
     )
