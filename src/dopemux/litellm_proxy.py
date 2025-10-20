@@ -229,14 +229,18 @@ class LiteLLMProxyManager:
         general_settings = config_data.setdefault("general_settings", {})
         general_settings["master_key"] = master_key
 
-        # Always use a per-instance SQLite DB unless explicitly overridden.
-        # Using Postgres from the repo config would cause local CLI startup failures.
+        # IMPORTANT: Do not set a database_url for local CLI proxy.
+        # Presence of this field triggers Prisma initialization which fails
+        # on local installs without generated binaries. We disable DB usage
+        # via env + removing the config key entirely. Advanced users can set
+        # DOPEMUX_LITELLM_DB_URL to opt back in.
         override_db = os.environ.get("DOPEMUX_LITELLM_DB_URL", "").strip()
         if override_db:
             general_settings["database_url"] = override_db
         else:
-            resolved_db = self.instance_dir / "litellm.db"
-            general_settings["database_url"] = f"sqlite:///{resolved_db}"
+            # Remove any existing DB configuration to avoid Prisma entirely
+            if "database_url" in general_settings:
+                general_settings.pop("database_url", None)
 
         config_path = self.instance_dir / "litellm.config.yaml"
         config_path.write_text(
