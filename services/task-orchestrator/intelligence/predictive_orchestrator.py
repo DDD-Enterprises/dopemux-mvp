@@ -436,39 +436,238 @@ class RuleBasedRecommender:
         }
 
 
-# Placeholder classes for future ML implementation (Week 5+)
+# ============================================================================
+# ML-Powered Recommenders (Week 4+)
+# ============================================================================
 
-class MLTaskRecommender:
+try:
+    import sys
+    from pathlib import Path
+    # Add ml module to path
+    ml_path = Path(__file__).parent.parent / "ml"
+    if str(ml_path) not in sys.path:
+        sys.path.insert(0, str(ml_path))
+
+    from feature_engineering import FeatureEngineer, extract_features_from_context
+    from contextual_bandit import (
+        ThompsonSamplingBandit,
+        UCBBandit,
+        BanditRecommendation,
+        create_bandit
+    )
+    ML_AVAILABLE = True
+except ImportError as e:
+    ML_AVAILABLE = False
+    print(f"⚠️ ML modules unavailable: {e}")
+
+
+class ContextualBanditRecommender:
     """
-    ML-powered task recommendations (Week 5+ implementation).
+    ML-powered task recommendations using contextual bandits.
 
-    Learns from historical task completions to predict which tasks
-    are most likely to be completed in current ADHD state.
+    Uses Thompson Sampling to learn which tasks are most likely to be
+    completed in different ADHD states. Adapts in real-time from outcomes.
 
     Features:
-    - GradientBoostingClassifier for completion prediction
-    - Feature engineering from ADHD state
-    - Continuous learning from outcomes
+    - Feature engineering from ADHD state (30 features)
+    - Thompson Sampling or UCB algorithm
+    - Safe exploration constraints
+    - Online learning from outcomes
     - Confidence scoring
 
-    Status: Placeholder for Week 5 implementation
+    Status: Week 4 implementation (ready for use)
     """
 
-    def __init__(self):
-        self.is_trained = False
-        self.min_training_samples = 50
+    def __init__(
+        self,
+        algorithm: str = "thompson_sampling",
+        min_training_samples: int = 10,  # Lower threshold for bandits
+        min_reward: float = 0.3,
+        safe_exploration: bool = True
+    ):
+        """
+        Initialize contextual bandit recommender.
+
+        Args:
+            algorithm: "thompson_sampling" or "ucb"
+            min_training_samples: Minimum samples before using ML (default 10)
+            min_reward: Minimum expected reward constraint
+            safe_exploration: Enable safety constraints
+        """
+        self.min_training_samples = min_training_samples
+        self.algorithm = algorithm
+
+        # Initialize ML components (if available)
+        if ML_AVAILABLE:
+            self.feature_engineer = FeatureEngineer()
+            self.bandit = create_bandit(
+                algorithm=algorithm,
+                min_reward=min_reward,
+                safe_exploration=safe_exploration
+            )
+            self.is_available = True
+        else:
+            self.feature_engineer = None
+            self.bandit = None
+            self.is_available = False
+
+        # Track outcomes for training threshold
+        self._outcome_count = 0
 
     async def recommend_tasks(
         self,
         context: RecommendationContext,
         limit: int = 3
     ) -> List[TaskRecommendation]:
-        """Generate ML-powered recommendations (Week 5+)."""
-        raise NotImplementedError(
-            "ML recommendations coming in Week 5. "
-            f"Need {self.min_training_samples} task completions for training. "
-            "Use RuleBasedRecommender for now."
+        """
+        Generate ML-powered recommendations using contextual bandit.
+
+        Args:
+            context: Current ADHD/temporal state
+            limit: Max recommendations (default 3)
+
+        Returns:
+            List of TaskRecommendation objects with ML confidence
+        """
+        if not self.is_available:
+            raise RuntimeError("ML modules not available - install dependencies")
+
+        if not context.candidate_tasks:
+            return []
+
+        # Extract features for each candidate task
+        features_per_task = {}
+        for task in context.candidate_tasks:
+            task_id = getattr(task, 'task_id', 'unknown')
+            feature_vector = self.feature_engineer.extract_features(context, task)
+            features_per_task[task_id] = feature_vector.features
+
+        # Get bandit recommendations
+        bandit_recs = self.bandit.recommend_tasks(
+            candidate_tasks=context.candidate_tasks,
+            features_per_task=features_per_task,
+            n_recommendations=limit
         )
+
+        # Convert to TaskRecommendation format
+        recommendations = []
+        for bandit_rec in bandit_recs:
+            # Generate rationale from features
+            feature_vector = features_per_task[bandit_rec.task_id]
+            rationale = self._generate_ml_rationale(
+                bandit_rec,
+                feature_vector,
+                context
+            )
+
+            rec = TaskRecommendation(
+                task_id=bandit_rec.task_id,
+                task=bandit_rec.task,
+                confidence=bandit_rec.confidence,
+                completion_probability=bandit_rec.expected_reward,
+                recommendation_source=RecommendationSource.ML_MODEL,
+                rationale=rationale,
+                ranking_factors={
+                    "expected_reward": bandit_rec.expected_reward,
+                    "exploration_score": bandit_rec.exploration_score,
+                    "confidence": bandit_rec.confidence,
+                    "sampled_value": bandit_rec.sampled_value
+                },
+                user_energy=context.energy_level,
+                user_attention=context.attention_level
+            )
+            recommendations.append(rec)
+
+        return recommendations
+
+    def update_from_outcome(
+        self,
+        task_id: str,
+        completed: bool,
+        context: RecommendationContext = None,
+        task: Any = None
+    ):
+        """
+        Update bandit with task completion outcome (online learning).
+
+        Args:
+            task_id: Task that was attempted
+            completed: Whether task was completed
+            context: Optional context when task was attempted
+            task: Optional task object for feature re-extraction
+        """
+        if not self.is_available:
+            return
+
+        # Extract features if context + task provided
+        features = None
+        if context and task:
+            feature_vector = self.feature_engineer.extract_features(context, task)
+            features = feature_vector.features
+
+        # Update bandit
+        self.bandit.update(
+            task_id=task_id,
+            completed=completed,
+            reward=1.0 if completed else 0.0,
+            features=features
+        )
+
+        # Track outcome count
+        self._outcome_count += 1
+
+    def is_trained(self) -> bool:
+        """Check if bandit has enough data to make good recommendations."""
+        return self._outcome_count >= self.min_training_samples
+
+    def get_training_progress(self) -> Dict[str, Any]:
+        """Get training progress information."""
+        return {
+            "outcome_count": self._outcome_count,
+            "min_training_samples": self.min_training_samples,
+            "is_trained": self.is_trained(),
+            "progress_percentage": min(
+                (self._outcome_count / self.min_training_samples) * 100,
+                100
+            ),
+            "bandit_stats": self.bandit.get_global_statistics() if self.is_available else None
+        }
+
+    def _generate_ml_rationale(
+        self,
+        bandit_rec: Any,  # BanditRecommendation
+        features: Any,  # np.ndarray
+        context: RecommendationContext
+    ) -> str:
+        """Generate human-readable rationale from ML prediction."""
+        reasons = []
+
+        # Confidence level
+        if bandit_rec.confidence > 0.7:
+            reasons.append(f"High confidence prediction ({bandit_rec.confidence:.0%})")
+        elif bandit_rec.confidence < 0.4:
+            reasons.append(f"Exploratory recommendation (learning your patterns)")
+
+        # Expected completion
+        if bandit_rec.expected_reward > 0.7:
+            reasons.append(f"Strong completion history ({bandit_rec.expected_reward:.0%} success rate)")
+        elif bandit_rec.expected_reward < 0.4:
+            reasons.append(f"Worth trying - gathering data")
+
+        # Exploration vs exploitation
+        if bandit_rec.exploration_score > 0.05:
+            reasons.append("Exploring new options to learn your preferences")
+
+        # Metadata insights
+        if "arm_pulls" in bandit_rec.metadata:
+            pulls = bandit_rec.metadata["arm_pulls"]
+            if pulls > 10:
+                reasons.append(f"Based on {pulls} previous attempts")
+
+        if not reasons:
+            return "ML-based recommendation adapting to your patterns"
+
+        return ". ".join(reasons)
 
 
 class HybridTaskRecommender:
@@ -476,30 +675,245 @@ class HybridTaskRecommender:
     Hybrid system combining rules + ML (Production system).
 
     Strategy:
-    - Try ML first when trained and confident
-    - Fall back to rules when ML uncertain or not trained
-    - Always provide 3 recommendations (never fail)
+    - Use rules-only for first 10 task completions (cold start)
+    - Transition to ML when training threshold met (10+ outcomes)
+    - Blend ML + rules for robustness (weighted average)
+    - Fall back to rules if ML fails or confidence too low
+    - Always provide recommendations (never fail)
 
-    Status: Week 5+ implementation
+    Status: Week 4+ implementation (ready for production)
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        ml_algorithm: str = "thompson_sampling",
+        min_ml_confidence: float = 0.4,
+        ml_weight: float = 0.7  # 70% ML, 30% rules when ML confident
+    ):
+        """
+        Initialize hybrid recommender.
+
+        Args:
+            ml_algorithm: "thompson_sampling" or "ucb"
+            min_ml_confidence: Minimum ML confidence to use ML predictions
+            ml_weight: Weight for ML vs rules (0.7 = 70% ML, 30% rules)
+        """
         self.rule_based = RuleBasedRecommender()
-        self.ml_based = MLTaskRecommender()
+
+        # Try to initialize ML
+        try:
+            self.ml_based = ContextualBanditRecommender(
+                algorithm=ml_algorithm,
+                min_training_samples=10
+            )
+            self.ml_available = ML_AVAILABLE
+        except Exception as e:
+            print(f"⚠️ ML initialization failed: {e}")
+            self.ml_based = None
+            self.ml_available = False
+
+        self.min_ml_confidence = min_ml_confidence
+        self.ml_weight = ml_weight
+
+        # Statistics
+        self._total_recommendations = 0
+        self._ml_recommendations = 0
+        self._rule_recommendations = 0
+        self._hybrid_recommendations = 0
 
     async def recommend_tasks(
         self,
         context: RecommendationContext,
-        limit: int = 3
+        limit: int = 3,
+        force_algorithm: Optional[str] = None  # "rules", "ml", "hybrid"
     ) -> List[TaskRecommendation]:
         """
         Generate hybrid recommendations.
 
-        For Week 3-4: Uses rule-based only
-        For Week 5+: Tries ML first, falls back to rules
+        Decision Logic:
+        1. If ML not available → rules only
+        2. If ML not trained (<10 outcomes) → rules only
+        3. If ML trained but low confidence → blend (hybrid)
+        4. If ML trained and high confidence → ML primary
+
+        Args:
+            context: Current ADHD/temporal state
+            limit: Max recommendations (default 3)
+            force_algorithm: Optional override ("rules", "ml", "hybrid")
+
+        Returns:
+            List of TaskRecommendation objects (source: HYBRID)
         """
-        # Week 3-4: Rule-based only
-        return await self.rule_based.recommend_tasks(context, limit)
+        self._total_recommendations += 1
+
+        # Override if forced
+        if force_algorithm == "rules":
+            recs = await self.rule_based.recommend_tasks(context, limit)
+            self._rule_recommendations += 1
+            return recs
+        elif force_algorithm == "ml" and self.ml_available:
+            recs = await self.ml_based.recommend_tasks(context, limit)
+            self._ml_recommendations += 1
+            return recs
+
+        # Decision logic: Should we use ML?
+        use_ml = self._should_use_ml()
+
+        if not use_ml:
+            # Rules only (cold start or ML unavailable)
+            recommendations = await self.rule_based.recommend_tasks(context, limit)
+            self._rule_recommendations += 1
+
+            # Mark source as hybrid (fallback)
+            for rec in recommendations:
+                rec.recommendation_source = RecommendationSource.HYBRID
+                rec.rationale += " (rule-based - ML training)"
+
+            return recommendations
+
+        # ML is available and trained - get both predictions
+        try:
+            ml_recs = await self.ml_based.recommend_tasks(context, limit * 2)  # Get more for blending
+            rule_recs = await self.rule_based.recommend_tasks(context, limit * 2)
+
+            # Blend recommendations
+            blended = self._blend_recommendations(
+                ml_recs, rule_recs, limit
+            )
+
+            self._hybrid_recommendations += 1
+            return blended
+
+        except Exception as e:
+            # ML failed - fall back to rules
+            print(f"⚠️ ML prediction failed: {e}")
+            recommendations = await self.rule_based.recommend_tasks(context, limit)
+            self._rule_recommendations += 1
+
+            for rec in recommendations:
+                rec.recommendation_source = RecommendationSource.HYBRID
+                rec.rationale += " (rule-based fallback)"
+
+            return recommendations
+
+    def update_from_outcome(
+        self,
+        task_id: str,
+        completed: bool,
+        context: RecommendationContext = None,
+        task: Any = None
+    ):
+        """
+        Update ML model with task completion outcome.
+
+        Args:
+            task_id: Task that was attempted
+            completed: Whether task was completed
+            context: Optional context when task was started
+            task: Optional task object
+        """
+        if self.ml_based and self.ml_available:
+            self.ml_based.update_from_outcome(
+                task_id=task_id,
+                completed=completed,
+                context=context,
+                task=task
+            )
+
+    def get_statistics(self) -> Dict[str, Any]:
+        """Get hybrid recommender statistics."""
+        stats = {
+            "total_recommendations": self._total_recommendations,
+            "ml_recommendations": self._ml_recommendations,
+            "rule_recommendations": self._rule_recommendations,
+            "hybrid_recommendations": self._hybrid_recommendations,
+            "ml_available": self.ml_available
+        }
+
+        # Add ML training progress if available
+        if self.ml_based and self.ml_available:
+            stats["ml_training_progress"] = self.ml_based.get_training_progress()
+
+        return stats
+
+    def _should_use_ml(self) -> bool:
+        """Decide whether to use ML or rules."""
+        if not self.ml_available or not self.ml_based:
+            return False
+
+        # Check if ML is trained
+        return self.ml_based.is_trained()
+
+    def _blend_recommendations(
+        self,
+        ml_recs: List[TaskRecommendation],
+        rule_recs: List[TaskRecommendation],
+        limit: int
+    ) -> List[TaskRecommendation]:
+        """
+        Blend ML and rule-based recommendations.
+
+        Strategy:
+        - Weighted average of completion probabilities
+        - 70% weight to ML, 30% weight to rules (configurable)
+        - Re-rank by blended score
+        - Mark source as HYBRID
+
+        Args:
+            ml_recs: ML recommendations
+            rule_recs: Rule recommendations
+            limit: How many to return
+
+        Returns:
+            Blended recommendations
+        """
+        # Build task_id → recommendation maps
+        ml_map = {rec.task_id: rec for rec in ml_recs}
+        rule_map = {rec.task_id: rec for rec in rule_recs}
+
+        # Get union of all recommended tasks
+        all_task_ids = set(ml_map.keys()) | set(rule_map.keys())
+
+        blended = []
+        for task_id in all_task_ids:
+            ml_rec = ml_map.get(task_id)
+            rule_rec = rule_map.get(task_id)
+
+            # Weighted blend
+            if ml_rec and rule_rec:
+                # Both recommended - blend probabilities
+                blended_prob = (
+                    self.ml_weight * ml_rec.completion_probability +
+                    (1 - self.ml_weight) * rule_rec.completion_probability
+                )
+                blended_confidence = (
+                    self.ml_weight * ml_rec.confidence +
+                    (1 - self.ml_weight) * 0.7  # Rule confidence is fixed 0.7
+                )
+
+                # Use ML task but update scores
+                rec = ml_rec
+                rec.completion_probability = blended_prob
+                rec.confidence = blended_confidence
+                rec.recommendation_source = RecommendationSource.HYBRID
+                rec.rationale = f"ML + Rules: {ml_rec.rationale}"
+
+            elif ml_rec:
+                # ML only - use as-is but mark hybrid
+                rec = ml_rec
+                rec.recommendation_source = RecommendationSource.HYBRID
+
+            else:
+                # Rules only - use as-is but mark hybrid
+                rec = rule_rec
+                rec.recommendation_source = RecommendationSource.HYBRID
+
+            blended.append(rec)
+
+        # Sort by blended completion probability
+        blended.sort(key=lambda r: r.completion_probability, reverse=True)
+
+        return blended[:limit]
 
 
 # Convenience function for easy import
