@@ -62,17 +62,12 @@
     },
     "exa": {
       "type": "stdio",
-      "command": "docker",
-      "args": [
-        "exec",
-        "-i",
-        "mcp-exa",
-        "python",
-        "/app/server.py"
-      ],
+      "command": "/Users/hue/code/dopemux-mvp/docker/mcp-servers/exa/start_with_uvx.sh",
+      "args": [],
       "env": {
         "EXA_API_KEY": "${EXA_API_KEY}"
-      }
+      },
+      "description": "Neural web search with native uvx support (no Docker)"
     },
     "dope-context": {
       "type": "stdio",
