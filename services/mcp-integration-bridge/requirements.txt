@@ -41,6 +41,7 @@ alembic>=1.12.0
 # Redis for session management and caching
 redis[hiredis]>=5.0.0
 aioredis>=2.0.1
+qdrant-client>=1.9.1
 
 # Date/time handling
 python-dateutil>=2.8.2

@@ -1,4 +1,4 @@
-# CONPORT-KG Production Deployment
+# Dope Decision Graph (formerly ConPort KG)
 
 **Status**: READY TO USE - Implementation DEFERRED (Option A chosen)
 **Reason**: Development mode is production-quality
@@ -21,7 +21,7 @@ nano .env.production
 
 ```bash
 cd /Users/hue/code/dopemux-mvp
-./scripts/deploy-conport-kg.sh
+./scripts/deploy-conport-kg.sh  # legacy script name
 ```
 
 ### 3. Verify
@@ -41,21 +41,21 @@ cd services/conport_kg_ui && npm run dev
 
 ## Services
 
-**PostgreSQL AGE**:
+**PostgreSQL AGE (Decision Graph DB)**:
 - Port: 5455
 - Database: dopemux_knowledge_graph
 - Graph: conport_knowledge
-- Health: `docker exec conport-kg-postgres-age pg_isready`
+- Health: `docker exec dope-decision-graph-postgres pg_isready`
 
 **Integration Bridge**:
 - Port: 3016 (PORT_BASE + 16)
 - API: http://localhost:3016/kg
 - Health: GET /kg/health
 
-**Redis** (optional):
+**Redis (Decision Graph cache)**:
 - Port: 6379
 - Purpose: Event bus and caching
-- Health: `docker exec conport-kg-redis redis-cli ping`
+- Health: `docker exec dope-decision-graph-redis redis-cli ping`
 
 ---
 
@@ -106,17 +106,17 @@ docker-compose -f docker/conport-kg/docker-compose.yml restart integration-bridg
 crontab -e
 
 # Add this line (daily at 2 AM)
-0 2 * * * /Users/hue/code/dopemux-mvp/scripts/backup-conport-kg.sh >> /var/log/conport-kg-backup.log 2>&1
+0 2 * * * /Users/hue/code/dopemux-mvp/scripts/backup-conport-kg.sh >> /var/log/dope-decision-graph-backup.log 2>&1
 ```
 
 ### Restore from Backup
 
 ```bash
 # List available backups
-ls -lh /var/backups/conport-kg/
+ls -lh /var/backups/dope-decision-graph/
 
 # Restore
-./scripts/restore-conport-kg.sh /var/backups/conport-kg/conport-kg-20251002_020000.sql.gz
+./scripts/restore-conport-kg.sh /var/backups/dope-decision-graph/dope-decision-graph-20251002_020000.sql.gz
 ```
 
 ---
@@ -133,7 +133,7 @@ ls -lh /var/backups/conport-kg/
 
 ```bash
 # Add to crontab (every 5 minutes)
-*/5 * * * * /Users/hue/code/dopemux-mvp/scripts/health-check-kg.sh >> /var/log/conport-kg-health.log 2>&1
+*/5 * * * * /Users/hue/code/dopemux-mvp/scripts/health-check-kg.sh >> /var/log/dope-decision-graph-health.log 2>&1
 ```
 
 ### Configure Alerts
@@ -158,7 +158,7 @@ export ALERT_WEBHOOK=https://discord.com/api/webhooks/YOUR/WEBHOOK
 docker-compose -f docker/conport-kg/docker-compose.yml logs integration-bridge
 
 # Check health
-docker ps --filter "name=conport-kg"
+docker ps --filter "name=dope-decision-graph"
 
 # Restart
 docker-compose -f docker/conport-kg/docker-compose.yml restart

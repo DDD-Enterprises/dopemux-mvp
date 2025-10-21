@@ -82,7 +82,7 @@ class ProductivityMonitor:
 
     async def stop_monitoring(self):
         """Stop productivity monitoring"""
-        if not self.is_monitoring:
+        if self.is_monitoring:
             logger.info("📊 Stopping productivity monitoring")
             self.is_monitoring = False
 

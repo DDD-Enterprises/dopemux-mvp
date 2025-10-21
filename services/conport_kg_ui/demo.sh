@@ -1,5 +1,5 @@
 #!/bin/bash
-# Demo launcher for ConPort KG UI
+# Demo launcher for Dope Decision Graph UI (formerly ConPort KG UI)
 # Starts mock server and UI together with proper cleanup
 
 set -e
@@ -7,7 +7,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-echo "🎭 Starting ConPort KG UI Demo Mode"
+echo "🎭 Starting Dope Decision Graph UI Demo Mode"
 echo ""
 
 # Start mock server in background

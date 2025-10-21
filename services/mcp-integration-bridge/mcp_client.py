@@ -2,7 +2,7 @@
 """
 MCP Client for Integration Bridge.
 
-Connects Integration Bridge to ConPort database for custom_data persistence.
+Connects Integration Bridge to Dope Decision Graph database for custom_data persistence.
 Uses direct PostgreSQL AGE access since bridge already has database connection.
 """
 
@@ -19,10 +19,10 @@ logger = logging.getLogger(__name__)
 
 class ConPortMCPClient:
     """
-    Client for ConPort database operations from Integration Bridge.
+    Client for Dope Decision Graph database operations from Integration Bridge.
 
     Since Integration Bridge already connects to PostgreSQL AGE for KG queries,
-    we can directly access the ConPort tables without an additional MCP hop.
+    we can directly access the Decision Graph tables without an additional MCP hop.
 
     This is architecturally sound because:
     - Bridge is the coordination layer (allowed to access shared database)
@@ -33,7 +33,7 @@ class ConPortMCPClient:
 
     def __init__(self, db_pool: Optional[asyncpg.Pool] = None):
         """
-        Initialize ConPort MCP client.
+        Initialize Dope Decision Graph MCP client.
 
         Args:
             db_pool: Existing PostgreSQL connection pool (from main.py)
@@ -42,7 +42,7 @@ class ConPortMCPClient:
         self.db_pool = db_pool
         self.workspace_id = os.getenv("WORKSPACE_ID", "/Users/hue/code/dopemux-mvp")
 
-        # Database configuration (same as ConPort)
+        # Database configuration (shared with Dope Decision Graph)
         self.db_config = {
             "host": os.getenv("AGE_HOST", "localhost"),
             "port": int(os.getenv("AGE_PORT", "5455")),
@@ -60,12 +60,12 @@ class ConPortMCPClient:
                     min_size=2,
                     max_size=10
                 )
-                logger.info("✅ ConPort MCP client initialized with own connection pool")
+                logger.info("✅ Decision Graph MCP client initialized with own connection pool")
             except Exception as e:
                 logger.error(f"❌ Failed to connect to ConPort database: {e}")
                 raise
         else:
-            logger.info("✅ ConPort MCP client using shared connection pool")
+            logger.info("✅ Decision Graph MCP client using shared connection pool")
 
     async def close(self):
         """Close database connection if we created it."""
@@ -81,7 +81,7 @@ class ConPortMCPClient:
         value: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
-        Save custom data to ConPort database.
+        Save custom data to Decision Graph database.
 
         Args:
             workspace_id: Workspace identifier
@@ -116,7 +116,7 @@ class ConPortMCPClient:
                     workspace_id, category, key, value_json, timestamp
                 )
 
-            logger.info(f"✅ Saved custom_data: {category}/{key} to ConPort")
+            logger.info(f"✅ Saved custom_data: {category}/{key} to Decision Graph")
 
             return {
                 "success": True,
