@@ -151,6 +151,8 @@ def _offer_worktree_creation(
     elif choice == "2":
         # Continue in main (warn)
         console.print("\n[yellow]⚠️ Continuing in main worktree - please be careful![/yellow]")
+        # Remember for this run to suppress further warnings
+        os.environ["DOPEMUX_ALLOW_MAIN"] = "1"
         return False
     elif choice == "3":
         # Exit

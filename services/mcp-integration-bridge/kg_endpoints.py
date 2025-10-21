@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Knowledge Graph REST Endpoints
-Part of CONPORT-KG-2025 Phase 10
+Part of Dope Decision Graph (formerly ConPort KG)
 
 Provides HTTP API for cross-plane KG access:
 - PM Plane: Read-only access to decision context
@@ -29,7 +29,7 @@ try:
     from queries.deep_context import DeepContextQueries
     from queries.models import DecisionCard, DecisionSummary, DecisionNeighborhood, FullDecisionContext
 except ImportError as e:
-    print(f"⚠️  ConPort KG queries not available: {e}")
+    print(f"⚠️  Dope Decision Graph queries not available: {e}")
     OverviewQueries = None
 
 
