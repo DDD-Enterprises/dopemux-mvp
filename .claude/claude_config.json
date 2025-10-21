@@ -1,13 +1,21 @@
 {
   "mcpServers": {
     "conport": {
-      "command": "/Users/hue/code/dopemux-mvp/services/conport/venv/bin/conport-mcp",
+      "type": "stdio",
+      "command": "docker",
       "args": [
-        "--mode", "stdio",
-        "--workspace_id", "/Users/hue/code/dopemux-mvp"
+        "exec",
+        "-i",
+        "mcp-conport_main",
+        "uvx",
+        "--from",
+        "context-portal-mcp",
+        "conport-mcp"
       ],
-      "env": {},
-      "type": "stdio"
+      "env": {
+        "DOPEMUX_INSTANCE_ID": "main",
+        "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
+      }
     },
     "metamcp-broker": {
       "command": "uvx",
@@ -24,10 +32,14 @@
       "command": "python",
       "args": [
         "/Users/hue/code/dopemux-mvp/scripts/mcp_event_wrapper.py",
-        "--server", "gpt-researcher",
-        "--instance", "${DOPEMUX_INSTANCE_ID:-A}",
-        "--redis-host", "localhost",
-        "--redis-port", "6379"
+        "--server",
+        "gpt-researcher",
+        "--instance",
+        "${DOPEMUX_INSTANCE_ID:-A}",
+        "--redis-host",
+        "localhost",
+        "--redis-port",
+        "6379"
       ],
       "env": {
         "WORKSPACE_PATH": "/Users/hue/code/dopemux-mvp",
@@ -74,7 +86,8 @@
     "zen": {
       "command": "uvx",
       "args": [
-        "--from", "git+https://github.com/BeehiveInnovations/zen-mcp-server.git",
+        "--from",
+        "git+https://github.com/BeehiveInnovations/zen-mcp-server.git",
         "zen-mcp-server"
       ],
       "env": {
@@ -108,6 +121,20 @@
         "EXA_API_KEY": "${EXA_API_KEY}"
       },
       "type": "stdio"
+    },
+    "conport-admin": {
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-conport_main",
+        "python",
+        "/app/conport_mcp_stdio.py"
+      ],
+      "env": {
+        "CONPORT_URL": "http://localhost:3004"
+      }
     }
   }
 }

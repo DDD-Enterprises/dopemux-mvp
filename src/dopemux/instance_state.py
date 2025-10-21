@@ -6,7 +6,7 @@ after crashes or restarts.
 """
 
 from dataclasses import dataclass, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, List
 import json
@@ -36,16 +36,35 @@ class InstanceState:
     def to_dict(self) -> dict:
         """Convert to dictionary for storage."""
         data = asdict(self)
-        data['created_at'] = self.created_at.isoformat()
-        data['last_active'] = self.last_active.isoformat()
+        # Normalize to UTC ISO8601 with 'Z'
+        def _to_utc_iso(dt: datetime) -> str:
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            else:
+                dt = dt.astimezone(timezone.utc)
+            return dt.isoformat().replace('+00:00', 'Z')
+
+        data['created_at'] = _to_utc_iso(self.created_at)
+        data['last_active'] = _to_utc_iso(self.last_active)
         return data
 
     @classmethod
     def from_dict(cls, data: dict) -> 'InstanceState':
         """Create from dictionary."""
         data = data.copy()
-        data['created_at'] = datetime.fromisoformat(data['created_at'])
-        data['last_active'] = datetime.fromisoformat(data['last_active'])
+        def _parse_iso(s: str) -> datetime:
+            # Support 'Z' suffix and naive inputs
+            if isinstance(s, str):
+                s2 = s.replace('Z', '+00:00')
+                try:
+                    return datetime.fromisoformat(s2)
+                except Exception:
+                    # Fallback to naive parse
+                    return datetime.strptime(s.split('.')[0], '%Y-%m-%dT%H:%M:%S')
+            return datetime.now(timezone.utc)
+
+        data['created_at'] = _parse_iso(data['created_at'])
+        data['last_active'] = _parse_iso(data['last_active'])
         return cls(**data)
 
 
@@ -219,7 +238,7 @@ class InstanceStateManager:
         state = await self.load_instance_state(instance_id)
         if state:
             state.status = 'stopped'
-            state.last_active = datetime.now()
+            state.last_active = datetime.now(timezone.utc)
             return await self.save_instance_state(state)
         return False
 
@@ -236,7 +255,7 @@ class InstanceStateManager:
         state = await self.load_instance_state(instance_id)
         if state:
             state.status = 'orphaned'
-            state.last_active = datetime.now()
+            state.last_active = datetime.now(timezone.utc)
             return await self.save_instance_state(state)
         return False
 
@@ -278,7 +297,7 @@ class InstanceStateManager:
         orphaned = await self.find_orphaned_instances()
 
         # Filter by age
-        cutoff_date = datetime.now() - timedelta(days=max_age_days)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=max_age_days)
         filtered = [
             state for state in orphaned
             if state.last_active >= cutoff_date

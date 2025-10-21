@@ -148,9 +148,13 @@ class TestShieldCoordinator:
         # Set short timeout
         coordinator.config.activation_timeout_seconds = 0.1
 
-        # Mock slow shield
+        # Mock slow shield that actually takes time
+        async def slow_activate(reason):
+            await asyncio.sleep(0.2)  # Longer than timeout
+            return {"success": True}
+
         coordinator.shields['dnd'] = Mock()
-        coordinator.shields['dnd'].activate = AsyncMock(side_effect=asyncio.sleep(1))  # Slow
+        coordinator.shields['dnd'].activate = slow_activate
 
         coordinator.monitor.get_current_productivity = AsyncMock(return_value=0.7)
 
@@ -239,7 +243,13 @@ class TestProductivityMonitor:
         await monitor.start_monitoring()
         assert monitor.is_monitoring
 
+        # Give the monitoring loop a moment to start
+        await asyncio.sleep(0.1)
+
         await monitor.stop_monitoring()
+
+        # Give the cancellation a moment to complete
+        await asyncio.sleep(0.1)
         assert not monitor.is_monitoring
 
     @pytest.mark.asyncio

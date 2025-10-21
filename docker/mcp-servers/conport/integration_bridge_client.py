@@ -1,9 +1,17 @@
 """
 Integration Bridge Client for ConPort
 Publishes events to Integration Bridge EventBus
+
+Configuration:
+    INTEGRATION_BRIDGE_URL: Base URL for the bridge (default resolves to
+        dope-decision-graph bridge inside Docker or falls back to service name)
+        Examples:
+          - http://dope-decision-graph-bridge:3016  (same compose project)
+          - http://localhost:3016                    (host access)
 """
 
 import asyncio
+import os
 import logging
 from typing import Any, Dict, List, Optional
 import aiohttp
@@ -19,15 +27,22 @@ class IntegrationBridgeClient:
     allowing Dashboard and ADHD Engine to react in real-time.
     """
 
-    def __init__(self, bridge_url: str = "http://mcp-integration-bridge:3016"):
+    def __init__(self, bridge_url: str | None = None):
         """
         Initialize Integration Bridge client
 
         Args:
             bridge_url: Base URL for Integration Bridge service
         """
-        self.bridge_url = bridge_url
-        self.events_endpoint = f"{bridge_url}/events"
+        # Prefer explicit arg → env override → sane defaults
+        if bridge_url:
+            self.bridge_url = bridge_url
+        else:
+            self.bridge_url = (
+                os.getenv("INTEGRATION_BRIDGE_URL")
+                or "http://dope-decision-graph-bridge:3016"
+            )
+        self.events_endpoint = f"{self.bridge_url}/events"
         self.session: Optional[aiohttp.ClientSession] = None
         self._enabled = True  # Can disable if Bridge unavailable
 
@@ -109,7 +124,8 @@ class IntegrationBridgeClient:
         decision_id: str,
         summary: str,
         workspace_id: str,
-        tags: Optional[List[str]] = None
+        tags: Optional[List[str]] = None,
+        extra: Optional[Dict[str, Any]] = None
     ) -> bool:
         """Publish decision_logged event"""
         return await self.publish_event(
@@ -118,7 +134,8 @@ class IntegrationBridgeClient:
                 "decision_id": decision_id,
                 "summary": summary,
                 "workspace_id": workspace_id,
-                "tags": tags or []
+                "tags": tags or [],
+                **(extra or {})
             }
         )
 
@@ -128,7 +145,8 @@ class IntegrationBridgeClient:
         status: str,
         description: str,
         workspace_id: str,
-        percentage: float = 0.0
+        percentage: float = 0.0,
+        extra: Optional[Dict[str, Any]] = None
     ) -> bool:
         """Publish progress_updated event"""
         return await self.publish_event(
@@ -138,6 +156,7 @@ class IntegrationBridgeClient:
                 "status": status,
                 "description": description,
                 "workspace_id": workspace_id,
-                "percentage": percentage
+                "percentage": percentage,
+                **(extra or {})
             }
         )

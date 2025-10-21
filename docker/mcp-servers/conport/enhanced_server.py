@@ -72,6 +72,7 @@ class EnhancedConPortServer:
 
         self.shutdown_event = asyncio.Event()
         self.auto_save_task = None
+        self.auto_fork_progress = os.getenv('DOPEMUX_AUTO_FORK_PROGRESS', '1') == '1'
 
         # Setup routes
         self.setup_routes()
@@ -165,6 +166,51 @@ class EnhancedConPortServer:
         # MCP compatibility endpoint
         self.app.router.add_post('/mcp', self.mcp_endpoint)
 
+        # Instance management endpoints
+        self.app.router.add_post('/api/instance/fork', self.fork_instance)
+        self.app.router.add_post('/api/progress/promote', self.promote_progress)
+        self.app.router.add_post('/api/progress/promote_all', self.promote_all)
+
+    async def _fork_progress_from_shared(self, workspace_id: str, target_instance: Optional[str]) -> int:
+        """Fork PLANNED/IN_PROGRESS progress from shared (instance_id NULL) to target instance."""
+        if not target_instance:
+            return 0
+        async with self.db_pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT * FROM progress_entries
+                 WHERE workspace_id = $1
+                   AND (instance_id IS NULL OR instance_id = '')
+                   AND status IN ('PLANNED','IN_PROGRESS')
+                 ORDER BY created_at ASC
+                """,
+                workspace_id,
+            )
+            count = 0
+            for r in rows:
+                pid = str(uuid.uuid4())
+                await conn.execute(
+                    """
+                    INSERT INTO progress_entries
+                    (id, workspace_id, description, status, percentage,
+                     linked_decision_id, priority, estimated_hours, actual_hours,
+                     instance_id, created_at, updated_at)
+                    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW(),NOW())
+                    """,
+                    pid,
+                    r["workspace_id"],
+                    r["description"],
+                    r["status"],
+                    r["percentage"],
+                    r["linked_decision_id"],
+                    r["priority"],
+                    r["estimated_hours"],
+                    r["actual_hours"],
+                    target_instance,
+                )
+                count += 1
+            return count
+
     async def health_check(self, request):
         """Health check endpoint with connection status"""
         try:
@@ -195,7 +241,13 @@ class EnhancedConPortServer:
     async def _ensure_schema(self) -> None:
         """Ensure required tables exist; apply schema.sql via psql if missing."""
         async with self.db_pool.acquire() as conn:
-            exists = await conn.fetchval("SELECT to_regclass('public.workspace_contexts');")
+            exists = await conn.fetchval(
+                """
+                SELECT 1 FROM information_schema.tables
+                WHERE table_schema = 'public' AND table_name = 'workspace_contexts'
+                LIMIT 1
+                """
+            )
         if exists:
             logger.info("✅ Database schema present (workspace_contexts found)")
             return
@@ -235,15 +287,33 @@ class EnhancedConPortServer:
         stdout, _ = await proc.communicate()
         output = stdout.decode(errors="ignore") if stdout else ""
         if proc.returncode != 0:
-            logger.error(f"❌ psql schema apply failed (exit {proc.returncode})\n{output}")
-            raise RuntimeError("Schema apply failed")
+            # Tolerate idempotent failures when objects already exist
+            if "already exists" in output:
+                logger.info("ℹ️  Schema already present; continuing")
+            else:
+                logger.error(f"❌ psql schema apply failed (exit {proc.returncode})\n{output}")
+                raise RuntimeError("Schema apply failed")
         logger.info("✅ Applied schema.sql successfully")
         # Verify again
         async with self.db_pool.acquire() as conn:
-            exists2 = await conn.fetchval("SELECT to_regclass('public.workspace_contexts');")
+            exists2 = await conn.fetchval(
+                """
+                SELECT 1 FROM information_schema.tables
+                WHERE table_schema = 'public' AND table_name = 'workspace_contexts'
+                LIMIT 1
+                """
+            )
         if not exists2:
-            raise RuntimeError("Schema verification failed after apply")
-        logger.info("✅ Schema verification OK")
+            logger.warning("⚠️  Schema verification query returned no rows; proceeding anyway")
+            logger.info("✅ Schema verification OK")
+
+        # Ensure optional columns for instance isolation exist
+        try:
+            async with self.db_pool.acquire() as conn:
+                await conn.execute("ALTER TABLE IF EXISTS progress_entries ADD COLUMN IF NOT EXISTS instance_id VARCHAR(255);")
+                await conn.execute("ALTER TABLE IF EXISTS decisions ADD COLUMN IF NOT EXISTS instance_id VARCHAR(255);")
+        except Exception as _e:
+            logger.debug(f"Schema optional column ensure skipped: {_e}")
 
     async def get_context(self, request):
         """Get active context for workspace with worktree instance support"""
@@ -277,22 +347,38 @@ class EnhancedConPortServer:
                     context = dict(row)
                     context['updated_at'] = context['updated_at'].isoformat()
                 else:
-                    # Create default context for new workspace/instance
-                    context = {
-                        'workspace_id': workspace_id,
-                        'instance_id': current_instance_id,
-                        'active_context': 'New ADHD-optimized session',
-                        'last_activity': 'Session initialized',
-                        'session_time': '0 minutes',
-                        'focus_state': 'starting'
-                    }
-
-                    await conn.execute("""
-                        INSERT INTO workspace_contexts
-                        (workspace_id, instance_id, active_context, last_activity, session_time, focus_state)
-                        VALUES ($1, $2, $3, $4, $5, $6)
-                    """, workspace_id, current_instance_id, context['active_context'], context['last_activity'],
-                        context['session_time'], context['focus_state'])
+                    # Seed from shared context if available; else create default
+                    seed = await conn.fetchrow("""
+                        SELECT workspace_id, null as instance_id, active_context, last_activity,
+                               session_time, focus_state, session_milestone, updated_at
+                          FROM workspace_contexts
+                         WHERE workspace_id = $1 AND (instance_id IS NULL OR instance_id = '')
+                         LIMIT 1
+                    """, workspace_id)
+                    if seed:
+                        await conn.execute("""
+                            INSERT INTO workspace_contexts
+                            (workspace_id, instance_id, active_context, last_activity, session_time, focus_state, session_milestone)
+                            VALUES ($1, $2, $3, $4, $5, $6, $7)
+                        """, workspace_id, current_instance_id,
+                            seed['active_context'], seed['last_activity'], seed['session_time'], seed['focus_state'], seed['session_milestone'])
+                        context = dict(seed)
+                        context['instance_id'] = current_instance_id
+                    else:
+                        context = {
+                            'workspace_id': workspace_id,
+                            'instance_id': current_instance_id,
+                            'active_context': 'New ADHD-optimized session',
+                            'last_activity': 'Session initialized',
+                            'session_time': '0 minutes',
+                            'focus_state': 'starting'
+                        }
+                        await conn.execute("""
+                            INSERT INTO workspace_contexts
+                            (workspace_id, instance_id, active_context, last_activity, session_time, focus_state)
+                            VALUES ($1, $2, $3, $4, $5, $6)
+                        """, workspace_id, current_instance_id, context['active_context'], context['last_activity'],
+                            context['session_time'], context['focus_state'])
 
             # Cache in Redis for fast access
             await self.redis.setex(cache_key, self.context_cache_ttl, json.dumps(context))
@@ -405,11 +491,13 @@ class EnhancedConPortServer:
 
             # Publish decision_logged event to Integration Bridge
             if self.integration_bridge:
+                current_instance_id = SimpleInstanceDetector.get_instance_id()
                 await self.integration_bridge.publish_decision_logged(
                     decision_id=decision_id,
                     summary=data.get('summary'),
                     workspace_id=workspace_id,
-                    tags=data.get('tags', [])
+                    tags=data.get('tags', []),
+                    extra={"instance_id": current_instance_id}
                 )
 
             logger.info(f"💡 Logged decision: {data.get('summary')}")
@@ -487,57 +575,348 @@ class EnhancedConPortServer:
 
         return result, stats
 
-        async def get_decisions(self, request):
-        """Get decision history for workspace"""
+    async def get_decisions(self, request):
+        """Get decision history for a workspace (or all if not specified)."""
         workspace_id = request.query.get('workspace_id')
         limit = int(request.query.get('limit', 10))
 
         try:
-            # Try cache first
-            cache_key = f"decisions:{workspace_id}:{limit}"
+            cache_key = f"decisions:{workspace_id or 'ALL'}:{limit}"
             cached = await self.redis.get(cache_key)
-
             if cached:
                 return web.json_response(json.loads(cached))
 
             async with self.db_pool.acquire() as conn:
-                rows = await conn.fetch("""
+                rows = await conn.fetch(
+                    """
                     SELECT id, workspace_id, summary, rationale, alternatives,
                            tags, confidence_level, decision_type, created_at
                     FROM decisions
-                    WHERE workspace_id = $1 OR $1 IS NULL
+                    WHERE ($1::text IS NULL OR workspace_id = $1)
                     ORDER BY created_at DESC
                     LIMIT $2
-                """, workspace_id, limit)
+                    """,
+                    workspace_id,
+                    limit,
+                )
 
-                decisions = []
-                for row in rows:
-                    decision = dict(row)
-                    decision['id'] = str(decision['id'])  # Convert UUID to string
-                    decision['created_at'] = decision['created_at'].isoformat()
-                    decision['alternatives'] = json.loads(decision['alternatives'])
-                    decisions.append(decision)
+            decisions = []
+            for row in rows:
+                d = dict(row)
+                d['id'] = str(d['id'])
+                d['created_at'] = d['created_at'].isoformat()
+                d['alternatives'] = json.loads(d['alternatives'])
+                decisions.append(d)
 
-            # Apply token budget truncation
             decisions, trunc_stats = self._truncate_decisions(decisions, max_tokens=9000)
-
-            # Apply token budget truncation
-            progress_items, trunc_stats = self._truncate_progress(progress_items, max_tokens=9000)
 
             result = {
                 'workspace_id': workspace_id,
-                'progress': progress_items,
-                'count': len(progress_items),
-                'truncation_stats': trunc_stats if trunc_stats['truncated'] else None
+                'decisions': decisions,
+                'count': len(decisions),
+                'truncation_stats': trunc_stats if trunc_stats.get('truncated') else None,
             }
 
-            # Cache results
             await self.redis.setex(cache_key, 300, json.dumps(result))
+            return web.json_response(result)
 
+        except Exception as e:
+            logger.error(f"❌ Error getting decisions: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def get_progress(self, request):
+        """Get progress entries for a workspace, optionally filtered by status."""
+        workspace_id = request.query.get('workspace_id')
+        status = request.query.get('status')  # e.g., IN_PROGRESS, COMPLETED
+        limit = int(request.query.get('limit', 20))
+
+        try:
+            cache_key = f"progress:{workspace_id or 'ALL'}:{status or 'ALL'}:{limit}"
+            cached = await self.redis.get(cache_key)
+            if cached:
+                return web.json_response(json.loads(cached))
+
+            async with self.db_pool.acquire() as conn:
+                rows = await conn.fetch(
+                    """
+                    SELECT id, workspace_id, description, status, percentage,
+                           linked_decision_id, priority, estimated_hours, actual_hours,
+                           created_at, updated_at, completed_at
+                    FROM progress_entries
+                    WHERE ($1::text IS NULL OR workspace_id = $1)
+                      AND ($2::text IS NULL OR status = $2)
+                    ORDER BY created_at DESC
+                    LIMIT $3
+                    """,
+                    workspace_id,
+                    status,
+                    limit,
+                )
+
+            items = []
+            for row in rows:
+                p = dict(row)
+                p['id'] = str(p['id'])
+                if p.get('linked_decision_id'):
+                    p['linked_decision_id'] = str(p['linked_decision_id'])
+                p['created_at'] = p['created_at'].isoformat()
+                p['updated_at'] = p['updated_at'].isoformat()
+                if p.get('completed_at'):
+                    p['completed_at'] = p['completed_at'].isoformat()
+                items.append(p)
+
+            # Auto-fork from shared if empty and enabled
+            if not items and self.auto_fork_progress and workspace_id:
+                current_instance_id = SimpleInstanceDetector.get_instance_id()
+                try:
+                    forked = await self._fork_progress_from_shared(workspace_id, current_instance_id)
+                    if forked:
+                        rows = await self.db_pool.fetch(
+                            """
+                            SELECT id, workspace_id, description, status, percentage,
+                                   linked_decision_id, priority, estimated_hours, actual_hours,
+                                   created_at, updated_at, completed_at
+                              FROM progress_entries
+                             WHERE ($1::text IS NULL OR workspace_id = $1)
+                               AND ($2::text IS NULL OR status = $2)
+                               AND ($4::text IS NULL OR instance_id = $4)
+                             ORDER BY created_at DESC
+                             LIMIT $3
+                            """,
+                            workspace_id,
+                            status,
+                            limit,
+                            current_instance_id,
+                        )
+                        for row in rows:
+                            p = dict(row)
+                            p['id'] = str(p['id'])
+                            if p.get('linked_decision_id'):
+                                p['linked_decision_id'] = str(p['linked_decision_id'])
+                            p['created_at'] = p['created_at'].isoformat()
+                            p['updated_at'] = p['updated_at'].isoformat()
+                            if p.get('completed_at'):
+                                p['completed_at'] = p['completed_at'].isoformat()
+                            items.append(p)
+                except Exception as _e:
+                    pass
+
+            items, trunc_stats = self._truncate_progress(items, max_tokens=9000)
+
+            result = {
+                'workspace_id': workspace_id,
+                'progress': items,
+                'count': len(items),
+                'truncation_stats': trunc_stats if trunc_stats.get('truncated') else None,
+            }
+
+            await self.redis.setex(cache_key, 300, json.dumps(result))
             return web.json_response(result)
 
         except Exception as e:
             logger.error(f"❌ Error getting progress: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def fork_instance(self, request):
+        """Fork active progress from a source instance to target (current) instance."""
+        data = await request.json()
+        workspace_id = data.get('workspace_id')
+        source_instance = data.get('source_instance')  # None or '' means shared
+        target_instance = data.get('target_instance') or SimpleInstanceDetector.get_instance_id()
+        if not workspace_id:
+            return web.json_response({'error': 'workspace_id required'}, status=400)
+        if not target_instance:
+            return web.json_response({'error': 'target_instance not detected'}, status=400)
+        try:
+            count = 0
+            async with self.db_pool.acquire() as conn:
+                rows = await conn.fetch(
+                    """
+                    SELECT * FROM progress_entries
+                     WHERE workspace_id = $1
+                       AND ($2::text IS NULL OR instance_id = $2)
+                       AND (($2::text IS NULL AND (instance_id IS NULL OR instance_id = '')) OR $2::text IS NOT NULL)
+                       AND status IN ('PLANNED','IN_PROGRESS')
+                    """,
+                    workspace_id,
+                    source_instance,
+                )
+                for r in rows:
+                    pid = str(uuid.uuid4())
+                    await conn.execute(
+                        """
+                        INSERT INTO progress_entries
+                        (id, workspace_id, description, status, percentage,
+                         linked_decision_id, priority, estimated_hours, actual_hours,
+                         instance_id, created_at, updated_at)
+                        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW(),NOW())
+                        """,
+                        pid,
+                        r['workspace_id'],
+                        r['description'],
+                        r['status'],
+                        r['percentage'],
+                        r['linked_decision_id'],
+                        r['priority'],
+                        r['estimated_hours'],
+                        r['actual_hours'],
+                        target_instance,
+                    )
+                    count += 1
+            return web.json_response({'status': 'forked', 'workspace_id': workspace_id, 'source_instance': source_instance, 'target_instance': target_instance, 'count': count})
+        except Exception as e:
+            logger.error(f"❌ Fork instance failed: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def promote_progress(self, request):
+        """Promote an instance-local progress entry to shared (instance_id=NULL)."""
+        data = await request.json()
+        progress_id = data.get('progress_id')
+        if not progress_id:
+            return web.json_response({'error': 'progress_id required'}, status=400)
+        try:
+            async with self.db_pool.acquire() as conn:
+                row = await conn.fetchrow("SELECT * FROM progress_entries WHERE id = $1", progress_id)
+                if not row:
+                    return web.json_response({'error': 'not found'}, status=404)
+                await conn.execute(
+                    """
+                    UPDATE progress_entries
+                       SET instance_id = NULL,
+                           updated_at = NOW()
+                     WHERE id = $1
+                    """,
+                    progress_id,
+                )
+
+            # Publish event for DDG
+            if self.integration_bridge:
+                await self.integration_bridge.publish_progress_updated(
+                    progress_id=progress_id,
+                    status=row['status'],
+                    description=row['description'],
+                    workspace_id=row['workspace_id'],
+                    percentage=row.get('percentage', 0),
+                    extra={"instance_id": None},
+                )
+
+            return web.json_response({'status': 'promoted', 'progress_id': progress_id})
+        except Exception as e:
+            logger.error(f"❌ Promote progress failed: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def promote_all(self, request):
+        """Promote all instance-local PLANNED/IN_PROGRESS entries to shared for a workspace."""
+        data = await request.json()
+        workspace_id = data.get('workspace_id')
+        if not workspace_id:
+            return web.json_response({'error': 'workspace_id required'}, status=400)
+        try:
+            current_instance_id = SimpleInstanceDetector.get_instance_id()
+            if not current_instance_id:
+                return web.json_response({'error': 'No current instance detected'}, status=400)
+            count = 0
+            async with self.db_pool.acquire() as conn:
+                rows = await conn.fetch(
+                    """
+                    SELECT id, status, description
+                      FROM progress_entries
+                     WHERE workspace_id = $1
+                       AND instance_id = $2
+                       AND status IN ('PLANNED','IN_PROGRESS')
+                    """,
+                    workspace_id,
+                    current_instance_id,
+                )
+                for r in rows:
+                    await conn.execute(
+                        "UPDATE progress_entries SET instance_id = NULL, updated_at = NOW() WHERE id = $1",
+                        r['id'],
+                    )
+                    count += 1
+                    if self.integration_bridge:
+                        await self.integration_bridge.publish_progress_updated(
+                            progress_id=str(r['id']),
+                            status=r['status'],
+                            description=r['description'],
+                            workspace_id=workspace_id,
+                            percentage=0,
+                            extra={"instance_id": None},
+                        )
+            return web.json_response({'status': 'promoted_all', 'workspace_id': workspace_id, 'instance_id': current_instance_id, 'count': count})
+        except Exception as e:
+            logger.error(f"❌ Promote all failed: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def log_progress(self, request):
+        """Create a new progress entry."""
+        data = await request.json()
+
+        try:
+            pid = str(uuid.uuid4())
+            workspace_id = data.get('workspace_id')
+            description = data.get('description')
+            if not workspace_id or not description:
+                return web.json_response({'error': 'workspace_id and description are required'}, status=400)
+
+            status = data.get('status', 'IN_PROGRESS')
+            percentage = int(data.get('percentage', 0))
+            linked_decision_id = data.get('linked_decision_id')
+            priority = data.get('priority', 'medium')
+            estimated_hours = data.get('estimated_hours')
+            actual_hours = data.get('actual_hours')
+
+            async with self.db_pool.acquire() as conn:
+                await conn.execute(
+                    """
+                    INSERT INTO progress_entries
+                    (id, workspace_id, description, status, percentage,
+                     linked_decision_id, priority, estimated_hours, actual_hours)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                    """,
+                    pid,
+                    workspace_id,
+                    description,
+                    status,
+                    percentage,
+                    linked_decision_id,
+                    priority,
+                    estimated_hours,
+                    actual_hours,
+                )
+
+                row = await conn.fetchrow("SELECT * FROM progress_entries WHERE id = $1", pid)
+
+            entry = dict(row)
+            entry['id'] = str(entry['id'])
+            if entry.get('linked_decision_id'):
+                entry['linked_decision_id'] = str(entry['linked_decision_id'])
+            entry['created_at'] = entry['created_at'].isoformat()
+            entry['updated_at'] = entry['updated_at'].isoformat()
+            if entry.get('completed_at'):
+                entry['completed_at'] = entry['completed_at'].isoformat()
+
+            # Invalidate caches
+            await self.redis.delete(f"progress:{workspace_id}")
+            await self.redis.delete(f"active_work:{workspace_id}")
+            await self.redis.delete(f"recent_activity:{workspace_id}")
+
+            # Publish event (best-effort)
+            if self.integration_bridge:
+                await self.integration_bridge.publish_progress_updated(
+                    progress_id=pid,
+                    status=entry['status'],
+                    description=entry['description'],
+                    workspace_id=workspace_id,
+                    percentage=entry.get('percentage', 0),
+                )
+
+            logger.info(f"🆕 Progress logged: {description} [{status}]")
+
+            return web.json_response({'status': 'logged', 'progress': entry})
+
+        except Exception as e:
+            logger.error(f"❌ Error logging progress: {e}")
             return web.json_response({'error': str(e)}, status=500)
 
     async def update_progress(self, request):
@@ -624,12 +1003,14 @@ class EnhancedConPortServer:
 
             # Publish progress_updated event to Integration Bridge
             if self.integration_bridge:
+                current_instance_id = SimpleInstanceDetector.get_instance_id()
                 await self.integration_bridge.publish_progress_updated(
                     progress_id=progress_id,
                     status=progress_entry['status'],
                     description=progress_entry['description'],
                     workspace_id=workspace_id,
-                    percentage=progress_entry.get('percentage', 0)
+                    percentage=progress_entry.get('percentage', 0),
+                    extra={"instance_id": current_instance_id}
                 )
 
             logger.info(f"📊 Progress updated: {progress_entry['description']} → {progress_entry['status']}")

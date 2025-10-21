@@ -1,5 +1,5 @@
 /**
- * Mock API Server for ConPort KG UI Development
+ * Mock API Server for Dope Decision Graph UI Development (formerly ConPort KG UI)
  * Simulates Integration Bridge /kg endpoints with fixture data
  *
  * Usage:
@@ -237,7 +237,7 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`\n🎭 Mock API Server running on http://localhost:${PORT}`);
-  console.log(`   Ready to serve ConPort KG UI with fixture data`);
+  console.log(`   Ready to serve Dope Decision Graph UI with fixture data`);
   console.log(`   Press Ctrl+C to stop\n`);
 });
 
