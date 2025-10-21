@@ -198,6 +198,11 @@ class ConfigManager:
 
         # Validate and create config object
         self._config = DopemuxConfig(**config_dict)
+
+        # Remove servers requested for deprecation
+        for deprecated in ("repo_prompt", "trigger"):
+            self._config.mcp_servers.pop(deprecated, None)
+
         return self._config
 
     def save_user_config(self, config: DopemuxConfig) -> None:

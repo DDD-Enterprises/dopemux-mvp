@@ -22,8 +22,17 @@ from enum import Enum
 import uuid
 
 import aiohttp
+try:
+    from qdrant_client import QdrantClient
+    from qdrant_client.http.models import Distance, VectorParams, PointStruct
+except Exception:
+    QdrantClient = None
+    Distance = None
+    VectorParams = None
+    PointStruct = None
 import asyncpg
 import redis.asyncio as redis
+import aiohttp
 from mcp import types
 from mcp.client.session import ClientSession as Client
 from mcp.client.stdio import stdio_client
@@ -33,6 +42,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 import uvicorn
 from sqlalchemy import create_engine, Column, String, DateTime, Integer, Text, JSON
+import psycopg2
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
@@ -125,6 +135,42 @@ class ProjectRecord(Base):
     status = Column(String, nullable=False, default="active")
     project_metadata = Column('metadata', JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+# Relational mirror for Dope Decision Graph ingestion
+class DdgDecision(Base):
+    __tablename__ = "ddg_decisions"
+
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, index=True, nullable=False)
+    instance_id = Column(String, index=True, nullable=True)
+    summary = Column(Text, nullable=False)
+    tags = Column(JSON, nullable=True)
+    source = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class DdgProgress(Base):
+    __tablename__ = "ddg_progress"
+
+    id = Column(String, primary_key=True)
+    workspace_id = Column(String, index=True, nullable=False)
+    instance_id = Column(String, index=True, nullable=True)
+    status = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    percentage = Column(Integer, default=0)
+    source = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+# Optional embeddings store (fallback when vector DB not used)
+class DdgEmbedding(Base):
+    __tablename__ = "ddg_embeddings"
+
+    id = Column(String, primary_key=True)  # decision_id
+    # Store vector as JSON array to avoid requiring pgvector
+    vector = Column(JSON, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 # Pydantic models for API
@@ -241,6 +287,107 @@ class CacheManager:
         """Close Redis connection"""
         if self.redis_client:
             await self.redis_client.close()
+
+# ============================================================================
+# DDG INGESTION (EventBus → relational mirror)
+# ============================================================================
+
+async def start_ddg_ingestion(event_bus: EventBus, db_manager: DatabaseManager):
+    """Consume EventBus and upsert into ddg_* tables (idempotent)."""
+    group = "ddg-ingest"
+    consumer = f"worker-{os.getpid()}"
+
+    # Optional AGE graph upsert manager and embeddings (best-effort)
+    age_mgr = AgeGraphManager.from_env()
+    embed_mgr = EmbeddingManager.from_env()
+
+    async for msg_id, event in event_bus.subscribe("dopemux:events", group, consumer):
+        try:
+            etype = (event.type or "").lower()
+            data = event.data or {}
+            source = event.source
+
+            from sqlalchemy import select
+            async with db_manager.get_session() as session:
+                if etype == "decision_logged":
+                    res = await session.execute(select(DdgDecision).where(DdgDecision.id == data.get("decision_id")))
+                    row = res.scalar_one_or_none()
+                    if row is None:
+                        row = DdgDecision(
+                            id=data.get("decision_id"),
+                            workspace_id=data.get("workspace_id"),
+                            instance_id=data.get("instance_id"),
+                            summary=data.get("summary", ""),
+                            tags=data.get("tags", []),
+                            source=source,
+                        )
+                        session.add(row)
+                    else:
+                        row.summary = data.get("summary", row.summary)
+                        row.tags = data.get("tags", row.tags)
+                        row.instance_id = data.get("instance_id", row.instance_id)
+                        row.source = source or row.source
+                    await session.commit()
+
+                    # Mirror to AGE graph (best-effort)
+                    if embed_mgr:
+                        try:
+                            await embed_mgr.upsert_decision_embedding(
+                                data.get("decision_id"),
+                                data.get("summary", ""),
+                                data.get("workspace_id"),
+                            )
+                        except Exception as e:
+                            logger.debug(f"Embedding upsert failed: {e}")
+
+                    if age_mgr:
+                        try:
+                            age_mgr.upsert_project(data.get("workspace_id"))
+                            age_mgr.upsert_decision(
+                                decision_id=data.get("decision_id"),
+                                summary=data.get("summary", ""),
+                                workspace_id=data.get("workspace_id"),
+                            )
+                        except Exception as e:
+                            logger.debug(f"AGE upsert decision failed: {e}")
+
+                elif etype == "progress_updated":
+                    res = await session.execute(select(DdgProgress).where(DdgProgress.id == data.get("progress_id")))
+                    row = res.scalar_one_or_none()
+                    if row is None:
+                        row = DdgProgress(
+                            id=data.get("progress_id"),
+                            workspace_id=data.get("workspace_id"),
+                            instance_id=data.get("instance_id"),
+                            status=data.get("status", "IN_PROGRESS"),
+                            description=data.get("description"),
+                            percentage=int(data.get("percentage", 0) or 0),
+                            source=source,
+                        )
+                        session.add(row)
+                    else:
+                        row.status = data.get("status", row.status)
+                        row.description = data.get("description", row.description)
+                        row.percentage = int(data.get("percentage", row.percentage) or 0)
+                        row.instance_id = data.get("instance_id", row.instance_id)
+                        row.source = source or row.source
+                    await session.commit()
+
+                    # Mirror to AGE graph (best-effort)
+                    if age_mgr:
+                        try:
+                            age_mgr.upsert_project(data.get("workspace_id"))
+                            age_mgr.upsert_progress(
+                                progress_id=data.get("progress_id"),
+                                description=data.get("description", ""),
+                                workspace_id=data.get("workspace_id"),
+                                status=data.get("status", ""),
+                                linked_decision_id=data.get("linked_decision_id"),
+                            )
+                        except Exception as e:
+                            logger.debug(f"AGE upsert progress failed: {e}")
+        except Exception as e:
+            logger.error(f"❌ DDG ingestion error for msg {msg_id}: {e}")
 
 # ============================================================================
 # MCP CLIENT MANAGEMENT (Instance-Aware)
@@ -1190,6 +1337,239 @@ try:
 except ImportError as e:
     logger.warning(f"⚠️  Knowledge Graph endpoints not available: {e}")
 
+# ============================================================================
+# AGE GRAPH MANAGER (best-effort upsert)
+# ============================================================================
+
+class AgeGraphManager:
+    def __init__(self, host: str, port: int, user: str, password: str, database: str, graph: str = "conport_knowledge"):
+        self.host = host
+        self.port = port
+        self.user = user
+        self.password = password
+        self.database = database
+        self.graph = graph
+
+    @classmethod
+    def from_env(cls):
+        host = os.getenv("AGE_HOST")
+        port = int(os.getenv("AGE_PORT", "5432"))
+        user = os.getenv("AGE_USER", "dopemux_age")
+        password = os.getenv("AGE_PASSWORD", "dopemux_age_dev_password")
+        database = os.getenv("AGE_DATABASE", "dopemux_knowledge_graph")
+        if not host:
+            return None
+        return cls(host, port, user, password, database)
+
+    def _conn(self):
+        return psycopg2.connect(
+            host=self.host,
+            port=self.port,
+            user=self.user,
+            password=self.password,
+            dbname=self.database,
+        )
+
+    def _exec(self, cypher: str):
+        # Minimal escaping (single quotes replaced)
+        cypher = cypher.replace("'", "''")
+        with self._conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("LOAD 'age';")
+                cur.execute("SET search_path = ag_catalog, public;")
+                # Ensure graph exists
+                cur.execute("SELECT * FROM create_graph(%s) ON CONFLICT DO NOTHING;", (self.graph,))
+                # Run cypher
+                cur.execute(f"SELECT * FROM cypher(%s, $$ {cypher} $$) as (v agtype);", (self.graph,))
+                conn.commit()
+
+    def upsert_project(self, workspace_id: str):
+        if not workspace_id:
+            return
+        self._exec(f"MERGE (p:Project {{workspace_id: '{workspace_id}'}})")
+
+    def upsert_decision(self, decision_id: str, summary: str, workspace_id: str):
+        if not decision_id:
+            return
+        self._exec(
+            f"MERGE (d:Decision {{id: '{decision_id}'}}) SET d.summary = '{summary or ''}', d.updated_at = '{datetime.utcnow().isoformat()}'"
+        )
+        if workspace_id:
+            self._exec(
+                f"MATCH (d:Decision {{id: '{decision_id}'}}), (p:Project {{workspace_id: '{workspace_id}'}}) MERGE (d)-[:BELONGS_TO]->(p)"
+            )
+
+    def upsert_progress(self, progress_id: str, description: str, workspace_id: str, status: str, linked_decision_id: Optional[str]):
+        if not progress_id:
+            return
+        self._exec(
+            f"MERGE (pr:Progress {{id: '{progress_id}'}}) SET pr.description = '{description or ''}', pr.status = '{status or ''}', pr.updated_at = '{datetime.utcnow().isoformat()}'"
+        )
+        if workspace_id:
+            self._exec(
+                f"MATCH (pr:Progress {{id: '{progress_id}'}}), (p:Project {{workspace_id: '{workspace_id}'}}) MERGE (pr)-[:BELONGS_TO]->(p)"
+            )
+        if linked_decision_id:
+            self._exec(
+                f"MATCH (pr:Progress {{id: '{progress_id}'}}), (d:Decision {{id: '{linked_decision_id}'}}) MERGE (pr)-[:RELATES_TO]->(d)"
+            )
+
+
+class EmbeddingManager:
+    """Embeddings manager with LiteLLM/OpenAI provider and Postgres mirror storage."""
+
+    def __init__(self, provider: str, model: str, api_base: Optional[str] = None, api_key: Optional[str] = None):
+        self.provider = provider
+        self.model = model
+        self.api_base = api_base
+        self.api_key = api_key
+        self._session: Optional[aiohttp.ClientSession] = None
+
+    @classmethod
+    def from_env(cls):
+        provider = os.getenv("EMBEDDINGS_PROVIDER", "voyageai").lower()
+        model = os.getenv("EMBEDDINGS_MODEL", "voyage-3-large")
+        if provider == "voyageai":
+            api_key = os.getenv("VOYAGEAI_API_KEY")
+            if not api_key:
+                return None
+            return cls(provider, model, api_key=api_key)
+        elif provider == "litellm":
+            api_base = os.getenv("LITELLM_BASE", "http://127.0.0.1:4000")
+            return cls(provider, model, api_base=api_base)
+        elif provider == "openai":
+            api_key = os.getenv("OPENAI_API_KEY")
+            if not api_key:
+                return None
+            return cls(provider, model, api_key=api_key)
+        return None
+
+    async def _ensure_session(self):
+        if not self._session:
+            self._session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10))
+
+    async def close(self):
+        if self._session:
+            await self._session.close()
+
+    async def embed(self, text: str) -> Optional[list]:
+        text = (text or "").strip()
+        if not text:
+            return None
+        await self._ensure_session()
+        if self.provider == "voyageai":
+            url = "https://api.voyageai.com/v1/embeddings"
+            headers = {"Authorization": f"Bearer {self.api_key}"}
+            payload = {"model": self.model, "input": [text]}
+            async with self._session.post(url, json=payload, headers=headers) as resp:
+                data = await resp.json()
+                vec = (((data or {}).get("data") or [{}])[0] or {}).get("embedding")
+                return vec
+        elif self.provider == "litellm":
+            url = f"{self.api_base}/embeddings"
+            payload = {"model": self.model, "input": [text]}
+            async with self._session.post(url, json=payload) as resp:
+                data = await resp.json()
+                vec = (((data or {}).get("data") or [{}])[0] or {}).get("embedding")
+                return vec
+        elif self.provider == "openai":
+            url = "https://api.openai.com/v1/embeddings"
+            headers = {"Authorization": f"Bearer {self.api_key}"}
+            payload = {"model": self.model, "input": text}
+            async with self._session.post(url, json=payload, headers=headers) as resp:
+                data = await resp.json()
+                vec = (((data or {}).get("data") or [{}])[0] or {}).get("embedding")
+                return vec
+        return None
+
+    async def rerank(self, query: str, documents: list, model: Optional[str] = None) -> list:
+        """Rerank documents for a query using VoyageAI if configured, else identity ranking.
+
+        Returns list of dicts: [{index, score}...]
+        """
+        model = model or os.getenv("RERANKER_MODEL", "reranker-2.5")
+        await self._ensure_session()
+        if self.provider == "voyageai" and self.api_key:
+            url = "https://api.voyageai.com/v1/rerank"
+            headers = {"Authorization": f"Bearer {self.api_key}"}
+            payload = {"model": model, "query": query, "documents": documents}
+            async with self._session.post(url, json=payload, headers=headers) as resp:
+                data = await resp.json()
+                # Expected: {data: [{index: int, relevance_score: float}, ...]}
+                items = []
+                for item in (data or {}).get("data", []):
+                    items.append({"index": item.get("index"), "score": item.get("relevance_score", 0.0)})
+                return items
+        # Fallback: preserve original order with equal scores
+        return [{"index": i, "score": 0.0} for i in range(len(documents))]
+
+    async def upsert_decision_embedding(self, decision_id: str, summary: str, workspace_id: Optional[str] = None):
+        vec = await self.embed(summary)
+        if not vec or not decision_id:
+            return
+        # store in Postgres mirror
+        async with db_manager.get_session() as session:
+            from sqlalchemy import select
+            res = await session.execute(select(DdgEmbedding).where(DdgEmbedding.id == decision_id))
+            row = res.scalar_one_or_none()
+            if row is None:
+                row = DdgEmbedding(id=decision_id, vector=vec)
+                session.add(row)
+            else:
+                row.vector = vec
+            await session.commit()
+
+        # Try Qdrant (optional)
+        try:
+            await self._upsert_qdrant_point(decision_id, vec, workspace_id)
+        except Exception:
+            pass
+
+    def _qdrant(self):
+        url = os.getenv("QDRANT_URL") or os.getenv("QDRANT_HOST")
+        if not url or QdrantClient is None:
+            return None
+        try:
+            if url.startswith("http"):
+                return QdrantClient(url=url)
+            host, _, port = url.partition(":")
+            port = int(port or "6333")
+            return QdrantClient(host=host, port=port)
+        except Exception:
+            return None
+
+    async def _upsert_qdrant_point(self, decision_id: str, vector: list, workspace_id: Optional[str]):
+        client = self._qdrant()
+        if not client:
+            return
+        collection = os.getenv("QDRANT_COLLECTION", "ddg_decisions")
+        try:
+            client.get_collection(collection)
+        except Exception:
+            if VectorParams is None:
+                return
+            client.recreate_collection(collection_name=collection, vectors_config=VectorParams(size=len(vector), distance=Distance.COSINE))
+        payload = {"decision_id": decision_id}
+        if workspace_id:
+            payload["workspace_id"] = workspace_id
+        if PointStruct is None:
+            return
+        client.upsert(collection_name=collection, points=[PointStruct(id=decision_id, vector=vector, payload=payload)])
+
+    def qdrant_search(self, vector: list, k: int = 10, workspace_id: Optional[str] = None):
+        client = self._qdrant()
+        if not client:
+            return []
+        collection = os.getenv("QDRANT_COLLECTION", "ddg_decisions")
+        try:
+            flt = None
+            if workspace_id:
+                flt = {"must": [{"key": "workspace_id", "match": {"value": workspace_id}}]}
+            res = client.search(collection_name=collection, query_vector=vector, limit=k, query_filter=flt)
+            return [(p.id, float(p.score)) for p in res]
+        except Exception:
+            return []
+
 # Include Task-Orchestrator query endpoints (Component 5)
 try:
     from orchestrator_endpoints import router as orchestrator_router
@@ -1236,6 +1616,13 @@ async def startup_event():
         logger.info(f"📊 Running on port: {MCP_INTEGRATION_PORT}")
         logger.info(f"🧠 ConPort ADHD context preservation enabled")
         logger.info(f"📡 EventBus ready for cross-service coordination")
+
+        # Start background ingestion from EventBus into DDG tables
+        try:
+            asyncio.create_task(start_ddg_ingestion(event_bus, db_manager))
+            logger.info("🧩 DDG ingestion task started")
+        except Exception as e:
+            logger.error(f"❌ Failed to start DDG ingestion: {e}")
 
     except Exception as e:
         logger.error(f"❌ Startup failed: {e}")
@@ -1459,6 +1846,251 @@ async def get_event_history(stream: str = "dopemux:events", count: int = 100):
     except Exception as e:
         logger.error(f"❌ Event history retrieval failed: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get event history: {str(e)}")
+
+# ============================================================================
+# DDG MIRROR QUERY ENDPOINTS (lightweight search)
+# ============================================================================
+
+@app.get("/ddg/decisions/recent")
+async def ddg_recent_decisions(workspace_id: Optional[str] = None, limit: int = 20):
+    try:
+        from sqlalchemy import select, desc
+        async with db_manager.get_session() as session:
+            q = select(DdgDecision).order_by(desc(DdgDecision.updated_at)).limit(min(limit, 100))
+            if workspace_id:
+                q = q.where(DdgDecision.workspace_id == workspace_id)
+            res = await session.execute(q)
+            rows = res.scalars().all()
+            return {
+                "count": len(rows),
+                "items": [
+                    {
+                        "id": r.id,
+                        "workspace_id": r.workspace_id,
+                        "instance_id": r.instance_id,
+                        "summary": r.summary,
+                        "tags": r.tags,
+                        "updated_at": r.updated_at.isoformat() if r.updated_at else None,
+                    }
+                    for r in rows
+                ],
+            }
+    except Exception as e:
+        logger.error(f"❌ ddg_recent_decisions failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/ddg/decisions/search")
+async def ddg_search_decisions(q: str, workspace_id: Optional[str] = None, limit: int = 20):
+    try:
+        from sqlalchemy import select
+        async with db_manager.get_session() as session:
+            like = f"%{q}%"
+            # Simple ILIKE search on summary
+            stmt = select(DdgDecision).where(DdgDecision.summary.ilike(like)).limit(min(limit, 50))
+            if workspace_id:
+                stmt = stmt.where(DdgDecision.workspace_id == workspace_id)
+            res = await session.execute(stmt)
+            rows = res.scalars().all()
+            return {
+                "query": q,
+                "count": len(rows),
+                "items": [
+                    {
+                        "id": r.id,
+                        "workspace_id": r.workspace_id,
+                        "instance_id": r.instance_id,
+                        "summary": r.summary,
+                        "tags": r.tags,
+                        "updated_at": r.updated_at.isoformat() if r.updated_at else None,
+                    }
+                    for r in rows
+                ],
+            }
+    except Exception as e:
+        logger.error(f"❌ ddg_search_decisions failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/ddg/decisions/link-similar")
+async def ddg_link_similar(workspace_id: Optional[str] = None, min_overlap: int = 3, limit: int = 200):
+    """Naive similarity linker: create SIMILAR_TO edges in AGE when summaries share words.
+
+    Parameters:
+      - workspace_id: limit to a project (optional)
+      - min_overlap: minimum shared token count to consider similar
+      - limit: max decisions to consider (most recent)
+    """
+    try:
+        if 'age_mgr' not in globals():
+            # Access the age manager built in start_ddg_ingestion scope is not trivial; rebuild here
+            local_age = AgeGraphManager.from_env()
+        else:
+            local_age = globals().get('age_mgr')
+        from sqlalchemy import select, desc
+        async with db_manager.get_session() as session:
+            q = select(DdgDecision).order_by(desc(DdgDecision.updated_at)).limit(min(limit, 500))
+            if workspace_id:
+                q = q.where(DdgDecision.workspace_id == workspace_id)
+            res = await session.execute(q)
+            rows = res.scalars().all()
+
+        # Tokenize summaries
+        def tokens(s: str) -> set:
+            import re
+            return set(t for t in re.findall(r"[A-Za-z0-9_]+", s or "") if len(t) > 2)
+
+        linked = 0
+        n = len(rows)
+        for i in range(n):
+            a = rows[i]
+            ta = tokens(a.summary)
+            for j in range(i + 1, n):
+                b = rows[j]
+                if workspace_id and a.workspace_id != b.workspace_id:
+                    continue
+                tb = tokens(b.summary)
+                if len(ta & tb) >= min_overlap:
+                    if local_age:
+                        try:
+                            # Create SIMILAR_TO edges both directions (idempotent MERGE)
+                            local_age._exec(
+                                f"MATCH (a:Decision {{id: '{a.id}'}}), (b:Decision {{id: '{b.id}'}}) MERGE (a)-[:SIMILAR_TO]->(b) MERGE (b)-[:SIMILAR_TO]->(a)"
+                            )
+                            linked += 1
+                        except Exception:
+                            pass
+
+        return {"linked": linked, "considered": n}
+    except Exception as e:
+        logger.error(f"❌ ddg_link_similar failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/ddg/instance-diff")
+async def ddg_instance_diff(workspace_id: str, a: str, b: str, kind: str = "decisions"):
+    """
+    Compare items between two instances for a workspace.
+    kind: 'decisions' or 'progress'
+    Returns items unique to A, unique to B, and common ids.
+    """
+    try:
+        from sqlalchemy import select
+        async with db_manager.get_session() as session:
+            if kind == "decisions":
+                sel = select(DdgDecision.id).where(DdgDecision.workspace_id == workspace_id)
+            else:
+                sel = select(DdgProgress.id).where(DdgProgress.workspace_id == workspace_id)
+
+            res_a = await session.execute(sel.where((DdgDecision.instance_id if kind == "decisions" else DdgProgress.instance_id) == a))
+            ids_a = {row[0] for row in res_a.fetchall()}
+            res_b = await session.execute(sel.where((DdgDecision.instance_id if kind == "decisions" else DdgProgress.instance_id) == b))
+            ids_b = {row[0] for row in res_b.fetchall()}
+
+            return {
+                "workspace_id": workspace_id,
+                "instance_a": a,
+                "instance_b": b,
+                "kind": kind,
+                "only_in_a": sorted(list(ids_a - ids_b)),
+                "only_in_b": sorted(list(ids_b - ids_a)),
+                "common": sorted(list(ids_a & ids_b)),
+            }
+    except Exception as e:
+        logger.error(f"❌ ddg_instance_diff failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/ddg/decisions/related")
+async def ddg_related_decisions(decision_id: str, k: int = 10):
+    """Find related decisions using embeddings with Qdrant if available, fallback to Postgres cosine."""
+    try:
+        from sqlalchemy import select
+        # get target embedding
+        async with db_manager.get_session() as session:
+            res = await session.execute(select(DdgEmbedding).where(DdgEmbedding.id == decision_id))
+            target = res.scalar_one_or_none()
+            if not target:
+                return {"decision_id": decision_id, "count": 0, "items": []}
+            targ_vec = target.vector
+        # Try Qdrant
+        try:
+            embed_mgr = EmbeddingManager.from_env()
+            if embed_mgr:
+                hits = embed_mgr.qdrant_search(targ_vec, k=max(1, min(k, 50)))
+                if hits:
+                    # Fetch summaries for rerank
+                    cand_ids = [hid for hid, _ in hits]
+                    from sqlalchemy import select
+                    async with db_manager.get_session() as session:
+                        res = await session.execute(select(DdgDecision).where(DdgDecision.id.in_(cand_ids)))
+                        rows = res.scalars().all()
+                        id_to_sum = {r.id: r.summary for r in rows}
+                    docs = [id_to_sum.get(hid, "") for hid, _ in hits]
+                    reranked = await embed_mgr.rerank(query=target.summary, documents=docs)
+                    # Map rerank order back to IDs
+                    items = []
+                    for rr in reranked[:k]:
+                        idx = rr.get("index", 0)
+                        if 0 <= idx < len(cand_ids):
+                            items.append({"id": cand_ids[idx], "score": rr.get("score", 0.0)})
+                    return {"decision_id": decision_id, "count": len(items), "items": items}
+        except Exception:
+            pass
+        # Fallback: cosine in Postgres mirror
+        async with db_manager.get_session() as session:
+            res2 = await session.execute(select(DdgEmbedding).where(DdgEmbedding.id != decision_id))
+            others = res2.scalars().all()
+        import math
+        def cos(a, b):
+            if not a or not b or len(a) != len(b):
+                return 0.0
+            dot = sum(x*y for x, y in zip(a, b))
+            na = math.sqrt(sum(x*x for x in a))
+            nb = math.sqrt(sum(y*y for y in b))
+            if na == 0 or nb == 0:
+                return 0.0
+            return dot / (na * nb)
+        scored = [(o.id, cos(targ_vec, o.vector)) for o in others]
+        scored.sort(key=lambda x: x[1], reverse=True)
+        top = scored[: max(0, min(k, 50))]
+        return {"decision_id": decision_id, "count": len(top), "items": [{"id": i, "score": s} for i, s in top]}
+    except Exception as e:
+        logger.error(f"❌ ddg_related_decisions failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/ddg/decisions/related-text")
+async def ddg_related_text(q: str, workspace_id: Optional[str] = None, k: int = 10):
+    """Find related decisions to an arbitrary text query using embeddings + rerank."""
+    try:
+        embed_mgr = EmbeddingManager.from_env()
+        if not embed_mgr:
+            return {"query": q, "count": 0, "items": []}
+        qvec = await embed_mgr.embed(q)
+        if not qvec:
+            return {"query": q, "count": 0, "items": []}
+
+        # Candidate retrieval via Qdrant (preferred)
+        hits = embed_mgr.qdrant_search(qvec, k=max(1, min(k * 3, 100)), workspace_id=workspace_id)
+        cand_ids = [hid for hid, _ in hits]
+        if not cand_ids:
+            return {"query": q, "count": 0, "items": []}
+
+        # Fetch summaries for rerank
+        from sqlalchemy import select
+        async with db_manager.get_session() as session:
+            res = await session.execute(select(DdgDecision).where(DdgDecision.id.in_(cand_ids)))
+            rows = res.scalars().all()
+            id_to_sum = {r.id: r.summary for r in rows}
+        docs = [id_to_sum.get(cid, "") for cid in cand_ids]
+
+        reranked = await embed_mgr.rerank(query=q, documents=docs)
+        items = []
+        for rr in reranked[:k]:
+            idx = rr.get("index", 0)
+            if 0 <= idx < len(cand_ids):
+                items.append({"id": cand_ids[idx], "score": rr.get("score", 0.0)})
+        return {"query": q, "count": len(items), "items": items}
+    except Exception as e:
+        logger.error(f"❌ ddg_related_text failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ============================================================================
 # TASK MANAGEMENT ENDPOINTS

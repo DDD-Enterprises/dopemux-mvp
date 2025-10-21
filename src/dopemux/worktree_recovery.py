@@ -71,7 +71,13 @@ class WorktreeRecoveryMenu:
         """
         self.workspace_id = workspace_id
         self.manager = InstanceStateManager(workspace_id, conport_port)
-        self.max_age_days = max_age_days
+        # Allow override via env var; default extended to 30 days
+        import os
+        try:
+            env_days = int(os.getenv("DOPEMUX_RECOVERY_MAX_DAYS", "0"))
+            self.max_age_days = env_days if env_days > 0 else max_age_days
+        except Exception:
+            self.max_age_days = max_age_days
         self.timeout_seconds = timeout_seconds
 
     async def find_recoverable_sessions(self) -> List[RecoveryOption]:
@@ -129,7 +135,7 @@ class WorktreeRecoveryMenu:
         for opt in options:
             print(opt.format_menu_line())
 
-        print(f"\n  0. 🏠 Stay in main worktree (default after {self.timeout_seconds}s)")
+        print(f"\n  0. 🏠 Stay in main worktree (default after {self.timeout_seconds}s; press Enter)")
 
         if has_more:
             print("  a. 📋 Show all recoverable sessions")

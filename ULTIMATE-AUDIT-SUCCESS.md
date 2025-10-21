@@ -87,7 +87,7 @@
 1. Dope-Context ✅
 2. ADHD Engine ✅ (NOW FULLY COMPLIANT!)
 3. Serena v2 ✅
-4. ConPort KG UI ✅
+4. Dope Decision Graph UI (formerly ConPort KG UI) ✅
 5. GPT-Researcher ✅
 6. ML Risk Assessment ✅
 7. Orchestrator ✅
@@ -95,7 +95,7 @@
 
 **Infrastructure** (2/12):
 9. Integration Bridge ✅ (100% COMPLETE!)
-10. ConPort KG ✅ (can now use complete bridge)
+10. Dope Decision Graph ✅ (formerly ConPort KG; can now use complete bridge)
 
 **Legacy** (2/12):
 11-12. Claude-Context (not critical)

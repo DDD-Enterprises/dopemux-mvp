@@ -24,6 +24,7 @@ import json
 
 from .shields import DNDShield, SlackShield, NotificationShield
 from .monitor import ProductivityMonitor
+from .conport_client import get_shield_conport_client
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +74,14 @@ class ShieldCoordinator:
             window_minutes=config.monitoring_window_minutes,
             threshold=config.productivity_threshold
         )
+
+        # Initialize ConPort client if configured
+        self.conport_client = None
+        if config.conport_workspace_id:
+            self.conport_client = get_shield_conport_client(config.conport_workspace_id)
+
+        # Track active progress entry ID for shield state
+        self.active_progress_id = None
 
         # Callbacks for state changes
         self._state_change_callbacks: List[Callable[[ShieldState], None]] = []
@@ -141,11 +150,30 @@ class ShieldCoordinator:
                     all_successful = False
 
         # Update activation timestamp
-        if any(self.state.dnd_active or self.state.slack_active or self.state.notifications_active):
+        if any([self.state.dnd_active, self.state.slack_active, self.state.notifications_active]):
             self.state.activated_at = datetime.now()
 
         # Log to ConPort if configured
-        await self._log_shield_activation(reason, activation_results)
+        if self.conport_client:
+            logged = await self.conport_client.log_shield_activation(
+                reason, activation_results, self.state.productivity_baseline, self.state.activated_at
+            )
+            if logged:
+                logger.debug("✅ Shield activation logged to ConPort")
+            else:
+                logger.warning("⚠️ Failed to log shield activation to ConPort")
+
+        # Store current state in ConPort
+        if self.conport_client:
+            state_data = {
+                "dnd_active": self.state.dnd_active,
+                "slack_active": self.state.slack_active,
+                "notifications_active": self.state.notifications_active,
+                "activated_at": self.state.activated_at.isoformat() if self.state.activated_at else None,
+                "productivity_baseline": self.state.productivity_baseline,
+                "false_positive_detected": self.state.false_positive_detected
+            }
+            await self.conport_client.store_shield_state(state_data)
 
         # Notify callbacks
         await self._notify_state_change()
@@ -228,7 +256,30 @@ class ShieldCoordinator:
         self.state.activated_at = None
 
         # Log to ConPort if configured
-        await self._log_shield_deactivation(reason, deactivation_results)
+        if self.conport_client:
+            logged = await self.conport_client.log_shield_deactivation(
+                self.active_progress_id or "shield_activation",
+                reason,
+                deactivation_results,
+                datetime.now()
+            )
+            if logged:
+                logger.debug("✅ Shield deactivation logged to ConPort")
+                self.active_progress_id = None  # Clear active progress ID
+            else:
+                logger.warning("⚠️ Failed to log shield deactivation to ConPort")
+
+        # Store updated state in ConPort
+        if self.conport_client:
+            state_data = {
+                "dnd_active": self.state.dnd_active,
+                "slack_active": self.state.slack_active,
+                "notifications_active": self.state.notifications_active,
+                "activated_at": None,  # Cleared
+                "productivity_baseline": self.state.productivity_baseline,
+                "false_positive_detected": self.state.false_positive_detected
+            }
+            await self.conport_client.store_shield_state(state_data)
 
         # Notify callbacks
         await self._notify_state_change()
@@ -321,62 +372,18 @@ class ShieldCoordinator:
             self.state.false_positive_detected = True
             logger.warning(f"🛡️ False positive detected: productivity drop {productivity_drop:.2f}")
 
+            # Log false positive event to ConPort
+            if self.conport_client:
+                event_details = {
+                    "productivity_baseline": self.state.productivity_baseline,
+                    "current_productivity": current_productivity,
+                    "productivity_drop": productivity_drop,
+                    "activated_at": self.state.activated_at.isoformat() if self.state.activated_at else None,
+                    "reason": "Productivity dropped below threshold during shield deactivation"
+                }
+                await self.conport_client.log_shield_event("false_positive", event_details)
+
         return false_positive
-
-    async def _log_shield_activation(self, reason: str, results: Dict[str, Any]):
-        """Log shield activation to ConPort if configured"""
-        if not self.config.conport_workspace_id:
-            return
-
-        try:
-            # Import here to avoid circular dependencies
-            from mcp_conport import log_progress
-
-            summary = f"Activated interruption shields: {reason}"
-            details = {
-                "reason": reason,
-                "results": results,
-                "productivity_baseline": self.state.productivity_baseline,
-                "activated_at": self.state.activated_at.isoformat() if self.state.activated_at else None
-            }
-
-            await log_progress(
-                workspace_id=self.config.conport_workspace_id,
-                status="IN_PROGRESS",  # Shields are now active
-                description=summary,
-                tags=["interruption_shield", "activation"]
-            )
-
-        except Exception as e:
-            logger.warning(f"Failed to log shield activation to ConPort: {e}")
-
-    async def _log_shield_deactivation(self, reason: str, results: Dict[str, Any]):
-        """Log shield deactivation to ConPort if configured"""
-        if not self.config.conport_workspace_id:
-            return
-
-        try:
-            # Import here to avoid circular dependencies
-            from mcp_conport import update_progress
-
-            summary = f"Deactivated interruption shields: {reason}"
-            details = {
-                "reason": reason,
-                "results": results,
-                "deactivated_at": datetime.now().isoformat()
-            }
-
-            # Find the activation progress entry and update it
-            # This is a simplified version - in practice would need to track progress IDs
-            await update_progress(
-                workspace_id=self.config.conport_workspace_id,
-                progress_id="shield_activation",  # Would need actual ID
-                status="DONE",
-                description=summary
-            )
-
-        except Exception as e:
-            logger.warning(f"Failed to log shield deactivation to ConPort: {e}")
 
     async def _notify_state_change(self):
         """Notify all registered callbacks of state changes"""

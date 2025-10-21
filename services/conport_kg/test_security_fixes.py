@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Security Test Suite for ConPort KG
+Security Test Suite for Dope Decision Graph (formerly ConPort KG)
 Tests SQL injection and ReDoS vulnerability fixes
 
 Date: 2025-10-16
