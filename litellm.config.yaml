@@ -25,7 +25,6 @@ model_list:
 litellm_settings:
   timeout: 90
   max_retries: 2
-  # Map common Anthropic model IDs emitted by clients → our configured alias
   model_alias_map:
     claude-sonnet-4-5-20250929: claude-sonnet-4.5
     anthropic/claude-sonnet-4-5-20250929: claude-sonnet-4.5

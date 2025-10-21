@@ -11,12 +11,13 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies for enhanced server with database persistence
-RUN pip install uv aiohttp asyncpg redis
+RUN pip install uv aiohttp asyncpg redis mcp
 
 # Copy the enhanced server with PostgreSQL + Redis persistence
 COPY enhanced_server.py .
 COPY instance_detector.py .
 COPY integration_bridge_client.py .
+COPY conport_mcp_stdio.py .
 COPY schema.sql .
 
 # Expose port

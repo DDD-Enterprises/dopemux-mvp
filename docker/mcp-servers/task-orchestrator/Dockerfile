@@ -28,11 +28,12 @@ RUN gradle build --no-daemon
 
 # Set up runtime environment
 ENV MCP_SERVER_PORT=3014
-ENV MCP_TRANSPORT=stdio
+# Run as an HTTP service inside Docker so healthchecks and port exposure work
+ENV MCP_TRANSPORT=http
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:${MCP_SERVER_PORT}/health || exit 1
+    CMD curl -sf http://localhost:${MCP_SERVER_PORT}/health || exit 1
 
 # Expose MCP server port
 EXPOSE 3014
@@ -43,5 +44,5 @@ LABEL mcp.priority="high"
 LABEL mcp.description="Task orchestration and dependency management"
 LABEL mcp.tools="37"
 
-# Run the MCP server
-CMD ["gradle", "run", "--args=--transport=stdio --port=3014"]
+# Run the MCP server as HTTP service
+CMD ["gradle", "run", "--args=--transport=http --port=3014"]

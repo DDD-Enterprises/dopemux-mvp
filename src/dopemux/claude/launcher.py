@@ -180,6 +180,10 @@ Alternative: Set CLAUDE_PATH environment variable
                 "[red]⚠️  Added --dangerously-skip-permissions flag to Claude Code[/red]"
             )
 
+        # In API-key proxy mode, rely on env to suppress browser/login prompts
+        # (CLAUDE_NO_BROWSER and CLAUDE_CODE_SKIP_PERMISSIONS). The CLI
+        # does not accept a --no-browser flag in some versions.
+
         # Launch process
         console.print(
             f"[blue]🚀 Launching Claude Code with ADHD optimizations...[/blue]"
@@ -300,6 +304,23 @@ Alternative: Set CLAUDE_PATH environment variable
             if proxy_url:
                 env.setdefault("ANTHROPIC_API_BASE", proxy_url)
                 env.setdefault("ANTHROPIC_BASE_URL", proxy_url)
+            # Suppress browser/OAuth prompts in API-key proxy mode
+            env.setdefault("CLAUDE_CODE_SKIP_PERMISSIONS", "true")
+            env.setdefault("CLAUDE_NO_BROWSER", "1")
+            # Isolate Claude platform home per instance to avoid picking up saved OAuth tokens
+            try:
+                from pathlib import Path as _Path
+                inst = env.get("DOPEMUX_INSTANCE_ID", "A") or "A"
+                ws = env.get("DOPEMUX_WORKSPACE_ID") or os.getcwd()
+                claude_home = _Path(ws) / ".dopemux" / "claude-platform" / inst
+                claude_home.mkdir(parents=True, exist_ok=True)
+                env["CLAUDE_PLATFORM_HOME"] = str(claude_home)
+            except Exception:
+                pass
+            # Remove any residual OAuth-related env to prevent mixed auth modes
+            for k in list(env.keys()):
+                if k.upper().startswith("ANTHROPIC_OAUTH") or k.upper() in {"ANTHROPIC_TOKEN", "CLAUDE_TOKEN"}:
+                    env.pop(k, None)
             console.print(
                 "[dim]✓ Routing Claude via LiteLLM proxy (API key mode enabled)[/dim]"
             )

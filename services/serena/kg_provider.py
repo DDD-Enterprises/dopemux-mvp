@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Serena KG Provider - LSP Integration for Knowledge Graph
-Part of CONPORT-KG-2025 Phase 8C
+Part of Dope Decision Graph (formerly ConPort KG)
 
 Provides seamless KG integration in Serena LSP:
 - Hover tooltips for decision references
@@ -26,7 +26,7 @@ try:
     from queries.deep_context import DeepContextQueries
     from queries.models import DecisionCard, DecisionSummary
 except ImportError:
-    print("⚠️  ConPort KG queries not available")
+    print("⚠️  Dope Decision Graph queries not available")
     OverviewQueries = None
 
 

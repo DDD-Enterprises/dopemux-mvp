@@ -20,7 +20,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
-from models.research_task import (
+from research_api.models.research_task import (
     ADHDConfiguration,
     ProjectContext,
     ResearchQuestion,
@@ -29,18 +29,18 @@ from models.research_task import (
     ResearchType,
     TaskStatus
 )
-from engines.query_classifier import (
+from research_api.engines.query_classifier import (
     QueryClassificationEngine,
     QueryIntent,
     ResearchScope,
     OutputFormat,
     SearchEngineStrategy
 )
-from engines.search.search_orchestrator import SearchOrchestrator, SearchStrategy
-from engines.search.exa_adapter import ExaSearchAdapter
-from engines.search.tavily_adapter import TavilySearchAdapter
-from engines.search.perplexity_adapter import PerplexitySearchAdapter
-from engines.search.context7_adapter import Context7SearchAdapter
+from research_api.engines.search.search_orchestrator import SearchOrchestrator, SearchStrategy
+from research_api.engines.search.exa_adapter import ExaSearchAdapter
+from research_api.engines.search.tavily_adapter import TavilySearchAdapter
+from research_api.engines.search.perplexity_adapter import PerplexitySearchAdapter
+from research_api.engines.search.context7_adapter import Context7SearchAdapter
 
 # Discrete integrations for ADHD-friendly research enhancement
 try:

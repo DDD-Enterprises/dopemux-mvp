@@ -50,7 +50,7 @@ check_mcp_proxy() {
 check_containers() {
     log_info "Checking Docker containers..."
 
-    local containers=("mcp-mas-sequential-thinking" "mcp-claude-context" "mcp-exa" "mcp-zen" "mcp-serena" "mcp-gptr-mcp" "mcp-gptr-stdio")
+    local containers=("mcp-mas-sequential-thinking" "mcp-claude-context" "mcp-exa" "mcp-zen" "mcp-serena" "mcp-gptr-mcp" "mcp-gptr-stdio" "mcp-task-orchestrator")
     local running_containers=()
 
     for container in "${containers[@]}"; do
@@ -103,6 +103,16 @@ test_docker_exec() {
             log_error "Missing Python deps in mcp-gptr-stdio (mcp/gpt_researcher)"
         fi
     fi
+
+    # Test task-orchestrator (Gradle present)
+    if docker ps --format '{{.Names}}' | grep -q "^mcp-task-orchestrator$"; then
+        log_info "Testing mcp-task-orchestrator..."
+        if timeout 8 docker exec mcp-task-orchestrator which gradle &>/dev/null; then
+            log_success "Gradle found in mcp-task-orchestrator"
+        else
+            log_error "Gradle not found in mcp-task-orchestrator image"
+        fi
+    fi
 }
 
 # Generate proxy configuration
@@ -117,6 +127,9 @@ generate_config() {
     },
     "gptr-researcher-stdio": {
       "command": "docker exec -i mcp-gptr-stdio python /app/scripts/gpt-researcher/mcp_server.py"
+    },
+    "task-orchestrator": {
+      "command": "docker exec -i mcp-task-orchestrator gradle run --args=\"--transport=stdio --port=3014\""
     }
   }
 }
@@ -152,6 +165,7 @@ start_proxy() {
         nohup mcp-proxy \
             --named-server mas-sequential-thinking 'docker exec -i mcp-mas-sequential-thinking mcp-server-mas-sequential-thinking' \
             --named-server gptr-researcher-stdio 'docker exec -i mcp-gptr-stdio python /app/scripts/gpt-researcher/mcp_server.py' \
+            --named-server task-orchestrator 'docker exec -i mcp-task-orchestrator gradle run --args="--transport=stdio --port=3014"' \
             --port "$PROXY_PORT" \
             --allow-origin '*' \
             > "$LOG_FILE" 2>&1 &
@@ -181,6 +195,7 @@ test_proxy() {
     local endpoints=(
         "mas-sequential-thinking"
         "gptr-researcher-stdio"
+        "task-orchestrator"
     )
 
     for endpoint in "${endpoints[@]}"; do

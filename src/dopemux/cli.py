@@ -103,6 +103,75 @@ def init(ctx, profile: Optional[str], force: bool):
     if not success:
         sys.exit(1)
 
+    # Install git hook for automatic ConPort wiring
+    try:
+        hooks_dir = workspace / ".git" / "hooks"
+        if hooks_dir.exists():
+            src = Path(__file__).resolve().parents[2] / "scripts" / "git_post_worktree_hook.sh"
+            dst = hooks_dir / "post-checkout"
+            if not dst.exists():
+                import shutil
+                shutil.copy2(src, dst)
+                dst.chmod(0o755)
+                click.echo("🔗 Installed git post-checkout hook for ConPort wiring")
+            else:
+                click.echo("✅ Git post-checkout hook present")
+    except Exception:
+        pass
+
+    # Install project templates (.claude/ and docs/)
+    try:
+        repo_root = Path(__file__).resolve().parents[2]
+        # .claude/claude.md
+        src_claude = repo_root / ".claude" / "claude.md"
+        dst_claude_dir = workspace / ".claude"
+        dst_claude_dir.mkdir(parents=True, exist_ok=True)
+        dst_claude = dst_claude_dir / "claude.md"
+        if not dst_claude.exists():
+            if src_claude.exists():
+                import shutil
+                shutil.copy2(src_claude, dst_claude)
+                click.echo("📝 Installed project Claude guide (.claude/claude.md)")
+            else:
+                dst_claude.write_text("# Project Claude Guide\n\nSee global Dopemux docs for MCP usage.")
+        # docs templates
+        dst_docs = workspace / "docs"
+        dst_docs.mkdir(parents=True, exist_ok=True)
+        for name in ["WORKTREES_AND_DECISION_GRAPH.md", "MCP_TOOLS_OVERVIEW.md"]:
+            src = repo_root / "docs" / name
+            dst = dst_docs / name
+            if not dst.exists():
+                if src.exists():
+                    import shutil
+                    shutil.copy2(src, dst)
+                    click.echo(f"📝 Installed docs/{name}")
+    except Exception:
+        pass
+
+
+@cli.command()
+@click.option("--instance", "-i", help="Instance id (feature branch name)")
+@click.option("--project", "-p", help="Project root (defaults to CWD)")
+def wire_conport(instance: Optional[str], project: Optional[str]):
+    """
+    Wire project-level ConPort MCP config for the current worktree.
+
+    Writes .claude/claude_config.json with a `conport` stdio server that
+    docker-execs into the correct container (mcp-conport[_<instance>]).
+    """
+    try:
+        script = Path(__file__).resolve().parents[2] / "scripts" / "wire_conport_project.py"
+        args = [sys.executable, str(script)]
+        if instance:
+            args.extend(["--instance", instance])
+        if project:
+            args.extend(["--project", project])
+        import subprocess
+        subprocess.check_call(args)
+        click.echo("✅ ConPort wired for this project/worktree")
+    except subprocess.CalledProcessError as e:
+        click.echo(f"❌ Failed to wire ConPort: {e}", err=True)
+        sys.exit(1)
 
 @cli.command()
 @click.option("--session", "-s", help="Restore specific session ID")
@@ -122,6 +191,11 @@ def init(ctx, profile: Optional[str], force: bool):
     "--no-mcp",
     is_flag=True,
     help="Skip starting MCP servers (not recommended for ADHD experience)",
+)
+@click.option(
+    "--no-recovery",
+    is_flag=True,
+    help="Skip orphan worktree recovery menu and continue in current location",
 )
 @click.option(
     "--litellm",
@@ -144,6 +218,7 @@ def start(
     dangerous: bool,
     dangerously_skip_permissions: bool,
     no_mcp: bool,
+    no_recovery: bool,
     use_litellm: bool,
     use_claude_router: bool,
     **legacy_kwargs,
@@ -164,10 +239,42 @@ def start(
 
     from .workspace_utils import get_workspace_root
 
+    # Default to LiteLLM + Router if configured (Option A)
+    if not use_litellm and not use_claude_router:
+        try:
+            default_env = os.getenv("DOPEMUX_DEFAULT_LITELLM", "0") == "1"
+            if not default_env:
+                # Attempt to detect healthy container proxy on 4000
+                mk = None
+                try:
+                    cfg_path = Path.cwd() / "litellm.config.yaml"
+                    if cfg_path.exists():
+                        cfg = yaml.safe_load(cfg_path.read_text()) or {}
+                        mk = ((cfg.get("general_settings") or {}).get("master_key"))
+                except Exception:
+                    mk = None
+                headers = {"Authorization": f"Bearer {mk}"} if mk else {}
+                import requests as _rq
+                r = _rq.get("http://127.0.0.1:4000/health", headers=headers, timeout=0.8)
+                default_env = r.status_code == 200
+            if default_env:
+                use_litellm = True
+                use_claude_router = True
+        except Exception:
+            pass
+
     config_manager = ctx.obj["config_manager"]
     # CRITICAL FIX: Use git root detection instead of cwd
     # This ensures correct workspace even from subdirectories and worktrees
     project_path = get_workspace_root()
+
+    # Auto-wire ConPort project MCP config for this worktree (idempotent)
+    try:
+        from subprocess import check_call
+        wire_script = Path(__file__).resolve().parents[2] / "scripts" / "wire_conport_project.py"
+        check_call([sys.executable, str(wire_script)])
+    except Exception:
+        pass
 
     # Check if project is initialized
     if not (project_path / ".dopemux").exists():
@@ -185,10 +292,12 @@ def start(
     import os
 
     try:
-        selected_worktree = show_recovery_menu_sync(
-            workspace_id=str(project_path),
-            conport_port=3004  # Default ConPort port for instance A
-        )
+        selected_worktree = None
+        if not no_recovery:
+            selected_worktree = show_recovery_menu_sync(
+                workspace_id=str(project_path),
+                conport_port=3004  # Default ConPort port for instance A
+            )
 
         if selected_worktree:
             # User selected a worktree to recover
@@ -207,10 +316,12 @@ def start(
     # Main Worktree Protection (ADHD-optimized guidance)
     # Check if working in main with uncommitted changes
     try:
-        should_exit = check_and_protect_main(
-            workspace_path=str(project_path),
-            enforce=False  # Warn only (gentle guidance, not blocking)
-        )
+        should_exit = False
+        if os.environ.get("DOPEMUX_ALLOW_MAIN") != "1":
+            should_exit = check_and_protect_main(
+                workspace_path=str(project_path),
+                enforce=False  # Warn only (gentle guidance, not blocking)
+            )
 
         new_worktree = consume_last_created_worktree()
         if new_worktree:
@@ -319,14 +430,42 @@ def start(
     if not worktree_path:
         worktree_path = project_path
 
+    # Optional override for default instance id mapping (advanced)
+    try:
+        force_id = os.getenv("DOPEMUX_FORCE_INSTANCE_ID", "").strip()
+        if force_id and force_id in InstanceManager.AVAILABLE_IDS:
+            used = {inst.instance_id for inst in (running_instances or [])}
+            if force_id not in used:
+                idx = InstanceManager.AVAILABLE_IDS.index(force_id)
+                forced_port = InstanceManager.AVAILABLE_PORTS[idx]
+                instance_id = force_id
+                port_base = forced_port
+                # Recompute per-instance env
+                instance_env_vars = instance_manager.get_instance_env_vars(
+                    instance_id,
+                    port_base,
+                    worktree_path
+                )
+                console.print(f"[dim]⚙️  Forced instance id: {instance_id} (port {port_base})[/dim]")
+            else:
+                console.print(f"[dim]⚠️  DOPEMUX_FORCE_INSTANCE_ID={force_id} already in use; ignoring[/dim]")
+    except Exception:
+        pass
+
     # Inject instance environment variables
     if instance_env_vars:
+        # Auto fast per-instance mode for instances beyond A
+        if instance_id and instance_id != 'A':
+            instance_env_vars["DOPEMUX_FAST_ONLY"] = "1"
         for key, value in instance_env_vars.items():
             os.environ[key] = value
 
         console.print("[dim]✅ Instance environment variables configured[/dim]")
 
     litellm_proxy_info = None
+    # If --litellm is passed, prefer enabling CCR unless explicitly disabled by user
+    if use_litellm and not use_claude_router:
+        use_claude_router = True
     litellm_enabled = use_litellm or use_claude_router
 
     if litellm_enabled:
@@ -383,8 +522,24 @@ def start(
         if litellm_proxy_info:
             provider_url = f"{litellm_proxy_info.base_url}/v1/chat/completions"
             provider_name = provider_name or "litellm"
-            # Use Claude as primary, with xAI Grok code-specialized fallback
-            provider_models = ["claude-sonnet-4.5", "xai-grok-code-fast", "openai-gpt-5"]
+            # Prefer xAI; if no ANTHROPIC_API_KEY, exclude Anthropic to avoid invalid key errors
+            have_anthropic = bool(os.environ.get("ANTHROPIC_API_KEY"))
+            if have_anthropic:
+                provider_models = [
+                    "xai-grok-code-fast",
+                    "claude-sonnet-4.5",
+                    "openai-gpt-5",
+                ]
+            else:
+                provider_models = [
+                    "xai-grok-code-fast",
+                    "openai-gpt-5",
+                ]
+            # Set router overrides to ensure our preferred defaults
+            router_overrides = {
+                "default": f"{provider_name},{provider_models[0]}",
+                "background": f"{provider_name},{provider_models[1 if len(provider_models) > 1 else 0]}",
+            }
         else:
             provider_url = os.environ.get("CLAUDE_CODE_ROUTER_UPSTREAM_URL")
             models_env = os.environ.get("CLAUDE_CODE_ROUTER_MODELS", "")
@@ -420,23 +575,17 @@ def start(
                 provider_name=provider_name or "litellm",
                 provider_key=provider_key,
                 provider_key_env_var=provider_key_env,
+                router_overrides=router_overrides if litellm_proxy_info else None,
             )
         except ClaudeCodeRouterError as exc:
             console.print(f"[red]❌ Claude Code Router failed: {exc}[/red]")
             sys.exit(1)
 
         router_env = router_manager.build_client_env(router_info)
-
-        # CRITICAL: Save original ANTHROPIC_API_KEY before router overwrites it
-        # The router's API key is only for router's internal use, NOT for MCP servers
-        original_anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
-
+        # Use router-provided base URL + API key for Claude Code and MCPs.
+        # Do not restore original ANTHROPIC_API_KEY here — in API-key proxy mode,
+        # the router (or LiteLLM) master key must be used by Claude to avoid login/API errors.
         os.environ.update(router_env)
-
-        # CRITICAL: Restore original ANTHROPIC_API_KEY for MCP servers and Claude Code
-        # MCP servers need the REAL Anthropic API key, not the router's key
-        if original_anthropic_key:
-            os.environ["ANTHROPIC_API_KEY"] = original_anthropic_key
 
         if router_info.already_running:
             console.print(
@@ -528,7 +677,7 @@ def start(
     # Save instance state to ConPort for crash recovery
     if instance_id and port_base:
         from .instance_state import save_instance_state_sync, InstanceState
-        from datetime import datetime
+        from datetime import datetime, timezone
 
         # Get current git branch
         try:
@@ -547,8 +696,8 @@ def start(
             port_base=port_base,
             worktree_path=str(worktree_path or project_path),
             git_branch=git_branch,
-            created_at=datetime.now(),
-            last_active=datetime.now(),
+            created_at=datetime.now(timezone.utc),
+            last_active=datetime.now(timezone.utc),
             status="active",
             last_working_directory=str(worktree_path or project_path),
             last_focus_context=context.get('current_goal', 'New session') if context else 'New session'
@@ -575,13 +724,13 @@ def start(
             # Mark instance as stopped in ConPort
             if instance_id:
                 from .instance_state import load_instance_state_sync, save_instance_state_sync
-                from datetime import datetime
+                from datetime import datetime, timezone
 
                 workspace_id = str(project_path.resolve())
                 state = load_instance_state_sync(instance_id, workspace_id, conport_port=3004)
                 if state:
                     state.status = 'stopped'
-                    state.last_active = datetime.now()
+                    state.last_active = datetime.now(timezone.utc)
                     save_instance_state_sync(state, workspace_id, conport_port=3004)
                     console.print("[dim]✅ Instance marked as stopped[/dim]")
 
@@ -2872,6 +3021,130 @@ def _check_dangerous_mode_expiry():
             _deactivate_dangerous_mode()
             return True
     return False
+
+
+@cli.command("backup")
+@click.option("--dest", help="Destination directory for tar backups (defaults to docker/mcp-servers/backups/volumes_<timestamp>)")
+@click.option("--pattern", help="Regex to filter volume names (default: ^(mcp_|dopemux_))")
+@click.option("--no-pull", is_flag=True, help="Do not pull alpine image if missing")
+@click.option("--schedule", type=click.Choice(["daily", "weekly"]), help="Print a cron entry to run backups on a schedule")
+@click.option("--apply", is_flag=True, help="Attempt to install the cron entry into your crontab")
+@click.pass_context
+def backup(ctx, dest: Optional[str], pattern: Optional[str], no_pull: bool, schedule: Optional[str], apply: bool):
+    """
+    📦 Back up all Docker named volumes used by Dopemux (mcp_*/dopemux_*).
+
+    Creates .tgz archives and a SHA256SUMS.txt manifest in the destination.
+    Use --schedule to print or install a cron job for daily/weekly backups.
+    """
+    from .workspace_utils import get_workspace_root
+    import hashlib, re
+
+    # Scheduling path only
+    if schedule:
+        _print_or_apply_cron(schedule, apply)
+        return
+
+    workspace = get_workspace_root()
+    ts = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    default_dest = workspace / "docker" / "mcp-servers" / "backups" / f"volumes_{ts}"
+    dest_path = Path(dest).expanduser().resolve() if dest else default_dest
+    dest_path.mkdir(parents=True, exist_ok=True)
+
+    vol_pattern = re.compile(pattern or r"^(mcp_|dopemux_)")
+
+    # Discover volumes
+    try:
+        result = subprocess.run(["docker", "volume", "ls", "--format", "{{.Name}}"], capture_output=True, text=True, check=True)
+    except Exception as e:
+        console.print(f"[red]❌ Docker not available: {e}[/red]")
+        sys.exit(1)
+
+    volumes = [v.strip() for v in result.stdout.splitlines() if v.strip() and vol_pattern.search(v.strip())]
+    if not volumes:
+        console.print("[yellow]No matching volumes found[/yellow]")
+        return
+
+    console.print(f"[blue]== Backing up {len(volumes)} volumes to {dest_path} ==[/blue]")
+
+    # Ensure alpine image present unless disabled
+    if not no_pull:
+        try:
+            subprocess.run(["docker", "image", "inspect", "alpine:latest"], capture_output=True, text=True, check=True)
+        except subprocess.CalledProcessError:
+            console.print("[dim]Pulling alpine:latest ...[/dim]")
+            subprocess.run(["docker", "pull", "alpine:latest"], check=False)
+
+    ok = 0
+    fail = 0
+    for vol in volumes:
+        console.print(f"Backing up [cyan]{vol}[/cyan] ...")
+        cmd = [
+            "docker", "run", "--rm",
+            "-v", f"{vol}:/data:ro",
+            "-v", f"{str(dest_path)}:/backup",
+            "alpine", "sh", "-lc",
+            f"cd /data 2>/dev/null || mkdir -p /data; tar czf '/backup/{vol}.tgz' -C /data ."
+        ]
+        try:
+            subprocess.run(cmd, check=True)
+            console.print(f"[green]✓ {vol}[/green] → {dest_path / (vol + '.tgz')}")
+            ok += 1
+        except subprocess.CalledProcessError:
+            console.print(f"[red]✗ Failed to back up {vol}[/red]")
+            fail += 1
+
+    # Write SHA256SUMS
+    try:
+        sums_path = dest_path / "SHA256SUMS.txt"
+        with sums_path.open("w") as f:
+            for tgz in sorted(dest_path.glob("*.tgz")):
+                h = hashlib.sha256()
+                with tgz.open("rb") as tf:
+                    for chunk in iter(lambda: tf.read(1024 * 1024), b""):
+                        h.update(chunk)
+                f.write(f"{h.hexdigest()}  {tgz.name}\n")
+        console.print(f"[green]Manifest written:[/green] {sums_path}")
+    except Exception as e:
+        console.print(f"[yellow]⚠️  Could not write checksum manifest: {e}[/yellow]")
+
+    console.print(f"\n[bold]Summary[/bold]: Backed up {ok} volumes, {fail} failed")
+
+
+def _print_or_apply_cron(frequency: str, apply: bool) -> None:
+    """Print or install a cron job to run 'dopemux backup' on the desired schedule."""
+    # Defaults: run at 02:30 local time
+    cron_time = "30 2 * * *" if frequency == "daily" else "30 2 * * 1"
+
+    backup_cmd = "dopemux backup"
+    cron_entry = (
+        f"# dopemux-backup ({frequency})\n"
+        f"{cron_time} cd $HOME/code/dopemux-mvp && {backup_cmd} >> $HOME/.dopemux/backup.log 2>&1\n"
+    )
+
+    if not apply:
+        console.print("\n[bold]Cron suggestion[/bold] (add via 'crontab -e'):\n")
+        console.print(cron_entry)
+        console.print("\n[dim]Tip: Adjust path and time as needed.[/dim]")
+        return
+
+    try:
+        current = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
+        content = current.stdout if current.returncode == 0 else ""
+        if "# dopemux-backup" in content:
+            console.print("[yellow]⚠️  A dopemux-backup entry already exists in your crontab[/yellow]")
+            return
+        new_content = content + ("\n" if content and not content.endswith("\n") else "") + cron_entry
+        p = subprocess.run(["crontab", "-"], input=new_content, text=True)
+        if p.returncode == 0:
+            console.print("[green]✅ Installed dopemux backup cron job[/green]")
+        else:
+            console.print("[yellow]⚠️  Could not install cron job. Printing entry instead:[/yellow]")
+            console.print(cron_entry)
+    except Exception as e:
+        console.print(f"[yellow]⚠️  Failed to install cron job: {e}[/yellow]")
+        console.print("\nAdd this entry manually via 'crontab -e':\n")
+        console.print(cron_entry)
 
 
 @cli.command("extract-chatlog")
