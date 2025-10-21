@@ -32,3 +32,11 @@ Project-specific Claude Code instructions for python development with ADHD accom
 
 **Focus**: python development with ADHD accommodations
 **Goal**: Maintain productivity while respecting neurodivergent needs
+## MCP Servers (Auto‑Wired)
+- Global servers available in Claude Desktop:
+  - mas-sequential-thinking, zen, context7 (stdio)
+  - serena (SSE), exa (SSE), leantime-bridge (SSE)
+  - task-orchestrator (stdio on-demand), gptr-researcher-stdio (stdio)
+- Project ConPort is auto‑wired per worktree as `conport` (stdio via docker exec).
+
+ConPort provides project‑local decisions and progress; the Dope Decision Graph mirrors and links these for cross‑project discovery.

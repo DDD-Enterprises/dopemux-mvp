@@ -94,8 +94,6 @@ services:
     image: redis:7-alpine
     container_name: redis_leantime
     restart: unless-stopped
-    ports:
-      - "6379:6379"
     networks:
       - leantime-net
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}

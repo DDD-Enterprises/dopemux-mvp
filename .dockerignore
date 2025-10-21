@@ -1,0 +1,59 @@
+# Global Docker ignore to keep build contexts small and fast
+
+# VCS
+.git
+.gitignore
+.gitmodules
+
+# OS / editor
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Python
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.cache/
+pip-wheel-metadata/
+
+# Node / JS
+node_modules/
+**/node_modules/
+
+# Virtual envs
+venv/
+.venv/
+**/venv/
+**/.venv/
+
+# Builds / artifacts
+dist/
+build/
+**/dist/
+**/build/
+coverage/
+.coverage*
+
+# Large data/logs/temp
+logs/
+**/logs/
+data/
+**/data/
+tmp/
+**/tmp/
+**/storage/
+**/qdrant/
+
+# Project-specific heavy paths that should never be in context
+docker/mcp-servers/backups/
+services/dope-context/data/
+
+# Misc
+*.log
+
