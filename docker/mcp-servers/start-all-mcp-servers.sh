@@ -101,6 +101,56 @@ safe_up qdrant mcp-qdrant
 echo "⏳ Waiting for Qdrant to be ready..."
 sleep 5
 
+# Initialize ConPort schema on first run (idempotent)
+ensure_conport_schema() {
+  local pgc="dopemux-postgres-age"
+  local sql="./conport/schema.sql"
+  if ! docker inspect "$pgc" >/dev/null 2>&1; then
+    echo "ℹ️  Skipping schema init: $pgc not running"
+    return
+  fi
+  # Wait for Postgres to be healthy
+  for i in {1..15}; do
+    if [ "$(docker inspect -f '{{.State.Health.Status}}' "$pgc" 2>/dev/null || echo unknown)" = "healthy" ]; then
+      break
+    fi
+    sleep 2
+  done
+  # Check if primary table exists
+  local exists
+  exists=$(docker exec -e PGPASSWORD=dopemux_age_dev_password "$pgc" \
+    psql -U dopemux_age -d dopemux_knowledge_graph -tAc "SELECT to_regclass('public.workspace_contexts');" 2>/dev/null | tr -d '[:space:]') || true
+  if [ -z "$exists" ] || [ "$exists" = "" ] || [ "$exists" = "null" ]; then
+    echo "🧩 Applying ConPort schema (first run)"
+    if [ -f "$sql" ]; then
+      docker cp "$sql" "$pgc":/tmp/conport_schema.sql
+      if docker exec -e PGPASSWORD=dopemux_age_dev_password -i "$pgc" \
+        psql -U dopemux_age -d dopemux_knowledge_graph -v ON_ERROR_STOP=1 -f /tmp/conport_schema.sql; then
+        echo "✅ ConPort schema applied"
+      else
+        echo "⚠️  Failed to apply ConPort schema (continuing)"
+      fi
+    else
+      echo "ℹ️  Schema file not found: $sql"
+    fi
+  else
+    echo "✅ ConPort schema already present"
+  fi
+}
+
+ensure_conport_schema
+
+# Fast per-instance mode: only bring up ConPort/Serena for this instance
+if [ "${DOPEMUX_FAST_ONLY:-0}" = "1" ] && [ -n "${DOPEMUX_INSTANCE_ID:-}" ]; then
+  echo "⚡ Fast per-instance start: starting only ConPort/Serena for instance ${DOPEMUX_INSTANCE_ID}"
+  safe_up conport "mcp-conport${SUFFIX}"
+  safe_up serena "mcp-serena${SUFFIX}"
+  echo "\n== Fast start status =="
+  docker-compose ps | grep -E "mcp-(conport|serena)" || true
+  echo "\n✅ Fast per-instance start completed."
+  exit 0
+fi
+
 # Start critical path servers (staggered for ADHD optimizations)
 echo "⚡ Starting critical path servers..."
 safe_up context7 mcp-context7
@@ -119,10 +169,28 @@ safe_up serena "mcp-serena${SUFFIX}"
 echo "⏳ Waiting for workflow servers to stabilize..."
 sleep 10
 
+# Optional: Task Orchestrator (stdio MCP; disabled by default to avoid restart loops)
+if [ "${DOPEMUX_START_TASK_ORCHESTRATOR:-0}" = "1" ]; then
+  echo "🧭 Starting Task Orchestrator (manual profile)"
+  # Requires compose profile; best-effort start
+  if docker compose -f ./docker-compose.yml --profile manual up -d --no-build task-orchestrator 2>/dev/null; then
+    echo "✅ Task Orchestrator up"
+  else
+    echo "ℹ️  Task Orchestrator not started (profile/manual)"
+  fi
+else
+  echo "• Skipping Task Orchestrator (set DOPEMUX_START_TASK_ORCHESTRATOR=1 to enable)"
+fi
+
 # Start research + quality & utility servers
 echo "🧠 Starting research + quality & utility servers..."
 safe_up gptr-mcp mcp-gptr-mcp
-safe_up gptr-mcp-stdio mcp-gptr-stdio
+# Only start gptr-mcp-stdio if the directory exists (optional component)
+if [ -d "./gptr-mcp-stdio" ] && [ -f "./gptr-mcp-stdio/Dockerfile" ]; then
+  safe_up gptr-mcp-stdio mcp-gptr-stdio
+else
+  echo "• Skipping gptr-mcp-stdio (not present)"
+fi
 safe_up exa mcp-exa
 safe_up desktop-commander mcp-desktop-commander
 
@@ -191,7 +259,7 @@ echo "🏥 Health check summary:"
 echo "========================"
 
 # Health check each critical server
-servers=("context7:3002" "zen:3003" "litellm:4000" "mas-sequential-thinking:3011" "conport:3004")
+servers=("context7:3002" "zen:3003" "litellm:4000" "conport:3004" "mas-sequential-thinking:3011")
 for server in "${servers[@]}"; do
     name="${server%:*}"
     port="${server#*:}"
@@ -237,7 +305,7 @@ echo "📚 Critical Path Servers:"
 echo "   Context7:     http://localhost:3002"
 echo "   Zen:          http://localhost:3003"
 echo "   LiteLLM:      http://localhost:4000"
-echo "   Sequential:   http://localhost:3001"
+echo "   Sequential:   http://localhost:3011"
 echo ""
 echo "🔄 Workflow Servers:"
 echo "   ConPort:      http://localhost:3004"

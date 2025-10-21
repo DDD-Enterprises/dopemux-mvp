@@ -196,6 +196,15 @@ Note on authentication modes:
   fall back to `xai/grok-code-fast-1` (and `openai/gpt-5` if configured). Set `XAI_API_KEY` (recommended)
   and/or `OPENAI_API_KEY` in your shell before starting.
 
+### ConPort + Dope Decision Graph (Automatic Wiring)
+
+- Project‑level ConPort is auto‑wired into `.claude/claude_config.json` on `dopemux start` and on `scripts/stack_up_all.sh`.
+- A git `post-checkout` hook is installed to wire new worktrees automatically.
+- ConPort uses stdio via `docker exec` targeting the instance container `mcp-conport[_<instance>]`.
+- Global MCP servers (Zen, MAS, Context7, Exa, Serena, Leantime Bridge, Task Orchestrator, GPT Researcher) are wired into Claude Desktop globally.
+
+Read more: `docs/WORKTREES_AND_DECISION_GRAPH.md`.
+
 ### Verify Setup
 
 Your statusline should now show:
