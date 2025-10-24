@@ -39,6 +39,13 @@ from ..utils.metrics_tracker import get_tracker
 from ..utils.token_budget import truncate_code_results, truncate_docs_results
 from ..autonomous.autonomous_controller import AutonomousController, AutonomousConfig
 
+# ConPort-KG Integration (optional)
+try:
+    from integration_bridge_connector import emit_search_completed
+    CONPORT_INTEGRATION_AVAILABLE = True
+except ImportError:
+    CONPORT_INTEGRATION_AVAILABLE = False
+
 
 logger = logging.getLogger(__name__)
 
