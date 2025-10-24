@@ -12,9 +12,19 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
+import warnings
 
 import click
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+    _DOTENV_AVAILABLE = True
+except ImportError:  # pragma: no cover - optional dependency
+    _DOTENV_AVAILABLE = False
+
+    def load_dotenv(*args, **kwargs):  # type: ignore[override]
+        """Fallback load_dotenv when python-dotenv is unavailable."""
+        return False
+
 from rich.console import Console
 from rich.live import Live
 from rich.panel import Panel
@@ -49,6 +59,13 @@ if "-litellm" in sys.argv:
     sys.argv = ["--litellm" if arg == "-litellm" else arg for arg in sys.argv]
 
 console = Console()
+
+if not _DOTENV_AVAILABLE:  # pragma: no cover - environment warning
+    warnings.warn(
+        "python-dotenv not installed; environment variables from .env files "
+        "will not be auto-loaded. Install python-dotenv to enable this feature.",
+        RuntimeWarning,
+    )
 
 
 def show_version(ctx, param, value):
@@ -470,12 +487,17 @@ def start(
 
     if litellm_enabled:
         # Require at least one upstream provider key for LiteLLM to be useful
-        if not (os.environ.get("XAI_API_KEY") or os.environ.get("OPENAI_API_KEY")):
+        provider_keys = {
+            "OPENROUTER_API_KEY": os.environ.get("OPENROUTER_API_KEY"),
+            "XAI_API_KEY": os.environ.get("XAI_API_KEY"),
+            "OPENAI_API_KEY": os.environ.get("OPENAI_API_KEY"),
+        }
+        if not any(provider_keys.values()):
             console.print(
                 "[red]❌ No upstream API key set for LiteLLM.[/red]"
             )
             console.print(
-                "[dim]Set XAI_API_KEY (recommended) or OPENAI_API_KEY before using --litellm[/dim]"
+                "[dim]Set OPENROUTER_API_KEY (preferred), XAI_API_KEY, or OPENAI_API_KEY before using --litellm[/dim]"
             )
             sys.exit(1)
 
@@ -522,19 +544,14 @@ def start(
         if litellm_proxy_info:
             provider_url = f"{litellm_proxy_info.base_url}/v1/chat/completions"
             provider_name = provider_name or "litellm"
-            # Prefer xAI; if no ANTHROPIC_API_KEY, exclude Anthropic to avoid invalid key errors
-            have_anthropic = bool(os.environ.get("ANTHROPIC_API_KEY"))
-            if have_anthropic:
-                provider_models = [
-                    "xai-grok-code-fast",
-                    "claude-sonnet-4.5",
-                    "openai-gpt-5",
-                ]
-            else:
-                provider_models = [
-                    "xai-grok-code-fast",
-                    "openai-gpt-5",
-                ]
+            if os.environ.get("OPENROUTER_API_KEY"):
+                provider_models.append("xai-grok-code-fast")
+            if os.environ.get("OPENAI_API_KEY"):
+                provider_models.append("openai-gpt-5")
+
+            if not provider_models:
+                provider_models = ["xai-grok-code-fast"]
+
             # Set router overrides to ensure our preferred defaults
             router_overrides = {
                 "default": f"{provider_name},{provider_models[0]}",
@@ -637,18 +654,22 @@ def start(
             _activate_dangerous_mode()
 
         # Auto-configure MCP servers for current worktree (Phase 2: Zero manual steps)
-        progress.update(task, description="Auto-configuring MCP servers...")
-        from .auto_configurator import WorktreeAutoConfigurator
-
-        auto_config = WorktreeAutoConfigurator()
-        workspace_to_configure = worktree_path or project_path
-        success, message = auto_config.configure_workspace(workspace_to_configure)
-
-        if success:
-            progress.update(task, description="✅ MCP auto-configuration complete")
+        skip_auto_config = os.getenv("DOPEMUX_SKIP_MCP_AUTOCONFIG", "0").lower() in {"1", "true", "yes"}
+        if skip_auto_config:
+            progress.update(task, description="⏭️ Skipping MCP auto-configuration (DOPEMUX_SKIP_MCP_AUTOCONFIG)")
         else:
-            progress.update(task, description="⚠️ MCP auto-configuration skipped")
-            console.print(f"[dim]{message}[/dim]")
+            progress.update(task, description="Auto-configuring MCP servers...")
+            from .auto_configurator import WorktreeAutoConfigurator
+
+            auto_config = WorktreeAutoConfigurator()
+            workspace_to_configure = worktree_path or project_path
+            success, message = auto_config.configure_workspace(workspace_to_configure)
+
+            if success:
+                progress.update(task, description="✅ MCP auto-configuration complete")
+            else:
+                progress.update(task, description="⚠️ MCP auto-configuration skipped")
+                console.print(f"[dim]{message}[/dim]")
 
         # Start MCP servers by default (ADHD-optimized experience)
         if not no_mcp:
@@ -2749,6 +2770,10 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
     - Clear status updates maintain engagement
     - Health check waiting ensures everything is ready
     """
+    if os.getenv("DOPEMUX_SKIP_MCP_START", "0").lower() in {"1", "true", "yes"}:
+        console.print("[yellow]⏭️ Skipping MCP server startup (DOPEMUX_SKIP_MCP_START)[/yellow]")
+        return
+
     import requests
 
     mcp_dir = project_path / "docker" / "mcp-servers"
