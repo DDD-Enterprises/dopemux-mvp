@@ -250,3 +250,4 @@ DOCS_TO_PROCESS/
 # Node.js dependencies (should be generated from package.json)
 node_modules/
 */node_modules/
+docker/mcp-servers/backups/
