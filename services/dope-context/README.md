@@ -8,10 +8,23 @@ Multi-project support with perfect workspace isolation, hybrid search (dense + s
 
 ## Features
 
+### Autonomous Indexing (NEW - Decision #218-219) ✨
+
+**Zero-touch operation - never think about indexing again!**
+
+- **File System Monitoring**: Watchdog library detects changes as they happen
+- **Smart Debouncing**: 5s wait after last change batches rapid saves
+- **Background Processing**: Async worker processes queue with 3 retries
+- **Periodic Fallback**: 10-minute sync catches edge cases
+- **3 MCP Tools**: start/stop/get_autonomous_status
+- **ADHD Impact**: 100% cognitive load reduction for indexing
+
+[📖 Complete Autonomous Indexing Guide](./AUTONOMOUS_INDEXING.md)
+
 ### Code Search
 
 - **AST-Aware Chunking**: Tree-sitter for semantic boundaries (functions, classes)
-- **Contextual Embeddings**: Claude-generated contexts (35-67% quality improvement)
+- **Contextual Embeddings**: gpt-5-mini-generated contexts (35-67% quality improvement)
 - **Multi-Vector**: Separate embeddings for content, title, breadcrumb
 - **Hybrid Search**: Dense (semantic) + BM25 (keyword) with RRF fusion
 - **Neural Reranking**: Voyage rerank-2.5 with progressive disclosure
@@ -29,6 +42,7 @@ Multi-project support with perfect workspace isolation, hybrid search (dense + s
 - **Auto-Detection**: Detects workspace from git root or cwd
 - **Incremental Sync**: SHA256-based change detection (Merkle DAG)
 - **Snapshot System**: Stores file hashes in ~/.dope-context/
+- **Autonomous Updates**: Background monitoring keeps index current
 
 ### ADHD Optimizations
 
@@ -36,6 +50,7 @@ Multi-project support with perfect workspace isolation, hybrid search (dense + s
 - **Complexity Scoring**: 0.0-1.0 cognitive load estimation
 - **Cost Tracking**: Full API cost monitoring
 - **Batching**: Optimized for minimal API calls
+- **Zero Mental Overhead**: Autonomous indexing (NEW)
 
 ---
 
@@ -102,22 +117,30 @@ Or manually edit `~/Library/Application Support/Claude/claude_desktop_config.jso
 
 ## Usage
 
-### 1. Index Your Codebase
+### 1. Start Autonomous Indexing (Recommended - NEW!) ✨
 
 ```python
-# In Claude Code
-index_workspace("/Users/you/your-project")
+# In Claude Code - One-time setup
+await start_autonomous_indexing()
+# Returns: {"status": "started", "workspace": "/path/to/project", ...}
 
-# With custom patterns
-index_workspace(
-    "/Users/you/your-project",
-    include_patterns=["*.py", "*.ts", "*.go"],
-    exclude_patterns=["*test*", "node_modules"],
-    max_files=1000
-)
+# That's it! Index automatically updates as you code
+# Never call sync_workspace() or index_workspace() manually again!
 ```
 
-### 2. Search Code
+**What Happens**:
+- Watchdog monitors your workspace for file changes
+- Background worker processes changes with debouncing (5s)
+- Periodic sync runs every 10 minutes as fallback
+- Your search results are always current
+
+**Check Status**:
+```python
+await get_autonomous_status()
+# Shows: active controllers, tasks processed, success rate
+```
+
+### 2. Search Code (Works with or without autonomous indexing)
 
 ```python
 # Basic search (auto-detects current workspace)
@@ -151,10 +174,21 @@ search_all("user authentication")
 # Returns: {workspace, code_results, docs_results, total_results}
 ```
 
-### 5. Incremental Sync
+### 5. Manual Indexing (If Not Using Autonomous)
 
 ```python
-# After making code changes
+# Initial index (one-time)
+index_workspace("/Users/you/your-project")
+
+# With custom patterns
+index_workspace(
+    "/Users/you/your-project",
+    include_patterns=["*.py", "*.ts", "*.go"],
+    exclude_patterns=["*test*", "node_modules"],
+    max_files=1000
+)
+
+# Incremental sync (manual)
 sync_workspace("/Users/you/your-project")
 # Returns: {added: 2, modified: 5, removed: 1, message: "..."}
 
@@ -164,6 +198,8 @@ index_workspace("/Users/you/your-project")  # Smart: only updates changes
 # Same for docs
 sync_docs("/Users/you/your-project")
 index_docs("/Users/you/your-project")
+
+# ⚠️ Note: With autonomous indexing enabled, you never need to do this manually!
 ```
 
 ---
@@ -234,21 +270,42 @@ FileSynchronizer.check_changes()
 
 ---
 
-## MCP Tools (9 Total)
+## MCP Tools (12 Total)
 
-### Indexing Tools
+### Autonomous Indexing Tools (NEW) ✨
+
+**start_autonomous_indexing**(workspace_path?, debounce_seconds?, periodic_interval?)
+
+- Start zero-touch indexing for workspace
+- Auto-detects workspace from cwd if not provided
+- Returns: controller status with configuration
+
+**stop_autonomous_indexing**(workspace_path?)
+
+- Stop autonomous indexing for workspace
+- Gracefully shuts down watchdog + worker + periodic sync
+- Returns: final statistics (tasks processed, success rate)
+
+**get_autonomous_status**()
+
+- Get status of all active autonomous controllers
+- Returns: active count, per-controller statistics, queue sizes
+
+### Manual Indexing Tools
 
 **index_workspace**(workspace_path, include_patterns?, exclude_patterns?, max_files?)
 
 - Index code files for semantic search
 - Auto-detects workspace, creates collection
 - Returns: indexing progress summary
+- ⚠️ Not needed if autonomous indexing enabled
 
 **index_docs**(workspace_path, include_patterns?)
 
 - Index documents (PDF, Markdown, HTML, DOCX)
 - Creates docs collection for workspace
 - Returns: docs processed count
+- ⚠️ Note: Autonomous indexing covers docs too
 
 ### Search Tools
 
