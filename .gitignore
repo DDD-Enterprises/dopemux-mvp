@@ -199,6 +199,12 @@ THREAD_WORK_SUMMARY.md
 *_COMPLETE.md
 *_STATUS.md
 *_SUMMARY.md
+
+# Allow agent/orchestrator milestone documentation
+!services/agents/*_COMPLETE.md
+!services/agents/*_SUMMARY.md
+!services/task-orchestrator/*_COMPLETE.md
+!services/task-orchestrator/*_ROUTING.md
 build_recovered/
 ARCHIVED_RECOVERY/
 *.tsv
