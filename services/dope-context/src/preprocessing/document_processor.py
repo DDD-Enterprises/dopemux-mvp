@@ -129,14 +129,17 @@ class DocumentProcessor:
         return text
 
     def _extract_markdown_text(self, file_path: str) -> str:
-        """Extract text from Markdown file."""
+        """
+        Extract text from Markdown file.
+
+        IMPORTANT: Keep raw markdown to preserve structure (headers, code blocks)
+        for structure-aware chunking!
+        """
         with open(file_path, "r", encoding="utf-8", errors="ignore") as file:
             content = file.read()
 
-        # Convert markdown to HTML then extract text
-        html = markdown(content)
-        soup = BeautifulSoup(html, "html.parser")
-        return soup.get_text().strip()
+        # Return raw markdown (preserves headers for structure-aware chunking)
+        return content.strip()
 
     def _extract_text_file(self, file_path: str) -> str:
         """Extract text from plain text file."""
@@ -232,6 +235,165 @@ class DocumentProcessor:
 
         return chunks
 
+    def chunk_markdown_structured(
+        self,
+        text: str,
+        max_chunk_size: int = 1500,
+        preserve_hierarchy: bool = True,
+    ) -> List[Tuple[str, List[str], int]]:
+        """
+        Chunk markdown by structure (headers) while preserving hierarchy.
+
+        This is the OPTIMIZATION we want! Chunks by semantic sections instead
+        of arbitrary character boundaries.
+
+        Args:
+            text: Markdown text to chunk
+            max_chunk_size: Maximum chunk size in characters
+            preserve_hierarchy: Include parent headers for context
+
+        Returns:
+            List of (chunk_text, hierarchy_path, header_level) tuples
+
+        Example:
+            Input:
+                # Main Topic
+                ## Subtopic A
+                Content for A...
+                ## Subtopic B
+                Content for B...
+
+            Output:
+                [
+                    ("# Main Topic\n## Subtopic A\nContent for A...", ["Main Topic", "Subtopic A"], 2),
+                    ("# Main Topic\n## Subtopic B\nContent for B...", ["Main Topic", "Subtopic B"], 2)
+                ]
+        """
+        chunks = []
+        current_hierarchy = []  # Stack: [(level, title), ...]
+        current_section = []
+        current_size = 0
+
+        for line in text.split('\n'):
+            # Detect markdown headers
+            header_match = re.match(r'^(#{1,6})\s+(.+)', line)
+
+            if header_match:
+                level = len(header_match.group(1))
+                title = header_match.group(2).strip()
+
+                # Save current section if we have content and it's large enough
+                if current_section and current_size > 100:  # Min 100 chars
+                    # Build chunk with hierarchy
+                    if preserve_hierarchy and current_hierarchy:
+                        # Add parent headers for context
+                        hierarchy_headers = []
+                        for h_level, h_title in current_hierarchy:
+                            hierarchy_headers.append(f"{'#' * h_level} {h_title}")
+
+                        chunk_text = '\n'.join(hierarchy_headers + current_section)
+                    else:
+                        chunk_text = '\n'.join(current_section)
+
+                    # Extract hierarchy path
+                    hierarchy_path = [h[1] for h in current_hierarchy]
+                    header_level = current_hierarchy[-1][0] if current_hierarchy else 0
+
+                    chunks.append((chunk_text, hierarchy_path, header_level))
+
+                    # Reset for new section
+                    current_section = []
+                    current_size = 0
+
+                # Update hierarchy stack
+                # Remove items at same or deeper level
+                current_hierarchy = [h for h in current_hierarchy if h[0] < level]
+                # Add new header
+                current_hierarchy.append((level, title))
+
+                # Start new section with header
+                current_section.append(line)
+                current_size += len(line)
+
+            else:
+                # Regular content line
+                current_section.append(line)
+                current_size += len(line)
+
+                # If chunk gets too large, save it
+                if current_size > max_chunk_size:
+                    if preserve_hierarchy and current_hierarchy:
+                        hierarchy_headers = []
+                        for h_level, h_title in current_hierarchy:
+                            hierarchy_headers.append(f"{'#' * h_level} {h_title}")
+                        chunk_text = '\n'.join(hierarchy_headers + current_section)
+                    else:
+                        chunk_text = '\n'.join(current_section)
+
+                    hierarchy_path = [h[1] for h in current_hierarchy]
+                    header_level = current_hierarchy[-1][0] if current_hierarchy else 0
+
+                    chunks.append((chunk_text, hierarchy_path, header_level))
+
+                    # Start fresh (keep hierarchy, reset content)
+                    current_section = []
+                    current_size = 0
+
+        # Don't forget final section!
+        if current_section and current_size > 100:
+            if preserve_hierarchy and current_hierarchy:
+                hierarchy_headers = []
+                for h_level, h_title in current_hierarchy:
+                    hierarchy_headers.append(f"{'#' * h_level} {h_title}")
+                chunk_text = '\n'.join(hierarchy_headers + current_section)
+            else:
+                chunk_text = '\n'.join(current_section)
+
+            hierarchy_path = [h[1] for h in current_hierarchy]
+            header_level = current_hierarchy[-1][0] if current_hierarchy else 0
+
+            chunks.append((chunk_text, hierarchy_path, header_level))
+
+        # If no structured chunks created, fall back to basic chunking
+        if not chunks and text.strip():
+            chunks.append((text, [], 0))
+
+        return chunks
+
+    def estimate_chunk_complexity(self, chunk_text: str) -> float:
+        """
+        Estimate cognitive complexity of a doc chunk (ADHD optimization).
+
+        Factors:
+        - Has code blocks (higher complexity)
+        - Has tables (moderate complexity)
+        - Length (longer = more complex)
+        - Technical density (specialized terms)
+
+        Returns:
+            0.0-1.0 complexity score
+        """
+        complexity = 0.0
+
+        # Code blocks increase complexity
+        if '```' in chunk_text or '    ' in chunk_text[:50]:  # Indented code
+            complexity += 0.3
+
+        # Tables increase complexity
+        if '|' in chunk_text and chunk_text.count('|') > 5:
+            complexity += 0.2
+
+        # Length factor
+        length_factor = min(len(chunk_text) / 2000, 0.3)
+        complexity += length_factor
+
+        # Technical density (capital words, underscores, symbols)
+        technical_indicators = len(re.findall(r'[A-Z_]{2,}', chunk_text))
+        if technical_indicators > 5:
+            complexity += 0.2
+
+        return min(complexity, 1.0)
+
     def count_tokens(self, text: str) -> int:
         """Count tokens in text using tiktoken."""
         return len(self.encoding.encode(text))
@@ -246,8 +408,13 @@ class DocumentProcessor:
         chunk_size: int = 1000,
         chunk_overlap: int = 100,
         metadata_override: Optional[dict] = None,
+        use_structure_aware: bool = True,  # NEW: Enable optimization
     ) -> List[DocumentChunk]:
-        """Process a document into chunks ready for indexing."""
+        """
+        Process a document into chunks ready for indexing.
+
+        Now with STRUCTURE-AWARE chunking for markdown! 🚀
+        """
         # Extract text
         doc_type = self.detect_document_type(file_path)
         text = self.extract_text(file_path, doc_type)
@@ -258,35 +425,72 @@ class DocumentProcessor:
         # Compute document hash
         source_hash = self.compute_content_hash(text)
 
-        # Chunk the text
-        chunks = self.chunk_text(text, chunk_size, chunk_overlap)
-
-        # Create document chunks
-        document_chunks = []
-        for i, chunk_text in enumerate(chunks):
-            # Create metadata
-            metadata = ChunkMetadata(
-                source_path=file_path,
-                source_hash=source_hash,
-                chunk_index=i,
-                char_count=len(chunk_text),
-                token_count=self.count_tokens(chunk_text),
-                content_hash=self.compute_content_hash(chunk_text),
-                document_type=doc_type,
-                title=Path(file_path).stem,
+        # OPTIMIZATION: Use structure-aware chunking for markdown!
+        if use_structure_aware and doc_type == DocumentType.MARKDOWN:
+            # Structure-aware chunking returns (text, hierarchy, level) tuples
+            structured_chunks = self.chunk_markdown_structured(
+                text,
+                max_chunk_size=chunk_size,
+                preserve_hierarchy=True,
             )
 
-            # Apply metadata overrides
-            if metadata_override:
-                for key, value in metadata_override.items():
-                    if hasattr(metadata, key):
-                        setattr(metadata, key, value)
+            document_chunks = []
+            for i, (chunk_text, hierarchy_path, header_level) in enumerate(structured_chunks):
+                # Detect section type
+                has_code = '```' in chunk_text
+                has_table = '|' in chunk_text and chunk_text.count('|') > 5
+                section_type = "code" if has_code else ("table" if has_table else "content")
 
-            # Create chunk
-            chunk = DocumentChunk(
-                text=chunk_text,
-                metadata=metadata,
-            )
-            document_chunks.append(chunk)
+                # Create enhanced metadata with hierarchy
+                metadata = ChunkMetadata(
+                    source_path=file_path,
+                    source_hash=source_hash,
+                    chunk_index=i,
+                    char_count=len(chunk_text),
+                    token_count=self.count_tokens(chunk_text),
+                    content_hash=self.compute_content_hash(chunk_text),
+                    document_type=doc_type,
+                    title=Path(file_path).stem,
+                    # NEW: Structure metadata
+                    section_hierarchy=hierarchy_path,
+                    header_level=header_level,
+                    has_code_blocks=has_code,
+                    complexity_estimate=self.estimate_chunk_complexity(chunk_text),
+                    parent_section=" > ".join(hierarchy_path) if hierarchy_path else "",
+                    section_type=section_type,
+                )
+
+                # Apply metadata overrides
+                if metadata_override:
+                    for key, value in metadata_override.items():
+                        if hasattr(metadata, key):
+                            setattr(metadata, key, value)
+
+                document_chunks.append(DocumentChunk(text=chunk_text, metadata=metadata))
+
+        else:
+            # Fallback to basic chunking for non-markdown or if disabled
+            chunks = self.chunk_text(text, chunk_size, chunk_overlap)
+
+            document_chunks = []
+            for i, chunk_text in enumerate(chunks):
+                metadata = ChunkMetadata(
+                    source_path=file_path,
+                    source_hash=source_hash,
+                    chunk_index=i,
+                    char_count=len(chunk_text),
+                    token_count=self.count_tokens(chunk_text),
+                    content_hash=self.compute_content_hash(chunk_text),
+                    document_type=doc_type,
+                    title=Path(file_path).stem,
+                    complexity_estimate=self.estimate_chunk_complexity(chunk_text),
+                )
+
+                if metadata_override:
+                    for key, value in metadata_override.items():
+                        if hasattr(metadata, key):
+                            setattr(metadata, key, value)
+
+                document_chunks.append(DocumentChunk(text=chunk_text, metadata=metadata))
 
         return document_chunks
