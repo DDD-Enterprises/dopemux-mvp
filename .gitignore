@@ -246,3 +246,7 @@ claudedocs.backup.*/
 build_recovered/
 DOCS_TO_PROCESS/
 .env.bak
+
+# Node.js dependencies (should be generated from package.json)
+node_modules/
+*/node_modules/
