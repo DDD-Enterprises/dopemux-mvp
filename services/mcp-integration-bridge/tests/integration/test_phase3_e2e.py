@@ -14,6 +14,7 @@ Complete flow:
 
 import asyncio
 import pytest
+import pytest_asyncio
 import time
 from datetime import datetime
 from typing import List, Dict, Any
@@ -43,7 +44,7 @@ from integrations.task_orchestrator import TaskOrchestratorIntegrationManager
 class TestPhase3EndToEnd:
     """End-to-end integration tests for Phase 3 features"""
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def redis_client(self):
         """Create real Redis client for integration testing"""
         client = redis.from_url(
@@ -61,15 +62,15 @@ class TestPhase3EndToEnd:
         await client.flushdb()
         await client.aclose()
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def event_bus_with_phase3(self, redis_client):
         """Create EventBus with ALL Phase 3 features enabled"""
         bus = EventBus(
             redis_url="redis://localhost:6379/15",
             enable_deduplication=True,
+            enable_cache=True,
             enable_rate_limiting=True,
             enable_monitoring=True,
-            enable_caching=True,
         )
 
         await bus.initialize()
@@ -85,22 +86,16 @@ class TestPhase3EndToEnd:
         if bus.redis_client:
             await bus.redis_client.aclose()
 
-    @pytest.fixture
-    async def pattern_detector_with_budgets(self, redis_client):
+    @pytest_asyncio.fixture
+    async def pattern_detector_with_budgets(self, event_bus_with_phase3):
         """Create PatternDetector with complexity budgets"""
         detector = PatternDetector(
-            redis_client=redis_client,
+            event_bus=event_bus_with_phase3,
             enable_complexity_budgets=True,
             enable_caching=True,
-            budget_points_per_minute=1000,
         )
 
-        await detector.initialize()
-
         yield detector
-
-        # Cleanup
-        await detector.cleanup()
 
     @pytest.mark.asyncio
     async def test_e2e_multi_tier_caching(self, event_bus_with_phase3):
@@ -109,11 +104,11 @@ class TestPhase3EndToEnd:
 
         # Publish same event multiple times (simulate repeated patterns)
         event = Event(
-            event_type="code_complexity_high",
-            source_agent="serena",
-            workspace_id="/test/workspace",
-            user_id="test_user",
+            type="code_complexity_high",
+            source="serena",
             data={
+                "workspace_id": "/test/workspace",
+                "user_id": "test_user",
                 "file_path": "/test/auth.py",
                 "complexity": 0.8
             }
@@ -156,11 +151,13 @@ class TestPhase3EndToEnd:
 
         for i in range(150):  # Try to publish 150 (should block after 100)
             event = Event(
-                event_type="test_event",
-                source_agent="test",
-                workspace_id=workspace_id,
-                user_id=user_id,
-                data={"index": i}
+                type="test_event",
+                source="test",
+                data={
+                    "workspace_id": workspace_id,
+                    "user_id": user_id,
+                    "index": i
+                }
             )
 
             result = await bus.publish("dopemux:events", event, user_id, workspace_id)
@@ -186,11 +183,12 @@ class TestPhase3EndToEnd:
         expensive_events = []
         for i in range(20):
             event = Event(
-                event_type="code_complexity_high",
-                source_agent="serena",
-                workspace_id="/test/workspace",
-                user_id="test_user",
+                type="code_complexity_high",
+                source="serena",
                 data={
+                    "workspace_id": "/test/workspace",
+                    "user_id": "test_user",
+                    
                     "file_path": f"/test/file{i}.py",
                     "complexity": 0.9,  # High complexity
                     "loc": 500  # Large file
@@ -234,11 +232,13 @@ class TestPhase3EndToEnd:
             event_type = event_types[i % len(event_types)]
 
             event = Event(
-                event_type=event_type,
-                source_agent=agent,
-                workspace_id="/test/workspace",
-                user_id="test_user",
-                data={"test_id": i}
+                type=event_type,
+                source=agent,
+                data={
+                    "workspace_id": "/test/workspace",
+                    "user_id": "test_user",
+                    "test_id": i
+                }
             )
 
             await bus.publish("dopemux:events", event, "test_user", "/test/workspace")
@@ -269,11 +269,12 @@ class TestPhase3EndToEnd:
 
             # 1. Agent emits event
             event = Event(
-                event_type="code_complexity_high",
-                source_agent="serena",
-                workspace_id="/test/workspace",
-                user_id="test_user",
+                type="code_complexity_high",
+                source="serena",
                 data={
+                    "workspace_id": "/test/workspace",
+                    "user_id": "test_user",
+                    
                     "file_path": f"/test/file{i}.py",
                     "complexity": 0.6
                 }
@@ -348,11 +349,12 @@ class TestPhase3EndToEnd:
 
         # Same pattern repeated (should cache result)
         event = Event(
-            event_type="code_complexity_high",
-            source_agent="serena",
-            workspace_id="/test/workspace",
-            user_id="test_user",
-            data={"file_path": "/test/auth.py", "complexity": 0.8}
+            type="code_complexity_high",
+            source="serena",
+            data={
+                "workspace_id": "/test/workspace",
+                "user_id": "test_user",
+                "file_path": "/test/auth.py", "complexity": 0.8}
         )
 
         # First detection (cache miss)
@@ -392,11 +394,13 @@ class TestPhase3EndToEnd:
 
         for i in range(num_events):
             event = Event(
-                event_type="test_event",
-                source_agent=agents[i % len(agents)],
-                workspace_id="/test/workspace",
-                user_id=f"user_{i % 10}",  # 10 different users
-                data={"index": i}
+                type="test_event",
+                source=agents[i % len(agents)],
+                data={
+                    "workspace_id": "/test/workspace",
+                    "user_id": f"user_{i % 10}",  # 10 different users
+                    "index": i
+                }
             )
 
             try:
@@ -439,11 +443,12 @@ class TestPhase3EndToEnd:
         for agent in ["serena", "dope-context", "adhd-engine", "task-orchestrator"]:
             for event_type in ["complexity", "search", "state", "progress"]:
                 event = Event(
-                    event_type=event_type,
-                    source_agent=agent,
-                    workspace_id="/test/workspace",
-                    user_id="test_user",
-                    data={}
+                    type=event_type,
+                    source=agent,
+                    data={
+                        "workspace_id": "/test/workspace",
+                        "user_id": "test_user"
+                    }
                 )
 
                 await bus.publish("dopemux:events", event, "test_user", "/test/workspace")
@@ -476,20 +481,21 @@ class TestPhase3EndToEnd:
         bus = EventBus(
             redis_url="redis://localhost:6379/15",
             enable_deduplication=True,  # Phase 2 (keep)
+            enable_cache=False,          # Phase 3 (disable)
             enable_rate_limiting=False,  # Phase 3 (disable)
             enable_monitoring=False,     # Phase 3 (disable)
-            enable_caching=False,        # Phase 3 (disable)
         )
 
         await bus.initialize()
 
         # Should still work, just without Phase 3 features
         event = Event(
-            event_type="test_event",
-            source_agent="test",
-            workspace_id="/test/workspace",
-            user_id="test_user",
-            data={}
+            type="test_event",
+            source="test",
+            data={
+                "workspace_id": "/test/workspace",
+                "user_id": "test_user",
+                }
         )
 
         result = await bus.publish("dopemux:events", event, "test_user", "/test/workspace")
@@ -523,11 +529,12 @@ class TestPhase3EndToEnd:
 
         # 1. Agent emits
         event = Event(
-            event_type="code_complexity_high",
-            source_agent="serena",
-            workspace_id="/test/workspace",
-            user_id="test_user",
+            type="code_complexity_high",
+            source="serena",
             data={
+                "workspace_id": "/test/workspace",
+                "user_id": "test_user",
+                
                 "file_path": "/test/auth.py",
                 "complexity": 0.85,
                 "loc": 350,
@@ -572,10 +579,8 @@ class TestPhase3EndToEnd:
 
         # Simulate transient error (None data should trigger error handling)
         event = Event(
-            event_type="test_event",
-            source_agent="test",
-            workspace_id="/test/workspace",
-            user_id="test_user",
+            type="test_event",
+            source="test",
             data=None  # Invalid data
         )
 
