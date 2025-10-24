@@ -1,0 +1,4 @@
+# Unified Complexity Coordinator Dependencies
+
+# No external dependencies - uses MCP clients provided by caller
+# Clients needed: dope-context, serena-v2, adhd-engine (all optional)
