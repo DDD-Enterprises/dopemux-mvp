@@ -17,7 +17,7 @@ from typing import Dict, Any, Optional
 from datetime import datetime, timezone
 
 from config import settings
-from conport_client import ConPortSQLiteClient
+from conport_client_unified import ConPortSQLiteClient
 
 logger = logging.getLogger(__name__)
 

@@ -32,7 +32,7 @@ from models import (
 )
 from config import settings
 from activity_tracker import ActivityTracker
-from conport_client import ConPortSQLiteClient
+from conport_client_unified import ConPortSQLiteClient
 from bridge_integration import ConPortBridgeAdapter
 
 # Machine Learning (IP-005 Days 11-12)
