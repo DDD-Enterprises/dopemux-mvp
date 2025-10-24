@@ -15,6 +15,9 @@ from dataclasses import dataclass, asdict
 import redis.asyncio as redis
 
 from event_deduplication import EventDeduplicator
+from cache import MultiTierCache
+from rate_limiter import RateLimiter
+from monitoring import IntegrationBridgeMetrics
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +78,15 @@ class EventBus:
     - ADHD-optimized: Non-blocking, resilient to interruptions
     """
 
-    def __init__(self, redis_url: str, password: Optional[str] = None, enable_deduplication: bool = True):
+    def __init__(
+        self,
+        redis_url: str,
+        password: Optional[str] = None,
+        enable_deduplication: bool = True,
+        enable_cache: bool = True,
+        enable_rate_limiting: bool = True,
+        enable_monitoring: bool = True
+    ):
         """
         Initialize EventBus with Redis connection
 
@@ -83,13 +94,26 @@ class EventBus:
             redis_url: Redis connection URL
             password: Optional Redis password
             enable_deduplication: Enable event deduplication (default: True)
+            enable_cache: Enable multi-tier caching (default: True)
+            enable_rate_limiting: Enable rate limiting (default: True)
+            enable_monitoring: Enable Prometheus metrics (default: True)
         """
         self.redis_url = redis_url
         self.password = password
         self.redis_client: Optional[redis.Redis] = None
         self._subscribers: Dict[str, bool] = {}  # Track active subscribers
+
+        # Phase 2 features
         self.enable_deduplication = enable_deduplication
         self.deduplicator: Optional[EventDeduplicator] = None
+
+        # Phase 3 features
+        self.enable_cache = enable_cache
+        self.enable_rate_limiting = enable_rate_limiting
+        self.enable_monitoring = enable_monitoring
+        self.cache: Optional[MultiTierCache] = None
+        self.rate_limiter: Optional[RateLimiter] = None
+        self.metrics: Optional[IntegrationBridgeMetrics] = None
 
     async def initialize(self):
         """Initialize Redis connection"""
@@ -107,13 +131,34 @@ class EventBus:
             await self.redis_client.ping()
             logger.info("✅ EventBus Redis connection established")
 
-            # Initialize deduplicator if enabled
+            # Initialize Phase 2 features
             if self.enable_deduplication:
                 self.deduplicator = EventDeduplicator(
                     redis_client=self.redis_client,
-                    ttl_seconds=300  # 5 minute deduplication window
+                    ttl_seconds=300
                 )
                 logger.info("✅ EventBus deduplication enabled (5min window)")
+
+            # Initialize Phase 3 features
+            if self.enable_cache:
+                self.cache = MultiTierCache(
+                    redis_client=self.redis_client,
+                    memory_ttl=5,
+                    redis_ttl=60
+                )
+                logger.info("✅ EventBus multi-tier cache enabled")
+
+            if self.enable_rate_limiting:
+                self.rate_limiter = RateLimiter(
+                    redis_client=self.redis_client,
+                    user_limit_per_minute=100,
+                    workspace_limit_per_minute=1000
+                )
+                logger.info("✅ EventBus rate limiting enabled (100/1000 req/min)")
+
+            if self.enable_monitoring:
+                self.metrics = IntegrationBridgeMetrics()
+                logger.info("✅ EventBus Prometheus monitoring enabled")
 
         except Exception as e:
             logger.error(f"❌ EventBus Redis initialization failed: {e}")
