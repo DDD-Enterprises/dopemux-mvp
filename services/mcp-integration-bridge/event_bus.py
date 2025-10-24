@@ -164,22 +164,36 @@ class EventBus:
             logger.error(f"❌ EventBus Redis initialization failed: {e}")
             raise
 
-    async def publish(self, stream: str, event: Event) -> Optional[str]:
+    async def publish(self, stream: str, event: Event, user_id: Optional[str] = None, workspace_id: Optional[str] = None) -> Optional[str]:
         """
-        Publish event to Redis Stream
+        Publish event to Redis Stream with Phase 3 features.
 
         Args:
             stream: Stream name (e.g., "dopemux:events")
             event: Event to publish
+            user_id: Optional user ID for rate limiting
+            workspace_id: Optional workspace ID for rate limiting
 
         Returns:
-            Message ID from Redis, or None if event was deduplicated
+            Message ID from Redis, or None if deduplicated/rate-limited
         """
         if not self.redis_client:
             raise RuntimeError("EventBus not initialized")
 
+        import time
+        start_time = time.time()
+
         try:
-            # Check for duplicate before publishing
+            # Phase 3: Check rate limit
+            if self.rate_limiter and (user_id or workspace_id):
+                allowed, retry_after = await self.rate_limiter.check_limit(user_id, workspace_id)
+                if not allowed:
+                    logger.warning(f"⏭️  Rate limit exceeded for {user_id or workspace_id}, retry after {retry_after}s")
+                    if self.metrics:
+                        self.metrics.record_event_published(event.source or "unknown", event.type, 0)
+                    return None
+
+            # Phase 2: Check for duplicate
             if self.deduplicator:
                 event_data = {
                     "type": event.type,
@@ -187,23 +201,38 @@ class EventBus:
                     "source": event.source
                 }
 
-                if await self.deduplicator.is_duplicate(event_data):
+                is_duplicate = await self.deduplicator.is_duplicate(event_data)
+
+                # Phase 3: Record dedup check in metrics
+                if self.metrics:
+                    self.metrics.record_dedup_check(is_duplicate)
+
+                if is_duplicate:
                     logger.debug(f"⏭️  Skipped duplicate event: {event.type}")
-                    return None  # Event was a duplicate, skip publishing
+                    return None
 
                 # Mark as processed
                 await self.deduplicator.mark_processed(event_data)
 
+            # Publish to Redis
             msg_id = await self.redis_client.xadd(
                 stream,
                 event.to_redis_dict()
             )
+
+            # Phase 3: Record metrics
+            if self.metrics:
+                latency = time.time() - start_time
+                self.metrics.record_event_published(event.source or "unknown", event.type, latency)
+                self.metrics.record_agent_event(event.source or "unknown", event.type)
 
             logger.info(f"📤 Published {event.type} to {stream} (ID: {msg_id.decode()})")
             return msg_id.decode()
 
         except Exception as e:
             logger.error(f"❌ Failed to publish event: {e}")
+            if self.metrics:
+                self.metrics.record_agent_emission_error(event.source or "unknown")
             raise
 
     async def subscribe(
