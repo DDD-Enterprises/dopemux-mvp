@@ -32,9 +32,9 @@ async def test_complete_pipeline():
     bus = EventBus(
         redis_url="redis://localhost:6379/0",
         enable_deduplication=True,
+        enable_cache=True,
         enable_rate_limiting=True,
         enable_monitoring=True,
-        enable_caching=True,
     )
     await bus.initialize()
 
