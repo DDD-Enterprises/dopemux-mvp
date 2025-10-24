@@ -169,10 +169,23 @@ class ADHDTaskOptimizer:
         # User profiles cache
         self.adhd_profiles: Dict[str, ADHDProfile] = {}
 
-        # Optimization parameters
+        # Optimization parameters (configurable via Config)
         self.cognitive_load_threshold = 0.8  # Max cognitive load ratio
         self.attention_decay_rate = 0.05  # Attention decrease per minute
         self.context_switch_penalty = 0.2  # Performance penalty for switching
+
+        adhd_settings = self.config.get("adhd", {}) if hasattr(self.config, "get") else {}
+        if isinstance(adhd_settings, dict):
+            threshold = adhd_settings.get("cognitive_load_threshold")
+            if threshold is not None:
+                try:
+                    self.cognitive_load_threshold = float(threshold)
+                except (TypeError, ValueError):  # pragma: no cover - defensive
+                    logger.warning(
+                        "Invalid cognitive_load_threshold value %r; using default %.2f",
+                        threshold,
+                        self.cognitive_load_threshold,
+                    )
 
     async def optimize_task(self, task: Any, user_id: str = None) -> Any:
         """
