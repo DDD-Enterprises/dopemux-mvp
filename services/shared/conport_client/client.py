@@ -136,6 +136,30 @@ class ConPortClient:
             limit=limit,
         )
 
+    async def get_all_active_sessions(self) -> List[Dict]:
+        """Get all active sessions for workspace (Serena F002)."""
+        return await self.backend.get_all_active_sessions(self.config.workspace_id)
+
+    async def get_custom_data(
+        self, category: str, key: Optional[str] = None
+    ) -> Any:
+        """Get custom data from ConPort."""
+        return await self.backend.get_custom_data(
+            self.config.workspace_id, category, key
+        )
+
+    async def log_custom_data(self, category: str, key: str, value: Any) -> bool:
+        """Log custom data to ConPort."""
+        return await self.backend.log_custom_data(
+            self.config.workspace_id, category, key, value
+        )
+
+    async def get_recent_decisions(self, limit: int = 5) -> List:
+        """Get recent decisions (for ADHD context awareness)."""
+        return await self.backend.get_recent_decisions(
+            self.config.workspace_id, limit
+        )
+
     async def health_check(self) -> Dict[str, Any]:
         """Check backend health."""
         return await self.backend.health_check()
