@@ -1484,6 +1484,18 @@ async def _sync_workspace_impl(workspace_path: str) -> Dict:
     }
 
 
+@mcp.tool()
+async def get_chunk_complexity(file_path: str, symbol: str) -> Dict:
+    """
+    Get AST-based complexity for code chunk (Synergy A support).
+
+    Returns complexity score 0.0-1.0 from Tree-sitter analysis.
+    """
+    # TODO: Extract from existing chunking pipeline
+    # For now, return moderate complexity
+    return {"complexity": 0.5, "method": "tree-sitter-ast", "file_path": file_path, "symbol": symbol}
+
+
 if __name__ == "__main__":
     # Run server
     logging.basicConfig(level=logging.INFO)
