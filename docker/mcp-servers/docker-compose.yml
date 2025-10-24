@@ -249,9 +249,10 @@ services:
     ports:
       - "3014:3014"
     # Stdio transport doesn't expose an HTTP port; keep healthcheck non-blocking.
+    # Fixed: Use sh instead of python (python not installed in Kotlin container)
     healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
-      timeout: 10s
+      test: ["CMD-SHELL", "exit 0"]
+      timeout: 5s
       retries: 3
       interval: 30s
       start_period: 30s
