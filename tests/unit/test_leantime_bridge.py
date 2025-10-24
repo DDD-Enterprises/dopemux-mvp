@@ -6,8 +6,11 @@ Comprehensive test coverage for Leantime integration with ADHD optimizations.
 
 import pytest
 
-pytest.importorskip("aiohttp")
-pytest.importorskip("aioresponses")
+aiohttp = pytest.importorskip("aiohttp")
+if getattr(aiohttp, "__dopemux_stub__", False):  # pragma: no cover - dependency guard
+    pytest.skip("aiohttp not available in test environment", allow_module_level=True)
+
+aioresponses = pytest.importorskip("aioresponses")
 import asyncio
 import json
 from datetime import datetime, timedelta
