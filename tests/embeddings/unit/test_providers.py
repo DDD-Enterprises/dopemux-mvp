@@ -7,7 +7,10 @@ Tests the VoyageAPIClient and other provider implementations.
 import pytest
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
-import aiohttp
+
+aiohttp = pytest.importorskip("aiohttp")
+if getattr(aiohttp, "__dopemux_stub__", False):  # pragma: no cover - dependency guard
+    pytest.skip("aiohttp not available in test environment", allow_module_level=True)
 
 from dopemux.embeddings.providers import VoyageAPIClient
 from dopemux.embeddings.core import AdvancedEmbeddingConfig, SecurityLevel
