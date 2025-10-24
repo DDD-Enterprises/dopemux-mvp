@@ -49,6 +49,7 @@ class ExplorationQueries:
 
     def get_decision_neighborhood(
         self,
+        workspace_id: str,
         decision_id: int,
         max_hops: int = 1,
         limit_per_hop: int = 10
@@ -61,7 +62,10 @@ class ExplorationQueries:
         - User expands to 2-hop when ready
         - Max 10 neighbors per hop level
 
+        Security: Workspace-scoped (only returns decisions in same workspace)
+
         Args:
+            workspace_id: Workspace to query (multi-tenant isolation)
             decision_id: Center decision ID
             max_hops: 1 for initial view, 2 for expanded (ADHD progressive)
             limit_per_hop: Max neighbors per hop level (default 10)
@@ -73,7 +77,9 @@ class ExplorationQueries:
         cypher = f"""
             SELECT * FROM cypher('conport_knowledge', $$
                 MATCH (center:Decision {{id: {decision_id}}})
+                WHERE center.workspace_id = '{workspace_id}'
                 OPTIONAL MATCH path = (center)-[*1..2]-(neighbor:Decision)
+                WHERE neighbor.workspace_id = '{workspace_id}'
                 WITH center, neighbor, path,
                      CASE
                          WHEN neighbor IS NULL THEN 0
@@ -140,6 +146,7 @@ class ExplorationQueries:
 
     def get_genealogy_chain(
         self,
+        workspace_id: str,
         decision_id: int,
         relationship_type: str = 'BUILDS_UPON',
         direction: str = 'upstream',
@@ -204,6 +211,7 @@ class ExplorationQueries:
 
     def find_by_relationship_type(
         self,
+        workspace_id: str,
         decision_id: int,
         relationship_type: str,
         direction: str = 'outgoing'
@@ -262,6 +270,7 @@ class ExplorationQueries:
 
     def get_impact_graph(
         self,
+        workspace_id: str,
         decision_id: int,
         max_depth: int = 2
     ) -> ImpactGraph:

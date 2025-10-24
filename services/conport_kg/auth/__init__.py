@@ -26,6 +26,8 @@ from .models import (
 )
 from .password_utils import PasswordManager, PasswordValidationError
 
+from .service import UserService, AuthenticationError, AuthorizationError, get_user_service
+
 __all__ = [
     # Database
     "get_db",
@@ -37,6 +39,11 @@ __all__ = [
     # Password
     "PasswordManager",
     "PasswordValidationError",
+    # Service
+    "UserService",
+    "AuthenticationError",
+    "AuthorizationError",
+    "get_user_service",
     # Models (ORM)
     "User",
     "UserWorkspace",
