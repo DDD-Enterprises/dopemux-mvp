@@ -256,6 +256,137 @@ class PostgreSQLAGEAdapter:
                 for row in rows
             ]
 
+    async def get_all_active_sessions(
+        self, workspace_id: str
+    ) -> List[Dict[str, Any]]:
+        """Get all active sessions for workspace (Serena F002)."""
+        await self._ensure_pool()
+
+        async with self.pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT
+                    session_id,
+                    worktree_path,
+                    branch,
+                    active_context as focus,
+                    EXTRACT(EPOCH FROM (NOW() - updated_at)) / 60 as minutes_ago,
+                    status,
+                    updated_at
+                FROM ag_catalog.workspace_contexts
+                WHERE workspace_id = $1
+                  AND status = 'active'
+                  AND updated_at > NOW() - INTERVAL '24 hours'
+                ORDER BY updated_at DESC
+                """,
+                workspace_id,
+            )
+
+            return [dict(row) for row in rows]
+
+    async def get_custom_data(
+        self,
+        workspace_id: str,
+        category: str,
+        key: Optional[str] = None,
+    ) -> Any:
+        """Get custom data from ConPort."""
+        await self._ensure_pool()
+
+        async with self.pool.acquire() as conn:
+            if key:
+                row = await conn.fetchrow(
+                    "SELECT value FROM ag_catalog.custom_data WHERE workspace_id = $1 AND category = $2 AND key = $3",
+                    workspace_id,
+                    category,
+                    key,
+                )
+                if row:
+                    import json
+                    try:
+                        return json.loads(row["value"])
+                    except json.JSONDecodeError:
+                        return row["value"]
+                return None
+            else:
+                rows = await conn.fetch(
+                    "SELECT key, value FROM ag_catalog.custom_data WHERE workspace_id = $1 AND category = $2",
+                    workspace_id,
+                    category,
+                )
+                import json
+                result = {}
+                for row in rows:
+                    try:
+                        result[row["key"]] = json.loads(row["value"])
+                    except json.JSONDecodeError:
+                        result[row["key"]] = row["value"]
+                return result
+
+    async def log_custom_data(
+        self,
+        workspace_id: str,
+        category: str,
+        key: str,
+        value: Any,
+    ) -> bool:
+        """Log custom data to ConPort."""
+        await self._ensure_pool()
+
+        import json
+
+        value_json = json.dumps(value) if isinstance(value, dict) else value
+
+        async with self.pool.acquire() as conn:
+            await conn.execute(
+                """
+                INSERT INTO ag_catalog.custom_data
+                    (workspace_id, category, key, value, created_at, updated_at)
+                VALUES ($1, $2, $3, $4, NOW(), NOW())
+                ON CONFLICT (workspace_id, category, key)
+                DO UPDATE SET
+                    value = EXCLUDED.value,
+                    updated_at = NOW()
+                """,
+                workspace_id,
+                category,
+                key,
+                value_json,
+            )
+
+        return True
+
+    async def get_recent_decisions(
+        self, workspace_id: str, limit: int = 5
+    ) -> List[Decision]:
+        """Get recent decisions (for ADHD context awareness)."""
+        await self._ensure_pool()
+
+        async with self.pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT id, summary, timestamp
+                FROM ag_catalog.decisions
+                WHERE workspace_id = $1
+                ORDER BY timestamp DESC
+                LIMIT $2
+                """,
+                workspace_id,
+                limit,
+            )
+
+            return [
+                Decision(
+                    id=row["id"],
+                    summary=row["summary"],
+                    rationale=None,
+                    implementation_details=None,
+                    tags=[],
+                    timestamp=row["timestamp"],
+                )
+                for row in rows
+            ]
+
     async def health_check(self) -> Dict[str, Any]:
         """Check PostgreSQL connection health."""
         try:
