@@ -2,6 +2,7 @@
 Unit tests for Claude Auto Responder integration.
 """
 
+import shutil
 import subprocess
 import tempfile
 import threading
@@ -18,6 +19,31 @@ from integrations.claude_autoresponder import (
     ClaudeAutoResponderManager,
     create_autoresponder_manager,
 )
+
+
+@pytest.fixture
+def temp_project_dir():
+    """Create temporary project directory for autoresponder tests."""
+    temp_dir = Path(tempfile.mkdtemp())
+    (temp_dir / ".dopemux").mkdir()
+    yield temp_dir
+    shutil.rmtree(temp_dir)
+
+
+@pytest.fixture
+def mock_config_manager(temp_project_dir):
+    """Provide a ConfigManager mock with default autoresponder settings."""
+    config_manager = Mock(spec=ConfigManager)
+    config_manager.get_claude_autoresponder_config.return_value = (
+        ClaudeAutoResponderConfig()
+    )
+    return config_manager
+
+
+@pytest.fixture
+def autoresponder_manager(mock_config_manager, temp_project_dir):
+    """Create a ClaudeAutoResponderManager for testing."""
+    return ClaudeAutoResponderManager(mock_config_manager, temp_project_dir)
 
 
 class TestClaudeAutoResponderConfig:
@@ -106,30 +132,6 @@ class TestAutoResponderMetrics:
 
 class TestClaudeAutoResponderManager:
     """Test Claude Auto Responder manager."""
-
-    @pytest.fixture
-    def temp_project_dir(self):
-        """Create temporary project directory."""
-        temp_dir = Path(tempfile.mkdtemp())
-        (temp_dir / ".dopemux").mkdir()
-        yield temp_dir
-        import shutil
-
-        shutil.rmtree(temp_dir)
-
-    @pytest.fixture
-    def mock_config_manager(self, temp_project_dir):
-        """Create mock config manager."""
-        config_manager = Mock(spec=ConfigManager)
-        config_manager.get_claude_autoresponder_config.return_value = (
-            ClaudeAutoResponderConfig()
-        )
-        return config_manager
-
-    @pytest.fixture
-    def autoresponder_manager(self, mock_config_manager, temp_project_dir):
-        """Create auto responder manager instance."""
-        return ClaudeAutoResponderManager(mock_config_manager, temp_project_dir)
 
     def test_initialization(self, autoresponder_manager, temp_project_dir):
         """Test manager initialization."""
