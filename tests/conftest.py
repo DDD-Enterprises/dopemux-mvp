@@ -3,11 +3,126 @@ Pytest configuration and shared fixtures.
 """
 
 import shutil
+import sys
 import tempfile
+import types
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+
+# Provide a lightweight aiohttp stub when the library is unavailable.
+try:  # pragma: no cover - exercised indirectly during import
+    import aiohttp  # type: ignore  # noqa: F401
+except ImportError:  # pragma: no cover - fallback
+    aiohttp_stub = types.ModuleType("aiohttp")
+    aiohttp_stub.__dopemux_stub__ = True
+
+    class ClientError(Exception):
+        """Base client error placeholder."""
+
+    class ClientResponseError(ClientError):
+        """Response error placeholder for compatibility."""
+
+        def __init__(self, request_info=None, history=None, *, status=None, message=None, headers=None):
+            super().__init__(message or "Client response error")
+            self.status = status
+            self.headers = headers or {}
+
+    class ClientTimeout:
+        """Minimal timeout configuration stub."""
+
+        def __init__(self, total=None, connect=None, sock_connect=None, sock_read=None):
+            self.total = total
+            self.connect = connect
+            self.sock_connect = sock_connect
+            self.sock_read = sock_read
+
+    class TCPConnector:
+        """Stub TCP connector."""
+
+        def __init__(self, limit=None, limit_per_host=None):
+            self.limit = limit
+            self.limit_per_host = limit_per_host
+
+        async def close(self):
+            return None
+
+    class _StubResponse:
+        """Async context manager mimicking aiohttp responses."""
+
+        def __init__(self, status=503, data=None, text_data=""):
+            self.status = status
+            self._data = data or {}
+            self._text = text_data
+            self.headers = {}
+
+        async def __aenter__(self):
+            raise ClientError("aiohttp stub cannot perform real HTTP requests")
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return False
+
+        async def json(self):
+            return self._data
+
+        async def text(self):
+            return self._text
+
+        def raise_for_status(self):
+            raise ClientError("aiohttp stub response")
+
+    class ClientSession:
+        """Minimal async session stub that signals missing dependency."""
+
+        def __init__(self, *args, **kwargs):
+            self._closed = False
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            await self.close()
+            return False
+
+        async def close(self):
+            self._closed = True
+
+        def _request(self, *args, **kwargs):
+            return _StubResponse()
+
+        def get(self, *args, **kwargs):
+            return self._request(*args, **kwargs)
+
+        def post(self, *args, **kwargs):
+            return self._request(*args, **kwargs)
+
+        def patch(self, *args, **kwargs):
+            return self._request(*args, **kwargs)
+
+        def delete(self, *args, **kwargs):
+            return self._request(*args, **kwargs)
+
+    aiohttp_stub.ClientError = ClientError
+    aiohttp_stub.ClientResponseError = ClientResponseError
+    aiohttp_stub.ClientSession = ClientSession
+    aiohttp_stub.ClientTimeout = ClientTimeout
+    aiohttp_stub.TCPConnector = TCPConnector
+
+    sys.modules["aiohttp"] = aiohttp_stub
+
+# Skip asyncio-marked tests when pytest-asyncio is unavailable.
+try:  # pragma: no cover - best effort compatibility
+    import pytest_asyncio  # type: ignore  # noqa: F401
+except ImportError:  # pragma: no cover - fallback
+
+    @pytest.hookimpl(tryfirst=True)
+    def pytest_runtest_setup(item):
+        if item.get_closest_marker("asyncio"):
+            pytest.skip(
+                "pytest-asyncio is not installed in this environment",
+                allow_module_level=False,
+            )
 
 # Legacy imports - commenting out as these modules have been refactored
 # from dopemux.event_bus import RedisStreamsAdapter, InMemoryAdapter

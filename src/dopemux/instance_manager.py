@@ -14,8 +14,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-import aiohttp
 import asyncio
+try:
+    import aiohttp  # type: ignore
+except ImportError:  # pragma: no cover - optional dependency
+    aiohttp = None  # type: ignore
 
 
 @dataclass
@@ -63,6 +66,10 @@ class InstanceManager:
         Returns:
             List of detected running instances
         """
+        if aiohttp is None:
+            # aiohttp not available; cannot probe HTTP endpoints
+            return []
+
         # Try cache first (eliminates 5s HTTP probing overhead!)
         if use_cache:
             cached = self._load_cache()
@@ -95,6 +102,9 @@ class InstanceManager:
             RunningInstance if found, None otherwise
         """
         conport_port = port_base + 7
+
+        if aiohttp is None:
+            return None
 
         try:
             async with aiohttp.ClientSession() as session:
