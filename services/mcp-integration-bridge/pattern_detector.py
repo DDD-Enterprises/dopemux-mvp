@@ -24,6 +24,14 @@ from patterns import (
     TaskAbandonmentPattern,
 )
 
+# Phase 3 imports
+try:
+    from complexity_scorer import ComplexityScorer
+    from cache import MultiTierCache
+    PHASE3_AVAILABLE = True
+except ImportError:
+    PHASE3_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -45,6 +53,8 @@ class PatternDetector:
         conport_client: Optional[Any] = None,
         event_window_minutes: int = 60,
         detection_interval_seconds: int = 300,  # 5 minutes
+        enable_complexity_budgets: bool = True,
+        enable_caching: bool = True
     ):
         """
         Initialize pattern detector.
@@ -70,6 +80,21 @@ class PatternDetector:
             ContextSwitchFrequencyPattern(),
             TaskAbandonmentPattern(),
         ]
+
+        # Phase 3 features
+        self.enable_complexity_budgets = enable_complexity_budgets and PHASE3_AVAILABLE
+        self.enable_caching = enable_caching and PHASE3_AVAILABLE
+        self.complexity_scorer: Optional[ComplexityScorer] = None
+        self.cache: Optional[MultiTierCache] = None
+
+        # Initialize Phase 3 components if enabled
+        if self.enable_complexity_budgets and event_bus.redis_client:
+            self.complexity_scorer = ComplexityScorer(event_bus.redis_client)
+            logger.info("✅ Pattern detector complexity budgets enabled")
+
+        if self.enable_caching and event_bus.cache:
+            self.cache = event_bus.cache
+            logger.info("✅ Pattern detector caching enabled")
 
         # Tracking
         self.total_runs = 0
