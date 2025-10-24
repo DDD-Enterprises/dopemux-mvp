@@ -18,6 +18,16 @@ RUN git clone https://github.com/assafelovic/gptr-mcp.git /app/gptr-mcp
 RUN pip install --no-cache-dir -r /app/gptr-mcp/requirements.txt && \
     pip install --no-cache-dir aiohttp requests
 
+# Fix langchain compatibility issues - downgrade to versions compatible with gpt-researcher
+# gpt-researcher 0.14.4 requires older langchain API structure
+# Use langchain-community 0.0.20 which is compatible with langsmith 0.0.87
+RUN pip install --no-cache-dir --force-reinstall \
+    'langchain==0.0.354' \
+    'langchain-community==0.0.20' \
+    'langchain-core==0.1.23' \
+    'langsmith==0.0.87' \
+    'numpy<2'
+
 # Create logs and data directories
 RUN mkdir -p /app/logs /app/data
 
