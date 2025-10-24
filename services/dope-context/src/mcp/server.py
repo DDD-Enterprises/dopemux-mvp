@@ -1411,12 +1411,13 @@ async def stop_autonomous_indexing(workspace_path: str = None) -> Dict:
 @mcp.tool()
 async def get_autonomous_status() -> Dict:
     """
-    Get status of all autonomous indexers.
+    Get status of all autonomous indexers (code AND docs).
 
     🎯 **USE CASE**: Health monitoring and debugging
 
     Returns comprehensive status for all active autonomous indexers including:
     - Workspace paths
+    - Type (code or docs)
     - Running state
     - Watchdog status (pending changes)
     - Worker stats (tasks processed, success rate, queue size)
@@ -1430,17 +1431,33 @@ async def get_autonomous_status() -> Dict:
     if not active:
         return {
             "active_count": 0,
-            "controllers": [],
+            "code_controllers": [],
+            "docs_controllers": [],
             "message": "No autonomous indexing active",
         }
 
-    statuses = []
+    code_statuses = []
+    docs_statuses = []
+
     for workspace_key, controller in active.items():
-        statuses.append(controller.get_status())
+        status = controller.get_status()
+
+        # Add type based on workspace key
+        if ":docs" in workspace_key:
+            status["type"] = "docs"
+            docs_statuses.append(status)
+        else:
+            status["type"] = "code"
+            code_statuses.append(status)
 
     return {
         "active_count": len(active),
-        "controllers": statuses,
+        "code_controllers": code_statuses,
+        "docs_controllers": docs_statuses,
+        "summary": {
+            "code_active": len(code_statuses),
+            "docs_active": len(docs_statuses),
+        },
     }
 
 
@@ -1481,6 +1498,145 @@ async def _sync_workspace_impl(workspace_path: str) -> Dict:
         "added_files": changes.added[:10],  # Sample
         "modified_files": changes.modified[:10],
         "removed_files": changes.removed[:10],
+    }
+
+
+# AUTONOMOUS DOCS INDEXING
+
+@mcp.tool()
+async def start_autonomous_docs_indexing(
+    workspace_path: str = None,
+    debounce_seconds: float = 5.0,
+    periodic_interval: int = 600,
+) -> Dict:
+    """
+    Enable autonomous docs indexing for workspace.
+
+    🎯 **ADHD BENEFIT**: Zero mental overhead - docs index updates automatically
+    as you edit markdown/PDFs. No manual sync needed!
+
+    Starts three monitoring systems:
+    1. File watcher (watchdog) - Immediate response to doc changes
+    2. 5s debouncing - Batches rapid saves for efficiency
+    3. 10min periodic fallback - Catches any missed events
+
+    Args:
+        workspace_path: Workspace to monitor (defaults to cwd)
+        debounce_seconds: Wait time after file changes (default: 5.0)
+        periodic_interval: Fallback check interval (default: 600s/10min)
+
+    Returns:
+        Status and configuration info
+    """
+    workspace = get_workspace_root(workspace_path)
+
+    logger.info(f"Starting autonomous docs indexing for {workspace}")
+
+    # Check if already running (use different key for docs)
+    workspace_key = f"{workspace}:docs"
+    active = AutonomousController.get_active_controllers()
+
+    if workspace_key in active:
+        return {
+            "status": "already_running",
+            "workspace": str(workspace),
+            "type": "docs",
+            "message": "Autonomous docs indexing already active for this workspace",
+        }
+
+    # Create config for docs (different patterns)
+    config = AutonomousConfig(
+        enabled=True,
+        debounce_seconds=debounce_seconds,
+        periodic_interval=periodic_interval,
+        include_patterns=["*.md", "*.pdf", "*.html", "*.txt"],
+        exclude_patterns=[
+            ".git",
+            "node_modules",
+            "__pycache__",
+            "dist",
+            "build",
+            ".venv",
+            "venv",
+        ],
+    )
+
+    # Create callbacks
+    async def docs_index_callback(ws_path: Path, changed_files: Optional[Set[str]]):
+        """Callback to trigger docs indexing."""
+        await _index_docs_impl(
+            workspace_path=str(ws_path),
+            include_patterns=config.include_patterns,
+        )
+
+    async def docs_sync_callback(ws_path: Path):
+        """Callback to trigger docs sync."""
+        return await _sync_docs_impl(
+            str(ws_path),
+            config.include_patterns,
+        )
+
+    # Create and start controller
+    controller = AutonomousController(
+        workspace_path=workspace,
+        index_callback=docs_index_callback,
+        sync_callback=docs_sync_callback,
+        config=config,
+    )
+
+    await controller.start()
+
+    # Register with docs-specific key
+    AutonomousController._active_controllers[workspace_key] = controller
+
+    return {
+        "status": "started",
+        "workspace": str(workspace),
+        "type": "docs",
+        "config": {
+            "debounce_seconds": debounce_seconds,
+            "periodic_interval": periodic_interval,
+            "patterns": config.include_patterns,
+        },
+        "message": f"Autonomous docs indexing started for {workspace.name}",
+    }
+
+
+@mcp.tool()
+async def stop_autonomous_docs_indexing(workspace_path: str = None) -> Dict:
+    """
+    Stop autonomous docs indexing for workspace.
+
+    🎯 **USE CASE**: Disable auto-indexing when not needed (saves resources)
+
+    Args:
+        workspace_path: Workspace to stop monitoring (defaults to cwd)
+
+    Returns:
+        Status info
+    """
+    workspace = get_workspace_root(workspace_path)
+    workspace_key = f"{workspace}:docs"
+
+    active = AutonomousController.get_active_controllers()
+
+    if workspace_key not in active:
+        return {
+            "status": "not_running",
+            "workspace": str(workspace),
+            "type": "docs",
+            "message": "No autonomous docs indexing active for this workspace",
+        }
+
+    # Stop controller
+    controller = active[workspace_key]
+    await controller.stop()
+
+    return {
+        "status": "stopped",
+        "workspace": str(workspace),
+        "type": "docs",
+        "message": f"Autonomous docs indexing stopped for {workspace.name}",
     }
 
 
