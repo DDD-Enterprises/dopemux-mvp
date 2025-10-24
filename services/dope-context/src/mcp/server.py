@@ -37,6 +37,7 @@ from ..utils.workspace import get_workspace_root, get_collection_names, get_snap
 from ..sync.file_synchronizer import FileSynchronizer, ChangeSet
 from ..utils.metrics_tracker import get_tracker
 from ..utils.token_budget import truncate_code_results, truncate_docs_results
+from ..autonomous.autonomous_controller import AutonomousController, AutonomousConfig
 
 
 logger = logging.getLogger(__name__)
@@ -1283,6 +1284,204 @@ async def clear_search_metrics() -> Dict:
     """
     get_tracker().clear_metrics()
     return {"status": "success", "message": "All search metrics cleared"}
+
+
+# ============================================================================
+# Autonomous Indexing Tools - Zero-Touch Operation
+# ============================================================================
+
+
+@mcp.tool()
+async def start_autonomous_indexing(
+    workspace_path: str = None,
+    debounce_seconds: float = 5.0,
+    periodic_interval: int = 600,
+) -> Dict:
+    """
+    Enable autonomous indexing for workspace.
+
+    🎯 **ADHD BENEFIT**: Zero mental overhead - index updates automatically
+    as you code. No manual sync needed ever again!
+
+    Starts three monitoring systems:
+    1. File watcher (watchdog) - Immediate response to changes
+    2. 5s debouncing - Batches rapid saves for efficiency
+    3. 10min periodic fallback - Catches any missed events
+
+    Args:
+        workspace_path: Workspace to monitor (defaults to cwd)
+        debounce_seconds: Wait time after file changes (default: 5.0)
+        periodic_interval: Fallback check interval (default: 600s/10min)
+
+    Returns:
+        Status and configuration info
+    """
+    workspace = get_workspace_root(workspace_path)
+
+    logger.info(f"Starting autonomous indexing for {workspace}")
+
+    # Check if already running
+    workspace_key = str(workspace)
+    active = AutonomousController.get_active_controllers()
+
+    if workspace_key in active:
+        return {
+            "status": "already_running",
+            "workspace": str(workspace),
+            "message": "Autonomous indexing already active for this workspace",
+        }
+
+    # Create config
+    config = AutonomousConfig(
+        enabled=True,
+        debounce_seconds=debounce_seconds,
+        periodic_interval=periodic_interval,
+    )
+
+    # Create callbacks
+    async def index_callback(ws_path: Path, changed_files: Optional[Set[str]]):
+        """Callback to trigger indexing."""
+        await _index_workspace_impl(
+            workspace_path=str(ws_path),
+            include_patterns=config.include_patterns,
+            exclude_patterns=config.exclude_patterns,
+        )
+
+    async def sync_callback(ws_path: Path):
+        """Callback to trigger sync."""
+        return await _sync_workspace_impl(str(ws_path))
+
+    # Create and start controller
+    controller = AutonomousController(
+        workspace_path=workspace,
+        index_callback=index_callback,
+        sync_callback=sync_callback,
+        config=config,
+    )
+
+    await controller.start()
+
+    return {
+        "status": "started",
+        "workspace": str(workspace),
+        "config": {
+            "debounce_seconds": debounce_seconds,
+            "periodic_interval": periodic_interval,
+        },
+        "message": f"Autonomous indexing started for {workspace.name}",
+    }
+
+
+@mcp.tool()
+async def stop_autonomous_indexing(workspace_path: str = None) -> Dict:
+    """
+    Stop autonomous indexing for workspace.
+
+    🎯 **USE CASE**: Disable auto-indexing when not needed (saves resources)
+
+    Args:
+        workspace_path: Workspace to stop monitoring (defaults to cwd)
+
+    Returns:
+        Status info
+    """
+    workspace = get_workspace_root(workspace_path)
+    workspace_key = str(workspace)
+
+    active = AutonomousController.get_active_controllers()
+
+    if workspace_key not in active:
+        return {
+            "status": "not_running",
+            "workspace": str(workspace),
+            "message": "No autonomous indexing active for this workspace",
+        }
+
+    # Stop controller
+    controller = active[workspace_key]
+    await controller.stop()
+
+    return {
+        "status": "stopped",
+        "workspace": str(workspace),
+        "message": f"Autonomous indexing stopped for {workspace.name}",
+    }
+
+
+@mcp.tool()
+async def get_autonomous_status() -> Dict:
+    """
+    Get status of all autonomous indexers.
+
+    🎯 **USE CASE**: Health monitoring and debugging
+
+    Returns comprehensive status for all active autonomous indexers including:
+    - Workspace paths
+    - Running state
+    - Watchdog status (pending changes)
+    - Worker stats (tasks processed, success rate, queue size)
+    - Periodic sync stats (sync count, changes detected)
+
+    Returns:
+        Dictionary with status of all active controllers
+    """
+    active = AutonomousController.get_active_controllers()
+
+    if not active:
+        return {
+            "active_count": 0,
+            "controllers": [],
+            "message": "No autonomous indexing active",
+        }
+
+    statuses = []
+    for workspace_key, controller in active.items():
+        statuses.append(controller.get_status())
+
+    return {
+        "active_count": len(active),
+        "controllers": statuses,
+    }
+
+
+async def _sync_workspace_impl(workspace_path: str) -> Dict:
+    """
+    Internal implementation of sync_workspace.
+
+    Args:
+        workspace_path: Workspace to sync
+
+    Returns:
+        Change detection results
+    """
+    workspace = Path(workspace_path).resolve()
+
+    synchronizer = FileSynchronizer(
+        workspace_path=workspace,
+        include_patterns=["*.py", "*.js", "*.ts", "*.tsx"],
+        exclude_patterns=[
+            "__pycache__",
+            "*.pyc",
+            "node_modules",
+            ".git",
+            "dist",
+            "build",
+        ],
+    )
+
+    changes = synchronizer.check_changes()
+
+    return {
+        "workspace": str(workspace),
+        "added": len(changes.added),
+        "modified": len(changes.modified),
+        "removed": len(changes.removed),
+        "total_changes": changes.total_changes(),
+        "has_changes": changes.has_changes(),
+        "added_files": changes.added[:10],  # Sample
+        "modified_files": changes.modified[:10],
+        "removed_files": changes.removed[:10],
+    }
 
 
 if __name__ == "__main__":
