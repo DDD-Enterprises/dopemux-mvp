@@ -264,6 +264,12 @@ def _initialize_components():
 
     _embedder = VoyageEmbedder(api_key=voyage_key)
 
+    # Create contextualized embedder for code content vectors
+    code_contextualized_embedder = ContextualizedEmbedder(
+        api_key=voyage_key,
+        cache_ttl_hours=24,
+    )
+
     vector_search = MultiVectorSearch(
         collection_name=code_collection,
         url=qdrant_url,
@@ -288,7 +294,8 @@ def _initialize_components():
     _pipeline = IndexingPipeline(
         chunker=chunker,
         context_generator=context_generator,
-        embedder=_embedder,
+        standard_embedder=_embedder,
+        contextualized_embedder=code_contextualized_embedder,
         vector_search=vector_search,
         config=config,
     )
@@ -344,9 +351,15 @@ async def _index_workspace_impl(
     if openai_key:
         context_generator = OpenAIContextGenerator(api_key=openai_key)
 
-    embedder = VoyageEmbedder(
+    standard_embedder = VoyageEmbedder(
         api_key=os.getenv("VOYAGE_API_KEY"),
         default_model="voyage-code-3",
+    )
+
+    # Create contextualized embedder for content vectors
+    contextualized_embedder = ContextualizedEmbedder(
+        api_key=os.getenv("VOYAGE_API_KEY"),
+        cache_ttl_hours=24,
     )
 
     config = IndexingConfig(
@@ -360,7 +373,8 @@ async def _index_workspace_impl(
     pipeline = IndexingPipeline(
         chunker=chunker,
         context_generator=context_generator,
-        embedder=embedder,
+        standard_embedder=standard_embedder,
+        contextualized_embedder=contextualized_embedder,
         vector_search=vector_search,
         config=config,
     )
