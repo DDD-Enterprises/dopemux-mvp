@@ -14,6 +14,8 @@ from dataclasses import dataclass, asdict
 
 import redis.asyncio as redis
 
+from event_deduplication import EventDeduplicator
+
 logger = logging.getLogger(__name__)
 
 
@@ -73,18 +75,21 @@ class EventBus:
     - ADHD-optimized: Non-blocking, resilient to interruptions
     """
 
-    def __init__(self, redis_url: str, password: Optional[str] = None):
+    def __init__(self, redis_url: str, password: Optional[str] = None, enable_deduplication: bool = True):
         """
         Initialize EventBus with Redis connection
 
         Args:
             redis_url: Redis connection URL
             password: Optional Redis password
+            enable_deduplication: Enable event deduplication (default: True)
         """
         self.redis_url = redis_url
         self.password = password
         self.redis_client: Optional[redis.Redis] = None
         self._subscribers: Dict[str, bool] = {}  # Track active subscribers
+        self.enable_deduplication = enable_deduplication
+        self.deduplicator: Optional[EventDeduplicator] = None
 
     async def initialize(self):
         """Initialize Redis connection"""
@@ -102,11 +107,19 @@ class EventBus:
             await self.redis_client.ping()
             logger.info("✅ EventBus Redis connection established")
 
+            # Initialize deduplicator if enabled
+            if self.enable_deduplication:
+                self.deduplicator = EventDeduplicator(
+                    redis_client=self.redis_client,
+                    ttl_seconds=300  # 5 minute deduplication window
+                )
+                logger.info("✅ EventBus deduplication enabled (5min window)")
+
         except Exception as e:
             logger.error(f"❌ EventBus Redis initialization failed: {e}")
             raise
 
-    async def publish(self, stream: str, event: Event) -> str:
+    async def publish(self, stream: str, event: Event) -> Optional[str]:
         """
         Publish event to Redis Stream
 
@@ -115,12 +128,27 @@ class EventBus:
             event: Event to publish
 
         Returns:
-            Message ID from Redis
+            Message ID from Redis, or None if event was deduplicated
         """
         if not self.redis_client:
             raise RuntimeError("EventBus not initialized")
 
         try:
+            # Check for duplicate before publishing
+            if self.deduplicator:
+                event_data = {
+                    "type": event.type,
+                    "data": event.data,
+                    "source": event.source
+                }
+
+                if await self.deduplicator.is_duplicate(event_data):
+                    logger.debug(f"⏭️  Skipped duplicate event: {event.type}")
+                    return None  # Event was a duplicate, skip publishing
+
+                # Mark as processed
+                await self.deduplicator.mark_processed(event_data)
+
             msg_id = await self.redis_client.xadd(
                 stream,
                 event.to_redis_dict()
