@@ -129,12 +129,14 @@ class DeepContextQueries:
         )
 
         # Get all relationships (will use get_all_relationships method)
-        relationships = self.get_all_relationships(decision_id)
+        relationships = self.get_all_relationships(workspace_id, decision_id)
 
         # Get related decisions (1-hop)
         cypher_related = f"""
             SELECT * FROM cypher('conport_knowledge', $$
                 MATCH (d:Decision {{id: {decision_id}}})-[]-(related:Decision)
+                WHERE d.workspace_id = '{workspace_id}'
+                  AND related.workspace_id = '{workspace_id}'
                 RETURN DISTINCT related.id, related.summary, related.timestamp
                 LIMIT 50
             $$) as (id agtype, summary agtype, timestamp agtype);
