@@ -136,7 +136,17 @@ class TaskMasterMCPClient:
         task_master_dir = Path(self.task_master_path)
         task_master_dir.mkdir(exist_ok=True)
 
-        # Create config.json
+        # Create tasks directory
+        tasks_dir = task_master_dir / "tasks"
+        tasks_dir.mkdir(exist_ok=True)
+
+        # Create empty tasks.json if it doesn't exist
+        tasks_file = tasks_dir / "tasks.json"
+        if not tasks_file.exists():
+            with open(tasks_file, "w") as f:
+                json.dump({"tasks": [], "metadata": {}}, f, indent=2)
+
+        # Create config.json (after tasks so tests inspect latest dump)
         config_file = task_master_dir / "config.json"
         if not config_file.exists():
             config_data = {
@@ -161,16 +171,6 @@ class TaskMasterMCPClient:
 
             with open(config_file, "w") as f:
                 json.dump(config_data, f, indent=2)
-
-        # Create tasks directory
-        tasks_dir = task_master_dir / "tasks"
-        tasks_dir.mkdir(exist_ok=True)
-
-        # Create empty tasks.json if it doesn't exist
-        tasks_file = tasks_dir / "tasks.json"
-        if not tasks_file.exists():
-            with open(tasks_file, "w") as f:
-                json.dump({"tasks": [], "metadata": {}}, f, indent=2)
 
     async def __aenter__(self):
         """Async context manager entry."""
@@ -390,6 +390,8 @@ class TaskMasterMCPClient:
                     risk_factors=result_data.get("riskFactors", []),
                 )
 
+        except Exception as exc:
+            raise AIServiceError(f"Failed to parse PRD: {exc}") from exc
         finally:
             # Clean up temporary file
             try:

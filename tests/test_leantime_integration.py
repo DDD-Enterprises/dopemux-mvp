@@ -5,11 +5,16 @@ Tests both basic API connectivity and ADHD-optimized features
 """
 
 import asyncio
-import aiohttp
 import json
-import sys
 import os
+import sys
 from datetime import datetime
+
+import pytest
+
+aiohttp = pytest.importorskip("aiohttp")
+if getattr(aiohttp, "__dopemux_stub__", False):  # pragma: no cover - dependency guard
+    pytest.skip("aiohttp not available in test environment", allow_module_level=True)
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
