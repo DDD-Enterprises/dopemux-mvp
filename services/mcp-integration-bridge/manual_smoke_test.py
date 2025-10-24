@@ -69,27 +69,27 @@ async def test_complete_pipeline():
         results["serena"] = f"❌ {e}"
         print(f"   Serena: ❌ {e}")
 
-    # Dope-Context: Search completed
+    # Dope-Context: Search result
     try:
-        await managers["dope-context"].handle_search_completed("test query", 5, 1.2)
+        await managers["dope-context"].handle_search_result("test query", [{"file": "test.py", "relevance_score": 0.8}])
         results["dope-context"] = "✅"
         print("   Dope-Context (search): ✅")
     except Exception as e:
         results["dope-context"] = f"❌ {e}"
         print(f"   Dope-Context: ❌ {e}")
 
-    # ADHD Engine: State change
+    # ADHD Engine: State update
     try:
-        await managers["adhd-engine"].handle_cognitive_state_change("focused", "scattered", 0.7)
+        await managers["adhd-engine"].handle_state_update("focused", 0.3, 0.7)
         results["adhd-engine"] = "✅"
         print("   ADHD Engine (state): ✅")
     except Exception as e:
         results["adhd-engine"] = f"❌ {e}"
         print(f"   ADHD Engine: ❌ {e}")
 
-    # Task Orchestrator: Task completed
+    # Task Orchestrator: Task status change
     try:
-        await managers["task-orchestrator"].handle_task_completed("TASK-001", 25.5)
+        await managers["task-orchestrator"].handle_task_status_change("TASK-001", "Test Task", "TODO", "IN_PROGRESS", 25.5)
         results["task-orchestrator"] = "✅"
         print("   Task Orchestrator (task): ✅")
     except Exception as e:
