@@ -7,7 +7,7 @@ pydantic>=2.0.0
 
 # Async Support
 asyncio>=3.4.3
-aiohttp>=3.12.14  # Security: CVE-2025-53643, CVE-2024-52304, directory traversal, DoS fixes
+aiohttp>=3.12.14  # Security: CVE-2025-53643, CVE-2024-52304, CVE-2024-27306, directory traversal, DoS fixes
 redis>=4.5.0  # Task-Orchestrator event bus integration (Fix C1-001)
 
 # Environment & Configuration
