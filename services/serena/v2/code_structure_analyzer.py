@@ -14,6 +14,15 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
 
+# ConPort-KG Integration (optional, graceful degradation if unavailable)
+try:
+    from integration_bridge_connector import emit_complexity_analyzed
+    CONPORT_INTEGRATION_AVAILABLE = True
+except ImportError:
+    CONPORT_INTEGRATION_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.debug("ConPort-KG integration not available (optional feature)")
+
 # Tree-sitter imports (would be installed via pip install tree-sitter)
 try:
     import tree_sitter
