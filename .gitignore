@@ -196,9 +196,7 @@ deleted_docs_list.txt
 .claude/claude_config_wrapped.json
 SESSION_*.md
 THREAD_WORK_SUMMARY.md
-*_COMPLETE.md
 *_STATUS.md
-*_SUMMARY.md
 
 # Allow agent/orchestrator milestone documentation
 !services/agents/*_COMPLETE.md
