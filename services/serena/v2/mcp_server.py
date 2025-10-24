@@ -435,7 +435,7 @@ class SerenaV2MCPServer:
             return
 
         try:
-            from conport_db_client import ConPortDBClient
+            from conport_client_unified import ConPortDBClient
 
             self.conport_client = ConPortDBClient(
                 host="localhost",
