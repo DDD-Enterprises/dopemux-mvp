@@ -81,7 +81,7 @@ class DeepContextQueries:
             print(f"❌ AGEClient initialization failed: {e}")
             raise
 
-    def get_full_decision_context(self, decision_id: int) -> FullDecisionContext:
+    def get_full_decision_context(self, workspace_id: str, decision_id: int) -> FullDecisionContext:
         """
         Get complete decision context with 3-hop traversal
 
@@ -102,6 +102,7 @@ class DeepContextQueries:
         cypher_decision = f"""
             SELECT * FROM cypher('conport_knowledge', $$
                 MATCH (d:Decision {{id: {decision_id}}})
+                WHERE d.workspace_id = '{workspace_id}'
                 RETURN d.id, d.summary, d.rationale, d.implementation, d.tags, d.timestamp
             $$) as (id agtype, summary agtype, rationale agtype, impl agtype, tags agtype, ts agtype);
         """
@@ -161,7 +162,7 @@ class DeepContextQueries:
             cognitive_load="high"  # Always high for Tier 3
         )
 
-    def get_all_relationships(self, decision_id: int) -> List[Relationship]:
+    def get_all_relationships(self, workspace_id: str, decision_id: int) -> List[Relationship]:
         """
         Get ALL relationships for a decision
 
@@ -209,6 +210,7 @@ class DeepContextQueries:
 
     def search_full_text(
         self,
+        workspace_id: str,
         search_term: str,
         limit: int = 20
     ) -> List[DecisionCard]:
@@ -258,7 +260,7 @@ class DeepContextQueries:
 
         return decisions
 
-    def get_decision_analytics(self, decision_id: int) -> DecisionAnalytics:
+    def get_decision_analytics(self, workspace_id: str, decision_id: int) -> DecisionAnalytics:
         """
         Calculate decision centrality and influence metrics
 
