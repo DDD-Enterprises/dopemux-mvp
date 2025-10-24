@@ -50,6 +50,13 @@ except ImportError as e:
     logger.warning(f"CognitiveGuardian not available: {e}")
     COGNITIVE_GUARDIAN_AVAILABLE = False
 
+# ConPort-KG Integration for task progress events
+try:
+    from integration_bridge_connector import emit_task_status_change
+    CONPORT_KG_INTEGRATION = True
+except ImportError:
+    CONPORT_KG_INTEGRATION = False
+
 logger = logging.getLogger(__name__)
 
 
