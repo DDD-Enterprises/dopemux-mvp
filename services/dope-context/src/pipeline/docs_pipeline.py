@@ -72,14 +72,17 @@ class DocIndexingPipeline:
         """
         try:
             # 1. Extract text using DocumentProcessor (handles PDF/DOCX/HTML/Markdown)
+            # NOW WITH STRUCTURE-AWARE CHUNKING! 🚀
             doc_chunks = self.doc_processor.process_document(
                 str(file_path),
                 chunk_size=chunk_size,
-                chunk_overlap=chunk_overlap
+                chunk_overlap=chunk_overlap,
+                use_structure_aware=True,  # Enable optimization!
             )
 
-            # 2. Extract text content from DocumentChunk objects
+            # 2. Extract text and preserve metadata
             chunks = [chunk.text for chunk in doc_chunks]
+            chunk_metadata = [chunk.metadata for chunk in doc_chunks]
 
             if not chunks:
                 return 0
@@ -124,21 +127,55 @@ class DocIndexingPipeline:
 
             content_embeddings = result.embeddings
 
-            # For multi-vector search: reuse content embeddings for title/breadcrumb
-            # (voyage-context-3 already captures full document context)
-            title_embeddings = content_embeddings
-            breadcrumb_embeddings = content_embeddings
+            # For multi-vector search: Create breadcrumbs from hierarchy!
+            # This improves search precision significantly
+            breadcrumb_texts = []
+            for metadata in chunk_metadata:
+                if metadata and metadata.parent_section:
+                    # Use hierarchy breadcrumb: "Main > Subtopic > Detail"
+                    breadcrumb_texts.append(metadata.parent_section)
+                else:
+                    # Fallback to doc name
+                    breadcrumb_texts.append(doc_name)
 
-            # 5. Prepare metadata
-            chunk_dicts = [
-                {
-                    "text": chunk,
+            # Embed breadcrumbs separately for better multi-vector precision
+            if breadcrumb_texts and breadcrumb_texts != [doc_name] * len(breadcrumb_texts):
+                breadcrumb_result = await self.embedder.embed_document(
+                    chunks=breadcrumb_texts,
+                    model="voyage-context-3",
+                    input_type="document",
+                    output_dimension=1024,
+                )
+                breadcrumb_embeddings = breadcrumb_result.embeddings
+            else:
+                # Reuse content embeddings if no hierarchy
+                breadcrumb_embeddings = content_embeddings
+
+            # Title embeddings can reuse content (already contextualized)
+            title_embeddings = content_embeddings
+
+            # 5. Prepare metadata (NOW WITH STRUCTURE INFO!)
+            chunk_dicts = []
+            for chunk_text, metadata in zip(chunks, chunk_metadata):
+                chunk_dict = {
+                    "text": chunk_text,
                     "source_path": str(file_path),
                     "doc_type": file_path.suffix.lstrip("."),
                     "workspace_id": self.workspace_id,
                 }
-                for chunk in chunks
-            ]
+
+                # Add structure metadata if available
+                if metadata:
+                    chunk_dict.update({
+                        "section_hierarchy": metadata.section_hierarchy,
+                        "header_level": metadata.header_level,
+                        "has_code_blocks": metadata.has_code_blocks,
+                        "complexity_estimate": metadata.complexity_estimate,
+                        "parent_section": metadata.parent_section,
+                        "section_type": metadata.section_type,
+                    })
+
+                chunk_dicts.append(chunk_dict)
 
             # 6. Index in Qdrant
             await self.doc_search.index_document(
