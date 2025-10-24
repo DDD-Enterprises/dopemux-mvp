@@ -35,6 +35,13 @@ from activity_tracker import ActivityTracker
 from conport_client_unified import ConPortSQLiteClient
 from bridge_integration import ConPortBridgeAdapter
 
+# ConPort-KG Integration (optional)
+try:
+    from integration_bridge_connector import emit_state_update
+    CONPORT_KG_INTEGRATION = True
+except ImportError:
+    CONPORT_KG_INTEGRATION = False
+
 # Machine Learning (IP-005 Days 11-12)
 try:
     from ml.predictive_engine import PredictiveADHDEngine
@@ -684,7 +691,7 @@ class ADHDAccommodationEngine:
             return AttentionState.FOCUSED
 
     async def _cognitive_load_monitor(self) -> None:
-        """Monitor overall cognitive load across all tasks."""
+        """Monitor cognitive load and emit events to ConPort-KG."""
         logger.info("🧠 Started cognitive load monitoring")
 
         while self.running:
@@ -701,6 +708,22 @@ class ADHDAccommodationEngine:
                     (timestamp, load) for timestamp, load in self.cognitive_load_history
                     if timestamp > cutoff_time
                 ]
+
+                # Emit state update to ConPort-KG (buffered, emitted every 30s)
+                if CONPORT_KG_INTEGRATION:
+                    try:
+                        # Get current state for first user (or default)
+                        user_id = next(iter(self.user_profiles.keys()), "default")
+                        attention_state = self.current_attention_states.get(user_id, AttentionState.FOCUSED)
+                        energy_level = self.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
+
+                        await emit_state_update(
+                            attention_state=attention_state.value,
+                            energy_level=energy_level.value,
+                            cognitive_load=min(total_load / 2.0, 1.0)  # Normalize to 0-1
+                        )
+                    except Exception as e:
+                        logger.debug(f"Event emission skipped: {e}")
 
                 # Check for cognitive overload
                 if total_load > 2.0:  # High system-wide load
