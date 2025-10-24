@@ -226,6 +226,18 @@ class CodeStructureAnalyzer:
             # Cache analysis result
             self.parsed_files[file_path] = structure_info
 
+            # Emit complexity event to ConPort-KG (if integration enabled)
+            if CONPORT_INTEGRATION_AVAILABLE:
+                try:
+                    complexity_score = structure_info["complexity_metrics"].get("overall_complexity", 0.5)
+                    await emit_complexity_analyzed(
+                        file_path=file_path,
+                        complexity_score=complexity_score,
+                        metrics=structure_info["complexity_metrics"]
+                    )
+                except Exception as e:
+                    logger.debug(f"Event emission skipped: {e}")
+
             logger.debug(f"🔍 Analyzed structure: {file_path} ({len(structure_info['symbols'])} symbols)")
             return structure_info
 
