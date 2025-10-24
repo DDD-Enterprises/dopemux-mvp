@@ -91,6 +91,13 @@ class DocumentSearch:
                 "doc_type": chunk.get("doc_type", "unknown"),
                 "page_number": chunk.get("page_number"),
                 "workspace_id": chunk.get("workspace_id", "default"),
+                # NEW: Structure-aware metadata for better filtering/search
+                "section_hierarchy": chunk.get("section_hierarchy", []),
+                "header_level": chunk.get("header_level", 0),
+                "has_code_blocks": chunk.get("has_code_blocks", False),
+                "complexity": chunk.get("complexity_estimate", 0.0),
+                "parent_section": chunk.get("parent_section", ""),
+                "section_type": chunk.get("section_type", "content"),
             }
 
             points.append((content_vec, title_vec, breadcrumb_vec, payload, point_id))
