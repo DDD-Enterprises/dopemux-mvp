@@ -189,6 +189,8 @@ class ExplorationQueries:
         cypher = f"""
             SELECT * FROM cypher('conport_knowledge', $$
                 {match_clause}
+                WHERE d.workspace_id = '{workspace_id}'
+                  AND related.workspace_id = '{workspace_id}'
                 RETURN related.id, related.summary, related.timestamp
                 LIMIT 20
             $$) as (id agtype, summary agtype, timestamp agtype);
@@ -247,6 +249,8 @@ class ExplorationQueries:
         cypher = f"""
             SELECT * FROM cypher('conport_knowledge', $$
                 MATCH (d:Decision {{id: {decision_id}}}){rel_pattern}(target:Decision)
+                WHERE d.workspace_id = '{workspace_id}'
+                  AND target.workspace_id = '{workspace_id}'
                 RETURN
                     target.id as id,
                     target.summary as summary,
@@ -296,7 +300,9 @@ class ExplorationQueries:
         cypher = f"""
             SELECT * FROM cypher('conport_knowledge', $$
                 MATCH (root:Decision {{id: {decision_id}}})
+                WHERE root.workspace_id = '{workspace_id}'
                 OPTIONAL MATCH path = (root)<-[:DEPENDS_ON*1..{max_depth}]-(dependent:Decision)
+                WHERE dependent.workspace_id = '{workspace_id}'
                 RETURN
                     root.id as root_id,
                     root.summary as root_summary,
