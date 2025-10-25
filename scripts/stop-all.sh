@@ -16,7 +16,17 @@ echo "🛑 Stopping Complete Dopemux Stack..."
 echo "=========================================="
 echo ""
 
-# Stop Task Orchestrator first (manual profile)
+# Stop ADHD Engine first (background process)
+echo "🧠 Stopping ADHD Engine..."
+pkill -f "adhd_engine/main.py" 2>/dev/null || true
+if lsof -i :8095 > /dev/null 2>&1; then
+    echo "⚠️  ADHD Engine still running - force killing..."
+    lsof -ti :8095 | xargs kill -9 2>/dev/null || true
+fi
+echo "✅ ADHD Engine stopped"
+echo ""
+
+# Stop Task Orchestrator (manual profile)
 echo "🤖 Stopping Task Orchestrator..."
 cd docker/mcp-servers
 docker-compose --profile manual down task-orchestrator 2>/dev/null || true
