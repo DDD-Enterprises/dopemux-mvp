@@ -1,0 +1,22 @@
+{
+  "app_mappings": {
+    "Claude Code": "/Users/hue/code/dopemux-mvp",
+    "Code": "/Users/hue/code/dopemux-mvp",
+    "Visual Studio Code": "/Users/hue/code/dopemux-mvp",
+    "Cursor": "/Users/hue/code/dopemux-mvp",
+    "Terminal": "/Users/hue/code/dopemux-mvp",
+    "iTerm2": "/Users/hue/code/dopemux-mvp",
+    "Alacritty": "/Users/hue/code/dopemux-mvp",
+    "Google Chrome": null,
+    "Chrome": null,
+    "Safari": null,
+    "Firefox": null,
+    "Slack": null,
+    "Discord": null,
+    "Mail": null,
+    "Messages": null,
+    "Spotify": null,
+    "Music": null
+  },
+  "default_workspace": null
+}
