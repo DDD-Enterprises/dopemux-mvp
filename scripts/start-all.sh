@@ -68,6 +68,10 @@ sleep 3
 # Verify it started
 if lsof -i :8095 2>/dev/null | grep -q LISTEN; then
     echo "✅ ADHD Engine started (port 8095, PID: $ADHD_PID)"
+
+    # Initialize ADHD user profile (ensures statusline works)
+    echo ""
+    "$PROJECT_ROOT/scripts/init-adhd-profile.sh"
 else
     echo "⚠️  ADHD Engine failed to start - check /tmp/adhd_engine.log"
 fi
