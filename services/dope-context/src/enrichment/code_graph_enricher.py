@@ -38,17 +38,52 @@ class CodeGraphEnricher:
     - Imported by count (how many files this imports)
     """
 
-    def __init__(self, redis_client=None, cache_ttl: int = 1800):
+    def __init__(self, redis_client=None, cache_ttl: int = 1800, workspace_path: Path = None):
         """
         Initialize code graph enricher.
 
         Args:
             redis_client: Optional Redis client for caching
             cache_ttl: Cache TTL in seconds (default: 30 min)
+            workspace_path: Workspace path for Serena integration
         """
         self.redis_client = redis_client
         self.cache_ttl = cache_ttl
+        self.workspace = workspace_path or Path.cwd()
         self._serena_available = None  # Lazy check
+        self._serena_server = None  # Lazy-loaded Serena MCP server
+
+    async def _get_serena_server(self):
+        """
+        Get or initialize Serena MCP server (singleton pattern).
+
+        Returns:
+            SerenaV2MCPServer instance or None if unavailable
+        """
+        if self._serena_server is not None:
+            return self._serena_server
+
+        try:
+            import sys
+            serena_path = Path(__file__).parent.parent.parent.parent / "serena" / "v2"
+            if str(serena_path) not in sys.path:
+                sys.path.insert(0, str(serena_path))
+
+            # Import Serena MCP server
+            from mcp_server import SerenaV2MCPServer
+
+            # Initialize server
+            self._serena_server = SerenaV2MCPServer(workspace=self.workspace)
+            self._serena_available = True
+
+            logger.info("✅ CodeGraphEnricher connected to Serena v2")
+
+        except Exception as e:
+            self._serena_available = False
+            self._serena_server = None
+            logger.warning(f"⚠️ Serena v2 unavailable: {e}")
+
+        return self._serena_server
 
     async def _check_serena_availability(self) -> bool:
         """
@@ -60,25 +95,8 @@ class CodeGraphEnricher:
         if self._serena_available is not None:
             return self._serena_available
 
-        try:
-            # Try to import Serena client or make test call
-            # For now, assume available if we can import
-            import sys
-            serena_path = Path(__file__).parent.parent.parent.parent / "serena" / "v2"
-            if str(serena_path) not in sys.path:
-                sys.path.insert(0, str(serena_path))
-
-            # Test import
-            from mcp_server import SerenaV2Server
-
-            self._serena_available = True
-            logger.info("Serena v2 available for code graph enrichment")
-
-        except Exception as e:
-            self._serena_available = False
-            logger.warning(f"Serena v2 unavailable: {e}")
-
-        return self._serena_available
+        serena = await self._get_serena_server()
+        return serena is not None
 
     async def _get_cached_relationships(self, cache_key: str) -> Optional[Dict]:
         """
@@ -148,21 +166,29 @@ class CodeGraphEnricher:
             if cached:
                 return cached.get('count', 0)
 
-            # Call Serena MCP find_references tool
-            # Note: In production, this would be an MCP client call
-            # For now, we'll use a placeholder that can be wired later
+            # Call Serena MCP find_references tool (direct import pattern)
+            serena = await self._get_serena_server()
+            if serena:
+                try:
+                    result_json = await serena.find_references_tool(
+                        file_path=file_path,
+                        line=start_line,
+                        column=0,
+                        max_results=100,  # Count all references
+                        include_declaration=True
+                    )
 
-            # TODO: Wire to actual Serena MCP client
-            # serena_result = await serena_mcp.call_tool(
-            #     "find_references",
-            #     file_path=file_path,
-            #     line=start_line,
-            #     column=0,
-            #     max_results=100  # Count all references
-            # )
-            # count = serena_result.get('found', 0)
+                    import json
+                    result_dict = json.loads(result_json)
+                    count = result_dict.get('found', 0)
 
-            count = 0  # Placeholder until MCP client wired
+                    logger.debug(f"✅ Serena find_references: {file_path}:{start_line} → {count} refs")
+
+                except Exception as call_error:
+                    logger.debug(f"Serena call failed: {call_error}")
+                    count = 0
+            else:
+                count = 0  # Serena unavailable
 
             # Cache result
             await self._cache_relationships(cache_key, {'count': count})
