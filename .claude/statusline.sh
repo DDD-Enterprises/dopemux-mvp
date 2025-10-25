@@ -189,8 +189,9 @@ if [ $? -eq 0 ] && [ -n "$adhd_health" ]; then
     ADHD_STATUS="🧠"
 
     # Extract energy level - lightning bolt + direction
-    energy=$(echo "$adhd_health" | jq -r '.current_state.energy_levels.current_user // ""' 2>/dev/null)
-    if [ -n "$energy" ] && [ "$energy" != "null" ]; then
+    # Try current_user first, then fall back to first user (hue, etc.)
+    energy=$(echo "$adhd_health" | jq -r '.current_state.energy_levels.current_user // .current_state.energy_levels | to_entries[0].value // ""' 2>/dev/null)
+    if [ -n "$energy" ] && [ "$energy" != "null" ] && [ "$energy" != "" ]; then
         case "$energy" in
             "hyperfocus") ENERGY_SYMBOL="⚡⚡" ;;  # Double lightning for hyperfocus
             "high") ENERGY_SYMBOL="⚡↑" ;;
@@ -201,7 +202,8 @@ if [ $? -eq 0 ] && [ -n "$adhd_health" ]; then
     fi
 
     # Extract attention state - eye + state indicator
-    attention=$(echo "$adhd_health" | jq -r '.current_state.attention_states.current_user // ""' 2>/dev/null)
+    # Try current_user first, then fall back to first user
+    attention=$(echo "$adhd_health" | jq -r '.current_state.attention_states.current_user // .current_state.attention_states | to_entries[0].value // ""' 2>/dev/null)
     if [ -n "$attention" ] && [ "$attention" != "null" ]; then
         case "$attention" in
             "hyperfocused") ATTENTION_SYMBOL="👁️✨" ;;  # Eye with sparkles for hyperfocus
