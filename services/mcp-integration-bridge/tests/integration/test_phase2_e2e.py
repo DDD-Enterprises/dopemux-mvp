@@ -15,6 +15,7 @@ Tests:
 
 import asyncio
 import pytest
+import pytest_asyncio
 import time
 from datetime import datetime
 from typing import List, Dict, Any
@@ -39,7 +40,7 @@ from integrations.task_orchestrator import TaskOrchestratorIntegrationManager
 class TestPhase2EndToEnd:
     """End-to-end integration tests for Phase 2"""
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def redis_client(self):
         """Create real Redis client for integration testing"""
         client = redis.from_url(
@@ -57,7 +58,7 @@ class TestPhase2EndToEnd:
         await client.flushdb()
         await client.aclose()
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def event_bus(self, redis_client):
         """Create EventBus with real Redis"""
         bus = EventBus(
@@ -406,7 +407,7 @@ class TestPhase2EndToEnd:
 class TestPhase2Performance:
     """Performance benchmarks for Phase 2"""
 
-    @pytest.fixture
+    @pytest_asyncio.fixture
     async def event_bus(self):
         """Create EventBus for performance testing"""
         bus = EventBus(
