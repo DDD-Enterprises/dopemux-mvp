@@ -78,7 +78,7 @@ fi
 echo ""
 
 # Step 5: Start Workspace Watcher (automatic workspace switch detection)
-echo "👁️  Step 5/5: Starting Workspace Watcher..."
+echo "👁️  Step 5/6: Starting Workspace Watcher..."
 cd "$PROJECT_ROOT/services/workspace-watcher"
 
 # Kill any existing instances
@@ -97,6 +97,29 @@ if ps -p $WATCHER_PID >/dev/null 2>&1; then
     echo "✅ Workspace Watcher started (PID: $WATCHER_PID, polling every 5s)"
 else
     echo "⚠️  Workspace Watcher failed to start - check /tmp/workspace_watcher.log"
+fi
+echo ""
+
+# Step 6: Start ADHD Notifier (break reminders + hyperfocus alerts)
+echo "🔔 Step 6/6: Starting ADHD Notifier..."
+cd "$PROJECT_ROOT/services/adhd-notifier"
+
+# Kill any existing instances
+pkill -9 -f "adhd-notifier/main.py" 2>/dev/null || true
+sleep 1
+
+# Start ADHD Notifier (60s check interval)
+nohup python main.py --interval 60 > /tmp/adhd_notifier.log 2>&1 &
+NOTIFIER_PID=$!
+
+# Wait briefly for startup
+sleep 2
+
+# Verify it started
+if ps -p $NOTIFIER_PID >/dev/null 2>&1; then
+    echo "✅ ADHD Notifier started (PID: $NOTIFIER_PID, checking every 60s)"
+else
+    echo "⚠️  ADHD Notifier failed to start - check /tmp/adhd_notifier.log"
 fi
 echo ""
 
