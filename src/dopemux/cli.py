@@ -576,7 +576,6 @@ def start(
     if litellm_enabled:
         # Require at least one upstream provider key for LiteLLM to be useful
         provider_keys = {
-            "OPENROUTER_API_KEY": os.environ.get("OPENROUTER_API_KEY"),
             "XAI_API_KEY": os.environ.get("XAI_API_KEY"),
             "OPENAI_API_KEY": os.environ.get("OPENAI_API_KEY"),
         }
@@ -585,7 +584,7 @@ def start(
                 "[red]❌ No upstream API key set for LiteLLM.[/red]"
             )
             console.print(
-                "[dim]Set OPENROUTER_API_KEY (preferred), XAI_API_KEY, or OPENAI_API_KEY before using --litellm[/dim]"
+                "[dim]Set XAI_API_KEY or OPENAI_API_KEY before using --litellm[/dim]"
             )
             sys.exit(1)
 
@@ -632,7 +631,7 @@ def start(
         if litellm_proxy_info:
             provider_url = f"{litellm_proxy_info.base_url}/v1/chat/completions"
             provider_name = provider_name or "litellm"
-            if os.environ.get("OPENROUTER_API_KEY"):
+            if os.environ.get("XAI_API_KEY"):
                 provider_models.append("xai-grok-code-fast")
             if os.environ.get("OPENAI_API_KEY"):
                 provider_models.append("openai-gpt-5")
