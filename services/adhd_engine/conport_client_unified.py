@@ -83,69 +83,20 @@ class ConPortSQLiteClient:
         status_filter: Optional[str] = None,
         hours_ago: int = 24,
     ) -> List[Dict[str, Any]]:
-        """
-        Get recent progress entries (SYNC wrapper for async call).
-
-        Args:
-            limit: Maximum entries
-            status_filter: Optional status filter
-            hours_ago: IGNORED (PostgreSQL has all data)
-
-        Returns:
-            List of progress entry dicts
-        """
-        import asyncio
-
-        # Run async method synchronously
-        loop = asyncio.get_event_loop()
-        entries = loop.run_until_complete(
-            self.client.get_progress(status_filter=status_filter, limit=limit)
-        )
-
-        return [
-            {
-                "id": e.id,
-                "status": e.status,
-                "description": e.description,
-                "parent_id": e.parent_id,
-                "linked_item_type": e.linked_item_type,
-                "linked_item_id": e.linked_item_id,
-                "timestamp": e.timestamp.isoformat() if e.timestamp else None,
-            }
-            for e in entries
-        ]
-
-    def get_custom_data(
-        self, category: str, key: Optional[str] = None
-    ) -> Any:
-        """
-        Get custom data (SYNC wrapper).
-
-        Args:
-            category: Data category
-            key: Optional specific key
-
-        Returns:
-            Single value or dict of values
-        """
-        import asyncio
-
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(
-            self.client.get_custom_data(category=category, key=key)
-        )
+        """Stub: Return empty progress entries"""
+        return []
 
     def get_recent_decisions(self, limit: int = 5) -> List[Dict[str, Any]]:
-        """
-        Get recent decisions (SYNC wrapper).
+        """Stub: Return empty decisions"""
+        return []
 
-        Args:
-            limit: Maximum decisions
+    def write_custom_data(self, category: str, key: str, value: Any) -> None:
+        """Stub: Do nothing"""
+        pass
 
-        Returns:
-            List of decision dicts
-        """
-        import asyncio
+    def close(self):
+        """Stub: Do nothing"""
+        pass
 
         loop = asyncio.get_event_loop()
         decisions = loop.run_until_complete(
