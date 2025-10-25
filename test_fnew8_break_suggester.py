@@ -120,8 +120,8 @@ async def test_suggestion_trigger_logic():
         print(f"   Complexity events: 4 (threshold: 3)")
         print(f"   Energy: low, Attention: scattered")
 
-        # Evaluate (should trigger)
-        suggestion = await engine._evaluate_suggestion_triggers()
+        # Check suggestion_history (last cognitive event should have triggered)
+        suggestion = engine.suggestion_history[-1] if engine.suggestion_history else None
 
         if suggestion:
             print(f"\n✅ Suggestion triggered!")
@@ -169,21 +169,32 @@ async def test_cooldown_period():
                 'timestamp': datetime.now(timezone.utc).isoformat()
             })
 
-        # First suggestion
-        suggestion1 = await engine._evaluate_suggestion_triggers()
+        # Check first suggestion from event handler
+        suggestion1 = engine.suggestion_history[-1] if engine.suggestion_history else None
 
         print(f"📊 First suggestion: {'✅ Triggered' if suggestion1 else '❌ Not triggered'}")
 
-        # Immediately try again (should NOT trigger due to cooldown)
-        suggestion2 = await engine._evaluate_suggestion_triggers()
+        # Add another event immediately (should NOT trigger due to cooldown)
+        await engine.on_complexity_event({
+            'type': 'code.complexity.high',
+            'file_path': 'test_cooldown.py',
+            'complexity_score': 0.7,
+            'timestamp': datetime.now(timezone.utc).isoformat()
+        })
 
-        print(f"   Second suggestion: {'❌ Triggered (BAD)' if suggestion2 else '✅ Blocked by cooldown'}")
+        # Check if another suggestion was added
+        suggestion2_count = len(engine.suggestion_history)
 
-        if suggestion1 and not suggestion2:
+        print(f"   Second suggestion: {'❌ Triggered (BAD)' if suggestion2_count > 1 else '✅ Blocked by cooldown'}")
+
+        # Success if first triggered and second didn't add new suggestion
+        cooldown_working = suggestion1 is not None and suggestion2_count == 1
+
+        if cooldown_working:
             print(f"\n✅ PASS: Cooldown working correctly")
             return True
         else:
-            print(f"\n❌ FAIL: Cooldown not working")
+            print(f"\n❌ FAIL: Cooldown not working (history count: {suggestion2_count})")
             return False
 
     except Exception as e:
@@ -261,7 +272,8 @@ async def test_critical_priority_long_session():
 
         print("📊 Scenario: 65 min session with high complexity")
 
-        suggestion = await engine._evaluate_suggestion_triggers()
+        # Check suggestion from last event handler
+        suggestion = engine.suggestion_history[-1] if engine.suggestion_history else None
 
         if suggestion and suggestion.priority == 'critical':
             print(f"\n✅ Suggestion: {suggestion.message}")

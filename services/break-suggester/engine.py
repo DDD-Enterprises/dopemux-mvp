@@ -118,8 +118,11 @@ class BreakSuggestionEngine:
 
         logger.debug(f"Complexity event: {event.get('file_path')} ({event.get('complexity_score')})")
 
-        # Check if suggestion needed
-        await self._evaluate_suggestion_triggers()
+        # Check if suggestion needed (returns suggestion if triggered)
+        suggestion = await self._evaluate_suggestion_triggers()
+        if suggestion:
+            logger.info(f"Break suggestion from complexity event: {suggestion.message}")
+        return suggestion
 
     async def on_cognitive_state_change(self, event: Dict):
         """
@@ -144,8 +147,11 @@ class BreakSuggestionEngine:
 
         logger.debug(f"Cognitive change: energy={event.get('energy_level')}, attention={event.get('attention_state')}")
 
-        # Check if suggestion needed
-        await self._evaluate_suggestion_triggers()
+        # Check if suggestion needed (returns suggestion if triggered)
+        suggestion = await self._evaluate_suggestion_triggers()
+        if suggestion:
+            logger.info(f"Break suggestion from cognitive change: {suggestion.message}")
+        return suggestion
 
     async def on_session_start(self, timestamp: Optional[datetime] = None):
         """Mark session start time."""
@@ -272,7 +278,8 @@ class BreakSuggestionEngine:
         # Build message based on triggers
         if complexity_count >= 5:
             triggers.append("very_high_complexity")
-            priority = "high"
+            if priority == "medium":
+                priority = "high"
         elif complexity_count >= 3:
             triggers.append("high_complexity")
 
@@ -282,11 +289,13 @@ class BreakSuggestionEngine:
 
             if energy == 'low':
                 triggers.append("low_energy")
-                priority = "high"
+                if priority != "critical":
+                    priority = "high"
 
             if attention == 'scattered':
                 triggers.append("scattered_attention")
-                priority = "high" if priority != "critical" else "critical"
+                if priority != "critical":
+                    priority = "high"
 
         if session_duration and session_duration > 60:
             triggers.append("long_session")
