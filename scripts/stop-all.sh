@@ -16,6 +16,12 @@ echo "🛑 Stopping Complete Dopemux Stack..."
 echo "=========================================="
 echo ""
 
+# Stop ADHD Notifier (background process)
+echo "🔔 Stopping ADHD Notifier..."
+pkill -9 -f "adhd-notifier/main.py" 2>/dev/null || true
+echo "✅ ADHD Notifier stopped"
+echo ""
+
 # Stop Workspace Watcher (background process)
 echo "👁️  Stopping Workspace Watcher..."
 pkill -9 -f "workspace-watcher/main.py" 2>/dev/null || true
