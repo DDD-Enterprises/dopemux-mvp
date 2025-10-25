@@ -1,19 +1,43 @@
 model_list:
-- model_name: gpt5-mini
+- model_name: xai-grok-code-fast
   litellm_params:
-    model: openai/gpt-5-mini
-    api_key: ${OPENAI_API_KEY}
-- model_name: mistral-l2
-  litellm_params:
-    model: openrouter/mistral/mistral-large-latest
+    model: xai/grok-code-fast-1
+    api_key: os.environ/OPENROUTER_API_KEY
     api_base: https://openrouter.ai/api/v1
-    api_key: ${OPENROUTER_API_KEY}
-    headers:
-      HTTP-Referer: ${OPENROUTER_HTTP_REFERER}
-      X-Title: ${OPENROUTER_X_TITLE}
-server:
-  host: 127.0.0.1
-  port: 7077
-  timeout: 120
+    extra_headers:
+      HTTP-Referer: https://dopemux.local
+      X-Title: Dopemux LiteLLM Proxy
+    max_tokens: 65536
+    rpm: 100
+    tpm: 4000000
+- model_name: openai-gpt-5
+  litellm_params:
+    model: openai/gpt-5
+    api_key: os.environ/OPENAI_API_KEY
+    api_base: https://api.openai.com/v1
+    max_completion_tokens: 32768
+    rpm: 500
+    tpm: 2000000
+litellm_settings:
+  timeout: 90
+  max_retries: 2
+  model_alias_map:
+    claude-sonnet-4.5: xai-grok-code-fast
+    anthropic/claude-3-5-sonnet-latest: xai-grok-code-fast
+    xai/grok-code-fast-1: xai-grok-code-fast
+  fallbacks:
+  - xai-grok-code-fast:
+    - openai-gpt-5
+  - openai-gpt-5:
+    - xai-grok-code-fast
+router_settings:
+  routing_strategy: usage-based-routing-v2
+  enable_pre_call_checks: true
+  allowed_fails: 3
+  cooldown_time: 45
+  num_retries: 3
+  retry_policy:
+    TimeoutErrorRetries: 2
+    RateLimitErrorRetries: 3
 general_settings:
   master_key: HZy6cX-h1t5wPed3XJHRByCK3lde4Pu17zDA5mz-BvM
