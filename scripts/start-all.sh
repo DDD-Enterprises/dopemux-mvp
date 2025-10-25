@@ -127,6 +127,11 @@ echo "=========================================="
 echo "🎉 All Dopemux services started!"
 echo ""
 
+echo "🌐 Optional: Start ADHD Dashboard (Web UI)"
+echo "   cd services/adhd-dashboard && python backend.py"
+echo "   Then visit: http://localhost:8097"
+echo ""
+
 # Show running services
 echo "📊 Running Services:"
 docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | \
@@ -196,6 +201,7 @@ echo "  Integration Bridge: http://localhost:3016/health"
 echo "  Task Orchestrator:  http://localhost:3014/health (stdio MCP)"
 echo "  Activity Capture:   http://localhost:8096/health"
 echo "  ADHD Engine:        http://localhost:8095/health"
+echo "  ADHD Dashboard:     http://localhost:8097 (optional, start manually)"
 echo "  ConPort MCP:        http://localhost:3004"
 echo "  Zen MCP:            http://localhost:3003"
 echo "  Redis UI:           http://localhost:8081"
