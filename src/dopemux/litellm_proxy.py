@@ -203,6 +203,11 @@ class LiteLLMProxyManager:
         if repo_candidate.is_file():
             return repo_candidate
 
+        # Use the default config from the dopemux installation
+        default_config = Path(__file__).parent.parent.parent / "litellm.config.yaml"
+        if default_config.exists():
+            return default_config
+
         return None
 
     def _ensure_master_key(self) -> str:
