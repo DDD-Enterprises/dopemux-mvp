@@ -1,0 +1,125 @@
+# Prometheus Alerting Rules for Dopemux
+# ADHD-Critical Performance Degradation Alerts
+
+groups:
+  - name: adhd_performance
+    interval: 30s
+    rules:
+      # Alert if search latency exceeds ADHD threshold
+      - alert: ADHDSearchLatencyHigh
+        expr: histogram_quantile(0.95, rate(dopemux_adhd_search_latency_seconds_bucket[5m])) > 0.2
+        for: 2m
+        labels:
+          severity: critical
+          component: adhd
+        annotations:
+          summary: "ADHD search latency exceeds 200ms target"
+          description: "P95 search latency is {{ $value }}s (target: <0.2s). ADHD users experiencing delays."
+
+      # Alert if no break suggestions when expected
+      - alert: BreakSuggesterInactive
+        expr: rate(dopemux_adhd_break_suggestions_total[30m]) == 0 AND rate(dopemux_adhd_task_completions_total[30m]) > 0
+        for: 30m
+        labels:
+          severity: warning
+          component: f-new-8
+        annotations:
+          summary: "F-NEW-8 break suggester appears inactive"
+          description: "No break suggestions in 30min despite active task work. Check EventBus consumer."
+
+      # Alert if cognitive load consistently high
+      - alert: SustainedHighCognitiveLoad
+        expr: dopemux_adhd_cognitive_state{metric="cognitive_load"} > 0.7
+        for: 25m
+        labels:
+          severity: warning
+          component: adhd_engine
+        annotations:
+          summary: "User {{ $labels.user_id }} has sustained high cognitive load"
+          description: "Cognitive load >0.7 for 25+ minutes. Consider break suggestion."
+
+  - name: service_health
+    interval: 60s
+    rules:
+      # Alert if any MCP server is down
+      - alert: MCPServerDown
+        expr: up{job="mcp_servers"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: mcp
+        annotations:
+          summary: "MCP server {{ $labels.instance }} is down"
+          description: "{{ $labels.server }} has been unreachable for 1+ minutes."
+
+      # Alert if database connections exhausted
+      - alert: DatabaseConnectionPoolExhausted
+        expr: dopemux_db_connections{pool="conport"} >= 4
+        for: 2m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Database connection pool nearly exhausted"
+          description: "{{ $value }}/5 connections in use. May impact performance."
+
+      # Alert if Redis stream lag is high
+      - alert: EventBusConsumerLag
+        expr: dopemux_eventbus_consumer_lag > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: eventbus
+        annotations:
+          summary: "EventBus consumer {{ $labels.consumer_group }} is lagging"
+          description: "{{ $value }} messages behind. Check consumer health."
+
+  - name: performance_degradation
+    interval: 30s
+    rules:
+      # Alert if overall request latency degrades
+      - alert: RequestLatencyDegraded
+        expr: histogram_quantile(0.95, rate(dopemux_http_request_duration_seconds_bucket[5m])) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "HTTP request P95 latency degraded"
+          description: "{{ $labels.service }}/{{ $labels.endpoint }}: {{ $value }}s (>1s threshold)"
+
+      # Alert if cache hit rate drops
+      - alert: CacheHitRateLow
+        expr: rate(dopemux_cache_operations_total{operation="hit"}[10m]) / (rate(dopemux_cache_operations_total{operation="hit"}[10m]) + rate(dopemux_cache_operations_total{operation="miss"}[10m])) < 0.5
+        for: 10m
+        labels:
+          severity: info
+          component: cache
+        annotations:
+          summary: "Cache hit rate below 50%"
+          description: "{{ $labels.cache_type }} hit rate: {{ $value | humanizePercentage }}. Consider cache tuning."
+
+  - name: adhd_user_experience
+    interval: 60s
+    rules:
+      # Alert if task abandonment rate is high
+      - alert: HighTaskAbandonmentRate
+        expr: rate(dopemux_adhd_task_completions_total{outcome="abandoned"}[1h]) / rate(dopemux_adhd_task_completions_total[1h]) > 0.3
+        for: 1h
+        labels:
+          severity: warning
+          component: adhd_ux
+        annotations:
+          summary: "High task abandonment rate detected"
+          description: "{{ $value | humanizePercentage }} of tasks abandoned in last hour. Check task-energy matching."
+
+      # Alert if energy consistently low
+      - alert: SustainedLowEnergy
+        expr: dopemux_adhd_cognitive_state{metric="energy"} < 0.3
+        for: 60m
+        labels:
+          severity: info
+          component: adhd_state
+        annotations:
+          summary: "User {{ $labels.user_id }} has sustained low energy"
+          description: "Energy <0.3 for 60+ minutes. User may need extended break or end of session."
