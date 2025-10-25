@@ -173,20 +173,27 @@ class SessionIntelligenceCoordinator:
             if not adhd_config:
                 return None
 
-            # Get state using ADHD Engine API (same as dope-context pattern)
-            energy = await adhd_config.get_energy_level(user_id)
-            attention = await adhd_config.get_attention_state(user_id)
+            # Get complete state summary (correct ADHD Engine API)
+            state_summary = await adhd_config.get_current_state_summary(user_id)
 
-            # Get break info
-            # Note: ADHD Engine API may not have minutes_since_break directly
-            # Using placeholder until API contract confirmed
-            minutes_since = None  # TODO: Confirm ADHD Engine API method
+            # Extract relevant fields
+            energy = state_summary.get('energy_level', 'medium')
+            attention = state_summary.get('attention_state', 'focused')
+
+            # Calculate minutes since break (if break info available)
+            # Note: ADHD Engine tracks should_break but not explicit break history yet
+            should_break = state_summary.get('should_break', False)
+            break_reason = state_summary.get('break_reason', '')
+
+            # Estimate minutes since break from should_break flag
+            # If should_break=True, assume 25+ minutes (Pomodoro threshold)
+            minutes_since = 26 if should_break else None
 
             return CognitiveState(
                 user_id=user_id,
                 energy_level=energy,
                 attention_state=attention,
-                last_break_timestamp=None,  # TODO: Get from ADHD Engine
+                last_break_timestamp=None,  # Not tracked by ADHD Engine yet
                 minutes_since_break=minutes_since
             )
 
