@@ -177,28 +177,24 @@ class KGOrchestrator:
 
         print(f"\n[KG Orchestrator] task.started: Task {task_id}")
 
-        # TODO: PERFORMANCE - N+1 Query Problem (Issue from audit 2025-10-16)
-        # Current: Loads decisions one-by-one (10 decisions = 10 queries)
-        # Fix: Add ExplorationQueries.get_multiple_neighborhoods(decision_refs) for batch loading
+        # Performance: Batch load all decision neighborhoods (N+1 optimization)
+        # Single query instead of N separate queries
         # Impact: 10x performance improvement for tasks with multiple decisions
-        # Priority: MEDIUM (not blocking production, but degrades performance)
+        try:
+            contexts = self.exploration.get_multiple_neighborhoods(
+                workspace_id=os.getenv("WORKSPACE_ID", "/Users/hue/code/dopemux-mvp"),
+                decision_ids=decision_refs,
+                max_hops=2,
+                limit_per_hop=5  # Smaller for caching
+            )
 
-        # Background: Pre-load decision contexts
-        contexts = []
-        for decision_id in decision_refs:
-            try:
-                context = self.exploration.get_decision_neighborhood(
-                    decision_id,
-                    max_hops=2,
-                    limit_per_hop=5  # Smaller for caching
-                )
-                contexts.append(context)
+            print(f"   → Batch loaded {len(contexts)} decision contexts in single query")
+            for context in contexts:
+                print(f"      Decision #{context.center.id}: 1-hop={len(context.hop_1_neighbors)}, 2-hop={len(context.hop_2_neighbors)}")
 
-                print(f"   → Loaded context for decision #{decision_id}")
-                print(f"      1-hop: {len(context.hop_1_neighbors)}, 2-hop: {len(context.hop_2_neighbors)}")
-
-            except Exception as e:
-                print(f"   ⚠️  Context loading failed for #{decision_id}: {e}")
+        except Exception as e:
+            print(f"   ⚠️  Batch context loading failed: {e}")
+            contexts = []
 
         if self.redis and contexts:
             # Cache for Serena to use
