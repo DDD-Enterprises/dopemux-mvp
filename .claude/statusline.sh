@@ -89,6 +89,9 @@ else
     context_pct=0
 fi
 
+# Check for 200K+ token warning (Claude Code v1.0.88+)
+exceeds_200k=$(echo "$input" | jq -r '.exceeds_200k_tokens // false' 2>/dev/null)
+
 # Directory and git
 dir=$(basename "$current_dir")
 [ -z "$dir" ] && dir="~"
@@ -270,6 +273,11 @@ elif [ "$context_pct" -lt 80 ]; then
     printf " \033[33m%dK/%dK (%d%%)\033[0m" "$used_k" "$total_k" "$context_pct"
 else
     printf " \033[31m%dK/%dK (%d%%)\033[0m" "$used_k" "$total_k" "$context_pct"
+fi
+
+# Warning if exceeds 200K (Claude Code v1.0.88+)
+if [ "$exceeds_200k" = "true" ]; then
+    printf " \033[31m⚠️>200K\033[0m"
 fi
 
 # Model
