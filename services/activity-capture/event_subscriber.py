@@ -166,25 +166,33 @@ class EventSubscriber:
         Args:
             event_data: Event payload with from_workspace, to_workspace, etc.
         """
+        logger.info(f"🎯 _handle_workspace_switched called with data: {event_data}")
+
         from_workspace = event_data.get("from_workspace", "")
         to_workspace = event_data.get("to_workspace", "")
         switch_type = event_data.get("switch_type", "manual")
+
+        logger.info(f"🔍 Parsed: from={from_workspace}, to={to_workspace}, type={switch_type}")
 
         self.workspace_switches += 1
 
         # Detect if switching TO dopemux workspace (start session)
         if "dopemux" in to_workspace.lower():
-            logger.info(f"📍 Session started: {to_workspace}")
+            logger.info(f"📍 Detected switch TO dopemux: {to_workspace}")
+            logger.info(f"📍 Starting session...")
             await self.activity_tracker.start_session()
+            logger.info(f"📍 Session start completed")
 
         # Detect if switching FROM dopemux workspace (end session, log activity)
         elif "dopemux" in from_workspace.lower():
-            logger.info(f"📤 Session ended: {from_workspace} → {to_workspace}")
+            logger.info(f"📤 Detected switch FROM dopemux: {from_workspace} → {to_workspace}")
+            logger.info(f"📤 Ending session...")
             await self.activity_tracker.end_session(interruption=True)
+            logger.info(f"📤 Session end completed")
 
         # Switching between other workspaces (count as interruption if session active)
         else:
-            logger.debug(f"🔄 Workspace switch: {from_workspace} → {to_workspace}")
+            logger.info(f"🔄 Other workspace switch: {from_workspace} → {to_workspace}")
             await self.activity_tracker.record_interruption()
 
     async def stop(self):
