@@ -107,19 +107,25 @@ class ClaudeCodeRouterManager:
         router_config.setdefault("longContextThreshold", 60_000)
 
         overrides = router_overrides or {}
-        primary_model = provider_models[0]
-        background_model = provider_models[1] if len(provider_models) > 1 else primary_model
-
+        
+        # Set up intelligent model routing based on Anthropic models
+        # Primary: Use Claude models with proper fallbacks through LiteLLM
         router_config["default"] = overrides.get(
-            "default", f"{provider_name},{primary_model}"
+            "default", "litellm,anthropic-claude-3-5-sonnet-20241022"
         )
         router_config["background"] = overrides.get(
-            "background", f"{provider_name},{background_model}"
+            "background", "litellm,anthropic-claude-3-haiku-20240307"
         )
-        router_config["think"] = overrides.get("think", router_config["default"])
+        router_config["think"] = overrides.get(
+            "think", "litellm,anthropic-claude-3-opus-20240229"
+        )
         router_config.setdefault("longContext", router_config["default"])
+        
+        # Web search uses faster models
         if "webSearch" in overrides:
             router_config["webSearch"] = overrides["webSearch"]
+        else:
+            router_config["webSearch"] = "litellm,anthropic-claude-3-haiku-20240307"
 
         config["Router"] = router_config
 
@@ -138,11 +144,15 @@ class ClaudeCodeRouterManager:
         elif provider_key and not provider_key_env_var:
             self._process_env_overrides.setdefault("CCR_UPSTREAM_API_KEY", provider_key)
         
-        # Also pass through the actual provider keys
+        # Pass through all required API keys for LiteLLM fallbacks
+        if os.environ.get("ANTHROPIC_API_KEY"):
+            self._process_env_overrides["ANTHROPIC_API_KEY"] = os.environ["ANTHROPIC_API_KEY"]
         if os.environ.get("XAI_API_KEY"):
             self._process_env_overrides["XAI_API_KEY"] = os.environ["XAI_API_KEY"]
         if os.environ.get("OPENAI_API_KEY"):
             self._process_env_overrides["OPENAI_API_KEY"] = os.environ["OPENAI_API_KEY"]
+        if os.environ.get("OPENROUTER_API_KEY"):
+            self._process_env_overrides["OPENROUTER_API_KEY"] = os.environ["OPENROUTER_API_KEY"]
 
         self._api_key = api_key
         return self.config_path
