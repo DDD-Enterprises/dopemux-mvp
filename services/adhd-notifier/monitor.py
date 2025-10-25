@@ -152,13 +152,16 @@ class ADHDMonitor:
 
         logger.info(f"Break recommended: {duration_minutes} min session")
 
-        # Send notification
+        # Send notification + voice
         urgency = "urgent" if duration_minutes >= 45 else "normal"
         success = self.notifier.send_break_reminder(duration_minutes, urgency)
 
         if success:
             self.break_notifications_sent += 1
             self.last_break_notification = time.time()
+
+            # Also speak the reminder (more effective for ADHD)
+            self.notifier.speak_break_reminder(duration_minutes, urgency)
 
     async def _check_hyperfocus(self, duration_minutes: int):
         """
@@ -179,12 +182,15 @@ class ADHDMonitor:
 
         logger.warning(f"HYPERFOCUS DETECTED: {duration_minutes} min session!")
 
-        # Send urgent notification
+        # Send urgent notification + voice
         success = self.notifier.send_hyperfocus_alert(duration_minutes)
 
         if success:
             self.hyperfocus_notifications_sent += 1
             self.last_hyperfocus_notification = time.time()
+
+            # Also speak the alert (critical for hyperfocus interruption)
+            self.notifier.speak_hyperfocus_alert(duration_minutes)
 
     def stop(self):
         """Stop monitoring"""
