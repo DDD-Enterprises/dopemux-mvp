@@ -100,8 +100,30 @@ else
 fi
 echo ""
 
-# Step 6: Start ADHD Notifier (break reminders + hyperfocus alerts)
-echo "🔔 Step 6/6: Starting ADHD Notifier..."
+# Step 6: Start F-NEW-8 Break Suggester (intelligent break detection)
+echo "🎯 Step 6/7: Starting Break Suggester (F-NEW-8)..."
+cd "$PROJECT_ROOT/services/break-suggester"
+
+# Kill any existing instances
+pkill -9 -f "break-suggester" 2>/dev/null || true
+sleep 1
+
+# Start Break Suggester
+nohup python start_service.py hue > /tmp/break_suggester.log 2>&1 &
+SUGGESTER_PID=$!
+
+# Wait briefly
+sleep 2
+
+if ps -p $SUGGESTER_PID >/dev/null 2>&1; then
+    echo "✅ Break Suggester started (PID: $SUGGESTER_PID)"
+else
+    echo "⚠️  Break Suggester failed - check /tmp/break_suggester.log"
+fi
+echo ""
+
+# Step 7: Start ADHD Notifier (break reminders + hyperfocus alerts + F-NEW-8 integration)
+echo "🔔 Step 7/7: Starting ADHD Notifier..."
 cd "$PROJECT_ROOT/services/adhd-notifier"
 
 # Kill any existing instances

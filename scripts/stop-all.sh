@@ -16,6 +16,12 @@ echo "🛑 Stopping Complete Dopemux Stack..."
 echo "=========================================="
 echo ""
 
+# Stop F-NEW-8 Break Suggester
+echo "🎯 Stopping Break Suggester..."
+pkill -9 -f "break-suggester" 2>/dev/null || true
+echo "✅ Break Suggester stopped"
+echo ""
+
 # Stop ADHD Notifier (background process)
 echo "🔔 Stopping ADHD Notifier..."
 pkill -9 -f "adhd-notifier/main.py" 2>/dev/null || true
