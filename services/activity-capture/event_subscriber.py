@@ -89,23 +89,16 @@ class EventSubscriber:
 
         # Start subscriber task
         self.running = True
-        logger.warning(f"🚀 About to create background task...")
         self.subscriber_task = asyncio.create_task(self._subscribe_loop())
-        logger.warning(f"✅ Background task created: {self.subscriber_task}")
         logger.info(f"▶️  Started event subscriber: {self.stream_name}")
-
-        # Give task a moment to start
-        await asyncio.sleep(0.1)
-        logger.warning(f"🏃 Task should be running now...")
 
     async def _subscribe_loop(self):
         """Main event subscription loop"""
-        logger.warning(f"🔄 Subscribe loop started! stream={self.stream_name}, group={self.consumer_group}")
+        logger.debug(f"Subscribe loop started: stream={self.stream_name}, group={self.consumer_group}")
 
         while self.running:
             try:
                 # Read events from stream
-                logger.warning(f"📡 Calling xreadgroup...")
                 events = await self.redis.xreadgroup(
                     groupname=self.consumer_group,
                     consumername=self.consumer_name,
@@ -114,14 +107,10 @@ class EventSubscriber:
                     block=1000  # Block for 1 second
                 )
 
-                if events:
-                    logger.warning(f"📬 Received {len(events)} stream(s) with events")
-
                 # Process events
                 for stream, messages in events:
-                    logger.warning(f"📨 Stream {stream} has {len(messages)} message(s)")
+                    logger.debug(f"Received {len(messages)} message(s) from stream {stream}")
                     for message_id, data in messages:
-                        logger.warning(f"📧 Processing message {message_id}")
                         await self._process_event(message_id, data)
 
                         # Acknowledge message
