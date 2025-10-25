@@ -308,7 +308,8 @@ async def start_ddg_ingestion(event_bus: EventBus, db_manager: DatabaseManager):
             source = event.source
 
             from sqlalchemy import select
-            async with db_manager.get_session() as session:
+            session_ctx = await db_manager.get_session()
+            async with session_ctx as session:
                 if etype == "decision_logged":
                     res = await session.execute(select(DdgDecision).where(DdgDecision.id == data.get("decision_id")))
                     row = res.scalar_one_or_none()
@@ -1508,7 +1509,8 @@ class EmbeddingManager:
         if not vec or not decision_id:
             return
         # store in Postgres mirror
-        async with db_manager.get_session() as session:
+        session_ctx = await db_manager.get_session()
+        async with session_ctx as session:
             from sqlalchemy import select
             res = await session.execute(select(DdgEmbedding).where(DdgEmbedding.id == decision_id))
             row = res.scalar_one_or_none()
@@ -1855,7 +1857,8 @@ async def get_event_history(stream: str = "dopemux:events", count: int = 100):
 async def ddg_recent_decisions(workspace_id: Optional[str] = None, limit: int = 20):
     try:
         from sqlalchemy import select, desc
-        async with db_manager.get_session() as session:
+        session_ctx = await db_manager.get_session()
+        async with session_ctx as session:
             q = select(DdgDecision).order_by(desc(DdgDecision.updated_at)).limit(min(limit, 100))
             if workspace_id:
                 q = q.where(DdgDecision.workspace_id == workspace_id)
@@ -1884,7 +1887,8 @@ async def ddg_recent_decisions(workspace_id: Optional[str] = None, limit: int = 
 async def ddg_search_decisions(q: str, workspace_id: Optional[str] = None, limit: int = 20):
     try:
         from sqlalchemy import select
-        async with db_manager.get_session() as session:
+        session_ctx = await db_manager.get_session()
+        async with session_ctx as session:
             like = f"%{q}%"
             # Simple ILIKE search on summary
             stmt = select(DdgDecision).where(DdgDecision.summary.ilike(like)).limit(min(limit, 50))
@@ -1927,7 +1931,8 @@ async def ddg_link_similar(workspace_id: Optional[str] = None, min_overlap: int 
         else:
             local_age = globals().get('age_mgr')
         from sqlalchemy import select, desc
-        async with db_manager.get_session() as session:
+        session_ctx = await db_manager.get_session()
+        async with session_ctx as session:
             q = select(DdgDecision).order_by(desc(DdgDecision.updated_at)).limit(min(limit, 500))
             if workspace_id:
                 q = q.where(DdgDecision.workspace_id == workspace_id)
@@ -1974,7 +1979,8 @@ async def ddg_instance_diff(workspace_id: str, a: str, b: str, kind: str = "deci
     """
     try:
         from sqlalchemy import select
-        async with db_manager.get_session() as session:
+        session_ctx = await db_manager.get_session()
+        async with session_ctx as session:
             if kind == "decisions":
                 sel = select(DdgDecision.id).where(DdgDecision.workspace_id == workspace_id)
             else:
@@ -2004,7 +2010,8 @@ async def ddg_related_decisions(decision_id: str, k: int = 10):
     try:
         from sqlalchemy import select
         # get target embedding
-        async with db_manager.get_session() as session:
+        session_ctx = await db_manager.get_session()
+        async with session_ctx as session:
             res = await session.execute(select(DdgEmbedding).where(DdgEmbedding.id == decision_id))
             target = res.scalar_one_or_none()
             if not target:
@@ -2019,7 +2026,8 @@ async def ddg_related_decisions(decision_id: str, k: int = 10):
                     # Fetch summaries for rerank
                     cand_ids = [hid for hid, _ in hits]
                     from sqlalchemy import select
-                    async with db_manager.get_session() as session:
+                    session_ctx = await db_manager.get_session()
+                    async with session_ctx as session:
                         res = await session.execute(select(DdgDecision).where(DdgDecision.id.in_(cand_ids)))
                         rows = res.scalars().all()
                         id_to_sum = {r.id: r.summary for r in rows}
@@ -2035,7 +2043,8 @@ async def ddg_related_decisions(decision_id: str, k: int = 10):
         except Exception:
             pass
         # Fallback: cosine in Postgres mirror
-        async with db_manager.get_session() as session:
+        session_ctx = await db_manager.get_session()
+        async with session_ctx as session:
             res2 = await session.execute(select(DdgEmbedding).where(DdgEmbedding.id != decision_id))
             others = res2.scalars().all()
         import math
@@ -2075,7 +2084,8 @@ async def ddg_related_text(q: str, workspace_id: Optional[str] = None, k: int = 
 
         # Fetch summaries for rerank
         from sqlalchemy import select
-        async with db_manager.get_session() as session:
+        session_ctx = await db_manager.get_session()
+        async with session_ctx as session:
             res = await session.execute(select(DdgDecision).where(DdgDecision.id.in_(cand_ids)))
             rows = res.scalars().all()
             id_to_sum = {r.id: r.summary for r in rows}
