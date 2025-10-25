@@ -51,7 +51,7 @@ echo "✅ Task Orchestrator started (port 3014)"
 echo ""
 
 # Step 4: Start ADHD Engine (background process - Docker version has dependency issues)
-echo "🧠 Step 4/4: Starting ADHD Engine..."
+echo "🧠 Step 4/5: Starting ADHD Engine..."
 cd "$PROJECT_ROOT/services/adhd_engine"
 
 # Kill any existing instances
@@ -74,6 +74,29 @@ if lsof -i :8095 2>/dev/null | grep -q LISTEN; then
     "$PROJECT_ROOT/scripts/init-adhd-profile.sh"
 else
     echo "⚠️  ADHD Engine failed to start - check /tmp/adhd_engine.log"
+fi
+echo ""
+
+# Step 5: Start Workspace Watcher (automatic workspace switch detection)
+echo "👁️  Step 5/5: Starting Workspace Watcher..."
+cd "$PROJECT_ROOT/services/workspace-watcher"
+
+# Kill any existing instances
+pkill -9 -f "workspace-watcher/main.py" 2>/dev/null || true
+sleep 1
+
+# Start Workspace Watcher (5s poll interval)
+nohup python main.py --interval 5 > /tmp/workspace_watcher.log 2>&1 &
+WATCHER_PID=$!
+
+# Wait briefly for startup
+sleep 2
+
+# Verify it started
+if ps -p $WATCHER_PID >/dev/null 2>&1; then
+    echo "✅ Workspace Watcher started (PID: $WATCHER_PID, polling every 5s)"
+else
+    echo "⚠️  Workspace Watcher failed to start - check /tmp/workspace_watcher.log"
 fi
 echo ""
 
