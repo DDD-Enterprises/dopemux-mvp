@@ -63,12 +63,69 @@ class ADHDMonitor:
         self.break_notifications_sent = 0
         self.hyperfocus_notifications_sent = 0
 
+    async def subscribe_to_break_suggestions(self):
+        """
+        Subscribe to break.suggestion events from F-NEW-8.
+
+        Integrates intelligent break detection with notification delivery.
+        """
+        try:
+            import sys
+            from pathlib import Path
+            bridge_path = Path(__file__).parent.parent.parent / "services" / "mcp-integration-bridge"
+            if str(bridge_path) not in sys.path:
+                sys.path.insert(0, str(bridge_path))
+
+            from event_bus import EventBus
+
+            event_bus = EventBus(redis_url="redis://localhost:6379")
+            await event_bus.initialize()
+
+            logger.info("📡 Subscribed to break.suggestion events from F-NEW-8")
+
+            # Subscribe to break suggestions
+            async for message_id, event in event_bus.subscribe(
+                stream="dopemux:events",
+                consumer_group="adhd-notifier-breaks",
+                consumer_name="adhd-notifier-1"
+            ):
+                if event.type == "break.suggestion":
+                    await self._handle_break_suggestion(event.data)
+
+        except Exception as e:
+            logger.error(f"Break suggestion subscription failed: {e}")
+
+    async def _handle_break_suggestion(self, event_data: dict):
+        """
+        Handle intelligent break suggestion from F-NEW-8.
+
+        Args:
+            event_data: Event payload with priority, message, duration
+        """
+        priority = event_data.get("priority", "medium")
+        message = event_data.get("message", "Time for a break")
+        duration = event_data.get("suggested_duration", 5)
+
+        logger.info(f"📥 Received break suggestion: {priority} - {message[:50]}")
+
+        # Map F-NEW-8 priority to notification urgency
+        urgency = "urgent" if priority in ["critical", "high"] else "normal"
+
+        # Send notification + voice
+        self.notifier.send_break_reminder(duration, urgency)
+        self.notifier.speak_break_reminder(duration, urgency)
+
+        logger.info(f"✅ Break suggestion delivered via notification + voice")
+
     async def start_monitoring(self):
-        """Start monitoring loop"""
+        """Start monitoring loop + event subscription"""
         self.running = True
         logger.info("ADHD monitor started")
         logger.info(f"Checking every {self.check_interval}s for break/hyperfocus")
         logger.info("")
+
+        # Start F-NEW-8 subscription in background
+        asyncio.create_task(self.subscribe_to_break_suggestions())
 
         while self.running:
             try:

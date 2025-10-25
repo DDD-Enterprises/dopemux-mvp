@@ -71,14 +71,16 @@ class BreakSuggestionEngine:
     - Combination of above indicates burnout risk
     """
 
-    def __init__(self, user_id: str = "default"):
+    def __init__(self, user_id: str = "default", event_bus = None):
         """
         Initialize break suggestion engine.
 
         Args:
             user_id: User identifier for personalization
+            event_bus: Optional EventBus for emitting break suggestions
         """
         self.user_id = user_id
+        self.event_bus = event_bus
         self.cognitive_window = CognitiveLoadWindow()
 
         # Thresholds (configurable, ADHD-optimized)
@@ -94,6 +96,9 @@ class BreakSuggestionEngine:
         # ADHD personalization
         self.gentle_mode = True  # Use gentle language
         self.celebration_mode = True  # Celebrate break adherence
+
+        # Metrics
+        self.suggestions_emitted = 0
 
     async def on_complexity_event(self, event: Dict):
         """
