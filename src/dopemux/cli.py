@@ -50,6 +50,7 @@ from .litellm_proxy import LiteLLMProxyError, LiteLLMProxyManager
 from .profile_models import ProfileValidationError
 from .profile_parser import ProfileParser
 from .protection_interceptor import check_and_protect_main, consume_last_created_worktree
+from .project_init import init_project
 import subprocess
 from subprocess import CalledProcessError
 import yaml
@@ -96,10 +97,15 @@ def cli(ctx, config: Optional[str], verbose: bool):
 
 
 @cli.command()
+@click.argument(
+    "directory",
+    type=click.Path(path_type=Path, file_okay=False, dir_okay=True),
+    required=False,
+)
 @click.option("--profile", "-p", help="Profile to use (auto-detects if not specified)")
 @click.option("--force", "-f", is_flag=True, help="Overwrite existing .dopemux/ directory")
 @click.pass_context
-def init(ctx, profile: Optional[str], force: bool):
+def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool):
     """
     🚀 Initialize dopemux in current project
 
@@ -111,13 +117,22 @@ def init(ctx, profile: Optional[str], force: bool):
         dopemux init                    # Auto-detect and prompt
         dopemux init -p python-ml       # Use specific profile
         dopemux init --force            # Reinitialize existing project
+        dopemux init ../project-2       # Initialize specific directory
     """
-    from .project_init import init_project
+    workspace = (directory or Path.cwd()).expanduser().resolve()
 
-    workspace = Path.cwd().resolve()
+    if not workspace.exists():
+        console.print(f"[red]Directory does not exist: {workspace}[/red]")
+        sys.exit(1)
+
+    if not workspace.is_dir():
+        console.print(f"[red]Path is not a directory: {workspace}[/red]")
+        sys.exit(1)
+
     success = init_project(workspace, profile, force)
 
     if not success:
+        console.print("[yellow]Initialization cancelled.[/yellow]")
         sys.exit(1)
 
     # Install git hook for automatic ConPort wiring
