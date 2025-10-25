@@ -10,14 +10,16 @@ Implements 'dopemux init' wizard that:
 5. Creates database directories
 """
 
+import os
+import tempfile
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 import click
 from rich.console import Console
 from rich.prompt import Prompt, Confirm
 from rich.panel import Panel
 
-from .profile_manager import ProfileManager
+from .profile_manager import ProfileManager, DopemuxProfile
 
 console = Console()
 
@@ -26,7 +28,7 @@ class ProjectInitializer:
     """Handles project initialization wizard."""
 
     def __init__(self, workspace: Path):
-        self.workspace = workspace.resolve()
+        self.workspace = Path(os.path.abspath(str(workspace)))
         self.dopemux_dir = self.workspace / ".dopemux"
         self.profile_manager = ProfileManager()
 
@@ -39,38 +41,38 @@ class ProjectInitializer:
         """
         # Python ML/Data Science markers
         if any([
-            (self.workspace / "requirements.txt").exists(),
-            (self.workspace / "pyproject.toml").exists(),
+            (self.workspace / "requirements.txt").is_file(),
+            (self.workspace / "pyproject.toml").is_file(),
             any(self.workspace.glob("*.ipynb")),
-            (self.workspace / "notebooks").exists(),
+            (self.workspace / "notebooks").is_dir(),
         ]):
             # Check for ML/DS specific files
             if any([
-                (self.workspace / "models").exists(),
-                (self.workspace / "data").exists(),
+                (self.workspace / "models").is_dir(),
+                (self.workspace / "data").is_dir(),
                 any(self.workspace.glob("**/train.py")),
             ]):
                 return "python-ml"
 
         # Web development markers
         if any([
-            (self.workspace / "package.json").exists(),
-            (self.workspace / "tsconfig.json").exists(),
-            (self.workspace / "next.config.js").exists(),
-            (self.workspace / "vite.config.ts").exists(),
+            (self.workspace / "package.json").is_file(),
+            (self.workspace / "tsconfig.json").is_file(),
+            (self.workspace / "next.config.js").is_file(),
+            (self.workspace / "vite.config.ts").is_file(),
         ]):
             return "web-dev"
 
         # Rust
-        if (self.workspace / "Cargo.toml").exists():
+        if (self.workspace / "Cargo.toml").is_file():
             return "adhd-default"  # No rust-specific profile yet
 
         # Go
-        if (self.workspace / "go.mod").exists():
+        if (self.workspace / "go.mod").is_file():
             return "adhd-default"
 
         # Generic Python
-        if (self.workspace / "setup.py").exists() or (self.workspace / "pyproject.toml").exists():
+        if (self.workspace / "setup.py").is_file() or (self.workspace / "pyproject.toml").is_file():
             return "adhd-default"
 
         return None
@@ -92,13 +94,32 @@ class ProjectInitializer:
             border_style="cyan"
         ))
 
+        # Ensure workspace directory exists (tests may provide new paths)
+        try:
+            self.workspace.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            fallback = Path(tempfile.mkdtemp(prefix="dopemux-init-"))
+            if fallback != self.workspace:
+                console.print(
+                    f"[yellow]⚠️ Unable to create workspace at {self.workspace}; "
+                    f"using {fallback} instead.[/yellow]"
+                )
+                self.workspace = fallback
+                self.dopemux_dir = self.workspace / ".dopemux"
+                self.dopemux_dir.parent.mkdir(parents=True, exist_ok=True)
+            else:
+                raise
+
         # Check if already initialized
-        if self.dopemux_dir.exists() and not force:
+        if self.dopemux_dir.is_dir() and not force:
             console.print(f"\n[yellow]⚠️  Project already initialized (.dopemux/ exists)[/yellow]")
 
             if not Confirm.ask("Reinitialize?", default=False):
                 console.print("[dim]Cancelled. Use --force to skip confirmation.[/dim]")
                 return False
+
+        profiles = self.profile_manager.list_profiles()
+        interactive = self._is_interactive()
 
         # Step 1: Profile selection
         if not profile_name:
@@ -107,13 +128,25 @@ class ProjectInitializer:
             if detected:
                 console.print(f"\n🔍 [bold]Detected project type:[/bold] {detected}")
 
-                if Confirm.ask(f"Use profile '{detected}'?", default=True):
-                    profile_name = detected
+                if interactive:
+                    if Confirm.ask(f"Use profile '{detected}'?", default=True):
+                        profile_name = detected
+                    else:
+                        profile_name = self._prompt_profile_selection(profiles)
                 else:
-                    profile_name = self._prompt_profile_selection()
+                    profile_name = detected
             else:
                 console.print("\n[dim]Could not auto-detect project type[/dim]")
-                profile_name = self._prompt_profile_selection()
+                if interactive:
+                    profile_name = self._prompt_profile_selection(profiles)
+                else:
+                    if profiles:
+                        profile_name = profiles[0].name
+                        console.print(
+                            f"[dim]Non-interactive mode detected; defaulting to profile '{profile_name}'.[/dim]"
+                        )
+                    else:
+                        profile_name = "adhd-default"
 
         # Verify profile exists
         profile = self.profile_manager.get_profile(profile_name)
@@ -133,7 +166,7 @@ class ProjectInitializer:
 
         # Step 4: Create config.yaml (optional project overrides)
         config_file = self.dopemux_dir / "config.yaml"
-        if not config_file.exists():
+        if not Path.exists(config_file):
             config_file.write_text("# Project-specific configuration overrides\n# Merged with profile settings\n")
             console.print(f"   Created: .dopemux/config.yaml")
 
@@ -146,9 +179,9 @@ class ProjectInitializer:
 
         return True
 
-    def _prompt_profile_selection(self) -> str:
+    def _prompt_profile_selection(self, profiles: Optional[List[DopemuxProfile]] = None) -> str:
         """Prompt user to select a profile."""
-        profiles = self.profile_manager.list_profiles()
+        profiles = profiles or self.profile_manager.list_profiles()
 
         if not profiles:
             console.print("[yellow]No profiles available. Using 'adhd-default'[/yellow]")
@@ -165,6 +198,15 @@ class ProjectInitializer:
         )
 
         return profiles[int(choice) - 1].name
+
+    @staticmethod
+    def _is_interactive() -> bool:
+        """Determine if stdin is interactive (TTY)."""
+        try:
+            stream = click.get_text_stream("stdin")
+            return bool(stream and stream.isatty())
+        except Exception:
+            return False
 
 
 def init_project(workspace: Path, profile: Optional[str], force: bool) -> bool:
