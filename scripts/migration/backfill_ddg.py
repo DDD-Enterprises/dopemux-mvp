@@ -2,37 +2,47 @@
 """
 Backfill DDG with historical decisions from ConPort PostgreSQL.
 
-Publishes decision_logged events to EventBus for each decision.
+Publishes decision_logged events to EventBus (Redis Streams) for each decision.
 DDG ingestion task will consume events and create embeddings.
 """
 
 import asyncio
 import asyncpg
-import httpx
+import redis.asyncio as aioredis
+import json
 from typing import List, Dict, Any
 from datetime import datetime
 import sys
 from pathlib import Path
+import uuid
 
 
 class DDGBackfill:
     """Backfill DDG with historical ConPort decisions"""
 
-    def __init__(self, conport_db_url: str, integration_bridge_url: str):
+    def __init__(self, conport_db_url: str, redis_url: str):
         self.conport_db_url = conport_db_url
-        self.integration_bridge_url = integration_bridge_url
+        self.redis_url = redis_url
         self.conn = None
+        self.redis = None
 
     async def connect(self):
-        """Connect to ConPort PostgreSQL"""
+        """Connect to ConPort PostgreSQL and Redis EventBus"""
         print("🔌 Connecting to ConPort PostgreSQL...")
         self.conn = await asyncpg.connect(self.conport_db_url)
-        print("   ✅ Connected")
+        print("   ✅ PostgreSQL connected")
+
+        print("🔌 Connecting to Redis EventBus...")
+        self.redis = await aioredis.from_url(self.redis_url, decode_responses=False)
+        await self.redis.ping()
+        print("   ✅ Redis connected")
 
     async def close(self):
-        """Close connection"""
+        """Close connections"""
         if self.conn:
             await self.conn.close()
+        if self.redis:
+            await self.redis.close()
 
     async def fetch_all_decisions(self) -> List[Dict[str, Any]]:
         """Fetch all decisions from ConPort PostgreSQL"""
@@ -56,48 +66,50 @@ class DDGBackfill:
         print(f"   ✅ Found {len(decisions)} decisions")
         return decisions
 
-    async def publish_decision_event(
-        self,
-        decision: Dict[str, Any],
-        client: httpx.AsyncClient
-    ) -> bool:
+    async def publish_decision_event(self, decision: Dict[str, Any]) -> bool:
         """
-        Publish decision_logged event to Integration Bridge.
+        Publish decision_logged event directly to Redis EventBus.
 
-        The bridge will forward to EventBus, DDG will ingest.
+        DDG ingestion task subscribes to dopemux:events and will process.
         """
         try:
-            event_data = {
+            # Create event in EventBus format
+            event = {
                 "type": "decision_logged",
                 "source": "conport-backfill",
+                "timestamp": datetime.utcnow().isoformat(),
                 "data": {
                     "decision_id": decision['id'],
                     "workspace_id": decision['workspace_id'],
                     "summary": decision['summary'],
                     "rationale": decision.get('rationale', ''),
+                    "implementation_details": decision.get('alternatives', {}),
                     "tags": decision.get('tags', []),
-                    "timestamp": decision['created_at']
+                    "created_at": decision['created_at']
                 },
                 "workspace_id": decision['workspace_id']
             }
 
-            response = await client.post(
-                f"{self.integration_bridge_url}/events/publish",
-                json=event_data,
-                timeout=10.0
+            # Publish to Redis Stream (dopemux:events)
+            event_json = json.dumps(event)
+            msg_id = await self.redis.xadd(
+                "dopemux:events",
+                {
+                    "event_type": "decision_logged",
+                    "source": "conport-backfill",
+                    "timestamp": event["timestamp"],
+                    "data": json.dumps(event["data"]),
+                    "workspace_id": decision['workspace_id']
+                }
             )
 
-            if response.status_code == 200:
-                return True
-            else:
-                print(f"   ⚠️  Event publish failed (HTTP {response.status_code}): {decision['id']}")
-                return False
+            return True
 
         except Exception as e:
             print(f"   ⚠️  Event publish error: {e}")
             return False
 
-    async def backfill_all_decisions(self, batch_size: int = 10) -> Dict[str, int]:
+    async def backfill_all_decisions(self, batch_size: int = 50) -> Dict[str, int]:
         """
         Backfill all decisions to DDG via EventBus.
 
@@ -113,27 +125,27 @@ class DDGBackfill:
             print("\n⚠️  No decisions to backfill")
             return {"total": 0, "published": 0, "failed": 0}
 
-        print(f"\n📡 Publishing {len(decisions)} events to EventBus...")
-        print(f"   Bridge URL: {self.integration_bridge_url}")
+        print(f"\n📡 Publishing {len(decisions)} events to Redis EventBus...")
+        print(f"   Redis: {self.redis_url}")
+        print(f"   Stream: dopemux:events")
         print(f"   Batch size: {batch_size}")
 
         published = 0
         failed = 0
 
-        async with httpx.AsyncClient() as client:
-            for i, decision in enumerate(decisions, 1):
-                success = await self.publish_decision_event(decision, client)
+        for i, decision in enumerate(decisions, 1):
+            success = await self.publish_decision_event(decision)
 
-                if success:
-                    published += 1
-                else:
-                    failed += 1
+            if success:
+                published += 1
+            else:
+                failed += 1
 
-                # Progress indicator
-                if i % batch_size == 0:
-                    print(f"   Progress: {i}/{len(decisions)} ({published} published, {failed} failed)")
-                    # Small delay to avoid overwhelming the system
-                    await asyncio.sleep(0.1)
+            # Progress indicator
+            if i % batch_size == 0:
+                print(f"   Progress: {i}/{len(decisions)} ({published} published, {failed} failed)")
+                # Small delay to avoid overwhelming the system
+                await asyncio.sleep(0.05)
 
         stats = {
             "total": len(decisions),
@@ -195,14 +207,14 @@ class DDGBackfill:
 
 async def main(
     conport_db_url: str,
-    integration_bridge_url: str,
+    redis_url: str,
     ddg_db_url: str,
-    batch_size: int = 10,
+    batch_size: int = 50,
     verify: bool = True
 ):
     """Main backfill workflow"""
 
-    backfill = DDGBackfill(conport_db_url, integration_bridge_url)
+    backfill = DDGBackfill(conport_db_url, redis_url)
 
     try:
         await backfill.connect()
@@ -229,14 +241,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--conport-db",
         type=str,
-        default="postgresql://dopemux_age:dopemux_age_dev_password@localhost:5455/dopemux_knowledge_graph",
-        help="ConPort PostgreSQL URL (must be migrated first!)"
+        default="postgresql://dopemux_age:dopemux_age_dev_password@localhost:5456/dopemux_knowledge_graph",
+        help="ConPort PostgreSQL URL on port 5456 (must be migrated first!)"
     )
     parser.add_argument(
-        "--bridge-url",
+        "--redis-url",
         type=str,
-        default="http://localhost:3016",
-        help="Integration Bridge URL"
+        default="redis://localhost:6379",
+        help="Redis EventBus URL (dopemux-redis-events)"
     )
     parser.add_argument(
         "--ddg-db",
@@ -261,14 +273,14 @@ if __name__ == "__main__":
     print("🚀 DDG Backfill Script")
     print("=" * 60)
     print(f"ConPort DB:  {args.conport_db}")
-    print(f"Bridge:      {args.bridge_url}")
+    print(f"Redis:       {args.redis_url}")
     print(f"Batch size:  {args.batch_size}")
     print()
 
     try:
         stats = asyncio.run(main(
             conport_db_url=args.conport_db,
-            integration_bridge_url=args.bridge_url,
+            redis_url=args.redis_url,
             ddg_db_url=args.ddg_db,
             batch_size=args.batch_size,
             verify=not args.no_verify

@@ -24,7 +24,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 SQLITE_PATH="$PROJECT_ROOT/context_portal/context.db"
 BACKUP_PATH="$PROJECT_ROOT/backups/context_$(date +%Y%m%d_%H%M%S).db"
 EXPORT_JSON="$SCRIPT_DIR/conport_export.json"
-PG_DB_URL="postgresql://dopemux_age:dopemux_age_dev_password@localhost:5455/dopemux_knowledge_graph"
+PG_DB_URL="postgresql://dopemux_age:dopemux_age_dev_password@localhost:5456/dopemux_knowledge_graph"
 
 echo -e "${BLUE}╔══════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║  ConPort → PostgreSQL AGE Migration + DDG Backfill      ║${NC}"
