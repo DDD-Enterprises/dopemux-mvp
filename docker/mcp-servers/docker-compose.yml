@@ -531,6 +531,41 @@ services:
       - "mcp.priority=high"
       - "mcp.description=Structured reasoning and decision frameworks"
 
+  # Activity Capture - Automatic development activity tracking for ADHD Engine
+  activity-capture:
+    build:
+      context: ../../services/activity-capture
+      dockerfile: Dockerfile
+    container_name: dopemux-activity-capture
+    restart: unless-stopped
+    networks:
+      - mcp-network
+      - dopemux-unified-network
+      - dopemux-network
+    environment:
+      - REDIS_URL=redis://dopemux-redis-events:6379
+      - STREAM_NAME=dopemux:events
+      - CONSUMER_GROUP=activity-capture
+      - CONSUMER_NAME=activity-capture-1
+      - ADHD_ENGINE_URL=http://host.docker.internal:8095
+      - ADHD_USER_ID=hue
+      - AGGREGATION_WINDOW_SECONDS=300
+      - API_PORT=8096
+    ports:
+      - "8096:8096"
+    depends_on:
+      - desktop-commander
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8096/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+    labels:
+      - "mcp.role=adhd-support"
+      - "mcp.priority=high"
+      - "mcp.description=Automatic activity tracking for ADHD Engine"
+
   # Redis Primary - Shared cache for MCP servers (ConPort, etc.)
   redis-primary:
     image: redis:7-alpine
@@ -578,6 +613,9 @@ networks:
   dopemux-unified-network:
     external: true
     name: dopemux-unified-network
+  dopemux-network:
+    external: true
+    name: dopemux-network
   # Connect to existing Leantime network for PM integration
   leantime-net:
     external: true
