@@ -23,6 +23,9 @@ import api.schemas as schemas
 from models import ADHDProfile, EnergyLevel, AttentionState
 from auth import verify_api_key
 
+# Import time for caching
+import time
+
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
