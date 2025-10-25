@@ -736,7 +736,7 @@ class SerenaV2MCPServer:
                 ),
                 Tool(
                     name="find_references",
-                    description="Find all references/usages of symbol at position (Tier 1 navigation tool). Uses LSP with ADHD filtering (max 10 results). Returns reference locations with 3-line context snippets.",
+                    description="Find all references/usages of symbol at position (Tier 1 navigation tool). Uses LSP with ADHD-aware filtering (3-40 results based on attention state). Returns reference locations with 3-line context snippets.",
                     inputSchema={
                         "type": "object",
                         "properties": {
@@ -754,15 +754,20 @@ class SerenaV2MCPServer:
                             },
                             "max_results": {
                                 "type": "integer",
-                                "description": "Maximum results (default: 10, max: 10 for ADHD)",
+                                "description": "Maximum results (default: 10, dynamically adjusted 3-40 by ADHD Engine)",
                                 "default": 10,
                                 "minimum": 1,
-                                "maximum": 10
+                                "maximum": 50
                             },
                             "include_declaration": {
                                 "type": "boolean",
                                 "description": "Include the declaration in results (default: true)",
                                 "default": True
+                            },
+                            "user_id": {
+                                "type": "string",
+                                "description": "User identifier for ADHD state lookup (default: 'default')",
+                                "default": "default"
                             }
                         },
                         "required": ["file_path", "line", "column"]
@@ -1309,6 +1314,8 @@ class SerenaV2MCPServer:
                     result = await self.read_file_tool(**arguments)
                 elif name == "list_dir":
                     result = await self.list_dir_tool(**arguments)
+                elif name == "find_similar_code":
+                    result = await self.find_similar_code_tool(**arguments)
                 else:
                     raise ValueError(f"Unknown tool: {name}")
 
@@ -1781,14 +1788,15 @@ class SerenaV2MCPServer:
         line: int,
         column: int,
         max_results: int = 10,
-        include_declaration: bool = True
+        include_declaration: bool = True,
+        user_id: str = "default"
     ) -> str:
         """
         Find all references/usages of symbol at position
 
         Tier 1 Navigation Tool:
         - Uses SimpleLSPClient (pylsp) for finding references
-        - ADHD filtering: max 10 results
+        - ADHD-aware: Dynamic result limits (3-40 based on attention state)
         - Returns each reference with 3-line context snippet
         - Fallback: Grep-based search if LSP unavailable
 
@@ -1796,16 +1804,17 @@ class SerenaV2MCPServer:
             file_path: File path (relative to workspace)
             line: Line number (1-indexed)
             column: Column number (1-indexed)
-            max_results: Max results (default: 10, capped at 10)
+            max_results: Max results (default: 10, dynamically adjusted by ADHD Engine)
             include_declaration: Include declaration in results
+            user_id: User identifier for ADHD state lookup
 
         Returns:
             JSON with reference locations and context snippets
         """
         start_time = datetime.now()
 
-        # Enforce ADHD max results
-        max_results = min(max_results, 10)
+        # Get dynamic max_results from ADHD Engine (F-NEW-1)
+        max_results = await get_dynamic_max_results(user_id, max_results)
 
         # Resolve path
         if Path(file_path).is_absolute():
@@ -4353,12 +4362,94 @@ class SerenaV2MCPServer:
         logger.info(f"list_dir: {relative_path} ({len(result['directories'])} dirs, {len(result['files'])} files)")
         return "\n".join(output_lines)
 
+    async def find_similar_code_tool(
+        self,
+        query: str,
+        top_k: int = 10,
+        user_id: str = "default"
+    ) -> str:
+        """
+        Find code semantically similar to natural language query (F-NEW-2)
+
+        Integrates with Dope-Context MCP for semantic search:
+        - AST-aware code chunking
+        - Voyage embeddings with neural reranking
+        - Natural language queries vs exact name matching
+        - Enriched with Serena's complexity scores
+
+        Args:
+            query: Natural language query (e.g., "authentication middleware patterns")
+            top_k: Number of results (default: 10, ADHD-adjusted)
+            user_id: User identifier for ADHD state lookup
+
+        Returns:
+            JSON with semantic search results + complexity scores
+        """
+        start_time = datetime.now()
+
+        # Get dynamic top_k from ADHD Engine
+        top_k = await get_dynamic_max_results(user_id, top_k)
+
+        try:
+            # Call Dope-Context search_code via direct function call
+            # (Since we're in same process, can import directly)
+            sys.path.insert(0, str(self.workspace.parent / "dope-context" / "src"))
+
+            try:
+                from mcp.server import search_code_impl
+                results = await search_code_impl(query, top_k, workspace_path=str(self.workspace))
+            except ImportError:
+                # Fallback: Use MCP client to call dope-context
+                logger.warning("Dope-Context not available for direct call, semantic search unavailable")
+                return json.dumps({
+                    "error": "Semantic search unavailable (Dope-Context MCP not configured)",
+                    "query": query,
+                    "fallback": "Use find_symbol for exact name matching"
+                }, indent=2)
+
+            # Enrich results with Serena's complexity analysis
+            tree_sitter_available = await self._ensure_component("tree_sitter")
+
+            if tree_sitter_available and self.tree_sitter:
+                for result in results:
+                    try:
+                        file_path = result.get("file_path", "")
+                        function_name = result.get("function_name", "")
+
+                        complexity = await self.tree_sitter.analyze_complexity(file_path, function_name)
+                        result["serena_complexity"] = complexity.get("score", 0.0)
+                        result["adhd_category"] = complexity.get("category", "unknown")
+                    except:
+                        result["serena_complexity"] = None
+
+            elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
+
+            output = {
+                "query": query,
+                "found": len(results),
+                "top_k": top_k,
+                "adhd_adjusted": True,
+                "results": results,
+                "performance": {
+                    "latency_ms": round(elapsed_ms, 2),
+                    "source": "dope-context",
+                    "serena_enhanced": tree_sitter_available
+                }
+            }
+
+            logger.info(f"find_similar_code: '{query}' → {len(results)} results ({elapsed_ms:.1f}ms)")
+            return json.dumps(output, indent=2)
+
+        except Exception as e:
+            logger.error(f"find_similar_code failed: {e}")
+            return json.dumps({"error": str(e), "query": query}, indent=2)
+
 
 async def main():
     """Main entry point for Serena v2 MCP server"""
     logger.info("="*60)
-    logger.info("SERENA V2 MCP SERVER - PHASE 2D + FEATURE 1 COMPLETE")
-    logger.info("ADHD-optimized code intelligence (20 tools)")
+    logger.info("SERENA V2 MCP SERVER - PHASE 2D + F001/F002 + F-NEW-1/F-NEW-2")
+    logger.info("ADHD-optimized code intelligence (21 tools)")
     logger.info("="*60)
 
     # Create server instance
@@ -4373,9 +4464,10 @@ async def main():
     logger.info("="*60)
     logger.info("Server ready - awaiting tool calls")
     logger.info(f"Workspace: {server_instance.workspace}")
-    logger.info(f"Tools available: 20")
+    logger.info(f"Tools available: 21")
     logger.info(f"  - Health (1): get_workspace_status")
     logger.info(f"  - Navigation Tier 1 (4): find_symbol, goto_definition, get_context, find_references")
+    logger.info(f"  - Semantic Search (1): find_similar_code [F-NEW-2]")
     logger.info(f"  - ADHD Intelligence Tier 2 (4): analyze_complexity, filter_by_focus, suggest_next_step, get_reading_order")
     logger.info(f"  - Advanced Tier 3 (3): find_relationships, get_navigation_patterns, update_focus_mode")
     logger.info(f"  - Feature 1 Detection (1): detect_untracked_work")
