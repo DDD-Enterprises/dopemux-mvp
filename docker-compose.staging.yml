@@ -1,0 +1,216 @@
+version: '3.8'
+
+# Staging Deployment Configuration for Dopemux
+# Includes all services + monitoring (Prometheus + Grafana)
+
+services:
+  # =====================================================================
+  # Data Layer
+  # =====================================================================
+
+  postgres-age:
+    container_name: staging-dopemux-postgres-age
+    image: apache/age:latest
+    environment:
+      POSTGRES_USER: dopemux_age
+      POSTGRES_PASSWORD: dopemux_age_staging_password
+      POSTGRES_DB: dopemux_knowledge_graph
+    ports:
+      - "5456:5432"  # Different port for staging
+    volumes:
+      - staging_postgres_data:/var/lib/postgresql/data
+      - ./docker/mcp-servers/conport/migrations:/docker-entrypoint-initdb.d/migrations
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dopemux_age"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    container_name: staging-redis
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"  # Different port for staging
+    volumes:
+      - staging_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  qdrant:
+    container_name: staging-qdrant
+    image: qdrant/qdrant:latest
+    ports:
+      - "6334:6333"  # Different port for staging
+    volumes:
+      - staging_qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # =====================================================================
+  # MCP Servers
+  # =====================================================================
+
+  conport-mcp:
+    container_name: staging-conport-mcp
+    build:
+      context: ./docker/mcp-servers/conport
+      dockerfile: Dockerfile
+    environment:
+      MCP_SERVER_PORT: 3004
+      DATABASE_URL: postgresql://dopemux_age:dopemux_age_staging_password@postgres-age:5432/dopemux_knowledge_graph
+      REDIS_URL: redis://redis:6379
+      PYTHON_ENV: staging
+    ports:
+      - "3014:3004"  # Different external port
+    depends_on:
+      - postgres-age
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  serena-mcp:
+    container_name: staging-serena-mcp
+    build:
+      context: ./services/serena/v2
+      dockerfile: Dockerfile
+    environment:
+      MCP_SERVER_PORT: 3001
+      REDIS_URL: redis://redis:6379
+      POSTGRES_URL: postgresql://dopemux_age:dopemux_age_staging_password@postgres-age:5432/dopemux_knowledge_graph
+      PYTHON_ENV: staging
+    ports:
+      - "3011:3001"
+    depends_on:
+      - postgres-age
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # =====================================================================
+  # Core Services
+  # =====================================================================
+
+  adhd-engine:
+    container_name: staging-adhd-engine
+    build:
+      context: ./services/adhd_engine
+      dockerfile: Dockerfile
+    environment:
+      PORT: 8001
+      REDIS_URL: redis://redis:6379
+      ENVIRONMENT: staging
+    ports:
+      - "8011:8001"
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  task-orchestrator:
+    container_name: staging-task-orchestrator
+    build:
+      context: ./services/task-orchestrator
+      dockerfile: Dockerfile
+    environment:
+      PORT: 8002
+      REDIS_URL: redis://redis:6379
+      CONPORT_URL: http://conport-mcp:3004
+      ENVIRONMENT: staging
+    ports:
+      - "8012:8002"
+    depends_on:
+      - conport-mcp
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  break-suggester:
+    container_name: staging-break-suggester
+    build:
+      context: ./services/break-suggester
+      dockerfile: Dockerfile
+    environment:
+      REDIS_URL: redis://redis:6379
+      USER_ID: staging_user
+    depends_on:
+      - redis
+    command: ["python", "start_service.py", "staging_user"]
+    restart: unless-stopped
+
+  # =====================================================================
+  # Monitoring Stack
+  # =====================================================================
+
+  prometheus:
+    container_name: staging-prometheus
+    image: prom/prometheus:latest
+    ports:
+      - "9091:9090"  # Different port for staging
+    volumes:
+      - ./services/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./services/monitoring/alerting_rules.yml:/etc/prometheus/alerting_rules.yml
+      - staging_prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    depends_on:
+      - conport-mcp
+      - serena-mcp
+      - adhd-engine
+      - task-orchestrator
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  grafana:
+    container_name: staging-grafana
+    image: grafana/grafana:latest
+    ports:
+      - "3010:3000"  # Different port for staging
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: staging_admin_password
+      GF_INSTALL_PLUGINS: ""
+    volumes:
+      - staging_grafana_data:/var/lib/grafana
+      - ./services/monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./services/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  staging_postgres_data:
+  staging_redis_data:
+  staging_qdrant_data:
+  staging_prometheus_data:
+  staging_grafana_data:
+
+networks:
+  default:
+    name: dopemux-staging
