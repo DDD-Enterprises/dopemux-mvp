@@ -238,9 +238,13 @@ fi
 # Continue with existing break warning logic (now using data from batched endpoint or health fallback)
 if [ -n "$adhd_health" ] || [ -n "$statusline_data" ]; then
 
-    # Check break recommendations (NEW)
-    breaks_suggested=$(echo "$adhd_health" | jq -r '.accommodation_stats.breaks_suggested // 0' 2>/dev/null)
+    # Check break recommendations
+    # Use breaks_suggested from batched data if available, otherwise from health
+    [ -z "$breaks_suggested" ] && breaks_suggested=$(echo "$adhd_health" | jq -r '.accommodation_stats.breaks_suggested // 0' 2>/dev/null)
+    [ -z "$breaks_suggested" ] && breaks_suggested=0
+
     active_accommodations=$(echo "$adhd_health" | jq -r '.current_state.active_accommodations.current_user // 0' 2>/dev/null)
+    [ -z "$active_accommodations" ] && active_accommodations=0
 
     # Check if break needed by looking at active accommodations or stats
     if [ "$active_accommodations" -gt 0 ] || [ "$breaks_suggested" -gt 0 ]; then
@@ -253,8 +257,11 @@ if [ -n "$adhd_health" ] || [ -n "$statusline_data" ]; then
     fi
 
     # Check for active protection
-    hyperfocus_protections=$(echo "$adhd_health" | jq -r '.accommodation_stats.hyperfocus_protections // 0' 2>/dev/null)
-    if [ "$hyperfocus_protections" -gt 0 ] && [ "$attention" = "hyperfocused" ]; then
+    # Use hyperfocus_protections from batched data if available
+    [ -z "$hyperfocus_protections" ] && hyperfocus_protections=$(echo "$adhd_health" | jq -r '.accommodation_stats.hyperfocus_protections // 0' 2>/dev/null)
+    [ -z "$hyperfocus_protections" ] && hyperfocus_protections=0
+
+    if [ "$hyperfocus_protections" -gt 0 ] 2>/dev/null && [ "$attention" = "hyperfocused" ]; then
         ACCOMMODATIONS="🛡️"  # Shield for hyperfocus protection
     fi
 fi
