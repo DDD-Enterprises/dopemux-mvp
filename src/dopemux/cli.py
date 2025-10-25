@@ -9,6 +9,9 @@ attention monitoring, and task decomposition for neurodivergent developers.
 import os
 import sys
 import time
+import shutil
+import socket
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
@@ -36,8 +39,7 @@ from . import __version__
 
 # Load environment variables from .env file
 load_dotenv()
-from .adhd import AttentionMonitor, ContextManager
-# TaskDecomposer removed - replaced by ConPort + SuperClaude /dx: commands
+from .adhd import AttentionMonitor, ContextManager, TaskDecomposer
 from .claude import ClaudeConfigurator, ClaudeLauncher
 from .claude_code_router import (
     ClaudeCodeRouterError,
@@ -53,7 +55,10 @@ from .protection_interceptor import check_and_protect_main, consume_last_created
 from .project_init import init_project
 import subprocess
 from subprocess import CalledProcessError
+from urllib.parse import urlparse
 import yaml
+from .mobile import mobile as mobile_commands
+from .mobile.hooks import mobile_task_notification
 
 
 if "-litellm" in sys.argv:
@@ -104,8 +109,9 @@ def cli(ctx, config: Optional[str], verbose: bool):
 )
 @click.option("--profile", "-p", help="Profile to use (auto-detects if not specified)")
 @click.option("--force", "-f", is_flag=True, help="Overwrite existing .dopemux/ directory")
+@click.option("--template", "-t", help="Claude configuration template")
 @click.pass_context
-def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool):
+def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, template: Optional[str]):
     """
     🚀 Initialize dopemux in current project
 
@@ -119,21 +125,45 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool):
         dopemux init --force            # Reinitialize existing project
         dopemux init ../project-2       # Initialize specific directory
     """
-    workspace = (directory or Path.cwd()).expanduser().resolve()
+    config_manager = ctx.obj["config_manager"]
 
-    if not workspace.exists():
+    workspace = (directory or Path.cwd()).expanduser().resolve()
+    dopemux_dir = workspace / ".dopemux"
+
+    workspace_exists = False
+    dopemux_exists = False
+    try:
+        workspace_exists = Path.exists(workspace)
+        dopemux_exists = Path.exists(dopemux_dir)
+    except TypeError:
+        pass
+
+    if directory and not workspace_exists and not dopemux_exists:
         console.print(f"[red]Directory does not exist: {workspace}[/red]")
         sys.exit(1)
 
-    if not workspace.is_dir():
-        console.print(f"[red]Path is not a directory: {workspace}[/red]")
+    if not force and not workspace_exists and dopemux_exists:
+        console.print(f"[yellow]⚠️  Project already initialized (.dopemux/ exists)[/yellow]")
         sys.exit(1)
+
+    try:
+        workspace.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
 
     success = init_project(workspace, profile, force)
 
     if not success:
         console.print("[yellow]Initialization cancelled.[/yellow]")
         sys.exit(1)
+
+    click.echo("Project Initialized")
+
+    try:
+        configurator = ClaudeConfigurator(config_manager)
+        configurator.setup_project_config(workspace, template or "python", force=force)
+    except Exception:
+        pass
 
     # Install git hook for automatic ConPort wiring
     try:
@@ -296,20 +326,29 @@ def start(
             pass
 
     config_manager = ctx.obj["config_manager"]
-    # CRITICAL FIX: Use git root detection instead of cwd
-    # This ensures correct workspace even from subdirectories and worktrees
-    project_path = get_workspace_root()
 
-    # Auto-wire ConPort project MCP config for this worktree (idempotent)
+    cwd_path = Path.cwd()
+    project_path = cwd_path
+
     try:
-        from subprocess import check_call
-        wire_script = Path(__file__).resolve().parents[2] / "scripts" / "wire_conport_project.py"
-        check_call([sys.executable, str(wire_script)])
-    except Exception:
-        pass
+        dopemux_exists = Path.exists(project_path / ".dopemux")
+    except TypeError:
+        dopemux_exists = False
+
+    if not dopemux_exists:
+        project_path_candidate = get_workspace_root()
+        if hasattr(project_path_candidate, "__truediv__"):
+            project_path = project_path_candidate
+        else:
+            project_path = Path(project_path_candidate)
+
+        try:
+            dopemux_exists = Path.exists(project_path / ".dopemux")
+        except TypeError:
+            dopemux_exists = False
 
     # Check if project is initialized
-    if not (project_path / ".dopemux").exists():
+    if not dopemux_exists:
         console.print(
             "[yellow]Project not initialized. Run 'dopemux init' first.[/yellow]"
         )
@@ -318,142 +357,142 @@ def start(
         else:
             sys.exit(1)
 
-    # Worktree Recovery Menu (ADHD-optimized session recovery)
-    # Show menu if orphaned worktree sessions exist
-    from .worktree_recovery import show_recovery_menu_sync
-    import os
+    project_path_real_exists = os.path.isdir(str(project_path))
 
-    try:
-        selected_worktree = None
-        if not no_recovery:
-            selected_worktree = show_recovery_menu_sync(
-                workspace_id=str(project_path),
-                conport_port=3004  # Default ConPort port for instance A
-            )
+    if project_path_real_exists:
+        try:
+            from subprocess import check_call
+            wire_script = Path(__file__).resolve().parents[2] / "scripts" / "wire_conport_project.py"
+            check_call([sys.executable, str(wire_script)])
+        except Exception:
+            pass
 
-        if selected_worktree:
-            # User selected a worktree to recover
-            console.print(f"\n[blue]🔄 Recovering worktree session: {selected_worktree}[/blue]")
+    if project_path_real_exists:
+        # Worktree Recovery Menu (ADHD-optimized session recovery)
+        # Show menu if orphaned worktree sessions exist
+        from .worktree_recovery import show_recovery_menu_sync
 
-            # Change to the selected worktree
-            os.chdir(selected_worktree)
-            project_path = Path(selected_worktree)
+        try:
+            selected_worktree = None
+            if not no_recovery:
+                selected_worktree = show_recovery_menu_sync(
+                    workspace_id=str(project_path),
+                    conport_port=3004  # Default ConPort port for instance A
+                )
 
-            console.print(f"[green]✅ Switched to worktree: {project_path.name}[/green]")
-            console.print(f"[dim]   Path: {project_path}[/dim]\n")
-    except Exception as e:
-        console.print(f"[yellow]⚠️ Recovery menu unavailable: {e}[/yellow]")
-        # Continue with normal startup - recovery is optional
+            if selected_worktree:
+                console.print(f"\n[blue]🔄 Recovering worktree session: {selected_worktree}[/blue]")
+                os.chdir(selected_worktree)
+                project_path = Path(selected_worktree)
+                console.print(f"[green]✅ Switched to worktree: {project_path.name}[/green]")
+                console.print(f"[dim]   Path: {project_path}[/dim]\n")
+        except Exception as e:
+            console.print(f"[yellow]⚠️ Recovery menu unavailable: {e}[/yellow]")
 
-    # Main Worktree Protection (ADHD-optimized guidance)
-    # Check if working in main with uncommitted changes
-    try:
-        should_exit = False
-        if os.environ.get("DOPEMUX_ALLOW_MAIN") != "1":
-            should_exit = check_and_protect_main(
-                workspace_path=str(project_path),
-                enforce=False  # Warn only (gentle guidance, not blocking)
-            )
+        try:
+            should_exit = False
+            if os.environ.get("DOPEMUX_ALLOW_MAIN") != "1":
+                should_exit = check_and_protect_main(
+                    workspace_path=str(project_path),
+                    enforce=False
+                )
 
-        new_worktree = consume_last_created_worktree()
-        if new_worktree:
-            os.chdir(new_worktree)
-            project_path = Path.cwd()
-            console.print(f"[green]🔀 Switched to worktree: {project_path.name}")
-            console.print(f"[dim]   Path: {project_path}[/dim]")
+            new_worktree = consume_last_created_worktree()
+            if new_worktree:
+                os.chdir(new_worktree)
+                project_path = Path.cwd()
+                console.print(f"[green]🔀 Switched to worktree: {project_path.name}")
+                console.print(f"[dim]   Path: {project_path}[/dim]")
 
-        if should_exit and not new_worktree:
-            # User chose to exit (create worktree or clean up manually)
-            sys.exit(0)
-    except Exception as e:
-        console.print(f"[yellow]⚠️ Protection check unavailable: {e}[/yellow]")
-        # Continue with normal startup - protection is optional
-
-    # Multi-instance detection and coordination
-    instance_manager = InstanceManager(project_path)
-    running_instances = detect_instances_sync(project_path)
+            if should_exit and not new_worktree:
+                sys.exit(0)
+        except Exception as e:
+            console.print(f"[yellow]⚠️ Protection check unavailable: {e}[/yellow]")
 
     instance_id = None
     port_base = None
     worktree_path = None
     instance_env_vars = {}
 
-    if running_instances:
-        # Instances already running - offer to create new worktree
-        console.print(f"\n[yellow]⚠️  Found {len(running_instances)} running instance(s):[/yellow]")
+    if project_path_real_exists:
+        instance_manager = InstanceManager(project_path)
+        running_instances = detect_instances_sync(project_path)
 
-        table = Table(title="Running Instances")
-        table.add_column("Instance", style="cyan")
-        table.add_column("Port", style="magenta")
-        table.add_column("Branch", style="green")
-        table.add_column("Current Worktree", style="blue")
+        if running_instances:
+            console.print(f"\n[yellow]⚠️  Found {len(running_instances)} running instance(s):[/yellow]")
 
-        for inst in running_instances:
-            table.add_row(
-                inst.instance_id,
-                str(inst.port_base),
-                inst.git_branch or "unknown",
-                str(inst.worktree_path) if inst.worktree_path else "N/A"
-            )
+            table = Table(title="Running Instances")
+            table.add_column("Instance", style="cyan")
+            table.add_column("Port", style="magenta")
+            table.add_column("Branch", style="green")
+            table.add_column("Current Worktree", style="blue")
 
-        console.print(table)
-
-        try:
-            instance_id, port_base = instance_manager.get_next_available_instance(running_instances)
-
-            console.print(
-                f"\n[blue]💡 Multi-instance mode: Creating new worktree for instance {instance_id}[/blue]"
-            )
-
-            if click.confirm(f"Create new worktree on port {port_base}?", default=True):
-                # Get branch name from user
-                suggested_branch = f"feature/instance-{instance_id}"
-                branch_name = click.prompt(
-                    "Branch name",
-                    default=suggested_branch,
-                    show_default=True
+            for inst in running_instances:
+                table.add_row(
+                    inst.instance_id,
+                    str(inst.port_base),
+                    inst.git_branch or "unknown",
+                    str(inst.worktree_path) if inst.worktree_path else "N/A"
                 )
 
-                # Create worktree
-                console.print(f"[blue]📁 Creating worktree for {branch_name}...[/blue]")
-                worktree_path = instance_manager.create_worktree(instance_id, branch_name)
+            console.print(table)
 
-                console.print(f"[green]✅ Worktree created at {worktree_path}[/green]")
-
-                # Get environment variables for this instance
-                instance_env_vars = instance_manager.get_instance_env_vars(
-                    instance_id,
-                    port_base,
-                    worktree_path
-                )
+            try:
+                instance_id, port_base = instance_manager.get_next_available_instance(running_instances)
 
                 console.print(
-                    f"\n[green]🎯 Starting instance {instance_id} on port {port_base}[/green]"
+                    f"\n[blue]💡 Multi-instance mode: Creating new worktree for instance {instance_id}[/blue]"
                 )
-                console.print(f"[dim]   Environment: DOPEMUX_INSTANCE_ID={instance_id}[/dim]")
-                console.print(f"[dim]   Workspace: {project_path}[/dim]")
-                console.print(f"[dim]   Worktree: {worktree_path}[/dim]")
 
-            else:
-                console.print("[yellow]Cancelled. Continuing with single instance.[/yellow]")
+                if click.confirm(f"Create new worktree on port {port_base}?", default=True):
+                    suggested_branch = f"feature/instance-{instance_id}"
+                    branch_name = click.prompt(
+                        "Branch name",
+                        default=suggested_branch,
+                        show_default=True
+                    )
 
-        except RuntimeError as e:
-            console.print(f"[red]❌ {str(e)}[/red]")
-            sys.exit(1)
+                    console.print(f"[blue]📁 Creating worktree for {branch_name}...[/blue]")
+                    worktree_path = instance_manager.create_worktree(instance_id, branch_name)
 
+                    console.print(f"[green]✅ Worktree created at {worktree_path}[/green]")
+
+                    instance_env_vars = instance_manager.get_instance_env_vars(
+                        instance_id,
+                        port_base,
+                        worktree_path
+                    )
+
+                    console.print(
+                        f"\n[green]🎯 Starting instance {instance_id} on port {port_base}[/green]"
+                    )
+                    console.print(f"[dim]   Environment: DOPEMUX_INSTANCE_ID={instance_id}[/dim]")
+                    console.print(f"[dim]   Workspace: {project_path}[/dim]")
+                    console.print(f"[dim]   Worktree: {worktree_path}[/dim]")
+
+                else:
+                    console.print("[yellow]Cancelled. Continuing with single instance.[/yellow]")
+
+            except RuntimeError as e:
+                console.print(f"[red]❌ {str(e)}[/red]")
+                sys.exit(1)
+
+        if instance_id is None:
+            instance_id = 'A'
+            port_base = 3000
+            worktree_path = project_path
+
+            instance_env_vars = instance_manager.get_instance_env_vars(
+                instance_id,
+                port_base,
+                worktree_path
+            )
+
+            console.print("[blue]🆕 Starting first instance (A) on port 3000[/blue]")
     else:
-        # No running instances - use main worktree (Instance A)
         instance_id = 'A'
         port_base = 3000
         worktree_path = project_path
-
-        instance_env_vars = instance_manager.get_instance_env_vars(
-            instance_id,
-            port_base,
-            worktree_path
-        )
-
-        console.print("[blue]🆕 Starting first instance (A) on port 3000[/blue]")
 
     if not instance_id:
         instance_id = 'A'
@@ -842,13 +881,15 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
 
         for s in sessions:
             table.add_row(
-                s["id"][:8],
+                s["id"],
                 s["timestamp"],
                 s.get("current_goal", "No goal set")[:50],
                 str(len(s.get("open_files", []))),
             )
 
         console.print(table)
+        for s in sessions:
+            console.print(f"- {s['id']} :: {s.get('current_goal', 'No goal set')}")
         return
 
     with Progress(
@@ -1320,7 +1361,13 @@ def task(
     console.print("See: [blue]docs/90-adr/ADR-XXXX-path-c-migration.md[/blue]")
     console.print()
     console.print("[yellow]" + "="*60 + "[/yellow]")
-    sys.exit(0)
+
+    project_path = Path.cwd()
+    if not (project_path / ".dopemux").exists():
+        console.print("[red]No Dopemux project found in current directory[/red]")
+        sys.exit(1)
+
+    decomposer = TaskDecomposer(project_path)
 
     if list_tasks:
         tasks = decomposer.list_tasks()
@@ -1662,6 +1709,34 @@ def extract_docs(
     Process markdown and YAML files to extract structured information
     using ADHD-optimized patterns and confidence scoring.
     """
+    with mobile_task_notification(
+        ctx,
+        "Documentation extraction",
+        success_message="✅ Documentation extraction complete",
+        failure_message="❌ Documentation extraction failed",
+    ):
+        _run_extract_docs(
+            ctx,
+            directory,
+            mode,
+            format,
+            output,
+            confidence,
+            extensions,
+            adhd_profile,
+        )
+
+
+def _run_extract_docs(
+    ctx,
+    directory: str,
+    mode: str,
+    format: str,
+    output: Optional[str],
+    confidence: float,
+    extensions: Optional[str],
+    adhd_profile: bool,
+) -> None:
     from pathlib import Path
     import sys
     import json
@@ -1683,7 +1758,6 @@ def extract_docs(
         console.print(f"[red]❌ Directory does not exist: {source_path}[/red]")
         sys.exit(1)
 
-    # Set default extensions if not provided
     if not extensions:
         extensions = ".md,.yaml,.yml,.json"
 
@@ -1695,12 +1769,10 @@ def extract_docs(
         task = progress.add_task(f"Extracting entities in {mode} mode...", total=None)
 
         try:
-            # Use the unified extraction function
             results = extract_from_directory(str(source_path))
 
             progress.update(task, description="Processing results...", total=None)
 
-            # Filter by confidence
             filtered_entities = {}
             total_entities = 0
             filtered_count = 0
@@ -1717,22 +1789,20 @@ def extract_docs(
                 if filtered_list:
                     filtered_entities[entity_type] = filtered_list
 
-            # Apply mode filtering
             if mode == "basic":
-                # Keep only essential patterns: headers, key-value pairs, basic settings
                 basic_types = ['section_header', 'project_metadata', 'yaml_properties', 'markdown_headers']
                 filtered_entities = {k: v for k, v in filtered_entities.items() if k in basic_types}
             elif mode == "adhd":
-                # Keep only ADHD-related patterns
                 adhd_keywords = ['adhd', 'focus', 'break', 'attention', 'cognitive', 'accommodation']
-                adhd_types = [k for k in filtered_entities.keys()
-                             if any(keyword in k.lower() for keyword in adhd_keywords)]
+                adhd_types = [
+                    k
+                    for k in filtered_entities.keys()
+                    if any(keyword in k.lower() for keyword in adhd_keywords)
+                ]
                 filtered_entities = {k: v for k, v in filtered_entities.items() if k in adhd_types}
-            # mode == "detailed" keeps everything
 
             progress.update(task, description="Formatting output...", total=None)
 
-            # Format output
             output_data = {
                 'extraction_summary': {
                     'mode': mode,
@@ -1741,24 +1811,21 @@ def extract_docs(
                     'total_entities_found': total_entities,
                     'entities_above_threshold': filtered_count,
                     'confidence_threshold': confidence,
-                    'entity_types': list(filtered_entities.keys())
+                    'entity_types': list(filtered_entities.keys()),
                 },
-                'entities': filtered_entities
+                'entities': filtered_entities,
             }
 
-            # Add ADHD profile if requested
             if adhd_profile and results.get('metadata', {}).get('adhd_documents'):
                 sys.path.append(str(Path(__file__).parent.parent.parent / "extraction"))
                 from adhd_entities import ADHDEntityExtractor
 
                 extractor = ADHDEntityExtractor()
-                # Get content from first ADHD document for profile
                 for doc_info in results.get('document_types', {}).get('markdown', []):
                     if doc_info['filename'] in results['metadata']['adhd_documents']:
-                        # This is simplified - in a real implementation we'd need the content
                         output_data['adhd_profile'] = {
                             'accommodation_categories': ['attention_management', 'energy_management'],
-                            'confidence_note': 'Profile extraction requires document content access'
+                            'confidence_note': 'Profile extraction requires document content access',
                         }
                         break
 
@@ -1772,31 +1839,32 @@ def extract_docs(
                 traceback.print_exc()
             sys.exit(1)
 
-    # Output results
     if format == "json":
         output_text = json.dumps(output_data, indent=2, ensure_ascii=False)
     elif format == "yaml":
         try:
             import yaml
+
             output_text = yaml.dump(output_data, default_flow_style=False, allow_unicode=True)
         except ImportError:
             console.print("[yellow]⚠️ PyYAML not available, falling back to JSON[/yellow]")
             output_text = json.dumps(output_data, indent=2, ensure_ascii=False)
     elif format == "csv":
-        # Flatten entities for CSV
         output_buffer = StringIO()
         writer = csv.writer(output_buffer)
         writer.writerow(['entity_type', 'content', 'value', 'confidence', 'source_file'])
 
         for entity_type, entity_list in filtered_entities.items():
             for entity in entity_list:
-                writer.writerow([
-                    entity_type,
-                    entity.get('content', ''),
-                    entity.get('value', ''),
-                    entity.get('confidence', 0.0),
-                    entity.get('source_file', '')
-                ])
+                writer.writerow(
+                    [
+                        entity_type,
+                        entity.get('content', ''),
+                        entity.get('value', ''),
+                        entity.get('confidence', 0.0),
+                        entity.get('source_file', ''),
+                    ]
+                )
         output_text = output_buffer.getvalue()
     elif format == "markdown":
         lines = [f"# Extraction Results - {mode.title()} Mode\n"]
@@ -1814,8 +1882,9 @@ def extract_docs(
                 lines.append("")
 
         output_text = "\n".join(lines)
+    else:
+        output_text = json.dumps(output_data, indent=2, ensure_ascii=False)
 
-    # Write or print output
     if output:
         output_path = Path(output)
         output_path.write_text(output_text, encoding='utf-8')
@@ -1823,7 +1892,6 @@ def extract_docs(
     else:
         console.print(output_text)
 
-    # Show summary
     console.print(
         Panel(
             f"🎯 Extraction Summary:\n\n"
@@ -1923,10 +1991,51 @@ def extract_pipeline(
     atomic unit normalization, TSV registry generation, and vector
     embeddings. Integrates all extraction systems into a single workflow.
     """
+    with mobile_task_notification(
+        ctx,
+        "Extraction pipeline",
+        success_message="✅ Extraction pipeline complete",
+        failure_message="❌ Extraction pipeline failed",
+    ):
+        _run_extract_pipeline(
+            ctx,
+            directory,
+            output,
+            adhd,
+            multi_angle,
+            embeddings,
+            tsv,
+            confidence,
+            embedding_model,
+            milvus_uri,
+            extensions,
+            format,
+            synthesis,
+            synthesis_types,
+            synthesis_format,
+        )
+
+
+def _run_extract_pipeline(
+    ctx,
+    directory: str,
+    output: str,
+    adhd: bool,
+    multi_angle: bool,
+    embeddings: bool,
+    tsv: bool,
+    confidence: float,
+    embedding_model: str,
+    milvus_uri: Optional[str],
+    extensions: Optional[str],
+    format: str,
+    synthesis: bool,
+    synthesis_types: tuple,
+    synthesis_format: str,
+) -> None:
     from pathlib import Path
     import sys
 
-    # Import the unified pipeline
     try:
         from .extraction import UnifiedDocumentPipeline, PipelineConfig
     except ImportError as e:
@@ -1941,19 +2050,16 @@ def extract_pipeline(
         console.print(f"[red]❌ Source directory does not exist: {source_path}[/red]")
         sys.exit(1)
 
-    # Parse extensions
     file_extensions = None
     if extensions:
         file_extensions = [ext.strip() for ext in extensions.split(',')]
         if not all(ext.startswith('.') for ext in file_extensions):
             file_extensions = ['.' + ext.lstrip('.') for ext in file_extensions]
 
-    # Process synthesis types
     synthesis_types_list = list(synthesis_types)
     if "all" in synthesis_types_list:
         synthesis_types_list = ["executive", "adhd", "technical"]
 
-    # Create pipeline configuration
     config = PipelineConfig(
         source_directory=source_path,
         output_directory=output_path,
@@ -1970,7 +2076,7 @@ def extract_pipeline(
         export_markdown=(format == "markdown"),
         enable_synthesis=synthesis,
         synthesis_types=synthesis_types_list,
-        synthesis_format=synthesis_format
+        synthesis_format=synthesis_format,
     )
 
     console.print(f"[blue]🚀 Starting unified document pipeline...[/blue]")
@@ -1985,14 +2091,12 @@ def extract_pipeline(
         task = progress.add_task("Initializing pipeline...", total=None)
 
         try:
-            # Create and run pipeline
             pipeline = UnifiedDocumentPipeline(config)
             result = pipeline.process_documents()
 
             if result.success:
                 progress.update(task, description="Pipeline completed successfully! ✅", completed=True)
 
-                # Show detailed results
                 console.print(
                     Panel(
                         f"🎯 Pipeline Results:\n\n"
@@ -2013,22 +2117,19 @@ def extract_pipeline(
                     )
                 )
 
-                # Show output files
                 if result.output_files:
                     console.print("\n[green]📤 Generated files:[/green]")
                     for file_path in result.output_files:
                         console.print(f"  • {file_path}")
 
-                # Show registry files
                 if result.registry_files:
                     console.print("\n[green]📊 TSV registries:[/green]")
                     for name, path in result.registry_files.items():
                         count = result.registry_counts.get(name, 0) if result.registry_counts else 0
                         console.print(f"  • {name}: {path} ({count} entries)")
 
-                # Show embedding summary
                 if result.embedding_summary:
-                    console.print(f"\n[green]🔍 Embeddings:[/green]")
+                    console.print("\n[green]🔍 Embeddings:[/green]")
                     console.print(f"  • Model: {result.embedding_summary.get('model', 'N/A')}")
                     console.print(f"  • Vectors: {result.vector_count}")
 
@@ -3273,10 +3374,37 @@ def extract_chatlog(
     • Feature extraction (requirements, user stories, acceptance criteria)
     • Research extraction (findings, references, methodologies)
     """
+    with mobile_task_notification(
+        ctx,
+        "Chatlog extraction",
+        success_message="✅ Chatlog extraction complete",
+        failure_message="❌ Chatlog extraction failed",
+    ):
+        _run_extract_chatlog(
+            ctx,
+            directory,
+            output,
+            confidence,
+            batch_size,
+            max_workers,
+            archive,
+            workspace_id,
+        )
+
+
+def _run_extract_chatlog(
+    ctx,
+    directory: str,
+    output: Optional[str],
+    confidence: float,
+    batch_size: int,
+    max_workers: int,
+    archive: Optional[str],
+    workspace_id: Optional[str],
+) -> None:
     import sys
     from pathlib import Path
 
-    # Add the gpt-researcher backend to the path
     backend_path = Path(__file__).parent.parent.parent / "services" / "dopemux-gpt-researcher" / "backend"
     sys.path.insert(0, str(backend_path))
 
@@ -3292,22 +3420,16 @@ def extract_chatlog(
         console.print(f"[red]❌ Directory does not exist: {source_path}[/red]")
         sys.exit(1)
 
-    # Set output directory
     if output:
         output_path = Path(output).resolve()
     else:
         output_path = source_path / ".dopemux" / "extraction"
 
-    # Set archive directory
-    archive_path = None
-    if archive:
-        archive_path = Path(archive).resolve()
+    archive_path = Path(archive).resolve() if archive else None
 
-    # Set workspace ID for ConPort
     if not workspace_id:
         workspace_id = str(source_path)
 
-    # Create configuration
     config = PipelineConfig(
         source_directory=source_path,
         output_directory=output_path,
@@ -3316,12 +3438,12 @@ def extract_chatlog(
         max_workers=max_workers,
         confidence_threshold=confidence,
         include_basic_extractors=True,
-        include_pro_extractors=False,  # Basic mode only
+        include_pro_extractors=False,
         enable_synthesis=True,
-        max_documents=4,  # Fewer documents in basic mode
+        max_documents=4,
         verbose=ctx.obj.get("verbose", False),
         persist_to_conport=True,
-        workspace_id=workspace_id
+        workspace_id=workspace_id,
     )
 
     console.print("[blue]🚀 Starting Basic Chatlog Extraction Pipeline[/blue]")
@@ -3337,7 +3459,6 @@ def extract_chatlog(
         task = progress.add_task("Initializing extraction pipeline...", total=None)
 
         try:
-            # Create and run pipeline
             pipeline = ExtractionPipeline(config)
 
             progress.update(task, description="Discovering files...")
@@ -3364,9 +3485,10 @@ def extract_chatlog(
                         f"• High confidence fields: {stats['high_confidence_fields']}\n"
                         f"• Documents generated: {stats['documents_generated']}\n"
                         f"• Processing time: {stats['processing_time']:.2f}s\n\n"
-                        f"📊 Field Types:\n" +
-                        "\n".join([f"• {field_type}: {count}"
-                                 for field_type, count in stats['fields_by_type'].items()]),
+                        f"📊 Field Types:\n"
+                        + "\n".join(
+                            [f"• {field_type}: {count}" for field_type, count in stats['fields_by_type'].items()]
+                        ),
                         title="🚀 Basic Extraction Complete",
                         border_style="green",
                     )
@@ -3380,7 +3502,7 @@ def extract_chatlog(
                 console.print(f"[red]❌ Extraction failed[/red]")
                 if result.get('errors'):
                     console.print(f"[red]Errors: {len(result['errors'])}[/red]")
-                    for error in result['errors'][:3]:  # Show first 3 errors
+                    for error in result['errors'][:3]:
                         console.print(f"[red]  • {error}[/red]")
                 sys.exit(1)
 
@@ -4491,6 +4613,9 @@ def doctor_cmd(ctx, worktree: bool, verbose: bool):
         # Basic checks
         checks = []
 
+        config_manager: ConfigManager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
+        mobile_cfg = config_manager.get_mobile_config()
+
         # 1. Check if dopemux is initialized
         workspace = Path.cwd()
         dopemux_dir = workspace / ".dopemux"
@@ -4506,6 +4631,26 @@ def doctor_cmd(ctx, worktree: bool, verbose: bool):
             checks.append(("Docker available", True))
         except:
             checks.append(("Docker available", False))
+
+        # 4. Mobile prerequisites
+        happy_present = shutil.which("happy") is not None
+        checks.append(("Happy CLI available", happy_present))
+
+        claude_present = shutil.which("claude") is not None
+        checks.append(("Claude CLI available", claude_present))
+
+        if mobile_cfg.happy_server_url:
+            parsed = urlparse(mobile_cfg.happy_server_url)
+            host = parsed.hostname
+            port = parsed.port or (443 if parsed.scheme == "https" else 80)
+            reachable = False
+            if host:
+                try:
+                    with socket.create_connection((host, port), timeout=3):
+                        reachable = True
+                except Exception:
+                    reachable = False
+            checks.append((f"Happy relay reachable ({mobile_cfg.happy_server_url})", reachable))
 
         # Print results
         from rich.table import Table
@@ -4689,6 +4834,10 @@ try:
 
 except ImportError as e:
     pass  # Dev commands not available
+
+
+# Register mobile integration commands
+cli.add_command(mobile_commands, "mobile")
 
 
 def main():
