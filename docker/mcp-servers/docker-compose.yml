@@ -532,6 +532,8 @@ services:
       - "mcp.description=Structured reasoning and decision frameworks"
 
   # Activity Capture - Automatic development activity tracking for ADHD Engine
+  # NOTE: ADHD Engine (port 8095) runs as background process via start-all.sh
+  #       (Docker version has dependency issues - TODO: Fix in future)
   activity-capture:
     build:
       context: ../../services/activity-capture
