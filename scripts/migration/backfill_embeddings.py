@@ -13,11 +13,12 @@ import asyncpg
 import sys
 import os
 from pathlib import Path
+from typing import List, Dict, Any
 
 # Add dope-context to path to reuse VectorStore + Voyage
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "services" / "dope-context" / "src"))
 
-from core.vector_store import VectorStore
+from core.vector_store import QdrantVectorStore
 from embeddings.voyage_embedder import VoyageEmbedder
 
 
@@ -40,12 +41,15 @@ class EmbeddingBackfill:
         print("   ✅ PostgreSQL connected")
 
         print("🔌 Initializing Qdrant vector store...")
-        self.vector_store = VectorStore(
+        from core.vector_store import VectorStoreConfig
+
+        config = VectorStoreConfig(
             collection_name="ddg_global_decisions",
-            url=self.qdrant_url,
-            port=self.qdrant_port,
-            vector_size=1024  # voyage-3-large dimension
+            qdrant_url=self.qdrant_url,
+            qdrant_port=self.qdrant_port,
+            vector_size=1024
         )
+        self.vector_store = QdrantVectorStore(config)
         await self.vector_store.initialize()
         print("   ✅ Qdrant initialized (collection: ddg_global_decisions)")
 
