@@ -41,6 +41,57 @@ SCRIPT_DIR = Path(__file__).parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+# ============================================================================
+# ADHD Engine Integration - Dynamic result limits (F-NEW-1)
+# ============================================================================
+
+# Global ADHD config (initialized on first use)
+_adhd_config = None
+_adhd_feature_flags = None
+
+
+async def _get_adhd_config():
+    """Get or initialize ADHD config singleton."""
+    global _adhd_config, _adhd_feature_flags
+
+    if _adhd_config is None:
+        try:
+            sys.path.insert(0, str(SCRIPT_DIR.parent.parent / "adhd_engine"))
+
+            from adhd_config_service import get_adhd_config_service
+            from feature_flags import ADHDFeatureFlags
+
+            _adhd_config = await get_adhd_config_service()
+            _adhd_feature_flags = ADHDFeatureFlags(_adhd_config.redis_client)
+
+            logger.info("✅ Serena v2 connected to ADHD Engine")
+        except Exception as e:
+            logger.warning(f"⚠️ ADHD Engine unavailable: {e}")
+
+    return _adhd_config, _adhd_feature_flags
+
+
+async def get_dynamic_max_results(user_id: str = "default", requested: int = 10) -> int:
+    """
+    Get dynamic max_results from ADHD Engine based on attention state.
+
+    Returns:
+        scattered: 5 results (reduce overwhelm)
+        focused: 15 results (standard)
+        hyperfocused: 40 results (deep dive)
+        fallback: requested (ADHD Engine unavailable)
+    """
+    adhd_config, feature_flags = await _get_adhd_config()
+
+    if adhd_config and feature_flags:
+        try:
+            return await adhd_config.get_max_results(user_id)
+        except Exception as e:
+            logger.debug(f"ADHD Engine query failed: {e}")
+
+    # Fallback to requested value
+    return requested
+
 
 class SimpleLSPClient:
     """
@@ -1337,27 +1388,29 @@ class SerenaV2MCPServer:
         self,
         query: str,
         symbol_type: Optional[str] = None,
-        max_results: int = 10
+        max_results: int = 10,
+        user_id: str = "default"
     ) -> str:
         """
         Search for symbols (functions, classes, variables) by name
 
         Tier 1 Navigation Tool:
         - Uses LSP workspace_symbols (lazy-loaded)
-        - ADHD filtering: max 10 results
+        - ADHD-aware: Dynamic result limits (3-40 based on attention state)
         - Complexity scoring if tree_sitter available
         - Fallback: Simple file search if LSP unavailable
 
         Args:
             query: Search query (symbol name or partial match)
             symbol_type: Optional filter by type
-            max_results: Max results (default 10, capped at 10 for ADHD)
+            max_results: Max results (default 10, dynamically adjusted by ADHD Engine)
+            user_id: User identifier for ADHD state lookup
 
         Returns:
             JSON array of symbols with file, line, type, complexity
         """
-        # Enforce ADHD max results constraint
-        max_results = min(max_results, 10)
+        # Get dynamic max_results from ADHD Engine (F-NEW-1)
+        max_results = await get_dynamic_max_results(user_id, max_results)
 
         # Ensure LSP is loaded
         lsp_available = await self._ensure_component("lsp")

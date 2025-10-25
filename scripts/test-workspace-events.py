@@ -39,6 +39,7 @@ async def emit_workspace_switch(
         to_workspace: New workspace
         switch_type: Type of switch (manual/automatic)
     """
+    import time
     event = Event(
         type="workspace.switched",
         data={
@@ -48,7 +49,7 @@ async def emit_workspace_switch(
             "context_data": {},
             "workspace_id": to_workspace,
             "adhd_context_capture": {
-                "timestamp": "2025-10-24T19:00:00Z",
+                "timestamp": f"{time.time()}",  # Unique timestamp to avoid deduplication
                 "recovery_priority": "medium"
             }
         },
