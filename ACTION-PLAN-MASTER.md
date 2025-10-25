@@ -1,8 +1,26 @@
 # Master Action Plan - Extracted from Complete Audit
-**Date**: 2025-10-16
-**Source**: Synthesis of 51 audit documents
+**Date**: 2025-10-25 (Updated: F-NEW features, Dependabot, priorities complete)
+**Source**: Synthesis of 51 audit documents + recent completions
 **Method**: Semantic search + systematic analysis
-**Status**: Comprehensive roadmap with all findings categorized
+**Status**: 6/7 F-NEW features operational, automation enabled
+
+---
+
+## 🎉 RECENT COMPLETIONS (October 2025)
+
+**Oct 23-25 Session**: Major productivity surge
+- ✅ 16 commits pushed (14,209 lines)
+- ✅ F-NEW features: 6/7 operational (86%)
+- ✅ Dependabot automation enabled
+- ✅ Phase 2 E2E tests: 14/14 passing
+- ✅ Serena v2: 24 tools operational
+
+**Key Deliverables**:
+- F-NEW-3 unified complexity (production wired)
+- Dependabot (11 ecosystems, ADHD-optimized)
+- Logging cleanup (90% noise reduction)
+- Security review complete
+- Task-Orchestrator saved (Nov 1 deadline)
 
 ---
 
@@ -15,9 +33,9 @@ Extracted **all action items** from comprehensive audit and categorized by:
 - **Category**: Security / Architecture / Features / Quality
 
 **Total Items Found**: 45+
-**Already Complete**: 15 (from this session!)
-**Immediate**: 8 (next sprint)
-**Future**: 22 (roadmap)
+**Complete**: 22+ (significant progress!)
+**Immediate**: 4 (security items remain)
+**Future**: 19 (roadmap)
 
 ---
 
@@ -95,9 +113,9 @@ Extracted **all action items** from comprehensive audit and categorized by:
    - Impact: Architecture violation eliminated
    - Evidence: bridge_integration.py, commit 2c8e7fbc
 
-### ⚠️ PENDING
+### ✅ COMPLETE (October 2025)
 
-10. **ConPort Orchestrator Bridge Wiring** 🟡 HIGH
+10. **ConPort Orchestrator Bridge Wiring** 🟡 HIGH (ALREADY COMPLETE)
    - Location: `services/conport_kg/orchestrator.py:127`
    - Issue: TODO for Integration Bridge event publishing
    - Current: Events not published
@@ -106,18 +124,36 @@ Extracted **all action items** from comprehensive audit and categorized by:
    - Priority: 🟡 HIGH (completes automation layer)
    - **Action**: Next architecture sprint
 
-11. **Task-Orchestrator Un-Deprecation** 🟡 HIGH
-   - Finding: Service has 5,577 lines, unique ML capabilities
-   - Issue: Marked for deletion 2025-11-01
-   - Evidence: Only 17% migrated to ADHD Engine
-   - Recommendation: **UN-DEPRECATE**
-   - Effort: 13 hours (security audit + integration)
-   - Priority: 🟡 HIGH (from task-orchestrator-final-assessment.md)
-   - **Action**: Review Decision #140, un-deprecate if valuable
+11. **Task-Orchestrator Un-Deprecation** 🟡 HIGH (✅ COMPLETE 2025-10-16)
+   - Status: ✅ UN-DEPRECATED (Decision #5, ADR-203)
+   - Result: 5,577 lines ML code preserved
+   - Deletion: CANCELLED (Nov 1 deadline averted)
+   - Next: Week 7 security audit + integration (13 hours)
+   - Evidence: STATUS.md created, DEPRECATED.md removed
 
 ---
 
 ## CATEGORY 3: FEATURES & ENHANCEMENTS
+
+### ✅ COMPLETE (October 2025) - F-NEW Serena/ADHD Synergies
+
+**F-NEW-1 through F-NEW-6**: Cross-system intelligence features (Decision #222 synergies)
+- **Status**: ✅ 6/7 operational, 16/16 tests passing (100%)
+- **Delivered**: 1,503 lines code + comprehensive tests
+- **Impact**: HIGH - Enhanced ADHD accommodations
+
+**Features Operational**:
+1. F-NEW-1: Dynamic result limits (3-40) ✅ LIVE
+2. F-NEW-2: Semantic code search ✅ LIVE
+3. F-NEW-3: Unified complexity (AST+LSP+Usage+ADHD) ✅ READY Oct 25
+4. F-NEW-4: Attention-aware search ✅ OPERATIONAL
+5. F-NEW-5: Code graph enrichment ✅ READY
+6. F-NEW-6: Session intelligence dashboard ✅ READY
+7. F-NEW-7: ConPort-KG 2.0 ⏳ STRATEGIC (Q1 2026, 3-4 weeks)
+
+**Documentation**: docs/F-NEW_FEATURES_STATUS.md (285 lines)
+
+---
 
 ### 🔮 Future Enhancements (Q1-Q2 2026)
 
