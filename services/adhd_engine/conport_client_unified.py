@@ -10,12 +10,18 @@ import sys
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
-# Add shared modules to path
-SHARED_DIR = Path(__file__).parent.parent / "shared"
-if str(SHARED_DIR) not in sys.path:
-    sys.path.insert(0, str(SHARED_DIR))
+# Try to import ConPort client, make it optional for MVP
+try:
+    # Add shared modules to path
+    SHARED_DIR = Path(__file__).parent.parent / "shared"
+    if str(SHARED_DIR) not in sys.path:
+        sys.path.insert(0, str(SHARED_DIR))
 
-from conport_client import ConPortClient, ConPortConfig
+    from conport_client import ConPortClient
+    CONPORT_AVAILABLE = True
+except ImportError:
+    CONPORT_AVAILABLE = False
+    ConPortClient = None
 
 
 logger = logging.getLogger(__name__)
@@ -23,15 +29,10 @@ logger = logging.getLogger(__name__)
 
 class ConPortSQLiteClient:
     """
-    Unified ConPort client adapter for ADHD Engine.
+    Stub ConPort client for ADHD Engine MVP.
 
-    NOTE: Despite the name "SQLiteClient", this now uses PostgreSQL AGE backend
-    via the unified client. Name preserved for API compatibility during migration.
-
-    Migrated from SQLite to PostgreSQL for:
-    - Multi-session support
-    - Better performance
-    - Unified backend across all systems
+    ConPort integration disabled for MVP due to dependency complexity.
+    Returns empty/default data for all queries.
     """
 
     def __init__(
@@ -41,33 +42,32 @@ class ConPortSQLiteClient:
         read_only: bool = True,
     ):
         """
-        Initialize ConPort client (matches old API).
+        Initialize stub ConPort client.
 
         Args:
-            db_path: IGNORED (kept for API compatibility, uses PostgreSQL now)
+            db_path: IGNORED
             workspace_id: Workspace identifier
-            read_only: IGNORED (PostgreSQL manages permissions)
+            read_only: IGNORED
         """
-        # Create config for unified client (PostgreSQL backend)
-        config = ConPortConfig(
-            workspace_id=workspace_id,
-            backend="postgresql_age",
-            pg_host="localhost",
-            pg_port=5455,
-            pg_user="dopemux_age",
-            pg_password="dopemux_age_dev_password",
-            pg_database="dopemux_knowledge_graph",
-        )
-
-        # Create unified client
-        self.client = ConPortClient(config=config)
-        self.db_path = db_path  # Stored but unused
         self.workspace_id = workspace_id
         self.read_only = read_only
+        logger.warning(f"ConPort stub client initialized (no persistence) for {workspace_id}")
 
-        logger.info(
-            f"Initialized unified ConPort client (ADHD adapter): PostgreSQL backend for {Path(workspace_id).name}"
-        )
+    def get_progress(self, *args, **kwargs):
+        """Stub: Return empty progress"""
+        return []
+
+    def get_decisions(self, *args, **kwargs):
+        """Stub: Return empty decisions"""
+        return []
+
+    def write_custom_data(self, *args, **kwargs):
+        """Stub: Do nothing"""
+        pass
+
+    def get_custom_data(self, *args, **kwargs):
+        """Stub: Return empty dict"""
+        return {}
 
     def _get_connection(self, write_mode: bool = False):
         """
