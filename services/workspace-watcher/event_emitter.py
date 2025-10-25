@@ -61,7 +61,8 @@ class WorkspaceSwitchEmitter:
         from_workspace: Optional[str],
         to_workspace: Optional[str],
         from_app: str,
-        to_app: str
+        to_app: str,
+        file_activity: Optional[dict] = None
     ) -> bool:
         """
         Emit workspace.switched event.
@@ -105,7 +106,8 @@ class WorkspaceSwitchEmitter:
                     "adhd_context_capture": {
                         "timestamp": f"{time.time()}",
                         "recovery_priority": "high" if from_workspace and to_workspace else "low",
-                        "detection_method": "workspace_watcher"
+                        "detection_method": "workspace_watcher",
+                        "file_activity": file_activity  # Include file modification data
                     }
                 },
                 source="workspace-watcher"
