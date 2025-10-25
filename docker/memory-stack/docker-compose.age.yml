@@ -4,7 +4,7 @@
 
 services:
   postgres-age:
-    image: apache/age:latest
+    image: apache/age:latest  # ✅ Working AGE with graph support
     container_name: dopemux-postgres-age
     ports:
       - "5455:5432"  # Using 5455 to avoid conflict with existing PostgreSQL on 5432
