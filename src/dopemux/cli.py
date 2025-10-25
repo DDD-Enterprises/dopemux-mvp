@@ -632,18 +632,38 @@ def start(
         if litellm_proxy_info:
             provider_url = f"{litellm_proxy_info.base_url}/v1/chat/completions"
             provider_name = provider_name or "litellm"
+            
+            # Configure Anthropic models as primary with proper fallbacks
+            if os.environ.get("ANTHROPIC_API_KEY"):
+                provider_models.extend([
+                    "anthropic-claude-3-5-sonnet-20241022",
+                    "anthropic-claude-3-opus-20240229", 
+                    "anthropic-claude-3-haiku-20240307"
+                ])
+            
+            # Add fallback models
             if os.environ.get("XAI_API_KEY"):
-                provider_models.append("xai-grok-code-fast")
+                provider_models.append("xai-grok-code-fast-1")
             if os.environ.get("OPENAI_API_KEY"):
-                provider_models.append("openai-gpt-5")
+                provider_models.extend(["openai-gpt-4o", "openai-gpt-4o-mini"])
+            if os.environ.get("OPENROUTER_API_KEY"):
+                provider_models.append("openrouter-anthropic-claude-3-opus-20240229")
 
             if not provider_models:
-                provider_models = ["xai-grok-code-fast"]
+                console.print(
+                    "[red]❌ No API keys found for any model providers.[/red]"
+                )
+                console.print(
+                    "[dim]Set ANTHROPIC_API_KEY, XAI_API_KEY, or OPENAI_API_KEY before using --litellm[/dim]"
+                )
+                sys.exit(1)
 
-            # Set router overrides to ensure our preferred defaults
+            # Set intelligent router overrides for different use cases
             router_overrides = {
-                "default": f"{provider_name},{provider_models[0]}",
-                "background": f"{provider_name},{provider_models[1 if len(provider_models) > 1 else 0]}",
+                "default": "litellm,anthropic-claude-3-5-sonnet-20241022",
+                "background": "litellm,anthropic-claude-3-haiku-20240307",
+                "think": "litellm,anthropic-claude-3-opus-20240229",
+                "webSearch": "litellm,anthropic-claude-3-haiku-20240307",
             }
         else:
             provider_url = os.environ.get("CLAUDE_CODE_ROUTER_UPSTREAM_URL")
