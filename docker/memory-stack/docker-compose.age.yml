@@ -7,7 +7,7 @@ services:
     image: apache/age:latest  # ✅ Working AGE with graph support
     container_name: dopemux-postgres-age
     ports:
-      - "5455:5432"  # Using 5455 to avoid conflict with existing PostgreSQL on 5432
+      - "5456:5432"  # Using 5456 (DDG uses 5455, ConPort uses 5456)
     environment:
       POSTGRES_USER: dopemux_age
       POSTGRES_PASSWORD: ${AGE_DB_PASSWORD:-dopemux_age_dev_password}

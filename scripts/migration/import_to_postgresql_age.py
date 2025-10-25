@@ -17,6 +17,7 @@ from typing import Dict, List, Any, Optional
 import sys
 from datetime import datetime
 import uuid
+from dateutil import parser as dateparser
 
 
 # Schema mapping for decisions
@@ -95,6 +96,13 @@ class ConPortMigration:
                     except:
                         tags = []
 
+                # Parse timestamps
+                created_at_str = decision.get('timestamp') or decision.get('created_at')
+                created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
+
+                updated_at_str = decision.get('updated_at')
+                updated_at = dateparser.parse(updated_at_str) if updated_at_str else datetime.utcnow()
+
                 # Insert decision
                 await self.conn.execute("""
                     INSERT INTO ag_catalog.decisions
@@ -110,8 +118,8 @@ class ConPortMigration:
                     tags,
                     decision.get('confidence_level', 'medium'),
                     decision.get('decision_type', 'implementation'),
-                    decision.get('timestamp') or decision.get('created_at') or datetime.utcnow().isoformat(),
-                    decision.get('updated_at') or datetime.utcnow().isoformat()
+                    created_at,
+                    updated_at
                 )
 
                 imported += 1
@@ -146,6 +154,20 @@ class ConPortMigration:
                 if entry.get('parent_id'):
                     parent_id = self.id_mapping.get(entry['parent_id'])
 
+                # Map status values (DONE → COMPLETED for PostgreSQL constraint)
+                status = entry.get('status', 'TODO')
+                if status == 'DONE':
+                    status = 'COMPLETED'
+                elif status == 'TODO':
+                    status = 'PLANNED'  # Match PostgreSQL constraint
+
+                # Parse timestamps
+                created_at_str = entry.get('timestamp') or entry.get('created_at')
+                created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
+
+                updated_at_str = entry.get('updated_at')
+                updated_at = dateparser.parse(updated_at_str) if updated_at_str else datetime.utcnow()
+
                 await self.conn.execute("""
                     INSERT INTO ag_catalog.progress_entries
                     (id, workspace_id, status, description, parent_id,
@@ -154,14 +176,14 @@ class ConPortMigration:
                 """,
                     new_id,
                     entry.get('workspace_id', '/Users/hue/code/dopemux-mvp'),
-                    entry.get('status', 'TODO'),
+                    status,
                     entry.get('description', ''),
                     parent_id,
                     self.id_mapping.get(entry.get('linked_item_id')) if entry.get('linked_item_type') == 'decision' else None,
                     entry.get('link_relationship_type', 'relates_to_progress'),
                     tags,
-                    entry.get('timestamp') or entry.get('created_at') or datetime.utcnow().isoformat(),
-                    entry.get('updated_at') or datetime.utcnow().isoformat()
+                    created_at,
+                    updated_at
                 )
 
                 imported += 1
@@ -186,6 +208,13 @@ class ConPortMigration:
                     except:
                         pass
 
+                # Parse timestamps
+                created_at_str = entry.get('created_at')
+                created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
+
+                updated_at_str = entry.get('updated_at')
+                updated_at = dateparser.parse(updated_at_str) if updated_at_str else datetime.utcnow()
+
                 await self.conn.execute("""
                     INSERT INTO ag_catalog.custom_data
                     (workspace_id, category, key, value, created_at, updated_at)
@@ -197,8 +226,8 @@ class ConPortMigration:
                     entry.get('category', 'unknown'),
                     entry.get('key', 'unknown'),
                     json.dumps(value),
-                    entry.get('created_at') or datetime.utcnow().isoformat(),
-                    entry.get('updated_at') or datetime.utcnow().isoformat()
+                    created_at,
+                    updated_at
                 )
 
                 imported += 1
@@ -221,22 +250,27 @@ class ConPortMigration:
                 target_id = self.id_mapping.get(link.get('target_item_id'))
 
                 if not source_id or not target_id:
-                    print(f"   ⚠️  Skipping link (missing ID mapping): {link.get('id')}")
+                    # Skip silently (expected - relationships reference old IDs)
                     continue
 
+                # Parse timestamp
+                created_at_str = link.get('created_at')
+                created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
+
+                # Schema uses source_type/source_id (not source_item_type/source_item_id)
                 await self.conn.execute("""
                     INSERT INTO ag_catalog.entity_relationships
-                    (source_item_type, source_item_id, target_item_type, target_item_id,
-                     relationship_type, description, created_at)
+                    (workspace_id, source_type, source_id, target_type, target_id,
+                     relationship_type, created_at)
                     VALUES ($1, $2, $3, $4, $5, $6, $7)
                 """,
+                    link.get('workspace_id', '/Users/hue/code/dopemux-mvp'),
                     link.get('source_item_type', 'decision'),
                     source_id,
                     link.get('target_item_type', 'decision'),
                     target_id,
                     link.get('relationship_type', 'relates_to'),
-                    link.get('description', ''),
-                    link.get('created_at') or datetime.utcnow().isoformat()
+                    created_at
                 )
 
                 imported += 1
@@ -251,6 +285,19 @@ class ConPortMigration:
         """Import system patterns"""
         print(f"\n🧩 Importing {len(patterns)} system patterns...")
 
+        # Check if table exists first
+        table_exists = await self.conn.fetchval("""
+            SELECT EXISTS (
+                SELECT 1 FROM information_schema.tables
+                WHERE table_schema = 'ag_catalog'
+                AND table_name = 'system_patterns'
+            )
+        """)
+
+        if not table_exists:
+            print("   ⚠️  system_patterns table doesn't exist - skipping")
+            return 0
+
         imported = 0
         for pattern in patterns:
             try:
@@ -263,8 +310,13 @@ class ConPortMigration:
                     except:
                         tags = []
 
-                # Note: Assuming system_patterns table exists in ag_catalog
-                # If not, this will fail and we'll handle it
+                # Parse timestamps
+                created_at_str = pattern.get('created_at')
+                created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
+
+                updated_at_str = pattern.get('updated_at')
+                updated_at = dateparser.parse(updated_at_str) if updated_at_str else datetime.utcnow()
+
                 await self.conn.execute("""
                     INSERT INTO ag_catalog.system_patterns
                     (id, workspace_id, name, description, tags, created_at, updated_at)
@@ -275,8 +327,8 @@ class ConPortMigration:
                     pattern.get('name', 'Unknown Pattern'),
                     pattern.get('description', ''),
                     tags,
-                    pattern.get('created_at') or datetime.utcnow().isoformat(),
-                    pattern.get('updated_at') or datetime.utcnow().isoformat()
+                    created_at,
+                    updated_at
                 )
 
                 imported += 1
@@ -301,16 +353,24 @@ class ConPortMigration:
                     except:
                         pass
 
+                # Parse timestamps
+                created_at_str = active_context.get('created_at')
+                created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
+
+                updated_at_str = active_context.get('updated_at')
+                updated_at = dateparser.parse(updated_at_str) if updated_at_str else datetime.utcnow()
+
+                # Store content in active_context column (not content)
                 await self.conn.execute("""
                     INSERT INTO ag_catalog.workspace_contexts
-                    (workspace_id, context_type, content, created_at, updated_at)
+                    (workspace_id, active_context, context_type, created_at, updated_at)
                     VALUES ($1, $2, $3, $4, $5)
                 """,
                     active_context.get('workspace_id', '/Users/hue/code/dopemux-mvp'),
-                    'active',
                     json.dumps(content),
-                    active_context.get('created_at') or datetime.utcnow().isoformat(),
-                    active_context.get('updated_at') or datetime.utcnow().isoformat()
+                    'active',
+                    created_at,
+                    updated_at
                 )
                 imported += 1
                 print("   ✅ Imported active context")
@@ -327,16 +387,24 @@ class ConPortMigration:
                     except:
                         pass
 
+                # Parse timestamps
+                created_at_str = product_context.get('created_at')
+                created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
+
+                updated_at_str = product_context.get('updated_at')
+                updated_at = dateparser.parse(updated_at_str) if updated_at_str else datetime.utcnow()
+
+                # Store in active_context column (reuse same column, differentiate by context_type)
                 await self.conn.execute("""
                     INSERT INTO ag_catalog.workspace_contexts
-                    (workspace_id, context_type, content, created_at, updated_at)
+                    (workspace_id, active_context, context_type, created_at, updated_at)
                     VALUES ($1, $2, $3, $4, $5)
                 """,
                     product_context.get('workspace_id', '/Users/hue/code/dopemux-mvp'),
-                    'product',
                     json.dumps(content),
-                    product_context.get('created_at') or datetime.utcnow().isoformat(),
-                    product_context.get('updated_at') or datetime.utcnow().isoformat()
+                    'product',
+                    created_at,
+                    updated_at
                 )
                 imported += 1
                 print("   ✅ Imported product context")
@@ -427,8 +495,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--db-url",
         type=str,
-        default="postgresql://dopemux_age:dopemux_age_dev_password@localhost:5455/dopemux_knowledge_graph",
-        help="PostgreSQL connection URL"
+        default="postgresql://dopemux_age:dopemux_age_dev_password@localhost:5456/dopemux_knowledge_graph",
+        help="PostgreSQL connection URL (ConPort on 5456, DDG on 5455)"
     )
     parser.add_argument(
         "--dry-run",
