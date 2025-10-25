@@ -50,22 +50,23 @@ docker-compose --profile manual up -d task-orchestrator
 echo "✅ Task Orchestrator started (port 3014)"
 echo ""
 
-# Step 4: Start ADHD Engine (background process)
+# Step 4: Start ADHD Engine (background process - Docker version has dependency issues)
 echo "🧠 Step 4/4: Starting ADHD Engine..."
 cd "$PROJECT_ROOT/services/adhd_engine"
 
 # Kill any existing instances
-pkill -f "adhd_engine/main.py" 2>/dev/null || true
+pkill -9 -f "adhd_engine/main.py" 2>/dev/null || true
+sleep 1
 
 # Start ADHD Engine on port 8095
 API_PORT=8095 REDIS_URL=redis://localhost:6379 nohup python main.py > /tmp/adhd_engine.log 2>&1 &
 ADHD_PID=$!
 
 # Wait for startup
-sleep 2
+sleep 3
 
 # Verify it started
-if lsof -i :8095 > /dev/null 2>&1; then
+if lsof -i :8095 2>/dev/null | grep -q LISTEN; then
     echo "✅ ADHD Engine started (port 8095, PID: $ADHD_PID)"
 else
     echo "⚠️  ADHD Engine failed to start - check /tmp/adhd_engine.log"
