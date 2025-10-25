@@ -3,3 +3,4 @@ asyncpg>=0.29.0
 redis[hiredis]>=5.0.0
 httpx>=0.25.0
 pydantic>=2.0.0
+python-dateutil>=2.8.0
