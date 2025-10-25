@@ -156,6 +156,8 @@ class EventSubscriber:
         except Exception as e:
             self.errors += 1
             logger.error(f"Event processing error: {e} | Data: {data}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
 
     async def _handle_workspace_switched(self, event_data: Dict[str, Any]):
         """
