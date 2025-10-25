@@ -75,11 +75,11 @@ class ActivityTracker:
 
         Called when workspace switches TO dopemux workspace.
         """
-        logger.info(f"🎯 start_session() called | current active: {self.session_active}")
+        logger.debug(f"start_session() called (active: {self.session_active})")
 
         if self.session_active:
             # Already in session, might be redundant event
-            logger.info("⚠️  Session already active, skipping")
+            logger.debug("Session already active, skipping")
             return
 
         self.session_active = True
@@ -87,7 +87,7 @@ class ActivityTracker:
         self.session_interruptions = 0
         self.sessions_tracked += 1
 
-        logger.info(f"📍 Session started (#{self.sessions_tracked}) at {self.session_start_time}")
+        logger.info(f"📍 Session started (#{self.sessions_tracked})")
 
         # Start aggregation window timer if not running
         if not self.running:

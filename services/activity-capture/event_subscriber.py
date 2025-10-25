@@ -89,14 +89,23 @@ class EventSubscriber:
 
         # Start subscriber task
         self.running = True
+        logger.warning(f"🚀 About to create background task...")
         self.subscriber_task = asyncio.create_task(self._subscribe_loop())
+        logger.warning(f"✅ Background task created: {self.subscriber_task}")
         logger.info(f"▶️  Started event subscriber: {self.stream_name}")
+
+        # Give task a moment to start
+        await asyncio.sleep(0.1)
+        logger.warning(f"🏃 Task should be running now...")
 
     async def _subscribe_loop(self):
         """Main event subscription loop"""
+        logger.warning(f"🔄 Subscribe loop started! stream={self.stream_name}, group={self.consumer_group}")
+
         while self.running:
             try:
                 # Read events from stream
+                logger.warning(f"📡 Calling xreadgroup...")
                 events = await self.redis.xreadgroup(
                     groupname=self.consumer_group,
                     consumername=self.consumer_name,
@@ -105,9 +114,14 @@ class EventSubscriber:
                     block=1000  # Block for 1 second
                 )
 
+                if events:
+                    logger.warning(f"📬 Received {len(events)} stream(s) with events")
+
                 # Process events
                 for stream, messages in events:
+                    logger.warning(f"📨 Stream {stream} has {len(messages)} message(s)")
                     for message_id, data in messages:
+                        logger.warning(f"📧 Processing message {message_id}")
                         await self._process_event(message_id, data)
 
                         # Acknowledge message
@@ -133,6 +147,8 @@ class EventSubscriber:
             message_id: Redis stream message ID
             data: Event data from stream
         """
+        logger.debug(f"Processing event: message_id={message_id}, data keys={list(data.keys())}")
+
         try:
             # Parse event data - Redis uses "event_type" not "type"
             event_type = data.get("event_type", data.get("type", ""))
@@ -141,13 +157,15 @@ class EventSubscriber:
 
             self.events_processed += 1
 
-            # Debug: Log what events we're seeing
             logger.info(f"📥 Event #{self.events_processed}: {event_type}")
 
             # Handle workspace.switched events
             if event_type == "workspace.switched":
-                logger.info(f"🔍 Processing workspace.switched event: {event_data.get('from_workspace', '?')} → {event_data.get('to_workspace', '?')}")
+                logger.info(f"🔍 Processing workspace.switched event")
+                logger.debug(f"Event data: {event_data}")
                 await self._handle_workspace_switched(event_data)
+            else:
+                logger.debug(f"Skipping event type: {event_type}")
 
             # Future: Handle other event types
             # elif event_type == "progress.updated":
@@ -166,33 +184,27 @@ class EventSubscriber:
         Args:
             event_data: Event payload with from_workspace, to_workspace, etc.
         """
-        logger.info(f"🎯 _handle_workspace_switched called with data: {event_data}")
-
         from_workspace = event_data.get("from_workspace", "")
         to_workspace = event_data.get("to_workspace", "")
         switch_type = event_data.get("switch_type", "manual")
 
-        logger.info(f"🔍 Parsed: from={from_workspace}, to={to_workspace}, type={switch_type}")
+        logger.debug(f"Workspace switch: {from_workspace} → {to_workspace} ({switch_type})")
 
         self.workspace_switches += 1
 
         # Detect if switching TO dopemux workspace (start session)
         if "dopemux" in to_workspace.lower():
-            logger.info(f"📍 Detected switch TO dopemux: {to_workspace}")
-            logger.info(f"📍 Starting session...")
+            logger.info(f"📍 Session started: {to_workspace}")
             await self.activity_tracker.start_session()
-            logger.info(f"📍 Session start completed")
 
         # Detect if switching FROM dopemux workspace (end session, log activity)
         elif "dopemux" in from_workspace.lower():
-            logger.info(f"📤 Detected switch FROM dopemux: {from_workspace} → {to_workspace}")
-            logger.info(f"📤 Ending session...")
+            logger.info(f"📤 Session ended: {from_workspace} → {to_workspace}")
             await self.activity_tracker.end_session(interruption=True)
-            logger.info(f"📤 Session end completed")
 
         # Switching between other workspaces (count as interruption if session active)
         else:
-            logger.info(f"🔄 Other workspace switch: {from_workspace} → {to_workspace}")
+            logger.debug(f"Non-dopemux workspace switch: {from_workspace} → {to_workspace}")
             await self.activity_tracker.record_interruption()
 
     async def stop(self):
