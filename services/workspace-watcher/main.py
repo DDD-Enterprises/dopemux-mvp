@@ -33,6 +33,7 @@ from typing import Optional
 from app_detector import AppDetector
 from workspace_mapper import WorkspaceMapper
 from event_emitter import WorkspaceSwitchEmitter
+from file_activity_checker import FileActivityChecker
 
 # Configure logging
 logging.basicConfig(
@@ -75,6 +76,7 @@ class WorkspaceWatcher:
         self.app_detector = AppDetector()
         self.workspace_mapper = WorkspaceMapper(config_path=config_path)
         self.event_emitter = WorkspaceSwitchEmitter(redis_url=redis_url)
+        self.file_checker = FileActivityChecker(recency_threshold=30)
 
         # State
         self.current_app: Optional[str] = None
@@ -146,12 +148,23 @@ class WorkspaceWatcher:
             from_workspace = self.current_workspace
             to_workspace = self.workspace_mapper.get_workspace(active_app)
 
+            # Check for recent file activity (if switching to dev workspace)
+            file_activity = None
+            if to_workspace:
+                file_activity = self.file_checker.check_recent_activity(to_workspace)
+                if file_activity["has_recent_activity"]:
+                    logger.info(
+                        f"  File activity: {file_activity['files_modified']} files modified "
+                        f"({file_activity['seconds_since_last_save']}s ago)"
+                    )
+
             # Emit event
             success = await self.event_emitter.emit_workspace_switch(
                 from_workspace=from_workspace,
                 to_workspace=to_workspace,
                 from_app=self.current_app or "unknown",
-                to_app=active_app
+                to_app=active_app,
+                file_activity=file_activity  # Include file activity data
             )
 
             if success:
