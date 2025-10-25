@@ -17,11 +17,13 @@ ADHD Benefit: Visualize patterns, track progress, celebrate wins
 
 import asyncio
 import logging
+import os
 from datetime import datetime, timedelta
 from typing import Dict, Any, List
 
 import aiohttp
-from fastapi import FastAPI
+from fastapi import FastAPI, Security, HTTPException
+from fastapi.security import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 import uvicorn
@@ -31,13 +33,32 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="ADHD Dashboard API", version="1.0.0")
 
-# Enable CORS for frontend
+# API Key authentication (optional, disabled by default for localhost)
+API_KEY = os.getenv("DASHBOARD_API_KEY", None)
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+async def verify_api_key(api_key: str = Security(api_key_header)):
+    """Verify API key if authentication is enabled"""
+    if API_KEY is None:
+        # Auth disabled (localhost development)
+        return None
+
+    if api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid API key")
+    return api_key
+
+# Restricted CORS - localhost only
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:8097,http://127.0.0.1:8097"
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,  # Localhost only
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET"],  # Read-only dashboard
+    allow_headers=["X-API-Key"],
 )
 
 # Service URLs
@@ -52,7 +73,7 @@ async def root():
 
 
 @app.get("/api/metrics")
-async def get_metrics():
+async def get_metrics(api_key: str = Security(verify_api_key)):
     """Get current activity metrics from Activity Capture"""
     try:
         async with aiohttp.ClientSession() as session:
@@ -66,7 +87,7 @@ async def get_metrics():
 
 
 @app.get("/api/adhd-state")
-async def get_adhd_state():
+async def get_adhd_state(api_key: str = Security(verify_api_key)):
     """Get current ADHD state from ADHD Engine"""
     try:
         async with aiohttp.ClientSession() as session:
@@ -95,7 +116,7 @@ async def get_adhd_state():
 
 
 @app.get("/api/sessions/today")
-async def get_today_sessions():
+async def get_today_sessions(api_key: str = Security(verify_api_key)):
     """Get today's session summary"""
     metrics = await get_metrics()
 
@@ -109,7 +130,7 @@ async def get_today_sessions():
 
 
 @app.get("/api/analytics/summary")
-async def get_analytics_summary():
+async def get_analytics_summary(api_key: str = Security(verify_api_key)):
     """Get analytics summary combining all sources"""
     metrics = await get_metrics()
     adhd = await get_adhd_state()
