@@ -153,6 +153,12 @@ class EventSubscriber:
                 logger.info(f"🔍 Processing workspace.switched event")
                 logger.debug(f"Event data: {event_data}")
                 await self._handle_workspace_switched(event_data)
+
+            # Handle code.committed events (git commits)
+            elif event_type == "code.committed":
+                logger.info(f"📝 Processing code.committed event")
+                await self._handle_code_committed(event_data)
+
             else:
                 logger.debug(f"Skipping event type: {event_type}")
 
@@ -195,6 +201,38 @@ class EventSubscriber:
         else:
             logger.debug(f"Non-dopemux workspace switch: {from_workspace} → {to_workspace}")
             await self.activity_tracker.record_interruption()
+
+    async def _handle_code_committed(self, event_data: Dict[str, Any]):
+        """
+        Handle git commit event.
+
+        Commits are high-productivity signals - log immediately to ADHD Engine.
+
+        Args:
+            event_data: Event payload with commit metadata
+        """
+        logger.info(f"📝 Git commit detected")
+
+        commit_hash = event_data.get("commit_hash", "unknown")[:8]
+        total_changes = event_data.get("total_changes", 0)
+        complexity = event_data.get("complexity", 0.7)
+        commit_message = event_data.get("commit_message", "")[:50]
+
+        logger.info(
+            f"📝 Commit: {commit_hash} "
+            f"({total_changes} lines, complexity: {complexity:.2f})"
+        )
+
+        # Log as immediate high-productivity activity
+        # Commits represent completed work regardless of session state
+        await self.activity_tracker._log_activity(
+            duration_minutes=5,  # Assume ~5 min work for a commit
+            interruptions=0,
+            complexity=complexity,
+            activity_type="committing"
+        )
+
+        logger.info(f"✅ Commit activity logged to ADHD Engine")
 
     async def stop(self):
         """Stop event subscriber gracefully"""
