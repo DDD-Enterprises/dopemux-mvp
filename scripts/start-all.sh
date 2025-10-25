@@ -129,12 +129,21 @@ if [ "$VERIFY" = true ]; then
         echo "❌ Not responding - check /tmp/adhd_engine.log"
     fi
 
+    # Check Activity Capture
+    echo -n "  Activity Capture (8096): "
+    if curl -sf http://localhost:8096/health > /dev/null 2>&1; then
+        echo "✅ Healthy"
+    else
+        echo "❌ Not responding - check: docker logs dopemux-activity-capture"
+    fi
+
     echo ""
 fi
 
 echo "🔗 Service URLs:"
 echo "  Integration Bridge: http://localhost:3016/health"
 echo "  Task Orchestrator:  http://localhost:3014/health (stdio MCP)"
+echo "  Activity Capture:   http://localhost:8096/health"
 echo "  ADHD Engine:        http://localhost:8095/health"
 echo "  ConPort MCP:        http://localhost:3004"
 echo "  Zen MCP:            http://localhost:3003"
