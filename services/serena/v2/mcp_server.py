@@ -905,6 +905,29 @@ class SerenaV2MCPServer:
                     }
                 ),
                 Tool(
+                    name="get_unified_complexity",
+                    description="F-NEW-3: Unified Complexity Intelligence (HIGH priority synergy). Combines AST (dope-context), LSP (serena), usage patterns, and ADHD adjustments for accurate cognitive load assessment. Returns 0.0-1.0 score with breakdown and human-readable interpretation.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "file_path": {
+                                "type": "string",
+                                "description": "File path to analyze"
+                            },
+                            "symbol": {
+                                "type": "string",
+                                "description": "Optional function/class name (analyzes whole file if omitted)"
+                            },
+                            "user_id": {
+                                "type": "string",
+                                "description": "User identifier for ADHD adjustments (default: 'default')",
+                                "default": "default"
+                            }
+                        },
+                        "required": ["file_path"]
+                    }
+                ),
+                Tool(
                     name="get_reading_order",
                     description="Optimal reading order for understanding code (Tier 2 ADHD tool). Orders files/symbols by complexity progression (simple to complex). Progressive disclosure for learning.",
                     inputSchema={
@@ -1396,6 +1419,8 @@ class SerenaV2MCPServer:
                     result = await self.predict_navigation_from_git_tool(**arguments)
                 elif name == "find_test_file":
                     result = await self.find_test_file_tool(**arguments)
+                elif name == "get_unified_complexity":
+                    result = await self.get_unified_complexity_tool(**arguments)
                 else:
                     raise ValueError(f"Unknown tool: {name}")
 
@@ -4725,13 +4750,60 @@ class SerenaV2MCPServer:
             logger.error(f"find_test_file failed: {e}")
             return json.dumps({"error": str(e), "file_path": file_path}, indent=2)
 
+    async def get_unified_complexity_tool(
+        self,
+        file_path: str,
+        symbol: Optional[str] = None,
+        user_id: str = "default"
+    ) -> str:
+        """
+        F-NEW-3: Get unified complexity score combining AST, LSP, usage, and ADHD.
+
+        Combines:
+        - AST complexity (dope-context Tree-sitter)
+        - LSP complexity (Serena code analysis)
+        - Usage complexity (reference counts)
+        - ADHD multiplier (user-specific adjustments)
+
+        Args:
+            file_path: File path to analyze
+            symbol: Optional function/class name
+            user_id: User identifier for ADHD adjustments
+
+        Returns:
+            JSON with complexity breakdown and interpretation
+        """
+        try:
+            # Import complexity coordinator
+            import sys
+            coord_path = Path(__file__).parent.parent.parent / "complexity_coordinator"
+            if str(coord_path) not in sys.path:
+                sys.path.insert(0, str(coord_path))
+
+            from unified_complexity import get_unified_complexity
+
+            # Get unified complexity
+            breakdown = await get_unified_complexity(file_path, symbol, user_id)
+
+            return json.dumps(breakdown.to_dict(), indent=2)
+
+        except Exception as e:
+            logger.error(f"get_unified_complexity failed: {e}")
+            return json.dumps({
+                "error": str(e),
+                "file_path": file_path,
+                "symbol": symbol,
+                "fallback_score": 0.5,
+                "interpretation": "Error - using medium complexity estimate"
+            }, indent=2)
+
 
 async def main():
     """Main entry point for Serena v2 MCP server"""
     logger.info("="*60)
     logger.info("SERENA V2 MCP SERVER - PHASE 2 + ENHANCED FEATURES")
-    logger.info("ADHD-optimized code intelligence (23 tools)")
-    logger.info("Enhanced: Cache (100x faster), File Watcher, Git Prediction, Test Nav")
+    logger.info("ADHD-optimized code intelligence (24 tools)")
+    logger.info("Enhanced: Cache (100x faster), Unified Complexity, File Watcher")
     logger.info("="*60)
 
     # Create server instance
@@ -4746,11 +4818,11 @@ async def main():
     logger.info("="*60)
     logger.info("Server ready - awaiting tool calls")
     logger.info(f"Workspace: {server_instance.workspace}")
-    logger.info(f"Tools available: 23")
+    logger.info(f"Tools available: 24")
     logger.info(f"  - Health (1): get_workspace_status")
     logger.info(f"  - Navigation Tier 1 (4): find_symbol, goto_definition, get_context, find_references")
-    logger.info(f"  - Enhanced Navigation (3): find_similar_code, predict_navigation_from_git, find_test_file")
-    logger.info(f"  - Performance: Redis cache enabled (100x speedup), File watcher active")
+    logger.info(f"  - Enhanced Navigation (4): find_similar_code, predict_navigation_from_git, find_test_file, get_unified_complexity")
+    logger.info(f"  - Performance: Redis cache (100x faster), File watcher, Unified complexity")
     logger.info(f"  - ADHD Intelligence Tier 2 (4): analyze_complexity, filter_by_focus, suggest_next_step, get_reading_order")
     logger.info(f"  - Advanced Tier 3 (3): find_relationships, get_navigation_patterns, update_focus_mode")
     logger.info(f"  - Feature 1 Detection (1): detect_untracked_work")
