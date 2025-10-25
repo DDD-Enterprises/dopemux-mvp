@@ -187,10 +187,14 @@ class LiteLLMProxyManager:
         }
 
         # Preserve original provider keys for LiteLLM to use
+        if os.environ.get("ANTHROPIC_API_KEY"):
+            updates["ANTHROPIC_API_KEY"] = os.environ["ANTHROPIC_API_KEY"]
         if os.environ.get("XAI_API_KEY"):
             updates["XAI_API_KEY"] = os.environ["XAI_API_KEY"]
         if os.environ.get("OPENAI_API_KEY"):
-            updates["OPENAI_API_KEY_ORIGINAL"] = os.environ["OPENAI_API_KEY"]
+            updates["OPENAI_API_KEY"] = os.environ["OPENAI_API_KEY"]
+        if os.environ.get("OPENROUTER_API_KEY"):
+            updates["OPENROUTER_API_KEY"] = os.environ["OPENROUTER_API_KEY"]
             
         return updates
 
