@@ -16,7 +16,7 @@ services:
       POSTGRES_PASSWORD: dopemux_age_staging_password
       POSTGRES_DB: dopemux_knowledge_graph
     ports:
-      - "5456:5432"  # Different port for staging
+      - "5457:5432"  # Staging port (5455-5456 in use)
     volumes:
       - staging_postgres_data:/var/lib/postgresql/data
       - ./docker/mcp-servers/conport/migrations:/docker-entrypoint-initdb.d/migrations
@@ -30,7 +30,7 @@ services:
     container_name: staging-redis
     image: redis:7-alpine
     ports:
-      - "6380:6379"  # Different port for staging
+      - "6381:6379"  # Staging port (6379-6380 may be in use)
     volumes:
       - staging_redis_data:/data
     healthcheck:
@@ -43,7 +43,7 @@ services:
     container_name: staging-qdrant
     image: qdrant/qdrant:latest
     ports:
-      - "6334:6333"  # Different port for staging
+      - "6335:6333"  # Different port for staging (6334 in use)
     volumes:
       - staging_qdrant_data:/qdrant/storage
     healthcheck:
