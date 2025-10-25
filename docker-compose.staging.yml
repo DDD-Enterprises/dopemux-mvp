@@ -16,7 +16,7 @@ services:
       POSTGRES_PASSWORD: dopemux_age_staging_password
       POSTGRES_DB: dopemux_knowledge_graph
     ports:
-      - "5457:5432"  # Staging port (5455-5456 in use)
+      - "15432:5432"  # Staging port (completely different range)
     volumes:
       - staging_postgres_data:/var/lib/postgresql/data
       - ./docker/mcp-servers/conport/migrations:/docker-entrypoint-initdb.d/migrations
@@ -30,7 +30,7 @@ services:
     container_name: staging-redis
     image: redis:7-alpine
     ports:
-      - "6381:6379"  # Staging port (6379-6380 may be in use)
+      - "16379:6379"  # Staging port (completely different range)
     volumes:
       - staging_redis_data:/data
     healthcheck:
@@ -43,7 +43,7 @@ services:
     container_name: staging-qdrant
     image: qdrant/qdrant:latest
     ports:
-      - "6335:6333"  # Different port for staging (6334 in use)
+      - "16333:6333"  # Staging port (completely different range)
     volumes:
       - staging_qdrant_data:/qdrant/storage
     healthcheck:
@@ -67,7 +67,7 @@ services:
       REDIS_URL: redis://redis:6379
       PYTHON_ENV: staging
     ports:
-      - "3014:3004"  # Different external port
+      - "13004:3004"  # Staging port (1xxxx range)
     depends_on:
       - postgres-age
       - redis
@@ -88,7 +88,7 @@ services:
       POSTGRES_URL: postgresql://dopemux_age:dopemux_age_staging_password@postgres-age:5432/dopemux_knowledge_graph
       PYTHON_ENV: staging
     ports:
-      - "3011:3001"
+      - "13001:3001"  # Staging port
     depends_on:
       - postgres-age
       - redis
@@ -112,7 +112,7 @@ services:
       REDIS_URL: redis://redis:6379
       ENVIRONMENT: staging
     ports:
-      - "8011:8001"
+      - "18001:8001"  # Staging port
     depends_on:
       - redis
     healthcheck:
@@ -132,7 +132,7 @@ services:
       CONPORT_URL: http://conport-mcp:3004
       ENVIRONMENT: staging
     ports:
-      - "8012:8002"
+      - "18002:8002"  # Staging port
     depends_on:
       - conport-mcp
       - redis
@@ -163,7 +163,7 @@ services:
     container_name: staging-prometheus
     image: prom/prometheus:latest
     ports:
-      - "9091:9090"  # Different port for staging
+      - "19090:9090"  # Staging port
     volumes:
       - ./services/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./services/monitoring/alerting_rules.yml:/etc/prometheus/alerting_rules.yml
@@ -188,7 +188,7 @@ services:
     container_name: staging-grafana
     image: grafana/grafana:latest
     ports:
-      - "3010:3000"  # Different port for staging
+      - "13000:3000"  # Staging port
     environment:
       GF_SECURITY_ADMIN_PASSWORD: staging_admin_password
       GF_INSTALL_PLUGINS: ""
