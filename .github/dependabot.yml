@@ -1,0 +1,196 @@
+# Dependabot Configuration for Dopemux MVP
+# Automated dependency updates with ADHD-friendly settings
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
+
+version: 2
+updates:
+  # ============================================================================
+  # Python Dependencies (Root Project)
+  # ============================================================================
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Los_Angeles"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "DDD-Enterprises/dopemux-maintainers"
+    assignees:
+      - "DDD-Enterprises/dopemux-maintainers"
+    labels:
+      - "dependencies"
+      - "python"
+      - "automated"
+    commit-message:
+      prefix: "deps(python)"
+      include: "scope"
+    # Security updates get priority
+    allow:
+      - dependency-type: "all"
+    # Group minor/patch updates together to reduce PR noise
+    groups:
+      python-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # ============================================================================
+  # Python - Service-Specific Dependencies
+  # ============================================================================
+  - package-ecosystem: "pip"
+    directory: "/services/dope-context"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "python"
+      - "dope-context"
+    commit-message:
+      prefix: "deps(dope-context)"
+
+  - package-ecosystem: "pip"
+    directory: "/services/serena"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "python"
+      - "serena"
+    commit-message:
+      prefix: "deps(serena)"
+
+  - package-ecosystem: "pip"
+    directory: "/services/activity-capture"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "python"
+      - "activity-capture"
+    commit-message:
+      prefix: "deps(activity-capture)"
+
+  # ============================================================================
+  # Docker - MCP Servers
+  # ============================================================================
+  - package-ecosystem: "pip"
+    directory: "/docker/mcp-servers/zen/zen-mcp-server"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "python"
+      - "mcp-zen"
+    commit-message:
+      prefix: "deps(zen-mcp)"
+
+  - package-ecosystem: "pip"
+    directory: "/docker/mcp-servers/desktop-commander"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "python"
+      - "mcp-desktop-commander"
+    commit-message:
+      prefix: "deps(desktop-commander)"
+
+  - package-ecosystem: "pip"
+    directory: "/docker/mcp-servers/exa"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "python"
+      - "mcp-exa"
+    commit-message:
+      prefix: "deps(exa-mcp)"
+
+  # ============================================================================
+  # JavaScript/TypeScript - MetaMCP
+  # ============================================================================
+  - package-ecosystem: "npm"
+    directory: "/metamcp"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "javascript"
+      - "metamcp"
+    commit-message:
+      prefix: "deps(metamcp)"
+    groups:
+      js-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "npm"
+    directory: "/metamcp/apps/frontend"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "javascript"
+      - "frontend"
+    commit-message:
+      prefix: "deps(frontend)"
+
+  - package-ecosystem: "npm"
+    directory: "/metamcp/apps/backend"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "javascript"
+      - "backend"
+    commit-message:
+      prefix: "deps(backend)"
+
+  # ============================================================================
+  # GitHub Actions
+  # ============================================================================
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "thursday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "ci-cd"
+    commit-message:
+      prefix: "deps(actions)"
+
+# ADHD-Friendly Configuration Notes:
+# - Weekly schedule to avoid PR overwhelm
+# - Staggered days (Mon: Python, Tue: MCP, Wed: JS, Thu: Actions)
+# - Limited concurrent PRs (3-5 max)
+# - Grouped minor/patch updates reduce noise
+# - Clear labeling for easy filtering
+# - Conventional commit prefixes for clean history
