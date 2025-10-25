@@ -16,6 +16,12 @@ echo "🛑 Stopping Complete Dopemux Stack..."
 echo "=========================================="
 echo ""
 
+# Stop Workspace Watcher (background process)
+echo "👁️  Stopping Workspace Watcher..."
+pkill -9 -f "workspace-watcher/main.py" 2>/dev/null || true
+echo "✅ Workspace Watcher stopped"
+echo ""
+
 # Stop ADHD Engine (background process)
 echo "🧠 Stopping ADHD Engine..."
 pkill -9 -f "adhd_engine/main.py" 2>/dev/null || true
