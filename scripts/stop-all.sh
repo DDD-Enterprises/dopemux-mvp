@@ -16,12 +16,12 @@ echo "🛑 Stopping Complete Dopemux Stack..."
 echo "=========================================="
 echo ""
 
-# Stop ADHD Engine first (background process)
+# Stop ADHD Engine (background process)
 echo "🧠 Stopping ADHD Engine..."
-pkill -f "adhd_engine/main.py" 2>/dev/null || true
-if lsof -i :8095 > /dev/null 2>&1; then
-    echo "⚠️  ADHD Engine still running - force killing..."
-    lsof -ti :8095 | xargs kill -9 2>/dev/null || true
+pkill -9 -f "adhd_engine/main.py" 2>/dev/null || true
+if lsof -i :8095 2>/dev/null | grep -q LISTEN; then
+    echo "⚠️  ADHD Engine still running - force killing port..."
+    lsof -ti :8095 2>/dev/null | xargs kill -9 2>/dev/null || true
 fi
 echo "✅ ADHD Engine stopped"
 echo ""
