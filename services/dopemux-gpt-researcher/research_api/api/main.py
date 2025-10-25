@@ -485,8 +485,17 @@ async def resume_session(session_id: str):
 # ========================
 
 @app.websocket("/ws/{task_id}")
-async def websocket_endpoint(websocket: WebSocket, task_id: str):
-    """WebSocket for real-time progress updates"""
+async def websocket_endpoint(websocket: WebSocket, task_id: str, api_key: str = None):
+    """
+    WebSocket for real-time progress updates
+
+    Security: Requires API key via query parameter (?api_key=...)
+    """
+    # Validate API key before accepting connection
+    expected_key = os.getenv("RESEARCHER_API_KEY")
+    if expected_key and api_key != expected_key:
+        await websocket.close(code=4001, reason="Invalid API key")
+        return
 
     await websocket.accept()
     app_state.active_websockets[task_id] = websocket
