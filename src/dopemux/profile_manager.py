@@ -102,7 +102,7 @@ class ProfileManager:
         """Get specific profile by name."""
         profile_path = self.profiles_dir / f"{name}.yaml"
 
-        if not profile_path.exists():
+        if not Path.exists(profile_path):
             return None
 
         return DopemuxProfile.from_yaml(profile_path)
@@ -130,7 +130,7 @@ class ProfileManager:
 
         profile_path = self.profiles_dir / f"{name}.yaml"
 
-        if profile_path.exists():
+        if Path.exists(profile_path):
             raise ValueError(f"Profile already exists: {name}")
 
         # Create profile (copy from base or use defaults)
@@ -177,7 +177,7 @@ class ProfileManager:
         """Get active profile name for workspace."""
         profile_marker = workspace / ".dopemux" / "active_profile"
 
-        if profile_marker.exists():
+        if Path.exists(profile_marker):
             return profile_marker.read_text().strip()
 
         return None
@@ -208,7 +208,7 @@ class ProfileManager:
         merged = {}
 
         # 1. Global config
-        if self.config_file.exists():
+        if Path.exists(self.config_file):
             with open(self.config_file) as f:
                 global_cfg = yaml.safe_load(f) or {}
                 merged = self._deep_merge(merged, global_cfg)
@@ -230,7 +230,7 @@ class ProfileManager:
 
         # 3. Project config
         project_config_file = workspace / ".dopemux" / "config.yaml"
-        if project_config_file.exists():
+        if Path.exists(project_config_file):
             with open(project_config_file) as f:
                 project_cfg = yaml.safe_load(f) or {}
                 merged = self._deep_merge(merged, project_cfg)
@@ -282,7 +282,7 @@ class ProfileManager:
         # Find source profiles in dopemux repo
         repo_profiles = Path(__file__).parent.parent.parent / "config" / "profiles"
 
-        if not repo_profiles.exists():
+        if not Path.exists(repo_profiles):
             print(f"Warning: Default profiles not found at {repo_profiles}")
             return
 
@@ -290,7 +290,7 @@ class ProfileManager:
         for profile_file in repo_profiles.glob("*.yaml"):
             dest = self.profiles_dir / profile_file.name
 
-            if not dest.exists():
+            if not Path.exists(dest):
                 shutil.copy(profile_file, dest)
                 print(f"✅ Installed profile: {profile_file.stem}")
             else:
