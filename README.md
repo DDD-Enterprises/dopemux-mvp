@@ -576,6 +576,43 @@ Dopemux is designed by and for developers with ADHD. Contributions welcome!
 - ✅ Worktree consolidation improvements (Decision #217)
 - ✅ OpenRouter + Grok Code Fast integration for LiteLLM
 
+## 📱 Mobile Mode with Happy
+
+Bring Claude Code to your phone with the Happy mobile client.
+
+### Prerequisites
+
+- Install Claude CLI and log in: `brew install claude-cli` then `claude login`
+- Install Happy CLI globally: `npm i -g happy-coder`
+- Optional: configure a self-hosted Happy relay and webapp
+
+### Configuration
+
+Add the following keys to `~/.config/dopemux/config.yaml` or `.dopemux/config.yaml`:
+
+```yaml
+mobile:
+  enabled: true
+  default_panes: primary  # "primary", "all", or list of pane titles
+  happy_server_url: https://happy.yourdomain.tld  # optional
+  happy_webapp_url: https://happyweb.yourdomain.tld  # optional
+```
+
+### Quick Start
+
+1. `dopemux start`
+2. `dopemux mobile start`
+3. Scan the QR code with the Happy app (iOS, Android, or web)
+4. Code from your phone while Claude stays in sync
+
+Helpful commands:
+
+- `dopemux mobile start --all` – mirror all Claude panes
+- `dopemux mobile notify "✅ Tests passed"` – push a status notification
+- `dopemux mobile detach --all` – stop all Happy sessions
+
+Run `dopemux doctor` to verify Happy/Claude CLI availability and optional relay reachability.
+
 ### Version 2.0 (2025-10-04)
 
 **Statusline Improvements:**

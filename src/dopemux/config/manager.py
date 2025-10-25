@@ -9,7 +9,7 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import toml
 import yaml
@@ -109,6 +109,45 @@ class ClaudeAutoResponderConfig(BaseModel):
         return v
 
 
+class MobileConfig(BaseModel):
+    """Mobile mode configuration for Happy client integration."""
+
+    enabled: bool = Field(default=False, description="Enable Dopemux mobile integrations")
+    happy_server_url: Optional[str] = Field(
+        default=None, description="Custom Happy relay base URL"
+    )
+    happy_webapp_url: Optional[str] = Field(
+        default=None, description="Custom Happy webapp URL"
+    )
+    default_panes: Union[str, List[str]] = Field(
+        default="primary",
+        description="Default Claude panes to mirror (primary, all, or explicit names)",
+    )
+    popup_mode: bool = Field(
+        default=False,
+        description="Use tmux popup for ephemeral Happy session instead of panes",
+    )
+
+    @field_validator("default_panes")
+    @classmethod
+    def validate_default_panes(cls, value: Union[str, List[str]]):
+        if isinstance(value, str):
+            allowed = {"primary", "all"}
+            if value.lower() in allowed:
+                return value.lower()
+            if not value:
+                raise ValueError("default_panes must not be empty")
+            return value
+        if isinstance(value, list):
+            if not value:
+                raise ValueError("default_panes list must not be empty")
+            for item in value:
+                if not isinstance(item, str) or not item.strip():
+                    raise ValueError("default_panes list entries must be non-empty strings")
+            return [item.strip() for item in value]
+        raise ValueError("default_panes must be 'primary', 'all', or a list of pane names")
+
+
 class DopemuxConfig(BaseModel):
     """Main Dopemux configuration."""
 
@@ -122,6 +161,7 @@ class DopemuxConfig(BaseModel):
     )
     claude_path: Optional[str] = None
     project_templates: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
+    mobile: MobileConfig = Field(default_factory=MobileConfig)
 
 
 @dataclass
@@ -259,6 +299,11 @@ class ConfigManager:
         config = self.load_config()
         return config.claude_autoresponder
 
+    def get_mobile_config(self) -> MobileConfig:
+        """Return mobile Happy integration settings."""
+        config = self.load_config()
+        return config.mobile
+
     def update_claude_autoresponder(self, **kwargs) -> None:
         """Update Claude Auto Responder settings."""
         config = self.load_config()
@@ -321,6 +366,13 @@ class ConfigManager:
                 "timeout_minutes": 30,
                 "whitelist_tools": True,
                 "debug_mode": False,
+            },
+            "mobile": {
+                "enabled": False,
+                "happy_server_url": None,
+                "happy_webapp_url": None,
+                "default_panes": "primary",
+                "popup_mode": False,
             },
             "project_templates": self._get_project_templates(),
         }
