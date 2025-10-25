@@ -2,9 +2,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install system dependencies (gcc for builds, curl for health checks)
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first (Docker layer caching)
@@ -20,13 +21,14 @@ COPY . .
 RUN useradd -m -u 1000 adhd && chown -R adhd:adhd /app
 USER adhd
 
-# Expose API port
-EXPOSE 8000
+# Expose API port (8095 for ADHD Engine)
+EXPOSE 8095
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health').raise_for_status()"
+    CMD curl -f http://localhost:8095/health || exit 1
 
 # Set Python path and run with uvicorn as module
 ENV PYTHONPATH=/app
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
+ENV API_PORT=8095
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8095", "--log-level", "info"]
