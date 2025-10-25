@@ -164,6 +164,7 @@ MCP_SERENA="⚠️"     # 🔬 Code intelligence (port 3006)
 MCP_DDG="⚠️"        # 📊 Decision Graph (port 3016)
 MCP_DOPE="⚠️"       # 🔎 Semantic Search - via Qdrant (port 6333)
 MCP_DESKTOP="⚠️"    # 🖥️ Context switching (port 3012)
+MCP_ACTIVITY="⚠️"   # 🎯 Activity Capture (port 8096)
 
 # Fast port checks using nc (netcat) - much faster than curl
 if nc -z localhost 3002 2>/dev/null; then MCP_CONTEXT7="📚"; fi
@@ -172,6 +173,7 @@ if nc -z localhost 3006 2>/dev/null; then MCP_SERENA="🔬"; fi
 if nc -z localhost 3016 2>/dev/null; then MCP_DDG="📊"; fi
 if nc -z localhost 6333 2>/dev/null; then MCP_DOPE="🔎"; fi
 if nc -z localhost 3012 2>/dev/null; then MCP_DESKTOP="🖥️"; fi
+if nc -z localhost 8096 2>/dev/null; then MCP_ACTIVITY="🎯"; fi
 
 # ADHD Engine comprehensive status (single /health call for efficiency)
 ADHD_STATUS="💤"
@@ -266,7 +268,7 @@ fi
 printf " \033[2m|\033[0m"
 
 # MCP Servers - compact status icons
-printf " %s%s%s%s%s%s" "$MCP_CONTEXT7" "$MCP_ZEN" "$MCP_SERENA" "$MCP_DDG" "$MCP_DOPE" "$MCP_DESKTOP"
+printf " %s%s%s%s%s%s%s" "$MCP_CONTEXT7" "$MCP_ZEN" "$MCP_SERENA" "$MCP_DDG" "$MCP_DOPE" "$MCP_DESKTOP" "$MCP_ACTIVITY"
 
 printf " \033[2m|\033[0m"
 
