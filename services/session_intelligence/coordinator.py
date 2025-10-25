@@ -67,16 +67,44 @@ class SessionIntelligenceCoordinator:
     Provides unified dashboard and actionable recommendations.
     """
 
-    def __init__(self):
-        """Initialize session intelligence coordinator."""
-        self._serena_client = None
-        self._adhd_client = None
+    def __init__(self, workspace_path: Path = None):
+        """
+        Initialize session intelligence coordinator.
+
+        Args:
+            workspace_path: Workspace path for Serena integration
+        """
+        self.workspace = workspace_path or Path.cwd()
+        self._serena_server = None  # Lazy-loaded
+        self._adhd_config = None  # Lazy-loaded
         self._cache = {}  # Simple in-memory cache (10s TTL)
         self._cache_ttl = 10  # seconds
 
+    async def _get_serena_server(self):
+        """Get or initialize Serena MCP server (singleton)."""
+        if self._serena_server is not None:
+            return self._serena_server
+
+        try:
+            import sys
+            serena_path = Path(__file__).parent.parent / "serena" / "v2"
+            if str(serena_path) not in sys.path:
+                sys.path.insert(0, str(serena_path))
+
+            from mcp_server import SerenaV2MCPServer
+
+            self._serena_server = SerenaV2MCPServer(workspace=self.workspace)
+            logger.info("✅ SessionIntelligence connected to Serena v2")
+
+        except Exception as e:
+            logger.warning(f"⚠️ Serena unavailable: {e}")
+            self._serena_server = None
+
+        return self._serena_server
+
     async def _get_serena_session(self, session_id: Optional[str] = None) -> Optional[SessionState]:
         """
-        Get session state from Serena.
+        Get session state from Serena MCP.
 
         Args:
             session_id: Optional session ID
@@ -85,16 +113,50 @@ class SessionIntelligenceCoordinator:
             SessionState or None if unavailable
         """
         try:
-            # TODO: Wire to Serena MCP get_session_info tool
-            # serena_result = await serena_mcp.call_tool("get_session_info")
+            serena = await self._get_serena_server()
+            if not serena:
+                return None
 
-            # Placeholder
-            logger.debug("Serena session fetch (placeholder)")
-            return None
+            # Call Serena get_session_info tool
+            result_json = await serena.get_session_info_tool()
+
+            import json
+            result = json.loads(result_json)
+
+            return SessionState(
+                session_id=result.get('session_id', ''),
+                workspace=result.get('workspace', ''),
+                worktree=result.get('worktree', ''),
+                branch=result.get('branch', ''),
+                current_focus=result.get('current_focus'),
+                session_duration_minutes=result.get('session_duration_minutes', 0)
+            )
 
         except Exception as e:
             logger.warning(f"Failed to get Serena session: {e}")
             return None
+
+    async def _get_adhd_config(self):
+        """Get or initialize ADHD config (singleton, same pattern as dope-context)."""
+        if self._adhd_config is not None:
+            return self._adhd_config
+
+        try:
+            import sys
+            adhd_path = Path(__file__).parent.parent / "adhd_engine"
+            if str(adhd_path) not in sys.path:
+                sys.path.insert(0, str(adhd_path))
+
+            from adhd_config_service import get_adhd_config_service
+
+            self._adhd_config = await get_adhd_config_service()
+            logger.info("✅ SessionIntelligence connected to ADHD Engine")
+
+        except Exception as e:
+            logger.warning(f"⚠️ ADHD Engine unavailable: {e}")
+            self._adhd_config = None
+
+        return self._adhd_config
 
     async def _get_adhd_state(self, user_id: str = "default") -> Optional[CognitiveState]:
         """
@@ -107,12 +169,26 @@ class SessionIntelligenceCoordinator:
             CognitiveState or None if unavailable
         """
         try:
-            # TODO: Wire to ADHD Engine HTTP API
-            # response = await http_client.get(f"/api/v1/user/{user_id}/state")
+            adhd_config = await self._get_adhd_config()
+            if not adhd_config:
+                return None
 
-            # Placeholder
-            logger.debug(f"ADHD state fetch for user {user_id} (placeholder)")
-            return None
+            # Get state using ADHD Engine API (same as dope-context pattern)
+            energy = await adhd_config.get_energy_level(user_id)
+            attention = await adhd_config.get_attention_state(user_id)
+
+            # Get break info
+            # Note: ADHD Engine API may not have minutes_since_break directly
+            # Using placeholder until API contract confirmed
+            minutes_since = None  # TODO: Confirm ADHD Engine API method
+
+            return CognitiveState(
+                user_id=user_id,
+                energy_level=energy,
+                attention_state=attention,
+                last_break_timestamp=None,  # TODO: Get from ADHD Engine
+                minutes_since_break=minutes_since
+            )
 
         except Exception as e:
             logger.warning(f"Failed to get ADHD state: {e}")
