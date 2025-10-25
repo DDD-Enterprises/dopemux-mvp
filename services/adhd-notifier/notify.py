@@ -83,6 +83,80 @@ class Notifier:
             "default"
         )
 
+    def speak_break_reminder(self, duration_minutes: int, urgency: str = "normal") -> bool:
+        """
+        Speak break reminder using text-to-speech (macOS only).
+
+        Args:
+            duration_minutes: How long user has been working
+            urgency: "normal" or "urgent"
+
+        Returns:
+            True if speech sent successfully
+        """
+        if not IS_MACOS:
+            logger.debug("Voice notifications only supported on macOS")
+            return False
+
+        if urgency == "urgent":
+            message = f"Break needed now. You have been coding for {duration_minutes} minutes. Please take a ten minute break."
+        else:
+            message = f"Time for a break. You have been focused for {duration_minutes} minutes. Take a five minute break."
+
+        return self._speak_macos(message)
+
+    def speak_hyperfocus_alert(self, duration_minutes: int) -> bool:
+        """
+        Speak urgent hyperfocus alert using TTS.
+
+        Args:
+            duration_minutes: How long user has been in hyperfocus
+
+        Returns:
+            True if speech sent successfully
+        """
+        if not IS_MACOS:
+            return False
+
+        message = (
+            f"Hyperfocus alert! You have been coding for {duration_minutes} minutes without a break. "
+            f"This can lead to burnout. Take a fifteen minute break immediately."
+        )
+
+        return self._speak_macos(message, rate=180)  # Slightly faster for urgency
+
+    def _speak_macos(self, message: str, rate: int = 175) -> bool:
+        """
+        Speak text on macOS using 'say' command.
+
+        Args:
+            message: Text to speak
+            rate: Words per minute (default: 175)
+
+        Returns:
+            True if successful
+        """
+        try:
+            result = subprocess.run(
+                ["say", "-r", str(rate), message],
+                capture_output=True,
+                timeout=30.0  # Max 30 seconds to speak
+            )
+
+            if result.returncode == 0:
+                logger.info(f"Spoke: {message[:50]}...")
+                return True
+            else:
+                logger.warning(f"say command failed: {result.stderr}")
+                return False
+
+        except subprocess.TimeoutExpired:
+            logger.error("Speech timeout")
+            return False
+        except Exception as e:
+            logger.error(f"macOS speech error: {e}")
+            return False
+
     def _send_notification(
         self,
         title: str,
