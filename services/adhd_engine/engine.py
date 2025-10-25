@@ -109,6 +109,11 @@ class ADHDAccommodationEngine:
         # Machine Learning predictive engine (IP-005 Days 11-12)
         self.predictive_engine: Optional[Any] = None  # PredictiveADHDEngine if ML enabled
 
+        # Phase 6: Cache for statusline endpoint (5-second TTL)
+        self._statusline_cache: Dict[str, Any] = {}
+        self._statusline_cache_time: Dict[str, float] = {}
+        self._statusline_cache_ttl = 5  # seconds
+
     async def initialize(self) -> None:
         """Initialize ADHD accommodation engine."""
         logger.info("🧠 Initializing ADHD Accommodation Engine...")
