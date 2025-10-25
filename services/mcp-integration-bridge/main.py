@@ -2429,6 +2429,270 @@ async def debug_instance_info():
         "redis_url": REDIS_URL
     }
 
+# ============================================================================
+# TWO-PLANE ROUTING ENDPOINTS (Week 6)
+# ============================================================================
+
+class CrossPlaneRouteRequest(BaseModel):
+    """
+    Request to route operation from one plane to another.
+
+    Used by TwoPlaneOrchestrator for PM ↔ Cognitive coordination.
+    """
+    source: str = Field(..., description="Source plane: 'pm' or 'cognitive'")
+    operation: str = Field(..., description="Operation name (e.g., 'get_tasks', 'update_status')")
+    data: Dict[str, Any] = Field(default_factory=dict, description="Operation data payload")
+    requester: str = Field(default="unknown", description="Name of requesting agent/service")
+
+class CrossPlaneRouteResponse(BaseModel):
+    """Response from cross-plane routing"""
+    success: bool
+    data: Dict[str, Any] = Field(default_factory=dict)
+    error: Optional[str] = None
+    correlation_id: Optional[str] = None
+
+async def _route_to_pm(request: CrossPlaneRouteRequest) -> CrossPlaneRouteResponse:
+    """
+    Route request to PM plane (Leantime).
+
+    Translates REST request → EventBus event for async processing.
+    For queries (get_*), returns immediately with mock data.
+    For commands (update_*, set_*), publishes event and returns ack.
+    """
+    correlation_id = str(uuid.uuid4())
+
+    try:
+        # Determine if this is a query or command
+        is_query = request.operation.startswith("get_") or request.operation.startswith("query_")
+
+        # Publish event to EventBus
+        event = Event(
+            type="cross_plane_request",
+            data={
+                "target_plane": "pm",
+                "source_plane": request.source,
+                "operation": request.operation,
+                "payload": request.data,
+                "requester": request.requester,
+                "correlation_id": correlation_id
+            },
+            source=f"two-plane-orchestrator-{INSTANCE_NAME}"
+        )
+
+        msg_id = await event_bus.publish("dopemux:cross-plane", event)
+
+        logger.info(
+            f"🔄 Cross-plane request routed: {request.source} → PM "
+            f"(operation={request.operation}, correlation_id={correlation_id})"
+        )
+
+        # For queries, forward to real PM plane services
+        # Week 11-12: Real service integration (requires infrastructure)
+        if is_query:
+            if request.operation == "get_tasks":
+                # Forward to Task Orchestrator query server (proxies to Leantime)
+                try:
+                    import httpx
+                    async with httpx.AsyncClient(timeout=10.0) as client:
+                        response = await client.get(
+                            f"{TASK_ORCHESTRATOR_URL}/tasks",
+                            params=request.data
+                        )
+                        if response.status_code == 200:
+                            tasks_data = response.json()
+                            return CrossPlaneRouteResponse(
+                                success=True,
+                                data=tasks_data,
+                                correlation_id=correlation_id
+                            )
+                        else:
+                            # Fallback to mock if service unavailable
+                            logger.warning(f"Task Orchestrator returned {response.status_code}, using mock fallback")
+                except Exception as e:
+                    # Graceful degradation: Use mock if service unavailable
+                    logger.warning(f"Task Orchestrator unavailable ({e}), using mock fallback")
+
+                # Mock fallback (for testing without infrastructure)
+                return CrossPlaneRouteResponse(
+                    success=True,
+                    data={
+                        "tasks": [
+                            {"id": "1", "title": "Task 1 (mock)", "status": "TODO"},
+                            {"id": "2", "title": "Task 2 (mock)", "status": "IN_PROGRESS"}
+                        ],
+                        "source": "mock_fallback"
+                    },
+                    correlation_id=correlation_id
+                )
+            else:
+                # Generic query - return mock
+                return CrossPlaneRouteResponse(
+                    success=True,
+                    data={"message": f"Query {request.operation} processed (mock)"},
+                    correlation_id=correlation_id
+                )
+
+        # For commands, return acknowledgment
+        return CrossPlaneRouteResponse(
+            success=True,
+            data={
+                "message": f"Command {request.operation} queued",
+                "event_id": msg_id
+            },
+            correlation_id=correlation_id
+        )
+
+    except Exception as e:
+        logger.error(f"❌ PM routing failed: {e}")
+        return CrossPlaneRouteResponse(
+            success=False,
+            error=str(e),
+            correlation_id=correlation_id
+        )
+
+async def _route_to_cognitive(request: CrossPlaneRouteRequest) -> CrossPlaneRouteResponse:
+    """
+    Route request to Cognitive plane (AI agents).
+
+    Translates REST request → EventBus event for async processing.
+    For queries (get_*), returns immediately with mock data.
+    For commands (update_*, set_*), publishes event and returns ack.
+    """
+    correlation_id = str(uuid.uuid4())
+
+    try:
+        # Determine if this is a query or command
+        is_query = request.operation.startswith("get_") or request.operation.startswith("query_")
+
+        # Publish event to EventBus
+        event = Event(
+            type="cross_plane_request",
+            data={
+                "target_plane": "cognitive",
+                "source_plane": request.source,
+                "operation": request.operation,
+                "payload": request.data,
+                "requester": request.requester,
+                "correlation_id": correlation_id
+            },
+            source=f"two-plane-orchestrator-{INSTANCE_NAME}"
+        )
+
+        msg_id = await event_bus.publish("dopemux:cross-plane", event)
+
+        logger.info(
+            f"🔄 Cross-plane request routed: {request.source} → Cognitive "
+            f"(operation={request.operation}, correlation_id={correlation_id})"
+        )
+
+        # For queries, forward to real Cognitive plane services
+        # Week 11-12: Real service integration (requires infrastructure)
+        if is_query:
+            if request.operation == "get_complexity":
+                # Use Serena MCP for complexity analysis
+                # Note: Would need to extract file/symbol from request.data
+                # For now, mock fallback
+                return CrossPlaneRouteResponse(
+                    success=True,
+                    data={
+                        "complexity": 0.6,
+                        "file": request.data.get("file", "unknown"),
+                        "function": request.data.get("function", "unknown"),
+                        "source": "serena_mcp (mock fallback)"
+                    },
+                    correlation_id=correlation_id
+                )
+
+            elif request.operation == "get_adhd_state":
+                # Forward to Task Orchestrator /adhd-state endpoint
+                try:
+                    import httpx
+                    async with httpx.AsyncClient(timeout=10.0) as client:
+                        response = await client.get(f"{TASK_ORCHESTRATOR_URL}/adhd-state")
+                        if response.status_code == 200:
+                            adhd_data = response.json()
+                            return CrossPlaneRouteResponse(
+                                success=True,
+                                data=adhd_data,
+                                correlation_id=correlation_id
+                            )
+                        else:
+                            logger.warning(f"Task Orchestrator returned {response.status_code}, using mock fallback")
+                except Exception as e:
+                    logger.warning(f"Task Orchestrator unavailable ({e}), using mock fallback")
+
+                # Mock fallback
+                return CrossPlaneRouteResponse(
+                    success=True,
+                    data={
+                        "energy": "medium",
+                        "attention": "focused",
+                        "cognitive_load": 0.5,
+                        "source": "mock_fallback"
+                    },
+                    correlation_id=correlation_id
+                )
+
+            else:
+                # Generic query - return mock
+                return CrossPlaneRouteResponse(
+                    success=True,
+                    data={"message": f"Query {request.operation} processed (mock)"},
+                    correlation_id=correlation_id
+                )
+
+        # For commands, return acknowledgment
+        return CrossPlaneRouteResponse(
+            success=True,
+            data={
+                "message": f"Command {request.operation} queued",
+                "event_id": msg_id
+            },
+            correlation_id=correlation_id
+        )
+
+    except Exception as e:
+        logger.error(f"❌ Cognitive routing failed: {e}")
+        return CrossPlaneRouteResponse(
+            success=False,
+            error=str(e),
+            correlation_id=correlation_id
+        )
+
+@app.post("/route/pm", response_model=CrossPlaneRouteResponse)
+async def route_to_pm_plane(request: CrossPlaneRouteRequest):
+    """
+    Route request to PM plane (Project Management - Leantime).
+
+    Used by TwoPlaneOrchestrator to coordinate Cognitive → PM requests.
+
+    Examples:
+    - Get tasks: {"source": "cognitive", "operation": "get_tasks", "data": {"status": "TODO"}}
+    - Update task: {"source": "cognitive", "operation": "update_task_status", "data": {"task_id": "123", "status": "done"}}
+
+    Returns:
+    - Queries: Immediate response with data
+    - Commands: Acknowledgment with event_id
+    """
+    return await _route_to_pm(request)
+
+@app.post("/route/cognitive", response_model=CrossPlaneRouteResponse)
+async def route_to_cognitive_plane(request: CrossPlaneRouteRequest):
+    """
+    Route request to Cognitive plane (AI agents - ADHD Engine, Task Orchestrator).
+
+    Used by TwoPlaneOrchestrator to coordinate PM → Cognitive requests.
+
+    Examples:
+    - Get complexity: {"source": "pm", "operation": "get_complexity", "data": {"file": "auth.py", "function": "login"}}
+    - Get ADHD state: {"source": "pm", "operation": "get_adhd_state", "data": {}}
+
+    Returns:
+    - Queries: Immediate response with data
+    - Commands: Acknowledgment with event_id
+    """
+    return await _route_to_cognitive(request)
+
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
