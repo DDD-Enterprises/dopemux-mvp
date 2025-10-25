@@ -58,6 +58,7 @@ class EnhancedConPortServer:
         self.db_pool = None
         self.redis = None
         self.integration_bridge = None  # EventBus client for cross-service coordination
+        self.unified_query_api = None  # F-NEW-7 Phase 2: Cross-workspace queries
 
         # Configuration
         self.postgres_url = os.getenv(
@@ -110,6 +111,15 @@ class EnhancedConPortServer:
             self.integration_bridge = IntegrationBridgeClient()
             await self.integration_bridge.initialize()
 
+            # F-NEW-7 Phase 2: Initialize unified query API
+            from unified_queries import UnifiedQueryAPI
+            self.unified_query_api = UnifiedQueryAPI(
+                db_pool=self.db_pool,
+                redis_client=self.redis,
+                schema='ag_catalog'
+            )
+            logger.info("✅ F-NEW-7 Unified Query API initialized")
+
             # Start auto-save task for ADHD context preservation
             self.auto_save_task = asyncio.create_task(self.auto_save_loop())
 
@@ -157,6 +167,11 @@ class EnhancedConPortServer:
 
         # Search endpoints
         self.app.router.add_get('/api/search/{workspace_id}', self.search_content)
+
+        # F-NEW-7 Phase 2: Unified query endpoints
+        self.app.router.add_get('/api/unified-search', self.unified_search)
+        self.app.router.add_get('/api/workspace-relationships', self.workspace_relationships)
+        self.app.router.add_get('/api/workspace-summary', self.workspace_summary)
 
         # Custom data endpoints (generic key-value store)
         self.app.router.add_post('/api/custom_data', self.save_custom_data)
@@ -1390,6 +1405,180 @@ class EnhancedConPortServer:
                     'message': f'Internal error: {str(e)}'
                 }
             }, status=500)
+
+    # =====================================================================
+    # F-NEW-7 Phase 2: Unified Query Endpoints
+    # =====================================================================
+
+    async def unified_search(self, request):
+        """
+        Cross-workspace full-text search endpoint.
+
+        Query params:
+            user_id: User identifier (required)
+            query: Search query (required)
+            workspaces: Comma-separated workspace IDs (optional, defaults to all)
+            limit: Max results (optional, default 50)
+
+        Returns:
+            List of search results with relevance scores
+
+        Performance: <200ms target (ADHD requirement)
+        """
+        try:
+            user_id = request.query.get('user_id')
+            query = request.query.get('query')
+
+            if not user_id or not query:
+                return web.json_response(
+                    {'error': 'user_id and query are required'},
+                    status=400
+                )
+
+            # Parse workspaces
+            workspaces_str = request.query.get('workspaces')
+            workspaces = workspaces_str.split(',') if workspaces_str else None
+
+            limit = int(request.query.get('limit', 50))
+
+            # Execute unified search
+            start_time = datetime.now()
+            results = await self.unified_query_api.search_across_workspaces(
+                user_id=user_id,
+                query=query,
+                workspaces=workspaces,
+                limit=limit
+            )
+            elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
+
+            # Convert results to JSON-serializable format
+            results_json = [
+                {
+                    'decision_id': r.decision_id,
+                    'workspace_id': r.workspace_id,
+                    'summary': r.summary,
+                    'rationale': r.rationale,
+                    'created_at': r.created_at.isoformat(),
+                    'relevance_score': r.relevance_score,
+                    'user_id': r.user_id,
+                    'tags': r.tags
+                }
+                for r in results
+            ]
+
+            logger.info(f"Unified search: {len(results)} results in {elapsed_ms:.1f}ms")
+
+            return web.json_response({
+                'results': results_json,
+                'total': len(results),
+                'query': query,
+                'workspaces_searched': workspaces or 'all',
+                'response_time_ms': elapsed_ms
+            })
+
+        except Exception as e:
+            logger.error(f"Unified search error: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def workspace_relationships(self, request):
+        """
+        Multi-workspace relationship traversal endpoint.
+
+        Query params:
+            decision_id: Starting decision ID (required)
+            user_id: User identifier (required)
+            include_workspaces: Include cross-workspace relations (default true)
+            max_depth: Max traversal depth (default 3, ADHD-safe)
+
+        Returns:
+            Graph of related decisions
+
+        Performance: <500ms for depth-3
+        """
+        try:
+            decision_id = request.query.get('decision_id')
+            user_id = request.query.get('user_id')
+
+            if not decision_id or not user_id:
+                return web.json_response(
+                    {'error': 'decision_id and user_id are required'},
+                    status=400
+                )
+
+            include_workspaces = request.query.get('include_workspaces', 'true').lower() == 'true'
+            max_depth = int(request.query.get('max_depth', 3))
+
+            # Execute relationship traversal
+            start_time = datetime.now()
+            graph = await self.unified_query_api.get_related_decisions(
+                decision_id=int(decision_id),
+                user_id=user_id,
+                include_workspaces=include_workspaces,
+                max_depth=max_depth
+            )
+            elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
+
+            logger.info(f"Relationship traversal: {graph['total_nodes']} nodes in {elapsed_ms:.1f}ms")
+
+            graph['response_time_ms'] = elapsed_ms
+            return web.json_response(graph)
+
+        except Exception as e:
+            logger.error(f"Relationship traversal error: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def workspace_summary(self, request):
+        """
+        Workspace aggregation endpoint.
+
+        Query params:
+            user_id: User identifier (required)
+
+        Returns:
+            List of workspace summaries with activity metrics
+
+        Performance: <100ms
+        """
+        try:
+            user_id = request.query.get('user_id')
+
+            if not user_id:
+                return web.json_response(
+                    {'error': 'user_id is required'},
+                    status=400
+                )
+
+            # Execute workspace summary
+            start_time = datetime.now()
+            summaries = await self.unified_query_api.get_workspace_summary(user_id)
+            elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
+
+            # Convert to JSON
+            summaries_json = [
+                {
+                    'workspace_id': s.workspace_id,
+                    'name': s.name,
+                    'total_decisions': s.total_decisions,
+                    'recent_decisions_7d': s.recent_decisions_7d,
+                    'total_progress': s.total_progress,
+                    'in_progress_count': s.in_progress_count,
+                    'last_activity': s.last_activity.isoformat() if s.last_activity else None
+                }
+                for s in summaries
+            ]
+
+            logger.info(f"Workspace summary: {len(summaries)} workspaces in {elapsed_ms:.1f}ms")
+
+            return web.json_response({
+                'workspaces': summaries_json,
+                'total': len(summaries),
+                'user_id': user_id,
+                'response_time_ms': elapsed_ms
+            })
+
+        except Exception as e:
+            logger.error(f"Workspace summary error: {e}")
+            return web.json_response({'error': str(e)}, status=500)
 
     async def start_server(self):
         """Start the enhanced HTTP server"""
