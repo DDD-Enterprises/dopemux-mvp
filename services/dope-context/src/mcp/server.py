@@ -455,8 +455,9 @@ async def _search_code_impl(
     workspace_path: Optional[str] = None,
     budget_tokens: int = 9000,
     user_id: str = "default",
+    enrich_with_graph: bool = False,  # F-NEW-5: Code graph enrichment
 ) -> List[Dict]:
-    """Implementation of search_code tool (NOW WITH DYNAMIC TOP_K!)."""
+    """Implementation of search_code tool (NOW WITH DYNAMIC TOP_K + GRAPH ENRICHMENT!)."""
     try:
         # Get dynamic top_k from ADHD Engine
         top_k = await get_dynamic_top_k(user_id, top_k)
@@ -640,6 +641,8 @@ async def _search_code_impl(
                         "relevance_score": r.relevance_score,
                         "original_rank": r.original_rank,
                         "reranked": True,
+                        "start_line": getattr(r.search_result, 'start_line', None),  # F-NEW-5 support
+                        "end_line": getattr(r.search_result, 'end_line', None),
                     }
                     for r in final_results
                 ]
@@ -673,6 +676,8 @@ async def _search_code_impl(
                 "context": r.context_snippet,
                 "score": r.score,
                 "reranked": False,
+                "start_line": getattr(r, 'start_line', None),  # F-NEW-5 support
+                "end_line": getattr(r, 'end_line', None),
             }
             for r in search_results[:top_k]
         ]
@@ -690,7 +695,23 @@ async def _search_code_impl(
                 f"{trunc_info.estimated_tokens} tokens ({trunc_info.budget_used_pct:.1f}% of budget)"
             )
 
-        return truncated_results
+        # F-NEW-5: Enrich with code graph relationships if requested
+        final_results = truncated_results
+        if enrich_with_graph:
+            try:
+                from enrichment.code_graph_enricher import get_code_graph_enricher
+
+                enricher = await get_code_graph_enricher()
+                final_results = await enricher.enrich_results(
+                    results=truncated_results,
+                    max_enrich=5  # ADHD limit: enrich top 5 only
+                )
+                logger.info(f"✅ Results enriched with code graph relationships")
+            except Exception as enrich_error:
+                logger.warning(f"Code graph enrichment failed: {enrich_error}")
+                # Continue with unenriched results
+
+        return final_results
 
     except Exception as execution_error:
         logger.error(f"Search execution failed: {execution_error}", exc_info=True)
@@ -709,6 +730,7 @@ async def search_code(
     use_reranking: bool = True,
     filter_language: Optional[str] = None,
     workspace_path: Optional[str] = None,
+    enrich_with_graph: bool = False,  # F-NEW-5: Add code graph relationships
 ) -> List[Dict]:
     """
     Search indexed code with hybrid dense + sparse search.
@@ -737,12 +759,21 @@ async def search_code(
         use_reranking: Whether to rerank with Voyage (default: True)
         filter_language: Filter by language (python, javascript, typescript)
         workspace_path: Optional workspace path (auto-detects if None)
+        enrich_with_graph: Add code graph relationships from Serena (F-NEW-5)
 
     Returns:
         List of search results with code, context, and scores
+        If enrich_with_graph=True, includes 'relationships' field with:
+        - callers: Number of functions that call this
+        - callees: Number of functions this calls
+        - imports: Number of modules imported
+        - impact_score: 0.0-1.0 impact rating
+        - impact_level: none/low/medium/high/critical
+        - impact_message: ADHD-friendly impact description
     """
     return await _search_code_impl(
-        query, top_k, profile, use_reranking, filter_language, workspace_path
+        query, top_k, profile, use_reranking, filter_language, workspace_path,
+        enrich_with_graph=enrich_with_graph
     )
 
 
