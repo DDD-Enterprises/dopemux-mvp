@@ -175,7 +175,7 @@ if nc -z localhost 6333 2>/dev/null; then MCP_DOPE="🔎"; fi
 if nc -z localhost 3012 2>/dev/null; then MCP_DESKTOP="🖥️"; fi
 if nc -z localhost 8096 2>/dev/null; then MCP_ACTIVITY="🎯"; fi
 
-# ADHD Engine comprehensive status (single /health call for efficiency)
+# ADHD Engine comprehensive status
 ADHD_STATUS="💤"
 ENERGY_SYMBOL=""
 ATTENTION_SYMBOL=""
@@ -185,36 +185,43 @@ ACCOMMODATIONS=""
 # Get terminal width for progressive disclosure
 term_width=$(tput cols 2>/dev/null || echo 120)
 
-# Query ADHD Engine health (single call, all data)
-adhd_health=$(timeout 0.4s curl -s http://localhost:8095/health 2>/dev/null)
-if [ $? -eq 0 ] && [ -n "$adhd_health" ]; then
+# Check if ADHD Engine is running (quick port check)
+if nc -z localhost 8095 2>/dev/null; then
     ADHD_STATUS="🧠"
 
-    # Extract energy level - lightning bolt + direction
-    # Try current_user first, then fall back to first user (hue, etc.)
-    energy=$(echo "$adhd_health" | jq -r '.current_state.energy_levels.current_user // .current_state.energy_levels | to_entries[0].value // ""' 2>/dev/null)
-    if [ -n "$energy" ] && [ "$energy" != "null" ] && [ "$energy" != "" ]; then
-        case "$energy" in
-            "hyperfocus") ENERGY_SYMBOL="⚡⚡" ;;  # Double lightning for hyperfocus
-            "high") ENERGY_SYMBOL="⚡↑" ;;
-            "medium") ENERGY_SYMBOL="⚡=" ;;  # Balanced/level
-            "low") ENERGY_SYMBOL="⚡↓" ;;
-            "very_low") ENERGY_SYMBOL="⚡⇣" ;;
-        esac
+    # Query individual endpoints for real-time state (faster than health endpoint)
+    # Energy level endpoint
+    energy_data=$(timeout 0.3s curl -s http://localhost:8095/api/v1/energy-level/hue 2>/dev/null)
+    if [ -n "$energy_data" ]; then
+        energy=$(echo "$energy_data" | jq -r '.energy_level // ""' 2>/dev/null)
+        if [ -n "$energy" ] && [ "$energy" != "null" ] && [ "$energy" != "" ]; then
+            case "$energy" in
+                "hyperfocus") ENERGY_SYMBOL="⚡⚡" ;;  # Double lightning for hyperfocus
+                "high") ENERGY_SYMBOL="⚡↑" ;;
+                "medium") ENERGY_SYMBOL="⚡=" ;;  # Balanced/level
+                "low") ENERGY_SYMBOL="⚡↓" ;;
+                "very_low") ENERGY_SYMBOL="⚡⇣" ;;
+            esac
+        fi
     fi
 
-    # Extract attention state - eye + state indicator
-    # Try current_user first, then fall back to first user
-    attention=$(echo "$adhd_health" | jq -r '.current_state.attention_states.current_user // .current_state.attention_states | to_entries[0].value // ""' 2>/dev/null)
-    if [ -n "$attention" ] && [ "$attention" != "null" ]; then
-        case "$attention" in
-            "hyperfocused") ATTENTION_SYMBOL="👁️✨" ;;  # Eye with sparkles for hyperfocus
-            "focused") ATTENTION_SYMBOL="👁️●" ;;  # Eye with solid dot for focused
-            "transitioning") [ "$term_width" -ge 90 ] && ATTENTION_SYMBOL="👁️~" ;;  # Eye with wave for shifting
-            "scattered") ATTENTION_SYMBOL="👁️🌀" ;;  # Eye with spiral for scattered
-            "overwhelmed") ATTENTION_SYMBOL="👁️💥" ;;  # Eye with explosion for overwhelmed
-        esac
+    # Attention state endpoint
+    attention_data=$(timeout 0.3s curl -s http://localhost:8095/api/v1/attention-state/hue 2>/dev/null)
+    if [ -n "$attention_data" ]; then
+        attention=$(echo "$attention_data" | jq -r '.attention_state // ""' 2>/dev/null)
+        if [ -n "$attention" ] && [ "$attention" != "null" ] && [ "$attention" != "" ]; then
+            case "$attention" in
+                "hyperfocused") ATTENTION_SYMBOL="👁️✨" ;;  # Eye with sparkles for hyperfocus
+                "focused") ATTENTION_SYMBOL="👁️●" ;;  # Eye with solid dot for focused
+                "transitioning") [ "$term_width" -ge 90 ] && ATTENTION_SYMBOL="👁️~" ;;  # Eye with wave for shifting
+                "scattered") ATTENTION_SYMBOL="👁️🌀" ;;  # Eye with spiral for scattered
+                "overwhelmed") ATTENTION_SYMBOL="👁️💥" ;;  # Eye with explosion for overwhelmed
+            esac
+        fi
     fi
+
+    # Get health data for break warnings (optional, from old health endpoint)
+    adhd_health=$(timeout 0.2s curl -s http://localhost:8095/health 2>/dev/null)
 
     # Check break recommendations (NEW)
     breaks_suggested=$(echo "$adhd_health" | jq -r '.accommodation_stats.breaks_suggested // 0' 2>/dev/null)
