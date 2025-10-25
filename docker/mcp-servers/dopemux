@@ -40,11 +40,11 @@ detect_running_instances() {
 
     # Check for running containers with mcp.instance label
     if command -v docker &> /dev/null; then
-        while IFS= read -r line; do
+        docker ps --filter "label=mcp.instance" --format "{{.Label \"mcp.instance\"}}" 2>/dev/null | sort -u | while IFS= read -r line; do
             if [[ -n "$line" ]]; then
                 running_instances+=("$line")
             fi
-        done < <(docker ps --filter "label=mcp.instance" --format "{{.Label \"mcp.instance\"}}" 2>/dev/null | sort -u)
+        done
     fi
 
     printf '%s\n' "${running_instances[@]}"
@@ -94,11 +94,11 @@ get_next_port() {
 
     # Get ports from running instances
     if command -v docker &> /dev/null; then
-        while IFS= read -r port; do
+        docker ps --format "{{.Ports}}" 2>/dev/null | grep -oE '0\.0\.0\.0:[0-9]+' | cut -d: -f2 | sort -n | while IFS= read -r port; do
             if [[ -n "$port" && "$port" =~ ^[0-9]+$ ]]; then
                 used_ports+=("$port")
             fi
-        done < <(docker ps --format "{{.Ports}}" 2>/dev/null | grep -oE '0\.0\.0\.0:[0-9]+' | cut -d: -f2 | sort -n)
+        done
     fi
 
     # Find next available port base (multiple of 30)
@@ -132,7 +132,7 @@ show_status() {
     echo
 
     local running_instances
-    mapfile -t running_instances < <(detect_running_instances)
+    running_instances=($(detect_running_instances))
 
     if [[ ${#running_instances[@]} -eq 0 ]]; then
         log_info "No instances currently running"
@@ -188,7 +188,7 @@ show_instance_details() {
 
     # Get container info
     local containers
-    mapfile -t containers < <(docker ps --filter "label=mcp.instance=$instance" --format "{{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null)
+    containers=($(docker ps --filter "label=mcp.instance=$instance" --format "{{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null))
 
     if [[ ${#containers[@]} -gt 0 ]]; then
         echo "  🐳 Containers:"
@@ -229,7 +229,7 @@ start_instance() {
 
     # Detect current state
     local running_instances
-    mapfile -t running_instances < <(detect_running_instances)
+    running_instances=($(detect_running_instances))
     local main_instance
     main_instance=$(detect_main_instance)
 
