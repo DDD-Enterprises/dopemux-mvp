@@ -47,17 +47,22 @@ services:
       # Port configuration
       - PORT_BASE=3000
 
-      # Database connection
-      - AGE_HOST=postgres-age
+      # Database connection (FIXED: Use DDG postgres)
+      - AGE_HOST=dope-decision-graph-postgres
       - AGE_PORT=5432
       - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
-      # Qdrant (embeddings index)
-      - QDRANT_URL=http://qdrant:6333
-      # Redis cache (auth if REDIS_PASSWORD provided)
-      - REDIS_URL=redis://redis:6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
-      # Shared state DB URL (reuse the same Postgres instance)
-      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@postgres-age:5432/dopemux_knowledge_graph
+      # Qdrant (embeddings index - FIXED: Use existing Qdrant)
+      - QDRANT_URL=http://mcp-qdrant:6333
+      # Redis cache (FIXED: No password on dopemux-redis-events)
+      - REDIS_URL=redis://dopemux-redis-events:6379
+      - REDIS_PASSWORD=
+      # Shared state DB URL (FIXED: Use DDG postgres)
+      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:${AGE_PASSWORD:-dopemux_age_dev_password}@dope-decision-graph-postgres:5432/dopemux_knowledge_graph
+
+      # Embeddings (FIXED: Add Voyage API key)
+      - VOYAGEAI_API_KEY=${VOYAGE_API_KEY}
+      - EMBEDDINGS_PROVIDER=voyageai
+      - EMBEDDINGS_MODEL=voyage-3-large
 
       # Feature flags
       - KG_DIRECT_CONNECTION=true
