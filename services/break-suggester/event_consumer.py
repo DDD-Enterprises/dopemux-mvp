@@ -17,7 +17,7 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -52,13 +52,14 @@ class BreakSuggestionConsumer:
     async def initialize(self):
         """Initialize Redis connection and break engine."""
         try:
-            import aioredis
+            import redis.asyncio as redis
 
-            self.redis_client = await aioredis.create_redis_pool(self.redis_url)
+            self.redis_client = redis.from_url(self.redis_url, decode_responses=True)
+            await self.redis_client.ping()
             logger.info(f"✅ Connected to Redis: {self.redis_url}")
 
-            # Import break engine
-            from engine import get_break_suggestion_engine
+            # Import break engine (absolute import)
+            from services.break_suggester.engine import get_break_suggestion_engine
 
             self.engine = await get_break_suggestion_engine(self.user_id)
             logger.info(f"✅ BreakSuggestionEngine initialized for user {self.user_id}")
@@ -93,19 +94,19 @@ class BreakSuggestionConsumer:
                 # Read events from stream
                 # XREADGROUP GROUP group consumer BLOCK 1000 STREAMS stream >
                 events = await self.redis_client.xreadgroup(
-                    self.consumer_group,
-                    self.consumer_name,
-                    [self.stream_name],
-                    timeout=1000,  # 1 second timeout
-                    latest_ids=['>']
+                    groupname=self.consumer_group,
+                    consumername=self.consumer_name,
+                    streams={self.stream_name: '>'},
+                    count=10,
+                    block=1000  # 1 second timeout in milliseconds
                 )
 
-                if not events:
+                if not events or len(events) == 0:
                     await asyncio.sleep(0.1)
                     continue
 
-                # Process each event
-                for stream, messages in events:
+                # Process each event (events is a list of [stream_name, [[msg_id, data], ...]])
+                for stream_name, messages in events:
                     for message_id, data in messages:
                         await self._process_event(message_id, data)
 
@@ -134,10 +135,10 @@ class BreakSuggestionConsumer:
             data: Event data dict
         """
         try:
-            # Parse event data
-            event_type = data.get(b'type', b'').decode('utf-8')
-            event_data_json = data.get(b'data', b'{}').decode('utf-8')
-            event_data = json.loads(event_data_json)
+            # Parse event data (redis.asyncio with decode_responses=True returns strings)
+            event_type = data.get('event_type', data.get('type', ''))
+            event_data_str = data.get('data', '{}')
+            event_data = json.loads(event_data_str) if isinstance(event_data_str, str) else event_data_str
 
             logger.debug(f"Processing event: {event_type}")
 
@@ -165,8 +166,7 @@ class BreakSuggestionConsumer:
         logger.info("Stopping event consumption...")
 
         if self.redis_client:
-            self.redis_client.close()
-            await self.redis_client.wait_closed()
+            await self.redis_client.aclose()
 
 
 async def run_break_suggester_service(user_id: str = "default"):
