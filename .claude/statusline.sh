@@ -157,6 +157,18 @@ if [ -f "$conport_db" ] && command -v sqlite3 >/dev/null 2>&1; then
     fi
 fi
 
+# MCP Server Status (fast port checks with nc)
+MCP_CONTEXT7="⚠️"   # 📚 Documentation (port 3002)
+MCP_ZEN="⚠️"        # 🧠 Multi-model reasoning (port 3003)
+MCP_SERENA="⚠️"     # 🔍 Code intelligence (port 3006)
+MCP_DESKTOP="⚠️"    # 🖥️ Context switching (port 3012)
+
+# Fast port checks using nc (netcat) - much faster than curl
+if nc -z localhost 3002 2>/dev/null; then MCP_CONTEXT7="📚"; fi
+if nc -z localhost 3003 2>/dev/null; then MCP_ZEN="🧠"; fi
+if nc -z localhost 3006 2>/dev/null; then MCP_SERENA="🔍"; fi
+if nc -z localhost 3012 2>/dev/null; then MCP_DESKTOP="🖥️"; fi
+
 # ADHD Engine comprehensive status (single /health call for efficiency)
 ADHD_STATUS="💤"
 ENERGY_SYMBOL=""
@@ -244,6 +256,11 @@ fi
 if [ -n "$SESSION_INFO" ]; then
     printf " \033[36m[%s]\033[0m" "$SESSION_INFO"
 fi
+
+printf " \033[2m|\033[0m"
+
+# MCP Servers - compact status icons
+printf " %s%s%s%s" "$MCP_CONTEXT7" "$MCP_ZEN" "$MCP_SERENA" "$MCP_DESKTOP"
 
 printf " \033[2m|\033[0m"
 
