@@ -16,11 +16,10 @@ import os
 import sys
 from pathlib import Path
 
-# Add project root to path
-project_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(project_root))
+# Add current directory to path for relative imports
+sys.path.insert(0, str(Path(__file__).parent))
 
-from services.break_suggester.event_consumer import run_break_suggester_service
+from event_consumer import run_break_suggester_service
 
 # Configure logging
 logging.basicConfig(
