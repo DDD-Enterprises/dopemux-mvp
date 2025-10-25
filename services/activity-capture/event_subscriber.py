@@ -134,15 +134,19 @@ class EventSubscriber:
             data: Event data from stream
         """
         try:
-            # Parse event data
-            event_type = data.get("type", "")
+            # Parse event data - Redis uses "event_type" not "type"
+            event_type = data.get("event_type", data.get("type", ""))
             event_data_str = data.get("data", "{}")
             event_data = json.loads(event_data_str) if isinstance(event_data_str, str) else event_data_str
 
             self.events_processed += 1
 
+            # Debug: Log what events we're seeing
+            logger.info(f"📥 Event #{self.events_processed}: {event_type}")
+
             # Handle workspace.switched events
             if event_type == "workspace.switched":
+                logger.info(f"🔍 Processing workspace.switched event: {event_data.get('from_workspace', '?')} → {event_data.get('to_workspace', '?')}")
                 await self._handle_workspace_switched(event_data)
 
             # Future: Handle other event types
