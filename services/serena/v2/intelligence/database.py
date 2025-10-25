@@ -8,6 +8,7 @@ performance monitoring integration, and <200ms query guarantees.
 import asyncio
 import json
 import logging
+import os
 import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
@@ -23,8 +24,15 @@ except ImportError:
     ASYNCPG_AVAILABLE = False
     logging.warning("asyncpg not available - install with: pip install asyncpg")
 
-from ..performance_monitor import PerformanceMonitor, PerformanceTarget
-from ..adhd_features import CodeComplexityAnalyzer
+# Use absolute imports for pytest compatibility
+try:
+    # Try absolute import first (pytest, production)
+    from services.serena.v2.performance_monitor import PerformanceMonitor, PerformanceTarget
+    from services.serena.v2.adhd_features import CodeComplexityAnalyzer
+except ImportError:
+    # Fallback to relative import (direct execution)
+    from ..performance_monitor import PerformanceMonitor, PerformanceTarget
+    from ..adhd_features import CodeComplexityAnalyzer
 
 logger = logging.getLogger(__name__)
 

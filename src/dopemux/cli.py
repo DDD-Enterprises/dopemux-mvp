@@ -2450,6 +2450,61 @@ def mcp_logs_cmd(service: str):
         sys.exit(1)
 
 
+@mcp.command("start-all")
+@click.option("--verify", "-v", is_flag=True, help="Verify service health after starting")
+def mcp_start_all_cmd(verify: bool):
+    """
+    🚀 Start complete Dopemux stack (MCP servers + application services)
+
+    Starts all services including:
+    - 12 MCP servers (ConPort, Zen, Serena, Context7, etc.)
+    - Integration Bridge (event processing, pattern detection)
+    - Task Orchestrator (ADHD task coordination)
+    - All infrastructure (PostgreSQL, Redis, Qdrant)
+
+    \b
+    Examples:
+        dopemux mcp start-all           # Start everything
+        dopemux mcp start-all --verify  # Start + verify health
+
+    \b
+    ADHD Benefit:
+        One command to start the complete event-driven intelligence system.
+        No need to remember which services to start manually.
+    """
+    try:
+        # Run the start-all.sh script
+        script_path = Path(__file__).parent.parent.parent / "scripts" / "start-all.sh"
+
+        if not script_path.exists():
+            console.print(f"[red]❌ start-all.sh not found at {script_path}[/red]")
+            console.print("[yellow]Falling back to manual startup...[/yellow]")
+
+            # Fallback: manual startup
+            console.print("[blue]Starting MCP servers...[/blue]")
+            subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose up -d"], check=True)
+
+            console.print("[blue]Starting Integration Bridge...[/blue]")
+            subprocess.run(["bash","-lc","cd docker/conport-kg && docker-compose up -d --no-deps integration-bridge"], check=True)
+
+            console.print("[blue]Starting Task Orchestrator...[/blue]")
+            subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose --profile manual up -d task-orchestrator"], check=True)
+
+            console.print("[green]✅ All services started[/green]")
+        else:
+            # Use the script
+            cmd = ["bash", str(script_path)]
+            if verify:
+                cmd.append("--verify")
+
+            subprocess.run(cmd, check=True)
+
+    except CalledProcessError:
+        console.print("[red]❌ Failed to start all services[/red]")
+        console.print("[yellow]💡 Try: docker ps to see running containers[/yellow]")
+        sys.exit(1)
+
+
 @cli.group()
 def servers():
     """Alias for 'dopemux mcp' commands."""
