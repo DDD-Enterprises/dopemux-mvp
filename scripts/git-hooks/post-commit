@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+# Git Post-Commit Hook - ADHD Activity Tracking
+#
+# Tracks git commits as productivity signals for ADHD Engine.
+# Emits code.committed events to Activity Capture for session tracking.
+#
+# ADHD Benefit: Commits = completed work, high-energy activity signal
+#
+
+# Get commit metadata
+COMMIT_HASH=$(git rev-parse HEAD)
+COMMIT_MESSAGE=$(git log -1 --pretty=%B | head -1)
+FILES_CHANGED=$(git diff-tree --no-commit-id --name-only -r HEAD | wc -l | tr -d ' ')
+LINES_ADDED=$(git diff HEAD~1 HEAD --numstat 2>/dev/null | awk '{sum+=$1} END {print int(sum)}')
+LINES_REMOVED=$(git diff HEAD~1 HEAD --numstat 2>/dev/null | awk '{sum+=$2} END {print int(sum)}')
+WORKSPACE=$(git rev-parse --show-toplevel 2>/dev/null)
+
+# Default to 0 if empty
+[ -z "$LINES_ADDED" ] && LINES_ADDED=0
+[ -z "$LINES_REMOVED" ] && LINES_REMOVED=0
+
+# Get script directory (relative to git hooks)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+# Call Python emitter (non-blocking, fire-and-forget)
+python3 "$SCRIPT_DIR/scripts/emit-commit-event.py" \
+    "$COMMIT_HASH" \
+    "$FILES_CHANGED" \
+    "$LINES_ADDED" \
+    "$LINES_REMOVED" \
+    "$WORKSPACE" \
+    "$COMMIT_MESSAGE" \
+    >/dev/null 2>&1 &
+
+exit 0
