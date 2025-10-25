@@ -7,18 +7,20 @@
 
 ### Visual MCP Server Status
 
-The statusline now shows the status of 4 core MCP servers:
+The statusline now shows the status of 6 core MCP servers:
 
 ```
-dopemux-mvp main | ✅ Focus [2h] | 📚🧠🔍🖥️ | 💤 215K/1000K (21%) | Sonnet
-                                    ^^^^^^^^
-                                    MCP Status
+dopemux-mvp main | ✅ Focus [2h] | 📚🧠🔬📊🔎🖥️ | 💤 215K/1000K (21%) | Sonnet
+                                    ^^^^^^^^^^^^
+                                    MCP Status (6 servers)
 ```
 
 **Indicator Meanings**:
 - **📚** (Book) - Context7 (Documentation) - Port 3002
 - **🧠** (Brain) - Zen (Multi-model reasoning) - Port 3003
-- **🔍** (Magnifying glass) - Serena (Code intelligence) - Port 3006
+- **🔬** (Microscope) - Serena (Code intelligence) - Port 3006
+- **📊** (Chart) - DDG-MCP (Decision Graph) - Port 3016
+- **🔎** (Magnifier right) - Dope-Context (Semantic Search via Qdrant) - Port 6333
 - **🖥️** (Desktop) - Desktop-Commander (Context switching) - Port 3012
 
 **Status**:
@@ -29,27 +31,29 @@ dopemux-mvp main | ✅ Focus [2h] | 📚🧠🔍🖥️ | 💤 215K/1000K (21%) 
 
 **All servers up**:
 ```
-| 📚🧠🔍🖥️ |
+| 📚🧠🔬📊🔎🖥️ |
 ```
 
 **Zen is down**:
 ```
-| 📚⚠️🔍🖥️ |
+| 📚⚠️🔬📊🔎🖥️ |
 ```
 
-**Context7 and Desktop-Commander down**:
+**DDG and Dope-Context down**:
 ```
-| ⚠️🧠🔍⚠️ |
+| 📚🧠🔬⚠️⚠️🖥️ |
 ```
 
-## Why These 4 Servers?
+## Why These 6 Servers?
 
 These are the **core MCP servers** for ADHD-optimized development:
 
 1. **Context7 📚** - Official documentation lookup (prevents guessing APIs)
 2. **Zen 🧠** - Multi-model reasoning (thinkdeep, consensus, debug, planner)
-3. **Serena 🔍** - Code intelligence (LSP navigation, complexity scoring)
-4. **Desktop-Commander 🖥️** - Context switch recovery (ADHD critical)
+3. **Serena 🔬** - Code intelligence (LSP navigation, complexity scoring)
+4. **DDG-MCP 📊** - Decision graph queries (related decisions, instance diff, cross-workspace)
+5. **Dope-Context 🔎** - Semantic code/docs search (AST-aware, ADHD-optimized)
+6. **Desktop-Commander 🖥️** - Context switch recovery (ADHD critical)
 
 **Not shown** (managed differently):
 - ConPort - Has dedicated ✅/⚠️ indicator (already in statusline)
@@ -66,9 +70,15 @@ Uses `nc -z` (netcat zero I/O mode) for fast port availability checks:
 ```bash
 if nc -z localhost 3002 2>/dev/null; then MCP_CONTEXT7="📚"; fi
 if nc -z localhost 3003 2>/dev/null; then MCP_ZEN="🧠"; fi
-if nc -z localhost 3006 2>/dev/null; then MCP_SERENA="🔍"; fi
+if nc -z localhost 3006 2>/dev/null; then MCP_SERENA="🔬"; fi
+if nc -z localhost 3016 2>/dev/null; then MCP_DDG="📊"; fi
+if nc -z localhost 6333 2>/dev/null; then MCP_DOPE="🔎"; fi
 if nc -z localhost 3012 2>/dev/null; then MCP_DESKTOP="🖥️"; fi
 ```
+
+**Special Cases**:
+- **Dope-Context 🔎**: Stdio MCP (no HTTP server). Checks Qdrant port 6333 as critical dependency.
+- **DDG-MCP 📊**: HTTP bridge for decision graph queries across worktrees.
 
 **Why nc instead of curl?**
 - ⚡ **Faster**: <5ms vs 50-200ms per check
@@ -77,9 +87,11 @@ if nc -z localhost 3012 2>/dev/null; then MCP_DESKTOP="🖥️"; fi
 
 ### Performance
 
-- **Check time**: ~20ms total (4 servers in parallel via shell)
+- **Check time**: ~30ms total (6 servers sequentially, but nc is blazing fast)
 - **Overhead**: Negligible (statusline updates every keystroke)
 - **No timeout needed**: nc is instant if port is closed
+
+**Note**: Sequential checks are fine since nc is so fast (~5ms each). Parallel backgrounding would add complexity for minimal gain.
 
 ## ADHD Benefits
 
