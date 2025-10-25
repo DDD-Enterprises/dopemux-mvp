@@ -131,11 +131,18 @@ class ClaudeCodeRouterManager:
             "CCR_INSTANCE_ID": self.instance_id,
         }
         self._provider_key_env_var = provider_key_env_var
+        
+        # Ensure provider keys are available to the router process
         if provider_key_env_var and provider_key is not None:
             self._process_env_overrides[provider_key_env_var] = provider_key
         elif provider_key and not provider_key_env_var:
-            # Ensure upstream credential still available at runtime
             self._process_env_overrides.setdefault("CCR_UPSTREAM_API_KEY", provider_key)
+        
+        # Also pass through the actual provider keys
+        if os.environ.get("XAI_API_KEY"):
+            self._process_env_overrides["XAI_API_KEY"] = os.environ["XAI_API_KEY"]
+        if os.environ.get("OPENAI_API_KEY"):
+            self._process_env_overrides["OPENAI_API_KEY"] = os.environ["OPENAI_API_KEY"]
 
         self._api_key = api_key
         return self.config_path
