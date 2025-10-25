@@ -170,15 +170,15 @@ class LiteLLMProxyManager:
     def build_client_env(self, proxy_info: LiteLLMProxyInfo) -> Dict[str, str]:
         """Return environment variable updates for clients using the proxy."""
         updates: Dict[str, str] = {
+            # Set OpenAI-compatible environment for Claude Code
             "OPENAI_API_BASE": proxy_info.base_url,
             "OPENAI_BASE_URL": proxy_info.base_url,
             "OPENAI_API_KEY": proxy_info.master_key,
-            # Claude Code expects Anthropic-style env when routing via LiteLLM
-            # Set both common variants to maximize compatibility
+            # Also set Anthropic-compatible environment
             "ANTHROPIC_API_BASE": proxy_info.base_url,
             "ANTHROPIC_BASE_URL": proxy_info.base_url,
             "ANTHROPIC_API_KEY": proxy_info.master_key,
-            # Dopemux hint for launcher to keep API key (disable OAuth stripping)
+            # Dopemux hints
             "DOPEMUX_CLAUDE_VIA_LITELLM": "1",
             "DOPEMUX_LITELLM_MASTER_KEY": proxy_info.master_key,
             "DOPEMUX_LITELLM_PORT": str(proxy_info.port),
@@ -186,10 +186,12 @@ class LiteLLMProxyManager:
             "LITELLM_PROXY_URL": proxy_info.base_url,
         }
 
-        current_openai_key = os.environ.get("OPENAI_API_KEY")
-        if current_openai_key and current_openai_key != proxy_info.master_key:
-            updates["DOPEMUX_PROVIDER_OPENAI_API_KEY"] = current_openai_key
-
+        # Preserve original provider keys for LiteLLM to use
+        if os.environ.get("XAI_API_KEY"):
+            updates["XAI_API_KEY"] = os.environ["XAI_API_KEY"]
+        if os.environ.get("OPENAI_API_KEY"):
+            updates["OPENAI_API_KEY_ORIGINAL"] = os.environ["OPENAI_API_KEY"]
+            
         return updates
 
     def _resolve_config_template(self) -> Optional[Path]:
