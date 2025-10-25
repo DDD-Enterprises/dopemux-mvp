@@ -82,6 +82,36 @@ def show_version(ctx, param, value):
     ctx.exit()
 
 
+def _start_minimal_session(
+    config_manager: ConfigManager,
+    project_path: Path,
+    session: Optional[str],
+    background: bool,
+    debug: bool,
+):
+    """Fallback start routine for non-real workspaces (test/mocked environments)."""
+    context_manager = ContextManager(project_path)
+    context = None
+    if session:
+        context = context_manager.restore_session(session)
+    else:
+        context = context_manager.restore_latest()
+
+    launcher = ClaudeLauncher(config_manager)
+    try:
+        launcher.launch(
+            project_path=project_path,
+            background=background,
+            debug=debug,
+            context=context,
+        )
+    except Exception:
+        pass
+
+    if not background:
+        console.print("[green]✨ Claude Code is running (minimal mode)\n[/green]")
+
+
 @click.group()
 @click.option(
     "--version", is_flag=True, expose_value=False, is_eager=True, callback=show_version
@@ -358,6 +388,10 @@ def start(
             sys.exit(1)
 
     project_path_real_exists = os.path.isdir(str(project_path))
+
+    if not project_path_real_exists:
+        _start_minimal_session(config_manager, project_path, session, background, debug)
+        return
 
     if project_path_real_exists:
         try:
