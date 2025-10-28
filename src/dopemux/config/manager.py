@@ -518,8 +518,12 @@ class ConfigManager:
                     "GROQ_API_KEY": "${GROQ_API_KEY}",
                     "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
                     "ZEN_DISABLED_TOOLS": "chat,explain,translate,summarize",
-                    "ZEN_DEFAULT_MODEL": "openai/gpt-4o",  # Use OpenAI as default
-                    "ZEN_FALLBACK_MODELS": "xai/grok-beta,groq/llama-3.1-70b",  # Fallback chain
+                    # Use LiteLLM routing when available
+                    "ZEN_DEFAULT_MODEL": os.getenv("ZEN_DEFAULT_MODEL", "openai/gpt-4o"),
+                    "ZEN_FALLBACK_MODELS": os.getenv("ZEN_FALLBACK_MODELS", "xai/grok-beta,groq/llama-3.1-70b"),
+                    # LiteLLM configuration
+                    "LITELLM_PROXY": os.getenv("LITELLM_PROXY", "http://localhost:4000"),
+                    "LITELLM_MASTER_KEY": os.getenv("DOPEMUX_LITELLM_MASTER_KEY"),
                 },
                 "timeout": 60,
                 "auto_restart": True,

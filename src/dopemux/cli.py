@@ -541,6 +541,10 @@ def start(
     except Exception:
         pass
 
+    # Check if we should use OpenRouter via LiteLLM (for tmux --happy mode)
+    if os.getenv("DOPEMUX_USE_OPENROUTER") == "1":
+        _configure_openrouter_litellm()
+
     # Inject instance environment variables
     if instance_env_vars:
         # Auto fast per-instance mode for instances beyond A
@@ -2960,6 +2964,29 @@ def _get_attention_emoji(state: Optional[str]) -> str:
         "distracted": "😵‍💫",
     }
     return emoji_map.get(state, "❓")
+
+
+def _configure_openrouter_litellm():
+    """Configure environment for OpenRouter via LiteLLM"""
+    # Set up OpenRouter models for LiteLLM
+    openrouter_models = [
+        "openrouter/anthropic/claude-3.5-sonnet",
+        "openrouter/anthropic/claude-3-opus", 
+        "openrouter/anthropic/claude-3-haiku",
+        "openrouter/google/gemini-2.0-flash-exp",
+        "openrouter/meta-llama/llama-3.1-405b-instruct"
+    ]
+    
+    # Update environment
+    os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
+    os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
+    os.environ["CLAUDE_CODE_ROUTER_MODELS"] = ",".join(openrouter_models)
+    
+    # Ensure Zen MCP uses LiteLLM
+    os.environ["ZEN_DEFAULT_MODEL"] = "litellm/openrouter/anthropic/claude-3.5-sonnet"
+    os.environ["ZEN_FALLBACK_MODELS"] = "litellm/openrouter/anthropic/claude-3-haiku,litellm/openrouter/google/gemini-2.0-flash-exp"
+    
+    console.print("[green]✅ OpenRouter via LiteLLM configuration applied[/green]")
 
 
 def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[dict] = None):
