@@ -9,7 +9,8 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Literal
+from typing import Literal
 
 import toml
 import yaml
@@ -148,6 +149,39 @@ class MobileConfig(BaseModel):
         raise ValueError("default_panes must be 'primary', 'all', or a list of pane names")
 
 
+class TmuxPresetConfig(BaseModel):
+    """Configuration describing how to launch a preset tmux pane."""
+
+    command: str
+    cwd: Optional[str] = None
+    window: Optional[str] = None
+    focus: bool = True
+    environment: Dict[str, str] = Field(default_factory=dict)
+
+
+class TmuxControllerConfig(BaseModel):
+    """Settings for the Dopemux tmux controller."""
+
+    enabled: bool = True
+    default_session: Optional[str] = None
+    allowed_sessions: List[str] = Field(default_factory=list)
+    presets: Dict[str, TmuxPresetConfig] = Field(default_factory=dict)
+    send_rate_limit_seconds: float = Field(default=0.15, ge=0.0)
+    capture_default_lines: int = Field(default=200, ge=1, le=2000)
+    default_layout: Literal["low", "medium", "high", "orchestrator"] = "orchestrator"
+    monitor_commands: Dict[str, str] = Field(default_factory=dict)
+    orchestrator_command: Optional[str] = None
+    sandbox_command: Optional[str] = None
+    dual_agent_default: bool = False
+    secondary_agent_command: Optional[str] = None
+    pane_styles: Dict[str, str] = Field(default_factory=dict)
+
+    @field_validator("allowed_sessions")
+    @classmethod
+    def normalize_allowed_sessions(cls, value: List[str]) -> List[str]:
+        return [item.strip() for item in value if item and item.strip()]
+
+
 class DopemuxConfig(BaseModel):
     """Main Dopemux configuration."""
 
@@ -162,6 +196,7 @@ class DopemuxConfig(BaseModel):
     claude_path: Optional[str] = None
     project_templates: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     mobile: MobileConfig = Field(default_factory=MobileConfig)
+    tmux: TmuxControllerConfig = Field(default_factory=TmuxControllerConfig)
 
 
 @dataclass
@@ -304,6 +339,11 @@ class ConfigManager:
         config = self.load_config()
         return config.mobile
 
+    def get_tmux_config(self) -> TmuxControllerConfig:
+        """Return tmux controller settings."""
+        config = self.load_config()
+        return config.tmux
+
     def update_claude_autoresponder(self, **kwargs) -> None:
         """Update Claude Auto Responder settings."""
         config = self.load_config()
@@ -373,6 +413,42 @@ class ConfigManager:
                 "happy_webapp_url": None,
                 "default_panes": "primary",
                 "popup_mode": False,
+            },
+            "tmux": {
+                "enabled": True,
+                "default_session": None,
+                "allowed_sessions": [],
+                "send_rate_limit_seconds": 0.15,
+                "capture_default_lines": 200,
+                "default_layout": "orchestrator",
+                "monitor_commands": {
+                    "monitor:worktree": "dopemux status --attention --tasks",
+                    "monitor:logs": "(touch logs/latest.log 2>/dev/null); tail -n 120 logs/latest.log",
+                    "monitor:metrics": "dopemux health",
+                },
+                "orchestrator_command": "dopemux start --no-recovery",
+                "sandbox_command": None,
+                "dual_agent_default": False,
+                "secondary_agent_command": None,
+                "pane_styles": {
+                    "monitor:worktree": "fg=#a6e3a1,bg=#1e1e2e",
+                    "monitor:logs": "fg=#89dceb,bg=#1e1e2e",
+                    "monitor:metrics": "fg=#f9e2af,bg=#1e1e2e",
+                    "orchestrator:control": "fg=#f5f5f7,bg=#181825",
+                    "sandbox:shell": "fg=#f5c2e7,bg=#302d41",
+                    "agent:primary": "fg=#cdd6f4,bg=#1f1d2e",
+                    "agent:secondary": "fg=#b4befe,bg=#262335",
+                },
+                "presets": {
+                    "bash": {
+                        "command": "${SHELL:/bin/bash}",
+                        "focus": True,
+                    },
+                    "claude": {
+                        "command": "dopemux start --background --no-recovery",
+                        "focus": True,
+                    },
+                },
             },
             "project_templates": self._get_project_templates(),
         }
