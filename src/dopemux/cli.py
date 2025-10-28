@@ -419,7 +419,7 @@ def start(
             if new_worktree:
                 os.chdir(new_worktree)
                 project_path = Path.cwd()
-                console.print(f"[green]🔀 Switched to worktree: {project_path.name}")
+                console.print(f"[green]🔀 Switched to worktree: {project_path.name}[/green]")
                 console.print(f"[dim]   Path: {project_path}[/dim]")
 
             if should_exit and not new_worktree:
