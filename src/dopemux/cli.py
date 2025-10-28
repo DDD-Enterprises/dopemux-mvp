@@ -4769,7 +4769,7 @@ def doctor_cmd(ctx, worktree: bool, verbose: bool):
         console.print(table)
 
         # Summary
-        console.print(f"\n[bold]Result: [/bold]{passed}/{len(checks)} checks passed")
+        console.print(f"\n[bold]Result:[/bold] {passed}/{len(checks)} checks passed")
 
         if passed == len(checks):
             console.print("[green]🎉 System healthy![/green]")
