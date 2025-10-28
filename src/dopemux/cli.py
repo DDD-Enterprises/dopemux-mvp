@@ -544,6 +544,12 @@ def start(
     # Check if we should use OpenRouter via LiteLLM (for tmux --happy mode)
     if os.getenv("DOPEMUX_USE_OPENROUTER") == "1":
         _configure_openrouter_litellm()
+        
+        # Force Claude Code to use LiteLLM proxy
+        os.environ["ANTHROPIC_API_KEY"] = os.getenv("DOPEMUX_LITELLM_MASTER_KEY", "")
+        os.environ["ANTHROPIC_BASE_URL"] = "http://localhost:4000"
+        
+        console.print("[green]✅ Forced Claude Code to use LiteLLM proxy[/green]")
 
     # Inject instance environment variables
     if instance_env_vars:
@@ -2985,6 +2991,14 @@ def _configure_openrouter_litellm():
     # Ensure Zen MCP uses LiteLLM
     os.environ["ZEN_DEFAULT_MODEL"] = "litellm/openrouter/anthropic/claude-3.5-sonnet"
     os.environ["ZEN_FALLBACK_MODELS"] = "litellm/openrouter/anthropic/claude-3-haiku,litellm/openrouter/google/gemini-2.0-flash-exp"
+    
+    # Set up LiteLLM proxy URL
+    os.environ["LITELLM_PROXY_URL"] = "http://localhost:4000"
+    
+    # Configure Claude Code to use LiteLLM
+    os.environ["CLAUDE_CODE_LLM_PROVIDER"] = "litellm"
+    os.environ["CLAUDE_CODE_LLM_BASE_URL"] = "http://localhost:4000"
+    os.environ["CLAUDE_CODE_LLM_API_KEY"] = os.getenv("DOPEMUX_LITELLM_MASTER_KEY", "")
     
     console.print("[green]✅ OpenRouter via LiteLLM configuration applied[/green]")
 
