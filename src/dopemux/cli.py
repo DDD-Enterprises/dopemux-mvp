@@ -549,6 +549,11 @@ def start(
         os.environ["ANTHROPIC_API_KEY"] = os.getenv("DOPEMUX_LITELLM_MASTER_KEY", "")
         os.environ["ANTHROPIC_BASE_URL"] = "http://localhost:4000"
         
+        # Also set for Claude Code Router
+        os.environ["CLAUDE_CODE_ROUTER_PROVIDER"] = "litellm"
+        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = "http://localhost:4000/v1/chat/completions"
+        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
+        
         console.print("[green]✅ Forced Claude Code to use LiteLLM proxy[/green]")
 
     # Inject instance environment variables
@@ -4952,57 +4957,6 @@ if not hasattr(tmux_commands, 'commands'):
 cli.add_command(tmux_commands, "tmux")
 
 
-@tmux_commands.command("start")
-@click.option("--happy", is_flag=True, help="Start with Happy mobile integration")
-@click.option("--litellm", is_flag=True, help="Route through LiteLLM proxy")
-@click.option("--openrouter", is_flag=True, help="Use OpenRouter via LiteLLM")
-@click.option("--background", "-b", is_flag=True, help="Launch in background")
-@click.pass_context
-def tmux_start(ctx, happy: bool, litellm: bool, openrouter: bool, background: bool):
-    """
-    🚀 Start Dopemux in tmux mode with optional Happy integration
-    
-    When --happy is specified, ensures proper routing through LiteLLM to OpenRouter
-    instead of direct Anthropic API calls.
-    """
-    # Force LiteLLM routing when Happy mode is enabled
-    if happy and not litellm:
-        litellm = True
-        openrouter = True
-    
-    # Set environment variables to ensure proper routing
-    if litellm:
-        os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "1"
-        os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
-    
-    if openrouter:
-        os.environ["DOPEMUX_USE_OPENROUTER"] = "1"
-        _configure_openrouter_litellm()
-        
-        # Ensure OpenRouter API key is used
-        if not os.environ.get("OPENROUTER_API_KEY"):
-            console.print("[red]❌ OPENROUTER_API_KEY environment variable is not set[/red]")
-            console.print("[yellow]💡 Set OPENROUTER_API_KEY to use OpenRouter models[/yellow]")
-            sys.exit(1)
-
-    console.print(f"[blue]🚀 Starting Dopemux in tmux mode...[/blue]")
-    if happy:
-        console.print("[green]✅ Happy mobile integration enabled[/green]")
-    if litellm:
-        console.print("[green]✅ LiteLLM routing enabled[/green]")
-    if openrouter:
-        console.print("[green]✅ OpenRouter models configured[/green]")
-
-    # Use the standard start command with the appropriate flags
-    start_kwargs = {
-        'background': background,
-        'use_litellm': litellm,
-        'use_claude_router': litellm,  # Enable router when using LiteLLM
-        'no_recovery': True,  # Skip recovery in tmux mode for cleaner startup
-    }
-    
-    # Invoke the main start command with our configured options
-    ctx.invoke(start, **start_kwargs)
 
 
 @tmux_commands.command("start")
