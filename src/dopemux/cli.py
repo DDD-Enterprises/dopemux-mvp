@@ -60,6 +60,7 @@ from urllib.parse import urlparse
 import yaml
 from .mobile import mobile as mobile_commands
 from .mobile.hooks import mobile_task_notification
+from .tmux import tmux as tmux_commands
 
 
 if "-litellm" in sys.argv:
@@ -334,27 +335,9 @@ def start(
 
     # Default to LiteLLM + Router if configured (Option A)
     if not use_litellm and not use_claude_router:
-        try:
-            default_env = os.getenv("DOPEMUX_DEFAULT_LITELLM", "0") == "1"
-            if not default_env:
-                # Attempt to detect healthy container proxy on 4000
-                mk = None
-                try:
-                    cfg_path = Path.cwd() / "litellm.config.yaml"
-                    if cfg_path.exists():
-                        cfg = yaml.safe_load(cfg_path.read_text()) or {}
-                        mk = ((cfg.get("general_settings") or {}).get("master_key"))
-                except Exception:
-                    mk = None
-                headers = {"Authorization": f"Bearer {mk}"} if mk else {}
-                import requests as _rq
-                r = _rq.get("http://127.0.0.1:4000/health", headers=headers, timeout=0.8)
-                default_env = r.status_code == 200
-            if default_env:
-                use_litellm = True
-                use_claude_router = True
-        except Exception:
-            pass
+        if os.getenv("DOPEMUX_DEFAULT_LITELLM", "0") == "1":
+            use_litellm = True
+            use_claude_router = True
 
     config_manager = ctx.obj["config_manager"]
 
@@ -4892,6 +4875,7 @@ except ImportError as e:
 
 # Register mobile integration commands
 cli.add_command(mobile_commands, "mobile")
+cli.add_command(tmux_commands, "tmux")
 
 
 def main():
@@ -4902,7 +4886,8 @@ def main():
         console.print("\n[yellow]⏸️ Interrupted by user[/yellow]")
         sys.exit(1)
     except Exception as e:
-        console.print(f"[red]❌ Error: {e}[/red]")
+        error_text = Text("❌ Error: ", style="red") + Text(str(e))
+        console.print(error_text)
         if "--debug" in sys.argv:
             raise
         sys.exit(1)
