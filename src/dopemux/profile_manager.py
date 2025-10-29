@@ -33,6 +33,16 @@ class DopemuxProfile:
     database_config: Dict[str, Dict[str, str]] = field(default_factory=dict)
     tools: Dict[str, Any] = field(default_factory=dict)
     markers: Dict[str, List[str]] = field(default_factory=dict)
+    
+    @property
+    def mcps(self) -> List[str]:
+        """Alias for mcp_servers for backward compatibility.
+        
+        Returns combined list of required and enabled MCP servers.
+        """
+        required = self.mcp_servers.get("required", [])
+        enabled = self.mcp_servers.get("enabled", [])
+        return list(set(required + enabled))
 
     @classmethod
     def from_yaml(cls, path: Path) -> "DopemuxProfile":

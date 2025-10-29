@@ -10,7 +10,6 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union, Literal
-from typing import Literal
 
 import toml
 import yaml
@@ -159,6 +158,54 @@ class TmuxPresetConfig(BaseModel):
     environment: Dict[str, str] = Field(default_factory=dict)
 
 
+class DopeLayoutTransientThresholds(BaseModel):
+    """Threshold configuration for Dope layout transient messages."""
+
+    untracked_warning_days: int = Field(default=1, ge=0)
+    untracked_critical_days: int = Field(default=7, ge=1)
+    break_reminder_minutes: List[int] = Field(default_factory=lambda: [25, 45, 90])
+
+
+class DopeLayoutTransientConfig(BaseModel):
+    """Transient message preferences for the Dope layout."""
+
+    enabled: bool = True
+    untracked_work: bool = True
+    context_switches: bool = True
+    task_drift: bool = True
+    break_reminders: bool = False
+    thresholds: DopeLayoutTransientThresholds = Field(default_factory=DopeLayoutTransientThresholds)
+
+
+class DopeLayoutPMConfig(BaseModel):
+    """PM mode configuration for the Dope layout."""
+
+    leantime_url: str = "http://localhost:3007"
+    conport_url: str = "http://localhost:3009"
+    auto_switch: bool = False
+
+
+class DopeLayoutServicesConfig(BaseModel):
+    """External service endpoints used by the Dope layout."""
+
+    adhd_engine_url: str = "http://localhost:3008"
+    activity_capture_url: str = "http://localhost:3006"
+    serena_url: str = "http://localhost:3010"
+    litellm_url: str = "http://localhost:4000"
+    docker_compose_bin: str = "docker-compose"
+
+
+class DopeLayoutConfig(BaseModel):
+    """Dope layout configuration surface."""
+
+    default_mode: Literal["implementation", "pm"] = "implementation"
+    metrics_bar_enabled: bool = True
+    transient_messages: DopeLayoutTransientConfig = Field(default_factory=DopeLayoutTransientConfig)
+    pm_mode: DopeLayoutPMConfig = Field(default_factory=DopeLayoutPMConfig)
+    services: DopeLayoutServicesConfig = Field(default_factory=DopeLayoutServicesConfig)
+    state_file: Optional[str] = None
+
+
 class TmuxControllerConfig(BaseModel):
     """Settings for the Dopemux tmux controller."""
 
@@ -168,7 +215,7 @@ class TmuxControllerConfig(BaseModel):
     presets: Dict[str, TmuxPresetConfig] = Field(default_factory=dict)
     send_rate_limit_seconds: float = Field(default=0.15, ge=0.0)
     capture_default_lines: int = Field(default=200, ge=1, le=2000)
-    default_layout: Literal["low", "medium", "high", "orchestrator"] = "orchestrator"
+    default_layout: Literal["low", "medium", "high", "orchestrator", "dope"] = "dope"
     monitor_commands: Dict[str, str] = Field(default_factory=dict)
     orchestrator_command: Optional[str] = None
     sandbox_command: Optional[str] = None
@@ -197,6 +244,7 @@ class DopemuxConfig(BaseModel):
     project_templates: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     mobile: MobileConfig = Field(default_factory=MobileConfig)
     tmux: TmuxControllerConfig = Field(default_factory=TmuxControllerConfig)
+    dope_layout: DopeLayoutConfig = Field(default_factory=DopeLayoutConfig)
 
 
 @dataclass
@@ -420,7 +468,7 @@ class ConfigManager:
                 "allowed_sessions": [],
                 "send_rate_limit_seconds": 0.15,
                 "capture_default_lines": 200,
-                "default_layout": "orchestrator",
+                "default_layout": "dope",
                 "monitor_commands": {
                     "monitor:worktree": "dopemux status --attention --tasks",
                     "monitor:logs": "(touch logs/latest.log 2>/dev/null); tail -n 120 logs/latest.log",
@@ -449,6 +497,35 @@ class ConfigManager:
                         "focus": True,
                     },
                 },
+            },
+            "dope_layout": {
+                "default_mode": "implementation",
+                "metrics_bar_enabled": True,
+                "transient_messages": {
+                    "enabled": True,
+                    "untracked_work": True,
+                    "context_switches": True,
+                    "task_drift": True,
+                    "break_reminders": False,
+                    "thresholds": {
+                        "untracked_warning_days": 1,
+                        "untracked_critical_days": 7,
+                        "break_reminder_minutes": [25, 45, 90],
+                    },
+                },
+                "pm_mode": {
+                    "leantime_url": "http://localhost:3007",
+                    "conport_url": "http://localhost:3009",
+                    "auto_switch": False,
+                },
+                "services": {
+                    "adhd_engine_url": "http://localhost:3008",
+                    "activity_capture_url": "http://localhost:3006",
+                    "serena_url": "http://localhost:3010",
+                    "litellm_url": "http://localhost:4000",
+                    "docker_compose_bin": "docker-compose",
+                },
+                "state_file": None,
             },
             "project_templates": self._get_project_templates(),
         }
@@ -523,7 +600,7 @@ class ConfigManager:
                     "ZEN_FALLBACK_MODELS": os.getenv("ZEN_FALLBACK_MODELS", "xai/grok-beta,groq/llama-3.1-70b"),
                     # LiteLLM configuration
                     "LITELLM_PROXY": os.getenv("LITELLM_PROXY", "http://localhost:4000"),
-                    "LITELLM_MASTER_KEY": os.getenv("DOPEMUX_LITELLM_MASTER_KEY"),
+                    "LITELLM_MASTER_KEY": os.getenv("DOPEMUX_LITELLM_MASTER_KEY", ""),
                 },
                 "timeout": 60,
                 "auto_restart": True,

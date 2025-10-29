@@ -14,14 +14,17 @@ Plus utility endpoints: GET / (info), GET /health (health check)
 All endpoints secured with X-API-Key authentication (configurable via ADHD_ENGINE_API_KEY).
 """
 
-from fastapi import APIRouter, HTTPException, Depends, Security
+from fastapi import APIRouter, HTTPException, Depends, Security, WebSocket, WebSocketDisconnect
 from typing import Any
 from datetime import datetime, timezone
 import logging
+import asyncio
+import json
 
 import api.schemas as schemas
 from models import ADHDProfile, EnergyLevel, AttentionState
 from auth import verify_api_key
+from api.websocket import manager, send_heartbeat
 
 # Import time for caching
 import time
@@ -262,6 +265,123 @@ async def update_activity(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# Dashboard-specific endpoints (Day 2)
+
+@router.get("/cognitive-load/{user_id}")
+async def get_cognitive_load(
+    user_id: str,
+    engine = Depends(get_engine),
+    api_key: str = Security(verify_api_key)
+):
+    """Get current cognitive load for user."""
+    try:
+        # Calculate current system-wide cognitive load
+        cognitive_load = await engine._calculate_system_cognitive_load()
+        
+        # Categorize the load
+        if cognitive_load < 0.3:
+            category = "low"
+            status = "underutilized"
+        elif 0.6 <= cognitive_load <= 0.7:
+            category = "optimal"
+            status = "sweet_spot"
+        elif cognitive_load > 0.85:
+            category = "critical"
+            status = "overload"
+        else:
+            category = "moderate"
+            status = "normal"
+        
+        return {
+            "cognitive_load": round(cognitive_load, 2),
+            "category": category,
+            "threshold_status": status,
+            "last_updated": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Cognitive load retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/flow-state/{user_id}")
+async def get_flow_state(
+    user_id: str,
+    engine = Depends(get_engine),
+    api_key: str = Security(verify_api_key)
+):
+    """Get current flow state for user."""
+    try:
+        # Check if user has active flow state
+        # For now, return placeholder - would integrate with flow tracker
+        flow_active = False
+        duration_minutes = 0
+        start_time = None
+        
+        return {
+            "active": flow_active,
+            "duration_minutes": duration_minutes,
+            "start_time": start_time,
+            "last_updated": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Flow state retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/session-time/{user_id}")
+async def get_session_time(
+    user_id: str,
+    engine = Depends(get_engine),
+    api_key: str = Security(verify_api_key)
+):
+    """Get current session duration for user."""
+    try:
+        # Calculate session time from activity tracker
+        # For now, return placeholder - would integrate with activity tracker
+        total_minutes = 0
+        start_time = datetime.now(timezone.utc)
+        duration = "0m"
+        
+        return {
+            "duration": duration,
+            "start_time": start_time.isoformat(),
+            "total_minutes": total_minutes,
+            "last_updated": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Session time retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/breaks/{user_id}")
+async def get_breaks_info(
+    user_id: str,
+    engine = Depends(get_engine),
+    api_key: str = Security(verify_api_key)
+):
+    """Get break timing information for user."""
+    try:
+        # Get profile for break timing
+        profile = engine.user_profiles.get(user_id, ADHDProfile(user_id=user_id))
+        
+        # Calculate recommended break timing
+        # For now, use optimal task duration as guide
+        last_break = None
+        minutes_since = 0
+        recommended_in = profile.optimal_task_duration
+        
+        return {
+            "last_break": last_break,
+            "minutes_since": minutes_since,
+            "recommended_in": recommended_in,
+            "optimal_duration": profile.optimal_task_duration,
+            "last_updated": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Breaks info retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ML Pattern & Prediction Endpoints (IP-005 Days 11-12)
 
 @router.get("/patterns/{user_id}", response_model=schemas.PatternsResponse)
@@ -352,3 +472,159 @@ async def predict(
     except Exception as e:
         logger.error(f"Prediction failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# WebSocket Streaming Endpoint (Dashboard Day 7)
+# ============================================================================
+
+@router.websocket("/ws/stream")
+async def websocket_stream(websocket: WebSocket, user_id: str = "default"):
+    """
+    Real-time event streaming to dashboard via WebSocket.
+    
+    Sends:
+    - state_update: ADHD state changes (energy, attention, cognitive load)
+    - metric_update: Time-series data points for sparklines
+    - alert: Critical notifications (break needed, energy crash)
+    - heartbeat: Keep-alive every 30 seconds
+    
+    Features:
+    - Auto-buffering of messages during disconnection (last 50)
+    - Graceful reconnection handling
+    - Low latency (<100ms typical)
+    - Supports multiple concurrent connections per user
+    
+    Usage:
+        wscat -c "ws://localhost:8001/api/v1/ws/stream?user_id=test"
+    
+    Part of Dashboard Day 7 - WebSocket Streaming Implementation
+    """
+    await manager.connect(websocket, user_id)
+    
+    try:
+        # Send buffered messages from disconnection period
+        await manager.send_buffered_messages(websocket, user_id)
+        
+        # Send initial state
+        engine = get_engine()
+        initial_state = await _get_current_state(engine, user_id)
+        
+        await websocket.send_json({
+            "type": "state_update",
+            "timestamp": datetime.utcnow().isoformat(),
+            "data": initial_state
+        })
+        
+        logger.info(f"📡 WebSocket stream started for user: {user_id}")
+        
+        # Keep connection alive with heartbeat and handle client messages
+        last_heartbeat = datetime.utcnow()
+        heartbeat_interval = 30  # seconds
+        
+        while True:
+            # Send heartbeat every 30s
+            if (datetime.utcnow() - last_heartbeat).total_seconds() > heartbeat_interval:
+                await send_heartbeat(websocket, user_id)
+                last_heartbeat = datetime.utcnow()
+            
+            # Wait for client messages (optional commands like refresh)
+            try:
+                data = await asyncio.wait_for(websocket.receive_text(), timeout=1.0)
+                command = json.loads(data)
+                await _handle_client_command(websocket, user_id, command, engine)
+                
+            except asyncio.TimeoutError:
+                # No message received, continue loop
+                continue
+                
+    except WebSocketDisconnect:
+        logger.info(f"🔌 WebSocket disconnected normally: {user_id}")
+        
+    except Exception as e:
+        logger.error(f"❌ WebSocket error for {user_id}: {e}")
+        
+    finally:
+        await manager.disconnect(websocket, user_id)
+
+
+async def _get_current_state(engine, user_id: str) -> dict:
+    """Fetch current ADHD state from engine"""
+    try:
+        # Get energy level
+        energy_level = engine.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
+        energy_str = energy_level.value if hasattr(energy_level, 'value') else str(energy_level)
+        
+        # Get attention state
+        attention_state = engine.current_attention_states.get(user_id, AttentionState.FOCUSED)
+        attention_str = attention_state.value if hasattr(attention_state, 'value') else str(attention_state)
+        
+        # Calculate cognitive load
+        cognitive_load = await engine._calculate_cognitive_load(user_id)
+        
+        # Get session duration
+        session_duration = await engine._get_session_duration(user_id)
+        
+        # Get tasks completed
+        tasks_completed = await engine._get_tasks_completed(user_id)
+        
+        return {
+            "energy_level": energy_str,
+            "attention_state": attention_str,
+            "cognitive_load": cognitive_load,
+            "session_duration_minutes": session_duration,
+            "tasks_completed_today": tasks_completed,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting current state: {e}")
+        # Return safe defaults
+        return {
+            "energy_level": "MEDIUM",
+            "attention_state": "FOCUSED",
+            "cognitive_load": 50,
+            "session_duration_minutes": 0,
+            "tasks_completed_today": 0,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+
+async def _handle_client_command(websocket: WebSocket, user_id: str, command: dict, engine):
+    """Handle client commands (refresh, subscribe, etc.)"""
+    try:
+        cmd_type = command.get("type")
+        
+        if cmd_type == "refresh":
+            # Send current state
+            state = await _get_current_state(engine, user_id)
+            await websocket.send_json({
+                "type": "state_update",
+                "timestamp": datetime.utcnow().isoformat(),
+                "data": state
+            })
+            logger.debug(f"Refresh command from {user_id}")
+            
+        elif cmd_type == "ping":
+            # Simple ping/pong for latency testing
+            await websocket.send_json({
+                "type": "pong",
+                "timestamp": datetime.utcnow().isoformat(),
+                "data": command.get("data", {})
+            })
+            
+        elif cmd_type == "subscribe":
+            # Future: Subscribe to specific metrics
+            metrics = command.get("metrics", [])
+            logger.info(f"Subscribe request from {user_id}: {metrics}")
+            await websocket.send_json({
+                "type": "subscribed",
+                "timestamp": datetime.utcnow().isoformat(),
+                "data": {"metrics": metrics, "status": "acknowledged"}
+            })
+            
+        else:
+            logger.warning(f"Unknown command type: {cmd_type}")
+            
+    except Exception as e:
+        logger.error(f"Error handling command: {e}")
