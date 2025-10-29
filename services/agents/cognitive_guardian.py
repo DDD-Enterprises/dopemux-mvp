@@ -130,11 +130,45 @@ class CognitiveGuardian:
         self.breaks_enforced = 0
         self.burnout_prevented = 0
         self.energy_mismatches_caught = 0
+        
+        # MCP Integration
+        self._in_claude_code = self._detect_claude_code_context()
 
         logger.info(
             f"CognitiveGuardian initialized (break interval: {break_interval_minutes}min, "
-            f"mandatory: {mandatory_break_minutes}min)"
+            f"mandatory: {mandatory_break_minutes}min, MCP: {self._in_claude_code})"
         )
+    
+    def _detect_claude_code_context(self) -> bool:
+        """Detect if running in Claude Code/MCP environment."""
+        try:
+            import sys
+            return 'mcp' in sys.modules or hasattr(sys, '_mcp_tools')
+        except Exception:
+            return False
+    
+    async def _load_user_preferences(self):
+        """Load ADHD preferences from ConPort."""
+        if not self._in_claude_code:
+            return
+            
+        try:
+            from mcp_tools import mcp__conport__get_custom_data
+            
+            prefs = await mcp__conport__get_custom_data(
+                workspace_id=self.workspace_id,
+                category="adhd_preferences",
+                key="break_intervals"
+            )
+            
+            if prefs:
+                self.break_interval = prefs.get("gentle_reminder", 25)
+                self.mandatory_break = prefs.get("mandatory", 90)
+                self.hyperfocus_warning = prefs.get("hyperfocus_warning", 60)
+                
+                logger.info(f"Loaded ADHD preferences: {prefs}")
+        except Exception as e:
+            logger.warning(f"Could not load preferences, using defaults: {e}")
 
     async def start_monitoring(self):
         """Start background monitoring for breaks and attention."""
@@ -253,6 +287,61 @@ class CognitiveGuardian:
         print(f"   Duration: {duration_minutes} minutes")
         print(f"   Total breaks: {self.breaks_taken}")
         print(f"   Ready to continue when you are!\n")
+    
+    async def _save_user_state(self, user_state: UserState):
+        """
+        Persist user state to ConPort for cross-session continuity.
+        
+        Args:
+            user_state: Current user state to save
+        """
+        if not self._in_claude_code:
+            return  # Skip if not in Claude Code
+        
+        try:
+            # Dynamic import to avoid dependency when not in Claude Code
+            from mcp_tools import mcp__conport__update_active_context
+            
+            await mcp__conport__update_active_context(
+                workspace_id=self.workspace_id,
+                patch_content={
+                    "cognitive_guardian_state": {
+                        "energy": user_state.energy.value,
+                        "attention": user_state.attention.value,
+                        "session_duration_minutes": user_state.session_duration_minutes,
+                        "breaks_taken": user_state.breaks_taken,
+                        "last_break": user_state.last_break,
+                        "current_task_complexity": user_state.current_task_complexity,
+                        "time_of_day_hour": user_state.time_of_day_hour,
+                        "timestamp": datetime.now(timezone.utc).isoformat()
+                    }
+                }
+            )
+            
+            logger.debug("User state persisted to ConPort")
+        except Exception as e:
+            logger.error(f"Failed to save user state: {e}")
+    
+    async def _save_metrics(self):
+        """Persist metrics to ConPort for tracking."""
+        if not self._in_claude_code:
+            return
+        
+        try:
+            from mcp_tools import mcp__conport__log_custom_data
+            
+            metrics = self.get_metrics()
+            
+            await mcp__conport__log_custom_data(
+                workspace_id=self.workspace_id,
+                category="adhd_metrics",
+                key=f"session_{datetime.now(timezone.utc).isoformat()}",
+                value=metrics
+            )
+            
+            logger.debug("Metrics persisted to ConPort")
+        except Exception as e:
+            logger.error(f"Failed to save metrics: {e}")
 
     async def get_user_state(self) -> UserState:
         """
@@ -293,7 +382,7 @@ class CognitiveGuardian:
             if session:
                 current_complexity = session.complexity
 
-        return UserState(
+        user_state = UserState(
             energy=energy,
             attention=attention,
             session_duration_minutes=session_duration,
@@ -302,6 +391,11 @@ class CognitiveGuardian:
             current_task_complexity=current_complexity,
             time_of_day_hour=hour
         )
+        
+        # Persist to ConPort
+        await self._save_user_state(user_state)
+        
+        return user_state
 
     async def suggest_tasks(
         self,
@@ -468,6 +562,9 @@ class CognitiveGuardian:
                 await self.monitoring_task
             except asyncio.CancelledError:
                 pass
+
+        # Save final metrics
+        await self._save_metrics()
 
         logger.info("CognitiveGuardian monitoring stopped")
 
