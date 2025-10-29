@@ -8,7 +8,9 @@ from unittest.mock import Mock, patch
 import pytest
 from click.testing import CliRunner
 
-from dopemux.cli import cli
+from dopemux.cli import cli, _invoke_switch_role_script
+import os
+import subprocess
 
 
 class TestCLI:
@@ -149,15 +151,85 @@ class TestCLI:
         mock_launcher.return_value = mock_claude_launcher
 
         runner = CliRunner()
+        os.environ["DOPEMUX_SKIP_SWITCH_ROLE_SCRIPT"] = "1"
         with patch("dopemux.cli.Path", return_value=mock_project_path):
             result = runner.invoke(cli, ["start"])
 
         assert result.exit_code == 0
 
+    def test_start_command_role_dry_run(self, monkeypatch):
+        """Dry-run with role should preview profile changes and exit early."""
+
+        runner = CliRunner()
+        os.environ["DOPEMUX_SKIP_SWITCH_ROLE_SCRIPT"] = "1"
+
+        from dopemux import cli as dopemux_cli
+
+        class DummyProfile:
+            name = "quickfix"
+            mcps = ["conport", "serena", "context7"]
+
+        class DummyProfileManager:
+            def __init__(self):
+                self.profile = DummyProfile()
+
+            def get_profile(self, name):
+                return self.profile if name == "quickfix" else None
+
+            def set_active_profile(self, workspace, profile_name):
+                self.last_set = (workspace, profile_name)
+
+        class DummyClaudeConfig:
+            def __init__(self):
+                self.calls = []
+
+            def apply_profile(self, profile, create_backup=True, dry_run=False):
+                self.calls.append(
+                    {
+                        "profile": profile.name,
+                        "create_backup": create_backup,
+                        "dry_run": dry_run,
+                    }
+                )
+                return {"mcpServers": {name: {} for name in profile.mcps}}
+
+        dummy_manager = DummyProfileManager()
+        dummy_config = DummyClaudeConfig()
+
+        monkeypatch.setattr(dopemux_cli, "ProfileManager", lambda: dummy_manager)
+        monkeypatch.setattr(dopemux_cli, "ClaudeConfig", lambda *a, **k: dummy_config)
+
+        result = runner.invoke(cli, ["start", "--role", "quickfix", "--dry-run"])
+
+        assert result.exit_code == 0, result.output
+        assert "Dry run" in result.output
+        assert "quickfix" in result.output
+        assert any(call["dry_run"] for call in dummy_config.calls)
+
+    def test_invoke_switch_role_script_executes(self, monkeypatch, tmp_path):
+        script = tmp_path / "switch-role.sh"
+        script.write_text("#!/bin/bash\nexit 0\n")
+        script.chmod(0o755)
+
+        monkeypatch.setenv("DOPEMUX_SKIP_SWITCH_ROLE_SCRIPT", "0")
+        monkeypatch.setattr(Path, "home", lambda: tmp_path)
+
+        calls = []
+
+        def fake_run(cmd, check):
+            calls.append(cmd)
+            assert check is True
+            return 0
+
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        _invoke_switch_role_script("act")
+        assert calls, "switch-role script was not invoked"
+
     @patch("dopemux.cli.ConfigManager")
     def test_start_command_not_initialized(self, mock_config):
         """Test start command when project is not initialized."""
         runner = CliRunner()
+        os.environ["DOPEMUX_SKIP_SWITCH_ROLE_SCRIPT"] = "1"
 
         with patch("dopemux.cli.Path.cwd", return_value=Path("/test")):
             with patch("dopemux.cli.Path.exists", return_value=False):
