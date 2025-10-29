@@ -113,6 +113,9 @@ class ADHDAccommodationEngine:
         self._statusline_cache: Dict[str, Any] = {}
         self._statusline_cache_time: Dict[str, float] = {}
         self._statusline_cache_ttl = 5  # seconds
+        
+        # WebSocket streaming (Dashboard Day 7)
+        self._websocket_enabled = True  # Feature flag
 
     async def initialize(self) -> None:
         """Initialize ADHD accommodation engine."""
@@ -1181,10 +1184,62 @@ class ADHDAccommodationEngine:
     async def _log_energy_change(self, user_id: str, previous: EnergyLevel, current: EnergyLevel) -> None:
         """Log energy level change."""
         logger.info(f"⚡ Energy change for {user_id}: {previous.value} → {current.value}")
+        
+        # Broadcast to WebSocket clients (Dashboard Day 7)
+        if self._websocket_enabled:
+            await self._broadcast_state_update(user_id, "energy_change")
 
     async def _log_attention_change(self, user_id: str, previous: AttentionState, current: AttentionState) -> None:
         """Log attention state change."""
         logger.info(f"👁️ Attention change for {user_id}: {previous.value} → {current.value}")
+        
+        # Broadcast to WebSocket clients (Dashboard Day 7)
+        if self._websocket_enabled:
+            await self._broadcast_state_update(user_id, "attention_change")
+    
+    async def _broadcast_state_update(self, user_id: str, change_type: str = "state_update"):
+        """
+        Broadcast state update to WebSocket clients.
+        
+        Part of Dashboard Day 7 - WebSocket Streaming Implementation.
+        """
+        try:
+            # Import here to avoid circular dependency
+            from api.websocket import manager
+            
+            # Get current state
+            energy_level = self.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
+            energy_str = energy_level.value if hasattr(energy_level, 'value') else str(energy_level)
+            
+            attention_state = self.current_attention_states.get(user_id, AttentionState.FOCUSED)
+            attention_str = attention_state.value if hasattr(attention_state, 'value') else str(attention_state)
+            
+            cognitive_load = await self._calculate_cognitive_load(user_id)
+            session_duration = await self._get_session_duration(user_id)
+            tasks_completed = await self._get_tasks_completed(user_id)
+            
+            # Broadcast to all connected clients for this user
+            await manager.broadcast(
+                message={
+                    "type": "state_update",
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "change_type": change_type,
+                    "data": {
+                        "energy_level": energy_str,
+                        "attention_state": attention_str,
+                        "cognitive_load": cognitive_load,
+                        "session_duration_minutes": session_duration,
+                        "tasks_completed_today": tasks_completed,
+                        "timestamp": datetime.utcnow().isoformat()
+                    }
+                },
+                user_id=user_id
+            )
+            
+            logger.debug(f"📡 Broadcast {change_type} to WebSocket clients for {user_id}")
+            
+        except Exception as e:
+            logger.error(f"❌ Error broadcasting state update: {e}")
 
     async def close(self) -> None:
         """Shutdown ADHD accommodation engine."""
