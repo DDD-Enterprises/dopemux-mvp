@@ -105,12 +105,18 @@ With: Your actual act-endpoint API key
 
 ## Step 6: Test Role Switching!
 
-### Switch to QUICKFIX mode:
+### Switch to QUICKFIX mode (CLI shortcut):
+```bash
+dopemux start --role quickfix --dry-run   # preview tool changes
+dopemux start --role quickfix             # launch with role applied
+```
+
+CLI automatically rewrites the Claude config, sets `DOPEMUX_AGENT_ROLE`, and shows any missing services. The legacy helper script still works:
 ```bash
 ~/.claude/switch-role.sh quickfix
 ```
 
-Then restart Claude Code:
+After switching, restart Claude Code if it was already running:
 ```bash
 exit  # or Ctrl+D
 claude
@@ -119,10 +125,27 @@ claude
 
 ### Switch to ACT mode:
 ```bash
-~/.claude/switch-role.sh act
+dopemux start --role act
 ```
 
-Restart Claude Code and verify 4 servers!
+Restart Claude Code (or let the CLI relaunch it) and verify the tool set.
+
+### Switch agent panes from the orchestrator
+
+Inside the orchestrator tmux session you can retarget an agent pane on demand:
+
+```bash
+# Primary agent → ACT mode
+dopemux tmux agent switch-role act
+
+# Secondary agent → PLAN mode
+dopemux tmux agent switch-role plan --target secondary
+
+# Target a pane explicitly
+dopemux tmux agent switch-role research --pane %27
+```
+
+The command interrupts the existing process, reruns `dopemux start --role ...` in that pane, and warns if any required MCP services are offline (including the exact `dopemux mcp up --services ...` command to start them).
 
 ---
 
@@ -219,7 +242,18 @@ source ~/.zshrc
 **Available Modes (Phase 1A):**
 - `quickfix` - 3 tools, minimal cognitive load
 - `act` - 4 tools, implementation focus
+- `plan` - strategic planning / architecture persona
+- `research` - investigation persona
 - `all` - 4 tools, full flexibility
+
+**Extended personas (CLI shortcut):**
+```bash
+dopemux start --role developer   # Implementation persona
+dopemux start --role architect   # Architecture/ADR persona
+dopemux start --role reviewer    # Review & QA persona
+dopemux start --role debugger    # Incident + debugging persona
+dopemux start --role ops         # Runbook / operational persona
+```
 
 **Check Current Mode:**
 ```bash
