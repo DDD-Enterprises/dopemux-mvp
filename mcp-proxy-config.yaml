@@ -18,3 +18,7 @@ mcp_servers:
   serena:
     command: ["docker", "exec", "-i", "mcp-serena", "python", "server.py"]
     port: 8005
+
+  leantime-bridge:
+    command: ["docker", "exec", "-i", "mcp-leantime-bridge", "python", "-m", "leantime_bridge.http_server"]
+    port: 3015
