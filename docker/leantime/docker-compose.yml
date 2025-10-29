@@ -29,7 +29,9 @@ services:
       start_period: 30s
 
   leantime:
-    image: leantime/leantime:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: leantime
     restart: unless-stopped
     ports:
