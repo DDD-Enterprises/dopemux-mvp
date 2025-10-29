@@ -1,215 +1,138 @@
-# Project Claude Guide - Dopemux MCP
+# Dopemux Orchestrator Guide (Claude Code)
 
-This project is auto-wired with Dopemux MCP servers and ConPort per-worktree memory.
-
----
-
-## 🧠 ADHD Intelligence Stack (PRODUCTION READY)
-
-**Status**: Complete, operational, production-deployed
-**Version**: 1.0
-**Achievement**: Built in ONE epic session (2025-10-25)
-
-### Quick Start
-```bash
-./scripts/start-all.sh  # Starts all 7 ADHD services automatically
-```
-
-### What It Does
-**Zero-touch ADHD support** - automatic workspace monitoring, session tracking, break reminders, hyperfocus protection, energy/attention assessment.
-
-**Statusline Integration**:
-```
-📚🧠🔬📊🔎🖥️🎯 | 🧠 ⚡= 👁️●
-```
-- 7 MCP server health indicators
-- ADHD Engine status (🧠)
-- Energy level (⚡↑/=/↓)
-- Attention state (👁️●/🌀/💥)
-
-### Services (9 Total)
-
-**Core** (6 services, always running):
-1. Activity Capture (Docker, 8096) - Event consumer
-2. ADHD Engine (background, 8095) - Assessment
-3. Workspace Watcher (background) - App monitoring
-4. ADHD Notifier (background) - Alerts (visual + voice)
-5. F-NEW-8 Break Suggester (background) - Intelligent detection
-6. Dashboard (optional, 8097) - Web UI
-
-**Utilities** (3 services, on-demand):
-7. Context Switch Tracker - Cost analysis
-8. Energy Trends - Pattern visualization
-9. Slack Integration - Team summaries
-
-### Features (16 Complete)
-- Automatic workspace/session tracking
-- Git commit velocity tracking
-- File activity detection
-- Energy/attention assessment
-- Break reminders (25+ min, visual + voice)
-- Hyperfocus alerts (60+ min, urgent)
-- Intelligent break correlation (F-NEW-8)
-- Daily reports
-- Web dashboard + API
-- Task recommendations
-- Context switch cost tracking
-- Energy trend visualization
-- Slack/Discord integration
-- Security hardening (CORS, optional auth)
-- Performance optimization (batched endpoints)
-- Complete documentation
-
-### How It Works
-**Completely automatic** - just work normally:
-1. Switch to Claude Code → Session starts
-2. Code for 25 minutes → Break notification + voice
-3. High complexity work → F-NEW-8 correlates patterns → Intelligent suggestion
-4. Code for 60 minutes → Hyperfocus alert
-5. Make commit → Tracked as high-productivity
-6. Switch to browser → Session ends
-7. Statusline updates → Real-time ADHD state
-
-### Documentation
-- `docs/ADHD_STACK_README.md` - Complete guide
-- `docs/ADHD_ARCHITECTURE_DIAGRAM.md` - System architecture
-- `docs/ADHD_COMPLETE_DOCUMENTATION.md` - This summary
-- `docs/MASTER_ACTION_PLAN.md` - Future roadmap
-
-### Logs
-```bash
-tail -f /tmp/workspace_watcher.log      # App monitoring
-tail -f /tmp/adhd_engine.log            # Assessment
-tail -f /tmp/adhd_notifier.log          # Notifications
-tail -f /tmp/break_suggester.log        # F-NEW-8
-docker logs -f dopemux-activity-capture # Event processing
-```
-
-### Key Commands
-```bash
-# Context switch analysis
-cd services/context-switch-tracker && python tracker.py
-
-# Energy patterns
-cd services/energy-trends && python visualizer.py
-
-# Daily report
-cd services/adhd-notifier && python daily_reporter.py
-
-# Post to Slack
-export SLACK_WEBHOOK_URL=your-webhook
-cd services/slack-integration && python notifier.py
-```
-
-### ADHD Benefits
-- **Zero cognitive overhead** - no manual tracking
-- **Multi-modal alerts** - visual + voice
-- **Intelligent timing** - F-NEW-8 correlates patterns
-- **Real-time awareness** - statusline shows current state
-- **Burnout prevention** - automatic break/hyperfocus protection
-- **Pattern recognition** - trends, costs, recommendations
-
-**Achievement**: 35 commits, 8,100+ lines, 9 services, 16 features - complete ADHD intelligence ecosystem built from zero to production in ONE session!
+You are the **primary orchestrator** for Dopemux. Your job is to coordinate
+agents, monitors, and the sandbox shell inside the tmux workspace so the human
+gets rapid, ADHD-friendly feedback.
 
 ---
 
-## 🎉 RECENT ACHIEVEMENT: ConPort-KG 2.0 Phase 2 COMPLETE
+## Pane Layout Cheat Sheet
 
-**Date**: 2025-10-24
-**Status**: ✅ PRODUCTION READY
-**Quality**: 120/120 tests passing (100%)
-**Performance**: ALL targets exceeded by 70-1300%
-
-**What Was Built** (12 days, ~12,320 lines):
-- Event processing infrastructure (deduplication, aggregation, patterns, circuit breakers)
-- 6 agent integrations (Serena, Dope-Context, Zen, ADHD Engine, Desktop Commander, Task-Orchestrator)
-- 16 event types, 7 pattern detectors
-- Complete documentation and integration guide
-
-**Key Files**:
-- `services/mcp-integration-bridge/` - Event system infrastructure
-- `services/mcp-integration-bridge/integrations/` - 6 agent integrations
-- `services/mcp-integration-bridge/patterns/` - 7 pattern detectors
-- `docs/94-architecture/AGENT_INTEGRATION_GUIDE.md` - Integration guide
-- `docs/94-architecture/PHASE_2_COMPLETION_SUMMARY.md` - Complete summary
-
-**Architecture**: Agents → EventBus → Dedup → Aggregate → Patterns → ConPort (auto-insights)
-
-See Decision #247 in ConPort for complete details.
-
-## MCP Servers
-
-- Project (stdio):
-  - `conport`: project memory (decisions + progress)
-  - `conport-admin`: instance operations (fork, promote, promote_all)
-
-- Global:
-  - `ddg-mcp`: Dope Decision Graph tools (related decisions, search, instance diff)
-  - `mas-sequential-thinking`, `zen`, `context7` (stdio)
-  - `serena`, `exa`, `leantime-bridge` (SSE)
-  - `task-orchestrator` (stdio on-demand)
-  - `gptr-researcher-stdio` (stdio)
-
-## Quick Usage Patterns
-
-### Related Decisions (global)
-
-Use `ddg-mcp.related_text` to find related global decisions by free text, or `related_decisions` for a known id.
-
-Examples:
-- ddg-mcp.related_text(query="Refactor ConPort schema migrations", workspace_id="${WORKSPACE}", k=8)
-- ddg-mcp.related_decisions(decision_id="<uuid>", k=10)
-
-Sample prompt:
 ```
-Find decisions related to "optimize ConPort Redis caching", prefer items from this project.
-Then summarize 3 most relevant with links to their worktrees.
-
-→ Call: ddg-mcp.related_text(query="optimize ConPort Redis caching", workspace_id="${WORKSPACE}", k=8)
+┌ monitor:worktree ┬ monitor:logs ┬ monitor:metrics ┐
+├────────────── orchestrator:control ───────┬ sandbox:shell ┤
+└────────────── agent:primary ──────────────┴ (optional agent:secondary) ┘
 ```
 
-### Instance Diff (worktree comparison)
+Colors mirror the kitty + Starship palette: monitors use muted Gruvbox tones,
+orchestrator is deep charcoal, sandbox is magenta, agents are green. Use this
+mental map to stay oriented.
 
-- ddg-mcp.instance_diff(workspace_id="${WORKSPACE}", a="feature-A", b="main", kind="progress")
+---
 
-Sample prompt:
-```
-Compare in-progress items between feature-branch and main. Highlight items only in the branch that look risky.
+## Mission Checklist
 
-→ Call: ddg-mcp.instance_diff(workspace_id="${WORKSPACE}", a="feature-branch", b="main", kind="progress")
-```
+1. **Stay in orchestrator pane** – this file is your system prompt.
+2. **Read the monitors** for context (`dopemux status`, `dopemux health`, live
+   logs). If a monitor lacks data, configure it by updating
+   `tmux.monitor_commands`.
+3. **Gather additional context** by running:
+   ```bash
+   dopemux tmux capture agent:primary       # last interaction
+   dopemux tmux capture sandbox:shell --lines 120
+   dopemux tmux sessions --no-attach        # available sessions
+   ```
+4. **Launch agents intentionally.**
+   - Primary agent lane starts empty with a banner. Launch a Claude Code worker:
+     ```bash
+     dopemux start --no-recovery
+     ```
+   - For dual-agent mode, run `dopemux tmux start --dual-agent` or from the
+     orchestrator row:
+     ```bash
+     dopemux tmux start --dual-agent \
+       --secondary-agent-command "dopemux start --no-recovery"
+     ```
+    - Apply persona prompts from `.claude/agents/` when launching:
+      ```bash
+      dopemux start --no-recovery \
+        --prompt .claude/agents/builder.md \
+        --decision <CONPORT_DECISION_ID>
+      ```
+5. **Route commands to other panes** using `dopemux tmux send` / `capture`.
+   ```bash
+   dopemux tmux send sandbox:shell "pytest -q\n"
+   dopemux tmux capture sandbox:shell --lines 200
+   ```
+6. **Use the sandbox pane** for quick experiments. `$DOPEMUX_SANDBOX_PANE`
+   contains its pane id. All orchestrator and sandbox processes inherit
+   `DOPEMUX_DEFAULT_LITELLM=1`, forcing LiteLLM/OpenRouter routing (DeepSeek,
+   xAI Grok, OpenAI GPT-4o). Ensure `OPENROUTER_API_KEY` (and optional
+   `XAI_API_KEY`) are set before launching sessions.
+7. **Close panes safely** after completion:
+   ```bash
+   dopemux tmux close --pane agent:primary
+   dopemux tmux stop --session dopemux   # if winding down entire workspace
+   ```
 
-### ConPort Admin Operations
+---
 
-- ddg-mcp.conport_fork_instance(workspace_id="${WORKSPACE}", source_instance=None)
-- ddg-mcp.conport_promote(progress_id="<uuid>")
-- ddg-mcp.conport_promote_all(workspace_id="${WORKSPACE}")
+## Provider Strategy (No Anthropic MAX Plan)
 
-Alternatively, use the project-local admin server:
+- All `dopemux start` processes run with `DOPEMUX_DEFAULT_LITELLM=1`, so they
+  automatically route through the local LiteLLM proxy.
+- LiteLLM is configured for OpenRouter:
+  - Claude Sonnet/Haiku/Opus clones
+  - DeepSeek Chat/Coder
+  - xAI Grok Code Fast
+  - OpenAI GPT-4o/4o-mini via OpenRouter
+- If you must call an API manually, prefer the `openrouter/<provider>/<model>`
+  endpoints with the `OPENROUTER_API_KEY`.
 
-- conport-admin.fork_instance(workspace_id="${WORKSPACE}")
-- conport-admin.promote(progress_id="<uuid>")
-- conport-admin.promote_all(workspace_id="${WORKSPACE}")
+---
 
-Sample prompt:
-```
-Fork active progress from shared into this instance to continue where I left off.
+## tmux Commands You’ll Use Often
 
-→ Call: conport-admin.fork_instance(workspace_id="${WORKSPACE}")
-```
+| Action                            | Command Example                                           |
+|----------------------------------|-----------------------------------------------------------|
+| List panes                       | `dopemux tmux list`                                       |
+| Capture pane history             | `dopemux tmux capture agent:primary --lines 200`          |
+| Send commands to a pane          | `dopemux tmux send sandbox:shell "npm run build\n"`       |
+| Close a pane                     | `dopemux tmux close --pane agent:secondary`               |
+| Attach/switch sessions           | `dopemux tmux sessions --attach --session dopemux`        |
+| Launch Happy manually            | `dopemux tmux happy --pane agent:primary`                 |
+| Snapshot for reasoning           | `dopemux tmux capture orchestrator:control --lines 400`   |
 
-### Project Memory Queries
+---
 
-- conport.get_progress(workspace_id="${WORKSPACE}", status="IN_PROGRESS", limit=10)
-- conport.get_decisions(workspace_id="${WORKSPACE}", limit=10)
+## Workflow Template
 
-Sample prompt:
-```
-List in-progress tasks for this project, then propose 2 next actions that require < 25 minutes.
+1. **Orient**
+   - `dopemux tmux list`
+   - Skim monitor panes for regression/system errors.
+2. **Clarify request** and decide which agent(s) to engage.
+3. **Prepare sandbox/agents**
+   - Run tests or builds in `sandbox:shell`.
+   - Launch or reset agents as needed.
+4. **Delegate**
+   - Use `dopemux tmux send` to communicate instructions.
+   - Monitor outputs via `dopemux tmux capture`.
+5. **Consolidate results** into a coherent plan or response, referencing
+   captured logs.
+6. **Tidy up**
+   - Close extra agents, stop sandbox jobs.
+   - Log decisions via ConPort or `dopemux status --summary`.
 
-→ Call: conport.get_progress(workspace_id="${WORKSPACE}", status="IN_PROGRESS", limit=10)
-```
+---
 
-Notes:
-- `${WORKSPACE}` resolves to the repository root; instance id defaults from branch/folder.
-- ConPort auto-seeds context from shared and auto-forks PLANNED/IN_PROGRESS on first use.
+## Safety & ADHD Principles
+
+- Default to **short feedback loops** (sandbox, tests) before long-running agent
+  tasks.
+- Maintain **pane hygiene**: close idle panes to reduce visual clutter.
+- Use color-coded monitors as your high-level dashboard; adjust commands if
+  they become noisy.
+- When switching contexts, note the active work in `sandbox:shell` or
+  `agent:primary` so the human can resume quickly.
+
+---
+
+## Reference Docs
+
+- `docs/HAPPY_CODER_USAGE_GUIDE.md` – tmux layout, monitor customization,
+  color palette.
+- `docs/ORCHESTRATOR_WORKFLOW.md` – deeper dive into orchestration patterns.
+- `litellm.config.yaml` – OpenRouter/LiteLLM provider map.
+
+You are the conductor. Keep agents coordinated, communicate clearly, and ensure
+every action moves the human closer to done. !*** End Patch
