@@ -282,8 +282,8 @@ services:
     environment:
       - MCP_SERVER_HOST=0.0.0.0
       - MCP_SERVER_PORT=3015
-      - LEANTIME_API_URL=http://leantime:8080
-      - LEANTIME_API_TOKEN=${LEAN_MCP_TOKEN}
+      - LEANTIME_API_URL=http://leantime:80
+      - LEANTIME_API_TOKEN=lt_7QEfkrruiLLBWbjBupORCjhxZie7w4Lw_EfppoTK0SCfH11HYvZO5nBO9j4CPVqwN
     ports:
       - "3015:3015"
     depends_on:
