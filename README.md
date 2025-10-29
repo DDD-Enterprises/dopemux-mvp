@@ -189,6 +189,28 @@ dopemux start
   - `CLAUDE_CODE_ROUTER_MODELS` – comma-separated model names (e.g. `deepseek-chat,deepseek-reasoner`)
 - Use `--no-claude-router` if you need to fall back to direct Anthropics access.
 
+### Role-aware launch
+
+Trim Claude’s tool set to match your attention state:
+
+```bash
+# Preview the QUICKFIX mode (scattered attention, 3 tools)
+dopemux start --role quickfix --dry-run
+
+# Launch in implementation mode (ACT)
+dopemux start --role act
+
+# Strategic planning dashboard
+dopemux start --role plan
+
+# Retarget the primary agent pane from the orchestrator session
+dopemux tmux agent switch-role act
+```
+
+The CLI rewrites `~/.claude/settings.json`, sets `DOPEMUX_AGENT_ROLE`, and warns if any required MCP services are offline (with suggested `dopemux mcp ...` commands to start them). Inside the orchestrator tmux session you can retarget agent panes on demand with `dopemux tmux agent switch-role ...`.
+
+Supported personas: `quickfix`, `act`, `plan`, `research`, `all`, `developer`, `architect`, `reviewer`, `debugger`, and `ops` (legacy aliases such as `orchestrator`/`agent` continue to work).
+
 Note on authentication modes:
 - Default (`dopemux start`): Claude Code uses OAuth (Claude Pro/Max). No API key passed to the app.
 - With `--litellm`: Dopemux runs a local LiteLLM proxy and sets `ANTHROPIC_API_BASE`/`ANTHROPIC_API_KEY`
@@ -610,6 +632,18 @@ Helpful commands:
 - `dopemux mobile start --all` – mirror all Claude panes
 - `dopemux mobile notify "✅ Tests passed"` – push a status notification
 - `dopemux mobile detach --all` – stop all Happy sessions
+- `dopemux mobile status --watch` – keep an eye on Happy health and sessions in real time
+
+Automation-friendly helpers:
+
+- `dopemux run-tests` (or pass your own command) broadcasts mobile notifications when test suites finish
+- `dopemux run-build` does the same for build pipelines
+
+The tmux status line now shows a 📱 indicator whenever Happy is enabled—green when sessions are active, amber when idle, and red when attention is needed.
+
+Use `dopemux status -m` to see Happy readiness alongside the rest of your Dopemux metrics.
+
+For dashboards or custom tooling, read `~/.cache/dopemux/status/mobile_status.json` for the latest Happy snapshot (same data that powers the status line).
 
 Run `dopemux doctor` to verify Happy/Claude CLI availability and optional relay reachability.
 
