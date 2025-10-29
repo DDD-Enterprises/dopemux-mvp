@@ -633,6 +633,13 @@ class EnhancedTaskOrchestrator:
                         f"   Reason: {readiness['reason']}\n"
                         f"   Suggestion: {readiness['suggestion']}"
                     )
+                    
+                    # Check if mandatory break needed
+                    user_state = await self.cognitive_guardian.get_user_state()
+                    if user_state.session_duration_minutes >= 90:
+                        logger.error("🛑 MANDATORY BREAK REQUIRED - No tasks assigned")
+                        return "break_required"  # Special signal for break enforcement
+                    
                     # Return None to defer task
                     # UI would display readiness['alternatives'] for user to choose
                     # This prevents energy mismatches and burnout
@@ -675,9 +682,33 @@ class EnhancedTaskOrchestrator:
             return None
 
     async def _dispatch_to_agent(self, task: OrchestrationTask, agent: AgentType) -> bool:
-        """Dispatch task to assigned AI agent."""
+        """
+        Dispatch task to assigned AI agent.
+
+        Args:
+            task: Orchestration task to dispatch
+            agent: Target AI agent (or "break_required" signal)
+
+        Returns:
+            Success status
+        """
         try:
-            # Check agent availability
+            # NEW: Handle break-required state
+            if agent == "break_required":
+                logger.warning("🛑 MANDATORY BREAK - Task deferred")
+                print("\n" + "="*70)
+                print("🛑 MANDATORY BREAK REQUIRED")
+                print("   You've been working too long.")
+                print("   Take a 10-minute break, then return.")
+                print("   Task will be available after break.")
+                print("="*70 + "\n")
+                
+                # Track ADHD accommodation
+                self.metrics["adhd_accommodations_applied"] += 1
+                
+                return False  # Task not dispatched
+            
+            # EXISTING: Check agent availability
             agent_info = self.agent_pool.get(agent)
             if not agent_info or not agent_info["available"]:
                 logger.warning(f"Agent {agent.value} not available for task {task.id}")
