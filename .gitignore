@@ -257,3 +257,5 @@ node_modules/
 docker/mcp-servers/backups/
 # JWT Keys (generated at runtime, never commit)
 services/conport_kg/auth/keys/*.pem
+.env* 
+=*
