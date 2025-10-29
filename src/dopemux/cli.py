@@ -15,8 +15,9 @@ import signal
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import Iterable, List, Optional, Sequence
 import warnings
+import logging
 
 import click
 try:
@@ -50,7 +51,9 @@ from .config import ConfigManager
 from .health import HealthChecker
 from .instance_manager import InstanceManager, detect_instances_sync, detect_orphaned_instances_sync
 from .litellm_proxy import LiteLLMProxyError, LiteLLMProxyManager
+from .profile_manager import ProfileManager
 from .profile_models import ProfileValidationError
+from .claude_config import ClaudeConfig, ClaudeConfigError
 from .profile_parser import ProfileParser
 from .protection_interceptor import check_and_protect_main, consume_last_created_worktree
 from .project_init import init_project
@@ -60,7 +63,14 @@ from urllib.parse import urlparse
 import yaml
 from .mobile import mobile as mobile_commands
 from .mobile.hooks import mobile_task_notification
+from .mobile.runtime import update_tmux_mobile_indicator
 from .tmux import tmux as tmux_commands
+from .roles.catalog import (
+    activate_role,
+    available_roles,
+    resolve_role,
+    RoleNotFoundError,
+)
 
 
 if "-litellm" in sys.argv:
@@ -74,6 +84,126 @@ if not _DOTENV_AVAILABLE:  # pragma: no cover - environment warning
         "will not be auto-loaded. Install python-dotenv to enable this feature.",
         RuntimeWarning,
     )
+
+
+ROLE_SERVER_SERVICE_MAP = {
+    "conport": "conport",
+    "serena": "serena",
+    "serena-lsp": "serena",
+    "context7": "context7",
+    "zen": "zen",
+    "exa": "exa",
+    "gptr-mcp": "gptr-mcp",
+    "dopemux-gpt-researcher": "dopemux-gpt-researcher",
+    "mas-sequential-thinking": "mas-sequential-thinking",
+    "desktop-commander": "desktop-commander",
+    "leantime": "leantime-bridge",
+    "leantime-bridge": "leantime-bridge",
+}
+
+ATTENTION_PROFILE_DEFAULTS = {
+    "scattered": {
+        "session_duration_minutes": 20,
+        "energy_preference": "low",
+        "attention_mode": "scattered",
+    },
+    "focused": {
+        "session_duration_minutes": 50,
+        "energy_preference": "medium",
+        "attention_mode": "focused",
+    },
+    "hyperfocus": {
+        "session_duration_minutes": 90,
+        "energy_preference": "high",
+        "attention_mode": "hyperfocused",
+    },
+    "variable": {
+        "session_duration_minutes": 45,
+        "energy_preference": "any",
+        "attention_mode": "any",
+    },
+}
+
+
+def _ensure_role_profile(spec) -> Optional[object]:  # returns DopemuxProfile when available
+    """Ensure a profile file exists for the given role spec."""
+
+    profile_name = getattr(spec, "profile_name", None)
+    if not profile_name:
+        return None
+
+    manager = ProfileManager()
+    existing = manager.get_profile(profile_name)
+    if existing:
+        return existing
+
+    profiles_dir = manager.profiles_dir
+    profiles_dir.mkdir(parents=True, exist_ok=True)
+
+    required = sorted({"conport", * (spec.required_servers or [])})
+    optional = sorted(set(spec.optional_servers or []))
+
+    attention_cfg = ATTENTION_PROFILE_DEFAULTS.get(spec.attention_state, ATTENTION_PROFILE_DEFAULTS["variable"])
+
+    profile_data = {
+        "name": profile_name,
+        "display_name": spec.label,
+        "description": spec.description,
+        "mcp_servers": {
+            "required": required,
+            "enabled": optional,
+            "disabled": [],
+        },
+        "adhd_config": {
+            "session_duration_minutes": attention_cfg["session_duration_minutes"],
+            "energy_preference": attention_cfg["energy_preference"],
+            "attention_mode": attention_cfg["attention_mode"],
+        },
+        "markers": {
+            "required_files": [],
+            "optional_files": [],
+        },
+    }
+
+    profile_path = profiles_dir / f"{profile_name}.yaml"
+    with open(profile_path, "w", encoding="utf-8") as f:
+        yaml.safe_dump(profile_data, f, sort_keys=False)
+
+    return manager.get_profile(profile_name)
+
+
+def _suggest_server_start(missing_servers: Iterable[str]) -> None:
+    """Suggest commands to start missing MCP services."""
+
+    services = sorted({ROLE_SERVER_SERVICE_MAP.get(name, name) for name in missing_servers})
+    if not services:
+        return
+    service_arg = ",".join(services)
+    console.print(
+        f"[yellow]💡 Start required services: dopemux mcp up --services {service_arg}[/yellow]"
+    )
+    console.print(
+        "[dim]   or bring up the full stack: dopemux mcp start-all --verify[/dim]"
+    )
+
+
+def _invoke_switch_role_script(role_key: str) -> None:
+    if os.getenv("DOPEMUX_SKIP_SWITCH_ROLE_SCRIPT", "0").lower() in {"1", "true", "yes"}:
+        return
+
+    script_path = Path.home() / ".claude" / "switch-role.sh"
+    if not script_path.exists():
+        return
+
+    try:
+        subprocess.run([str(script_path), role_key], check=True)
+        console.print(
+            f"[dim]✓ Synced MetaMCP role via {script_path} {role_key}[/dim]"
+        )
+    except subprocess.CalledProcessError as exc:
+        console.print(
+            f"[yellow]⚠ switch-role.sh failed (exit {exc.returncode}); continuing[/yellow]"
+        )
 
 
 def show_version(ctx, param, value):
@@ -120,8 +250,9 @@ def _start_minimal_session(
 )
 @click.option("--config", "-c", help="Configuration file path")
 @click.option("--verbose", "-v", is_flag=True, help="Verbose output")
+@click.option("--debug-log", type=click.Path(path_type=Path, dir_okay=False), help="Write debug logs to file")
 @click.pass_context
-def cli(ctx, config: Optional[str], verbose: bool):
+def cli(ctx, config: Optional[str], verbose: bool, debug_log: Optional[Path]):
     """
     🧠 Dopemux - ADHD-optimized development platform
 
@@ -131,6 +262,25 @@ def cli(ctx, config: Optional[str], verbose: bool):
     ctx.ensure_object(dict)
     ctx.obj["verbose"] = verbose
     ctx.obj["config_manager"] = ConfigManager(config_path=config)
+
+    # Optional debug file logging
+    log_path_env = os.getenv("DOPEMUX_DEBUG_LOG")
+    if not debug_log and log_path_env:
+        debug_log = Path(log_path_env)
+    if debug_log:
+        try:
+            log_path = Path(debug_log).expanduser().resolve()
+            log_path.parent.mkdir(parents=True, exist_ok=True)
+            logging.basicConfig(
+                level=logging.DEBUG,
+                format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+                handlers=[logging.FileHandler(log_path, encoding="utf-8")],
+            )
+            ctx.obj["debug_log"] = str(log_path)
+            os.environ["DOPEMUX_DEBUG_LOG"] = str(log_path)
+            logging.debug("dopemux invoked: argv=%s", sys.argv)
+        except Exception:
+            pass
 
 
 @cli.command()
@@ -298,10 +448,26 @@ def wire_conport(instance: Optional[str], project: Optional[str]):
     help="Route Claude Code traffic through LiteLLM proxy",
 )
 @click.option(
+    "--alt-routing",
+    "use_alt_routing",
+    is_flag=True,
+    help="🚀 Automatic alternative provider routing (OpenRouter, XAI, Minimax) - starts LiteLLM automatically",
+)
+@click.option(
     "--claude-router/--no-claude-router",
     "use_claude_router",
     default=False,  # Changed to False - OAuth-first design (no routing needed)
     help="Start Claude Code Router per instance (requires global `ccr`)",
+)
+@click.option(
+    "--role",
+    "-r",
+    help="Run Claude with a specific role/persona (e.g. quickfix, act, plan, research, all, orchestrator).",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Preview role/profile effects without launching Claude Code.",
 )
 @click.pass_context
 def start(
@@ -314,7 +480,10 @@ def start(
     no_mcp: bool,
     no_recovery: bool,
     use_litellm: bool,
+    use_alt_routing: bool,
     use_claude_router: bool,
+    role: Optional[str],
+    dry_run: bool,
     **legacy_kwargs,
 ):
     """
@@ -333,6 +502,93 @@ def start(
 
     from .workspace_utils import get_workspace_root
 
+    # Handle --alt-routing flag (automatic LiteLLM setup)
+    if use_alt_routing:
+        use_litellm = True
+        console.print("[cyan]🚀 Alternative routing enabled - starting LiteLLM automatically...[/cyan]")
+        
+        # Load routing environment
+        from pathlib import Path as EnvPath
+        from dotenv import load_dotenv
+        
+        routing_env = EnvPath.cwd() / ".env.routing"
+        if routing_env.exists():
+            load_dotenv(routing_env)
+            console.print("[dim]✓ Loaded .env.routing[/dim]")
+        else:
+            console.print("[yellow]⚠️  .env.routing not found - using defaults[/yellow]")
+        
+        # Auto-start LiteLLM if not already running
+        litellm_running = False
+        try:
+            import httpx
+            resp = httpx.get("http://localhost:4000/health", timeout=2)
+            litellm_running = resp.status_code in (200, 401)  # 401 means running but needs auth
+        except Exception:
+            pass
+        
+        if not litellm_running:
+            console.print("[blue]🔄 Starting LiteLLM proxy...[/blue]")
+            import subprocess
+            
+            # Kill any stuck instances
+            subprocess.run(["pkill", "-f", "litellm.*4000"], 
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            time.sleep(1)
+            
+            # Start LiteLLM
+            litellm_config = Path.cwd() / ".dopemux" / "litellm" / "A" / "litellm.config.yaml"
+            if not litellm_config.exists():
+                litellm_config = Path.cwd() / "litellm.config.yaml"
+            
+            if litellm_config.exists():
+                litellm_log = Path.cwd() / ".dopemux" / "litellm" / "A" / "litellm.log"
+                litellm_log.parent.mkdir(parents=True, exist_ok=True)
+                
+                with open(litellm_log, "w") as log_file:
+                    subprocess.Popen(
+                        ["litellm", "--config", str(litellm_config), "--port", "4000", "--host", "0.0.0.0"],
+                        stdout=log_file,
+                        stderr=subprocess.STDOUT,
+                        start_new_session=True,
+                    )
+                
+                # Wait for startup
+                console.print("[dim]⏳ Waiting for LiteLLM to start...[/dim]")
+                litellm_master_key = os.getenv("LITELLM_MASTER_KEY", "HZy6cX-h1t5wPed3XJHRByCK3lde4Pu17zDA5mz-BvM")
+                
+                for i in range(20):
+                    try:
+                        import httpx
+                        resp = httpx.get(
+                            "http://localhost:4000/health",
+                            headers={"Authorization": f"Bearer {litellm_master_key}"},
+                            timeout=2
+                        )
+                        if resp.status_code == 200:
+                            console.print("[green]✅ LiteLLM proxy ready on port 4000[/green]")
+                            break
+                    except Exception:
+                        pass
+                    time.sleep(1)
+                else:
+                    console.print("[yellow]⚠️  LiteLLM may not be ready - continuing anyway[/yellow]")
+                    console.print(f"[dim]Check logs: tail -f {litellm_log}[/dim]")
+            else:
+                console.print("[yellow]⚠️  LiteLLM config not found - skipping proxy startup[/yellow]")
+        else:
+            console.print("[green]✓ LiteLLM proxy already running on port 4000[/green]")
+        
+        # Set environment for Claude to use LiteLLM
+        os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
+        os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
+        os.environ["ANTHROPIC_BASE_URL"] = "http://localhost:4000"
+        master_key = os.getenv("LITELLM_MASTER_KEY", "HZy6cX-h1t5wPed3XJHRByCK3lde4Pu17zDA5mz-BvM")
+        os.environ["ANTHROPIC_API_KEY"] = master_key
+        
+        console.print("[dim]✓ Claude Code configured to use LiteLLM proxy[/dim]")
+        console.print("")
+
     # Default to LiteLLM + Router if configured (Option A)
     if not use_litellm and not use_claude_router:
         if os.getenv("DOPEMUX_DEFAULT_LITELLM", "0") == "1":
@@ -340,6 +596,118 @@ def start(
             use_claude_router = True
 
     config_manager = ctx.obj["config_manager"]
+
+    role_activation = None
+    pending_profile_name: Optional[str] = None
+    role_profile = None
+    requested_role = role or os.environ.get("DOPEMUX_AGENT_ROLE")
+    if requested_role:
+        try:
+            role_activation = activate_role(requested_role, config_manager, console)
+        except RoleNotFoundError:
+            available = ", ".join(available_roles())
+            console.print(
+                f"[red]❌ Unknown role: {requested_role}[/red]\n"
+                f"[dim]Available roles: {available}[/dim]"
+            )
+            sys.exit(1)
+
+        spec = role_activation.spec
+        role_profile = _ensure_role_profile(spec)
+        pending_profile_name = getattr(role_profile, "name", spec.profile_name)
+        if role:
+            console.print(
+                f"[cyan]🎭 Role activated:[/cyan] {spec.label} "
+                f"[dim]({spec.key})[/dim] — {spec.description}"
+            )
+            if role_activation.enabled_servers:
+                console.print(
+                    f"[dim]Enabled MCP servers: {', '.join(role_activation.enabled_servers)}[/dim]"
+                )
+            if role_activation.disabled_servers:
+                console.print(
+                    f"[dim]Disabled MCP servers: {', '.join(role_activation.disabled_servers)}[/dim]"
+                )
+        else:
+            console.print(
+                f"[dim]🎭 Active role:[/dim] {spec.label} "
+                f"[dim]({spec.key})[/dim]"
+            )
+    else:
+        pending_profile_name = None
+
+    if dry_run:
+        console.print("[cyan]Dry run: no tmux or Claude Code processes will be started.[/cyan]")
+        if role_activation:
+            spec = role_activation.spec
+            console.print(
+                f"[dim]Role:[/dim] {spec.label} ({spec.key}) — {spec.description}"
+            )
+            if role_activation.enabled_servers:
+                console.print(
+                    f"[dim]MCP servers that would remain enabled: {', '.join(role_activation.enabled_servers)}[/dim]"
+                )
+            if role_activation.disabled_servers:
+                console.print(
+                    f"[dim]MCP servers that would be disabled: {', '.join(role_activation.disabled_servers)}[/dim]"
+                )
+        else:
+            current_config = config_manager.load_config()
+            enabled_now = sorted(
+                name
+                for name, server in current_config.mcp_servers.items()
+                if server.enabled
+            )
+            console.print(
+                f"[dim]No role specified — current enabled MCP servers: {', '.join(enabled_now)}[/dim]"
+            )
+
+        if role_activation and role_activation.missing_required:
+            _suggest_server_start(role_activation.missing_required)
+
+        if pending_profile_name:
+            profile = role_profile or ProfileManager().get_profile(pending_profile_name)
+            if profile:
+                try:
+                    claude_config = ClaudeConfig()
+                    preview = claude_config.apply_profile(
+                        profile,
+                        create_backup=False,
+                        dry_run=True,
+                    )
+                    preview_servers = sorted(preview.get("mcpServers", {}).keys())
+                    console.print(
+                        f"[dim]Profile '{profile.name}' would mount MCP servers: {', '.join(preview_servers)}[/dim]"
+                    )
+                except ClaudeConfigError as err:
+                    console.print(
+                        f"[yellow]⚠ Claude config preview failed: {err}[/yellow]"
+                    )
+            else:
+                    console.print(
+                        f"[yellow]⚠ Profile '{pending_profile_name}' is not defined."
+                    )
+
+        console.print("[green]Dry run complete. No changes were made.[/green]")
+        ctx.exit(0)
+
+    if role_activation and role_activation.missing_required:
+        _suggest_server_start(role_activation.missing_required)
+    if role_activation and role_activation.missing_optional:
+        console.print(
+            f"[dim]Optional services currently offline: {', '.join(role_activation.missing_optional)}[/dim]"
+        )
+
+    # Kill all active tmux sessions at start (requested behavior)
+    # Skip if running inside tmux to avoid killing the session created by `dopemux tmux start`.
+    try:
+        if shutil.which("tmux") and not os.environ.get("TMUX"):
+            _res = subprocess.run(["tmux", "kill-server"], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            logging.debug("tmux kill-server executed: returncode=%s", getattr(_res, "returncode", None))
+        else:
+            logging.debug("Skipping tmux kill-server (inside tmux: %s)", bool(os.environ.get("TMUX")))
+    except Exception:
+        pass
 
     cwd_path = Path.cwd()
     project_path = cwd_path
@@ -565,6 +933,34 @@ def start(
             os.environ[key] = value
 
         console.print("[dim]✅ Instance environment variables configured[/dim]")
+
+    active_profile_applied = False
+    if pending_profile_name:
+        profile_manager = ProfileManager()
+        profile = role_profile or profile_manager.get_profile(pending_profile_name)
+        if profile:
+            try:
+                claude_config = ClaudeConfig()
+                claude_config.apply_profile(profile, create_backup=True, dry_run=False)
+                try:
+                    profile_manager.set_active_profile(project_path, profile.name)
+                except Exception:
+                    pass
+                console.print(
+                    f"[dim]✓ Activated profile '{profile.name}' for Claude Code[/dim]"
+                )
+                active_profile_applied = True
+            except ClaudeConfigError as err:
+                console.print(
+                    f"[yellow]⚠ Could not apply profile '{profile.name}': {err}[/yellow]"
+                )
+        else:
+            console.print(
+                f"[yellow]⚠ Profile '{pending_profile_name}' is not defined."
+            )
+
+    if role_activation and not dry_run:
+        _invoke_switch_role_script(role_activation.spec.key)
 
     litellm_proxy_info = None
     # If --litellm is passed, prefer enabling CCR unless explicitly disabled by user
@@ -1298,8 +1694,9 @@ def instances_cleanup(ctx, instance_id: Optional[str], all: bool, force: bool):
 @click.option("--attention", "-a", is_flag=True, help="Show attention metrics")
 @click.option("--context", "-c", is_flag=True, help="Show context information")
 @click.option("--tasks", "-t", is_flag=True, help="Show task progress")
+@click.option("--mobile", "-m", is_flag=True, help="Show Happy mobile status")
 @click.pass_context
-def status(ctx, attention: bool, context: bool, tasks: bool):
+def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
     """
     📊 Show current session status and metrics
 
@@ -1313,8 +1710,8 @@ def status(ctx, attention: bool, context: bool, tasks: bool):
         sys.exit(1)
 
     # Show all by default if no specific flags
-    if not any([attention, context, tasks]):
-        attention = context = tasks = True
+    if not any([attention, context, tasks, mobile]):
+        attention = context = tasks = mobile = True
 
     if attention:
         monitor = AttentionMonitor(project_path)
@@ -1374,6 +1771,114 @@ def status(ctx, attention: bool, context: bool, tasks: bool):
             console.print(table)
         else:
             console.print("[yellow]No active tasks found[/yellow]")
+
+    if mobile:
+        from .mobile.runtime import check_cli_health, list_mobile_panes
+        from .mobile.tmux_utils import TmuxError
+
+        cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
+        mobile_cfg = cfg_manager.get_mobile_config()
+
+        happy_ok = check_cli_health("happy")
+        claude_ok = check_cli_health("claude")
+
+        try:
+            panes = list_mobile_panes()
+            tmux_error = None
+        except TmuxError as exc:
+            panes = []
+            tmux_error = str(exc)
+
+        mobile_table = Table(title="📱 Mobile Status")
+        mobile_table.add_column("Check", style="cyan")
+        mobile_table.add_column("Status", style="green")
+
+        mobile_table.add_row("Mobile Enabled", "✅ Enabled" if mobile_cfg.enabled else "❌ Disabled")
+        mobile_table.add_row("Happy CLI", "✅ Healthy" if happy_ok else "❌ Unavailable")
+        mobile_table.add_row("Claude CLI", "✅ Healthy" if claude_ok else "⚠️ Check setup")
+
+        if tmux_error:
+            mobile_table.add_row("tmux", f"⚠️ {tmux_error}")
+        else:
+            mobile_table.add_row("Active Sessions", str(len(panes)))
+
+        console.print(mobile_table)
+
+        if not tmux_error and panes:
+            sessions_table = Table(title="📱 Active Happy Sessions")
+            sessions_table.add_column("Pane", style="cyan")
+            sessions_table.add_column("Window", style="green")
+            sessions_table.add_column("Path", style="dim")
+
+            for pane in panes:
+                sessions_table.add_row(
+                    pane.title or "(unnamed)",
+                    pane.window or "?",
+                    pane.path or "",
+                )
+
+            console.print(sessions_table)
+
+
+@cli.command("run-tests")
+@click.argument("command", nargs=-1)
+@click.option("--cwd", type=click.Path(file_okay=False, dir_okay=True), help="Working directory for the test command")
+@click.option("--label", default="Test run", show_default=True, help="Notification label for this test run")
+@click.pass_context
+def run_tests(ctx, command: Sequence[str], cwd: Optional[str], label: str):
+    """Run automated tests and send mobile notifications."""
+
+    args = list(command) if command else ["pytest"]
+    task_label = label or "Test run"
+
+    with mobile_task_notification(
+        ctx,
+        task_label,
+        success_message=f"✅ {task_label} complete",
+        failure_message=f"❌ {task_label} failed",
+    ):
+        result = subprocess.run(args, cwd=cwd, check=False)
+        cmd_display = " ".join(args)
+
+        if result.returncode == 0:
+            console.print(f"[green]✅ Tests passed ({cmd_display})[/green]")
+        else:
+            console.print(f"[red]❌ Tests failed ({cmd_display})[/red]")
+            sys.exit(result.returncode)
+
+    cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
+    update_tmux_mobile_indicator(cfg_manager)
+
+
+@cli.command("run-build")
+@click.argument("command", nargs=-1)
+@click.option("--cwd", type=click.Path(file_okay=False, dir_okay=True), help="Working directory for the build command")
+@click.option("--label", default="Build", show_default=True, help="Notification label for this build run")
+@click.pass_context
+def run_build(ctx, command: Sequence[str], cwd: Optional[str], label: str):
+    """Run a build command and send mobile notifications."""
+
+    # Default to npm build if no command provided
+    args = list(command) if command else ["npm", "run", "build"]
+    task_label = label or "Build"
+
+    with mobile_task_notification(
+        ctx,
+        task_label,
+        success_message=f"✅ {task_label} complete",
+        failure_message=f"❌ {task_label} failed",
+    ):
+        result = subprocess.run(args, cwd=cwd, check=False)
+        cmd_display = " ".join(args)
+
+        if result.returncode == 0:
+            console.print(f"[green]✅ Build succeeded ({cmd_display})[/green]")
+        else:
+            console.print(f"[red]❌ Build failed ({cmd_display})[/red]")
+            sys.exit(result.returncode)
+
+    cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
+    update_tmux_mobile_indicator(cfg_manager)
 
 
 @cli.command()
@@ -2243,6 +2748,32 @@ def extract_cleanup(
 
     Default behavior preserves output files and runs in dry-run mode for safety.
     """
+    with mobile_task_notification(
+        ctx,
+        "Pipeline cleanup",
+        success_message="✅ Pipeline cleanup complete",
+        failure_message="❌ Pipeline cleanup failed",
+    ):
+        _run_extract_cleanup(
+            ctx,
+            directory,
+            dry_run,
+            cleanup_types,
+            include_outputs,
+            report_format,
+            report_file,
+        )
+
+
+def _run_extract_cleanup(
+    ctx,
+    directory: str,
+    dry_run: bool,
+    cleanup_types: tuple,
+    include_outputs: bool,
+    report_format: str,
+    report_file: Optional[str],
+) -> None:
     from pathlib import Path
     import sys
     import json
@@ -3347,6 +3878,19 @@ def backup(ctx, dest: Optional[str], pattern: Optional[str], no_pull: bool, sche
         _print_or_apply_cron(schedule, apply)
         return
 
+    with mobile_task_notification(
+        ctx,
+        "Docker volume backup",
+        success_message="✅ Docker volume backup complete",
+        failure_message="❌ Docker volume backup failed",
+    ):
+        _run_volume_backup(dest, pattern, no_pull, get_workspace_root)
+
+
+def _run_volume_backup(dest: Optional[str], pattern: Optional[str], no_pull: bool, get_workspace_root):
+    import hashlib
+    import re
+
     workspace = get_workspace_root()
     ts = datetime.now().strftime("%Y-%m-%d_%H%M%S")
     default_dest = workspace / "docker" / "mcp-servers" / "backups" / f"volumes_{ts}"
@@ -3355,7 +3899,6 @@ def backup(ctx, dest: Optional[str], pattern: Optional[str], no_pull: bool, sche
 
     vol_pattern = re.compile(pattern or r"^(mcp_|dopemux_)")
 
-    # Discover volumes
     try:
         result = subprocess.run(["docker", "volume", "ls", "--format", "{{.Name}}"], capture_output=True, text=True, check=True)
     except Exception as e:
@@ -3369,7 +3912,6 @@ def backup(ctx, dest: Optional[str], pattern: Optional[str], no_pull: bool, sche
 
     console.print(f"[blue]== Backing up {len(volumes)} volumes to {dest_path} ==[/blue]")
 
-    # Ensure alpine image present unless disabled
     if not no_pull:
         try:
             subprocess.run(["docker", "image", "inspect", "alpine:latest"], capture_output=True, text=True, check=True)
@@ -3396,7 +3938,6 @@ def backup(ctx, dest: Optional[str], pattern: Optional[str], no_pull: bool, sche
             console.print(f"[red]✗ Failed to back up {vol}[/red]")
             fail += 1
 
-    # Write SHA256SUMS
     try:
         sums_path = dest_path / "SHA256SUMS.txt"
         with sums_path.open("w") as f:
@@ -3662,6 +4203,36 @@ def extractPro(
     • Knowledge graph with relationship mapping
     • Comprehensive quality metrics and reporting
     """
+    with mobile_task_notification(
+        ctx,
+        "Pro chatlog extraction",
+        success_message="✅ Pro chatlog extraction complete",
+        failure_message="❌ Pro chatlog extraction failed",
+    ):
+        _run_extract_pro(
+            ctx,
+            directory,
+            output,
+            confidence,
+            batch_size,
+            max_workers,
+            archive,
+            workspace_id,
+            max_documents,
+        )
+
+
+def _run_extract_pro(
+    ctx,
+    directory: str,
+    output: Optional[str],
+    confidence: float,
+    batch_size: int,
+    max_workers: int,
+    archive: Optional[str],
+    workspace_id: Optional[str],
+    max_documents: int,
+) -> None:
     import sys
     from pathlib import Path
 
@@ -4957,59 +5528,224 @@ if not hasattr(tmux_commands, 'commands'):
 cli.add_command(tmux_commands, "tmux")
 
 
+# ============================================================================
+# 🚀 EASY LAUNCH SHORTCUTS - Quick commands for common workflows
+# ============================================================================
 
-
-@tmux_commands.command("start")
-@click.option("--happy", is_flag=True, help="Start with Happy mobile integration")
-@click.option("--litellm", is_flag=True, help="Route through LiteLLM proxy")
-@click.option("--openrouter", is_flag=True, help="Use OpenRouter via LiteLLM")
-@click.option("--background", "-b", is_flag=True, help="Launch in background")
+@cli.command("launch")
+@click.option(
+    "--preset",
+    type=click.Choice(["minimal", "standard", "full", "dope-muted", "dope-neon", "dope-house"]),
+    default="standard",
+    help="Launch preset configuration"
+)
+@click.option("--attach/--no-attach", default=True, help="Attach to session after creation")
 @click.pass_context
-def tmux_start(ctx, happy: bool, litellm: bool, openrouter: bool, background: bool):
+def launch(ctx, preset: str, attach: bool):
     """
-    🚀 Start Dopemux in tmux mode with optional Happy integration
+    🚀 Quick launch with opinionated presets.
     
-    When --happy is specified, ensures proper routing through LiteLLM to OpenRouter
-    instead of direct Anthropic API calls.
+    Presets:
+    
+      minimal     - Just Claude Code, no tmux
+      standard    - Medium layout with default theme
+      full        - DOPE layout with all features
+      dope-muted  - DOPE layout + muted theme (recommended)
+      dope-neon   - DOPE layout + neon theme
+      dope-house  - DOPE layout + house theme
+    
+    Examples:
+    
+      dopemux launch                    # Standard setup
+      dopemux launch --preset full      # Full DOPE layout
+      dopemux launch --preset dope-muted  # DOPE with muted colors
     """
-    # Force LiteLLM routing when Happy mode is enabled
-    if happy and not litellm:
-        litellm = True
-        openrouter = True
+    from .tmux.controller import TmuxController
+    import subprocess
+    import time
     
-    # Set environment variables to ensure proper routing
-    if litellm:
-        os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "1"
-        os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
+    console.print(f"[cyan]🚀 Launching Dopemux with '{preset}' preset...[/cyan]\n")
     
-    if openrouter:
-        os.environ["DOPEMUX_USE_OPENROUTER"] = "1"
-        _configure_openrouter_litellm()
-        
-        # Ensure OpenRouter API key is used
-        if not os.environ.get("OPENROUTER_API_KEY"):
-            console.print("[red]❌ OPENROUTER_API_KEY environment variable is not set[/red]")
-            console.print("[yellow]💡 Set OPENROUTER_API_KEY to use OpenRouter models[/yellow]")
-            sys.exit(1)
-
-    console.print(f"[blue]🚀 Starting Dopemux in tmux mode...[/blue]")
-    if happy:
-        console.print("[green]✅ Happy mobile integration enabled[/green]")
-    if litellm:
-        console.print("[green]✅ LiteLLM routing enabled[/green]")
-    if openrouter:
-        console.print("[green]✅ OpenRouter models configured[/green]")
-
-    # Use the standard start command with the appropriate flags
-    start_kwargs = {
-        'background': background,
-        'use_litellm': litellm,
-        'use_claude_router': litellm,  # Enable router when using LiteLLM
-        'no_recovery': True,  # Skip recovery in tmux mode for cleaner startup
+    if preset == "minimal":
+        # Just start Claude Code, no tmux
+        console.print("[dim]Starting Claude Code without tmux...[/dim]")
+        ctx.invoke(cli.commands['start'])
+        return
+    
+    # Parse preset into layout and theme
+    layout_map = {
+        "standard": ("medium", None),
+        "full": ("dope", None),
+        "dope-muted": ("dope", "muted"),
+        "dope-neon": ("dope", "neon"),
+        "dope-house": ("dope", "house"),
     }
     
-    # Invoke the main start command with our configured options
-    ctx.invoke(start, **start_kwargs)
+    layout, theme = layout_map[preset]
+    
+    # Start tmux with layout
+    console.print(f"[blue]📐 Creating {layout} layout...[/blue]")
+    
+    tmux_start_args = [
+        "dopemux", "tmux", "start",
+        "--layout", layout,
+        "--bootstrap",
+    ]
+    
+    if not attach:
+        tmux_start_args.append("--no-attach")
+    
+    # Start the session
+    subprocess.run(tmux_start_args, check=True)
+    
+    # Apply theme if specified
+    if theme:
+        console.print(f"\n[magenta]🎨 Applying {theme} theme...[/magenta]")
+        time.sleep(1)  # Give tmux time to initialize
+        subprocess.run(["dopemux", "tmux", "theme", theme, "--apply"], check=True)
+        console.print(f"[green]✨ {preset} preset ready![/green]")
+    else:
+        console.print(f"[green]✨ {preset} preset ready![/green]")
+
+
+@cli.command("dope")
+@click.option(
+    "--theme",
+    type=click.Choice(["muted", "neon", "house"]),
+    default="muted",
+    help="Visual theme to apply"
+)
+@click.option("--attach/--no-attach", default=True, help="Attach to session")
+@click.pass_context
+def dope(ctx, theme: str, attach: bool):
+    """
+    🔥 Launch full DOPE layout (shortcut for: launch --preset dope-{theme})
+    
+    This is the complete Dopemux experience:
+      ✓ Full DOPE layout with all monitors
+      ✓ Orchestrator + dual agents
+      ✓ Dashboard panels
+      ✓ Auto-bootstrap services
+      ✓ Your choice of theme
+    
+    Examples:
+    
+      dopemux dope              # DOPE with muted theme (default)
+      dopemux dope --theme neon # DOPE with neon theme
+      dopemux dope --theme house # DOPE with house theme
+    """
+    preset = f"dope-{theme}"
+    ctx.invoke(launch, preset=preset, attach=attach)
+
+
+@cli.command("quick")
+@click.pass_context
+def quick(ctx):
+    """
+    ⚡ Fastest start - medium layout, no bells and whistles.
+    
+    Perfect for:
+      • Quick coding sessions
+      • Testing something fast
+      • Don't need full monitoring
+    
+    Equivalent to: dopemux tmux start --layout medium
+    """
+    console.print("[cyan]⚡ Quick start - medium layout[/cyan]\n")
+    import subprocess
+    subprocess.run([
+        "dopemux", "tmux", "start",
+        "--layout", "medium",
+    ], check=True)
+
+
+@cli.command("layouts")
+def layouts():
+    """
+    📐 Show available layouts and themes with examples.
+    
+    Educational command to learn what's available.
+    """
+    from rich.markdown import Markdown
+    
+    help_text = """
+# Dopemux Layouts & Themes Guide
+
+## 🏗️ Layouts (Structure)
+
+Layouts control **pane arrangement** - where things go in your tmux session.
+
+| Layout       | Description | Use When |
+|--------------|-------------|----------|
+| `low`        | Minimal: main + agent | You want simplicity |
+| `medium`     | Standard split panes | General development |
+| `high`       | More monitoring panes | Need more visibility |
+| `orchestrator` | Full orchestrator + monitors | Managing multiple tasks |
+| `dope`       | Complete DOPE experience | You want it all! 🔥 |
+
+## 🎨 Themes (Appearance)
+
+Themes control **colors and styling** - how things look.
+
+| Theme  | Style | Best For |
+|--------|-------|----------|
+| `muted` | Soft, low contrast | Long sessions, reduced eye strain |
+| `neon`  | Bright, vibrant | High energy, clear distinctions |
+| `house` | Balanced, professional | General use |
+
+## 🚀 Easy Commands
+
+Instead of memorizing complex tmux commands, use these shortcuts:
+
+```bash
+# Quick start commands
+dopemux quick                    # Fast medium layout
+dopemux dope                     # Full DOPE with muted theme
+dopemux dope --theme neon        # Full DOPE with neon theme
+dopemux launch --preset full     # Full DOPE, default theme
+
+# Full control
+dopemux launch --preset dope-muted  # Explicit preset
+
+# Traditional (if you prefer)
+dopemux tmux start --layout dope --bootstrap
+dopemux tmux theme muted --apply
+```
+
+## 📋 Presets Reference
+
+| Preset | Layout | Theme | Description |
+|--------|--------|-------|-------------|
+| `minimal` | none | none | Just Claude Code |
+| `standard` | medium | default | Basic split panes |
+| `full` | dope | default | Everything enabled |
+| `dope-muted` | dope | muted | Recommended! 🌟 |
+| `dope-neon` | dope | neon | Bright & vibrant |
+| `dope-house` | dope | house | Professional |
+
+## 💡 Tips
+
+- **First time?** Try: `dopemux dope`
+- **Long session?** Use: `dopemux launch --preset dope-muted`
+- **Quick test?** Use: `dopemux quick`
+- **Learning?** Start with: `dopemux launch --preset standard`
+
+## 🔧 Advanced Usage
+
+```bash
+# Manual control (traditional way)
+dopemux tmux start --layout dope --bootstrap --alt-routing
+dopemux tmux theme neon --apply
+
+# List current panes
+dopemux tmux list
+
+# Preview a theme without applying
+dopemux tmux theme neon
+```
+"""
+    
+    console.print(Markdown(help_text))
 
 
 def main():
