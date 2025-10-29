@@ -421,31 +421,111 @@ class CognitiveGuardian:
             f"attention={user_state.attention.value}"
         )
 
-        # In production, would query ConPort for tasks
-        # For now, show pattern:
-        # tasks = await self.conport_client.get_progress(
-        #     workspace_id=self.workspace_id,
-        #     status="TODO"
-        # )
+        # Real ConPort queries or fallback to simulation
+        if not self._in_claude_code:
+            return self._simulate_task_suggestions(target_energy, max_suggestions)
 
-        # Filter by energy level
-        # matched_tasks = [
-        #     t for t in tasks
-        #     if t.get("energy_required") == target_energy
-        # ]
+        try:
+            from mcp_tools import mcp__conport__get_progress
 
-        # Sort by complexity match to attention state
-        # If scattered: prefer low complexity (<0.3)
-        # If focused: any complexity okay
-        # If hyperfocus: can handle high complexity (>0.7)
+            # Get all TODO tasks from ConPort
+            all_tasks = await mcp__conport__get_progress(
+                workspace_id=self.workspace_id,
+                status="TODO"
+            )
 
-        # Limit to max_suggestions (ADHD: prevent overwhelm)
-        # return matched_tasks[:max_suggestions]
+            # Filter by energy level and attention state
+            matched_tasks = []
+            for task in all_tasks:
+                task_energy = task.get("energy_required", "medium")
+                task_complexity = task.get("complexity", 0.5)
 
-        # Simulation mode - show pattern
-        print(f"\n🎯 Task Suggestions (Energy: {target_energy})")
-        print(f"   Attention: {user_state.attention.value}")
-        print(f"   Time: {user_state.time_of_day_hour}:00\n")
+                # Energy match
+                if task_energy != target_energy:
+                    continue
+
+                # Attention match (if scattered, skip complex tasks)
+                if user_state.attention == AttentionState.SCATTERED:
+                    if task_complexity > 0.5:
+                        continue  # Skip complex when scattered
+
+                # Calculate match score
+                match_score = self._calculate_task_match_score(
+                    user_state, task_complexity, task_energy
+                )
+
+                matched_tasks.append({
+                    "title": task.get("title", "Untitled"),
+                    "complexity": task_complexity,
+                    "energy_required": task_energy,
+                    "description": task.get("description", ""),
+                    "match_score": match_score
+                })
+
+            # Sort by match score (descending)
+            matched_tasks.sort(key=lambda t: t["match_score"], reverse=True)
+
+            # Limit to max_suggestions (ADHD: prevent overwhelm)
+            top_tasks = matched_tasks[:max_suggestions]
+
+            # Display suggestions
+            print(f"\n🎯 Task Suggestions (Energy: {target_energy})")
+            print(f"   Attention: {user_state.attention.value}")
+            print(f"   Found {len(matched_tasks)} matches, showing top {len(top_tasks)}\n")
+
+            for i, task in enumerate(top_tasks, 1):
+                print(f"   {i}. {task['title']} (complexity: {task['complexity']:.1f})")
+            print()
+
+            return top_tasks
+
+        except Exception as e:
+            logger.error(f"ConPort query failed: {e}")
+            return self._simulate_task_suggestions(target_energy, max_suggestions)
+
+    def _calculate_task_match_score(
+        self,
+        user_state: UserState,
+        task_complexity: float,
+        task_energy: str
+    ) -> float:
+        """Calculate how well a task matches user's current state."""
+        score = 0.5  # Base score
+
+        # Energy match bonus
+        if task_energy == user_state.energy.value:
+            score += 0.3
+
+        # Complexity match to attention
+        if user_state.attention == AttentionState.HYPERFOCUS:
+            if task_complexity > 0.7:
+                score += 0.2  # Perfect for complex work
+        elif user_state.attention == AttentionState.FOCUSED:
+            if 0.3 <= task_complexity <= 0.7:
+                score += 0.2  # Moderate complexity ok
+        elif user_state.attention == AttentionState.SCATTERED:
+            if task_complexity < 0.3:
+                score += 0.2  # Simple only
+
+        return min(1.0, score)
+
+    def _simulate_task_suggestions(
+        self,
+        target_energy: str,
+        max_suggestions: int
+    ) -> List[Dict[str, Any]]:
+        """Simulation mode for when ConPort unavailable."""
+        print(f"\n🎯 Task Suggestions (Energy: {target_energy}) [SIMULATION]")
+        print(f"   ConPort unavailable, showing examples\n")
+
+    def _simulate_task_suggestions(
+        self,
+        target_energy: str,
+        max_suggestions: int
+    ) -> List[Dict[str, Any]]:
+        """Simulation mode for when ConPort unavailable."""
+        print(f"\n🎯 Task Suggestions (Energy: {target_energy}) [SIMULATION]")
+        print(f"   ConPort unavailable, showing examples\n")
 
         if target_energy == "high":
             print("   Suggested (complex tasks):")
@@ -463,7 +543,7 @@ class CognitiveGuardian:
             print("   2. Update README formatting (complexity: 0.2)")
             print("   3. Run and review test suite (complexity: 0.2)\n")
 
-        return []  # Would return real tasks from ConPort
+        return []  # No real tasks in simulation
 
     async def check_task_readiness(
         self,
