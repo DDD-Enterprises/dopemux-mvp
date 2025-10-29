@@ -9,7 +9,7 @@ import logging
 import os
 from typing import Any, Dict, List, Optional, Sequence
 
-import aiohttp
+import httpx
 import uvicorn
 from mcp import types
 from mcp.server import Server
@@ -38,43 +38,43 @@ class LeantimeClient:
         self.base_url = base_url.rstrip('/')
         self.api_endpoint = f"{self.base_url}/api/jsonrpc"
         self.api_token = api_token
-        self.session = None
+        self.client = None
 
     async def __aenter__(self):
-        self.session = aiohttp.ClientSession()
+        # Use httpx instead of aiohttp (works better in Docker)
+        self.client = httpx.AsyncClient(timeout=30.0)
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if self.session:
-            await self.session.close()
+        if self.client:
+            await self.client.aclose()
 
     async def call_api(self, method: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
         """Make a JSON-RPC call to Leantime API"""
-        if not self.session:
+        if not self.client:
             raise RuntimeError("LeantimeClient not initialized - use as async context manager")
 
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_token}"
+            "x-api-key": self.api_token
         }
 
         payload = request(method, params or {})
 
         try:
-            async with self.session.post(
+            response = await self.client.post(
                 self.api_endpoint,
                 json=payload,
-                headers=headers,
-                timeout=aiohttp.ClientTimeout(total=30)
-            ) as response:
-                response.raise_for_status()
-                result = await response.json()
+                headers=headers
+            )
+            response.raise_for_status()
+            result = response.json()
 
-                parsed = parse(result)
-                if isinstance(parsed, Ok):
-                    return parsed.result
-                else:
-                    raise Exception(f"Leantime API error: {parsed}")
+            parsed = parse(result)
+            if isinstance(parsed, Ok):
+                return parsed.result
+            else:
+                raise Exception(f"Leantime API error: {parsed}")
 
         except Exception as e:
             logger.error(f"Leantime API call failed: {e}")
