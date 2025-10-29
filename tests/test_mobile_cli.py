@@ -1,0 +1,129 @@
+from click.testing import CliRunner
+from types import SimpleNamespace
+
+from dopemux.cli import cli
+from dopemux.mobile.cli import mobile
+from dopemux.mobile.tmux_utils import TmuxPane
+from dopemux.mobile.runtime import MobileStatus
+from dopemux.config.manager import MobileConfig
+
+
+class DummyConfigManager:
+    def __init__(self, enabled: bool = True):
+        self._mobile = MobileConfig(enabled=enabled)
+
+    def get_mobile_config(self):
+        return self._mobile
+
+
+def _runner():
+    return CliRunner()
+
+
+def test_mobile_status_lists_sessions(monkeypatch):
+    dummy_cm = DummyConfigManager()
+    snapshot = MobileStatus(
+        enabled=True,
+        happy_ok=True,
+        claude_ok=True,
+        sessions=[
+            TmuxPane(
+                pane_id="%1",
+                title="mobile:reviewer",
+                command="happy",
+                window="mobile",
+                session="session0",
+                active=True,
+                path="/tmp",
+            )
+        ],
+        tmux_error=None,
+    )
+
+    monkeypatch.setattr("dopemux.mobile.cli._get_config_manager", lambda ctx: dummy_cm)
+    monkeypatch.setattr("dopemux.mobile.cli.get_mobile_status", lambda cm: snapshot)
+    monkeypatch.setattr("dopemux.mobile.cli.update_tmux_mobile_indicator", lambda cm: None)
+
+    result = _runner().invoke(mobile, ["status"])
+
+    assert result.exit_code == 0
+    assert "Active sessions" in result.output
+    assert "mobile:reviewer" in result.output
+
+
+def test_mobile_status_json_monkeypatch(monkeypatch):
+    dummy_cm = DummyConfigManager(enabled=False)
+    snapshot = MobileStatus(
+        enabled=False,
+        happy_ok=False,
+        claude_ok=False,
+        sessions=[],
+        tmux_error=None,
+    )
+
+    monkeypatch.setattr("dopemux.mobile.cli._get_config_manager", lambda ctx: dummy_cm)
+    monkeypatch.setattr("dopemux.mobile.cli.get_mobile_status", lambda cm: snapshot)
+    monkeypatch.setattr("dopemux.mobile.cli.update_tmux_mobile_indicator", lambda cm: None)
+
+    result = _runner().invoke(mobile, ["status", "--json"])
+
+    assert result.exit_code == 0
+    assert '"mobile_enabled": false' in result.output.lower()
+
+
+def test_mobile_status_watch_json_conflict(monkeypatch):
+    dummy_cm = DummyConfigManager()
+    snapshot = MobileStatus(
+        enabled=True,
+        happy_ok=True,
+        claude_ok=True,
+        sessions=[],
+        tmux_error=None,
+    )
+
+    monkeypatch.setattr("dopemux.mobile.cli._get_config_manager", lambda ctx: dummy_cm)
+    monkeypatch.setattr("dopemux.mobile.cli.get_mobile_status", lambda cm: snapshot)
+    monkeypatch.setattr("dopemux.mobile.cli.update_tmux_mobile_indicator", lambda cm: None)
+
+    result = _runner().invoke(mobile, ["status", "--json", "--watch"], catch_exceptions=False)
+
+    assert result.exit_code == 1
+    assert "cannot be combined" in result.output
+
+
+def test_run_tests_default(monkeypatch):
+    recorded = {}
+
+    monkeypatch.setattr(
+        "dopemux.mobile.hooks.notify_mobile_event", lambda cfg, msg: recorded.setdefault("messages", []).append(msg)
+    )
+    monkeypatch.setattr("dopemux.mobile.runtime.update_tmux_mobile_indicator", lambda cfg: None)
+
+    def fake_run(args, cwd=None, check=False):
+        recorded["args"] = list(args)
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr("subprocess.run", fake_run)
+
+    result = CliRunner().invoke(cli, ["run-tests"])
+
+    assert result.exit_code == 0
+    assert recorded["args"] == ["pytest"]
+    assert any("complete" in msg for msg in recorded["messages"])
+
+
+def test_run_build_failure(monkeypatch):
+    messages = []
+
+    monkeypatch.setattr("dopemux.mobile.hooks.notify_mobile_event", lambda cfg, msg: messages.append(msg))
+    monkeypatch.setattr("dopemux.mobile.runtime.update_tmux_mobile_indicator", lambda cfg: None)
+
+    def fake_run(args, cwd=None, check=False):
+        return SimpleNamespace(returncode=2)
+
+    monkeypatch.setattr("subprocess.run", fake_run)
+
+    result = CliRunner().invoke(cli, ["run-build", "npm", "run", "build"], catch_exceptions=False)
+
+    assert result.exit_code == 2
+    assert any("failed" in msg.lower() for msg in messages)
