@@ -37,6 +37,11 @@ from mcp import types
 from mcp.client.session import ClientSession as Client
 from mcp.client.stdio import stdio_client
 from fastapi import FastAPI, HTTPException, Depends, Request, Response
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from datetime import timedelta
+from fastapi import status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -1314,6 +1319,59 @@ app = FastAPI(
     description=f"Task management coordination for Dopemux instance: {INSTANCE_NAME}"
 )
 
+# JWT Auth constants and functions
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
+ALGORITHM = 'HS256'
+pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
+
+users_db = {'admin': {
+    'username': 'admin',
+    'hashed_password': get_password_hash('password'),
+}}
+
+def authenticate_user(username: str, password: str):
+    user = users_db.get(username)
+    if not user or not verify_password(password, user['hashed_password']):
+        return False
+    return user
+
+def create_access_token(data: dict, expires_delta: timedelta = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({'exp': expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+security = HTTPBearer()
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail='Could not validate credentials',
+        headers={'WWW-Authenticate': 'Bearer'},
+    )
+    try:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get('sub')
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    user = users_db.get(username)
+    if user is None:
+        raise credentials_exception
+    return user
+
 # CORS middleware with environment-based origin whitelist
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080").split(",")
 app.add_middleware(
@@ -1640,6 +1698,50 @@ async def shutdown_event():
     await conport_client.close()  # Clean up ConPort connection
     logger.info(f"✅ MCP Integration Bridge shut down for instance: {INSTANCE_NAME}")
     logger.info(f"🧠 ConPort context preserved for next session")
+
+@app.post("/login")
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Incorrect username or password',
+            headers={'WWW-Authenticate': 'Bearer'},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={'sub': user['username']}, expires_delta=access_token_expires
+    )
+    return {'access_token': access_token, 'token_type': 'bearer'}
+
+@app.post("/refresh")
+async def refresh_token(current_token: str = Depends(security)):
+    try:
+        payload = jwt.decode(current_token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get('sub')
+        if username is None:
+            raise HTTPException(status_code=401, detail='Invalid token')
+        user = users_db.get(username)
+        if user is None:
+            raise HTTPException(status_code=401, detail='User not found')
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={'sub': user['username']}, expires_delta=access_token_expires
+        )
+        return {'access_token': access_token, 'token_type': 'bearer'}
+    except JWTError:
+        raise HTTPException(status_code=401, detail='Invalid token')
+
+@app.post("/panes/send-cmd")
+async def send_cmd(current_user: dict = Depends(get_current_user), cmd: str, request: Request):
+    # Placeholder for tmux send-cmd logic - integrate with existing tmux orchestration
+    # For MVP, return success
+    update_context_delta(request, 'command_sent', {
+        'cmd': cmd,
+        'user': current_user['username'],
+        'timestamp': datetime.utcnow().isoformat()
+    })
+    return {'message': f'Command "{cmd}" sent by {current_user["username"]}', 'status': 'success'}
 
 @app.get("/health")
 async def health_check():
