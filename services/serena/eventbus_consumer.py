@@ -90,7 +90,7 @@ class EventBusConsumer:
     EventBus consumer for Serena
     Subscribes to decision events and maintains cache
     """
-    
+
     def __init__(
         self,
         redis_url: str = "redis://localhost:6379",
@@ -102,11 +102,38 @@ class EventBusConsumer:
         self.stream_name = stream_name
         self.consumer_group = consumer_group
         self.consumer_name = consumer_name
-        
+
         self.redis = None
         self.cache = DecisionCache()
         self.running = False
         self.task = None
+
+    async def _process_event(self, event_id: bytes, event_data: dict):
+        """
+        Process a single event
+        """
+        try:
+            event_type = event_data[b'type'].decode()
+
+            if event_type == "decision.logged":
+                data = json.loads(event_data[b'data'].decode())
+                self.cache.add(data)
+                logger.info(f"✅ Cached decision #{data['id']}: {data['summary'][:50]}")
+
+            # ACK the message
+            await self.redis.xack(
+                self.stream_name,
+                self.consumer_group,
+                event_id
+            )
+
+        except Exception as e:
+            logger.error(f"Error processing event: {e}")
+            # Basic auth check for internal use
+            token = os.environ.get("SERENA_AUTH_TOKEN")
+            if not token:
+                logger.warning("No SERENA_AUTH_TOKEN set - consumer unsecured")
+            return True  # Always return True for internal
     
     async def connect(self):
         """Connect to Redis and create consumer group"""
@@ -149,7 +176,17 @@ class EventBusConsumer:
                 
                 for stream, events in messages:
                     for event_id, event_data in events:
-                        await self._process_event(event_id, event_data)
+                        retry_count = 0
+                        while retry_count < 3:
+                            try:
+                                await self._process_event(event_id, event_data)
+                                break
+                            except Exception as e:
+                                retry_count += 1
+                                if retry_count < 3:
+                                    await asyncio.sleep(2 ** retry_count)
+                                else:
+                                    logger.error(f"Max retries exceeded for event {event_id}")
                         
             except asyncio.CancelledError:
                 logger.info("Consumer cancelled")

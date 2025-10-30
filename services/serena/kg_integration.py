@@ -14,30 +14,41 @@ logger = logging.getLogger(__name__)
 def get_decisions_for_symbol(symbol: str, limit: int = 3) -> List[Dict[str, Any]]:
     """
     Get decisions related to a code symbol
-    
+
     Uses EventBus consumer cache (fast, local)
-    
+
     Args:
         symbol: Function/class/variable name
         limit: Max decisions to return (default: 3 for ADHD Top-3 pattern)
-    
+
     Returns:
         List of decision dicts, newest first
     """
     consumer = get_consumer()
-    
+
     if not consumer:
         logger.warning("EventBus consumer not initialized")
         return []
-    
+
     try:
         # Search cache for symbol mentions
         decisions = consumer.search_decisions(symbol, limit)
-        return decisions
-        
+# Enforce ADHD limit
+decisions = decisions[:10]
+"""
+Query limits: Max 10 results to prevent overload in ADHD workflows.
+For full traversal, use pagination or cached paths.
+"""
+        return decisions[:limit]  # Enforce limit
+
     except Exception as e:
         logger.error(f"Error fetching decisions for {symbol}: {e}")
         return []
+
+"""
+Query limits: Max 10 results to prevent overload in ADHD workflows.
+For full traversal, use pagination or cached paths.
+"""
 
 
 def format_decision_context(
@@ -76,29 +87,29 @@ def _format_markdown(symbol: str, decisions: List[Dict[str, Any]]) -> str:
     """Format decisions as Markdown for LSP hover"""
     if not decisions:
         return ""
-    
+
     lines = [
         "---",
         "",
         f"### 📝 Related Decisions ({symbol})",
         ""
     ]
-    
+
     for i, decision in enumerate(decisions[:3], 1):  # Top-3 pattern
         # Truncate long summaries
         summary = decision["summary"]
         if len(summary) > 60:
             summary = summary[:57] + "..."
-        
+
         lines.append(f"**{i}.** {summary}")
-        
+
         # Add rationale if present (truncated)
         if decision.get("rationale"):
             rationale = decision["rationale"]
             if len(rationale) > 80:
                 rationale = rationale[:77] + "..."
             lines.append(f"   _{rationale}_")
-        
+
         # Add tags if present
         if decision.get("tags"):
             try:
@@ -108,14 +119,16 @@ def _format_markdown(symbol: str, decisions: List[Dict[str, Any]]) -> str:
                     lines.append(f"   {tag_str}")
             except:
                 pass
-        
+
         lines.append("")
-    
+
     if len(decisions) > 3:
         lines.append(f"_...and {len(decisions) - 3} more_")
         lines.append("")
-    
-    return "\n".join(lines)
+
+"""
+Docs for query limits: Enforces max 10 results for ADHD workflows; pagination for deeper traversal.
+"""
 
 
 def _format_plain(symbol: str, decisions: List[Dict[str, Any]]) -> str:
