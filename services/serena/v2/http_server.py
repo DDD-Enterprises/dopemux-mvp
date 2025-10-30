@@ -12,7 +12,23 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 import logging
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Depends
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+@app.get("/api/metrics")
+async def get_metrics(limit: int = Query(5, ge=1, le=10)):
+    # Dynamic ADHD limit from ConPort
+    from mcp__conport__get_active_context import get_active_context
+    context = get_active_context()
+    dynamic_limit = 3 if context.get("attention_state") == "scattered" else 10
+    # Apply limit
+    return MOCK_METRICS.copy()
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
@@ -26,6 +42,14 @@ app = FastAPI(
     version="2.0.0",
     description="ADHD-optimized pattern detection metrics"
 )
+
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # CORS for dashboard access
 app.add_middleware(
