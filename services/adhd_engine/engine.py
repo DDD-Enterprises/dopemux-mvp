@@ -22,6 +22,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 import redis.asyncio as redis
+# Serena Integration (Serena v2)
 
 from models import (
     EnergyLevel,
