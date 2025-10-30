@@ -6,14 +6,14 @@
       "args": [
         "exec",
         "-i",
-        "mcp-conport_feat-path-c-and-dddpg-week1",
+        "mcp-conport_main",
         "uvx",
         "--from",
         "context-portal-mcp",
         "conport-mcp"
       ],
       "env": {
-        "DOPEMUX_INSTANCE_ID": "feat-path-c-and-dddpg-week1",
+        "DOPEMUX_INSTANCE_ID": "main",
         "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
       }
     },
@@ -115,7 +115,7 @@
       "args": [
         "exec",
         "-i",
-        "mcp-conport_feat-path-c-and-dddpg-week1",
+        "mcp-conport_main",
         "python",
         "/app/conport_mcp_stdio.py"
       ],
