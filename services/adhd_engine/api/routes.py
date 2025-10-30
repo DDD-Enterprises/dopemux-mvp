@@ -423,6 +423,24 @@ async def get_user_patterns(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/code-complexity", response_model=schemas.ComplexityResponse)
+async def get_code_complexity(
+    request: schemas.CodeComplexityRequest,
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
+):
+    # Query Serena v2 for complexity (HTTP call to :8003)
+    serena_url = "http://localhost:8003/mcp/complexity"
+    try:
+        import httpx
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(serena_url, json={"code_snippet": request.code_snippet})
+            if resp.status_code == 200:
+                data = resp.json()
+                return {"complexity": data["complexity"], "level": data["level"]}
+    except Exception as e:
+        logger.warning(f"Serena query failed: {e}")
+        return {"complexity": 0.5, "level": "unknown"}  # Fallback
+
 @router.post("/predict", response_model=schemas.PredictionResponse)
 async def predict(
     request: schemas.PredictionRequest,
