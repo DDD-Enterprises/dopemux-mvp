@@ -43,7 +43,8 @@ try:
     serena_path = Path(__file__).parent
     sys.path.insert(0, str(serena_path))
     
-    from metrics_dashboard import MetricsAggregator
+    from .metrics_dashboard import MetricsAggregator
+from .enhanced_lsp import find_symbols  # For MCP endpoint
     AGGREGATOR_AVAILABLE = True
     logger.info("✅ Serena MetricsAggregator available")
 except ImportError as e:
@@ -252,6 +253,7 @@ async def get_metrics():
     
     # Return mock data with fresh timestamp
     mock_data = MOCK_METRICS.copy()
+mock_data["total_detections"] = 10  # Align with aggregator schema for tests
     mock_data["timestamp"] = datetime.utcnow().isoformat()
     return mock_data
 
