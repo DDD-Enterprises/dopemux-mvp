@@ -1,0 +1,50 @@
+[
+  {
+    "id": "4cb7f3a3220a942d395067edf9b6f049cf47e94b58ba093d3c7f920c8254b115_processes_0",
+    "name": "• Run 'dopemux start' to launch Claude Code",
+    "entity_type": "processes",
+    "confidence": 0.7,
+    "source_file": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "source_unit": "4cb7f3a3220a942d395067edf9b6f049cf47e94b58ba093d3c7f920c8254b115",
+    "doc_type": "markdown",
+    "description": "Extracted processes from Success Output",
+    "context": "lized\n\n📁 Configuration: /path/to/project/.claude/\n🧠 ADHD features: /path/to/project/.dopemux/\n\nNext steps:\n• Run 'dopemux start' to launch Claude Code\n• Use 'dopemux save' to preserve context\n• Check 'dopemux status' for attention metrics\n```",
+    "extraction_method": "regex",
+    "metadata": {
+      "pattern_name": "processes",
+      "match_start": 140,
+      "match_end": 190,
+      "file_type": "markdown",
+      "timestamp": "2025-09-24T09:34:40.898428",
+      "section_path": [
+        "Initialize with Rust template",
+        "Success Output"
+      ]
+    },
+    "extracted_at": "2025-09-24T02:34:40.913434"
+  },
+  {
+    "id": "901ffefa93f58e807cd2fef65194898c1c65d54d24c332e60184de8a08495945_technologies_1",
+    "name": "Design",
+    "entity_type": "technologies",
+    "confidence": 0.7,
+    "source_file": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "source_unit": "901ffefa93f58e807cd2fef65194898c1c65d54d24c332e60184de8a08495945",
+    "doc_type": "markdown",
+    "description": "Extracted technologies from Automatic Task Decomposition",
+    "context": "\n✅ Accept this breakdown? (Y/n): y\n\n🎉 Created 5 focused tasks totaling 120 minutes\n🎯 Ready to start with: Design user model schema\n```",
+    "extraction_method": "regex",
+    "metadata": {
+      "pattern_name": "technologies",
+      "match_start": 647,
+      "match_end": 659,
+      "file_type": "markdown",
+      "timestamp": "2025-09-24T09:34:40.903036",
+      "section_path": [
+        "Quick task addition",
+        "Automatic Task Decomposition"
+      ]
+    },
+    "extracted_at": "2025-09-24T02:34:40.913440"
+  }
+]
