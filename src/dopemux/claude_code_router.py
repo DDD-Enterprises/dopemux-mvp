@@ -108,16 +108,15 @@ class ClaudeCodeRouterManager:
 
         overrides = router_overrides or {}
         
-        # Set up intelligent model routing based on Anthropic models
-        # Primary: Use Claude models with proper fallbacks through LiteLLM
+        # Set up intelligent model routing using OpenRouter-hosted models
         router_config["default"] = overrides.get(
-            "default", "litellm,anthropic-claude-3-5-sonnet-20241022"
+            "default", "litellm,openrouter-openai-gpt-5"
         )
         router_config["background"] = overrides.get(
-            "background", "litellm,anthropic-claude-3-haiku-20240307"
+            "background", "litellm,openrouter-xai-grok-code-fast"
         )
         router_config["think"] = overrides.get(
-            "think", "litellm,anthropic-claude-3-opus-20240229"
+            "think", "litellm,openrouter-openai-gpt-5-codex"
         )
         router_config.setdefault("longContext", router_config["default"])
         
@@ -125,7 +124,7 @@ class ClaudeCodeRouterManager:
         if "webSearch" in overrides:
             router_config["webSearch"] = overrides["webSearch"]
         else:
-            router_config["webSearch"] = "litellm,anthropic-claude-3-haiku-20240307"
+            router_config["webSearch"] = "litellm,openrouter-google-gemini-2-flash"
 
         config["Router"] = router_config
 
