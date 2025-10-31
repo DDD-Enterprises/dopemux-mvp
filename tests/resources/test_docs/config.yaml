@@ -1,0 +1,23 @@
+active_features:
+  attention_monitoring: true
+  context_preservation: true
+  gentle_notifications: true
+  task_decomposition: true
+
+adhd_profile:
+  break_interval: 5
+  distraction_sensitivity: 0.5
+  focus_duration_avg: 30
+  hyperfocus_tendency: false
+  notification_style: gentle
+  visual_complexity: minimal
+
+initialized_at: '2024-01-15T10:30:00Z'
+project_type: python
+
+session_settings:
+  auto_save_interval: 30
+  compression: true
+  max_sessions: 50
+
+version: '1.0'
