@@ -20,9 +20,10 @@ JWT_ALGORITHM = "RS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 15  # 15 minutes
 REFRESH_TOKEN_EXPIRE_DAYS = 30    # 30 days
 
-# Load or generate RSA keys
-PRIVATE_KEY_PATH = os.path.join(os.path.dirname(__file__), "keys", "jwt_private.pem")
-PUBLIC_KEY_PATH = os.path.join(os.path.dirname(__file__), "keys", "jwt_public.pem")
+# Key file paths
+KEYS_DIR = os.path.join(os.path.dirname(__file__), "keys")
+PRIVATE_KEY_PATH = os.path.join(KEYS_DIR, "jwt_private.pem")
+PUBLIC_KEY_PATH = os.path.join(KEYS_DIR, "jwt_public.pem")
 
 def load_or_generate_keys() -> Tuple[str, str]:
     """
@@ -47,7 +48,7 @@ def load_or_generate_keys() -> Tuple[str, str]:
         print("🔑 Generating new JWT RSA keys...")
 
         # Ensure keys directory exists
-        os.makedirs(os.path.dirname(PRIVATE_KEY_PATH), exist_ok=True)
+        os.makedirs(KEYS_DIR, exist_ok=True)
 
         # Generate RSA key pair
         private_key = rsa.generate_private_key(
@@ -165,6 +166,9 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
     except Exception as e:
         print(f"❌ Token verification error: {e}")
         return None
+
+# Alias for backward compatibility
+validate_token = verify_token
 
 def decode_token(token: str) -> Optional[Dict[str, Any]]:
     """
@@ -312,6 +316,7 @@ __all__ = [
     "create_access_token",
     "create_refresh_token",
     "verify_token",
+    "validate_token",
     "decode_token",
     "get_token_expiration",
     "is_token_expired",
