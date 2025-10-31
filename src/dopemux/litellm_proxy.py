@@ -19,63 +19,124 @@ class LiteLLMProxyError(RuntimeError):
 
 
 DEFAULT_LITELLM_CONFIG = """model_list:
-  - model_name: openai-gpt-5
+  - model_name: openrouter-xai-grok-code-fast
     litellm_params:
-      model: openai/gpt-5
-      api_key: os.environ/OPENAI_API_KEY
-      api_base: https://api.openai.com
+      model: openrouter/xai/grok-code-fast-1
+      api_key: os.environ/OPENROUTER_API_KEY
+      api_base: https://openrouter.ai/api/v1
       temperature: 0.0
-      max_tokens: 8192
+      max_tokens: 65536
+      rpm: 100
+      tpm: 4000000
+      extra_headers:
+        HTTP-Referer: https://dopemux.local
+        X-Title: Dopemux LiteLLM Proxy
 
-  - model_name: openai-gpt-5-mini
+  - model_name: openrouter-openai-gpt-5
     litellm_params:
-      model: openai/gpt-5-mini
-      api_key: os.environ/OPENAI_API_KEY
-      api_base: https://api.openai.com
+      model: openrouter/openai/gpt-5
+      api_key: os.environ/OPENROUTER_API_KEY
+      api_base: https://openrouter.ai/api/v1
       temperature: 0.0
-      max_tokens: 4096
+      max_tokens: 32768
+      rpm: 500
+      tpm: 2000000
+      extra_headers:
+        HTTP-Referer: https://dopemux.local
+        X-Title: Dopemux LiteLLM Proxy
 
-  - model_name: xai-grok-4
+  - model_name: openrouter-openai-gpt-5-codex
     litellm_params:
-      model: xai/grok-4
-      api_key: os.environ/XAI_API_KEY
-      api_base: https://api.x.ai/v1
+      model: openrouter/openai/gpt-5-codex
+      api_key: os.environ/OPENROUTER_API_KEY
+      api_base: https://openrouter.ai/api/v1
       temperature: 0.0
-      max_tokens: 4096
+      max_tokens: 32768
+      extra_headers:
+        HTTP-Referer: https://dopemux.local
+        X-Title: Dopemux LiteLLM Proxy
 
-  - model_name: xai-grok-code-fast-1
+  - model_name: openrouter-openai-gpt-5-mini
     litellm_params:
-      model: xai/grok-code-fast-1
-      api_key: os.environ/XAI_API_KEY
-      api_base: https://api.x.ai/v1
+      model: openrouter/openai/gpt-5-mini
+      api_key: os.environ/OPENROUTER_API_KEY
+      api_base: https://openrouter.ai/api/v1
       temperature: 0.0
-      max_tokens: 4096
+      max_tokens: 16384
+      extra_headers:
+        HTTP-Referer: https://dopemux.local
+        X-Title: Dopemux LiteLLM Proxy
+
+  - model_name: openrouter-google-gemini-2-flash
+    litellm_params:
+      model: openrouter/google/gemini-2.0-flash-exp
+      api_key: os.environ/OPENROUTER_API_KEY
+      api_base: https://openrouter.ai/api/v1
+      temperature: 0.0
+      max_tokens: 30720
+      extra_headers:
+        HTTP-Referer: https://dopemux.local
+        X-Title: Dopemux LiteLLM Proxy
+
+  - model_name: openrouter-meta-llama-3.1-405b
+    litellm_params:
+      model: openrouter/meta-llama/llama-3.1-405b-instruct
+      api_key: os.environ/OPENROUTER_API_KEY
+      api_base: https://openrouter.ai/api/v1
+      temperature: 0.0
+      max_tokens: 32768
+      extra_headers:
+        HTTP-Referer: https://dopemux.local
+        X-Title: Dopemux LiteLLM Proxy
 
 litellm_settings:
-  timeout: 60
+  timeout: 90
   max_retries: 2
+  drop_params: true
+  model_alias_map:
+    claude-sonnet-4.5: openrouter-xai-grok-code-fast
+    anthropic/claude-3-5-sonnet-latest: openrouter-xai-grok-code-fast
+    xai/grok-code-fast-1: openrouter-xai-grok-code-fast
   fallbacks:
-    - openai-gpt-5: ["openai-gpt-5-mini", "xai-grok-4", "xai-grok-code-fast-1"]
-    - openai-gpt-5-mini: ["xai-grok-4", "xai-grok-code-fast-1"]
-  default_fallbacks: ["xai-grok-4", "xai-grok-code-fast-1"]
+    openrouter-xai-grok-code-fast:
+      - openrouter-openai-gpt-5
+    openrouter-openai-gpt-5:
+      - openrouter-xai-grok-code-fast
+      - openrouter-openai-gpt-5-codex
+      - openrouter-openai-gpt-5-mini
+    openrouter-openai-gpt-5-codex:
+      - openrouter-xai-grok-code-fast
+      - openrouter-openai-gpt-5-mini
+    openrouter-openai-gpt-5-mini:
+      - openrouter-xai-grok-code-fast
+      - openrouter-google-gemini-2-flash
+    openrouter-google-gemini-2-flash:
+      - openrouter-meta-llama-3.1-405b
+    openrouter-meta-llama-3.1-405b:
+      - openrouter-openai-gpt-5-codex
+  default_fallbacks:
+    - openrouter-openai-gpt-5
+    - openrouter-xai-grok-code-fast
 
 router_settings:
-  routing_strategy: "simple-shuffle"
+  routing_strategy: usage-based-routing-v2
   enable_pre_call_checks: true
   allowed_fails: 3
-  cooldown_time: 30
+  cooldown_time: 45
+  num_retries: 3
   retry_policy:
     AuthenticationErrorRetries: 1
-    TimeoutErrorRetries: 1
-    RateLimitErrorRetries: 1
+    TimeoutErrorRetries: 2
+    RateLimitErrorRetries: 3
     InternalServerErrorRetries: 1
   content_policy_fallbacks:
-    openai-gpt-5: ["xai-grok-4"]
-    openai-gpt-5-mini: ["xai-grok-4"]
+    openrouter-openai-gpt-5:
+      - openrouter-xai-grok-code-fast
+    openrouter-openai-gpt-5-codex:
+      - openrouter-google-gemini-2-flash
 
 general_settings:
-  master_key: "YOUR_MASTER_KEY"
-  database_url: "sqlite:///litellm.db"
+  master_key: YOUR_MASTER_KEY
 """
 
 
@@ -186,16 +247,22 @@ class LiteLLMProxyManager:
             "LITELLM_PROXY_URL": proxy_info.base_url,
         }
 
-        # Preserve original provider keys for LiteLLM to use
-        if os.environ.get("ANTHROPIC_API_KEY"):
-            updates["ANTHROPIC_API_KEY"] = os.environ["ANTHROPIC_API_KEY"]
-        if os.environ.get("XAI_API_KEY"):
-            updates["XAI_API_KEY"] = os.environ["XAI_API_KEY"]
-        if os.environ.get("OPENAI_API_KEY"):
-            updates["OPENAI_API_KEY"] = os.environ["OPENAI_API_KEY"]
-        if os.environ.get("OPENROUTER_API_KEY"):
-            updates["OPENROUTER_API_KEY"] = os.environ["OPENROUTER_API_KEY"]
-            
+        # Preserve original provider keys separately so LiteLLM can access them if needed
+        provider_key_envs = {
+            "ANTHROPIC_API_KEY": "DOPEMUX_PROVIDER_ANTHROPIC_API_KEY",
+            "XAI_API_KEY": "DOPEMUX_PROVIDER_XAI_API_KEY",
+            "OPENAI_API_KEY": "DOPEMUX_PROVIDER_OPENAI_API_KEY",
+        }
+        for env_name, dopemux_key in provider_key_envs.items():
+            value = os.environ.get(env_name)
+            if value:
+                updates[dopemux_key] = value
+
+        openrouter_key = os.environ.get("OPENROUTER_API_KEY")
+        if openrouter_key:
+            updates["OPENROUTER_API_KEY"] = openrouter_key
+            updates["DOPEMUX_PROVIDER_OPENROUTER_API_KEY"] = openrouter_key
+
         return updates
 
     def _resolve_config_template(self) -> Optional[Path]:
