@@ -30,6 +30,7 @@
 - [Role Switching](02-how-to/role-switching-quickstart.md)
 - [Multi-Instance Workflow](02-how-to/multi-instance-workflow.md)
 - [Instance State Persistence](02-how-to/instance-state-persistence.md)
+- [Orchestrator Dashboard Quickstart](02-how-to/orchestrator-dashboard.md)
 - [Serena V2 Deployment](02-how-to/serena-v2-production-deployment.md)
 
 ---

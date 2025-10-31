@@ -969,18 +969,10 @@ def start(
     litellm_enabled = use_litellm or use_claude_router
 
     if litellm_enabled:
-        # Require at least one upstream provider key for LiteLLM to be useful
-        provider_keys = {
-            "XAI_API_KEY": os.environ.get("XAI_API_KEY"),
-            "OPENAI_API_KEY": os.environ.get("OPENAI_API_KEY"),
-        }
-        if not any(provider_keys.values()):
-            console.print(
-                "[red]❌ No upstream API key set for LiteLLM.[/red]"
-            )
-            console.print(
-                "[dim]Set XAI_API_KEY or OPENAI_API_KEY before using --litellm[/dim]"
-            )
+        # Require OpenRouter since LiteLLM proxy is configured to route through it
+        if not os.environ.get("OPENROUTER_API_KEY"):
+            console.print("[red]❌ OPENROUTER_API_KEY is not set.[/red]")
+            console.print("[dim]Set OPENROUTER_API_KEY before using --litellm[/dim]")
             sys.exit(1)
 
         try:
@@ -1027,37 +1019,21 @@ def start(
             provider_url = f"{litellm_proxy_info.base_url}/v1/chat/completions"
             provider_name = provider_name or "litellm"
             
-            # Configure Anthropic models as primary with proper fallbacks
-            if os.environ.get("ANTHROPIC_API_KEY"):
-                provider_models.extend([
-                    "anthropic-claude-3-5-sonnet-20241022",
-                    "anthropic-claude-3-opus-20240229", 
-                    "anthropic-claude-3-haiku-20240307"
-                ])
-            
-            # Add fallback models
-            if os.environ.get("XAI_API_KEY"):
-                provider_models.append("xai-grok-code-fast-1")
-            if os.environ.get("OPENAI_API_KEY"):
-                provider_models.extend(["openai-gpt-4o", "openai-gpt-4o-mini"])
-            if os.environ.get("OPENROUTER_API_KEY"):
-                provider_models.append("openrouter-anthropic-claude-3-opus-20240229")
-
-            if not provider_models:
-                console.print(
-                    "[red]❌ No API keys found for any model providers.[/red]"
-                )
-                console.print(
-                    "[dim]Set ANTHROPIC_API_KEY, XAI_API_KEY, or OPENAI_API_KEY before using --litellm[/dim]"
-                )
-                sys.exit(1)
+            provider_models.extend([
+                "openrouter-xai-grok-code-fast",
+                "openrouter-openai-gpt-5",
+                "openrouter-openai-gpt-5-mini",
+                "openrouter-openai-gpt-5-codex",
+                "openrouter-google-gemini-2-flash",
+                "openrouter-meta-llama-3.1-405b",
+            ])
 
             # Set intelligent router overrides for different use cases
             router_overrides = {
-                "default": "litellm,anthropic-claude-3-5-sonnet-20241022",
-                "background": "litellm,anthropic-claude-3-haiku-20240307",
-                "think": "litellm,anthropic-claude-3-opus-20240229",
-                "webSearch": "litellm,anthropic-claude-3-haiku-20240307",
+                "default": "litellm,openrouter-openai-gpt-5",
+                "background": "litellm,openrouter-xai-grok-code-fast",
+                "think": "litellm,openrouter-openai-gpt-5-codex",
+                "webSearch": "litellm,openrouter-google-gemini-2-flash",
             }
         else:
             provider_url = os.environ.get("CLAUDE_CODE_ROUTER_UPSTREAM_URL")
@@ -3512,11 +3488,12 @@ def _configure_openrouter_litellm():
     """Configure environment for OpenRouter via LiteLLM"""
     # Set up OpenRouter models for LiteLLM
     openrouter_models = [
-        "openrouter/anthropic/claude-3.5-sonnet",
-        "openrouter/anthropic/claude-3-opus", 
-        "openrouter/anthropic/claude-3-haiku",
-        "openrouter/google/gemini-2.0-flash-exp",
-        "openrouter/meta-llama/llama-3.1-405b-instruct"
+        "openrouter-xai-grok-code-fast",
+        "openrouter-openai-gpt-5",
+        "openrouter-openai-gpt-5-mini",
+        "openrouter-openai-gpt-5-codex",
+        "openrouter-google-gemini-2-flash",
+        "openrouter-meta-llama-3.1-405b",
     ]
     
     # Update environment
@@ -3525,8 +3502,8 @@ def _configure_openrouter_litellm():
     os.environ["CLAUDE_CODE_ROUTER_MODELS"] = ",".join(openrouter_models)
     
     # Ensure Zen MCP uses LiteLLM
-    os.environ["ZEN_DEFAULT_MODEL"] = "litellm/openrouter/anthropic/claude-3.5-sonnet"
-    os.environ["ZEN_FALLBACK_MODELS"] = "litellm/openrouter/anthropic/claude-3-haiku,litellm/openrouter/google/gemini-2.0-flash-exp"
+    os.environ["ZEN_DEFAULT_MODEL"] = "litellm/openrouter-openai-gpt-5"
+    os.environ["ZEN_FALLBACK_MODELS"] = "litellm/openrouter-xai-grok-code-fast,litellm/openrouter-google-gemini-2-flash"
     
     # Set up LiteLLM proxy URL
     os.environ["LITELLM_PROXY_URL"] = "http://localhost:4000"
@@ -3543,11 +3520,12 @@ def _configure_openrouter_litellm():
     """Configure environment for OpenRouter via LiteLLM"""
     # Set up OpenRouter models for LiteLLM
     openrouter_models = [
-        "openrouter/anthropic/claude-3.5-sonnet",
-        "openrouter/anthropic/claude-3-opus", 
-        "openrouter/anthropic/claude-3-haiku",
-        "openrouter/google/gemini-2.0-flash-exp",
-        "openrouter/meta-llama/llama-3.1-405b-instruct"
+        "openrouter-xai-grok-code-fast",
+        "openrouter-openai-gpt-5",
+        "openrouter-openai-gpt-5-mini",
+        "openrouter-openai-gpt-5-codex",
+        "openrouter-google-gemini-2-flash",
+        "openrouter-meta-llama-3.1-405b",
     ]
     
     # Update environment
@@ -3556,8 +3534,8 @@ def _configure_openrouter_litellm():
     os.environ["CLAUDE_CODE_ROUTER_MODELS"] = ",".join(openrouter_models)
     
     # Ensure Zen MCP uses LiteLLM
-    os.environ["ZEN_DEFAULT_MODEL"] = "litellm/openrouter/anthropic/claude-3.5-sonnet"
-    os.environ["ZEN_FALLBACK_MODELS"] = "litellm/openrouter/anthropic/claude-3-haiku,litellm/openrouter/google/gemini-2.0-flash-exp"
+    os.environ["ZEN_DEFAULT_MODEL"] = "litellm/openrouter-openai-gpt-5"
+    os.environ["ZEN_FALLBACK_MODELS"] = "litellm/openrouter-xai-grok-code-fast,litellm/openrouter-google-gemini-2-flash"
     
     console.print("[green]✅ OpenRouter via LiteLLM configuration applied[/green]")
 
