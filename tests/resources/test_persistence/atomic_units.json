@@ -1,0 +1,5887 @@
+[
+  {
+    "unit_id": "39905bc80441bf30193997aaefb9b063b3718aadd1fee412f621400834854a97",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/features.yaml",
+    "doc_type": "error",
+    "section_path": [
+      "ERROR"
+    ],
+    "entity_type": "Para",
+    "title": "Processing Error: features.yaml",
+    "text": "Error processing file: 9 validation errors for AtomicUnit\nunit_id\n  Field required [type=missing, input_value={'id': 'features_data', '...2, 'encoding': 'utf-8'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\ndoc_uri\n  Field required [type=missing, input_value={'id': 'features_data', '...2, 'encoding': 'utf-8'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\ndoc_type\n  Field required [type=missing, input_value={'id': 'features_data', '...2, 'encoding': 'utf-8'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\nsection_path\n  Input should be a valid list [type=list_type, input_value='YAML', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.11/v/list_type\nentity_type\n  Field required [type=missing, input_value={'id': 'features_data', '...2, 'encoding': 'utf-8'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\ntitle\n  Field required [type=missing, input_value={'id': 'features_data', '...2, 'encoding': 'utf-8'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\ntext\n  Field required [type=missing, input_value={'id': 'features_data', '...2, 'encoding': 'utf-8'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\ncreated_at\n  Field required [type=missing, input_value={'id': 'features_data', '...2, 'encoding': 'utf-8'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\nchecksum\n  Field required [type=missing, input_value={'id': 'features_data', '...2, 'encoding': 'utf-8'}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing",
+    "created_at": "2025-09-24T09:34:40.889741",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      1
+    ],
+    "checksum": "f8f0dc80c72741ee",
+    "glossary_expansions": [],
+    "tags": [
+      "error",
+      "processing_failed"
+    ]
+  },
+  {
+    "unit_id": "997447ad827995105ee4247b86e234d873cc18eabb7053e080cba6d00eed2e57",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "🧠 Dopemux - ADHD-Optimized Development Platform"
+    ],
+    "entity_type": "Para",
+    "title": "🧠 Dopemux - ADHD-Optimized Development Platform",
+    "text": "# 🧠 Dopemux - ADHD-Optimized Development Platform\n\n> **Dopemux MVP**: Complete ADHD-optimized development platform with health monitoring, MCP server integration, and comprehensive Claude Code support.\n\nDopemux is a specialized development platform designed for neurodivergent developers, particularly those with ADHD. It provides context preservation, attention monitoring, task decomposition, and comprehensive health monitoring to enhance productivity and reduce cognitive load.\n\n[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://python.org)\n[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)\n[![ADHD](https://img.shields.io/badge/ADHD-Optimized-purple.svg)](docs/ADHD_FEATURES.md)\n[![Health](https://img.shields.io/badge/Health-Monitoring-orange.svg)](docs/HEALTH_MONITORING.md)",
+    "created_at": "2025-09-24T09:34:40.890839",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "checksum": "7679cc6730fcbac4",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "204fa135386c718d1662d8803bd7b238b4c23c2e4d2f92d95b68811ea4dd11ec",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "🧠 Dopemux - ADHD-Optimized Development Platform",
+      "🎯 Key Features"
+    ],
+    "entity_type": "Para",
+    "title": "🎯 Key Features",
+    "text": "## 🎯 Key Features",
+    "created_at": "2025-09-24T09:34:40.890865",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      12,
+      13
+    ],
+    "checksum": "e7f8b281cf599567",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "7689dd880b347711c7b632382d7cbec80500e1989c2ef4952b2a20731cfa6eb4",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "🧠 Dopemux - ADHD-Optimized Development Platform",
+      "🎯 Key Features",
+      "**🧠 ADHD-First Design**"
+    ],
+    "entity_type": "Para",
+    "title": "**🧠 ADHD-First Design**",
+    "text": "### **🧠 ADHD-First Design**\n- **Context Preservation**: Automatic session state management across interruptions\n- **Attention Monitoring**: Real-time focus state tracking and adaptive responses\n- **Task Decomposition**: Complex tasks broken into manageable 25-minute chunks\n- **Gentle Guidance**: Non-judgmental, encouraging feedback and clear next steps\n- **Decision Reduction**: Maximum 3 options presented to reduce cognitive overwhelm",
+    "created_at": "2025-09-24T09:34:40.890886",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "checksum": "3c2ec1e280443e1c",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "718d1fe95e90302e2ee88718a5beca633c17345592922472d23087fcc4101bf6",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "🧠 Dopemux - ADHD-Optimized Development Platform",
+      "🎯 Key Features",
+      "**🏥 Comprehensive Health Monitoring**"
+    ],
+    "entity_type": "Para",
+    "title": "**🏥 Comprehensive Health Monitoring**",
+    "text": "### **🏥 Comprehensive Health Monitoring**\n- **Real-time Health Checks**: Monitor Dopemux core, Claude Code, MCP servers, and system resources\n- **Slash Command Integration**: Instant health status from Claude Code with `/health`, `/mcp-status`, `/health-fix`\n- **Auto-remediation**: Automatic service restart and problem resolution\n- **ADHD-Friendly Interface**: Clear visual indicators (🟢🟡🔴) and minimal cognitive load\n- **Docker MCP Support**: Ready for comprehensive Docker-based MCP server ecosystem",
+    "created_at": "2025-09-24T09:34:40.890905",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27
+    ],
+    "checksum": "772ce4446dc47f37",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "178d84abcd86a8d5e9a25480011b6e651bdba9ef94c2174088d4960123398878",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "🧠 Dopemux - ADHD-Optimized Development Platform",
+      "🎯 Key Features",
+      "**🔧 Claude Code Integration**"
+    ],
+    "entity_type": "Para",
+    "title": "**🔧 Claude Code Integration**",
+    "text": "### **🔧 Claude Code Integration**\n- **MCP Server Management**: Integrated sequential thinking and reasoning capabilities\n- **Auto-responder**: Intelligent confirmation handling with attention-aware features\n- **Configuration Management**: ADHD-optimized Claude Code setup and maintenance\n- **Project Templates**: Pre-configured setups for common development scenarios",
+    "created_at": "2025-09-24T09:34:40.890922",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      28,
+      29,
+      30,
+      31,
+      32,
+      33
+    ],
+    "checksum": "5015c506e3f6c7a9",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "71f918b87e6c8a3ea5ca46d128ef272b73d7c99ee0d6d115b4bab48c2df91bef",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "🧠 Dopemux - ADHD-Optimized Development Platform",
+      "🎯 Key Features",
+      "**⚡ Advanced MCP Ecosystem**"
+    ],
+    "entity_type": "Para",
+    "title": "**⚡ Advanced MCP Ecosystem**",
+    "text": "### **⚡ Advanced MCP Ecosystem**\n- **Sequential Thinking Server**: Multi-agent reasoning with DeepSeek/GitHub Models\n- **MCP Proxy Integration**: Seamless Docker-to-Claude Code connectivity\n- **Leantime Integration**: Project management with ADHD accommodations\n- **Docker Orchestration**: Scalable MCP server architecture\n- **Health Monitoring**: Comprehensive service monitoring and auto-recovery",
+    "created_at": "2025-09-24T09:34:40.890940",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40
+    ],
+    "checksum": "30ef067e4dbd4d41",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "b6dd90a90c97c0647342fa3c88d3c9a6e8621c0764e65d8fee3b5ca2aea9112b",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "🧠 Dopemux - ADHD-Optimized Development Platform",
+      "✨ Features"
+    ],
+    "entity_type": "Para",
+    "title": "✨ Features",
+    "text": "## ✨ Features",
+    "created_at": "2025-09-24T09:34:40.890953",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      41,
+      42
+    ],
+    "checksum": "5730f11cc974bca6",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "260f7cd71c1a893c3ab9d28ef25efc8eab540f6e02886aba9e252d7423fb875e",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "🧠 Dopemux - ADHD-Optimized Development Platform",
+      "✨ Features",
+      "🧠 ADHD-First Design"
+    ],
+    "entity_type": "Para",
+    "title": "🧠 ADHD-First Design",
+    "text": "### 🧠 ADHD-First Design\n- **Attention State Management**: Automatic focus duration tracking and break recommendations\n- **Cognitive Load Balancing**: Smart task scheduling based on complexity and mental capacity\n- **Context Preservation**: Never lose your place with automatic session saves and restoration\n- **Executive Function Support**: Clear next steps and decision reduction to minimize overwhelm\n- **ADHD Metadata**: Every task includes cognitive load (1-10), focus level, break reminders, and optimal timing\n- **Attention-Aware Filtering**: Get tasks by attention level, cognitive capacity, and current state",
+    "created_at": "2025-09-24T09:34:40.890981",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50
+    ],
+    "checksum": "dac95ce7df925043",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "4cf13ea4ae7b54f5d4f8fa080bd5116d5e48ddd5f498105cc45194745c6a0bba",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "🧠 Dopemux - ADHD-Optimized Development Platform",
+      "✨ Features",
+      "🚀 AI-Powered Workflow"
+    ],
+    "entity_type": "Para",
+    "title": "🚀 AI-Powered Workflow",
+    "text": "### 🚀 AI-Powered Workflow\n- **PRD-to-Tasks**: Transform Product Requirements Documents into actionable task breakdowns\n- **Intelligent Scheduling**: Optimal task sequencing based on attention patterns and complexity\n- **Bidirectional Sync**: Seamless data flow between Leantime project management and Task-Master AI\n- **Claude Auto Responder**: Automatic Claude Code confirmation responses with ADHD accommodations\n- **Real-time Optimization**: Continuous workflow adaptation based on performance metrics",
+    "created_at": "2025-09-24T09:34:40.890999",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57
+    ],
+    "checksum": "3dbce2ee429d92de",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "b61023b3cae7069d64b394bc538572748859c1d78b688ff20e9504ed5220eebf",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "🧠 Dopemux - ADHD-Optimized Development Platform",
+      "✨ Features",
+      "🐳 Self-Hosted Infrastructure"
+    ],
+    "entity_type": "Para",
+    "title": "🐳 Self-Hosted Infrastructure",
+    "text": "### 🐳 Self-Hosted Infrastructure\n- **Docker-Based Deployment**: One-command setup with docker-compose\n- **Leantime Integration**: Neurodiversity-focused project management platform\n- **Task-Master AI**: Advanced PRD parsing and task decomposition via MCP\n- **Health Monitoring**: Comprehensive system checks and automated recovery",
+    "created_at": "2025-09-24T09:34:40.891016",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      58,
+      59,
+      60,
+      61,
+      62,
+      63
+    ],
+    "checksum": "c8e42e954ba3fd9e",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "66625e73a4b84fd58adc6e92e0439aae78aa75dd5ba942a2c98961ec7212e096",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "🧠 Dopemux - ADHD-Optimized Development Platform",
+      "🎯 Quick Start"
+    ],
+    "entity_type": "Para",
+    "title": "🎯 Quick Start",
+    "text": "## 🎯 Quick Start",
+    "created_at": "2025-09-24T09:34:40.891027",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      64,
+      65
+    ],
+    "checksum": "ee00c18e7e53fd51",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "18b74961cab946c859457d93d4b63972f1b4c4d2ae044c57a376d90f9f84d03d",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "🧠 Dopemux - ADHD-Optimized Development Platform",
+      "🎯 Quick Start",
+      "Prerequisites"
+    ],
+    "entity_type": "Para",
+    "title": "Prerequisites",
+    "text": "### Prerequisites\n- Docker & Docker Compose\n- Python 3.8+\n- Node.js 18+\n- 4GB+ RAM (8GB recommended)",
+    "created_at": "2025-09-24T09:34:40.891039",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      66,
+      67,
+      68,
+      69,
+      70,
+      71
+    ],
+    "checksum": "47eecfea06d58f63",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "2cc04399a94a75fedb935ea0f4ecd988d7dcb35758174b99a0e561a8213bff54",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "🧠 Dopemux - ADHD-Optimized Development Platform",
+      "🎯 Quick Start",
+      "Installation"
+    ],
+    "entity_type": "Para",
+    "title": "Installation",
+    "text": "### Installation\n```bash",
+    "created_at": "2025-09-24T09:34:40.891049",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      72,
+      73
+    ],
+    "checksum": "ed76dc543c36dc87",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "3ebd445b5d7daacb1d21b6880065f5087ccc42529aa20c63b0d876898def4f7b",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Clone repository"
+    ],
+    "entity_type": "Para",
+    "title": "Clone repository",
+    "text": "# Clone repository\ngit clone https://github.com/your-repo/dopemux-mvp.git\ncd dopemux-mvp",
+    "created_at": "2025-09-24T09:34:40.891059",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      74,
+      75,
+      76,
+      77
+    ],
+    "checksum": "248d7dc59a0742eb",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "142d303ffbf6e9b0dace41717223c2cf5e954659a8992ba542582bde06df752e",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Automated installation (recommended)"
+    ],
+    "entity_type": "Para",
+    "title": "Automated installation (recommended)",
+    "text": "# Automated installation (recommended)\npython installers/leantime/install.py --interactive",
+    "created_at": "2025-09-24T09:34:40.891072",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      78,
+      79,
+      80
+    ],
+    "checksum": "dc672a95497d4951",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "f941b466c16be46fa2bf9ce93c46c1455d87d33aba9453592088f57dc47ccc40",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Manual installation"
+    ],
+    "entity_type": "Para",
+    "title": "Manual installation",
+    "text": "# Manual installation\ncd docker/leantime\ndocker-compose up -d",
+    "created_at": "2025-09-24T09:34:40.891083",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      81,
+      82,
+      83,
+      84
+    ],
+    "checksum": "baad2f62d974855a",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "c626fcc80b2b2e434b8bad8be9f8018cc7d4cf6c152e676d466d21ba9ab17b15",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "MCP Proxy Setup for Claude Code Integration"
+    ],
+    "entity_type": "Para",
+    "title": "MCP Proxy Setup for Claude Code Integration",
+    "text": "# MCP Proxy Setup for Claude Code Integration\n./scripts/mcp-proxy-setup.sh setup\nnpm install -g claude-task-master\npip install -r requirements.txt\n```",
+    "created_at": "2025-09-24T09:34:40.891098",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      85,
+      86,
+      87,
+      88,
+      89,
+      90
+    ],
+    "checksum": "fe98ae66c6695709",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "9f75e3aa91195fcacd88b90b79dfa2760e9987b6efe67a6cfa1ba5a5ccfdbf02",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "MCP Proxy Setup for Claude Code Integration",
+      "First Use"
+    ],
+    "entity_type": "Para",
+    "title": "First Use",
+    "text": "### First Use\n1. **Access Leantime**: http://localhost:8080 (admin/admin)\n2. **Verify Health**: `python installers/leantime/health_check.py`\n3. **Create Project**: Start with a simple PRD document\n4. **Enable ADHD Mode**: Configure attention tracking preferences\n5. **Test MCP Integration**: Use `/mcp` in Claude Code to access containerized servers",
+    "created_at": "2025-09-24T09:34:40.891110",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97
+    ],
+    "checksum": "59ca58af462bb874",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "9a253b42e301915f08c8355e01c17c6b3340ef9e421420017b4900cbce573b10",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "MCP Proxy Setup for Claude Code Integration",
+      "🔗 MCP Proxy Integration"
+    ],
+    "entity_type": "Para",
+    "title": "🔗 MCP Proxy Integration",
+    "text": "### 🔗 MCP Proxy Integration\n\nDopemux includes an innovative MCP proxy solution that bridges Docker-containerized MCP servers with Claude Code:\n\n```bash",
+    "created_at": "2025-09-24T09:34:40.891125",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      98,
+      99,
+      100,
+      101,
+      102
+    ],
+    "checksum": "a1ce147c5886db6c",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "8b072bd7f786bbb85431bb4241d138e02aa2756d5fbe766ca080aba4ecd1b78e",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Quick setup"
+    ],
+    "entity_type": "Para",
+    "title": "Quick setup",
+    "text": "# Quick setup\n./scripts/mcp-proxy-setup.sh setup",
+    "created_at": "2025-09-24T09:34:40.891136",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      103,
+      104,
+      105
+    ],
+    "checksum": "26c7d7b6cb788af3",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "dbbce8ff0117c69534f1d0d2fbefebb669d6917da5ce43c9fbf34fa894b09d85",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Verify connection"
+    ],
+    "entity_type": "Para",
+    "title": "Verify connection",
+    "text": "# Verify connection\nclaude mcp list  # Should show ✓ Connected servers",
+    "created_at": "2025-09-24T09:34:40.891147",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      106,
+      107,
+      108
+    ],
+    "checksum": "37c015c2e7545e2c",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "59f8a12bdf09732fdd75755da6c627d3fa590bc5ef30693913f632c629c544e2",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Use in Claude Code"
+    ],
+    "entity_type": "Para",
+    "title": "Use in Claude Code",
+    "text": "# Use in Claude Code\n/mcp tools list  # See available MCP tools\n```\n\n**Available MCP Servers:**\n- **Sequential Thinking** - Advanced multi-agent reasoning\n- **Exa Search** - Web research and data gathering\n- **Zen Orchestration** - Multi-model coordination\n- **Serena Navigation** - Enhanced code exploration\n\n📖 **Detailed guides:**\n- [Quick Start](docs/MCP_PROXY_QUICK_START.md) - Get running in 2 minutes\n- [Complete Setup Guide](docs/MCP_PROXY_SETUP_GUIDE.md) - Comprehensive documentation",
+    "created_at": "2025-09-24T09:34:40.891164",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122
+    ],
+    "checksum": "f50233e9a77d0ce1",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "025f95f8f769d24c87e4419b920136cd6bc1031c4ad56b24c7c415da419a9932",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Use in Claude Code",
+      "📊 System Architecture"
+    ],
+    "entity_type": "Para",
+    "title": "📊 System Architecture",
+    "text": "## 📊 System Architecture\n\n```\n┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐\n│   Leantime      │◄──►│  Sync Manager    │◄──►│ Task-Master AI  │\n│   (Projects)    │    │ (Bidirectional)  │    │ (PRD Analysis)  │\n└─────────────────┘    └──────────────────┘    └─────────────────┘\n         ▲                        ▲                       ▲\n         │              ┌─────────▼─────────┐             │\n         │              │ ADHD Optimizations │             │\n         │              │ - Attention Mgmt   │             │\n         │              │ - Context Preserve │             │\n         │              │ - Cognitive Load   │             │\n         │              └────────────────────┘             │\n         │                                                 │\n         ▼                                                 ▼\n┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐\n│ Docker Services │    │     MCP Bridge   │    │  Health Checks  │\n│ - MySQL         │    │   (Protocol)     │    │   & Monitoring  │\n│ - Redis         │    │                  │    │                 │\n└─────────────────┘    └──────────────────┘    └─────────────────┘\n```",
+    "created_at": "2025-09-24T09:34:40.891197",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      123,
+      124,
+      125,
+      126,
+      127,
+      128,
+      129,
+      130,
+      131,
+      132,
+      133,
+      134,
+      135,
+      136,
+      137,
+      138,
+      139,
+      140,
+      141,
+      142,
+      143,
+      144,
+      145
+    ],
+    "checksum": "4e44a21cb6f96bd7",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "baa82cb974ae4ccfaf9ba798a79aa5d3abdfffa8930e83f4f7cf16b768db5547",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Use in Claude Code",
+      "🔧 Core Components"
+    ],
+    "entity_type": "Para",
+    "title": "🔧 Core Components",
+    "text": "## 🔧 Core Components",
+    "created_at": "2025-09-24T09:34:40.891209",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      146,
+      147
+    ],
+    "checksum": "f21077bd507ab1ee",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "a8a67bb3f659769fb1ccedeeeb38cb318f69bee826b928ba47fda66693822748",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Use in Claude Code",
+      "🔧 Core Components",
+      "Leantime Bridge (`src/integrations/leantime_bridge.py`)"
+    ],
+    "entity_type": "Para",
+    "title": "Leantime Bridge (`src/integrations/leantime_bridge.py`)",
+    "text": "### Leantime Bridge (`src/integrations/leantime_bridge.py`)\n- **MCP Client**: Protocol-based integration with Leantime API\n- **Project Management**: Create, read, update, delete operations for projects and tasks\n- **ADHD Features**: Attention-level filtering, cognitive load assessment, break reminders",
+    "created_at": "2025-09-24T09:34:40.891222",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      148,
+      149,
+      150,
+      151,
+      152
+    ],
+    "checksum": "74515472cb06f3f9",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "cd06e159ebc1091ed921acd1ccf9aca815257d05bdce77a47f27d7f3c8ecfccb",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Use in Claude Code",
+      "🔧 Core Components",
+      "Task-Master Bridge (`src/integrations/taskmaster_bridge.py`)"
+    ],
+    "entity_type": "Para",
+    "title": "Task-Master Bridge (`src/integrations/taskmaster_bridge.py`)",
+    "text": "### Task-Master Bridge (`src/integrations/taskmaster_bridge.py`)\n- **PRD Processing**: Intelligent analysis of Product Requirements Documents\n- **Task Decomposition**: Break complex features into manageable chunks\n- **Complexity Assessment**: Cognitive load scoring for optimal scheduling",
+    "created_at": "2025-09-24T09:34:40.891235",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      153,
+      154,
+      155,
+      156,
+      157
+    ],
+    "checksum": "147897a9bdba1e01",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "8ecf2c16de58d7c474e3ff2597dd1fc63a8e0fae1743eafefbc9541ba571865d",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Use in Claude Code",
+      "🔧 Core Components",
+      "Sync Manager (`src/integrations/sync_manager.py`)"
+    ],
+    "entity_type": "Para",
+    "title": "Sync Manager (`src/integrations/sync_manager.py`)",
+    "text": "### Sync Manager (`src/integrations/sync_manager.py`)\n- **Bidirectional Sync**: Real-time data synchronization between systems\n- **Conflict Resolution**: Intelligent handling of concurrent updates\n- **Event Sourcing**: Complete audit trail of all changes",
+    "created_at": "2025-09-24T09:34:40.891246",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      158,
+      159,
+      160,
+      161,
+      162
+    ],
+    "checksum": "d994b1f7b2d27995",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "e04951858d30ddcf79998e1b3b724edbfff1a16e3701ffb015f4a963a7c60a36",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Use in Claude Code",
+      "🔧 Core Components",
+      "ADHD Optimizations (`src/utils/adhd_optimizations.py`)"
+    ],
+    "entity_type": "Para",
+    "title": "ADHD Optimizations (`src/utils/adhd_optimizations.py`)",
+    "text": "### ADHD Optimizations (`src/utils/adhd_optimizations.py`)\n- **Attention Tracking**: Monitor focus states and recommend optimal work patterns\n- **Context Management**: Preserve mental models across interruptions\n- **Schedule Optimization**: Balance cognitive load and task complexity",
+    "created_at": "2025-09-24T09:34:40.891258",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      163,
+      164,
+      165,
+      166,
+      167
+    ],
+    "checksum": "f465b7fa83b863c0",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "e7b4029649c6160016b94f55d8ef423e2206600c915c62782b9febfa1eb262cc",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Use in Claude Code",
+      "📚 Documentation"
+    ],
+    "entity_type": "Para",
+    "title": "📚 Documentation",
+    "text": "## 📚 Documentation\n\n- **[Installation Guide](docs/INSTALLATION.md)**: Complete setup instructions\n- **[User Guide](docs/USER_GUIDE.md)**: ADHD-optimized workflows and features\n- **[API Documentation](docs/API.md)**: Complete technical reference",
+    "created_at": "2025-09-24T09:34:40.891272",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      168,
+      169,
+      170,
+      171,
+      172,
+      173
+    ],
+    "checksum": "ce01e008f5a0a2c8",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "eb99ab4a6a02ea6a8bdda99e166cd77108853b1802b810129b71863b0a972f46",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Use in Claude Code",
+      "🧪 Testing"
+    ],
+    "entity_type": "Para",
+    "title": "🧪 Testing",
+    "text": "## 🧪 Testing",
+    "created_at": "2025-09-24T09:34:40.891281",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      174,
+      175
+    ],
+    "checksum": "1960588413456c7f",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "07905ff8d478ddd8a241c4bb2a03a121e996ce8c4001e8cab97011f68ff0d141",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Use in Claude Code",
+      "🧪 Testing",
+      "Run Test Suite"
+    ],
+    "entity_type": "Para",
+    "title": "Run Test Suite",
+    "text": "### Run Test Suite\n```bash",
+    "created_at": "2025-09-24T09:34:40.891290",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      176,
+      177
+    ],
+    "checksum": "47b23772f07193ef",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "ef1387dab294c96691ac5b405a19c29aafcaa388f429968b22f08292398c291d",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Full test coverage"
+    ],
+    "entity_type": "Para",
+    "title": "Full test coverage",
+    "text": "# Full test coverage\npython -m pytest tests/ --cov=src --cov-report=html",
+    "created_at": "2025-09-24T09:34:40.891299",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      178,
+      179,
+      180
+    ],
+    "checksum": "1a33df47416b7760",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "403ceef4e072e4bceec9097949efb68e5b75148f1dd72711eb959dd096a424ed",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Unit tests only"
+    ],
+    "entity_type": "Para",
+    "title": "Unit tests only",
+    "text": "# Unit tests only\npython -m pytest tests/unit/ -v",
+    "created_at": "2025-09-24T09:34:40.891308",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      181,
+      182,
+      183
+    ],
+    "checksum": "695f6f5305e117e0",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "dbc6268a7150d77252a8e1f430c5314c25150b52e87f9467d33c2cfbe64321b8",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Integration tests"
+    ],
+    "entity_type": "Para",
+    "title": "Integration tests",
+    "text": "# Integration tests\npython -m pytest tests/integration/ -v",
+    "created_at": "2025-09-24T09:34:40.891317",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      184,
+      185,
+      186
+    ],
+    "checksum": "8acb117336f2e6b0",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "232d5b05bf432e828e351d2919642e87ae35a264beb487674ae8af713337af3a",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Specific test"
+    ],
+    "entity_type": "Para",
+    "title": "Specific test",
+    "text": "# Specific test\npython -m pytest tests/unit/test_adhd_optimizations.py -v\n```",
+    "created_at": "2025-09-24T09:34:40.891326",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      187,
+      188,
+      189,
+      190
+    ],
+    "checksum": "a3495966d40c3be3",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "618a9bf14f77abaf65bf893154da13900efef9d3f516e8c2d7e2647274cfe38c",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Specific test",
+      "Test Coverage"
+    ],
+    "entity_type": "Para",
+    "title": "Test Coverage",
+    "text": "### Test Coverage\n- **Unit Tests**: 100% coverage for all modules\n- **Integration Tests**: Complete workflow validation\n- **Health Checks**: System monitoring and recovery\n- **Performance Tests**: Load testing and optimization",
+    "created_at": "2025-09-24T09:34:40.891337",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      191,
+      192,
+      193,
+      194,
+      195,
+      196
+    ],
+    "checksum": "5d06df2d2ebfc189",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "9c77c01512688011c33c549a38d3f5d7e84794ff5178af6f1f870e8e0ba7aa7f",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Specific test",
+      "🎨 ADHD-Friendly Features"
+    ],
+    "entity_type": "Para",
+    "title": "🎨 ADHD-Friendly Features",
+    "text": "## 🎨 ADHD-Friendly Features",
+    "created_at": "2025-09-24T09:34:40.891346",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      197,
+      198
+    ],
+    "checksum": "204374c457859fae",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "1c90a0bb6600daaeba1ea8bf9755d9f1ff8b0234a959c7744f6a5660434ba115",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Specific test",
+      "🎨 ADHD-Friendly Features",
+      "Attention Management"
+    ],
+    "entity_type": "Para",
+    "title": "Attention Management",
+    "text": "### Attention Management\n- **Focus Sessions**: 25-minute blocks with automatic break reminders\n- **Attention Detection**: Real-time assessment of cognitive state\n- **Context Switching**: Minimal disruption with preserved mental models\n- **Progress Visualization**: Clear indicators of completion and remaining work",
+    "created_at": "2025-09-24T09:34:40.891356",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      199,
+      200,
+      201,
+      202,
+      203,
+      204
+    ],
+    "checksum": "33a994f7d5814f99",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "fc0cbaaef1459b0851ddca01e52965e59f93bad23d47493395de654fb744f459",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Specific test",
+      "🎨 ADHD-Friendly Features",
+      "Cognitive Load Optimization"
+    ],
+    "entity_type": "Para",
+    "title": "Cognitive Load Optimization",
+    "text": "### Cognitive Load Optimization\n- **Task Complexity**: 1-10 scoring system for mental effort estimation\n- **Schedule Balancing**: Mix of high/medium/low complexity tasks\n- **Energy Matching**: Align challenging work with peak attention periods\n- **Break Integration**: Regular rest periods built into workflow",
+    "created_at": "2025-09-24T09:34:40.891367",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      205,
+      206,
+      207,
+      208,
+      209,
+      210
+    ],
+    "checksum": "603e7879e6c75cce",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "e61674afb439d1110512f1a1d4bc147148e547b8e57ea28ea6310130a93137c9",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Specific test",
+      "🎨 ADHD-Friendly Features",
+      "Executive Function Support"
+    ],
+    "entity_type": "Para",
+    "title": "Executive Function Support",
+    "text": "### Executive Function Support\n- **Decision Reduction**: Maximum 3 options presented at once\n- **Clear Next Steps**: Always know what to do next\n- **Prerequisites Tracking**: Dependencies clearly identified\n- **Completion Celebration**: Positive reinforcement for task completion",
+    "created_at": "2025-09-24T09:34:40.891377",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      211,
+      212,
+      213,
+      214,
+      215,
+      216
+    ],
+    "checksum": "d238ac09cf4ea4f4",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "20f08c5d2d306f30afbf28902f1d4edc388c8642a497573f6b928369115197b9",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Specific test",
+      "🤝 Contributing"
+    ],
+    "entity_type": "Para",
+    "title": "🤝 Contributing",
+    "text": "## 🤝 Contributing",
+    "created_at": "2025-09-24T09:34:40.891386",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      217,
+      218
+    ],
+    "checksum": "6adea1af0dbc8da8",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "6bdb3809ddf802ec7a8d6934ca1b43d0649caa4634c5c2a1f658bce6a550ec21",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Specific test",
+      "🤝 Contributing",
+      "Development Setup"
+    ],
+    "entity_type": "Para",
+    "title": "Development Setup",
+    "text": "### Development Setup\n```bash",
+    "created_at": "2025-09-24T09:34:40.891394",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      219,
+      220
+    ],
+    "checksum": "034b7e73b266fec0",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "41726a9ceebed1a302b55ac00a148c4947357e64cc2f605ccaccb5253ba87c10",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Development installation"
+    ],
+    "entity_type": "Para",
+    "title": "Development installation",
+    "text": "# Development installation\ngit clone https://github.com/your-repo/dopemux-mvp.git\ncd dopemux-mvp\npython -m venv venv\nsource venv/bin/activate  # or venv\\Scripts\\activate on Windows\npip install -e .\npip install -r requirements-dev.txt\n```",
+    "created_at": "2025-09-24T09:34:40.891405",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      221,
+      222,
+      223,
+      224,
+      225,
+      226,
+      227,
+      228,
+      229
+    ],
+    "checksum": "81c66bf1ca8e7143",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "b7be21ab33496a384237b03326eb07a0e1532185081e8bb354f461430ce8d1e7",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Development installation",
+      "ADHD-Friendly Contributions"
+    ],
+    "entity_type": "Para",
+    "title": "ADHD-Friendly Contributions",
+    "text": "### ADHD-Friendly Contributions\n- **Any format welcome**: Bullet points, voice notes, rough ideas\n- **No judgment**: All questions and suggestions valued\n- **Flexible participation**: Contribute when attention allows\n- **Clear guidelines**: Specific steps for each contribution type",
+    "created_at": "2025-09-24T09:34:40.891418",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      230,
+      231,
+      232,
+      233,
+      234,
+      235
+    ],
+    "checksum": "6094885778b62fd7",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "23b7cdce70cb7b30b8ce1761de82e43398e7466f1da866715c27711e54bac6e0",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Development installation",
+      "📝 License"
+    ],
+    "entity_type": "Para",
+    "title": "📝 License",
+    "text": "## 📝 License\n\nMIT License - see [LICENSE](LICENSE) file for details.",
+    "created_at": "2025-09-24T09:34:40.891495",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      236,
+      237,
+      238,
+      239
+    ],
+    "checksum": "da507253fbdf94ec",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "973f02fefa429ddba4933d422eefddf3bf7c89829fdf02564ee6c927725203c4",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/README copy.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Development installation",
+      "🙏 Acknowledgments"
+    ],
+    "entity_type": "Para",
+    "title": "🙏 Acknowledgments",
+    "text": "## 🙏 Acknowledgments\n\n- **Leantime Team**: For creating neurodiversity-focused project management\n- **Task-Master AI**: For intelligent task decomposition capabilities\n- **ADHD Community**: For insights into attention-friendly development workflows\n- **MCP Protocol**: For enabling seamless AI service integration\n\n---\n\n**Built with ❤️ for the ADHD developer community**\n\n*Making development accessible, one focused session at a time.*",
+    "created_at": "2025-09-24T09:34:40.891515",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      240,
+      241,
+      242,
+      243,
+      244,
+      245,
+      246,
+      247,
+      248,
+      249,
+      250,
+      251,
+      252
+    ],
+    "checksum": "cab07f1f9408e744",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "793465b37ea9ebcb9cd07f2b60796e3175788042b6ba2f45142242c6bc8ad5dd",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Dopemux CLI Reference"
+    ],
+    "entity_type": "Para",
+    "title": "Dopemux CLI Reference",
+    "text": "# Dopemux CLI Reference",
+    "created_at": "2025-09-24T09:34:40.895623",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      1,
+      2
+    ],
+    "checksum": "a02c492383697ec1",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "f7435899a4207069b07272ecda06fa3f13275e374966fb8c73588113fbfdc70d",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Dopemux CLI Reference",
+      "Overview"
+    ],
+    "entity_type": "Para",
+    "title": "Overview",
+    "text": "## Overview\n\nThe Dopemux CLI provides ADHD-optimized commands for managing development sessions, context preservation, and task decomposition. All commands are designed with gentle, supportive UX and clear visual feedback.",
+    "created_at": "2025-09-24T09:34:40.895640",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      3,
+      4,
+      5,
+      6
+    ],
+    "checksum": "4bbc2ce18df0b60f",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "9e8974572f115ac45dc8233cc9cc8fa2e9f2a9941e8590a725f6e782f3772ab4",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Dopemux CLI Reference",
+      "Global Options"
+    ],
+    "entity_type": "Para",
+    "title": "Global Options",
+    "text": "## Global Options\n\n```bash\ndopemux [GLOBAL_OPTIONS] COMMAND [COMMAND_OPTIONS] [ARGS]\n```",
+    "created_at": "2025-09-24T09:34:40.895651",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "checksum": "ba09d204cac42685",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "cde760d76a0b26d277e9fe6b058798feef15f6968d19aaccfb0c40c4c629549b",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Dopemux CLI Reference",
+      "Global Options",
+      "Global Flags"
+    ],
+    "entity_type": "Para",
+    "title": "Global Flags",
+    "text": "### Global Flags\n\n| Flag | Description | Example |\n|------|-------------|---------|\n| `--version` | Show version and exit | `dopemux --version` |\n| `--config, -c` | Specify config file path | `dopemux -c custom.yaml start` |\n| `--verbose, -v` | Enable verbose output | `dopemux -v status` |\n\n---",
+    "created_at": "2025-09-24T09:34:40.895665",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22
+    ],
+    "checksum": "d5b5a1d1e2ae1e2b",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "383a2a49fc8eb13290641a88bdeb552cdab1bf400763ae37a1750bec7f4c2099",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Dopemux CLI Reference",
+      "Commands"
+    ],
+    "entity_type": "Para",
+    "title": "Commands",
+    "text": "## Commands",
+    "created_at": "2025-09-24T09:34:40.895675",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      23,
+      24
+    ],
+    "checksum": "36cd3f2bb454f575",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "80317407f18c2ddd3078f40dcd1d7ef0a392686f438074548ab5afbe96c8022f",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Dopemux CLI Reference",
+      "Commands",
+      "`dopemux init`"
+    ],
+    "entity_type": "Para",
+    "title": "`dopemux init`",
+    "text": "### `dopemux init`\n\n**Initialize a Dopemux project with ADHD-optimized configuration**",
+    "created_at": "2025-09-24T09:34:40.895684",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      25,
+      26,
+      27,
+      28
+    ],
+    "checksum": "fab979b22181dfa2",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "294b0d05fbbf9cfd1f164e64d08cf9b9d348a44406125d45023dcdb5350984ba",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Dopemux CLI Reference",
+      "Commands",
+      "`dopemux init`",
+      "Usage"
+    ],
+    "entity_type": "Para",
+    "title": "Usage",
+    "text": "#### Usage\n```bash\ndopemux init [DIRECTORY] [OPTIONS]\n```",
+    "created_at": "2025-09-24T09:34:40.895694",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      29,
+      30,
+      31,
+      32,
+      33
+    ],
+    "checksum": "5ae938c80cab85e8",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "993ce53773fd0c04a80718f00db9847a56fc9a93b5295183f8aea338f0cf8731",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Dopemux CLI Reference",
+      "Commands",
+      "`dopemux init`",
+      "Arguments"
+    ],
+    "entity_type": "Para",
+    "title": "Arguments",
+    "text": "#### Arguments\n- `DIRECTORY` - Target directory (default: current directory)",
+    "created_at": "2025-09-24T09:34:40.895703",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      34,
+      35,
+      36
+    ],
+    "checksum": "115d93936be54c1f",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "842a93e47efe3378bbd941d452f343f66b892734451ac12ddccba8d5e6b14bc5",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Dopemux CLI Reference",
+      "Commands",
+      "`dopemux init`",
+      "Options"
+    ],
+    "entity_type": "Para",
+    "title": "Options",
+    "text": "#### Options\n\n| Option | Short | Description | Default | Example |\n|--------|-------|-------------|---------|---------|\n| `--force` | `-f` | Overwrite existing configuration | `false` | `dopemux init --force` |\n| `--template` | `-t` | Project template type | `python` | `dopemux init -t rust` |",
+    "created_at": "2025-09-24T09:34:40.895714",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43
+    ],
+    "checksum": "26f0cb8162e22b0b",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "81921a3920b9c25d159c67eb1a54df0d568fa2bd2afd6a716dac76ad298e1950",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Dopemux CLI Reference",
+      "Commands",
+      "`dopemux init`",
+      "Available Templates"
+    ],
+    "entity_type": "Para",
+    "title": "Available Templates",
+    "text": "#### Available Templates\n\n| Template | Description | Generated Config |\n|----------|-------------|------------------|\n| `python` | Python project with pytest, type hints | PEP 8, Black formatting, mypy |\n| `javascript` | Node.js project with modern tooling | ESLint, Prettier, Jest |\n| `typescript` | TypeScript project with strict config | TSConfig, type checking |\n| `rust` | Rust project with Cargo integration | Clippy, rustfmt, cargo-watch |\n| `go` | Go project with modules | gofmt, golint, go test |\n| `java` | Java project with Maven/Gradle | Checkstyle, JUnit, SpotBugs |",
+    "created_at": "2025-09-24T09:34:40.895727",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54
+    ],
+    "checksum": "2e24ca2ebd8f643e",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "5c71d80196714b26da443b61f13d6b86078650b528f1f41184223ecfdedfc5ad",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Dopemux CLI Reference",
+      "Commands",
+      "`dopemux init`",
+      "Examples"
+    ],
+    "entity_type": "Para",
+    "title": "Examples",
+    "text": "#### Examples\n\n```bash",
+    "created_at": "2025-09-24T09:34:40.895739",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      55,
+      56,
+      57
+    ],
+    "checksum": "27659cc185dd4791",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "51bd5b5d6bf02c8c4ca68fc9a93211a36bb15badf7a985d87b13b3ee424d7d9b",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Initialize current directory with Python template"
+    ],
+    "entity_type": "Para",
+    "title": "Initialize current directory with Python template",
+    "text": "# Initialize current directory with Python template\ndopemux init",
+    "created_at": "2025-09-24T09:34:40.895748",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      58,
+      59,
+      60
+    ],
+    "checksum": "842a474ad63c5304",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "f5dad8d9ebb46db12b03498679363015a5ca5c8f54c20d9ae7d7392667dda25e",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Initialize specific directory with TypeScript template"
+    ],
+    "entity_type": "Para",
+    "title": "Initialize specific directory with TypeScript template",
+    "text": "# Initialize specific directory with TypeScript template\ndopemux init ./my-project --template typescript",
+    "created_at": "2025-09-24T09:34:40.895757",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      61,
+      62,
+      63
+    ],
+    "checksum": "685cd57d11d3233e",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "861fde6fe5c27b137e1405b94cac7ad4142bdab60bf1ec9f4addc3b29b97404b",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Force overwrite existing configuration"
+    ],
+    "entity_type": "Para",
+    "title": "Force overwrite existing configuration",
+    "text": "# Force overwrite existing configuration\ndopemux init --force",
+    "created_at": "2025-09-24T09:34:40.895765",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      64,
+      65,
+      66
+    ],
+    "checksum": "4b156c05abf08ba4",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "674853714774634cc20a167680ccec44552901ee15846fff4716841794336ce0",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Initialize with Rust template"
+    ],
+    "entity_type": "Para",
+    "title": "Initialize with Rust template",
+    "text": "# Initialize with Rust template\ndopemux init ~/code/rust-project -t rust\n```",
+    "created_at": "2025-09-24T09:34:40.895774",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      67,
+      68,
+      69,
+      70
+    ],
+    "checksum": "0629a872345b3490",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "debc4cbda779195f8144722f18c09ff356c9cd7a754923f7fbde33304b4c4af3",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Initialize with Rust template",
+      "What Gets Created"
+    ],
+    "entity_type": "Para",
+    "title": "What Gets Created",
+    "text": "#### What Gets Created\n\n```\nproject/\n├── .dopemux/\n│   ├── config.yaml          # ADHD profile settings\n│   ├── context.db           # SQLite context storage\n│   └── sessions/            # Session backup directory\n└── .claude/\n    ├── claude.md            # Project-specific Claude instructions\n    ├── context.md           # Context management configuration\n    ├── llms.md              # Multi-model AI configuration\n    └── session.md           # Session persistence patterns\n```",
+    "created_at": "2025-09-24T09:34:40.895796",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85
+    ],
+    "checksum": "96c198e76b081ec9",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "4cb7f3a3220a942d395067edf9b6f049cf47e94b58ba093d3c7f920c8254b115",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Initialize with Rust template",
+      "Success Output"
+    ],
+    "entity_type": "Para",
+    "title": "Success Output",
+    "text": "#### Success Output\n```\n🎉 Project Initialized\n\n📁 Configuration: /path/to/project/.claude/\n🧠 ADHD features: /path/to/project/.dopemux/\n\nNext steps:\n• Run 'dopemux start' to launch Claude Code\n• Use 'dopemux save' to preserve context\n• Check 'dopemux status' for attention metrics\n```",
+    "created_at": "2025-09-24T09:34:40.895813",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98
+    ],
+    "checksum": "03a0f077909a4c2d",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "d4757789c55cea18aa24d4bcb50518d42df5e250a4d97d4a891ab8a36120109b",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Initialize with Rust template",
+      "Error Handling"
+    ],
+    "entity_type": "Para",
+    "title": "Error Handling",
+    "text": "#### Error Handling\n\n| Error | Solution |\n|-------|----------|\n| Directory doesn't exist | Create directory or use existing path |\n| Already initialized | Use `--force` to overwrite |\n| Permission denied | Check write permissions on directory |\n| Invalid template | Use `dopemux init --help` to see available templates |\n\n---",
+    "created_at": "2025-09-24T09:34:40.895829",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109
+    ],
+    "checksum": "3dd7b52f8c5e3249",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "bd547ede22706edd6cb5dd6323c48ad58b9ace4521e42b2787822d77d7846d47",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Initialize with Rust template",
+      "`dopemux start`"
+    ],
+    "entity_type": "Para",
+    "title": "`dopemux start`",
+    "text": "### `dopemux start`\n\n**Launch Claude Code with ADHD optimizations and context restoration**",
+    "created_at": "2025-09-24T09:34:40.895839",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      110,
+      111,
+      112,
+      113
+    ],
+    "checksum": "c66a9a632021aa30",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "59f1128a93b5a351f67abd5f2a31de0f5d4e37067faa25ec2d924bf8a172977c",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Initialize with Rust template",
+      "`dopemux start`",
+      "Usage"
+    ],
+    "entity_type": "Para",
+    "title": "Usage",
+    "text": "#### Usage\n```bash\ndopemux start [OPTIONS]\n```",
+    "created_at": "2025-09-24T09:34:40.895848",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      114,
+      115,
+      116,
+      117,
+      118
+    ],
+    "checksum": "fe4b809dd1bfc8ed",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "f460e587f71a2dd54f54b4c1e71c17d3edc34761d65252bfc22ca4c7b173dbed",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Initialize with Rust template",
+      "`dopemux start`",
+      "Options"
+    ],
+    "entity_type": "Para",
+    "title": "Options",
+    "text": "#### Options\n\n| Option | Short | Description | Default | Example |\n|--------|-------|-------------|---------|---------|\n| `--session` | `-s` | Restore specific session ID | Latest session | `dopemux start -s abc123` |\n| `--background` | `-b` | Launch in background mode | `false` | `dopemux start --background` |\n| `--debug` | | Enable debug output | `false` | `dopemux start --debug` |",
+    "created_at": "2025-09-24T09:34:40.895859",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126
+    ],
+    "checksum": "c02cf8ee9f01e4f0",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "726e6cb6900109ef28c2b82389ad58dd4762642cc6aee9edb57eb6955d73a1a4",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Initialize with Rust template",
+      "`dopemux start`",
+      "Examples"
+    ],
+    "entity_type": "Para",
+    "title": "Examples",
+    "text": "#### Examples\n\n```bash",
+    "created_at": "2025-09-24T09:34:40.895868",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      127,
+      128,
+      129
+    ],
+    "checksum": "27659cc185dd4791",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "2c8d055ca9b6f2f413bbe50f890f19a5428280d82a8c422dbf53e194b5e4f9cd",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Start with latest context"
+    ],
+    "entity_type": "Para",
+    "title": "Start with latest context",
+    "text": "# Start with latest context\ndopemux start",
+    "created_at": "2025-09-24T09:34:40.895877",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      130,
+      131,
+      132
+    ],
+    "checksum": "1423a90a4beacd8f",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "3f9ddc2b64749857f5300b375aac18b9c5b5204865744123231397fa1e6ad36b",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Restore specific session"
+    ],
+    "entity_type": "Para",
+    "title": "Restore specific session",
+    "text": "# Restore specific session\ndopemux start --session abc12345",
+    "created_at": "2025-09-24T09:34:40.895885",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      133,
+      134,
+      135
+    ],
+    "checksum": "d85dc7a9f550577a",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "697331f4f1b24a8056ec93f1a7b3eac47df477e566b98015973f187f3d8a7899",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Launch in background"
+    ],
+    "entity_type": "Para",
+    "title": "Launch in background",
+    "text": "# Launch in background\ndopemux start --background",
+    "created_at": "2025-09-24T09:34:40.895894",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      136,
+      137,
+      138
+    ],
+    "checksum": "ba6be63217165c1c",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "191a4cb65c8258ba10a6d337cdb011484efa37942898794107cbbdedaa951254",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Debug mode for troubleshooting"
+    ],
+    "entity_type": "Para",
+    "title": "Debug mode for troubleshooting",
+    "text": "# Debug mode for troubleshooting\ndopemux start --debug\n```",
+    "created_at": "2025-09-24T09:34:40.895903",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      139,
+      140,
+      141,
+      142
+    ],
+    "checksum": "dcf66d924de73510",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "ebaf89751054f11d74450e4a845c27c67c5b61603bcc635b91c0a890c38d983a",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Debug mode for troubleshooting",
+      "Launch Process"
+    ],
+    "entity_type": "Para",
+    "title": "Launch Process",
+    "text": "#### Launch Process\n\n1. **🔍 Project Check** - Verify Dopemux initialization\n2. **📍 Context Restore** - Load session context (<500ms)\n3. **🚀 Claude Launch** - Start Claude Code with MCP servers\n4. **🧠 Monitor Start** - Begin attention monitoring\n5. **✅ Ready** - Display session information",
+    "created_at": "2025-09-24T09:34:40.895917",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      143,
+      144,
+      145,
+      146,
+      147,
+      148,
+      149,
+      150
+    ],
+    "checksum": "a7d5e7e270591291",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "a9f219159d8f9f1a3461342b5695105fe7514355b828dfd11919a0b18ee33563",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Debug mode for troubleshooting",
+      "Output Examples"
+    ],
+    "entity_type": "Para",
+    "title": "Output Examples",
+    "text": "#### Output Examples\n\n**New Session:**\n```\n🆕 Starting new session\n\n✨ Claude Code is running with ADHD optimizations\nPress Ctrl+C to stop monitoring and save context\n```\n\n**Restored Session:**\n```\n📍 Welcome back! You were working on: Implement user authentication\n\n🎯 Goal: Add JWT-based login system\n📁 Files: 5 files restored\n⏱️  Last save: 2 hours ago\n🧠 Attention state: focused\n\n✨ Claude Code is running with ADHD optimizations\nPress Ctrl+C to stop monitoring and save context\n```\n\n**Background Mode:**\n```\n🚀 Claude Code launched in background\n🆔 Process ID: 12345\n📋 Use 'dopemux status' to check session\n💾 Context auto-saving every 30 seconds\n```",
+    "created_at": "2025-09-24T09:34:40.895944",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      151,
+      152,
+      153,
+      154,
+      155,
+      156,
+      157,
+      158,
+      159,
+      160,
+      161,
+      162,
+      163,
+      164,
+      165,
+      166,
+      167,
+      168,
+      169,
+      170,
+      171,
+      172,
+      173,
+      174,
+      175,
+      176,
+      177,
+      178,
+      179,
+      180,
+      181
+    ],
+    "checksum": "9eae2f930eddb124",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "2c18ff3e260384bba295cc4b88f5afbe63228d79b54f0f3502cb5da0f6104a8b",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Debug mode for troubleshooting",
+      "Requirements Check"
+    ],
+    "entity_type": "Para",
+    "title": "Requirements Check",
+    "text": "#### Requirements Check\n\nThe command will verify:\n- ✅ Project is initialized (`.dopemux/` exists)\n- ✅ Claude Code is installed and accessible\n- ✅ MCP servers are configured\n- ✅ SQLite database is accessible",
+    "created_at": "2025-09-24T09:34:40.895959",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      182,
+      183,
+      184,
+      185,
+      186,
+      187,
+      188,
+      189
+    ],
+    "checksum": "1235ddf5aa0ffb3c",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "330a9b2b9359a2a1a055fcad5ee0f500b87e4ef726038e1b7b3034a5ba3ff32d",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Debug mode for troubleshooting",
+      "Auto-initialization"
+    ],
+    "entity_type": "Para",
+    "title": "Auto-initialization",
+    "text": "#### Auto-initialization\n\nIf project is not initialized:\n```\n⚠️  Project not initialized. Run 'dopemux init' first.\n\nInitialize now? (y/N): y\n```\n\n---",
+    "created_at": "2025-09-24T09:34:40.895976",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      190,
+      191,
+      192,
+      193,
+      194,
+      195,
+      196,
+      197,
+      198,
+      199,
+      200
+    ],
+    "checksum": "6c030d1a3bc72aa6",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "81c0ff2bdb3b5cbc974d792d5001b93fc4381a2fbfa2af68fead40cabc97f54e",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Debug mode for troubleshooting",
+      "`dopemux save`"
+    ],
+    "entity_type": "Para",
+    "title": "`dopemux save`",
+    "text": "### `dopemux save`\n\n**Manually save current development context**",
+    "created_at": "2025-09-24T09:34:40.895985",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      201,
+      202,
+      203,
+      204
+    ],
+    "checksum": "4a7ccb089134c514",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "203c9cfced1b6393468d76b62044be35c5b9dc92ecece60f9b703b24d45a1a16",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Debug mode for troubleshooting",
+      "`dopemux save`",
+      "Usage"
+    ],
+    "entity_type": "Para",
+    "title": "Usage",
+    "text": "#### Usage\n```bash\ndopemux save [OPTIONS]\n```",
+    "created_at": "2025-09-24T09:34:40.895995",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      205,
+      206,
+      207,
+      208,
+      209
+    ],
+    "checksum": "1c978680f32a0fe5",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "a4734643c47bd2450da31bc50cbb58eaa3745548b1787960068fff64830b37a4",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Debug mode for troubleshooting",
+      "`dopemux save`",
+      "Options"
+    ],
+    "entity_type": "Para",
+    "title": "Options",
+    "text": "#### Options\n\n| Option | Short | Description | Example |\n|--------|-------|-------------|---------|\n| `--message` | `-m` | Add save message/note | `dopemux save -m \"Before refactoring\"` |\n| `--force` | `-f` | Force save even if no changes | `dopemux save --force` |",
+    "created_at": "2025-09-24T09:34:40.896007",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      210,
+      211,
+      212,
+      213,
+      214,
+      215,
+      216
+    ],
+    "checksum": "bb2241c645edeb47",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "3e6ae7bac9be7d59acb1314143ad4fa2176ec01b5b99caea2347364357225a5c",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Debug mode for troubleshooting",
+      "`dopemux save`",
+      "Examples"
+    ],
+    "entity_type": "Para",
+    "title": "Examples",
+    "text": "#### Examples\n\n```bash",
+    "created_at": "2025-09-24T09:34:40.896016",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      217,
+      218,
+      219
+    ],
+    "checksum": "27659cc185dd4791",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "a12258ee5855ec7e674fcfdc4e64a700053c7aa7a9b505ee5ebefa2c5dbc8fc5",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Quick save"
+    ],
+    "entity_type": "Para",
+    "title": "Quick save",
+    "text": "# Quick save\ndopemux save",
+    "created_at": "2025-09-24T09:34:40.896024",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      220,
+      221,
+      222
+    ],
+    "checksum": "c480aee379e72e0f",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "39a135180123948c78e6e11647b3f4bd3b11a8c1182cfe7fbdba1d0cb7f642c3",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save with descriptive message"
+    ],
+    "entity_type": "Para",
+    "title": "Save with descriptive message",
+    "text": "# Save with descriptive message\ndopemux save --message \"Completed user model, starting authentication\"",
+    "created_at": "2025-09-24T09:34:40.896033",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      223,
+      224,
+      225
+    ],
+    "checksum": "cdc11ee498c3b316",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "14b4e75cabd65450c0f4faf3df09c4927146f3a4cc77726d70600c4c58934f8b",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Force save (useful for testing)"
+    ],
+    "entity_type": "Para",
+    "title": "Force save (useful for testing)",
+    "text": "# Force save (useful for testing)\ndopemux save --force",
+    "created_at": "2025-09-24T09:34:40.896042",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      226,
+      227,
+      228
+    ],
+    "checksum": "e7934de3ae6b062c",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "e12c79eaedd848aaf73b60ec87092915e52dd4921b7bd8ffcda9603a8d381e8c",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save before major change"
+    ],
+    "entity_type": "Para",
+    "title": "Save before major change",
+    "text": "# Save before major change\ndopemux save -m \"Before switching to async approach\"\n```",
+    "created_at": "2025-09-24T09:34:40.896051",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      229,
+      230,
+      231,
+      232
+    ],
+    "checksum": "180d0bcf0c7c58fa",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "8790664517faa3c920bd6eccd204c747e27cb21bb63fd5bd3ef6ec016241334c",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save before major change",
+      "What Gets Saved"
+    ],
+    "entity_type": "Para",
+    "title": "What Gets Saved",
+    "text": "#### What Gets Saved\n\n| Context Type | Information Captured |\n|--------------|---------------------|\n| **File State** | Open files, cursor positions, selections |\n| **Mental Model** | Current goal, approach, blockers |\n| **Session Data** | Git branch, recent changes, time spent |\n| **ADHD Metrics** | Attention state, focus duration, breaks |\n| **Decision History** | Choices made, rationale, outcomes |",
+    "created_at": "2025-09-24T09:34:40.896063",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      233,
+      234,
+      235,
+      236,
+      237,
+      238,
+      239,
+      240,
+      241,
+      242
+    ],
+    "checksum": "784e82c75e765f99",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "b228aa65722cd910255e98daf06bd3c83a8bff42a8495deb36dff4085635353f",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save before major change",
+      "Success Output"
+    ],
+    "entity_type": "Para",
+    "title": "Success Output",
+    "text": "#### Success Output\n```\n✅ Context saved (session: abc12345)\n💾 Captured 7 open files, 3 recent edits\n🧠 Attention state: focused (87% focus score)\n⏱️  Session duration: 23 minutes\n\nNote: Completed user model implementation\n```",
+    "created_at": "2025-09-24T09:34:40.896077",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      243,
+      244,
+      245,
+      246,
+      247,
+      248,
+      249,
+      250,
+      251,
+      252
+    ],
+    "checksum": "47d88c23071e1c81",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "2045eacae7d4f8ad548eb1bc070ed8bf2fbdf74a8d735ead68e50f3e16aa4344",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save before major change",
+      "Performance"
+    ],
+    "entity_type": "Para",
+    "title": "Performance",
+    "text": "#### Performance\n- ⚡ **Save time:** <50ms (invisible to user)\n- 💾 **Storage:** ~2-5KB per session\n- 🔄 **Auto-save:** Every 30 seconds in background\n\n---",
+    "created_at": "2025-09-24T09:34:40.896091",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      253,
+      254,
+      255,
+      256,
+      257,
+      258,
+      259
+    ],
+    "checksum": "4d4abd4304de2a6c",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "1500af4de31294d12732e00286bc383252cea379c182f55436b07c9e44e62cda",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save before major change",
+      "`dopemux restore`"
+    ],
+    "entity_type": "Para",
+    "title": "`dopemux restore`",
+    "text": "### `dopemux restore`\n\n**Restore previous development context**",
+    "created_at": "2025-09-24T09:34:40.896100",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      260,
+      261,
+      262,
+      263
+    ],
+    "checksum": "e802db89728ba14a",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "c70946032ca9b1c2a44e6679b1893276f839f848230f8656caaaf0c7455ac829",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save before major change",
+      "`dopemux restore`",
+      "Usage"
+    ],
+    "entity_type": "Para",
+    "title": "Usage",
+    "text": "#### Usage\n```bash\ndopemux restore [OPTIONS]\n```",
+    "created_at": "2025-09-24T09:34:40.896110",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      264,
+      265,
+      266,
+      267,
+      268
+    ],
+    "checksum": "51f0f3fae58d355f",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "c0fad8dc575998c7cca5cf43ecd4e65141bd4b7847a50e651355fd532436e1cc",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save before major change",
+      "`dopemux restore`",
+      "Options"
+    ],
+    "entity_type": "Para",
+    "title": "Options",
+    "text": "#### Options\n\n| Option | Short | Description | Example |\n|--------|-------|-------------|---------|\n| `--session` | `-s` | Specific session ID to restore | `dopemux restore -s abc123` |\n| `--list` | `-l` | List available sessions | `dopemux restore --list` |",
+    "created_at": "2025-09-24T09:34:40.896120",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      269,
+      270,
+      271,
+      272,
+      273,
+      274,
+      275
+    ],
+    "checksum": "f31779dea2bf5fbf",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "8f6019a7307863e2f4a5d496b58f5e7bda075b75259c4118edcc142acc7c1f64",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save before major change",
+      "`dopemux restore`",
+      "Examples"
+    ],
+    "entity_type": "Para",
+    "title": "Examples",
+    "text": "#### Examples\n\n```bash",
+    "created_at": "2025-09-24T09:34:40.896128",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      276,
+      277,
+      278
+    ],
+    "checksum": "27659cc185dd4791",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "29f8e607880bdfb91252b7f03aa5adc5a0fc6f2e60be96c133bd346f28d9a4e7",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Restore latest session"
+    ],
+    "entity_type": "Para",
+    "title": "Restore latest session",
+    "text": "# Restore latest session\ndopemux restore",
+    "created_at": "2025-09-24T09:34:40.896137",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      279,
+      280,
+      281
+    ],
+    "checksum": "3b275cea462b30d3",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "f27b92f26447dd6f0d3b85db42c52e8cc4eb277f3cbd04070be1232c537a99ca",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Restore specific session"
+    ],
+    "entity_type": "Para",
+    "title": "Restore specific session",
+    "text": "# Restore specific session\ndopemux restore --session abc12345",
+    "created_at": "2025-09-24T09:34:40.896146",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      282,
+      283,
+      284
+    ],
+    "checksum": "c6934c5d1127c5db",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "349c4232746bb20784cfeab5df151195d9c2d5fe1e7340b582b47082f625aae8",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "List all available sessions"
+    ],
+    "entity_type": "Para",
+    "title": "List all available sessions",
+    "text": "# List all available sessions\ndopemux restore --list",
+    "created_at": "2025-09-24T09:34:40.896154",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      285,
+      286,
+      287
+    ],
+    "checksum": "5dca18e0a182db03",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "f555a654b36e6ad7a8f772320337e8922c862ce6860c43d50dd838e28cc0b169",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "List and then restore interactively"
+    ],
+    "entity_type": "Para",
+    "title": "List and then restore interactively",
+    "text": "# List and then restore interactively\ndopemux restore -l",
+    "created_at": "2025-09-24T09:34:40.896163",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      288,
+      289
+    ],
+    "checksum": "998190340e6d99ff",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "eb714f0875d674bcdf5e124c4f27a19f4c27b5405483bf911f36e8ce21ddc5b9",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "(shows list, then user can copy session ID)"
+    ],
+    "entity_type": "Para",
+    "title": "(shows list, then user can copy session ID)",
+    "text": "# (shows list, then user can copy session ID)\n```",
+    "created_at": "2025-09-24T09:34:40.896171",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      290,
+      291,
+      292
+    ],
+    "checksum": "22ead58d29d698c0",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "dd5d58ab39d415ecf5cb67d8bb3b6e522ea8f5028cab802e1adb55669e5abecf",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "(shows list, then user can copy session ID)",
+      "Session List Output"
+    ],
+    "entity_type": "Para",
+    "title": "Session List Output",
+    "text": "#### Session List Output\n\n```bash\ndopemux restore --list\n```\n\n```\nAvailable Sessions\n┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┓\n┃ ID       ┃ Timestamp           ┃ Goal                                               ┃ Files   ┃\n┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━┩\n│ f7a3b2c8 │ 2024-01-15 14:30:22 │ Implement user authentication system              │ 7       │\n│ e9d1a4f6 │ 2024-01-15 11:15:45 │ Fix database connection timeout issue             │ 4       │\n│ b5c8e2a9 │ 2024-01-15 09:45:12 │ Add input validation to user registration         │ 3       │\n│ d4f7b1c3 │ 2024-01-14 16:20:33 │ Refactor authentication middleware                │ 5       │\n│ a8e3c6d2 │ 2024-01-14 13:55:18 │ Write unit tests for user service                 │ 8       │\n└──────────┴─────────────────────┴────────────────────────────────────────────────────┴─────────┘\n```",
+    "created_at": "2025-09-24T09:34:40.896195",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      293,
+      294,
+      295,
+      296,
+      297,
+      298,
+      299,
+      300,
+      301,
+      302,
+      303,
+      304,
+      305,
+      306,
+      307,
+      308,
+      309,
+      310,
+      311
+    ],
+    "checksum": "a945897cf1dd3d2b",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "999151abef96a5074168b0a834f8e076c9f270ccdabe2b51f2404a7ca27a363d",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "(shows list, then user can copy session ID)",
+      "Restore Success Output"
+    ],
+    "entity_type": "Para",
+    "title": "Restore Success Output",
+    "text": "#### Restore Success Output\n\n```\n✅ Restored session from 2024-01-15 14:30:22\n\n🎯 Goal: Implement user authentication system\n📁 Files: 7 files restored to exact positions\n🧠 Previous attention state: focused\n⏱️  Session was: 45 minutes of focused work\n\nWelcome back! You were working on the login endpoint implementation.\nLast action: Added password hashing to User model\nNext planned step: Create JWT token generation\n```",
+    "created_at": "2025-09-24T09:34:40.896215",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      312,
+      313,
+      314,
+      315,
+      316,
+      317,
+      318,
+      319,
+      320,
+      321,
+      322,
+      323,
+      324,
+      325,
+      326
+    ],
+    "checksum": "ff41f07a43deab06",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "05a82e408fc16bed947439f138f7818f59a94408cfa5a359828d1545371d779a",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "(shows list, then user can copy session ID)",
+      "Restoration Performance"
+    ],
+    "entity_type": "Para",
+    "title": "Restoration Performance",
+    "text": "#### Restoration Performance\n- ⚡ **Restore time:** <500ms (ADHD requirement)\n- 🎯 **Accuracy:** Exact file positions, selections, context\n- 💾 **Storage:** Compressed JSON with indexing\n\n---",
+    "created_at": "2025-09-24T09:34:40.896227",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      327,
+      328,
+      329,
+      330,
+      331,
+      332,
+      333
+    ],
+    "checksum": "3c89f475dc7e07ad",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "326285c5fcc84448d13cd82e9db7054d3ea0a065d0f6d3ab784918e659f552ff",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "(shows list, then user can copy session ID)",
+      "`dopemux status`"
+    ],
+    "entity_type": "Para",
+    "title": "`dopemux status`",
+    "text": "### `dopemux status`\n\n**Show current session status and ADHD metrics**",
+    "created_at": "2025-09-24T09:34:40.896237",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      334,
+      335,
+      336,
+      337
+    ],
+    "checksum": "19e032eb187d0390",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "f9cc763f7fbb7ce11472fdd0789faf48c92d30f0b76fb5f813a95dabf7db4f5e",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "(shows list, then user can copy session ID)",
+      "`dopemux status`",
+      "Usage"
+    ],
+    "entity_type": "Para",
+    "title": "Usage",
+    "text": "#### Usage\n```bash\ndopemux status [OPTIONS]\n```",
+    "created_at": "2025-09-24T09:34:40.896246",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      338,
+      339,
+      340,
+      341,
+      342
+    ],
+    "checksum": "cfda0af9bc0f338f",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "e8e2b1bdfa5c9ebd382c82c07ac68cac8b3f088aeaa083caa132e20d5a2ab400",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "(shows list, then user can copy session ID)",
+      "`dopemux status`",
+      "Options"
+    ],
+    "entity_type": "Para",
+    "title": "Options",
+    "text": "#### Options\n\n| Option | Short | Description | Example |\n|--------|-------|-------------|---------|\n| `--attention` | `-a` | Show only attention metrics | `dopemux status -a` |\n| `--context` | `-c` | Show only context information | `dopemux status -c` |\n| `--tasks` | `-t` | Show only task progress | `dopemux status -t` |",
+    "created_at": "2025-09-24T09:34:40.896257",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      343,
+      344,
+      345,
+      346,
+      347,
+      348,
+      349,
+      350
+    ],
+    "checksum": "4f2d11792350f071",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "46767e319f2d624c7c2edb5b33134d70094d9eeacb943c744b8129768971a1ae",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "(shows list, then user can copy session ID)",
+      "`dopemux status`",
+      "Examples"
+    ],
+    "entity_type": "Para",
+    "title": "Examples",
+    "text": "#### Examples\n\n```bash",
+    "created_at": "2025-09-24T09:34:40.896265",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      351,
+      352,
+      353
+    ],
+    "checksum": "27659cc185dd4791",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "ce5937699a513837a46deee4f51b6693abd35e4df7b463075ed2bfa2b370ff82",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Show all status information"
+    ],
+    "entity_type": "Para",
+    "title": "Show all status information",
+    "text": "# Show all status information\ndopemux status",
+    "created_at": "2025-09-24T09:34:40.896274",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      354,
+      355,
+      356
+    ],
+    "checksum": "9cb108e55dfb84ac",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "73fb293eb020db0d042010785dbc8c7c36c9b84ca433dd2f6c748c523d5e4720",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Show only attention metrics"
+    ],
+    "entity_type": "Para",
+    "title": "Show only attention metrics",
+    "text": "# Show only attention metrics\ndopemux status --attention",
+    "created_at": "2025-09-24T09:34:40.896282",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      357,
+      358,
+      359
+    ],
+    "checksum": "1c405196be3a478d",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "b1ae159c5dc9878b453e74c051bfdb848430d575112de20b229359af454f86f7",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Show only context information"
+    ],
+    "entity_type": "Para",
+    "title": "Show only context information",
+    "text": "# Show only context information\ndopemux status --context",
+    "created_at": "2025-09-24T09:34:40.896293",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      360,
+      361,
+      362
+    ],
+    "checksum": "3e05f382c336ddbe",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "f9e6df24edc74ea9396b168b18be073345ddced254c8e74d123567063ad0c743",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Show only task progress"
+    ],
+    "entity_type": "Para",
+    "title": "Show only task progress",
+    "text": "# Show only task progress\ndopemux status --tasks\n```",
+    "created_at": "2025-09-24T09:34:40.896302",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      363,
+      364,
+      365,
+      366
+    ],
+    "checksum": "231347b9cc54b812",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "335ef9ae176d80e84120583e02c1fc7c7cc6cc8faa1723dbbaa1e52be689cc97",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Show only task progress",
+      "Full Status Output"
+    ],
+    "entity_type": "Para",
+    "title": "Full Status Output",
+    "text": "#### Full Status Output\n\n```bash\ndopemux status\n```\n\n```\n🧠 Attention Metrics\n┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━┓\n┃ Metric          ┃ Value       ┃ Status    ┃\n┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━┩\n│ Current State   │ focused     │ 🎯        │\n│ Session Duration│ 23.5 min    │ ⏱️         │\n│ Focus Score     │ 87.2%       │ 🎯        │\n│ Context Switches│ 3           │ 🔄        │\n│ Break Count     │ 1           │ ☕        │\n│ Keystroke Rate  │ 52/min      │ ⌨️         │\n│ Error Rate      │ 3.1%        │ 🐛        │\n└─────────────────┴─────────────┴───────────┘\n\n📍 Context Information\n┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n┃ Item            ┃ Value                                            ┃\n┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩\n│ Current Goal    │ Implement JWT token generation                   │\n│ Open Files      │ 5                                                │\n│ Last Save       │ 2 minutes ago                                    │\n│ Git Branch      │ feature/authentication                           │\n│ Project         │ /Users/dev/myproject                             │\n│ Session ID      │ f7a3b2c8                                         │\n└─────────────────┴──────────────────────────────────────────────────┘\n\n📋 Task Progress\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━┓\n┃ Task                                          ┃ Status  ┃ Progress  ┃\n┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━┩\n│ Set up user model with password hashing      │ ✅      │ 100%      │\n│ Create login endpoint with validation        │ 🔄      │ 75%       │\n│ Add JWT token generation                     │ ⏳      │ 0%        │\n│ Write authentication tests                   │ ⏳      │ 0%        │\n└───────────────────────────────────────────────┴─────────┴───────────┘\n```",
+    "created_at": "2025-09-24T09:34:40.896350",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      367,
+      368,
+      369,
+      370,
+      371,
+      372,
+      373,
+      374,
+      375,
+      376,
+      377,
+      378,
+      379,
+      380,
+      381,
+      382,
+      383,
+      384,
+      385,
+      386,
+      387,
+      388,
+      389,
+      390,
+      391,
+      392,
+      393,
+      394,
+      395,
+      396,
+      397,
+      398,
+      399,
+      400,
+      401,
+      402,
+      403,
+      404,
+      405,
+      406,
+      407,
+      408,
+      409
+    ],
+    "checksum": "e7204319f2397493",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "136c8b0d950b48b7e069b8f529d4fa5c13a62f270fe3f365a44e3fe6e57f5255",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Show only task progress",
+      "Attention State Indicators"
+    ],
+    "entity_type": "Para",
+    "title": "Attention State Indicators",
+    "text": "#### Attention State Indicators\n\n| State | Emoji | Description | Recommendation |\n|-------|-------|-------------|----------------|\n| 🎯 focused | Green | High productivity, low errors | Continue current approach |\n| 😊 normal | Blue | Balanced work pattern | Standard development pace |\n| 🌪️ scattered | Yellow | Frequent context switches | Take break or focus on single task |\n| 🔥 hyperfocus | Orange | Very high intensity | Monitor for burnout, suggest breaks |\n| 😵‍💫 distracted | Red | Low focus, high errors | Take break, try grounding exercise |",
+    "created_at": "2025-09-24T09:34:40.896370",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      410,
+      411,
+      412,
+      413,
+      414,
+      415,
+      416,
+      417,
+      418,
+      419
+    ],
+    "checksum": "d253925da32ecdd6",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "dc81cbfc5b978b527c4fcdc90ca9123ef879e43f3df268b0689a4be604574983",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Show only task progress",
+      "Context Switch Thresholds"
+    ],
+    "entity_type": "Para",
+    "title": "Context Switch Thresholds",
+    "text": "#### Context Switch Thresholds\n\n| Count | Status | ADHD Impact |\n|-------|--------|-------------|\n| 0-5 | 🟢 Stable | Focused work session |\n| 6-15 | 🟡 Moderate | Normal development pattern |\n| 16-30 | 🟠 High | Possible scattered attention |\n| 31+ | 🔴 Excessive | Likely distraction/overwhelm |\n\n---",
+    "created_at": "2025-09-24T09:34:40.896385",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      420,
+      421,
+      422,
+      423,
+      424,
+      425,
+      426,
+      427,
+      428,
+      429,
+      430
+    ],
+    "checksum": "5b27775f4b6be634",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "785725629f9c577cae55cc8c6f6b9e75ee5b5e727c1128429c96db085121e47d",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Show only task progress",
+      "`dopemux task`"
+    ],
+    "entity_type": "Para",
+    "title": "`dopemux task`",
+    "text": "### `dopemux task`\n\n**ADHD-friendly task management with 25-minute chunks**",
+    "created_at": "2025-09-24T09:34:40.896395",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      431,
+      432,
+      433,
+      434
+    ],
+    "checksum": "a9cb3ecc69b8e133",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "5bb03bf79f550a8d4f4ac87a1b7e7a01f2a5a2b718a156fc407380da0eee1e96",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Show only task progress",
+      "`dopemux task`",
+      "Usage"
+    ],
+    "entity_type": "Para",
+    "title": "Usage",
+    "text": "#### Usage\n```bash\ndopemux task [DESCRIPTION] [OPTIONS]\ndopemux task [OPTIONS]  # When using --list\n```",
+    "created_at": "2025-09-24T09:34:40.896406",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      435,
+      436,
+      437,
+      438,
+      439,
+      440
+    ],
+    "checksum": "5ddad447ec9c6575",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "bf931416b08a69aaff87e1e0e21fe5ede902800c993cadd741d14c5fa5452632",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Show only task progress",
+      "`dopemux task`",
+      "Arguments"
+    ],
+    "entity_type": "Para",
+    "title": "Arguments",
+    "text": "#### Arguments\n- `DESCRIPTION` - Task description (required unless using `--list`)",
+    "created_at": "2025-09-24T09:34:40.896415",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      441,
+      442,
+      443
+    ],
+    "checksum": "a6c1b16a294fc746",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "7d977b497151560ee2058388ebfe756e5459ff423b047cd8c80d4b890a92fce1",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Show only task progress",
+      "`dopemux task`",
+      "Options"
+    ],
+    "entity_type": "Para",
+    "title": "Options",
+    "text": "#### Options\n\n| Option | Short | Description | Default | Example |\n|--------|-------|-------------|---------|---------|\n| `--duration` | `-d` | Task duration in minutes | `25` | `dopemux task \"Fix bug\" -d 45` |\n| `--priority` | `-p` | Priority level | `medium` | `dopemux task \"Security fix\" -p high` |\n| `--list` | `-l` | List current tasks | | `dopemux task --list` |",
+    "created_at": "2025-09-24T09:34:40.896428",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      444,
+      445,
+      446,
+      447,
+      448,
+      449,
+      450,
+      451
+    ],
+    "checksum": "94f1225b99618177",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "e830628977ef19053339cc8118af189f6c55b1c1a8894f43bcb6aca1f0eab232",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Show only task progress",
+      "`dopemux task`",
+      "Priority Levels"
+    ],
+    "entity_type": "Para",
+    "title": "Priority Levels",
+    "text": "#### Priority Levels\n\n| Priority | Description | Visual Indicator | Recommended Duration |\n|----------|-------------|------------------|---------------------|\n| `high` | Critical/blocking work | 🔴 | 25-45 minutes |\n| `medium` | Standard development | 🟡 | 25 minutes |\n| `low` | Nice-to-have features | 🟢 | 15-25 minutes |",
+    "created_at": "2025-09-24T09:34:40.896443",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      452,
+      453,
+      454,
+      455,
+      456,
+      457,
+      458,
+      459
+    ],
+    "checksum": "170601693ae3431d",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "b2de759a108c9cbba95c20a27aff81d0fd8369d5da1e304642b5e13b6c32bd19",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Show only task progress",
+      "`dopemux task`",
+      "Examples"
+    ],
+    "entity_type": "Para",
+    "title": "Examples",
+    "text": "#### Examples\n\n```bash",
+    "created_at": "2025-09-24T09:34:40.896451",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      460,
+      461,
+      462
+    ],
+    "checksum": "27659cc185dd4791",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "b6cab30704a68d50e962d6ccf7c15973ea7a5136fa186d226303aa26c2fac7f8",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Add new task with default settings (25 min, medium priority)"
+    ],
+    "entity_type": "Para",
+    "title": "Add new task with default settings (25 min, medium priority)",
+    "text": "# Add new task with default settings (25 min, medium priority)\ndopemux task \"Fix authentication bug\"",
+    "created_at": "2025-09-24T09:34:40.896461",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      463,
+      464,
+      465
+    ],
+    "checksum": "3b265cf17e2b5964",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "f8931877369d92dab08b2c3bfb407d66f1a4a2f19592010184c0a16c6a1f00e4",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Add high-priority task with custom duration"
+    ],
+    "entity_type": "Para",
+    "title": "Add high-priority task with custom duration",
+    "text": "# Add high-priority task with custom duration\ndopemux task \"Security vulnerability patch\" --priority high --duration 45",
+    "created_at": "2025-09-24T09:34:40.896470",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      466,
+      467,
+      468
+    ],
+    "checksum": "ed95a90bfa386e20",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "289f6195dd10f2c45cf7f3142ba6e4b64dd87912888037e55220fd37a74c9fa1",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Add low-priority task"
+    ],
+    "entity_type": "Para",
+    "title": "Add low-priority task",
+    "text": "# Add low-priority task\ndopemux task \"Update documentation\" -p low -d 15",
+    "created_at": "2025-09-24T09:34:40.896479",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      469,
+      470,
+      471
+    ],
+    "checksum": "44cc2b9b7117e306",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "5ebd77e6b201ca1c5fe1e1d6854f1ebc927f2ca70246fd989d9cfce488dde159",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "List all current tasks"
+    ],
+    "entity_type": "Para",
+    "title": "List all current tasks",
+    "text": "# List all current tasks\ndopemux task --list",
+    "created_at": "2025-09-24T09:34:40.896487",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      472,
+      473,
+      474
+    ],
+    "checksum": "b44c0e48b7bbbcc1",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "9e321b634321ea6c514f9dca2fdaeb78592b127fbc80decf3915755b65681c69",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Quick task addition"
+    ],
+    "entity_type": "Para",
+    "title": "Quick task addition",
+    "text": "# Quick task addition\ndopemux task \"Refactor user service\"\n```",
+    "created_at": "2025-09-24T09:34:40.896496",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      475,
+      476,
+      477,
+      478
+    ],
+    "checksum": "f5c154ffba4a77cc",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "2183eb539ce3f2fafba2ccdf9804e718b729fcec95014986598ac16c308c5ff5",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Quick task addition",
+      "Task List Output"
+    ],
+    "entity_type": "Para",
+    "title": "Task List Output",
+    "text": "#### Task List Output\n\n```bash\ndopemux task --list\n```\n\n```\nCurrent Tasks\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━┓\n┃ Task                                          ┃ Priority  ┃ Duration ┃ Status        ┃\n┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━┩\n│ Fix authentication timeout issue             │ 🔴 high   │ 25m      │ 🔄 In Progress│\n│ Add input validation to registration form    │ 🟡 medium │ 25m      │ ⏳ Pending    │\n│ Write unit tests for user service           │ 🟡 medium │ 30m      │ ⏳ Pending    │\n│ Update API documentation                     │ 🟢 low    │ 15m      │ ⏳ Pending    │\n│ Refactor database connection pooling        │ 🟡 medium │ 25m      │ ✅ Complete   │\n└───────────────────────────────────────────────┴───────────┴──────────┴───────────────┘\n\n📊 Progress Summary:\n• 🔄 Active: 1 task\n• ⏳ Pending: 3 tasks\n• ✅ Completed: 1 task\n• ⏱️ Total estimated time: 95 minutes (3h 55min)\n• 🎯 Recommended next: Fix authentication timeout issue (high priority)\n```",
+    "created_at": "2025-09-24T09:34:40.896525",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      479,
+      480,
+      481,
+      482,
+      483,
+      484,
+      485,
+      486,
+      487,
+      488,
+      489,
+      490,
+      491,
+      492,
+      493,
+      494,
+      495,
+      496,
+      497,
+      498,
+      499,
+      500,
+      501,
+      502,
+      503,
+      504
+    ],
+    "checksum": "0daa8879124041b8",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "2ac0c9ecd7472869844f2d8bb26a7692b896ecdd60f9b1f3b8468a788865af9e",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Quick task addition",
+      "Task Addition Output"
+    ],
+    "entity_type": "Para",
+    "title": "Task Addition Output",
+    "text": "#### Task Addition Output\n\n```bash\ndopemux task \"Implement password reset functionality\" --priority medium --duration 30\n```\n\n```\n✅ Task added: Implement password reset functionality\n\n🆔 ID: t7a3b2c8\n⏱️ Duration: 30 minutes\n🎯 Priority: medium\n📅 Status: pending\n\n💡 Tip: This task will be automatically broken into focused segments\n🚀 Use 'dopemux start' to begin working with task context\n```",
+    "created_at": "2025-09-24T09:34:40.896544",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      505,
+      506,
+      507,
+      508,
+      509,
+      510,
+      511,
+      512,
+      513,
+      514,
+      515,
+      516,
+      517,
+      518,
+      519,
+      520,
+      521,
+      522
+    ],
+    "checksum": "7567e2f7ba0bea80",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "901ffefa93f58e807cd2fef65194898c1c65d54d24c332e60184de8a08495945",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Quick task addition",
+      "Automatic Task Decomposition"
+    ],
+    "entity_type": "Para",
+    "title": "Automatic Task Decomposition",
+    "text": "#### Automatic Task Decomposition\n\nFor complex tasks (>45 minutes or high complexity), Dopemux automatically suggests breakdown:\n\n```bash\ndopemux task \"Build complete user management system\" --duration 120\n```\n\n```\n🤔 This looks like a complex task! Let me break it down:\n\n📋 Suggested breakdown:\n├── 📝 Task 1: Design user model schema (25 min)\n├── 📝 Task 2: Implement user CRUD operations (25 min)\n├── 📝 Task 3: Add authentication endpoints (25 min)\n├── 📝 Task 4: Create user management UI (25 min)\n└── 📝 Task 5: Write comprehensive tests (20 min)\n\n✅ Accept this breakdown? (Y/n): y\n\n🎉 Created 5 focused tasks totaling 120 minutes\n🎯 Ready to start with: Design user model schema\n```",
+    "created_at": "2025-09-24T09:34:40.896568",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      523,
+      524,
+      525,
+      526,
+      527,
+      528,
+      529,
+      530,
+      531,
+      532,
+      533,
+      534,
+      535,
+      536,
+      537,
+      538,
+      539,
+      540,
+      541,
+      542,
+      543,
+      544,
+      545,
+      546
+    ],
+    "checksum": "94773fc5f8f1cbbe",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "ac67fa926c3fea0f7a93ddcc4c0d3744a6f02cb8d340598dabf7038154df7d17",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Quick task addition",
+      "Task Status Management"
+    ],
+    "entity_type": "Para",
+    "title": "Task Status Management",
+    "text": "#### Task Status Management\n\nTasks automatically update status based on session activity:\n\n- ⏳ **Pending** → 🔄 **In Progress** (when files related to task are opened)\n- 🔄 **In Progress** → ✅ **Complete** (when marked complete or time target met)\n- Any status → 📋 **On Hold** (when blocked or waiting for dependencies)\n\n---",
+    "created_at": "2025-09-24T09:34:40.896585",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      547,
+      548,
+      549,
+      550,
+      551,
+      552,
+      553,
+      554,
+      555,
+      556
+    ],
+    "checksum": "7b6d101ff6619285",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "7de1bb6247ca33af9ba089676cda459f4d3af1d7ed17ab5bd444771700ba789c",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Quick task addition",
+      "`dopemux autoresponder`"
+    ],
+    "entity_type": "Para",
+    "title": "`dopemux autoresponder`",
+    "text": "### `dopemux autoresponder`\n\n**Manage Claude Auto Responder integration for automatic confirmations**\n\nThe autoresponder automatically handles Claude Code confirmation prompts with ADHD-optimized controls and attention-aware features.",
+    "created_at": "2025-09-24T09:34:40.896596",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      557,
+      558,
+      559,
+      560,
+      561,
+      562
+    ],
+    "checksum": "c24580fa06f71c8b",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "f1abed38ad39f443874cc3be9640bd65444dc58cb8a4f4812f24c56e80c38e40",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Quick task addition",
+      "`dopemux autoresponder`",
+      "Usage"
+    ],
+    "entity_type": "Para",
+    "title": "Usage",
+    "text": "#### Usage\n```bash\ndopemux autoresponder COMMAND [OPTIONS]\n```",
+    "created_at": "2025-09-24T09:34:40.896605",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      563,
+      564,
+      565,
+      566,
+      567
+    ],
+    "checksum": "046ef1db501fe1d0",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "6593168414e142bf69aeebb345bb2631efe6970a80917bd8a6a757c0909e273f",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Quick task addition",
+      "`dopemux autoresponder`",
+      "Subcommands"
+    ],
+    "entity_type": "Para",
+    "title": "Subcommands",
+    "text": "#### Subcommands",
+    "created_at": "2025-09-24T09:34:40.896614",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      568,
+      569
+    ],
+    "checksum": "6d12690152710bca",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "1124cfb5f63002a5616d23d1a7861b5b440cfd8cf69b62abd15cb7f0b6aeafdf",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Quick task addition",
+      "`dopemux autoresponder`",
+      "Subcommands",
+      "`setup`"
+    ],
+    "entity_type": "Para",
+    "title": "`setup`",
+    "text": "##### `setup`\n**Download and configure ClaudeAutoResponder tool**\n\n```bash\ndopemux autoresponder setup\n```\n\nSets up the ClaudeAutoResponder repository and dependencies. Only needs to be run once per project.\n\n**Example Output:**\n```\n🔧 Setting up ClaudeAutoResponder...\n✅ ClaudeAutoResponder setup complete\n🚀 Run 'dopemux autoresponder start' to begin\n```",
+    "created_at": "2025-09-24T09:34:40.896633",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      570,
+      571,
+      572,
+      573,
+      574,
+      575,
+      576,
+      577,
+      578,
+      579,
+      580,
+      581,
+      582,
+      583,
+      584,
+      585
+    ],
+    "checksum": "cdcdb1c2b92b9e64",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "a78f136d685943a582e57529c2a4cda28e1965e0423e72e79b24415eaea00cde",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Quick task addition",
+      "`dopemux autoresponder`",
+      "Subcommands",
+      "`start`"
+    ],
+    "entity_type": "Para",
+    "title": "`start`",
+    "text": "##### `start`\n**Start automatic confirmation monitoring**\n\n```bash\ndopemux autoresponder start [OPTIONS]\n```\n\n**Options:**\n\n| Option | Short | Description | Default | Example |\n|--------|-------|-------------|---------|---------|\n| `--terminal-scope` | `-t` | Terminal monitoring scope | `current` | `--terminal-scope all` |\n| `--delay` | `-d` | Response delay in seconds | `0.0` | `--delay 1.5` |\n| `--timeout` | | Auto-stop timeout (minutes) | `30` | `--timeout 60` |\n| `--whitelist` | | Enable tool whitelisting | `true` | `--whitelist` |\n| `--no-whitelist` | | Disable tool whitelisting | | `--no-whitelist` |\n| `--debug` | | Enable debug logging | `false` | `--debug` |\n\n**Terminal Scope Options:**\n- `current` - Monitor only current terminal window\n- `all` - Monitor all terminal windows\n- `project` - Monitor project-related terminals\n\n**Examples:**\n```bash",
+    "created_at": "2025-09-24T09:34:40.896654",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      586,
+      587,
+      588,
+      589,
+      590,
+      591,
+      592,
+      593,
+      594,
+      595,
+      596,
+      597,
+      598,
+      599,
+      600,
+      601,
+      602,
+      603,
+      604,
+      605,
+      606,
+      607,
+      608,
+      609,
+      610
+    ],
+    "checksum": "93baab09705edb18",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "10e5ebb6167514b8cbff1626136f337c2a90fd226bd1d7a49b2f3f960add07a8",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Basic start with default settings"
+    ],
+    "entity_type": "Para",
+    "title": "Basic start with default settings",
+    "text": "# Basic start with default settings\ndopemux autoresponder start",
+    "created_at": "2025-09-24T09:34:40.896663",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      611,
+      612,
+      613
+    ],
+    "checksum": "057c06c522f7bd7a",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "c75c48c4a3fac47e984f1127e6bf1e07838bc5c7d54272133eb8226d68eae49e",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Start with 1-second delay for scattered attention"
+    ],
+    "entity_type": "Para",
+    "title": "Start with 1-second delay for scattered attention",
+    "text": "# Start with 1-second delay for scattered attention\ndopemux autoresponder start --delay 1.0",
+    "created_at": "2025-09-24T09:34:40.896672",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      614,
+      615,
+      616
+    ],
+    "checksum": "d6b6f505ea92d463",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "a9513d669c0923632bda8847ea5712066fbeabd18d16c4eea2d0ce679f02d25e",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Monitor all terminals with debug logging"
+    ],
+    "entity_type": "Para",
+    "title": "Monitor all terminals with debug logging",
+    "text": "# Monitor all terminals with debug logging\ndopemux autoresponder start -t all --debug",
+    "created_at": "2025-09-24T09:34:40.896681",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      617,
+      618,
+      619
+    ],
+    "checksum": "c7ee0503935d8422",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "0cad3377a0cd29005480e4082f823420a99dc0e9633236afd6bcdbf49bbdd0da",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Extended session with 60-minute timeout"
+    ],
+    "entity_type": "Para",
+    "title": "Extended session with 60-minute timeout",
+    "text": "# Extended session with 60-minute timeout\ndopemux autoresponder start --timeout 60\n```\n\n**Sample Output:**\n```\n🚀 Starting auto responder...\n✅ Claude Auto Responder is now active\n🎯 Monitoring for Claude Code confirmation prompts\n📡 Scope: current\n💤 Auto-stop after 30 minutes of inactivity\n```",
+    "created_at": "2025-09-24T09:34:40.896699",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      620,
+      621,
+      622,
+      623,
+      624,
+      625,
+      626,
+      627,
+      628,
+      629,
+      630,
+      631,
+      632
+    ],
+    "checksum": "c6b889b1ffecc41b",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "99c6e83def6c3251aa0ec4b085ba2ed778169c226affa77b1ab3e8b30ae5598a",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Extended session with 60-minute timeout",
+      "`stop`"
+    ],
+    "entity_type": "Para",
+    "title": "`stop`",
+    "text": "##### `stop`\n**Stop automatic confirmation monitoring**\n\n```bash\ndopemux autoresponder stop\n```\n\nStops the autoresponder and displays session statistics.\n\n**Sample Output:**\n```\n⏹️ Stopping auto responder...\n✅ Claude Auto Responder stopped\n\n📊 Session Statistics:\n  ⏱️ Uptime: 45.3 minutes\n  ✅ Responses sent: 23\n  📈 Rate: 0.51 responses/min\n```",
+    "created_at": "2025-09-24T09:34:40.896718",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      633,
+      634,
+      635,
+      636,
+      637,
+      638,
+      639,
+      640,
+      641,
+      642,
+      643,
+      644,
+      645,
+      646,
+      647,
+      648,
+      649,
+      650,
+      651,
+      652
+    ],
+    "checksum": "e17c248fd4231bcf",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "bddb8c4f86df78a1397dd4fb47a337bb2c7fca6e6984a5a5f640da39c5be9d0b",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Extended session with 60-minute timeout",
+      "`status`"
+    ],
+    "entity_type": "Para",
+    "title": "`status`",
+    "text": "##### `status`\n**Show current autoresponder status and metrics**\n\n```bash\ndopemux autoresponder status\n```\n\n**Sample Output:**\n```\n🤖 Claude Auto Responder Status\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n┃ Property              │ Value                                                           ┃\n┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩\n│ Status                │ 🟢 Running                                                     │\n│ Running               │ Yes                                                             │\n│ Uptime                │ 15.2 minutes                                                   │\n│ Responses Sent        │ 8                                                               │\n│ Response Rate         │ 0.53/min                                                       │\n│ Attention State       │ focused                                                         │\n│ Last Response         │ 2024-01-15T14:30:45                                           │\n└───────────────────────┴─────────────────────────────────────────────────────────────────┘\n\n⚙️ Configuration\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n┃ Setting               │ Value                                                           ┃\n┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩\n│ Enabled               │ Yes                                                             │\n│ Terminal Scope        │ current                                                         │\n│ Response Delay        │ 0.0s                                                            │\n│ Timeout               │ 30 minutes                                                      │\n│ Whitelist Tools       │ Yes                                                             │\n│ Debug Mode            │ No                                                              │\n└───────────────────────┴─────────────────────────────────────────────────────────────────┘\n```",
+    "created_at": "2025-09-24T09:34:40.896760",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      653,
+      654,
+      655,
+      656,
+      657,
+      658,
+      659,
+      660,
+      661,
+      662,
+      663,
+      664,
+      665,
+      666,
+      667,
+      668,
+      669,
+      670,
+      671,
+      672,
+      673,
+      674,
+      675,
+      676,
+      677,
+      678,
+      679,
+      680,
+      681,
+      682,
+      683,
+      684,
+      685,
+      686,
+      687
+    ],
+    "checksum": "890b23627e7429b9",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "c73a39e9e77b72226115c34c1a7ced3556a9ee9e6d69f5b70b5895c8a38ee177",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Extended session with 60-minute timeout",
+      "`config`"
+    ],
+    "entity_type": "Para",
+    "title": "`config`",
+    "text": "##### `config`\n**Configure autoresponder settings**\n\n```bash\ndopemux autoresponder config [OPTIONS]\n```\n\n**Options:**\n\n| Option | Description | Values | Example |\n|--------|-------------|--------|---------|\n| `--enabled` | Enable autoresponder | | `--enabled` |\n| `--disabled` | Disable autoresponder | | `--disabled` |\n| `--terminal-scope` | Set monitoring scope | `current`, `all`, `project` | `--terminal-scope all` |\n| `--delay` | Set response delay | `0.0` to `10.0` seconds | `--delay 2.0` |\n| `--timeout` | Set timeout duration | Minutes | `--timeout 45` |\n| `--whitelist` | Enable tool whitelisting | | `--whitelist` |\n| `--no-whitelist` | Disable tool whitelisting | | `--no-whitelist` |\n| `--debug` | Enable debug mode | | `--debug` |\n| `--no-debug` | Disable debug mode | | `--no-debug` |\n\n**Examples:**\n```bash",
+    "created_at": "2025-09-24T09:34:40.896780",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      688,
+      689,
+      690,
+      691,
+      692,
+      693,
+      694,
+      695,
+      696,
+      697,
+      698,
+      699,
+      700,
+      701,
+      702,
+      703,
+      704,
+      705,
+      706,
+      707,
+      708,
+      709,
+      710
+    ],
+    "checksum": "80be416d743c8b6c",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "c7d915a3e77fdd787b039bf773df4e31b9d25ff68570a692e549cc6412bae6c2",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Show current configuration"
+    ],
+    "entity_type": "Para",
+    "title": "Show current configuration",
+    "text": "# Show current configuration\ndopemux autoresponder config",
+    "created_at": "2025-09-24T09:34:40.896789",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      711,
+      712,
+      713
+    ],
+    "checksum": "48f599531d750421",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "d91cf681b1c88675af9cab916d8536f8fa1076cbc6d3d4e16c243ac378ee095c",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Enable with specific settings"
+    ],
+    "entity_type": "Para",
+    "title": "Enable with specific settings",
+    "text": "# Enable with specific settings\ndopemux autoresponder config --enabled --delay 1.0 --terminal-scope all",
+    "created_at": "2025-09-24T09:34:40.896838",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      714,
+      715,
+      716
+    ],
+    "checksum": "565ce9691a8659f5",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "d63d646bbeea5cfb329a0595730e15f3fbfba2b67cb004121b26c616763ba0d1",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Configure for hyperfocus sessions (no delay, extended timeout)"
+    ],
+    "entity_type": "Para",
+    "title": "Configure for hyperfocus sessions (no delay, extended timeout)",
+    "text": "# Configure for hyperfocus sessions (no delay, extended timeout)\ndopemux autoresponder config --delay 0.0 --timeout 90",
+    "created_at": "2025-09-24T09:34:40.896847",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      717,
+      718,
+      719
+    ],
+    "checksum": "9a7a34085e0ec3f3",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "bc7fb8b90c107e6a2de1b63917501cd289d68b0aefa01d4df40f68ad1801cbd1",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Configure for scattered attention (with delays)"
+    ],
+    "entity_type": "Para",
+    "title": "Configure for scattered attention (with delays)",
+    "text": "# Configure for scattered attention (with delays)\ndopemux autoresponder config --delay 2.0 --timeout 20\n```\n\n**Sample Configuration Update:**\n```\n✅ Configuration updated\n  enabled: True\n  delay: 1.0\n  terminal_scope: all\n🔄 Restarting auto responder with new settings...\n```",
+    "created_at": "2025-09-24T09:34:40.896865",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      720,
+      721,
+      722,
+      723,
+      724,
+      725,
+      726,
+      727,
+      728,
+      729,
+      730,
+      731,
+      732
+    ],
+    "checksum": "43152a32641d0339",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "3589bfa22c2005e7eda51cc018f6542d9a5992ee39c489618e2e2ab8d278f11c",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Configure for scattered attention (with delays)",
+      "ADHD-Optimized Usage Patterns"
+    ],
+    "entity_type": "Para",
+    "title": "ADHD-Optimized Usage Patterns",
+    "text": "#### ADHD-Optimized Usage Patterns\n\n**For Different Attention States:**\n\n**🎯 Hyperfocus Sessions:**\n```bash",
+    "created_at": "2025-09-24T09:34:40.896877",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      733,
+      734,
+      735,
+      736,
+      737,
+      738
+    ],
+    "checksum": "dc4e9f382224f31b",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "cad1da294f87a1ddf2f4e03ba736b05a88adedf85fc86ae0ef6553925c6ec336",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "No delays, extended timeout for deep work"
+    ],
+    "entity_type": "Para",
+    "title": "No delays, extended timeout for deep work",
+    "text": "# No delays, extended timeout for deep work\ndopemux autoresponder config --delay 0.0 --timeout 120\ndopemux autoresponder start\n```\n\n**🌪️ Scattered Attention:**\n```bash",
+    "created_at": "2025-09-24T09:34:40.896889",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      739,
+      740,
+      741,
+      742,
+      743,
+      744,
+      745
+    ],
+    "checksum": "570a9901317bd6dc",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "b4337b0ad29861df67086fad869f806df0ba4eca277c946c535975d7bad47911",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Gentle delays to reduce overwhelm"
+    ],
+    "entity_type": "Para",
+    "title": "Gentle delays to reduce overwhelm",
+    "text": "# Gentle delays to reduce overwhelm\ndopemux autoresponder config --delay 1.5 --timeout 20\ndopemux autoresponder start\n```\n\n**⚡ Context Switching:**\n```bash",
+    "created_at": "2025-09-24T09:34:40.896901",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      746,
+      747,
+      748,
+      749,
+      750,
+      751,
+      752
+    ],
+    "checksum": "6b25ad08b9f6cb06",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "35f7fe0002c81c3afd0ae59488ba8a2f0d1d248a81b72f67749a1aedd7c60cc1",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Project-specific scope to avoid interference"
+    ],
+    "entity_type": "Para",
+    "title": "Project-specific scope to avoid interference",
+    "text": "# Project-specific scope to avoid interference\ndopemux autoresponder config --terminal-scope project\ndopemux autoresponder start\n```\n\n**🔧 Development Setup:**\n```bash",
+    "created_at": "2025-09-24T09:34:40.896912",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      753,
+      754,
+      755,
+      756,
+      757,
+      758,
+      759
+    ],
+    "checksum": "a82446646620ad37",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "7693f198bf3e09fdc765793769bcd885ff608745b65b1a16b8f1a953f9838c56",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Safe defaults for coding sessions"
+    ],
+    "entity_type": "Para",
+    "title": "Safe defaults for coding sessions",
+    "text": "# Safe defaults for coding sessions\ndopemux autoresponder config --enabled --whitelist --timeout 45\ndopemux autoresponder start\n```",
+    "created_at": "2025-09-24T09:34:40.896922",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      760,
+      761,
+      762,
+      763,
+      764
+    ],
+    "checksum": "a03a349bd657151d",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "e1213094cf5dfff1a1092cf1a8c693811fdc1b4bbc0919e799c1216de1add1bd",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Safe defaults for coding sessions",
+      "Integration with Other Commands"
+    ],
+    "entity_type": "Para",
+    "title": "Integration with Other Commands",
+    "text": "#### Integration with Other Commands\n\nThe autoresponder integrates seamlessly with other Dopemux commands:\n\n```bash",
+    "created_at": "2025-09-24T09:34:40.896932",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      765,
+      766,
+      767,
+      768,
+      769
+    ],
+    "checksum": "fc3a2241967bcbd6",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "ae5ab5f6869e26f26351956973208893d812d2a5267612144dd7bbb1bb48b9c8",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Start complete development session"
+    ],
+    "entity_type": "Para",
+    "title": "Start complete development session",
+    "text": "# Start complete development session\ndopemux start --with-autoresponder",
+    "created_at": "2025-09-24T09:34:40.896940",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      770,
+      771,
+      772
+    ],
+    "checksum": "3ea30d9906cec476",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "f1eff1d0788ebef6e4959c9a79c67dd50a051a5cb01aebd1b00614df07a1a66c",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Check status including autoresponder"
+    ],
+    "entity_type": "Para",
+    "title": "Check status including autoresponder",
+    "text": "# Check status including autoresponder\ndopemux status  # Shows autoresponder in overview",
+    "created_at": "2025-09-24T09:34:40.896949",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      773,
+      774,
+      775
+    ],
+    "checksum": "de45117c9a97e5c5",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "93f09022683a088e7ca0ebff89f4e84b332ecee02d1c77eb8553af184118390c",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context with autoresponder metrics"
+    ],
+    "entity_type": "Para",
+    "title": "Save context with autoresponder metrics",
+    "text": "# Save context with autoresponder metrics\ndopemux save -m \"Completed with auto-responses: 15\"\n```\n\n---",
+    "created_at": "2025-09-24T09:34:40.896960",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      776,
+      777,
+      778,
+      779,
+      780,
+      781
+    ],
+    "checksum": "e8f73922cc8c679e",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "026a173799a16bcf04397110e989e77bfd591c74c606c6cc257b3da8b8029ab3",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context with autoresponder metrics",
+      "Error Handling"
+    ],
+    "entity_type": "Para",
+    "title": "Error Handling",
+    "text": "## Error Handling",
+    "created_at": "2025-09-24T09:34:40.896969",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      782,
+      783
+    ],
+    "checksum": "660ef21289a347f4",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "d1d898f1cc1aefbf58b3ce2425806bc78331b05c8dfe0d05b84d2aa1d0434297",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context with autoresponder metrics",
+      "Error Handling",
+      "Common Errors and Solutions"
+    ],
+    "entity_type": "Para",
+    "title": "Common Errors and Solutions",
+    "text": "### Common Errors and Solutions",
+    "created_at": "2025-09-24T09:34:40.896977",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      784,
+      785
+    ],
+    "checksum": "165d57c764af94ce",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "11264d9a346d1a8693e15e38fd65fa6cf87511c6925849f90a94ac482105d1b8",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context with autoresponder metrics",
+      "Error Handling",
+      "Common Errors and Solutions",
+      "Project Not Initialized"
+    ],
+    "entity_type": "Para",
+    "title": "Project Not Initialized",
+    "text": "#### Project Not Initialized\n```bash\nError: No Dopemux project found in current directory\n\nSolution:\n• Run 'dopemux init' to initialize current directory\n• Navigate to existing Dopemux project\n• Use 'dopemux init /path/to/project' for specific directory\n```",
+    "created_at": "2025-09-24T09:34:40.896992",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      786,
+      787,
+      788,
+      789,
+      790,
+      791,
+      792,
+      793,
+      794,
+      795
+    ],
+    "checksum": "3714ce04d8625538",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "f0f50a0d321f3cec6b598c3aca22ff2d87dbd040001b77cf085a2321ebf5d0fe",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context with autoresponder metrics",
+      "Error Handling",
+      "Common Errors and Solutions",
+      "Claude Code Not Found"
+    ],
+    "entity_type": "Para",
+    "title": "Claude Code Not Found",
+    "text": "#### Claude Code Not Found\n```bash\nError: Claude Code not found. Please install Claude Code first.\n\nSolution:\n• Install Claude Code from https://claude.ai/code\n• Ensure claude-code is in your PATH\n• Verify installation: claude-code --version\n```",
+    "created_at": "2025-09-24T09:34:40.897006",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      796,
+      797,
+      798,
+      799,
+      800,
+      801,
+      802,
+      803,
+      804,
+      805
+    ],
+    "checksum": "79d4e6c8297b12e9",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "3115a597eb0b3683e02da0db80b1f2e10b9c5fc3007a3329e74dc6ca610d04b0",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context with autoresponder metrics",
+      "Error Handling",
+      "Common Errors and Solutions",
+      "Session Restore Failed"
+    ],
+    "entity_type": "Para",
+    "title": "Session Restore Failed",
+    "text": "#### Session Restore Failed\n```bash\nError: Session f7a3b2c8 not found\n\nSolution:\n• Use 'dopemux restore --list' to see available sessions\n• Check session ID spelling (case-sensitive)\n• Try 'dopemux restore' to restore latest session\n```",
+    "created_at": "2025-09-24T09:34:40.897020",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      806,
+      807,
+      808,
+      809,
+      810,
+      811,
+      812,
+      813,
+      814,
+      815
+    ],
+    "checksum": "fe3820bd417c1fc5",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "d3001a0fcfed5573cb69bfd610702ae56dac6a0ea139cd12dda0060415454c6c",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context with autoresponder metrics",
+      "Error Handling",
+      "Common Errors and Solutions",
+      "Database Locked"
+    ],
+    "entity_type": "Para",
+    "title": "Database Locked",
+    "text": "#### Database Locked\n```bash\nError: Context database is locked by another process\n\nSolution:\n• Close other Dopemux instances\n• Wait 30 seconds and try again\n• Check for zombie processes: ps aux | grep dopemux\n```",
+    "created_at": "2025-09-24T09:34:40.897033",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      816,
+      817,
+      818,
+      819,
+      820,
+      821,
+      822,
+      823,
+      824,
+      825
+    ],
+    "checksum": "4133f029efec7fc6",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "12d1238f4467f03487c5f2b7b554a977c8ebe2a93a7ac6972368b322201bd809",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context with autoresponder metrics",
+      "Error Handling",
+      "Common Errors and Solutions",
+      "Permission Denied"
+    ],
+    "entity_type": "Para",
+    "title": "Permission Denied",
+    "text": "#### Permission Denied\n```bash\nError: Permission denied writing to .dopemux/context.db\n\nSolution:\n• Check directory permissions: ls -la .dopemux/\n• Ensure you own the project directory\n• Try: chmod 755 .dopemux/ && chmod 644 .dopemux/*\n```",
+    "created_at": "2025-09-24T09:34:40.897046",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      826,
+      827,
+      828,
+      829,
+      830,
+      831,
+      832,
+      833,
+      834,
+      835
+    ],
+    "checksum": "4f958e68c28fe961",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "7c467bbc107b49eb24e22afc31a3f216b818f475a27571e28de822ddc8d648af",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context with autoresponder metrics",
+      "Error Handling",
+      "Debug Mode"
+    ],
+    "entity_type": "Para",
+    "title": "Debug Mode",
+    "text": "### Debug Mode\n\nEnable debug mode for detailed error information:\n\n```bash\ndopemux --verbose start --debug\n```\n\nDebug output includes:\n- 📊 Performance timing for all operations\n- 🔧 MCP server configuration details\n- 💾 Database query execution times\n- 🧠 Attention classification algorithm details\n- 📁 File system operation logging\n\n---",
+    "created_at": "2025-09-24T09:34:40.897064",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      836,
+      837,
+      838,
+      839,
+      840,
+      841,
+      842,
+      843,
+      844,
+      845,
+      846,
+      847,
+      848,
+      849,
+      850,
+      851,
+      852
+    ],
+    "checksum": "b7c50322a2dbe8fb",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "350a492fb68a8469ef702fe467191a5fcb0a543103fda7b63d11aafc4b677a70",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context with autoresponder metrics",
+      "Environment Variables"
+    ],
+    "entity_type": "Para",
+    "title": "Environment Variables",
+    "text": "## Environment Variables",
+    "created_at": "2025-09-24T09:34:40.897073",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      853,
+      854
+    ],
+    "checksum": "66baf6a5eea36889",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "59a5dc0238fdc612d840ac9e9b9c81165f03e0da2426c3571bcde00cd5a88403",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context with autoresponder metrics",
+      "Environment Variables",
+      "Configuration Override"
+    ],
+    "entity_type": "Para",
+    "title": "Configuration Override",
+    "text": "### Configuration Override\n\n| Variable | Description | Example |\n|----------|-------------|---------|\n| `DOPEMUX_CONFIG` | Override config file location | `export DOPEMUX_CONFIG=/custom/config.yaml` |\n| `DOPEMUX_DEBUG` | Enable debug mode | `export DOPEMUX_DEBUG=1` |\n| `DOPEMUX_CLAUDE_PATH` | Custom Claude Code path | `export DOPEMUX_CLAUDE_PATH=/usr/local/bin/claude-code` |",
+    "created_at": "2025-09-24T09:34:40.897086",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      855,
+      856,
+      857,
+      858,
+      859,
+      860,
+      861,
+      862
+    ],
+    "checksum": "71874df2b3841d7e",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "a760d121668ea3748a94a50c38ab89b04f7a3e52c3afd9bce976e0db2b49699d",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context with autoresponder metrics",
+      "Environment Variables",
+      "ADHD Profile Override"
+    ],
+    "entity_type": "Para",
+    "title": "ADHD Profile Override",
+    "text": "### ADHD Profile Override\n\n| Variable | Description | Example |\n|----------|-------------|---------|\n| `DOPEMUX_FOCUS_DURATION` | Override focus duration | `export DOPEMUX_FOCUS_DURATION=30` |\n| `DOPEMUX_BREAK_INTERVAL` | Override break interval | `export DOPEMUX_BREAK_INTERVAL=10` |\n| `DOPEMUX_AUTO_SAVE_INTERVAL` | Override auto-save interval | `export DOPEMUX_AUTO_SAVE_INTERVAL=15` |",
+    "created_at": "2025-09-24T09:34:40.897098",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      863,
+      864,
+      865,
+      866,
+      867,
+      868,
+      869,
+      870
+    ],
+    "checksum": "dbcdcf83d1a38a10",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "6cb16a8898a4e3e7a05eac095841e91cd49a71a9379a245f654a30705f21c7d7",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context with autoresponder metrics",
+      "Environment Variables",
+      "MCP Server Configuration"
+    ],
+    "entity_type": "Para",
+    "title": "MCP Server Configuration",
+    "text": "### MCP Server Configuration\n\n| Variable | Description | Example |\n|----------|-------------|---------|\n| `DOPEMUX_MCP_CLAUDE_CONTEXT` | claude-context server path | `export DOPEMUX_MCP_CLAUDE_CONTEXT=/path/to/server` |\n| `DOPEMUX_MCP_SEQUENTIAL_THINKING` | mas-sequential-thinking path | `export DOPEMUX_MCP_SEQUENTIAL_THINKING=/path/to/server` |\n\n---",
+    "created_at": "2025-09-24T09:34:40.897110",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      871,
+      872,
+      873,
+      874,
+      875,
+      876,
+      877,
+      878,
+      879
+    ],
+    "checksum": "9bdcb4e4285cb110",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "b43e67e9374f9777d376f855a6cb169041b60852fb248a3e81a4a103b6577d81",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context with autoresponder metrics",
+      "Shell Integration"
+    ],
+    "entity_type": "Para",
+    "title": "Shell Integration",
+    "text": "## Shell Integration",
+    "created_at": "2025-09-24T09:34:40.897118",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      880,
+      881
+    ],
+    "checksum": "8ec0607fbe31f316",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "5a26bff3b5fe590ca934fe15c29d939165fc38e2211c3a417a43b37a7e0bf13c",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context with autoresponder metrics",
+      "Shell Integration",
+      "Bash/Zsh Completion"
+    ],
+    "entity_type": "Para",
+    "title": "Bash/Zsh Completion",
+    "text": "### Bash/Zsh Completion\n\nAdd to your `.bashrc` or `.zshrc`:\n\n```bash",
+    "created_at": "2025-09-24T09:34:40.897127",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      882,
+      883,
+      884,
+      885,
+      886
+    ],
+    "checksum": "a286d094c84942d9",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "6fdbeb77dbed5dc93beeddda7eea474110c9b48eb7524099b6c9a318da53e76d",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Dopemux completion"
+    ],
+    "entity_type": "Para",
+    "title": "Dopemux completion",
+    "text": "# Dopemux completion\neval \"$(_DOPEMUX_COMPLETE=bash_source dopemux)\"  # bash\neval \"$(_DOPEMUX_COMPLETE=zsh_source dopemux)\"   # zsh\n```",
+    "created_at": "2025-09-24T09:34:40.897137",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      887,
+      888,
+      889,
+      890,
+      891
+    ],
+    "checksum": "c395c6c5b63c8803",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "2e23d2d3a64bce4bde3b701d52df9bf401d72065cf7b52f224075beb029da77c",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Dopemux completion",
+      "Aliases and Functions"
+    ],
+    "entity_type": "Para",
+    "title": "Aliases and Functions",
+    "text": "### Aliases and Functions\n\n```bash",
+    "created_at": "2025-09-24T09:34:40.897145",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      892,
+      893,
+      894
+    ],
+    "checksum": "828f2dd6d2142cbc",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "870ec18d184fd62a125950543a333c4a82abe8572ff65c28e9613ee79165cf79",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Quick aliases"
+    ],
+    "entity_type": "Para",
+    "title": "Quick aliases",
+    "text": "# Quick aliases\nalias ds='dopemux status'\nalias dsa='dopemux save'\nalias dre='dopemux restore'\nalias dtl='dopemux task --list'",
+    "created_at": "2025-09-24T09:34:40.897156",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      895,
+      896,
+      897,
+      898,
+      899,
+      900
+    ],
+    "checksum": "a9caf671418e1749",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "e954e877c848ea0de7718980254eb4ec3e4d139104f399d566192a587eabf0e1",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Smart function to save with timestamp message"
+    ],
+    "entity_type": "Para",
+    "title": "Smart function to save with timestamp message",
+    "text": "# Smart function to save with timestamp message\ndsm() {\n    local message=\"${1:-Auto-save $(date '+%H:%M')}\"\n    dopemux save --message \"$message\"\n}",
+    "created_at": "2025-09-24T09:34:40.897166",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      901,
+      902,
+      903,
+      904,
+      905,
+      906
+    ],
+    "checksum": "3beb13c6f097435e",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "1c64002e6bd19cec04112943d3f35427e3ce9391fef7842be52a76e47f2b21a3",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Function to restore specific session by partial ID"
+    ],
+    "entity_type": "Para",
+    "title": "Function to restore specific session by partial ID",
+    "text": "# Function to restore specific session by partial ID\ndrs() {\n    local partial_id=\"$1\"\n    local full_id=$(dopemux restore --list | grep \"$partial_id\" | head -1 | awk '{print $1}')\n    if [[ -n \"$full_id\" ]]; then\n        dopemux restore --session \"$full_id\"\n    else\n        echo \"No session found matching: $partial_id\"\n        dopemux restore --list\n    fi\n}\n```\n\n---",
+    "created_at": "2025-09-24T09:34:40.897181",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      907,
+      908,
+      909,
+      910,
+      911,
+      912,
+      913,
+      914,
+      915,
+      916,
+      917,
+      918,
+      919,
+      920,
+      921
+    ],
+    "checksum": "266dd0ff519cd48b",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "f555f5ab90e1afcd48567b7ea6e489fc2eabc1d58c35ced01de58c81eb9706dc",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Function to restore specific session by partial ID",
+      "Tips and Best Practices"
+    ],
+    "entity_type": "Para",
+    "title": "Tips and Best Practices",
+    "text": "## Tips and Best Practices",
+    "created_at": "2025-09-24T09:34:40.897193",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      922,
+      923
+    ],
+    "checksum": "6686708b6c5c58ac",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "021e6fcbe5839955be43418b4116c2c7f6b536627a1cee51eac3f5af46ae0a01",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Function to restore specific session by partial ID",
+      "Tips and Best Practices",
+      "ADHD-Optimized Workflows"
+    ],
+    "entity_type": "Para",
+    "title": "ADHD-Optimized Workflows",
+    "text": "### ADHD-Optimized Workflows",
+    "created_at": "2025-09-24T09:34:40.897202",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      924,
+      925
+    ],
+    "checksum": "3346caa6fb54d31b",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "27646d911590ba06ad04eb3b214c7ec337c0aa1ecb187dfafd075dd3d8a0bc85",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Function to restore specific session by partial ID",
+      "Tips and Best Practices",
+      "ADHD-Optimized Workflows",
+      "Daily Start Routine"
+    ],
+    "entity_type": "Para",
+    "title": "Daily Start Routine",
+    "text": "#### Daily Start Routine\n```bash",
+    "created_at": "2025-09-24T09:34:40.897210",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      926,
+      927
+    ],
+    "checksum": "b6ff36b0dcc529ae",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "57603c6de0dcc607a139563d2822fc96d31b46b91fb87588e9404400463ff6cb",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "1. Check status from yesterday"
+    ],
+    "entity_type": "Para",
+    "title": "1. Check status from yesterday",
+    "text": "# 1. Check status from yesterday\ndopemux status",
+    "created_at": "2025-09-24T09:34:40.897221",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      928,
+      929,
+      930
+    ],
+    "checksum": "8d76a60dc3b9d1fb",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "d1bf0aa35ed27302043c5a5d8de038fae7fd76aa95d56bfc24565b3b3e1cc93a",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "2. Restore previous context or start fresh"
+    ],
+    "entity_type": "Para",
+    "title": "2. Restore previous context or start fresh",
+    "text": "# 2. Restore previous context or start fresh\ndopemux start",
+    "created_at": "2025-09-24T09:34:40.897231",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      931,
+      932,
+      933
+    ],
+    "checksum": "d365d492fd67ba2b",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "c9747f3c04f46bd8077233805b2487dbef545fdd8559f736d31a202a03cdc646",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "3. Review planned tasks"
+    ],
+    "entity_type": "Para",
+    "title": "3. Review planned tasks",
+    "text": "# 3. Review planned tasks\ndopemux task --list",
+    "created_at": "2025-09-24T09:34:40.897240",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      934,
+      935,
+      936
+    ],
+    "checksum": "d9f6a21d527aa8d7",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "38d6065c6047b64a76980e1a566a760255c88d4b44a49eed6309126d9b86ff19",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "4. Begin focused work session"
+    ],
+    "entity_type": "Para",
+    "title": "4. Begin focused work session",
+    "text": "# 4. Begin focused work session\n```",
+    "created_at": "2025-09-24T09:34:40.897249",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      937,
+      938,
+      939
+    ],
+    "checksum": "136d489c298d5a99",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "ea53cad5d570a47c388cbe9e393a8a0f4f3f1b37aba10fb7632219f914db64d5",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "4. Begin focused work session",
+      "Hyperfocus Management"
+    ],
+    "entity_type": "Para",
+    "title": "Hyperfocus Management",
+    "text": "#### Hyperfocus Management\n```bash",
+    "created_at": "2025-09-24T09:34:40.897259",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      940,
+      941
+    ],
+    "checksum": "b7a3a19c2eff7bd8",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "681b493eb8cbecdcf4f136dba679bbcdfd9c4ef35588b52ed573ed6428ab53e7",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save context before entering hyperfocus"
+    ],
+    "entity_type": "Para",
+    "title": "Save context before entering hyperfocus",
+    "text": "# Save context before entering hyperfocus\ndopemux save -m \"About to dive deep into complex refactoring\"",
+    "created_at": "2025-09-24T09:34:40.897270",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      942,
+      943,
+      944
+    ],
+    "checksum": "9d9976464d374811",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "4cdc4f4abd9c7dbb8c700d46563af7da87b535f4131b554ad8d481549c5b0237",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Set up task chunking even for hyperfocus"
+    ],
+    "entity_type": "Para",
+    "title": "Set up task chunking even for hyperfocus",
+    "text": "# Set up task chunking even for hyperfocus\ndopemux task \"Complex refactoring session\" -d 90 -p high\n```",
+    "created_at": "2025-09-24T09:34:40.897279",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      945,
+      946,
+      947,
+      948
+    ],
+    "checksum": "e9869dcc09a7afc3",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "4ced507e27b6ef9ca5e49be7a3b050954fbd4993531094bf4a1d3c8872af989d",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Set up task chunking even for hyperfocus",
+      "Context Switch Recovery"
+    ],
+    "entity_type": "Para",
+    "title": "Context Switch Recovery",
+    "text": "#### Context Switch Recovery\n```bash",
+    "created_at": "2025-09-24T09:34:40.897287",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      949,
+      950
+    ],
+    "checksum": "b450a41129f6d6db",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "3280551dcd0e433f8ab8a9d4d48cc6a1cbdb2f1efcac5e6a41f9fb8a0adde0c9",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "When interrupted, quickly save context"
+    ],
+    "entity_type": "Para",
+    "title": "When interrupted, quickly save context",
+    "text": "# When interrupted, quickly save context\ndopemux save -m \"Interrupted for meeting\"",
+    "created_at": "2025-09-24T09:34:40.897296",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      951,
+      952,
+      953
+    ],
+    "checksum": "6e4617746d21d88c",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "d42c3c74f9c1f6ec344331f2a04efc0b388ff73243cafbf75087c20f467724dd",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "After interruption, restore and check status"
+    ],
+    "entity_type": "Para",
+    "title": "After interruption, restore and check status",
+    "text": "# After interruption, restore and check status\ndopemux restore\ndopemux status --attention\n```",
+    "created_at": "2025-09-24T09:34:40.897305",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      954,
+      955,
+      956,
+      957,
+      958
+    ],
+    "checksum": "f1c1976625e95be8",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "18a17f3d9834452bfc031e152e5afa4edabe384877d373204292c65fc212c263",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "After interruption, restore and check status",
+      "End of Day Routine"
+    ],
+    "entity_type": "Para",
+    "title": "End of Day Routine",
+    "text": "#### End of Day Routine\n```bash",
+    "created_at": "2025-09-24T09:34:40.897314",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      959,
+      960
+    ],
+    "checksum": "dbb750d10821fa4c",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "e545dfc89784029ad997dc861f8952d62e9d82b828fde384d7551afc0a5cc467",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Save final context"
+    ],
+    "entity_type": "Para",
+    "title": "Save final context",
+    "text": "# Save final context\ndopemux save -m \"End of day - good stopping point\"",
+    "created_at": "2025-09-24T09:34:40.897323",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      961,
+      962,
+      963
+    ],
+    "checksum": "1bc7ed41ddf6da54",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "1782c2cd5c5d8443e48462de46aed917aebf7c1597b1b688db2ea5ab68274a1b",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Review accomplishments"
+    ],
+    "entity_type": "Para",
+    "title": "Review accomplishments",
+    "text": "# Review accomplishments\ndopemux task --list\ndopemux status\n```",
+    "created_at": "2025-09-24T09:34:40.897333",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      964,
+      965,
+      966,
+      967,
+      968
+    ],
+    "checksum": "4455841cb6e0b5f1",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "fd8c6a97a2ce02a5842e7f3bcb6350543d3775c313b4a0bb55099c5f34499d2a",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Review accomplishments",
+      "Performance Tips"
+    ],
+    "entity_type": "Para",
+    "title": "Performance Tips",
+    "text": "### Performance Tips",
+    "created_at": "2025-09-24T09:34:40.897341",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      969,
+      970
+    ],
+    "checksum": "1a239a278b78b1cc",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "fd43adcf53b9ed46ae9129801b144b6975a57313946d42aa8c3df3771a204065",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Review accomplishments",
+      "Performance Tips",
+      "Faster Context Operations"
+    ],
+    "entity_type": "Para",
+    "title": "Faster Context Operations",
+    "text": "#### Faster Context Operations\n```bash",
+    "created_at": "2025-09-24T09:34:40.897349",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      971,
+      972
+    ],
+    "checksum": "601ad2506217d01a",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "83c5c025b35c5d726895337328b1bc7ef61b5c8926b4b5abb279b9d3d2559615",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Use partial session IDs (first 6-8 characters)"
+    ],
+    "entity_type": "Para",
+    "title": "Use partial session IDs (first 6-8 characters)",
+    "text": "# Use partial session IDs (first 6-8 characters)\ndopemux restore -s f7a3b2",
+    "created_at": "2025-09-24T09:34:40.897358",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      973,
+      974,
+      975
+    ],
+    "checksum": "cca8cfc302cba62b",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "146601fab311c154259b74c391fef22cad601e64879aaa620f9c38885bac9aad",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Background saves for large projects"
+    ],
+    "entity_type": "Para",
+    "title": "Background saves for large projects",
+    "text": "# Background saves for large projects\ndopemux save --force &\n```",
+    "created_at": "2025-09-24T09:34:40.897367",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      976,
+      977,
+      978,
+      979
+    ],
+    "checksum": "81b4d4e3865d1dd9",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "8e144a8424bbb65f6d7c88c5e879df2d42973e9baa4775fb9810a83dbe97f8f6",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Background saves for large projects",
+      "Reduce Cognitive Load"
+    ],
+    "entity_type": "Para",
+    "title": "Reduce Cognitive Load",
+    "text": "#### Reduce Cognitive Load\n```bash",
+    "created_at": "2025-09-24T09:34:40.897375",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      980,
+      981
+    ],
+    "checksum": "49f0bb14d244cba1",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "5f834b194c5017d0ac1edce053f03cb65061200447102ac99f03a9a5037c0785",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Use focused status view when overwhelmed"
+    ],
+    "entity_type": "Para",
+    "title": "Use focused status view when overwhelmed",
+    "text": "# Use focused status view when overwhelmed\ndopemux status --attention",
+    "created_at": "2025-09-24T09:34:40.897385",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      982,
+      983,
+      984
+    ],
+    "checksum": "c9cc0f88983fc33b",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  },
+  {
+    "unit_id": "609ecd33bdc7cdb6734b89dccce4472be000d7007bad712c4e763edfc4248ab4",
+    "doc_uri": "/Users/hue/code/dopemux-mvp/docs/CLI_REFERENCE.md",
+    "doc_type": "markdown",
+    "section_path": [
+      "Simple task view when scattered"
+    ],
+    "entity_type": "Para",
+    "title": "Simple task view when scattered",
+    "text": "# Simple task view when scattered\ndopemux task --list | head -5\n```\n\n---\n\n**📚 CLI Reference Summary:**\n\nThe Dopemux CLI provides 5 core commands designed for ADHD developers:\n- ✅ `init` - Project setup with ADHD-optimized templates\n- ✅ `start` - Context restoration and Claude Code launch\n- ✅ `save` - Manual context preservation with notes\n- ✅ `restore` - Session navigation and restoration\n- ✅ `status` - Real-time ADHD metrics and progress\n- ✅ `task` - 25-minute chunk task management\n\n**All commands feature gentle UX, clear visual feedback, and <500ms performance for ADHD needs. 🧠💚**",
+    "created_at": "2025-09-24T09:34:40.897406",
+    "effective_date": null,
+    "status": null,
+    "related_ids": [],
+    "source_lines": [
+      985,
+      986,
+      987,
+      988,
+      989,
+      990,
+      991,
+      992,
+      993,
+      994,
+      995,
+      996,
+      997,
+      998,
+      999,
+      1000,
+      1001
+    ],
+    "checksum": "b99bdd3143639891",
+    "glossary_expansions": [],
+    "tags": [
+      "markdown",
+      "processed"
+    ]
+  }
+]
