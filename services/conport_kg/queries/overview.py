@@ -137,16 +137,11 @@ class OverviewQueries:
         else:
             return self._execute_cypher_fallback(cypher)
 
-    def get_recent_decisions(self, workspace_id: str, limit: int = 3) -> List[DecisionCard]:
+    def get_recent_decisions(self, limit: int = 3) -> List[DecisionCard]:
         """
         Get most recent decisions (Top-3 pattern)
 
         ADHD Optimization: Limits to 3 for quick scanning
-        Security: Workspace-scoped queries
-
-        Args:
-            workspace_id: Workspace to query (multi-tenant isolation)
-            limit: Maximum results (default 3)
 
         Returns: List[DecisionCard] with typed data
         """
@@ -156,7 +151,6 @@ class OverviewQueries:
         cypher = f"""
             SELECT * FROM cypher('conport_knowledge', $$
                 MATCH (d:Decision)
-                WHERE d.workspace_id = '{workspace_id}'
                 RETURN d.id, d.summary, d.timestamp
                 ORDER BY d.timestamp DESC
                 LIMIT {limit}
@@ -186,7 +180,7 @@ class OverviewQueries:
 
         return decisions
 
-    def get_decision_summary(self, workspace_id: str, decision_id: int) -> DecisionSummary:
+    def get_decision_summary(self, decision_id: int) -> DecisionSummary:
         """
         Get single decision with 1-hop context count
 
@@ -198,9 +192,7 @@ class OverviewQueries:
         cypher = f"""
             SELECT * FROM cypher('conport_knowledge', $$
                 MATCH (d:Decision {{id: {decision_id}}})
-                WHERE d.workspace_id = '{workspace_id}'
                 OPTIONAL MATCH (d)-[r]-(related:Decision)
-                WHERE related.workspace_id = '{workspace_id}'
                 WITH d, COUNT(DISTINCT related) as rel_count, COLLECT(DISTINCT type(r)) as rel_types
                 RETURN d.id, d.summary, d.rationale, rel_count, rel_types
             $$) as (id agtype, summary agtype, rationale agtype, rel_count agtype, rel_types agtype);
@@ -234,7 +226,7 @@ class OverviewQueries:
 
         return DecisionSummary(id=decision_id, summary="Not found", timestamp="")
 
-    def get_root_decisions(self, workspace_id: str, limit: int = 3) -> List[DecisionCard]:
+    def get_root_decisions(self, limit: int = 3) -> List[DecisionCard]:
         """
         Get root decisions (no incoming edges)
 
@@ -249,10 +241,8 @@ class OverviewQueries:
         cypher = f"""
             SELECT * FROM cypher('conport_knowledge', $$
                 MATCH (d:Decision)
-                WHERE d.workspace_id = '{workspace_id}'
-                  AND NOT EXISTS {{
+                WHERE NOT EXISTS {{
                     MATCH (d)<-[]-(other:Decision)
-                    WHERE other.workspace_id = '{workspace_id}'
                 }}
                 RETURN d.id, d.summary, d.timestamp
                 ORDER BY d.id DESC
@@ -281,7 +271,7 @@ class OverviewQueries:
 
         return decisions
 
-    def search_by_tag(self, workspace_id: str, tag: str, limit: int = 3) -> List[DecisionCard]:
+    def search_by_tag(self, tag: str, limit: int = 3) -> List[DecisionCard]:
         """
         Search decisions by tag (Top-3 pattern)
 
@@ -294,15 +284,10 @@ class OverviewQueries:
         limit = self._validate_limit(limit, max_limit=100)
 
         # AGE doesn't support ANY function, use array contains check
-        # Security: Sanitize tag to prevent Cypher injection
-        import re
-        tag_safe = re.sub(r'[^\w\s-]', '', tag)
-
         cypher = f"""
             SELECT * FROM cypher('conport_knowledge', $$
                 MATCH (d:Decision)
-                WHERE d.workspace_id = '{workspace_id}'
-                  AND d.tags @> ['"{tag_safe}"']
+                WHERE d.tags @> ['"{tag}"']
                 RETURN d.id, d.summary, d.timestamp
                 ORDER BY d.timestamp DESC
                 LIMIT {limit}

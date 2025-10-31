@@ -1,248 +1,363 @@
 #!/usr/bin/env python3
 """
 ConPort-KG Test Configuration
-Phase 1 Week 1 Day 3
-
-Pytest fixtures and configuration for all tests.
+Production-quality test fixtures and configuration for comprehensive testing.
 """
 
+import asyncio
 import os
-from datetime import datetime
-from pathlib import Path
-from typing import Dict, Any, Generator
-
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+import pytest_asyncio
+from typing import AsyncGenerator, Generator, Dict, Any
+from unittest.mock import AsyncMock, MagicMock
+import tempfile
+import shutil
 
-# Ensure auth package is importable
-import sys
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Test database configuration
+TEST_DATABASE_URL = os.getenv(
+    "TEST_DATABASE_URL",
+    "postgresql://test_user:test_password@localhost:5433/test_conport_kg"
+)
 
-from auth.models import Base, User, UserWorkspace
-from auth.jwt_utils import JWTManager
-from auth.password_utils import PasswordManager
-from auth.service import UserService
+# Test settings
+TEST_SETTINGS = {
+    "database_url": TEST_DATABASE_URL,
+    "redis_url": os.getenv("TEST_REDIS_URL", "redis://localhost:6380/1"),
+    "secret_key": "test_secret_key_for_jwt_tokens_123456789",
+    "debug": True,
+    "testing": True
+}
 
+@pytest.fixture(scope="session")
+def event_loop():
+    """Create an instance of the default event loop for the test session."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
 
-# ============================================================================
+@pytest.fixture(scope="session")
+def test_settings() -> Dict[str, Any]:
+    """Provide test settings for all tests."""
+    return TEST_SETTINGS.copy()
+
+@pytest.fixture(scope="session")
+def temp_dir() -> Generator[str, None, None]:
+    """Create a temporary directory for the test session."""
+    temp_path = tempfile.mkdtemp(prefix="conport_test_")
+    yield temp_path
+    shutil.rmtree(temp_path, ignore_errors=True)
+
 # Database Fixtures
-# ============================================================================
-
 
 @pytest.fixture(scope="session")
-def test_database_url():
-    """
-    Test database URL.
+def database_container():
+    """PostgreSQL test container using testcontainers."""
+    try:
+        from testcontainers.postgres import PostgresContainer
 
-    Uses in-memory SQLite for fast testing.
-    For integration tests, use PostgreSQL.
-    """
-    return "sqlite:///:memory:"
+        container = PostgresContainer(
+            image="postgres:15-alpine",
+            username="test_user",
+            password="test_password",
+            dbname="test_conport_kg",
+            port=5433
+        )
 
+        container.start()
+        db_url = container.get_connection_url()
 
-@pytest.fixture(scope="session")
-def test_engine(test_database_url):
-    """Test database engine"""
-    engine = create_engine(
-        test_database_url,
-        connect_args={"check_same_thread": False},  # SQLite specific
+        # Override the test database URL
+        os.environ["TEST_DATABASE_URL"] = db_url
+
+        yield container
+
+        container.stop()
+
+    except ImportError:
+        # Fallback when testcontainers is not available
+        pytest.skip("testcontainers not available - install with: pip install testcontainers[postgresql]")
+
+@pytest.fixture(scope="function")
+async def db_session(database_container):
+    """Provide a database session for each test function."""
+    from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+    from sqlalchemy.orm import sessionmaker
+
+    # Create async engine for testing
+    engine = create_async_engine(
+        TEST_DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"),
         echo=False,
+        pool_pre_ping=True
     )
 
-    # Create all tables
-    Base.metadata.create_all(bind=engine)
-
-    yield engine
-
-    # Cleanup
-    Base.metadata.drop_all(bind=engine)
-
-
-@pytest.fixture
-def test_db(test_engine) -> Generator[Session, None, None]:
-    """
-    Test database session.
-
-    Each test gets a fresh session with transaction rollback for isolation.
-    """
-    # Create connection
-    connection = test_engine.connect()
-
-    # Begin transaction
-    transaction = connection.begin()
-
-    # Create session bound to this connection
-    TestSessionLocal = sessionmaker(bind=connection)
-    session = TestSessionLocal()
-
-    yield session
-
-    # Rollback transaction (undoes all changes)
-    session.close()
-    transaction.rollback()
-    connection.close()
-
-
-# ============================================================================
-# Service Fixtures
-# ============================================================================
-
-
-@pytest.fixture
-def jwt_manager(tmp_path):
-    """JWT manager with temporary keys"""
-    key_dir = tmp_path / "keys"
-    key_dir.mkdir()
-
-    return JWTManager(
-        private_key_path=str(key_dir / "test_private.pem"),
-        public_key_path=str(key_dir / "test_public.pem"),
+    # Create session factory
+    async_session_factory = sessionmaker(
+        bind=engine,
+        class_=AsyncSession,
+        expire_on_commit=False
     )
 
+    async with async_session_factory() as session:
+        # Start transaction for test isolation
+        async with session.begin():
+            try:
+                yield session
+                # Rollback changes after test
+                await session.rollback()
+            finally:
+                await session.close()
+
+    await engine.dispose()
+
+@pytest.fixture(scope="function")
+async def clean_db(db_session):
+    """Ensure clean database state for each test."""
+    # Drop all tables and recreate schema
+    from conport_kg.auth.database import Base
+
+    # Drop all tables
+    async with db_session.bind.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+
+    # Run migrations if needed
+    # TODO: Add alembic migration execution here
+
+    yield db_session
+
+# Authentication Fixtures
 
 @pytest.fixture
-def password_manager():
-    """Password manager for testing"""
-    return PasswordManager()
-
-
-@pytest.fixture
-def user_service():
-    """UserService instance for testing"""
-    return UserService()
-
-
-# ============================================================================
-# Data Fixtures
-# ============================================================================
-
-
-@pytest.fixture
-def sample_user_data() -> Dict[str, Any]:
-    """Sample user data for testing"""
+def mock_user_data() -> Dict[str, Any]:
+    """Provide mock user data for testing."""
     return {
+        "id": 1,
         "email": "test@example.com",
         "username": "testuser",
-        "password": "MyUn1que!Test#Pass2025$ConPort",  # Unique password not in HIBP
+        "password_hash": "hashed_password",
+        "is_active": True,
+        "created_at": "2024-01-01T00:00:00Z",
+        "workspaces": [
+            {
+                "workspace_id": "test-workspace",
+                "role": "member",
+                "permissions": ["read", "write"]
+            }
+        ]
     }
 
-
 @pytest.fixture
-def sample_user_create(sample_user_data):
-    """Sample UserCreate schema"""
-    from auth.models import UserCreate
+def mock_jwt_token(mock_user_data) -> str:
+    """Provide a mock JWT token for testing."""
+    import jwt
+    from datetime import datetime, timedelta
 
-    return UserCreate(**sample_user_data)
-
-
-@pytest.fixture
-def created_test_user(test_db: Session, password_manager: PasswordManager) -> User:
-    """
-    Create a test user in database.
-
-    Returns persisted User object ready for testing.
-    """
-    password_hash = password_manager.hash_password("MyUn1que!Test#Pass2025$ConPort")
-
-    user = User(
-        email="test@example.com",
-        username="testuser",
-        password_hash=password_hash,
-        is_active=True,
-    )
-
-    test_db.add(user)
-    test_db.commit()
-    test_db.refresh(user)
-
-    return user
-
-
-@pytest.fixture
-def created_test_user_with_workspace(
-    test_db: Session, created_test_user: User
-) -> tuple[User, UserWorkspace]:
-    """
-    Create test user with workspace membership.
-
-    Returns tuple of (User, UserWorkspace).
-    """
-    workspace = UserWorkspace(
-        user_id=created_test_user.id,
-        workspace_id="/Users/hue/code/test-project",
-        role="member",
-        permissions={
-            "read_decisions": True,
-            "write_decisions": True,
-            "delete_decisions": False,
-        },
-    )
-
-    test_db.add(workspace)
-    test_db.commit()
-    test_db.refresh(workspace)
-
-    return created_test_user, workspace
-
-
-@pytest.fixture
-def admin_user(test_db: Session, password_manager: PasswordManager) -> User:
-    """Create admin user for authorization testing"""
-    password_hash = password_manager.hash_password("Adm1nUn1que!Pass#2025$ConPort")
-
-    user = User(
-        email="admin@example.com",
-        username="adminuser123",
-        password_hash=password_hash,
-        is_active=True,
-    )
-
-    test_db.add(user)
-    test_db.commit()
-    test_db.refresh(user)
-
-    # Add to workspace as admin
-    workspace = UserWorkspace(
-        user_id=user.id,
-        workspace_id="/Users/hue/code/test-project",
-        role="admin",
-        permissions={"manage_users": True, "write_decisions": True},
-    )
-
-    test_db.add(workspace)
-    test_db.commit()
-
-    return user
-
-
-@pytest.fixture
-def auth_tokens(jwt_manager: JWTManager, created_test_user: User):
-    """Generate valid auth tokens for test user"""
-    access_token = jwt_manager.create_access_token({
-        "sub": str(created_test_user.id),
-        "email": created_test_user.email,
-        "username": created_test_user.username,
-    })
-
-    refresh_token = jwt_manager.create_refresh_token({
-        "sub": str(created_test_user.id)
-    })
-
-    return {
-        "access": access_token,
-        "refresh": refresh_token,
+    payload = {
+        "sub": str(mock_user_data["id"]),
+        "email": mock_user_data["email"],
+        "username": mock_user_data["username"],
+        "exp": datetime.utcnow() + timedelta(hours=1),
+        "iat": datetime.utcnow(),
+        "type": "access"
     }
 
+    # Create token with test secret
+    token = jwt.encode(payload, TEST_SETTINGS["secret_key"], algorithm="HS256")
+    return token
 
-# ============================================================================
-# Pytest Configuration
-# ============================================================================
+@pytest.fixture
+def mock_refresh_token(mock_user_data) -> str:
+    """Provide a mock refresh token for testing."""
+    import jwt
+    from datetime import datetime, timedelta
 
+    payload = {
+        "sub": str(mock_user_data["id"]),
+        "email": mock_user_data["email"],
+        "username": mock_user_data["username"],
+        "exp": datetime.utcnow() + timedelta(days=30),
+        "iat": datetime.utcnow(),
+        "type": "refresh"
+    }
+
+    # Create token with test secret
+    token = jwt.encode(payload, TEST_SETTINGS["secret_key"], algorithm="HS256")
+    return token
+
+@pytest.fixture
+async def auth_headers(mock_jwt_token) -> Dict[str, str]:
+    """Provide authentication headers for API testing."""
+    return {"Authorization": f"Bearer {mock_jwt_token}"}
+
+# Factory Fixtures for Test Data
+
+@pytest.fixture
+def user_factory(db_session):
+    """Factory for creating test users."""
+    try:
+        import factory
+        from factory.alchemy import SQLAlchemyModelFactory
+        from conport_kg.auth.models import User
+
+        class UserFactory(SQLAlchemyModelFactory):
+            class Meta:
+                model = User
+                sqlalchemy_session = db_session
+
+            email = factory.Sequence(lambda n: f"user{n}@example.com")
+            username = factory.Sequence(lambda n: f"user{n}")
+            password_hash = factory.LazyFunction(lambda: "hashed_password")
+            is_active = True
+
+        return UserFactory
+
+    except ImportError:
+        pytest.skip("factory-boy not available - install with: pip install factory-boy")
+
+@pytest.fixture
+def workspace_factory(db_session):
+    """Factory for creating test workspaces."""
+    try:
+        import factory
+        from factory.alchemy import SQLAlchemyModelFactory
+        from conport_kg.auth.models import UserWorkspace
+
+        class WorkspaceFactory(SQLAlchemyModelFactory):
+            class Meta:
+                model = UserWorkspace
+                sqlalchemy_session = db_session
+
+            workspace_id = factory.Sequence(lambda n: f"workspace-{n}")
+            role = "member"
+            permissions = ["read", "write"]
+
+        return WorkspaceFactory
+
+    except ImportError:
+        pytest.skip("factory-boy not available - install with: pip install factory-boy")
+
+# Mock Fixtures for External Services
+
+@pytest.fixture
+def mock_redis():
+    """Mock Redis client for testing."""
+    mock_client = AsyncMock()
+    mock_client.get.return_value = None
+    mock_client.set.return_value = True
+    mock_client.delete.return_value = 1
+    return mock_client
+
+@pytest.fixture
+def mock_external_api():
+    """Mock external API responses."""
+    mock_response = AsyncMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"status": "success"}
+    return mock_response
+
+# FastAPI Test Client
+
+@pytest.fixture
+async def client():
+    """FastAPI test client."""
+    from fastapi.testclient import TestClient
+    from conport_kg.main import app  # Import your FastAPI app
+
+    # Override settings for testing
+    app.state.settings = TEST_SETTINGS
+
+    with TestClient(app) as test_client:
+        yield test_client
+
+# Async Test Client for httpx
+
+@pytest.fixture
+async def async_client():
+    """Async HTTP client for testing FastAPI endpoints."""
+    from httpx import AsyncClient
+    from conport_kg.main import app  # Import your FastAPI app
+
+    # Override settings for testing
+    app.state.settings = TEST_SETTINGS
+
+    async with AsyncClient(app=app, base_url="http://testserver") as client:
+        yield client
+
+# Test Utilities
+
+@pytest.fixture
+def test_request_context():
+    """Provide a test request context for middleware testing."""
+    from unittest.mock import MagicMock
+
+    request = MagicMock()
+    request.method = "GET"
+    request.url = MagicMock()
+    request.url.path = "/test"
+    request.headers = {"user-agent": "test-client"}
+    request.client = MagicMock()
+    request.client.host = "127.0.0.1"
+    request.state = MagicMock()
+    request.state.request_id = "test-request-id"
+
+    return request
+
+# Cleanup and Teardown
+
+@pytest.fixture(autouse=True)
+async def cleanup_after_test():
+    """Clean up after each test."""
+    yield
+
+    # Add any cleanup logic here
+    # For example: clear caches, reset global state, etc.
+
+# Test Markers
 
 def pytest_configure(config):
-    """Configure pytest with custom markers"""
-    config.addinivalue_line("markers", "unit: Unit tests (fast, no database)")
-    config.addinivalue_line("markers", "integration: Integration tests (database required)")
+    """Configure pytest with custom markers."""
+    config.addinivalue_line("markers", "auth: Authentication related tests")
+    config.addinivalue_line("markers", "db: Database related tests")
+    config.addinivalue_line("markers", "api: API endpoint tests")
+    config.addinivalue_line("markers", "security: Security related tests")
     config.addinivalue_line("markers", "slow: Slow running tests")
-    config.addinivalue_line("markers", "auth: Authentication tests")
+
+# Environment Setup
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_environment():
+    """Set up test environment variables."""
+    original_env = {}
+
+    # Store original values
+    for key in ["DATABASE_URL", "REDIS_URL", "SECRET_KEY"]:
+        if key in os.environ:
+            original_env[key] = os.environ[key]
+
+    # Set test values
+    os.environ.update({
+        "DATABASE_URL": TEST_DATABASE_URL,
+        "REDIS_URL": TEST_SETTINGS["redis_url"],
+        "SECRET_KEY": TEST_SETTINGS["secret_key"],
+        "TESTING": "true"
+    })
+
+    yield
+
+    # Restore original values
+    for key, value in original_env.items():
+        os.environ[key] = value
+    for key in ["DATABASE_URL", "REDIS_URL", "SECRET_KEY", "TESTING"]:
+        if key not in original_env and key in os.environ:
+            del os.environ[key]
+
+# Performance Testing Fixtures
+
+@pytest.fixture
+def benchmark_config():
+    """Configuration for performance benchmarks."""
+    return {
+        "min_rounds": 5,
+        "max_time": 1.0,
+        "warmup": True
+    }

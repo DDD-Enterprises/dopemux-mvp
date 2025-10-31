@@ -10,7 +10,7 @@ import bcrypt
 import secrets
 import string
 from typing import Dict, Any, Optional
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, EmailStr, field_validator
 
 class PasswordValidationError(Exception):
     """Raised when password validation fails"""
@@ -236,7 +236,8 @@ class PasswordChangeRequest(BaseModel):
     current_password: str
     new_password: str
 
-    @validator('new_password')
+    @field_validator('new_password')
+    @classmethod
     def validate_new_password(cls, v):
         PasswordManager.validate_password_strength(v)
         return v
@@ -250,7 +251,8 @@ class PasswordResetConfirm(BaseModel):
     token: str
     new_password: str
 
-    @validator('new_password')
+    @field_validator('new_password')
+    @classmethod
     def validate_new_password(cls, v):
         PasswordManager.validate_password_strength(v)
         return v
