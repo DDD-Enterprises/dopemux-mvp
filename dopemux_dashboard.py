@@ -864,9 +864,11 @@ if TEXTUAL_AVAILABLE:
         session_time = reactive("0m")
         
         def __init__(self, fetcher: Optional[MetricsFetcher] = None, **kwargs):
+            default_id = kwargs.get("id")
             super().__init__(**kwargs)
             self.fetcher = fetcher
-            self.id = "adhd_state_widget"
+            if default_id is None:
+                self.id = "adhd_state_widget"
         
         async def on_mount(self) -> None:
             # Only start polling if we have a fetcher (fallback mode)
