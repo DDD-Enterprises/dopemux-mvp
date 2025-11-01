@@ -25,8 +25,8 @@ class TestInputValidation:
         # Invalid cases (should be filtered out)
         ("http://valid.com,not-a-url", ["http://valid.com"]),
         ("http://valid.com, javascript:alert(1)", ["http://valid.com"]),
-        ("", []),  # Empty should trigger fallback
-        ("invalid-url,another-invalid", []),  # All invalid should trigger fallback
+        ("", ["http://localhost:3000", "http://localhost:8080"]),  # Empty should trigger fallback
+        ("invalid-url,another-invalid", ["http://localhost:3000", "http://localhost:8080"]),  # All invalid should trigger fallback
     ])
     def test_allowed_origins_parsing(self, origins_input, expected_origins):
         """Test ALLOWED_ORIGINS parsing with various inputs."""
