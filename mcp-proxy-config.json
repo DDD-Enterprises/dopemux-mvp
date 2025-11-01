@@ -97,16 +97,14 @@
       "type": "stdio"
     },
     "gpt-researcher": {
-      "command": "python",
+      "command": "uvx",
       "args": [
-        "/Users/hue/code/dopemux-mvp/scripts/gpt-researcher/mcp_server.py"
+        "mcp-proxy",
+        "--transport",
+        "sse",
+        "http://127.0.0.1:3009/sse"
       ],
-      "env": {
-        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-        "TAVILY_API_KEY": "${TAVILY_API_KEY}",
-        "VOYAGEAI_API_KEY": "${VOYAGEAI_API_KEY}",
-        "EXA_API_KEY": "${EXA_API_KEY}"
-      },
+      "env": {},
       "type": "stdio"
     },
     "conport-admin": {
