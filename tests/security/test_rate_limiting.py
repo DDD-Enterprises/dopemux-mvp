@@ -5,6 +5,7 @@ Tests rate limiting middleware functionality.
 """
 
 import pytest
+import pytest_asyncio
 from httpx import AsyncClient
 import os
 import subprocess
@@ -16,10 +17,11 @@ from typing import Optional
 class TestRateLimiting:
     """Test rate limiting functionality."""
 
-    @pytest.fixture(scope="class")
-    async def client(self):
+    @pytest_asyncio.fixture(scope="class")
+    async def client(self, request):
         """Create test client for ADHD Engine."""
         process = None
+        client = None
         try:
             # Set test environment
             env = os.environ.copy()
@@ -38,26 +40,42 @@ class TestRateLimiting:
             # Wait for server to start
             await asyncio.sleep(3)
 
+            # Create client for tests
+            client = AsyncClient(base_url="http://127.0.0.1:8096")
+
             # Verify server is running
             try:
-                async with AsyncClient(base_url="http://127.0.0.1:8096") as client:
-                    response = await client.get("/health")
-                    assert response.status_code == 200
+                response = await client.get("/health")
+                assert response.status_code == 200
             except Exception:
                 pytest.skip("ADHD Engine server failed to start")
 
-            # Create client for tests
-            async with AsyncClient(base_url="http://127.0.0.1:8096") as test_client:
-                yield test_client
+            # Add finalizer for cleanup
+            def cleanup():
+                if client:
+                    asyncio.run(client.aclose())
+                if process:
+                    process.terminate()
+                    try:
+                        process.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        process.kill()
 
-        finally:
-            # Cleanup
+            request.addfinalizer(cleanup)
+
+            return client
+
+        except Exception:
+            # Cleanup on setup failure
+            if client:
+                await client.aclose()
             if process:
                 process.terminate()
                 try:
                     process.wait(timeout=5)
                 except subprocess.TimeoutExpired:
                     process.kill()
+            raise
 
     @pytest.mark.asyncio
     async def test_rate_limit_assess_task_endpoint(self, client):
