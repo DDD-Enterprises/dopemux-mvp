@@ -1,0 +1,34 @@
+session_name: dopemux-orchestrator
+windows:
+  - window_name: orchestration
+    layout: tiled
+    options:
+      main-pane-height: 60%
+      status: on
+      status-interval: 30  # Update status bar every 30s
+      status-left: "#[fg=colour33]#[bg=colour0] Dopemux PM #[default]"
+      status-right: "#[fg=colour166]#[bg=colour0] #(./scripts/pm-status.sh) #[default]"
+    panes:
+      # Pane 0: Task Orchestrator + PM Overview (Primary)
+      - shell_command:
+          - watch -n 30 './scripts/pm-dashboard.sh orchestrator'
+        focus: true
+      # Pane 1: ConPort Memory Hub (Enhanced PM Dashboard)
+      - shell_command:
+          - watch -n 30 './scripts/pm-dashboard.sh conport'
+      # Pane 2: Leantime Strategic PM (Optional)
+      - shell_command:
+          - watch -n 30 './scripts/pm-dashboard.sh leantime'
+        start_directory: .
+      # Pane 3: Playwright Validation (With PM Links)
+      - shell_command:
+          - watch -n 30 './scripts/pm-dashboard.sh validation'
+        start_directory: .
+      # Pane 4: Morph Code Apply (With Task Links)
+      - shell_command:
+          - watch -n 30 './scripts/pm-dashboard.sh morph'
+        start_directory: .
+      # Pane 5: Zen Reasoning (Background with PM Context)
+      - shell_command:
+          - watch -n 30 './scripts/pm-dashboard.sh zen'
+        start_directory: .
