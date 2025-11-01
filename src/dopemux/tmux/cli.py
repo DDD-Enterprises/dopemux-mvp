@@ -23,6 +23,7 @@ from .controller import TmuxController, PaneInfo
 from ..mobile.runtime import ensure_dependency, env_for_happy
 from ..mobile import tmux_utils
 from ..roles.catalog import available_roles, resolve_role, RoleNotFoundError
+from ..litellm_proxy import LiteLLMProxyError, sync_litellm_database
 
 console = Console()
 
@@ -1792,6 +1793,34 @@ def start_tmux(
         if routing_env.exists():
             load_dotenv(routing_env)
             console.print("[dim]✓ Loaded .env.routing[/dim]")
+
+        db_url_path = EnvPath(start_dir) / ".dopemux" / "litellm" / "A" / "database.url"
+        db_url = (
+            os.getenv("DOPEMUX_LITELLM_DB_URL")
+            or os.getenv("LITELLM_DATABASE_URL")
+            or os.getenv("DATABASE_URL")
+        )
+        if not db_url and db_url_path.exists():
+            try:
+                loaded = db_url_path.read_text(encoding="utf-8").strip()
+                if loaded:
+                    db_url = loaded
+            except Exception:
+                pass
+        if db_url:
+            os.environ["DOPEMUX_LITELLM_DB_URL"] = db_url
+            os.environ.setdefault("LITELLM_DATABASE_URL", db_url)
+            os.environ["DATABASE_URL"] = db_url
+            try:
+                db_url_path.parent.mkdir(parents=True, exist_ok=True)
+                db_url_path.write_text(db_url, encoding="utf-8")
+            except Exception:
+                pass
+            console.print("[dim]ℹ️ LiteLLM metrics database detected (sync on start)[/dim]")
+        else:
+            console.print(
+                "[yellow]⚠️  LiteLLM metrics disabled (set DOPEMUX_LITELLM_DB_URL in .env.routing)[/yellow]"
+            )
         
         # Check if LiteLLM is already running
         litellm_running = False
@@ -1818,6 +1847,18 @@ def start_tmux(
             if litellm_config.exists():
                 litellm_log = EnvPath(start_dir) / ".dopemux" / "litellm" / "A" / "litellm.log"
                 litellm_log.parent.mkdir(parents=True, exist_ok=True)
+
+                if db_url:
+                    try:
+                        db_status, db_enabled = sync_litellm_database(litellm_log.parent, db_url)
+                        if db_enabled:
+                            console.print(f"[dim]{db_status}[/dim]")
+                        else:
+                            console.print(f"[yellow]{db_status}[/yellow]")
+                            db_url = None
+                    except LiteLLMProxyError as exc:
+                        console.print(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
+                        raise click.ClickException(str(exc))
                 
                 with open(litellm_log, "w") as log_file:
                     subprocess.Popen(
@@ -1855,8 +1896,21 @@ def start_tmux(
         os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
         os.environ["ANTHROPIC_BASE_URL"] = "http://localhost:4000"
         master_key = os.getenv("LITELLM_MASTER_KEY", "REDACTED_LITELLM_KEY")
+        os.environ["LITELLM_MASTER_KEY"] = master_key
+        os.environ.setdefault("DOPEMUX_LITELLM_MASTER_KEY", master_key)
         os.environ["ANTHROPIC_API_KEY"] = master_key
         
+        try:
+            master_key_path = EnvPath(start_dir) / ".dopemux" / "litellm" / "A" / "master.key"
+            master_key_path.parent.mkdir(parents=True, exist_ok=True)
+            master_key_path.write_text(master_key)
+        except Exception:
+            pass
+
+        if not db_url:
+            for var in ("DOPEMUX_LITELLM_DB_URL", "LITELLM_DATABASE_URL", "DATABASE_URL"):
+                os.environ.pop(var, None)
+
         console.print("[dim]✓ Environment configured for LiteLLM routing[/dim]")
         console.print("")
     

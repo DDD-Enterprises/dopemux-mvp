@@ -53,9 +53,12 @@
       "type": "stdio"
     },
     "dope-context": {
-      "command": "bash",
+      "command": "uvx",
       "args": [
-        "services/dope-context/run_mcp.sh"
+        "mcp-proxy",
+        "--transport",
+        "streamablehttp",
+        "http://127.0.0.1:3010/sse"
       ],
       "env": {},
       "type": "stdio"
@@ -97,16 +100,14 @@
       "type": "stdio"
     },
     "gpt-researcher": {
-      "command": "python",
+      "command": "uvx",
       "args": [
-        "/Users/hue/code/dopemux-mvp/scripts/gpt-researcher/mcp_server.py"
+        "mcp-proxy",
+        "--transport",
+        "sse",
+        "http://127.0.0.1:3009/sse"
       ],
-      "env": {
-        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-        "TAVILY_API_KEY": "${TAVILY_API_KEY}",
-        "VOYAGEAI_API_KEY": "${VOYAGEAI_API_KEY}",
-        "EXA_API_KEY": "${EXA_API_KEY}"
-      },
+      "env": {},
       "type": "stdio"
     },
     "conport-admin": {
@@ -124,14 +125,19 @@
       }
     },
     "exa": {
-      "command": "uvx",
-      "args": [
-        "mcp-proxy",
-        "--transport",
-        "streamablehttp",
-        "http://127.0.0.1:3007/sse"
-      ],
-      "env": {},
+      "command": "/Users/hue/code/dopemux-mvp/docker/mcp-servers/exa/start_with_uvx.sh",
+      "args": [],
+      "env": {
+        "EXA_API_KEY": "${EXA_API_KEY}"
+      },
+      "type": "stdio"
+    },
+    "desktop-commander": {
+      "command": "/Users/hue/code/dopemux-mvp/docker/mcp-servers/desktop-commander/start_with_uvx.sh",
+      "args": [],
+      "env": {
+        "DISPLAY": "${DISPLAY:-:0}"
+      },
       "type": "stdio"
     },
     "task-orchestrator": {

@@ -106,7 +106,7 @@ class WorkspaceWatcher:
         logger.info("Monitoring active application for workspace switches...")
         logger.info("")
 
-        # Get initial state
+        # Get initial state (use sync version for startup)
         self.current_app = self.app_detector.get_active_app()
         if self.current_app:
             self.current_workspace = self.workspace_mapper.get_workspace(self.current_app)
@@ -133,8 +133,8 @@ class WorkspaceWatcher:
         """Poll active app and check for changes"""
         self.polls += 1
 
-        # Detect current app
-        active_app = self.app_detector.get_active_app()
+        # Detect current app (use async version to avoid blocking)
+        active_app = await self.app_detector.get_active_app_async()
 
         if not active_app:
             logger.debug(f"Poll #{self.polls}: No app detected")

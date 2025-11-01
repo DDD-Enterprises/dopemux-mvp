@@ -23,11 +23,12 @@ class TestOrchestatorIntegration:
     """Test suite for integrated orchestrator functionality"""
 
     @pytest.fixture
-    async def orchestrator(self):
+    def orchestrator(self):
         """Create orchestrator with mock adapters for testing"""
 
         # Mock project context
         project_context = ProjectContext(
+            workspace_path="/test/workspace",
             tech_stack=["Python", "FastAPI", "React"],
             architecture_patterns=["microservices", "event-driven"],
             current_focus="research-integration"

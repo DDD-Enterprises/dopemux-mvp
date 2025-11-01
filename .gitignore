@@ -261,3 +261,4 @@ docker/mcp-servers/backups/
 services/conport_kg/auth/keys/*.pem
 .env* 
 =*
+.vercel
