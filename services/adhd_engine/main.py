@@ -21,6 +21,14 @@ import logging
 from engine import ADHDAccommodationEngine
 from api import routes
 from config import settings
+from middleware.rate_limit import RateLimitMiddleware
+
+# Import shared Redis pool and cache for performance optimization
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'shared'))
+from redis_pool import get_redis_pool
+from cache import get_cache
 
 # Configure logging
 logging.basicConfig(
@@ -94,15 +102,34 @@ app = FastAPI(
 )
 
 # CORS middleware for browser access
-# Security: Use environment-based origin whitelist
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080").split(",")
+# Security: Use environment-based origin whitelist with secure defaults and validation
+try:
+    origins_raw = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080")
+    ALLOWED_ORIGINS = origins_raw.split(",")
+
+    # Validate each origin format (basic URL validation)
+    import re
+    url_pattern = re.compile(r'^https?://[a-zA-Z0-9.-]+(:[0-9]+)?(/.*)?$')
+    ALLOWED_ORIGINS = [origin.strip() for origin in ALLOWED_ORIGINS if url_pattern.match(origin.strip())]
+
+    # Ensure we have at least localhost fallback
+    if not ALLOWED_ORIGINS:
+        logger.warning("No valid origins found in ALLOWED_ORIGINS, using localhost fallback")
+        ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:8080"]
+
+except Exception as e:
+    logger.error(f"Error parsing ALLOWED_ORIGINS: {e}, using secure fallback")
+    ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:8080"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],  # Restrict to safe HTTP methods only
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],  # Restrict to necessary headers
 )
+
+# Rate limiting middleware - protect against abuse
+app.add_middleware(RateLimitMiddleware)
 
 # Include API routes
 app.include_router(routes.router, prefix="/api/v1", tags=["adhd"])

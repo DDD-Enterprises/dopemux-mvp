@@ -15,7 +15,7 @@ import signal
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, List, Optional, Sequence
+from typing import Dict, Iterable, List, Optional, Sequence
 import warnings
 import logging
 
@@ -170,6 +170,97 @@ def _ensure_role_profile(spec) -> Optional[object]:  # returns DopemuxProfile wh
         yaml.safe_dump(profile_data, f, sort_keys=False)
 
     return manager.get_profile(profile_name)
+
+
+def _load_litellm_models(config_path: Path) -> List[str]:
+    """Load model names from a LiteLLM YAML configuration file."""
+    try:
+        data = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return []
+    except yaml.YAMLError:
+        return []
+
+    models: List[str] = []
+    for entry in data.get("model_list", []) if isinstance(data, dict) else []:
+        if isinstance(entry, dict):
+            name = entry.get("model_name")
+            if isinstance(name, str) and name.strip():
+                models.append(name.strip())
+    return models
+
+
+def _select_model_by_priority(models: Sequence[str], candidates: Sequence[str]) -> Optional[str]:
+    """Choose the first model matching any candidate (exact or substring) from a list."""
+    if not models:
+        return None
+
+    normalized = [(model, model.lower()) for model in models]
+    for candidate in candidates:
+        candidate_lower = candidate.lower()
+        for original, lower in normalized:
+            if lower == candidate_lower:
+                return original
+        for original, lower in normalized:
+            if candidate_lower in lower:
+                return original
+
+    return models[0]
+
+
+def _build_router_overrides(provider_name: str, models: Sequence[str]) -> Dict[str, str]:
+    """Generate CCR router overrides based on available LiteLLM models."""
+    overrides: Dict[str, str] = {}
+
+    def _assign(key: str, candidates: Sequence[str]) -> None:
+        chosen = _select_model_by_priority(models, candidates)
+        if chosen:
+            overrides[key] = f"{provider_name},{chosen}"
+
+    _assign(
+        "default",
+        (
+            "gpt-5",
+            "gpt-5-pro",
+            "openrouter-openai-gpt-5",
+            "grok-4-fast",
+            "grok-4",
+            "grok-code-fast-1",
+            "xai-grok-4-fast",
+            "xai-grok-code-fast-1",
+        ),
+    )
+    _assign(
+        "background",
+        (
+            "grok-4-fast",
+            "grok-code-fast-1",
+            "xai-grok-4-fast",
+            "xai-grok-code-fast-1",
+            "openrouter-xai-grok-code-fast",
+        ),
+    )
+    _assign(
+        "think",
+        (
+            "gpt-5-codex",
+            "openrouter-openai-gpt-5-codex",
+            "codex",
+        ),
+    )
+    _assign(
+        "webSearch",
+        (
+            "gpt-5-mini",
+            "openrouter-openai-gpt-5-mini",
+            "glm-4.6",
+            "grok-code-fast-1",
+            "xai-grok-code-fast-1",
+            "openrouter-google-gemini-2-flash",
+        ),
+    )
+
+    return overrides
 
 
 def _suggest_server_start(missing_servers: Iterable[str]) -> None:
@@ -537,13 +628,25 @@ def start(
             time.sleep(1)
             
             # Start LiteLLM
-            litellm_config = Path.cwd() / ".dopemux" / "litellm" / "A" / "litellm.config.yaml"
-            if not litellm_config.exists():
-                litellm_config = Path.cwd() / "litellm.config.yaml"
+            litellm_config: Optional[Path] = None
+            for candidate in (
+                Path.cwd() / "litellm.config.yaml",
+                Path.cwd() / ".dopemux" / "litellm" / "A" / "litellm.config.yaml",
+            ):
+                if candidate.exists():
+                    litellm_config = candidate
+                    break
             
-            if litellm_config.exists():
+            if litellm_config:
                 litellm_log = Path.cwd() / ".dopemux" / "litellm" / "A" / "litellm.log"
                 litellm_log.parent.mkdir(parents=True, exist_ok=True)
+
+                instance_config = Path.cwd() / ".dopemux" / "litellm" / "A" / "litellm.config.yaml"
+                if litellm_config != instance_config and instance_config.exists():
+                    try:
+                        instance_config.unlink()
+                    except Exception:
+                        pass
                 
                 with open(litellm_log, "w") as log_file:
                     subprocess.Popen(
@@ -584,7 +687,48 @@ def start(
         os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
         os.environ["ANTHROPIC_BASE_URL"] = "http://localhost:4000"
         master_key = os.getenv("LITELLM_MASTER_KEY", "HZy6cX-h1t5wPed3XJHRByCK3lde4Pu17zDA5mz-BvM")
+        os.environ["LITELLM_MASTER_KEY"] = master_key
+        os.environ.setdefault("DOPEMUX_LITELLM_MASTER_KEY", master_key)
         os.environ["ANTHROPIC_API_KEY"] = master_key
+        
+        try:
+            master_key_path = Path.cwd() / ".dopemux" / "litellm" / "A" / "master.key"
+            master_key_path.parent.mkdir(parents=True, exist_ok=True)
+            master_key_path.write_text(master_key)
+        except Exception:
+            pass
+
+        db_url = (
+            os.getenv("DOPEMUX_LITELLM_DB_URL")
+            or os.getenv("LITELLM_DATABASE_URL")
+            or os.getenv("DATABASE_URL")
+        )
+        remember_raw = os.getenv("DOPEMUX_LITELLM_REMEMBER_DB", "").strip().lower()
+        remember_db = remember_raw not in {"0", "false", "no"}
+        db_url_path = Path.cwd() / ".dopemux" / "litellm" / "A" / "database.url"
+        if not db_url and remember_db and db_url_path.exists():
+            try:
+                loaded = db_url_path.read_text(encoding="utf-8").strip()
+                if loaded:
+                    db_url = loaded
+            except Exception:
+                pass
+
+        if db_url:
+            os.environ["DOPEMUX_LITELLM_DB_URL"] = db_url
+            os.environ.setdefault("LITELLM_DATABASE_URL", db_url)
+            os.environ["DATABASE_URL"] = db_url
+            if remember_db:
+                try:
+                    db_url_path.parent.mkdir(parents=True, exist_ok=True)
+                    db_url_path.write_text(db_url, encoding="utf-8")
+                except Exception:
+                    pass
+            console.print("[dim]ℹ️ LiteLLM metrics database detected (sync on start)[/dim]")
+        else:
+            console.print(
+                "[yellow]⚠️  LiteLLM metrics disabled (set DOPEMUX_LITELLM_DB_URL in .env.routing)[/yellow]"
+            )
         
         console.print("[dim]✓ Claude Code configured to use LiteLLM proxy[/dim]")
         console.print("")
@@ -985,6 +1129,10 @@ def start(
             # Explicit hint for Claude Launcher to route via LiteLLM (API key mode)
             os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "1"
 
+            if not litellm_proxy_info.db_enabled:
+                for var in ("DOPEMUX_LITELLM_DB_URL", "LITELLM_DATABASE_URL", "DATABASE_URL"):
+                    os.environ.pop(var, None)
+
             if litellm_proxy_info.already_running:
                 console.print(
                     f"[green]✅ Reusing LiteLLM proxy at {litellm_proxy_info.base_url}[/green]"
@@ -999,6 +1147,12 @@ def start(
                 console.print(
                     f"[dim]   Logs: {litellm_proxy_info.log_path}[/dim]"
                 )
+            if litellm_proxy_info.db_status:
+                prisma_log = litellm_proxy_info.log_path.parent / "prisma.log"
+                color = "dim" if litellm_proxy_info.db_enabled else "yellow"
+                console.print(f"[{color}]   {litellm_proxy_info.db_status}[/{color}]")
+                if prisma_log.exists():
+                    console.print(f"[dim]   Prisma log: {prisma_log}[/dim]")
 
         except LiteLLMProxyError as exc:
             console.print(f"[red]❌ LiteLLM proxy failed: {exc}[/red]")
@@ -1014,27 +1168,35 @@ def start(
             "DOPEMUX_LITELLM_MASTER_KEY" if litellm_proxy_info else None,
         )
         provider_key: Optional[str] = None
+        router_overrides: Dict[str, str] = {}
 
         if litellm_proxy_info:
             provider_url = f"{litellm_proxy_info.base_url}/v1/chat/completions"
             provider_name = provider_name or "litellm"
-            
-            provider_models.extend([
-                "openrouter-xai-grok-code-fast",
-                "openrouter-openai-gpt-5",
-                "openrouter-openai-gpt-5-mini",
-                "openrouter-openai-gpt-5-codex",
-                "openrouter-google-gemini-2-flash",
-                "openrouter-meta-llama-3.1-405b",
-            ])
+            provider_models = _load_litellm_models(litellm_proxy_info.config_path)
 
-            # Set intelligent router overrides for different use cases
-            router_overrides = {
-                "default": "litellm,openrouter-openai-gpt-5",
-                "background": "litellm,openrouter-xai-grok-code-fast",
-                "think": "litellm,openrouter-openai-gpt-5-codex",
-                "webSearch": "litellm,openrouter-google-gemini-2-flash",
-            }
+            extra_models_env = os.environ.get("CLAUDE_CODE_ROUTER_MODELS", "")
+            if extra_models_env:
+                provider_models.extend(
+                    [
+                        model.strip()
+                        for model in extra_models_env.split(",")
+                        if model.strip()
+                    ]
+                )
+
+            if provider_models:
+                deduped: List[str] = []
+                seen_lower = set()
+                for model in provider_models:
+                    lower = model.lower()
+                    if lower in seen_lower:
+                        continue
+                    seen_lower.add(lower)
+                    deduped.append(model)
+                provider_models = deduped
+
+                router_overrides = _build_router_overrides(provider_name, provider_models)
         else:
             provider_url = os.environ.get("CLAUDE_CODE_ROUTER_UPSTREAM_URL")
             models_env = os.environ.get("CLAUDE_CODE_ROUTER_MODELS", "")
@@ -1070,7 +1232,7 @@ def start(
                 provider_name=provider_name or "litellm",
                 provider_key=provider_key,
                 provider_key_env_var=provider_key_env,
-                router_overrides=router_overrides if litellm_proxy_info else None,
+                router_overrides=router_overrides if router_overrides else None,
             )
         except ClaudeCodeRouterError as exc:
             console.print(f"[red]❌ Claude Code Router failed: {exc}[/red]")
