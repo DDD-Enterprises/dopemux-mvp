@@ -72,8 +72,9 @@ class ADHDAccommodationEngine:
         self.redis_url = settings.redis_url
         self.workspace_id = settings.workspace_id
 
-        # Redis connection for state persistence
+        # Redis connection for state persistence (now using shared pool)
         self.redis_client: Optional[redis.Redis] = None
+        self.redis_pool = None  # Shared Redis connection pool
 
         # ADHD state tracking
         self.user_profiles: Dict[str, ADHDProfile] = {}
@@ -122,13 +123,17 @@ class ADHDAccommodationEngine:
         """Initialize ADHD accommodation engine."""
         logger.info("🧠 Initializing ADHD Accommodation Engine...")
 
-        # Initialize Redis connection
-        self.redis_client = redis.from_url(
-            self.redis_url,
-            db=settings.redis_db,
-            decode_responses=True
-        )
-        await self.redis_client.ping()
+        # Initialize shared Redis connection pool (performance optimization)
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'shared'))
+        from redis_pool import get_redis_pool
+
+        self.redis_pool = await get_redis_pool()
+        # Keep legacy redis_client for backward compatibility, but use pool internally
+        async with self.redis_pool.get_client() as client:
+            self.redis_client = client
+            await self.redis_client.ping()
 
         # Initialize ActivityTracker with ConPort database
         conport_db_path = settings.workspace_id + "/context_portal/context.db"

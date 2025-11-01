@@ -1,64 +1,25 @@
 model_list:
-- model_name: grok-4-fast
-  litellm_params:
-    model: xai/grok-4-fast
-    api_key: os.environ/XAI_API_KEY
-    max_tokens: 131072
 - model_name: grok-code-fast-1
   litellm_params:
     model: xai/grok-code-fast-1
     api_key: os.environ/XAI_API_KEY
     max_tokens: 131072
-- model_name: minimax-m2-free
+- model_name: grok-4-fast
   litellm_params:
-    model: openrouter/minimax/minimax-m2:free
+    model: xai/grok-4-fast
+    api_key: os.environ/XAI_API_KEY
+    max_tokens: 131072
+- model_name: grok-4-fast-reasoning
+  litellm_params:
+    model: xai/grok-4-fast-reasoning
+    api_key: os.environ/XAI_API_KEY
+    max_tokens: 131072
+- model_name: gpt-5
+  litellm_params:
+    model: openrouter/openai/gpt-5
     api_key: os.environ/OPENROUTER_API_KEY
     api_base: https://openrouter.ai/api/v1
-    max_tokens: 100000
-    extra_headers:
-      HTTP-Referer: https://dopemux.local
-      X-Title: Dopemux LiteLLM Proxy
-      Referer: https://dopemux.local
-      User-Agent: Dopemux LiteLLM Proxy
-- model_name: o3-deep-research
-  litellm_params:
-    model: openrouter/openai/o3-deep-research
-    api_key: os.environ/OPENROUTER_API_KEY
-    api_base: https://openrouter.ai/api/v1
-    max_tokens: 100000
-    extra_headers:
-      HTTP-Referer: https://dopemux.local
-      X-Title: Dopemux LiteLLM Proxy
-      Referer: https://dopemux.local
-      User-Agent: Dopemux LiteLLM Proxy
-- model_name: o4-mini-deep-research
-  litellm_params:
-    model: openrouter/openai/o4-mini-deep-research
-    api_key: os.environ/OPENROUTER_API_KEY
-    api_base: https://openrouter.ai/api/v1
-    max_tokens: 100000
-    extra_headers:
-      HTTP-Referer: https://dopemux.local
-      X-Title: Dopemux LiteLLM Proxy
-      Referer: https://dopemux.local
-      User-Agent: Dopemux LiteLLM Proxy
-- model_name: gpt-5-pro
-  litellm_params:
-    model: openrouter/openai/gpt-5-pro
-    api_key: os.environ/OPENROUTER_API_KEY
-    api_base: https://openrouter.ai/api/v1
-    max_tokens: 32768
-    extra_headers:
-      HTTP-Referer: https://dopemux.local
-      X-Title: Dopemux LiteLLM Proxy
-      Referer: https://dopemux.local
-      User-Agent: Dopemux LiteLLM Proxy
-- model_name: glm-4.6
-  litellm_params:
-    model: openrouter/z-ai/glm-4.6
-    api_key: os.environ/OPENROUTER_API_KEY
-    api_base: https://openrouter.ai/api/v1
-    max_tokens: 128000
+    max_tokens: 131072
     extra_headers:
       HTTP-Referer: https://dopemux.local
       X-Title: Dopemux LiteLLM Proxy
@@ -69,62 +30,7 @@ model_list:
     model: openrouter/openai/gpt-5-codex
     api_key: os.environ/OPENROUTER_API_KEY
     api_base: https://openrouter.ai/api/v1
-    max_tokens: 32768
-    extra_headers:
-      HTTP-Referer: https://dopemux.local
-      X-Title: Dopemux LiteLLM Proxy
-      Referer: https://dopemux.local
-      User-Agent: Dopemux LiteLLM Proxy
-- model_name: gpt-5
-  litellm_params:
-    model: openrouter/openai/gpt-5
-    api_key: os.environ/OPENROUTER_API_KEY
-    api_base: https://openrouter.ai/api/v1
-    max_tokens: 32768
-    extra_headers:
-      HTTP-Referer: https://dopemux.local
-      X-Title: Dopemux LiteLLM Proxy
-      Referer: https://dopemux.local
-      User-Agent: Dopemux LiteLLM Proxy
-- model_name: gpt-5-mini
-  litellm_params:
-    model: openrouter/openai/gpt-5-mini
-    api_key: os.environ/OPENROUTER_API_KEY
-    api_base: https://openrouter.ai/api/v1
-    max_tokens: 32768
-    extra_headers:
-      HTTP-Referer: https://dopemux.local
-      X-Title: Dopemux LiteLLM Proxy
-      Referer: https://dopemux.local
-      User-Agent: Dopemux LiteLLM Proxy
-- model_name: o3-pro
-  litellm_params:
-    model: openrouter/openai/o3-pro
-    api_key: os.environ/OPENROUTER_API_KEY
-    api_base: https://openrouter.ai/api/v1
-    max_tokens: 100000
-    extra_headers:
-      HTTP-Referer: https://dopemux.local
-      X-Title: Dopemux LiteLLM Proxy
-      Referer: https://dopemux.local
-      User-Agent: Dopemux LiteLLM Proxy
-- model_name: codex-mini
-  litellm_params:
-    model: openrouter/openai/codex-mini
-    api_key: os.environ/OPENROUTER_API_KEY
-    api_base: https://openrouter.ai/api/v1
-    max_tokens: 32768
-    extra_headers:
-      HTTP-Referer: https://dopemux.local
-      X-Title: Dopemux LiteLLM Proxy
-      Referer: https://dopemux.local
-      User-Agent: Dopemux LiteLLM Proxy
-- model_name: o3
-  litellm_params:
-    model: openrouter/openai/o3
-    api_key: os.environ/OPENROUTER_API_KEY
-    api_base: https://openrouter.ai/api/v1
-    max_tokens: 100000
+    max_tokens: 131072
     extra_headers:
       HTTP-Referer: https://dopemux.local
       X-Title: Dopemux LiteLLM Proxy
@@ -135,53 +41,46 @@ litellm_settings:
   max_retries: 3
   drop_params: true
   model_alias_map:
+    grok: grok-code-fast-1
     grok-code: grok-code-fast-1
-    grok: grok-4-fast
-    minimax: minimax-m2-free
+    grok-4: grok-4-fast
+    grok-4-fast: grok-4-fast
+    grok-4-fast-reasoning: grok-4-fast-reasoning
+    grok-4-reasoning: grok-4-fast-reasoning
+    minimax: gpt-5-codex
     codex: gpt-5-codex
-    claude-sonnet: gpt-5
-    claude-sonnet-4.5: gpt-5
-    claude-haiku: gpt-5-mini
-    claude-opus: o3-pro
-    fast: grok-4-fast
-    free: minimax-m2-free
-    research: o3-deep-research
-    pro: gpt-5-pro
-router_settings:
-  routing_strategy: simple-shuffle
-  enable_pre_call_checks: false
-  allowed_fails: 3
-  cooldown_time: 30
-  num_retries: 3
-  retry_policy:
-    TimeoutErrorRetries: 3
-    RateLimitErrorRetries: 4
-    AuthenticationErrorRetries: 1
-    ContentPolicyViolationRetries: 1
+    claude-sonnet: grok-code-fast-1
+    claude-sonnet-4.5: grok-code-fast-1
+    claude-sonnet-4-5-20250929: grok-code-fast-1
+    claude-haiku: grok-code-fast-1
+    claude-opus: gpt-5-codex
+    claude-opus-4-20250514: gpt-5-codex
+    claude-opus-4-1-20250805: gpt-5-codex
+    claude-4: gpt-5-codex
+    claude-4-sonnet: grok-code-fast-1
+    claude-4-opus: gpt-5-codex
+    claude-3.7: grok-code-fast-1
+    claude-3-7-sonnet-20250219: grok-code-fast-1
+    claude-3.5: grok-code-fast-1
+    claude-3-5-sonnet-20240620: grok-code-fast-1
+    gpt-5: gpt-5
   fallbacks:
   - grok-4-fast:
     - gpt-5
-    - minimax-m2-free
-  - grok-code-fast-1:
     - gpt-5-codex
-    - gpt-5
-  - o3-deep-research:
-    - o3-pro
-    - o3
-  - o4-mini-deep-research:
-    - o3
-    - gpt-5
-  - gpt-5-pro:
-    - gpt-5
+  - grok-code-fast-1:
     - grok-4-fast
+    - gpt-5-codex
   - gpt-5:
     - grok-4-fast
-    - minimax-m2-free
-  - gpt-5-mini:
-    - minimax-m2-free
+    - gpt-5-codex
+  - gpt-5-codex:
+    - gpt-5
     - grok-4-fast
-  - minimax-m2-free:
-    - grok-4-fast
-    - gpt-5-mini
+  default_fallbacks:
+  - grok-4-fast
+  - gpt-5
+  - gpt-5-codex
 general_settings:
   master_key: REDACTED_LITELLM_KEY
+  database_url: postgresql://dopemux_age:dopemux_age_dev_password@localhost:5456/litellm
