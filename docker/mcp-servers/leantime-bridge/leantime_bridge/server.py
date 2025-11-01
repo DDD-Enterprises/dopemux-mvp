@@ -13,6 +13,7 @@ import aiohttp
 from mcp import types
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
+from mcp.server.sse import sse_server
 from pydantic import BaseModel
 from jsonrpcclient import request, parse, Ok
 
@@ -328,11 +329,11 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[types.Text
             return enforce_token_budget_on_text_content(error_content, name, max_tokens=SAFE_TOKEN_BUDGET)
 
 async def main():
-    """Run the MCP server"""
-    logger.info(f"Starting Leantime MCP Bridge Server on port {MCP_SERVER_PORT}")
+    """Run the MCP server with HTTP/SSE transport"""
+    logger.info(f"Starting Leantime MCP Bridge HTTP/SSE Server on port {MCP_SERVER_PORT}")
     logger.info(f"Connecting to Leantime at: {LEANTIME_API_URL}")
 
-    async with stdio_server() as (read_stream, write_stream):
+    async with sse_server() as (read_stream, write_stream):
         await app.run(
             read_stream,
             write_stream,
