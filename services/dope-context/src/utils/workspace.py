@@ -9,7 +9,15 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 # Add project root to path for imports
-project_root = Path(__file__).resolve().parents[4]  # services/dope-context/src/utils -> root
+# Detect if running in Docker (different path structure)
+is_docker = Path("/.dockerenv").exists() or Path("/app").exists()
+if is_docker:
+    # In Docker: /app/src/utils/workspace.py -> /app (2 levels up)
+    project_root = Path(__file__).resolve().parents[2]
+else:
+    # Local development: services/dope-context/src/utils -> root (4 levels up)
+    project_root = Path(__file__).resolve().parents[4]
+
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
