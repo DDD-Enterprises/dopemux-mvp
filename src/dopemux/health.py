@@ -238,29 +238,14 @@ class HealthChecker:
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     continue
 
-            # Try to health check our custom MCP server
-            sequential_thinking_health = self._check_sequential_thinking_server()
-
             if not mcp_processes:
                 status = HealthStatus.WARNING
                 message = "No MCP servers running"
-            elif (
-                sequential_thinking_health
-                and sequential_thinking_health.get("status") == "healthy"
-            ):
+            else:
                 status = HealthStatus.HEALTHY
                 message = f"MCP servers healthy ({len(mcp_processes)} running)"
-            else:
-                status = HealthStatus.WARNING
-                message = f"MCP servers running but issues detected"
 
-            details.update(
-                {
-                    "processes_count": len(mcp_processes),
-                    "sequential_thinking": sequential_thinking_health
-                    or {"status": "not_found"},
-                }
-            )
+            details.update({"processes_count": len(mcp_processes)})
 
             if detailed:
                 details["processes"] = mcp_processes
@@ -276,35 +261,6 @@ class HealthChecker:
                 message=f"MCP server check failed: {e}",
                 details={"error": str(e)},
             )
-
-    def _check_sequential_thinking_server(self) -> Optional[Dict[str, Any]]:
-        """Check our custom sequential thinking MCP server."""
-        try:
-            # Try to run the health monitor script
-            script_path = (
-                Path(__file__).parent.parent.parent
-                / "docker"
-                / "mcp-servers"
-                / "mcp-server-mas-sequential-thinking"
-                / "scripts"
-                / "health_monitor.py"
-            )
-
-            if script_path.exists():
-                result = subprocess.run(
-                    ["python", str(script_path), "health"],
-                    capture_output=True,
-                    text=True,
-                    timeout=10,
-                )
-
-                if result.returncode == 0:
-                    return json.loads(result.stdout)
-
-        except Exception:
-            pass
-
-        return None
 
     def _check_docker_services(self, detailed: bool = False) -> ServiceHealth:
         """Check Docker-based MCP services."""
@@ -625,23 +581,7 @@ class HealthChecker:
 
         for service_name, health in results.items():
             if health.status in [HealthStatus.CRITICAL, HealthStatus.WARNING]:
-                if service_name == "mcp_servers":
-                    try:
-                        # Try to restart MCP server
-                        script_path = (
-                            Path(__file__).parent.parent.parent
-                            / "docker"
-                            / "mcp-servers"
-                            / "mcp-server-mas-sequential-thinking"
-                            / "scripts"
-                            / "health_monitor.py"
-                        )
-                        if script_path.exists():
-                            subprocess.run(
-                                ["python", str(script_path), "restart"], timeout=30
-                            )
-                            restarted.append("MCP Sequential Thinking Server")
-                    except Exception:
-                        pass
+                # No automatic restart hooks currently configured
+                pass
 
         return restarted

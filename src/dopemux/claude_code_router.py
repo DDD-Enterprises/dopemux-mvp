@@ -107,24 +107,27 @@ class ClaudeCodeRouterManager:
         router_config.setdefault("longContextThreshold", 60_000)
 
         overrides = router_overrides or {}
-        
-        # Set up intelligent model routing using OpenRouter-hosted models
-        router_config["default"] = overrides.get(
-            "default", "litellm,openrouter-openai-gpt-5"
+
+        default_route = overrides.get("default") or f"{provider_name},{provider_models[0]}"
+        router_config["default"] = default_route
+
+        router_config["background"] = (
+            overrides.get("background")
+            or router_config.get("background")
+            or default_route
         )
-        router_config["background"] = overrides.get(
-            "background", "litellm,openrouter-xai-grok-code-fast"
+        router_config["think"] = (
+            overrides.get("think")
+            or router_config.get("think")
+            or default_route
         )
-        router_config["think"] = overrides.get(
-            "think", "litellm,openrouter-openai-gpt-5-codex"
-        )
+
         router_config.setdefault("longContext", router_config["default"])
-        
-        # Web search uses faster models
+
         if "webSearch" in overrides:
             router_config["webSearch"] = overrides["webSearch"]
         else:
-            router_config["webSearch"] = "litellm,openrouter-google-gemini-2-flash"
+            router_config.setdefault("webSearch", default_route)
 
         config["Router"] = router_config
 
