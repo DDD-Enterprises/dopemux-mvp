@@ -15,9 +15,11 @@ import os
 import pickle
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from fastmcp import FastMCP
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 from ..preprocessing.code_chunker import CodeChunker, ChunkingConfig
 from ..context.openai_generator import OpenAIContextGenerator
@@ -52,6 +54,12 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastMCP server
 mcp = FastMCP("dope-context")
+
+
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(_: Request) -> JSONResponse:
+    """Basic health endpoint for container probes."""
+    return JSONResponse({"status": "ok"})
 
 
 # ============================================================================
@@ -232,6 +240,27 @@ _docs_pipeline: Optional[DocIndexingPipeline] = None
 _docs_search: Optional[DocumentSearch] = None
 _docs_embedder: Optional[ContextualizedEmbedder] = None
 
+VOYAGE_KEY_ENV_VARS: Tuple[str, ...] = ("VOYAGE_API_KEY", "VOYAGEAI_API_KEY")
+
+
+def _get_voyage_api_key(required: bool = True) -> Optional[str]:
+    """
+    Resolve the Voyage API key from multiple supported environment variables.
+
+    Args:
+        required: Whether to raise if no key is found.
+    """
+    for env_name in VOYAGE_KEY_ENV_VARS:
+        value = os.getenv(env_name)
+        if value:
+            return value
+
+    if required:
+        raise ValueError(
+            "VOYAGE_API_KEY or VOYAGEAI_API_KEY environment variable required"
+        )
+    return None
+
 
 def _initialize_components():
     """Initialize all pipeline components."""
@@ -240,12 +269,9 @@ def _initialize_components():
 
     # Get API keys
     openai_key = os.getenv("OPENAI_API_KEY")
-    voyage_key = os.getenv("VOYAGE_API_KEY")
+    voyage_key = _get_voyage_api_key()
     qdrant_url = os.getenv("QDRANT_URL", "localhost")
     qdrant_port = int(os.getenv("QDRANT_PORT", "6333"))
-
-    if not voyage_key:
-        raise ValueError("VOYAGE_API_KEY environment variable required")
 
     # Detect workspace and get collection names
     workspace_root = get_workspace_root()
@@ -352,13 +378,13 @@ async def _index_workspace_impl(
         context_generator = OpenAIContextGenerator(api_key=openai_key)
 
     standard_embedder = VoyageEmbedder(
-        api_key=os.getenv("VOYAGE_API_KEY"),
+        api_key=_get_voyage_api_key(),
         default_model="voyage-code-3",
     )
 
     # Create contextualized embedder for content vectors
     contextualized_embedder = ContextualizedEmbedder(
-        api_key=os.getenv("VOYAGE_API_KEY"),
+        api_key=_get_voyage_api_key(),
         cache_ttl_hours=24,
     )
 
@@ -477,12 +503,14 @@ async def _search_code_impl(
         logger.info(f"Searching workspace: {workspace} → collection: {code_collection}")
 
         # Check API keys first
-        voyage_key = os.getenv("VOYAGE_API_KEY")
+        voyage_key = _get_voyage_api_key(required=False)
         if not voyage_key:
-            logger.error("VOYAGE_API_KEY not set")
+            logger.error(
+                "Voyage API key not set (expected VOYAGE_API_KEY or VOYAGEAI_API_KEY)"
+            )
             return [{
-                "error": "VOYAGE_API_KEY environment variable not set",
-                "help": "Set VOYAGE_API_KEY in your environment to enable embeddings and reranking"
+                "error": "Voyage API key environment variable not set",
+                "help": "Set VOYAGE_API_KEY or VOYAGEAI_API_KEY to enable embeddings and reranking"
             }]
 
         # Get cached components (reuses HTTP clients and connections)
@@ -589,7 +617,7 @@ async def _search_code_impl(
             return [{
                 "error": f"Query embedding failed: {str(embed_error)}",
                 "query": query,
-                "help": "Check VOYAGE_API_KEY and network connectivity"
+                "help": "Check VOYAGE_API_KEY or VOYAGEAI_API_KEY and network connectivity"
             }]
 
         query_vectors = {
@@ -850,7 +878,7 @@ async def _index_docs_impl(
     )
 
     docs_embedder = ContextualizedEmbedder(
-        api_key=os.getenv("VOYAGE_API_KEY"),
+        api_key=_get_voyage_api_key(),
         cache_ttl_hours=24,
     )
 
@@ -910,12 +938,14 @@ async def _docs_search_impl(
     logger.info(f"Searching docs: {workspace} → collection: {docs_collection}")
 
     # Check API key
-    voyage_key = os.getenv("VOYAGE_API_KEY")
+    voyage_key = _get_voyage_api_key(required=False)
     if not voyage_key:
-        logger.error("VOYAGE_API_KEY not set")
+        logger.error(
+            "Voyage API key not set (expected VOYAGE_API_KEY or VOYAGEAI_API_KEY)"
+        )
         return [{
-            "error": "VOYAGE_API_KEY environment variable not set",
-            "help": "Set VOYAGE_API_KEY in your environment"
+            "error": "Voyage API key environment variable not set",
+            "help": "Set VOYAGE_API_KEY or VOYAGEAI_API_KEY in your environment"
         }]
 
     # Get cached components (reuses HTTP clients and connections)
@@ -1137,7 +1167,7 @@ async def _sync_workspace_impl(
             chunker = CodeChunker()
             openai_key = os.getenv("OPENAI_API_KEY")
             context_generator = OpenAIContextGenerator(api_key=openai_key) if openai_key else None
-            embedder = _get_cached_embedder(api_key=os.getenv("VOYAGE_API_KEY"))
+            embedder = _get_cached_embedder(api_key=_get_voyage_api_key())
 
             config = IndexingConfig(
                 workspace_path=workspace,
@@ -1708,5 +1738,48 @@ if __name__ == "__main__":
     # Run server
     logging.basicConfig(level=logging.INFO)
     logger.info("Dope-Context MCP server starting...")
+
+    transport_env = os.getenv("MCP_TRANSPORT") or os.getenv("FASTMCP_TRANSPORT")
+    if transport_env:
+        transport = transport_env.strip().lower()
+    elif os.getenv("MCP_SERVER_PORT"):
+        transport = "http"
+    else:
+        transport = "stdio"
+
+    valid_transports = {"stdio", "http", "sse", "streamable-http"}
+    if transport not in valid_transports:
+        logger.warning(
+            "Unknown MCP transport '%s'; defaulting to 'stdio'",
+            transport,
+        )
+        transport = "stdio"
+
+    run_kwargs: Dict[str, Any] = {}
+    if transport != "stdio":
+        host = (
+            os.getenv("MCP_SERVER_HOST")
+            or os.getenv("FASTMCP_HOST")
+            or "0.0.0.0"
+        )
+        port_str = (
+            os.getenv("MCP_SERVER_PORT")
+            or os.getenv("FASTMCP_PORT")
+            or os.getenv("PORT")
+        )
+        try:
+            port = int(port_str) if port_str else 3010
+        except (TypeError, ValueError):
+            logger.warning(
+                "Invalid MCP_SERVER_PORT '%s'; defaulting to 3010",
+                port_str,
+            )
+            port = 3010
+
+        run_kwargs.update(host=host, port=port)
+        logger.info("HTTP transport configured on %s:%s", host, port)
+    else:
+        logger.info("Using stdio transport")
+
     # Components initialize on first tool call (lazy init)
-    mcp.run()
+    mcp.run(transport=transport, **run_kwargs)

@@ -107,25 +107,27 @@ class ClaudeCodeRouterManager:
         router_config.setdefault("longContextThreshold", 60_000)
 
         overrides = router_overrides or {}
-        
-        # Set up intelligent model routing based on Anthropic models
-        # Primary: Use Claude models with proper fallbacks through LiteLLM
-        router_config["default"] = overrides.get(
-            "default", "litellm,anthropic-claude-3-5-sonnet-20241022"
+
+        default_route = overrides.get("default") or f"{provider_name},{provider_models[0]}"
+        router_config["default"] = default_route
+
+        router_config["background"] = (
+            overrides.get("background")
+            or router_config.get("background")
+            or default_route
         )
-        router_config["background"] = overrides.get(
-            "background", "litellm,anthropic-claude-3-haiku-20240307"
+        router_config["think"] = (
+            overrides.get("think")
+            or router_config.get("think")
+            or default_route
         )
-        router_config["think"] = overrides.get(
-            "think", "litellm,anthropic-claude-3-opus-20240229"
-        )
+
         router_config.setdefault("longContext", router_config["default"])
-        
-        # Web search uses faster models
+
         if "webSearch" in overrides:
             router_config["webSearch"] = overrides["webSearch"]
         else:
-            router_config["webSearch"] = "litellm,anthropic-claude-3-haiku-20240307"
+            router_config.setdefault("webSearch", default_route)
 
         config["Router"] = router_config
 

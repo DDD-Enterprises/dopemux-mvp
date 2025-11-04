@@ -99,6 +99,7 @@ celerybeat.pid
 .env
 .env.conport
 .venv
+.venv-litellm
 env/
 venv/
 ENV/
@@ -136,6 +137,7 @@ context_snapshots/
 .taskmaster/
 .worktrees/
 context_portal/conport_vector_data/
+logs/
 
 # Claude Code specific
 .claude/settings.local.json
@@ -259,3 +261,4 @@ docker/mcp-servers/backups/
 services/conport_kg/auth/keys/*.pem
 .env* 
 =*
+.vercel

@@ -13,6 +13,7 @@ import aiohttp
 from mcp import types
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
+from mcp.server.sse import sse_server
 from pydantic import BaseModel
 from jsonrpcclient import request, parse, Ok
 
@@ -108,7 +109,7 @@ class LeantimeClient:
 
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_token}"
+            "x-api-key": self.api_token
         }
 
         payload = request(method, params or {})
@@ -257,49 +258,49 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[types.Text
             result_content = None
 
             if name == "create_project":
-                result = await client.call_api("leantime.addProject", arguments)
+                result = await client.call_api("leantime.rpc.projects.addProject", arguments)
                 result_content = [types.TextContent(
                     type="text",
                     text=f"Project created successfully: {json.dumps(result, indent=2)}"
                 )]
 
             elif name == "list_projects":
-                result = await client.call_api("leantime.getProjects", arguments)
+                result = await client.call_api("leantime.rpc.projects.getAll", arguments)
                 result_content = [types.TextContent(
                     type="text",
                     text=f"Projects: {json.dumps(result, indent=2)}"
                 )]
 
             elif name == "create_ticket":
-                result = await client.call_api("leantime.addTicket", arguments)
+                result = await client.call_api("leantime.rpc.tickets.addTicket", arguments)
                 result_content = [types.TextContent(
                     type="text",
                     text=f"Ticket created successfully: {json.dumps(result, indent=2)}"
                 )]
 
             elif name == "list_tickets":
-                result = await client.call_api("leantime.getTickets", arguments)
+                result = await client.call_api("leantime.rpc.tickets.getTickets", arguments)
                 result_content = [types.TextContent(
                     type="text",
                     text=f"Tickets: {json.dumps(result, indent=2)}"
                 )]
 
             elif name == "update_ticket":
-                result = await client.call_api("leantime.editTicket", arguments)
+                result = await client.call_api("leantime.rpc.tickets.editTicket", arguments)
                 result_content = [types.TextContent(
                     type="text",
                     text=f"Ticket updated successfully: {json.dumps(result, indent=2)}"
                 )]
 
             elif name == "get_project_stats":
-                result = await client.call_api("leantime.getProjectStats", arguments)
+                result = await client.call_api("leantime.rpc.projects.getProjectStats", arguments)
                 result_content = [types.TextContent(
                     type="text",
                     text=f"Project statistics: {json.dumps(result, indent=2)}"
                 )]
 
             elif name == "create_milestone":
-                result = await client.call_api("leantime.addMilestone", arguments)
+                result = await client.call_api("leantime.rpc.projects.addMilestone", arguments)
                 result_content = [types.TextContent(
                     type="text",
                     text=f"Milestone created successfully: {json.dumps(result, indent=2)}"
@@ -328,11 +329,11 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> Sequence[types.Text
             return enforce_token_budget_on_text_content(error_content, name, max_tokens=SAFE_TOKEN_BUDGET)
 
 async def main():
-    """Run the MCP server"""
-    logger.info(f"Starting Leantime MCP Bridge Server on port {MCP_SERVER_PORT}")
+    """Run the MCP server with HTTP/SSE transport"""
+    logger.info(f"Starting Leantime MCP Bridge HTTP/SSE Server on port {MCP_SERVER_PORT}")
     logger.info(f"Connecting to Leantime at: {LEANTIME_API_URL}")
 
-    async with stdio_server() as (read_stream, write_stream):
+    async with sse_server() as (read_stream, write_stream):
         await app.run(
             read_stream,
             write_stream,
