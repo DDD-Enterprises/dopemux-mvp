@@ -47,13 +47,9 @@
     },
     "gpt-researcher": {
       "type": "stdio",
-      "command": "docker",
+      "command": "python3",
       "args": [
-        "exec",
-        "-i",
-        "mcp-gptr-mcp",
-        "python",
-        "/app/gptr-mcp/server.py"
+        "/Users/hue/code/dopemux-mvp/scripts/gpt-researcher/mcp_server.py"
       ],
       "env": {
         "OPENAI_API_KEY": "${OPENAI_API_KEY}",
@@ -91,10 +87,10 @@
     },
     "desktop-commander": {
       "type": "stdio",
-      "command": "/Users/hue/code/dopemux-mvp/docker/mcp-servers/desktop-commander/start_with_uvx.sh",
-      "args": [],
+      "command": "python3",
+      "args": ["/Users/hue/code/dopemux-mvp/docker/mcp-servers/desktop-commander/stdio_bridge.py"],
       "env": {},
-      "description": "Desktop automation with native macOS support (uvx-based)"
+      "description": "Desktop automation with native macOS support"
     }
   }
 }

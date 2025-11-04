@@ -86,6 +86,7 @@ HOUSE_THEME = {
     ),
     "status_right": (
         "#[fg=#a6e3a1]#{@dopemux_mobile_indicator:-📱 idle} #[default]"
+        "#[fg=#b4befe]#(./scripts/ccr_model_tracker.sh 2>/dev/null || echo '🤖') #[default]"
         "#[fg=#f5c2e7]  %R #[fg=#89dceb]%a %b %d "
         "#[fg=#cdd6f4]#{window_index}:#{window_name} "
         "#[fg=#f9e2af]#{pane_index}:#{pane_title}"
@@ -143,6 +144,7 @@ NEON_THEME = {
     ),
     "status_right": (
         "#[fg=#94fadb]#{@dopemux_mobile_indicator:-📱 idle} #[default]"
+        "#[fg=#ffcf78]#(./scripts/ccr_model_tracker.sh 2>/dev/null || echo '🤖') #[default]"
         "#[fg=#ff8bd1]  %R #[fg=#7dfbf6]%a %b %d "
         "#[fg=#9b78ff]#{window_index}:#{window_name} "
         "#[fg=#f5f26d]#{pane_index}:#{pane_title}"
