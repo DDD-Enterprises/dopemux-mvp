@@ -285,5 +285,35 @@ curl http://localhost:8097/health
 - `tests/security/README.md` – Security testing framework and guidelines
 - `docs/security-overview.md` – Security features and implementation
 
+## Available MCP Tools
+
+### 🖥️ Desktop Commander (Port 3012)
+**Purpose**: Desktop automation for ADHD-optimized development workflows
+**Status**: ✅ Fully operational with automatic X11 setup
+
+**Available Tools**:
+- **screenshot**: Capture desktop state for visual documentation
+- **window_list**: List all open windows for workspace awareness
+- **focus_window**: Auto-focus specific windows (eliminates manual switching)
+- **type_text**: Type text via automation for repetitive tasks
+
+**ADHD Integration**:
+- **Automatic window focus** after code navigation (Serena → Desktop Commander)
+- **Visual context preservation** for decision documentation
+- **Workspace state tracking** before/after deep work sessions
+- **Sub-2-second context switching** between applications
+
+**Usage Examples**:
+```python
+# Seamless development flow
+mcp__dope-context__search_code(query="authentication")
+mcp__serena-v2__goto_definition(file_path="auth.py", line=42)
+mcp__desktop-commander__focus_window(title="VS Code")  # Auto-focus!
+
+# Visual decision logging
+mcp__desktop-commander__screenshot(filename="/tmp/arch.png")
+mcp__conport__log_decision(summary="Architecture approved", implementation_details="/tmp/arch.png")
+```
+
 You are the conductor. Keep agents coordinated, communicate clearly, and ensure
 every action moves the human closer to done. !*** End Patch

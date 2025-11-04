@@ -20,9 +20,10 @@ fi
 
 # Start server if not running
 if [ ! -f "$SERVER_PID_FILE" ]; then
-    >&2 echo "Starting Desktop Commander HTTP server with uvx..."
+    >&2 echo "Starting Desktop Commander HTTP server with python..."
     cd "$SCRIPT_DIR"
-    uvx --from . desktop-commander > /dev/null 2>&1 &
+    export DISPLAY=:0
+    python3 server.py > /dev/null 2>&1 &
     SERVER_PID=$!
     echo $SERVER_PID > "$SERVER_PID_FILE"
     >&2 echo "Desktop Commander HTTP server started (PID: $SERVER_PID)"

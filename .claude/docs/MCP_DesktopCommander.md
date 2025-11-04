@@ -3,7 +3,8 @@
 **Provider**: Dopemux
 **Purpose**: Desktop automation, window management, screenshot capture for ADHD-optimized workflows
 **Port**: 3012
-**Status**: ✅ Fully operational
+**Status**: ✅ Fully operational with X11 auto-setup
+**Integration**: Automatic DISPLAY configuration, seamless workflow integration
 
 ## Overview
 
@@ -312,33 +313,29 @@ mcp__desktop-commander__focus_window(title="Editor")
 
 **Operating System**:
 - Linux with X11 ✅
-- macOS with X11 forwarding ✅
+- macOS with X11 forwarding ✅ (auto-configured)
 - Wayland ⚠️ (limited support)
 
-**Dependencies**:
+**Dependencies** (Auto-installed):
 - xdotool (X11 automation)
 - wmctrl (window management)
 - scrot (screenshots)
 - imagemagick (image processing)
 
-**Docker Setup**:
-```yaml
-# docker-compose.yml
-services:
-  mcp-desktop-commander:
-    build: ./docker/mcp-servers/desktop-commander
-    container_name: mcp-desktop-commander
-    ports:
-      - "3012:3012"
-    environment:
-      - DISPLAY=${DISPLAY}
-    volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw
-    healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+**Dopemux Integration**:
+- **Automatic X11 Setup**: DISPLAY environment configured automatically
+- **Seamless Startup**: Integrated into Dopemux workflow initialization
+- **ADHD Optimization**: Zero manual configuration required
+
+**Manual Setup** (if needed):
+```bash
+# macOS X11 setup
+brew install --cask xquartz
+open -a XQuartz
+# Configure: XQuartz → Preferences → Security → ✅ Allow network clients
+
+# Enable X11 forwarding
+defaults write org.xquartz.X11 enable_iglx -bool true
 ```
 
 ---
@@ -347,12 +344,12 @@ services:
 
 **X11 Required**: Desktop automation requires X11 display server
 - Wayland support limited
-- Requires X11 forwarding for remote containers
+- Auto-fallback to macOS native tools when X11 unavailable
 
 **Security Considerations**:
 - Desktop automation has broad permissions
-- Mitigated by Docker isolation
-- Screenshot access requires user consent
+- Mitigated by isolated execution environment
+- Screenshot access requires user consent (macOS)
 
 **Window Title Matching**:
 - `focus_window` uses partial title matching

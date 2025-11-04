@@ -18,7 +18,7 @@ services:
       - pg_age_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph || exit 1"]
-      timeout: 5s
+      timeout: 10s
       retries: 10
       interval: 10s
       start_period: 20s
@@ -45,7 +45,7 @@ services:
       timeout: 10s
       retries: 3
       interval: 30s
-      start_period: 30s
+      start_period: 45s
     volumes:
       - mcp_context7_cache:/app/cache
     labels:
@@ -73,11 +73,11 @@ services:
       - "3003:3003"
     working_dir: /app
     healthcheck:
-      test: ["CMD-SHELL", "exit 0"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3014/sse --head || nc -z localhost 3014 || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
-      start_period: 30s
+      start_period: 45s
     labels:
       - "mcp.role=critical_path"
       - "mcp.priority=highest"
@@ -144,7 +144,7 @@ services:
       timeout: 10s
       retries: 3
       interval: 30s
-      start_period: 30s
+      start_period: 45s
     volumes:
       - mcp_logs:/app/logs
       - mcp_cache:/app/cache
@@ -187,7 +187,7 @@ services:
       timeout: 10s
       retries: 3
       interval: 30s
-      start_period: 30s
+      start_period: 45s
     volumes:
       - mcp_conport_data:/app/data
     labels:
@@ -231,13 +231,11 @@ services:
   # Task Orchestrator - Advanced task orchestration and dependency management
   task-orchestrator:
     build:
-      context: ./task-orchestrator
+      context: ../../services/task-orchestrator
       dockerfile: Dockerfile
     container_name: mcp-task-orchestrator
-    profiles: ["manual"]
-    # Kotlin MCP server currently runs over stdio; not a long-lived HTTP daemon.
-    # Avoid infinite restart loop when the process exits cleanly.
-    restart: "on-failure:3"
+    # Now always-on MCP server
+    restart: unless-stopped
     networks:
       - mcp-network
     env_file:
@@ -247,19 +245,18 @@ services:
       - JVM_HEAP_SIZE=512m
     ports:
       - "3014:3014"
-    # Stdio transport doesn't expose an HTTP port; keep healthcheck non-blocking.
-    # Fixed: Use sh instead of python (python not installed in Kotlin container)
+    # MCP server now runs persistently over SSE transport
     healthcheck:
-      test: ["CMD-SHELL", "exit 0"]
-      timeout: 5s
+      test: ["CMD-SHELL", "curl -f http://localhost:3014/sse --head || nc -z localhost 3014 || exit 1"]
+      timeout: 10s
       retries: 3
       interval: 30s
-      start_period: 30s
+      start_period: 45s
     volumes:
       - mcp_task_orchestrator_data:/app/data
       - mcp_task_orchestrator_logs:/app/logs
     # Keep container alive for mcp-proxy to exec stdio server on demand
-    command: ["/bin/sh", "-lc", "sleep infinity"]
+    command: ["python", "/app/server.py"]
     labels:
       - "mcp.role=workflow"
       - "mcp.priority=high"
@@ -391,7 +388,7 @@ services:
       timeout: 10s
       retries: 3
       interval: 30s
-      start_period: 30s
+      start_period: 45s
     labels:
       - "mcp.role=research"
       - "mcp.priority=low"
@@ -449,7 +446,7 @@ services:
       timeout: 10s
       retries: 3
       interval: 30s
-      start_period: 30s
+      start_period: 45s
     volumes:
       - mcp_gptr_data:/app/data
       - mcp_gptr_logs:/app/logs
@@ -504,7 +501,7 @@ services:
   #     timeout: 10s
   #     retries: 3
   #     interval: 30s
-  #     start_period: 30s
+  #     start_period: 45s
   #   labels:
   #     - "mcp.role=quality"
   #     - "mcp.priority=medium"
@@ -534,7 +531,7 @@ services:
       timeout: 10s
       retries: 3
       interval: 30s
-      start_period: 30s
+      start_period: 45s
     labels:
       - "mcp.role=utility"
       - "mcp.priority=medium"
@@ -595,7 +592,7 @@ services:
       timeout: 10s
       retries: 3
       interval: 30s
-      start_period: 30s
+      start_period: 45s
     labels:
       - "mcp.role=adhd-support"
       - "mcp.priority=high"
@@ -725,3 +722,4 @@ volumes:
   dope_context_logs:
     driver: local
     name: dope_context_logs
+      - "mcp.transport=sse"

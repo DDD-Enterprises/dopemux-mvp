@@ -51,12 +51,17 @@ async def startup():
     """Initialize orchestrator on startup."""
     global orchestrator
     logger.info("🚀 Starting Task-Orchestrator Query Server...")
-    
+
+    # Get MCP tools for ConPort integration
+    from orchestrator_mcp_tools import get_mcp_tools
+    mcp_tools = await get_mcp_tools()
+
     orchestrator = EnhancedTaskOrchestrator(
         leantime_url=LEANTIME_URL,
         leantime_token=LEANTIME_TOKEN,
         redis_url=REDIS_URL,
-        workspace_id=WORKSPACE_ID
+        workspace_id=WORKSPACE_ID,
+        mcp_tools=mcp_tools
     )
     
     await orchestrator.initialize()
