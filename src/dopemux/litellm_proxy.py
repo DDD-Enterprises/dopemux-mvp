@@ -12,7 +12,7 @@ import time
 from datetime import datetime
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 import litellm  # type: ignore
 import yaml
@@ -20,6 +20,45 @@ import yaml
 
 class LiteLLMProxyError(RuntimeError):
     """Raised when the LiteLLM proxy cannot be prepared or launched."""
+
+MASTER_KEY_PREFIX = "sk-master-dopemux-local"
+
+
+def _sanitize_random_token(length: int = 24) -> str:
+    """
+    Generate a URL-safe random token trimmed to the requested length.
+
+    LiteLLM virtual keys are opaque but must stay URL-safe and reasonably short.
+    """
+    token = secrets.token_urlsafe(length)
+    # token_urlsafe can exceed requested length; trim while keeping alphanumerics/-/_
+    return token.replace("-", "").replace("_", "")[:length]
+
+
+def generate_litellm_master_key() -> str:
+    """
+    Create a LiteLLM-compatible virtual master key.
+
+    LiteLLM requires virtual keys to start with ``sk-``. Prefix with a Dopemux-specific
+    marker so users can recognise local keys when debugging.
+    """
+    random_part = _sanitize_random_token()
+    return f"{MASTER_KEY_PREFIX}-{random_part}"
+
+
+def ensure_master_key(candidate: Optional[str]) -> Tuple[str, bool]:
+    """
+    Validate or generate a LiteLLM master key.
+
+    Returns:
+        A tuple of (master_key, regenerated) where ``regenerated`` is True if the
+        provided candidate was invalid and a new key had to be generated.
+    """
+    value = (candidate or "").strip()
+    if value.startswith("sk-"):
+        return value, False
+
+    return generate_litellm_master_key(), True
 
 
 DEFAULT_LITELLM_CONFIG = """model_list:
@@ -379,9 +418,13 @@ class LiteLLMProxyManager:
     def _ensure_master_key(self) -> str:
         key_path = self.instance_dir / "master.key"
         if key_path.exists():
-            return key_path.read_text().strip()
+            existing = key_path.read_text().strip()
+            master_key, regenerated = ensure_master_key(existing)
+            if regenerated:
+                key_path.write_text(master_key)
+            return master_key
 
-        master_key = secrets.token_urlsafe(32)
+        master_key, _ = ensure_master_key(None)
         key_path.write_text(master_key)
         return master_key
 

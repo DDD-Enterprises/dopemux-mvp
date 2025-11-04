@@ -23,7 +23,80 @@ if str(project_root) not in sys.path:
 
 # Import shared workspace detection (SINGLE SOURCE OF TRUTH)
 # This fixes the worktree bug: git worktrees have .git as FILE, not directory!
-from src.dopemux.workspace_detection import get_workspace_root as _get_workspace_root
+try:
+    from src.dopemux.workspace_detection import get_workspace_root as _get_workspace_root
+except ModuleNotFoundError:
+    # Fallback implementation for Docker images where the shared dopemux package
+    # is not available. Keeps workspace detection consistent with the main repo.
+    import logging
+    import os
+    import subprocess
+
+    _logger = logging.getLogger(__name__)
+
+    def _get_workspace_root(start_path: Optional[Path] = None) -> Path:
+        current = Path(start_path or os.getcwd()).resolve()
+
+        env_workspace = os.getenv("DOPEMUX_WORKSPACE_ROOT")
+        if env_workspace:
+            workspace_path = Path(env_workspace).resolve()
+            if workspace_path.exists() and workspace_path.is_dir():
+                _logger.debug(
+                    "Workspace detected via DOPEMUX_WORKSPACE_ROOT: %s", workspace_path
+                )
+                return workspace_path
+            _logger.warning(
+                "DOPEMUX_WORKSPACE_ROOT set to invalid path: %s. Falling back to auto-detection.",
+                env_workspace,
+            )
+
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "--show-toplevel"],
+                cwd=str(current),
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=2,
+            )
+            git_root = Path(result.stdout.strip())
+            if git_root.exists():
+                _logger.debug("Workspace detected via git: %s", git_root)
+                return git_root.resolve()
+        except (
+            subprocess.CalledProcessError,
+            subprocess.TimeoutExpired,
+            FileNotFoundError,
+        ) as exc:
+            _logger.debug("Git detection failed (%s). Trying project markers.", exc)
+
+        project_markers = [
+            "pyproject.toml",
+            "package.json",
+            ".git",
+            "Cargo.toml",
+            "go.mod",
+            "composer.json",
+        ]
+
+        search_path = current
+        for _ in range(10):
+            for marker in project_markers:
+                if (search_path / marker).exists():
+                    _logger.debug(
+                        "Workspace detected via marker '%s': %s", marker, search_path
+                    )
+                    return search_path
+
+            parent = search_path.parent
+            if parent == search_path:
+                break
+            search_path = parent
+
+        _logger.warning(
+            "No workspace root detected. Falling back to current directory: %s", current
+        )
+        return current
 
 
 # Compatibility wrapper for existing dope-context code
