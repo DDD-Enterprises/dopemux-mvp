@@ -316,13 +316,23 @@ class DopemuxController extends Controller
      */
     private function getADHDState(int $userId): array
     {
-        // This would fetch from database
+        // Load models
+        $preferencesModel = new \Leantime\Plugins\Dopemux\Models\ADHDUserPreferences();
+        $cognitiveModel = new \Leantime\Plugins\Dopemux\Models\CognitiveLoadHistory();
+        $attentionModel = new \Leantime\Plugins\Dopemux\Models\AttentionStateHistory();
+
+        // Get real data from models
+        $currentLoad = $cognitiveModel->getAverageLoad($userId, 1); // Last 24 hours
+        $currentAttention = $attentionModel->getCurrentState($userId) ?: 'focused';
+        $preferences = $preferencesModel->getUserPreferences($userId);
+
         return [
-            'attention_state' => 'focused',
-            'cognitive_load' => 5,
-            'break_due' => false,
-            'context_preserved' => true,
-            'last_updated' => date('c')
+            'attention_state' => $currentAttention,
+            'cognitive_load' => $currentLoad,
+            'break_due' => $this->isBreakDue($userId),
+            'context_preserved' => true, // Always true for now
+            'last_updated' => date('c'),
+            'preferences' => $preferences
         ];
     }
 
@@ -379,8 +389,8 @@ class DopemuxController extends Controller
      */
     private function getCurrentCognitiveLoad(int $userId): int
     {
-        // This would fetch from user preferences or current session
-        return 5; // Default moderate load
+        $cognitiveModel = new \Leantime\Plugins\Dopemux\Models\CognitiveLoadHistory();
+        return (int) $cognitiveModel->getAverageLoad($userId, 1); // Last 24 hours
     }
 
     /**
@@ -388,12 +398,16 @@ class DopemuxController extends Controller
      */
     private function getCognitiveLoadHistory(int $userId): array
     {
-        // This would fetch historical data
-        return [
-            ['timestamp' => '2025-01-20 10:00', 'load' => 3],
-            ['timestamp' => '2025-01-20 11:00', 'load' => 5],
-            ['timestamp' => '2025-01-20 12:00', 'load' => 7],
-        ];
+        $cognitiveModel = new \Leantime\Plugins\Dopemux\Models\CognitiveLoadHistory();
+        $rawHistory = $cognitiveModel->getUserHistory($userId, 10);
+
+        // Format for template
+        return array_map(function($record) {
+            return [
+                'timestamp' => date('Y-m-d H:i', strtotime($record['created_at'])),
+                'load' => (float) $record['load_value']
+            ];
+        }, $rawHistory);
     }
 
     /**
