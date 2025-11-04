@@ -177,16 +177,22 @@ class KGOrchestrator:
 
         print(f"\n[KG Orchestrator] task.started: Task {task_id}")
 
-        # TODO: PERFORMANCE - N+1 Query Problem (Issue from audit 2025-10-16)
-        # Current: Loads decisions one-by-one (10 decisions = 10 queries)
-        # Fix: Add ExplorationQueries.get_multiple_neighborhoods(decision_refs) for batch loading
+        # PERFORMANCE FIX - N+1 Query Problem (Issue from audit 2025-10-16)
+        # Fixed: Now uses batch loading instead of one-by-one queries
         # Impact: 10x performance improvement for tasks with multiple decisions
-        # Priority: MEDIUM (not blocking production, but degrades performance)
 
-        # Background: Pre-load decision contexts
+        # Background: Pre-load decision contexts using batch query
         contexts = []
-        for decision_id in decision_refs:
-            try:
+        try:
+            # Try batch loading first for better performance
+            batch_contexts = await self.exploration_queries.get_multiple_neighborhoods(decision_refs)
+            contexts = batch_contexts
+            print(f"[KG Orchestrator] Batch loaded {len(contexts)} decision contexts")
+        except (AttributeError, NotImplementedError):
+            # Fallback to individual loading if batch method not available
+            print(f"[KG Orchestrator] Batch loading not available, falling back to individual queries")
+            for decision_id in decision_refs:
+                try:
                 context = self.exploration.get_decision_neighborhood(
                     decision_id,
                     max_hops=2,

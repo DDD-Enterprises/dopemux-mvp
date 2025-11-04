@@ -185,3 +185,17 @@ class HealthResponse(BaseModel):
     accommodation_stats: Dict[str, int]
     current_state: Dict[str, Any]
     effectiveness_metrics: Dict[str, Any]
+
+
+# Code Complexity Assessment Schemas
+class CodeComplexityRequest(BaseModel):
+    """Request for code complexity assessment."""
+    code_snippet: str = Field(..., min_length=1, description="Code snippet to analyze")
+    language: Optional[str] = Field(None, description="Programming language (e.g., python, javascript)")
+
+class ComplexityResponse(BaseModel):
+    """Response for code complexity assessment."""
+    complexity_score: float = Field(..., ge=0.0, le=1.0, description="Complexity score (0.0-1.0)")
+    complexity_level: str = Field(..., description="Complexity level: low, medium, high")
+    estimated_reading_time_minutes: int = Field(..., ge=0, description="Estimated time to understand")
+    recommendations: List[str] = Field(default_factory=list, description="Suggestions for simplification")
