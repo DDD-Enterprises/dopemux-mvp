@@ -41,6 +41,7 @@ def test_ensure_started_writes_config_and_master_key(monkeypatch, tmp_path):
     info = manager.ensure_started()
 
     assert info.master_key
+    assert info.master_key.startswith("sk-")
     assert launches["env"]["LITELLM_MASTER_KEY"] == info.master_key
 
     config_data = yaml.safe_load(Path(info.config_path).read_text())
@@ -68,3 +69,19 @@ def test_build_client_env_preserves_provider_key(monkeypatch, tmp_path):
     assert updates["OPENROUTER_API_KEY"] == "sk-provider"
     assert updates["DOPEMUX_PROVIDER_OPENROUTER_API_KEY"] == "sk-provider"
     assert updates["OPENAI_API_BASE"] == "http://127.0.0.1:4100"
+
+
+def test_ensure_started_regenerates_legacy_master_key(monkeypatch, tmp_path):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-provider")
+
+    legacy_dir = tmp_path / ".dopemux" / "litellm" / "A"
+    legacy_dir.mkdir(parents=True, exist_ok=True)
+    (legacy_dir / "master.key").write_text("legacy-master-key")
+
+    manager = LiteLLMProxyManager(tmp_path, "A", 3000)
+    monkeypatch.setattr(manager, "_is_port_in_use", lambda: True)
+
+    info = manager.ensure_started()
+
+    assert info.master_key.startswith("sk-")
+    assert (legacy_dir / "master.key").read_text().startswith("sk-")

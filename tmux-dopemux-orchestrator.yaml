@@ -32,3 +32,11 @@ windows:
       - shell_command:
           - watch -n 30 './scripts/pm-dashboard.sh zen'
         start_directory: .
+      # Pane 6: ADHD Metrics Dashboard
+      - shell_command:
+          - watch -n 30 './scripts/pm-dashboard.sh adhd'
+        start_directory: .
+      # Pane 7: System Health Monitor
+      - shell_command:
+          - watch -n 30 './scripts/pm-dashboard.sh health'
+        start_directory: .

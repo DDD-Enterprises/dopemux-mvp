@@ -28,6 +28,18 @@
 # Detect shell type
 DOPEMUX_SHELL_TYPE="${BASH_VERSION:+bash}${ZSH_VERSION:+zsh}"
 
+_dopemux_source_env_for_path() {
+    local repo_path="$1"
+    if [ -z "$repo_path" ]; then
+        return
+    fi
+    local env_file="$repo_path/.dopemux/env/current.sh"
+    if [ -f "$env_file" ]; then
+        # shellcheck disable=SC1090
+        source "$env_file"
+    fi
+}
+
 #
 # OPTIMIZED: Pure git-based worktree switching (NO PYTHON!)
 #
@@ -91,6 +103,7 @@ dwt() {
     # Switch to found worktree
     if [ -n "$target_path" ] && [ -d "$target_path" ]; then
         cd "$target_path" || return 1
+        _dopemux_source_env_for_path "$target_path"
 
         # Visual confirmation with ADHD-friendly output
         local current_branch
@@ -171,6 +184,7 @@ dwtcreate() {
         echo "✅ Created worktree: $worktree_path"
         echo "   Switching to it..."
         cd "$worktree_path" || return 1
+        _dopemux_source_env_for_path "$worktree_path"
         echo "   Branch: $(git branch --show-current)"
     else
         echo "❌ Failed to create worktree"
