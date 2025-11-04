@@ -47,6 +47,17 @@ model_list:
       X-Title: Dopemux LiteLLM Proxy
       Referer: https://dopemux.local
       User-Agent: Dopemux LiteLLM Proxy
+- model_name: openrouter-openai-gpt-5-pro
+  litellm_params:
+    model: openrouter/openai/gpt-5-pro
+    api_key: os.environ/OPENROUTER_API_KEY
+    api_base: https://openrouter.ai/api/v1
+    max_tokens: 131072
+    extra_headers:
+      HTTP-Referer: https://dopemux.local
+      X-Title: Dopemux LiteLLM Proxy
+      Referer: https://dopemux.local
+      User-Agent: Dopemux LiteLLM Proxy
 - model_name: openrouter-google-gemini-2-flash
   litellm_params:
     model: openrouter/google/gemini-2.0-flash-exp
@@ -87,8 +98,10 @@ litellm_settings:
     minimax: openrouter-openai-gpt-5-codex
     codex: openrouter-openai-gpt-5-codex
     gpt-5: openrouter-openai-gpt-5
+    gpt-5-pro: openrouter-openai-gpt-5-pro
     gpt-5-codex: openrouter-openai-gpt-5-codex
     openrouter-openai-gpt-5: openrouter-openai-gpt-5
+    openrouter-openai-gpt-5-pro: openrouter-openai-gpt-5-pro
     openrouter-openai-gpt-5-mini: openrouter-openai-gpt-5-mini
     openrouter-openai-gpt-5-codex: openrouter-openai-gpt-5-codex
     openrouter-google-gemini-2-flash: openrouter-google-gemini-2-flash
@@ -108,15 +121,21 @@ litellm_settings:
     claude-3.5: openrouter-xai-grok-code-fast
     claude-3-5-sonnet-20240620: openrouter-xai-grok-code-fast
   fallbacks:
-  - openrouter-xai-grok-4-fast:
-    - openrouter-openai-gpt-5
+  - openrouter-openai-gpt-5-pro:
     - openrouter-openai-gpt-5-codex
+    - openrouter-openai-gpt-5
+  - openrouter-xai-grok-4-fast:
+    - openrouter-openai-gpt-5-codex
+    - openrouter-openai-gpt-5-pro
   - openrouter-xai-grok-code-fast:
     - openrouter-xai-grok-4-fast
     - openrouter-openai-gpt-5-codex
   - openrouter-openai-gpt-5:
-    - openrouter-xai-grok-4-fast
     - openrouter-openai-gpt-5-codex
+    - openrouter-openai-gpt-5-pro
+  - openrouter-openai-gpt-5-codex:
+    - openrouter-openai-gpt-5-pro
+    - openrouter-xai-grok-4-fast
   - openrouter-openai-gpt-5-codex:
     - openrouter-openai-gpt-5
     - openrouter-xai-grok-4-fast
