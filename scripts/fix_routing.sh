@@ -62,6 +62,41 @@ else
     echo "✅ Using default LiteLLM master key"
 fi
 
+# Persist master key so Dopemux CLI reuses the same credential
+mkdir -p .dopemux/litellm/A
+printf "%s" "$LITELLM_MASTER_KEY" > .dopemux/litellm/A/master.key
+
+# Configure LiteLLM database URL (optional but required for metrics)
+DB_STORE=".dopemux/litellm/A/database.url"
+if [ -z "${DOPEMUX_LITELLM_DB_URL:-}" ]; then
+    if [ -f "$DB_STORE" ]; then
+        DOPEMUX_LITELLM_DB_URL=$(cat "$DB_STORE")
+        export DOPEMUX_LITELLM_DB_URL
+        echo "✅ Using LiteLLM database URL from $DB_STORE"
+    else
+        echo ""
+        read -r -p "Enter LiteLLM Postgres URL for metrics (leave blank to skip): " db_input
+        if [ -n "$db_input" ]; then
+            DOPEMUX_LITELLM_DB_URL="$db_input"
+            export DOPEMUX_LITELLM_DB_URL
+            printf "%s" "$DOPEMUX_LITELLM_DB_URL" > "$DB_STORE"
+            echo "✅ LiteLLM database URL saved to $DB_STORE"
+        else
+            echo "⚠️  LiteLLM database URL not provided - metrics disabled"
+        fi
+    fi
+else
+    printf "%s" "$DOPEMUX_LITELLM_DB_URL" > "$DB_STORE"
+    echo "✅ LiteLLM database URL loaded from environment"
+fi
+
+if [ -n "${DOPEMUX_LITELLM_DB_URL:-}" ]; then
+    export LITELLM_DATABASE_URL="$DOPEMUX_LITELLM_DB_URL"
+    export DATABASE_URL="$DOPEMUX_LITELLM_DB_URL"
+    db_scheme="${DOPEMUX_LITELLM_DB_URL%%://*}"
+    echo "   Using driver: ${db_scheme:-postgresql}"
+fi
+
 # Enable routing mode
 export DOPEMUX_CLAUDE_VIA_LITELLM=true
 export DOPEMUX_DEFAULT_LITELLM=1
@@ -169,4 +204,3 @@ echo "    -H 'Authorization: Bearer $LITELLM_MASTER_KEY' \\"
 echo "    -H 'Content-Type: application/json' \\"
 echo "    -d '{\"model\":\"grok-4-fast\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello\"}],\"max_tokens\":50}'"
 echo ""
-

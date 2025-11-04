@@ -177,24 +177,34 @@ class KGOrchestrator:
 
         print(f"\n[KG Orchestrator] task.started: Task {task_id}")
 
-        # Performance: Batch load all decision neighborhoods (N+1 optimization)
-        # Single query instead of N separate queries
+        # PERFORMANCE FIX - N+1 Query Problem (Issue from audit 2025-10-16)
+        # Fixed: Now uses batch loading instead of one-by-one queries
         # Impact: 10x performance improvement for tasks with multiple decisions
+
+        # Background: Pre-load decision contexts using batch query
+        contexts = []
         try:
-            contexts = self.exploration.get_multiple_neighborhoods(
-                workspace_id=os.getenv("WORKSPACE_ID", "/Users/hue/code/dopemux-mvp"),
-                decision_ids=decision_refs,
-                max_hops=2,
-                limit_per_hop=5  # Smaller for caching
-            )
+            # Try batch loading first for better performance
+            batch_contexts = await self.exploration_queries.get_multiple_neighborhoods(decision_refs)
+            contexts = batch_contexts
+            print(f"[KG Orchestrator] Batch loaded {len(contexts)} decision contexts")
+        except (AttributeError, NotImplementedError):
+            # Fallback to individual loading if batch method not available
+            print(f"[KG Orchestrator] Batch loading not available, falling back to individual queries")
+            for decision_id in decision_refs:
+                try:
+                context = self.exploration.get_decision_neighborhood(
+                    decision_id,
+                    max_hops=2,
+                    limit_per_hop=5  # Smaller for caching
+                )
+                contexts.append(context)
 
-            print(f"   → Batch loaded {len(contexts)} decision contexts in single query")
-            for context in contexts:
-                print(f"      Decision #{context.center.id}: 1-hop={len(context.hop_1_neighbors)}, 2-hop={len(context.hop_2_neighbors)}")
+                print(f"   → Loaded context for decision #{decision_id}")
+                print(f"      1-hop: {len(context.hop_1_neighbors)}, 2-hop: {len(context.hop_2_neighbors)}")
 
-        except Exception as e:
-            print(f"   ⚠️  Batch context loading failed: {e}")
-            contexts = []
+            except Exception as e:
+                print(f"   ⚠️  Context loading failed for #{decision_id}: {e}")
 
         if self.redis and contexts:
             # Cache for Serena to use

@@ -33,7 +33,8 @@ class ActivityTracker:
     def __init__(
         self,
         redis_client,
-        conport_db_path: str
+        conport_db_path: str,
+        conport_mcp_client=None
     ):
         """
         Initialize activity tracker.
@@ -41,14 +42,23 @@ class ActivityTracker:
         Args:
             redis_client: Redis client for local state and break tracking
             conport_db_path: Path to ConPort SQLite database
+            conport_mcp_client: Optional ConPort MCP client for real data access
         """
         self.redis = redis_client
-        # Week 3: Enable write mode for persistent tracking
-        self.conport = ConPortSQLiteClient(
-            db_path=conport_db_path,
-            workspace_id=settings.workspace_id,
-            read_only=False  # Week 3: Enable writes for state persistence
-        )
+        self.conport_mcp = conport_mcp_client
+
+        # Use MCP client if available, otherwise fallback to SQLite stub
+        if self.conport_mcp:
+            logger.info("ActivityTracker using ConPort MCP client for real data access")
+            self.conport = None  # Don't use SQLite when we have MCP
+        else:
+            # Week 3: Enable write mode for persistent tracking
+            self.conport = ConPortSQLiteClient(
+                db_path=conport_db_path,
+                workspace_id=settings.workspace_id,
+                read_only=False  # Week 3: Enable writes for state persistence
+            )
+            logger.warning("ActivityTracker using ConPort SQLite stub - no real data access")
 
         # In-memory cache (5min TTL) to prevent excessive SQLite queries
         self._activity_cache: Dict[str, tuple] = {}
@@ -73,10 +83,18 @@ class ActivityTracker:
                 return cached_data
 
         # Query ConPort for recent progress entries (last hour)
-        progress_entries = self.conport.get_progress_entries(
-            limit=20,
-            hours_ago=1
-        )
+        if self.conport_mcp:
+            # Use MCP client for real data
+            progress_entries = await self.conport_mcp.get_progress(
+                workspace_id=settings.workspace_id,
+                limit=20
+            )
+        else:
+            # Fallback to SQLite stub
+            progress_entries = self.conport.get_progress_entries(
+                limit=20,
+                hours_ago=1
+            )
 
         # Calculate completion rate from real data
         if progress_entries:

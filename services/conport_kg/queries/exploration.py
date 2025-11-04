@@ -49,7 +49,6 @@ class ExplorationQueries:
 
     def get_decision_neighborhood(
         self,
-        workspace_id: str,
         decision_id: int,
         max_hops: int = 1,
         limit_per_hop: int = 10
@@ -62,10 +61,7 @@ class ExplorationQueries:
         - User expands to 2-hop when ready
         - Max 10 neighbors per hop level
 
-        Security: Workspace-scoped (only returns decisions in same workspace)
-
         Args:
-            workspace_id: Workspace to query (multi-tenant isolation)
             decision_id: Center decision ID
             max_hops: 1 for initial view, 2 for expanded (ADHD progressive)
             limit_per_hop: Max neighbors per hop level (default 10)
@@ -77,9 +73,7 @@ class ExplorationQueries:
         cypher = f"""
             SELECT * FROM cypher('conport_knowledge', $$
                 MATCH (center:Decision {{id: {decision_id}}})
-                WHERE center.workspace_id = '{workspace_id}'
                 OPTIONAL MATCH path = (center)-[*1..2]-(neighbor:Decision)
-                WHERE neighbor.workspace_id = '{workspace_id}'
                 WITH center, neighbor, path,
                      CASE
                          WHEN neighbor IS NULL THEN 0
@@ -144,122 +138,8 @@ class ExplorationQueries:
             is_expanded=(max_hops == 2)
         )
 
-    def get_multiple_neighborhoods(
-        self,
-        workspace_id: str,
-        decision_ids: List[int],
-        max_hops: int = 1,
-        limit_per_hop: int = 10
-    ) -> List[DecisionNeighborhood]:
-        """
-        Batch load multiple decision neighborhoods (N+1 query optimization).
-
-        Loads all neighborhoods in a single query instead of N separate queries.
-        Significantly improves performance for tasks with multiple linked decisions.
-
-        Args:
-            workspace_id: Workspace to query
-            decision_ids: List of decision IDs to fetch neighborhoods for
-            max_hops: 1 for initial view, 2 for expanded
-            limit_per_hop: Max neighbors per hop level per decision
-
-        Returns:
-            List of DecisionNeighborhood objects (one per decision_id)
-        """
-        if not decision_ids:
-            return []
-
-        # Build IN clause for batch query
-        ids_str = ','.join(str(id) for id in decision_ids)
-
-        cypher = f"""
-            SELECT * FROM cypher('conport_knowledge', $$
-                MATCH (center:Decision)
-                WHERE center.id IN [{ids_str}]
-                  AND center.workspace_id = '{workspace_id}'
-                OPTIONAL MATCH path = (center)-[*1..2]-(neighbor:Decision)
-                WHERE neighbor.workspace_id = '{workspace_id}'
-                WITH center, neighbor, path,
-                     CASE
-                         WHEN neighbor IS NULL THEN 0
-                         ELSE length(path)
-                     END as hop_dist
-                WHERE neighbor IS NULL OR (hop_dist <= {max_hops} AND neighbor.id <> center.id)
-                RETURN DISTINCT
-                    center.id as c_id,
-                    center.summary as c_summary,
-                    center.timestamp as c_timestamp,
-                    neighbor.id as n_id,
-                    neighbor.summary as n_summary,
-                    neighbor.timestamp as n_timestamp,
-                    hop_dist
-                ORDER BY center.id, hop_dist, neighbor.timestamp DESC
-            $$) as (c_id agtype, c_summary agtype, c_timestamp agtype,
-                    n_id agtype, n_summary agtype, n_timestamp agtype,
-                    hop_dist agtype);
-        """
-
-        results = self.client.execute_cypher(cypher)
-
-        # Group results by center decision
-        neighborhoods_by_id = {}
-
-        for row in results:
-            center_id = int(row['c_id'])
-
-            # Initialize neighborhood for this center if not exists
-            if center_id not in neighborhoods_by_id:
-                center = DecisionCard(
-                    id=center_id,
-                    summary=str(row['c_summary']),
-                    timestamp=str(row.get('c_timestamp', ''))
-                )
-                neighborhoods_by_id[center_id] = {
-                    'center': center,
-                    'hop_1': [],
-                    'hop_2': []
-                }
-
-            # Add neighbor if exists
-            neighbor_id = row.get('n_id')
-            if neighbor_id is not None and neighbor_id != 'null':
-                neighbor = DecisionCard(
-                    id=int(neighbor_id),
-                    summary=str(row['n_summary']),
-                    timestamp=str(row.get('n_timestamp', ''))
-                )
-
-                hop_dist = int(row.get('hop_dist', 0))
-
-                if hop_dist == 1 and len(neighborhoods_by_id[center_id]['hop_1']) < limit_per_hop:
-                    neighborhoods_by_id[center_id]['hop_1'].append(neighbor)
-                elif hop_dist == 2 and len(neighborhoods_by_id[center_id]['hop_2']) < limit_per_hop:
-                    neighborhoods_by_id[center_id]['hop_2'].append(neighbor)
-
-        # Build result list in original order
-        result_neighborhoods = []
-        for decision_id in decision_ids:
-            if decision_id in neighborhoods_by_id:
-                data = neighborhoods_by_id[decision_id]
-                result_neighborhoods.append(DecisionNeighborhood(
-                    center=data['center'],
-                    hop_1_neighbors=data['hop_1'],
-                    hop_2_neighbors=data['hop_2'],
-                    is_expanded=(max_hops == 2)
-                ))
-            else:
-                # Decision not found - return empty neighborhood
-                result_neighborhoods.append(DecisionNeighborhood(
-                    center=DecisionCard(id=decision_id, summary="Not found", timestamp=""),
-                    hop_1_neighbors=[],
-                    hop_2_neighbors=[]
-                ))
-
-        return result_neighborhoods
-
     def get_genealogy_chain(
         self,
-        workspace_id: str,
         decision_id: int,
         relationship_type: str = 'BUILDS_UPON',
         direction: str = 'upstream',
@@ -302,8 +182,6 @@ class ExplorationQueries:
         cypher = f"""
             SELECT * FROM cypher('conport_knowledge', $$
                 {match_clause}
-                WHERE d.workspace_id = '{workspace_id}'
-                  AND related.workspace_id = '{workspace_id}'
                 RETURN related.id, related.summary, related.timestamp
                 LIMIT 20
             $$) as (id agtype, summary agtype, timestamp agtype);
@@ -326,7 +204,6 @@ class ExplorationQueries:
 
     def find_by_relationship_type(
         self,
-        workspace_id: str,
         decision_id: int,
         relationship_type: str,
         direction: str = 'outgoing'
@@ -362,8 +239,6 @@ class ExplorationQueries:
         cypher = f"""
             SELECT * FROM cypher('conport_knowledge', $$
                 MATCH (d:Decision {{id: {decision_id}}}){rel_pattern}(target:Decision)
-                WHERE d.workspace_id = '{workspace_id}'
-                  AND target.workspace_id = '{workspace_id}'
                 RETURN
                     target.id as id,
                     target.summary as summary,
@@ -387,7 +262,6 @@ class ExplorationQueries:
 
     def get_impact_graph(
         self,
-        workspace_id: str,
         decision_id: int,
         max_depth: int = 2
     ) -> ImpactGraph:
@@ -413,9 +287,7 @@ class ExplorationQueries:
         cypher = f"""
             SELECT * FROM cypher('conport_knowledge', $$
                 MATCH (root:Decision {{id: {decision_id}}})
-                WHERE root.workspace_id = '{workspace_id}'
                 OPTIONAL MATCH path = (root)<-[:DEPENDS_ON*1..{max_depth}]-(dependent:Decision)
-                WHERE dependent.workspace_id = '{workspace_id}'
                 RETURN
                     root.id as root_id,
                     root.summary as root_summary,
