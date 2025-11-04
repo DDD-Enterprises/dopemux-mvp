@@ -1,10 +1,10 @@
 model_list:
-- model_name: grok-code-fast-1
+- model_name: openrouter-xai-grok-code-fast
   litellm_params:
     model: xai/grok-code-fast-1
     api_key: os.environ/XAI_API_KEY
     max_tokens: 131072
-- model_name: grok-4-fast
+- model_name: openrouter-xai-grok-4-fast
   litellm_params:
     model: xai/grok-4-fast
     api_key: os.environ/XAI_API_KEY
@@ -14,7 +14,7 @@ model_list:
     model: xai/grok-4-fast-reasoning
     api_key: os.environ/XAI_API_KEY
     max_tokens: 131072
-- model_name: gpt-5
+- model_name: openrouter-openai-gpt-5
   litellm_params:
     model: openrouter/openai/gpt-5
     api_key: os.environ/OPENROUTER_API_KEY
@@ -25,7 +25,7 @@ model_list:
       X-Title: Dopemux LiteLLM Proxy
       Referer: https://dopemux.local
       User-Agent: Dopemux LiteLLM Proxy
-- model_name: gpt-5-codex
+- model_name: openrouter-openai-gpt-5-codex
   litellm_params:
     model: openrouter/openai/gpt-5-codex
     api_key: os.environ/OPENROUTER_API_KEY
@@ -36,51 +36,94 @@ model_list:
       X-Title: Dopemux LiteLLM Proxy
       Referer: https://dopemux.local
       User-Agent: Dopemux LiteLLM Proxy
+- model_name: openrouter-openai-gpt-5-mini
+  litellm_params:
+    model: openrouter/openai/gpt-5-mini
+    api_key: os.environ/OPENROUTER_API_KEY
+    api_base: https://openrouter.ai/api/v1
+    max_tokens: 65536
+    extra_headers:
+      HTTP-Referer: https://dopemux.local
+      X-Title: Dopemux LiteLLM Proxy
+      Referer: https://dopemux.local
+      User-Agent: Dopemux LiteLLM Proxy
+- model_name: openrouter-google-gemini-2-flash
+  litellm_params:
+    model: openrouter/google/gemini-2.0-flash-exp
+    api_key: os.environ/OPENROUTER_API_KEY
+    api_base: https://openrouter.ai/api/v1
+    max_tokens: 65536
+    extra_headers:
+      HTTP-Referer: https://dopemux.local
+      X-Title: Dopemux LiteLLM Proxy
+      Referer: https://dopemux.local
+      User-Agent: Dopemux LiteLLM Proxy
+- model_name: openrouter-meta-llama-3.1-405b
+  litellm_params:
+    model: openrouter/meta-llama/llama-3.1-405b-instruct
+    api_key: os.environ/OPENROUTER_API_KEY
+    api_base: https://openrouter.ai/api/v1
+    max_tokens: 65536
+    extra_headers:
+      HTTP-Referer: https://dopemux.local
+      X-Title: Dopemux LiteLLM Proxy
+      Referer: https://dopemux.local
+      User-Agent: Dopemux LiteLLM Proxy
 litellm_settings:
   timeout: 120
   max_retries: 3
   drop_params: true
   model_alias_map:
-    grok: grok-code-fast-1
-    grok-code: grok-code-fast-1
-    grok-4: grok-4-fast
-    grok-4-fast: grok-4-fast
+    grok: openrouter-xai-grok-code-fast
+    grok-code: openrouter-xai-grok-code-fast
+    grok-code-fast-1: openrouter-xai-grok-code-fast
+    grok-4: openrouter-xai-grok-4-fast
+    grok-4-fast: openrouter-xai-grok-4-fast
     grok-4-fast-reasoning: grok-4-fast-reasoning
     grok-4-reasoning: grok-4-fast-reasoning
-    minimax: gpt-5-codex
-    codex: gpt-5-codex
-    claude-sonnet: grok-code-fast-1
-    claude-sonnet-4.5: grok-code-fast-1
-    claude-sonnet-4-5-20250929: grok-code-fast-1
-    claude-haiku: grok-code-fast-1
-    claude-opus: gpt-5-codex
-    claude-opus-4-20250514: gpt-5-codex
-    claude-opus-4-1-20250805: gpt-5-codex
-    claude-4: gpt-5-codex
-    claude-4-sonnet: grok-code-fast-1
-    claude-4-opus: gpt-5-codex
-    claude-3.7: grok-code-fast-1
-    claude-3-7-sonnet-20250219: grok-code-fast-1
-    claude-3.5: grok-code-fast-1
-    claude-3-5-sonnet-20240620: grok-code-fast-1
-    gpt-5: gpt-5
+    openrouter-xai-grok-code-fast: openrouter-xai-grok-code-fast
+    openrouter-xai-grok-4-fast: openrouter-xai-grok-4-fast
+    openrouter-xai-grok-4-fast-reasoning: grok-4-fast-reasoning
+    minimax: openrouter-openai-gpt-5-codex
+    codex: openrouter-openai-gpt-5-codex
+    gpt-5: openrouter-openai-gpt-5
+    gpt-5-codex: openrouter-openai-gpt-5-codex
+    openrouter-openai-gpt-5: openrouter-openai-gpt-5
+    openrouter-openai-gpt-5-mini: openrouter-openai-gpt-5-mini
+    openrouter-openai-gpt-5-codex: openrouter-openai-gpt-5-codex
+    openrouter-google-gemini-2-flash: openrouter-google-gemini-2-flash
+    openrouter-meta-llama-3.1-405b: openrouter-meta-llama-3.1-405b
+    claude-sonnet: openrouter-xai-grok-code-fast
+    claude-sonnet-4.5: openrouter-xai-grok-code-fast
+    claude-sonnet-4-5-20250929: openrouter-xai-grok-code-fast
+    claude-haiku: openrouter-xai-grok-code-fast
+    claude-opus: openrouter-openai-gpt-5-codex
+    claude-opus-4-20250514: openrouter-openai-gpt-5-codex
+    claude-opus-4-1-20250805: openrouter-openai-gpt-5-codex
+    claude-4: openrouter-openai-gpt-5-codex
+    claude-4-sonnet: openrouter-xai-grok-code-fast
+    claude-4-opus: openrouter-openai-gpt-5-codex
+    claude-3.7: openrouter-xai-grok-code-fast
+    claude-3-7-sonnet-20250219: openrouter-xai-grok-code-fast
+    claude-3.5: openrouter-xai-grok-code-fast
+    claude-3-5-sonnet-20240620: openrouter-xai-grok-code-fast
   fallbacks:
-  - grok-4-fast:
-    - gpt-5
-    - gpt-5-codex
-  - grok-code-fast-1:
-    - grok-4-fast
-    - gpt-5-codex
-  - gpt-5:
-    - grok-4-fast
-    - gpt-5-codex
-  - gpt-5-codex:
-    - gpt-5
-    - grok-4-fast
+  - openrouter-xai-grok-4-fast:
+    - openrouter-openai-gpt-5
+    - openrouter-openai-gpt-5-codex
+  - openrouter-xai-grok-code-fast:
+    - openrouter-xai-grok-4-fast
+    - openrouter-openai-gpt-5-codex
+  - openrouter-openai-gpt-5:
+    - openrouter-xai-grok-4-fast
+    - openrouter-openai-gpt-5-codex
+  - openrouter-openai-gpt-5-codex:
+    - openrouter-openai-gpt-5
+    - openrouter-xai-grok-4-fast
   default_fallbacks:
-  - grok-4-fast
-  - gpt-5
-  - gpt-5-codex
+  - openrouter-xai-grok-4-fast
+  - openrouter-openai-gpt-5
+  - openrouter-openai-gpt-5-codex
 general_settings:
-  master_key: REDACTED_LITELLM_KEY
+  master_key: sk-master-dopemux-local-20251101
   database_url: postgresql://dopemux_age:dopemux_age_dev_password@localhost:5456/litellm
