@@ -23,6 +23,14 @@ logger = logging.getLogger(__name__)
 IS_MACOS = platform.system() == "Darwin"
 IS_LINUX = platform.system() == "Linux"
 
+# Set DISPLAY for X11 access on macOS/Linux
+if IS_MACOS or IS_LINUX:
+    if not os.environ.get('DISPLAY'):
+        os.environ['DISPLAY'] = ':0'
+        logger.info(f"🖥️  Set DISPLAY={os.environ['DISPLAY']} for X11 access")
+    else:
+        logger.info(f"🖥️  Using existing DISPLAY={os.environ['DISPLAY']}")
+
 logger.info(f"🖥️  Desktop Commander detected OS: {platform.system()}")
 logger.info(f"   macOS mode: {IS_MACOS}, Linux mode: {IS_LINUX}")
 

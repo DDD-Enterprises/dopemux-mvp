@@ -35,6 +35,7 @@ Component 6 ADHD Intelligence Layer is **production-ready** with two complete ph
 - "You were doing X" narrative generation
 - Background monitoring (5s interval)
 - Complete MCP integration (Desktop-Commander, Serena, ConPort, Task-Orchestrator, Git)
+- Implicit Desktop-Commander usage: Automatic window focus after navigation, visual state capture for decisions, workspace restoration after interruptions
 - Graceful fallbacks for all dependencies
 
 ### Phase 2 - Predictive Intelligence
