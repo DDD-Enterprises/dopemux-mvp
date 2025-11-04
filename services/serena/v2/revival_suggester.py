@@ -147,7 +147,17 @@ class RevivalSuggester:
         # Factor 4: Branch name similarity (0-10 points)
         # Simple heuristic: shared words in branch names
         branch_score = 0.0
-        # TODO: Implement branch name similarity if current work has branch context
+        # Implement branch name similarity if current work has branch context
+        if hasattr(self, 'current_branch') and self.current_branch and 'branch' in work_context:
+            current_words = set(self.current_branch.lower().replace('-', ' ').replace('_', ' ').split())
+            work_words = set(work_context['branch'].lower().replace('-', ' ').replace('_', ' ').split())
+
+            if current_words and work_words:
+                overlap = len(current_words.intersection(work_words))
+                total_unique = len(current_words.union(work_words))
+                if total_unique > 0:
+                    similarity = overlap / total_unique
+                    branch_score = similarity * 10.0  # Scale to 0-10
 
         # Total score
         relevance_score = file_overlap_score + dir_overlap_score + recency_score + branch_score
