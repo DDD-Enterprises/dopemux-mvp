@@ -152,12 +152,14 @@ class EnhancedTaskOrchestrator:
         leantime_url: str,
         leantime_token: str,
         redis_url: str = "redis://localhost:6379",
-        workspace_id: str = "/Users/hue/code/dopemux-mvp"
+        workspace_id: str = "/Users/hue/code/dopemux-mvp",
+        mcp_tools: Any = None
     ):
         self.leantime_url = leantime_url.rstrip('/')
         self.leantime_token = leantime_token
         self.redis_url = redis_url
         self.workspace_id = workspace_id
+        self.mcp_tools = mcp_tools  # Add mcp_tools parameter
 
         # Component connections
         self.leantime_session: Optional[aiohttp.ClientSession] = None
@@ -285,9 +287,12 @@ class EnhancedTaskOrchestrator:
         # Initialize ConPort adapter (Architecture 3.0 Component 2)
         try:
             from adapters.conport_adapter import ConPortEventAdapter
+            from conport_mcp_client import ConPortMCPClient
+            # Wire ConPort MCP client for full integration (Component 3)
+            conport_client = ConPortMCPClient(self.mcp_tools)
             self.conport_adapter = ConPortEventAdapter(
                 workspace_id=self.workspace_id,
-                conport_client=None  # TODO: Wire actual ConPort MCP client in Component 3
+                conport_client=conport_client
             )
             logger.info("📊 ConPort adapter initialized (storage authority)")
         except Exception as e:
@@ -522,8 +527,12 @@ class EnhancedTaskOrchestrator:
                     "linked_item_id": event.task_id
                 }
 
-                # Would make MCP call to ConPort here
-                logger.debug(f"📊 Synced to ConPort: {event.task_id}")
+                # Make actual MCP call to ConPort
+                if self.conport_adapter:
+                    conport_id = await self.conport_adapter.create_task_in_conport_from_sync(event)
+                    logger.info(f"📊 Synced to ConPort: {event.task_id} -> ConPort ID: {conport_id}")
+                else:
+                    logger.warning("📊 ConPort adapter not initialized, skipping sync")
 
         except Exception as e:
             logger.error(f"ConPort sync failed: {e}")
@@ -1519,14 +1528,28 @@ if __name__ == "__main__":
 
     async def get_adhd_state(self) -> Dict[str, Any]:
         """Get current ADHD state (Component 5)."""
-        # TODO: Wire to ADHD Engine
-        return {
-            "energy_level": "medium",
-            "attention_level": "focused",
-            "time_since_break": 45,
-            "break_recommended": False,
-            "current_session_duration": 45
-        }
+        try:
+            # Wire to ADHD Engine via HTTP client
+            from activity_capture.adhd_client import ADHDEngineClient
+            adhd_client = ADHDEngineClient()
+            # Get ADHD state from engine
+            state = await adhd_client.get_adhd_state(self.user_id)
+            return {
+                "energy_level": state.get("energy_level", "medium"),
+                "attention_level": state.get("attention_state", "focused"),
+                "time_since_break": state.get("time_since_break", 45),
+                "break_recommended": state.get("break_recommended", False),
+                "current_session_duration": state.get("session_duration", 45)
+            }
+        except Exception as e:
+            logger.warning(f"ADHD Engine connection failed: {e} - using defaults")
+            return {
+                "energy_level": "medium",
+                "attention_level": "focused",
+                "time_since_break": 45,
+                "break_recommended": False,
+                "current_session_duration": 45
+            }
 
     async def get_task_recommendations(self, limit: int = 5) -> List[Dict[str, Any]]:
         """Get ADHD-aware task recommendations (Component 5)."""

@@ -26,7 +26,7 @@ from middleware.rate_limit import RateLimitMiddleware
 # Import shared Redis pool and cache for performance optimization
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'shared'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'docker', 'mcp-servers', 'shared'))
 from redis_pool import get_redis_pool
 from cache import get_cache
 
