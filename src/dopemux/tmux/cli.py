@@ -8,6 +8,7 @@ import shutil
 import sys
 import logging
 import subprocess
+import yaml
 from pathlib import Path
 from typing import Optional, Tuple, Sequence, List, Dict
 from dataclasses import dataclass
@@ -23,7 +24,12 @@ from .controller import TmuxController, PaneInfo
 from ..mobile.runtime import ensure_dependency, env_for_happy
 from ..mobile import tmux_utils
 from ..roles.catalog import available_roles, resolve_role, RoleNotFoundError
-from ..litellm_proxy import LiteLLMProxyError, sync_litellm_database
+from ..litellm_proxy import (
+    DEFAULT_LITELLM_CONFIG,
+    ensure_master_key,
+    LiteLLMProxyError,
+    sync_litellm_database,
+)
 
 console = Console()
 
@@ -1783,137 +1789,214 @@ def start_tmux(
     # Handle --alt-routing flag (start LiteLLM automatically)
     if alt_routing:
         console.print("[cyan]🚀 Alternative routing enabled - starting LiteLLM automatically...[/cyan]")
-        
-        # Load routing environment
+
         from pathlib import Path as EnvPath
         from dotenv import load_dotenv
         import time
-        
+        import httpx
+
         routing_env = EnvPath(start_dir) / ".env.routing"
         if routing_env.exists():
             load_dotenv(routing_env)
             console.print("[dim]✓ Loaded .env.routing[/dim]")
+        else:
+            console.print("[yellow]⚠️  .env.routing not found - using defaults[/yellow]")
 
-        db_url_path = EnvPath(start_dir) / ".dopemux" / "litellm" / "A" / "database.url"
+        instance_dir = EnvPath(start_dir) / ".dopemux" / "litellm" / "A"
+        instance_dir.mkdir(parents=True, exist_ok=True)
+        litellm_log = instance_dir / "litellm.log"
+        master_key_path = instance_dir / "master.key"
+        db_url_path = instance_dir / "database.url"
+
+        remember_raw = os.getenv("DOPEMUX_LITELLM_REMEMBER_DB", "").strip().lower()
+        remember_db = remember_raw not in {"0", "false", "no"}
         db_url = (
             os.getenv("DOPEMUX_LITELLM_DB_URL")
             or os.getenv("LITELLM_DATABASE_URL")
             or os.getenv("DATABASE_URL")
         )
-        if not db_url and db_url_path.exists():
+        if not db_url and remember_db and db_url_path.exists():
             try:
                 loaded = db_url_path.read_text(encoding="utf-8").strip()
                 if loaded:
                     db_url = loaded
             except Exception:
                 pass
-        if db_url:
-            os.environ["DOPEMUX_LITELLM_DB_URL"] = db_url
-            os.environ.setdefault("LITELLM_DATABASE_URL", db_url)
-            os.environ["DATABASE_URL"] = db_url
+
+        if not db_url:
+            console.print("[red]❌ LiteLLM metrics database is required for alternative routing.[/red]")
+            console.print("[yellow]   Set DOPEMUX_LITELLM_DB_URL in .env.routing and ensure the database is reachable.[/yellow]")
+            raise click.ClickException("LiteLLM metrics database not configured.")
+
+        stored_master_key: Optional[str] = None
+        if master_key_path.exists():
+            try:
+                stored_master_key = master_key_path.read_text(encoding="utf-8").strip()
+            except Exception:
+                stored_master_key = None
+
+        env_master_key_raw = (os.getenv("LITELLM_MASTER_KEY") or "").strip()
+        candidate_keys: List[str] = []
+        for key in (stored_master_key, env_master_key_raw):
+            if key and key not in candidate_keys:
+                candidate_keys.append(key)
+
+        litellm_master_key = ""
+        regenerated_master_key = False
+        litellm_running = False
+
+        for candidate in candidate_keys:
+            try:
+                resp = httpx.get(
+                    "http://localhost:4000/health/readiness",
+                    timeout=2,
+                )
+                if resp.status_code == 200:
+                    litellm_master_key = candidate
+                    litellm_running = True
+                    break
+            except httpx.HTTPError as exc:
+                cause = getattr(exc, "__cause__", None)
+                if isinstance(cause, OSError) and getattr(cause, "errno", None) == 1:
+                    console.print(
+                        "[yellow]⚠️ LiteLLM health probe blocked by OS (operation not permitted); proceeding without inline check.[/yellow]"
+                    )
+                    break
+
+        if not litellm_master_key:
+            base_candidate = env_master_key_raw or stored_master_key
+            litellm_master_key, regenerated_master_key = ensure_master_key(base_candidate)
+            if regenerated_master_key:
+                console.print("[yellow]⚠️  Generated LiteLLM master key with sk- prefix for proxy auth[/yellow]")
+        else:
+            regenerated_master_key = False
+
+        os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
+
+        if not stored_master_key or stored_master_key != litellm_master_key:
+            try:
+                master_key_path.write_text(litellm_master_key, encoding="utf-8")
+            except Exception:
+                pass
+
+        config_source: Optional[Path] = None
+        for candidate in (
+            instance_dir / "litellm.config.yaml",
+            EnvPath(start_dir) / "litellm.config.yaml",
+        ):
+            if candidate.exists():
+                config_source = candidate
+                break
+
+        if config_source and config_source.exists():
+            try:
+                config_data = yaml.safe_load(config_source.read_text(encoding="utf-8")) or {}
+            except yaml.YAMLError:
+                config_data = {}
+        else:
+            try:
+                config_data = yaml.safe_load(DEFAULT_LITELLM_CONFIG) or {}
+            except yaml.YAMLError:
+                config_data = {}
+
+        general_settings = config_data.setdefault("general_settings", {})
+        general_settings["master_key"] = litellm_master_key
+
+        try:
+            db_status_msg, db_enabled = sync_litellm_database(instance_dir, db_url)
+        except LiteLLMProxyError as exc:
+            console.print(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
+            console.print("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.")
+            raise click.ClickException(str(exc))
+
+        if not db_enabled:
+            console.print(f"[red]❌ {db_status_msg}[/red]")
+            console.print("[yellow]   LiteLLM metrics must be available. Resolve the database issue and retry.")
+            raise click.ClickException("LiteLLM metrics database not ready.")
+
+        console.print(f"[dim]{db_status_msg}[/dim]")
+        general_settings["database_url"] = db_url
+
+        config_path = instance_dir / "litellm.config.yaml"
+        try:
+            config_path.write_text(
+                yaml.safe_dump(config_data, sort_keys=False, default_flow_style=False),
+                encoding="utf-8",
+            )
+        except Exception:
+            pass
+
+        if litellm_running:
+            console.print("[green]✓ LiteLLM already running[/green]")
+        else:
+            console.print("[blue]🔄 Starting LiteLLM proxy...[/blue]")
+            kill_result = subprocess.run(
+                ["pkill", "-f", "litellm"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            if kill_result.returncode not in (0, 1):
+                console.print("[red]❌ Unable to manage existing LiteLLM processes automatically (permission denied).")
+                console.print("[yellow]   Stop the existing LiteLLM proxy on port 4000 manually and rerun the command.")
+                raise click.ClickException("LiteLLM proxy still running.")
+
+            time.sleep(1)
+            litellm_log.parent.mkdir(parents=True, exist_ok=True)
+            with open(litellm_log, "w", encoding="utf-8") as log_file:
+                subprocess.Popen(
+                    ["litellm", "--config", str(config_path), "--port", "4000", "--host", "0.0.0.0"],
+                    stdout=log_file,
+                    stderr=subprocess.STDOUT,
+                    start_new_session=True,
+                )
+
+            console.print("[dim]⏳ Waiting for LiteLLM...[/dim]")
+            ready = False
+            for _ in range(15):
+                try:
+                    resp = httpx.get(
+                        "http://localhost:4000/health/readiness",
+                        timeout=2,
+                    )
+                    if resp.status_code == 200:
+                        ready = True
+                        break
+                except httpx.HTTPError as exc:
+                    cause = getattr(exc, "__cause__", None)
+                    if isinstance(cause, OSError) and getattr(cause, "errno", None) == 1:
+                        console.print(
+                            "[yellow]⚠️ LiteLLM health probe blocked by OS (operation not permitted); assuming proxy is running.[/yellow]"
+                        )
+                        ready = True
+                        break
+                time.sleep(1)
+
+            if not ready:
+                console.print("[red]❌ LiteLLM proxy did not become healthy.")
+                console.print(f"[yellow]   Check logs: tail -f {litellm_log}")
+                raise click.ClickException("LiteLLM proxy failed to start.")
+
+            console.print("[green]✅ LiteLLM ready on port 4000[/green]")
+
+        os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
+        os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
+        os.environ["ANTHROPIC_BASE_URL"] = "http://localhost:4000"
+        os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
+        os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
+
+        os.environ["DOPEMUX_LITELLM_DB_URL"] = db_url
+        os.environ.setdefault("LITELLM_DATABASE_URL", db_url)
+        os.environ["DATABASE_URL"] = db_url
+        if remember_db:
             try:
                 db_url_path.parent.mkdir(parents=True, exist_ok=True)
                 db_url_path.write_text(db_url, encoding="utf-8")
             except Exception:
                 pass
-            console.print("[dim]ℹ️ LiteLLM metrics database detected (sync on start)[/dim]")
-        else:
-            console.print(
-                "[yellow]⚠️  LiteLLM metrics disabled (set DOPEMUX_LITELLM_DB_URL in .env.routing)[/yellow]"
-            )
-        
-        # Check if LiteLLM is already running
-        litellm_running = False
-        try:
-            import httpx
-            resp = httpx.get("http://localhost:4000/health", timeout=2)
-            litellm_running = resp.status_code in (200, 401)
-        except Exception:
-            pass
-        
-        if not litellm_running:
-            console.print("[blue]🔄 Starting LiteLLM proxy...[/blue]")
-            
-            # Kill stuck instances
-            subprocess.run(["pkill", "-f", "litellm.*4000"], 
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            time.sleep(1)
-            
-            # Start LiteLLM
-            litellm_config = EnvPath(start_dir) / ".dopemux" / "litellm" / "A" / "litellm.config.yaml"
-            if not litellm_config.exists():
-                litellm_config = EnvPath(start_dir) / "litellm.config.yaml"
-            
-            if litellm_config.exists():
-                litellm_log = EnvPath(start_dir) / ".dopemux" / "litellm" / "A" / "litellm.log"
-                litellm_log.parent.mkdir(parents=True, exist_ok=True)
-
-                if db_url:
-                    try:
-                        db_status, db_enabled = sync_litellm_database(litellm_log.parent, db_url)
-                        if db_enabled:
-                            console.print(f"[dim]{db_status}[/dim]")
-                        else:
-                            console.print(f"[yellow]{db_status}[/yellow]")
-                            db_url = None
-                    except LiteLLMProxyError as exc:
-                        console.print(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
-                        raise click.ClickException(str(exc))
-                
-                with open(litellm_log, "w") as log_file:
-                    subprocess.Popen(
-                        ["litellm", "--config", str(litellm_config), "--port", "4000", "--host", "0.0.0.0"],
-                        stdout=log_file,
-                        stderr=subprocess.STDOUT,
-                        start_new_session=True,
-                    )
-                
-                # Wait for startup
-                console.print("[dim]⏳ Waiting for LiteLLM...[/dim]")
-                litellm_master_key = os.getenv("LITELLM_MASTER_KEY", "HZy6cX-h1t5wPed3XJHRByCK3lde4Pu17zDA5mz-BvM")
-                
-                for i in range(15):
-                    try:
-                        import httpx
-                        resp = httpx.get(
-                            "http://localhost:4000/health",
-                            headers={"Authorization": f"Bearer {litellm_master_key}"},
-                            timeout=2
-                        )
-                        if resp.status_code == 200:
-                            console.print("[green]✅ LiteLLM ready on port 4000[/green]")
-                            break
-                    except Exception:
-                        pass
-                    time.sleep(1)
-            else:
-                console.print("[yellow]⚠️  LiteLLM config not found[/yellow]")
-        else:
-            console.print("[green]✓ LiteLLM already running[/green]")
-        
-        # Set environment for all dopemux start commands
-        os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
-        os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
-        os.environ["ANTHROPIC_BASE_URL"] = "http://localhost:4000"
-        master_key = os.getenv("LITELLM_MASTER_KEY", "HZy6cX-h1t5wPed3XJHRByCK3lde4Pu17zDA5mz-BvM")
-        os.environ["LITELLM_MASTER_KEY"] = master_key
-        os.environ.setdefault("DOPEMUX_LITELLM_MASTER_KEY", master_key)
-        os.environ["ANTHROPIC_API_KEY"] = master_key
-        
-        try:
-            master_key_path = EnvPath(start_dir) / ".dopemux" / "litellm" / "A" / "master.key"
-            master_key_path.parent.mkdir(parents=True, exist_ok=True)
-            master_key_path.write_text(master_key)
-        except Exception:
-            pass
-
-        if not db_url:
-            for var in ("DOPEMUX_LITELLM_DB_URL", "LITELLM_DATABASE_URL", "DATABASE_URL"):
-                os.environ.pop(var, None)
-
+        console.print("[dim]ℹ️ LiteLLM metrics database synchronised[/dim]")
         console.print("[dim]✓ Environment configured for LiteLLM routing[/dim]")
         console.print("")
-    
+
     # Determine layout and window name before creating session
     layout_choice = layout or getattr(tmux_cfg, "default_layout", None) or "medium"
     orchestrator_window = getattr(tmux_cfg, "orchestrator_window", None) or "dopemux"
