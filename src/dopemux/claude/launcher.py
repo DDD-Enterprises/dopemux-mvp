@@ -299,11 +299,13 @@ Alternative: Set CLAUDE_PATH environment variable
         # ANTHROPIC_API_KEY and point Anthropic base to the proxy.
         via_litellm = env.get("DOPEMUX_CLAUDE_VIA_LITELLM") in ("1", "true", "True")
         if via_litellm:
-            # Ensure base URL is set for Claude Code to talk to LiteLLM
-            proxy_url = env.get("LITELLM_PROXY_URL") or env.get("OPENAI_API_BASE")
-            if proxy_url:
-                env.setdefault("ANTHROPIC_API_BASE", proxy_url)
-                env.setdefault("ANTHROPIC_BASE_URL", proxy_url)
+            # If ANTHROPIC_BASE_URL is already set (e.g., by CCR), keep it
+            # Otherwise, fall back to LITELLM_PROXY_URL
+            if not env.get("ANTHROPIC_BASE_URL"):
+                proxy_url = env.get("LITELLM_PROXY_URL") or env.get("OPENAI_API_BASE")
+                if proxy_url:
+                    env.setdefault("ANTHROPIC_API_BASE", proxy_url)
+                    env.setdefault("ANTHROPIC_BASE_URL", proxy_url)
             # Suppress browser/OAuth prompts in API-key proxy mode
             env.setdefault("CLAUDE_CODE_SKIP_PERMISSIONS", "true")
             env.setdefault("CLAUDE_NO_BROWSER", "1")

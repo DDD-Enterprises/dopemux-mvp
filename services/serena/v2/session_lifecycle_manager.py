@@ -449,9 +449,28 @@ class SessionLifecycleManager:
 
     async def _remove_from_active_context(self, session_id: str, conport_client):
         """Remove session from active_context (called after archiving)."""
-        # TODO: Implement when ConPort supports delete_active_context
-        # For now, mark as completed
-        pass
+        try:
+            # Get current active context
+            current_context = await conport_client.get_active_context(self.workspace_id)
+
+            # Remove this session from active sessions
+            if "active_context" in current_context and "active_sessions" in current_context["active_context"]:
+                active_sessions = current_context["active_context"]["active_sessions"]
+                if isinstance(active_sessions, list):
+                    # Remove session by ID
+                    updated_sessions = [s for s in active_sessions if s.get("session_id") != session_id]
+                    current_context["active_context"]["active_sessions"] = updated_sessions
+
+                    # Update the active context
+                    await conport_client.update_active_context(self.workspace_id, current_context)
+                    logger.info(f"Removed session {session_id} from active context")
+                else:
+                    logger.warning("Active sessions is not a list")
+            else:
+                logger.warning("No active context or active sessions found")
+
+        except Exception as e:
+            logger.error(f"Failed to remove session {session_id} from active context: {e}")
 
     async def _find_stale_sessions(
         self,
@@ -459,14 +478,62 @@ class SessionLifecycleManager:
         conport_client
     ) -> List[Dict]:
         """Find sessions inactive for > max_age_hours."""
-        # TODO: Implement with ConPort query
-        # For now, return empty list
-        return []
+        try:
+            # Get active context to find all sessions
+            context = await conport_client.get_active_context(self.workspace_id)
+
+            if "active_context" not in context or "active_sessions" not in context["active_context"]:
+                return []
+
+            active_sessions = context["active_context"]["active_sessions"]
+            if not isinstance(active_sessions, list):
+                return []
+
+            stale_sessions = []
+            cutoff_time = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
+
+            for session in active_sessions:
+                if isinstance(session, dict) and "last_updated" in session:
+                    try:
+                        # Parse the timestamp
+                        if isinstance(session["last_updated"], str):
+                            last_updated = datetime.fromisoformat(session["last_updated"].replace('Z', '+00:00'))
+                        else:
+                            last_updated = session["last_updated"]
+
+                        if last_updated < cutoff_time:
+                            stale_sessions.append(session)
+                    except (ValueError, TypeError) as e:
+                        logger.warning(f"Invalid timestamp format for session {session.get('session_id', 'unknown')}: {e}")
+                        # Consider sessions with invalid timestamps as stale
+                        stale_sessions.append(session)
+
+            logger.info(f"Found {len(stale_sessions)} stale sessions (inactive > {max_age_hours}h)")
+            return stale_sessions
+
+        except Exception as e:
+            logger.error(f"Failed to find stale sessions: {e}")
+            return []
 
     async def _get_all_active_sessions(self, conport_client) -> List[Dict]:
         """Get all active sessions for workspace."""
-        # TODO: Implement multi-session query when schema migrated
-        return []
+        try:
+            # Get active context which contains session information
+            context = await conport_client.get_active_context(self.workspace_id)
+
+            if "active_context" not in context or "active_sessions" not in context["active_context"]:
+                return []
+
+            active_sessions = context["active_context"]["active_sessions"]
+            if isinstance(active_sessions, list):
+                return active_sessions
+            else:
+                logger.warning("Active sessions in context is not a list")
+                return []
+
+        except Exception as e:
+            logger.error(f"Failed to get all active sessions: {e}")
+            return []
 
     async def _mark_session_invalid(
         self,

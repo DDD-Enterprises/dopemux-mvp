@@ -1,0 +1,385 @@
+Integrating Claude-Code-Tools into Dopemux – Deep Dive & Implementation Plan
+
+Executive Brief
+
+Overview: The open-source Claude-Code-Tools repository ￼ ￼ by Prasad Chalasani provides a suite of productivity enhancements for AI coding agents (developed for Anthropic’s Claude Code, but broadly applicable). Its features directly align with Dopemux’s goals: tmux-based multiplexing of CLI sessions, orchestrating multiple AI agents, robust safety guardrails, and multi-model (provider) routing. By adopting or mimicking these tools in Dopemux, we can dramatically improve interactive capabilities (e.g. running interactive scripts, multi-agent collaboration), session management, and safety/operations without reinventing the wheel. All components are MIT-licensed ￼, which ensures compatibility with Dopemux’s licensing and allows code reuse or adaptation.
+
+Key Components to Integrate:
+	•	tmux-cli (Terminal Automation): Enables an AI agent to control terminal applications programmatically, essentially acting as “Playwright for terminals” ￼. This allows Claude (or any CLI-based agent) to run interactive scripts, use debuggers (pdb/gdb), or even launch another agent instance visibly in a new pane ￼ ￼. Incorporating this in Dopemux would unlock robust multi-agent orchestration and interactive testing workflows.
+	•	Session Search & Resume Tools: find-session, find-claude-session, and find-codex-session provide unified search across session transcripts and one-command resume with correct context ￼ ￼. These improve developer productivity by quickly locating past conversations or debugging sessions across projects and agents. Dopemux can integrate a similar “dmx session” system to search and resume sessions across its multi-agent environment.
+	•	Safety Hooks & Env Tools: A comprehensive set of safety hooks guard against dangerous operations (file deletion, wildcard git adds, .env exposure, reading huge files, etc.) ￼ ￼. Additionally, env-safe and vault tools handle environment secrets safely – env-safe allows listing or checking env vars without ever revealing sensitive values ￼, and vault provides encrypted backup/sync for .env files using SOPS ￼. These features align with Dopemux’s need for strict guardrails in an AI-driven CLI and secure management of credentials.
+	•	Multi-Model Routing (Provider Shims): Functions like kimi(), zai(), dseek() route Claude Code to alternative Anthropic-compatible endpoints (Kimi, Zai, DeepSeek, etc.) by setting endpoint URLs and API keys in a subshell ￼ ￼. This allows seamless switching between models and even concurrent instances each with different LLM backends ￼. Dopemux can offer an integrated provider-routing system so users (or the orchestrator) can easily assign different AI models to different sessions or tasks.
+
+Return on Investment: These features solve real pain points in agentic coding workflows – enabling interactive program control, preserving institutional knowledge via session recall, preventing costly mistakes (like accidental rm or credential leaks), and leveraging multiple AI models effortlessly. By mapping Claude-Code-Tools into Dopemux, we fast-track these capabilities with proven implementations. The highest-impact areas are tmux-cli (for orchestrated multi-agent workflows) and the safety hooks (for trust and reliability). We will prioritize those first, while also integrating session search and env management for completeness. A phased adoption is recommended: first get tmux orchestration and safety basics working, then layer on session search, vault, and provider routing. Overall, the integration elevates Dopemux from a basic tmux TUI to a smart, safe, and flexible AI coding environment, leveraging Claude-Code-Tools’ battle-tested ideas to avoid pitfalls.
+
+Feature Inventory & Mapping to Dopemux
+
+The following table maps each major feature of Claude-Code-Tools to its planned counterpart in Dopemux, outlining its value, intended Dopemux implementation, and notes on effort or risks:
+
+Claude-Code-Tools Feature	Value Proposition	Dopemux Integration (API & Design)	Effort / Risk
+tmux-cli (Terminal controller)	Allows an AI agent to programmatically control interactive CLI programs. Enables running scripts that require input, using interactive debuggers, or even Claude-to-Claude conversations in separate visible windows ￼ ￼. Essentially “terminal automation for AI” ￼.	Dopemux: Implement as a dmx-tmux plugin. Provide commands like dmx tmux open <agent> (to spawn a new agent pane), dmx tmux send <pane> "<keystrokes>" (to send input), dmx tmux capture <pane> (to read output). The Dopemux orchestrator (possibly via libtmux) will handle pane management and keystroke injection. Bind hotkeys (e.g. Ctrl-D N for new agent, etc.) for quick use. Make this accessible to the AI agent as well (so an agent in one pane can call a secure API to control another pane).	Effort: Moderate. Dopemux already uses tmux; we can leverage libtmux integration (already under research in Dopemux ￼) to implement this cleanly. Risk: Need to enforce safety (to avoid infinite loops or destructive commands via automation). Also must ensure synchronization (reading output reliably) – might need small delays or expect prompts.
+find-session (Unified session search)	Global search through past sessions (Claude and Codex) with one command, yielding an interactive list. Supports multiple agents, projects, and keywords, plus a “smart resume” that uses the right agent CLI to reopen the session ￼. Preserves working directory on resume via shell wrapper ￼. Greatly speeds up retrieving context from prior work.	Dopemux: Provide a dmx session find command that searches across all saved session logs (across Dopemux’s own agent logs, and possibly we can plug in Claude or other agent logs if relevant). Use filters for agent type and project. The UI can be similar rich-text table output showing session metadata (agent, date, branch, snippet) for selection ￼ ￼. On selection, Dopemux calls the appropriate resume command (e.g., for a Claude session use claude -r <id>, for a Dopemux native session maybe dmx resume <id>). Also implement persistent directory restore (store cwd in session metadata and cd to it on resume). Possibly create shell aliases fs (find-session), fcs (find Claude session) for convenience ￼ ￼.	Effort: Moderate. Requires reading and indexing session files (likely JSONL logs) for multiple agent types. Dopemux may need to interface with Claude’s and Codex’s session storage if we want cross-tool search, or just focus on Dopemux’s sessions. Risk: Dealing with different log formats (Claude vs Codex vs Dopemux) and maintaining an up-to-date index. Also, ensuring the resumed session integrates with Dopemux UI (potentially spawning a new pane running the agent in resume mode).
+find-claude-session / find-codex-session	Agent-specific session search with interactive UI (previews of last user message, etc.) and direct resume ￼ ￼. Essentially special cases of find-session focusing on one agent type, with convenience wrappers (fcs, fcs-codex). Also handles subtle differences (file paths, metadata) between Claude and Codex logs ￼.	Dopemux: Could be integrated into dmx session find with --agent filters (e.g. --agent claude or --agent codex). However, for familiarity we might also add shortcuts: dmx session find-claude alias or detect automatically if running inside a Claude agent context. The unified tool can handle differences internally (we’ll incorporate logic similar to Claude-Code-Tools to find Claude’s ~/.claude/sessions vs Codex’s ~/.codex/sessions structure ￼). The interactive behavior and options (copy session to file, show path, etc.) will be ported.	Effort: Low incremental once find-session is implemented. Just additional filtering and using the appropriate resume command. Risk: Minimal; just ensuring we don’t break specialized features (like Codex’s session metadata parsing ￼). Possibly need to adjust for any differences in how Dopemux itself might log sessions.
+vault (Encrypted env backup)	A unified vault for .env files across projects, using SOPS (which leverages GPG) for encryption ￼. Allows easy backup or sync of environment configs: e.g. vault encrypt to save local .env to a central git repo (like ~/Git/dotenvs), vault decrypt to restore, vault sync to auto-detect direction, plus listing and status ￼. Protects secrets at rest and supports sharing across machines securely.	Dopemux: Introduce a dmx vault command group. We can adopt the same subcommands: dmx vault encrypt (copy and encrypt current project’s .env to central location), dmx vault decrypt (restore latest .env), dmx vault sync (compare timestamps and do the appropriate push/pull), etc. ￼. Use SOPS under the hood – likely require user to have GPG keys set up. The central vault path could default to ~/.dopemux/vault/ or similar (or reuse ~/Git/dotenvs/ convention). Ensure that vault list and vault status show clear info for Dopemux projects. Possibly integrate with Dopemux’s config or project metadata to identify projects.	Effort: Low to medium. The Claude tool likely has a Python implementation we can mimic or call directly (since MIT license). We need to ensure SOPS is installed and maybe provide guidance to user to set up a GPG key. Risk: Mainly user setup complexity (GPG keys, SOPS installation ￼). Also must carefully handle errors (e.g., decrypt when no backup exists, or encryption conflicts). Testing needed to ensure no data loss.
+env-safe (Safe .env inspection)	Prevents secret leaks by providing read-only, value-sanitized access to .env content ￼. Supports listing env var keys, checking if a key exists, counting defined vs empty, and validating syntax ￼ – never printing actual values. This works in tandem with safety hooks which completely block direct .env reads ￼. Claude (or Dopemux’s AI agent) can thus be allowed to use env-safe to reason about env configuration (like knowing a key exists or is empty) without exposing credentials ￼.	Dopemux: Provide an dmx env tool (or incorporate into a broader dmx-safe plugin). Subcommands: dmx env list (show all keys, possibly with an indicator for set/empty if --status flag), dmx env check <KEY>, dmx env count, dmx env validate. The implementation can be directly borrowed from Claude-Code-Tools (ensuring that printing values is removed or masked). Additionally, Dopemux’s policy engine will outright block any attempt by an AI to open .env files, funneling them to use dmx env instead – similar to Claude’s approach ￼ ￼. We will document that any env modifications must be done by the human developer (outside the AI agent), not via Dopemux.	Effort: Low. This is mostly a read-only parser for .env files – straightforward to implement or reuse. Risk: Low; just need to ensure the blocking hooks are in place so that the AI cannot bypass and read the file directly. Also, we should ensure dmx env validate is in sync with .env syntax rules.
+Claude Code Safety Hooks (Bash, Git, etc.)	A set of global CLI hooks that intercept dangerous commands to prevent accidents ￼. Key protections include: File deletion safety (block raw rm unless directed to safe trash), Git guardrails – e.g. block git add . or --all entirely ￼, require confirmation (“speed bump”) for adding entire directories or committing (first attempt warns, second proceeds) ￼, and block unsafe git checkout that might discard changes. Env file locks – completely disallow reading/writing .env (point user/AI to env-safe instead) ￼. Context limits – refuse reading very large files (>500 lines) to avoid prompt bloat ￼. Force rg over grep for performance ￼. These are installed via a hooks config in ~/.claude/settings.json pointing to scripts in the repo ￼ ￼.	Dopemux: Build a dmx-safe or policy module that implements similar hooks within Dopemux’s command processing pipeline. Since Dopemux controls the shell/commands that the AI executes, we can intercept those commands and apply these rules: e.g., detect an rm command in the AI’s output before execution – block it and replace with a safe alternative or prompt; intercept git add or commit commands and require an explicit confirmation (possibly the agent must output the command twice, or the user must confirm via UI); intercept any attempt to read .env (file read request) and abort it with an explanation, suggesting dmx env list instead. We will enforce using rg by intercepting grep commands and swapping them out or advising the AI accordingly. Technically, Dopemux could integrate these at the shell level or as middleware in the orchestration layer. Additionally, Dopemux might expose a configuration (similar to Claude’s settings.json) for these policies, but they might be on by default for all Dopemux sessions (with perhaps an override for advanced users). We also include any extra hooks from Claude-Code-Tools like notification_hook.sh (could be repurposed to send notifications on long tasks) or subtask state flags if relevant ￼.	Effort: Medium. Need to carefully implement command parsing/monitoring in Dopemux’s execution flow. Dopemux likely already has some policy framework; we should fit into that. Possibly reuse logic from Claude’s hooks scripts (translated to Python if needed, given Dopemux is Python-based). Risk: High importance to get right – an overly aggressive hook could impede normal usage (false positives), whereas a missed hook could allow a dangerous operation. Thorough testing required (e.g., ensure rm -rf is truly blocked, but allow safe deletions when intended, etc.). Also need to maintain ease-of-use – e.g., the “speed bump” approach for git commit should be clear to the user/AI why it’s blocked first time.
+Alt-Provider Shell Shims (kimi, zai, dseek functions)	Simple yet powerful approach to multi-model support: by defining shell functions that set ANTHROPIC_BASE_URL and ANTHROPIC_API_KEY (and model names if needed) in a subshell, then invoke claude ￼ ￼. This allows users to spin up Claude Code sessions that actually hit a different backend (Kimi, Zai, DeepSeek, etc.), without changing Claude Code itself. The use of a subshell ensures each session’s env vars don’t bleed into others, enabling concurrent usage of different models ￼. In practice, a user can simply type kimi instead of claude to get an AI coding session on the Kimi model.	Dopemux: Because Dopemux is an orchestrator for multiple agents, we can formalize this capability. Options: (1) Provide a CLI command or flag to launch a new agent specifying the model/provider, e.g. dmx new --provider=kimi or dmx use-model kimi which internally sets up the environment and calls Claude Code with the alternate base URL. (2) In a GUI/TUI context, allow the user to choose the model for a pane from a menu. Under the hood, Dopemux can manage API keys and endpoints (perhaps in a config file or environment variables) for known providers. We might integrate with Dopemux’s ClaudeCodeRouter (it appears Dopemux already has a ClaudeCodeRouterManager to handle alternate endpoints via a local router ￼ ￼). The simplest initial implementation could mimic the shell functions: e.g. dmx kimi simply spawns a Dopemux/Claude instance with the env var overrides, similar to the provided snippet. Over time, a more robust model routing UI can be built (with support for additional providers and dynamic selection per agent).	Effort: Low to start (shell function approach is trivial to implement within Dopemux’s launch commands). Risk: Low. Need to ensure API keys are provided by user securely (maybe via environment or Dopemux config). Also consider that anthropic-compatible models might have different capabilities (context length, etc.); Dopemux’s orchestration should be aware if needed. We should clearly document how to add a new provider function. Over-reliance on environment variables might conflict if a user runs multiple models in one shell without using subshell – but our implementation will isolate them properly.
+
+Table: Claude-Code-Tools features and how we plan to integrate or mimic them in Dopemux.
+
+Proposed API & CLI Specifications for Dopemux Extensions
+
+To implement the above, we propose the following new Dopemux CLI commands and plugin interfaces. These are designed to feel like natural extensions of Dopemux, using naming aligned with the original tools (for familiarity) but under a consistent dmx namespace:
+	•	dmx tmux – Terminal Multiplexing Control: Manage tmux sessions/panes via Dopemux.
+	•	dmx tmux open :<agent> – Launch a new agent instance in a new tmux pane. For example, dmx tmux open :claude might open a Claude Code pane; :bash could open a regular shell. (The prefix : denotes type, similar to how some systems might indicate sessions.)
+	•	dmx tmux send <target-pane> "<keystrokes>" – Send keystrokes to a specified pane. E.g. dmx tmux send 2 "yes\n" would send “yes” followed by Enter to pane 2. We will support special sequences for common keys (Esc, Ctrl-C, etc.).
+	•	dmx tmux capture <pane> – Capture and display the last chunk of output from the target pane (to allow an agent to read what happened there). Possibly with flags like --lines N.
+	•	Design: The dmx-tmux plugin will expose a programmatic API so that an AI agent running under Dopemux can call these functions (with proper sandboxing). Under the hood, Dopemux’s orchestrator will use libtmux or tmux CLI commands to perform the actions. We will include safeguards: e.g., rate-limit input injection to avoid flooding, and ensure an agent can only control allowed panes (maybe not arbitrary user terminals).
+	•	UX: Power-users can also manually use these commands in the Dopemux console. We might add tmux keybindings for convenience (for instance, pressing a key combination to quickly split a pane with a new agent, etc.).
+	•	dmx session – Session Search and Management:
+	•	dmx session find [<keywords>] [--agent X] [--global] [--limit N] – Search session history. Without keywords, list recent sessions. With --agent filter (e.g., --agent claude or multiple --agent claude --agent codex), restrict by agent type. --global searches across all projects (if Dopemux is used in multiple project contexts similar to Claude’s separation by project directories ￼). --limit bounds the number of results.
+	•	Upon running, this will display an interactive table of matches (using a textual UI, possibly integrating with Rich library as Claude-Code-Tools does ￼). Columns: agent name, project, git branch, date, number of messages, and a preview snippet ￼. Each entry is selectable.
+	•	After the user (or agent) selects a session, an action menu may appear: e.g., “Resume session” (default on Enter), “Show file path”, “Export to file”. Alternatively, separate subcommands: dmx session resume <id> directly resumes if ID known; dmx session export <id> <dest> etc.
+	•	Resuming will open the session in an appropriate agent pane. For Claude or Codex, it might shell out to claude -r or codex resume under the hood ￼ ￼. For Dopemux’s own sessions, we’d have a mechanism to restore state (if supported).
+	•	dmx session list – (Alias for find with no filter) quickly list sessions in current project.
+	•	dmx session open <id> – (Possible alias for resume).
+	•	Integration: We will store Dopemux session transcripts in a standardized JSONL or Markdown format similar to Claude’s, so that the search index can treat them uniformly. Configuration can be allowed via ~/.config/dmx-sessions.json (similar to find-session’s config) to add custom agent types or paths ￼, though initially we’ll hardcode known ones.
+	•	dmx env (Safe Env File Operations):
+	•	dmx env list [--status] – List all environment variable keys in the current .env (or another specified env file). If --status is provided, indicate for each key whether it has a value defined or is empty ￼. Example output:
+
+API_KEY    [SET]
+DEBUG      [EMPTY]
+PORT       [SET]
+
+(But never showing the values).
+
+	•	dmx env check <VAR> – Check if a specific environment variable is present in the file (exit 0 or print a message if yes/no). Claude’s version prints existence ￼.
+	•	dmx env count – Show the count of total variables, how many have values vs are empty ￼.
+	•	dmx env validate – Validate that the .env file syntax is correct (e.g., no invalid variable names, proper quoting, etc.).
+	•	Note: All these commands avoid printing secrets by design ￼. They will be used by AI agents instead of any direct file read. Dopemux will enforce that by intercepting attempts to open .env (as described in Safety Hooks below).
+
+	•	dmx vault (Encrypted Env Vault):
+	•	dmx vault encrypt – Encrypt and back up the current directory’s .env file to the central vault (e.g., ~/.dopemux/vault/<project>.env.sops.yaml). Uses SOPS with a preconfigured key. Typically, this means encrypting with the user’s GPG key. If the vault file already exists, it will create a new version (or update it) with a timestamp.
+	•	dmx vault decrypt – Restore the .env from the vault to the current project directory. Likely will refuse to overwrite an existing .env unless a --force or the existing one is known to be a placeholder.
+	•	dmx vault sync – Auto-detect if the local .env is newer or the vault is newer, and do an encrypt or decrypt accordingly ￼. This uses file timestamps or content hash to decide direction.
+	•	dmx vault list – List all projects for which an .env backup exists in the vault, with info like last backup date ￼.
+	•	dmx vault status – Show status for the current project’s .env: e.g., “Vault is up to date” or “Local .env changed since last vault backup” etc.
+	•	Implementation: Likely wrap the existing vault tool logic. We might directly call the vault Python functions from Claude-Code-Tools if we include it as a library, or reimplement with SOPS CLI commands.
+	•	Safety Hooks & Policies (internal, surfaced via dmx-safe):
+	•	These may not all be user-facing commands, but we might expose a status or management interface:
+	•	dmx safe status – Show which safety policies/hooks are active (e.g., “✅ .env read/write is blocked”, “✅ ‘rm’ protection enabled”, etc.).
+	•	dmx safe log – If we maintain a log of prevented actions, show recent entries (e.g., “Blocked attempt to remove file X at 10:32, moved to Trash instead”).
+	•	Possibly provide a way to temporarily override a block in a controlled way (though this is dangerous – better to enforce hard rules).
+	•	Hook Implementation Details: Dopemux’s shell/command runner will include checks:
+	•	rm hook: If an AI tries to run rm (especially recursive or wildcard deletions), intercept. We can either block outright or redirect to a safer command. Claude’s approach was to enforce using a TRASH directory ￼ – i.e., maybe the AI must use a trash <file> command instead which moves files to a trash folder rather than deleting. We can introduce such a command or instruct the AI policy that rm is disallowed.
+	•	Git hooks: If an AI runs git add . or similar broad adds ￼, we block it completely (tell the AI this is not allowed, to add specific files or use smaller scope). For git add <dir> (a directory), we can implement the “speed bump” – e.g., on first attempt, do not execute; instead, list the files in that directory and warn (so the AI/user sees what they are about to add) ￼. If the AI then repeats the exact same git add <dir> command, we allow it, assuming they’ve reviewed the list. Similarly, for git commit, intercept the first commit attempt to confirm (could just ask the user to confirm or require a second attempt).
+	•	Checkout protection: If git checkout is attempted while there are uncommitted changes or something that could lead to loss, we block and warn (this one might require context of git state; possibly out-of-scope for initial implementation but worth noting).
+	•	.env hook: Any attempt to open or read a file named .env (or .env.* perhaps) by the AI is blocked ￼. The AI gets a message like “Direct .env access is disallowed. Use dmx env list or edit manually.” This ensures secrets don’t leak.
+	•	File size hook: If an AI tries to read a file larger than X lines (500 by default) ￼, intercept and either refuse or truncate. For example, we might simulate Claude’s behavior: “This file is too large to read fully (X lines). Consider opening a smaller portion or summarizing.” This prevents exhausting the context window.
+	•	Grep enforcement: If an AI uses the grep command, replace or alias it to rg (ripgrep) for speed ￼. We can set an environment alias or just intercept grep calls and transform them. Possibly also block grep -r (since rg is much faster).
+	•	Under the hood: We will likely integrate these via Dopemux’s execution engine (if Dopemux uses pexpect or direct subprocess, we can pre-scan the command string). Another approach is to install shell aliases or functions for the AI’s shell (like how Claude’s hooks use a bash preload script). However, integrating in Python gives us more control and ability to communicate back to the agent/user.
+	•	We will utilize the existing hooks scripts from Claude-Code-Tools as references ￼ – for example, examine bash_hook.py for patterns of dangerous commands, and env_file_protection_hook.py for .env blocking. We will adapt those to Dopemux’s context.
+	•	Multi-Model/Provider Usage:
+	•	We won’t necessarily have separate CLI commands for each provider (to avoid clutter). Instead, we implement a unified approach:
+	•	dmx new --model <name> or dmx model use <name>: Launch or switch an agent to use a specified model backend. For instance, dmx new --model=kimi would start a new Claude Code instance pointed at the Kimi API. We could also have a default mapping of model name to provider URL/key in a config file (so Dopemux knows what “kimi” means – likely the user sets this up, or we provide defaults if possible).
+	•	Alternatively, a config file or command dmx provider set kimi <url> <key> could register a new provider.
+	•	On the backend, if Dopemux already uses a Claude Code Router (as seen in claude_code_router.py) that can route to multiple models, we might integrate with that rather than launching different binaries. For example, Dopemux could send a command to its router to use anthropic-claude vs kimi-k2 model for a given session. The code suggests Dopemux’s router merges provider configs and can run in non-interactive mode ￼ – possibly supporting multiple upstream models. We might simply use environment variables method for now (since the Claude-Code-Tools approach is proven simple) and later hook into the router for a more scalable solution.
+	•	Regardless, from the user’s perspective, it should be as easy as how Claude-Code-Tools made it: one command or function and you’re using a different model. We’ll document supported ones (Claude, Kimi, Zai, DeepSeek, etc.) and how to configure the API keys (e.g., environment vars KIMI_API_KEY, etc., akin to Claude-Code-Tools’ instructions ￼).
+
+The CLI and API design above aims for clarity and consistency. All new commands will be documented (with dmx <command> --help) and integrated into Dopemux’s help menus. We’ll also integrate them into the Dopemux TUI (for example, session search might be accessible via a special key to open a search prompt UI; vault could be surfaced in settings menus, etc.). Importantly, any action the AI agent might need to do (like controlling another pane or reading env keys) will have a corresponding safe tool in this interface that the agent can invoke instead of doing it directly.
+
+Workflow Scenarios (Sequence Diagrams & Examples)
+
+To illustrate how these integrations will work in practice, here are key workflow scenarios with step-by-step sequences. These serve as both design validation and usage examples:
+
+1. Interactive Script Testing via tmux-cli: Goal: Claude (AI agent) runs a Python script that prompts for user input, and Dopemux enables it to handle the prompt automatically.
+	•	User writes a request in Dopemux: “Run the setup.py script and provide ‘yes’ when it asks for confirmation.”
+	•	Claude (AI in Pane 1) understands it needs to run an interactive script. It uses the tmux-cli facility: Dopemux’s tmux-cli plugin intercepts this request.
+	•	Dopemux spawns a new tmux pane (Pane 2) and runs the setup.py script there (perhaps via a command like python setup.py).
+	•	The script in Pane 2 prints “Are you sure you want to continue? (yes/no): ” and waits for input.
+	•	Claude (Pane 1) issues a dmx tmux send 2 "yes\n" command (via the underlying API) to send the answer.
+	•	Dopemux injects the keystrokes “yes” + Enter into Pane 2 ￼. The script receives the input and continues execution.
+	•	The script completes and prints output in Pane 2. Dopemux can then capture that output.
+	•	Claude reads the output (via dmx tmux capture 2) and provides a summary or continues the coding task as instructed.
+	•	Result: The interactive prompt was handled seamlessly by the agent, thanks to tmux multiplexing. The user saw all this happening in real-time (Pane 2 was visible), providing transparency. This uses the “test interactive scripts” capability of tmux-cli ￼.
+
+2. Interactive Debugging with PDB (Debugging a code issue): Goal: Use tmux-cli to let Claude step through code using pdb in an interactive session.
+	•	User asks Claude: “Debug the failing test by running pytest and use pdb to inspect the variables at the error.”
+	•	Claude (Pane 1) opens a new Pane 3 via dmx tmux open :bash (or a direct command to run pytest in a new pane).
+	•	Dopemux opens Pane 3 and executes pytest under pdb (the test fails, triggering pdb).
+	•	The pdb debugger in Pane 3 waits for input ((Pdb)  prompt).
+	•	Claude (Pane 1) sees the prompt (possibly via capturing output) and decides to send debugger commands. For example, it might send bt (backtrace) or inspect variables: dmx tmux send 3 "print(data)\n".
+	•	Dopemux injects those commands into Pane 3’s pdb session. The output (e.g., variable contents) is printed in Pane 3.
+	•	Claude can iteratively send commands (next, continue, etc.) to step through the code ￼. The user can watch this live or even intervene if needed.
+	•	Once the issue is identified, Claude exits pdb (sending exit) and closes Pane 3 or leaves it open for the user.
+	•	Result: Dopemux facilitated a smooth debugging session orchestrated by the AI. This is safer and more visible than Claude running a hidden subprocess – the developer can monitor each debugger step.
+
+3. Claude-to-Claude Collaboration (Agent consult): Goal: Launch a secondary AI agent to review code or perform a specialized task, controlled by the primary agent (Claude).
+	•	User instructs Claude: “Spin up another AI instance to review the code in module.py and suggest improvements, then incorporate the feedback.”
+	•	Claude (Primary, Pane 1) uses dmx tmux open :claude to launch Pane 4 with a new Claude Code instance (Secondary).
+	•	Dopemux opens Pane 4, running a fresh Claude process (or another model’s process, per user request).
+	•	Claude (Primary) then prepares a message (e.g., it might say: “Please review the following code for style issues:” and include module.py content) and sends it to the secondary agent. It does this by sending keystrokes to Pane 4: e.g., dmx tmux send 4 "<review prompt>\n" – effectively Claude writing a message to Claude.
+	•	Secondary Claude (Pane 4) receives the prompt and produces an answer (since it’s an AI session in that pane). The user and primary Claude can see the review comments in real time as they appear in Pane 4 ￼.
+	•	Once Secondary Claude finishes, Primary Claude might capture the output from Pane 4 (dmx tmux capture 4) to analyze it, or simply read it via the shared tmux buffer.
+	•	Primary Claude then summarizes or applies the feedback to the code in its own environment.
+	•	This way, one AI can leverage another with specialized knowledge (e.g., ask one agent tuned for security to do a security review).
+	•	Result: Dopemux’s tmux integration enabled multi-agent orchestration: a visible, auditable “Claude→Claude” conversation took place, rather than an invisible sub-agent. This addresses the use case of an AI agent getting a second opinion or offloading a task ￼.
+
+4. Safe Environment Inquiry (env-safe usage): Goal: The AI needs to verify if certain config variables are set, without exposing secrets, using env-safe tool integrated in Dopemux.
+	•	Scenario: The AI is deploying an app and needs to ensure that API_KEY and DB_PASSWORD are configured, but should not see their actual values.
+	•	Claude attempts to read the .env file. Dopemux’s safety hook blocks this operation ￼, so Claude receives a safe error message: “Direct .env access is not allowed.” Claude then knows to use the provided tool.
+	•	Claude runs dmx env list --status. Dopemux executes the env-safe logic: it scans the .env file and returns a list of keys with status:
+	•	e.g., it prints:
+
+API_KEY        [SET]  
+DB_PASSWORD    [SET]  
+DEBUG          [EMPTY]  
+
+
+	•	Claude sees this output (via Dopemux capturing it for the agent or simply reading the console if connected).
+
+	•	Now Claude knows that API_KEY and DB_PASSWORD exist and are non-empty (set), and sees that perhaps DEBUG is defined but empty (maybe prompting it to set a default).
+	•	If Claude specifically wants to double-check one key, it could run dmx env check DEBUG. Dopemux would respond with something like “DEBUG is present but has no value” or exit code indicating false.
+	•	User also benefits from this: no secrets were revealed to the AI or anywhere, maintaining security.
+	•	Result: The AI was able to confirm environment configuration safely. This demonstrates how env-safe works in tandem with the .env read-block – providing a secure alternative path for the AI to fulfill its task ￼.
+
+5. Vault Backup and Sync Workflow: Goal: Use dmx vault to back up a project’s .env, then simulate a scenario of pulling it to a new environment.
+	•	Developer runs dmx vault encrypt in Project A’s directory. Dopemux finds the .env file and uses SOPS to encrypt it with the user’s GPG key, saving to the central vault (e.g., ~/.dopemux/vault/ProjectA.env.sops.yaml). It prints “Encrypted .env and saved to vault.” Metadata (timestamp, project name) is stored.
+	•	Later, on another machine or after a fresh clone of Project A, the developer wants the env setup. They run dmx vault decrypt. Dopemux looks up ProjectA.env.sops.yaml in the vault, decrypts it (requiring access to the GPG key), and writes a new .env in the working directory. It ensures correct file permissions and warns if an .env already exists.
+	•	If an AI in Dopemux tries to modify the .env, it’s not allowed – the developer must do dmx vault decrypt/encrypt for changes. Optionally, if the AI suggests adding a new env var, the developer can do it manually and then update the vault.
+	•	The dmx vault sync command can be used daily – it will check if local .env was changed since the last vault backup (maybe by storing a hash or timestamp in the vault file’s metadata). If changed, it encrypts a new version; if the vault is newer (someone updated it elsewhere), it decrypts.
+	•	Result: The environment secrets are safely centralized and versioned (in encrypted form), reducing the risk of lost or inconsistent env files. This scenario ensures Dopemux users can easily manage secrets across multiple instances.
+
+Each of these scenarios will be documented with examples in Dopemux’s guide. They also form the basis of integration tests and demos (see Testing section below). By walking through them, we ensure the design of Dopemux commands covers the needed steps and interactions.
+
+Proof-of-Concept Implementation & Demos
+
+To validate these features early, we will develop a few Proof-of-Concept (PoC) demos within a Dopemux development environment:
+	•	PoC 1: Minimal dmx-tmux Demo – Automated REPL Interaction:
+	•	Set up a simple Python REPL in one tmux pane and Dopemux/Claude in another. Through Dopemux’s tmux control, have Claude automatically send inputs to the Python REPL (e.g., define a variable, execute a function) and capture the output to explain it.
+	•	Success Criteria: Claude can run a multi-step interaction (like define a function and then run it) in the REPL without user intervention. We assert that the outputs captured match expectations.
+	•	PoC 2: Claude→Claude Review Session:
+	•	Use a dummy second agent (could be another Claude or even a simplified echo agent) in a new pane. Script Claude in pane 1 to ask pane 2 a question and get an answer. This could be done by stubbing dmx tmux send and capture calls. Verify that pane 1 correctly interprets and uses pane 2’s response.
+	•	Success Criteria: The transcript of pane 2’s answer is available to pane 1, and pane 1 acts on it (e.g., prints “The other agent suggested X, so I will do X.”).
+	•	PoC 3: Safety Hook Drill:
+	•	Start a Dopemux session with an AI agent. Have the agent attempt a series of “dangerous” operations: rm test.txt, rm -rf somedir/, git add ., git commit -m "test", cat .env, grep -R "password" . etc.
+	•	Monitor Dopemux’s responses. We expect:
+	•	rm test.txt might be allowed if it’s a single file but redirected to trash (so file is moved, and a message “File moved to trash instead of deletion” is shown).
+	•	rm -rf somedir/ is blocked entirely with an error message.
+	•	git add . is blocked with “Refused: adding all files is unsafe.”
+	•	git add src/ triggers a warning listing files in src and not adding them. A second identical git add src/ would then go through.
+	•	git commit first attempt prints “Are you sure? Commit again to confirm.” The second attempt succeeds.
+	•	cat .env is blocked: “Access to .env is disallowed. Use dmx env list.” The agent might then try dmx env list which succeeds and doesn’t show secrets.
+	•	grep -R "password" . is replaced or blocked with suggestion: “Use rg for recursive search. E.g., run: rg “password” .”
+	•	Success Criteria: Each unsafe operation is either blocked or intercepted with the intended mechanism, and no forbidden action actually takes place (verify files remain undeleted, .env not printed, etc.). The AI should receive guidance messages consistent with Claude-Code-Tools’ approach ￼.
+	•	PoC 4: Vault Round-trip:
+	•	Prepare a dummy .env in a temp directory with known values. Run dmx vault encrypt and then wipe/rename the .env. Run dmx vault decrypt. Compare the restored .env with the original (they should match exactly). Also test dmx vault list shows the entry, and dmx vault status reports correctly.
+	•	Optionally, simulate conflict: modify .env and vault differently and run dmx vault sync to see if it picks up the right change.
+	•	Success Criteria: Encryption and decryption work with no data loss. The vault file is indeed encrypted (cannot read it directly), and the logic chooses correct sync directions.
+
+These PoCs will be executed in a controlled dev setup (maybe using Dopemux’s test mode or a dummy AI agent that just prints commands). They serve to prove out technical viability and flush out any integration bugs early. We will incorporate any lessons from PoCs back into the design (for example, adjusting how we capture pane output if needed, or tweaking safety regex patterns).
+
+Moreover, we will include these scenarios in our automated test suite (where possible) or as demos in the documentation. For instance, we can script a demo session using tmux and Dopemux CLI to demonstrate an AI debugging with pdb, capturing the terminal output as a GIF for docs, similar to the original repo’s demo gif ￼.
+
+Security and UX Considerations
+
+Security Model Alignment: Dopemux must maintain or improve upon Claude-Code-Tools’ safety guarantees. The hooks provided are a great baseline:
+	•	We will enforce all the same protections by default. This means Dopemux’s AI agents will be effectively “sandboxed” to prevent irreversible or high-risk actions. The assumption is that the AI agent should not be fully trusted; Dopemux acts as a governor. For example, file deletion will either be disabled or converted to a reversible action (trash) ￼, and certain git operations will require human confirmation or an AI second attempt to ensure deliberation ￼.
+	•	Dopemux’s core may also implement further restrictions beyond Claude’s:
+	•	Perhaps integrating a Python sandbox for any user-supplied Python code (if Dopemux allows plugins/extensions from AI) – though out of scope of this immediate integration, this was mentioned as a research item in Dopemux docs (Plugin System Security) ￼. For now, focusing on CLI command safety is priority.
+	•	We should consider rate-limiting AI command execution to prevent, say, a runaway loop of rm attempts or spamming external APIs.
+	•	Configuration of Safety: In Claude-Code-Tools, hooks are configured via a JSON in the user’s home ￼. For Dopemux, we might not expose an external config initially (to avoid users disabling critical safety), or we provide a config but with very strong warnings. Likely, we’ll bake these rules in, and allow toggling only via environment or a “dev mode” if absolutely needed. In an enterprise setting, these protections should be always-on to protect resources.
+	•	We will document all safety interventions so users understand what’s blocked and how to intentionally override if necessary (outside Dopemux, e.g., manually running a git command if Dopemux refuses to let the AI do it).
+
+User Experience & ADHD-Friendly Design: Dopemux has a focus on ADHD-friendly UI (per the documentation referencing ADHD design principles ￼). We will ensure the new features align with those principles:
+	•	Clarity and Feedback: Whenever an action is blocked by a safety hook, Dopemux will provide a clear, concise explanation in output (possibly highlighted in a distinct color). For example: “⚠️ Safety Block: Direct deletion is disabled. File has been moved to Trash.” – using icons or coloring to draw attention without being overwhelming.
+	•	Minimal Surprises: Features like session search and vault will be clearly invoked by the user or agent, so no surprise pop-ups. But if an AI triggers a safety hook, the message should both inform the developer and implicitly guide the AI (which will read the message) on what to do next (Claude-Code-Tools does this by suggesting env-safe in the error text ￼ – we’ll do similar).
+	•	Interactive confirmations (“speed bumps”): We adopt the two-step commit for git as a user-friendly way to avoid mistakes while not outright preventing progress ￼. This is analogous to “Are you sure? [y/N]” prompts but adapted to an AI flow. We’ll make sure the AI agent knows (via its prompt knowledge or the message) that it should repeat to confirm. If needed, we may introduce an explicit command or flag for confirmation (but keeping it simple is preferable).
+	•	Visual Integration: The session finder’s table UI will be implemented with an eye on readability: clear columns, possibly color coding by agent, and truncated previews that show just enough context. We saw in Claude’s version they use Rich to create a neat table ￼. We will ensure it adheres to Dopemux’s theme (e.g., using the ADHD theme colors if applicable to not be jarring).
+	•	Keyboard shortcuts: For power users (especially those who favor keyboard-driven workflows), we’ll assign intuitive shortcuts: e.g., while in the Dopemux TUI, pressing / might open the session search (like searching history), or a special key combo to invoke vault sync. We need to integrate with the tmux keybinding scheme (perhaps prefix combos).
+	•	Documentation & Help: We will update Dopemux’s help docs to have quick “cheat sheets” for these new commands. The executive brief and design will be distilled into user-facing docs focusing on how to use these features effectively (and why they exist – educating users on safety, etc.).
+
+Performance Impact: One UX aspect is performance – e.g., running find-session search should be snappy. We might need to index sessions on the fly or maintain a cache. Given possible large volumes of session data, we’ll ensure using efficient search (maybe using Python’s rg if available for content search, or at least optimizing file scanning). The original uses AND logic for keywords and can search across many files – possibly fine, but we’ll test performance with large histories.
+
+Finally, accessibility: Dopemux’s ADHD optimizations (like careful color choices, reduced cognitive load) will be applied. For instance, in safety messages we avoid all-caps or intimidating language – use calm, clear wording. The env-safe output will be aligned in columns for readability, etc. And sequence of tasks like vault sync will break down multi-step info into bullet points or numbered steps if shown to the user, rather than a wall of text.
+
+In summary, our integration will maintain a developer-friendly UX: empowering but safe. We treat the AI agent as a potentially clumsy junior developer – we give it the tools to do the job (tmux control, session recall, env info) but also supervise its actions (safety hooks) and ensure the human is never blindsided by a destructive action. The enhancements should augment the developer’s experience with minimal friction.
+
+Multi-Model Routing Strategy
+
+Claude-Code-Tools demonstrated a lightweight way to route requests to different AI providers via environment tweaks ￼ ￼. Dopemux, being designed for orchestrating multiple AI instances, will incorporate this at a more integrated level:
+	•	Shell Function vs. Integrated Config: While we can implement the exact shell functions (kimi() { ...; claude "$@"; }) in the Dopemux environment, we will likely pursue a more structured approach:
+	•	Dopemux can maintain a mapping of provider names to (base_url, auth_env_var). For example:
+
+// In Dopemux config (e.g., ~/.dopemux/providers.json)
+{
+  "providers": {
+    "kimi": {
+      "base_url": "https://api.moonshot.ai/anthropic",
+      "auth_env": "KIMI_API_KEY"
+    },
+    "zai": {
+      "base_url": "https://api.z.ai/api/anthropic",
+      "auth_env": "Z_API_KEY"
+    },
+    "deepseek": {
+      "base_url": "https://api.deepseek.com/anthropic",
+      "auth_env": "DEEPSEEK_API_KEY",
+      "model": "deepseek-chat", 
+      "fast_model": "deepseek-chat"
+    }
+  }
+}
+
+The above is analogous to the functions defined in Claude-Code-Tools ￼ ￼. Dopemux uses this to know how to launch each provider.
+
+	•	If the user runs dmx new --provider kimi, Dopemux will:
+	•	Create a subshell or isolated environment where ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN are set to the Kimi values (taking token from KIMI_API_KEY env var) ￼.
+	•	Possibly set specific model variables if needed (DeepSeek needed ANTHROPIC_MODEL=deepseek-chat for example ￼).
+	•	Then launch the Claude Code binary (or the Dopemux Claude integration) in that environment.
+	•	The result is a new pane with an AI agent connected to the alternate provider.
+	•	Because we use a subshell or isolated process, once that agent exits, those env vars don’t leak to others, so concurrently one can have a Kimi-backed Claude and the normal Claude, etc. ￼. This matches the original design.
+
+	•	Integration with Claude Code Router: The Dopemux codebase suggests they might use a local router (perhaps litellm or others) to manage multiple model endpoints ￼. We should ensure our implementation doesn’t conflict:
+	•	Possibly, Dopemux’s Claude Code Router could handle multi-provider by itself. If so, dmx new --provider might instruct the router rather than launching separate instances.
+	•	However, to keep it simple for initial implementation, directly launching separate instances with different env might be clearer and aligns with how a user might do it manually with those shell functions. We can iterate later to integrate at the router level (which could optimize switching models without new processes, but that’s an optimization).
+	•	UI/UX for multi-model: We should clearly show which model a given pane/agent is using. For example, the Dopemux status bar or pane title could include the provider name (e.g., “Claude (Kimi)” or “Claude [ZAI]”). This is important so the user knows which AI variant they’re interacting with. Also, session logs should record the provider used.
+	•	We will also provide user guidance: e.g., in documentation, “To use alternate AI providers (like Kimi, Zai, etc.), first obtain API keys and set them in your environment (KIMI_API_KEY, etc.). Then use dmx new --provider=kimi to start a session.” We’ll mention the supported providers out-of-the-box and how to add new ones.
+	•	Concurrency and Resource Use: Running multiple AI models at once is powerful. We should caution the user about rate limits or token usage if they do this heavily. Also, if running via Anthropics API, multiple base URLs may allow more throughput, but still be mindful of account limits.
+	•	Testing multi-model: We will test launching at least two different providers simultaneously to ensure no cross-talk (each should hit its respective endpoint, returning appropriate results). Possibly simulate one real and one dummy local model for test if actual keys are not available.
+
+Overall, multi-model routing in Dopemux will evolve Dopemux from a single-backend tool to a flexible orchestrator that can integrate various LLM providers transparently – a key strategic advantage. The initial approach (shell env isolation) is proven and quick to implement, and we will build on it for a more dynamic routing in the future (maybe even per-message routing, though that’s beyond scope for now).
+
+Testing Plan and Acceptance Criteria
+
+To ensure these integrations work as intended and are robust, we outline a comprehensive test matrix. Each major feature will have corresponding tests (automated where possible) and acceptance criteria drawn from the original prompt’s expectations:
+	•	Tmux-CLI Workflows: We will manually and automatically test the four scenarios mentioned in the Claude-Code-Tools doc ￼:
+	1.	Interactive Script Testing: (as in PoC1) – Acceptance: The AI can complete a script requiring user input (e.g., a prompt for “yes/no”) without human intervention, and the output is correctly processed.
+	2.	UI Development / Web Testing: (not explicitly detailed above) – We should test that the AI can launch a development server in one pane and perhaps use a browser automation in another. Given Dopemux’s scope, this might be an extension – but at least ensure that tmux-cli doesn’t break if the AI runs something like npm start (which binds to the terminal) in a new pane and then perhaps uses another command to check a URL. If we incorporate browser control later, we’ll test that too.
+	3.	Interactive Debugging: (PoC2) – Acceptance: The AI steps through a debugger session via Dopemux. Criteria: It can inspect a variable and continue execution, with Dopemux properly conveying the commands and responses.
+	4.	Claude-to-Claude Communication: (PoC3) – Acceptance: One AI instance can launch and converse with another in a separate pane, and the content is exchanged accurately. Specifically, if the secondary agent produces a piece of text, the primary can retrieve it. We should verify no ghost errors (like sending keystrokes to wrong pane).
+	•	Additional acceptance: The tmux control should work on both local and remote setups – meaning if Dopemux is running on a server over SSH, it still can open new tmux windows on that server. (This was a selling point: “Works anywhere: automatically handles local and remote tmux” ￼ – likely means it uses the same commands regardless, which will work if tmux is running on remote). We simulate/test Dopemux in an SSH session to ensure commands still function.
+	•	Session Finder Tools:
+	•	Test indexing of sessions: Create dummy session files for Claude and Codex (or Dopemux’s own) with known content. Run dmx session find "keyword" local vs global. Acceptance: It finds the correct sessions (case-insensitive, and treats comma-separated keywords as AND logic like original does).
+	•	Test interactive selection: This is harder to automate, but we can simulate selection by programmatically sending arrow key and enter inputs if the UI is curses-based. At least ensure the underlying find-session --shell mode returns correct shell commands to change directory and resume, like Claude’s does ￼.
+	•	Acceptance: Persistent directory – this was a feature where if you resume a session from a different project, after closing, you remain in that project directory ￼. We will test that with our wrapper function approach (the fs() shell function in the docs).
+	•	Acceptance: Filtering and limits – ensure --agents filter works (e.g., only shows Claude sessions when specified), and -n 5 returns at most 5 results.
+	•	Test that pressing Enter with no selection cleanly cancels (no stuck state).
+	•	If possible, test across a variety of session file sizes (some large transcripts to ensure performance is okay).
+	•	Vault:
+	•	Unit test the encryption/decryption with a known input (as in PoC4). Possibly use a test GPG key or stub SOPS in a dry-run mode if available.
+	•	Test vault sync logic by intentionally making local .env newer vs vault newer.
+	•	Acceptance: Timestamp and central storage – After vault encrypt, check that the file lands in ~/Git/dotenvs/ (or configured path) with correct naming and is a valid SOPS file (YAML with encrypted values). Check that vault list shows it.
+	•	Test error cases: no .env present (vault should handle gracefully, maybe warn “no .env to back up”), no vault present on decrypt (should warn “no backup found”), missing GPG key (should error clearly).
+	•	Security acceptance: confirm that the encrypted files cannot be read without the key (outside scope of automated test, but by inspection they should be gibberish text with SOPS headers).
+	•	Also test that env-safe and vault interplay: after decrypt, the .env is back and env-safe list sees the keys; if .env is encrypted and removed, env-safe should handle the “file not found” gracefully.
+	•	Env-Safe:
+	•	Test each subcommand:
+	•	dmx env list on a sample .env (with a few keys and values) – ensure output lists all keys alphabetically (if that’s how we do it, or in file order) and does not contain any value substring. We might deliberately put a value like SECRET=abcd1234 and verify that abcd or 1234 do not appear in output.
+	•	dmx env list --status – test with some empty values and some set. Ensure [SET]/[EMPTY] indicators are correct.
+	•	dmx env check KEY – try for existing and non-existing keys, ensure correct exit code or output (“exists” vs “not found”).
+	•	dmx env validate – test on a valid .env (maybe just returns “OK”) and on an invalid one (e.g., with a line like FOO=bar=baz or unquoted value with space) and expect an error message.
+	•	Acceptance: It should be impossible to retrieve a value via these commands. If our implementation accidentally allowed something like dmx env list | grep SECRET_KEY, we need to consider if that could indirectly leak (in our design it wouldn’t because values aren’t printed at all).
+	•	Also, integration test: if AI tries to open(".env"), Dopemux blocks it, and if AI then tries dmx env list, it succeeds. This chain shows the policy works as intended.
+	•	Safety Hooks:
+	•	We enumerated these in PoC3; those essentially are the tests. Additional edge tests:
+	•	rm variations: ensure rm -f file also blocked or handled, ensure rm file1 file2 similarly (multiple args).
+	•	rm on a directory vs file differences (maybe always block directory removal).
+	•	git add -A or --all explicitly (should block, as per list ￼).
+	•	git add * in a directory (should catch that * means all and block).
+	•	For the speed bump, test that if the AI or user slightly changes the command (e.g., adds a space at end or similar) on second attempt, do we treat it as same? We might have to normalize the command string for comparison.
+	•	Test git commit two-step: that doing any other command in between resets the “first warning” (likely we implement it so it warns every new commit attempt unless a flag like --no-verify-second or internal state is set).
+	•	grep enforcement: test that a simple grep is blocked or alias replaced. Ideally, after one block, the AI might switch to rg (if it’s installed). If rg isn’t installed, we should consider what to do (maybe instruct to install or allow grep if rg not present?). We can ensure in Dopemux environment that rg is indeed available (list it in requirements).
+	•	Large file read: simulate an AI doing open('bigfile.txt').read(). If Dopemux sees the file has, say, 600 lines, it should prevent sending the content. Possibly we break the file reading action – if using pexpect, when it tries to output too much, we intervene. We can simpler test with wc -l bigfile.txt to count lines and verify hook triggers if >500 lines. The acceptance is that the agent does not receive the full content of a large file, and gets a message. This one might be tricky if not already solved; we may implement as: the AI’s attempt to read the file triggers a prompt in Dopemux and only sends first 500 lines plus a note, something like that.
+	•	Multi-Model:
+	•	Launch sessions using each provider (assuming we have API access in test env, which we might not, but at least we can test that the environment variables are set properly).
+	•	Possibly stub the Anthropics API endpoints with a dummy server to ensure the request goes to the correct URL (this is more integration testing).
+	•	At least test that launching with --provider does indeed set the env var. For example, launch dmx new --provider=kimi and within that agent session, run a command to print env (echo $ANTHROPIC_BASE_URL), expecting the Kimi URL.
+	•	Test that normal dmx new (no provider) uses the default Anthropic API (or local Claude if that’s how Dopemux works).
+	•	If multiple sessions run, verify that each has correct isolation: e.g., from a Kimi session, printing $Z_API_KEY should show empty (because that var wasn’t set in that subshell), while the Zai session would have it.
+	•	If using the Claude Code Router, test switching models via config – ensure that doesn’t break our logic.
+	•	Acceptance: Concurrent usage – run two agents with different providers, have them both do a simple task (like calculate 2+2). Both should respond correctly (meaning they reached their respective endpoints). No interference or cross-results.
+
+Acceptance Criteria Summary: Dopemux is considered to have successfully integrated Claude-Code-Tools features when:
+	•	Terminal Automation: Dopemux can reproduce all major tmux-cli scenarios: interactive input handling, debugging, multi-agent orchestration – with the AI controlling tmux via safe interfaces and the user able to observe. The interactions should be as smooth as described (no significant lag or misrouting of commands).
+	•	Session Search: A user (or AI via command) can quickly search past sessions by keywords and resume them, with the current directory properly restored and correct agent invoked for that session ￼ ￼. This should work for Dopemux’s own sessions and any integrated Claude/Codex logs if applicable.
+	•	Safety Enforcement: The listed dangerous operations are confirmed blocked or gated. In practice, during a test coding session, the AI cannot accidentally delete files or reveal secrets, thanks to these measures. The user feels confident letting the AI run code because Dopemux is actively preventing destructive actions.
+	•	Env Management: The dmx env commands function as the only method the AI will use to query env vars, and they never leak values ￼. Vault commands successfully protect and restore env files without manual editing of secrets by the AI (keeping that boundary intact).
+	•	Multi-Model Support: The user can start new Dopemux agent sessions on alternate models with one command, and run them concurrently. This extends Dopemux’s usefulness (e.g., use a faster but lower-accuracy model for quick tasks and a slower Claude for complex tasks in parallel).
+	•	Documentation & UX: All new features are discoverable via --help or documented, and fit into Dopemux’s interface without confusion. For instance, dmx session find feels like a natural part of the tool, not a clunky add-on.
+	•	Performance and Stability: Running these features does not significantly degrade performance. The overhead of hooks and tmux control is minimal (e.g., hooks checking strings is fast; libtmux calls are cached as per research ￼). If any minor slowdowns exist (like the first search indexing), they are within acceptable range (sub-second for moderate session logs, etc.).
+
+We will finalize acceptance through a combination of automated tests and internal dogfooding – using Dopemux with these features in a real development task for a day and verifying that they indeed solve the intended problems without introducing new ones.
+
+Risks & Mitigations
+
+Integrating new features into a complex system like Dopemux carries risks. Below we outline key risks and how we plan to mitigate them:
+	•	Risk 1: tmux Integration Complexity – Using tmux programmatically can be tricky. Potential issues include synchronization (ensuring the target pane is ready to receive input) and addressing (identifying the correct pane/session to control, especially if multiple sessions open). Also, if Dopemux’s orchestrator already uses tmux for its UI, there’s a risk of conflict or mis-targeting panes.
+	•	Mitigation: Use the libtmux library which provides a high-level API to tmux sessions, and implement a robust mapping of Dopemux “pane IDs” to tmux pane identifiers. The research in Dopemux’s docs on libtmux best practices ￼ will guide our implementation to ensure caching and fast operations (so sending a key doesn’t require a heavy tmux subprocess call every time). We’ll also implement locking or checks – e.g., if an agent is mid-output, maybe queue the next send to avoid interrupting mid-line (or use tmux’s wait-for synchronization primitives if needed). Extensive testing of corner cases (like sending very quickly or capturing output while it’s still coming) will be done.
+	•	Risk 2: Breaking Existing Behavior – Dopemux currently might allow some actions that we plan to block. For instance, before adding these safety hooks, perhaps an AI could rm a file – now we will stop that. While this is intended as a feature, it could break workflows for some (maybe someone relied on cleanup tasks).
+	•	Mitigation: Clearly communicate these changes in release notes as protective measures. Provide escape hatches for advanced users: e.g., an environment variable to disable safety hooks if absolutely needed (not recommended, but for emergencies or debugging the hooks themselves). Also ensure that the hooks themselves are bug-free to avoid false positives (e.g., only block rm when it’s a standalone command or dangerous pattern, not when it appears in a string context or as part of grep -r 'rm' search or such). We’ll use regex anchored patterns similar to Claude’s bash_hook.py to be precise.
+	•	Risk 3: Dependency Requirements (tmux, SOPS, rg) – The new features rely on external tools: tmux itself (which Dopemux likely assumes since it’s a tmux-based UI, but not sure if on Windows?), SOPS for vault, and rg for grep enforcement. If these are missing, features break or safety could be reduced.
+	•	Mitigation: Update Dopemux’s installer/requirements: ensure tmux is listed as a prerequisite and check for it at startup. For SOPS, perhaps bundle a lightweight alternative or at least detect and prompt to install if vault is invoked without it. We could also consider using simple GPG directly if SOPS is too heavy, but SOPS is nice for structured encryption and is the Claude-Code-Tools choice. For rg, if not present, our grep_block_hook might either just warn instead of enforcing, or we ship rg as part of a Dopemux dependencies bundle. Ideally, instruct users to install ripgrep for best experience.
+	•	We will implement graceful fallbacks: e.g., vault command prints “SOPS not found, please install it to use vault” rather than failing unclearly. The same for missing GPG keys (“No GPG key found for encryption – generate one or specify one via environment”).
+	•	Risk 4: GPG Key Management – Using SOPS means the user must manage GPG keys. This can be challenging for those unfamiliar, leading to friction or failures (can’t decrypt if key not in agent, etc.).
+	•	Mitigation: Provide a clear guide in Dopemux docs for setting up GPG (or using age as an alternative since SOPS supports age keys as well). Possibly support an environment variable like SOPS_AGE_KEY_FILE if the user prefers that. Also, ensure that if a user doesn’t set it up, the rest of Dopemux still works fine (vault just won’t function). Maybe prompt the first time: “Vault requires GPG – skip if not needed, or run dmx vault init to set it up.”
+	•	Risk 5: Complexity and Maintenance – With these new features, Dopemux’s codebase grows in complexity (especially safety hooks and session management logic). This could introduce maintenance burden and new bugs.
+	•	Mitigation: Keep the implementation as modular as possible. E.g., implement dmx-tmux as an isolated module/plugin that interacts with the core through well-defined interfaces. The safety rules can be centralized in a single policy module for ease of updates. We should also add unit tests for each piece (as outlined) to catch regressions.
+	•	Additionally, since the Claude-Code-Tools are MIT licensed, we can, where practical, reuse their code to reduce fresh bugs. For example, if there’s a well-tested function to parse Claude session files or to implement vault logic, consider importing or adapting it rather than writing from scratch.
+	•	Risk 6: User Adoption and Learning Curve – Dopemux users might be new to these concepts. If not properly introduced, they might be confused by, say, the session search UI or why their AI says “blocked by safety” suddenly.
+	•	Mitigation: Create tutorial content or first-run guidance. Perhaps an optional “Introduction to Dopemux Safe Mode” that runs through an example (like trying to delete a file to see the safety hook in action, etc.). Also, ensure the error messages from hooks are informative for both the user and the AI. For example, “Claude tried to do X which was blocked because Y. This is to protect you. If needed, do Z.” – so the user isn’t left wondering.
+	•	Provide a section in docs “Working with Multiple AI Models” to help users get API keys and use the feature – multi-model is powerful but only if configured.
+	•	On the flip side, there’s a risk of overwhelming with too many new commands. We mitigate by integrating them seamlessly (e.g., adding session and vault into existing menus if Dopemux has a menu UI).
+	•	Risk 7: Unknown Unknowns – Because we’re introducing automation of interactive processes, there could be unforeseen interactions (like an agent sending keys at the wrong time, messing up terminal state, or a safety hook accidentally blocking something innocuous).
+	•	Mitigation: Beta test this integration with a small group (perhaps internally or with power users who used Claude Code). Collect feedback, and be ready to push quick fixes. The design from Claude-Code-Tools is proven in their context, but Dopemux’s environment might bring surprises, so quick iteration is key. Having logging for safety interventions (so we can trace why something got blocked if user reports an issue) will help debug if needed.
+
+By anticipating these risks and preparing mitigations, we aim for a smooth rollout of these features. The end result should justify the added complexity by significantly enhancing Dopemux’s capabilities and reliability.
+
+Implementation & Deployment Plan
+
+Finally, here is a step-by-step plan to implement and release these integrations, along with a playbook for adoption:
+	1.	Development Phase (Implement & Test Incrementally):
+	1.	tmux-cli Integration: Begin with implementing dmx-tmux functionality using libtmux. Develop basic send/open functions and test with a simple scenario (PoC1). Once stable, build out capture function. Write unit tests for command parsing (ensuring correct tmux pane targeting, etc.).
+	2.	Safety Hooks: Implement the command interception in a draft form. Start by logging what would be blocked (for confidence) before actually enforcing, then flip to enforce. Write tests for patterns (regex against sample commands). Possibly release this in a branch or behind a feature flag initially.
+	3.	Session Finders: Implement dmx session find reading from Claude/Codex logs and Dopemux logs if any. Focus on just listing and resuming. Use Rich or textual to format table. Test with dummy files. This feature is less risky, can be developed in parallel.
+	4.	Env-Safe & Vault: Implement dmx env commands (these are straightforward). For vault, consider using the Claude-Code-Tools code – possibly directly install that package as a library dependency and call vault functions, or copy logic (to avoid heavy dependency on uv toolkit if any). Test vault thoroughly with local GPG.
+	5.	Multi-model Launch: Add support in whatever component manages launching Claude instances. Likely in the Dopemux orchestrator CLI, add the --provider option that sets env vars. Ensure the environment is isolated (maybe by using Python’s subprocess.Popen(env={...}) to spawn the new agent process). Test with dummy base URLs if real ones not available in dev.
+	6.	Integrate UI/UX elements: Add keybindings in tmux config or Dopemux’s UI: for example, update the tmux config to bind a key for session search (e.g., prefix + F to trigger dmx session find in a popup), etc. Also, adjust status bar to show model name. This step ensures it feels integrated.
+	7.	Documentation: Concurrently, write documentation for each feature as it becomes ready. Likely create a new section in Dopemux’s README or docs/ for these “Advanced Workflow Tools”, crediting the original Claude-Code-Tools for inspiration (to comply with MIT notice requirements).
+	8.	Internal QA and Feedback: Use Dopemux with these features on real tasks for a few days. Possibly have a colleague test the multi-model by connecting to their own API keys, test vault on a small project, etc. Collect any bug reports or confusion points.
+	2.	Pre-Release (Beta) Phase:
+	•	Announce a beta release (maybe version 0.x +1) to a subset of users or on an internal channel, inviting them to try tmux-cli features. Provide guidelines (“try doing X with Dopemux now, which wasn’t possible before”) to steer testing.
+	•	Pay attention to any issues like compatibility (different OS, tmux versions, etc. – e.g., on Mac vs Linux).
+	•	Finalize the safety hook behavior based on feedback – ensure it’s not too obstructive.
+	3.	Release Phase:
+	•	Bump version (using commitizen as in the repo guidelines ￼ if Dopemux uses similar semantic versioning).
+	•	Publish release notes highlighting:
+	•	New dmx tmux plugin – explain what it does and scenarios it enables.
+	•	New dmx session find – how to search and resume, mention it works for Claude & Codex if those are used externally.
+	•	Safety enhancements – list each blocked operation and the rationale, so users understand this important change.
+	•	dmx env-safe and dmx vault – how to use them to manage env vars.
+	•	Multi-model support – list supported providers and how to configure keys.
+	•	Thank the Claude-Code-Tools project for inspiration (and perhaps mention it in credits, as courtesy per MIT license norms).
+	4.	Post-Release Adoption Playbook:
+For users upgrading Dopemux to this version, the following steps will ensure they can leverage the new features from day one:
+	•	Installation/Upgrade: User updates Dopemux (via pip or pulling latest). Ensure tmux, rg, and sops are installed. (If not, provide one-liners to install: e.g., brew install ripgrep sops or apt equivalents.)
+	•	Initial Configuration:
+	•	If they want multi-model: set environment variables for any alternate model keys they have (e.g., export KIMI_API_KEY, etc.). Or edit the providers.json if we use that approach.
+	•	For vault: if first time, generate a GPG key if not existing (gpg --gen-key) and export the key ID as needed by SOPS (or we handle via SOPS config). Possibly run dmx vault encrypt on a sample to ensure it works.
+	•	Safety hooks: nothing to configure (enabled by default), but user can review dmx safe status to see what’s enforced.
+	•	Trial Run: Suggest a “tour”:
+	1.	Open Dopemux and run a small interactive script via Claude to witness tmux automation (maybe a provided example in docs).
+	2.	Use dmx session find to recall a known session (if they have Claude or Codex logs, otherwise skip).
+	3.	Intentionally try a dangerous command through the AI (like ask it to delete a file) to see the safety mechanism in action – so they trust it.
+	4.	Run dmx env list to see how env-safe works, then try to cat .env through the AI and see it blocked (demonstrating the difference).
+	5.	Demonstrate vault: change an env value, run dmx vault encrypt, then show the vault file and maybe decrypt it back.
+	6.	If possible, demonstrate multi-model: if they have a second model key, run one model and show in status bar it’s different, etc. If not, just mention it’s available.
+	•	Learning Resources: Point to the detailed documentation pages: e.g., “tmux-cli detailed instructions” (which we might adapt from original ￼) and any tutorials (the original project referenced some tutorials ￼; we can create a Dopemux-specific one).
+	•	Support & Feedback: Encourage users to report any issues with these features and iterate quickly if, say, a particular shell or OS needs tweak (for example, if Windows support is needed – though tmux isn’t native on Windows, Dopemux might be WSL only).
+The playbook ensures that rather than quietly introducing these powerful features, users are guided to use them effectively, maximizing the benefit to their workflow.
+
+By following this plan, Dopemux will successfully incorporate the Claude-Code-Tools functionality, delivering a more powerful, safer, and flexible AI coding assistant. Each integrated piece will be thoroughly vetted, and users will be equipped to use them from day one. This bridges the gap between Claude Code’s innovations and Dopemux’s vision, resulting in a truly “dope” multiplexed coding experience.
+
+Sources:
+	•	Claude-Code-Tools README – features of tmux-cli and session finders ￼ ￼, safety hooks ￼, env-safe/vault usage ￼ ￼, provider functions ￼ ￼.
+	•	Dopemux internal docs – libtmux integration notes ￼ for performance considerations.

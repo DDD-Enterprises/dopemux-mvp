@@ -2,80 +2,144 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import secrets
+import shutil
 import socket
 import subprocess
 import time
+from datetime import datetime
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
+import litellm  # type: ignore
 import yaml
 
 
 class LiteLLMProxyError(RuntimeError):
     """Raised when the LiteLLM proxy cannot be prepared or launched."""
 
+MASTER_KEY_PREFIX = "sk-master-dopemux-local"
+
+
+def _sanitize_random_token(length: int = 24) -> str:
+    """
+    Generate a URL-safe random token trimmed to the requested length.
+
+    LiteLLM virtual keys are opaque but must stay URL-safe and reasonably short.
+    """
+    token = secrets.token_urlsafe(length)
+    # token_urlsafe can exceed requested length; trim while keeping alphanumerics/-/_
+    return token.replace("-", "").replace("_", "")[:length]
+
+
+def generate_litellm_master_key() -> str:
+    """
+    Create a LiteLLM-compatible virtual master key.
+
+    LiteLLM requires virtual keys to start with ``sk-``. Prefix with a Dopemux-specific
+    marker so users can recognise local keys when debugging.
+    """
+    random_part = _sanitize_random_token()
+    return f"{MASTER_KEY_PREFIX}-{random_part}"
+
+
+def ensure_master_key(candidate: Optional[str]) -> Tuple[str, bool]:
+    """
+    Validate or generate a LiteLLM master key.
+
+    Returns:
+        A tuple of (master_key, regenerated) where ``regenerated`` is True if the
+        provided candidate was invalid and a new key had to be generated.
+    """
+    value = (candidate or "").strip()
+    if value.startswith("sk-"):
+        return value, False
+
+    return generate_litellm_master_key(), True
+
 
 DEFAULT_LITELLM_CONFIG = """model_list:
-  - model_name: openai-gpt-5
+  - model_name: grok-4-fast
     litellm_params:
-      model: openai/gpt-5
-      api_key: os.environ/OPENAI_API_KEY
-      api_base: https://api.openai.com
-      temperature: 0.0
-      max_tokens: 8192
-
-  - model_name: openai-gpt-5-mini
-    litellm_params:
-      model: openai/gpt-5-mini
-      api_key: os.environ/OPENAI_API_KEY
-      api_base: https://api.openai.com
-      temperature: 0.0
-      max_tokens: 4096
-
-  - model_name: xai-grok-4
-    litellm_params:
-      model: xai/grok-4
+      model: xai/grok-4-fast
       api_key: os.environ/XAI_API_KEY
-      api_base: https://api.x.ai/v1
-      temperature: 0.0
-      max_tokens: 4096
+      max_tokens: 131072
 
   - model_name: xai-grok-code-fast-1
     litellm_params:
       model: xai/grok-code-fast-1
       api_key: os.environ/XAI_API_KEY
-      api_base: https://api.x.ai/v1
-      temperature: 0.0
-      max_tokens: 4096
+      max_tokens: 131072
+
+  - model_name: openrouter-gpt-5
+    litellm_params:
+      model: openrouter/openai/gpt-5
+      api_key: os.environ/OPENROUTER_API_KEY
+      api_base: https://openrouter.ai/api/v1
+      max_tokens: 32768
+      extra_headers:
+        HTTP-Referer: https://dopemux.local
+        X-Title: Dopemux LiteLLM Proxy
+
+  - model_name: openrouter-gpt-5-codex
+    litellm_params:
+      model: openrouter/openai/gpt-5-codex
+      api_key: os.environ/OPENROUTER_API_KEY
+      api_base: https://openrouter.ai/api/v1
+      max_tokens: 32768
+      extra_headers:
+        HTTP-Referer: https://dopemux.local
+        X-Title: Dopemux LiteLLM Proxy
 
 litellm_settings:
-  timeout: 60
+  timeout: 90
   max_retries: 2
+  drop_params: true
+  model_alias_map:
+    grok-4: grok-4-fast
+    grok: grok-4-fast
+    grok-code: xai-grok-code-fast-1
+    claude-sonnet: xai-grok-code-fast-1
+    claude-sonnet-4-5-20250929: xai-grok-code-fast-1
+    claude-sonnet-4.5: xai-grok-code-fast-1
+    claude-haiku: xai-grok-code-fast-1
+    claude-opus: openrouter-gpt-5-codex
+    claude-opus-4-1-20250805: openrouter-gpt-5-codex
+    claude-opus-4-20250514: openrouter-gpt-5-codex
+    claude-4: openrouter-gpt-5-codex
+    claude-4-sonnet: xai-grok-code-fast-1
+    claude-4-opus: openrouter-gpt-5-codex
+    claude-3.7: xai-grok-code-fast-1
+    claude-3-7-sonnet-20250219: xai-grok-code-fast-1
+    claude-3.5: xai-grok-code-fast-1
+    claude-3-5-sonnet-20240620: xai-grok-code-fast-1
+    anthropic/claude-3-5-sonnet-latest: xai-grok-code-fast-1
+    xai/grok-code-fast-1: xai-grok-code-fast-1
+    gpt-5: openrouter-gpt-5
+    codex: openrouter-gpt-5-codex
   fallbacks:
-    - openai-gpt-5: ["openai-gpt-5-mini", "xai-grok-4", "xai-grok-code-fast-1"]
-    - openai-gpt-5-mini: ["xai-grok-4", "xai-grok-code-fast-1"]
-  default_fallbacks: ["xai-grok-4", "xai-grok-code-fast-1"]
-
-router_settings:
-  routing_strategy: "simple-shuffle"
-  enable_pre_call_checks: true
-  allowed_fails: 3
-  cooldown_time: 30
-  retry_policy:
-    AuthenticationErrorRetries: 1
-    TimeoutErrorRetries: 1
-    RateLimitErrorRetries: 1
-    InternalServerErrorRetries: 1
-  content_policy_fallbacks:
-    openai-gpt-5: ["xai-grok-4"]
-    openai-gpt-5-mini: ["xai-grok-4"]
+    grok-4-fast:
+      - openrouter-gpt-5
+      - openrouter-gpt-5-codex
+    xai-grok-code-fast-1:
+      - grok-4-fast
+      - openrouter-gpt-5-codex
+    openrouter-gpt-5:
+      - grok-4-fast
+      - openrouter-gpt-5-codex
+    openrouter-gpt-5-codex:
+      - openrouter-gpt-5
+      - grok-4-fast
+  default_fallbacks:
+    - grok-4-fast
+    - openrouter-gpt-5
+    - openrouter-gpt-5-codex
 
 general_settings:
-  master_key: "YOUR_MASTER_KEY"
-  database_url: "sqlite:///litellm.db"
+  master_key: YOUR_MASTER_KEY
 """
 
 
@@ -89,6 +153,9 @@ class LiteLLMProxyInfo:
     master_key: str
     log_path: Path
     already_running: bool
+    db_status: Optional[str] = None
+    db_enabled: bool = False
+    db_url: Optional[str] = None
 
     @property
     def base_url(self) -> str:
@@ -96,11 +163,87 @@ class LiteLLMProxyInfo:
         return f"http://{self.host}:{self.port}"
 
 
+def sync_litellm_database(instance_dir: Path, db_url: str) -> tuple[str, bool]:
+    """
+    Ensure the LiteLLM Prisma schema is applied for metrics/logging support.
+
+    Args:
+        instance_dir: Directory for the LiteLLM instance (used for sentinel/log files)
+        db_url: Connection string to the LiteLLM Postgres database
+
+    Returns:
+        Status message for logging
+
+    Raises:
+        LiteLLMProxyError: If synchronization fails or prerequisites are missing
+    """
+    sentinel_path = instance_dir / "prisma.ready"
+    hash_key = hashlib.sha256(db_url.encode("utf-8")).hexdigest()[:16]
+
+    if sentinel_path.exists():
+        try:
+            if sentinel_path.read_text().strip() == hash_key:
+                return "LiteLLM database schema already synchronized", True
+        except OSError:
+            pass
+
+    prisma_cli = shutil.which("prisma")
+    if prisma_cli is None:
+        return (
+            "⚠️  LiteLLM metrics disabled (Prisma CLI not installed - install with `pip install prisma`)",
+            False,
+        )
+
+    schema_dir = Path(litellm.__file__).resolve().parent / "proxy"
+    log_path = instance_dir / "prisma.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    env = os.environ.copy()
+    env.setdefault("DATABASE_URL", db_url)
+    env.setdefault("PRISMA_QUERY_ENGINE_TYPE", "binary")
+
+    with log_path.open("a", encoding="utf-8") as log_file:
+        log_file.write(f"\n[{datetime.utcnow().isoformat()}Z] prisma db push\n")
+        log_file.flush()
+        try:
+            subprocess.run(
+                [prisma_cli, "db", "push", "--accept-data-loss"],
+                cwd=str(schema_dir),
+                env=env,
+                check=True,
+                stdout=log_file,
+                stderr=log_file,
+                timeout=180,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise LiteLLMProxyError(
+                f"Timed out syncing LiteLLM database; see {log_path} for details."
+            ) from exc
+        except subprocess.CalledProcessError as exc:
+            error_text = ""
+            try:
+                error_text = log_path.read_text(encoding="utf-8")[-2000:]
+            except Exception:
+                pass
+            lowered = error_text.lower()
+            if ("can't reach database server" in lowered) or ("p1001" in lowered):
+                return (
+                    "⚠️  LiteLLM database unreachable - continuing without metrics",
+                    False,
+                )
+            raise LiteLLMProxyError(
+                f"Failed to sync LiteLLM database; see {log_path} for details."
+            ) from exc
+
+    sentinel_path.write_text(hash_key, encoding="utf-8")
+    return "LiteLLM database schema synchronized", True
+
+
 class LiteLLMProxyManager:
     """Prepare and launch LiteLLM proxy instances per Dopemux worktree."""
 
     DEFAULT_HOST = "127.0.0.1"
-    DEFAULT_PORT_BASE = 4100
+    DEFAULT_PORT_BASE = 4000
     MAIN_PORT_BASE = 3000
 
     def __init__(self, project_root: Path, instance_id: str, port_base: int):
@@ -135,33 +278,77 @@ class LiteLLMProxyManager:
             already_running=False,
         )
 
+        db_url = self._resolve_db_url()
+        effective_db_url = None
+        if db_url:
+            status, enabled = self._sync_database(db_url)
+            proxy_info.db_status = status
+            proxy_info.db_enabled = enabled
+            if enabled:
+                proxy_info.db_url = db_url
+                effective_db_url = db_url
+        else:
+            proxy_info.db_status = "LiteLLM metrics disabled"
+
         if self._is_port_in_use():
             proxy_info.already_running = True
             return proxy_info
 
-        proxy_env = os.environ.copy()
-        proxy_env["LITELLM_MASTER_KEY"] = master_key
-        # Avoid Prisma requirement locally; disable DB/spend logging for CLI proxy
-        proxy_env.setdefault("LITELLM_DISABLE_DB", "true")
-        proxy_env.setdefault("LITELLM_DISABLE_SPEND_LOGGING", "true")
+        attempts = 0
+        max_attempts = 2
+        while True:
+            proxy_env = os.environ.copy()
+            proxy_env["LITELLM_MASTER_KEY"] = master_key
+            if effective_db_url:
+                proxy_env.setdefault("DATABASE_URL", effective_db_url)
+                proxy_env.pop("LITELLM_DISABLE_DB", None)
+                proxy_env.pop("LITELLM_DISABLE_SPEND_LOGGING", None)
+            else:
+                # Avoid Prisma requirement locally when no DB configured
+                proxy_env.setdefault("LITELLM_DISABLE_DB", "true")
+                proxy_env.setdefault("LITELLM_DISABLE_SPEND_LOGGING", "true")
 
-        try:
-            process = self._launch_proxy_process(proxy_env, config_path, log_path)
-        except FileNotFoundError as exc:  # pragma: no cover - depends on system setup
-            raise LiteLLMProxyError(
-                "litellm executable not found. Install LiteLLM (pip install litellm)"
-            ) from exc
-        except OSError as exc:  # pragma: no cover - defensive
-            raise LiteLLMProxyError(f"Failed to launch LiteLLM proxy: {exc}") from exc
+            try:
+                process = self._launch_proxy_process(proxy_env, config_path, log_path)
+            except FileNotFoundError as exc:  # pragma: no cover - depends on system setup
+                raise LiteLLMProxyError(
+                    "litellm executable not found. Install LiteLLM (pip install litellm)"
+                ) from exc
+            except OSError as exc:  # pragma: no cover - defensive
+                raise LiteLLMProxyError(f"Failed to launch LiteLLM proxy: {exc}") from exc
 
-        if process.poll() is not None:
-            raise LiteLLMProxyError("LiteLLM proxy terminated immediately after launch")
+            if process.poll() is not None:
+                log_excerpt = self._read_tail(log_path)
+                reason = self._should_disable_db_due_to_launch(log_excerpt)
+                if effective_db_url and reason:
+                    attempts += 1
+                    proxy_info.db_enabled = False
+                    proxy_info.db_url = None
+                    proxy_info.db_status = reason
+                    effective_db_url = None
+                    for var in ("DOPEMUX_LITELLM_DB_URL", "LITELLM_DATABASE_URL", "DATABASE_URL"):
+                        os.environ.pop(var, None)
+                    if attempts < max_attempts:
+                        continue
+                raise LiteLLMProxyError("LiteLLM proxy terminated immediately after launch")
 
-        if not self._wait_until_ready():
-            process.terminate()
-            raise LiteLLMProxyError(
-                f"LiteLLM proxy did not become ready on {self.host}:{self.port}"
-            )
+            if not self._wait_until_ready():
+                process.terminate()
+                log_excerpt = self._read_tail(log_path)
+                reason = self._should_disable_db_due_to_launch(log_excerpt)
+                if effective_db_url and reason and attempts < max_attempts:
+                    attempts += 1
+                    proxy_info.db_enabled = False
+                    proxy_info.db_url = None
+                    proxy_info.db_status = reason
+                    effective_db_url = None
+                    for var in ("DOPEMUX_LITELLM_DB_URL", "LITELLM_DATABASE_URL", "DATABASE_URL"):
+                        os.environ.pop(var, None)
+                    continue
+                raise LiteLLMProxyError(
+                    f"LiteLLM proxy did not become ready on {self.host}:{self.port}"
+                )
+            break
 
         self._write_state(process.pid)
 
@@ -184,18 +371,30 @@ class LiteLLMProxyManager:
             "DOPEMUX_LITELLM_PORT": str(proxy_info.port),
             "DOPEMUX_LITELLM_HOST": proxy_info.host,
             "LITELLM_PROXY_URL": proxy_info.base_url,
+            "LITELLM_MASTER_KEY": proxy_info.master_key,
         }
 
-        # Preserve original provider keys for LiteLLM to use
-        if os.environ.get("ANTHROPIC_API_KEY"):
-            updates["ANTHROPIC_API_KEY"] = os.environ["ANTHROPIC_API_KEY"]
-        if os.environ.get("XAI_API_KEY"):
-            updates["XAI_API_KEY"] = os.environ["XAI_API_KEY"]
-        if os.environ.get("OPENAI_API_KEY"):
-            updates["OPENAI_API_KEY"] = os.environ["OPENAI_API_KEY"]
-        if os.environ.get("OPENROUTER_API_KEY"):
-            updates["OPENROUTER_API_KEY"] = os.environ["OPENROUTER_API_KEY"]
-            
+        if proxy_info.db_enabled and proxy_info.db_url:
+            updates["DOPEMUX_LITELLM_DB_URL"] = proxy_info.db_url
+            updates.setdefault("LITELLM_DATABASE_URL", proxy_info.db_url)
+            updates.setdefault("DATABASE_URL", proxy_info.db_url)
+
+        # Preserve original provider keys separately so LiteLLM can access them if needed
+        provider_key_envs = {
+            "ANTHROPIC_API_KEY": "DOPEMUX_PROVIDER_ANTHROPIC_API_KEY",
+            "XAI_API_KEY": "DOPEMUX_PROVIDER_XAI_API_KEY",
+            "OPENAI_API_KEY": "DOPEMUX_PROVIDER_OPENAI_API_KEY",
+        }
+        for env_name, dopemux_key in provider_key_envs.items():
+            value = os.environ.get(env_name)
+            if value:
+                updates[dopemux_key] = value
+
+        openrouter_key = os.environ.get("OPENROUTER_API_KEY")
+        if openrouter_key:
+            updates["OPENROUTER_API_KEY"] = openrouter_key
+            updates["DOPEMUX_PROVIDER_OPENROUTER_API_KEY"] = openrouter_key
+
         return updates
 
     def _resolve_config_template(self) -> Optional[Path]:
@@ -219,9 +418,13 @@ class LiteLLMProxyManager:
     def _ensure_master_key(self) -> str:
         key_path = self.instance_dir / "master.key"
         if key_path.exists():
-            return key_path.read_text().strip()
+            existing = key_path.read_text().strip()
+            master_key, regenerated = ensure_master_key(existing)
+            if regenerated:
+                key_path.write_text(master_key)
+            return master_key
 
-        master_key = secrets.token_urlsafe(32)
+        master_key, _ = ensure_master_key(None)
         key_path.write_text(master_key)
         return master_key
 
@@ -259,6 +462,16 @@ class LiteLLMProxyManager:
         )
 
         return config_path
+
+    def _resolve_db_url(self) -> Optional[str]:
+        for key in ("DOPEMUX_LITELLM_DB_URL", "LITELLM_DATABASE_URL", "DATABASE_URL"):
+            value = os.environ.get(key, "").strip()
+            if value:
+                return value
+        return None
+
+    def _sync_database(self, db_url: str) -> str:
+        return sync_litellm_database(self.instance_dir, db_url)
 
     def _is_port_in_use(self) -> bool:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -306,3 +519,27 @@ class LiteLLMProxyManager:
     def _write_state(self, pid: int) -> None:
         state_path = self.instance_dir / "litellm.state"
         state_path.write_text(str(pid))
+
+    @staticmethod
+    def _read_tail(path: Path, length: int = 2000) -> str:
+        try:
+            text = path.read_text(encoding="utf-8")
+            return text[-length:]
+        except Exception:
+            return ""
+
+    @staticmethod
+    def _should_disable_db_due_to_launch(log_excerpt: str) -> Optional[str]:
+        lowered = log_excerpt.lower()
+        if "unable to find prisma binaries" in lowered or (
+            "prisma generate" in lowered and "unable" in lowered
+        ):
+            return "⚠️  LiteLLM metrics disabled (Prisma client unavailable)"
+        if (
+            "all connection attempts failed" in lowered
+            or "connection refused" in lowered
+            or "p1001" in lowered
+            or "can't reach database server" in lowered
+        ):
+            return "⚠️  LiteLLM metrics disabled (database unreachable)"
+        return None
