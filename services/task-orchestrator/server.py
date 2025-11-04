@@ -127,8 +127,7 @@ class TaskOrchestratorWrapper:
                     # Fall back to trying Java directly
                     cmd = [
                         "java", "-jar",
-                        "/opt/task-orchestrator/task-orchestrator.jar",
-                        "--mcp-mode"
+                        "/opt/task-orchestrator/task-orchestrator.jar"
                     ]
 
             # Add any additional environment variables
