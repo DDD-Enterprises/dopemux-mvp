@@ -91,6 +91,25 @@
       "args": ["/Users/hue/code/dopemux-mvp/docker/mcp-servers/desktop-commander/stdio_bridge.py"],
       "env": {},
       "description": "Desktop automation with native macOS support"
+    },
+    "task-orchestrator": {
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-task-orchestrator",
+        "python",
+        "/app/server.py"
+      ],
+      "env": {
+        "WORKSPACE_ID": "/Users/hue/code/dopemux-mvp",
+        "DATABASE_PATH": "/app/data/tasks.db",
+        "MCP_TRANSPORT": "stdio",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"
+      },
+      "description": "Advanced task orchestration and dependency management with 37 tools"
     }
   }
 }

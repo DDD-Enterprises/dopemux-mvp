@@ -142,29 +142,44 @@ class DopemuxController extends Controller
      */
     public function updateCognitiveLoad(): JsonResponse
     {
-        $userId = $_SESSION['userdata']['id'] ?? null;
+        try {
+            $userId = $_SESSION['userdata']['id'] ?? null;
 
-        if (!$userId) {
-            return new JsonResponse(['error' => 'Not authenticated'], 401);
-        }
+            if (!$userId) {
+                return new JsonResponse(['error' => 'Not authenticated'], 401);
+            }
 
-        $requestData = json_decode(file_get_contents('php://input'), true);
-        $newLoad = $requestData['cognitive_load'] ?? null;
+            // Safely parse JSON input
+            $input = file_get_contents('php://input');
+            if (empty($input)) {
+                return new JsonResponse(['error' => 'No input data provided'], 400);
+            }
 
-        if ($newLoad === null || !is_numeric($newLoad) || $newLoad < 1 || $newLoad > 10) {
-            return new JsonResponse(['error' => 'Invalid cognitive load value'], 400);
-        }
+            $requestData = json_decode($input, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return new JsonResponse(['error' => 'Invalid JSON format'], 400);
+            }
 
-        $success = $this->setCognitiveLoad($userId, (int)$newLoad);
+            $newLoad = $requestData['cognitive_load'] ?? null;
 
-        if ($success) {
-            return new JsonResponse([
-                'success' => true,
-                'cognitive_load' => (int)$newLoad,
-                'timestamp' => date('c')
-            ]);
-        } else {
-            return new JsonResponse(['error' => 'Failed to update cognitive load'], 500);
+            if ($newLoad === null || !is_numeric($newLoad) || $newLoad < 1 || $newLoad > 10) {
+                return new JsonResponse(['error' => 'Invalid cognitive load value. Must be a number between 1 and 10'], 400);
+            }
+
+            $success = $this->setCognitiveLoad($userId, (int)$newLoad);
+
+            if ($success) {
+                return new JsonResponse([
+                    'success' => true,
+                    'cognitive_load' => (int)$newLoad,
+                    'timestamp' => date('c')
+                ]);
+            } else {
+                return new JsonResponse(['error' => 'Failed to update cognitive load'], 500);
+            }
+        } catch (\Exception $e) {
+            error_log('Dopemux updateCognitiveLoad error: ' . $e->getMessage());
+            return new JsonResponse(['error' => 'Internal server error'], 500);
         }
     }
 
@@ -193,31 +208,45 @@ class DopemuxController extends Controller
      */
     public function updateAttentionState(): JsonResponse
     {
-        $userId = $_SESSION['userdata']['id'] ?? null;
+        try {
+            $userId = $_SESSION['userdata']['id'] ?? null;
 
-        if (!$userId) {
-            return new JsonResponse(['error' => 'Not authenticated'], 401);
-        }
+            if (!$userId) {
+                return new JsonResponse(['error' => 'Not authenticated'], 401);
+            }
 
-        $requestData = json_decode(file_get_contents('php://input'), true);
-        $newState = $requestData['attention_state'] ?? null;
+            // Safely parse JSON input
+            $input = file_get_contents('php://input');
+            if (empty($input)) {
+                return new JsonResponse(['error' => 'No input data provided'], 400);
+            }
 
-        $validStates = ['hyperfocus', 'focused', 'scattered', 'background', 'transition'];
+            $requestData = json_decode($input, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return new JsonResponse(['error' => 'Invalid JSON format'], 400);
+            }
 
-        if (!in_array($newState, $validStates)) {
-            return new JsonResponse(['error' => 'Invalid attention state'], 400);
-        }
+            $newState = $requestData['attention_state'] ?? null;
+            $validStates = ['hyperfocus', 'focused', 'scattered', 'background', 'transition'];
 
-        $success = $this->setAttentionState($userId, $newState);
+            if (!in_array($newState, $validStates)) {
+                return new JsonResponse(['error' => 'Invalid attention state. Must be one of: ' . implode(', ', $validStates)], 400);
+            }
 
-        if ($success) {
-            return new JsonResponse([
-                'success' => true,
-                'attention_state' => $newState,
-                'timestamp' => date('c')
-            ]);
-        } else {
-            return new JsonResponse(['error' => 'Failed to update attention state'], 500);
+            $success = $this->setAttentionState($userId, $newState);
+
+            if ($success) {
+                return new JsonResponse([
+                    'success' => true,
+                    'attention_state' => $newState,
+                    'timestamp' => date('c')
+                ]);
+            } else {
+                return new JsonResponse(['error' => 'Failed to update attention state'], 500);
+            }
+        } catch (\Exception $e) {
+            error_log('Dopemux updateAttentionState error: ' . $e->getMessage());
+            return new JsonResponse(['error' => 'Internal server error'], 500);
         }
     }
 
@@ -226,27 +255,52 @@ class DopemuxController extends Controller
      */
     public function saveContext(): JsonResponse
     {
-        $userId = $_SESSION['userdata']['id'] ?? null;
+        try {
+            $userId = $_SESSION['userdata']['id'] ?? null;
 
-        if (!$userId) {
-            return new JsonResponse(['error' => 'Not authenticated'], 401);
-        }
+            if (!$userId) {
+                return new JsonResponse(['error' => 'Not authenticated'], 401);
+            }
 
-        $requestData = json_decode(file_get_contents('php://input'), true);
-        $contextName = $requestData['context_name'] ?? 'Auto-saved Context';
-        $contextData = $requestData['context_data'] ?? [];
+            // Safely parse JSON input
+            $input = file_get_contents('php://input');
+            if (empty($input)) {
+                return new JsonResponse(['error' => 'No input data provided'], 400);
+            }
 
-        $contextId = $this->saveUserContext($userId, $contextName, $contextData);
+            $requestData = json_decode($input, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return new JsonResponse(['error' => 'Invalid JSON format'], 400);
+            }
 
-        if ($contextId) {
-            return new JsonResponse([
-                'success' => true,
-                'context_id' => $contextId,
-                'context_name' => $contextName,
-                'timestamp' => date('c')
-            ]);
-        } else {
-            return new JsonResponse(['error' => 'Failed to save context'], 500);
+            $contextName = $requestData['context_name'] ?? 'Auto-saved Context';
+            $contextData = $requestData['context_data'] ?? [];
+
+            // Validate context name
+            if (!is_string($contextName) || strlen($contextName) > 255) {
+                return new JsonResponse(['error' => 'Invalid context name. Must be a string with maximum 255 characters'], 400);
+            }
+
+            // Validate context data is an array/object
+            if (!is_array($contextData)) {
+                return new JsonResponse(['error' => 'Invalid context data. Must be an array or object'], 400);
+            }
+
+            $contextId = $this->saveUserContext($userId, $contextName, $contextData);
+
+            if ($contextId) {
+                return new JsonResponse([
+                    'success' => true,
+                    'context_id' => $contextId,
+                    'context_name' => $contextName,
+                    'timestamp' => date('c')
+                ]);
+            } else {
+                return new JsonResponse(['error' => 'Failed to save context'], 500);
+            }
+        } catch (\Exception $e) {
+            error_log('Dopemux saveContext error: ' . $e->getMessage());
+            return new JsonResponse(['error' => 'Internal server error'], 500);
         }
     }
 
@@ -255,28 +309,33 @@ class DopemuxController extends Controller
      */
     public function restoreContext(): JsonResponse
     {
-        $userId = $_SESSION['userdata']['id'] ?? null;
+        try {
+            $userId = $_SESSION['userdata']['id'] ?? null;
 
-        if (!$userId) {
-            return new JsonResponse(['error' => 'Not authenticated'], 401);
-        }
+            if (!$userId) {
+                return new JsonResponse(['error' => 'Not authenticated'], 401);
+            }
 
-        $contextId = $_GET['context_id'] ?? null;
+            $contextId = $_GET['context_id'] ?? null;
 
-        if (!$contextId) {
-            return new JsonResponse(['error' => 'Context ID required'], 400);
-        }
+            if (!$contextId || !is_numeric($contextId)) {
+                return new JsonResponse(['error' => 'Valid context ID required'], 400);
+            }
 
-        $contextData = $this->restoreUserContext($userId, $contextId);
+            $contextData = $this->restoreUserContext($userId, (int)$contextId);
 
-        if ($contextData) {
-            return new JsonResponse([
-                'success' => true,
-                'context_data' => $contextData,
-                'timestamp' => date('c')
-            ]);
-        } else {
-            return new JsonResponse(['error' => 'Failed to restore context'], 500);
+            if ($contextData !== null) {
+                return new JsonResponse([
+                    'success' => true,
+                    'context_data' => $contextData,
+                    'timestamp' => date('c')
+                ]);
+            } else {
+                return new JsonResponse(['error' => 'Context not found'], 404);
+            }
+        } catch (\Exception $e) {
+            error_log('Dopemux restoreContext error: ' . $e->getMessage());
+            return new JsonResponse(['error' => 'Internal server error'], 500);
         }
     }
 
@@ -285,27 +344,52 @@ class DopemuxController extends Controller
      */
     public function setBreakReminder(): JsonResponse
     {
-        $userId = $_SESSION['userdata']['id'] ?? null;
+        try {
+            $userId = $_SESSION['userdata']['id'] ?? null;
 
-        if (!$userId) {
-            return new JsonResponse(['error' => 'Not authenticated'], 401);
-        }
+            if (!$userId) {
+                return new JsonResponse(['error' => 'Not authenticated'], 401);
+            }
 
-        $requestData = json_decode(file_get_contents('php://input'), true);
-        $frequency = $requestData['frequency'] ?? 25; // Default 25 minutes
-        $enabled = $requestData['enabled'] ?? true;
+            // Safely parse JSON input
+            $input = file_get_contents('php://input');
+            if (empty($input)) {
+                return new JsonResponse(['error' => 'No input data provided'], 400);
+            }
 
-        $success = $this->setBreakReminderPreference($userId, $frequency, $enabled);
+            $requestData = json_decode($input, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return new JsonResponse(['error' => 'Invalid JSON format'], 400);
+            }
 
-        if ($success) {
-            return new JsonResponse([
-                'success' => true,
-                'frequency' => $frequency,
-                'enabled' => $enabled,
-                'timestamp' => date('c')
-            ]);
-        } else {
-            return new JsonResponse(['error' => 'Failed to set break reminder'], 500);
+            $frequency = $requestData['frequency'] ?? 25; // Default 25 minutes
+            $enabled = $requestData['enabled'] ?? true;
+
+            // Validate frequency
+            if (!is_numeric($frequency) || $frequency < 5 || $frequency > 180) {
+                return new JsonResponse(['error' => 'Invalid frequency. Must be a number between 5 and 180 minutes'], 400);
+            }
+
+            // Validate enabled flag
+            if (!is_bool($enabled)) {
+                return new JsonResponse(['error' => 'Invalid enabled flag. Must be true or false'], 400);
+            }
+
+            $success = $this->setBreakReminderPreference($userId, (int)$frequency, $enabled);
+
+            if ($success) {
+                return new JsonResponse([
+                    'success' => true,
+                    'frequency' => (int)$frequency,
+                    'enabled' => $enabled,
+                    'timestamp' => date('c')
+                ]);
+            } else {
+                return new JsonResponse(['error' => 'Failed to set break reminder'], 500);
+            }
+        } catch (\Exception $e) {
+            error_log('Dopemux setBreakReminder error: ' . $e->getMessage());
+            return new JsonResponse(['error' => 'Internal server error'], 500);
         }
     }
 
@@ -316,24 +400,37 @@ class DopemuxController extends Controller
      */
     private function getADHDState(int $userId): array
     {
-        // Load models
-        $preferencesModel = new \Leantime\Plugins\Dopemux\Models\ADHDUserPreferences();
-        $cognitiveModel = new \Leantime\Plugins\Dopemux\Models\CognitiveLoadHistory();
-        $attentionModel = new \Leantime\Plugins\Dopemux\Models\AttentionStateHistory();
+        try {
+            // Load models
+            $preferencesModel = new \Leantime\Plugins\Dopemux\Models\ADHDUserPreferences();
+            $cognitiveModel = new \Leantime\Plugins\Dopemux\Models\CognitiveLoadHistory();
+            $attentionModel = new \Leantime\Plugins\Dopemux\Models\AttentionStateHistory();
 
-        // Get real data from models
-        $currentLoad = $cognitiveModel->getAverageLoad($userId, 1); // Last 24 hours
-        $currentAttention = $attentionModel->getCurrentState($userId) ?: 'focused';
-        $preferences = $preferencesModel->getUserPreferences($userId);
+            // Get real data from models
+            $currentLoad = $cognitiveModel->getAverageLoad($userId, 1); // Last 24 hours
+            $currentAttention = $attentionModel->getCurrentState($userId) ?: 'focused';
+            $preferences = $preferencesModel->getUserPreferences($userId);
 
-        return [
-            'attention_state' => $currentAttention,
-            'cognitive_load' => $currentLoad,
-            'break_due' => $this->isBreakDue($userId),
-            'context_preserved' => true, // Always true for now
-            'last_updated' => date('c'),
-            'preferences' => $preferences
-        ];
+            return [
+                'attention_state' => $currentAttention,
+                'cognitive_load' => $currentLoad,
+                'break_due' => $this->isBreakDue($userId),
+                'context_preserved' => true, // Always true for now
+                'last_updated' => date('c'),
+                'preferences' => $preferences
+            ];
+        } catch (\Exception $e) {
+            error_log('Dopemux getADHDState error for user ' . $userId . ': ' . $e->getMessage());
+            // Return safe defaults on error
+            return [
+                'attention_state' => 'focused',
+                'cognitive_load' => 5.0,
+                'break_due' => false,
+                'context_preserved' => false,
+                'last_updated' => date('c'),
+                'preferences' => []
+            ];
+        }
     }
 
     /**
@@ -365,11 +462,29 @@ class DopemuxController extends Controller
      */
     private function getUpcomingBreaks(int $userId): array
     {
-        return [
-            'next_break' => '25 minutes',
-            'break_type' => 'short',
-            'reminders_enabled' => true
-        ];
+        $breakModel = new \Leantime\Plugins\Dopemux\Models\BreakReminderSettings();
+        $settings = $breakModel->getUserSettings($userId);
+        $isDue = $breakModel->isBreakDue($userId);
+
+        if ($isDue && ($settings['enabled'] ?? true)) {
+            return [
+                'next_break' => 'Now',
+                'break_type' => 'short',
+                'reminders_enabled' => true
+            ];
+        } elseif ($settings['enabled'] ?? true) {
+            return [
+                'next_break' => $settings['frequency_minutes'] . ' minutes',
+                'break_type' => 'short',
+                'reminders_enabled' => true
+            ];
+        } else {
+            return [
+                'next_break' => null,
+                'break_type' => null,
+                'reminders_enabled' => false
+            ];
+        }
     }
 
     /**
@@ -377,10 +492,21 @@ class DopemuxController extends Controller
      */
     private function getContextStatus(int $userId): array
     {
+        $breakModel = new \Leantime\Plugins\Dopemux\Models\BreakReminderSettings();
+        $settings = $breakModel->getUserSettings($userId);
+
+        $contextModel = new \Leantime\Plugins\Dopemux\Models\ContextSnapshot();
+        $snapshots = $contextModel->getUserSnapshots($userId, 1); // Get latest
+
+        $lastSave = 'Never';
+        if (!empty($snapshots)) {
+            $lastSave = date('i \m\i\n\u\t\e\s \a\g\o', strtotime($snapshots[0]['created_at']));
+        }
+
         return [
-            'auto_save_enabled' => true,
-            'last_save' => '5 minutes ago',
-            'saved_contexts' => 3
+            'auto_save_enabled' => $settings['enabled'] ?? true,
+            'last_save' => $lastSave,
+            'saved_contexts' => count($contextModel->getUserSnapshots($userId, 100)) // Count total
         ];
     }
 
@@ -398,16 +524,21 @@ class DopemuxController extends Controller
      */
     private function getCognitiveLoadHistory(int $userId): array
     {
-        $cognitiveModel = new \Leantime\Plugins\Dopemux\Models\CognitiveLoadHistory();
-        $rawHistory = $cognitiveModel->getUserHistory($userId, 10);
+        try {
+            $cognitiveModel = new \Leantime\Plugins\Dopemux\Models\CognitiveLoadHistory();
+            $rawHistory = $cognitiveModel->getUserHistory($userId, 10);
 
-        // Format for template
-        return array_map(function($record) {
-            return [
-                'timestamp' => date('Y-m-d H:i', strtotime($record['created_at'])),
-                'load' => (float) $record['load_value']
-            ];
-        }, $rawHistory);
+            // Format for template
+            return array_map(function($record) {
+                return [
+                    'timestamp' => date('Y-m-d H:i', strtotime($record['created_at'])),
+                    'load' => (float) $record['load_value']
+                ];
+            }, $rawHistory);
+        } catch (\Exception $e) {
+            error_log('Dopemux getCognitiveLoadHistory error for user ' . $userId . ': ' . $e->getMessage());
+            return [];
+        }
     }
 
     /**
@@ -415,23 +546,32 @@ class DopemuxController extends Controller
      */
     private function getCognitiveLoadRecommendations(int $currentLoad): array
     {
-        if ($currentLoad >= 8) {
+        try {
+            if ($currentLoad >= 8) {
+                return [
+                    'status' => 'high',
+                    'recommendation' => 'Take a break or switch to lighter tasks',
+                    'suggested_actions' => ['Take 15 minute break', 'Do documentation tasks', 'Review code instead of writing']
+                ];
+            } elseif ($currentLoad >= 6) {
+                return [
+                    'status' => 'moderate',
+                    'recommendation' => 'Monitor load and take breaks as needed',
+                    'suggested_actions' => ['Continue current work', 'Plan break in 30 minutes']
+                ];
+            } else {
+                return [
+                    'status' => 'low',
+                    'recommendation' => 'Good time for complex tasks',
+                    'suggested_actions' => ['Tackle difficult problems', 'Start new features', 'Do architecture work']
+                ];
+            }
+        } catch (\Exception $e) {
+            error_log('Dopemux getCognitiveLoadRecommendations error: ' . $e->getMessage());
             return [
-                'status' => 'high',
-                'recommendation' => 'Take a break or switch to lighter tasks',
-                'suggested_actions' => ['Take 15 minute break', 'Do documentation tasks', 'Review code instead of writing']
-            ];
-        } elseif ($currentLoad >= 6) {
-            return [
-                'status' => 'moderate',
-                'recommendation' => 'Monitor load and take breaks as needed',
-                'suggested_actions' => ['Continue current work', 'Plan break in 30 minutes']
-            ];
-        } else {
-            return [
-                'status' => 'low',
-                'recommendation' => 'Good time for complex tasks',
-                'suggested_actions' => ['Tackle difficult problems', 'Start new features', 'Do architecture work']
+                'status' => 'unknown',
+                'recommendation' => 'Unable to generate recommendations at this time',
+                'suggested_actions' => ['Assess current state manually']
             ];
         }
     }
@@ -441,8 +581,14 @@ class DopemuxController extends Controller
      */
     private function getCurrentAttentionState(int $userId = null): string
     {
-        // This would fetch from user session or preferences
-        return 'focused'; // Default state
+        if (!$userId) {
+            return 'focused'; // Default for non-authenticated users
+        }
+
+        $attentionModel = new \Leantime\Plugins\Dopemux\Models\AttentionStateHistory();
+        $currentState = $attentionModel->getCurrentState($userId);
+
+        return $currentState ?: 'focused'; // Default if no history
     }
 
     /**
@@ -450,11 +596,16 @@ class DopemuxController extends Controller
      */
     private function getAttentionStateHistory(int $userId): array
     {
-        return [
-            ['timestamp' => '2025-01-20 09:00', 'state' => 'scattered'],
-            ['timestamp' => '2025-01-20 10:00', 'state' => 'focused'],
-            ['timestamp' => '2025-01-20 11:00', 'state' => 'hyperfocus'],
-        ];
+        $attentionModel = new \Leantime\Plugins\Dopemux\Models\AttentionStateHistory();
+        $rawHistory = $attentionModel->getUserHistory($userId, 10);
+
+        // Format for template compatibility
+        return array_map(function($record) {
+            return [
+                'timestamp' => date('Y-m-d H:i', strtotime($record['created_at'])),
+                'state' => $record['state']
+            ];
+        }, $rawHistory);
     }
 
     /**
@@ -491,11 +642,17 @@ class DopemuxController extends Controller
      */
     private function getSavedContexts(int $userId): array
     {
-        return [
-            ['id' => 1, 'name' => 'Feature Development', 'saved_at' => '2025-01-20 10:00'],
-            ['id' => 2, 'name' => 'Bug Fixing Session', 'saved_at' => '2025-01-19 15:30'],
-            ['id' => 3, 'name' => 'Code Review', 'saved_at' => '2025-01-19 09:15'],
-        ];
+        $contextModel = new \Leantime\Plugins\Dopemux\Models\ContextSnapshot();
+        $snapshots = $contextModel->getUserSnapshots($userId, 10);
+
+        // Format for template compatibility
+        return array_map(function($snapshot) {
+            return [
+                'id' => $snapshot['id'],
+                'name' => $snapshot['name'],
+                'saved_at' => date('Y-m-d H:i', strtotime($snapshot['created_at']))
+            ];
+        }, $snapshots);
     }
 
     /**
@@ -503,11 +660,13 @@ class DopemuxController extends Controller
      */
     private function getCurrentContext(int $userId): array
     {
+        // This would ideally come from session data or user preferences
+        // For now, return a basic structure
         return [
-            'active_project' => 'Dopemux MVP',
-            'active_tickets' => [1, 3, 7],
-            'open_files' => ['bridge.py', 'client.py'],
-            'notes' => 'Working on JSON-RPC integration'
+            'active_project' => $_SESSION['currentProject']['name'] ?? 'Dopemux MVP',
+            'active_tickets' => $_SESSION['currentProject']['tickets'] ?? [],
+            'open_files' => [],
+            'notes' => $_SESSION['currentProject']['notes'] ?? 'No current notes'
         ];
     }
 
@@ -516,8 +675,13 @@ class DopemuxController extends Controller
      */
     private function setCognitiveLoad(int $userId, int $load): bool
     {
-        // This would store in database
-        return true; // Placeholder
+        try {
+            $cognitiveModel = new \Leantime\Plugins\Dopemux\Models\CognitiveLoadHistory();
+            return $cognitiveModel->recordLoad($userId, $load, 'user_input');
+        } catch (\Exception $e) {
+            error_log('Dopemux setCognitiveLoad error for user ' . $userId . ': ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -525,8 +689,13 @@ class DopemuxController extends Controller
      */
     private function setAttentionState(int $userId, string $state): bool
     {
-        // This would store in database
-        return true; // Placeholder
+        try {
+            $attentionModel = new \Leantime\Plugins\Dopemux\Models\AttentionStateHistory();
+            return $attentionModel->recordState($userId, $state, 'user_input');
+        } catch (\Exception $e) {
+            error_log('Dopemux setAttentionState error for user ' . $userId . ': ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -534,8 +703,23 @@ class DopemuxController extends Controller
      */
     private function saveUserContext(int $userId, string $name, array $contextData): ?int
     {
-        // This would store in database and return context ID
-        return rand(1000, 9999); // Placeholder
+        try {
+            $contextModel = new \Leantime\Plugins\Dopemux\Models\ContextSnapshot();
+            $success = $contextModel->saveSnapshot($userId, $name, $contextData);
+
+            if ($success) {
+                // Get the last inserted ID (simplified approach)
+                $pdo = $this->db ?? null;
+                if ($pdo) {
+                    return (int) $pdo->lastInsertId();
+                }
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            error_log('Dopemux saveUserContext error for user ' . $userId . ': ' . $e->getMessage());
+            return null;
+        }
     }
 
     /**
@@ -543,12 +727,15 @@ class DopemuxController extends Controller
      */
     private function restoreUserContext(int $userId, int $contextId): ?array
     {
-        // This would fetch from database
-        return [
-            'active_project' => 'Dopemux MVP',
-            'active_tickets' => [1, 3, 7],
-            'notes' => 'Restored context'
-        ]; // Placeholder
+        try {
+            $contextModel = new \Leantime\Plugins\Dopemux\Models\ContextSnapshot();
+            $snapshot = $contextModel->getSnapshot($userId, $contextId);
+
+            return $snapshot ? $snapshot['snapshot_data'] : null;
+        } catch (\Exception $e) {
+            error_log('Dopemux restoreUserContext error for user ' . $userId . ': ' . $e->getMessage());
+            return null;
+        }
     }
 
     /**
@@ -556,8 +743,17 @@ class DopemuxController extends Controller
      */
     private function setBreakReminderPreference(int $userId, int $frequency, bool $enabled): bool
     {
-        // This would store in user preferences
-        return true; // Placeholder
+        $breakModel = new \Leantime\Plugins\Dopemux\Models\BreakReminderSettings();
+        return $breakModel->updateUserSettings($userId, $frequency, $enabled);
+    }
+
+    /**
+     * Check if break is due for user
+     */
+    private function isBreakDue(int $userId): bool
+    {
+        $breakModel = new \Leantime\Plugins\Dopemux\Models\BreakReminderSettings();
+        return $breakModel->isBreakDue($userId);
     }
 
     /**

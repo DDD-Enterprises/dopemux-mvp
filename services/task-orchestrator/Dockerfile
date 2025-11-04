@@ -17,12 +17,21 @@
   # Copy application code
   COPY . .
 
+  # Create directory for Task-Orchestrator JAR and data
+  RUN mkdir -p /opt/task-orchestrator /app/data
+
+  # Copy the Task-Orchestrator JAR to expected location
+  COPY mcp-task-orchestrator-*.jar /opt/task-orchestrator/task-orchestrator.jar
+
+  # Set permissions for data directory
+  RUN chmod 755 /app/data
+
   # Expose MCP port
   EXPOSE 3014
 
-  # Health check for MCP SSE endpoint
-  HEALTHCHECK --interval=15s --timeout=5s --retries=3 \
-      CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:3014/sse')" || exit 1
+  # Health check - just ensure Java process is running
+  HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+      CMD pgrep java > /dev/null || exit 1
 
-  # Run the Python MCP wrapper persistently
+  # Run the Python MCP wrapper that spawns the JAR subprocess
   CMD ["python", "server.py"]
