@@ -1,0 +1,725 @@
+# Dopemux MCP Servers - Complete Docker Orchestration
+# Based on ADR-007 (Routing Logic) and ADR-012 (MCP Integration Patterns)
+
+services:
+  # === DATABASE (External) ===
+
+  dopemux-postgres-age:
+    image: postgres:16-alpine
+    container_name: dopemux-postgres-age
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - POSTGRES_USER=dopemux_age
+      - POSTGRES_PASSWORD=dopemux_age_dev_password
+      - POSTGRES_DB=dopemux_knowledge_graph
+    volumes:
+      - pg_age_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph || exit 1"]
+      timeout: 10s
+      retries: 10
+      interval: 10s
+      start_period: 20s
+
+  # === CRITICAL PATH SERVERS (Priority: High) ===
+
+  # Context7 - ALWAYS FIRST for documentation and API references
+  context7:
+    build:
+      context: ./context7
+      dockerfile: Dockerfile
+    container_name: mcp-context7
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - CONTEXT7_API_KEY=${CONTEXT7_API_KEY}
+      - CONTEXT7_ENDPOINT=${CONTEXT7_ENDPOINT}
+      - MCP_SERVER_PORT=3002
+    ports:
+      - "3002:3002"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3002/health || nc -z localhost 3002"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    volumes:
+      - mcp_context7_cache:/app/cache
+    labels:
+      - "mcp.role=critical_path"
+      - "mcp.priority=highest"
+      - "mcp.description=Documentation and API references"
+
+  # Zen - Multi-model orchestration and complex decision making
+  zen:
+    build:
+      context: ./zen
+      dockerfile: Dockerfile
+    container_name: mcp-zen
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DISABLED_TOOLS=analyze,refactor,testgen,secaudit,docgen,tracer
+      - DEFAULT_MODEL=auto
+      - MCP_SERVER_PORT=3003
+    ports:
+      - "3003:3003"
+    working_dir: /app
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3014/sse --head || nc -z localhost 3014 || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    labels:
+      - "mcp.role=critical_path"
+      - "mcp.priority=highest"
+      - "mcp.description=Multi-model orchestration"
+
+  # LiteLLM - Unified LLM proxy with routing and fallbacks
+  litellm:
+    build:
+      context: ../../
+      dockerfile: docker/mcp-servers/litellm/Dockerfile
+    container_name: mcp-litellm
+    restart: unless-stopped
+    networks:
+      - mcp-network
+      - dopemux-unified-network
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      # Prisma / DB connection for LiteLLM spend/logging + admin APIs
+      # Override with LITELLM_DATABASE_URL in .env if needed
+      - DATABASE_URL=${LITELLM_DATABASE_URL:-postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm}
+      - LITELLM_LOG=INFO
+      - LITELLM_DROP_PARAMS=true
+    ports:
+      - "4000:4000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -H 'Authorization: Bearer REDACTED_LITELLM_KEY' http://localhost:4000/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    volumes:
+      - ../../litellm.config.yaml:/app/config.yaml:ro
+      - mcp_litellm_data:/app/data
+    depends_on:
+      dopemux-postgres-age:
+        condition: service_healthy
+    labels:
+      - "mcp.role=critical_path"
+      - "mcp.priority=high"
+      - "mcp.description=Unified LLM proxy with intelligent routing"
+
+  # Sequential Thinking - Multi-step reasoning and architectural analysis
+  mas-sequential-thinking:
+    build:
+      context: ./mcp-server-mas-sequential-thinking
+      dockerfile: Dockerfile
+    container_name: mcp-mas-sequential-thinking
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    env_file:
+      - ./mcp-server-mas-sequential-thinking/.env
+    environment:
+      - MCP_SERVER_PORT=3011
+    ports:
+      - "3011:3011"
+    healthcheck:
+      # MCP server runs over stdio via proxy, port checks can be misleading. Consider process running as healthy.
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    volumes:
+      - mcp_logs:/app/logs
+      - mcp_cache:/app/cache
+    labels:
+      - "mcp.role=critical_path"
+      - "mcp.priority=high"
+      - "mcp.description=Multi-step reasoning and analysis"
+
+  # === WORKFLOW SERVERS (Priority: Medium) ===
+
+  # ConPort - Project memory and decision tracking
+  conport:
+    build:
+      context: ./conport
+      dockerfile: Dockerfile
+    container_name: mcp-conport${DOPEMUX_INSTANCE_ID:+_}${DOPEMUX_INSTANCE_ID}  # Multi-instance naming
+    restart: unless-stopped
+    networks:
+      - mcp-network
+      - dopemux-unified-network
+    depends_on:
+      dopemux-postgres-age:
+        condition: service_healthy
+      redis-primary:
+        condition: service_started
+    environment:
+      - MCP_SERVER_PORT=${CONPORT_PORT:-3004}  # Dynamic port from instance env
+      - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      - REDIS_URL=redis://dopemux-redis-primary:6379
+      - INTEGRATION_BRIDGE_URL=http://dope-decision-graph-bridge:3016
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GOOGLE_API_KEY=${GEMINI_API_KEY}
+      - VOYAGEAI_API_KEY=${VOYAGEAI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID}  # CRITICAL: Instance workspace isolation
+    ports:
+      - "${CONPORT_PORT:-3004}:${CONPORT_PORT:-3004}"  # Multi-instance port mapping
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost',3004)); s.close()"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    volumes:
+      - mcp_conport_data:/app/data
+    labels:
+      - "mcp.role=workflow"
+      - "mcp.priority=medium"
+      - "mcp.description=Project memory and decision tracking"
+
+  # Task Master AI - Task management and PRD processing
+  task-master-ai:
+    build:
+      context: ./task-master-ai
+      dockerfile: Dockerfile
+    container_name: mcp-task-master-ai
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    env_file:
+      - ./task-master-ai/.env
+    environment:
+      - MCP_SERVER_PORT=3005
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+    ports:
+      - "3005:3005"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 3005 || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 60s
+    volumes:
+      - mcp_task_master_data:/app/data
+      - mcp_task_master_logs:/app/logs
+    labels:
+      - "mcp.role=workflow"
+      - "mcp.priority=medium"
+      - "mcp.description=AI-powered task management and PRD processing"
+
+  # Task Orchestrator - Advanced task orchestration and dependency management
+  task-orchestrator:
+    build:
+      context: ../../services/task-orchestrator
+      dockerfile: Dockerfile
+    container_name: mcp-task-orchestrator
+    # Now always-on MCP server
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    env_file:
+      - ./task-orchestrator/.env
+    environment:
+      - MCP_SERVER_PORT=3014
+      - JVM_HEAP_SIZE=512m
+    ports:
+      - "3014:3014"
+    # MCP server now runs persistently over SSE transport
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3014/sse --head || nc -z localhost 3014 || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    volumes:
+      - mcp_task_orchestrator_data:/app/data
+      - mcp_task_orchestrator_logs:/app/logs
+    # Keep container alive for mcp-proxy to exec stdio server on demand
+    command: ["python", "/app/server.py"]
+    labels:
+      - "mcp.role=workflow"
+      - "mcp.priority=high"
+      - "mcp.description=Task orchestration and dependency management with 37 tools"
+
+  # Leantime Bridge - Connects existing Leantime to MCP network (HTTP/SSE transport)
+  leantime-bridge:
+    build:
+      context: ./leantime-bridge
+      dockerfile: Dockerfile
+    container_name: mcp-leantime-bridge
+    restart: unless-stopped
+    networks:
+      - mcp-network
+      - leantime-net
+      - dopemux-unified-network
+    env_file:
+      - ./leantime-bridge/.env
+    environment:
+      - MCP_SERVER_HOST=0.0.0.0
+      - MCP_SERVER_PORT=3015
+      - LEANTIME_API_URL=http://leantime:80
+      - LEANTIME_API_TOKEN=REPLACE_WITH_LEANTIME_API_TOKEN
+    ports:
+      - "3015:3015"
+    depends_on:
+      - qdrant
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3015/sse --head || nc -z localhost 3015 || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    volumes:
+      - mcp_leantime_bridge_data:/app/data
+      - mcp_leantime_bridge_logs:/app/logs
+    labels:
+      - "mcp.role=workflow"
+      - "mcp.priority=high"
+      - "mcp.transport=http-sse"
+      - "mcp.description=Leantime project management integration bridge (HTTP/SSE)"
+
+  # Serena - Code navigation, refactoring, LSP functionality
+  serena:
+    build:
+      context: ./serena
+      dockerfile: Dockerfile
+    container_name: mcp-serena${DOPEMUX_INSTANCE_ID:+_}${DOPEMUX_INSTANCE_ID}  # Multi-instance naming
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - MCP_SERVER_PORT=${SERENA_PORT:-3006}  # Dynamic port from instance env
+      - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID}  # CRITICAL: Instance workspace isolation
+    ports:
+      - "${SERENA_PORT:-3006}:${SERENA_PORT:-3006}"  # Multi-instance port mapping
+    # Health check disabled - server is functional but container lacks health check tools
+    # healthcheck:
+    #   test: ["CMD", "sh", "-c", "exit 0"]
+    volumes:
+      - mcp_serena_data:/app/data
+      - ${DOPEMUX_CODE_PARENT:-~/code}:/workspaces:ro  # Mount parent to support all worktrees
+    labels:
+      - "mcp.role=workflow"
+      - "mcp.priority=medium"
+      - "mcp.description=Code navigation and refactoring with project access"
+
+  # === RESEARCH SERVERS (Priority: Low - Fallback Only) ===
+
+  # Dopemux GPT Researcher - ADHD-optimized research with enhanced features
+  dopemux-gpt-researcher:
+    build:
+      context: ../../services/dopemux-gpt-researcher
+      dockerfile: Dockerfile
+    container_name: dopemux-gpt-researcher
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - WORKSPACE_PATH=${DOPEMUX_WORKSPACE_ID:-/workspaces/dopemux-mvp}  # Auto-detect from host
+      - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID:-/workspaces/dopemux-mvp}  # Backward compatibility
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - EXA_API_KEY=${EXA_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      - CONPORT_ENABLED=true
+      - WEBSOCKET_PORT=8001
+      - API_PORT=8000
+    ports:
+      - "8000:8000"  # FastAPI backend
+      - "8001:8001"  # WebSocket progress streaming
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    volumes:
+      - mcp_dopemux_gpt_data:/app/data
+      - mcp_dopemux_gpt_logs:/app/logs
+      - mcp_dopemux_gpt_cache:/app/cache
+      - ${DOPEMUX_CODE_PARENT:-~/code}:/workspaces:ro  # Mount parent to support all worktrees
+    depends_on:
+      - conport
+    labels:
+      - "mcp.role=research"
+      - "mcp.priority=highest"
+      - "mcp.description=ADHD-optimized research with real-time progress and pause/resume"
+
+  # Exa - Web research (ONLY when context7 lacks information)
+  # DISABLED: Migrated to uvx for better performance and protocol compatibility (Oct 20, 2025)
+  exa:
+    build:
+      context: ./exa
+      dockerfile: Dockerfile
+    container_name: mcp-exa
+    profiles: ["disabled"]
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - EXA_API_KEY=${EXA_API_KEY}
+      - MCP_SERVER_PORT=3008
+    ports:
+      - "3008:3008"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3008/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    labels:
+      - "mcp.role=research"
+      - "mcp.priority=low"
+      - "mcp.description=Web research fallback"
+
+  # Dope Context - Semantic code and document search
+  dope-context:
+    build:
+      context: ../../services/dope-context
+      dockerfile: Dockerfile
+    container_name: mcp-dope-context
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - MCP_SERVER_PORT=3010
+    ports:
+      - "3010:3010"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3010/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    volumes:
+      - dope_context_data:/app/data
+      - dope_context_logs:/app/logs
+      - ${DOPEMUX_CODE_PARENT:-~/code}:/workspaces:ro
+    labels:
+      - "mcp.role=search"
+      - "mcp.priority=high"
+      - "mcp.description=Semantic code and document search with AST-aware indexing"
+
+  # GPT Researcher - Autonomous deep research with comprehensive reports
+  gptr-mcp:
+    build:
+      context: ./gptr-mcp
+      dockerfile: Dockerfile
+    container_name: mcp-gptr-mcp
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - MCP_SERVER_PORT=3009
+      - MCP_TRANSPORT=sse
+    ports:
+      - "3009:3009"
+    # Run server.py directly as MCP server (not HTTP wrapper)
+    command: ["python", "/app/gptr-mcp/server.py"]
+    healthcheck:
+      # MCP servers don't expose HTTP health endpoints - just check if process is running
+      test: ["CMD", "python", "-c", "import psutil; exit(0 if any('server.py' in cmd for cmd in [p.cmdline() for p in psutil.process_iter() if p.cmdline()]) else 1)"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    volumes:
+      - mcp_gptr_data:/app/data
+      - mcp_gptr_logs:/app/logs
+    labels:
+      - "mcp.role=research"
+      - "mcp.priority=high"
+      - "mcp.description=Autonomous deep research and report generation"
+
+  # GPT Researcher (STDIO) - container for proxy exec
+  # TEMPORARILY DISABLED: Missing gptr-mcp-stdio directory
+  # gptr-mcp-stdio:
+  #   build:
+  #     context: ../../
+  #     dockerfile: docker/mcp-servers/gptr-mcp-stdio/Dockerfile
+  #   container_name: mcp-gptr-stdio
+  #   restart: unless-stopped
+  #   networks:
+  #     - mcp-network
+  #   environment:
+  #     - OPENAI_API_KEY=${OPENAI_API_KEY}
+  #     - TAVILY_API_KEY=${TAVILY_API_KEY}
+  #   # No ports; stdio via docker exec
+  #   command: ["tail", "-f", "/dev/null"]
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+  #     timeout: 10s
+  #     retries: 3
+  #     interval: 30s
+  #     start_period: 10s
+  #   labels:
+  #     - "mcp.role=research"
+  #     - "mcp.priority=high"
+  #     - "mcp.description=STDIO bridge for GPT Researcher via proxy"
+
+  # === QUALITY & UTILITY SERVERS (Priority: Medium) ===
+
+  # MorphLLM Fast Apply - DISABLED (package not found in registry)
+  # morphllm-fast-apply:
+  #   build:
+  #     context: ./morphllm-fast-apply
+  #     dockerfile: Dockerfile
+  #   container_name: mcp-morphllm-fast-apply
+  #   restart: unless-stopped
+  #   networks:
+  #     - mcp-network
+  #   environment:
+  #     - MCP_SERVER_PORT=3011
+  #   ports:
+  #     - "3011:3011"
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:3011/health"]
+  #     timeout: 10s
+  #     retries: 3
+  #     interval: 30s
+  #     start_period: 45s
+  #   labels:
+  #     - "mcp.role=quality"
+  #     - "mcp.priority=medium"
+  #     - "mcp.description=Pattern-based transformations and bulk edits"
+
+  # Desktop Commander - Desktop automation and system control
+  # DISABLED: Migrated to uvx for better performance and protocol compatibility (Oct 19, 2025)
+  desktop-commander:
+    build:
+      context: ./desktop-commander
+      dockerfile: Dockerfile
+    container_name: mcp-desktop-commander
+    profiles: ["disabled"]
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - MCP_SERVER_PORT=3012
+      - DISPLAY=${DISPLAY:-:0}
+    ports:
+      - "3012:3012"
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp:/tmp
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3012/health"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    labels:
+      - "mcp.role=utility"
+      - "mcp.priority=medium"
+      - "mcp.description=Desktop automation and system control"
+
+  # ClearThought - Structured reasoning and decision frameworks
+  clear-thought:
+    image: node:18-alpine
+    container_name: mcp-clear-thought
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - CLEAR_THOUGHT_TELEMETRY=off
+      - MCP_SERVER_PORT=3013
+    ports:
+      - "3013:3013"
+    working_dir: /app
+    command: ["npx", "-y", "@waldzellai/clear-thought-onepointfive"]
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 3013 || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 60s
+    labels:
+      - "mcp.role=reasoning"
+      - "mcp.priority=high"
+      - "mcp.description=Structured reasoning and decision frameworks"
+
+  # Activity Capture - Automatic development activity tracking for ADHD Engine
+  # NOTE: ADHD Engine (port 8095) runs as background process via start-all.sh
+  #       (Docker version has dependency issues - TODO: Fix in future)
+  activity-capture:
+    build:
+      context: ../../services/activity-capture
+      dockerfile: Dockerfile
+    container_name: dopemux-activity-capture
+    restart: unless-stopped
+    networks:
+      - mcp-network
+      - dopemux-unified-network
+      - dopemux-network
+    environment:
+      - REDIS_URL=redis://dopemux-redis-events:6379
+      - STREAM_NAME=dopemux:events
+      - CONSUMER_GROUP=activity-capture
+      - CONSUMER_NAME=activity-capture-1
+      - ADHD_ENGINE_URL=http://host.docker.internal:8095
+      - ADHD_USER_ID=hue
+      - AGGREGATION_WINDOW_SECONDS=300
+      - API_PORT=8096
+    ports:
+      - "8096:8096"
+    # depends_on removed - desktop-commander migrated to uvx
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8096/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
+    labels:
+      - "mcp.role=adhd-support"
+      - "mcp.priority=high"
+      - "mcp.description=Automatic activity tracking for ADHD Engine"
+
+  # Redis Primary - Shared cache for MCP servers (ConPort, etc.)
+  redis-primary:
+    image: redis:7-alpine
+    container_name: dopemux-redis-primary
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    command: redis-server --appendonly yes
+    volumes:
+      - mcp_redis_primary_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 3s
+      retries: 5
+      interval: 10s
+    labels:
+      - "mcp.role=infrastructure"
+      - "mcp.priority=high"
+      - "mcp.description=Shared Redis cache for MCP servers"
+
+  # Qdrant - Vector database for dope-context semantic search
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: mcp-qdrant
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - mcp_qdrant_data:/qdrant/storage
+    # Healthcheck disabled: qdrant minimal image lacks curl/wget
+    # Service is functionally healthy and accessible on port 6333
+    labels:
+      - "mcp.role=infrastructure"
+      - "mcp.priority=high"
+      - "mcp.description=Vector database for semantic code search"
+
+# === NETWORKS ===
+networks:
+  mcp-network:
+    external: true
+    name: mcp-network
+  dopemux-unified-network:
+    external: true
+    name: dopemux-unified-network
+  dopemux-network:
+    external: true
+    name: dopemux-network
+  # Connect to existing Leantime network for PM integration
+  leantime-net:
+    external: true
+    name: leantime-net
+
+# === VOLUMES ===
+volumes:
+  # Flexible Postgres AGE data volume; attach existing named volume via env
+  pg_age_data:
+    external: true
+    name: ${POSTGRES_AGE_VOLUME:-mcp_postgres_age_data}
+  mcp_logs:
+    external: true
+    name: mcp_logs
+  mcp_cache:
+    external: true
+    name: mcp_cache
+  mcp_context7_cache:
+    driver: local
+    name: mcp_context7_cache
+  mcp_conport_data:
+    driver: local
+    name: mcp_conport_data
+  mcp_task_master_data:
+    driver: local
+    name: mcp_task_master_data
+  mcp_task_master_logs:
+    driver: local
+    name: mcp_task_master_logs
+  mcp_task_orchestrator_data:
+    driver: local
+    name: mcp_task_orchestrator_data
+  mcp_task_orchestrator_logs:
+    driver: local
+    name: mcp_task_orchestrator_logs
+  mcp_leantime_bridge_data:
+    driver: local
+    name: mcp_leantime_bridge_data
+  mcp_leantime_bridge_logs:
+    driver: local
+    name: mcp_leantime_bridge_logs
+  mcp_serena_data:
+    driver: local
+    name: mcp_serena_data
+  mcp_gptr_data:
+    driver: local
+    name: mcp_gptr_data
+  mcp_gptr_logs:
+    driver: local
+    name: mcp_gptr_logs
+  mcp_dopemux_gpt_data:
+    driver: local
+    name: mcp_dopemux_gpt_data
+  mcp_dopemux_gpt_logs:
+    driver: local
+    name: mcp_dopemux_gpt_logs
+  mcp_dopemux_gpt_cache:
+    driver: local
+    name: mcp_dopemux_gpt_cache
+  mcp_litellm_data:
+    driver: local
+    name: mcp_litellm_data
+  mcp_qdrant_data:
+    driver: local
+    name: mcp_qdrant_data
+  mcp_redis_primary_data:
+    driver: local
+    name: mcp_redis_primary_data
+  dope_context_data:
+    driver: local
+    name: dope_context_data
+  dope_context_logs:
+    driver: local
+    name: dope_context_logs
+      - "mcp.transport=sse"
