@@ -33,7 +33,7 @@ from models import (
 )
 from config import settings
 from activity_tracker import ActivityTracker
-from conport_client_unified import ConPortSQLiteClient
+from conport_mcp_client import ConPortMCPClient
 from bridge_integration import ConPortBridgeAdapter
 
 # ConPort-KG Integration (optional)
@@ -137,19 +137,24 @@ class ADHDAccommodationEngine:
 
         # Initialize ActivityTracker with ConPort database
         conport_db_path = settings.workspace_id + "/context_portal/context.db"
+        # Initialize ConPort MCP client for real data access
+        self.conport_mcp = ConPortMCPClient()
+        logger.info("✅ ConPort MCP client initialized")
+
         self.activity_tracker = ActivityTracker(
             redis_client=self.redis_client,
-            conport_db_path=conport_db_path
+            conport_db_path=conport_db_path,
+            conport_mcp_client=self.conport_mcp  # Pass MCP client for real data
         )
-        logger.info("✅ ActivityTracker initialized with ConPort SQLite")
+        logger.info("✅ ActivityTracker initialized with ConPort MCP integration")
 
-        # Initialize ConPort client for Week 3 state persistence
+        # Keep SQLite client for backwards compatibility/fallback
         self.conport = ConPortSQLiteClient(
             db_path=conport_db_path,
             workspace_id=settings.workspace_id,
             read_only=False  # Week 3: Enable writes for persistent tracking
         )
-        logger.info("✅ ConPort SQLite client initialized (Week 3 write mode)")
+        logger.info("✅ ConPort SQLite client initialized (fallback mode)")
 
         # Initialize ML predictive engine (IP-005 Days 11-12)
         if settings.enable_ml_predictions and ML_AVAILABLE:

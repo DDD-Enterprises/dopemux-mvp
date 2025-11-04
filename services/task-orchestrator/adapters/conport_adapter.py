@@ -399,6 +399,36 @@ class ConPortEventAdapter:
             logger.error(f"Failed to create task in ConPort: {e}")
             return None
 
+    async def create_task_in_conport_from_sync(self, event: Any) -> Optional[int]:
+        """
+        Create task in ConPort from sync event data.
+
+        Used by Task Orchestrator sync methods.
+        """
+        try:
+            # Extract progress data from sync event
+            progress_data = {
+                "workspace_id": self.workspace_id,
+                "status": event.data.get("status", "pending").upper(),
+                "description": f"Task orchestration: {event.data.get('title', 'Unknown task')}",
+                "linked_item_type": "orchestration_task",
+                "linked_item_id": event.task_id
+            }
+
+            # Call ConPort MCP (with retry)
+            conport_id = await self._resilient_log_progress(progress_data)
+
+            if conport_id:
+                logger.info(f"✅ Synced task to ConPort: {event.task_id} (ID: {conport_id})")
+                return conport_id
+            else:
+                logger.warning(f"⚠️ ConPort sync failed, task not persisted: {event.task_id}")
+                return None
+
+        except Exception as e:
+            logger.error(f"Failed to sync task to ConPort: {e}")
+            return None
+
     async def update_task_in_conport(
         self,
         task: OrchestrationTask,

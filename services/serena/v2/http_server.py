@@ -251,11 +251,20 @@ async def get_metrics():
     # Try real aggregator first
     if aggregator:
         try:
-            # TODO: Get real detection results from Serena
-            # results = await get_detection_results()
-            # real_metrics = aggregator.aggregate_detections(results)
-            # return format_adhd_friendly(real_metrics)
-            pass
+            # Get real detection results from Serena
+            from untracked_work_detector import UntrackedWorkDetector
+            from pathlib import Path
+
+            # Initialize detector with workspace
+            workspace_path = Path("/Users/hue/code/dopemux-mvp")  # Default workspace
+            detector = UntrackedWorkDetector(workspace_path, "dopemux-mvp")
+
+            # Run detection
+            detection_result = await detector.detect(conport_client=None, session_number=1)
+
+            # Aggregate detections
+            real_metrics = aggregator.aggregate_detections([detection_result])
+            return format_adhd_friendly(real_metrics)
         except Exception as e:
             logger.warning(f"Real metrics failed, using mock: {e}")
     
@@ -285,11 +294,20 @@ async def get_detections_summary(
     # Try real aggregator first
     if aggregator:
         try:
-            # TODO: Get real detection results from Serena
-            # results = await get_detection_results()
-            # summary = aggregator.calculate_f1_f4_metrics(results)
-            # return format_adhd_friendly(summary)
-            pass
+            # Get real detection results from Serena
+            from untracked_work_detector import UntrackedWorkDetector
+            from pathlib import Path
+
+            # Initialize detector with workspace
+            workspace_path = Path("/Users/hue/code/dopemux-mvp")  # Default workspace
+            detector = UntrackedWorkDetector(workspace_path, "dopemux-mvp")
+
+            # Run detection
+            detection_result = await detector.detect(conport_client=None, session_number=1)
+
+            # Calculate F1-F4 metrics
+            summary = aggregator.calculate_f1_f4_metrics([detection_result])
+            return format_adhd_friendly(summary)
         except Exception as e:
             logger.warning(f"Real summary failed, using mock: {e}")
     
@@ -313,8 +331,55 @@ async def get_top_patterns(
     # Try real aggregator first
     if aggregator:
         try:
-            # TODO: Extract top patterns from real metrics
-            pass
+            # Extract top patterns from real metrics
+            from untracked_work_detector import UntrackedWorkDetector
+            from pathlib import Path
+
+            # Initialize detector with workspace
+            workspace_path = Path("/Users/hue/code/dopemux-mvp")  # Default workspace
+            detector = UntrackedWorkDetector(workspace_path, "dopemux-mvp")
+
+            # Get top patterns from pattern learner
+            top_file_extensions = await detector.pattern_learner.get_top_patterns("file_extension", limit=limit)
+            top_directories = await detector.pattern_learner.get_top_patterns("directory", limit=limit)
+            top_branches = await detector.pattern_learner.get_top_patterns("branch_prefix", limit=limit)
+
+            # Format for API response
+            patterns = []
+            for ext, count in top_file_extensions.items():
+                patterns.append({
+                    "type": "file_extension",
+                    "pattern": ext,
+                    "count": count,
+                    "description": f"Files with .{ext} extension"
+                })
+
+            for dir_path, count in top_directories.items():
+                patterns.append({
+                    "type": "directory",
+                    "pattern": dir_path,
+                    "count": count,
+                    "description": f"Work in {dir_path} directory"
+                })
+
+            for branch, count in top_branches.items():
+                patterns.append({
+                    "type": "branch_prefix",
+                    "pattern": branch,
+                    "count": count,
+                    "description": f"Branches starting with {branch}"
+                })
+
+            # Sort by count and limit
+            patterns.sort(key=lambda x: x["count"], reverse=True)
+            patterns = patterns[:limit]
+
+            return {
+                "patterns": patterns,
+                "total_patterns": len(patterns),
+                "timestamp": datetime.utcnow().isoformat(),
+                "limit_applied": limit
+            }
         except Exception as e:
             logger.warning(f"Real patterns failed, using mock: {e}")
     
