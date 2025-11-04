@@ -13,23 +13,10 @@ from typing import Dict, List, Any, Optional
 import logging
 
 from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-
-limiter = Limiter(key_func=get_remote_address)
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
-@app.get("/api/metrics")
-async def get_metrics(limit: int = Query(5, ge=1, le=10)):
-    # Dynamic ADHD limit from ConPort
-    from mcp__conport__get_active_context import get_active_context
-    context = get_active_context()
-    dynamic_limit = 3 if context.get("attention_state") == "scattered" else 10
-    # Apply limit
-    return MOCK_METRICS.copy()
-from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 # Configure logging
@@ -43,10 +30,7 @@ app = FastAPI(
     description="ADHD-optimized pattern detection metrics"
 )
 
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
-
+# Configure rate limiting
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -66,9 +50,9 @@ try:
     # Add serena v2 to path
     serena_path = Path(__file__).parent
     sys.path.insert(0, str(serena_path))
-    
+
     from .metrics_dashboard import MetricsAggregator
-from .enhanced_lsp import find_symbols  # For MCP endpoint
+    from .enhanced_lsp import find_symbols  # For MCP endpoint
     AGGREGATOR_AVAILABLE = True
     logger.info("✅ Serena MetricsAggregator available")
 except ImportError as e:
@@ -277,7 +261,7 @@ async def get_metrics():
     
     # Return mock data with fresh timestamp
     mock_data = MOCK_METRICS.copy()
-mock_data["total_detections"] = 10  # Align with aggregator schema for tests
+    mock_data["total_detections"] = 10  # Align with aggregator schema for tests
     mock_data["timestamp"] = datetime.utcnow().isoformat()
     return mock_data
 
