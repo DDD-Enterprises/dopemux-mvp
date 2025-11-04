@@ -8,26 +8,26 @@ that basic initialization works.
 import sys
 import os
 
-# Add the backend directory to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'backend'))
+# Add the research_api directory to Python path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'research_api'))
 
 try:
     print("Testing imports...")
 
     # Test model imports
-    from models.research_task import ResearchType, ADHDConfiguration, ProjectContext
+    from research_api.models.research_task import ResearchType, ADHDConfiguration, ProjectContext
     print("✅ Research task models imported successfully")
 
     # Test orchestrator import
-    from services.orchestrator import ResearchTaskOrchestrator
+    from research_api.services.orchestrator import ResearchTaskOrchestrator
     print("✅ ResearchTaskOrchestrator imported successfully")
 
     # Test search engine imports
-    from engines.search.search_orchestrator import SearchOrchestrator, SearchStrategy
+    from research_api.engines.search.search_orchestrator import SearchOrchestrator, SearchStrategy
     print("✅ SearchOrchestrator imported successfully")
 
     # Test adapter imports
-    from engines.search.base_adapter import BaseSearchAdapter, SearchResult
+    from research_api.engines.search.base_adapter import BaseSearchAdapter, SearchResult
     print("✅ Search adapters imported successfully")
 
     print("\n🎉 All imports successful! Integration is syntactically correct.")

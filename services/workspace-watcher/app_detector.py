@@ -44,11 +44,67 @@ class AppDetector:
             logger.warning(f"Unsupported OS: {self.os_type}")
             return None
 
+    async def get_active_app_async(self) -> Optional[str]:
+        """
+        Async version of get_active_app.
+
+        Uses thread pool execution to avoid blocking async event loops.
+        Preferred in async contexts.
+        """
+        if IS_MACOS:
+            return await self._get_active_app_macos_async()
+        elif IS_LINUX:
+            # Linux version is already async-compatible, but keep consistent interface
+            return self._get_active_app_linux()
+        else:
+            logger.warning(f"Unsupported OS: {self.os_type}")
+            return None
+
+    async def _get_active_app_macos_async(self) -> Optional[str]:
+        """
+        Get active app on macOS using AppleScript (async version).
+
+        Uses System Events to query frontmost process name.
+        Runs in thread pool to avoid blocking async event loop.
+        """
+        try:
+            import asyncio
+
+            # AppleScript to get frontmost application
+            script = 'tell application "System Events" to get name of first process whose frontmost is true'
+
+            # Run subprocess in thread pool to avoid blocking event loop
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(
+                None,
+                lambda: subprocess.run(
+                    ["osascript", "-e", script],
+                    capture_output=True,
+                    text=True,
+                    timeout=1.0
+                )
+            )
+
+            if result.returncode == 0:
+                app_name = result.stdout.strip()
+                return app_name if app_name else None
+            else:
+                logger.debug(f"osascript failed: {result.stderr}")
+                return None
+
+        except subprocess.TimeoutExpired:
+            logger.warning("osascript timeout")
+            return None
+        except Exception as e:
+            logger.error(f"macOS app detection error: {e}")
+            return None
+
     def _get_active_app_macos(self) -> Optional[str]:
         """
         Get active app on macOS using AppleScript.
 
-        Uses System Events to query frontmost process name.
+        Legacy sync version - kept for backward compatibility.
+        Use _get_active_app_macos_async() in async contexts.
         """
         try:
             # AppleScript to get frontmost application

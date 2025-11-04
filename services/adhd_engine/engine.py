@@ -33,7 +33,7 @@ from models import (
 )
 from config import settings
 from activity_tracker import ActivityTracker
-from conport_client_unified import ConPortSQLiteClient
+from conport_mcp_client import ConPortMCPClient
 from bridge_integration import ConPortBridgeAdapter
 
 # ConPort-KG Integration (optional)
@@ -72,8 +72,9 @@ class ADHDAccommodationEngine:
         self.redis_url = settings.redis_url
         self.workspace_id = settings.workspace_id
 
-        # Redis connection for state persistence
+        # Redis connection for state persistence (now using shared pool)
         self.redis_client: Optional[redis.Redis] = None
+        self.redis_pool = None  # Shared Redis connection pool
 
         # ADHD state tracking
         self.user_profiles: Dict[str, ADHDProfile] = {}
@@ -122,29 +123,38 @@ class ADHDAccommodationEngine:
         """Initialize ADHD accommodation engine."""
         logger.info("🧠 Initializing ADHD Accommodation Engine...")
 
-        # Initialize Redis connection
-        self.redis_client = redis.from_url(
-            self.redis_url,
-            db=settings.redis_db,
-            decode_responses=True
-        )
-        await self.redis_client.ping()
+        # Initialize shared Redis connection pool (performance optimization)
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'shared'))
+        from redis_pool import get_redis_pool
+
+        self.redis_pool = await get_redis_pool()
+        # Keep legacy redis_client for backward compatibility, but use pool internally
+        async with self.redis_pool.get_client() as client:
+            self.redis_client = client
+            await self.redis_client.ping()
 
         # Initialize ActivityTracker with ConPort database
         conport_db_path = settings.workspace_id + "/context_portal/context.db"
+        # Initialize ConPort MCP client for real data access
+        self.conport_mcp = ConPortMCPClient()
+        logger.info("✅ ConPort MCP client initialized")
+
         self.activity_tracker = ActivityTracker(
             redis_client=self.redis_client,
-            conport_db_path=conport_db_path
+            conport_db_path=conport_db_path,
+            conport_mcp_client=self.conport_mcp  # Pass MCP client for real data
         )
-        logger.info("✅ ActivityTracker initialized with ConPort SQLite")
+        logger.info("✅ ActivityTracker initialized with ConPort MCP integration")
 
-        # Initialize ConPort client for Week 3 state persistence
+        # Keep SQLite client for backwards compatibility/fallback
         self.conport = ConPortSQLiteClient(
             db_path=conport_db_path,
             workspace_id=settings.workspace_id,
             read_only=False  # Week 3: Enable writes for persistent tracking
         )
-        logger.info("✅ ConPort SQLite client initialized (Week 3 write mode)")
+        logger.info("✅ ConPort SQLite client initialized (fallback mode)")
 
         # Initialize ML predictive engine (IP-005 Days 11-12)
         if settings.enable_ml_predictions and ML_AVAILABLE:

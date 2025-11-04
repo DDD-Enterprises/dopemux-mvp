@@ -426,7 +426,10 @@ def extract_from_directory(directory_path: str) -> Dict[str, Any]:
 # Test function
 def test_with_docs_to_process():
     """Test the classifier with test_docs directory."""
-    docs_dir = Path("test_docs")
+    docs_dir = Path(__file__).resolve().parents[1] / "tests" / "resources" / "test_docs"
+
+    if not docs_dir.exists():
+        docs_dir = Path("test_docs")
 
     if not docs_dir.exists():
         print("test_docs directory not found")

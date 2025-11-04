@@ -7,6 +7,14 @@ Complete guide for setting up Prometheus + Grafana monitoring for ADHD Intellige
 
 ---
 
+## Quick Start (one-liner)
+
+```bash
+./scripts/monitoring_stack.sh start
+```
+
+This helper script wraps the Docker Compose stack below (and also supports `stop`, `status`, and `logs`).
+
 ## Quick Start (Docker Compose - Recommended)
 
 ### 1. Start Monitoring Stack
