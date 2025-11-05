@@ -773,12 +773,12 @@ class EnhancedTaskOrchestrator:
                 # Update existing progress entry
                 logger.info(f"📊 ConPort update: {task.title} (ID: {task.conport_id})")
 
-                # Would call: await mcp__conport__update_progress(
-                #     workspace_id=self.workspace_id,
-                #     progress_id=task.conport_id,
-                #     status=task.status.value.upper(),
-                #     description=f"{task.title} (complexity: {task.complexity_score:.2f})"
-                # )
+                await mcp__conport__update_progress(
+                    workspace_id=self.workspace_id,
+                    progress_id=task.conport_id,
+                    status=task.status.value.upper(),
+                    description=f"{task.title} (complexity: {task.complexity_score:.2f})"
+                )
 
                 logger.debug(f"Updated ConPort progress entry {task.conport_id}")
 
@@ -786,13 +786,13 @@ class EnhancedTaskOrchestrator:
                 # Create new progress entry with ADHD metadata
                 logger.info(f"📊 ConPort create: {task.title}")
 
-                # Would call: result = await mcp__conport__log_progress(
-                #     workspace_id=self.workspace_id,
-                #     status=task.status.value.upper(),
-                #     description=task.title,
-                #     # ADHD metadata would be added as custom JSON in description or via custom_data
-                # )
-                # task.conport_id = result['id']
+                result = await mcp__conport__log_progress(
+                    workspace_id=self.workspace_id,
+                    status=task.status.value.upper(),
+                    description=task.title,
+                    # ADHD metadata would be added as custom JSON in description or via custom_data
+                )
+                task.conport_id = result['id']
 
                 logger.debug(f"Created ConPort progress entry for {task.title}")
 
