@@ -66,8 +66,8 @@ async def lifespan(app: FastAPI):
 
     try:
         # Initialize Redis pool and cache
-        redis_pool = await get_redis_pool()
-        cache = await get_cache()
+        redis_pool = get_redis_pool()
+        cache = get_cache()
 
         # Initialize ADHD Accommodation Engine
         engine = ADHDAccommodationEngine(
@@ -142,12 +142,12 @@ def create_application() -> FastAPI:
             "service": "adhd-accommodation-engine",
             "version": "1.0.0",
             "monitors": {
-                "energy_tracking": engine.energy_monitor.is_running if engine else False,
-                "attention_monitoring": engine.attention_monitor.is_running if engine else False,
-                "cognitive_load": engine.cognitive_load_monitor.is_running if engine else False,
-                "break_suggestions": engine.break_suggester.is_running if engine else False,
-                "hyperfocus_detection": engine.hyperfocus_detector.is_running if engine else False,
-                "context_switching": engine.context_switch_tracker.is_running if engine else False
+                "energy_tracking": getattr(engine.monitors.get("energy_tracking"), "is_running", False) if engine and engine.monitors else False,
+                "attention_monitoring": getattr(engine.monitors.get("attention_monitoring"), "is_running", False) if engine and engine.monitors else False,
+                "cognitive_load": getattr(engine.monitors.get("cognitive_load"), "is_running", False) if engine and engine.monitors else False,
+                "break_suggestions": getattr(engine.monitors.get("break_suggester"), "is_running", False) if engine and engine.monitors else False,
+                "hyperfocus_detection": getattr(engine.monitors.get("hyperfocus_detector"), "is_running", False) if engine and engine.monitors else False,
+                "context_switching": getattr(engine.monitors.get("context_switch_tracker"), "is_running", False) if engine and engine.monitors else False
             } if engine else "engine_not_initialized"
         }
 
