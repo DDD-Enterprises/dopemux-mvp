@@ -18,7 +18,7 @@ class TestTaskOrchestratorEventEmitter:
     """Test TaskOrchestratorEventEmitter"""
 
     @pytest.fixture
-    async def event_bus_mock(self):
+    def event_bus_mock(self):
         """Create mock EventBus"""
         bus = Mock(spec=EventBus)
         bus.publish = AsyncMock(return_value="msg-123")
@@ -165,7 +165,7 @@ class TestTaskOrchestratorIntegrationManager:
     """Test TaskOrchestratorIntegrationManager"""
 
     @pytest.fixture
-    async def event_bus_mock(self):
+    def event_bus_mock(self):
         """Create mock EventBus"""
         bus = Mock(spec=EventBus)
         bus.publish = AsyncMock(return_value="msg-123")
