@@ -182,15 +182,15 @@ class ConPortInsightPublisher:
                 return False
 
             # Call ConPort link_conport_items
-            # await self.conport_client.link_conport_items(
-            #     workspace_id=self.workspace_id,
-            #     source_item_type="decision",
-            #     source_item_id=str(decision_id),
-            #     target_item_type="progress_entry",
-            #     target_item_id=str(task_conport_id),
-            #     relationship_type=relationship_type,
-            #     description=f"AI decision {decision_id} {relationship_type} task {task_conport_id}"
-            # )
+            await self.conport_client.link_conport_items(
+                workspace_id=self.workspace_id,
+                source_item_type="decision",
+                source_item_id=str(decision_id),
+                target_item_type="progress_entry",
+                target_item_id=str(task_conport_id),
+                relationship_type=relationship_type,
+                description=f"AI decision {decision_id} {relationship_type} task {task_conport_id}"
+            )
 
             logger.info(f"📎 Linked decision {decision_id} to task {task_conport_id} ({relationship_type})")
             return True
