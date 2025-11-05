@@ -19,6 +19,9 @@ from enum import Enum
 import aiohttp
 import redis.asyncio as redis
 
+# Configure logging FIRST
+logger = logging.getLogger(__name__)
+
 # Import Integration Bridge EventBus for event coordination (Component 3)
 try:
     # Add integration bridge path
@@ -56,8 +59,6 @@ try:
     CONPORT_KG_INTEGRATION = True
 except ImportError:
     CONPORT_KG_INTEGRATION = False
-
-logger = logging.getLogger(__name__)
 
 
 class TaskStatus(str, Enum):

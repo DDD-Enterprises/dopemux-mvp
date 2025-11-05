@@ -6,7 +6,7 @@
       "args": [
         "exec",
         "-i",
-        "mcp-conport_main",
+        "mcp-conport",
         "uvx",
         "--from",
         "context-portal-mcp",
@@ -127,7 +127,7 @@
       "args": [
         "exec",
         "-i",
-        "mcp-conport_main",
+        "mcp-conport",
         "python",
         "/app/conport_mcp_stdio.py"
       ],

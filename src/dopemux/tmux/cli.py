@@ -1003,7 +1003,24 @@ def _setup_orchestrator_layout(
         getattr(config, "orchestrator_command", None) or "dopemux start --role orchestrator --no-recovery"
     )
     if orchestrator_cmd:
+        # Build orchestrator environment with LiteLLM configuration if enabled
+        litellm_env_orch = ""
+        if os.environ.get("DOPEMUX_CLAUDE_VIA_LITELLM") == "true":
+            litellm_master_key = os.environ.get("DOPEMUX_LITELLM_MASTER_KEY", "")
+            litellm_db_url = os.environ.get("DOPEMUX_LITELLM_DB_URL", "")
+            litellm_env_orch = (
+                f"export DOPEMUX_CLAUDE_VIA_LITELLM=true; "
+                f"export ANTHROPIC_BASE_URL=http://localhost:4000; "
+                f"export ANTHROPIC_API_KEY={shlex.quote(litellm_master_key)}; "
+                f"export LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+                f"export DOPEMUX_LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+                f"export DOPEMUX_LITELLM_DB_URL={shlex.quote(litellm_db_url)}; "
+                f"export LITELLM_DATABASE_URL={shlex.quote(litellm_db_url)}; "
+                f"export DATABASE_URL={shlex.quote(litellm_db_url)}; "
+            )
+        
         orchestrator_prefix = (
+            f"{litellm_env_orch}"
             f"export DOPEMUX_DEFAULT_LITELLM=1; "
             f"export DOPEMUX_TMUX_SESSION={session}; "
             f"unset DOPEMUX_NON_INTERACTIVE; "
@@ -1052,7 +1069,25 @@ def _setup_orchestrator_layout(
     
     # Auto-start agent with role configuration
     agent_cmd = getattr(config, "agent_command", None) or "dopemux start --role agent"
+    
+    # Build agent environment with LiteLLM configuration if enabled
+    litellm_env = ""
+    if os.environ.get("DOPEMUX_CLAUDE_VIA_LITELLM") == "true":
+        litellm_master_key = os.environ.get("DOPEMUX_LITELLM_MASTER_KEY", "")
+        litellm_db_url = os.environ.get("DOPEMUX_LITELLM_DB_URL", "")
+        litellm_env = (
+            f"export DOPEMUX_CLAUDE_VIA_LITELLM=true; "
+            f"export ANTHROPIC_BASE_URL=http://localhost:4000; "
+            f"export ANTHROPIC_API_KEY={shlex.quote(litellm_master_key)}; "
+            f"export LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+            f"export DOPEMUX_LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+            f"export DOPEMUX_LITELLM_DB_URL={shlex.quote(litellm_db_url)}; "
+            f"export LITELLM_DATABASE_URL={shlex.quote(litellm_db_url)}; "
+            f"export DATABASE_URL={shlex.quote(litellm_db_url)}; "
+        )
+    
     agent_prefix = (
+        f"{litellm_env}"
         f"export DOPEMUX_DEFAULT_LITELLM=1; "
         f"export DOPEMUX_TMUX_SESSION={session}; "
         f"unset DOPEMUX_NON_INTERACTIVE; "
@@ -1075,6 +1110,7 @@ def _setup_orchestrator_layout(
     if secondary_agent_id:
         secondary_cmd = getattr(config, "secondary_agent_command", None) or "dopemux start --role secondary"
         secondary_prefix = (
+            f"{litellm_env}"
             f"export DOPEMUX_DEFAULT_LITELLM=1; "
             f"export DOPEMUX_TMUX_SESSION={session}; "
             f"export DOPEMUX_NON_INTERACTIVE=1; "
@@ -1347,7 +1383,24 @@ def _setup_dope_layout(
             getattr(config, "orchestrator_command", None) or "dopemux start --role orchestrator --no-recovery"
         )
         if orchestrator_cmd:
+            # Build orchestrator environment with LiteLLM configuration if enabled
+            litellm_env_orch = ""
+            if os.environ.get("DOPEMUX_CLAUDE_VIA_LITELLM") == "true":
+                litellm_master_key = os.environ.get("DOPEMUX_LITELLM_MASTER_KEY", "")
+                litellm_db_url = os.environ.get("DOPEMUX_LITELLM_DB_URL", "")
+                litellm_env_orch = (
+                    f"export DOPEMUX_CLAUDE_VIA_LITELLM=true; "
+                    f"export ANTHROPIC_BASE_URL=http://localhost:4000; "
+                    f"export ANTHROPIC_API_KEY={shlex.quote(litellm_master_key)}; "
+                    f"export LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+                    f"export DOPEMUX_LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+                    f"export DOPEMUX_LITELLM_DB_URL={shlex.quote(litellm_db_url)}; "
+                    f"export LITELLM_DATABASE_URL={shlex.quote(litellm_db_url)}; "
+                    f"export DATABASE_URL={shlex.quote(litellm_db_url)}; "
+                )
+            
             orchestrator_prefix = (
+                f"{litellm_env_orch}"
                 f"export DOPEMUX_DEFAULT_LITELLM=1; "
                 f"export DOPEMUX_TMUX_SESSION={session}; "
                 f"unset DOPEMUX_NON_INTERACTIVE; "
@@ -1394,7 +1447,25 @@ def _setup_dope_layout(
 
     if bootstrap:
         agent_cmd = getattr(config, "agent_command", None) or "dopemux start --role agent"
+        
+        # Build agent environment with LiteLLM configuration if enabled
+        litellm_env_agent = ""
+        if os.environ.get("DOPEMUX_CLAUDE_VIA_LITELLM") == "true":
+            litellm_master_key = os.environ.get("DOPEMUX_LITELLM_MASTER_KEY", "")
+            litellm_db_url = os.environ.get("DOPEMUX_LITELLM_DB_URL", "")
+            litellm_env_agent = (
+                f"export DOPEMUX_CLAUDE_VIA_LITELLM=true; "
+                f"export ANTHROPIC_BASE_URL=http://localhost:4000; "
+                f"export ANTHROPIC_API_KEY={shlex.quote(litellm_master_key)}; "
+                f"export LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+                f"export DOPEMUX_LITELLM_MASTER_KEY={shlex.quote(litellm_master_key)}; "
+                f"export DOPEMUX_LITELLM_DB_URL={shlex.quote(litellm_db_url)}; "
+                f"export LITELLM_DATABASE_URL={shlex.quote(litellm_db_url)}; "
+                f"export DATABASE_URL={shlex.quote(litellm_db_url)}; "
+            )
+        
         agent_prefix = (
+            f"{litellm_env_agent}"
             f"export DOPEMUX_DEFAULT_LITELLM=1; "
             f"export DOPEMUX_TMUX_SESSION={session}; "
             f"export DOPEMUX_NON_INTERACTIVE=1; "
@@ -1417,6 +1488,7 @@ def _setup_dope_layout(
         if secondary_agent_id:
             secondary_cmd = getattr(config, "secondary_agent_command", None) or "dopemux start --role secondary"
             secondary_prefix = (
+                f"{litellm_env_agent}"
                 f"export DOPEMUX_DEFAULT_LITELLM=1; "
                 f"export DOPEMUX_TMUX_SESSION={session}; "
                 f"export DOPEMUX_NON_INTERACTIVE=1; "
