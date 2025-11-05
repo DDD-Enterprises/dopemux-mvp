@@ -23,13 +23,19 @@ from collections import defaultdict
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-try:
-    from dopemux.event_bus import RedisStreamsAdapter, DopemuxEvent, Priority, CognitiveLoad, ADHDMetadata
-    from dopemux.producers.mcp_producer import MCPEventProducer
-    EVENTS_ENABLED = True
-except ImportError:
-    EVENTS_ENABLED = False
-    logging.warning("Event bus integration not available - continuing without events")
+# Temporarily disable event bus integration for testing
+EVENTS_ENABLED = False
+logger.warning("Event bus integration disabled for testing - continuing without events")
+
+# Mock classes to prevent import errors
+class RedisStreamsAdapter:
+    pass
+
+class DopemuxEvent:
+    pass
+
+class MCPEventProducer:
+    pass
 
 # Configure logging
 logging.basicConfig(
@@ -38,6 +44,20 @@ logging.basicConfig(
     stream=sys.stderr
 )
 logger = logging.getLogger("task-orchestrator-wrapper")
+
+# Temporarily disable event bus integration for testing
+EVENTS_ENABLED = False
+logger.warning("Event bus integration disabled for testing - continuing without events")
+
+# Mock classes to prevent import errors
+class RedisStreamsAdapter:
+    pass
+
+class DopemuxEvent:
+    pass
+
+class MCPEventProducer:
+    pass
 
 
 class TaskOrchestratorWrapper:
@@ -102,6 +122,7 @@ class TaskOrchestratorWrapper:
 
     async def start_orchestrator(self):
         """Start the underlying Task-Orchestrator server."""
+        logger.info("Starting Task-Orchestrator subprocess...")
         try:
             # Determine how to launch Task-Orchestrator
             # It's a Kotlin app, so might use gradle, java -jar, or a wrapper script
@@ -147,6 +168,11 @@ class TaskOrchestratorWrapper:
             )
 
             logger.info(f"Started Task-Orchestrator with command: {' '.join(cmd)}")
+            logger.info(f"Process PID: {self.process.pid}")
+            logger.info(f"Process return code: {self.process.poll()}")
+            if self.process.poll() is not None:
+                logger.error(f"Process exited immediately with return code: {self.process.poll()}")
+                logger.error(f"Process stderr: {self.process.stderr.read() if self.process.stderr else 'No stderr'}")
 
         except FileNotFoundError as e:
             logger.error(f"Failed to start Task-Orchestrator: {e}")
