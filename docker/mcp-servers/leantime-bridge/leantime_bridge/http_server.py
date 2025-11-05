@@ -7,6 +7,7 @@ import asyncio
 import json
 import logging
 import os
+import time
 from typing import Any, Dict, List, Optional, Sequence
 
 import httpx
@@ -28,6 +29,7 @@ logger = logging.getLogger(__name__)
 # Configuration
 LEANTIME_API_URL = os.getenv("LEANTIME_API_URL", "http://leantime:80")
 LEANTIME_API_TOKEN = os.getenv("LEANTIME_API_TOKEN", "")
+LEAN_TIME_RATE_LIMIT_SECONDS = float(os.getenv("LEAN_TIME_RATE_LIMIT_SECONDS", "1.0"))
 MCP_SERVER_HOST = os.getenv("MCP_SERVER_HOST", "0.0.0.0")
 MCP_SERVER_PORT = int(os.getenv("MCP_SERVER_PORT", "3015"))
 
@@ -50,9 +52,24 @@ class LeantimeClient:
             await self.client.aclose()
 
     async def call_api(self, method: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
-        """Make a JSON-RPC call to Leantime API"""
+        """Make a JSON-RPC call to Leantime API with rate limiting"""
         if not self.client:
             raise RuntimeError("LeantimeClient not initialized - use as async context manager")
+
+        # Configurable rate limiting
+        if not hasattr(self, '_last_call_time'):
+            self._last_call_time = 0
+
+        current_time = time.time()
+        time_since_last_call = current_time - self._last_call_time
+
+        # Enforce minimum delay between calls
+        if time_since_last_call < LEAN_TIME_RATE_LIMIT_SECONDS:
+            wait_time = LEAN_TIME_RATE_LIMIT_SECONDS - time_since_last_call
+            logger.debug(f"Rate limiting: waiting {wait_time:.2f} seconds...")
+            await asyncio.sleep(wait_time)
+
+        self._last_call_time = time.time()
 
         headers = {
             "Content-Type": "application/json",
