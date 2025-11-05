@@ -334,7 +334,7 @@ class MultiDirectionalSyncEngine:
                 }
 
                 # This would make MCP call to ConPort
-                # await conport_client.log_progress(**progress_data)
+                await conport_client.log_progress(**progress_data)
                 logger.debug(f"📊 Synced Leantime task to ConPort: {operation.entity_id}")
                 return True
 
@@ -349,7 +349,7 @@ class MultiDirectionalSyncEngine:
                 }
 
                 # This would make MCP call to ConPort
-                # await conport_client.update_active_context(patch_content=sprint_context)
+                await conport_client.update_active_context(patch_content=sprint_context)
                 logger.debug(f"🎯 Synced Leantime sprint to ConPort: {operation.entity_id}")
                 return True
 
@@ -546,7 +546,7 @@ class MultiDirectionalSyncEngine:
                     }
 
                     # This would make ConPort MCP call
-                    # await conport_client.log_decision(**decision_data)
+                    await conport_client.log_decision(**decision_data)
                     return True
 
             return False

@@ -482,7 +482,7 @@ class ImplicitAutomationEngine:
             }
 
             # This would make ConPort MCP call
-            # await self.conport_client.update_active_context(patch_content=sprint_context)
+            await self.conport_client.update_active_context(patch_content=sprint_context)
 
             logger.info(f"🎯 ConPort context setup for sprint: {sprint_id}")
             return True
