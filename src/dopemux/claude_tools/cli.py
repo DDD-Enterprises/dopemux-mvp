@@ -23,138 +23,9 @@ from ..adhd.context_manager import ContextManager
 console = Console()
 
 
-@click.group(name="tmux")
-def tmux_group():
-    """Tmux automation commands for AI agents."""
-    pass
-
-
-@tmux_group.command("open")
-@click.argument("command")
-@click.option("--session", "-s", help="Session name")
-def tmux_open(command: str, session: Optional[str]):
-    """Launch command in new tmux pane."""
-    integration = get_global_integration()
-    if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
-        return
-
-    try:
-        pane = integration.tmux_launch(command, session)
-        console.print(f"[green]Launched command in pane: {pane.pane_id}[/green]")
-    except Exception as e:
-        console.print(f"[red]Failed to launch command: {e}[/red]")
-
-
-@tmux_group.command("send")
-@click.argument("pane_id")
-@click.argument("text")
-@click.option("--enter/--no-enter", default=True, help="Send Enter after text")
-@click.option("--delay-enter", type=float, default=0.1, help="Delay before Enter")
-def tmux_send(pane_id: str, text: str, enter: bool, delay_enter: float):
-    """Send text input to tmux pane."""
-    integration = get_global_integration()
-    if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
-        return
-
-    try:
-        integration.tmux_send(text, pane_id, enter=enter, delay_enter=delay_enter)
-        console.print(f"[green]Sent text to pane {pane_id}[/green]")
-    except Exception as e:
-        console.print(f"[red]Failed to send text: {e}[/red]")
-
-
-@tmux_group.command("capture")
-@click.argument("pane_id")
-@click.option("--lines", "-n", type=int, default=100, help="Number of lines to capture")
-def tmux_capture(pane_id: str, lines: int):
-    """Capture output from tmux pane."""
-    integration = get_global_integration()
-    if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
-        return
-
-    try:
-        output = integration.tmux_capture(pane_id, lines)
-        console.print(f"[cyan]Captured output from pane {pane_id}:[/cyan]")
-        console.print(output)
-    except Exception as e:
-        console.print(f"[red]Failed to capture output: {e}[/red]")
-
-
-@tmux_group.command("interrupt")
-@click.argument("pane_id")
-def tmux_interrupt(pane_id: str):
-    """Send interrupt signal to tmux pane."""
-    integration = get_global_integration()
-    if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
-        return
-
-    try:
-        integration.tmux_interrupt(pane_id)
-        console.print(f"[green]Interrupted pane {pane_id}[/green]")
-    except Exception as e:
-        console.print(f"[red]Failed to interrupt pane: {e}[/red]")
-
-
-@tmux_group.command("kill")
-@click.argument("pane_id")
-def tmux_kill(pane_id: str):
-    """Kill tmux pane."""
-    integration = get_global_integration()
-    if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
-        return
-
-    try:
-        integration.tmux_kill(pane_id)
-        console.print(f"[green]Killed pane {pane_id}[/green]")
-    except Exception as e:
-        console.print(f"[red]Failed to kill pane: {e}[/red]")
-
-
-@tmux_group.command("list")
-@click.option("--session", "-s", help="Session name filter")
-def tmux_list(session: Optional[str]):
-    """List tmux panes."""
-    integration = get_global_integration()
-    if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
-        return
-
-    try:
-        panes = integration.tmux_list_panes(session)
-        if not panes:
-            console.print("No panes found")
-            return
-
-        console.print("[cyan]Tmux Panes:[/cyan]")
-        for pane in panes:
-            status = "[active]" if pane.active else ""
-            console.print(f"  {pane.pane_id}: {pane.command} {status}")
-    except Exception as e:
-        console.print(f"[red]Failed to list panes: {e}[/red]")
-
-
-@tmux_group.command("status")
-def tmux_status():
-    """Show current tmux status."""
-    integration = get_global_integration()
-    if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
-        return
-
-    try:
-        status = integration.tmux_status()
-        console.print(f"[cyan]Current location: {status['current_location']}[/cyan]")
-        console.print("[cyan]Panes in current window:[/cyan]")
-        for pane in status['panes']:
-            console.print(f"  {pane['id']}: {pane['command']}")
-    except Exception as e:
-        console.print(f"[red]Failed to get status: {e}[/red]")
-
+# Tmux commands removed - use 'dopemux tmux' instead
+# The tmux_group was conflicting with dopemux.tmux.cli and has been removed.
+# All tmux functionality is available via 'dopemux tmux' commands.
 
 # Environment safe commands
 @click.group(name="env")
@@ -734,8 +605,12 @@ def debug_analyze_error(error_text: str):
 
 # Register command groups
 def register_commands(main_group):
-    """Register Claude-Code-Tools commands with main CLI group."""
-    main_group.add_command(tmux_group)
+    """Register Claude-Code-Tools commands with main CLI group.
+    
+    Note: tmux_group is NOT registered to avoid conflicts with dopemux.tmux.
+    Use 'dopemux tmux' for all tmux functionality.
+    """
+    # main_group.add_command(tmux_group)  # REMOVED: Conflicts with dopemux.tmux
     main_group.add_command(env_group)
     main_group.add_command(session_group)
     main_group.add_command(safe_group)
