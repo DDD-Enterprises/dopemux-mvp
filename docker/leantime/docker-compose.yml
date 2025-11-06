@@ -81,7 +81,7 @@ services:
     volumes:
       - leantime_public_userfiles:/var/www/html/public/userfiles
       - leantime_userfiles:/var/www/html/userfiles
-      - leantime_plugins:/var/www/html/app/Plugins
+      - ./plugins:/var/www/html/app/Plugins
       - leantime_logs:/var/www/html/storage/logs
       - leantime_config:/var/www/html/config
     healthcheck:

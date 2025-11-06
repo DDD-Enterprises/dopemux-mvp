@@ -277,6 +277,39 @@ services:
       - "dopemux.component=task-coordination"
       - "dopemux.description=ADHD-optimized task orchestration and agent coordination"
 
+  # ADHD Engine - Real-time ADHD Accommodation Service
+  adhd-engine:
+    build:
+      context: ./services/adhd_engine/services/adhd_engine
+      dockerfile: Dockerfile
+    container_name: dopemux-adhd-engine
+    restart: unless-stopped
+    networks:
+      - mcp-network
+      - dopemux-unified-network
+    ports:
+      - "8095:8095"
+    environment:
+      - API_PORT=8095
+      - HOST=0.0.0.0
+      - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY:-dev-key-123}
+      - REDIS_URL=redis://dopemux-redis-primary:6379
+      - CONPORT_URL=http://conport:3004
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097
+    depends_on:
+      - dopemux-redis-primary
+      - conport
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8095/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+    labels:
+      - "dopemux.service=application"
+      - "dopemux.component=adhd-accommodation"
+      - "dopemux.description=Real-time ADHD task assessment, energy monitoring, and accommodation recommendations"
+
   # Note: Additional MCP servers (Serena, Exa, Desktop Commander, etc.)
   # can be added here following the same pattern. For brevity, only core
   # services are shown. See docker/mcp-servers/docker-compose.yml for
