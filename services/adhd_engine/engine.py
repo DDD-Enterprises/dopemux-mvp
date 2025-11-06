@@ -869,6 +869,21 @@ class ADHDAccommodationEngine:
             )
 
             self.accommodation_stats["breaks_suggested"] += 1
+
+            # Send mobile notification via Happy CLI
+            try:
+                await self._send_mobile_notification(
+                    user_id=user_id,
+                    notification_type="break",
+                    title="Break Time! ⏰",
+                    message=f"Time for a {work_duration:.0f}-minute break! Try: {break_suggestions[0] if break_suggestions else 'Take a short break'}",
+                    duration=5,
+                    activity=break_suggestions[0] if break_suggestions else "Take a short break"
+                )
+                logger.info(f"📱 Mobile break notification sent for {user_id}")
+            except Exception as e:
+                logger.warning(f"Failed to send mobile break notification: {e}")
+
             logger.info(f"☕ Break recommended for {user_id}: {reason}")
 
         except Exception as e:
@@ -1195,7 +1210,23 @@ class ADHDAccommodationEngine:
     async def _log_energy_change(self, user_id: str, previous: EnergyLevel, current: EnergyLevel) -> None:
         """Log energy level change."""
         logger.info(f"⚡ Energy change for {user_id}: {previous.value} → {current.value}")
-        
+
+        # Send mobile notification for significant energy drops
+        if (current == EnergyLevel.LOW or current == EnergyLevel.VERY_LOW) and previous != current:
+            try:
+                suggestions = ["Take a short break", "Hydrate", "Have a snack"] if current == EnergyLevel.LOW else ["Rest", "Consider stopping work", "Get fresh air"]
+                await self._send_mobile_notification(
+                    user_id=user_id,
+                    notification_type="energy",
+                    title="Energy Alert ⚡",
+                    message=f"Your energy level is {current.value.lower()}. Suggestions: {', '.join(suggestions[:2])}",
+                    energy_level=current.value.lower(),
+                    suggestions=suggestions
+                )
+                logger.info(f"📱 Mobile energy alert sent for {user_id}: {current.value}")
+            except Exception as e:
+                logger.warning(f"Failed to send mobile energy notification: {e}")
+
         # Broadcast to WebSocket clients (Dashboard Day 7)
         if self._websocket_enabled:
             await self._broadcast_state_update(user_id, "energy_change")
@@ -1208,6 +1239,44 @@ class ADHDAccommodationEngine:
         if self._websocket_enabled:
             await self._broadcast_state_update(user_id, "attention_change")
     
+    async def _send_mobile_notification(self, user_id: str, notification_type: str, title: str, message: str, **kwargs) -> None:
+        """
+        Send mobile notification via Happy CLI integration.
+
+        In a production environment, this would integrate with:
+        - Apple Push Notification service (APNs) for iOS
+        - Firebase Cloud Messaging (FCM) for Android
+        - Web Push API for web notifications
+        - SMS services like Twilio for fallback
+
+        For now, this logs the notification for development/testing.
+        """
+        notification = {
+            "user_id": user_id,
+            "type": notification_type,
+            "title": title,
+            "message": message,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            **kwargs
+        }
+
+        # Log notification (would be sent to mobile services in production)
+        logger.info(f"📱 Mobile Notification: {title} - {message}")
+
+        # Store notification in Redis for tracking
+        try:
+            await self.redis_client.lpush(
+                f"adhd:notifications:{self.workspace_id}",
+                json.dumps(notification)
+            )
+            # Keep only recent notifications
+            await self.redis_client.ltrim(
+                f"adhd:notifications:{self.workspace_id}",
+                0, 49  # Keep 50 most recent
+            )
+        except Exception as e:
+            logger.warning(f"Failed to store notification in Redis: {e}")
+
     async def _broadcast_state_update(self, user_id: str, change_type: str = "state_update"):
         """
         Broadcast state update to WebSocket clients.
