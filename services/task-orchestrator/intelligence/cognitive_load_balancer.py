@@ -37,7 +37,7 @@ Integration Points:
 
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, Optional, Any, Tuple
+from typing import Dict, Optional, Any, Tuple, List
 from dataclasses import dataclass, field
 import asyncio
 
@@ -554,3 +554,154 @@ async def get_current_cognitive_load(
     )
 
     return await balancer.calculate_load()
+
+
+# Component 6 Expansion: Task Adjustment Engine
+# ============================================================================
+
+class CognitiveTaskAdjuster:
+    """
+    Advanced task adjustment engine that proactively modifies task parameters
+    based on real-time cognitive load to prevent overwhelm and maintain flow.
+
+    Features:
+    - Dynamic task complexity adjustment
+    - Energy-aware task sequencing
+    - Break scheduling optimization
+    - Attention span prediction
+    """
+
+    def __init__(self, workspace_id: str, conport_client: Any):
+        self.workspace_id = workspace_id
+        self.conport_client = conport_client
+        self.load_balancer = CognitiveLoadBalancer(
+            workspace_id=workspace_id,
+            conport_client=conport_client
+        )
+
+    async def adjust_task_for_load(
+        self,
+        task: Dict[str, Any],
+        current_load: CognitiveLoad
+    ) -> Dict[str, Any]:
+        """
+        Adjust task parameters based on current cognitive load.
+
+        Args:
+            task: Task dictionary with complexity_score, estimated_minutes, etc.
+            current_load: Current CognitiveLoad object
+
+        Returns:
+            Adjusted task parameters
+        """
+        adjusted = task.copy()
+
+        # Adjust complexity based on load status
+        if current_load.status == LoadStatus.CRITICAL:
+            # Emergency: Simplify drastically
+            adjusted['complexity_score'] = min(task.get('complexity_score', 0.5), 0.3)
+            adjusted['estimated_minutes'] = min(task.get('estimated_minutes', 30), 15)
+            adjusted['break_frequency_minutes'] = 5
+
+        elif current_load.status == LoadStatus.HIGH:
+            # High load: Moderate simplification
+            adjusted['complexity_score'] = task.get('complexity_score', 0.5) * 0.8
+            adjusted['estimated_minutes'] = task.get('estimated_minutes', 30) * 1.2
+            adjusted['break_frequency_minutes'] = 15
+
+        elif current_load.status == LoadStatus.OPTIMAL:
+            # Optimal: Keep as-is but ensure breaks
+            adjusted['break_frequency_minutes'] = 25
+
+        elif current_load.status == LoadStatus.LOW:
+            # Low load: Can handle slightly more complexity
+            adjusted['complexity_score'] = min(task.get('complexity_score', 0.5) * 1.2, 1.0)
+            adjusted['estimated_minutes'] = task.get('estimated_minutes', 30) * 0.9
+
+        # Add load-aware metadata
+        adjusted['load_adjusted'] = True
+        adjusted['original_complexity'] = task.get('complexity_score', 0.5)
+        adjusted['current_load_score'] = current_load.score
+
+        return adjusted
+
+    async def predict_attention_span(
+        self,
+        task_complexity: float,
+        energy_level: str
+    ) -> int:
+        """
+        Predict optimal attention span for task based on complexity and energy.
+
+        Returns minutes of focused work possible.
+        """
+        base_span = 25  # Default 25-minute pomodoro
+
+        # Adjust based on complexity
+        complexity_factor = 1.0 - (task_complexity * 0.5)  # Higher complexity = shorter spans
+        base_span *= complexity_factor
+
+        # Adjust based on energy
+        energy_factors = {
+            'high': 1.2,
+            'medium': 1.0,
+            'low': 0.7
+        }
+        base_span *= energy_factors.get(energy_level, 1.0)
+
+        return max(5, int(base_span))  # Minimum 5 minutes
+
+    async def schedule_optimal_breaks(
+        self,
+        task_duration: int,
+        attention_spans: List[int]
+    ) -> List[int]:
+        """
+        Schedule breaks to maintain cognitive flow.
+
+        Args:
+            task_duration: Total task duration in minutes
+            attention_spans: List of predicted attention spans
+
+        Returns:
+            List of break start times (minutes from task start)
+        """
+        breaks = []
+        elapsed = 0
+
+        for span in attention_spans:
+            elapsed += span
+            if elapsed < task_duration:
+                breaks.append(elapsed)
+                elapsed += 5  # 5-minute break
+
+        return breaks
+
+    async def optimize_task_sequence(
+        self,
+        tasks: List[Dict[str, Any]],
+        current_load: CognitiveLoad
+    ) -> List[Dict[str, Any]]:
+        """
+        Optimize task sequence for cognitive flow and energy management.
+        """
+        # Sort by energy compatibility first
+        energy_priority = {'low': 1, 'medium': 2, 'high': 3}
+        tasks.sort(key=lambda t: energy_priority.get(t.get('energy_required', 'medium'), 2))
+
+        # Then sort by complexity based on current load
+        if current_load.status in [LoadStatus.LOW, LoadStatus.OPTIMAL]:
+            # Start with easier tasks to build momentum
+            tasks.sort(key=lambda t: t.get('complexity_score', 0.5))
+        else:
+            # Start with medium complexity to avoid overwhelm
+            tasks.sort(key=lambda t: abs(t.get('complexity_score', 0.5) - 0.6))
+
+        return tasks
+
+# Integration helper
+async def get_task_adjuster(workspace_id: str, conport_client: Any) -> CognitiveTaskAdjuster:
+    """
+    Get a CognitiveTaskAdjuster instance for task optimization.
+    """
+    return CognitiveTaskAdjuster(workspace_id, conport_client)
