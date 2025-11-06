@@ -14,6 +14,9 @@ aiohttp==3.9.1
 # Environment variable management
 python-dotenv==1.0.0
 
+# Redis client
+redis[hiredis]==5.0.1
+
 # Logging and utilities
 structlog==23.2.0
 
