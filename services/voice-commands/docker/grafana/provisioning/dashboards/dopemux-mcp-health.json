@@ -1,0 +1,189 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Dopemux MCP Health & ADHD Metrics",
+    "tags": ["dopemux", "mcp", "health", "adhd"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "MCP Service Health Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=\"mcp-services\"}",
+            "legendFormat": "{{service}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "text": "DOWN",
+                    "color": "red"
+                  },
+                  "1": {
+                    "text": "UP",
+                    "color": "green"
+                  }
+                },
+                "type": "value"
+              }
+            ]
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 0
+        }
+      },
+      {
+        "id": 2,
+        "title": "ADHD Engine Metrics",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "adhd_engine_energy_level",
+            "legendFormat": "Energy Level"
+          },
+          {
+            "expr": "adhd_engine_attention_state",
+            "legendFormat": "Attention State"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 0
+        }
+      },
+      {
+        "id": 3,
+        "title": "MCP Response Times",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(mcp_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(mcp_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "Median"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 8
+        }
+      },
+      {
+        "id": 4,
+        "title": "ConPort Knowledge Graph Stats",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "conport_decisions_total",
+            "legendFormat": "Decisions"
+          },
+          {
+            "expr": "conport_progress_entries_total",
+            "legendFormat": "Progress Entries"
+          },
+          {
+            "expr": "conport_system_patterns_total",
+            "legendFormat": "System Patterns"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 16
+        }
+      },
+      {
+        "id": 5,
+        "title": "Voice Command Usage",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(voice_commands_total[5m])",
+            "legendFormat": "Voice Commands/min"
+          },
+          {
+            "expr": "voice_decompositions_total",
+            "legendFormat": "Task Decompositions"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 16
+        }
+      },
+      {
+        "id": 6,
+        "title": "Mobile Notification Stats",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(mobile_notifications_sent_total[5m])",
+            "legendFormat": "Notifications/min"
+          }
+        ],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 24
+        }
+      },
+      {
+        "id": 7,
+        "title": "Sprint Progress",
+        "type": "bargauge",
+        "targets": [
+          {
+            "expr": "sprint_completion_percentage",
+            "legendFormat": "Completion %"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100
+          }
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 24
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "templating": {
+      "list": []
+    },
+    "annotations": {
+      "list": []
+    },
+    "refresh": "30s",
+    "schemaVersion": 27,
+    "version": 0,
+    "links": []
+  }
+}
