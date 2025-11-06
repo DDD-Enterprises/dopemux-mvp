@@ -63,17 +63,19 @@ services:
     networks:
       - mcp-network
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=""  # Disabled - no direct OpenAI calls
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
       - DISABLED_TOOLS=analyze,refactor,testgen,secaudit,docgen,tracer
       - DEFAULT_MODEL=auto
+      - ZEN_DEFAULT_PROVIDER=openrouter  # Prefer OpenRouter for routing
       - MCP_SERVER_PORT=3003
     ports:
       - "3003:3003"
     working_dir: /app
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3014/sse --head || nc -z localhost 3014 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3003/health || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -245,18 +247,20 @@ services:
       - JVM_HEAP_SIZE=512m
     ports:
       - "3014:3014"
-    # MCP server now runs persistently over SSE transport
+    # MCP server runs as persistent stdio server
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3014/sse --head || nc -z localhost 3014 || exit 1"]
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
       timeout: 10s
       retries: 3
       interval: 30s
-      start_period: 45s
+      start_period: 10s
     volumes:
       - mcp_task_orchestrator_data:/app/data
       - mcp_task_orchestrator_logs:/app/logs
-    # Keep container alive for mcp-proxy to exec stdio server on demand
+    # Run as persistent MCP stdio server
     command: ["python", "/app/server.py"]
+    stdin_open: true
+    tty: true
     labels:
       - "mcp.role=workflow"
       - "mcp.priority=high"
