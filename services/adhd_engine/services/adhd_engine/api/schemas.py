@@ -48,9 +48,9 @@ class TaskAssessmentResponse(BaseModel):
 class EnergyLevelResponse(BaseModel):
     """Response model for energy level queries."""
     user_id: str = Field(..., description="User identifier")
-    energy_level: float = Field(..., ge=0, le=1, description="Current energy level")
-    timestamp: datetime = Field(..., description="Timestamp of measurement")
-    trend: str = Field(..., description="Energy trend (increasing, decreasing, stable)")
+    energy_level: float = Field(..., ge=0, le=1, description="Current energy level (0.0-1.0)")
+    timestamp: datetime = Field(..., description="Last updated timestamp")
+    trend: str = Field(..., description="Energy trend (rising/steady/declining)")
 
 
 # Attention State Schemas
