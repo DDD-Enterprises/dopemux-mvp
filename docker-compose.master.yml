@@ -310,6 +310,40 @@ services:
       - "dopemux.component=adhd-accommodation"
       - "dopemux.description=Real-time ADHD task assessment, energy monitoring, and accommodation recommendations"
 
+  # Plane Coordinator - Two-Plane Architecture Coordination
+  plane-coordinator:
+    build:
+      context: ./services/task-orchestrator
+      dockerfile: Dockerfile.coordination
+    container_name: dopemux-plane-coordinator
+    restart: unless-stopped
+    networks:
+      - mcp-network
+      - dopemux-unified-network
+    ports:
+      - "8090:8090"
+    environment:
+      - COORDINATION_API_PORT=8090
+      - WORKSPACE_ID=/workspace
+      - REDIS_URL=redis://dopemux-redis-events:6379
+      - CONPORT_URL=http://conport:3004
+      - ADHD_ENGINE_URL=http://dopemux-adhd-engine:8095
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097
+    depends_on:
+      - dopemux-redis-events
+      - conport
+      - dopemux-adhd-engine
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8090/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+    labels:
+      - "dopemux.service=application"
+      - "dopemux.component=plane-coordination"
+      - "dopemux.description=Two-plane architecture coordination between PM and Cognitive planes"
+
   # Note: Additional MCP servers (Serena, Exa, Desktop Commander, etc.)
   # can be added here following the same pattern. For brevity, only core
   # services are shown. See docker/mcp-servers/docker-compose.yml for

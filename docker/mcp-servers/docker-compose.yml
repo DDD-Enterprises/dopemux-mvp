@@ -71,15 +71,7 @@ services:
       - DEFAULT_MODEL=auto
       - ZEN_DEFAULT_PROVIDER=openrouter  # Prefer OpenRouter for routing
       - MCP_SERVER_PORT=3003
-    ports:
-      - "3003:3003"
     working_dir: /app
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3003/health || exit 1"]
-      timeout: 10s
-      retries: 3
-      interval: 30s
-      start_period: 45s
     labels:
       - "mcp.role=critical_path"
       - "mcp.priority=highest"
@@ -303,6 +295,44 @@ services:
       - "mcp.transport=http-sse"
       - "mcp.description=Leantime project management integration bridge (HTTP/SSE)"
 
+  # Plane Coordinator - Two-plane architecture coordination service
+  plane-coordinator:
+    build:
+      context: ../../services/task-orchestrator
+      dockerfile: Dockerfile.coordination
+    container_name: mcp-plane-coordinator
+    restart: unless-stopped
+    networks:
+      - mcp-network
+      - dopemux-unified-network
+    environment:
+      - COORDINATION_API_PORT=8090
+      - WORKSPACE_ID=/workspace
+      - REDIS_URL=redis://dopemux-redis-events:6379
+      - CONPORT_URL=http://conport:3004
+      - ADHD_ENGINE_URL=http://dopemux-adhd-engine:8095
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097
+    ports:
+      - "8090:8090"
+    depends_on:
+      - dopemux-redis-events
+      - conport
+      - dopemux-adhd-engine
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8090/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 30s
+    volumes:
+      - mcp_plane_coordinator_data:/app/data
+      - mcp_plane_coordinator_logs:/app/logs
+    labels:
+      - "mcp.role=workflow"
+      - "mcp.priority=high"
+      - "mcp.transport=http"
+      - "mcp.description=Two-plane architecture coordination between PM and Cognitive planes"
+
   # Serena - Code navigation, refactoring, LSP functionality
   serena:
     build:
@@ -409,8 +439,17 @@ services:
       - mcp-network
     environment:
       - MCP_SERVER_PORT=3010
+      - QDRANT_URL=mcp-qdrant
+      - QDRANT_PORT=6333
+      - VOYAGEAI_API_KEY=${VOYAGEAI_API_KEY}
+      - VOYAGE_API_KEY=${VOYAGEAI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID}
+      - DOPEMUX_WORKSPACE_ROOT=/workspaces/dopemux-mvp
     ports:
       - "3010:3010"
+    depends_on:
+      - qdrant
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3010/health || exit 1"]
       timeout: 10s
@@ -536,31 +575,6 @@ services:
       - "mcp.priority=medium"
       - "mcp.description=Desktop automation and system control"
 
-  # ClearThought - Structured reasoning and decision frameworks
-  clear-thought:
-    image: node:18-alpine
-    container_name: mcp-clear-thought
-    restart: unless-stopped
-    networks:
-      - mcp-network
-    environment:
-      - CLEAR_THOUGHT_TELEMETRY=off
-      - MCP_SERVER_PORT=3013
-    ports:
-      - "3013:3013"
-    working_dir: /app
-    command: ["npx", "-y", "@waldzellai/clear-thought-onepointfive"]
-    healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 3013 || exit 1"]
-      timeout: 10s
-      retries: 3
-      interval: 30s
-      start_period: 60s
-    labels:
-      - "mcp.role=reasoning"
-      - "mcp.priority=high"
-      - "mcp.description=Structured reasoning and decision frameworks"
-
   # Activity Capture - Automatic development activity tracking for ADHD Engine
   # NOTE: ADHD Engine (port 8095) runs as background process via start-all.sh
   #       (Docker version has dependency issues - TODO: Fix in future)
@@ -685,6 +699,12 @@ volumes:
   mcp_leantime_bridge_data:
     driver: local
     name: mcp_leantime_bridge_data
+  mcp_plane_coordinator_data:
+    driver: local
+    name: mcp_plane_coordinator_data
+  mcp_plane_coordinator_logs:
+    driver: local
+    name: mcp_plane_coordinator_logs
   mcp_leantime_bridge_logs:
     driver: local
     name: mcp_leantime_bridge_logs
@@ -721,4 +741,3 @@ volumes:
   dope_context_logs:
     driver: local
     name: dope_context_logs
-      - "mcp.transport=sse"
