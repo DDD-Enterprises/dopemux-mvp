@@ -18,6 +18,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
 
+# Prometheus metrics
+from .metrics import (
+    REQUEST_COUNT, REQUEST_LATENCY, ENERGY_LEVEL, ATTENTION_STATE,
+    COGNITIVE_LOAD, BREAK_RECOMMENDATIONS, ACCOMMODATION_STATS,
+    ACTIVE_USERS, MONITORING_CYCLES, record_request, update_energy_level,
+    update_attention_state, update_cognitive_load, record_break_recommendation,
+    record_accommodation_action, update_active_users, record_monitoring_cycle,
+    get_metrics
+)
+
 from engine import ADHDAccommodationEngine
 from api import routes
 from config import settings
@@ -176,6 +186,14 @@ def create_application() -> FastAPI:
 # Create application instance
 app = create_application()
 
+
+# Metrics endpoint for Prometheus
+@app.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint for ADHD Engine"""
+    from .metrics import get_metrics
+    from fastapi.responses import Response
+    return Response(get_metrics(), media_type="text/plain")
 
 if __name__ == "__main__":
     import uvicorn
