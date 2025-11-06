@@ -431,13 +431,13 @@ class ADHDAccommodationEngine:
     async def _get_user_state(self, user_id: str) -> Dict[str, Any]:
         """Get current user state from cache/Redis."""
         # Check cache first
-        cached_state = self.cache.get(f"adhd_user_state:{user_id}")
+        cached_state = await self.cache.get(f"adhd_user_state:{user_id}")
         if cached_state:
             return cached_state
 
         # Fallback to default state
         state = {
-            "energy_level": "medium",
+            "energy_level": 0.6,  # medium energy level
             "attention_state": "focused",
             "last_activity": datetime.now(timezone.utc).isoformat(),
             "session_duration": 0,
@@ -445,7 +445,7 @@ class ADHDAccommodationEngine:
         }
 
         # Store in cache
-        self.cache.set(f"adhd_user_state:{user_id}", state, ttl=300)  # 5 minutes
+        await self.cache.set(f"adhd_user_state:{user_id}", state, ttl=300)  # 5 minutes
 
         return state
 
