@@ -1,0 +1,36 @@
+{
+    "name": "dopemux/leantime-adhd-plugin",
+    "description": "ADHD-optimized project management features for Dopemux integration with Leantime",
+    "version": "1.0.0",
+    "type": "leantime-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dopemux Team",
+            "email": "support@dopemux.com"
+        }
+    ],
+    "keywords": [
+        "leantime",
+        "plugin",
+        "adhd",
+        "dopemux",
+        "project-management",
+        "accessibility"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Leantime\\Plugins\\Dopemux\\": "/"
+        }
+    },
+    "require": {
+        "php": ">=7.4"
+    },
+    "extra": {
+        "leantime": {
+            "plugin-name": "Dopemux ADHD Features",
+            "min-version": "3.0.0",
+            "max-version": "4.0.0"
+        }
+    }
+}
