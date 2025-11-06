@@ -1,36 +1,22 @@
 {
   "mcpServers": {
     "zen": {
-      "type": "stdio",
-      "command": "docker",
-      "args": [
-        "exec",
-        "-i",
-        "mcp-zen",
-        "bash",
-        "-c",
-        "source /app/.venv/bin/activate && python3 server.py"
-      ],
+      "type": "sse",
+      "url": "http://localhost:3003/sse",
       "env": {
-        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "OPENAI_API_KEY": "",  // Disabled - no direct OpenAI calls
         "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY:-}",
         "GEMINI_API_KEY": "${GEMINI_API_KEY:-REDACTED_SECRET}",
         "GOOGLE_API_KEY": "${GOOGLE_API_KEY:-REDACTED_SECRET}",
         "XAI_API_KEY": "${XAI_API_KEY:-REDACTED_SECRET}",
         "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
-        "DEFAULT_MODEL": "auto"
+        "DEFAULT_MODEL": "auto",
+        "ZEN_DEFAULT_PROVIDER": "openrouter"  // Prefer OpenRouter for routing
       }
     },
     "conport": {
-      "type": "stdio",
-      "command": "docker",
-      "args": [
-        "exec",
-        "-i",
-        "mcp-conport",
-        "python3",
-        "/app/enhanced_server.py"
-      ],
+      "type": "sse",
+      "url": "http://localhost:3004/sse",
       "env": {
         "WORKSPACE_ID": "/Users/hue/code/dopemux-mvp",
         "GEMINI_API_KEY": "${GEMINI_API_KEY}",
@@ -46,31 +32,35 @@
       }
     },
     "gpt-researcher": {
-      "type": "stdio",
-      "command": "python3",
-      "args": [
-        "/Users/hue/code/dopemux-mvp/scripts/gpt-researcher/mcp_server.py"
-      ],
+      "type": "sse",
+      "url": "http://localhost:3009/sse",
       "env": {
         "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-        "TAVILY_API_KEY": "${TAVILY_API_KEY}"
-      }
+        "TAVILY_API_KEY": "${TAVILY_API_KEY}",
+        "EXA_API_KEY": "${EXA_API_KEY}",
+        "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"
+      },
+      "description": "Deep research with comprehensive analysis via container"
     },
     "exa": {
       "type": "stdio",
-      "command": "/Users/hue/code/dopemux-mvp/docker/mcp-servers/exa/start_with_uvx.sh",
-      "args": [],
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-exa",
+        "python",
+        "/app/mcp_server.py"
+      ],
       "env": {
         "EXA_API_KEY": "${EXA_API_KEY}"
       },
-      "description": "Neural web search with native uvx support (no Docker)"
+      "description": "Neural web search via Docker container"
     },
     "dope-context": {
-      "type": "stdio",
-      "command": "bash",
-      "args": [
-        "/Users/hue/code/dopemux-mvp/services/dope-context/run_mcp.sh"
-      ],
+      "type": "sse",
+      "url": "http://localhost:3010/mcp",
       "env": {
         "VOYAGE_API_KEY": "${VOYAGEAI_API_KEY}",
         "OPENAI_API_KEY": "${OPENAI_API_KEY}",
@@ -87,29 +77,29 @@
     },
     "desktop-commander": {
       "type": "stdio",
-      "command": "python3",
-      "args": ["/Users/hue/code/dopemux-mvp/docker/mcp-servers/desktop-commander/stdio_bridge.py"],
-      "env": {},
-      "description": "Desktop automation with native macOS support"
-    },
-    "task-orchestrator": {
-      "type": "stdio",
       "command": "docker",
       "args": [
         "exec",
         "-i",
-        "mcp-task-orchestrator",
+        "mcp-desktop-commander",
         "python",
-        "/app/server.py"
+        "/app/mcp_server.py"
       ],
       "env": {
-        "WORKSPACE_ID": "/Users/hue/code/dopemux-mvp",
-        "DATABASE_PATH": "/app/data/tasks.db",
-        "MCP_TRANSPORT": "stdio",
-        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"
+        "DISPLAY": "${DISPLAY:-:0}"
+      },
+      "description": "Desktop automation via Docker container"
+    },
+    "task-orchestrator": {
+      "type": "stdio",
+      "command": "python3",
+      "args": [
+        "/Users/hue/code/dopemux-mvp/services/task-orchestrator/server.py"
+      ],
+      "env": {
+        "WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
       },
       "description": "Advanced task orchestration and dependency management with 37 tools"
-    }
+    },
   }
 }
