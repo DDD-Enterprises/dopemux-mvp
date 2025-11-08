@@ -145,4 +145,5 @@ litellm_settings:
   - openrouter-openai-gpt-5-codex
 general_settings:
   master_key: sk-master-dopemux-local-20251101
-  database_url: postgresql://dopemux_age:dopemux_age_dev_password@localhost:5456/litellm
+  # Use the in-network service name so LiteLLM can reach Postgres from inside Docker
+  database_url: postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm

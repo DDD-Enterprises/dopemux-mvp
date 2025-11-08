@@ -54,6 +54,7 @@ class ClaudeCodeRouterManager:
         self.base_dir = self.project_root / ".dopemux" / "claude-code-router"
         self.instance_home = self.base_dir / instance_id
         self.router_home = self.instance_home / ".claude-code-router"
+        self.claude_home = self.instance_home / ".claude"
 
         self.config_path = self.router_home / "config.json"
         self.api_key_path = self.router_home / "api.key"
@@ -219,6 +220,12 @@ class ClaudeCodeRouterManager:
         self.instance_home.mkdir(parents=True, exist_ok=True)
         self.router_home.mkdir(parents=True, exist_ok=True)
         (self.router_home / "logs").mkdir(parents=True, exist_ok=True)
+
+        # Claude Code Router expects the legacy Claude desktop layout under $HOME/.claude
+        # Ensure the directories exist so CCR doesn't crash while scanning for projects.
+        self.claude_home.mkdir(parents=True, exist_ok=True)
+        (self.claude_home / "projects").mkdir(parents=True, exist_ok=True)
+        (self.claude_home / "sessions").mkdir(parents=True, exist_ok=True)
 
     def _load_config(self) -> Dict[str, object]:
         if not self.config_path.exists():
