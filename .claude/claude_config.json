@@ -66,14 +66,18 @@
       "type": "stdio"
     },
     "gpt-researcher": {
-      "command": "uvx",
+      "command": "python",
       "args": [
-        "mcp-proxy",
-        "--transport",
-        "sse",
-        "http://127.0.0.1:3009/sse"
+        "services/dopemux-gpt-researcher/mcp-server/server.py"
       ],
-      "env": {},
+      "env": {
+        "WORKSPACE_PATH": "/Users/hue/code/dopemux-mvp",
+        "EXA_API_KEY": "${EXA_API_KEY}",
+        "TAVILY_API_KEY": "${TAVILY_API_KEY}",
+        "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}",
+        "PYTHONPATH": "/Users/hue/code/dopemux-mvp/services/dopemux-gpt-researcher/research_api"
+      },
       "type": "stdio"
     },
     "exa": {
