@@ -20,11 +20,18 @@ class AgentConfig(BaseSettings):
     max_generations: int = Field(default=5, description="Maximum generations")
     crossover_rate: float = Field(default=0.8, description="Crossover probability")
     mutation_rate: float = Field(default=0.2, description="Mutation probability")
+    max_tree_depth: int = Field(default=5, description="Maximum tree depth for GP operators")
 
     # MCP service URLs
     conport_url: str = Field(default="http://localhost:3000", description="ConPort service URL")
     serena_url: str = Field(default="http://localhost:3001", description="Serena service URL")
     dope_context_url: str = Field(default="http://localhost:3002", description="Dope-Context service URL")
+    zen_url: str = Field(default="http://localhost:3003", description="Zen MCP service URL")
+    workspace_id: str = Field(default="/app/workspace", description="Workspace ID for MCP services")
+
+    # EventBus and user context
+    redis_url: str = Field(default="redis://localhost:6379", description="Redis URL for EventBus")
+    user_id: str = Field(default="default_user", description="User ID for event filtering")
 
     class Config:
         env_prefix = "GENETIC_AGENT_"

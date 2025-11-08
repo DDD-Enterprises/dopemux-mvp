@@ -4,9 +4,9 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from core.config import AgentConfig
-from vanilla.vanilla_agent import VanillaAgent
-from genetic.genetic_agent import GeneticAgent
+from .core.config import AgentConfig
+from .vanilla.vanilla_agent import VanillaAgent
+from .genetic.genetic_agent import GeneticAgent
 
 # Create FastAPI app
 app = FastAPI(
@@ -42,7 +42,7 @@ async def startup_event():
 @app.get("/")
 async def root():
     """Root endpoint."""
-    return {"message": "Genetic Coding Agent API", "version": "0.1.0"}
+    return {"message": "Genetic Coding Agent API", "version": "0.2.0"}
 
 
 @app.get("/health")
