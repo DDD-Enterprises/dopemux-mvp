@@ -14,7 +14,7 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional, Set, Tuple
-from ..models.research_task import ResearchType, ADHDConfiguration
+from models.research_task import ResearchType, ADHDConfiguration
 
 class QueryIntent(str, Enum):
     """Primary intent behind the research query"""

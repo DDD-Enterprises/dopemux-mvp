@@ -20,7 +20,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
-from ..models.research_task import (
+from models.research_task import (
     ADHDConfiguration,
     ProjectContext,
     ResearchQuestion,
@@ -29,22 +29,22 @@ from ..models.research_task import (
     ResearchType,
     TaskStatus
 )
-from ..engines.query_classifier import (
+from engines.query_classifier import (
     QueryClassificationEngine,
     QueryIntent,
     ResearchScope,
     OutputFormat,
     SearchEngineStrategy
 )
-from ..engines.search.search_orchestrator import SearchOrchestrator, SearchStrategy
-from ..engines.search.exa_adapter import ExaSearchAdapter
-from ..engines.search.tavily_adapter import TavilySearchAdapter
-from ..engines.search.perplexity_adapter import PerplexitySearchAdapter
-from ..engines.search.context7_adapter import Context7SearchAdapter
+from engines.search.search_orchestrator import SearchOrchestrator, SearchStrategy
+from engines.search.exa_adapter import ExaSearchAdapter
+from engines.search.tavily_adapter import TavilySearchAdapter
+from engines.search.perplexity_adapter import PerplexitySearchAdapter
+from engines.search.context7_adapter import Context7SearchAdapter
 
 # Discrete integrations for ADHD-friendly research enhancement
 try:
-    from ..adapters.context7_helper import discrete_enhance_research, analyze_for_documentation_hints
+    from adapters.context7_helper import discrete_enhance_research, analyze_for_documentation_hints
 except ImportError:
     # Ultra-discrete fallback
     async def discrete_enhance_research(query, results): return results
@@ -712,7 +712,7 @@ class ResearchTaskOrchestrator:
             # Step 7: Discrete Context7 documentation enhancement
             enhanced_sources = sources
             try:
-                from ..adapters.context7_helper import discrete_enhance_research
+                from adapters.context7_helper import discrete_enhance_research
                 enhanced_sources = await discrete_enhance_research(question.question, sources)
                 if enhanced_sources != sources:
                     logger.debug(f"Context7 discretely enhanced results for '{question.question}'")
