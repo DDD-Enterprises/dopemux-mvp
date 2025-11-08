@@ -46,10 +46,42 @@ class ADHDInsights(BaseModel):
 
 class MLPrediction(BaseModel):
     """Machine learning prediction with confidence (IP-005 Days 11-12)."""
-    predicted_value: str
+    predicted_value: Any
     confidence: float = Field(..., ge=0.0, le=1.0)
     explanation: str
     ml_used: bool = Field(default=True, description="True if ML used, False if rule-based fallback")
+    override_available: bool = Field(default=True, description="Whether user can override this prediction")
+    override_reason: Optional[str] = Field(default=None, description="Why override is recommended/not available")
+
+
+class PredictionOverrideRequest(BaseModel):
+    """Request to override an ML prediction."""
+    prediction_type: str  # "energy", "attention", "break"
+    original_prediction: Any
+    override_value: Any
+    reason: Optional[str] = None
+    feedback_rating: Optional[int] = Field(default=None, ge=1, le=5)  # 1-5 star rating
+
+
+class OverrideResponse(BaseModel):
+    """Response to prediction override."""
+    override_id: str
+    prediction_type: str
+    original_prediction: Any
+    override_value: Any
+    applied: bool
+    feedback_recorded: bool
+    message: str
+
+
+class CustomizationSettings(BaseModel):
+    """User customization settings for ADHD Engine."""
+    confidence_threshold: float = Field(default=0.7, ge=0.5, le=0.95, description="Minimum confidence for ML predictions")
+    automation_level: str = Field(default="balanced", description="Automation level: minimal, balanced, proactive")
+    notifications_enabled: bool = Field(default=True, description="Enable break and energy notifications")
+    accessibility_mode: bool = Field(default=False, description="Enhanced accessibility features")
+    keyboard_shortcuts: bool = Field(default=True, description="Enable keyboard shortcuts")
+    high_contrast: bool = Field(default=False, description="High contrast mode")
 
 
 class TaskAssessmentResponse(BaseModel):
