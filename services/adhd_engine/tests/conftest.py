@@ -2,14 +2,17 @@
 Pytest configuration and fixtures for ADHD Engine tests.
 """
 
-import pytest
 import asyncio
-from unittest.mock import AsyncMock, MagicMock
 from datetime import datetime, timezone
+from unittest.mock import AsyncMock, MagicMock
 
-from adhd_engine.models import ADHDProfile, EnergyLevel, AttentionState
-from adhd_engine.engine import ADHDAccommodationEngine
-from adhd_engine.activity_tracker import ActivityTracker
+import pytest
+import pytest_asyncio
+
+from ..activity_tracker import ActivityTracker
+from ..engine import ADHDAccommodationEngine
+from ..inmemory_redis import InMemoryRedis
+from ..models import ADHDProfile, EnergyLevel, AttentionState
 
 
 @pytest.fixture(scope="session")
@@ -34,6 +37,15 @@ def mock_redis():
     redis_mock.keys = AsyncMock(return_value=[])
     redis_mock.close = AsyncMock(return_value=None)
     return redis_mock
+
+
+@pytest_asyncio.fixture
+async def redis_client():
+    """In-memory Redis substitute for tests."""
+    client = InMemoryRedis()
+    await client.flushdb()
+    yield client
+    await client.flushdb()
 
 
 @pytest.fixture

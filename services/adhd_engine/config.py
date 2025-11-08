@@ -32,6 +32,7 @@ class Settings:
     
     # ConPort integration
     conport_url: str = os.getenv("CONPORT_URL", "http://localhost:3010")
+    workspace_id: str = os.getenv("ADHD_WORKSPACE_ID", os.getcwd())
     
     # Monitor settings
     monitor_check_interval: int = int(os.getenv("MONITOR_CHECK_INTERVAL", "60"))
@@ -39,9 +40,15 @@ class Settings:
     attention_reset_threshold: int = int(os.getenv("ATTENTION_RESET_THRESHOLD", "300"))
     
     # ML settings
-    enable_ml_predictions: bool = os.getenv("ENABLE_ML_PREDICTIONS", "false").lower() == "true"
+    enable_ml_predictions: bool = os.getenv("ENABLE_ML_PREDICTIONS", "true").lower() == "true"
     ml_model_path: str = os.getenv("ML_MODEL_PATH", "/app/models")
+
+    # Background prediction service (Phase 3.4)
+    enable_background_predictions: bool = os.getenv("ENABLE_BACKGROUND_PREDICTIONS", "true").lower() == "true"
 
 
 # Global settings instance
 settings = Settings()
+
+# Backwards-compatible aliases used throughout the legacy code/tests
+ALLOWED_ORIGINS = settings.allowed_origins

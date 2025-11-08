@@ -26,6 +26,9 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
 import redis.asyncio as redis
+from redis.exceptions import RedisError
+
+from .inmemory_redis import InMemoryRedis
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +59,13 @@ class ADHDConfigService:
 
     async def initialize(self) -> None:
         """Initialize Redis connection to ADHD Engine."""
-        self.redis_client = redis.from_url(self.redis_url, decode_responses=True)
-        await self.redis_client.ping()
-        logger.info("✅ ADHDConfigService connected to ADHD Engine")
+        try:
+            self.redis_client = redis.from_url(self.redis_url, decode_responses=True)
+            await self.redis_client.ping()
+            logger.info("✅ ADHDConfigService connected to ADHD Engine")
+        except (RedisError, OSError, PermissionError) as exc:
+            logger.warning("⚠️ Redis unavailable (%s); falling back to in-memory store", exc)
+            self.redis_client = InMemoryRedis()
 
     # ============================================================================
     # Public API - Dynamic ADHD Accommodations
@@ -279,7 +286,7 @@ class ADHDConfigService:
         state = await self.redis_client.get(redis_key)
 
         if not state:
-            state = "focused"  # Safe default if ADHD Engine hasn't assessed yet
+            state = "transitioning"  # Safe default if ADHD Engine hasn't assessed yet
 
         # Cache result
         self._put_in_cache(cache_key, state)
