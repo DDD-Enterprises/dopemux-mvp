@@ -706,14 +706,30 @@ def start(
 
         import httpx
 
+        # Check if port 4000 is available, otherwise use an alternative
+        def is_port_available(port: int) -> bool:
+            """Check if a port is available for binding."""
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                try:
+                    s.bind(('127.0.0.1', port))
+                    return True
+                except OSError:
+                    return False
+
+        litellm_port = 4000
+        if not is_port_available(litellm_port):
+            # Port 4000 is taken, try 4001
+            litellm_port = 4001
+            console.print(f"[yellow]⚠️  Port 4000 is in use, using port {litellm_port} instead[/yellow]")
+
         litellm_master_key = ""
         regenerated_master_key = False
         litellm_running = False
 
-        # Check if LiteLLM is already running
+        # Check if LiteLLM is already running on the determined port
         try:
             resp = httpx.get(
-                "http://localhost:4000/health/readiness",
+                f"http://localhost:{litellm_port}/health/readiness",
                 timeout=2,
             )
             if resp.status_code == 200:
@@ -793,7 +809,7 @@ def start(
             pass
 
         if litellm_running:
-            console.print("[green]✓ LiteLLM proxy already running on port 4000[/green]")
+            console.print(f"[green]✓ LiteLLM proxy already running on port {litellm_port}[/green]")
         else:
             import subprocess
 
@@ -805,14 +821,14 @@ def start(
             )
             if kill_result.returncode not in (0, 1):
                 console.print("[red]❌ Unable to manage existing LiteLLM processes automatically (permission denied).")
-                console.print("[yellow]   Stop the existing LiteLLM proxy on port 4000 manually and rerun the command.")
+                console.print(f"[yellow]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
                 raise click.ClickException("LiteLLM proxy still running.")
 
             time.sleep(1)
             litellm_log.parent.mkdir(parents=True, exist_ok=True)
             with open(litellm_log, "w", encoding="utf-8") as log_file:
                 subprocess.Popen(
-                    ["litellm", "--config", str(config_path), "--port", "4000", "--host", "0.0.0.0"],
+                    ["litellm", "--config", str(config_path), "--port", str(litellm_port), "--host", "0.0.0.0"],
                     stdout=log_file,
                     stderr=subprocess.STDOUT,
                     start_new_session=True,
@@ -823,7 +839,7 @@ def start(
             for _ in range(20):
                 try:
                     resp = httpx.get(
-                        "http://localhost:4000/health/readiness",
+                        f"http://localhost:{litellm_port}/health/readiness",
                         timeout=2,
                     )
                     if resp.status_code == 200:
@@ -844,11 +860,11 @@ def start(
                 console.print(f"[yellow]   Check logs: tail -f {litellm_log}")
                 raise click.ClickException("LiteLLM proxy failed to start.")
 
-            console.print("[green]✅ LiteLLM proxy ready on port 4000[/green]")
+            console.print(f"[green]✅ LiteLLM proxy ready on port {litellm_port}[/green]")
 
         os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
         os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
-        os.environ["ANTHROPIC_BASE_URL"] = "http://localhost:4000"
+        os.environ["ANTHROPIC_BASE_URL"] = f"http://localhost:{litellm_port}"
         os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
         os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
         os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
