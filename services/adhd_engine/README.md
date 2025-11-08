@@ -75,17 +75,19 @@ The ADHD Engine provides intelligent, real-time assistance for neurodivergent de
 ```
 
 #### `GET /api/v1/energy-level`
-**Purpose**: Get current energy assessment
+**Purpose**: Get current energy assessment with ML predictions
 **Response**:
 ```json
 {
-  "current_level": 0.65,
-  "trend": "increasing",
-  "peak_predicted": "11:30",
-  "recommendations": [
-    "High-energy task suitable",
-    "Complex problem solving optimal"
-  ]
+  "energy_level": "HIGH",
+  "confidence": 0.8,
+  "last_updated": "2025-11-07T20:30:00Z",
+  "ml_prediction": {
+    "predicted_value": "HIGH",
+    "confidence": 0.82,
+    "explanation": "Based on time patterns, you typically have HIGH energy at 2pm",
+    "ml_used": true
+  }
 }
 ```
 
@@ -127,6 +129,36 @@ The ADHD Engine provides intelligent, real-time assistance for neurodivergent de
   "expected_benefit": "15% productivity increase"
 }
 ```
+
+## 🔬 Phase 3: Proactive Intelligence
+
+### ML Prediction Integration
+All core APIs now include optional `ml_prediction` fields with machine learning insights:
+
+```json
+{
+  "energy_level": "HIGH",
+  "confidence": 0.8,
+  "ml_prediction": {
+    "predicted_value": "HIGH",
+    "confidence": 0.82,
+    "explanation": "Based on time patterns, you typically have HIGH energy at 2pm",
+    "ml_used": true
+  }
+}
+```
+
+### Redis Caching Layer
+- **<100ms Latency**: Endpoint-specific TTLs (energy: 5min, attention: 3min, breaks: 1min)
+- **Performance Monitoring**: Prometheus metrics with cache hit rates and response times
+- **Background Service**: Continuous ML prediction updates with <5% overhead
+
+### Background Prediction Service
+**Features**:
+- Continuous user monitoring every 5 minutes
+- Proactive ML prediction updates stored in Redis
+- Performance overhead monitoring and auto-adjustment
+- Status endpoint: `/background-service/status`
 
 ## 🧠 Specialized Services
 
