@@ -11,24 +11,7 @@ import json
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import redis.asyncio as redis
-
 from adhd_config_service import ADHDConfigService, get_adhd_config_service, reset_adhd_config_service
-
-
-@pytest_asyncio.fixture
-async def redis_client():
-    """Create test Redis client."""
-    client = redis.from_url("redis://localhost:6379/5", decode_responses=True)
-
-    # Clear test data
-    await client.flushdb()
-
-    yield client
-
-    # Cleanup
-    await client.flushdb()
-    await client.close()
 
 
 @pytest_asyncio.fixture

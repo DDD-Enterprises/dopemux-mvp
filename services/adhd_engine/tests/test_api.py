@@ -2,8 +2,9 @@
 Integration tests for ADHD Engine FastAPI endpoints.
 """
 
+import asyncio
 import pytest
-from fastapi.testclient import TestClient
+import httpx
 from unittest.mock import AsyncMock, MagicMock, patch
 
 # Import app
@@ -15,10 +16,34 @@ from main import app
 from models import ADHDProfile, EnergyLevel, AttentionState
 
 
+class SyncASGITestClient:
+    """Minimal synchronous wrapper around httpx.AsyncClient + ASGI transport."""
+
+    def __init__(self, app):
+        self._transport = httpx.ASGITransport(app=app)
+        self._client = httpx.AsyncClient(transport=self._transport, base_url="http://testserver")
+
+    def request(self, method, url, **kwargs):
+        return asyncio.run(self._client.request(method, url, **kwargs))
+
+    def get(self, url, **kwargs):
+        return self.request("GET", url, **kwargs)
+
+    def post(self, url, **kwargs):
+        return self.request("POST", url, **kwargs)
+
+    def close(self):
+        asyncio.run(self._client.aclose())
+
+
 @pytest.fixture
 def client():
     """FastAPI test client."""
-    return TestClient(app)
+    client = SyncASGITestClient(app)
+    try:
+        yield client
+    finally:
+        client.close()
 
 
 @pytest.fixture
@@ -121,18 +146,19 @@ class TestTaskAssessment:
             assert "cognitive_load" in data
             assert 0.0 <= data["suitability_score"] <= 1.0
 
-    def test_assess_task_invalid_complexity(self, client):
+    def test_assess_task_invalid_complexity(self, client, mock_initialized_engine):
         """Should reject invalid complexity score."""
-        response = client.post("/api/v1/assess-task", json={
-            "user_id": "test_user",
-            "task_id": "task_123",
-            "task_data": {
-                "complexity_score": 1.5,  # Invalid: > 1.0
-                "estimated_minutes": 25,
-                "description": "task",
-                "dependencies": []
-            }
-        })
+        with patch('main.engine', mock_initialized_engine):
+            response = client.post("/api/v1/assess-task", json={
+                "user_id": "test_user",
+                "task_id": "task_123",
+                "task_data": {
+                    "complexity_score": 1.5,  # Invalid: > 1.0
+                    "estimated_minutes": 25,
+                    "description": "task",
+                    "dependencies": []
+                }
+            })
 
         assert response.status_code == 422  # Validation error
 

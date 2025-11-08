@@ -8,6 +8,7 @@ IP-005 Days 11-12: Machine Learning Component 1/2
 """
 
 import asyncio
+import inspect
 import json
 import logging
 import statistics
@@ -136,6 +137,12 @@ class ADHDPatternLearner:
         self.attention_patterns: Dict[str, List[AttentionPattern]] = {}
         self.break_patterns: Dict[str, List[BreakPattern]] = {}
 
+    async def _maybe_await(self, result):
+        """Await helper that handles sync or async ConPort clients."""
+        if inspect.isawaitable(result):
+            return await result
+        return result
+
     async def extract_energy_patterns(
         self,
         user_id: str,
@@ -252,10 +259,11 @@ class ADHDPatternLearner:
         grouped: Dict[str, List[Dict[str, Any]]] = {"morning": [], "afternoon": [], "evening": []}
 
         for session in session_history:
-            if 'start_time' not in session:
+            start_time_str = session.get('start_time') or session.get('session_start') or session.get('timestamp')
+            if not start_time_str:
                 continue
 
-            start_time = datetime.fromisoformat(session['start_time'])
+            start_time = datetime.fromisoformat(start_time_str)
             hour = start_time.hour
 
             # Categorize session
@@ -283,12 +291,58 @@ class ADHDPatternLearner:
             weights = []
 
             for session in sessions:
-                warmup_time = session.get('warmup_minutes', 15)  # Default 15min
-                peak_duration = session.get('peak_duration_minutes', 25)
-                total_duration = session.get('total_minutes', 50)
+                attention_states = session.get('attention_states', [])
+
+                warmup_time = session.get('warmup_minutes')
+                if warmup_time is None and attention_states:
+                    focus_entry = next(
+                        (s for s in attention_states if s.get('state') == AttentionState.FOCUSED.value),
+                        None,
+                    )
+                else:
+                    focus_entry = None
+                if warmup_time is None and focus_entry:
+                    warmup_time = focus_entry.get('time', 15)
+                if warmup_time is None:
+                    warmup_time = 15
+
+                peak_duration = session.get('peak_duration_minutes')
+                if peak_duration is None and focus_entry:
+                    next_transition = next(
+                        (
+                            s
+                            for s in attention_states
+                            if s.get('time', 0) > focus_entry.get('time', 0)
+                        ),
+                        None,
+                    )
+                    end_time = next_transition.get('time') if next_transition else session.get('total_minutes')
+                    if end_time is None:
+                        end_time = session.get('session_end')
+                        start_iso = session.get('session_start') or session.get('start_time')
+                        if end_time and start_iso:
+                            end_dt = datetime.fromisoformat(end_time)
+                            start_dt = datetime.fromisoformat(start_iso)
+                            end_time = (end_dt - start_dt).seconds // 60
+                    if end_time is not None:
+                        peak_duration = max(0, end_time - focus_entry.get('time', 0))
+                if peak_duration is None:
+                    peak_duration = 25
+
+                total_duration = session.get('total_minutes')
+                if total_duration is None:
+                    start_iso = session.get('session_start') or session.get('start_time')
+                    end_iso = session.get('session_end')
+                    if start_iso and end_iso:
+                        start_dt = datetime.fromisoformat(start_iso)
+                        end_dt = datetime.fromisoformat(end_iso)
+                        total_duration = max(1, (end_dt - start_dt).seconds // 60)
+                    else:
+                        total_duration = 50
 
                 # Time decay weight
-                timestamp = datetime.fromisoformat(session['start_time'])
+                timestamp_str = session.get('start_time') or session.get('session_start') or session.get('timestamp')
+                timestamp = datetime.fromisoformat(timestamp_str)
                 days_old = (current_time - timestamp).days
                 weight = self._calculate_time_decay_weight(days_old)
 
@@ -299,9 +353,9 @@ class ADHDPatternLearner:
 
             # Weighted averages
             total_weight = sum(weights)
-            avg_warmup = int(sum(warmup_times) / total_weight) if total_weight > 0 else 15
-            avg_peak = int(sum(peak_durations) / total_weight) if total_weight > 0 else 25
-            avg_total = int(sum(total_durations) / total_weight) if total_weight > 0 else 50
+            avg_warmup = round(sum(warmup_times) / total_weight) if total_weight > 0 else 15
+            avg_peak = round(sum(peak_durations) / total_weight) if total_weight > 0 else 25
+            avg_total = round(sum(total_durations) / total_weight) if total_weight > 0 else 50
 
             # Calculate confidence (consistency of session durations)
             duration_std = statistics.stdev([s.get('total_minutes', 50) for s in sessions]) if len(sessions) > 1 else 0
@@ -309,7 +363,15 @@ class ADHDPatternLearner:
             confidence = self._calculate_confidence(len(sessions), consistency_ratio)
 
             # Most recent session
-            last_observed = max(sessions, key=lambda x: x['start_time'])['start_time']
+            last_observed_session = max(
+                sessions,
+                key=lambda x: x.get('start_time') or x.get('session_start') or x.get('timestamp')
+            )
+            last_observed = (
+                last_observed_session.get('start_time')
+                or last_observed_session.get('session_start')
+                or last_observed_session.get('timestamp')
+            )
 
             pattern = AttentionPattern(
                 warmup_minutes=avg_warmup,
@@ -451,11 +513,8 @@ class ADHDPatternLearner:
         Returns:
             Confidence score (0.0-1.0)
         """
-        # Sample count factor (logarithmic growth, saturates at ~20 samples)
         sample_factor = min(1.0, sample_count / 20.0)
-
-        # Combined confidence
-        confidence = (sample_factor * 0.5) + (consistency_ratio * 0.5)
+        confidence = sample_factor * consistency_ratio
         return min(1.0, max(0.0, confidence))
 
     async def persist_patterns_to_conport(
@@ -488,10 +547,12 @@ class ADHDPatternLearner:
             # Save energy patterns
             if energy_patterns is not None:
                 data = [p.to_dict() for p in energy_patterns]
-                result = await self.conport.write_custom_data(
-                    category="adhd_patterns",
-                    key=f"{user_id}_energy",
-                    value=data
+                result = await self._maybe_await(
+                    self.conport.write_custom_data(
+                        category="adhd_patterns",
+                        key=f"{user_id}_energy",
+                        value=data
+                    )
                 )
                 if not result:
                     logger.error(f"Failed to save energy patterns for {user_id}")
@@ -502,10 +563,12 @@ class ADHDPatternLearner:
             # Save attention patterns
             if attention_patterns is not None:
                 data = [p.to_dict() for p in attention_patterns]
-                result = await self.conport.write_custom_data(
-                    category="adhd_patterns",
-                    key=f"{user_id}_attention",
-                    value=data
+                result = await self._maybe_await(
+                    self.conport.write_custom_data(
+                        category="adhd_patterns",
+                        key=f"{user_id}_attention",
+                        value=data
+                    )
                 )
                 if not result:
                     logger.error(f"Failed to save attention patterns for {user_id}")
@@ -516,10 +579,12 @@ class ADHDPatternLearner:
             # Save break patterns
             if break_patterns is not None:
                 data = [p.to_dict() for p in break_patterns]
-                result = await self.conport.write_custom_data(
-                    category="adhd_patterns",
-                    key=f"{user_id}_breaks",
-                    value=data
+                result = await self._maybe_await(
+                    self.conport.write_custom_data(
+                        category="adhd_patterns",
+                        key=f"{user_id}_breaks",
+                        value=data
+                    )
                 )
                 if not result:
                     logger.error(f"Failed to save break patterns for {user_id}")
@@ -555,30 +620,51 @@ class ADHDPatternLearner:
             }
 
             # Load energy patterns
-            energy_data = await self.conport.get_custom_data(
-                category="adhd_patterns",
-                key=f"{user_id}_energy"
+            energy_data = await self._maybe_await(
+                self.conport.get_custom_data(
+                    category="adhd_patterns",
+                    key=f"{user_id}_energy"
+                )
             )
             if energy_data:
-                result["energy"] = [EnergyPattern.from_dict(p) for p in energy_data]
+                payload = (
+                    energy_data.get("energy")
+                    if isinstance(energy_data, dict) and "energy" in energy_data
+                    else energy_data
+                )
+                result["energy"] = [EnergyPattern.from_dict(p) for p in payload]
                 logger.info(f"Loaded {len(result['energy'])} energy patterns for {user_id}")
 
             # Load attention patterns
-            attention_data = await self.conport.get_custom_data(
-                category="adhd_patterns",
-                key=f"{user_id}_attention"
+            attention_data = await self._maybe_await(
+                self.conport.get_custom_data(
+                    category="adhd_patterns",
+                    key=f"{user_id}_attention"
+                )
             )
             if attention_data:
-                result["attention"] = [AttentionPattern.from_dict(p) for p in attention_data]
+                payload = (
+                    attention_data.get("attention")
+                    if isinstance(attention_data, dict) and "attention" in attention_data
+                    else attention_data
+                )
+                result["attention"] = [AttentionPattern.from_dict(p) for p in payload]
                 logger.info(f"Loaded {len(result['attention'])} attention patterns for {user_id}")
 
             # Load break patterns
-            break_data = await self.conport.get_custom_data(
-                category="adhd_patterns",
-                key=f"{user_id}_breaks"
+            break_data = await self._maybe_await(
+                self.conport.get_custom_data(
+                    category="adhd_patterns",
+                    key=f"{user_id}_breaks"
+                )
             )
             if break_data:
-                result["breaks"] = [BreakPattern.from_dict(p) for p in break_data]
+                payload = (
+                    break_data.get("breaks")
+                    if isinstance(break_data, dict) and "breaks" in break_data
+                    else break_data
+                )
+                result["breaks"] = [BreakPattern.from_dict(p) for p in payload]
                 logger.info(f"Loaded {len(result['breaks'])} break patterns for {user_id}")
 
             return result
