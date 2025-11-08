@@ -3,8 +3,8 @@ Unit tests for ADHD Accommodation Engine core logic.
 """
 
 import pytest
-from adhd_engine.engine import ADHDAccommodationEngine
-from adhd_engine.models import EnergyLevel, AttentionState, CognitiveLoadLevel, ADHDProfile
+from ..engine import ADHDAccommodationEngine
+from ..models import EnergyLevel, AttentionState, CognitiveLoadLevel, ADHDProfile
 
 
 class TestCognitiveLoadCalculation:

@@ -19,11 +19,7 @@ class Settings(BaseSettings):
     api_port: int = int(os.getenv("API_PORT", "8095"))
     host: str = os.getenv("HOST", "0.0.0.0")
 
-    # CORS settings
-    allowed_origins: List[str] = os.getenv(
-        "ALLOWED_ORIGINS",
-        "http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097"
-    ).split(",")
+    # CORS settings - handled separately to avoid pydantic parsing issues
 
     # Authentication
     api_key: str = os.getenv("ADHD_ENGINE_API_KEY", "dev-key-123")
@@ -46,6 +42,15 @@ class Settings(BaseSettings):
     enable_ml_predictions: bool = os.getenv("ENABLE_ML_PREDICTIONS", "false").lower() == "true"
     ml_model_path: str = os.getenv("ML_MODEL_PATH", "/app/models")
 
+    # Statusline integration
+    statusline_allow_public: bool = os.getenv("ADHD_STATUSLINE_ALLOW_NOAUTH", "true").lower() == "true"
+
+
+# Handle CORS origins separately (workaround for pydantic_settings parsing issues)
+ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097"
+).split(",") if origin.strip()]
 
 # Global settings instance
 settings = Settings()

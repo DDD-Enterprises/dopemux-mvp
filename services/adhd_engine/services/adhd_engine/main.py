@@ -19,7 +19,7 @@ from contextlib import asynccontextmanager
 import logging
 
 # Prometheus metrics
-from .metrics import (
+from metrics import (
     REQUEST_COUNT, REQUEST_LATENCY, ENERGY_LEVEL, ATTENTION_STATE,
     COGNITIVE_LOAD, BREAK_RECOMMENDATIONS, ACCOMMODATION_STATS,
     ACTIVE_USERS, MONITORING_CYCLES, record_request, update_energy_level,
@@ -191,7 +191,7 @@ app = create_application()
 @app.get("/metrics")
 async def metrics():
     """Prometheus metrics endpoint for ADHD Engine"""
-    from .metrics import get_metrics
+    from metrics import get_metrics
     from fastapi.responses import Response
     return Response(get_metrics(), media_type="text/plain")
 
