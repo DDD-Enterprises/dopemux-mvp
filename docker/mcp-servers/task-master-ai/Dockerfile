@@ -21,8 +21,9 @@ ENV NODE_ENV=production
 ENV MCP_SERVER_PORT=3005
 ENV MCP_TRANSPORT=stdio
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:${MCP_SERVER_PORT}/health || nc -z localhost ${MCP_SERVER_PORT} || exit 1
+# Note: Health check disabled - service uses stdio transport
+# HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+#     CMD curl -f http://localhost:${MCP_SERVER_PORT}/health || nc -z localhost ${MCP_SERVER_PORT} || exit 1
 
 EXPOSE 3005
 
