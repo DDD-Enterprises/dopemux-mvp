@@ -164,6 +164,18 @@ async def health():
         "service": "adhd-engine"
     }
 
+
+@app.get("/background-service/status")
+async def background_service_status():
+    """Get background prediction service status (Phase 3.4)."""
+    try:
+        from engine.services.background_prediction_service import get_background_prediction_service
+        service = await get_background_prediction_service()
+        return await service.get_status()
+    except Exception as e:
+        logger.error(f"Failed to get background service status: {e}")
+        return {"error": str(e), "running": False}
+
 # Test endpoint to verify new routes work
 @app.get("/test")
 async def test():
