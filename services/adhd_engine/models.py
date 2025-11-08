@@ -65,6 +65,15 @@ class ADHDProfile:
     celebration_feedback: bool = True       # Wants completion celebrations
     break_activity_suggestions: bool = True # Wants break activity ideas
 
+    # Phase 3.5 User Control Layer
+    confidence_threshold: float = 0.7       # 0.5-0.95, minimum ML confidence for predictions
+    automation_level: str = "balanced"      # minimal, balanced, proactive
+    notifications_enabled: bool = True      # Enable break and energy notifications
+    accessibility_mode: bool = False        # Enhanced accessibility features
+    keyboard_shortcuts: bool = True         # Enable keyboard shortcuts
+    high_contrast: bool = False            # High contrast mode
+    overrides: List[Dict] = field(default_factory=list)  # Prediction override history
+
     def __post_init__(self):
         if self.peak_hours is None:
             self.peak_hours = [9, 10, 14, 15]  # Default morning and afternoon peaks
