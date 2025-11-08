@@ -297,10 +297,15 @@ async def handle_sse(request: Request) -> Response:
         )
     return Response()
 
+async def handle_health(request: Request) -> Response:
+    """Health check endpoint"""
+    return Response("OK", status_code=200)
+
 # Create Starlette application
 starlette_app = Starlette(
     routes=[
         Route("/sse", endpoint=handle_sse, methods=["GET"]),
+        Route("/health", endpoint=handle_health, methods=["GET"]),
         Mount("/messages/", app=sse.handle_post_message),
     ]
 )

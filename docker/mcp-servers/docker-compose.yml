@@ -2,27 +2,6 @@
 # Based on ADR-007 (Routing Logic) and ADR-012 (MCP Integration Patterns)
 
 services:
-  # === DATABASE (External) ===
-
-  dopemux-postgres-age:
-    image: postgres:16-alpine
-    container_name: dopemux-postgres-age
-    restart: unless-stopped
-    networks:
-      - mcp-network
-    environment:
-      - POSTGRES_USER=dopemux_age
-      - POSTGRES_PASSWORD=dopemux_age_dev_password
-      - POSTGRES_DB=dopemux_knowledge_graph
-    volumes:
-      - pg_age_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph || exit 1"]
-      timeout: 10s
-      retries: 10
-      interval: 10s
-      start_period: 20s
-
   # === CRITICAL PATH SERVERS (Priority: High) ===
 
   # Context7 - ALWAYS FIRST for documentation and API references
@@ -70,8 +49,15 @@ services:
       - DISABLED_TOOLS=analyze,refactor,testgen,secaudit,docgen,tracer
       - DEFAULT_MODEL=auto
       - ZEN_DEFAULT_PROVIDER=openrouter  # Prefer OpenRouter for routing
+    command: bash -c "source /app/.venv/bin/activate && python /app/zen_http_wrapper.py"
       - MCP_SERVER_PORT=3003
     working_dir: /app
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3003/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
     labels:
       - "mcp.role=critical_path"
       - "mcp.priority=highest"
@@ -93,15 +79,16 @@ services:
       - XAI_API_KEY=${XAI_API_KEY}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-master-dopemux-local-20251101}
       # Prisma / DB connection for LiteLLM spend/logging + admin APIs
-      # Override with LITELLM_DATABASE_URL in .env if needed
+      # Use existing postgres container (external)
       - DATABASE_URL=${LITELLM_DATABASE_URL:-postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm}
       - LITELLM_LOG=INFO
       - LITELLM_DROP_PARAMS=true
     ports:
       - "4000:4000"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f -H 'Authorization: Bearer REDACTED_LITELLM_KEY' http://localhost:4000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f -H \"Authorization: Bearer $$LITELLM_MASTER_KEY\" http://localhost:4000/health || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -109,9 +96,6 @@ services:
     volumes:
       - ../../litellm.config.yaml:/app/config.yaml:ro
       - mcp_litellm_data:/app/data
-    depends_on:
-      dopemux-postgres-age:
-        condition: service_healthy
     labels:
       - "mcp.role=critical_path"
       - "mcp.priority=high"
@@ -149,46 +133,6 @@ services:
 
   # === WORKFLOW SERVERS (Priority: Medium) ===
 
-  # ConPort - Project memory and decision tracking
-  conport:
-    build:
-      context: ./conport
-      dockerfile: Dockerfile
-    container_name: mcp-conport${DOPEMUX_INSTANCE_ID:+_}${DOPEMUX_INSTANCE_ID}  # Multi-instance naming
-    restart: unless-stopped
-    networks:
-      - mcp-network
-      - dopemux-unified-network
-    depends_on:
-      dopemux-postgres-age:
-        condition: service_healthy
-      redis-primary:
-        condition: service_started
-    environment:
-      - MCP_SERVER_PORT=${CONPORT_PORT:-3004}  # Dynamic port from instance env
-      - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
-      - REDIS_URL=redis://dopemux-redis-primary:6379
-      - INTEGRATION_BRIDGE_URL=http://dope-decision-graph-bridge:3016
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GOOGLE_API_KEY=${GEMINI_API_KEY}
-      - VOYAGEAI_API_KEY=${VOYAGEAI_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID}  # CRITICAL: Instance workspace isolation
-    ports:
-      - "${CONPORT_PORT:-3004}:${CONPORT_PORT:-3004}"  # Multi-instance port mapping
-    healthcheck:
-      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost',3004)); s.close()"]
-      timeout: 10s
-      retries: 3
-      interval: 30s
-      start_period: 45s
-    volumes:
-      - mcp_conport_data:/app/data
-    labels:
-      - "mcp.role=workflow"
-      - "mcp.priority=medium"
-      - "mcp.description=Project memory and decision tracking"
-
   # Task Master AI - Task management and PRD processing
   task-master-ai:
     build:
@@ -202,6 +146,7 @@ services:
       - ./task-master-ai/.env
     environment:
       - MCP_SERVER_PORT=3005
+      - MCP_TRANSPORT=sse
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
@@ -209,7 +154,7 @@ services:
     ports:
       - "3005:3005"
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 3005 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3005/health || nc -z localhost 3005 || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -221,6 +166,29 @@ services:
       - "mcp.role=workflow"
       - "mcp.priority=medium"
       - "mcp.description=AI-powered task management and PRD processing"
+
+  # MCP Client - Custom client for stdio MCP servers
+  mcp-client:
+    build:
+      context: ../../services/mcp-client
+      dockerfile: Dockerfile
+    container_name: dopemux-mcp-client
+    restart: unless-stopped
+    networks:
+      - mcp-network
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
+      - EXA_API_KEY=${EXA_API_KEY}
+    volumes:
+      - mcp_client_data:/app/data
+      - mcp_client_logs:/app/logs
+    labels:
+      - "mcp.role=client"
+      - "mcp.priority=high"
+      - "mcp.description=Custom MCP client for stdio server integration"
 
   # Task Orchestrator - Advanced task orchestration and dependency management
   task-orchestrator:
@@ -276,6 +244,7 @@ services:
       - MCP_SERVER_PORT=3015
       - LEANTIME_API_URL=http://leantime:80
       - LEANTIME_API_TOKEN=lt_2N6XKkiRJoGjHOlDi3clbn0IxvmVP1Ll_jUcnR5NvUONQKx0CxtwvG3G84swXhltJ
+      - REDIS_URL=redis://dopemux-redis-primary:6379
     ports:
       - "3015:3015"
     depends_on:
@@ -308,16 +277,14 @@ services:
     environment:
       - COORDINATION_API_PORT=8090
       - WORKSPACE_ID=/workspace
-      - REDIS_URL=redis://dopemux-redis-events:6379
+      - REDIS_URL=redis://dopemux-redis-primary:6379
       - CONPORT_URL=http://conport:3004
       - ADHD_ENGINE_URL=http://dopemux-adhd-engine:8095
       - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097
     ports:
       - "8090:8090"
     depends_on:
-      - dopemux-redis-events
-      - conport
-      - dopemux-adhd-engine
+      - redis-primary
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8090/health || exit 1"]
       timeout: 10s
@@ -394,8 +361,6 @@ services:
       - mcp_dopemux_gpt_logs:/app/logs
       - mcp_dopemux_gpt_cache:/app/cache
       - ${DOPEMUX_CODE_PARENT:-~/code}:/workspaces:ro  # Mount parent to support all worktrees
-    depends_on:
-      - conport
     labels:
       - "mcp.role=research"
       - "mcp.priority=highest"
@@ -446,6 +411,11 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID}
       - DOPEMUX_WORKSPACE_ROOT=/workspaces/dopemux-mvp
+      # CRITICAL: Hash override ensures collection names match between host and container
+      # Host indexes with path /Users/hue/code/dopemux-mvp (hash=3ca12e07)
+      # Container mounts as /workspaces/dopemux-mvp (different hash)
+      # Override ensures both use same collection name in Qdrant
+      - WORKSPACE_HASH_OVERRIDE=3ca12e07
     ports:
       - "3010:3010"
     depends_on:
@@ -481,10 +451,14 @@ services:
       - MCP_TRANSPORT=sse
     ports:
       - "3009:3009"
-    # Run the wrapper that uses mcp-proxy to provide HTTP/SSE transport
-    command: ["python", "/app/wrapper.py"]
-    # Health check disabled - service is functional and accessible on port 3009
-    # Manual testing confirms socket connectivity works correctly
+    # Run the upstream server directly (it provides its own HTTP/SSE transport)
+    # Health check tests SSE endpoint (service is functional and accessible on port 3009)
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3009/sse --head || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
     volumes:
       - mcp_gptr_data:/app/data
       - mcp_gptr_logs:/app/logs
@@ -681,9 +655,6 @@ volumes:
   mcp_context7_cache:
     driver: local
     name: mcp_context7_cache
-  mcp_conport_data:
-    driver: local
-    name: mcp_conport_data
   mcp_task_master_data:
     driver: local
     name: mcp_task_master_data
@@ -741,3 +712,9 @@ volumes:
   dope_context_logs:
     driver: local
     name: dope_context_logs
+  mcp_client_data:
+    driver: local
+    name: mcp_client_data
+  mcp_client_logs:
+    driver: local
+    name: mcp_client_logs
