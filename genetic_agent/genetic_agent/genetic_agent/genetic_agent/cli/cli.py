@@ -7,11 +7,11 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from ..core.config import AgentConfig
-from ..vanilla.vanilla_agent import VanillaAgent
-from ..genetic.genetic_agent import GeneticAgent
-from ..shared.mcp.memory_adapter import MemoryAdapter
-from ..shared.mcp.conport_client import ConPortClient
+from core.config import AgentConfig
+from vanilla.vanilla_agent import VanillaAgent
+from genetic.genetic_agent import GeneticAgent
+from shared.mcp.memory_adapter import MemoryAdapter
+from shared.mcp.conport_client import ConPortClient
 
 
 class CLIProgress:

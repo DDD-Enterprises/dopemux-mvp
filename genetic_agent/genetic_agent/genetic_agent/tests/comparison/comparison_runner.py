@@ -6,9 +6,9 @@ from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 from datetime import datetime
 
-from ...core.config import AgentConfig
-from ...vanilla.vanilla_agent import VanillaAgent
-from ...genetic.genetic_agent import GeneticAgent
+from core.config import AgentConfig
+from vanilla.vanilla_agent import VanillaAgent
+from genetic.genetic_agent import GeneticAgent
 
 
 @dataclass
