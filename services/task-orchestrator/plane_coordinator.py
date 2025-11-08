@@ -18,6 +18,7 @@ Created: 2025-11-05
 
 import asyncio
 import logging
+import os
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional, Callable
 from dataclasses import dataclass, asdict, field
@@ -135,9 +136,13 @@ class PlaneCoordinator:
 
     def __init__(self, workspace_id: str):
         self.workspace_id = workspace_id
+        redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
 
         # Core coordination components
-        self.sync_engine = MultiDirectionalSyncEngine(workspace_id=workspace_id)
+        self.sync_engine = MultiDirectionalSyncEngine(
+            redis_url=redis_url,
+            workspace_id=workspace_id,
+        )
         self.task_coordinator = TaskCoordinator(workspace_id)
         self.conport_adapter = ConPortEventAdapter(workspace_id)
         self.cognitive_guardian = CognitiveLoadBalancer(workspace_id=workspace_id)

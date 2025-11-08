@@ -152,7 +152,7 @@ class EnhancedTaskOrchestrator:
         self,
         leantime_url: str,
         leantime_token: str,
-        redis_url: str = "redis://localhost:6379",
+        redis_url: str = os.getenv("REDIS_URL", "redis://localhost:6379"),
         workspace_id: str = "/Users/hue/code/dopemux-mvp",
         mcp_tools: Any = None
     ):
@@ -1198,7 +1198,7 @@ class EnhancedTaskOrchestrator:
                 logger.error(f"Integration Bridge subscription error: {e}")
                 await asyncio.sleep(30)  # Reconnect after 30 seconds
 
-    async def _handle_integration_bridge_event(self, event: Event) -> None:
+    async def _handle_integration_bridge_event(self, event: Any) -> None:
         """Handle events from Integration Bridge."""
         try:
             logger.debug(f"📥 Received event: {event.type} from {event.source}")
@@ -1225,7 +1225,7 @@ class EnhancedTaskOrchestrator:
         except Exception as e:
             logger.error(f"Event handling failed: {e}")
 
-    async def _handle_tasks_imported(self, event: Event) -> None:
+    async def _handle_tasks_imported(self, event: Any) -> None:
         """Handle tasks_imported event from Integration Bridge."""
         try:
             task_count = event.data.get("task_count", 0)
@@ -1241,7 +1241,7 @@ class EnhancedTaskOrchestrator:
         except Exception as e:
             logger.error(f"Failed to handle tasks_imported: {e}")
 
-    async def _handle_session_started(self, event: Event) -> None:
+    async def _handle_session_started(self, event: Any) -> None:
         """Handle session_started event from Integration Bridge."""
         try:
             task_id = event.data.get("task_id", "")
@@ -1257,7 +1257,7 @@ class EnhancedTaskOrchestrator:
         except Exception as e:
             logger.error(f"Failed to handle session_started: {e}")
 
-    async def _handle_session_paused(self, event: Event) -> None:
+    async def _handle_session_paused(self, event: Any) -> None:
         """Handle session_paused event from Integration Bridge."""
         try:
             task_id = event.data.get("task_id", "")
@@ -1272,7 +1272,7 @@ class EnhancedTaskOrchestrator:
         except Exception as e:
             logger.error(f"Failed to handle session_paused: {e}")
 
-    async def _handle_session_completed(self, event: Event) -> None:
+    async def _handle_session_completed(self, event: Any) -> None:
         """Handle session_completed event from Integration Bridge."""
         try:
             task_id = event.data.get("task_id", "")
@@ -1287,7 +1287,7 @@ class EnhancedTaskOrchestrator:
         except Exception as e:
             logger.error(f"Failed to handle session_completed: {e}")
 
-    async def _handle_progress_updated(self, event: Event) -> None:
+    async def _handle_progress_updated(self, event: Any) -> None:
         """Handle progress_updated event from Integration Bridge."""
         try:
             task_id = event.data.get("task_id", "")
@@ -1304,7 +1304,7 @@ class EnhancedTaskOrchestrator:
         except Exception as e:
             logger.error(f"Failed to handle progress_updated: {e}")
 
-    async def _handle_decision_logged(self, event: Event) -> None:
+    async def _handle_decision_logged(self, event: Any) -> None:
         """Handle decision_logged event from Integration Bridge."""
         try:
             decision_summary = event.data.get("summary", "")
@@ -1320,7 +1320,7 @@ class EnhancedTaskOrchestrator:
         except Exception as e:
             logger.error(f"Failed to handle decision_logged: {e}")
 
-    async def _handle_adhd_state_changed(self, event: Event) -> None:
+    async def _handle_adhd_state_changed(self, event: Any) -> None:
         """Handle adhd_state_changed event from Integration Bridge."""
         try:
             state = event.data.get("state", "")
@@ -1337,7 +1337,7 @@ class EnhancedTaskOrchestrator:
         except Exception as e:
             logger.error(f"Failed to handle adhd_state_changed: {e}")
 
-    async def _handle_break_reminder(self, event: Event) -> None:
+    async def _handle_break_reminder(self, event: Any) -> None:
         """Handle break_reminder event from Integration Bridge."""
         try:
             task_id = event.data.get("task_id", "")
