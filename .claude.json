@@ -1,8 +1,16 @@
 {
   "mcpServers": {
     "zen": {
-      "type": "sse",
-      "url": "http://localhost:3003/sse",
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-zen",
+        "bash",
+        "-c",
+        "source /app/.venv/bin/activate && python zen-mcp-server/server.py"
+      ],
       "env": {
         "OPENAI_API_KEY": "",  // Disabled - no direct OpenAI calls
         "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY:-}",
@@ -42,6 +50,14 @@
         "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"
       },
       "description": "Deep research with comprehensive analysis via container"
+    },
+    "leantime-bridge": {
+      "type": "sse",
+      "url": "http://localhost:3015/sse",
+      "env": {
+        "LEANTIME_API_TOKEN": "REPLACE_WITH_LEANTIME_API_TOKEN"
+      },
+      "description": "Leantime project management integration bridge"
     },
     "exa": {
       "type": "stdio",

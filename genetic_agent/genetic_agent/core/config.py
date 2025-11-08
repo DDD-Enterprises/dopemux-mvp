@@ -28,6 +28,9 @@ class AgentConfig(BaseSettings):
     dope_context_url: str = Field(default="http://localhost:3002", description="Dope-Context service URL")
     zen_url: str = Field(default="http://localhost:3003", description="Zen MCP service URL")
     workspace_id: str = Field(default="/app/workspace", description="Workspace ID for MCP services")
+    timeout: int = Field(default=30, description="Request timeout in seconds")
+    health_check_interval: int = Field(default=300, description="Health check interval in seconds")
+    retry_attempts: int = Field(default=3, description="Number of retry attempts")
 
     # EventBus and user context
     redis_url: str = Field(default="redis://localhost:6379", description="Redis URL for EventBus")

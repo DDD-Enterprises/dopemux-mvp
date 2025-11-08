@@ -232,3 +232,58 @@ class TestAPICaching:
 
             # Should have hits after first call
             assert hits > 0
+
+
+class TestBackgroundPredictionService:
+    """Test background prediction service (Phase 3.4)."""
+
+    @pytest.mark.asyncio
+    async def test_background_service_initialization(self, fake_redis):
+        """Test background prediction service initializes correctly."""
+        from ..services.background_prediction_service import BackgroundPredictionService
+
+        service = BackgroundPredictionService("/test/workspace")
+        await service.initialize()
+
+        assert service.workspace_id == "/test/workspace"
+        assert service.redis_client is not None
+        assert service.running is False
+
+    @pytest.mark.asyncio
+    async def test_background_service_status(self, fake_redis):
+        """Test background service status reporting."""
+        from ..services.background_prediction_service import BackgroundPredictionService
+
+        service = BackgroundPredictionService("/test/workspace")
+        await service.initialize()
+
+        status = await service.get_status()
+
+        assert "running" in status
+        assert "predictions_made" in status
+        assert "users_being_monitored" in status
+        assert "monitoring_interval_seconds" in status
+
+    @pytest.mark.asyncio
+    async def test_background_service_start_stop(self, fake_redis):
+        """Test background service can start and stop gracefully."""
+        from ..services.background_prediction_service import BackgroundPredictionService
+
+        service = BackgroundPredictionService("/test/workspace")
+        await service.initialize()
+
+        # Start service
+        start_task = asyncio.create_task(service.start())
+        await asyncio.sleep(0.1)  # Let it start
+        assert service.running is True
+
+        # Stop service
+        await service.stop()
+        assert service.running is False
+
+        # Cancel the start task
+        start_task.cancel()
+        try:
+            await start_task
+        except asyncio.CancelledError:
+            pass
