@@ -20,6 +20,20 @@ from datetime import datetime, timezone
 import logging
 import asyncio
 import json
+import os
+import sys
+
+# Import cache utility for Redis caching
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'docker', 'mcp-servers', 'shared'))
+from cache import get_cache
+
+# Import Prometheus metrics
+try:
+    from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
+    PROMETHEUS_AVAILABLE = True
+except ImportError:
+    PROMETHEUS_AVAILABLE = False
+    logger.warning("Prometheus client not available - metrics disabled")
 
 import api.schemas as schemas
 from models import ADHDProfile, EnergyLevel, AttentionState
@@ -31,6 +45,95 @@ import time
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+# Cache TTL constants (seconds)
+ENERGY_CACHE_TTL = 300  # 5 minutes - energy levels are relatively stable
+ATTENTION_CACHE_TTL = 180  # 3 minutes - attention can change more frequently
+BREAK_CACHE_TTL = 60  # 1 minute - break recommendations need to be fresh
+ACTIVITY_CACHE_TTL = 60  # 1 minute - activity updates are time-sensitive
+
+# Get global cache instance
+cache = get_cache()
+
+# Prometheus metrics (only if available)
+if PROMETHEUS_AVAILABLE:
+    # API call counters
+    API_REQUESTS_TOTAL = Counter(
+        'adhd_api_requests_total',
+        'Total number of API requests',
+        ['endpoint', 'method', 'status']
+    )
+
+    # Cache performance metrics
+    CACHE_HITS_TOTAL = Counter(
+        'adhd_cache_hits_total',
+        'Total number of cache hits',
+        ['endpoint']
+    )
+
+    CACHE_MISSES_TOTAL = Counter(
+        'adhd_cache_misses_total',
+        'Total number of cache misses',
+        ['endpoint']
+    )
+
+    # Response time histograms
+    API_REQUEST_DURATION = Histogram(
+        'adhd_api_request_duration_seconds',
+        'API request duration in seconds',
+        ['endpoint'],
+        buckets=[0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.0]
+    )
+
+    # ML prediction metrics
+    ML_PREDICTIONS_TOTAL = Counter(
+        'adhd_ml_predictions_total',
+        'Total number of ML predictions made',
+        ['endpoint', 'prediction_type']
+    )
+
+    ML_PREDICTION_CONFIDENCE = Histogram(
+        'adhd_ml_prediction_confidence',
+        'ML prediction confidence scores',
+        ['endpoint'],
+        buckets=[0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    )
+
+    # Cache size gauge
+    CACHE_SIZE = Gauge(
+        'adhd_cache_entries',
+        'Current number of cache entries',
+        ['cache_type']
+    )
+
+else:
+    # Dummy metrics if Prometheus not available
+    API_REQUESTS_TOTAL = None
+    CACHE_HITS_TOTAL = None
+    CACHE_MISSES_TOTAL = None
+    API_REQUEST_DURATION = None
+    ML_PREDICTIONS_TOTAL = None
+    ML_PREDICTION_CONFIDENCE = None
+    CACHE_SIZE = None
+
+def _make_cache_key(endpoint: str, user_id: str, **params) -> str:
+    """Generate cache key for API endpoint."""
+    key_parts = [f"adhd:{endpoint}:{user_id}"]
+    for k, v in sorted(params.items()):
+        if v is not None:
+            key_parts.append(f"{k}:{v}")
+    return ":".join(key_parts)
+
+async def _invalidate_user_caches(user_id: str):
+    """Invalidate all cached responses for a user (used when profile updates)."""
+    try:
+        # Delete pattern-based cache keys for the user
+        # Note: Redis DEL with pattern not directly supported, but we can implement
+        # cache invalidation by storing a user cache version that gets incremented
+        # For simplicity, we'll skip complex invalidation for now
+        logger.debug(f"Cache invalidation requested for user {user_id}")
+    except Exception as e:
+        logger.warning(f"Cache invalidation failed for user {user_id}: {e}")
 
 
 # Dependency injection for engine instance
@@ -98,16 +201,80 @@ async def assess_task(
 @router.get("/energy-level/{user_id}", response_model=schemas.EnergyLevelResponse)
 async def get_energy_level(user_id: str, engine = Depends(get_engine), api_key: str = Security(verify_api_key)):
     """Get current energy level for user."""
+    start_time = time.time()
+    status = "success"
+
     try:
+        # Check cache first
+        cache_key = _make_cache_key("energy", user_id)
+        cached_data = await cache.get(cache_key)
+
+        if cached_data:
+            logger.debug(f"Cache hit for energy level: {user_id}")
+            # Record cache hit
+            if CACHE_HITS_TOTAL:
+                CACHE_HITS_TOTAL.labels(endpoint="energy").inc()
+            if API_REQUEST_DURATION:
+                API_REQUEST_DURATION.labels(endpoint="energy").observe(time.time() - start_time)
+            if API_REQUESTS_TOTAL:
+                API_REQUESTS_TOTAL.labels(endpoint="energy", method="GET", status=status).inc()
+            return schemas.EnergyLevelResponse.model_validate_json(cached_data)
+
+        # Cache miss - record miss
+        if CACHE_MISSES_TOTAL:
+            CACHE_MISSES_TOTAL.labels(endpoint="energy").inc()
+
+        # Cache miss - execute normal logic
         energy = engine.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
 
-        return schemas.EnergyLevelResponse(
+        # Record API request
+        if API_REQUESTS_TOTAL:
+            API_REQUESTS_TOTAL.labels(endpoint="energy", method="GET", status=status).inc()
+
+        # Get ML prediction if available
+        ml_prediction = None
+        if engine.predictive_engine:
+            try:
+                pred_value, confidence, explanation = await engine.predictive_engine.predict_energy_level(user_id)
+                ml_prediction = schemas.MLPrediction(
+                    predicted_value=pred_value,
+                    confidence=confidence,
+                    explanation=explanation,
+                    ml_used=confidence >= engine.predictive_engine.min_prediction_confidence
+                )
+
+                # Record ML prediction metrics
+                if ML_PREDICTIONS_TOTAL:
+                    ML_PREDICTIONS_TOTAL.labels(endpoint="energy", prediction_type="energy").inc()
+                if ML_PREDICTION_CONFIDENCE:
+                    ML_PREDICTION_CONFIDENCE.labels(endpoint="energy").observe(confidence)
+
+            except Exception as e:
+                logger.warning(f"ML energy prediction failed: {e}")
+
+        response = schemas.EnergyLevelResponse(
             energy_level=energy.value if hasattr(energy, 'value') else str(energy),
             confidence=0.8,  # Based on activity data freshness
-            last_updated=datetime.now(timezone.utc)
+            last_updated=datetime.now(timezone.utc),
+            ml_prediction=ml_prediction
         )
 
+        # Cache the response
+        try:
+            await cache.set(cache_key, response.model_dump_json(), ttl=ENERGY_CACHE_TTL)
+        except Exception as e:
+            logger.warning(f"Cache set failed for energy level: {e}")
+
+        # Record timing
+        if API_REQUEST_DURATION:
+            API_REQUEST_DURATION.labels(endpoint="energy").observe(time.time() - start_time)
+
+        return response
+
     except Exception as e:
+        status = "error"
+        if API_REQUESTS_TOTAL:
+            API_REQUESTS_TOTAL.labels(endpoint="energy", method="GET", status=status).inc()
         logger.error(f"Energy level retrieval failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -116,6 +283,15 @@ async def get_energy_level(user_id: str, engine = Depends(get_engine), api_key: 
 async def get_attention_state(user_id: str, engine = Depends(get_engine), api_key: str = Security(verify_api_key)):
     """Get current attention state for user."""
     try:
+        # Check cache first
+        cache_key = _make_cache_key("attention", user_id)
+        cached_data = await cache.get(cache_key)
+
+        if cached_data:
+            logger.debug(f"Cache hit for attention state: {user_id}")
+            return schemas.AttentionStateResponse.model_validate_json(cached_data)
+
+        # Cache miss - execute normal logic
         attention = engine.current_attention_states.get(user_id, AttentionState.FOCUSED)
 
         # Get indicators that led to this assessment
@@ -124,11 +300,34 @@ async def get_attention_state(user_id: str, engine = Depends(get_engine), api_ke
             "assessment_method": "activity_pattern_analysis"
         }
 
-        return schemas.AttentionStateResponse(
+        # Get ML prediction if available
+        ml_prediction = None
+        if engine.predictive_engine:
+            try:
+                pred_value, confidence, explanation = await engine.predictive_engine.predict_attention_state(user_id)
+                ml_prediction = schemas.MLPrediction(
+                    predicted_value=pred_value,
+                    confidence=confidence,
+                    explanation=explanation,
+                    ml_used=confidence >= engine.predictive_engine.min_prediction_confidence
+                )
+            except Exception as e:
+                logger.warning(f"ML attention prediction failed: {e}")
+
+        response = schemas.AttentionStateResponse(
             attention_state=attention.value if hasattr(attention, 'value') else str(attention),
             indicators=indicators,
-            last_updated=datetime.now(timezone.utc)
+            last_updated=datetime.now(timezone.utc),
+            ml_prediction=ml_prediction
         )
+
+        # Cache the response
+        try:
+            await cache.set(cache_key, response.model_dump_json(), ttl=ATTENTION_CACHE_TTL)
+        except Exception as e:
+            logger.warning(f"Cache set failed for attention state: {e}")
+
+        return response
 
     except Exception as e:
         logger.error(f"Attention state retrieval failed: {e}")
@@ -142,6 +341,15 @@ async def recommend_break(
 ):
     """Get personalized break recommendation."""
     try:
+        # Check cache first
+        cache_key = _make_cache_key("break", request.user_id, work_duration=int(request.work_duration))
+        cached_data = await cache.get(cache_key)
+
+        if cached_data:
+            logger.debug(f"Cache hit for break recommendation: {request.user_id}")
+            return schemas.BreakRecommendationResponse.model_validate_json(cached_data)
+
+        # Cache miss - execute normal logic
         # Get user profile
         profile = engine.user_profiles.get(request.user_id)
         if not profile:
@@ -165,13 +373,39 @@ async def recommend_break(
             suggestions = []
             message = f"You're doing great! {profile.optimal_task_duration - int(request.work_duration)} minutes until recommended break."
 
-        return schemas.BreakRecommendationResponse(
+        # Get ML prediction if available
+        ml_prediction = None
+        if engine.predictive_engine:
+            try:
+                minutes_until_break, confidence, explanation = await engine.predictive_engine.predict_optimal_break_timing(
+                    user_id, minutes_since_break
+                )
+                ml_prediction = schemas.MLPrediction(
+                    predicted_value=f"{minutes_until_break} minutes",
+                    confidence=confidence,
+                    explanation=explanation,
+                    ml_used=confidence >= engine.predictive_engine.min_prediction_confidence
+                )
+            except Exception as e:
+                logger.warning(f"ML break prediction failed: {e}")
+
+        response = schemas.BreakRecommendationResponse(
             break_needed=break_needed,
             reason=reason,
             suggestions=suggestions,
             urgency=urgency,
-            message=message
+            message=message,
+            ml_prediction=ml_prediction
         )
+
+        # Cache the response
+        try:
+            cache_key = _make_cache_key("break", request.user_id, work_duration=int(request.work_duration))
+            await cache.set(cache_key, response.model_dump_json(), ttl=BREAK_CACHE_TTL)
+        except Exception as e:
+            logger.warning(f"Cache set failed for break recommendation: {e}")
+
+        return response
 
     except Exception as e:
         logger.error(f"Break recommendation failed: {e}")
@@ -236,6 +470,15 @@ async def update_activity(
     Updates will trigger immediate energy/attention reassessment.
     """
     try:
+        # Check cache first (though POST, cache recent activity summary)
+        cache_key = _make_cache_key("activity", user_id)
+        cached_data = await cache.get(cache_key)
+
+        if cached_data:
+            logger.debug(f"Cache hit for activity update: {user_id}")
+            return schemas.ActivityUpdateResponse.model_validate_json(cached_data)
+
+        # Cache miss - execute normal logic
         # TODO (Day 4): Store activity in Redis for tracking
         # activity_event = {
         #     "user_id": user_id,
@@ -253,12 +496,41 @@ async def update_activity(
             energy_updated = True
             attention_updated = True
 
-        return schemas.ActivityUpdateResponse(
+        # Get ML prediction if available (predict activity impact)
+        ml_prediction = None
+        if engine.predictive_engine and (request.completion_rate is not None or request.break_compliance is not None):
+            try:
+                # Predict how activity will affect energy/attention
+                context = {
+                    "completion_rate": request.completion_rate,
+                    "break_compliance": request.break_compliance,
+                    "minutes_since_break": request.minutes_since_break
+                }
+                pred_value, confidence, explanation = await engine.predictive_engine.predict_attention_state(user_id, context)
+                ml_prediction = schemas.MLPrediction(
+                    predicted_value=f"Attention may become {pred_value}",
+                    confidence=confidence,
+                    explanation=explanation,
+                    ml_used=confidence >= engine.predictive_engine.min_prediction_confidence
+                )
+            except Exception as e:
+                logger.warning(f"ML activity impact prediction failed: {e}")
+
+        response = schemas.ActivityUpdateResponse(
             recorded=True,
             energy_updated=energy_updated,
             attention_updated=attention_updated,
-            message="Activity logged successfully"
+            message="Activity logged successfully",
+            ml_prediction=ml_prediction
         )
+
+        # Cache the response (short TTL for activity updates)
+        try:
+            await cache.set(cache_key, response.model_dump_json(), ttl=ACTIVITY_CACHE_TTL)
+        except Exception as e:
+            logger.warning(f"Cache set failed for activity update: {e}")
+
+        return response
 
     except Exception as e:
         logger.error(f"Activity update failed: {e}")
@@ -490,6 +762,83 @@ async def predict(
     except Exception as e:
         logger.error(f"Prediction failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# Statusline endpoint for Claude Code statusline integration
+@router.get("/statusline/{user_id}")
+async def get_statusline_data(
+    user_id: str,
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
+):
+    """
+    Statusline data endpoint for Claude Code integration.
+
+    Provides aggregated ADHD state data for statusline display:
+    - energy_level: Current energy state
+    - attention_state: Current attention state
+    - breaks_suggested: Number of pending break suggestions
+    - hyperfocus_protections: Number of active hyperfocus protections
+    """
+    try:
+        # Get energy level
+        energy_level = engine.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
+        energy_str = energy_level.value if hasattr(energy_level, 'value') else str(energy_level)
+
+        # Get attention state
+        attention_state = engine.current_attention_states.get(user_id, AttentionState.FOCUSED)
+        attention_str = attention_state.value if hasattr(attention_state, 'value') else str(attention_state)
+
+        # Get break suggestions count (simplified for statusline)
+        breaks_suggested = 0
+        if user_id in engine.user_profiles:
+            profile = engine.user_profiles[user_id]
+            # Simple heuristic: suggest break if past optimal duration
+            breaks_suggested = 1 if profile.optimal_task_duration > 0 else 0
+
+        # Get hyperfocus protections count
+        hyperfocus_protections = 0
+        if attention_str == "hyperfocused":
+            hyperfocus_protections = 1
+
+        return {
+            "energy_level": energy_str,
+            "attention_state": attention_str,
+            "breaks_suggested": breaks_suggested,
+            "hyperfocus_protections": hyperfocus_protections
+        }
+
+    except Exception as e:
+        logger.error(f"Statusline data retrieval failed: {e}")
+        # Return safe defaults
+        return {
+            "energy_level": "MEDIUM",
+            "attention_state": "FOCUSED",
+            "breaks_suggested": 0,
+            "hyperfocus_protections": 0
+        }
+
+
+# ============================================================================
+# Metrics Endpoint (Phase 3.3 Performance Monitoring)
+# ============================================================================
+
+@router.get("/metrics")
+async def metrics():
+    """
+    Prometheus metrics endpoint for performance monitoring.
+
+    Exposes:
+    - API request counts and latency histograms
+    - Cache hit/miss rates
+    - ML prediction metrics
+    - System performance indicators
+
+    Access: GET /api/v1/metrics
+    """
+    if not PROMETHEUS_AVAILABLE:
+        return {"error": "Prometheus metrics not available"}
+
+    return generate_latest()
 
 
 # ============================================================================
