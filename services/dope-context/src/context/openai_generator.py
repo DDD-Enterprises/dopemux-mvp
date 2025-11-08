@@ -76,6 +76,16 @@ class OpenAIContextGenerator:
         self.total_requests = 0
         self.cache_hits = 0
         self.total_tokens = 0
+        self.total_cost_usd = 0.0
+
+        # Per-model pricing (per 1M tokens)
+        self.PRICING = {
+            "gpt-5-mini": {"input": 0.15, "output": 0.60},
+            "gpt-5": {"input": 3.00, "output": 12.00},
+            "gpt-5-codex": {"input": 1.50, "output": 6.00},
+            "gpt-4o": {"input": 2.50, "output": 10.00},
+            "gpt-4o-mini": {"input": 0.15, "output": 0.60},
+        }
 
         logger.info(f"OpenAI context generator initialized with model {model}")
 
@@ -142,10 +152,12 @@ class OpenAIContextGenerator:
             input_tokens = completion.usage.prompt_tokens
             output_tokens = completion.usage.completion_tokens
 
-            # Calculate cost (gpt-5-mini pricing)
-            cost_usd = (input_tokens * 0.15 / 1_000_000) + (output_tokens * 0.60 / 1_000_000)
+            # Calculate cost based on model
+            model_pricing = self.PRICING.get(self.model, {"input": 0.15, "output": 0.60})
+            cost_usd = (input_tokens * model_pricing["input"] / 1_000_000) + (output_tokens * model_pricing["output"] / 1_000_000)
 
             self.total_tokens += tokens_used
+            self.total_cost_usd += cost_usd
 
             response = ContextResponse(
                 context=context,
@@ -237,3 +249,26 @@ Provide a brief description that would help someone understand what this code do
             "total_tokens": self.total_tokens,
             "avg_tokens_per_request": round(self.total_tokens / max(1, self.total_requests - self.cache_hits), 1)
         }
+
+    def get_cost_summary(self) -> Dict:
+        """Get cost tracking summary."""
+        try:
+            cache_rate = self.cache_hits / self.total_requests if self.total_requests > 0 else 0
+            return {
+                "model": getattr(self, 'model', 'unknown'),
+                "total_requests": getattr(self, 'total_requests', 0),
+                "cache_hits": getattr(self, 'cache_hits', 0),
+                "cache_rate": round(cache_rate, 3),
+                "total_tokens": getattr(self, 'total_tokens', 0),
+                "total_cost_usd": round(getattr(self, 'total_cost_usd', 0.0), 4),
+            }
+        except Exception as e:
+            # Return safe fallback if anything fails
+            return {
+                "model": "unknown",
+                "total_requests": 0,
+                "cache_hits": 0,
+                "cache_rate": 0.0,
+                "total_tokens": 0,
+                "total_cost_usd": 0.0,
+            }
