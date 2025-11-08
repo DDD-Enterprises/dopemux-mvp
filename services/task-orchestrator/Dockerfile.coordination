@@ -26,7 +26,7 @@ WORKDIR /app
 
 # Copy requirements first for better caching
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && pip install uvicorn[standard]==0.32.0 fastapi==0.115.2
 
 # Copy application code
 COPY plane_coordinator.py .
