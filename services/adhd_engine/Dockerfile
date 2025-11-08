@@ -28,7 +28,7 @@ EXPOSE 8095
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8095/health || exit 1
 
-# Set Python path and run with uvicorn as module
+# Set Python path and run main.py directly
 ENV PYTHONPATH=/app
 ENV API_PORT=8095
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8095", "--log-level", "info"]
+CMD ["python", "main.py"]
