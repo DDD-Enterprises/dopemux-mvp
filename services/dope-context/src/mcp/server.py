@@ -22,7 +22,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from ..preprocessing.code_chunker import CodeChunker, ChunkingConfig
-from ..context.openai_generator import OpenAIContextGenerator
+# from ..context.openai_generator import OpenAIContextGenerator
 from ..embeddings.voyage_embedder import VoyageEmbedder
 from ..embeddings.contextualized_embedder import ContextualizedEmbedder
 from ..search.dense_search import MultiVectorSearch, SearchProfile
@@ -816,12 +816,7 @@ async def _get_index_status_impl() -> Dict:
         "collection_name": info.get("name", "code_index"),
         "total_vectors": info.get("vectors_count", 0),
         "status": info.get("status", "unknown"),
-        "embedding_cost_summary": _embedder.get_cost_summary() if _embedder else {},
-        "context_cost_summary": (
-            _pipeline.context_generator.get_cost_summary()
-            if _pipeline.context_generator
-            else {}
-        ),
+        "cost_summary": _pipeline.get_cost_summary() if _pipeline else {},
     }
 
 
@@ -1543,44 +1538,6 @@ async def get_autonomous_status() -> Dict:
     }
 
 
-async def _sync_workspace_impl(workspace_path: str) -> Dict:
-    """
-    Internal implementation of sync_workspace.
-
-    Args:
-        workspace_path: Workspace to sync
-
-    Returns:
-        Change detection results
-    """
-    workspace = Path(workspace_path).resolve()
-
-    synchronizer = FileSynchronizer(
-        workspace_path=workspace,
-        include_patterns=["*.py", "*.js", "*.ts", "*.tsx"],
-        exclude_patterns=[
-            "__pycache__",
-            "*.pyc",
-            "node_modules",
-            ".git",
-            "dist",
-            "build",
-        ],
-    )
-
-    changes = synchronizer.check_changes()
-
-    return {
-        "workspace": str(workspace),
-        "added": len(changes.added),
-        "modified": len(changes.modified),
-        "removed": len(changes.removed),
-        "total_changes": changes.total_changes(),
-        "has_changes": changes.has_changes(),
-        "added_files": changes.added[:10],  # Sample
-        "modified_files": changes.modified[:10],
-        "removed_files": changes.removed[:10],
-    }
 
 
 # AUTONOMOUS DOCS INDEXING

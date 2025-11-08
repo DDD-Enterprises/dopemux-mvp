@@ -332,7 +332,7 @@ services:
     depends_on:
       - dopemux-redis-events
       - conport
-      - dopemux-adhd-engine
+      - adhd-engine
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8090/health || exit 1"]
       timeout: 10s
