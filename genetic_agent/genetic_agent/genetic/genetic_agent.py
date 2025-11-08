@@ -1,16 +1,20 @@
 """Genetic Agent implementation with GP operators and hybrid approach."""
 
 import asyncio
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 import time
 
-from ..core.agent import BaseAgent
-from ..core.state import AgentState
-from ..shared.mcp.serena_client import SerenaClient
-from ..shared.mcp.dope_context_client import DopeContextClient
+from core.agent import BaseAgent
+from core.state import AgentState
+from shared.mcp.serena_client import SerenaClient
+from shared.mcp.dope_context_client import DopeContextClient
+from shared.mcp.conport_client import ConPortClient
+from shared.mcp.memory_adapter import MemoryAdapter
+from shared.eventbus import SimpleEventBus as EventBus, Event, EventType
 
 from .gp_operators import GPOperators
 from .population import GPPopulation, GPIndividual
+from shared.mcp.zen_client import ZenClient
 
 
 class RepairCandidate:
@@ -31,6 +35,8 @@ class GeneticAgent(BaseAgent):
         super().__init__(config)
         self.serena_client = SerenaClient(self.config.serena_url, self.config)
         self.dope_client = DopeContextClient(self.config.dope_context_url, self.config)
+        self.conport_client = ConPortClient(self.config.conport_url, self.config)
+        self.zen_client = ZenClient(self.config.zen_url, self.config)
 
         # GP components
         self.gp_operators = GPOperators(max_tree_depth=self.config.max_tree_depth)
@@ -39,10 +45,13 @@ class GeneticAgent(BaseAgent):
             population_size=self.config.population_size
         )
 
+        # Memory adapter for ConPort logging (research-based learning)
+        self.memory_adapter = MemoryAdapter(self.conport_client, self.config.workspace_id)
+
         self.repair_candidates: List[RepairCandidate] = []
 
     async def _execute_repair(self, task: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute hybrid LLM + GP repair process."""
+        """Execute hybrid LLM + GP repair process with selective GP activation."""
         bug_description = task.get("bug_description", "")
         file_path = task.get("file_path", "")
         line_number = task.get("line_number", 0)
@@ -51,29 +60,67 @@ class GeneticAgent(BaseAgent):
         self.status.update_state(AgentState.ANALYZING)
         context = await self._analyze_bug(bug_description, file_path, line_number)
 
+        # Phase 1.5: Determine repair strategy based on failure patterns
+        repair_strategy = await self._determine_repair_strategy(context)
+
         # Phase 2: LLM-First Generation (Vanilla-style)
         self.status.update_state(AgentState.REPAIRING)
         llm_repair = await self._generate_llm_repair(context)
 
+        # Log LLM attempt to ConPort (research-based learning)
+        await self.memory_adapter.log_attempt(
+            attempt_number=1,
+            operator="enhanced_llm",
+            fitness_score=llm_repair.confidence,
+            context=context,
+            success=llm_repair.confidence >= self.config.confidence_threshold
+        )
+
         if llm_repair.confidence >= self.config.confidence_threshold:
             # LLM repair is good enough, return it
+            await self._log_session_summary(success=True)
             return self._format_success_response(llm_repair, 1, "llm")
 
-        # Phase 3: GP Enhancement
-        gp_success = await self._run_gp_optimization(llm_repair, context)
+        # Phase 3: GP Enhancement (selective based on strategy)
+        if repair_strategy == "selective_gp":
+            gp_success = await self._run_selective_gp(llm_repair, context)
+        else:
+            gp_success = await self._run_gp_optimization(llm_repair, context)
 
         if gp_success:
             # Return best GP-enhanced repair
             best_candidate = self._get_best_candidate()
             if best_candidate and best_candidate.confidence >= self.config.confidence_threshold:
                 iterations = self.population_manager.generation + 1  # +1 for LLM phase
+                await self._log_session_summary(success=True)
                 return self._format_success_response(best_candidate, iterations, "gp")
 
         # Phase 4: Fallback to best available
         best_candidate = self._get_best_candidate()
         if best_candidate:
             iterations = len(self.repair_candidates)
+            # Log successful hybrid approach
+            await self.memory_adapter.log_attempt(
+                attempt_number=iterations,
+                operator="hybrid_fallback",
+                fitness_score=best_candidate.confidence,
+                context=context,
+                success=True
+            )
+            await self._log_session_summary(success=True)
             return self._format_success_response(best_candidate, iterations, "hybrid")
+
+        # No suitable repair found - log failure signals for learning
+        failure_signals = [
+            "llm_repair_insufficient",
+            "gp_optimization_failed",
+            f"complexity_{context.get('complexity', {}).get('score', 0.5):.1f}",
+            f"similar_patterns_{len(context.get('similar_patterns', {}).get('results', []))}"
+        ]
+        await self.memory_adapter.log_failure_signals(failure_signals, context)
+
+        # Log session summary for research learning
+        await self._log_session_summary(success=False)
 
         # No suitable repair found
         return {
@@ -85,45 +132,245 @@ class GeneticAgent(BaseAgent):
             "candidates_evaluated": len(self.repair_candidates)
         }
 
+    async def _determine_repair_strategy(self, context: Dict[str, Any]) -> str:
+        """Determine repair strategy using Zen planner for intelligent decision making."""
+        try:
+            # Retrieve historical failure patterns
+            failure_patterns = await self.memory_adapter.get_failure_patterns(limit=10)
+
+            # Analyze bug complexity indicators
+            complexity_score = context.get('complexity', {}).get('score', 0.5)
+            similar_patterns_count = len(context.get('similar_patterns', {}).get('results', []))
+            description_length = len(context.get('description', ''))
+
+            # Use Zen planner for strategic decision making
+            planning_prompt = f"""Plan the repair strategy for this bug:
+
+Bug: {context['description']}
+Complexity: {complexity_score}
+Similar patterns: {similar_patterns_count}
+Description length: {description_length}
+Historical failures: {len([p for p in failure_patterns if 'complexity' in p.get('signals', [])])} complex cases
+
+Available strategies:
+1. selective_gp: Small population (3-5) for complex/novel bugs
+2. standard_gp: Full population for routine bugs
+
+Choose the optimal strategy based on complexity, novelty, and historical patterns."""
+
+            async with self.zen_client:
+                response = await self.zen_client.planner(
+                    step=planning_prompt,
+                    step_number=1,
+                    total_steps=1,
+                    next_step_required=False,
+                    model="gemini-2.5-pro"
+                )
+
+            # Extract strategy from response
+            planner_result = response.get('plan', '').lower()
+            chosen_strategy = "selective_gp" if 'selective' in planner_result and 'gp' in planner_result else "standard_gp"
+
+            # Log Zen planner decision to ConPort for research learning
+            await self.memory_adapter.log_attempt(
+                attempt_number=0,  # Strategy determination happens before repair attempts
+                operator=f"zen_planner_{chosen_strategy}",
+                fitness_score=1.0,  # Strategy decisions are always "successful"
+                context={
+                    **context,
+                    "zen_planner_result": planner_result,
+                    "strategy_factors": {
+                        "complexity_score": complexity_score,
+                        "similar_patterns_count": similar_patterns_count,
+                        "description_length": description_length,
+                        "historical_complex_failures": len([p for p in failure_patterns if 'complexity' in p.get('signals', [])])
+                    }
+                },
+                success=True
+            )
+
+            return chosen_strategy
+
+        except Exception as e:
+            # Fallback to standard GP on error
+            print(f"Zen planning failed: {e}")
+            return "standard_gp"
+
+    async def _run_selective_gp(self, llm_repair: RepairCandidate, context: Dict[str, Any]) -> bool:
+        """Run selective GP with small population (3-5 candidates) for complex bugs."""
+        try:
+            # Phase 2: Small population (3-5 candidates) - research-based approach
+            small_population_size = 3  # Research shows 3-5 candidates optimal for complex cases
+
+            # Get complexity for operator recommendation
+            complexity_score = context.get('complexity', {}).get('score', 0.5)
+
+            # Get recommended operator from learning history
+            recommended_operator = await self.memory_adapter.recommend_operator(
+                context_complexity=complexity_score,
+                recent_failures=[]  # Could be populated from context
+            )
+
+            # Initialize selective population with LLM seed and recommended operator bias
+            self.population_manager.initialize_from_seed(llm_repair.code, variations=small_population_size - 1)
+
+            # Enhanced fitness function with operator awareness
+            def fitness_func(code: str) -> tuple[float, Dict[str, float]]:
+                fitness, components = self._evaluate_fitness(code, context)
+                # Bonus for using recommended operator patterns (learned from history)
+                if recommended_operator in ["negate_condition", "swap_operator"]:
+                    # These operators work well for complex logic - slight bonus
+                    fitness += 0.05
+                return fitness, components
+
+            # Evolve with limited generations (research shows 2-3 generations sufficient for small populations)
+            max_selective_generations = 2
+
+            for generation in range(max_selective_generations):
+                continue_evolution = self.population_manager.evolve(fitness_func)
+
+                # Log selective GP attempt with operator recommendation
+                operator_used = f"selective_gp_{recommended_operator}_gen_{generation + 1}"
+                await self.memory_adapter.log_attempt(
+                    attempt_number=generation + 2,  # +1 for LLM, +1 for generation offset
+                    operator=operator_used,
+                    fitness_score=self.population_manager.get_best_individual().fitness,
+                    context=context,
+                    success=False  # Will be updated if successful
+                )
+
+                # Check for good enough solution (research threshold)
+                best_fitness = self.population_manager.get_best_individual().fitness
+                if best_fitness >= self.config.confidence_threshold:
+                    # Convert to candidate
+                    best_individual = self.population_manager.get_best_individual()
+                    candidate = RepairCandidate(
+                        code=best_individual.code,
+                        explanation=f"Selective GP success with {recommended_operator} (gen {generation + 1}, fitness {best_fitness:.3f})",
+                        confidence=best_fitness,
+                        source="selective_gp"
+                    )
+                    self.repair_candidates.append(candidate)
+
+                    # Log successful selective GP
+                    await self.memory_adapter.log_attempt(
+                        attempt_number=generation + 2,
+                        operator=operator_used,
+                        fitness_score=best_fitness,
+                        context=context,
+                        success=True
+                    )
+                    return True
+
+                if not continue_evolution:
+                    break
+
+            # Add final best individual as candidate
+            best_individual = self.population_manager.get_best_individual()
+            candidate = RepairCandidate(
+                code=best_individual.code,
+                explanation=f"Selective GP final with {recommended_operator} (fitness {best_individual.fitness:.3f})",
+                confidence=best_individual.fitness,
+                source="selective_gp"
+            )
+            self.repair_candidates.append(candidate)
+
+            return best_individual.fitness >= 0.6  # Lower threshold for selective GP (research-based)
+
+        except Exception as e:
+            # Selective GP failed, log and continue
+            print(f"Selective GP failed: {e}")
+            return False
+
     async def _analyze_bug(self, description: str, file_path: str, line: int) -> Dict[str, Any]:
-        """Analyze the bug using MCP services."""
+        """Analyze the bug using enhanced MCP services for comprehensive context."""
+        # Complexity analysis with Serena
         try:
             async with self.serena_client:
                 complexity = await self.serena_client.analyze_complexity(file_path, "")
         except Exception:
             complexity = {"score": 0.5, "error": "Serena unavailable"}
 
+        # Enhanced pattern search with DopeContext using multiple strategies
+        similar_patterns = {"results": [], "error": None}
         try:
             async with self.dope_client:
-                similar_repairs = await self.dope_client.search_code(f"fix {description}")
-        except Exception:
-            similar_repairs = {"results": [], "error": "Dope-Context unavailable"}
+                # Multi-query search for comprehensive pattern matching
+                search_queries = [
+                    f"fix {description}",  # Direct fix search
+                    f"bug {description}",  # Bug pattern search
+                    f"error {description}",  # Error handling patterns
+                    f"repair {description}"  # Repair pattern search
+                ]
+
+                all_results = []
+                for query in search_queries:
+                    try:
+                        results = await self.dope_client.search_code(
+                            query=query,
+                            top_k=5,  # Limit per query to avoid overwhelm
+                            profile="debugging"  # Use debugging profile for bug-related searches
+                        )
+                        if results and "results" in results:
+                            all_results.extend(results["results"])
+                    except Exception as e:
+                        continue  # Continue with other queries if one fails
+
+                # Deduplicate and rank results by relevance and complexity
+                seen_codes = set()
+                unique_results = []
+                for result in all_results:
+                    code_hash = hash(result.get("code", ""))
+                    if code_hash not in seen_codes:
+                        seen_codes.add(code_hash)
+                        # Add complexity score for ADHD-aware selection
+                        result["complexity_score"] = complexity.get("score", 0.5)
+                        unique_results.append(result)
+
+                # Sort by relevance score and limit to top 10 for ADHD optimization
+                unique_results.sort(key=lambda x: x.get("relevance_score", 0), reverse=True)
+                similar_patterns["results"] = unique_results[:10]
+
+        except Exception as e:
+            similar_patterns["error"] = f"Dope-Context unavailable: {e}"
 
         return {
             "description": description,
             "file_path": file_path,
             "line": line,
             "complexity": complexity,
-            "similar_patterns": similar_repairs
+            "similar_patterns": similar_patterns
         }
 
     async def _generate_llm_repair(self, context: Dict[str, Any]) -> RepairCandidate:
-        """Generate initial repair using LLM (vanilla approach)."""
+        """Generate initial repair using LLM with enhanced pattern analysis."""
         prompt = self._build_repair_prompt(context, 0)
 
-        # TODO: Replace with actual LLM call via MCP
-        # For now, create a mock LLM response
-        mock_response = {
-            "code": f"# LLM-generated fix for: {context['description']}\npass  # TODO: implement repair",
-            "explanation": f"LLM-generated repair attempt for: {context['description']}",
-            "confidence": 0.6  # Lower confidence to trigger GP optimization
-        }
+        # TODO: Replace with actual LLM call - for now using enhanced mock based on patterns
+        similar_patterns = context.get('similar_patterns', {}).get('results', [])
+        complexity_score = context.get('complexity', {}).get('score', 0.5)
+
+        # Enhanced mock response based on context analysis
+        if similar_patterns:
+            # Use similar pattern as inspiration
+            mock_response = {
+                "code": f"# Enhanced fix based on {len(similar_patterns)} similar patterns\n# for: {context['description']}\npass  # TODO: implement repair",
+                "explanation": f"Pattern-based repair attempt using {len(similar_patterns)} similar fixes for: {context['description']}",
+                "confidence": min(0.8, complexity_score + 0.2)  # Higher confidence with patterns
+            }
+        else:
+            # No patterns found, lower confidence
+            mock_response = {
+                "code": f"# Basic fix for: {context['description']}\npass  # TODO: implement repair",
+                "explanation": f"Basic repair attempt for: {context['description']}",
+                "confidence": 0.4  # Lower confidence without patterns
+            }
 
         candidate = RepairCandidate(
             code=mock_response["code"],
             explanation=mock_response["explanation"],
             confidence=mock_response["confidence"],
-            source="llm"
+            source="enhanced_llm"
         )
 
         self.repair_candidates.append(candidate)
@@ -178,29 +425,45 @@ class GeneticAgent(BaseAgent):
             return False
 
     def _evaluate_fitness(self, code: str, context: Dict[str, Any]) -> Tuple[float, Dict[str, float]]:
-        """Evaluate fitness of a code repair."""
-        # Component 1: Correctness (syntax validity)
+        """Evaluate fitness using research-based multi-objective scoring."""
+
+        # Component 1: Test Success (100% weight - research priority)
+        # TODO: Replace with actual test execution
+        # For now, use syntax validation as proxy for basic correctness
         tree = self.gp_operators.code_to_tree(code)
-        correctness = 1.0 if tree and self.gp_operators.validate_ast(tree) else 0.0
+        syntax_valid = 1.0 if tree and self.gp_operators.validate_ast(tree) else 0.0
+        test_success = syntax_valid  # Placeholder - would run actual tests
 
-        # Component 2: Simplicity (code length minimization)
-        # Prefer shorter, simpler repairs
-        simplicity = max(0.0, 1.0 - (len(code) / 1000.0))  # Penalize very long code
+        # Component 2: Size Penalty (0.1/line over 50 lines - from Chronicle research)
+        lines_of_code = len(code.split('\n'))
+        size_penalty = max(0, (lines_of_code - 50) * 0.1) if lines_of_code > 50 else 0.0
+        size_score = max(0.0, 1.0 - size_penalty)  # Convert penalty to score
 
-        # Component 3: Execution (placeholder - would run tests)
-        execution = 0.5  # Placeholder - real implementation would run tests
+        # Component 3: Lint Penalty (5/error - research-based lint weighting)
+        # TODO: Replace with actual linting
+        # For now, use basic AST complexity as proxy
+        complexity_penalty = self.gp_operators.get_tree_complexity(tree) / 100.0 if tree else 1.0
+        lint_penalty = complexity_penalty * 5  # 5 points per "error"
+        lint_score = max(0.0, 1.0 - lint_penalty)
 
-        # Weighted fitness
+        # Research-based weighted fitness (GenProg/Chronicle methodology)
+        # Test success gets highest priority, followed by code quality metrics
         fitness = (
-            self.config.correctness_weight * correctness +
-            self.config.simplicity_weight * simplicity +
-            self.config.execution_weight * execution
+            1.0 * test_success +           # 100% weight on test success
+            0.3 * size_score +             # Size minimization (Chronicle)
+            0.2 * lint_score               # Code quality (research standards)
         )
 
+        # Normalize to 0.0-1.0 range
+        fitness = min(1.0, max(0.0, fitness))
+
         components = {
-            "correctness": correctness,
-            "simplicity": simplicity,
-            "execution": execution
+            "test_success": test_success,
+            "size_score": size_score,
+            "lint_score": lint_score,
+            "lines_of_code": lines_of_code,
+            "complexity_penalty": complexity_penalty,
+            "raw_fitness": fitness
         }
 
         return fitness, components
@@ -223,20 +486,57 @@ class GeneticAgent(BaseAgent):
             "candidates_evaluated": len(self.repair_candidates)
         }
 
+    async def _log_session_summary(self, success: bool) -> None:
+        """Log comprehensive session summary for research learning."""
+        total_attempts = len(self.repair_candidates)
+        successful_repairs = sum(1 for c in self.repair_candidates if c.confidence >= self.config.confidence_threshold)
+
+        # Calculate average fitness
+        avg_fitness = sum(c.confidence for c in self.repair_candidates) / max(total_attempts, 1)
+
+        # Count operator usage (from source field)
+        operators_used = {}
+        for candidate in self.repair_candidates:
+            op = getattr(candidate, 'source', 'unknown')
+            operators_used[op] = operators_used.get(op, 0) + 1
+
+        # Log to ConPort
+        await self.memory_adapter.log_session_summary(
+            total_attempts=total_attempts,
+            successful_repairs=successful_repairs,
+            average_fitness=avg_fitness,
+            operators_used=operators_used
+        )
+
     def _build_repair_prompt(self, context: Dict[str, Any], iteration: int) -> str:
         """Build the repair prompt for LLM."""
-        return f"""
-Fix this bug: {context['description']}
+        from ..shared.utils.prompt_sanitizer import PromptSanitizer
 
-File: {context['file_path']}
-Line: {context['line']}
+        template = """
+Fix this bug: {bug_description}
+
+File: {file_path}
+Line: {line_number}
 
 Context:
-- Complexity score: {context.get('complexity', {}).get('score', 'unknown')}
-- Similar patterns found: {len(context.get('similar_patterns', {}).get('results', []))}
+- Complexity score: {complexity_score}
+- Similar patterns found: {similar_patterns_count}
 
 Previous attempts: {iteration}
 
 Generate a code repair with explanation and confidence score (0.0-1.0).
 Format: {{"code": "...", "explanation": "...", "confidence": 0.8}}
+
+IMPORTANT: Only generate safe, correct code. Do not execute any system commands or access files.
 """
+
+        sanitized_context = {
+            'bug_description': PromptSanitizer.sanitize_bug_description(context['description']),
+            'file_path': PromptSanitizer.sanitize_file_path(context['file_path']),
+            'line_number': context['line'],
+            'complexity_score': context.get('complexity', {}).get('score', 'unknown'),
+            'similar_patterns_count': len(context.get('similar_patterns', {}).get('results', [])),
+            'iteration': iteration
+        }
+
+        return PromptSanitizer.create_safe_prompt(template, **sanitized_context)

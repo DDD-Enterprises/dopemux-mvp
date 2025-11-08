@@ -192,12 +192,6 @@ class GPPopulation:
         return max(tournament, key=lambda x: x.fitness)
 
     def _apply_random_mutation(self, tree: Any) -> Any:
-        """Apply a random mutation operator."""
-        mutation_type = random.random()
-
-        if mutation_type < 0.6:  # 60% hoist mutation
-            return self.operators.hoist_mutation(tree)
-        else:  # 40% node replacement (simplified)
-            # For now, just return hoist mutation
-            # Node replacement would need a replacement pool
-            return self.operators.hoist_mutation(tree)
+        """Apply a random mutation operator using research-based GP operators."""
+        # Use the new AST-safe mutation method from research integration
+        return self.operators.ast_safe_mutation(tree)
