@@ -120,6 +120,7 @@ def workspace_to_hash(workspace_path: Path) -> str:
     Generate stable hash from workspace path.
 
     Uses MD5 of absolute normalized path (same as official claude-context).
+    Supports WORKSPACE_HASH_OVERRIDE env var for Docker compatibility.
 
     Args:
         workspace_path: Absolute workspace path
@@ -127,6 +128,17 @@ def workspace_to_hash(workspace_path: Path) -> str:
     Returns:
         8-character hex hash
     """
+    import os
+    
+    # Check for hash override (for Docker where mount path differs from host)
+    override = os.getenv("WORKSPACE_HASH_OVERRIDE")
+    if override:
+        import logging
+        logging.getLogger(__name__).info(
+            f"Using WORKSPACE_HASH_OVERRIDE={override} (workspace: {workspace_path})"
+        )
+        return override
+    
     normalized = str(workspace_path.resolve())
     hash_full = hashlib.md5(normalized.encode()).hexdigest()
     return hash_full[:8]
