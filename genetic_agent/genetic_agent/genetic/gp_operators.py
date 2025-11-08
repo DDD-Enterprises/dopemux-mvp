@@ -120,6 +120,123 @@ class GPOperators:
         """Calculate tree complexity (number of nodes)."""
         return len(self._get_all_nodes(tree))
 
+    def negate_condition(self, tree: ast.AST) -> ast.AST:
+        """Negate a conditional expression (research-based operator from GP literature)."""
+        class ConditionNegator(ast.NodeTransformer):
+            def visit_Compare(self, node):
+                # Handle comparison operators: > → <=, < → >=, == → !=, etc.
+                if len(node.ops) == 1:
+                    op = node.ops[0]
+                    if isinstance(op, ast.Gt):
+                        # > → <=
+                        node.ops[0] = ast.LtE()
+                    elif isinstance(op, ast.Lt):
+                        # < → >=
+                        node.ops[0] = ast.GtE()
+                    elif isinstance(op, ast.GtE):
+                        # >= → <
+                        node.ops[0] = ast.Lt()
+                    elif isinstance(op, ast.LtE):
+                        # <= → >
+                        node.ops[0] = ast.Gt()
+                    elif isinstance(op, ast.Eq):
+                        # == → !=
+                        node.ops[0] = ast.NotEq()
+                    elif isinstance(op, ast.NotEq):
+                        # != → ==
+                        node.ops[0] = ast.Eq()
+                return self.generic_visit(node)
+
+            def visit_If(self, node):
+                # Negate if condition and swap branches (if A then B else C → if !A then C else B)
+                if node.orelse:  # Has else clause
+                    # Swap the bodies
+                    node.body, node.orelse = node.orelse, node.body
+                    # Negate the condition
+                    node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
+                return self.generic_visit(node)
+
+        negator = ConditionNegator()
+        return negator.visit(copy.deepcopy(tree))
+
+    def swap_operator(self, tree: ast.AST) -> ast.AST:
+        """Swap operators in expressions (research-based operator from GP literature)."""
+        class OperatorSwapper(ast.NodeTransformer):
+            def visit_BinOp(self, node):
+                # Swap arithmetic operators: + ↔ -, * ↔ /
+                if isinstance(node.op, ast.Add):
+                    node.op = ast.Sub()
+                elif isinstance(node.op, ast.Sub):
+                    node.op = ast.Add()
+                elif isinstance(node.op, ast.Mult):
+                    node.op = ast.Div()
+                elif isinstance(node.op, ast.Div):
+                    node.op = ast.Mult()
+                elif isinstance(node.op, ast.FloorDiv):
+                    node.op = ast.Mod()
+                elif isinstance(node.op, ast.Mod):
+                    node.op = ast.FloorDiv()
+                return self.generic_visit(node)
+
+            def visit_BoolOp(self, node):
+                # Swap logical operators: and ↔ or
+                if isinstance(node.op, ast.And):
+                    node.op = ast.Or()
+                elif isinstance(node.op, ast.Or):
+                    node.op = ast.And()
+                return self.generic_visit(node)
+
+        swapper = OperatorSwapper()
+        return swapper.visit(copy.deepcopy(tree))
+
+    def hunk_edit(self, tree: ast.AST, edit_type: str = "insert") -> ast.AST:
+        """Perform hunk edits (GenProg research): insert/delete statement blocks."""
+        nodes = self._get_all_nodes(tree)
+
+        if edit_type == "insert":
+            # Insert a pass statement at a random location
+            if nodes:
+                target_node = random.choice(nodes)
+                if hasattr(target_node, 'body') and isinstance(target_node.body, list):
+                    # Insert pass statement
+                    pass_stmt = ast.Pass()
+                    insert_pos = random.randint(0, len(target_node.body))
+                    target_node.body.insert(insert_pos, pass_stmt)
+
+        elif edit_type == "delete":
+            # Delete a random statement (safely)
+            stmt_nodes = [n for n in nodes if isinstance(n, (ast.Expr, ast.Assign, ast.Return))]
+            if stmt_nodes and len(stmt_nodes) > 1:  # Keep at least one statement
+                target_stmt = random.choice(stmt_nodes)
+                # Find parent and remove
+                for node in ast.walk(tree):
+                    if hasattr(node, 'body') and isinstance(node.body, list):
+                        if target_stmt in node.body:
+                            node.body.remove(target_stmt)
+                            break
+
+        return tree
+
+    def ast_safe_mutation(self, tree: ast.AST) -> ast.AST:
+        """Apply AST-safe mutations based on GP research patterns."""
+        mutations = [
+            self.negate_condition,
+            self.swap_operator,
+            lambda t: self.hunk_edit(t, "insert"),
+            lambda t: self.hunk_edit(t, "delete"),
+            self.hoist_mutation
+        ]
+
+        # Randomly select and apply a mutation
+        mutation = random.choice(mutations)
+        result = mutation(tree)
+
+        # Validate the result is still AST-valid
+        if self.validate_ast(result):
+            return result
+        else:
+            return tree  # Return original if mutation broke AST
+
     def simplify_tree(self, tree: ast.AST, max_complexity: int = 50) -> ast.AST:
         """Simplify tree if it exceeds maximum complexity."""
         complexity = self.get_tree_complexity(tree)
