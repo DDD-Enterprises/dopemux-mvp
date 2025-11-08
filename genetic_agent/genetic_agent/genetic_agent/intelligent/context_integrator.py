@@ -5,9 +5,9 @@ from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from ..shared.mcp.serena_client import SerenaClient
-from ..shared.mcp.dope_context_client import DopeContextClient
-from ..core.config import AgentConfig
+from shared.mcp.serena_client import SerenaClient
+from shared.mcp.dope_context_client import DopeContextClient
+from core.config import AgentConfig
 
 
 @dataclass

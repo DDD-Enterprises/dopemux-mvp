@@ -2,16 +2,18 @@ version: '3.8'
 
 services:
   genetic-agent:
-    build: .
+    build:
+      context: ..
+      dockerfile: genetic_agent/Dockerfile
     ports:
       - "8000:8000"
     environment:
       - GENETIC_AGENT_ENV=production
       - PYTHONPATH=/app
-      # MCP Service URLs - configure these for your environment
-      - SERENA_URL=${SERENA_URL:-http://host.docker.internal:3001}
-      - DOPE_CONTEXT_URL=${DOPE_CONTEXT_URL:-http://host.docker.internal:3002}
-      - CONPORT_URL=${CONPORT_URL:-http://host.docker.internal:3003}
+      # MCP Service URLs - connect to mcp-network services
+      - SERENA_URL=${SERENA_URL:-http://mcp-serena:3006}
+      - DOPE_CONTEXT_URL=${DOPE_CONTEXT_URL:-http://mcp-dope-context:3010}
+      - CONPORT_URL=${CONPORT_URL:-http://mcp-conport:3004}
       - WORKSPACE_ID=${WORKSPACE_ID:-/app/workspace}
     volumes:
       - ./logs:/app/logs
@@ -73,3 +75,6 @@ volumes:
 networks:
   genetic-network:
     driver: bridge
+  mcp-network:
+    external: true
+    name: mcp-network
