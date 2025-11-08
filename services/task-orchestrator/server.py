@@ -19,25 +19,7 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime
 from collections import defaultdict
 
-# Add dopemux to path for event bus integration
-project_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(project_root))
-
-# Temporarily disable event bus integration for testing
-EVENTS_ENABLED = False
-logging.warning("Event bus integration disabled for testing - continuing without events")
-
-# Mock classes to prevent import errors
-class RedisStreamsAdapter:
-    pass
-
-class DopemuxEvent:
-    pass
-
-class MCPEventProducer:
-    pass
-
-# Configure logging
+# Configure logging first
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -45,19 +27,32 @@ logging.basicConfig(
 )
 logger = logging.getLogger("task-orchestrator-wrapper")
 
-# Temporarily disable event bus integration for testing
-EVENTS_ENABLED = False
-logging.warning("Event bus integration disabled for testing - continuing without events")
+# Add dopemux to path for event bus integration
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
 
-# Mock classes to prevent import errors
-class RedisStreamsAdapter:
-    pass
+# Enable event bus integration
+EVENTS_ENABLED = True
 
-class DopemuxEvent:
-    pass
+# Try to import real event bus classes, fall back to mocks if not available
+try:
+    from dopemux.shared.event_bus.redis_streams_adapter import RedisStreamsAdapter
+    from dopemux.shared.event_bus.events import DopemuxEvent
+    from dopemux.shared.mcp.event_producer import MCPEventProducer
+    logger.info("Event bus integration enabled successfully")
+except ImportError as e:
+    logger.warning(f"Event bus imports failed ({e}), using mock classes")
+    EVENTS_ENABLED = False
 
-class MCPEventProducer:
-    pass
+    # Mock classes to prevent import errors
+    class RedisStreamsAdapter:
+        pass
+
+    class DopemuxEvent:
+        pass
+
+    class MCPEventProducer:
+        pass
 
 
 class TaskOrchestratorWrapper:
