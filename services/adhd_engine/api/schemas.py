@@ -75,6 +75,7 @@ class EnergyLevelResponse(BaseModel):
     energy_level: str  # very_low, low, medium, high, hyperfocus
     confidence: float = Field(default=0.8, ge=0.0, le=1.0)
     last_updated: datetime
+    ml_prediction: Optional[MLPrediction] = None
 
 
 class AttentionStateResponse(BaseModel):
@@ -82,6 +83,7 @@ class AttentionStateResponse(BaseModel):
     attention_state: str  # scattered, transitioning, focused, hyperfocused, overwhelmed
     indicators: Dict[str, Any]
     last_updated: datetime
+    ml_prediction: Optional[MLPrediction] = None
 
 
 # Break Recommendation
@@ -99,6 +101,7 @@ class BreakRecommendationResponse(BaseModel):
     suggestions: List[str]
     urgency: str
     message: str
+    ml_prediction: Optional[MLPrediction] = None
 
 
 # User Profile
@@ -139,6 +142,7 @@ class ActivityUpdateResponse(BaseModel):
     energy_updated: bool
     attention_updated: bool
     message: str
+    ml_prediction: Optional[MLPrediction] = None
 
 
 # ML Pattern & Prediction Endpoints (IP-005 Days 11-12)
@@ -185,6 +189,7 @@ class HealthResponse(BaseModel):
     accommodation_stats: Dict[str, int]
     current_state: Dict[str, Any]
     effectiveness_metrics: Dict[str, Any]
+    ml_prediction: Optional[MLPrediction] = None
 
 
 # Code Complexity Assessment Schemas
