@@ -516,14 +516,23 @@ class IndexingPipeline:
         """Get current progress."""
         return self.progress
 
+    def _safe_get_cost_summary(self, obj) -> Dict:
+        """Safely get cost summary from an object."""
+        try:
+            if hasattr(obj, 'get_cost_summary'):
+                return obj.get_cost_summary()
+        except Exception as e:
+            logger.warning(f"Failed to get cost summary: {e}")
+        return {}
+
     def get_cost_summary(self) -> Dict:
         """Get detailed cost breakdown."""
         return {
             "context_generation": {
                 "cost_usd": round(self.progress.context_cost_usd, 4),
                 "summary": (
-                    self.context_generator.get_cost_summary()
-                    if self.context_generator and hasattr(self.context_generator, 'get_cost_summary')
+                    self._safe_get_cost_summary(self.context_generator)
+                    if self.context_generator
                     else {}
                 ),
             },

@@ -15,7 +15,7 @@ RUN mkdir -p /app/data /app/logs
 
 ENV NODE_ENV=production
 ENV MCP_SERVER_PORT=3005
-ENV MCP_TRANSPORT=stdio
+ENV MCP_TRANSPORT=sse
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:${MCP_SERVER_PORT}/health || nc -z localhost ${MCP_SERVER_PORT} || exit 1
