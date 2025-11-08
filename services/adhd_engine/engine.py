@@ -1195,7 +1195,8 @@ class ADHDAccommodationEngine:
                 "components": {
                     "redis_persistence": "🟢 Connected" if redis_healthy else "🔴 Disconnected",
                     "monitors_active": f"{active_monitors}/{len(self.monitoring_tasks)}",
-                    "user_profiles": len(self.user_profiles)
+                    "user_profiles": len(self.user_profiles),
+                    "background_prediction": "🟢 Active" if hasattr(self, 'background_service') and self.background_service.running else "🔴 Inactive"
                 },
                 "accommodation_stats": self.accommodation_stats,
                 "current_state": {
@@ -1213,6 +1214,16 @@ class ADHDAccommodationEngine:
         except Exception as e:
             logger.error(f"ADHD accommodation health check failed: {e}")
             return {"overall_status": "🔴 Error", "error": str(e)}
+
+    async def get_background_service_status(self) -> Dict[str, Any]:
+        """Get background prediction service status."""
+        try:
+            from .services.background_prediction_service import get_background_prediction_service
+            service = await get_background_prediction_service()
+            return await service.get_status()
+        except Exception as e:
+            logger.error(f"Failed to get background service status: {e}")
+            return {"error": str(e), "running": False}
 
     # Placeholder log methods
     async def _log_energy_change(self, user_id: str, previous: EnergyLevel, current: EnergyLevel) -> None:
