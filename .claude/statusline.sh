@@ -5,6 +5,31 @@
 # Read JSON input
 input=$(cat)
 
+# Determine repository root (statusline runs from ~/.claude)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+MODEL_TRACKER_SCRIPT="$PROJECT_ROOT/scripts/ccr_model_tracker.sh"
+CCR_ACTUAL_MODEL=""
+CCR_ROUTE_ALIAS=""
+CCR_RESOLVED_TARGET=""
+if [ -x "$MODEL_TRACKER_SCRIPT" ]; then
+    CCR_ACTUAL_MODEL="$($MODEL_TRACKER_SCRIPT --statusline 2>/dev/null)"
+    # Validate that we got a meaningful result
+    if [ -z "$CCR_ACTUAL_MODEL" ] || [ "$CCR_ACTUAL_MODEL" = "LLM:" ]; then
+        CCR_ACTUAL_MODEL=""
+    fi
+
+    CCR_ROUTE_ALIAS="$($MODEL_TRACKER_SCRIPT --route 2>/dev/null)"
+    if [ -z "$CCR_ROUTE_ALIAS" ] || [ "$CCR_ROUTE_ALIAS" = "LLM:" ]; then
+        CCR_ROUTE_ALIAS=""
+    fi
+
+    CCR_RESOLVED_TARGET="$($MODEL_TRACKER_SCRIPT --resolved 2>/dev/null)"
+    if [ -z "$CCR_RESOLVED_TARGET" ] || [ "$CCR_RESOLVED_TARGET" = "LLM:" ]; then
+        CCR_RESOLVED_TARGET=""
+    fi
+fi
+
 # Debug logging (uncomment to diagnose token extraction issues)
 # echo "$input" > /tmp/statusline_debug.json
 # echo "$(date) - context_used: $(echo "$input" | jq -r '.context.used // .tokens.used // .usage.input_tokens // .token_count.input // 0' 2>/dev/null)" >> /tmp/statusline_debug.log
@@ -166,14 +191,76 @@ MCP_DOPE="⚠️"       # 🔎 Semantic Search - via Qdrant (port 6333)
 MCP_DESKTOP="⚠️"    # 🖥️ Context switching (port 3012)
 MCP_ACTIVITY="⚠️"   # 🎯 Activity Capture (port 8096)
 
-# Fast port checks using nc (netcat) - much faster than curl
-if nc -z localhost 3002 2>/dev/null; then MCP_CONTEXT7="📚"; fi
-if nc -z localhost 3003 2>/dev/null; then MCP_ZEN="🧠"; fi
-if nc -z localhost 3006 2>/dev/null; then MCP_SERENA="🔬"; fi
-if nc -z localhost 3016 2>/dev/null; then MCP_DDG="📊"; fi
-if nc -z localhost 6333 2>/dev/null; then MCP_DOPE="🔎"; fi
-if nc -z localhost 3012 2>/dev/null; then MCP_DESKTOP="🖥️"; fi
-if nc -z localhost 8096 2>/dev/null; then MCP_ACTIVITY="🎯"; fi
+# Determine live port bases so multi-instance MCP clusters report accurately
+declare -a MCP_PORT_BASES=()
+
+add_port_base() {
+    local base="$1"
+    if [ -z "$base" ]; then
+        return
+    fi
+    if ! [[ "$base" =~ ^[0-9]+$ ]]; then
+        return
+    fi
+    for existing in "${MCP_PORT_BASES[@]}"; do
+        if [ "$existing" = "$base" ]; then
+            return
+        fi
+    done
+    MCP_PORT_BASES+=("$base")
+}
+
+extract_port_base() {
+    local file="$1"
+    if [ ! -f "$file" ]; then
+        return
+    fi
+    local line
+    line=$(grep -E 'DOPEMUX_PORT_BASE' "$file" 2>/dev/null | tail -1)
+    if [ -z "$line" ]; then
+        return
+    fi
+    line="${line#*=}"
+    line="${line//\"/}"
+    line="${line//\'/}"
+    echo "$line"
+}
+
+add_port_base "${DOPEMUX_PORT_BASE:-}"
+add_port_base "${PORT_BASE:-}"
+
+env_port_base=$(extract_port_base "$PROJECT_ROOT/.dopemux/env/current.env")
+add_port_base "$env_port_base"
+
+sh_port_base=$(extract_port_base "$PROJECT_ROOT/.dopemux/env/current.sh")
+add_port_base "$sh_port_base"
+
+# Always include default + fallback bases so secondary instances still display
+for fallback_base in 3000 3030 3060 3090 3120; do
+    add_port_base "$fallback_base"
+done
+
+check_mcp_port() {
+    local offset="$1"
+    local base
+    for base in "${MCP_PORT_BASES[@]}"; do
+        local port=$((base + offset))
+        if nc -z -w 1 localhost "$port" >/dev/null 2>&1; then
+            echo "$port"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Fast port checks using nc (netcat) - now multi-instance aware
+if context7_port=$(check_mcp_port 2); then MCP_CONTEXT7="📚"; fi
+if zen_port=$(check_mcp_port 3); then MCP_ZEN="🧠"; fi
+if serena_port=$(check_mcp_port 6); then MCP_SERENA="🔬"; fi
+if ddg_port=$(check_mcp_port 16); then MCP_DDG="📊"; fi
+if nc -z -w 1 localhost 6333 2>/dev/null; then MCP_DOPE="🔎"; fi
+if desktop_port=$(check_mcp_port 12); then MCP_DESKTOP="🖥️"; fi
+if nc -z -w 1 localhost 8096 2>/dev/null; then MCP_ACTIVITY="🎯"; fi
 
 # ADHD Engine comprehensive status
 ADHD_STATUS="💤"
@@ -334,5 +421,37 @@ if [ "$exceeds_200k" = "true" ]; then
     printf " \033[31m⚠️>200K\033[0m"
 fi
 
-# Model
-printf " \033[2m|\033[0m \033[90m%s\033[0m" "$model_name"
+# Model (Claude selection vs actual CCR/LiteLLM route)
+model_display="$model_name"
+
+# Use CCR-detected model (actual routed model) or fallback
+if [ -n "$CCR_ACTUAL_MODEL" ]; then
+    # Use CCR-detected model from logs/config
+    model_display="$CCR_ACTUAL_MODEL"
+else
+    # Fallback: try to get more specific model info from JSON
+    json_model_id=$(echo "$input" | jq -r '.model.id // ""' 2>/dev/null)
+    if [ -n "$json_model_id" ] && [ "$json_model_id" != "null" ]; then
+        case "$json_model_id" in
+            *"sonnet-4-5"*|*"sonnet-4.5"*) model_display="Sonnet-4.5" ;;
+            *"sonnet"*) model_display="Sonnet" ;;
+            *"haiku"*) model_display="Haiku" ;;
+            *"opus"*) model_display="Opus" ;;
+            *) model_display="${model_name:-Sonnet}" ;;
+        esac
+    fi
+fi
+
+model_detail=""
+if [ -n "$CCR_ROUTE_ALIAS" ] && [ -n "$CCR_RESOLVED_TARGET" ]; then
+    model_detail="CCR ${CCR_ROUTE_ALIAS} -> LLM ${CCR_RESOLVED_TARGET}"
+elif [ -n "$CCR_ROUTE_ALIAS" ]; then
+    model_detail="CCR ${CCR_ROUTE_ALIAS}"
+elif [ -n "$CCR_RESOLVED_TARGET" ]; then
+    model_detail="LLM ${CCR_RESOLVED_TARGET}"
+fi
+
+printf " \033[2m|\033[0m \033[90m%s\033[0m" "$model_display"
+if [ -n "$model_detail" ]; then
+    printf " \033[2m(%s)\033[0m" "$model_detail"
+fi
