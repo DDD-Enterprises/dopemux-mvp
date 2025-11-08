@@ -4,7 +4,7 @@ Tests for ActivityTracker with ConPort integration.
 
 import pytest
 from unittest.mock import MagicMock, AsyncMock
-from adhd_engine.activity_tracker import ActivityTracker
+from ..activity_tracker import ActivityTracker
 
 
 class TestActivityTrackerCaching:
