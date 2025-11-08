@@ -6,29 +6,12 @@ Tests the gradual rollout system for ADHD Engine integration.
 
 import pytest
 import pytest_asyncio
-import redis.asyncio as redis
-
 from feature_flags import (
     ADHDFeatureFlags,
     FEATURE_ADHD_ENGINE_SERENA,
     FEATURE_ADHD_ENGINE_CONPORT,
     FEATURE_ADHD_ENGINE_DOPE_CONTEXT
 )
-
-
-@pytest_asyncio.fixture
-async def redis_client():
-    """Create test Redis client."""
-    client = redis.from_url("redis://localhost:6379/5", decode_responses=True)
-
-    # Clear test data
-    await client.flushdb()
-
-    yield client
-
-    # Cleanup
-    await client.flushdb()
-    await client.close()
 
 
 @pytest_asyncio.fixture

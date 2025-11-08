@@ -1,109 +1,201 @@
 """
-Pydantic schemas for ADHD Accommodation Engine API.
+Pydantic schemas for ADHD Engine API.
 
-Defines request/response models for all API endpoints.
+Request/response models for all 7 REST endpoints.
 """
 
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 
-# Task Assessment Schemas
+# Task Assessment
+
+class TaskData(BaseModel):
+    """Task data for ADHD assessment."""
+    complexity_score: float = Field(..., ge=0.0, le=1.0, description="Task complexity (0.0-1.0)")
+    estimated_minutes: int = Field(..., gt=0, description="Estimated duration in minutes")
+    description: str = Field(..., min_length=1, description="Task description")
+    dependencies: List[str] = Field(default_factory=list, description="List of dependency task IDs")
+
+
 class TaskAssessmentRequest(BaseModel):
-    """Request model for task assessment."""
-    task_description: str = Field(..., description="Description of the task to assess")
-    estimated_hours: float = Field(..., ge=0, description="Estimated hours to complete the task")
-    technologies: List[str] = Field(default_factory=list, description="Technologies involved")
-    dependencies: List[str] = Field(default_factory=list, description="Task dependencies")
+    """Request to assess task suitability."""
+    user_id: str = Field(..., min_length=1)
+    task_id: str = Field(..., min_length=1)
+    task_data: TaskData
 
 
 class AccommodationRecommendationSchema(BaseModel):
-    """Schema for accommodation recommendations."""
-    accommodation_type: str = Field(..., description="Type of accommodation recommended")
-    description: str = Field(..., description="Description of the accommodation")
-    priority: str = Field(..., description="Priority level (low, medium, high)")
+    """ADHD accommodation recommendation."""
+    accommodation_type: str
+    urgency: str  # immediate, soon, when_convenient
+    message: str
+    action_required: bool
+    suggested_actions: List[str]
+    cognitive_benefit: str
+    implementation_effort: str  # minimal, low, moderate, high
 
 
 class ADHDInsights(BaseModel):
-    """Schema for ADHD-specific insights."""
-    attention_span_needed: str = Field(..., description="Required attention span")
-    energy_requirement: str = Field(..., description="Energy level required")
-    break_frequency: str = Field(..., description="Recommended break frequency")
+    """ADHD-specific insights about task."""
+    hyperfocus_risk: str  # low, medium, high
+    distraction_risk: str  # low, medium, high
+    context_switch_impact: str  # low, medium, high
+
+
+class MLPrediction(BaseModel):
+    """Machine learning prediction with confidence (IP-005 Days 11-12)."""
+    predicted_value: str
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    explanation: str
+    ml_used: bool = Field(default=True, description="True if ML used, False if rule-based fallback")
 
 
 class TaskAssessmentResponse(BaseModel):
-    """Response model for task assessment."""
-    complexity_score: float = Field(..., ge=0, le=1, description="Cognitive complexity score")
-    cognitive_load: str = Field(..., description="Cognitive load level")
-    recommended_chunks: int = Field(..., ge=1, description="Recommended task chunks")
-    break_frequency: str = Field(..., description="Recommended break frequency")
-    energy_requirement: str = Field(..., description="Energy requirement level")
-    attention_span_needed: str = Field(..., description="Attention span needed")
-    accommodations: List[AccommodationRecommendationSchema] = Field(default_factory=list)
+    """Response from task suitability assessment."""
+    suitability_score: float = Field(..., ge=0.0, le=1.0)
+    energy_match: float = Field(..., ge=0.0, le=1.0)
+    attention_compatibility: float = Field(..., ge=0.0, le=1.0)
+    cognitive_load: float = Field(..., ge=0.0, le=1.0)
+    cognitive_load_level: str  # minimal, low, moderate, high, extreme
+    recommendations: List[AccommodationRecommendationSchema]
+    accommodations_needed: List[str]
+    optimal_timing: Dict[str, Any]
     adhd_insights: ADHDInsights
+    # ML predictions (IP-005 Days 11-12)
+    ml_energy_prediction: Optional[MLPrediction] = Field(None, description="ML-based energy level prediction")
+    ml_attention_prediction: Optional[MLPrediction] = Field(None, description="ML-based attention state prediction")
 
 
-# Energy Level Schemas
+# Energy & Attention State
+
 class EnergyLevelResponse(BaseModel):
-    """Response model for energy level queries."""
-    user_id: str = Field(..., description="User identifier")
-    energy_level: float = Field(..., ge=0, le=1, description="Current energy level (0.0-1.0)")
-    timestamp: datetime = Field(..., description="Last updated timestamp")
-    trend: str = Field(..., description="Energy trend (rising/steady/declining)")
+    """Current energy level for user."""
+    energy_level: str  # very_low, low, medium, high, hyperfocus
+    confidence: float = Field(default=0.8, ge=0.0, le=1.0)
+    last_updated: datetime
 
 
-# Attention State Schemas
 class AttentionStateResponse(BaseModel):
-    """Response model for attention state queries."""
-    user_id: str = Field(..., description="User identifier")
-    attention_state: str = Field(..., description="Current attention state")
-    focus_level: float = Field(..., ge=0, le=1, description="Current focus level")
-    distraction_level: float = Field(..., ge=0, le=1, description="Current distraction level")
-    timestamp: datetime = Field(..., description="Timestamp of measurement")
-    recommendations: List[str] = Field(default_factory=list, description="Personalized recommendations")
+    """Current attention state for user."""
+    attention_state: str  # scattered, transitioning, focused, hyperfocused, overwhelmed
+    indicators: Dict[str, Any]
+    last_updated: datetime
 
 
-# Break Recommendation Schemas
+# Break Recommendation
+
 class BreakRecommendationRequest(BaseModel):
-    """Request model for break recommendations."""
-    user_id: str = Field(..., description="User identifier")
-    current_task: Optional[str] = Field(None, description="Current task being worked on")
-    time_since_last_break: int = Field(..., ge=0, description="Minutes since last break")
+    """Request for break recommendation."""
+    user_id: str
+    work_duration: float = Field(..., gt=0, description="Minutes of continuous work")
 
 
 class BreakRecommendationResponse(BaseModel):
-    """Response model for break recommendations."""
-    should_take_break: bool = Field(..., description="Whether a break is recommended")
-    recommended_duration: int = Field(..., ge=0, description="Recommended break duration in minutes")
-    reason: str = Field(..., description="Reason for the recommendation")
-    break_type: str = Field(..., description="Type of break recommended")
-    next_check_in: int = Field(..., ge=0, description="Minutes until next check")
+    """Break recommendation response."""
+    break_needed: bool
+    reason: str
+    suggestions: List[str]
+    urgency: str
+    message: str
 
 
-# User Profile Schemas
+# User Profile
+
 class UserProfileRequest(BaseModel):
-    """Request model for user profile creation/updates."""
-    user_id: str = Field(..., description="User identifier")
-    adhd_type: Optional[str] = Field(None, description="ADHD subtype or presentation")
-    work_style: Optional[str] = Field(None, description="Preferred work style")
-    energy_patterns: Optional[Dict[str, Any]] = Field(None, description="Energy pattern preferences")
-    attention_characteristics: Optional[Dict[str, Any]] = Field(None, description="Attention characteristics")
-    accommodation_preferences: Optional[List[str]] = Field(None, description="Preferred accommodations")
+    """Create or update user ADHD profile."""
+    user_id: str
+    hyperfocus_tendency: Optional[float] = Field(None, ge=0.0, le=1.0)
+    distraction_sensitivity: Optional[float] = Field(None, ge=0.0, le=1.0)
+    context_switch_penalty: Optional[float] = Field(None, ge=0.0, le=1.0)
+    break_resistance: Optional[float] = Field(None, ge=0.0, le=1.0)
+    optimal_task_duration: Optional[int] = Field(None, gt=0, le=120)
+    max_task_duration: Optional[int] = Field(None, gt=0, le=180)
+    peak_hours: Optional[List[int]] = Field(None, description="Hours 0-23")
 
 
 class UserProfileResponse(BaseModel):
-    """Response model for user profile operations."""
-    user_id: str = Field(..., description="User identifier")
-    profile_created: bool = Field(..., description="Whether profile was created or updated")
-    message: str = Field(..., description="Operation result message")
+    """User profile response."""
+    user_id: str
+    profile_created: bool
+    message: str
 
 
-# Activity Update Schemas
+# Activity Update
+
 class ActivityUpdateRequest(BaseModel):
-    """Request model for activity updates."""
-    user_id: str = Field(..., description="User identifier")
-    activity_type: str = Field(..., description="Type of activity")
-    duration: int = Field(..., ge=0, description="Activity duration in minutes")
-    context: Optional[Dict[str, Any]] = Field(None, description="Activity context")
-    cognitive_load: Optional[float] = Field(None, ge=0, le=1, description="Perceived cognitive load")
+    """Log user activity metrics."""
+    user_id: str
+    completion_rate: Optional[float] = Field(None, ge=0.0, le=1.0)
+    context_switches: Optional[int] = Field(None, ge=0)
+    break_compliance: Optional[float] = Field(None, ge=0.0, le=1.0)
+    minutes_since_break: Optional[int] = Field(None, ge=0)
+
+
+class ActivityUpdateResponse(BaseModel):
+    """Activity update response."""
+    recorded: bool
+    energy_updated: bool
+    attention_updated: bool
+    message: str
+
+
+# ML Pattern & Prediction Endpoints (IP-005 Days 11-12)
+
+class PatternsResponse(BaseModel):
+    """User patterns learned by ML system."""
+    user_id: str
+    energy_patterns: List[Dict[str, Any]]
+    attention_patterns: List[Dict[str, Any]]
+    break_patterns: List[Dict[str, Any]]
+    last_updated: datetime
+
+
+class PredictionRequest(BaseModel):
+    """Request for ML predictions."""
+    user_id: str
+    prediction_type: str = Field(..., description="energy, attention, or break")
+    context: Optional[Dict[str, Any]] = Field(None, description="Additional context (session_type, time, etc.)")
+
+
+class PredictionResponse(BaseModel):
+    """ML prediction response."""
+    prediction_type: str
+    predicted_value: str
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    explanation: str
+    ml_used: bool
+    timestamp: datetime
+
+
+# Health Check
+
+class ComponentStatus(BaseModel):
+    """Status of engine component."""
+    redis_persistence: str
+    monitors_active: str
+    user_profiles: int
+
+
+class HealthResponse(BaseModel):
+    """Health check response."""
+    overall_status: str
+    components: ComponentStatus
+    accommodation_stats: Dict[str, int]
+    current_state: Dict[str, Any]
+    effectiveness_metrics: Dict[str, Any]
+
+
+# Code Complexity Assessment Schemas
+class CodeComplexityRequest(BaseModel):
+    """Request for code complexity assessment."""
+    code_snippet: str = Field(..., min_length=1, description="Code snippet to analyze")
+    language: Optional[str] = Field(None, description="Programming language (e.g., python, javascript)")
+
+class ComplexityResponse(BaseModel):
+    """Response for code complexity assessment."""
+    complexity_score: float = Field(..., ge=0.0, le=1.0, description="Complexity score (0.0-1.0)")
+    complexity_level: str = Field(..., description="Complexity level: low, medium, high")
+    estimated_reading_time_minutes: int = Field(..., ge=0, description="Estimated time to understand")
+    recommendations: List[str] = Field(default_factory=list, description="Suggestions for simplification")

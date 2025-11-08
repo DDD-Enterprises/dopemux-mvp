@@ -315,8 +315,7 @@ services:
 
 networks:
   dopemux-network:
-    driver: bridge
-    name: dopemux-network
+    external: true
 
 # === VOLUMES ===
 

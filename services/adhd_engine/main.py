@@ -103,23 +103,7 @@ app = FastAPI(
 
 # CORS middleware for browser access
 # Security: Use environment-based origin whitelist with secure defaults and validation
-try:
-    origins_raw = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080")
-    ALLOWED_ORIGINS = origins_raw.split(",")
-
-    # Validate each origin format (basic URL validation)
-    import re
-    url_pattern = re.compile(r'^https?://[a-zA-Z0-9.-]+(:[0-9]+)?(/.*)?$')
-    ALLOWED_ORIGINS = [origin.strip() for origin in ALLOWED_ORIGINS if url_pattern.match(origin.strip())]
-
-    # Ensure we have at least localhost fallback
-    if not ALLOWED_ORIGINS:
-        logger.warning("No valid origins found in ALLOWED_ORIGINS, using localhost fallback")
-        ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:8080"]
-
-except Exception as e:
-    logger.error(f"Error parsing ALLOWED_ORIGINS: {e}, using secure fallback")
-    ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:8080"]
+from config import ALLOWED_ORIGINS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -179,6 +163,12 @@ async def health():
         "message": "Engine initializing...",
         "service": "adhd-engine"
     }
+
+# Test endpoint to verify new routes work
+@app.get("/test")
+async def test():
+    """Test endpoint to verify the API is working."""
+    return {"message": "ADHD Engine API is operational!"}
 
 
 # Development server
