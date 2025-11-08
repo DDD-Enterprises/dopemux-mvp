@@ -19,29 +19,24 @@ RUN sed -i 's/port=8000/port=int(os.getenv("MCP_SERVER_PORT", "8000"))/g' /app/g
 
 # Install Python dependencies from the cloned repo
 RUN pip install --no-cache-dir -r /app/gptr-mcp/requirements.txt && \
-    pip install --no-cache-dir aiohttp requests
+    pip install --no-cache-dir aiohttp requests fastapi uvicorn
 
-# Fix langchain compatibility issues - downgrade to versions compatible with gpt-researcher
-# gpt-researcher 0.14.4 requires older langchain API structure
-# Use langchain-community 0.0.20 which is compatible with langsmith 0.0.87
-RUN pip install --no-cache-dir --force-reinstall \
-    'langchain==0.0.354' \
-    'langchain-community==0.0.20' \
-    'langchain-core==0.1.23' \
-    'langsmith==0.0.87' \
-    'numpy<2'
+# Note: Removed forced langchain version downgrades - let gpt-researcher determine compatible versions
+# The gpt-researcher package will install the correct langchain versions it needs
 
 # Create logs and data directories
 RUN mkdir -p /app/logs /app/data
 
-# Copy environment template (MCP server handles its own config)
+# Copy wrapper and environment files
+COPY wrapper.py /app/wrapper.py
 COPY .env.template /app/.env
 
-# Expose MCP server port
-EXPOSE 3009
+# Expose MCP server ports
+EXPOSE 3009 3013
 
 # Set environment variables
 ENV MCP_SERVER_PORT=3009
+ENV GPTR_UPSTREAM_PORT=3013
 ENV PYTHONUNBUFFERED=1
 
 # Health check - MCP servers don't expose HTTP endpoints, just verify python process is running
