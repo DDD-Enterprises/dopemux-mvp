@@ -37,6 +37,8 @@ except ImportError:
 
 import api.schemas as schemas
 from models import ADHDProfile, EnergyLevel, AttentionState
+
+from .schemas import PredictionOverrideRequest, OverrideResponse, CustomizationSettings
 from auth import verify_api_key
 from api.websocket import manager, send_heartbeat
 
@@ -995,3 +997,170 @@ async def _handle_client_command(websocket: WebSocket, user_id: str, command: di
             
     except Exception as e:
         logger.error(f"Error handling command: {e}")
+
+
+# ============================================================================
+# Phase 3.5 User Control Layer - Prediction Overrides and Customization
+# ============================================================================
+
+@router.post("/override-prediction", response_model=schemas.OverrideResponse)
+async def override_prediction(
+    request: schemas.PredictionOverrideRequest,
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
+):
+    """Allow user to override an ML prediction."""
+    try:
+        # Log the override
+        override_id = f"override_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{request.prediction_type}"
+
+        # Update user profile with override
+        user_profile = engine.user_profiles.get(request.user_id)
+        if not user_profile:
+            return schemas.OverrideResponse(
+                override_id=override_id,
+                prediction_type=request.prediction_type,
+                original_prediction=request.original_prediction,
+                override_value=request.override_value,
+                applied=False,
+                feedback_recorded=False,
+                message="No profile found for this user"
+            )
+
+        # Store override in user profile
+        if "overrides" not in user_profile.__dict__:
+            user_profile.overrides = []
+
+        user_profile.overrides.append({
+            "id": override_id,
+            "type": request.prediction_type,
+            "original": request.original_prediction,
+            "override": request.override_value,
+            "reason": request.reason,
+            "timestamp": datetime.now(timezone.utc),
+            "feedback_rating": request.feedback_rating
+        })
+
+        # Update the current state to use override
+        if request.prediction_type == "energy":
+            engine.current_energy_levels[request.user_id] = request.override_value
+        elif request.prediction_type == "attention":
+            engine.current_attention_states[request.user_id] = request.override_value
+        elif request.prediction_type == "break":
+            # Clear break cache
+            cache_key = _make_cache_key("break", request.user_id)
+            try:
+                await cache.delete(cache_key)
+            except Exception as e:
+                logger.warning(f"Failed to invalidate break cache: {e}")
+
+        # Record feedback for ML model improvement
+        feedback_recorded = False
+        if request.feedback_rating:
+            try:
+                # Store feedback in ConPort for ML retraining
+                await engine.conport.log_custom_data(
+                    category="ml_feedback",
+                    key=f"override_{override_id}",
+                    value={
+                        "user_id": request.user_id,
+                        "prediction_type": request.prediction_type,
+                        "original_prediction": request.original_prediction,
+                        "override_value": request.override_value,
+                        "reason": request.reason,
+                        "feedback_rating": request.feedback_rating,
+                        "timestamp": datetime.now(timezone.utc).isoformat()
+                    }
+                )
+                feedback_recorded = True
+            except Exception as e:
+                logger.warning(f"Failed to record feedback: {e}")
+
+        return schemas.OverrideResponse(
+            override_id=override_id,
+            prediction_type=request.prediction_type,
+            original_prediction=request.original_prediction,
+            override_value=request.override_value,
+            applied=True,
+            feedback_recorded=feedback_recorded,
+            message=f"Prediction override applied successfully. ID: {override_id}"
+        )
+
+    except Exception as e:
+        logger.error(f"Prediction override failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/customization-settings/{user_id}", response_model=schemas.CustomizationSettings)
+async def update_customization_settings(
+    user_id: str,
+    settings: schemas.CustomizationSettings,
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
+):
+    """Update user customization settings for ADHD Engine."""
+    try:
+        # Get or create user profile
+        user_profile = engine.user_profiles.get(user_id)
+        if not user_profile:
+            user_profile = ADHDProfile(user_id=user_id)
+            engine.user_profiles[user_id] = user_profile
+
+        # Update settings
+        user_profile.confidence_threshold = settings.confidence_threshold
+        user_profile.automation_level = settings.automation_level
+        user_profile.notifications_enabled = settings.notifications_enabled
+        user_profile.accessibility_mode = settings.accessibility_mode
+        user_profile.keyboard_shortcuts = settings.keyboard_shortcuts
+        user_profile.high_contrast = settings.high_contrast
+
+        # Invalidate caches affected by these settings
+        await _invalidate_user_caches(user_id)
+
+        # Save to persistent storage
+        try:
+            await engine.conport.write_custom_data(
+                category="user_settings",
+                key=f"customization_{user_id}",
+                value={
+                    "confidence_threshold": settings.confidence_threshold,
+                    "automation_level": settings.automation_level,
+                    "notifications_enabled": settings.notifications_enabled,
+                    "accessibility_mode": settings.accessibility_mode,
+                    "keyboard_shortcuts": settings.keyboard_shortcuts,
+                    "high_contrast": settings.high_contrast,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }
+            )
+        except Exception as e:
+            logger.warning(f"Failed to persist settings: {e}")
+
+        return settings
+
+    except Exception as e:
+        logger.error(f"Customization update failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/customization-settings/{user_id}", response_model=schemas.CustomizationSettings)
+async def get_customization_settings(
+    user_id: str,
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
+):
+    """Get user customization settings."""
+    try:
+        user_profile = engine.user_profiles.get(user_id)
+        if not user_profile:
+            # Return defaults
+            return schemas.CustomizationSettings()
+
+        return schemas.CustomizationSettings(
+            confidence_threshold=user_profile.confidence_threshold,
+            automation_level=user_profile.automation_level,
+            notifications_enabled=user_profile.notifications_enabled,
+            accessibility_mode=user_profile.accessibility_mode,
+            keyboard_shortcuts=user_profile.keyboard_shortcuts,
+            high_contrast=user_profile.high_contrast
+        )
+
+    except Exception as e:
+        logger.error(f"Get customization settings failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
