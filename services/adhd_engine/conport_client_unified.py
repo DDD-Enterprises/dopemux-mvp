@@ -9,6 +9,7 @@ Future: Replace with full ConPort integration for pattern learning.
 """
 
 import logging
+from collections import defaultdict
 from typing import Optional, Dict, Any, List
 
 logger = logging.getLogger(__name__)
@@ -45,6 +46,7 @@ class ConPortSQLiteClient:
         """
         self.workspace_id = workspace_id
         self.read_only = read_only
+        self._custom_data: Dict[str, Dict[str, Any]] = defaultdict(dict)
         logger.warning(f"ConPort stub client initialized (no persistence) for {workspace_id}")
 
     def get_progress(self, *args, **kwargs) -> List:
@@ -55,13 +57,18 @@ class ConPortSQLiteClient:
         """Stub: Return empty decisions list"""
         return []
 
-    def write_custom_data(self, category: str, key: str, value: Any) -> None:
-        """Stub: Do nothing"""
-        pass
+    def write_custom_data(self, category: str, key: str, value: Any) -> bool:
+        """Stub implementation that stores data in-memory."""
+        self._custom_data[category][key] = value
+        return True
 
     def get_custom_data(self, category: str = None, key: str = None) -> Dict:
-        """Stub: Return empty dict"""
-        return {}
+        """Stub: Return stored data."""
+        if category is None:
+            return {}
+        if key is None:
+            return self._custom_data.get(category, {})
+        return self._custom_data.get(category, {}).get(key)
 
     def get_progress_entries(
         self,

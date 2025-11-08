@@ -24,17 +24,17 @@ from typing import Any, Dict, List, Optional, Tuple
 import redis.asyncio as redis
 # Serena Integration (Serena v2)
 
-from models import (
+from .models import (
     EnergyLevel,
     AttentionState,
     CognitiveLoadLevel,
     ADHDProfile,
     AccommodationRecommendation
 )
-from config import settings
-from activity_tracker import ActivityTracker
-from conport_mcp_client import ConPortMCPClient
-from bridge_integration import ConPortBridgeAdapter
+from .config import settings
+from .activity_tracker import ActivityTracker
+from .conport_mcp_client import ConPortMCPClient
+from .bridge_integration import ConPortBridgeAdapter
 
 # ConPort-KG Integration (optional)
 try:
@@ -43,6 +43,8 @@ try:
 except ImportError:
     CONPORT_KG_INTEGRATION = False
 
+logger = logging.getLogger(__name__)
+
 # Machine Learning (IP-005 Days 11-12)
 try:
     from ml.predictive_engine import PredictiveADHDEngine
@@ -50,8 +52,6 @@ try:
 except ImportError:
     ML_AVAILABLE = False
     logger.warning("ML module not available - using rule-based logic only")
-
-logger = logging.getLogger(__name__)
 
 
 class ADHDAccommodationEngine:
@@ -162,6 +162,14 @@ class ADHDAccommodationEngine:
             logger.info("✅ ML Predictive Engine enabled (IP-005 Days 11-12)")
         else:
             logger.info("ℹ️  ML predictions disabled - using rule-based logic only")
+
+        # Initialize background prediction service (Phase 3.4)
+        if settings.enable_background_predictions:
+            from ..services.background_prediction_service import start_background_prediction_service
+            asyncio.create_task(start_background_prediction_service())
+            logger.info("✅ Background prediction service started (Phase 3.4)")
+        else:
+            logger.info("ℹ️  Background prediction service disabled")
 
         # Load existing user profiles
         await self._load_user_profiles()
