@@ -64,14 +64,19 @@ ensure_volume mcp_logs
 ensure_volume mcp_cache
 
 check_leantime_health() {
-  local url="${LEANTIME_HEALTH_URL:-http://localhost:8080}"
-  echo "🩺 Checking Leantime health at ${url} ..."
+  local url="${LEANTIME_HEALTH_URL:-http://localhost:8080/index.php}"
+  local expect="${LEANTIME_HEALTH_EXPECT:-Dopemux plugin register.php loaded successfully}"
+  echo "🩺 Checking Leantime health at ${url} (expecting '${expect}') ..."
   for attempt in {1..10}; do
-    if curl -sSf -o /dev/null --max-time 5 "$url"; then
-      echo "✅ Leantime responded successfully"
-      return 0
+    if response=$(curl -fsS --max-time 5 "$url" 2>/dev/null); then
+      if [[ "$response" == *"$expect"* ]]; then
+        echo "✅ Leantime responded with expected content"
+        return 0
+      fi
+      echo "   response received but missing expected content; retrying in 3s"
+    else
+      echo "   attempt ${attempt} failed; retrying in 3s"
     fi
-    echo "   attempt ${attempt} failed; retrying in 3s"
     sleep 3
   done
   echo "❌ Leantime health check failed after 10 attempts"
@@ -212,8 +217,10 @@ safe_up desktop-commander mcp-desktop-commander
 echo ""
 echo "⏳ Final startup wait..."
 sleep 5
-
-check_leantime_health || true
+if ! check_leantime_health; then
+  echo "Leantime did not pass health checks. Set LEANTIME_HEALTH_URL/LEANTIME_HEALTH_EXPECT to override." >&2
+  exit 1
+fi
 
 echo ""
 echo "📊 Service status:"
