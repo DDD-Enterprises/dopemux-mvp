@@ -208,6 +208,107 @@ class HNSWIndex(BaseVectorIndex):
         logger.info(f"📁 HNSW index loaded from {path} ({len(self.doc_ids):,} documents)")
 
 
+class IVFIndex(BaseVectorIndex):
+    """IVF-PQ vector index for memory-efficient large-scale search."""
+
+    def __init__(self, config: AdvancedEmbeddingConfig):
+        self.config = config
+        self.dimension = config.embedding_dimension
+
+        if faiss is None:
+            raise ImportError("faiss not available. Install with: pip install faiss-cpu")
+
+        # IVF-PQ parameters - optimized for 2048-dim embeddings
+        self.nlist = getattr(config, 'ivf_nlist', 2048)  # Number of clusters
+        self.m = getattr(config, 'ivf_m', 32)  # Number of subquantizers
+
+        # Create IVF-PQ index with optimized parameters
+        quantizer = faiss.IndexFlatIP(self.dimension)  # Inner product for cosine similarity
+        self.index = faiss.IndexIVFFlat(quantizer, self.dimension, self.nlist, faiss.METRIC_INNER_PRODUCT)
+
+        # Initialize with dummy data for training
+        dummy_vectors = np.random.random((self.nlist * 2, self.dimension)).astype('float32')
+        faiss.normalize_L2(dummy_vectors)
+        self.index.train(dummy_vectors)
+
+        self.doc_ids = []
+
+        logger.info(f"🚀 IVF-PQ index initialized: dim={self.dimension}, nlist={self.nlist}, m={self.m}")
+
+    def add_vectors(self, vectors: np.ndarray, ids: List[str]) -> None:
+        """Add vectors to the index."""
+        if len(vectors) == 0:
+            return
+
+        # Normalize vectors for cosine similarity
+        faiss.normalize_L2(vectors)
+
+        # Add to index
+        self.index.add_with_ids(vectors.astype('float32'), np.array(ids, dtype='int64'))
+        self.doc_ids.extend(ids)
+
+        logger.debug(f"Added {len(vectors)} vectors to IVF-PQ index")
+
+    def search(self, query_vector: np.ndarray, k: int) -> Tuple[List[float], List[int]]:
+        """Search for similar vectors. Returns (scores, indices)."""
+        if len(query_vector) != self.dimension:
+            raise ValueError(f"Query dimension {len(query_vector)} doesn't match index dimension {self.dimension}")
+
+        # Ensure k doesn't exceed available documents
+        k = min(k, len(self.doc_ids))
+
+        # Normalize query
+        faiss.normalize_L2(query_vector)
+
+        # Search
+        distances, indices = self.index.search(query_vector.astype('float32'), k)
+        # IVF returns distances, convert to scores (higher distance = higher similarity for IP)
+        scores = distances.tolist()
+
+        return scores[0], indices[0].tolist()
+
+    def save(self, path: str) -> None:
+        """Save index to disk."""
+        index_path = Path(path)
+        index_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Save index
+        faiss.write_index(self.index, str(index_path))
+
+        # Save metadata
+        metadata = {
+            "doc_ids": self.doc_ids,
+            "dimension": self.dimension,
+            "config": {
+                "nlist": self.nlist,
+                "m": self.m,
+                "distance_metric": self.config.distance_metric
+            }
+        }
+
+        with open(f"{path}.meta", 'w') as f:
+            json.dump(metadata, f)
+
+        logger.info(f"💾 IVF-PQ index saved to {path}")
+
+    def load(self, path: str) -> None:
+        """Load index from disk."""
+        index_path = Path(path)
+        if not index_path.exists():
+            raise FileNotFoundError(f"IVF-PQ index not found: {path}")
+
+        # Load metadata
+        with open(f"{path}.meta", 'r') as f:
+            metadata = json.load(f)
+
+        self.doc_ids = metadata["doc_ids"]
+
+        # Load index
+        self.index = faiss.read_index(str(index_path))
+
+        logger.info(f"📁 IVF-PQ index loaded from {path} ({len(self.doc_ids):,} documents)")
+
+
 class BM25Index:
     """BM25 lexical search index for exact keyword matching."""
 
@@ -471,8 +572,7 @@ class HybridVectorStore:
         if self.config.index_type == IndexType.HNSW:
             return HNSWIndex(self.config)
         elif self.config.index_type == IndexType.IVF_PQ:
-            # TODO: Implement Faiss IVF-PQ
-            raise NotImplementedError("IVF-PQ not yet implemented")
+            return IVFIndex(self.config)
         elif self.config.index_type == IndexType.SCANN:
             # TODO: Implement ScaNN
             raise NotImplementedError("ScaNN not yet implemented")

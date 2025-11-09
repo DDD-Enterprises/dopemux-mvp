@@ -35,6 +35,7 @@ from .config import settings
 from .activity_tracker import ActivityTracker
 from .conport_mcp_client import ConPortMCPClient
 from .bridge_integration import ConPortBridgeAdapter
+from .zen_client import ADHDZenClient
 
 # ConPort-KG Integration (optional)
 try:
@@ -75,6 +76,9 @@ class ADHDAccommodationEngine:
         # Redis connection for state persistence (now using shared pool)
         self.redis_client: Optional[redis.Redis] = None
         self.redis_pool = None  # Shared Redis connection pool
+
+        # MCP clients
+        self.zen_client = ADHDZenClient(settings.zen_url, settings)
 
         # ADHD state tracking
         self.user_profiles: Dict[str, ADHDProfile] = {}
@@ -171,6 +175,11 @@ class ADHDAccommodationEngine:
         else:
             logger.info("ℹ️  Background prediction service disabled")
 
+        # Initialize trust building service (Phase 3.6)
+        from .services.trust_building_service import get_trust_building_service
+        self.trust_service = await get_trust_building_service(settings.workspace_id)
+        logger.info("✅ Trust building service initialized (Phase 3.6)")
+
         # Load existing user profiles
         await self._load_user_profiles()
 
@@ -220,7 +229,7 @@ class ADHDAccommodationEngine:
         user_id: str,
         task_data: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Assess if task is suitable for user's current ADHD state."""
+        """Assess if task is suitable for user's current ADHD state using Zen-enhanced analysis."""
         try:
             # Get current user state
             current_energy = self.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
@@ -240,29 +249,41 @@ class ADHDAccommodationEngine:
                 task_complexity, estimated_duration, task_data
             )
 
-            # Energy matching assessment
+            # Use Zen thinkdeep for enhanced task complexity assessment
+            zen_task_analysis = await self._analyze_task_with_zen(
+                task_data, current_energy, current_attention, user_profile
+            )
+
+            # Energy matching assessment (enhanced with Zen insights)
             energy_match_score = self._assess_energy_match(
                 current_energy, cognitive_load, user_profile
             )
 
-            # Attention state compatibility
+            # Attention state compatibility (enhanced with Zen insights)
             attention_compatibility = self._assess_attention_compatibility(
                 current_attention, task_data, cognitive_load
             )
 
-            # Overall suitability score
-            suitability_score = (energy_match_score * 0.5 + attention_compatibility * 0.5)
-
-            # Generate recommendations
-            recommendations = await self._generate_task_recommendations(
-                user_profile, current_energy, current_attention, task_data, cognitive_load
+            # Overall suitability score (weighted with Zen confidence)
+            zen_confidence = zen_task_analysis.get('confidence', 0.5)
+            suitability_score = (
+                energy_match_score * 0.4 +
+                attention_compatibility * 0.4 +
+                zen_confidence * 0.2
             )
 
-            return {
+            # Generate recommendations (enhanced with Zen suggestions)
+            recommendations = await self._generate_task_recommendations(
+                user_profile, current_energy, current_attention, task_data, cognitive_load,
+                zen_insights=zen_task_analysis
+            )
+
+            result = {
                 "suitability_score": suitability_score,
                 "energy_match": energy_match_score,
                 "attention_compatibility": attention_compatibility,
                 "cognitive_load": cognitive_load,
+                "zen_task_analysis": zen_task_analysis,
                 "cognitive_load_level": self._categorize_cognitive_load(cognitive_load),
                 "recommendations": [
                     {
@@ -285,6 +306,18 @@ class ADHDAccommodationEngine:
                     "context_switch_impact": self._assess_context_switch_impact(user_profile)
                 }
             }
+
+            # Record prediction for accuracy tracking
+            if self.trust_service:
+                await self.trust_service.record_prediction_outcome(
+                    user_id=user_id,
+                    prediction_type="task_suitability",
+                    predicted_value=suitability_score,
+                    actual_value=None,  # Actual outcome will be recorded later
+                    confidence=zen_confidence
+                )
+
+            return result
 
         except Exception as e:
             logger.error(f"Task suitability assessment failed: {e}")
@@ -432,13 +465,87 @@ class ADHDAccommodationEngine:
         except Exception:
             return 0.5
 
+    async def _analyze_task_with_zen(
+        self,
+        task_data: Dict[str, Any],
+        current_energy: EnergyLevel,
+        current_attention: AttentionState,
+        user_profile: ADHDProfile
+    ) -> Dict[str, Any]:
+        """Use Zen thinkdeep to analyze task complexity and ADHD accommodations."""
+        try:
+            task_description = task_data.get('description', 'Unknown task')
+            task_complexity = task_data.get('complexity_score', 0.5)
+            estimated_duration = task_data.get('estimated_minutes', 25)
+
+            zen_prompt = f"""Analyze this task for ADHD accommodation planning:
+
+Task: {task_description}
+Complexity: {task_complexity}
+Estimated Duration: {estimated_duration} minutes
+
+User Current State:
+- Energy Level: {current_energy.value if hasattr(current_energy, 'value') else str(current_energy)}
+- Attention State: {current_attention.value if hasattr(current_attention, 'value') else str(current_attention)}
+- Profile: Hyperfocus tendency {getattr(user_profile, 'hyperfocus_tendency', 0.5)}, Distraction sensitivity {getattr(user_profile, 'distraction_sensitivity', 0.5)}
+
+Analyze:
+1. True cognitive complexity (beyond surface metrics)
+2. ADHD-specific challenges and accommodations needed
+3. Optimal timing and break patterns
+4. Risk factors for distraction or overwhelm
+5. Recommended modifications for success
+
+Format: {{
+  "true_complexity": 0.7,
+  "adhd_challenges": ["list of specific challenges"],
+  "optimal_timing": "best time windows",
+  "break_strategy": "recommended break pattern",
+  "risk_factors": ["distraction risks"],
+  "accommodations": ["specific recommendations"],
+  "confidence": 0.8
+}}"""
+
+            async with self.zen_client:
+                response = await self.zen_client.thinkdeep(
+                    step=zen_prompt,
+                    step_number=1,
+                    total_steps=1,
+                    next_step_required=False,
+                    findings=f"ADHD task analysis for {task_description}",
+                    model="gemini-2.5-pro"
+                )
+
+                return response.get('reasoning', {
+                    'true_complexity': task_complexity,
+                    'adhd_challenges': ['Analysis unavailable'],
+                    'optimal_timing': 'Unknown',
+                    'break_strategy': 'Standard breaks',
+                    'risk_factors': ['Unknown'],
+                    'accommodations': ['Standard accommodations'],
+                    'confidence': 0.3
+                })
+
+        except Exception as e:
+            print(f"Zen task analysis failed: {e}")
+            return {
+                'true_complexity': task_complexity,
+                'adhd_challenges': ['Analysis failed'],
+                'optimal_timing': 'Fallback to profile',
+                'break_strategy': 'Standard breaks',
+                'risk_factors': ['Unknown'],
+                'accommodations': ['Standard accommodations'],
+                'confidence': 0.2
+            }
+
     async def _generate_task_recommendations(
         self,
         profile: ADHDProfile,
         energy: EnergyLevel,
         attention: AttentionState,
         task_data: Dict[str, Any],
-        cognitive_load: float
+        cognitive_load: float,
+        zen_insights: Optional[Dict[str, Any]] = None
     ) -> List[AccommodationRecommendation]:
         """Generate ADHD-specific task recommendations."""
         recommendations = []
@@ -508,6 +615,46 @@ class ADHDAccommodationEngine:
                     cognitive_benefit="Sets up conditions for success",
                     implementation_effort="low"
                 ))
+
+            # Enhanced recommendations using Zen insights
+            if zen_insights and zen_insights.get('confidence', 0) > 0.6:
+                # Incorporate Zen-specific recommendations
+                zen_accommodations = zen_insights.get('accommodations', [])
+                for accom in zen_accommodations[:3]:  # Limit to top 3 Zen suggestions
+                    recommendations.append(AccommodationRecommendation(
+                        accommodation_type="zen_recommended",
+                        urgency="when_convenient",
+                        message=f"🤖 Zen AI Recommendation: {accom}",
+                        action_required=False,
+                        suggested_actions=[accom],
+                        cognitive_benefit="AI-optimized accommodation",
+                        implementation_effort="low"
+                    ))
+
+                # Add Zen-specific break recommendations
+                if 'break_strategy' in zen_insights:
+                    recommendations.append(AccommodationRecommendation(
+                        accommodation_type="zen_break_strategy",
+                        urgency="when_convenient",
+                        message=f"⏰ Zen Break Strategy: {zen_insights['break_strategy']}",
+                        action_required=False,
+                        suggested_actions=[zen_insights['break_strategy']],
+                        cognitive_benefit="AI-optimized break timing",
+                        implementation_effort="minimal"
+                    ))
+
+                # Add Zen risk factor mitigations
+                if 'risk_factors' in zen_insights:
+                    for risk in zen_insights['risk_factors'][:2]:  # Top 2 risks
+                        recommendations.append(AccommodationRecommendation(
+                            accommodation_type="zen_risk_mitigation",
+                            urgency="when_convenient",
+                            message=f"⚠️ Zen Risk Mitigation: {risk}",
+                            action_required=False,
+                            suggested_actions=[f"Mitigate: {risk}"],
+                            cognitive_benefit="Prevents ADHD-specific challenges",
+                            implementation_effort="moderate"
+                        ))
 
             return recommendations
 

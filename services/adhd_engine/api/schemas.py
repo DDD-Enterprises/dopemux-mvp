@@ -63,6 +63,14 @@ class PredictionOverrideRequest(BaseModel):
     feedback_rating: Optional[int] = Field(default=None, ge=1, le=5)  # 1-5 star rating
 
 
+class PredictionFeedbackRequest(BaseModel):
+    """Request to submit feedback on prediction."""
+    prediction_id: str  # ID of the prediction being rated
+    rating: int = Field(..., ge=1, le=5)  # 1-5 star rating
+    usefulness: str  # "very_useful", "somewhat_useful", "neutral", "not_useful", "harmful"
+    comments: Optional[str] = None
+
+
 class OverrideResponse(BaseModel):
     """Response to prediction override."""
     override_id: str
@@ -82,6 +90,30 @@ class CustomizationSettings(BaseModel):
     accessibility_mode: bool = Field(default=False, description="Enhanced accessibility features")
     keyboard_shortcuts: bool = Field(default=True, description="Enable keyboard shortcuts")
     high_contrast: bool = Field(default=False, description="High contrast mode")
+
+
+class AutomationAdjustmentRequest(BaseModel):
+    """Request to adjust automation level."""
+    prediction_type: str  # "energy", "attention", "break"
+    automation_level: str  # "minimal", "balanced", "proactive"
+
+
+class TrustMetricsResponse(BaseModel):
+    """Trust metrics for user."""
+    overall_trust_score: float
+    prediction_types: Dict[str, Dict[str, Any]]
+    feedback_summary: Dict[str, Any]
+    automation_levels: Dict[str, str]
+    recommendations: List[str]
+
+
+class TrustVisualizationResponse(BaseModel):
+    """Visualization data for trust building."""
+    accuracy_over_time: Dict[str, List[Dict]]
+    feedback_distribution: Dict[str, int]
+    trust_score_progression: List[Dict]
+    automation_level_changes: List[Dict]
+    prediction_success_stories: List[Dict]
 
 
 class TaskAssessmentResponse(BaseModel):
