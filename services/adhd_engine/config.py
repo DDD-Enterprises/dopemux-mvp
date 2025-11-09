@@ -32,6 +32,7 @@ class Settings:
     
     # ConPort integration
     conport_url: str = os.getenv("CONPORT_URL", "http://localhost:3010")
+    zen_url: str = os.getenv("ZEN_URL", "http://localhost:3003")
     workspace_id: str = os.getenv("ADHD_WORKSPACE_ID", os.getcwd())
     
     # Monitor settings

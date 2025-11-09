@@ -311,16 +311,55 @@ class ProfileDetector:
         except (subprocess.TimeoutExpired, FileNotFoundError):
             pass  # Git not available or not a git repo
 
-        # TODO: Gather recent files from editor history or git log
-        # For now, check current directory for common file types
-        common_extensions = ['*.py', '*.ts', '*.js', '*.go', '*.md', '*.yaml']
-        recent = []
-        for ext in common_extensions:
-            recent.extend([str(p.name) for p in context.current_dir.glob(ext)][:3])
-        context.recent_files = recent[:10]
+        # Gather recent files from git log (last 7 days)
+        try:
+            git_log_result = subprocess.run(
+                ['git', 'log', '--name-only', '--since="7 days ago"', '--pretty=format:', '--', '.'],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                cwd=context.current_dir
+            )
+            if git_log_result.returncode == 0:
+                git_files = set(line.strip() for line in git_log_result.stdout.split('\n') if line.strip())
+                # Filter to recent files that exist
+                context.recent_files = [f for f in git_files if (context.current_dir / f).exists()][:20]
+            else:
+                # Fallback to current directory files
+                common_extensions = ['*.py', '*.ts', '*.js', '*.go', '*.md', '*.yaml']
+                recent = []
+                for ext in common_extensions:
+                    recent.extend([str(p.name) for p in context.current_dir.glob(ext)][:3])
+                context.recent_files = recent[:10]
+        except (subprocess.TimeoutExpired, FileNotFoundError, subprocess.CalledProcessError):
+            # Fallback to current directory files
+            common_extensions = ['*.py', '*.ts', '*.js', '*.go', '*.md', '*.yaml']
+            recent = []
+            for ext in common_extensions:
+                recent.extend([str(p.name) for p in context.current_dir.glob(ext)][:3])
+            context.recent_files = recent[:10]
 
-        # TODO: Query ADHD Engine if available (Serena v2 integration)
-        # For now, leave energy/attention as None
+        # Query ADHD Engine for energy and attention states
+        try:
+            # Try to import ADHD Engine client
+            import sys
+            sys.path.append(str(Path(__file__).parent.parent.parent / "services" / "adhd_engine"))
+            from api.routes import get_energy_level, get_attention_state
+            import httpx
+
+            # Get energy level (mock user_id for now)
+            energy_response = get_energy_level("default_user")
+            if energy_response.energy_level:
+                context.energy_level = energy_response.energy_level.lower()
+
+            # Get attention state
+            attention_response = get_attention_state("default_user")
+            if attention_response.attention_state:
+                context.attention_mode = attention_response.attention_state.lower()
+
+        except Exception as e:
+            # ADHD Engine not available, leave as None
+            pass
 
         return context
 
@@ -338,13 +377,80 @@ class ProfileDetector:
             context = self._gather_context()
 
         results = {}
-        for profile in self.profiles.profiles:
-            # Temporarily set this profile as best match
-            match = self.detect(context)
-            # TODO: Implement per-profile scoring
-            # For now, just return the detected best match
 
-        return {match.profile_name: match}
+        # Calculate scores for each profile individually
+        for profile in self.profiles.profiles:
+            signal_scores = {}
+
+            # Signal 1: Git Branch (30 points)
+            if context.git_branch and profile.auto_detection:
+                signal_scores['git_branch'] = self._score_git_branch(
+                    profile.auto_detection.git_branches,
+                    context.git_branch
+                )
+            else:
+                signal_scores['git_branch'] = 0.0
+
+            # Signal 2: Directory Context (25 points)
+            if profile.auto_detection:
+                signal_scores['directory'] = self._score_directory(
+                    profile.auto_detection.directories,
+                    context.current_dir
+                )
+            else:
+                signal_scores['directory'] = 0.0
+
+            # Signal 3: ADHD State (20 points) - OPTIONAL
+            if context.energy_level and profile.adhd_config:
+                signal_scores['adhd_state'] = self._score_adhd_state(
+                    profile.adhd_config.energy_preference,
+                    profile.adhd_config.attention_mode,
+                    context.energy_level,
+                    context.attention_mode
+                )
+            else:
+                signal_scores['adhd_state'] = 0.0
+
+            # Signal 4: Time of Day (15 points)
+            if profile.auto_detection:
+                signal_scores['time_window'] = self._score_time_window(
+                    profile.auto_detection.time_windows,
+                    context.current_time
+                )
+            else:
+                signal_scores['time_window'] = 0.0
+
+            # Signal 5: Recent Files (10 points)
+            if profile.auto_detection and context.recent_files:
+                signal_scores['file_patterns'] = self._score_file_patterns(
+                    profile.auto_detection.file_patterns,
+                    context.recent_files
+                )
+            else:
+                signal_scores['file_patterns'] = 0.0
+
+            total_score = sum(signal_scores.values())
+            confidence = total_score / 100.0
+
+            # Determine suggestion level
+            if confidence >= self.THRESHOLD_AUTO:
+                suggestion_level = 'auto'
+            elif confidence >= self.THRESHOLD_PROMPT:
+                suggestion_level = 'prompt'
+            else:
+                suggestion_level = 'none'
+
+            match = ProfileMatch(
+                profile_name=profile.name,
+                confidence=confidence,
+                total_score=total_score,
+                signal_scores=signal_scores,
+                suggestion_level=suggestion_level
+            )
+
+            results[profile.name] = match
+
+        return results
 
 
 def format_match_summary(match: ProfileMatch) -> str:

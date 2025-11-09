@@ -155,7 +155,37 @@ if TEXTUAL_AVAILABLE:
         
         async def _fetch_task_data(self) -> Dict[str, Any]:
             """Fetch task metadata"""
-            # TODO: Get from task management system when available
+            # Fetch from ConPort progress entries
+            try:
+                import httpx
+                conport_url = "http://localhost:5455/conport/get_progress"
+                workspace_id = "/Users/hue/code/dopemux-mvp"
+
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    response = await client.get(f"{conport_url}?workspace_id={workspace_id}")
+                    if response.status_code == 200:
+                        progress_data = response.json()
+                        # Find task by ID or description
+                        task_entry = next(
+                            (entry for entry in progress_data.get("progress_entries", []) if entry.get("description", "").lower().startswith(self.task_id.lower())),
+                            None
+                        )
+                        if task_entry:
+                            return {
+                                "id": task_entry.get("id", self.task_id),
+                                "title": task_entry.get("description", "Unknown Task"),
+                                "description": task_entry.get("description", "No description available"),
+                                "complexity": task_entry.get("metadata", {}).get("complexity", 0.5),
+                                "estimated_duration_minutes": task_entry.get("metadata", {}).get("estimated_duration", 60),
+                                "requires_deep_focus": task_entry.get("metadata", {}).get("requires_deep_focus", False),
+                                "tags": task_entry.get("tags", [])
+                            }
+                    # Fallback to mock if ConPort unavailable
+                    logger.warning("ConPort task fetch failed, using mock data")
+            except Exception as e:
+                logger.warning(f"Error fetching task data from ConPort: {e}")
+
+            # Mock data fallback
             return {
                 "id": self.task_id,
                 "title": "Implement API integration",
