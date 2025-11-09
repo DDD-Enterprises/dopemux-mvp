@@ -13,18 +13,20 @@ import asyncio
 from datetime import datetime, timezone, timedelta
 from unittest.mock import Mock, AsyncMock, patch
 import sys
-import os
+from pathlib import Path
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+if str(PACKAGE_ROOT) not in sys.path:
+    sys.path.insert(0, str(PACKAGE_ROOT))
 
-from ml.pattern_learner import ADHDPatternLearner
-from ml.predictive_engine import PredictiveADHDEngine
-from models import EnergyLevel, AttentionState
+from adhd_engine.ml.pattern_learner import ADHDPatternLearner
+from adhd_engine.ml.predictive_engine import PredictiveADHDEngine
+from adhd_engine.models import EnergyLevel, AttentionState
 
 
 def test_ml_enabled_in_config():
     """Verify ML is enabled by default in config."""
-    from config import settings
+    from adhd_engine.config import settings
 
     assert settings.enable_ml_predictions is True, "ML predictions should be enabled"
     print(f"✅ ML enabled: {settings.enable_ml_predictions}")

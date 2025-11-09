@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from core.config import AgentConfig
 from vanilla.vanilla_agent import VanillaAgent
 from genetic.genetic_agent import GeneticAgent
+from genetic.enhanced_iterative_agent import EnhancedIterativeAgent
 
 # Create FastAPI app
 app = FastAPI(
@@ -27,16 +28,18 @@ app.add_middleware(
 # Global agent instances
 vanilla_agent = None
 genetic_agent = None
+enhanced_agent = None
 
 
 @app.on_event("startup")
 async def startup_event():
     """Initialize agents on startup."""
-    global vanilla_agent, genetic_agent
+    global vanilla_agent, genetic_agent, enhanced_agent
 
     config = AgentConfig()
     vanilla_agent = VanillaAgent(config)
     genetic_agent = GeneticAgent(config)
+    enhanced_agent = EnhancedIterativeAgent(config)
 
 
 @app.get("/")
@@ -53,7 +56,8 @@ async def health_check():
         "version": "0.2.0",
         "agents": {
             "vanilla": vanilla_agent is not None,
-            "genetic": genetic_agent is not None
+            "genetic": genetic_agent is not None,
+            "enhanced": enhanced_agent is not None
         }
     }
 
@@ -78,10 +82,24 @@ async def repair_with_genetic(task: dict):
     return result
 
 
+@app.post("/repair/enhanced")
+async def repair_with_enhanced(task: dict):
+    """Repair code using the enhanced iterative agent with full intelligence."""
+    if not enhanced_agent:
+        return {"error": "Enhanced agent not initialized"}
+
+    result = await enhanced_agent.process_task(task)
+    return result
+
+
 @app.post("/repair/auto")
 async def repair_auto(task: dict):
-    """Automatically select the best agent for repair (genetic preferred)."""
-    if genetic_agent:
+    """Automatically select the best agent for repair (enhanced > genetic > vanilla)."""
+    if enhanced_agent:
+        result = await enhanced_agent.process_task(task)
+        result["agent_used"] = "enhanced"
+        return result
+    elif genetic_agent:
         result = await genetic_agent.process_task(task)
         result["agent_used"] = "genetic"
         return result

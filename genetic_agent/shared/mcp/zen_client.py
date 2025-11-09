@@ -1,7 +1,7 @@
 """Zen MCP Client for multi-model reasoning and code generation."""
 
 import asyncio
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 import httpx
 import json
 

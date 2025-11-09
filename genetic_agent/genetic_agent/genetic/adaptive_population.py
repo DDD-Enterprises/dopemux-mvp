@@ -178,7 +178,7 @@ class AdaptivePopulationManager:
         Returns:
             Tuple of (new_population_size, adaptation_reason)
         """
-        current_size = len(current_population.individuals)
+        current_size = len(current_population.population)
         recommended_size = problem_complexity.recommended_population_size
 
         # Check resource constraints

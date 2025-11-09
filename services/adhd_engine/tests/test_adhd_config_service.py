@@ -10,8 +10,18 @@ import pytest_asyncio
 import json
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
+import sys
+from pathlib import Path
 
-from adhd_config_service import ADHDConfigService, get_adhd_config_service, reset_adhd_config_service
+PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+if str(PACKAGE_ROOT) not in sys.path:
+    sys.path.insert(0, str(PACKAGE_ROOT))
+
+from adhd_engine.adhd_config_service import (
+    ADHDConfigService,
+    get_adhd_config_service,
+    reset_adhd_config_service,
+)
 
 
 @pytest_asyncio.fixture
