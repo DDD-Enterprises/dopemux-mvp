@@ -75,6 +75,10 @@ services:
       LEAN_MCP_TOKEN: ${LEAN_MCP_TOKEN}
       LEAN_API_ENABLED: ${LEAN_API_ENABLED:-true}
 
+      # Logging configuration
+      LOG_CHANNEL: ${LOG_CHANNEL:-single}
+      LOG_STACK: ${LOG_STACK:-single}
+
       # User & Group permissions for volume access
       PUID: ${PUID:-1000}
       PGID: ${PGID:-1000}
