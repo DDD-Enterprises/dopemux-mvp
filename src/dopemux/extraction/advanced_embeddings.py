@@ -72,6 +72,7 @@ class AdvancedEmbeddingConfig:
 
     # IVF-PQ parameters
     ivf_nlist: int = 2048                 # Number of clusters
+    ivf_m: int = 32                       # Number of subquantizers for PQ
     pq_m: int = 64                        # Product quantization subspaces
 
     # === Performance Configuration ===

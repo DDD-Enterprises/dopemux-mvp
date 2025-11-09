@@ -35,6 +35,7 @@ from enhanced_orchestrator import OrchestrationTask, TaskStatus
 from adapters.conport_adapter import ConPortEventAdapter
 from intelligence.cognitive_load_balancer import CognitiveLoadBalancer
 from intelligence.context_switch_recovery import ContextSwitchRecovery
+from zen_client import TaskOrchestratorZenClient
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +68,7 @@ class TaskCoordinator:
         self.conport_adapter = ConPortEventAdapter(workspace_id)
         self.cognitive_guardian = CognitiveLoadBalancer(workspace_id=workspace_id, conport_client=self.conport_adapter)
         self.context_recovery = ContextSwitchRecovery(workspace_id, self.conport_adapter)
+        self.zen_client = TaskOrchestratorZenClient("http://localhost:3003", {})
 
         # State tracking
         self.coordination_state = CoordinationState(
@@ -111,8 +113,8 @@ class TaskCoordinator:
         # Step 2: Resolve dependencies
         resolved_tasks = await self._resolve_dependencies(tasks)
 
-        # Step 3: Sequence tasks by ADHD-aware priorities
-        sequenced_plan = await self._sequence_tasks(resolved_tasks, current_adhd_state)
+        # Step 3: Sequence tasks by ADHD-aware priorities using Zen planner for complex tasks
+        sequenced_plan = await self._sequence_tasks_with_zen(resolved_tasks, current_adhd_state)
 
         # Step 4: Sync coordination state to ConPort
         await self._sync_coordination_state()
@@ -129,6 +131,97 @@ class TaskCoordinator:
             "recommendations": self._generate_recommendations(current_adhd_state),
             "next_batch_size": len(execution_results['completed']) if execution_results else 0
         }
+
+    async def _sequence_tasks_with_zen(
+        self,
+        tasks: List[OrchestrationTask],
+        adhd_state: Dict[str, str]
+    ) -> Dict[str, Any]:
+        """Sequence tasks using Zen planner for complex task prioritization."""
+        try:
+            # Check if we have complex tasks that would benefit from Zen planning
+            complex_tasks = [t for t in tasks if getattr(t, 'complexity_score', 0) > 0.7 or len(tasks) > 5]
+
+            if complex_tasks and len(tasks) >= 3:
+                # Use Zen for intelligent prioritization
+                task_data = [{'description': t.description, 'complexity': getattr(t, 'complexity_score', 0.5),
+                             'estimated_minutes': getattr(t, 'estimated_duration', 30)} for t in tasks]
+
+                zen_context = {
+                    'energy_level': adhd_state.get('energy', 'MEDIUM'),
+                    'attention_state': adhd_state.get('attention', 'FOCUSED'),
+                    'cognitive_load': float(adhd_state.get('cognitive_load', 0.5)),
+                    'available_time': 120,  # Assume 2 hours available
+                    'peak_hours': adhd_state.get('peak_hours', 'morning')
+                }
+
+                zen_prioritization = await self.zen_client.prioritize_task_queue(task_data, zen_context)
+
+                # Apply Zen prioritization to tasks
+                prioritized_indices = zen_prioritization.get('prioritized_order', list(range(len(tasks))))
+                prioritized_tasks = [tasks[i] for i in prioritized_indices]
+
+                return {
+                    "tasks": prioritized_tasks,
+                    "strategy": "zen_intelligent",
+                    "batches": zen_prioritization.get('execution_batches', [list(range(len(tasks)))]),
+                    "break_schedule": zen_prioritization.get('break_schedule', []),
+                    "rationale": zen_prioritization.get('rationale', 'Zen-optimized sequencing')
+                }
+            else:
+                # Fall back to standard sequencing for simpler cases
+                return await self._sequence_tasks(tasks, adhd_state)
+
+        except Exception as e:
+            logger.warning(f"Zen task sequencing failed: {e}")
+            # Fall back to standard sequencing
+            return await self._sequence_tasks(tasks, adhd_state)
+
+    async def break_down_complex_task(self, task: OrchestrationTask, adhd_context: Dict[str, Any]) -> Dict[str, Any]:
+        """Use Zen planner to break down a complex task into manageable subtasks."""
+        try:
+            task_data = {
+                'description': task.description,
+                'complexity': getattr(task, 'complexity_score', 0.5),
+                'estimated_minutes': getattr(task, 'estimated_duration', 30)
+            }
+
+            zen_breakdown = await self.zen_client.plan_task_breakdown(task_data, adhd_context)
+
+            # Convert Zen breakdown to OrchestrationTask subtasks
+            subtasks = []
+            for subtask_data in zen_breakdown.get('subtasks', []):
+                subtask = OrchestrationTask(
+                    id=f"{task.id}_sub_{len(subtasks)}",
+                    description=subtask_data['description'],
+                    complexity_score=subtask_data.get('complexity_score', 0.3),
+                    estimated_duration=subtask_data['duration_minutes'],
+                    dependencies=subtask_data.get('dependencies', []),
+                    status=TaskStatus.PENDING
+                )
+                subtasks.append(subtask)
+
+            return {
+                'original_task': task,
+                'subtasks': subtasks,
+                'execution_order': zen_breakdown.get('execution_order', []),
+                'total_duration': zen_breakdown.get('total_duration', task.estimated_duration),
+                'break_points': zen_breakdown.get('break_points', []),
+                'progress_checkpoints': zen_breakdown.get('progress_checkpoints', []),
+                'strategy': 'zen_breakdown'
+            }
+
+        except Exception as e:
+            logger.warning(f"Zen task breakdown failed: {e}")
+            return {
+                'original_task': task,
+                'subtasks': [task],  # Return original task unchanged
+                'execution_order': [task.id],
+                'total_duration': task.estimated_duration,
+                'break_points': [],
+                'progress_checkpoints': [],
+                'strategy': 'fallback'
+            }
 
     async def _assess_cognitive_batch(
         self,

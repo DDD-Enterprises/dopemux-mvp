@@ -2,6 +2,7 @@
 
 from typing import Dict, Any, List
 import asyncio
+import logging
 from datetime import datetime
 
 from core.agent import BaseAgent
@@ -25,6 +26,7 @@ class VanillaAgent(BaseAgent):
 
     def __init__(self, config):
         super().__init__(config)
+        self.logger = logging.getLogger(__name__)
         self.serena_client = SerenaClient(self.config.serena_url, self.config)
         self.dope_client = DopeContextClient(self.config.dope_context_url, self.config)
         self.repair_history: List[RepairAttempt] = []
@@ -93,31 +95,86 @@ class VanillaAgent(BaseAgent):
 
     async def _generate_repair_attempt(self, context: Dict[str, Any], iteration: int) -> RepairAttempt:
         """Generate a repair attempt using LLM (placeholder for now)."""
-        # TODO: Integrate with LLM service (MCP or direct API)
-        # For now, return a mock repair
         prompt = self._build_repair_prompt(context, iteration)
 
-        # Mock LLM response - replace with actual LLM call
-        mock_response = {
-            "code": f"# Fixed: {context['description']}\npass  # TODO: implement repair",
-            "explanation": f"Generated repair attempt {iteration + 1} for: {context['description']}",
-            "confidence": min(0.8, 0.5 + iteration * 0.1)  # Improving confidence
-        }
+        # Call LLM using Zen MCP chat tool
+        try:
+            import httpx
+            zen_url = "http://localhost:8002/mcp/zen/chat"  # Assuming Zen MCP server URL
+            llm_request = {
+                "prompt": prompt,
+                "working_directory": "/tmp",  # Temporary working directory
+                "model": "gpt-5-mini",  # Use fast model for iterations
+                "temperature": 0.2  # Low temperature for code generation
+            }
+
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(zen_url, json=llm_request)
+                if response.status_code == 200:
+                    llm_response = response.json()
+                    generated_code = llm_response.get("response", "").strip()
+                    explanation = llm_response.get("explanation", "LLM-generated repair attempt")
+                    confidence = min(0.95, 0.6 + iteration * 0.1)  # Base confidence + improvement
+                else:
+                    logger.warning(f"LLM call failed: {response.status_code}")
+                    # Fallback to mock
+                    generated_code = f"# LLM failed, mock repair for {context['description']}\npass"
+                    explanation = "Fallback mock repair due to LLM service error"
+                    confidence = 0.3
+        except Exception as e:
+            logger.error(f"LLM integration error: {e}")
+            # Fallback to mock
+            generated_code = f"# Error: {context['description']}\npass  # TODO: implement repair"
+            explanation = f"Error generating repair attempt {iteration + 1}: {e}"
+            confidence = 0.2
 
         return RepairAttempt(
-            code=mock_response["code"],
-            explanation=mock_response["explanation"],
-            confidence=mock_response["confidence"]
+            code=generated_code,
+            explanation=explanation,
+            confidence=confidence
         )
 
     async def _validate_repair(self, repair: RepairAttempt, context: Dict[str, Any]) -> float:
         """Validate repair quality (basic implementation)."""
-        # TODO: Add syntax checking, basic heuristics
-        # For now, cap confidence and add some basic validation
-        if not repair.code or "TODO" in repair.code:
-            return min(repair.confidence, 0.6)  # Penalize incomplete repairs
+        # Basic syntax checking using Serena client
+        if not repair.code:
+            return 0.0
 
-        return min(repair.confidence, 0.9)  # Cap until real testing
+        try:
+            async with self.serena_client:
+                # Use Serena to analyze complexity and syntax
+                analysis = await self.serena_client.analyze_complexity(context["file_path"], repair.code)
+                complexity = analysis.get("complexity", 0.5)
+
+                # Syntax validation - if Serena reports syntax errors, penalize heavily
+                if "syntax_error" in analysis:
+                    self.logger.warning(f"Syntax error in repair: {analysis['syntax_error']}")
+                    return 0.1  # Very low confidence for syntax errors
+
+                # Basic heuristics
+                if "TODO" in repair.code or "pass" in repair.code.lower():
+                    penalty = 0.3  # Incomplete implementation
+                else:
+                    penalty = 0.0
+
+                # Adjust confidence based on complexity (too complex might be wrong)
+                if complexity > 0.8:
+                    complexity_penalty = 0.2
+                else:
+                    complexity_penalty = 0.0
+
+                adjusted_confidence = repair.confidence - penalty - complexity_penalty
+                adjusted_confidence = max(0.0, min(0.95, adjusted_confidence))
+
+                self.logger.debug(f"Repair validation: confidence={adjusted_confidence}, complexity={complexity}, penalties={penalty + complexity_penalty}")
+                return adjusted_confidence
+
+        except Exception as e:
+            self.logger.warning(f"Serena validation failed: {e}")
+            # Fallback validation
+            if "TODO" in repair.code or "pass" in repair.code.lower():
+                return min(repair.confidence, 0.6)
+            return min(repair.confidence, 0.9)
 
     async def _finalize_repair(self, repair: RepairAttempt, context: Dict[str, Any]) -> Dict[str, Any]:
         """Finalize and format the repair result."""

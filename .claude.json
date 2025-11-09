@@ -67,7 +67,7 @@
         "-i",
         "mcp-exa",
         "python",
-        "/app/mcp_server.py"
+        "/app/exa_server.py"
       ],
       "env": {
         "EXA_API_KEY": "${EXA_API_KEY}"

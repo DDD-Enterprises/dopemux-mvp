@@ -46,7 +46,14 @@ class ContextSharingProtocol:
         """
         self.workspace_id = workspace_id
         self.session_id = session_id
-        # TODO: Initialize ConPort client
+
+        # Initialize ConPort client
+        try:
+            from .conport_http_client import ConPortHTTPClient
+            self.conport_client = ConPortHTTPClient(workspace_id)
+        except Exception as e:
+            print(f"⚠️ ConPort client initialization failed: {e}")
+            self.conport_client = None
 
     def publish_artifact(
         self,
@@ -255,7 +262,28 @@ class ContextSharingProtocol:
             ]
 
             # Current mode/focus from ConPort active_context
-            # TODO: context["current_focus"] = conport.get_active_context()
+            if self.conport_client:
+                try:
+                    # Get active context from ConPort
+                    active_context = await self.conport_client.get_active_context()
+                    if active_context and active_context.get("active_context"):
+                        context_data = active_context["active_context"]
+                        context["current_focus"] = context_data.get("current_focus", "unknown")
+                        context["session_duration_minutes"] = context_data.get("session_duration_minutes", 0)
+                        context["context_switches_count"] = context_data.get("context_switches_count", 0)
+                    else:
+                        context["current_focus"] = "no active context available"
+                        context["session_duration_minutes"] = 0
+                        context["context_switches_count"] = 0
+                except Exception as e:
+                    print(f"⚠️ Failed to get active context from ConPort: {e}")
+                    context["current_focus"] = "context unavailable"
+                    context["session_duration_minutes"] = 0
+                    context["context_switches_count"] = 0
+            else:
+                context["current_focus"] = "conport client not available"
+                context["session_duration_minutes"] = 0
+                context["context_switches_count"] = 0
 
         # Level 2: Moderate (on request)
         if detail_level >= 2:
