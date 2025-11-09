@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 # Orchestrator HTTP server configuration
 PORT_BASE = int(os.getenv("PORT_BASE", "3000"))
-ORCHESTRATOR_URL = f"http://localhost:{PORT_BASE + 17}"  # 3017
+ORCHESTRATOR_URL = "http://localhost:8001"  # Task Orchestrator service
 USE_MOCK_FALLBACK = os.getenv("USE_MOCK_FALLBACK", "true").lower() == "true"
 
 # Mock data for testing when orchestrator is unavailable

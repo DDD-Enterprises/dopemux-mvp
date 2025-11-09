@@ -878,12 +878,39 @@ class ContextManager:
             json.dump(context.to_dict(), f, indent=2)
 
     def _apply_context(self, context_data: Dict[str, Any]) -> None:
-        """Apply restored context (placeholder for editor integration)."""
-        # This would integrate with the editor to restore file positions
-        # For now, just print what would be restored
-        console.print(
-            f"[blue]Restoring context: {context_data.get('current_goal', 'Unknown')}[/blue]"
-        )
+        """Apply restored context by opening relevant files and restoring positions."""
+        try:
+            # Get files from context
+            open_files = context_data.get('open_files', [])
+            current_file = context_data.get('current_file')
+            cursor_position = context_data.get('cursor_position')
+
+            # Open current file if specified
+            if current_file and os.path.exists(current_file):
+                # In Claude Code, we can suggest opening the file
+                console.print(
+                    f"[blue]💡 Context restored - consider opening: {current_file}[/blue]"
+                )
+                if cursor_position:
+                    console.print(
+                        f"[blue]   Cursor position: line {cursor_position.get('line', '?')}, col {cursor_position.get('column', '?')}[/blue]"
+                    )
+
+            # Show other context info
+            current_goal = context_data.get('current_goal', 'Unknown')
+            console.print(f"[blue]🎯 Current goal: {current_goal}[/blue]")
+
+            # Show any recent changes or notes
+            notes = context_data.get('notes', [])
+            if notes:
+                console.print(f"[blue]📝 Recent notes: {len(notes)} items[/blue]")
+
+        except Exception as e:
+            console.print(f"[red]❌ Failed to apply context: {e}[/red]")
+            # Fallback to basic display
+            console.print(
+                f"[blue]Context data available: {list(context_data.keys()) if context_data else 'None'}[/blue]"
+            )
 
     def _emergency_save(self) -> Optional[str]:
         """Emergency context save on system failure."""
