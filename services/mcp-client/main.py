@@ -9,6 +9,7 @@ import json
 import subprocess
 import sys
 import os
+import time
 from typing import Dict, List, Any, Optional
 import aiohttp
 
@@ -253,8 +254,8 @@ def create_server_configs():
     # Zen (stdio)
     configs['zen'] = {
         'transport': 'stdio',
-        'command': 'docker',
-        'args': ['exec', 'mcp-zen', 'bash', '-c', 'source /app/.venv/bin/activate && python zen-mcp-server/server.py'],
+        'command': 'python',
+        'args': ['zen-mcp-server/server.py'],
         'env': {
             'OPENAI_API_KEY': os.getenv('OPENAI_API_KEY', ''),
             'OPENROUTER_API_KEY': os.getenv('OPENROUTER_API_KEY', ''),
@@ -269,7 +270,7 @@ def create_server_configs():
     # Exa (http)
     configs['exa'] = {
         'transport': 'http',
-        'port': 3008,
+        'base_url': 'http://mcp-exa:3008',
         'env': {
             'EXA_API_KEY': os.getenv('EXA_API_KEY', '')
         }
@@ -278,7 +279,7 @@ def create_server_configs():
     # Desktop Commander (http)
     configs['desktop-commander'] = {
         'transport': 'http',
-        'port': 3012,
+        'base_url': 'http://mcp-desktop-commander:3012',
         'env': {
             'DISPLAY': os.getenv('DISPLAY', ':0')
         }
