@@ -426,11 +426,15 @@ class HistoricalLearningSystem:
                 "workspace_id": self.workspace_id
             }
 
-            await self.conport_client.log_custom_data(
-                category="operator_learning",
-                key=f"event_{event.event_id}",
-                value=event_data
-            )
+            try:
+                await self.conport_client.log_custom_data(
+                    category="operator_learning",
+                    key=f"event_{event.event_id}",
+                    value=event_data
+                )
+            except AttributeError:
+                # ConPort client doesn't support custom data logging
+                pass
 
         except Exception as e:
             # Log but don't fail the learning process
@@ -440,9 +444,12 @@ class HistoricalLearningSystem:
         """Load historical learning data from ConPort."""
         try:
             # Load operator performance data
-            perf_data = await self.conport_client.get_custom_data(
-                category="operator_performance"
-            )
+            try:
+                perf_data = await self.conport_client.get_custom_data(
+                    category="operator_performance"
+                )
+            except AttributeError:
+                perf_data = {}
 
             for key, data in perf_data.items():
                 if isinstance(data, dict) and "operator_name" in data:
@@ -450,9 +457,12 @@ class HistoricalLearningSystem:
                     self.operator_performance[operator_name] = OperatorPerformance(**data)
 
             # Load learning events
-            event_data = await self.conport_client.get_custom_data(
-                category="operator_learning"
-            )
+            try:
+                event_data = await self.conport_client.get_custom_data(
+                    category="operator_learning"
+                )
+            except AttributeError:
+                event_data = {}
 
             for key, data in event_data.items():
                 if isinstance(data, dict) and "event_id" in data:

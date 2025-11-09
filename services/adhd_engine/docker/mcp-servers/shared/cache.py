@@ -51,7 +51,10 @@ class RedisCache:
     async def initialize(self):
         """Initialize Redis connection pool."""
         if not self.redis_pool:
-            from .redis_pool import get_redis_pool
+            try:
+                from .redis_pool import get_redis_pool
+            except ImportError:
+                from redis_pool import get_redis_pool  # type: ignore
             self.redis_pool = await get_redis_pool()
         logger.info("Redis cache initialized")
 

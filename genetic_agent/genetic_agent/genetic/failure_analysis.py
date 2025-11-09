@@ -360,12 +360,16 @@ Format: {{"root_cause": "hypothesis", "strategic_recommendations": ["list"], "le
                 'workspace_id': self.workspace_id
             }
 
-            # Store in ConPort
-            await self.conport_client.log_custom_data(
-                category="failure_patterns",
-                key=f"pattern_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-                value=pattern_data
-            )
+            # Store in ConPort (optional - fallback if method doesn't exist)
+            try:
+                await self.conport_client.log_custom_data(
+                    category="failure_patterns",
+                    key=f"pattern_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                    value=pattern_data
+                )
+            except AttributeError:
+                # ConPort client doesn't support custom data logging
+                pass
 
         except Exception as e:
             # Log but don't fail the analysis
@@ -378,6 +382,9 @@ Format: {{"root_cause": "hypothesis", "strategic_recommendations": ["list"], "le
             data = await self.conport_client.get_custom_data(
                 category="failure_patterns"
             )
+        except AttributeError:
+            # ConPort client doesn't support custom data retrieval
+            return []
 
             # Process and return insights
             insights = []

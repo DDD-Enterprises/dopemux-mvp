@@ -18,10 +18,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
 
-from engine import ADHDAccommodationEngine
-from api import routes
-from config import settings
-from middleware.rate_limit import RateLimitMiddleware
+try:
+    from .engine import ADHDAccommodationEngine
+    from .api import routes
+    from .config import settings
+    from .middleware.rate_limit import RateLimitMiddleware
+except ImportError:  # pragma: no cover - fallback when run as script
+    from engine import ADHDAccommodationEngine  # type: ignore
+    from api import routes  # type: ignore
+    from config import settings  # type: ignore
+    from middleware.rate_limit import RateLimitMiddleware  # type: ignore
 
 # Import shared Redis pool and cache for performance optimization
 import sys
