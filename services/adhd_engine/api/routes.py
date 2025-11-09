@@ -22,15 +22,24 @@ import asyncio
 import json
 import os
 import sys
+import importlib
+import asyncio
+
+logger = logging.getLogger(__name__)
 
 # Import cache utility for Redis caching
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'docker', 'mcp-servers', 'shared'))
 from cache import get_cache
 
-# Import Prometheus metrics
+# Import Prometheus metrics (avoid conflicts with repo-local prometheus_client.py)
 try:
-    from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
-    PROMETHEUS_AVAILABLE = True
+    prometheus_module = importlib.import_module("prometheus_client")
+    required_attrs = ["Counter", "Histogram", "Gauge", "generate_latest", "CONTENT_TYPE_LATEST"]
+    if all(hasattr(prometheus_module, attr) for attr in required_attrs):
+        from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
+        PROMETHEUS_AVAILABLE = True
+    else:
+        raise ImportError("prometheus_client missing metrics API")
 except ImportError:
     PROMETHEUS_AVAILABLE = False
     logger.warning("Prometheus client not available - metrics disabled")
@@ -49,7 +58,6 @@ from api.websocket import manager, send_heartbeat
 # Import time for caching
 import time
 
-logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # Cache TTL constants (seconds)
@@ -58,8 +66,47 @@ ATTENTION_CACHE_TTL = 180  # 3 minutes - attention can change more frequently
 BREAK_CACHE_TTL = 60  # 1 minute - break recommendations need to be fresh
 ACTIVITY_CACHE_TTL = 60  # 1 minute - activity updates are time-sensitive
 
-# Get global cache instance
-cache = get_cache()
+# Cache instance (lazy async initialization)
+_cache_instance = None
+
+
+class _InMemoryCache:
+    """Minimal async cache fallback when Redis is unavailable."""
+
+    def __init__(self):
+        self._store = {}
+        self._lock = asyncio.Lock()
+
+    async def get(self, key: str, default: Any = None):
+        async with self._lock:
+            return self._store.get(key, default)
+
+    async def set(self, key: str, value: Any, ttl: int = 0):
+        async with self._lock:
+            self._store[key] = value
+        return True
+
+    async def delete(self, key: str):
+        async with self._lock:
+            self._store.pop(key, None)
+        return True
+
+
+async def get_cache_instance():
+    """Return shared Redis cache (initialize once)."""
+    global _cache_instance
+    force_memory = os.getenv("ADHD_FORCE_INMEMORY_CACHE", "").lower() in {"1", "true", "yes"}
+    if force_memory:
+        if not isinstance(_cache_instance, _InMemoryCache):
+            _cache_instance = _InMemoryCache()
+        return _cache_instance
+    if _cache_instance is None:
+        try:
+            _cache_instance = await get_cache()
+        except Exception as exc:
+            logger.warning("Cache unavailable (%s); using in-memory fallback", exc)
+            _cache_instance = _InMemoryCache()
+    return _cache_instance
 
 # Prometheus metrics (only if available)
 if PROMETHEUS_AVAILABLE:
@@ -145,10 +192,13 @@ async def _invalidate_user_caches(user_id: str):
 # Dependency injection for engine instance
 def get_engine():
     """Get global engine instance."""
-    import main
-    if not main.engine:
+    try:
+        from adhd_engine import main as engine_main
+    except ImportError:
+        import main as engine_main  # type: ignore
+    if not engine_main.engine:
         raise HTTPException(status_code=503, detail="Engine not initialized")
-    return main.engine
+    return engine_main.engine
 
 
 @router.post("/assess-task", response_model=schemas.TaskAssessmentResponse)
@@ -211,6 +261,7 @@ async def get_energy_level(user_id: str, engine = Depends(get_engine), api_key: 
     status = "success"
 
     try:
+        cache = await get_cache_instance()
         # Check cache first
         cache_key = _make_cache_key("energy", user_id)
         cached_data = await cache.get(cache_key)
@@ -289,6 +340,7 @@ async def get_energy_level(user_id: str, engine = Depends(get_engine), api_key: 
 async def get_attention_state(user_id: str, engine = Depends(get_engine), api_key: str = Security(verify_api_key)):
     """Get current attention state for user."""
     try:
+        cache = await get_cache_instance()
         # Check cache first
         cache_key = _make_cache_key("attention", user_id)
         cached_data = await cache.get(cache_key)
@@ -347,6 +399,7 @@ async def recommend_break(
 ):
     """Get personalized break recommendation."""
     try:
+        cache = await get_cache_instance()
         # Check cache first
         cache_key = _make_cache_key("break", request.user_id, work_duration=int(request.work_duration))
         cached_data = await cache.get(cache_key)
@@ -503,6 +556,7 @@ async def update_activity(
     Updates will trigger immediate energy/attention reassessment.
     """
     try:
+        cache = await get_cache_instance()
         # Check cache first (though POST, cache recent activity summary)
         cache_key = _make_cache_key("activity", user_id)
         cached_data = await cache.get(cache_key)
@@ -1078,6 +1132,7 @@ async def override_prediction(
             engine.current_attention_states[request.user_id] = request.override_value
         elif request.prediction_type == "break":
             # Clear break cache
+            cache = await get_cache_instance()
             cache_key = _make_cache_key("break", request.user_id)
             try:
                 await cache.delete(cache_key)

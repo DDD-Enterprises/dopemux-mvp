@@ -6,7 +6,14 @@ Tests the gradual rollout system for ADHD Engine integration.
 
 import pytest
 import pytest_asyncio
-from feature_flags import (
+import sys
+from pathlib import Path
+
+PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+if str(PACKAGE_ROOT) not in sys.path:
+    sys.path.insert(0, str(PACKAGE_ROOT))
+
+from adhd_engine.feature_flags import (
     ADHDFeatureFlags,
     FEATURE_ADHD_ENGINE_SERENA,
     FEATURE_ADHD_ENGINE_CONPORT,
