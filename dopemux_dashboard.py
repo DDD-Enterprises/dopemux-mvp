@@ -1417,17 +1417,35 @@ Run: docker start dopemux-prometheus
         
         def action_show_service_logs(self) -> None:
             """Show live logs for a service"""
-            # For now, show Serena logs as example
-            # TODO: Add service selection menu
-            service_name = "Serena"
-            self.push_screen(ServiceLogsModal(service_name))
+            # Show service selection menu
+            self.push_screen(ServiceSelectionModal())
         
         def action_show_pattern_detail(self) -> None:
             """Show detailed view of a behavioral pattern"""
-            # For now, show a sample pattern
-            # TODO: Get currently active/top pattern
-            pattern_id = 7
-            self.push_screen(PatternDetailModal(pattern_id))
+            # Get the top pattern from Serena
+            try:
+                import httpx
+                async with httpx.AsyncClient(timeout=5.0) as client:
+                    response = await client.get("http://localhost:8003/api/patterns/top?limit=1")
+                    if response.status_code == 200:
+                        data = response.json()
+                        patterns = data.get("patterns", [])
+                        if patterns:
+                            # Use the first (top) pattern
+                            top_pattern = patterns[0]
+                            pattern_id = top_pattern.get("id", 7)
+                            # Pass pattern data to modal
+                            self.push_screen(PatternDetailModal(pattern_id, top_pattern))
+                        else:
+                            # Fallback to sample
+                            self.push_screen(PatternDetailModal(7))
+                    else:
+                        # Fallback to sample
+                        self.push_screen(PatternDetailModal(7))
+            except Exception as e:
+                # Fallback to sample
+                self.app.notify(f"⚠️ Could not load pattern data: {e}", severity="warning")
+                self.push_screen(PatternDetailModal(7))
         
         def action_show_metric_history(self) -> None:
             """Show historical graph for a metric"""
@@ -1599,6 +1617,44 @@ Cognitive load: {task['cognitive_load_trend']} ([green]trend: decreasing ✓[/gr
             """Add a note to task"""
             self.app.notify(f"📝 Note added to task #{self.task_id}", severity="information")
 
+
+    class ServiceSelectionModal(ModalView):
+        """Modal for selecting which service to view logs for"""
+
+        def compose(self) -> ComposeResult:
+            with Container(id="modal-container"):
+                yield Static("Select Service for Logs", id="modal-header")
+                with Container(id="modal-content"):
+                    yield ListView(id="service-list")
+                yield Static("[Esc] Close  [Enter] Select", id="modal-footer")
+
+        async def on_mount(self) -> None:
+            """Initialize service list"""
+            list_view = self.query_one("#service-list", ListView)
+
+            # Available services
+            services = [
+                "ADHD Engine",
+                "ConPort",
+                "Serena",
+                "Zen MCP",
+                "Task Orchestrator",
+                "Integration Bridge",
+                "Dope Context",
+                "Desktop Commander"
+            ]
+
+            for service in services:
+                list_view.append(ListItem(Label(service)))
+
+        def on_list_view_selected(self, event: ListView.Selected) -> None:
+            """Handle service selection"""
+            selected_item = event.item
+            service_name = str(selected_item.get_child_by_type(Label).renderable)
+
+            # Close selection modal and open logs modal
+            self.app.pop_screen()  # Close this modal
+            self.app.push_screen(ServiceLogsModal(service_name))
 
     class ServiceLogsModal(ModalView):
         """Live log viewer for services"""

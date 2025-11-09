@@ -297,8 +297,7 @@ class TmuxLayoutManager:
             True if save succeeded
         """
         try:
-            # This would integrate with ConPort MCP
-            # For now, return placeholder
+            # Build layout data
             layout_data = {
                 "layout_type": self.current_layout.value if self.current_layout else None,
                 "session_name": self.session_name,
@@ -306,16 +305,28 @@ class TmuxLayoutManager:
                 "timestamp": "now"  # Would use datetime.utcnow().isoformat()
             }
 
-            # TODO: Call mcp__conport__log_custom_data when integrated
-            # await mcp__conport__log_custom_data(
-            #     workspace_id=self.workspace_id,
-            #     category="orchestrator_layout",
-            #     key="current_layout",
-            #     value=layout_data
-            # )
+            # Integrate with ConPort HTTP client
+            try:
+                from .conport_http_client import ConPortHTTPClient
+                client = ConPortHTTPClient(self.workspace_id)
+                result = await client.log_custom_data(
+                    category="orchestrator_layout",
+                    key="current_layout",
+                    value=layout_data
+                )
 
-            logger.info(f"💾 Layout saved to ConPort: {layout_data}")
-            return True
+                if result.get("success"):
+                    logger.info(f"💾 Layout saved to ConPort: {layout_data}")
+                    return True
+                else:
+                    logger.warning(f"⚠️ ConPort save failed: {result}")
+                    return False
+
+            except Exception as e:
+                logger.warning(f"⚠️ ConPort integration failed: {e}")
+                # Fallback: log locally
+                logger.info(f"💾 Layout logged locally (ConPort unavailable): {layout_data}")
+                return True
 
         except Exception as e:
             logger.error(f"❌ Failed to save layout: {e}")

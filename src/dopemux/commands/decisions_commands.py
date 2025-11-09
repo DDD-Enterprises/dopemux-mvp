@@ -313,11 +313,40 @@ def decision_stats(since: int, workspace: Optional[str]):
 
                 console.print(table)
 
-            # ADHD Insights placeholder
+            # ADHD Insights - analyze decision patterns
             console.print(f"\n[bold]🧠 ADHD Insights[/bold]")
-            console.print("  [dim]• Pattern detection coming in Phase 3[/dim]")
-            console.print("  [dim]• Energy correlation analysis coming in Phase 4[/dim]")
-            console.print("  [dim]• Success prediction coming in Phase 3[/dim]")
+
+            # Analyze decision outcomes
+            successful_decisions = sum(1 for d in decisions if d.get('outcome') == 'SUCCESSFUL')
+            success_rate = (successful_decisions / len(decisions)) * 100 if decisions else 0
+
+            console.print(f"  📊 Success Rate: {success_rate:.1f}% ({successful_decisions}/{len(decisions)})")
+
+            # Analyze decision types
+            decision_types = {}
+            for d in decisions:
+                decision_type = d.get('decision_type', 'ARCHITECTURAL')
+                decision_types[decision_type] = decision_types.get(decision_type, 0) + 1
+
+            if decision_types:
+                most_common = max(decision_types.items(), key=lambda x: x[1])
+                console.print(f"  🎯 Most Common Type: {most_common[0]} ({most_common[1]} decisions)")
+
+            # Time-based analysis
+            recent_decisions = [d for d in decisions if 'timestamp' in d]
+            if recent_decisions:
+                console.print(f"  ⏰ Recent Activity: {len(recent_decisions)} decisions in last period")
+
+            # Tag analysis for patterns
+            all_tags = []
+            for d in decisions:
+                all_tags.extend(d.get('tags', []))
+
+            if all_tags:
+                from collections import Counter
+                tag_counts = Counter(all_tags)
+                top_tags = tag_counts.most_common(3)
+                console.print(f"  🏷️  Top Tags: {', '.join(f'{tag}({count})' for tag, count in top_tags)}")
 
             console.print(f"\n[dim]Full stats dashboard coming in Phase 2 (Enhanced CLI)[/dim]")
 

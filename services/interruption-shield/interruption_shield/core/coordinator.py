@@ -7,6 +7,8 @@ shield activation/deactivation across all integrated services.
 
 import asyncio
 import logging
+import websockets
+import json
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -49,16 +51,53 @@ class ShieldCoordinator:
         """Start monitoring ADHD Engine and coordinating shields."""
         logger.info("Starting ShieldCoordinator...")
 
-        # TODO: Subscribe to ADHD Engine attention state changes
-        # await self.adhd_engine.subscribe_attention_state(
-        #     callback=self.on_attention_state_changed
-        # )
+        # Subscribe to ADHD Engine attention state changes via WebSocket
+        asyncio.create_task(self._connect_to_adhd_engine())
 
         # Start background monitoring tasks
         asyncio.create_task(self._monitor_productivity())
         asyncio.create_task(self._periodic_metrics_log())
 
         logger.info("ShieldCoordinator started successfully")
+
+    async def _connect_to_adhd_engine(self):
+        """Connect to ADHD Engine WebSocket and listen for attention state changes."""
+        adhd_ws_url = "ws://localhost:8001/api/v1/ws/stream"  # ADHD Engine WebSocket URL
+        user_id = self.state.user_id
+
+        while True:  # Reconnect on disconnection
+            try:
+                logger.info(f"Connecting to ADHD Engine WebSocket for user {user_id}")
+                async with websockets.connect(f"{adhd_ws_url}?user_id={user_id}") as websocket:
+                    logger.info("Connected to ADHD Engine WebSocket")
+
+                    # Send initial state request
+                    await websocket.send_json({"type": "refresh"})
+
+                    async for message in websocket:
+                        try:
+                            data = json.loads(message)
+                            if data.get("type") == "state_update":
+                                attention_state = data.get("data", {}).get("attention_state")
+                                if attention_state:
+                                    # Convert string to AttentionState enum
+                                    try:
+                                        attention_enum = AttentionState(attention_state.upper())
+                                        await self.on_attention_state_changed(attention_enum, user_id)
+                                    except ValueError:
+                                        logger.warning(f"Unknown attention state: {attention_state}")
+
+                        except json.JSONDecodeError:
+                            logger.warning(f"Invalid JSON from ADHD Engine: {message}")
+                        except Exception as e:
+                            logger.error(f"Error processing ADHD Engine message: {e}")
+
+            except websockets.exceptions.ConnectionClosed:
+                logger.warning("ADHD Engine WebSocket connection closed, reconnecting...")
+                await asyncio.sleep(5)  # Wait before reconnecting
+            except Exception as e:
+                logger.error(f"ADHD Engine WebSocket error: {e}")
+                await asyncio.sleep(5)  # Wait before reconnecting
 
     async def on_attention_state_changed(
         self,
@@ -225,11 +264,41 @@ class ShieldCoordinator:
         """
         Check if user has made code changes recently.
 
-        TODO: Query Serena for recent file modifications
-        TODO: Query git for uncommitted changes
+        Queries Serena for recent file modifications and git for uncommitted changes.
         """
-        # Placeholder - always return True for now
-        return True
+        try:
+            # Query Serena for recent file modifications (last 15 minutes)
+            import httpx
+            serena_url = "http://localhost:8003/mcp/serena/check_recent_activity"
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                response = await client.get(f"{serena_url}?minutes=15")
+                if response.status_code == 200:
+                    serena_data = response.json()
+                    if serena_data.get("has_recent_activity", False):
+                        logger.debug("Recent file activity detected via Serena")
+                        return True
+
+            # Query git for uncommitted changes
+            import subprocess
+            result = await asyncio.create_subprocess_exec(
+                "git", "status", "--porcelain",
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                cwd="."  # Assuming we're in a git repo
+            )
+            stdout, stderr = await result.communicate()
+
+            if result.returncode == 0 and stdout.strip():
+                logger.debug("Uncommitted changes detected via git")
+                return True
+
+            logger.debug("No recent code activity detected")
+            return False
+
+        except Exception as e:
+            logger.warning(f"Error checking code activity: {e}")
+            # Default to True to avoid false positives
+            return True
 
     async def _periodic_metrics_log(self):
         """Log metrics to ConPort every 5 minutes."""
@@ -250,8 +319,28 @@ class ShieldCoordinator:
 
         summary = await self.triage.get_queued_summary()
 
-        # TODO: Display via Desktop Commander notification
-        logger.info(f"Queued summary: {summary}")
+        # Display via Desktop Commander notification
+        try:
+            import httpx
+            desktop_commander_url = "http://localhost:3012/desktop-commander/notify"
+            notification_data = {
+                "title": "Interruption Shield Deactivated",
+                "message": f"Queued communications summary: {summary}",
+                "type": "info",
+                "user_id": user_id
+            }
+
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                response = await client.post(desktop_commander_url, json=notification_data)
+                if response.status_code == 200:
+                    logger.info("Queued summary notification sent via Desktop Commander")
+                else:
+                    logger.warning(f"Failed to send notification: {response.status_code}")
+
+        except Exception as e:
+            logger.warning(f"Desktop Commander notification failed: {e}")
+            # Fallback to logging
+            logger.info(f"Queued summary: {summary}")
 
     async def _log_to_conport(
         self,
@@ -260,10 +349,63 @@ class ShieldCoordinator:
         metadata: dict = None
     ):
         """Log shield events to ConPort for analytics."""
-        # TODO: Implement ConPort integration
-        logger.debug(f"ConPort log: {event} - {metadata}")
+        try:
+            import httpx
+            conport_url = "http://localhost:5455/conport/log_custom_data"  # ConPort MCP server
+
+            log_data = {
+                "workspace_id": "/Users/hue/code/dopemux-mvp",  # Current workspace
+                "category": "shield_events",
+                "key": f"{event}_{datetime.now().isoformat()}",
+                "value": {
+                    "user_id": user_id,
+                    "event": event,
+                    "timestamp": datetime.now().isoformat(),
+                    "metadata": metadata or {}
+                }
+            }
+
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                response = await client.post(conport_url, json=log_data)
+                if response.status_code == 200:
+                    logger.debug(f"Shield event logged to ConPort: {event}")
+                else:
+                    logger.warning(f"Failed to log to ConPort: {response.status_code}")
+
+        except Exception as e:
+            logger.warning(f"ConPort logging failed: {e}")
+            # Fallback to debug logging
+            logger.debug(f"ConPort log: {event} - {metadata}")
 
     async def _log_metrics(self):
         """Log current shield metrics."""
-        # TODO: Implement metrics logging
-        logger.debug(f"Metrics: {self.state}")
+        try:
+            # Log to ConPort
+            metrics_data = {
+                "workspace_id": "/Users/hue/code/dopemux-mvp",
+                "category": "shield_metrics",
+                "key": f"metrics_{datetime.now().isoformat()}",
+                "value": {
+                    "user_id": self.state.user_id,
+                    "active": self.state.active,
+                    "attention_state": self.state.attention_state.value if self.state.attention_state else None,
+                    "activated_at": self.state.activated_at.isoformat() if self.state.activated_at else None,
+                    "duration_seconds": self.state.duration_seconds,
+                    "timestamp": datetime.now().isoformat()
+                }
+            }
+
+            import httpx
+            conport_url = "http://localhost:5455/conport/log_custom_data"
+
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                response = await client.post(conport_url, json=metrics_data)
+                if response.status_code == 200:
+                    logger.debug("Shield metrics logged to ConPort")
+                else:
+                    logger.warning(f"Failed to log metrics to ConPort: {response.status_code}")
+
+        except Exception as e:
+            logger.warning(f"Metrics logging failed: {e}")
+            # Fallback to debug logging
+            logger.debug(f"Metrics: {self.state}")

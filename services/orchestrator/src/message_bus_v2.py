@@ -158,6 +158,12 @@ class InMemoryMessageBus(MessageBus):
         self.metrics_events_dropped = 0
         self.metrics_callback_times: dict[str, list[float]] = {}
 
+        # Circuit breaker for failed subscribers
+        self.circuit_breaker_failures: dict[str, int] = {}  # sub_id -> failure count
+        self.circuit_breaker_threshold = 5  # Disable after 5 failures
+        self.circuit_breaker_timeout = 300  # 5 minutes recovery time
+        self.circuit_breaker_disabled_until: dict[str, float] = {}  # sub_id -> timestamp
+
         # Lifecycle
         self._running = True
 
@@ -220,9 +226,33 @@ class InMemoryMessageBus(MessageBus):
 
         return True
 
+    def _record_failure(self, sub_id: str):
+        """Record subscriber failure for circuit breaker."""
+        current_time = time.time()
+        self.circuit_breaker_failures[sub_id] = self.circuit_breaker_failures.get(sub_id, 0) + 1
+
+        # Check if threshold exceeded
+        if self.circuit_breaker_failures[sub_id] >= self.circuit_breaker_threshold:
+            self.circuit_breaker_disabled_until[sub_id] = current_time + self.circuit_breaker_timeout
+            logger.warning(f"🔌 Circuit breaker activated for subscriber {sub_id}: {self.circuit_breaker_failures[sub_id]} failures in {self.circuit_breaker_timeout}s")
+
+        logger.debug(f"Subscriber {sub_id} failure #{self.circuit_breaker_failures[sub_id]}")
+
     def _safe_callback(self, sub_id: str, callback: Callable, event: Event):
         """Execute callback with timeout and error handling."""
         start_time = time.time()
+
+        # Check circuit breaker first
+        current_time = time.time()
+        if sub_id in self.circuit_breaker_disabled_until:
+            if current_time < self.circuit_breaker_disabled_until[sub_id]:
+                logger.debug(f"Subscriber {sub_id} circuit breaker active, skipping callback")
+                return
+            else:
+                # Reset circuit breaker
+                del self.circuit_breaker_disabled_until[sub_id]
+                del self.circuit_breaker_failures[sub_id]
+                logger.info(f"Subscriber {sub_id} circuit breaker reset after {self.circuit_breaker_timeout}s")
 
         try:
             # Execute with timeout
@@ -240,8 +270,8 @@ class InMemoryMessageBus(MessageBus):
                 self.metrics_callback_times[sub_id] = self.metrics_callback_times[sub_id][-100:]
 
         except Exception as e:
-            print(f"⚠️ Subscriber {sub_id} error: {e}")
-            # TODO: Circuit breaker - disable subscriber after N failures
+            logger.error(f"⚠️ Subscriber {sub_id} error: {e}")
+            self._record_failure(sub_id)
 
     def subscribe(
         self,
