@@ -17,8 +17,12 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 import math
 
-from models import EnergyLevel, AttentionState
-from bridge_integration import ConPortBridgeAdapter
+try:
+    from adhd_engine.models import EnergyLevel, AttentionState
+    from adhd_engine.bridge_integration import ConPortBridgeAdapter
+except ImportError:  # pragma: no cover - fallback when run as script
+    from models import EnergyLevel, AttentionState  # type: ignore
+    from bridge_integration import ConPortBridgeAdapter  # type: ignore
 
 logger = logging.getLogger(__name__)
 

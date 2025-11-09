@@ -34,6 +34,7 @@ class GPPopulation:
         self.tournament_size = tournament_size
         self.population: List[GPIndividual] = []
         self.generation = 0
+        self.fitness_history: List[float] = []
 
     def initialize_from_seed(self, seed_code: str, variations: int = 9) -> None:
         """Initialize population from a seed individual with variations."""
