@@ -15,12 +15,15 @@ from typing import List, Dict, Any
 from unittest.mock import Mock, AsyncMock, patch
 
 import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from pathlib import Path
 
-from ml.predictive_engine import PredictiveADHDEngine
-from ml.pattern_learner import EnergyPattern, AttentionPattern, BreakPattern
-from models import EnergyLevel, AttentionState
+PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+if str(PACKAGE_ROOT) not in sys.path:
+    sys.path.insert(0, str(PACKAGE_ROOT))
+
+from adhd_engine.ml.predictive_engine import PredictiveADHDEngine
+from adhd_engine.ml.pattern_learner import EnergyPattern, AttentionPattern, BreakPattern
+from adhd_engine.models import EnergyLevel, AttentionState
 
 
 @pytest.fixture

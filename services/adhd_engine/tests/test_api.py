@@ -10,10 +10,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 # Import app
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+PACKAGE_ROOT = Path(__file__).resolve().parents[2]
+if str(PACKAGE_ROOT) not in sys.path:
+    sys.path.insert(0, str(PACKAGE_ROOT))
 
-from main import app
-from models import ADHDProfile, EnergyLevel, AttentionState
+from adhd_engine.main import app
+from adhd_engine.models import ADHDProfile, EnergyLevel, AttentionState
 
 
 class SyncASGITestClient:
@@ -49,7 +51,7 @@ def client():
 @pytest.fixture
 def mock_initialized_engine():
     """Mock initialized engine for API tests."""
-    from main import engine as global_engine
+    from adhd_engine.main import engine as global_engine
 
     mock_engine = MagicMock()
     mock_engine.current_energy_levels = {"test_user": EnergyLevel.MEDIUM}
@@ -126,7 +128,7 @@ class TestTaskAssessment:
 
     def test_assess_task_valid_request(self, client, mock_initialized_engine):
         """Should assess task and return suitability scores."""
-        with patch('main.engine', mock_initialized_engine):
+        with patch('adhd_engine.main.engine', mock_initialized_engine):
             response = client.post("/api/v1/assess-task", json={
                 "user_id": "test_user",
                 "task_id": "task_123",
@@ -148,7 +150,7 @@ class TestTaskAssessment:
 
     def test_assess_task_invalid_complexity(self, client, mock_initialized_engine):
         """Should reject invalid complexity score."""
-        with patch('main.engine', mock_initialized_engine):
+        with patch('adhd_engine.main.engine', mock_initialized_engine):
             response = client.post("/api/v1/assess-task", json={
                 "user_id": "test_user",
                 "task_id": "task_123",
@@ -168,7 +170,7 @@ class TestEnergyAndAttention:
 
     def test_get_energy_level(self, client, mock_initialized_engine):
         """Should return user's energy level."""
-        with patch('main.engine', mock_initialized_engine):
+        with patch('adhd_engine.main.engine', mock_initialized_engine):
             response = client.get("/api/v1/energy-level/test_user")
 
             assert response.status_code == 200
@@ -179,7 +181,7 @@ class TestEnergyAndAttention:
 
     def test_get_attention_state(self, client, mock_initialized_engine):
         """Should return user's attention state."""
-        with patch('main.engine', mock_initialized_engine):
+        with patch('adhd_engine.main.engine', mock_initialized_engine):
             response = client.get("/api/v1/attention-state/test_user")
 
             assert response.status_code == 200
@@ -194,7 +196,7 @@ class TestBreakRecommendation:
 
     def test_recommend_break_needed(self, client, mock_initialized_engine):
         """Should recommend break after optimal duration."""
-        with patch('main.engine', mock_initialized_engine):
+        with patch('adhd_engine.main.engine', mock_initialized_engine):
             mock_initialized_engine.user_profiles = {
                 "test_user": ADHDProfile(user_id="test_user", optimal_task_duration=25)
             }
@@ -217,7 +219,7 @@ class TestUserProfile:
 
     def test_create_profile(self, client, mock_initialized_engine):
         """Should create user ADHD profile."""
-        with patch('main.engine', mock_initialized_engine):
+        with patch('adhd_engine.main.engine', mock_initialized_engine):
             response = client.post("/api/v1/user-profile", json={
                 "user_id": "new_user",
                 "hyperfocus_tendency": 0.8,

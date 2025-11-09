@@ -63,6 +63,21 @@ ensure_volume() {
 ensure_volume mcp_logs
 ensure_volume mcp_cache
 
+check_leantime_health() {
+  local url="${LEANTIME_HEALTH_URL:-http://localhost:8080}"
+  echo "🩺 Checking Leantime health at ${url} ..."
+  for attempt in {1..10}; do
+    if curl -sSf -o /dev/null --max-time 5 "$url"; then
+      echo "✅ Leantime responded successfully"
+      return 0
+    fi
+    echo "   attempt ${attempt} failed; retrying in 3s"
+    sleep 3
+  done
+  echo "❌ Leantime health check failed after 10 attempts"
+  return 1
+}
+
 echo ""
 echo "🔨 Building and starting containers (idempotent)..."
 
@@ -197,6 +212,8 @@ safe_up desktop-commander mcp-desktop-commander
 echo ""
 echo "⏳ Final startup wait..."
 sleep 5
+
+check_leantime_health || true
 
 echo ""
 echo "📊 Service status:"
