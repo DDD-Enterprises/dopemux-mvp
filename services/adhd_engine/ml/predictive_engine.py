@@ -12,13 +12,22 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from models import EnergyLevel, AttentionState
-from .pattern_learner import (
-    ADHDPatternLearner,
-    EnergyPattern,
-    AttentionPattern,
-    BreakPattern
-)
+try:
+    from adhd_engine.models import EnergyLevel, AttentionState
+    from adhd_engine.ml.pattern_learner import (
+        ADHDPatternLearner,
+        EnergyPattern,
+        AttentionPattern,
+        BreakPattern,
+    )
+except ImportError:  # pragma: no cover - fallback for script execution
+    from models import EnergyLevel, AttentionState  # type: ignore
+    from .pattern_learner import (  # type: ignore
+        ADHDPatternLearner,
+        EnergyPattern,
+        AttentionPattern,
+        BreakPattern,
+    )
 
 logger = logging.getLogger(__name__)
 

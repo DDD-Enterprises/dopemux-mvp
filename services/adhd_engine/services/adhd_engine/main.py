@@ -18,19 +18,31 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
 
-# Prometheus metrics
-from metrics import (
-    REQUEST_COUNT, REQUEST_LATENCY, ENERGY_LEVEL, ATTENTION_STATE,
-    COGNITIVE_LOAD, BREAK_RECOMMENDATIONS, ACCOMMODATION_STATS,
-    ACTIVE_USERS, MONITORING_CYCLES, record_request, update_energy_level,
-    update_attention_state, update_cognitive_load, record_break_recommendation,
-    record_accommodation_action, update_active_users, record_monitoring_cycle,
-    get_metrics
-)
-
-from engine import ADHDAccommodationEngine
-from api import routes
-from config import settings
+# Prometheus metrics + core modules (support script + package execution)
+try:
+    from .metrics import (
+        REQUEST_COUNT, REQUEST_LATENCY, ENERGY_LEVEL, ATTENTION_STATE,
+        COGNITIVE_LOAD, BREAK_RECOMMENDATIONS, ACCOMMODATION_STATS,
+        ACTIVE_USERS, MONITORING_CYCLES, record_request, update_energy_level,
+        update_attention_state, update_cognitive_load, record_break_recommendation,
+        record_accommodation_action, update_active_users, record_monitoring_cycle,
+        get_metrics,
+    )
+    from .engine import ADHDAccommodationEngine
+    from .api import routes
+    from .config import settings
+except ImportError:  # pragma: no cover - fallback outside package context
+    from metrics import (  # type: ignore
+        REQUEST_COUNT, REQUEST_LATENCY, ENERGY_LEVEL, ATTENTION_STATE,
+        COGNITIVE_LOAD, BREAK_RECOMMENDATIONS, ACCOMMODATION_STATS,
+        ACTIVE_USERS, MONITORING_CYCLES, record_request, update_energy_level,
+        update_attention_state, update_cognitive_load, record_break_recommendation,
+        record_accommodation_action, update_active_users, record_monitoring_cycle,
+        get_metrics,
+    )
+    from engine import ADHDAccommodationEngine  # type: ignore
+    from api import routes  # type: ignore
+    from config import settings  # type: ignore
 # from middleware.rate_limit import RateLimitMiddleware  # Disabled for testing
 
 # Import shared Redis pool and cache for performance optimization
