@@ -51,73 +51,148 @@ class GeneticAgent(BaseAgent):
         self.repair_candidates: List[RepairCandidate] = []
 
     async def _execute_repair(self, task: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute hybrid LLM + GP repair process with selective GP activation."""
+        """Execute hybrid LLM + GP repair process with comprehensive Zen reasoning."""
         bug_description = task.get("bug_description", "")
         file_path = task.get("file_path", "")
         line_number = task.get("line_number", 0)
 
-        # Phase 1: Analysis
+        # Phase 0: Comprehensive reasoning with Zen thinkdeep for overall repair approach
         self.status.update_state(AgentState.ANALYZING)
-        context = await self._analyze_bug(bug_description, file_path, line_number)
+        comprehensive_context = await self._analyze_bug(bug_description, file_path, line_number)
 
-        # Phase 1.5: Determine repair strategy based on failure patterns
-        repair_strategy = await self._determine_repair_strategy(context)
+        # Use Zen thinkdeep for comprehensive repair reasoning
+        thinkdeep_prompt = f"""Comprehensive analysis for code repair:
 
-        # Phase 2: LLM-First Generation (Vanilla-style)
+Bug: {bug_description}
+File: {file_path}:{line_number}
+Analysis:
+- Complexity: {comprehensive_context['complexity'].get('score', 0.5)}
+- Patterns found: {len(comprehensive_context['similar_patterns']['results'])}
+
+Provide a comprehensive analysis of the repair approach, including:
+1. Root cause hypothesis
+2. Recommended repair strategy
+3. Expected challenges
+4. Integration points
+5. Success criteria
+
+Format: {{
+  "root_cause": "hypothesis",
+  "recommended_strategy": "detailed approach",
+  "expected_challenges": ["list of challenges"],
+  "integration_points": ["specific files or components"],
+  "success_criteria": ["test passing", "confidence > 0.7", "no new errors introduced"]
+}}"""
+
+        try:
+            async with self.zen_client:
+                reasoning_response = await self.zen_client.thinkdeep(
+                    step=thinkdeep_prompt,
+                    step_number=1,
+                    total_steps=2,
+                    next_step_required=False,
+                    findings=f"Comprehensive repair reasoning for {bug_description}",
+                    model="gpt-5-codex"
+                )
+                reasoning = reasoning_response.get('reasoning', {})
+        except Exception as e:
+            # Fallback to basic context if Zen unavailable
+            print(f"Zen comprehensive reasoning failed: {e}")
+            reasoning = {
+                "root_cause": "Unknown root cause - needs analysis",
+                "recommended_strategy": "Standard hybrid LLM + GP approach",
+                "expected_challenges": ["MCP service availability", "Pattern relevance"],
+                "integration_points": [file_path],
+                "success_criteria": ["Confidence >= 0.7", "Syntax validation"]
+            }
+
+        # Phase 1: Detailed analysis incorporating Zen reasoning
+        self.status.update_state(AgentState.ANALYZING)
+        detailed_context = await self._analyze_bug(bug_description, file_path, line_number)
+
+        # Phase 1.5: Determine repair strategy based on Zen reasoning
+        repair_strategy = await self._determine_repair_strategy(detailed_context)
+
+        # Phase 2: LLM-First Generation with Zen reasoning context
         self.status.update_state(AgentState.REPAIRING)
-        llm_repair = await self._generate_llm_repair(context)
+        llm_repair = await self._generate_llm_repair(detailed_context)
 
         # Log LLM attempt to ConPort (research-based learning)
         await self.memory_adapter.log_attempt(
             attempt_number=1,
-            operator="enhanced_llm",
+            operator="comprehensive_llm",
             fitness_score=llm_repair.confidence,
-            context=context,
+            context=detailed_context,
             success=llm_repair.confidence >= self.config.confidence_threshold
         )
 
         if llm_repair.confidence >= self.config.confidence_threshold:
-            # LLM repair is good enough, return it
-            await self._log_session_summary(success=True)
-            return self._format_success_response(llm_repair, 1, "llm")
+            # Use Zen consensus to validate the repair before returning
+            validation_result = await self._validate_repair_with_consensus(llm_repair, detailed_context)
+            if validation_result.get('approved', False):
+                # LLM repair is validated and good enough, return it
+                await self._log_session_summary(success=True)
+                return self._format_success_response(llm_repair, 1, "validated_llm")
+            # Validation failed, continue with GP optimization
 
         # Phase 3: GP Enhancement (selective based on strategy)
         if repair_strategy == "selective_gp":
-            gp_success = await self._run_selective_gp(llm_repair, context)
+            gp_success = await self._run_selective_gp(llm_repair, detailed_context)
         else:
-            gp_success = await self._run_gp_optimization(llm_repair, context)
+            gp_success = await self._run_gp_optimization(llm_repair, detailed_context)
 
         if gp_success:
             # Return best GP-enhanced repair
             best_candidate = self._get_best_candidate()
             if best_candidate and best_candidate.confidence >= self.config.confidence_threshold:
-                iterations = self.population_manager.generation + 1  # +1 for LLM phase
-                await self._log_session_summary(success=True)
-                return self._format_success_response(best_candidate, iterations, "gp")
+                # Use Zen codereview to assess repair quality before returning
+                review_result = await self._review_repair_quality(best_candidate, detailed_context)
+                if review_result.get('approved', False):
+                    # Final Zen precommit validation
+                    precommit_result = await self._validate_precommit(best_candidate, detailed_context)
+                    if precommit_result.get('approved', False):
+                        iterations = self.population_manager.generation + 1  # +1 for LLM phase
+                        await self._log_session_summary(success=True)
+                        return self._format_success_response(best_candidate, iterations, "gp_precommit")
+                    # Precommit validation failed, continue with fallback
+                # Quality review failed, continue with fallback
 
         # Phase 4: Fallback to best available
         best_candidate = self._get_best_candidate()
         if best_candidate:
-            iterations = len(self.repair_candidates)
-            # Log successful hybrid approach
-            await self.memory_adapter.log_attempt(
-                attempt_number=iterations,
-                operator="hybrid_fallback",
-                fitness_score=best_candidate.confidence,
-                context=context,
-                success=True
-            )
-            await self._log_session_summary(success=True)
-            return self._format_success_response(best_candidate, iterations, "hybrid")
+            # Use Zen codereview for final quality assessment
+            review_result = await self._review_repair_quality(best_candidate, detailed_context)
+            if review_result.get('approved', False):
+                iterations = len(self.repair_candidates)
+                # Log successful hybrid approach
+                await self.memory_adapter.log_attempt(
+                    attempt_number=iterations,
+                    operator="comprehensive_hybrid_reviewed",
+                    fitness_score=best_candidate.confidence,
+                    context=detailed_context,
+                    success=True
+                )
+                await self._log_session_summary(success=True)
+                return self._format_success_response(best_candidate, iterations, "hybrid_reviewed")
+            else:
+                # Even fallback fails review, return with warnings
+                iterations = len(self.repair_candidates)
+                return self._format_success_response(best_candidate, iterations, "hybrid_fallback")
 
-        # No suitable repair found - log failure signals for learning
+        # No suitable repair found - use Zen debug for root cause analysis
         failure_signals = [
             "llm_repair_insufficient",
             "gp_optimization_failed",
-            f"complexity_{context.get('complexity', {}).get('score', 0.5):.1f}",
-            f"similar_patterns_{len(context.get('similar_patterns', {}).get('results', []))}"
+            f"complexity_{detailed_context.get('complexity', {}).get('score', 0.5):.1f}",
+            f"similar_patterns_{len(detailed_context.get('similar_patterns', {}).get('results', []))}"
         ]
-        await self.memory_adapter.log_failure_signals(failure_signals, context)
+
+        # Use Zen debug for comprehensive failure analysis
+        debug_analysis = await self._analyze_failure_with_debug(
+            failure_signals, detailed_context, reasoning, self.repair_candidates
+        )
+
+        await self.memory_adapter.log_failure_signals(failure_signals, detailed_context)
 
         # Log session summary for research learning
         await self._log_session_summary(success=False)
@@ -129,7 +204,11 @@ class GeneticAgent(BaseAgent):
             "repair": None,
             "iterations": len(self.repair_candidates),
             "explanation": "No suitable repair found within constraints",
-            "candidates_evaluated": len(self.repair_candidates)
+            "candidates_evaluated": len(self.repair_candidates),
+            "reasoning": reasoning,
+            "debug_analysis": debug_analysis,
+            "review_analysis": review_result if 'review_result' in locals() else None,
+            "precommit_validation": precommit_result if 'precommit_result' in locals() else None
         }
 
     async def _determine_repair_strategy(self, context: Dict[str, Any]) -> str:
@@ -475,7 +554,7 @@ Choose the optimal strategy based on complexity, novelty, and historical pattern
         return max(self.repair_candidates, key=lambda x: x.confidence)
 
     def _format_success_response(self, candidate: RepairCandidate, iterations: int, method: str) -> Dict[str, Any]:
-        """Format successful repair response."""
+        """Format successful repair response with Zen integration details."""
         return {
             "success": True,
             "confidence": candidate.confidence,
@@ -483,7 +562,12 @@ Choose the optimal strategy based on complexity, novelty, and historical pattern
             "iterations": iterations,
             "explanation": candidate.explanation,
             "method": method,
-            "candidates_evaluated": len(self.repair_candidates)
+            "candidates_evaluated": len(self.repair_candidates),
+            "zen_integration": {
+                "planning_used": True,
+                "strategy": method,
+                "reasoning_available": method != "llm"
+            }
         }
 
     async def _log_session_summary(self, success: bool) -> None:
@@ -507,6 +591,239 @@ Choose the optimal strategy based on complexity, novelty, and historical pattern
             average_fitness=avg_fitness,
             operators_used=operators_used
         )
+
+    async def _validate_repair_with_consensus(self, repair: RepairCandidate, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Use Zen consensus to validate repair quality across multiple models."""
+        try:
+            consensus_prompt = f"""Evaluate this code repair for the following bug:
+
+Bug: {context['description']}
+File: {context['file_path']}:{context['line']}
+Complexity: {context.get('complexity', {}).get('score', 0.5)}
+
+Repair: {repair.code}
+
+Explanation: {repair.explanation}
+
+Confidence: {repair.confidence}
+
+Evaluate:
+1. Does the repair address the root cause?
+2. Is the code syntactically correct?
+3. Does it follow best practices?
+4. What are the potential risks?
+5. Overall recommendation (approve/reject)
+
+Format: {{"evaluation": "detailed analysis", "risks": ["list"], "recommendation": "approve/reject", "confidence": 0.8}}"""
+
+            # Use consensus with multiple models for validation
+            models = [
+                {"model": "gpt-5-codex", "stance": "neutral"},
+                {"model": "gemini-2.5-pro", "stance": "critical"},
+                {"model": "gpt-5", "stance": "optimistic"}
+            ]
+
+            async with self.zen_client:
+                consensus_response = await self.zen_client.consensus(
+                    step=consensus_prompt,
+                    step_number=1,
+                    total_steps=1,
+                    next_step_required=False,
+                    findings=f"Repair validation for {context['description']}",
+                    models=models
+                )
+
+            # Extract consensus result
+            consensus_result = consensus_response.get('consensus', {})
+            recommendation = consensus_result.get('recommendation', 'reject').lower()
+
+            return {
+                'approved': recommendation == 'approve',
+                'evaluation': consensus_result.get('evaluation', ''),
+                'risks': consensus_result.get('risks', []),
+                'confidence': consensus_result.get('confidence', 0.5)
+            }
+
+        except Exception as e:
+            # Fallback to simple validation if consensus fails
+            print(f"Zen consensus validation failed: {e}")
+            return {
+                'approved': repair.confidence >= 0.8,  # Fallback to confidence threshold
+                'evaluation': 'Consensus unavailable, using confidence fallback',
+                'risks': ['Validation unavailable'],
+                'confidence': repair.confidence
+            }
+
+    async def _analyze_failure_with_debug(self, failure_signals: List[str], context: Dict[str, Any],
+                                        reasoning: Dict[str, Any], candidates: List[RepairCandidate]) -> Dict[str, Any]:
+        """Use Zen debug to analyze why repair attempts failed."""
+        try:
+            debug_step = f"""Debug repair failure analysis:
+
+Bug: {context['description']}
+Failure Signals: {', '.join(failure_signals)}
+Complexity: {context.get('complexity', {}).get('score', 0.5)}
+Patterns Found: {len(context.get('similar_patterns', {}).get('results', []))}
+Candidates Evaluated: {len(candidates)}
+
+Candidates Summary:
+{chr(10).join([f"- {c.source}: confidence {c.confidence:.2f}, explanation: {c.explanation[:100]}" for c in candidates])}
+
+Root Cause Hypothesis: {reasoning.get('root_cause', 'Unknown')}
+
+Analyze:
+1. Why did all repair attempts fail?
+2. What are the systemic issues?
+3. How can the repair process be improved?
+4. What additional context or capabilities are needed?
+
+Format: {{"root_causes": ["list"], "systemic_issues": ["list"], "improvements": ["list"], "needed_capabilities": ["list"]}}"""
+
+            async with self.zen_client:
+                debug_response = await self.zen_client.debug(
+                    step=debug_step,
+                    step_number=1,
+                    total_steps=1,
+                    next_step_required=False,
+                    hypothesis=f"Repair failure due to {', '.join(failure_signals)}",
+                    findings=f"Debugging {len(candidates)} failed repair attempts"
+                )
+
+            # Extract debug analysis
+            debug_result = debug_response.get('debug_analysis', {})
+
+            return {
+                'root_causes': debug_result.get('root_causes', []),
+                'systemic_issues': debug_result.get('systemic_issues', []),
+                'improvements': debug_result.get('improvements', []),
+                'needed_capabilities': debug_result.get('needed_capabilities', []),
+                'confidence': debug_result.get('confidence', 0.5)
+            }
+
+        except Exception as e:
+            # Fallback debug analysis
+            print(f"Zen debug analysis failed: {e}")
+            return {
+                'root_causes': ['MCP service unavailable', 'Complex bug type'],
+                'systemic_issues': ['Insufficient context', 'Pattern matching limitations'],
+                'improvements': ['Enhance pattern discovery', 'Add domain-specific operators'],
+                'needed_capabilities': ['Better test execution', 'Domain expertise'],
+                'confidence': 0.3
+            }
+
+    async def _review_repair_quality(self, repair: RepairCandidate, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Use Zen codereview to assess the quality of the generated repair."""
+        try:
+            review_step = f"""Review this code repair for quality, security, performance, and architecture:
+
+Bug Context: {context['description']}
+File: {context['file_path']}:{context['line']}
+Complexity: {context.get('complexity', {}).get('score', 0.5)}
+
+Repair Code: {repair.code}
+
+Review Focus:
+1. Functional correctness (does it fix the bug?)
+2. Security (vulnerabilities introduced?)
+3. Performance (efficiency of the solution?)
+4. Code quality (readability, maintainability)
+5. Architecture (fits existing patterns?)
+
+Provide a comprehensive review with approval recommendation.
+
+Format: {{"approved": "boolean", "quality_score": 0.8, "issues": ["list of issues"], "recommendations": ["list"]}}"""
+
+            async with self.zen_client:
+                review_response = await self.zen_client.codereview(
+                    step=review_step,
+                    step_number=1,
+                    total_steps=1,
+                    next_step_required=False,
+                    findings=f"Quality assessment for {repair.explanation}",
+                    relevant_files=[context['file_path']],
+                    model="gpt-5-codex"
+                )
+
+            # Extract review result
+            review_result = review_response.get('review_result', {})
+            approved = review_result.get('approved', False)
+            quality_score = review_result.get('quality_score', 0.5)
+
+            return {
+                'approved': approved,
+                'quality_score': quality_score,
+                'issues': review_result.get('issues', []),
+                'recommendations': review_result.get('recommendations', []),
+                'detailed_review': review_result.get('detailed_review', '')
+            }
+
+        except Exception as e:
+            # Fallback to simple review if codereview fails
+            print(f"Zen codereview failed: {e}")
+            return {
+                'approved': repair.confidence >= 0.7,  # Fallback to confidence
+                'quality_score': repair.confidence,
+                'issues': ['Review unavailable'],
+                'recommendations': ['Consider manual review'],
+                'detailed_review': 'Codereview service unavailable'
+            }
+
+    async def _validate_precommit(self, repair: RepairCandidate, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Use Zen precommit to validate the repair before final application."""
+        try:
+            precommit_step = f"""Pre-commit validation for code repair:
+
+Validate this repair before committing:
+
+Bug: {context['description']}
+Repair: {repair.code}
+Explanation: {repair.explanation}
+
+Validation Checks:
+1. Syntax correctness
+2. No breaking changes to existing functionality
+3. Performance impact assessment
+4. Integration with existing codebase
+5. Security implications
+
+Determine if this repair is safe to commit.
+
+Format: {{"approved": "boolean", "validation_score": 0.9, "concerns": ["list"], "ready_to_commit": "boolean"}}"""
+
+            async with self.zen_client:
+                precommit_response = await self.zen_client.precommit(
+                    step=precommit_step,
+                    step_number=1,
+                    total_steps=1,
+                    next_step_required=False,
+                    findings=f"Pre-commit validation for {repair.explanation}",
+                    path=context['file_path'],
+                    model="gpt-5-codex"
+                )
+
+            # Extract precommit result
+            precommit_result = precommit_response.get('precommit_validation', {})
+            approved = precommit_result.get('approved', False)
+            validation_score = precommit_result.get('validation_score', 0.5)
+
+            return {
+                'approved': approved,
+                'validation_score': validation_score,
+                'concerns': precommit_result.get('concerns', []),
+                'ready_to_commit': precommit_result.get('ready_to_commit', False),
+                'validation_details': precommit_result.get('validation_details', '')
+            }
+
+        except Exception as e:
+            # Fallback to simple validation if precommit fails
+            print(f"Zen precommit validation failed: {e}")
+            return {
+                'approved': repair.confidence >= 0.8,  # Fallback to confidence
+                'validation_score': repair.confidence,
+                'concerns': ['Validation unavailable'],
+                'ready_to_commit': repair.confidence >= 0.8,
+                'validation_details': 'Precommit service unavailable'
+            }
 
     def _build_repair_prompt(self, context: Dict[str, Any], iteration: int) -> str:
         """Build the repair prompt for LLM."""

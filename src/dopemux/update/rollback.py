@@ -345,8 +345,34 @@ class RollbackManager:
             # Restore Redis data
             redis_backup = db_backup_dir / "redis.rdb"
             if redis_backup.exists():
-                # This would require more complex Redis restoration
-                logger.info("Redis backup found but restoration not implemented")
+                try:
+                    # Find Redis data directory (common locations)
+                    redis_data_dirs = [
+                        Path("/var/lib/redis"),
+                        Path("/usr/local/var/db/redis"),
+                        Path("/opt/homebrew/var/db/redis"),
+                        Path.home() / ".redis"
+                    ]
+
+                    redis_dir = None
+                    for potential_dir in redis_data_dirs:
+                        if potential_dir.exists():
+                            redis_dir = potential_dir
+                            break
+
+                    if redis_dir:
+                        # Copy backup to Redis data directory
+                        import shutil
+                        redis_dump = redis_dir / "dump.rdb"
+                        shutil.copy2(redis_backup, redis_dump)
+                        logger.info(f"Redis data restored from {redis_backup} to {redis_dump}")
+
+                        # Note: Would need Redis restart to load new data
+                        logger.info("Redis restart required to load restored data")
+                    else:
+                        logger.warning("Could not find Redis data directory for restoration")
+                except Exception as e:
+                    logger.error(f"Redis restoration failed: {e}")
 
             return True
 

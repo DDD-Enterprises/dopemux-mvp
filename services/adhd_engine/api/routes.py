@@ -38,7 +38,11 @@ except ImportError:
 import api.schemas as schemas
 from models import ADHDProfile, EnergyLevel, AttentionState
 
-from .schemas import PredictionOverrideRequest, OverrideResponse, CustomizationSettings
+from .schemas import (
+    PredictionOverrideRequest, OverrideResponse, CustomizationSettings,
+    PredictionFeedbackRequest, AutomationAdjustmentRequest,
+    TrustMetricsResponse, TrustVisualizationResponse
+)
 from auth import verify_api_key
 from api.websocket import manager, send_heartbeat
 
@@ -391,13 +395,40 @@ async def recommend_break(
             except Exception as e:
                 logger.warning(f"ML break prediction failed: {e}")
 
+        # Get Zen break strategy recommendation
+        zen_break_recommendation = None
+        try:
+            current_state = {
+                'energy_level': engine.current_energy_levels.get(request.user_id, 'MEDIUM'),
+                'attention_state': engine.current_attention_states.get(request.user_id, 'FOCUSED'),
+                'minutes_since_last_break': request.minutes_since_break or 0,
+                'cognitive_load': await engine._calculate_system_cognitive_load()
+            }
+            work_context = {
+                'task_type': 'general',
+                'complexity': 0.5,
+                'progress_percentage': 0
+            }
+
+            zen_result = await engine.zen_client.recommend_break_strategy(current_state, work_context)
+            if zen_result.get('break_recommended'):
+                zen_break_recommendation = schemas.MLPrediction(
+                    predicted_value=zen_result.get('break_duration_minutes', 5),
+                    confidence=zen_result.get('post_break_energy_boost', 0.15),
+                    explanation=zen_result.get('reasoning', 'Zen AI break optimization'),
+                    ml_used=False  # Zen is AI, not ML
+                )
+        except Exception as e:
+            logger.warning(f"Zen break recommendation failed: {e}")
+
         response = schemas.BreakRecommendationResponse(
             break_needed=break_needed,
             reason=reason,
             suggestions=suggestions,
             urgency=urgency,
             message=message,
-            ml_prediction=ml_prediction
+            ml_prediction=ml_prediction,
+            zen_break_recommendation=zen_break_recommendation
         )
 
         # Cache the response
@@ -1163,4 +1194,99 @@ async def get_customization_settings(
 
     except Exception as e:
         logger.error(f"Get customization settings failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# Phase 3.6 Trust Building Layer - Accuracy Tracking and Feedback
+# ============================================================================
+
+@router.post("/prediction-feedback/{user_id}")
+async def submit_prediction_feedback(
+    user_id: str,
+    feedback: PredictionFeedbackRequest,
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
+):
+    """Submit feedback on prediction usefulness."""
+    try:
+        if not engine.trust_service:
+            return {"error": "Trust building service not available"}
+
+        await engine.trust_service.collect_user_feedback(
+            user_id=user_id,
+            prediction_type=getattr(feedback, 'prediction_type', 'general'),  # Add to schema
+            prediction_id=feedback.prediction_id,
+            rating=feedback.rating,
+            usefulness=feedback.usefulness,
+            comments=feedback.comments
+        )
+
+        return {"message": "Feedback recorded successfully"}
+
+    except Exception as e:
+        logger.error(f"Feedback submission failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/trust-metrics/{user_id}", response_model=TrustMetricsResponse)
+async def get_trust_metrics(
+    user_id: str,
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
+):
+    """Get trust metrics for user."""
+    try:
+        if not engine.trust_service:
+            raise HTTPException(status_code=503, detail="Trust building service not available")
+
+        metrics = await engine.trust_service.get_trust_metrics(user_id)
+        return metrics
+
+    except Exception as e:
+        logger.error(f"Trust metrics retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/trust-visualization/{user_id}", response_model=TrustVisualizationResponse)
+async def get_trust_visualization(
+    user_id: str,
+    days: int = 30,
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
+):
+    """Get trust visualization data."""
+    try:
+        if not engine.trust_service:
+            raise HTTPException(status_code=503, detail="Trust building service not available")
+
+        data = await engine.trust_service.get_visualization_data(user_id, days)
+        return data
+
+    except Exception as e:
+        logger.error(f"Trust visualization retrieval failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/automation-level/{user_id}")
+async def adjust_automation_level(
+    user_id: str,
+    request: schemas.AutomationAdjustmentRequest,
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
+):
+    """Adjust automation level for prediction type."""
+    try:
+        if not engine.trust_service:
+            return {"error": "Trust building service not available"}
+
+        success = await engine.trust_service.adjust_automation_level(
+            prediction_type=request.prediction_type,
+            user_id=user_id,
+            new_level=request.automation_level
+        )
+
+        if success:
+            return {"message": f"Automation level adjusted to {request.automation_level}"}
+        else:
+            raise HTTPException(status_code=400, detail="Invalid automation level")
+
+    except Exception as e:
+        logger.error(f"Automation level adjustment failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))

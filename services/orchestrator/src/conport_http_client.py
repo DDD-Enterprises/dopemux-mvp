@@ -399,6 +399,35 @@ class ConPortHTTPClient:
             logger.warning(f"Semantic search failed: {e}")
             return []
 
+    async def get_active_context(self) -> Dict[str, Any]:
+        """
+        Get current active context from ConPort.
+
+        Returns:
+            Active context data including current focus, session info, etc.
+        """
+        # Check circuit breaker
+        if not await self._check_circuit():
+            logger.info("Circuit breaker open, active context unavailable")
+            return {"active_context": {}}
+
+        # Try HTTP request
+        try:
+            response = await self.client.get(
+                f"{self.bridge_url}/conport/active_context",
+                params={"workspace_id": self.workspace_id},
+                headers={"X-Source-Plane": "cognitive_plane"}
+            )
+            response.raise_for_status()
+
+            self._record_success()
+            return response.json()
+
+        except (httpx.HTTPError, httpx.TimeoutException) as e:
+            self._record_failure()
+            logger.warning(f"Get active context failed: {e}")
+            return {"active_context": {}}
+
     async def log_decision(
         self,
         summary: str,

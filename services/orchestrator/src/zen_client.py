@@ -12,9 +12,12 @@ This is BETTER than spawning separate CLIs because:
 Complexity: 0.35 (Low-Medium) - Much simpler than agent_spawner!
 """
 
+import logging
 from typing import Optional, Literal
 from dataclasses import dataclass
 from enum import Enum
+
+logger = logging.getLogger(__name__)
 
 
 class ZenModel(Enum):
@@ -92,20 +95,40 @@ class ZenMCPClient:
             ...     total_steps=3
             ... )
         """
-        # TODO: Call actual Zen MCP tool
-        # result = mcp__zen__thinkdeep(
-        #     step=step,
-        #     model=model,
-        #     step_number=step_number,
-        #     total_steps=total_steps,
-        #     confidence=confidence
-        # )
+        # Call actual Zen MCP tool via HTTP
+        try:
+            import httpx
+            zen_endpoint = "http://localhost:8002/mcp/zen/thinkdeep"
+            request_data = {
+                "step": step,
+                "step_number": step_number,
+                "total_steps": total_steps,
+                "next_step_required": True,
+                "findings": {},  # Initial findings
+                "confidence": confidence,
+                "model": model
+            }
 
-        return ZenResponse(
-            model_used=model,
-            content=f"[Zen thinkdeep analysis would appear here]\nStep {step_number}/{total_steps}: {step}",
-            confidence=0.8,
-        )
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(zen_endpoint, json=request_data)
+                if response.status_code == 200:
+                    zen_data = response.json()
+                    return ZenResponse(
+                        model_used=model,
+                        content=zen_data.get("content", "Zen thinkdeep analysis"),
+                        confidence=zen_data.get("confidence", 0.8),
+                        thinking=zen_data.get("thinking", None)
+                    )
+                else:
+                    raise ValueError(f"Zen MCP returned {response.status_code}")
+        except Exception as e:
+            logger.warning(f"Zen thinkdeep call failed: {e}")
+            # Fallback to mock
+            return ZenResponse(
+                model_used=model,
+                content=f"[Zen thinkdeep fallback]\nStep {step_number}/{total_steps}: {step} (service unavailable)",
+                confidence=0.5,
+            )
 
     def planner(
         self,
@@ -132,14 +155,38 @@ class ZenMCPClient:
             ...     model="sonnet"
             ... )
         """
-        # TODO: Call actual Zen MCP
-        # result = mcp__zen__planner(...)
+        # Call actual Zen MCP planner via HTTP
+        try:
+            import httpx
+            zen_endpoint = "http://localhost:8002/mcp/zen/planner"
+            request_data = {
+                "step": step,
+                "step_number": step_number,
+                "total_steps": total_steps,
+                "next_step_required": True,
+                "model": model
+            }
 
-        return ZenResponse(
-            model_used=model,
-            content=f"[Zen planner output]\nStep {step_number}: {step}",
-            confidence=0.85,
-        )
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(zen_endpoint, json=request_data)
+                if response.status_code == 200:
+                    zen_data = response.json()
+                    return ZenResponse(
+                        model_used=model,
+                        content=zen_data.get("content", "Zen planner output"),
+                        confidence=zen_data.get("confidence", 0.85),
+                        thinking=zen_data.get("thinking", None)
+                    )
+                else:
+                    raise ValueError(f"Zen MCP returned {response.status_code}")
+        except Exception as e:
+            logger.warning(f"Zen planner call failed: {e}")
+            # Fallback to mock
+            return ZenResponse(
+                model_used=model,
+                content=f"[Zen planner fallback]\nStep {step_number}: {step} (service unavailable)",
+                confidence=0.6,
+            )
 
     def consensus(
         self, step: str, models: Optional[list[dict]] = None
@@ -171,17 +218,46 @@ class ZenMCPClient:
                 {"model": "grok4-fast", "stance": "against"},
             ]
 
-        # TODO: Call actual Zen MCP
-        # result = mcp__zen__consensus(step=step, models=models, ...)
+        # Call actual Zen MCP consensus via HTTP
+        try:
+            import httpx
+            zen_endpoint = "http://localhost:8002/mcp/zen/consensus"
+            request_data = {
+                "step": step,
+                "step_number": 1,
+                "total_steps": len(models) if models else 3,
+                "next_step_required": False,
+                "findings": {},
+                "model": "auto",  # Let Zen decide based on models list
+                "questions": [],  # Not used for consensus
+                "multiSelect": False,  # Not used
+                "models": models or []
+            }
 
-        models_used = ", ".join(m["model"] for m in models)
-
-        return ZenResponse(
-            model_used=models_used,
-            content=f"[Multi-model consensus]\nQuestion: {step}\nModels: {models_used}",
-            confidence=0.87,
-            metadata={"models_consulted": models},
-        )
+            async with httpx.AsyncClient(timeout=45.0) as client:  # Longer timeout for consensus
+                response = await client.post(zen_endpoint, json=request_data)
+                if response.status_code == 200:
+                    zen_data = response.json()
+                    models_used = ", ".join(m["model"] for m in models) if models else "auto-selected"
+                    return ZenResponse(
+                        model_used=models_used,
+                        content=zen_data.get("content", "Multi-model consensus"),
+                        confidence=zen_data.get("confidence", 0.87),
+                        metadata={"models_consulted": models},
+                        thinking=zen_data.get("thinking", None)
+                    )
+                else:
+                    raise ValueError(f"Zen MCP returned {response.status_code}")
+        except Exception as e:
+            logger.warning(f"Zen consensus call failed: {e}")
+            # Fallback to mock
+            models_used = ", ".join(m["model"] for m in models) if models else "fallback"
+            return ZenResponse(
+                model_used=models_used,
+                content=f"[Zen consensus fallback]\nQuestion: {step}\nModels: {models_used} (service unavailable)",
+                confidence=0.6,
+                metadata={"models_consulted": models},
+            )
 
     def chat(self, prompt: str, model: str = "grok-code") -> ZenResponse:
         """
@@ -200,12 +276,39 @@ class ZenMCPClient:
             ...     model="grok-code"
             ... )
         """
-        # TODO: Call actual Zen MCP
-        # result = mcp__zen__chat(prompt=prompt, model=model)
+        # Call actual Zen MCP chat via HTTP
+        try:
+            import httpx
+            zen_endpoint = "http://localhost:8002/mcp/zen/chat"
+            request_data = {
+                "prompt": prompt,
+                "working_directory": "/tmp",  # Temporary working directory
+                "model": model,
+                "temperature": 0.7,  # Creative for chat
+                "thinking_mode": "medium",
+                "continuation_id": ""  # New conversation
+            }
 
-        return ZenResponse(
-            model_used=model, content=f"[{model} response to: {prompt}]", confidence=0.8
-        )
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(zen_endpoint, json=request_data)
+                if response.status_code == 200:
+                    zen_data = response.json()
+                    return ZenResponse(
+                        model_used=model,
+                        content=zen_data.get("response", f"[{model} response]"),
+                        confidence=0.8,
+                        thinking=zen_data.get("thinking", None)
+                    )
+                else:
+                    raise ValueError(f"Zen MCP returned {response.status_code}")
+        except Exception as e:
+            logger.warning(f"Zen chat call failed: {e}")
+            # Fallback to mock
+            return ZenResponse(
+                model_used=model,
+                content=f"[{model} fallback response to: {prompt}] (service unavailable)",
+                confidence=0.5
+            )
 
     def debug(
         self,
@@ -231,14 +334,42 @@ class ZenMCPClient:
             ...     model="gemini"
             ... )
         """
-        # TODO: Call actual Zen MCP
-        # result = mcp__zen__debug(step=step, hypothesis=hypothesis, model=model)
+        # Call actual Zen MCP debug via HTTP
+        try:
+            import httpx
+            zen_endpoint = "http://localhost:8002/mcp/zen/debug"
+            request_data = {
+                "step": step,
+                "step_number": 1,
+                "total_steps": 1,
+                "next_step_required": False,
+                "findings": {},
+                "hypothesis": hypothesis,
+                "model": model,
+                "temperature": 0.2,  # Low temperature for debugging
+                "thinking_mode": "high"
+            }
 
-        return ZenResponse(
-            model_used=model,
-            content=f"[Debug analysis]\nHypothesis: {hypothesis}\n{step}",
-            confidence=0.75,
-        )
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(zen_endpoint, json=request_data)
+                if response.status_code == 200:
+                    zen_data = response.json()
+                    return ZenResponse(
+                        model_used=model,
+                        content=zen_data.get("content", "Debug analysis"),
+                        confidence=zen_data.get("confidence", 0.75),
+                        thinking=zen_data.get("thinking", None)
+                    )
+                else:
+                    raise ValueError(f"Zen MCP returned {response.status_code}")
+        except Exception as e:
+            logger.warning(f"Zen debug call failed: {e}")
+            # Fallback to mock
+            return ZenResponse(
+                model_used=model,
+                content=f"[Zen debug fallback]\nHypothesis: {hypothesis}\n{step} (service unavailable)",
+                confidence=0.5,
+            )
 
     def codereview(
         self,
@@ -264,19 +395,46 @@ class ZenMCPClient:
             ...     model="gemini"
             ... )
         """
-        # TODO: Call actual Zen MCP
-        # result = mcp__zen__codereview(
-        #     relevant_files=files,
-        #     review_type=review_type,
-        #     model=model
-        # )
+        # Call actual Zen MCP codereview via HTTP
+        try:
+            import httpx
+            zen_endpoint = "http://localhost:8002/mcp/zen/codereview"
+            request_data = {
+                "step": f"Review {len(files)} files with {review_type} focus",
+                "step_number": 1,
+                "total_steps": 1,
+                "next_step_required": False,
+                "findings": {},
+                "relevant_files": files,
+                "review_type": review_type,
+                "focus_on": review_type,
+                "model": model,
+                "review_validation_type": "external",
+                "severity_filter": "all"
+            }
 
-        return ZenResponse(
-            model_used=model,
-            content=f"[Code review of {len(files)} files]\nType: {review_type}",
-            confidence=0.82,
-            metadata={"files_reviewed": files},
-        )
+            async with httpx.AsyncClient(timeout=60.0) as client:  # Longer timeout for code review
+                response = await client.post(zen_endpoint, json=request_data)
+                if response.status_code == 200:
+                    zen_data = response.json()
+                    return ZenResponse(
+                        model_used=model,
+                        content=zen_data.get("content", f"Code review of {len(files)} files"),
+                        confidence=zen_data.get("confidence", 0.82),
+                        metadata={"files_reviewed": files},
+                        thinking=zen_data.get("thinking", None)
+                    )
+                else:
+                    raise ValueError(f"Zen MCP returned {response.status_code}")
+        except Exception as e:
+            logger.warning(f"Zen codereview call failed: {e}")
+            # Fallback to mock
+            return ZenResponse(
+                model_used=model,
+                content=f"[Zen codereview fallback]\nReview of {len(files)} files\nType: {review_type} (service unavailable)",
+                confidence=0.5,
+                metadata={"files_reviewed": files},
+            )
 
 
 if __name__ == "__main__":
