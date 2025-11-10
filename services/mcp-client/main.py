@@ -251,11 +251,10 @@ def create_server_configs():
         }
     }
 
-    # Zen (stdio)
+    # Zen (http)
     configs['zen'] = {
-        'transport': 'stdio',
-        'command': 'python',
-        'args': ['zen-mcp-server/server.py'],
+        'transport': 'http',
+        'base_url': 'http://mcp-zen:3003',
         'env': {
             'OPENAI_API_KEY': os.getenv('OPENAI_API_KEY', ''),
             'OPENROUTER_API_KEY': os.getenv('OPENROUTER_API_KEY', ''),
