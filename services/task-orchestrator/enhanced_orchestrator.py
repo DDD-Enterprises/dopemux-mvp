@@ -288,14 +288,15 @@ class EnhancedTaskOrchestrator:
         # Initialize ConPort adapter (Architecture 3.0 Component 2)
         try:
             from adapters.conport_adapter import ConPortEventAdapter
-            from conport_mcp_client import ConPortMCPClient
-            # Wire ConPort MCP client for full integration (Component 3)
-            conport_client = ConPortMCPClient(self.mcp_tools)
+            # Use ConPort HTTP API for secure service boundaries (Component 3)
+            conport_url = os.getenv("CONPORT_URL", "http://localhost:8005")
             self.conport_adapter = ConPortEventAdapter(
                 workspace_id=self.workspace_id,
-                conport_client=conport_client
+                conport_url=conport_url
             )
-            logger.info("📊 ConPort adapter initialized (storage authority)")
+            # Initialize HTTP session for ConPort communication
+            await self.conport_adapter.initialize()
+            logger.info("📊 ConPort adapter initialized with HTTP API (secure service boundaries)")
         except Exception as e:
             logger.warning(f"ConPort adapter initialization failed: {e} - continuing without persistence")
             self.conport_adapter = None
@@ -1431,6 +1432,11 @@ class EnhancedTaskOrchestrator:
         # Close connections
         if self.leantime_session:
             await self.leantime_session.close()
+
+        # Close ConPort adapter HTTP session
+        if self.conport_adapter:
+            await self.conport_adapter.close()
+            logger.info("📊 ConPort adapter closed")
 
         if self.redis_client:
             await self.redis_client.close()

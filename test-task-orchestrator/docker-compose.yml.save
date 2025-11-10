@@ -1,0 +1,11 @@
+  version: '3.8'
+  services:
+    task-orchestrator:
+   image: ghcr.io/jpicklyk/task-orchestrator:latest
+   stdin_open: true
+   tty: true
+   volumes:
+     - ./data:/app/data
+     - ../../.claude:/project/.claude
+   environment:
+     - PORT=8082

@@ -173,6 +173,50 @@ class ConPortClient:
             logger.error(f"Failed to get progress: {e}")
             return {"error": str(e)}
 
+    async def semantic_search(self, workspace_id: str, query: str, top_k: int = 5,
+                           filter_item_types: Optional[List[str]] = None,
+                           filter_tags_include_any: Optional[List[str]] = None,
+                           filter_tags_include_all: Optional[List[str]] = None) -> Dict[str, Any]:
+        """
+        Perform semantic search on ConPort knowledge graph - ADHD-optimized discovery
+
+        Uses vector embeddings to find relevant content by meaning, not keywords.
+        Perfect for exploring complex relationships and discovering hidden connections.
+        """
+        await self._ensure_session()
+
+        payload = {
+            "workspace_id": workspace_id,
+            "query_text": query,
+            "top_k": top_k
+        }
+
+        # Add optional filters
+        if filter_item_types:
+            payload["filter_item_types"] = filter_item_types
+        if filter_tags_include_any:
+            payload["filter_tags_include_any"] = filter_tags_include_any
+        if filter_tags_include_all:
+            payload["filter_tags_include_all"] = filter_tags_include_all
+
+        try:
+            async with self.session.post(
+                f"{self.base_url}/api/semantic-search",
+                json=payload,
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    result_count = len(result.get("result", []))
+                    logger.info(f"Semantic search found {result_count} results for '{query}'")
+                    return result
+                else:
+                    error_text = await response.text()
+                    return {"error": f"HTTP {response.status}: {error_text}"}
+        except Exception as e:
+            logger.error(f"Semantic search failed: {e}")
+            return {"error": str(e)}
+
     async def close(self):
         """Close the HTTP session"""
         if self.session and not self.session.closed:
@@ -208,6 +252,26 @@ async def update_progress(description: str, status: str = "IN_PROGRESS", percent
     finally:
         await client.close()
 
+async def semantic_search(query: str, top_k: int = 5, workspace_id: str = "/Users/hue/code/dopemux-mvp",
+                         filter_item_types: Optional[List[str]] = None) -> Dict[str, Any]:
+    """
+    Quick semantic search function - discover knowledge by meaning
+
+    Finds relevant content using vector embeddings, not just keywords.
+    Perfect for exploring complex relationships and ADHD-friendly discovery.
+    """
+    client = ConPortClient()
+    try:
+        result = await client.semantic_search(
+            workspace_id=workspace_id,
+            query=query,
+            top_k=top_k,
+            filter_item_types=filter_item_types
+        )
+        return result
+    finally:
+        await client.close()
+
 if __name__ == "__main__":
     # Test the client
     async def test_client():
@@ -229,6 +293,14 @@ if __name__ == "__main__":
             ["Direct integration", "MCP-only approach", "Separate service"]
         )
         print(f"Decision: {decision}")
+
+        # Test semantic search
+        search_results = await client.semantic_search(
+            workspace_id="/Users/hue/code/dopemux-mvp",
+            query="ADHD optimization",
+            top_k=3
+        )
+        print(f"Semantic search: {search_results}")
 
         await client.close()
 

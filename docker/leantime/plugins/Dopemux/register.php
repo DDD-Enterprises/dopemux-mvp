@@ -7,7 +7,6 @@
  */
 
 error_log("=== Dopemux Plugin register.php START ===");
-echo "Dopemux plugin register.php loaded successfully\n";
 
 try {
     // Check if composer.json exists and is readable
