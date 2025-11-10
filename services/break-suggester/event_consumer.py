@@ -58,8 +58,12 @@ class BreakSuggestionConsumer:
             await self.redis_client.ping()
             logger.info(f"✅ Connected to Redis: {self.redis_url}")
 
-            # Import break engine (relative import)
-            from .engine import get_break_suggestion_engine
+            # Import break engine (absolute import for standalone execution)
+            import sys
+            import os
+            from pathlib import Path
+            sys.path.insert(0, str(Path(__file__).parent))
+            from engine import get_break_suggestion_engine
 
             self.engine = await get_break_suggestion_engine(self.user_id)
             logger.info(f"✅ BreakSuggestionEngine initialized for user {self.user_id}")
