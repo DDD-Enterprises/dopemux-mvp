@@ -127,6 +127,12 @@ services:
       - redis
     networks:
       - dopemux-staging
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adhd-engine.rule=Host(`adhd-engine.staging.local`)"
+      - "traefik.http.services.adhd-engine.loadbalancer.server.port=8001"
+      - "traefik.http.middlewares.adhd-engine-healthcheck.healthcheck.path=/health"
+      - "traefik.http.middlewares.adhd-engine-healthcheck.healthcheck.interval=10s"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 15s
@@ -263,8 +269,33 @@ services:
     restart: unless-stopped
 
   # =====================================================================
-  # Monitoring Stack
+  # Service Mesh & Monitoring Stack
   # =====================================================================
+
+  traefik:
+    container_name: staging-traefik
+    image: traefik:v3.0
+    ports:
+      - "80:80"        # HTTP
+      - "8080:8080"    # Dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--api.dashboard=true"
+      - "--api.insecure=true"  # Enable for staging
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.staging.local`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+    depends_on:
+      - adhd-engine
+      - conport-mcp
+      - serena-mcp
+    networks:
+      - dopemux-staging
 
   prometheus:
     container_name: staging-prometheus

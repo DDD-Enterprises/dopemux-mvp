@@ -29,6 +29,9 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+# Import the global error handling framework
+from ..error_handling import GlobalErrorHandler, with_error_handling, create_dopemux_error, ErrorType, ErrorSeverity
+
 # Add src to path for dopemux imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
