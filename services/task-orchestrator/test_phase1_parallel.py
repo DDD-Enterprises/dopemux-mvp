@@ -12,8 +12,12 @@ import json
 from pathlib import Path
 
 # Import our new classes
-from services.task_orchestrator.src.dopemux.mcp.parallel_executor import MCPParallelExecutor
-from services.task_orchestrator.src.dopemux.file_ops.batch_handler import BatchFileOps
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../src'))
+
+from dopemux.mcp.parallel_executor import MCPParallelExecutor
+from dopemux.file_ops.batch_handler import BatchFileOps
 
 
 class MockMCPClient:

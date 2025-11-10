@@ -52,6 +52,24 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'docker', 'mcp-servers',
 from redis_pool import get_redis_pool
 from cache import get_cache
 
+# Parse allowed origins from environment
+def get_allowed_origins():
+    """Parse ALLOWED_ORIGINS environment variable with fallback for malformed entries."""
+    origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8097")
+    origins = []
+
+    for origin in origins_str.split(","):
+        origin = origin.strip()
+        # Basic validation - skip obviously malformed origins
+        if origin and "://" in origin and not origin.startswith("javascript:"):
+            origins.append(origin)
+
+    # Always include fallback origins if parsing resulted in empty list
+    if not origins:
+        origins = ["http://localhost:3000", "http://localhost:8097"]
+
+    return origins
+
 # Configure logging
 logging.basicConfig(
     level=settings.log_level,
@@ -137,14 +155,14 @@ def create_application() -> FastAPI:
         lifespan=lifespan
     )
 
-    # Configure CORS - temporarily disabled for testing
-    # app.add_middleware(
-    #     CORSMiddleware,
-    #     allow_origins=settings.allowed_origins,
-    #     allow_credentials=True,
-    #     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    #     allow_headers=["*"],
-    # )
+    # Configure CORS with environment-based origins
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=get_allowed_origins(),
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["*"],
+    )
 
     # Rate limiting disabled for initial testing
 
