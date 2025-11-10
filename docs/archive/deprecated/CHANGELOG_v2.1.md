@@ -1,3 +1,11 @@
+---
+id: CHANGELOG_v2.1
+title: Changelog_V2.1
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dopemux MVP v2.1 - Comprehensive Changelog
 
 **Release Date**: 2025-10-23

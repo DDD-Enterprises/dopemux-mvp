@@ -1,3 +1,11 @@
+---
+id: F-NEW-7_DEPLOYMENT_GUIDE
+title: F New 7_Deployment_Guide
+type: reference
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # F-NEW-7 Phase 1: Deployment Guide
 
 **Migration 003**: Multi-Tenancy Foundation

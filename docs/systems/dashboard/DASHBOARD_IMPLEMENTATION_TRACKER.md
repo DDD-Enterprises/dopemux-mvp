@@ -1,3 +1,11 @@
+---
+id: DASHBOARD_IMPLEMENTATION_TRACKER
+title: Dashboard_Implementation_Tracker
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dopemux Dashboard - Implementation Tracker
 
 **Tracking progress on advanced features and future enhancements**
@@ -20,7 +28,7 @@ Last Updated: 2025-10-28
 
 **Files Created:**
 - `TMUX_METRICS_INVENTORY.md` - Complete metrics catalog
-- `TMUX_DASHBOARD_DESIGN.md` - Research & design rationale  
+- `TMUX_DASHBOARD_DESIGN.md` - Research & design rationale
 - `dopemux_dashboard.py` - Production-ready implementation
 - `TMUX_DASHBOARD_README.md` - Quick start guide
 - `DASHBOARD_ENHANCEMENTS.md` - Future features roadmap
@@ -243,7 +251,7 @@ class SparklineGenerator:
         chars = "▁▂▃▄▅▆▇█"
         normalized = self._normalize(data, len(chars) - 1)
         return "".join([chars[int(v)] for v in normalized])
-    
+
     def fetch_history(self, metric: str, hours: int = 24) -> List[float]:
         """Fetch historical data from Prometheus"""
         # Query: rate(metric[1h]) over last N hours
@@ -269,7 +277,7 @@ class DopemuxDashboard(App):
 async def show_task_detail(self, task_id: str):
     """Show detailed task view in popup"""
     details = await self.fetcher.get_task_detail(task_id)
-    
+
     popup = TaskDetailPopup(details)
     await self.push_screen(popup)
 ```

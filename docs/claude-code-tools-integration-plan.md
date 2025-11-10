@@ -1,3 +1,11 @@
+---
+id: claude-code-tools-integration-plan
+title: Claude Code Tools Integration Plan
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Claude-Code-Tools Integration Implementation Plan
 
 ## Executive Summary

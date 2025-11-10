@@ -1,3 +1,11 @@
+---
+id: README
+title: Readme
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Deployment Documentation
 
 Production and staging deployment guides for Dopemux.
@@ -134,5 +142,5 @@ Best for: Multi-environment setups, parallel deployments
 
 ---
 
-**Maintained by:** DevOps Team  
+**Maintained by:** DevOps Team
 **Last Updated:** 2025-10-29

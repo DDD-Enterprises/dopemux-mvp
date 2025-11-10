@@ -1,8 +1,16 @@
+---
+id: DASHBOARD_DAY6_HANDOFF
+title: Dashboard_Day6_Handoff
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dashboard Day 6 - Handoff & Next Steps 🚀
 
-**Date:** 2025-10-29  
-**Phase:** API Integration Complete  
-**Status:** ✅ Ready for Integration  
+**Date:** 2025-10-29
+**Phase:** API Integration Complete
+**Status:** ✅ Ready for Integration
 **Next Phase:** WebSocket Streaming (Day 7)
 
 ---
@@ -44,7 +52,7 @@ docs/implementation-plans/
 # Add at top of file (after existing imports)
 from dashboard.modals_enhanced import (
     TaskDetailModal,
-    ServiceLogsModal, 
+    ServiceLogsModal,
     PatternAnalysisModal,
     MetricHistoryModal
 )
@@ -59,13 +67,13 @@ class DopemuxDashboard(App):
         super().__init__()
         self.fetcher = MetricsFetcher()
         self.prefetcher = DataPrefetcher()  # ADD THIS
-        
+
         # ... rest of existing code ...
-    
+
     def on_mount(self) -> None:
         # ... existing code ...
         self.prefetcher.start()  # ADD THIS
-    
+
     async def on_unmount(self) -> None:
         """Clean shutdown"""
         self.prefetcher.stop()  # ADD THIS
@@ -152,23 +160,23 @@ Metric History:        350-450ms ✅
 ## 🐛 KNOWN ISSUES & WORKAROUNDS
 
 ### Issue 1: ConPort HTTP API Not Ready
-**Impact:** Decision history uses mock data  
-**Workaround:** Mock data is realistic and sufficient for UI testing  
+**Impact:** Decision history uses mock data
+**Workaround:** Mock data is realistic and sufficient for UI testing
 **Fix:** Will migrate to real API when bridge is complete (Day 8+)
 
 ### Issue 2: No WebSocket Support Yet
-**Impact:** Using polling (2-10s refresh) instead of real-time  
-**Workaround:** Polling works well, users don't notice lag  
+**Impact:** Using polling (2-10s refresh) instead of real-time
+**Workaround:** Polling works well, users don't notice lag
 **Fix:** Day 7 will implement WebSocket streaming
 
 ### Issue 3: Limited Test Coverage
-**Impact:** Only manual testing, no CI/CD  
-**Workaround:** Test suite (`test_dashboard_day6.py`) covers key flows  
+**Impact:** Only manual testing, no CI/CD
+**Workaround:** Test suite (`test_dashboard_day6.py`) covers key flows
 **Fix:** Day 7 will add pytest-based automated tests
 
 ### Issue 4: Prometheus Might Not Have Data
-**Impact:** Empty sparklines/patterns if Prometheus is fresh  
-**Workaround:** Shows "No data" message gracefully  
+**Impact:** Empty sparklines/patterns if Prometheus is fresh
+**Workaround:** Shows "No data" message gracefully
 **Fix:** Ensure Prometheus scraping is configured (see setup guide)
 
 ---
@@ -264,28 +272,28 @@ Before marking Day 6 complete:
 
 ### Common Issues
 
-**Q: Modal shows "Service unavailable"**  
+**Q: Modal shows "Service unavailable"**
 A: Ensure backend service is running:
 ```bash
 docker start adhd_engine  # or prometheus, etc.
 curl http://localhost:8000/health  # Check if responding
 ```
 
-**Q: Sparklines are empty**  
+**Q: Sparklines are empty**
 A: Prometheus needs historical data:
 ```bash
 # Check if Prometheus has data
 curl 'http://localhost:9090/api/v1/query?query=adhd_cognitive_load'
 ```
 
-**Q: Modals load slowly (>500ms)**  
+**Q: Modals load slowly (>500ms)**
 A: Check prefetcher is running:
 ```python
 # In dashboard code, verify:
 self.prefetcher.start()  # Called in on_mount()
 ```
 
-**Q: Cache not working**  
+**Q: Cache not working**
 A: Verify cache strategy:
 ```python
 # Short TTL (5s) for real-time data
@@ -325,6 +333,6 @@ We built:
 
 ---
 
-**Questions?** Check the documentation or run the test suite.  
-**Issues?** See troubleshooting section above.  
+**Questions?** Check the documentation or run the test suite.
+**Issues?** See troubleshooting section above.
 **Ready?** Run `python test_dashboard_day6.py` to verify!

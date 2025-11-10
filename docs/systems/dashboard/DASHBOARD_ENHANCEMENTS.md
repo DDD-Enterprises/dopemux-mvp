@@ -1,3 +1,11 @@
+---
+id: DASHBOARD_ENHANCEMENTS
+title: Dashboard_Enhancements
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dashboard Enhancement Roadmap
 
 **Prioritized features to add beyond the core dashboard**
@@ -12,7 +20,7 @@
 # Add to dopemux_dashboard.py
 BINDINGS = [
     ("b", "force_break", "Take Break"),
-    ("f", "toggle_focus", "Focus Mode"),  
+    ("f", "toggle_focus", "Focus Mode"),
     ("r", "reset_timer", "Reset Timer"),
     ("p", "pause_session", "Pause/Resume"),
 ]
@@ -79,7 +87,7 @@ Press 'l' to log a decision:
   Title: [______________________]
   Context: [____________________]
   Type: ☑ Code ☐ Design ☐ Meeting
-  
+
 [Save] [Cancel]
 ```
 - **Effort:** 1 day
@@ -200,7 +208,7 @@ dopemux config set theme=nord
 class MyMetricWidget(DashboardWidget):
     def fetch_data(self):
         return custom_api_call()
-    
+
     def render(self):
         return Panel(...)
 
@@ -236,30 +244,30 @@ dashboard.register_plugin(MyMetricWidget)
 
 class DopemuxDashboard(App):
     focus_mode = reactive(False)
-    
+
     def action_toggle_focus(self):
         """Press 'f' to toggle focus mode"""
         self.focus_mode = not self.focus_mode
-        
+
         if self.focus_mode:
             # Mute notifications
-            subprocess.run(["osascript", "-e", 
+            subprocess.run(["osascript", "-e",
                 'tell application "System Events" to set Do Not Disturb of notification settings to true'])
-            
+
             # Hide distracting panels
             self.query_one("#services").display = False
             self.query_one("#patterns").display = False
-            
+
             # Show banner
             self.notify("🎯 Focus Mode ON - Notifications muted", severity="information")
         else:
             # Restore
             subprocess.run(["osascript", "-e",
                 'tell application "System Events" to set Do Not Disturb of notification settings to false'])
-            
+
             self.query_one("#services").display = True
             self.query_one("#patterns").display = True
-            
+
             self.notify("Focus Mode OFF", severity="information")
 ```
 
@@ -268,13 +276,13 @@ class DopemuxDashboard(App):
 ```python
 class StreakWidget(Static):
     """Show current streaks"""
-    
+
     break_streak = reactive(0)
     completion_streak = reactive(0)
-    
+
     async def on_mount(self):
         self.set_interval(3600, self.check_streaks)
-    
+
     async def check_streaks(self):
         # Check if broke yesterday
         yesterday_breaks = await fetch_breaks_taken(days=1)
@@ -282,25 +290,25 @@ class StreakWidget(Static):
             self.break_streak += 1
         else:
             self.break_streak = 0
-        
+
         # Check task completion
         yesterday_rate = await fetch_completion_rate(days=1)
         if yesterday_rate >= 0.85:  # Target: 85%
             self.completion_streak += 1
         else:
             self.completion_streak = 0
-    
+
     def render(self) -> Panel:
         table = Table.grid(padding=1)
         table.add_row(
             f"🔥 Break Streak: {self.break_streak} days",
             f"🎯 Completion Streak: {self.completion_streak} days"
         )
-        
+
         # Celebration for milestones
         if self.break_streak >= 7:
             table.add_row("🏆 One week streak! Amazing!", "")
-        
+
         return Panel(table, title="Streaks", border_style="yellow")
 ```
 
@@ -322,21 +330,21 @@ async def main():
         # Fetch all metrics
         state = await client.get("http://localhost:8001/api/v1/state")
         tasks = await client.get("http://localhost:8001/api/v1/tasks")
-        
+
         data = state.json()
         task_data = tasks.json()
-        
+
         # Create summary table
         table = Table(title="Dopemux Stats", show_header=False)
         table.add_column("Metric", style="cyan")
         table.add_column("Value", style="bold")
-        
+
         table.add_row("Energy", f"{data['energy_level']} {data['energy_icon']}")
         table.add_row("Attention", f"{data['attention_state']} {data['attention_icon']}")
         table.add_row("Cognitive Load", f"{int(data['cognitive_load'] * 100)}%")
         table.add_row("Tasks", f"{task_data['completed']}/{task_data['total']} ({int(task_data['rate'] * 100)}%)")
         table.add_row("Session Time", data['session_time'])
-        
+
         console.print(table)
 
 if __name__ == "__main__":

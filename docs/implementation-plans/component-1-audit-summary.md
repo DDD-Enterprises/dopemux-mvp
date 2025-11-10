@@ -1,3 +1,11 @@
+---
+id: component-1-audit-summary
+title: Component 1 Audit Summary
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Component 1 Audit Summary - Architecture 3.0 Phase 1
 
 **Component**: 1 - Dependency Audit

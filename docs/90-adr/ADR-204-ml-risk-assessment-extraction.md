@@ -1,3 +1,11 @@
+---
+id: ADR-204-ml-risk-assessment-extraction
+title: Adr 204 Ml Risk Assessment Extraction
+type: adr
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # ADR-204: ML Risk Assessment Service Extraction
 
 **Date**: 2025-10-16
