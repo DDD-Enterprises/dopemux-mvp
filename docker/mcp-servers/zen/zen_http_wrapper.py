@@ -47,23 +47,29 @@ class ZenServerHandler(BaseHTTPRequestHandler):
 
 def start_zen_server():
     """Start the Zen MCP server as a subprocess"""
-    cmd = ["python", "server.py"]
-    print(f"Starting Zen MCP server with command: {' '.join(cmd)}")
+    cmd = ["/app/.venv/bin/python", "server.py"]
+    print(f"Starting Zen MCP server with command: {' '.join(cmd)}", flush=True)
 
     process = subprocess.Popen(
         cmd,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True,
-        bufsize=1
+        text=True,   # Text mode for JSON-RPC (line-based)
+        bufsize=1,   # Line-buffered for JSON-RPC
+        universal_newlines=True
     )
 
     # Start threads to handle output
     def handle_output(stream, prefix):
-        for line in iter(stream.readline, ''):
-            print(f"[ZEN {prefix}] {line.strip()}")
-        stream.close()
+        try:
+            for line in iter(stream.readline, ''):
+                if line.strip():  # Only print non-empty lines
+                    print(f"[ZEN {prefix}] {line.strip()}")
+        except Exception as e:
+            print(f"[ZEN {prefix}] Error reading output: {e}")
+        finally:
+            stream.close()
 
     threading.Thread(target=handle_output, args=(process.stdout, "OUT"), daemon=True).start()
     threading.Thread(target=handle_output, args=(process.stderr, "ERR"), daemon=True).start()
@@ -72,12 +78,16 @@ def start_zen_server():
 
 def main():
     port = int(os.environ.get('MCP_SERVER_PORT', 3003))
+    
+    print(f"🧠 Zen HTTP Wrapper starting...", flush=True)
+    print(f"📍 Port: {port}", flush=True)
 
     # Start Zen MCP server
     mcp_process = start_zen_server()
 
     # Create HTTP server
     server = HTTPServer(('0.0.0.0', port), ZenServerHandler)
+    print(f"HTTP server started on 0.0.0.0:{port}", flush=True)
     server.mcp_process = mcp_process
 
     def signal_handler(signum, frame):
@@ -94,10 +104,11 @@ def main():
     signal.signal(signal.SIGTERM, signal_handler)
     signal.signal(signal.SIGINT, signal_handler)
 
-    print(f"🧠 Zen MCP Server wrapper running on port {port}")
-    print(f"💡 Health endpoint: http://0.0.0.0:{port}/health")
+    print(f"🧠 Zen MCP Server wrapper running on port {port}", flush=True)
+    print(f"💡 Health endpoint: http://0.0.0.0:{port}/health", flush=True)
 
     try:
+        print("Starting HTTP server serve_forever...", flush=True)
         server.serve_forever()
     except KeyboardInterrupt:
         pass

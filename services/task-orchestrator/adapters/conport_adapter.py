@@ -15,6 +15,7 @@ Specification: docs/implementation-plans/conport-event-schema-design.md
 
 import asyncio
 import logging
+import aiohttp
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -254,6 +255,7 @@ def conport_progress_to_orchestration_task(progress: Dict[str, Any]) -> Orchestr
     # Step 5: Build OrchestrationTask
     return OrchestrationTask(
         id=f"conport-{progress['id']}",  # Prefix to identify source
+        conport_id=progress['id'],
         leantime_id=leantime_id,
         title=title,
         description=description,
@@ -343,28 +345,51 @@ class ConPortEventAdapter:
 
     Handles:
     - Bidirectional task transformations
-    - ConPort MCP API interactions
+    - ConPort HTTP API interactions (secure service boundaries)
     - Dependency synchronization
     - Error handling and retry logic
     - ADHD metadata preservation
 
     Usage:
-        adapter = ConPortEventAdapter(workspace_id, conport_client)
+        adapter = ConPortEventAdapter(workspace_id, conport_url)
         await adapter.sync_task_to_conport(orchestration_task)
         tasks = await adapter.get_all_tasks_from_conport()
     """
 
-    def __init__(self, workspace_id: str, conport_client: Any = None):
+    def __init__(self, workspace_id: str, conport_url: str = "http://localhost:8005"):
         """
         Initialize ConPort adapter.
 
         Args:
             workspace_id: Absolute path to workspace
-            conport_client: ConPort MCP client (optional, uses placeholder if None)
+            conport_url: ConPort HTTP API base URL
         """
         self.workspace_id = workspace_id
-        self.conport_client = conport_client
+        self.conport_url = conport_url.rstrip('/')
+        self.http_session: Optional[aiohttp.ClientSession] = None
         self.local_cache: Dict[str, Dict] = {}  # Fallback cache if ConPort unavailable
+
+    async def __aenter__(self):
+        """Async context manager entry"""
+        await self.initialize()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit"""
+        await self.close()
+
+    async def initialize(self):
+        """Initialize HTTP session"""
+        if not self.http_session:
+            self.http_session = aiohttp.ClientSession(
+                timeout=aiohttp.ClientTimeout(total=30.0)
+            )
+
+    async def close(self):
+        """Close HTTP session"""
+        if self.http_session:
+            await self.http_session.close()
+            self.http_session = None
 
     # ------------------------------------------------------------------------
     # Task Synchronization Methods
@@ -549,29 +574,34 @@ class ConPortEventAdapter:
 
     async def _resilient_log_progress(self, progress_data: Dict) -> Optional[int]:
         """
-        Log progress to ConPort with retry logic.
+        Log progress to ConPort via HTTP API with retry logic.
 
         Returns ConPort progress_entry ID if successful, None otherwise.
         """
+        if not self.http_session:
+            await self.initialize()
+
         max_retries = 3
 
         for attempt in range(max_retries):
             try:
-                if self.conport_client:
-                    # Call actual ConPort MCP client
-                    result = await self.conport_client.log_progress(**progress_data)
-                    # ConPort MCP returns dict with "id" field
-                    if isinstance(result, dict) and "id" in result:
-                        return result["id"]
-                    else:
-                        logger.error(f"Invalid ConPort response format: {result}")
-                        return None
-                else:
-                    # Placeholder: No client available
-                    logger.warning("ConPort client not configured, using placeholder")
-                    return None
+                url = f"{self.conport_url}/api/progress/log"
+                params = {"workspace_id": self.workspace_id}
 
-            except (ConnectionError, OSError) as e:
+                async with self.http_session.post(url, params=params, json=progress_data) as response:
+                    if response.status == 200:
+                        result = await response.json()
+                        if result.get("success") and "progress_id" in result:
+                            return result["progress_id"]
+                        else:
+                            logger.error(f"Invalid ConPort response format: {result}")
+                            return None
+                    else:
+                        error_text = await response.text()
+                        logger.error(f"ConPort HTTP error {response.status}: {error_text}")
+                        return None
+
+            except (aiohttp.ClientError, asyncio.TimeoutError) as e:
                 if attempt < max_retries - 1:
                     wait_time = 2 ** attempt  # Exponential backoff
                     logger.warning(f"ConPort connection failed (attempt {attempt+1}/{max_retries}), retrying in {wait_time}s...")
@@ -593,29 +623,36 @@ class ConPortEventAdapter:
         description: Optional[str] = None
     ) -> bool:
         """
-        Update progress in ConPort with retry logic.
+        Update progress in ConPort via HTTP API with retry logic.
 
         Returns True if successful, False otherwise.
         """
+        if not self.http_session:
+            await self.initialize()
+
         max_retries = 3
 
         for attempt in range(max_retries):
             try:
-                if self.conport_client:
-                    # Call actual ConPort MCP client
-                    await self.conport_client.update_progress(
-                        workspace_id=self.workspace_id,
-                        progress_id=progress_id,
-                        status=status,
-                        description=description
-                    )
-                    return True
-                else:
-                    # Placeholder
-                    logger.warning("ConPort client not configured")
-                    return False
+                url = f"{self.conport_url}/api/progress/{progress_id}"
+                params = {"workspace_id": self.workspace_id}
+                update_data = {}
 
-            except ConnectionError as e:
+                if status is not None:
+                    update_data["status"] = status
+                if description is not None:
+                    update_data["description"] = description
+
+                async with self.http_session.put(url, params=params, json=update_data) as response:
+                    if response.status == 200:
+                        result = await response.json()
+                        return result.get("success", False)
+                    else:
+                        error_text = await response.text()
+                        logger.error(f"ConPort HTTP error {response.status}: {error_text}")
+                        return False
+
+            except (aiohttp.ClientError, asyncio.TimeoutError) as e:
                 if attempt < max_retries - 1:
                     wait_time = 2 ** attempt
                     logger.warning(f"ConPort update failed (attempt {attempt+1}/{max_retries}), retrying in {wait_time}s...")
@@ -636,34 +673,39 @@ class ConPortEventAdapter:
         tags_filter: Optional[List[str]] = None
     ) -> List[Dict]:
         """
-        Get progress entries from ConPort.
+        Get progress entries from ConPort via HTTP API.
         """
+        if not self.http_session:
+            await self.initialize()
+
         try:
-            if self.conport_client:
-                # Call actual ConPort MCP client
-                result = await self.conport_client.get_progress(
-                    workspace_id=self.workspace_id,
-                    status_filter=status_filter,
-                    limit=100  # Reasonable limit for task orchestration
-                )
-                # ConPort MCP returns dict with "result" field containing list of progress entries
-                if isinstance(result, dict) and "result" in result:
-                    entries = result["result"]
-                    # Filter by tags if specified (ConPort doesn't have direct tag filter in get_progress)
-                    if tags_filter:
-                        filtered = []
-                        for entry in entries:
-                            entry_tags = entry.get("tags", [])
-                            if any(tag in entry_tags for tag in tags_filter):
-                                filtered.append(entry)
-                        return filtered
-                    return entries
+            url = f"{self.conport_url}/api/progress"
+            params = {"workspace_id": self.workspace_id}
+
+            if status_filter:
+                params["status_filter"] = status_filter
+
+            async with self.http_session.get(url, params=params) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    if isinstance(result, dict) and "progress_entries" in result:
+                        entries = result["progress_entries"]
+                        # Filter by tags if specified
+                        if tags_filter:
+                            filtered = []
+                            for entry in entries:
+                                entry_tags = entry.get("tags", [])
+                                if any(tag in entry_tags for tag in tags_filter):
+                                    filtered.append(entry)
+                            return filtered
+                        return entries
+                    else:
+                        logger.error(f"Invalid ConPort get_progress response: {result}")
+                        return []
                 else:
-                    logger.error(f"Invalid ConPort get_progress response: {result}")
+                    error_text = await response.text()
+                    logger.error(f"ConPort HTTP error {response.status}: {error_text}")
                     return []
-            else:
-                logger.warning("ConPort client not configured")
-                return []
 
         except Exception as e:
             logger.error(f"Failed to get progress from ConPort: {e}")
@@ -677,25 +719,36 @@ class ConPortEventAdapter:
         description: str
     ) -> bool:
         """
-        Create relationship link between ConPort items.
+        Create relationship link between ConPort items via HTTP API.
         """
+        if not self.http_session:
+            await self.initialize()
+
         try:
-            if self.conport_client:
-                # Call actual ConPort MCP client
-                await self.conport_client.link_conport_items(
-                    workspace_id=self.workspace_id,
-                    source_item_type="progress_entry",
-                    source_item_id=str(source_id),
-                    target_item_type="progress_entry",
-                    target_item_id=str(target_id),
-                    relationship_type=relationship_type,
-                    description=description
-                )
-                logger.info(f"📎 Linked: {source_id} -{relationship_type}-> {target_id}")
-                return True
-            else:
-                logger.warning("ConPort client not configured for linking")
-                return False
+            url = f"{self.conport_url}/api/links"
+            params = {"workspace_id": self.workspace_id}
+            link_data = {
+                "source_item_type": "progress_entry",
+                "source_item_id": str(source_id),
+                "target_item_type": "progress_entry",
+                "target_item_id": str(target_id),
+                "relationship_type": relationship_type,
+                "description": description
+            }
+
+            async with self.http_session.post(url, params=params, json=link_data) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    if result.get("success"):
+                        logger.info(f"📎 Linked: {source_id} -{relationship_type}-> {target_id}")
+                        return True
+                    else:
+                        logger.error(f"Failed to create link: {result}")
+                        return False
+                else:
+                    error_text = await response.text()
+                    logger.error(f"ConPort HTTP error {response.status}: {error_text}")
+                    return False
 
         except Exception as e:
             logger.error(f"Failed to link items: {e}")

@@ -14,6 +14,9 @@ Enhanced: 2025-10-20 (Component 5 - Cross-plane query operations)
 import logging
 from typing import Any, Dict, List, Optional
 
+from src.dopemux.mcp.parallel_executor import MCPParallelExecutor
+from src.dopemux.file_ops.batch_handler import BatchFileOps
+
 logger = logging.getLogger(__name__)
 
 
@@ -489,7 +492,7 @@ class ConPortMCPClient:
             params = {
                 "workspace_id": workspace_id,
                 "query_text": query_text,
-                "top_k": min(top_k, 25)  # Enforce max 25
+                "top_k": str(min(top_k, 25))  # Enforce max 25 as string for MCP validation
             }
 
             if filter_item_types:
@@ -617,3 +620,193 @@ class ConPortMCPClient:
         except Exception as e:
             logger.error(f"ConPort get_custom_data failed: {e}")
             raise
+
+    # ===== PARALLEL OPERATIONS =====
+
+    def __init_parallel_components(self):
+        """Initialize parallel operation components."""
+        if not hasattr(self, '_parallel_executor'):
+            self._parallel_executor = MCPParallelExecutor(max_concurrent=5)
+        if not hasattr(self, '_batch_file_ops'):
+            self._batch_file_ops = BatchFileOps(max_concurrent=10)
+
+    async def batch_log_progress(
+        self,
+        workspace_id: str,
+        progress_entries: List[Dict[str, Any]],
+        return_exceptions: bool = True
+    ) -> List[Any]:
+        """
+        Log multiple progress entries in parallel.
+
+        Args:
+            workspace_id: Workspace identifier
+            progress_entries: List of progress entry dicts (each with status, description, etc.)
+            return_exceptions: If True, exceptions are returned instead of raised
+
+        Returns:
+            List of results, one per progress entry
+
+        Example:
+            entries = [
+                {"status": "DONE", "description": "Task 1 complete"},
+                {"status": "IN_PROGRESS", "description": "Task 2 in progress"}
+            ]
+            results = await client.batch_log_progress(workspace_id, entries)
+        """
+        self.__init_parallel_components()
+
+        # Add workspace_id to each entry
+        call_specs = []
+        for entry in progress_entries:
+            entry_with_workspace = {**entry, "workspace_id": workspace_id}
+            call_specs.append({
+                "method": "log_progress",
+                "kwargs": entry_with_workspace
+            })
+
+        logger.info(f"Batch logging {len(progress_entries)} progress entries in parallel")
+        return await self._parallel_executor.execute_batch(self, call_specs, return_exceptions)
+
+    async def batch_update_progress(
+        self,
+        workspace_id: str,
+        progress_updates: List[Dict[str, Any]],
+        return_exceptions: bool = True
+    ) -> List[Any]:
+        """
+        Update multiple progress entries in parallel.
+
+        Args:
+            workspace_id: Workspace identifier
+            progress_updates: List of update dicts (each must include progress_id)
+            return_exceptions: If True, exceptions are returned instead of raised
+
+        Returns:
+            List of results, one per update
+
+        Example:
+            updates = [
+                {"progress_id": 123, "status": "DONE"},
+                {"progress_id": 124, "description": "Updated task"}
+            ]
+            results = await client.batch_update_progress(workspace_id, updates)
+        """
+        self.__init_parallel_components()
+
+        # Add workspace_id to each update
+        call_specs = []
+        for update in progress_updates:
+            update_with_workspace = {**update, "workspace_id": workspace_id}
+            call_specs.append({
+                "method": "update_progress",
+                "kwargs": update_with_workspace
+            })
+
+        logger.info(f"Batch updating {len(progress_updates)} progress entries in parallel")
+        return await self._parallel_executor.execute_batch(self, call_specs, return_exceptions)
+
+    async def batch_log_decisions(
+        self,
+        workspace_id: str,
+        decisions: List[Dict[str, Any]],
+        return_exceptions: bool = True
+    ) -> List[Any]:
+        """
+        Log multiple decisions in parallel.
+
+        Args:
+            workspace_id: Workspace identifier
+            decisions: List of decision dicts (each with summary, rationale, etc.)
+            return_exceptions: If True, exceptions are returned instead of raised
+
+        Returns:
+            List of results, one per decision
+        """
+        self.__init_parallel_components()
+
+        call_specs = []
+        for decision in decisions:
+            decision_with_workspace = {**decision, "workspace_id": workspace_id}
+            call_specs.append({
+                "method": "log_decision",
+                "kwargs": decision_with_workspace
+            })
+
+        logger.info(f"Batch logging {len(decisions)} decisions in parallel")
+        return await self._parallel_executor.execute_batch(self, call_specs, return_exceptions)
+
+    async def parallel_semantic_search(
+        self,
+        workspace_id: str,
+        queries: List[str],
+        return_exceptions: bool = True
+    ) -> List[Any]:
+        """
+        Perform multiple semantic searches in parallel.
+
+        Args:
+            workspace_id: Workspace identifier
+            queries: List of search query strings
+            return_exceptions: If True, exceptions are returned instead of raised
+
+        Returns:
+            List of search results, one per query
+        """
+        self.__init_parallel_components()
+
+        call_specs = []
+        for query in queries:
+            call_specs.append({
+                "method": "semantic_search_conport",
+                "kwargs": {
+                    "workspace_id": workspace_id,
+                    "query_text": query
+                }
+            })
+
+        logger.info(f"Parallel semantic search for {len(queries)} queries")
+        return await self._parallel_executor.execute_batch(self, call_specs, return_exceptions)
+
+    # ===== BATCH FILE OPERATIONS =====
+
+    async def batch_read_configs(
+        self,
+        config_paths: List[str]
+    ) -> Dict[str, Any]:
+        """
+        Read multiple configuration files in parallel and merge them.
+
+        Args:
+            config_paths: List of configuration file paths
+
+        Returns:
+            Merged configuration dictionary
+
+        Example:
+            configs = await client.batch_read_configs(['app.json', 'user.json'])
+        """
+        self.__init_parallel_components()
+
+        logger.info(f"Batch reading {len(config_paths)} config files")
+        return await self._batch_file_ops.read_config_batch(config_paths)
+
+    async def batch_backup_files(
+        self,
+        file_paths: List[str],
+        backup_suffix: str = '.backup'
+    ) -> Dict[str, Any]:
+        """
+        Create backup copies of multiple files in parallel.
+
+        Args:
+            file_paths: Files to backup
+            backup_suffix: Suffix for backup files
+
+        Returns:
+            Dict of backup results
+        """
+        self.__init_parallel_components()
+
+        logger.info(f"Batch backing up {len(file_paths)} files")
+        return await self._batch_file_ops.backup_files(file_paths, backup_suffix)

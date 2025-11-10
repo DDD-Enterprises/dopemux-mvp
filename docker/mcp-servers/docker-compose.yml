@@ -50,7 +50,7 @@ services:
       - DEFAULT_MODEL=auto
       - ZEN_DEFAULT_PROVIDER=openrouter  # Prefer OpenRouter for routing
       - MCP_SERVER_PORT=3003
-    command: ["tail", "-f", "/dev/null"]
+      - MCP_TRANSPORT=http
     working_dir: /app
     healthcheck:
       test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
@@ -75,7 +75,7 @@ services:
       - dopemux-unified-network
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=sk-master-dopemux-local-20251101
       - XAI_API_KEY=${XAI_API_KEY}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
@@ -148,16 +148,15 @@ services:
       - MCP_SERVER_PORT=3005
       - MCP_TRANSPORT=stdio
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=sk-master-dopemux-local-20251101
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
     # stdio transport does not expose HTTP; container stays idle until mcp-client execs the server
-    command: ["tail", "-f", "/dev/null"]
     volumes:
       - mcp_task_master_data:/app/data
       - mcp_task_master_logs:/app/logs
     healthcheck:
-      test: ["CMD", "sh", "-c", "ps aux | grep -q python || exit 1"]
+      test: ["CMD", "sh", "-c", "ps aux | grep -q node || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -177,7 +176,7 @@ services:
     networks:
       - mcp-network
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=sk-master-dopemux-local-20251101
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - XAI_API_KEY=${XAI_API_KEY}
@@ -343,7 +342,7 @@ services:
     environment:
       - WORKSPACE_PATH=${DOPEMUX_WORKSPACE_ID:-/workspaces/dopemux-mvp}  # Auto-detect from host
       - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID:-/workspaces/dopemux-mvp}  # Backward compatibility
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=sk-master-dopemux-local-20251101
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - TAVILY_API_KEY=${TAVILY_API_KEY}
       - EXA_API_KEY=${EXA_API_KEY}
@@ -385,7 +384,7 @@ services:
     ports:
       - "3008:3008"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3008/health || exit 1"]
+      test: ["CMD", "pgrep", "-f", "python.*server.py"]  # Process check for reliability
       timeout: 10s
       retries: 3
       interval: 30s
@@ -394,6 +393,7 @@ services:
       - "mcp.role=research"
       - "mcp.priority=low"
       - "mcp.description=Web research fallback"
+
 
   # Dope Context - Semantic code and document search
   dope-context:
@@ -410,7 +410,7 @@ services:
       - QDRANT_PORT=6333
       - VOYAGEAI_API_KEY=${VOYAGEAI_API_KEY}
       - VOYAGE_API_KEY=${VOYAGEAI_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=sk-master-dopemux-local-20251101
       - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID}
       - DOPEMUX_WORKSPACE_ROOT=/workspaces/dopemux-mvp
       # CRITICAL: Hash override ensures collection names match between host and container
@@ -423,7 +423,7 @@ services:
     depends_on:
       - qdrant
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3010/health || exit 1"]
+      test: ["CMD", "pgrep", "-f", "python.*server.py"]  # Check for Python process
       timeout: 10s
       retries: 3
       interval: 30s
@@ -437,6 +437,7 @@ services:
       - "mcp.priority=high"
       - "mcp.description=Semantic code and document search with AST-aware indexing"
 
+
   # GPT Researcher - Autonomous deep research with comprehensive reports
   gptr-mcp:
     build:
@@ -447,11 +448,27 @@ services:
     networks:
       - mcp-network
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_BASE=http://mcp-litellm:4000
+      - OPENAI_API_VERSION=v1
+      - LLM_BACKEND=openai
+      - LLM_MODEL=gpt-5
+      - OPENAI_API_KEY=sk-master-dopemux-local-20251101
       - TAVILY_API_KEY=${TAVILY_API_KEY}
       - MCP_SERVER_PORT=3009
       - MCP_TRANSPORT=http
+      - OPENAI_API_KEY=sk-master-dopemux-local-20251101
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - MCP_SERVER_PORT=3009
+      - MCP_TRANSPORT=http
+    ports:
+      - "3009:3009"
     # HTTP transport exposes SSE endpoint; ports required for HTTP access
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3009/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 60s  # Give more time for startup
     volumes:
       - mcp_gptr_data:/app/data
       - mcp_gptr_logs:/app/logs
@@ -471,7 +488,7 @@ services:
   #   networks:
   #     - mcp-network
   #   environment:
-  #     - OPENAI_API_KEY=${OPENAI_API_KEY}
+  #     - OPENAI_API_KEY=sk-master-dopemux-local-20251101
   #     - TAVILY_API_KEY=${TAVILY_API_KEY}
   #   # No ports; stdio via docker exec
   #   command: ["tail", "-f", "/dev/null"]

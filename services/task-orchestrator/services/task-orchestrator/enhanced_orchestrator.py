@@ -10,11 +10,11 @@ import json
 import logging
 import os
 import sys
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Callable
-from dataclasses import dataclass, asdict
 from enum import Enum
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Set
 
 import aiohttp
 import redis.asyncio as redis
@@ -22,22 +22,40 @@ import redis.asyncio as redis
 # Configure logging FIRST
 logger = logging.getLogger(__name__)
 
-# Import Integration Bridge EventBus for event coordination (Component 3)
+# Import Integration Bridge connector for event coordination (Component 3)
 try:
-    # Add integration bridge path
-    integration_bridge_path = os.path.join(os.path.dirname(__file__), '..', 'mcp-integration-bridge')
-    sys.path.insert(0, integration_bridge_path)
-    from event_bus import EventBus, Event, EventType
-    EVENTBUS_AVAILABLE = True
+    from .integration_bridge_connector import (
+        IntegrationBridgeConnector,
+        emit_adhd_coordination_event,
+        emit_service_coordination_event,
+        emit_task_status_change,
+        get_integration_bridge_connector,
+    )
+
+    INTEGRATION_BRIDGE_AVAILABLE = True
 except ImportError as e:
-    logger.warning(f"EventBus not available: {e}")
-    EVENTBUS_AVAILABLE = False
+    logger.warning(f"Integration Bridge connector not available: {e}")
+    INTEGRATION_BRIDGE_AVAILABLE = False
 
 # Import our new specialized engines (using absolute imports to fix module loading)
 try:
-    from multi_team_coordination import MultiTeamCoordinationEngine, TeamProfile, CrossTeamDependency, CoordinationPriority
-    from predictive_risk_assessment import PredictiveRiskAssessmentEngine, RiskProfile, RiskLevel
-    from external_dependency_integration import ExternalDependencyIntegrationEngine, ExternalDependency, DependencyType
+    from external_dependency_integration import (
+        DependencyType,
+        ExternalDependency,
+        ExternalDependencyIntegrationEngine,
+    )
+    from multi_team_coordination import (
+        CoordinationPriority,
+        CrossTeamDependency,
+        MultiTeamCoordinationEngine,
+        TeamProfile,
+    )
+    from predictive_risk_assessment import (
+        PredictiveRiskAssessmentEngine,
+        RiskLevel,
+        RiskProfile,
+    )
+
     SPECIALIZED_ENGINES_AVAILABLE = True
 except ImportError as e:
     logger.warning(f"Specialized engines not available: {e}")
@@ -45,9 +63,10 @@ except ImportError as e:
 
 # Import CognitiveGuardian for ADHD-aware task routing (Week 5)
 try:
-    agents_path = os.path.join(os.path.dirname(__file__), '..', 'agents')
+    agents_path = os.path.join(os.path.dirname(__file__), "..", "agents")
     sys.path.insert(0, agents_path)
     from cognitive_guardian import CognitiveGuardian
+
     COGNITIVE_GUARDIAN_AVAILABLE = True
 except ImportError as e:
     logger.warning(f"CognitiveGuardian not available: {e}")
@@ -56,6 +75,7 @@ except ImportError as e:
 # ConPort-KG Integration for task progress events
 try:
     from integration_bridge_connector import emit_task_status_change
+
     CONPORT_KG_INTEGRATION = True
 except ImportError:
     CONPORT_KG_INTEGRATION = False
@@ -63,6 +83,7 @@ except ImportError:
 
 class TaskStatus(str, Enum):
     """Enhanced task status with ADHD considerations."""
+
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -74,6 +95,7 @@ class TaskStatus(str, Enum):
 
 class AgentType(str, Enum):
     """AI agent types for task coordination."""
+
     CONPORT = "conport"
     SERENA = "serena"
     TASKMASTER = "taskmaster"
@@ -84,9 +106,12 @@ class AgentType(str, Enum):
 @dataclass
 class OrchestrationTask:
     """Enhanced task representation for orchestration."""
+
     id: str
     leantime_id: Optional[int] = None
-    conport_id: Optional[int] = None  # ConPort progress_entry ID (Architecture 3.0 Component 2)
+    conport_id: Optional[int] = (
+        None  # ConPort progress_entry ID (Architecture 3.0 Component 2)
+    )
     title: str = ""
     description: str = ""
     status: TaskStatus = TaskStatus.PENDING
@@ -127,6 +152,7 @@ class OrchestrationTask:
 @dataclass
 class SyncEvent:
     """Event for multi-directional synchronization."""
+
     source_system: str
     target_systems: List[str]
     event_type: str
@@ -154,9 +180,9 @@ class EnhancedTaskOrchestrator:
         leantime_token: str,
         redis_url: str = "redis://localhost:6379",
         workspace_id: str = "/Users/hue/code/dopemux-mvp",
-        mcp_tools: Any = None
+        mcp_tools: Any = None,
     ):
-        self.leantime_url = leantime_url.rstrip('/')
+        self.leantime_url = leantime_url.rstrip("/")
         self.leantime_token = leantime_token
         self.redis_url = redis_url
         self.workspace_id = workspace_id
@@ -165,12 +191,16 @@ class EnhancedTaskOrchestrator:
         # Component connections
         self.leantime_session: Optional[aiohttp.ClientSession] = None
         self.redis_client: Optional[redis.Redis] = None
-        self.event_bus: Optional[EventBus] = None  # Integration Bridge EventBus (Component 3)
+        self.integration_bridge: Optional[IntegrationBridgeConnector] = (
+            None  # Integration Bridge connector
+        )
 
         # Task coordination state - Architecture 3.0: ConPort is storage authority
         # REMOVED: self.orchestrated_tasks dict (Authority violation - fixed in Component 2 Task 2.5)
         # Tasks now queried from ConPort via conport_adapter
-        self.conport_adapter = None  # Initialized in _initialize_agent_pool with ConPortEventAdapter
+        self.conport_adapter = (
+            None  # Initialized in _initialize_agent_pool with ConPortEventAdapter
+        )
         self.agent_pool: Dict[AgentType, Dict[str, Any]] = {}
         self.sync_queue: asyncio.Queue = asyncio.Queue()
 
@@ -183,7 +213,7 @@ class EnhancedTaskOrchestrator:
             "break_enforcement": True,
             "context_switch_penalty": 0.3,
             "energy_level_matching": True,
-            "implicit_progress_tracking": True
+            "implicit_progress_tracking": True,
         }
 
         # Orchestration metrics
@@ -192,7 +222,7 @@ class EnhancedTaskOrchestrator:
             "sync_events_processed": 0,
             "ai_agent_dispatches": 0,
             "adhd_accommodations_applied": 0,
-            "implicit_automations_triggered": 0
+            "implicit_automations_triggered": 0,
         }
 
         # Background workers
@@ -207,7 +237,7 @@ class EnhancedTaskOrchestrator:
         await asyncio.gather(
             self._initialize_leantime_connection(),
             self._initialize_redis_connection(),
-            self._initialize_agent_pool()
+            self._initialize_agent_pool(),
         )
 
         # Initialize ADHD support agents (Week 5)
@@ -226,8 +256,8 @@ class EnhancedTaskOrchestrator:
                 timeout=aiohttp.ClientTimeout(total=30),
                 headers={
                     "Authorization": f"Bearer {self.leantime_token}",
-                    "Content-Type": "application/json"
-                }
+                    "Content-Type": "application/json",
+                },
             )
 
             # Test connection
@@ -247,8 +277,8 @@ class EnhancedTaskOrchestrator:
                     "jsonrpc": "2.0",
                     "method": "leantime.rpc.projects.getAllProjects",
                     "params": {"limit": 1},
-                    "id": 1
-                }
+                    "id": 1,
+                },
             ) as response:
                 if response.status == 200:
                     data = await response.json()
@@ -265,19 +295,21 @@ class EnhancedTaskOrchestrator:
             self.redis_client = redis.from_url(
                 self.redis_url,
                 db=2,  # Separate DB for orchestrator
-                decode_responses=True
+                decode_responses=True,
             )
 
             await self.redis_client.ping()
             logger.info("🔗 Connected to Redis for coordination")
 
-            # Initialize Integration Bridge EventBus (Component 3)
-            if EVENTBUS_AVAILABLE:
-                self.event_bus = EventBus(self.redis_url, password=None)
-                await self.event_bus.initialize()
-                logger.info("🔗 Connected to Integration Bridge EventBus")
+            # Initialize Integration Bridge connector (Component 3)
+            if INTEGRATION_BRIDGE_AVAILABLE:
+                self.integration_bridge = IntegrationBridgeConnector(self.workspace_id)
+                await self.integration_bridge.connect()
+                logger.info("🔗 Connected to Integration Bridge")
             else:
-                logger.warning("⚠️ EventBus not available - Integration Bridge events disabled")
+                logger.warning(
+                    "⚠️ Integration Bridge not available - event coordination disabled"
+                )
 
         except Exception as e:
             logger.error(f"Failed to connect to Redis: {e}")
@@ -289,42 +321,48 @@ class EnhancedTaskOrchestrator:
         try:
             from adapters.conport_adapter import ConPortEventAdapter
             from conport_mcp_client import ConPortMCPClient
+
             # Wire ConPort MCP client for full integration (Component 3)
             conport_client = ConPortMCPClient(self.mcp_tools)
             self.conport_adapter = ConPortEventAdapter(
-                workspace_id=self.workspace_id,
-                conport_client=conport_client
+                workspace_id=self.workspace_id, conport_client=conport_client
             )
             logger.info("📊 ConPort adapter initialized (storage authority)")
         except Exception as e:
-            logger.warning(f"ConPort adapter initialization failed: {e} - continuing without persistence")
+            logger.warning(
+                f"ConPort adapter initialization failed: {e} - continuing without persistence"
+            )
             self.conport_adapter = None
 
         self.agent_pool = {
             AgentType.CONPORT: {
                 "available": True,
                 "current_tasks": [],
-                "capabilities": ["decision_logging", "progress_tracking", "context_management"],
-                "max_concurrent": 5
+                "capabilities": [
+                    "decision_logging",
+                    "progress_tracking",
+                    "context_management",
+                ],
+                "max_concurrent": 5,
             },
             AgentType.SERENA: {
                 "available": True,
                 "current_tasks": [],
                 "capabilities": ["code_navigation", "file_analysis", "refactoring"],
-                "max_concurrent": 3
+                "max_concurrent": 3,
             },
             AgentType.TASKMASTER: {
                 "available": True,
                 "current_tasks": [],
                 "capabilities": ["prd_parsing", "complexity_analysis", "research"],
-                "max_concurrent": 2
+                "max_concurrent": 2,
             },
             AgentType.ZEN: {
                 "available": True,
                 "current_tasks": [],
                 "capabilities": ["consensus", "code_review", "architecture_analysis"],
-                "max_concurrent": 1  # Intensive operations
-            }
+                "max_concurrent": 1,  # Intensive operations
+            },
         }
 
         logger.info("🤖 AI agent pool initialized")
@@ -342,7 +380,7 @@ class EnhancedTaskOrchestrator:
                 conport_client=None,  # Could wire ConPort client if needed
                 break_interval_minutes=25,
                 mandatory_break_minutes=90,
-                hyperfocus_warning_minutes=60
+                hyperfocus_warning_minutes=60,
             )
             await self.cognitive_guardian.start_monitoring()
             logger.info("🧠 CognitiveGuardian initialized - ADHD-aware routing active")
@@ -357,11 +395,11 @@ class EnhancedTaskOrchestrator:
             self._sync_processor(),
             self._adhd_monitor(),
             self._implicit_automation_engine(),
-            self._progress_correlator()
+            self._progress_correlator(),
         ]
 
         # Add Integration Bridge event subscriber (Component 3)
-        if self.event_bus:
+        if self.integration_bridge:
             workers.append(self._integration_bridge_subscriber())
             logger.info("📡 Integration Bridge event subscriber enabled")
 
@@ -405,12 +443,9 @@ class EnhancedTaskOrchestrator:
                 json={
                     "jsonrpc": "2.0",
                     "method": "leantime.rpc.tickets.getAllTickets",
-                    "params": {
-                        "limit": 100,
-                        "since": since_time.isoformat()
-                    },
-                    "id": self._next_request_id()
-                }
+                    "params": {"limit": 100, "since": since_time.isoformat()},
+                    "id": self._next_request_id(),
+                },
             ) as response:
                 if response.status == 200:
                     data = await response.json()
@@ -418,8 +453,7 @@ class EnhancedTaskOrchestrator:
 
                     # Update last poll timestamp
                     await self.redis_client.set(
-                        "orchestrator:last_poll",
-                        datetime.now(timezone.utc).isoformat()
+                        "orchestrator:last_poll", datetime.now(timezone.utc).isoformat()
                     )
 
                     return tasks if isinstance(tasks, list) else []
@@ -429,7 +463,9 @@ class EnhancedTaskOrchestrator:
 
         return []
 
-    async def _process_leantime_task_update(self, leantime_task: Dict[str, Any]) -> None:
+    async def _process_leantime_task_update(
+        self, leantime_task: Dict[str, Any]
+    ) -> None:
         """Process updated task from Leantime."""
         try:
             task_id = str(leantime_task.get("id", ""))
@@ -442,19 +478,27 @@ class EnhancedTaskOrchestrator:
                 description=leantime_task.get("description", ""),
                 status=self._map_leantime_status(leantime_task.get("status", "0")),
                 priority=int(leantime_task.get("priority", "2")),
-                estimated_minutes=self._estimate_task_duration(leantime_task)
+                estimated_minutes=self._estimate_task_duration(leantime_task),
             )
 
             # Apply ADHD optimizations
-            orchestration_task = await self._apply_adhd_optimizations(orchestration_task)
+            orchestration_task = await self._apply_adhd_optimizations(
+                orchestration_task
+            )
 
             # Store in ConPort (Architecture 3.0: ConPort is storage authority)
             if self.conport_adapter:
-                conport_id = await self.conport_adapter.create_task_in_conport(orchestration_task)
+                conport_id = await self.conport_adapter.create_task_in_conport(
+                    orchestration_task
+                )
                 orchestration_task.conport_id = conport_id
-                logger.debug(f"📊 Task stored in ConPort: {orchestration_task.title} (ID: {conport_id})")
+                logger.debug(
+                    f"📊 Task stored in ConPort: {orchestration_task.title} (ID: {conport_id})"
+                )
             else:
-                logger.warning(f"⚠️ ConPort adapter not initialized, task not persisted: {orchestration_task.id}")
+                logger.warning(
+                    f"⚠️ ConPort adapter not initialized, task not persisted: {orchestration_task.id}"
+                )
 
             # Determine AI agent assignment
             assigned_agent = await self._assign_optimal_agent(orchestration_task)
@@ -469,7 +513,7 @@ class EnhancedTaskOrchestrator:
                 task_id=orchestration_task.id,
                 data=asdict(orchestration_task),
                 timestamp=datetime.now(timezone.utc),
-                adhd_metadata={"cognitive_load": orchestration_task.cognitive_load}
+                adhd_metadata={"cognitive_load": orchestration_task.cognitive_load},
             )
 
             await self.sync_queue.put(sync_event)
@@ -510,7 +554,9 @@ class EnhancedTaskOrchestrator:
                 elif target_system == "leantime":
                     await self._sync_to_leantime(event)
 
-            logger.debug(f"🔄 Sync completed: {event.event_type} to {len(event.target_systems)} systems")
+            logger.debug(
+                f"🔄 Sync completed: {event.event_type} to {len(event.target_systems)} systems"
+            )
 
         except Exception as e:
             logger.error(f"Sync execution failed: {e}")
@@ -525,13 +571,19 @@ class EnhancedTaskOrchestrator:
                     "status": event.data.get("status", "pending").upper(),
                     "description": f"Task orchestration: {event.data.get('title', 'Unknown task')}",
                     "linked_item_type": "orchestration_task",
-                    "linked_item_id": event.task_id
+                    "linked_item_id": event.task_id,
                 }
 
                 # Make actual MCP call to ConPort
                 if self.conport_adapter:
-                    conport_id = await self.conport_adapter.create_task_in_conport_from_sync(event)
-                    logger.info(f"📊 Synced to ConPort: {event.task_id} -> ConPort ID: {conport_id}")
+                    conport_id = (
+                        await self.conport_adapter.create_task_in_conport_from_sync(
+                            event
+                        )
+                    )
+                    logger.info(
+                        f"📊 Synced to ConPort: {event.task_id} -> ConPort ID: {conport_id}"
+                    )
                 else:
                     logger.warning("📊 ConPort adapter not initialized, skipping sync")
 
@@ -549,7 +601,9 @@ class EnhancedTaskOrchestrator:
                 if task_data.get("estimated_minutes", 0) > 25:
                     # Auto-decompose large tasks
                     decomposed_tasks = await self._decompose_for_adhd(task_data)
-                    logger.debug(f"🧠 ADHD decomposed task into {len(decomposed_tasks)} subtasks")
+                    logger.debug(
+                        f"🧠 ADHD decomposed task into {len(decomposed_tasks)} subtasks"
+                    )
 
         except Exception as e:
             logger.error(f"Local ADHD sync failed: {e}")
@@ -613,7 +667,9 @@ class EnhancedTaskOrchestrator:
 
     # AI Agent Coordination
 
-    async def _assign_optimal_agent(self, task: OrchestrationTask) -> Optional[AgentType]:
+    async def _assign_optimal_agent(
+        self, task: OrchestrationTask
+    ) -> Optional[AgentType]:
         """
         Assign optimal AI agent based on task characteristics with ADHD awareness.
 
@@ -634,22 +690,22 @@ class EnhancedTaskOrchestrator:
             if self.cognitive_guardian:
                 readiness = await self.cognitive_guardian.check_task_readiness(
                     task_complexity=task.complexity_score,
-                    task_energy_required=task.energy_required
+                    task_energy_required=task.energy_required,
                 )
 
-                if not readiness['ready']:
+                if not readiness["ready"]:
                     logger.warning(
                         f"⚠️ User not ready for task: {task.title}\n"
                         f"   Reason: {readiness['reason']}\n"
                         f"   Suggestion: {readiness['suggestion']}"
                     )
-                    
+
                     # Check if mandatory break needed
                     user_state = await self.cognitive_guardian.get_user_state()
                     if user_state.session_duration_minutes >= 90:
                         logger.error("🛑 MANDATORY BREAK REQUIRED - No tasks assigned")
                         return "break_required"  # Special signal for break enforcement
-                    
+
                     # Return None to defer task
                     # UI would display readiness['alternatives'] for user to choose
                     # This prevents energy mismatches and burnout
@@ -669,18 +725,24 @@ class EnhancedTaskOrchestrator:
             description_lower = task.description.lower()
 
             # Decision/architectural tasks → ConPort
-            if any(keyword in title_lower or keyword in description_lower
-                   for keyword in ["decision", "architecture", "pattern", "strategy"]):
+            if any(
+                keyword in title_lower or keyword in description_lower
+                for keyword in ["decision", "architecture", "pattern", "strategy"]
+            ):
                 return AgentType.CONPORT
 
             # Code-related tasks → Serena
-            elif any(keyword in title_lower or keyword in description_lower
-                     for keyword in ["implement", "refactor", "debug", "code", "function"]):
+            elif any(
+                keyword in title_lower or keyword in description_lower
+                for keyword in ["implement", "refactor", "debug", "code", "function"]
+            ):
                 return AgentType.SERENA
 
             # Research/analysis tasks → TaskMaster
-            elif any(keyword in title_lower or keyword in description_lower
-                     for keyword in ["research", "analyze", "requirements", "prd"]):
+            elif any(
+                keyword in title_lower or keyword in description_lower
+                for keyword in ["research", "analyze", "requirements", "prd"]
+            ):
                 return AgentType.TASKMASTER
 
             # === STEP 4: DEFAULT FALLBACK ===
@@ -691,7 +753,9 @@ class EnhancedTaskOrchestrator:
             logger.error(f"Agent assignment failed: {e}")
             return None
 
-    async def _dispatch_to_agent(self, task: OrchestrationTask, agent: AgentType) -> bool:
+    async def _dispatch_to_agent(
+        self, task: OrchestrationTask, agent: AgentType
+    ) -> bool:
         """
         Dispatch task to assigned AI agent.
 
@@ -706,18 +770,18 @@ class EnhancedTaskOrchestrator:
             # NEW: Handle break-required state
             if agent == "break_required":
                 logger.warning("🛑 MANDATORY BREAK - Task deferred")
-                print("\n" + "="*70)
+                print("\n" + "=" * 70)
                 print("🛑 MANDATORY BREAK REQUIRED")
                 print("   You've been working too long.")
                 print("   Take a 10-minute break, then return.")
                 print("   Task will be available after break.")
-                print("="*70 + "\n")
-                
+                print("=" * 70 + "\n")
+
                 # Track ADHD accommodation
                 self.metrics["adhd_accommodations_applied"] += 1
-                
+
                 return False  # Task not dispatched
-            
+
             # EXISTING: Check agent availability
             agent_info = self.agent_pool.get(agent)
             if not agent_info or not agent_info["available"]:
@@ -729,7 +793,9 @@ class EnhancedTaskOrchestrator:
             max_concurrent = agent_info["max_concurrent"]
 
             if current_tasks >= max_concurrent:
-                logger.warning(f"Agent {agent.value} at capacity ({current_tasks}/{max_concurrent})")
+                logger.warning(
+                    f"Agent {agent.value} at capacity ({current_tasks}/{max_concurrent})"
+                )
                 return False
 
             # Dispatch based on agent type
@@ -748,7 +814,9 @@ class EnhancedTaskOrchestrator:
                 # Update agent state
                 agent_info["current_tasks"].append(task.id)
                 task.assigned_agent = agent
-                task.agent_assignments[agent.value] = datetime.now(timezone.utc).isoformat()
+                task.agent_assignments[agent.value] = datetime.now(
+                    timezone.utc
+                ).isoformat()
 
                 self.metrics["ai_agent_dispatches"] += 1
                 logger.info(f"🤖 Dispatched task {task.id} to {agent.value}")
@@ -777,7 +845,7 @@ class EnhancedTaskOrchestrator:
                     workspace_id=self.workspace_id,
                     progress_id=task.conport_id,
                     status=task.status.value.upper(),
-                    description=f"{task.title} (complexity: {task.complexity_score:.2f})"
+                    description=f"{task.title} (complexity: {task.complexity_score:.2f})",
                 )
 
                 logger.debug(f"Updated ConPort progress entry {task.conport_id}")
@@ -792,7 +860,7 @@ class EnhancedTaskOrchestrator:
                     description=task.title,
                     # ADHD metadata would be added as custom JSON in description or via custom_data
                 )
-                task.conport_id = result['id']
+                task.conport_id = result["id"]
 
                 logger.debug(f"Created ConPort progress entry for {task.title}")
 
@@ -891,7 +959,9 @@ class EnhancedTaskOrchestrator:
         High-complexity tasks (>0.8) benefit from multi-model reasoning.
         """
         try:
-            logger.info(f"🌟 Zen dispatch: {task.title} (complexity: {task.complexity_score:.2f})")
+            logger.info(
+                f"🌟 Zen dispatch: {task.title} (complexity: {task.complexity_score:.2f})"
+            )
 
             # Determine which Zen tool based on task type
             # Architecture/design tasks -> thinkdeep or consensus
@@ -932,7 +1002,9 @@ class EnhancedTaskOrchestrator:
 
             else:
                 # Lower complexity - simple dispatch without Zen
-                logger.debug(f"Task complexity {task.complexity_score:.2f} - no Zen analysis needed")
+                logger.debug(
+                    f"Task complexity {task.complexity_score:.2f} - no Zen analysis needed"
+                )
 
             logger.debug(f"Zen dispatch complete for {task.title}")
             return True
@@ -944,7 +1016,9 @@ class EnhancedTaskOrchestrator:
 
     # ADHD Optimization Methods
 
-    async def _apply_adhd_optimizations(self, task: OrchestrationTask) -> OrchestrationTask:
+    async def _apply_adhd_optimizations(
+        self, task: OrchestrationTask
+    ) -> OrchestrationTask:
         """Apply ADHD optimizations to task."""
         try:
             # Calculate cognitive load based on task characteristics
@@ -984,7 +1058,9 @@ class EnhancedTaskOrchestrator:
             base_load = 0.3  # Base cognitive load
 
             # Duration factor
-            duration_load = min(task.estimated_minutes / 60.0, 0.4)  # Max 0.4 for duration
+            duration_load = min(
+                task.estimated_minutes / 60.0, 0.4
+            )  # Max 0.4 for duration
 
             # Complexity factor
             complexity_load = task.complexity_score * 0.3
@@ -992,7 +1068,9 @@ class EnhancedTaskOrchestrator:
             # Priority stress factor
             priority_load = (task.priority / 10.0) * 0.1
 
-            total_load = min(base_load + duration_load + complexity_load + priority_load, 1.0)
+            total_load = min(
+                base_load + duration_load + complexity_load + priority_load, 1.0
+            )
             return total_load
 
         except Exception:
@@ -1017,9 +1095,13 @@ class EnhancedTaskOrchestrator:
 
             # Query ConPort for IN_PROGRESS tasks (Architecture 3.0: ConPort is source of truth)
             if self.conport_adapter:
-                active_tasks = await self.conport_adapter.get_all_tasks_from_conport(status_filter="IN_PROGRESS")
+                active_tasks = await self.conport_adapter.get_all_tasks_from_conport(
+                    status_filter="IN_PROGRESS"
+                )
             else:
-                logger.warning("⚠️ ConPort adapter not initialized, skipping break check")
+                logger.warning(
+                    "⚠️ ConPort adapter not initialized, skipping break check"
+                )
                 return
 
             for task in active_tasks:
@@ -1049,18 +1131,19 @@ class EnhancedTaskOrchestrator:
                 "task_title": task.title,
                 "work_duration": task.break_frequency_minutes,
                 "suggestion": f"☕ Great work on '{task.title}'! Time for a 5-minute break.",
-                "timestamp": datetime.now(timezone.utc).isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
 
             await self.redis_client.lpush(
                 f"orchestrator:break_suggestions:{self.workspace_id}",
-                json.dumps(break_suggestion)
+                json.dumps(break_suggestion),
             )
 
             # Trim list to keep only recent suggestions
             await self.redis_client.ltrim(
                 f"orchestrator:break_suggestions:{self.workspace_id}",
-                0, 9  # Keep only 10 most recent
+                0,
+                9,  # Keep only 10 most recent
             )
 
             logger.info(f"☕ Break suggested for task: {task.title}")
@@ -1105,11 +1188,13 @@ class EnhancedTaskOrchestrator:
                 "mode": "PLAN",
                 "focus": "Sprint planning automation",
                 "tasks_count": len(sprint_tasks),
-                "auto_setup": True
+                "auto_setup": True,
             }
 
             # This would sync to ConPort active context
-            logger.info(f"🚀 Auto-setup sprint {sprint_id} with {len(sprint_tasks)} tasks")
+            logger.info(
+                f"🚀 Auto-setup sprint {sprint_id} with {len(sprint_tasks)} tasks"
+            )
             self.metrics["implicit_automations_triggered"] += 1
 
         except Exception as e:
@@ -1125,7 +1210,7 @@ class EnhancedTaskOrchestrator:
             "2": TaskStatus.COMPLETED,
             "3": TaskStatus.BLOCKED,
             "6": TaskStatus.NEEDS_BREAK,
-            "7": TaskStatus.CONTEXT_SWITCH
+            "7": TaskStatus.CONTEXT_SWITCH,
         }
         return status_map.get(leantime_status, TaskStatus.PENDING)
 
@@ -1168,7 +1253,9 @@ class EnhancedTaskOrchestrator:
         # Placeholder - would fetch from Leantime
         return []
 
-    async def _auto_decompose_task(self, task: OrchestrationTask) -> List[OrchestrationTask]:
+    async def _auto_decompose_task(
+        self, task: OrchestrationTask
+    ) -> List[OrchestrationTask]:
         """Automatically decompose large task for ADHD."""
         # Placeholder - would integrate with ADHD decomposer
         return []
@@ -1184,85 +1271,103 @@ class EnhancedTaskOrchestrator:
         """Subscribe to Integration Bridge events for bidirectional ConPort communication."""
         logger.info("📡 Started Integration Bridge event subscriber")
 
+        # Define event filter for task-orchestrator relevant events
+        def event_filter(event_data: Dict[str, Any]) -> bool:
+            """Filter events relevant to task orchestration."""
+            event_type = event_data.get("event_type", "")
+            # Handle task-related events, ADHD events, and service coordination
+            return event_type.startswith(("task.", "adhd.", "service."))
+
         while self.running:
             try:
-                # Subscribe to dopemux:events stream
-                async for msg_id, event in self.event_bus.subscribe(
-                    stream="dopemux:events",
-                    consumer_group="task-orchestrator",
-                    consumer_name=f"orchestrator-{self.workspace_id.split('/')[-1]}"
-                ):
-                    await self._handle_integration_bridge_event(event)
+                # Subscribe to events using Integration Bridge connector
+                await self.integration_bridge.subscribe_events(
+                    callback=self._handle_integration_bridge_event,
+                    event_filter=event_filter,
+                )
 
             except Exception as e:
                 logger.error(f"Integration Bridge subscription error: {e}")
                 await asyncio.sleep(30)  # Reconnect after 30 seconds
 
-    async def _handle_integration_bridge_event(self, event: Event) -> None:
+    async def _handle_integration_bridge_event(
+        self, event_data: Dict[str, Any]
+    ) -> None:
         """Handle events from Integration Bridge."""
         try:
-            logger.debug(f"📥 Received event: {event.type} from {event.source}")
+            event_type = event_data.get("event_type", "")
+            source = event_data.get("source", "unknown")
+            logger.debug(f"📥 Received event: {event_type} from {source}")
 
-            if event.type == EventType.TASKS_IMPORTED:
-                await self._handle_tasks_imported(event)
-            elif event.type == EventType.SESSION_STARTED:
-                await self._handle_session_started(event)
-            elif event.type == EventType.SESSION_PAUSED:
-                await self._handle_session_paused(event)
-            elif event.type == EventType.SESSION_COMPLETED:
-                await self._handle_session_completed(event)
-            elif event.type == EventType.PROGRESS_UPDATED:
-                await self._handle_progress_updated(event)
-            elif event.type == EventType.DECISION_LOGGED:
-                await self._handle_decision_logged(event)
-            elif event.type == EventType.ADHD_STATE_CHANGED:
-                await self._handle_adhd_state_changed(event)
-            elif event.type == EventType.BREAK_REMINDER:
-                await self._handle_break_reminder(event)
+            if event_type == "task.tasks_imported":
+                await self._handle_tasks_imported(event_data)
+            elif event_type == "task.session_started":
+                await self._handle_session_started(event_data)
+            elif event_type == "task.session_paused":
+                await self._handle_session_paused(event_data)
+            elif event_type == "task.session_completed":
+                await self._handle_session_completed(event_data)
+            elif event_type == "task.progress_updated":
+                await self._handle_progress_updated(event_data)
+            elif event_type == "task.decision_logged":
+                await self._handle_decision_logged(event_data)
+            elif event_type == "adhd.state_changed":
+                await self._handle_adhd_state_changed(event_data)
+            elif event_type == "adhd.break_reminder":
+                await self._handle_break_reminder(event_data)
             else:
-                logger.debug(f"Unhandled event type: {event.type}")
+                logger.debug(f"Unhandled event type: {event_type}")
 
         except Exception as e:
             logger.error(f"Event handling failed: {e}")
 
-    async def _handle_tasks_imported(self, event: Event) -> None:
+    async def _handle_tasks_imported(self, event_data: Dict[str, Any]) -> None:
         """Handle tasks_imported event from Integration Bridge."""
         try:
-            task_count = event.data.get("task_count", 0)
-            sprint_id = event.data.get("sprint_id", "unknown")
+            payload = event_data.get("payload", {})
+            task_count = payload.get("task_count", 0)
+            sprint_id = payload.get("sprint_id", "unknown")
 
             logger.info(f"📥 Tasks imported: {task_count} tasks in sprint {sprint_id}")
 
             # Sync to ConPort if adapter available
             if self.conport_adapter:
-                logger.debug(f"📊 Syncing {task_count} tasks to ConPort for sprint {sprint_id}")
+                logger.debug(
+                    f"📊 Syncing {task_count} tasks to ConPort for sprint {sprint_id}"
+                )
                 await self.conport_adapter.sync_imported_tasks(task_count, sprint_id)
 
         except Exception as e:
             logger.error(f"Failed to handle tasks_imported: {e}")
 
-    async def _handle_session_started(self, event: Event) -> None:
+    async def _handle_session_started(self, event_data: Dict[str, Any]) -> None:
         """Handle session_started event from Integration Bridge."""
         try:
-            task_id = event.data.get("task_id", "")
-            duration_minutes = event.data.get("duration_minutes", 25)
+            payload = event_data.get("payload", {})
+            task_id = payload.get("task_id", "")
+            duration_minutes = payload.get("duration_minutes", 25)
 
-            logger.info(f"📥 Session started: Task {task_id} ({duration_minutes} minutes)")
+            logger.info(
+                f"📥 Session started: Task {task_id} ({duration_minutes} minutes)"
+            )
 
             # Update task status in ConPort
             if self.conport_adapter:
-                logger.debug(f"📊 Updating task {task_id} status to IN_PROGRESS in ConPort")
+                logger.debug(
+                    f"📊 Updating task {task_id} status to IN_PROGRESS in ConPort"
+                )
                 await self.conport_adapter.update_task_status(task_id, "IN_PROGRESS")
 
         except Exception as e:
             logger.error(f"Failed to handle session_started: {e}")
 
-    async def _handle_session_paused(self, event: Event) -> None:
+    async def _handle_session_paused(self, event_data: Dict[str, Any]) -> None:
         """Handle session_paused event from Integration Bridge."""
         try:
-            task_id = event.data.get("task_id", "")
+            payload = event_data.get("payload", {})
+            task_id = payload.get("task_id", "")
 
-            logger.info(f"📥 Session paused: Task {task_id}")
+            logger.info(f"⏸️ Session paused: Task {task_id}")
 
             # Update task status in ConPort
             if self.conport_adapter:
@@ -1294,12 +1399,16 @@ class EnhancedTaskOrchestrator:
             status = event.data.get("status", "")
             progress = event.data.get("progress", 0.0)
 
-            logger.info(f"📥 Progress updated: Task {task_id} -> {status} ({progress * 100:.0f}%)")
+            logger.info(
+                f"📥 Progress updated: Task {task_id} -> {status} ({progress * 100:.0f}%)"
+            )
 
             # Sync progress to ConPort
             if self.conport_adapter:
                 logger.debug(f"📊 Syncing progress for task {task_id} to ConPort")
-                await self.conport_adapter.update_task_progress(task_id, status.upper(), progress)
+                await self.conport_adapter.update_task_progress(
+                    task_id, status.upper(), progress
+                )
 
         except Exception as e:
             logger.error(f"Failed to handle progress_updated: {e}")
@@ -1314,7 +1423,9 @@ class EnhancedTaskOrchestrator:
 
             # Link decision to relevant tasks in ConPort
             if self.conport_adapter:
-                logger.debug(f"📊 Linking decision {decision_id} to related tasks in ConPort")
+                logger.debug(
+                    f"📊 Linking decision {decision_id} to related tasks in ConPort"
+                )
                 await self.conport_adapter.link_decision_to_tasks(decision_id)
 
         except Exception as e:
@@ -1327,12 +1438,18 @@ class EnhancedTaskOrchestrator:
             energy_level = event.data.get("energy_level", "medium")
             attention_level = event.data.get("attention_level", "focused")
 
-            logger.info(f"📥 ADHD state changed: {state} (Energy: {energy_level}, Attention: {attention_level})")
+            logger.info(
+                f"📥 ADHD state changed: {state} (Energy: {energy_level}, Attention: {attention_level})"
+            )
 
             # Adjust task recommendations based on ADHD state
             if self.conport_adapter:
-                logger.debug(f"📊 Adjusting task recommendations for ADHD state: {state}")
-                await self.conport_adapter.adjust_task_recommendations(energy_level, attention_level)
+                logger.debug(
+                    f"📊 Adjusting task recommendations for ADHD state: {state}"
+                )
+                await self.conport_adapter.adjust_task_recommendations(
+                    energy_level, attention_level
+                )
 
         except Exception as e:
             logger.error(f"Failed to handle adhd_state_changed: {e}")
@@ -1343,7 +1460,9 @@ class EnhancedTaskOrchestrator:
             task_id = event.data.get("task_id", "")
             duration_minutes = event.data.get("duration_minutes", 5)
 
-            logger.info(f"📥 Break reminder: Task {task_id} - {duration_minutes} minute break recommended")
+            logger.info(
+                f"📥 Break reminder: Task {task_id} - {duration_minutes} minute break recommended"
+            )
 
             # Update task status to IN_PROGRESS (ConPort doesn't have NEEDS_BREAK, keep as in_progress)
             if self.conport_adapter:
@@ -1380,13 +1499,19 @@ class EnhancedTaskOrchestrator:
         try:
             # Component health checks
             leantime_healthy = await self._test_leantime_connection()
-            redis_healthy = await self.redis_client.ping() if self.redis_client else False
+            redis_healthy = (
+                await self.redis_client.ping() if self.redis_client else False
+            )
 
             # Worker health
             active_workers = len([w for w in self.workers if not w.done()])
 
             # Overall status
-            if leantime_healthy and redis_healthy and active_workers == len(self.workers):
+            if (
+                leantime_healthy
+                and redis_healthy
+                and active_workers == len(self.workers)
+            ):
                 status = "🚀 Excellent"
             elif leantime_healthy and redis_healthy:
                 status = "✅ Good"
@@ -1398,14 +1523,21 @@ class EnhancedTaskOrchestrator:
             return {
                 "overall_status": status,
                 "components": {
-                    "leantime_api": "🟢 Connected" if leantime_healthy else "🔴 Disconnected",
-                    "redis_coordination": "🟢 Connected" if redis_healthy else "🔴 Disconnected",
+                    "leantime_api": (
+                        "🟢 Connected" if leantime_healthy else "🔴 Disconnected"
+                    ),
+                    "redis_coordination": (
+                        "🟢 Connected" if redis_healthy else "🔴 Disconnected"
+                    ),
                     "workers_active": f"{active_workers}/{len(self.workers)}",
-                    "ai_agents": {agent.value: info["available"] for agent, info in self.agent_pool.items()}
+                    "ai_agents": {
+                        agent.value: info["available"]
+                        for agent, info in self.agent_pool.items()
+                    },
                 },
                 "metrics": self.metrics,
                 "orchestrated_tasks": await self._get_task_count_from_conport(),
-                "timestamp": datetime.now(timezone.utc).isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
 
         except Exception as e:
@@ -1455,7 +1587,7 @@ async def main():
         leantime_url=leantime_url,
         leantime_token=leantime_token,
         redis_url=redis_url,
-        workspace_id=workspace_id
+        workspace_id=workspace_id,
     )
 
     try:
@@ -1484,37 +1616,43 @@ if __name__ == "__main__":
         self,
         status_filter: Optional[str] = None,
         sprint_id_filter: Optional[str] = None,
-        limit: int = 50
+        limit: int = 50,
     ) -> List[Dict[str, Any]]:
         """Query tasks from ConPort (Component 5)."""
         try:
             if not self.conport_adapter:
                 return []
-            
+
             # Query ConPort for progress entries
             progress_entries = await self.conport_adapter.get_progress_entries(
                 status_filter=status_filter,
-                tags_filter=[sprint_id_filter] if sprint_id_filter else None
+                tags_filter=[sprint_id_filter] if sprint_id_filter else None,
             )
-            
+
             # Transform to task format
             tasks = []
             for entry in progress_entries[:limit]:
-                tasks.append({
-                    "task_id": str(entry.get("id", "")),
-                    "title": entry.get("description", ""),
-                    "description": entry.get("description", ""),
-                    "status": entry.get("status", "TODO"),
-                    "progress": 0.5 if entry.get("status") == "IN_PROGRESS" else (1.0 if entry.get("status") == "DONE" else 0.0),
-                    "priority": "medium",
-                    "complexity": 0.5,
-                    "estimated_duration": 60,
-                    "dependencies": [],
-                    "tags": entry.get("tags", [])
-                })
-            
+                tasks.append(
+                    {
+                        "task_id": str(entry.get("id", "")),
+                        "title": entry.get("description", ""),
+                        "description": entry.get("description", ""),
+                        "status": entry.get("status", "TODO"),
+                        "progress": (
+                            0.5
+                            if entry.get("status") == "IN_PROGRESS"
+                            else (1.0 if entry.get("status") == "DONE" else 0.0)
+                        ),
+                        "priority": "medium",
+                        "complexity": 0.5,
+                        "estimated_duration": 60,
+                        "dependencies": [],
+                        "tags": entry.get("tags", []),
+                    }
+                )
+
             return tasks
-        
+
         except Exception as e:
             logger.error(f"Failed to get tasks: {e}")
             return []
@@ -1532,6 +1670,7 @@ if __name__ == "__main__":
         try:
             # Wire to ADHD Engine via HTTP client
             from activity_capture.adhd_client import ADHDEngineClient
+
             adhd_client = ADHDEngineClient()
             # Get ADHD state from engine
             state = await adhd_client.get_adhd_state(self.user_id)
@@ -1540,7 +1679,7 @@ if __name__ == "__main__":
                 "attention_level": state.get("attention_state", "focused"),
                 "time_since_break": state.get("time_since_break", 45),
                 "break_recommended": state.get("break_recommended", False),
-                "current_session_duration": state.get("session_duration", 45)
+                "current_session_duration": state.get("session_duration", 45),
             }
         except Exception as e:
             logger.warning(f"ADHD Engine connection failed: {e} - using defaults")
@@ -1549,23 +1688,25 @@ if __name__ == "__main__":
                 "attention_level": "focused",
                 "time_since_break": 45,
                 "break_recommended": False,
-                "current_session_duration": 45
+                "current_session_duration": 45,
             }
 
     async def get_task_recommendations(self, limit: int = 5) -> List[Dict[str, Any]]:
         """Get ADHD-aware task recommendations (Component 5)."""
         tasks = await self.get_tasks(status_filter="TODO")
         recommendations = []
-        
+
         for i, task in enumerate(tasks[:limit]):
-            recommendations.append({
-                "task_id": task["task_id"],
-                "title": task["title"],
-                "reason": "Matches current cognitive state",
-                "confidence": 0.8 - (i * 0.1),
-                "priority": i + 1
-            })
-        
+            recommendations.append(
+                {
+                    "task_id": task["task_id"],
+                    "title": task["title"],
+                    "reason": "Matches current cognitive state",
+                    "confidence": 0.8 - (i * 0.1),
+                    "priority": i + 1,
+                }
+            )
+
         return recommendations
 
     async def get_session_status(self) -> Dict[str, Any]:
@@ -1576,7 +1717,7 @@ if __name__ == "__main__":
             "started_at": datetime.now(),
             "duration_minutes": 45,
             "break_count": 0,
-            "tasks_completed": self.metrics.get("tasks_orchestrated", 0)
+            "tasks_completed": self.metrics.get("tasks_orchestrated", 0),
         }
 
     async def get_active_sprint(self) -> Dict[str, Any]:
@@ -1589,5 +1730,5 @@ if __name__ == "__main__":
             "end_date": datetime(2025, 10, 31),
             "total_tasks": 20,
             "completed_tasks": self.metrics.get("tasks_orchestrated", 0),
-            "in_progress_tasks": 3
+            "in_progress_tasks": 3,
         }

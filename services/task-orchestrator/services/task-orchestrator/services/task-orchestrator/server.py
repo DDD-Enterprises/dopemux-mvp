@@ -7,17 +7,22 @@ Simplified MCP server for Task-Orchestrator with ConPort integration.
 
 import asyncio
 import json
-import sys
 import logging
-from typing import Optional, Dict, Any
+import sys
+from typing import Any, Dict, Optional
 
 import uvicorn
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import JSONResponse
 
 # Import ConPort adapter
 from adapters.conport_adapter import ConPortEventAdapter
+from auth import verify_api_key
+from fastapi import FastAPI, HTTPException, Request, Security
+from fastapi.responses import JSONResponse
+from fastapi.security import APIKeyHeader
 from task_coordinator import TaskCoordinator
+
+API_KEY_NAME = "X-API-Key"
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -25,8 +30,24 @@ logger = logging.getLogger(__name__)
 
 # Global instances
 app = FastAPI(title="Task-Orchestrator MCP Server")
+
+# CORS middleware for web integration
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:8097",
+    ],  # ADHD Dashboard, etc.
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*", "X-API-Key"],  # Include X-API-Key for authentication
+)
+
 conport_adapter: Optional[ConPortEventAdapter] = None
 task_coordinator: Optional[TaskCoordinator] = None
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -46,6 +67,7 @@ async def startup_event():
 
     logger.info("Task-Orchestrator MCP Server startup complete")
 
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
@@ -53,11 +75,12 @@ async def health_check():
         "status": "healthy",
         "service": "task-orchestrator-mcp",
         "conport_connected": conport_adapter is not None,
-        "coordinator_ready": task_coordinator is not None
+        "coordinator_ready": task_coordinator is not None,
     }
 
+
 @app.post("/api/v1/tasks")
-async def create_task(request: Request):
+async def create_task(request: Request, api_key: str = Security(verify_api_key)):
     """Create a new task via ConPort."""
     if not conport_adapter:
         raise HTTPException(status_code=500, detail="ConPort adapter not initialized")
@@ -84,17 +107,30 @@ async def create_task(request: Request):
 
     return {"task_id": task_id, "conport_id": conport_id}
 
+
 @app.get("/api/v1/tasks")
-async def get_tasks():
+async def get_tasks(api_key: str = Security(verify_api_key)):
     """Get all tasks from ConPort."""
     if not conport_adapter:
         raise HTTPException(status_code=500, detail="ConPort adapter not initialized")
 
     tasks = await conport_adapter.get_all_tasks_from_conport()
-    return {"tasks": [{"id": t.id, "title": t.title, "status": t.status.value if hasattr(t.status, 'value') else str(t.status)} for t in tasks]}
+    return {
+        "tasks": [
+            {
+                "id": t.id,
+                "title": t.title,
+                "status": (
+                    t.status.value if hasattr(t.status, "value") else str(t.status)
+                ),
+            }
+            for t in tasks
+        ]
+    }
+
 
 @app.post("/api/v1/coordinate")
-async def coordinate_tasks(request: Request):
+async def coordinate_tasks(request: Request, api_key: str = Security(verify_api_key)):
     """Coordinate tasks using the Task Coordinator."""
     if not task_coordinator:
         raise HTTPException(status_code=500, detail="Task Coordinator not initialized")
@@ -106,6 +142,7 @@ async def coordinate_tasks(request: Request):
     # Convert to task objects
     tasks = []
     for task_data in tasks_data:
+
         class SimpleTask:
             def __init__(self, data):
                 self.id = data.get("id")
@@ -121,6 +158,7 @@ async def coordinate_tasks(request: Request):
     result = await task_coordinator.coordinate_tasks(tasks, adhd_state)
     return result
 
+
 @app.get("/")
 async def root():
     """Service information."""
@@ -131,9 +169,10 @@ async def root():
             "GET /health",
             "POST /api/v1/tasks",
             "GET /api/v1/tasks",
-            "POST /api/v1/coordinate"
-        ]
+            "POST /api/v1/coordinate",
+        ],
     }
+
 
 if __name__ == "__main__":
     # Get port from environment

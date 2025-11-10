@@ -50,6 +50,35 @@ class LoadStatus(Enum):
     CRITICAL = "critical"  # > 0.85 (overwhelm - break needed)
 
 
+class LoadFactors:
+    """Factors affecting cognitive load calculations."""
+    def __init__(self, complexity: float, context_switches: int, interruptions: int,
+                 duration_minutes: int, external_pressure: int):
+        self.complexity = complexity
+        self.context_switches = context_switches
+        self.interruptions = interruptions
+        self.duration_minutes = duration_minutes
+        self.external_pressure = external_pressure
+
+    def __repr__(self):
+        return f"LoadFactors(complexity={self.complexity}, switches={self.context_switches}, interruptions={self.interruptions})"
+
+
+class UserLoadProfile:
+    """User-specific cognitive load profile and preferences."""
+    def __init__(self, user_id: str, optimal_load_range: Tuple[float, float] = (0.6, 0.7),
+                 weights: Optional[Dict[str, float]] = None):
+        self.user_id = user_id
+        self.optimal_load_range = optimal_load_range
+        self.weights = weights or {
+            "task_complexity": 0.4,
+            "decision_count": 0.2,
+            "context_switches": 0.2,
+            "time_since_break": 0.1,
+            "interruptions": 0.1
+        }
+
+
 @dataclass
 class CognitiveLoad:
     """

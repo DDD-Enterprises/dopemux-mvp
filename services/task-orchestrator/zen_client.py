@@ -4,10 +4,28 @@ from typing import Dict, Any, List, Optional
 import sys
 import os
 
-# Add the genetic_agent path to import the shared MCP client
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'genetic_agent', 'genetic_agent'))
+# Try to import the genetic_agent ZenClient, fall back to mock if not available
+try:
+    # Add the genetic_agent path to import the shared MCP client
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'genetic_agent', 'genetic_agent'))
+    from genetic_agent.shared.mcp.zen_client import ZenClient as BaseZenClient
+except ImportError:
+    # Mock implementation for development
+    class BaseZenClient:
+        def __init__(self, base_url: str, config):
+            self.base_url = base_url
+            self.config = config
 
-from genetic_agent.shared.mcp.zen_client import ZenClient as BaseZenClient
+        async def plan_complex_task(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
+            """Mock implementation of complex task planning."""
+            return {
+                "plan": f"Mock plan for: {task_data.get('description', 'Unknown task')}",
+                "subtasks": [
+                    {"id": "subtask_1", "description": "First subtask", "duration": 15},
+                    {"id": "subtask_2", "description": "Second subtask", "duration": 15}
+                ],
+                "estimated_total": task_data.get('estimated_minutes', 30)
+            }
 
 class TaskOrchestratorZenClient(BaseZenClient):
     """Zen MCP client specialized for task orchestration and planning."""

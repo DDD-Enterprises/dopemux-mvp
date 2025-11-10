@@ -11,20 +11,26 @@ Tests:
 
 import asyncio
 import logging
-from pathlib import Path
-from typing import List
 
 # Add the task-orchestrator to path
 import sys
+from pathlib import Path
+from typing import List
+
 sys.path.insert(0, str(Path(__file__).parent))
 
-from enhanced_orchestrator import OrchestrationTask, TaskStatus, AgentType
-from adapters.conport_adapter import ConPortEventAdapter, safe_orchestration_task_to_conport_progress, safe_conport_progress_to_orchestration_task
+from adapters.conport_adapter import (
+    ConPortEventAdapter,
+    safe_conport_progress_to_orchestration_task,
+    safe_orchestration_task_to_conport_progress,
+)
+from enhanced_orchestrator import AgentType, OrchestrationTask, TaskStatus
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 WORKSPACE_ID = "/Users/hue/code/dopemux-mvp"
+
 
 async def test_bidirectional_transformations():
     """Test bidirectional transformations between OrchestrationTask and ConPort progress."""
@@ -44,7 +50,7 @@ async def test_bidirectional_transformations():
         energy_required="high",
         dependencies=["test-task-2"],
         context_switches_allowed=2,
-        break_frequency_minutes=25
+        break_frequency_minutes=25,
     )
 
     # Test OrchestrationTask → ConPort progress
@@ -78,6 +84,7 @@ async def test_bidirectional_transformations():
 
     return True
 
+
 async def test_conport_adapter_operations():
     """Test ConPort adapter operations (without actual ConPort server)."""
     logger.info("🔧 Testing ConPort adapter operations...")
@@ -94,7 +101,7 @@ async def test_conport_adapter_operations():
         priority=2,
         complexity_score=0.5,
         estimated_minutes=30,
-        energy_required="medium"
+        energy_required="medium",
     )
 
     # This will use the mock implementation since no real ConPort client
@@ -114,6 +121,7 @@ async def test_conport_adapter_operations():
 
     return True
 
+
 async def test_task_coordinator():
     """Test the TaskCoordinator class."""
     logger.info("🎯 Testing TaskCoordinator...")
@@ -130,15 +138,15 @@ async def test_task_coordinator():
                 title="Coordinate Test Task 1",
                 complexity_score=0.6,
                 energy_required="medium",
-                status=TaskStatus.PENDING
+                status=TaskStatus.PENDING,
             ),
             OrchestrationTask(
                 id="coord-test-2",
                 title="Coordinate Test Task 2",
                 complexity_score=0.4,
                 energy_required="low",
-                status=TaskStatus.PENDING
-            )
+                status=TaskStatus.PENDING,
+            ),
         ]
 
         adhd_state = {"energy": "medium", "attention": "focused", "load": 0.3}
@@ -154,6 +162,7 @@ async def test_task_coordinator():
     except Exception as e:
         logger.error(f"❌ TaskCoordinator test failed: {e}")
         return False
+
 
 async def main():
     """Run all ConPort sync tests."""
@@ -171,7 +180,7 @@ async def main():
     for test_name, test_func in tests:
         logger.info(f"\n{'='*50}")
         logger.info(f"Running: {test_name}")
-        logger.info('='*50)
+        logger.info("=" * 50)
 
         try:
             success = await test_func()
@@ -185,7 +194,7 @@ async def main():
 
     logger.info(f"\n{'='*60}")
     logger.info(f"Test Results: {passed}/{total} tests passed")
-    logger.info('='*60)
+    logger.info("=" * 60)
 
     if passed == total:
         logger.info("🎉 All ConPort sync tests PASSED!")
@@ -193,6 +202,7 @@ async def main():
     else:
         logger.warning("⚠️ Some tests failed - check implementation")
         return 1
+
 
 if __name__ == "__main__":
     exit_code = asyncio.run(main())

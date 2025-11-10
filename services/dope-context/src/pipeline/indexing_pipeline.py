@@ -18,7 +18,7 @@ from typing import Dict, List, Optional, Set
 from datetime import datetime
 
 from ..preprocessing.code_chunker import CodeChunker, CodeChunk, ChunkingConfig
-from ..context.openai_generator import OpenAIContextGenerator
+# OpenAIContextGenerator imported inside the example function to avoid import-time issues
 from ..embeddings.voyage_embedder import VoyageEmbedder
 from ..embeddings.contextualized_embedder import ContextualizedEmbedder
 from ..search.dense_search import MultiVectorSearch
@@ -122,7 +122,7 @@ class IndexingPipeline:
     def __init__(
         self,
         chunker: CodeChunker,
-        context_generator: Optional[OpenAIContextGenerator],
+        context_generator: Optional["OpenAIContextGenerator"],
         standard_embedder: VoyageEmbedder,
         contextualized_embedder: ContextualizedEmbedder,
         vector_search: MultiVectorSearch,
@@ -546,65 +546,70 @@ class IndexingPipeline:
 
 
 # Example usage
-async def main():
-    """Example usage of IndexingPipeline."""
-    import os
+if __name__ == "__main__":
+    async def main():
+        """Example usage of IndexingPipeline."""
+        import os
+        from ..context.openai_generator import OpenAIContextGenerator
 
-    # Initialize components
-    chunker = CodeChunker()
+        # Initialize components
+        chunker = CodeChunker()
 
-    context_generator = OpenAIContextGenerator(
-        api_key=os.getenv("OPENAI_API_KEY", "test"),
-    )
-
-    # Standard embedder for title + breadcrumb
-    standard_embedder = VoyageEmbedder(
-        api_key=os.getenv("VOYAGE_API_KEY", "test"),
-    )
-
-    # Contextualized embedder for content (14.24% better accuracy)
-    contextualized_embedder = ContextualizedEmbedder(
-        api_key=os.getenv("VOYAGE_API_KEY", "test"),
-    )
-
-    vector_search = MultiVectorSearch(
-        collection_name="code_index",
-    )
-
-    # Configure pipeline
-    config = IndexingConfig(
-        workspace_path=Path("./src"),
-        include_patterns=["*.py"],
-        max_files=5,  # Limit for testing
-        workspace_id="my-project",
-    )
-
-    # Create pipeline
-    pipeline = IndexingPipeline(
-        chunker=chunker,
-        context_generator=context_generator,
-        standard_embedder=standard_embedder,
-        contextualized_embedder=contextualized_embedder,
-        vector_search=vector_search,
-        config=config,
-    )
-
-    # Progress callback
-    def show_progress(progress: IndexingProgress):
-        pct = progress.percentage_complete()
-        print(
-            f"Progress: {progress.processed_files}/{progress.total_files} files, "
-            f"{progress.indexed_chunks}/{progress.total_chunks} chunks ({pct:.1f}%)"
+        context_generator = OpenAIContextGenerator(
+            api_key=os.getenv("OPENAI_API_KEY", "test"),
         )
 
-    # Index workspace
-    final_progress = await pipeline.index_workspace(
-        progress_callback=show_progress,
-    )
+        # Standard embedder for title + breadcrumb
+        standard_embedder = VoyageEmbedder(
+            api_key=os.getenv("VOYAGE_API_KEY", "test"),
+        )
 
-    print(f"\nIndexing complete!")
-    print(f"Summary: {final_progress.summary()}")
-    print(f"Costs: {pipeline.get_cost_summary()}")
+        # Contextualized embedder for content (14.24% better accuracy)
+        contextualized_embedder = ContextualizedEmbedder(
+            api_key=os.getenv("VOYAGE_API_KEY", "test"),
+        )
+
+        vector_search = MultiVectorSearch(
+            collection_name="code_index",
+        )
+
+        # Configure pipeline
+        config = IndexingConfig(
+            workspace_path=Path("./src"),
+            include_patterns=["*.py"],
+            max_files=5,  # Limit for testing
+            workspace_id="my-project",
+        )
+
+        # Create pipeline
+        pipeline = IndexingPipeline(
+            chunker=chunker,
+            context_generator=context_generator,
+            standard_embedder=standard_embedder,
+            contextualized_embedder=contextualized_embedder,
+            vector_search=vector_search,
+            config=config,
+        )
+
+        # Progress callback
+        def show_progress(progress: IndexingProgress):
+            pct = progress.percentage_complete()
+            print(
+                f"Progress: {progress.processed_files}/{progress.total_files} files, "
+                f"{progress.indexed_chunks}/{progress.total_chunks} chunks ({pct:.1f}%)"
+            )
+
+        # Index workspace
+        final_progress = await pipeline.index_workspace(
+            progress_callback=show_progress,
+        )
+
+        print(f"\nIndexing complete!")
+        print(f"Summary: {final_progress.summary()}")
+        print(f"Costs: {pipeline.get_cost_summary()}")
+
+    # Run the example
+    asyncio.run(main())
 
 
 if __name__ == "__main__":

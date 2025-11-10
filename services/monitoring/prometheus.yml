@@ -56,10 +56,10 @@ scrape_configs:
   - job_name: 'task_orchestrator'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['task-orchestrator:8002']
+      - targets: ['task-orchestrator:8000']
         labels:
           service: 'task_orchestrator'
-          layer: 'pm'
+          layer: 'orchestration'
 
   # PostgreSQL Exporter (optional, if added)
   # - job_name: 'postgresql'

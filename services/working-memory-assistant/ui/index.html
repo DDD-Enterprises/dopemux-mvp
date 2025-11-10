@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Working Memory Assistant - Context Recovery</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        .pulse-green {
+            animation: pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        .recovery-stage {
+            transition: all 0.3s ease-in-out;
+        }
+        .stage-essential { background-color: #dcfce7; border-color: #16a34a; color: #166534; }
+        .stage-detailed { background-color: #dbeafe; border-color: #2563eb; color: #1d4ed8; }
+        .stage-complete { background-color: #fef3c7; border-color: #d97706; color: #92400e; }
+        .context-card {
+            transition: all 0.3s ease-in-out;
+            transform: scale(1);
+        }
+        .context-card:hover {
+            transform: scale(1.02);
+        }
+        .progress-bar {
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #10b981;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-brain text-blue-500 mr-3"></i>
+                Working Memory Assistant
+            </h1>
+            <p class="text-gray-600">20-30x faster interrupt recovery for ADHD developers</p>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                <i class="fas fa-chart-line text-green-500 mr-2"></i>
+                Current Status
+            </h3>
+            <div class="grid md:grid-cols-3 gap-4 text-center">
+                <div>
+                    <div class="text-sm text-gray-600">Service</div>
+                    <div class="text-green-600 font-semibold">Healthy</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600">Database</div>
+                    <div class="text-green-600 font-semibold">Connected</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600">Cache</div>
+                    <div class="text-green-600 font-semibold">Connected</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recovery Controls -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                <i class="fas fa-undo-alt text-green-500 mr-2"></i>
+                Context Recovery
+            </h2>
+
+            <div class="grid md:grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">User ID</label>
+                    <input type="text" id="userId" value="test_user_123"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Snapshot ID (optional)</label>
+                    <input type="text" id="snapshotId" placeholder="Leave empty for latest"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button id="recoverEssential" class="recovery-btn bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors">
+                    <i class="fas fa-play-circle mr-2"></i>Essential Recovery
+                </button>
+                <button id="recoverDetailed" class="recovery-btn bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors">
+                    <i class="fas fa-info-circle mr-2"></i>Detailed Recovery
+                </button>
+                <button id="recoverComplete" class="recovery-btn bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md transition-colors">
+                    <i class="fas fa-layer-group mr-2"></i>Complete Recovery
+                </button>
+                <button id="recoverAdhd" class="recovery-btn bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md transition-colors">
+                    <i class="fas fa-brain mr-2"></i>ADHD-Adaptive Recovery
+                </button>
+            </div>
+
+            <div id="recoveryStatus" class="hidden text-sm text-gray-600">
+                <i class="fas fa-clock mr-1"></i>
+                Recovery time: <span id="recoveryTime">0</span>ms |
+                Cache hit: <span id="cacheHit">false</span>
+            </div>
+        </div>
+
+        <!-- ADHD Context Display -->
+        <div id="adhdContext" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-brain text-purple-500 mr-2"></i>
+                ADHD Context
+            </h3>
+            <div id="adhdContextContent" class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- ADHD metrics will be populated here -->
+            </div>
+        </div>
+
+        <!-- Recovery Results -->
+        <div id="recoveryResults" class="hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-search text-blue-500 mr-2"></i>
+                    Recovered Context
+                </h3>
+
+                <!-- Recovery Stage Indicator -->
+                <div class="mb-4">
+                    <span class="text-sm font-medium text-gray-700">Recovery Stage: </span>
+                    <span id="currentStage" class="px-2 py-1 text-xs font-medium rounded-full stage-essential">essential</span>
+                </div>
+
+                <!-- Context Display Area -->
+                <div id="contextDisplay" class="space-y-4">
+                    <!-- Context cards will be populated here -->
+                </div>
+
+                <!-- Expansion Controls -->
+                <div id="expansionControls" class="mt-6 pt-4 border-t border-gray-200 hidden">
+                    <div class="flex justify-center space-x-4">
+                        <button id="expandToDetailed" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors hidden">
+                            <i class="fas fa-chevron-down mr-2"></i>Show More Details
+                        </button>
+                        <button id="expandToComplete" class="recovery-btn bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md transition-colors hidden">
+                            <i class="fas fa-layer-group mr-2"></i>Show Everything
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                <i class="fas fa-chart-bar text-green-500 mr-2"></i>
+                Performance Metrics
+            </h3>
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-500" id="avgRecoveryTime">-</div>
+                    <div class="text-sm text-gray-600">Avg Recovery Time</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-500" id="cacheHitRate">-</div>
+                    <div class="text-sm text-gray-600">Cache Hit Rate</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-500" id="totalRecoveries">-</div>
+                    <div class="text-sm text-gray-600">Total Recoveries</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const WMA_BASE_URL = 'http://localhost:8096';
+        let currentContext = null;
+        let currentStage = 'essential';
+
+        // DOM Elements
+        const recoveryButtons = document.querySelectorAll('.recovery-btn');
+        const recoveryResults = document.getElementById('recoveryResults');
+        const recoveryStatus = document.getElementById('recoveryStatus');
+        const contextDisplay = document.getElementById('contextDisplay');
+        const currentStageElement = document.getElementById('currentStage');
+        const expansionControls = document.getElementById('expansionControls');
+        const expandToDetailed = document.getElementById('expandToDetailed');
+        const expandToComplete = document.getElementById('expandToComplete');
+        const adhdContext = document.getElementById('adhdContext');
+        const adhdContextContent = document.getElementById('adhdContextContent');
+
+        // Recovery button handlers
+        recoveryButtons.forEach(button => {
+            button.addEventListener('click', async () => {
+                const userId = document.getElementById('userId').value;
+                const snapshotId = document.getElementById('snapshotId').value;
+                const recoveryType = button.id;
+
+                if (!userId) {
+                    alert('Please enter a User ID');
+                    return;
+                }
+
+                // Show loading state
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
+                button.disabled = true;
+
+                try {
+                    let response;
+                    if (recoveryType === 'recoverAdhd') {
+                        response = await fetch(`${WMA_BASE_URL}/adhd-recover`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                user_id: userId,
+                                snapshot_id: snapshotId || null,
+                                recovery_stage: 'essential'
+                            })
+                        });
+                    } else {
+                        const stage = recoveryType.replace('recover', '').toLowerCase();
+                        response = await fetch(`${WMA_BASE_URL}/recover`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                user_id: userId,
+                                snapshot_id: snapshotId || null,
+                                recovery_stage: stage
+                            })
+                        });
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    const data = await response.json();
+                    displayRecoveryResults(data);
+                } catch (error) {
+                    console.error('Recovery failed:', error);
+                    alert('Recovery failed: ' + error.message);
+                } finally {
+                    // Reset button
+                    const icon = recoveryType === 'recoverAdhd' ? 'brain' :
+                               recoveryType === 'recoverEssential' ? 'play-circle' :
+                               recoveryType === 'recoverDetailed' ? 'info-circle' : 'layer-group';
+                    button.innerHTML = `<i class="fas fa-${icon} mr-2"></i>${button.textContent.replace('Loading...', '').trim()}`;
+                    button.disabled = false;
+                }
+            });
+        });
+
+        // Expansion handlers
+        expandToDetailed.addEventListener('click', () => expandRecovery('detailed'));
+        expandToComplete.addEventListener('click', () => expandRecovery('complete'));
+
+        // Display Functions
+        function displayRecoveryResults(response) {
+            currentContext = response.context_data;
+            currentStage = response.recovery_stage;
+
+            // Show results container
+            recoveryResults.classList.remove('hidden');
+            recoveryStatus.classList.remove('hidden');
+
+            // Update status
+            document.getElementById('recoveryTime').textContent = response.recovery_time_ms;
+            document.getElementById('cacheHit').textContent = response.cache_hit;
+
+            // Update stage indicator
+            currentStageElement.textContent = currentStage;
+            currentStageElement.className = `px-2 py-1 text-xs font-medium rounded-full stage-${currentStage}`;
+
+            // Display context
+            displayContextForStage(currentStage);
+
+            // Show expansion controls if not complete
+            if (currentStage !== 'complete') {
+                expansionControls.classList.remove('hidden');
+                expandToDetailed.classList.toggle('hidden', currentStage === 'detailed');
+                expandToComplete.classList.remove('hidden');
+            } else {
+                expansionControls.classList.add('hidden');
+            }
+
+            // Load ADHD context and metrics
+            const userId = document.getElementById('userId').value;
+            loadAdhdContext(userId);
+            loadPerformanceMetrics();
+        }
+
+        function displayContextForStage(stage) {
+            contextDisplay.innerHTML = '';
+
+            if (stage === 'essential') {
+                displayEssentialContext();
+            } else if (stage === 'detailed') {
+                displayDetailedContext();
+            } else if (stage === 'complete') {
+                displayCompleteContext();
+            }
+        }
+
+        function displayEssentialContext() {
+            const task = currentContext.task || currentContext.current_task?.description || 'Unknown task';
+            const file = currentContext.file || currentContext.active_focus?.file || 'Unknown file';
+            const line = currentContext.line || currentContext.active_focus?.cursor?.line || 0;
+
+            contextDisplay.innerHTML = `
+                <div class="context-card bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h4 class="font-medium text-green-800 mb-2">
+                        <i class="fas fa-tasks mr-2"></i>Current Task
+                    </h4>
+                    <p class="text-green-700">${task}</p>
+                </div>
+                <div class="context-card bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h4 class="font-medium text-green-800 mb-2">
+                        <i class="fas fa-file-code mr-2"></i>Active File
+                    </h4>
+                    <p class="text-green-700">${file} (line ${line})</p>
+                </div>
+            `;
+        }
+
+        function displayDetailedContext() {
+            displayEssentialContext(); // Show essential first
+
+            // Add mental model
+            if (currentContext.mental_model) {
+                const mentalModelCard = document.createElement('div');
+                mentalModelCard.className = 'context-card bg-blue-50 border border-blue-200 rounded-lg p-4';
+                mentalModelCard.innerHTML = `
+                    <h4 class="font-medium text-blue-800 mb-2">
+                        <i class="fas fa-project-diagram mr-2"></i>Mental Model
+                    </h4>
+                    <div class="space-y-1 text-blue-700">
+                        ${Object.entries(currentContext.mental_model).map(([key, value]) =>
+                            `<div><strong>${key}:</strong> ${value}</div>`
+                        ).join('')}
+                    </div>
+                `;
+                contextDisplay.appendChild(mentalModelCard);
+            }
+
+            // Add current task details
+            if (currentContext.current_task) {
+                const taskCard = document.createElement('div');
+                taskCard.className = 'context-card bg-blue-50 border border-blue-200 rounded-lg p-4';
+                taskCard.innerHTML = `
+                    <h4 class="font-medium text-blue-800 mb-2">
+                        <i class="fas fa-clipboard-list mr-2"></i>Task Details
+                    </h4>
+                    <div class="space-y-1 text-blue-700">
+                        <div><strong>Progress:</strong> ${Math.round((currentContext.current_task.progress || 0) * 100)}%</div>
+                        ${currentContext.current_task.blockers?.length ?
+                            `<div><strong>Blockers:</strong> ${currentContext.current_task.blockers.join(', ')}</div>` : ''}
+                        ${currentContext.current_task.nextSteps?.length ?
+                            `<div><strong>Next Steps:</strong> ${currentContext.current_task.nextSteps.join(', ')}</div>` : ''}
+                    </div>
+                `;
+                contextDisplay.appendChild(taskCard);
+            }
+        }
+
+        function displayCompleteContext() {
+            displayDetailedContext(); // Show detailed first
+
+            // Add all remaining context
+            const completeCard = document.createElement('div');
+            completeCard.className = 'context-card bg-yellow-50 border border-yellow-200 rounded-lg p-4';
+            completeCard.innerHTML = `
+                <h4 class="font-medium text-yellow-800 mb-2">
+                    <i class="fas fa-layer-group mr-2"></i>Complete Context
+                </h4>
+                <pre class="text-yellow-700 text-sm bg-yellow-100 p-3 rounded overflow-x-auto">${JSON.stringify(currentContext, null, 2)}</pre>
+            `;
+            contextDisplay.appendChild(completeCard);
+        }
+
+        function expandRecovery(targetStage) {
+            currentStage = targetStage;
+            currentStageElement.textContent = currentStage;
+            currentStageElement.className = `px-2 py-1 text-xs font-medium rounded-full stage-${currentStage}`;
+
+            displayContextForStage(currentStage);
+
+            if (targetStage === 'complete') {
+                expansionControls.classList.add('hidden');
+            } else {
+                expandToDetailed.classList.toggle('hidden', targetStage === 'detailed');
+                expandToComplete.classList.toggle('hidden', targetStage === 'complete');
+            }
+        }
+
+        function displayAdhdContext(adhdData) {
+            if (!adhdData || !adhdData.is_available) {
+                adhdContext.classList.add('hidden');
+                return;
+            }
+
+            adhdContext.classList.remove('hidden');
+            adhdContextContent.innerHTML = '';
+
+            const metrics = [
+                { key: 'energy_level', label: 'Energy Level', icon: 'battery-half', color: 'green' },
+                { key: 'attention_state', label: 'Attention State', icon: 'eye', color: 'blue' },
+                { key: 'cognitive_load', label: 'Cognitive Load', icon: 'brain', color: 'purple' },
+                { key: 'break_recommendation', label: 'Break Needed', icon: 'coffee', color: 'orange' }
+            ];
+
+            metrics.forEach(metric => {
+                const data = adhdData[metric.key];
+                if (data) {
+                    const value = typeof data === 'object' ? data.level || data.state || data.load || data.recommended : data;
+                    const card = document.createElement('div');
+                    card.className = `bg-${metric.color}-50 border border-${metric.color}-200 rounded-lg p-4`;
+                    card.innerHTML = `
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-${metric.icon} text-${metric.color}-500 mr-2"></i>
+                            <span class="font-medium text-${metric.color}-800">${metric.label}</span>
+                        </div>
+                        <div class="text-${metric.color}-700 font-semibold">${value}</div>
+                    `;
+                    adhdContextContent.appendChild(card);
+                }
+            });
+        }
+
+        async function loadAdhdContext(userId) {
+            try {
+                const response = await fetch(`${WMA_BASE_URL}/adhd-context/${userId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    displayAdhdContext(data);
+                }
+            } catch (error) {
+                console.log('ADHD context not available:', error);
+            }
+        }
+
+        async function loadPerformanceMetrics() {
+            try {
+                const userId = document.getElementById('userId').value;
+                const response = await fetch(`${WMA_BASE_URL}/stats/${userId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('avgRecoveryTime').textContent = `${data.avg_recovery_time || 0}ms`;
+                    document.getElementById('cacheHitRate').textContent = `${((data.success_rate || 0) * 100).toFixed(1)}%`;
+                    document.getElementById('totalRecoveries').textContent = data.total_recoveries || 0;
+                }
+            } catch (error) {
+                console.log('Performance metrics not available:', error);
+            }
+        }
+
+        // Load initial metrics
+        loadPerformanceMetrics();
+    </script>
+</body>
+</html>
