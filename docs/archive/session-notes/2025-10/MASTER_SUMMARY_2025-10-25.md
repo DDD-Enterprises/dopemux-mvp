@@ -1,3 +1,11 @@
+---
+id: MASTER_SUMMARY_2025-10-25
+title: Master_Summary_2025 10 25
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Master Summary: Mega-Session 2025-10-25
 
 **Session ID**: LEGENDARY-MEGA-SESSION-2025-10-25

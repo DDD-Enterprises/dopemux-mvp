@@ -1,3 +1,11 @@
+---
+id: working-memory-assistant-design
+title: Working Memory Assistant Design
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # F-NEW-10: Working Memory Assistant Architecture Design
 
 **Version**: 1.0.0

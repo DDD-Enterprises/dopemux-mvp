@@ -16,6 +16,7 @@ import asyncio
 import json
 import logging
 import os
+import subprocess
 import sys
 from datetime import datetime, timezone
 from enum import Enum
@@ -82,78 +83,10 @@ class MonitoringDashboard:
     """
 
     def __init__(self):
-        self.services = {
-            "adhd_engine": {
-                "name": "ADHD Engine",
-                "type": "web_api",
-                "url": "http://localhost:8095/health",
-                "timeout": 5.0,
-                "adhd_optimized": True
-            },
-            "adhd_dashboard": {
-                "name": "ADHD Dashboard",
-                "type": "web_api",
-                "url": "http://localhost:8097/health",
-                "timeout": 5.0,
-                "adhd_optimized": True
-            },
-            "conport": {
-                "name": "ConPort Knowledge Graph",
-                "type": "database_api",
-                "url": "http://localhost:5455/health",
-                "timeout": 10.0,  # Longer timeout for DB operations
-                "adhd_optimized": False,
-                "fallback_check": "process_check"  # Check if PostgreSQL process is running
-            },
-            "task_orchestrator": {
-                "name": "Task Orchestrator (Leantime)",
-                "type": "web_app",
-                "url": "http://localhost:8080/health",
-                "timeout": 5.0,
-                "adhd_optimized": True,
-                "auth_required": True,  # May redirect to login
-                "fallback_check": "docker_check"  # Check if leantime container is running
-            },
-            "zen_mcp": {
-                "name": "Zen MCP Server",
-                "type": "mcp_server",
-                "url": "http://localhost:3012/health",
-                "timeout": 3.0,
-                "adhd_optimized": True,
-                "fallback_check": "mcp_ping"  # MCP protocol health check
-            },
-            "serena_mcp": {
-                "name": "Serena MCP Server",
-                "type": "mcp_server",
-                "url": "http://localhost:3013/health",
-                "timeout": 3.0,
-                "adhd_optimized": True,
-                "fallback_check": "mcp_ping"
-            },
-            "dope_context_mcp": {
-                "name": "Dope-Context MCP Server",
-                "type": "mcp_server",
-                "url": "http://localhost:3014/health",
-                "timeout": 3.0,
-                "adhd_optimized": True,
-                "fallback_check": "mcp_ping"
-            },
-            "gpt_researcher": {
-                "name": "GPT Researcher",
-                "type": "mcp_server",
-                "url": "http://localhost:8010/health",
-                "timeout": 5.0,
-                "adhd_optimized": False,
-                "fallback_check": "mcp_ping"
-            },
-            "monitoring_dashboard": {
-                "name": "Monitoring Dashboard",
-                "type": "web_api",
-                "url": "http://localhost:8098/health",
-                "timeout": 3.0,
-                "adhd_optimized": True
-            }
-        }
+        # Initialize with empty services - will be populated by discover_services()
+        self.services = {}
+        self.discovery_cache = {}
+        self.discovery_cache_ttl = 300  # 5 minutes
 
         self.session = None
         self.last_update = None
@@ -162,6 +95,15 @@ class MonitoringDashboard:
 
         # Initialize circuit breakers for resilience
         self.circuit_breakers = self._init_circuit_breakers()
+
+        # Performance monitoring
+        self.performance_history = {}  # service_id -> deque of response times
+        self.performance_window_size = 20  # Keep last 20 measurements
+        self.performance_thresholds = {
+            "slow_response_ms": 1000,  # Flag responses > 1s as slow
+            "degradation_threshold": 1.5,  # 50% degradation triggers warning
+            "bottleneck_threshold": 2000  # > 2s considered bottleneck
+        }
 
         # ADHD-optimized alert system
         self.alert_system = ADHDAlertSystem(self)
@@ -219,6 +161,305 @@ class MonitoringDashboard:
 
         return circuit_breakers
 
+    async def discover_services(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Auto-discover running services from Docker containers and static config.
+
+        ADHD-optimized: Combines static known services with dynamic discovery
+        to ensure comprehensive coverage without overwhelming complexity.
+        """
+        discovered_services = {}
+
+        # Start with static known services (core Dopemux services)
+        static_services = self._get_static_services()
+        discovered_services.update(static_services)
+
+        # Auto-discover Docker containers
+        try:
+            docker_services = await self._discover_docker_services()
+            discovered_services.update(docker_services)
+            logger.info(f"Auto-discovered {len(docker_services)} Docker services")
+        except Exception as e:
+            logger.warning(f"Could not auto-discover Docker services: {e}")
+
+        # Log discovery summary
+        total_services = len(discovered_services)
+        mcp_services = sum(1 for s in discovered_services.values() if s.get('type') == 'mcp_server')
+        logger.info(f"Service discovery complete: {total_services} total services ({mcp_services} MCP servers)")
+
+        return discovered_services
+
+    def _get_static_services(self) -> Dict[str, Dict[str, Any]]:
+        """Get statically configured core services."""
+        return {
+            "adhd_engine": {
+                "name": "ADHD Engine",
+                "type": "web_api",
+                "url": "http://localhost:8095/health",
+                "timeout": 5.0,
+                "adhd_optimized": True,
+                "discovery": "static"
+            },
+            "adhd_dashboard": {
+                "name": "ADHD Dashboard",
+                "type": "web_api",
+                "url": "http://localhost:8097/health",
+                "timeout": 5.0,
+                "adhd_optimized": True,
+                "discovery": "static"
+            },
+            "conport": {
+                "name": "ConPort Knowledge Graph",
+                "type": "database_api",
+                "url": "http://localhost:5455/health",
+                "timeout": 10.0,
+                "adhd_optimized": False,
+                "fallback_check": "process_check",
+                "discovery": "static"
+            },
+            "task_orchestrator": {
+                "name": "Task Orchestrator (Leantime)",
+                "type": "web_app",
+                "url": "http://localhost:8080/health",
+                "timeout": 5.0,
+                "adhd_optimized": True,
+                "auth_required": True,
+                "fallback_check": "docker_check",
+                "discovery": "static"
+            },
+            "monitoring_dashboard": {
+                "name": "Monitoring Dashboard",
+                "type": "web_api",
+                "url": "http://localhost:8098/health",
+                "timeout": 3.0,
+                "adhd_optimized": True,
+                "discovery": "static"
+            }
+        }
+
+    async def _discover_docker_services(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Discover services from running Docker containers.
+
+        Uses docker ps to find containers and infers service types from names/ports.
+        """
+        discovered = {}
+
+        try:
+            # Get running containers in JSON format
+            result = subprocess.run(
+                ['docker', 'ps', '--format', 'json'],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+
+            if result.returncode != 0:
+                logger.warning(f"Docker ps failed: {result.stderr}")
+                return discovered
+
+            containers = []
+            for line in result.stdout.strip().split('\n'):
+                if line.strip():
+                    try:
+                        containers.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        continue
+
+            logger.debug(f"Found {len(containers)} running containers")
+
+            for container in containers:
+                service_config = self._analyze_container(container)
+                if service_config:
+                    service_id = service_config['id']
+                    discovered[service_id] = service_config
+                    logger.debug(f"Discovered service: {service_id} ({service_config['name']})")
+
+        except Exception as e:
+            logger.warning(f"Docker discovery error: {e}")
+
+        return discovered
+
+    def _analyze_container(self, container: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Analyze a Docker container and create service configuration if it's a Dopemux service.
+
+        Returns service config dict or None if not a Dopemux service.
+        """
+        name = container.get('Names', '').strip('/')
+        image = container.get('Image', '')
+        ports = container.get('Ports', '')
+
+        # Skip non-Dopemux containers
+        if not any(keyword in name.lower() for keyword in ['dopemux', 'mcp-', 'staging-', 'adhd', 'conport', 'serena', 'zen', 'dope-context', 'gpt-researcher', 'desktop-commander', 'exa', 'leantime']):
+            return None
+
+        # Determine service type and health check config
+        service_config = {
+            'id': name.replace('staging-', '').replace('mcp-', ''),
+            'discovery': 'docker'
+        }
+
+        # MCP Servers
+        if 'mcp-' in name or 'zen' in name or 'serena' in name or 'dope-context' in name or 'gpt-researcher' in name or 'desktop-commander' in name or 'exa' in name:
+            service_config.update({
+                'name': self._format_service_name(name),
+                'type': 'mcp_server',
+                'timeout': 3.0,
+                'adhd_optimized': True,
+                'fallback_check': 'mcp_ping'
+            })
+
+            # Extract health check port from container ports
+            health_port = self._extract_health_port(ports, name)
+            if health_port:
+                service_config['url'] = f"http://localhost:{health_port}/health"
+
+        # Web APIs
+        elif 'adhd' in name and 'engine' in name:
+            service_config.update({
+                'name': 'ADHD Engine (Docker)',
+                'type': 'web_api',
+                'timeout': 5.0,
+                'adhd_optimized': True
+            })
+            health_port = self._extract_health_port(ports, 'adhd-engine')
+            if health_port:
+                service_config['url'] = f"http://localhost:{health_port}/health"
+
+        # Database services
+        elif 'postgres' in name or 'conport' in name:
+            service_config.update({
+                'name': 'ConPort PostgreSQL',
+                'type': 'database_api',
+                'timeout': 10.0,
+                'adhd_optimized': False,
+                'fallback_check': 'process_check'
+            })
+            health_port = self._extract_health_port(ports, 'conport')
+            if health_port:
+                service_config['url'] = f"http://localhost:{health_port}/health"
+
+        # Web applications
+        elif 'leantime' in name:
+            service_config.update({
+                'name': 'Leantime (Docker)',
+                'type': 'web_app',
+                'timeout': 5.0,
+                'adhd_optimized': True,
+                'auth_required': True,
+                'fallback_check': 'docker_check'
+            })
+            health_port = self._extract_health_port(ports, 'leantime')
+            if health_port:
+                service_config['url'] = f"http://localhost:{health_port}/health"
+
+        # Only return if we have a health check URL
+        if 'url' in service_config:
+            return service_config
+
+        return None
+
+    def _format_service_name(self, container_name: str) -> str:
+        """Format container name into human-readable service name."""
+        name = container_name.replace('staging-', '').replace('mcp-', '')
+
+        # Special cases
+        name_map = {
+            'zen': 'Zen MCP Server',
+            'serena': 'Serena MCP Server',
+            'dope-context': 'Dope-Context MCP Server',
+            'gpt-researcher': 'GPT Researcher MCP',
+            'desktop-commander': 'Desktop Commander MCP',
+            'exa': 'Exa MCP Server'
+        }
+
+        return name_map.get(name, f"{name.replace('-', ' ').title()} MCP")
+
+    def _extract_health_port(self, ports_str: str, service_name: str) -> Optional[int]:
+        """Extract health check port from Docker ports string."""
+        if not ports_str:
+            return None
+
+        # Parse port mappings like "0.0.0.0:3012->3001/tcp"
+        import re
+        port_matches = re.findall(r'0\.0\.0\.0:(\d+)->(\d+)/tcp', ports_str)
+
+        if not port_matches:
+            return None
+
+        # For MCP servers, look for specific port patterns
+        for external, internal in port_matches:
+            external_port = int(external)
+
+            # MCP server port patterns
+            if service_name in ['zen', 'mcp-zen'] and internal == '3001':
+                return external_port
+            elif service_name in ['serena', 'mcp-serena'] and internal == '3006':
+                return external_port
+            elif service_name in ['dope-context', 'mcp-dope-context'] and internal == '3014':
+                return external_port
+            elif service_name in ['gpt-researcher', 'mcp-gptr-mcp'] and internal == '3009':
+                return external_port
+            elif service_name in ['desktop-commander', 'mcp-desktop-commander'] and internal == '3012':
+                return external_port
+            elif service_name in ['exa', 'mcp-exa'] and internal == '3008':
+                return external_port
+
+            # ADHD Engine
+            elif 'adhd-engine' in service_name and internal == '8001':
+                return external_port
+
+            # ConPort
+            elif 'conport' in service_name and internal == '3004':
+                return external_port
+
+            # Leantime
+            elif 'leantime' in service_name and internal == '80':
+                return external_port
+
+        # Return first available port as fallback
+        if port_matches:
+            return int(port_matches[0][0])
+
+        return None
+
+    async def get_services(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Get current service registry with discovery refresh if needed.
+
+        ADHD-optimized: Caches discovery results to avoid overwhelming users
+        with constant discovery operations.
+        """
+        now = datetime.now(timezone.utc)
+
+        # Check if discovery cache is still valid
+        if self.discovery_cache and self.discovery_cache.get('timestamp'):
+            cache_age = (now - self.discovery_cache['timestamp']).total_seconds()
+            if cache_age < self.discovery_cache_ttl:
+                return self.discovery_cache['services']
+
+        # Cache expired or missing - refresh discovery
+        logger.info("Refreshing service discovery...")
+        try:
+            discovered_services = await self.discover_services()
+            self.discovery_cache = {
+                'services': discovered_services,
+                'timestamp': now
+            }
+            self.services = discovered_services
+
+            # Re-initialize circuit breakers for new services
+            self.circuit_breakers = self._init_circuit_breakers()
+
+            logger.info(f"Service discovery refreshed: {len(discovered_services)} services")
+            return discovered_services
+
+        except Exception as e:
+            logger.error(f"Service discovery failed: {e}")
+            # Return cached services if available, otherwise empty dict
+            return self.discovery_cache.get('services', {}) if self.discovery_cache else {}
+
     async def init_session(self):
         """Initialize aiohttp session for HTTP requests."""
         if not self.session:
@@ -232,7 +473,7 @@ class MonitoringDashboard:
             await self.session.close()
             self.session = None
 
-    async def check_service_health(self, service_config: Dict[str, Any]) -> ServiceHealth:
+    async def check_service_health(self, service_id: str, service_config: Dict[str, Any]) -> ServiceHealth:
         """
         Check health of a single service with ADHD-optimized error handling and fallback checks.
         """
@@ -575,19 +816,88 @@ class MonitoringDashboard:
             "details": {"check_type": "none"}
         }
 
+    def _track_performance(self, service_id: str, response_time: float):
+        """Track performance metrics for the service."""
+        if service_id not in self.performance_history:
+            self.performance_history[service_id] = deque(maxlen=self.performance_window_size)
+
+        self.performance_history[service_id].append(response_time)
+
+        # Log if this is a slow response
+        if response_time > self.performance_thresholds["slow_response_ms"] / 1000:
+            logger.warning(f"Slow response from {service_id}: {response_time:.2f}s")
+
+    def _analyze_performance_trends(self, service_id: str) -> Dict[str, Any]:
+        """Analyze performance trends and detect bottlenecks."""
+        if service_id not in self.performance_history or len(self.performance_history[service_id]) < 5:
+            return {
+                "status": "insufficient_data",
+                "message": "Need more response times for trend analysis",
+                "bottleneck": False,
+                "degradation": False,
+                "recommendation": None
+            }
+
+        times = list(self.performance_history[service_id])
+        avg_response = sum(times) / len(times)
+        min_response = min(times)
+        max_response = max(times)
+
+        # Check for degradation (standard deviation > 50% of mean)
+        if len(times) > 1:
+            std_dev = stdev(times)
+            degradation_ratio = std_dev / avg_response if avg_response > 0 else 0
+            has_degradation = degradation_ratio > self.performance_thresholds["degradation_threshold"]
+        else:
+            has_degradation = False
+
+        # Check for bottleneck (avg > threshold)
+        is_bottleneck = avg_response > self.performance_thresholds["bottleneck_threshold"] / 1000
+
+        # Generate recommendation
+        recommendation = None
+        if is_bottleneck:
+            recommendation = f"Service {service_id} is a performance bottleneck. Average response: {avg_response:.2f}s. Consider optimization or scaling."
+        elif has_degradation:
+            recommendation = f"Service {service_id} shows performance degradation. Std dev: {std_dev:.2f}s. Monitor for emerging issues."
+        elif avg_response > self.performance_thresholds["slow_response_ms"] / 1000:
+            recommendation = f"Service {service_id} has slow responses. Average: {avg_response:.2f}s. Consider performance tuning."
+
+        return {
+            "status": "analyzed",
+            "avg_response_time": avg_response,
+            "min_response_time": min_response,
+            "max_response_time": max_response,
+            "bottleneck": is_bottleneck,
+            "degradation": has_degradation,
+            "recommendation": recommendation,
+            "trend_data": {
+                "count": len(times),
+                "avg_ms": avg_response * 1000,
+                "std_dev_ms": std_dev * 1000 if 'std_dev' in locals() else None
+            }
+        }
+
     async def get_dashboard_data(self) -> DashboardResponse:
         """
         Get comprehensive dashboard data with progressive disclosure.
         """
         await self.init_session()
 
+        # Get current services using discovery
+        services_config = await self.get_services()
+
         # Check cache first
         now = datetime.now(timezone.utc)
         if self.last_update and (now - self.last_update).total_seconds() < self.cache_ttl:
-            return self.cache["dashboard"]
+            # Update service IDs if they changed
+            if set(self.cache["dashboard"].services.keys()) == set(services_config.keys()):
+                return self.cache["dashboard"]
+            else:
+                logger.info("Service registry changed, bypassing cache")
 
         # Check all services in parallel
-        tasks = [self.check_service_health(config) for config in self.services.values()]
+        tasks = [self.check_service_health(service_id, config) for service_id, config in services_config.items()]
         service_healths = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Process results
@@ -595,12 +905,13 @@ class MonitoringDashboard:
         healthy_count = 0
         warning_count = 0
         critical_count = 0
+        total_services = len(services_config)
 
-        for result in service_healths:
+        for service_id, result in zip(services_config.keys(), service_healths):
             if isinstance(result, Exception):
                 # Handle task exceptions
                 services.append(ServiceHealth(
-                    name="Unknown",
+                    name=f"Unknown ({service_id})",
                     status=HealthLevel.UNKNOWN,
                     message=f"Check failed: {str(result)[:50]}",
                     last_check=now,
@@ -608,12 +919,27 @@ class MonitoringDashboard:
                 ))
                 critical_count += 1
             else:
-                services.append(result)
-                if result.status == HealthLevel.HEALTHY:
+                # Create ServiceHealth with service ID
+                health_result = ServiceHealth(
+                    name=result.name if hasattr(result, 'name') else service_id.title(),
+                    status=result.status if hasattr(result, 'status') else HealthLevel.UNKNOWN,
+                    message=result.message if hasattr(result, 'message') else "Unknown status",
+                    last_check=result.last_check if hasattr(result, 'last_check') else now,
+                    response_time=result.response_time if hasattr(result, 'response_time') else None,
+                    details=result.details if hasattr(result, 'details') else {},
+                    adhd_optimized=services_config[service_id].get('adhd_optimized', False)
+                )
+                services.append(health_result)
+
+                # Track performance if response time available
+                if health_result.response_time is not None:
+                    self._track_performance(service_id, health_result.response_time)
+
+                if health_result.status == HealthLevel.HEALTHY:
                     healthy_count += 1
-                elif result.status == HealthLevel.WARNING:
+                elif health_result.status == HealthLevel.WARNING:
                     warning_count += 1
-                elif result.status == HealthLevel.CRITICAL:
+                elif health_result.status == HealthLevel.CRITICAL:
                     critical_count += 1
                 else:  # UNKNOWN
                     critical_count += 1
@@ -625,6 +951,74 @@ class MonitoringDashboard:
             overall_health = HealthLevel.WARNING
         else:
             overall_health = HealthLevel.HEALTHY
+
+        # Create summary with performance metrics
+        summary = {
+            "total_services": total_services,
+            "healthy_services": healthy_count,
+            "warning_services": warning_count,
+            "critical_services": critical_count,
+            "discovery_sources": {
+                "static": sum(1 for s in services_config.values() if s.get('discovery') == 'static'),
+                "docker": sum(1 for s in services_config.values() if s.get('discovery') == 'docker')
+            },
+            "performance_summary": {
+                "services_with_data": len([s for s in self.performance_history if len(s) > 0]),
+                "avg_response_time_ms": None,
+                "slow_responses": 0,
+                "bottlenecks": [],
+                "recommendations": []
+            }
+        }
+
+        # Add performance analysis for services with sufficient data
+        bottleneck_services = []
+        slow_services = []
+        recommendations = []
+
+        for service_id in self.performance_history:
+            if len(self.performance_history[service_id]) >= 3:  # Need at least 3 measurements
+                perf_analysis = self._analyze_performance_trends(service_id)
+                if perf_analysis["bottleneck"]:
+                    bottleneck_services.append({
+                        "service": service_id,
+                        "avg_ms": perf_analysis["trend_data"]["avg_ms"],
+                        "recommendation": perf_analysis["recommendation"]
+                    })
+                elif perf_analysis["status"] == "analyzed" and perf_analysis["avg_response_time"] > 0.5:
+                    slow_services.append({
+                        "service": service_id,
+                        "avg_ms": perf_analysis["trend_data"]["avg_ms"],
+                        "recommendation": perf_analysis["recommendation"]
+                    })
+                if perf_analysis["recommendation"]:
+                    recommendations.append(perf_analysis["recommendation"])
+
+        if bottleneck_services:
+            summary["performance_summary"]["bottlenecks"] = bottleneck_services
+            summary["performance_summary"]["avg_response_time_ms"] = sum([b["avg_ms"] for b in bottleneck_services]) / len(bottleneck_services)
+        elif slow_services:
+            summary["performance_summary"]["slow_services"] = slow_services
+            summary["performance_summary"]["avg_response_time_ms"] = sum([s["avg_ms"] for s in slow_services]) / len(slow_services)
+
+        summary["performance_summary"]["recommendations"] = recommendations[:3]  # Top 3 recommendations
+
+        dashboard_data = DashboardResponse(
+            overall_health=overall_health,
+            total_services=total_services,
+            healthy_services=healthy_count,
+            warning_services=warning_count,
+            critical_services=critical_count,
+            last_update=now,
+            services=services,
+            summary=summary
+        )
+
+        # Cache the result
+        self.cache["dashboard"] = dashboard_data
+        self.last_update = now
+
+        return dashboard_data
 
         # ADHD-optimized summary
         summary = {
@@ -701,6 +1095,8 @@ app = FastAPI(
 @app.on_event("startup")
 async def startup_event():
     await dashboard.init_session()
+    # Initialize service discovery
+    await dashboard.discover_services()
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -759,6 +1155,30 @@ async def get_alerts():
 async def get_alert_history():
     """Get complete alert history."""
     return {"alerts": dashboard.alert_history}
+
+@app.get("/api/performance")
+async def get_performance_metrics():
+    """Get detailed performance metrics and bottleneck analysis."""
+    performance_data = {}
+
+    for service_id in dashboard.performance_history:
+        if len(dashboard.performance_history[service_id]) >= 3:
+            analysis = dashboard._analyze_performance_trends(service_id)
+            performance_data[service_id] = {
+                "analysis": analysis,
+                "response_times": list(dashboard.performance_history[service_id])[-10:],  # Last 10 measurements
+                "trend_status": "bottleneck" if analysis["bottleneck"] else "degraded" if analysis["degradation"] else "normal"
+            }
+
+    return {
+        "services_analyzed": len(performance_data),
+        "performance_data": performance_data,
+        "system_summary": {
+            "bottlenecks_count": sum(1 for s in performance_data.values() if s["analysis"]["bottleneck"]),
+            "degraded_count": sum(1 for s in performance_data.values() if s["analysis"]["degradation"]),
+            "total_measurements": sum(len(s["response_times"]) for s in performance_data.values())
+        }
+    }
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard_ui():

@@ -1,3 +1,11 @@
+---
+id: COMPONENT_7_ENVIRONMENTAL_INTERRUPTION_SHIELD
+title: Component_7_Environmental_Interruption_Shield
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Component 7: Environmental Interruption Shield - Technical Specification
 
 **Version**: 1.0.0

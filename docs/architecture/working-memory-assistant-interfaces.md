@@ -1,3 +1,11 @@
+---
+id: working-memory-assistant-interfaces
+title: Working Memory Assistant Interfaces
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Working Memory Assistant - Component Interfaces
 
 **Version**: 1.0.0

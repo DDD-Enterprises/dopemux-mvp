@@ -1,3 +1,11 @@
+---
+id: ADHD_ARCHITECTURE_DIAGRAM
+title: Adhd_Architecture_Diagram
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # ADHD Intelligence Stack - Complete Architecture
 
 **Date**: 2025-10-25

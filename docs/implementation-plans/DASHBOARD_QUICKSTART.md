@@ -1,3 +1,11 @@
+---
+id: DASHBOARD_QUICKSTART
+title: Dashboard_Quickstart
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dashboard Implementation Quickstart 🚀
 
 **TL;DR:** Start ADHD Engine, connect dashboard, ship in 3 days.
@@ -232,8 +240,8 @@ Once basic dashboard works:
 
 ---
 
-**Time to MVP:** 3 days  
-**Confidence:** HIGH  
-**Dependencies:** Python 3.11+, FastAPI, Textual, Rich  
+**Time to MVP:** 3 days
+**Confidence:** HIGH
+**Dependencies:** Python 3.11+, FastAPI, Textual, Rich
 
 **Let's ship! 🎉**

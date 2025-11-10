@@ -1,3 +1,11 @@
+---
+id: WORKSPACE_MULTI_INSTANCE_FIX
+title: Workspace_Multi_Instance_Fix
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Workspace & Multi-Instance Detection Fix
 
 **Date**: 2025-10-19

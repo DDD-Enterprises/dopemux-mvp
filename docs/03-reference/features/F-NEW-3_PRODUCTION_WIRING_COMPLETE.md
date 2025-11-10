@@ -1,3 +1,11 @@
+---
+id: F-NEW-3_PRODUCTION_WIRING_COMPLETE
+title: F New 3_Production_Wiring_Complete
+type: reference
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # F-NEW-3: Unified Complexity Intelligence - Production Wiring Complete
 
 **Date**: 2025-10-25

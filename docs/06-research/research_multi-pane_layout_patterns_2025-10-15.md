@@ -1,3 +1,11 @@
+---
+id: research_multi-pane_layout_patterns_2025-10-15
+title: Research_Multi Pane_Layout_Patterns_2025 10 15
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Multi-Pane Layout Patterns for Developer Productivity
 ## Research Report for Dopemux Two-Plane Architecture
 

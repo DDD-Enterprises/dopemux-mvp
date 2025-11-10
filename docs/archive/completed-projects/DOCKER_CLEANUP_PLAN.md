@@ -1,3 +1,11 @@
+---
+id: DOCKER_CLEANUP_PLAN
+title: Docker_Cleanup_Plan
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Docker Container Cleanup and Reorganization Plan
 
 ## Executive Summary
@@ -35,7 +43,7 @@ milvus-minio        # Exited - Object storage for Milvus
 milvus-etcd         # Exited - Metadata store for Milvus
 ```
 
-**Why Remove**: 
+**Why Remove**:
 - Qdrant (mcp-qdrant) is already running and active
 - Milvus is heavier (3 containers vs 1 for Qdrant)
 - No code references Milvus (checked services/)

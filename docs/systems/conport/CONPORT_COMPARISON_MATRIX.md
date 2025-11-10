@@ -1,6 +1,14 @@
+---
+id: CONPORT_COMPARISON_MATRIX
+title: Conport_Comparison_Matrix
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # ConPort Systems Feature Comparison Matrix
 
-**Purpose**: Quick reference for choosing the right ConPort system  
+**Purpose**: Quick reference for choosing the right ConPort system
 **Last Updated**: 2025-10-28
 
 ---
@@ -312,8 +320,8 @@ curl -X POST http://localhost:8000/auth/register ...
 
 ### From ConPort MCP → Enhanced Server
 
-**Difficulty**: Easy  
-**Time**: 1 hour  
+**Difficulty**: Easy
+**Time**: 1 hour
 **Data loss**: None
 
 ```bash
@@ -332,8 +340,8 @@ curl -X POST http://localhost:3004/import \
 
 ### From Enhanced Server → ConPort-KG
 
-**Difficulty**: Medium  
-**Time**: 2-3 hours  
+**Difficulty**: Medium
+**Time**: 2-3 hours
 **Data loss**: None (add metadata)
 
 ```bash
@@ -356,8 +364,8 @@ curl -X POST http://localhost:8000/kg/import \
 
 ### From ConPort MCP → ConPort-KG (Direct)
 
-**Difficulty**: Hard  
-**Time**: 4-6 hours  
+**Difficulty**: Hard
+**Time**: 4-6 hours
 **Data loss**: Minimal (some metadata)
 
 **Recommended**: Go through Enhanced Server first
@@ -520,12 +528,12 @@ START: Need context management
 4. **Month 1**: Add ADHD dashboard
 5. **Month 2**: Connect all 6 agents
 
-**Estimated effort**: 4-8 weeks to full integration  
-**Estimated value**: Extremely high 🚀  
+**Estimated effort**: 4-8 weeks to full integration
+**Estimated value**: Extremely high 🚀
 **Risk level**: Low (all systems proven)
 
 ---
 
-**Comparison Complete**: 2025-10-28  
-**Recommendation**: Deploy ConPort-KG API next (highest ROI)  
+**Comparison Complete**: 2025-10-28
+**Recommendation**: Deploy ConPort-KG API next (highest ROI)
 **Confidence**: Very High (0.94)

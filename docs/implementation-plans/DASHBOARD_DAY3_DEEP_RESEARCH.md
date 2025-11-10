@@ -1,8 +1,16 @@
+---
+id: DASHBOARD_DAY3_DEEP_RESEARCH
+title: Dashboard_Day3_Deep_Research
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dashboard Day 3: Interactive Navigation - Deep Research Plan 🎯
 
-**Created:** 2025-10-29  
-**Phase:** Advanced Features - Keyboard Navigation & Drill-Downs  
-**Estimated Time:** 4-5 hours  
+**Created:** 2025-10-29
+**Phase:** Advanced Features - Keyboard Navigation & Drill-Downs
+**Estimated Time:** 4-5 hours
 
 ---
 
@@ -56,7 +64,7 @@ Panel Actions:
   Enter         → Expand focused panel (maximize)
   Escape        → Collapse all (return to normal)
   d             → Drill-down details (popup)
-  
+
 Specific Actions:
   t             → Tasks detail (when on metrics panel)
   l             → Logs viewer (when on services panel)
@@ -74,7 +82,7 @@ class DopemuxDashboard(App):
     # Reactive state
     focused_panel = reactive("adhd")  # Current focus
     expanded_panel = reactive(None)   # Which panel is expanded (or None)
-    
+
     # Panel IDs
     PANELS = {
         "adhd": "adhd-state",
@@ -82,7 +90,7 @@ class DopemuxDashboard(App):
         "services": "services",
         "trends": "trends"
     }
-    
+
     PANEL_ORDER = ["adhd", "productivity", "services", "trends"]
 ```
 
@@ -144,14 +152,14 @@ class DopemuxDashboard(App):
 ```python
 class DopemuxDashboard(App):
     focused_panel = reactive("adhd", init=False)
-    
+
     def watch_focused_panel(self, old: str, new: str) -> None:
         """React to focus changes"""
         # Remove focus from old panel
         if old:
             old_widget = self.query_one(f"#{self.PANELS[old]}")
             old_widget.remove_class("panel-focused")
-        
+
         # Add focus to new panel
         if new:
             new_widget = self.query_one(f"#{self.PANELS[new]}")
@@ -216,12 +224,12 @@ def watch_expanded_panel(self, old: Optional[str], new: Optional[str]) -> None:
     if old:
         old_widget = self.query_one(f"#{self.PANELS[old]}")
         old_widget.remove_class("panel-expanded")
-    
+
     # Expand new panel + dim others
     if new:
         new_widget = self.query_one(f"#{self.PANELS[new]}")
         new_widget.add_class("panel-expanded")
-        
+
         # Dim all other panels
         for panel_id, widget_id in self.PANELS.items():
             if panel_id != new:
@@ -262,16 +270,16 @@ class ADHDStateWidget(Static):
     def render(self) -> Panel:
         # Check if expanded
         is_expanded = self.app.expanded_panel == "adhd"
-        
+
         if is_expanded:
             # Show detailed view
             content = self._render_detailed_view()
         else:
             # Show compact view
             content = self._render_compact_view()
-        
+
         return Panel(content, ...)
-    
+
     def _render_detailed_view(self) -> str:
         """Render expanded view with more details"""
         return f"""
@@ -300,30 +308,30 @@ Press 'd' for drill-down details
 ```python
 class DetailPopup(Screen):
     """Base class for detail popups"""
-    
+
     BINDINGS = [
         ("escape", "dismiss", "Close"),
         ("q", "dismiss", "Close"),
     ]
-    
+
     def __init__(self, title: str, content: str):
         super().__init__()
         self.popup_title = title
         self.popup_content = content
-    
+
     def compose(self) -> ComposeResult:
         yield Container(
             Static(self.popup_content, id="popup-content"),
             id="popup-container"
         )
-    
+
     def action_dismiss(self) -> None:
         self.app.pop_screen()
 
 
 class CognitiveLoadDetail(DetailPopup):
     """Detailed cognitive load history"""
-    
+
     def __init__(self, data: dict):
         content = f"""
 ╔══════════════════════════════════════════════════════╗
@@ -360,23 +368,23 @@ BINDINGS = [
 
 async def action_drill_down(self) -> None:
     """Show drill-down details for focused panel"""
-    
+
     if self.focused_panel == "adhd":
         # Fetch detailed cognitive load data
         data = await self.fetcher.get_cognitive_load_detail()
         popup = CognitiveLoadDetail(data)
         self.push_screen(popup)
-    
+
     elif self.focused_panel == "trends":
         # Show sparkline statistics
         popup = SparklineStatsPopup(self.sparkline_data)
         self.push_screen(popup)
-    
+
     elif self.focused_panel == "services":
         # Show service logs
         popup = ServiceLogsPopup(self.selected_service)
         self.push_screen(popup)
-    
+
     elif self.focused_panel == "productivity":
         # Show task details
         popup = TaskDetailsPopup(self.task_data)
