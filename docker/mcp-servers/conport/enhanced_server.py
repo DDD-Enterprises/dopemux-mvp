@@ -89,6 +89,23 @@ class EnhancedConPortServer:
         self.connection_pool_min = int(os.getenv('DB_POOL_MIN', '5'))  # Increased for scalability
         self.connection_pool_max = int(os.getenv('DB_POOL_MAX', '20'))  # Higher for high load
 
+        # Error handling framework integration (Phase 2)
+        if ERROR_HANDLING_AVAILABLE:
+            from dopemux.error_handling import GlobalErrorHandler, RetryPolicy
+            self.error_handler = GlobalErrorHandler("conport-enhanced")
+
+            # Register retry policy for database operations
+            db_retry_policy = RetryPolicy(
+                max_attempts=3,
+                initial_delay=0.5,
+                max_delay=5.0,
+                backoff_factor=2.0,
+                jitter=True
+            )
+            self.error_handler.register_retry_policy("api_retry", db_retry_policy)
+        else:
+            self.error_handler = None
+
         self.shutdown_event = asyncio.Event()
         self.auto_save_task = None
         self.auto_fork_progress = os.getenv('DOPEMUX_AUTO_FORK_PROGRESS', '1') == '1'
@@ -251,6 +268,7 @@ class EnhancedConPortServer:
                 count += 1
             return count
 
+    @with_error_handling("health_check", retry_policy="api_retry")
     async def health_check(self, request):
         """Health check endpoint with connection status"""
         try:
