@@ -100,7 +100,7 @@ class TestInputValidation:
             # Start server
             process = subprocess.Popen(
                 ["python", "-m", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8097"],
-                cwd="services/adhd_engine",
+                cwd="services/adhd_engine/services/adhd_engine",
                 env=env,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
@@ -114,9 +114,9 @@ class TestInputValidation:
                 response = await client.get("/health")
                 assert response.status_code == 200
 
-                # Test CORS with valid origin
+                # Test CORS with valid origin on a real endpoint
                 cors_response = await client.options(
-                    "/api/v1/energy-level/test",
+                    "/api/v1/energy-level/default",
                     headers={
                         "Origin": "http://localhost:3000",
                         "Access-Control-Request-Method": "GET"
