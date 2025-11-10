@@ -1,6 +1,7 @@
 from locust import HttpUser, task, between
 
 class DopemuxUser(HttpUser):
+    host = "http://localhost"
     wait_time = between(1, 3)  # Random wait between 1-3 seconds
 
     @task(3)
