@@ -52,11 +52,6 @@ services:
       - staging_qdrant_data:/qdrant/storage
     networks:
       - dopemux-staging
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   # =====================================================================
   # MCP Servers
