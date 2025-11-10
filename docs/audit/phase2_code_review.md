@@ -1,3 +1,11 @@
+---
+id: phase2_code_review
+title: Phase2_Code_Review
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dopemux Audit: Phase 2 - Systematic Code Review Report
 
 **Date**: November 10, 2025

@@ -1,10 +1,18 @@
+---
+id: DASHBOARD_DAY7_WEBSOCKET_DEEP_PLAN
+title: Dashboard_Day7_Websocket_Deep_Plan
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dashboard Day 7 - WebSocket Streaming Deep Plan 🔬
 ## Real-Time Intelligence Architecture
 
-**Date:** 2025-10-29  
-**Phase:** WebSocket Streaming Implementation  
-**Status:** 🧠 Deep Research & Planning Complete  
-**Estimated Effort:** 10-12 hours (1.5 days)  
+**Date:** 2025-10-29
+**Phase:** WebSocket Streaming Implementation
+**Status:** 🧠 Deep Research & Planning Complete
+**Estimated Effort:** 10-12 hours (1.5 days)
 **Priority:** HIGH - Transforms UX from "reactive" to "proactive"
 
 ---
@@ -135,11 +143,11 @@ router = APIRouter()
 
 class ConnectionManager:
     """Manages WebSocket connections and broadcasting"""
-    
+
     def __init__(self):
         self.active_connections: Dict[str, Set[WebSocket]] = {}
         self.message_buffer: Dict[str, List[Dict]] = {}  # For reconnection
-        
+
     async def connect(self, websocket: WebSocket, user_id: str):
         """Accept new WebSocket connection"""
         await websocket.accept()
@@ -147,7 +155,7 @@ class ConnectionManager:
             self.active_connections[user_id] = set()
         self.active_connections[user_id].add(websocket)
         logger.info(f"Client connected: {user_id}, total: {len(self.active_connections[user_id])}")
-        
+
     async def disconnect(self, websocket: WebSocket, user_id: str):
         """Remove disconnected WebSocket"""
         if user_id in self.active_connections:
@@ -155,7 +163,7 @@ class ConnectionManager:
             if not self.active_connections[user_id]:
                 del self.active_connections[user_id]
         logger.info(f"Client disconnected: {user_id}")
-        
+
     async def broadcast(self, message: Dict, user_id: str):
         """Send message to all connections for user"""
         if user_id not in self.active_connections:
@@ -166,7 +174,7 @@ class ConnectionManager:
             # Keep only last 50 messages
             self.message_buffer[user_id] = self.message_buffer[user_id][-50:]
             return
-            
+
         dead_connections = set()
         for connection in self.active_connections[user_id]:
             try:
@@ -174,11 +182,11 @@ class ConnectionManager:
             except Exception as e:
                 logger.error(f"Error broadcasting to {user_id}: {e}")
                 dead_connections.add(connection)
-                
+
         # Clean up dead connections
         for dead in dead_connections:
             await self.disconnect(dead, user_id)
-    
+
     async def send_buffered_messages(self, websocket: WebSocket, user_id: str):
         """Send buffered messages on reconnection"""
         if user_id in self.message_buffer:
@@ -197,7 +205,7 @@ manager = ConnectionManager()
 async def websocket_stream(websocket: WebSocket, user_id: str = "default"):
     """
     Real-time event streaming to dashboard
-    
+
     Sends:
     - state_update: ADHD state changes (energy, attention, cognitive load)
     - metric_update: Sparkline data points
@@ -205,11 +213,11 @@ async def websocket_stream(websocket: WebSocket, user_id: str = "default"):
     - heartbeat: Keep-alive every 30s
     """
     await manager.connect(websocket, user_id)
-    
+
     try:
         # Send buffered messages from disconnection period
         await manager.send_buffered_messages(websocket, user_id)
-        
+
         # Send initial state
         initial_state = await get_current_state(user_id)
         await websocket.send_json({
@@ -217,10 +225,10 @@ async def websocket_stream(websocket: WebSocket, user_id: str = "default"):
             "timestamp": datetime.utcnow().isoformat(),
             "data": initial_state
         })
-        
+
         # Keep connection alive with heartbeat
         last_heartbeat = datetime.utcnow()
-        
+
         while True:
             # Heartbeat every 30s
             if (datetime.utcnow() - last_heartbeat).total_seconds() > 30:
@@ -233,7 +241,7 @@ async def websocket_stream(websocket: WebSocket, user_id: str = "default"):
                     }
                 })
                 last_heartbeat = datetime.utcnow()
-            
+
             # Wait for client messages (optional commands)
             try:
                 data = await asyncio.wait_for(websocket.receive_text(), timeout=1.0)
@@ -241,7 +249,7 @@ async def websocket_stream(websocket: WebSocket, user_id: str = "default"):
                 await handle_client_command(websocket, user_id, command)
             except asyncio.TimeoutError:
                 continue
-                
+
     except WebSocketDisconnect:
         logger.info(f"WebSocket disconnected normally: {user_id}")
     except Exception as e:
@@ -252,7 +260,7 @@ async def websocket_stream(websocket: WebSocket, user_id: str = "default"):
 async def get_current_state(user_id: str) -> Dict:
     """Fetch current ADHD state from engine"""
     from main import engine  # Global engine instance
-    
+
     return {
         "energy_level": engine.current_energy_levels.get(user_id, "MEDIUM").value,
         "attention_state": engine.current_attention_states.get(user_id, "FOCUSED").value,
@@ -264,7 +272,7 @@ async def get_current_state(user_id: str) -> Dict:
 async def handle_client_command(websocket: WebSocket, user_id: str, command: Dict):
     """Handle client commands (refresh, subscribe to specific metrics, etc.)"""
     cmd_type = command.get("type")
-    
+
     if cmd_type == "refresh":
         state = await get_current_state(user_id)
         await websocket.send_json({
@@ -294,14 +302,14 @@ logger = logging.getLogger(__name__)
 class StreamingClient:
     """
     WebSocket client for real-time dashboard updates
-    
+
     Features:
     - Auto-reconnect with exponential backoff
     - Message routing to callbacks
     - Heartbeat monitoring
     - Graceful fallback to polling
     """
-    
+
     def __init__(
         self,
         url: str = "ws://localhost:8001/api/v1/ws/stream",
@@ -315,21 +323,21 @@ class StreamingClient:
         self.websocket: Optional[WebSocketClientProtocol] = None
         self.running = False
         self.connected = False
-        
+
         # Callbacks
         self.on_state_update = on_state_update
         self.on_metric_update = on_metric_update
         self.on_alert = on_alert
-        
+
         # Reconnection logic
         self.reconnect_delay = 1.0  # Start at 1s
         self.max_reconnect_delay = 60.0  # Max 60s
         self.reconnect_attempts = 0
-        
+
         # Heartbeat monitoring
         self.last_heartbeat = datetime.utcnow()
         self.heartbeat_timeout = 60  # Disconnect if no heartbeat for 60s
-    
+
     async def connect(self):
         """Establish WebSocket connection"""
         try:
@@ -343,7 +351,7 @@ class StreamingClient:
             logger.error(f"❌ WebSocket connection failed: {e}")
             self.connected = False
             return False
-    
+
     async def disconnect(self):
         """Close WebSocket connection"""
         if self.websocket:
@@ -351,7 +359,7 @@ class StreamingClient:
             self.websocket = None
         self.connected = False
         logger.info("WebSocket disconnected")
-    
+
     async def send_command(self, command: Dict):
         """Send command to server"""
         if self.websocket and self.connected:
@@ -359,11 +367,11 @@ class StreamingClient:
                 await self.websocket.send(json.dumps(command))
             except Exception as e:
                 logger.error(f"Error sending command: {e}")
-    
+
     async def start(self):
         """Start listening for messages (main loop)"""
         self.running = True
-        
+
         while self.running:
             if not self.connected:
                 # Try to connect/reconnect
@@ -385,7 +393,7 @@ class StreamingClient:
             else:
                 # Already connected, should be in receive loop
                 await asyncio.sleep(0.1)
-    
+
     async def _receive_loop(self):
         """Receive and route messages"""
         try:
@@ -395,7 +403,7 @@ class StreamingClient:
                     await self._handle_message(data)
                 except json.JSONDecodeError as e:
                     logger.error(f"Invalid JSON: {e}")
-                    
+
         except ConnectionClosed:
             logger.warning("WebSocket connection closed")
             self.connected = False
@@ -405,32 +413,32 @@ class StreamingClient:
         except Exception as e:
             logger.error(f"Unexpected error in receive loop: {e}")
             self.connected = False
-    
+
     async def _handle_message(self, message: Dict):
         """Route message to appropriate callback"""
         msg_type = message.get("type")
         timestamp = message.get("timestamp")
         data = message.get("data")
-        
+
         if msg_type == "state_update":
             if self.on_state_update:
                 await self.on_state_update(data)
-                
+
         elif msg_type == "metric_update":
             if self.on_metric_update:
                 await self.on_metric_update(data)
-                
+
         elif msg_type == "alert":
             if self.on_alert:
                 await self.on_alert(data)
-                
+
         elif msg_type == "heartbeat":
             self.last_heartbeat = datetime.utcnow()
             # logger.debug(f"Heartbeat received: {data}")
-            
+
         else:
             logger.warning(f"Unknown message type: {msg_type}")
-    
+
     async def stop(self):
         """Stop the client"""
         self.running = False
@@ -445,12 +453,12 @@ from dashboard.streaming import StreamingClient
 
 class DopemuxDashboard(App):
     """Enhanced dashboard with WebSocket streaming"""
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.streaming_client: Optional[StreamingClient] = None
         self.streaming_enabled = True  # Feature flag
-        
+
     async def on_mount(self):
         """Initialize WebSocket connection"""
         if self.streaming_enabled:
@@ -465,31 +473,31 @@ class DopemuxDashboard(App):
         else:
             # Fallback to polling
             self.set_interval(2.0, self.poll_updates)
-    
+
     async def handle_state_update(self, data: Dict):
         """Handle real-time state updates"""
         # Update ADHD panel
         adhd_panel = self.query_one("#adhd-panel")
         adhd_panel.update_state(data)
-        
+
         # Update sparklines
         trends_panel = self.query_one("#trends-panel")
         trends_panel.add_cognitive_load_point(data["cognitive_load"])
-    
+
     async def handle_metric_update(self, data: Dict):
         """Handle real-time metric updates"""
         metric_name = data["metric_name"]
         value = data["value"]
-        
+
         # Update appropriate sparkline
         trends_panel = self.query_one("#trends-panel")
         trends_panel.add_metric_point(metric_name, value)
-    
+
     async def handle_alert(self, data: Dict):
         """Handle critical alerts"""
         severity = data["severity"]
         message = data["message"]
-        
+
         # Show toast notification
         if severity == "critical":
             self.notify(message, severity="error", timeout=10)
@@ -497,7 +505,7 @@ class DopemuxDashboard(App):
             self.notify(message, severity="warning", timeout=5)
         else:
             self.notify(message, severity="information", timeout=3)
-    
+
     async def poll_updates(self):
         """Fallback polling if WebSocket unavailable"""
         # Old polling logic as backup
@@ -813,12 +821,12 @@ while not connected and running:
         reconnect_delay = 1.0  # Reset on success
     except Exception as e:
         logger.error(f"Connection attempt {attempt} failed: {e}")
-        
+
         # Exponential backoff: 1s, 2s, 4s, 8s, 16s, 32s, 60s (max)
         await asyncio.sleep(reconnect_delay)
         reconnect_delay = min(reconnect_delay * 2, 60.0)
         attempt += 1
-        
+
         # Fallback to polling after 5 attempts
         if attempt > 5:
             logger.warning("Falling back to polling mode")
@@ -833,10 +841,10 @@ class ConnectionManager:
     def __init__(self):
         self.message_buffer: Dict[str, deque] = {}  # Per-user buffer
         self.max_buffer_size = 50  # Prevent memory overflow
-        
+
     async def broadcast(self, message: Dict, user_id: str):
         """Broadcast to connected clients, buffer if offline"""
-        
+
         if user_id in self.active_connections:
             # User online, send immediately
             for ws in self.active_connections[user_id]:
@@ -846,7 +854,7 @@ class ConnectionManager:
             if user_id not in self.message_buffer:
                 self.message_buffer[user_id] = deque(maxlen=50)
             self.message_buffer[user_id].append(message)
-            
+
     async def send_buffered_messages(self, ws: WebSocket, user_id: str):
         """Send buffered messages on reconnection"""
         if user_id in self.message_buffer:
@@ -974,12 +982,12 @@ class TrendsPanel(Static):
         super().__init__()
         self.cognitive_load_data = deque(maxlen=20)  # Last 20 points
         self.velocity_data = deque(maxlen=20)
-        
+
     def add_cognitive_load_point(self, value: float):
         """Add new point and re-render sparkline"""
         self.cognitive_load_data.append(value)
         self.refresh()  # Trigger re-render
-        
+
     def render(self) -> RenderableType:
         sparkline = SparklineGenerator.render(self.cognitive_load_data)
         return Panel(f"Cognitive Load: {sparkline}")
@@ -1002,7 +1010,7 @@ async def handle_alert(self, data: Dict):
     """Show toast notification for alerts"""
     severity = data["severity"]
     message = data["message"]
-    
+
     if severity == "critical":
         self.notify(message, severity="error", timeout=10)
     elif severity == "warning":
@@ -1050,11 +1058,11 @@ async def test_reconnection():
     client = StreamingClient()
     await client.connect()
     assert client.connected
-    
+
     # Simulate disconnect
     await client.disconnect()
     assert not client.connected
-    
+
     # Start client (should reconnect)
     asyncio.create_task(client.start())
     await asyncio.sleep(5)  # Wait for reconnection
@@ -1063,11 +1071,11 @@ async def test_reconnection():
 async def test_message_buffering():
     """Test buffering during disconnection"""
     manager = ConnectionManager()
-    
+
     # Broadcast while offline
     await manager.broadcast({"type": "test"}, "offline_user")
     assert len(manager.message_buffer["offline_user"]) == 1
-    
+
     # Connect and verify buffered message sent
     ws = MockWebSocket()
     await manager.connect(ws, "offline_user")
@@ -1193,8 +1201,8 @@ async def test_message_buffering():
 
 ## ✅ READY TO IMPLEMENT!
 
-**Total Effort:** 10-12 hours (1.5 days)  
-**Risk Level:** LOW (proven technologies, clear plan)  
+**Total Effort:** 10-12 hours (1.5 days)
+**Risk Level:** LOW (proven technologies, clear plan)
 **Impact:** HIGH (transforms UX from reactive to proactive)
 
 **Next Action:** Begin Hour 1 - Backend WebSocket Endpoint

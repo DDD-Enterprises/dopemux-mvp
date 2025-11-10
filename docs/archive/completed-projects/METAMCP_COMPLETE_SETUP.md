@@ -1,3 +1,11 @@
+---
+id: METAMCP_COMPLETE_SETUP
+title: Metamcp_Complete_Setup
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # MetaMCP Complete Configuration - All 9 MCP Servers
 
 **Goal:** Configure all dopemux MCP servers through MetaMCP for role-based access

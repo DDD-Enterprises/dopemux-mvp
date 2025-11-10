@@ -1,3 +1,11 @@
+---
+id: COMPONENT_6_PHASE2_SPECIFICATION
+title: Component_6_Phase2_Specification
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Component 6: Phase 2 Implementation Specification
 
 **Phase**: Intelligence Core (50% of Component 6)

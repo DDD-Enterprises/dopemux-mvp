@@ -1,3 +1,11 @@
+---
+id: dopemux-ultra-ui-mvp-summary
+title: Dopemux Ultra Ui Mvp Summary
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dopemux Ultra UI MVP - Feature Summary
 
 ## Overview

@@ -1,3 +1,11 @@
+---
+id: MCP_TOOLS_OVERVIEW
+title: Mcp_Tools_Overview
+type: reference
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # MCP Tools Overview (Dopemux)
 
 This guide lists Dopemux MCP servers and their key tools with sample Claude usage.
@@ -79,4 +87,3 @@ List in-progress tasks for this project and propose 2 actionable next steps (< 2
 
 - ConPort auto-wires per-worktree and auto-seeds/auto-forks to preserve momentum.
 - DDG mirrors and graph upserts work best-effort; system continues to function without AGE/Qdrant.
-

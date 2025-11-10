@@ -1,3 +1,11 @@
+---
+id: README_STANDALONE
+title: Readme_Standalone
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dopemux Standalone CLI
 
 An ADHD-optimized document analysis tool that transforms any codebase into a structured, searchable knowledge base.

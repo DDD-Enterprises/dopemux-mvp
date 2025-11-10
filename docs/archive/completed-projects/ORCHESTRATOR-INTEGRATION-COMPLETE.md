@@ -1,3 +1,11 @@
+---
+id: ORCHESTRATOR-INTEGRATION-COMPLETE
+title: Orchestrator Integration Complete
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # ✅ Dopemux Orchestrator + ADHD Dashboard Integration - COMPLETE
 
 ## 🎯 What Was Built
@@ -361,7 +369,7 @@ Or adjust percentages in the script:
 # Make dashboard larger
 tmux split-window -v -p 75  # Dashboard gets 25% instead of 20%
 
-# Make CLI wider  
+# Make CLI wider
 tmux split-window -h -p 60  # CLI gets 40% instead of 33%
 ```
 

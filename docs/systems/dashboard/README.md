@@ -1,3 +1,11 @@
+---
+id: README
+title: Readme
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dashboard System Documentation
 
 The Dopemux Dashboard is a tmux-based ADHD-optimized interface providing real-time visibility into your development environment, cognitive state, and system health.
@@ -141,5 +149,5 @@ Adjust refresh rate, disable expensive metrics, or optimize queries.
 
 ---
 
-**Maintained by:** Dopemux Core Team  
+**Maintained by:** Dopemux Core Team
 **Last Updated:** 2025-10-29

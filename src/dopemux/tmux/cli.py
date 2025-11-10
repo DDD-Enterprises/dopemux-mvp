@@ -1896,6 +1896,8 @@ def start_tmux(
         if not db_url:
             console.print("[red]❌ LiteLLM metrics database is required for alternative routing.[/red]")
             console.print("[yellow]   Set DOPEMUX_LITELLM_DB_URL in .env.routing and ensure the database is reachable.[/yellow]")
+            console.print("\n[cyan]Example:[/cyan]")
+            console.print("  DOPEMUX_LITELLM_DB_URL=postgresql://user:password@localhost:5432/litellm")
             raise click.ClickException("LiteLLM metrics database not configured.")
 
         stored_master_key: Optional[str] = None
@@ -1911,6 +1913,30 @@ def start_tmux(
             if key and key not in candidate_keys:
                 candidate_keys.append(key)
 
+        # Check if port 4000 is available, otherwise use an alternative
+        import socket
+        def is_port_available(port: int) -> bool:
+            """Check if a port is available for binding."""
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                try:
+                    s.bind(('127.0.0.1', port))
+                    return True
+                except OSError:
+                    return False
+
+        litellm_port = 4000
+        if not is_port_available(litellm_port):
+            # Port 4000 is taken, try 4001
+            litellm_port = 4001
+            if not is_port_available(litellm_port):
+                # Port 4001 is also taken, try 4002
+                litellm_port = 4002
+                if not is_port_available(litellm_port):
+                    console.print("[red]❌ Ports 4000-4002 are all in use.[/red]")
+                    console.print("[yellow]   Free up a port or stop an existing LiteLLM instance.[/yellow]")
+                    raise click.ClickException("No available ports for LiteLLM proxy.")
+            console.print(f"[yellow]⚠️  Port 4000 is in use, using port {litellm_port} instead[/yellow]")
+
         litellm_master_key = ""
         regenerated_master_key = False
         litellm_running = False
@@ -1918,7 +1944,7 @@ def start_tmux(
         for candidate in candidate_keys:
             try:
                 resp = httpx.get(
-                    "http://localhost:4000/health/readiness",
+                    f"http://localhost:{litellm_port}/health/readiness",
                     timeout=2,
                 )
                 if resp.status_code == 200:
@@ -1976,7 +2002,12 @@ def start_tmux(
             db_status_msg, db_enabled = sync_litellm_database(instance_dir, db_url)
         except LiteLLMProxyError as exc:
             console.print(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
-            console.print("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.")
+            console.print("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.[/yellow]")
+            console.print("\n[cyan]Troubleshooting:[/cyan]")
+            console.print("  1. Check if PostgreSQL is running: lsof -i :5432 (or your port)")
+            console.print("  2. Verify database credentials in .env.routing")
+            console.print("  3. Ensure the 'litellm' database exists")
+            console.print("  4. Test connection: psql <your_database_url>")
             raise click.ClickException(str(exc))
 
         if not db_enabled:
@@ -2007,14 +2038,14 @@ def start_tmux(
             )
             if kill_result.returncode not in (0, 1):
                 console.print("[red]❌ Unable to manage existing LiteLLM processes automatically (permission denied).")
-                console.print("[yellow]   Stop the existing LiteLLM proxy on port 4000 manually and rerun the command.")
+                console.print(f"[yellow]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
                 raise click.ClickException("LiteLLM proxy still running.")
 
             time.sleep(1)
             litellm_log.parent.mkdir(parents=True, exist_ok=True)
             with open(litellm_log, "w", encoding="utf-8") as log_file:
                 subprocess.Popen(
-                    ["litellm", "--config", str(config_path), "--port", "4000", "--host", "0.0.0.0"],
+                    ["litellm", "--config", str(config_path), "--port", str(litellm_port), "--host", "0.0.0.0"],
                     stdout=log_file,
                     stderr=subprocess.STDOUT,
                     start_new_session=True,
@@ -2025,7 +2056,7 @@ def start_tmux(
             for _ in range(15):
                 try:
                     resp = httpx.get(
-                        "http://localhost:4000/health/readiness",
+                        f"http://localhost:{litellm_port}/health/readiness",
                         timeout=2,
                     )
                     if resp.status_code == 200:
@@ -2042,15 +2073,19 @@ def start_tmux(
                 time.sleep(1)
 
             if not ready:
-                console.print("[red]❌ LiteLLM proxy did not become healthy.")
-                console.print(f"[yellow]   Check logs: tail -f {litellm_log}")
+                console.print("[red]❌ LiteLLM proxy did not become healthy.[/red]")
+                console.print(f"[yellow]   Check logs: tail -f {litellm_log}[/yellow]")
+                console.print("\n[cyan]Common issues:[/cyan]")
+                console.print("  • Database connection failed (check PostgreSQL is running)")
+                console.print(f"  • Port {litellm_port} became busy during startup")
+                console.print("  • Configuration error in litellm.config.yaml")
                 raise click.ClickException("LiteLLM proxy failed to start.")
 
-            console.print("[green]✅ LiteLLM ready on port 4000[/green]")
+            console.print(f"[green]✅ LiteLLM ready on port {litellm_port}[/green]")
 
         os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
         os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
-        os.environ["ANTHROPIC_BASE_URL"] = "http://localhost:4000"
+        os.environ["ANTHROPIC_BASE_URL"] = f"http://localhost:{litellm_port}"
         os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
         os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
 

@@ -1,3 +1,11 @@
+---
+id: tmux-dashboard-index
+title: Tmux Dashboard Index
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Tmux Dashboard Implementation - Index
 
 **Complete documentation for Dopemux tmux dashboard implementation**

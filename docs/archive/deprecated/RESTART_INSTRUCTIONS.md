@@ -1,3 +1,11 @@
+---
+id: RESTART_INSTRUCTIONS
+title: Restart_Instructions
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Post-Restart Instructions
 
 **Session**: 2025-10-16 MCP Worktree Optimization

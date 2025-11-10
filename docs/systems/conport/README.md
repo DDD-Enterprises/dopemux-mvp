@@ -1,3 +1,11 @@
+---
+id: README
+title: Readme
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # ConPort System Documentation
 
 ConPort is Dopemux's context portal and knowledge graph system for managing development context, session intelligence, and cross-component queries.
@@ -83,13 +91,13 @@ ConPort integrates with:
 
 ## Development Status
 
-✅ **ConPort-KG**: Production-ready, fully implemented  
-✅ **ConPort HTTP API**: Complete, needs deployment  
+✅ **ConPort-KG**: Production-ready, fully implemented
+✅ **ConPort HTTP API**: Complete, needs deployment
 ✅ **ConPort MCP**: Integrated and functional
 
 See [KG Status](CONPORT_KG_STATUS.md) for current state and roadmap.
 
 ---
 
-**Maintained by:** Dopemux Core Team  
+**Maintained by:** Dopemux Core Team
 **Last Updated:** 2025-10-29

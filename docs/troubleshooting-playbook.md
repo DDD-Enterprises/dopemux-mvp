@@ -1,3 +1,11 @@
+---
+id: troubleshooting-playbook
+title: Troubleshooting Playbook
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Troubleshooting Playbook - Dopemux Ultra UI
 
 Comprehensive troubleshooting guide for the Dopemux Ultra UI services. This playbook covers common issues, diagnostic procedures, and resolution steps for the ADHD Engine ecosystem.
@@ -663,4 +671,4 @@ echo "ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-NOT SET}"
 
 ---
 
-**Remember**: Always start with the health checks and work systematically through the components. Most issues are configuration-related or dependency failures that can be resolved with the steps above.
+**Remember**: Always start with the health checks and work systematically through the components. Most issues are configuration-related or dependency failures that can be resolved with the steps above.hecks and work systematically through the components. Most issues are configuration-related or dependency failures that can be resolved with the steps above.

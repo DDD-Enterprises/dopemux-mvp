@@ -1,3 +1,11 @@
+---
+id: 00-MASTER-INDEX
+title: 00 Master Index
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dopemux Documentation - Master Index
 
 **Quick Navigation:** [Getting Started](#getting-started) | [How-To Guides](#how-to) | [Systems](#systems) | [Architecture](#architecture) | [Archive](#archive)

@@ -1,3 +1,11 @@
+---
+id: DEV_MODE_DESIGN
+title: Dev_Mode_Design
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dopemux Dev Mode - Comprehensive Design
 
 **Created**: 2025-10-18

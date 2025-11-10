@@ -885,6 +885,6 @@ dopemux start --role all
 
 ---
 
-**Document Status:** Comprehensive Guide - Ready to Use  
-**Next Steps:** Practice switching roles based on your current energy/task  
+**Document Status:** Comprehensive Guide - Ready to Use
+**Next Steps:** Practice switching roles based on your current energy/task
 **Tip:** Start with `quickfix` or `act` until you're comfortable with role-switching

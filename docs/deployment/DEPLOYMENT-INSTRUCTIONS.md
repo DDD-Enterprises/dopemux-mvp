@@ -1,3 +1,11 @@
+---
+id: DEPLOYMENT-INSTRUCTIONS
+title: Deployment Instructions
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Production Deployment - NOW
 **Status**: ✅ Merged to main, ready for deployment
 **Changes**: 24 commits with security + architecture improvements

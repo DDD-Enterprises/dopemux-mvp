@@ -1,3 +1,11 @@
+---
+id: F-NEW-9_ENERGY_TASK_ROUTER
+title: F New 9_Energy_Task_Router
+type: reference
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # F-NEW-9: Energy-Aware Intelligent Task Router
 
 **Date**: 2025-10-25

@@ -1,3 +1,11 @@
+---
+id: TMUX_DASHBOARD_DESIGN
+title: Tmux_Dashboard_Design
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Tmux Dashboard Design - Dopemux Metrics Display
 
 **Comprehensive design for maximum information density with ADHD-optimized presentation**
@@ -82,7 +90,7 @@ set -g status-style 'bg=#1e1e2e fg=#cdd6f4'  # Catppuccin Mocha base
 
 # Critical thresholds
 if-shell '[ $COGNITIVE_LOAD -gt 85 ]' 'set -g status-style bg=#f38ba8'  # Red
-if-shell '[ $COGNITIVE_LOAD -gt 70 ]' 'set -g status-style bg=#f9e2af'  # Yellow  
+if-shell '[ $COGNITIVE_LOAD -gt 70 ]' 'set -g status-style bg=#f9e2af'  # Yellow
 if-shell '[ $ENERGY_LEVEL == "depleted" ]' 'set -g status-style bg=#f38ba8'  # Red
 ```
 
@@ -159,30 +167,30 @@ import asyncio
 
 class ADHDStatePanel(Static):
     """Top panel - critical state (Tier 1)"""
-    
+
     energy = reactive("medium")
     attention = reactive("focused")
     cognitive_load = reactive(0.65)
     in_flow = reactive(False)
     break_in = reactive(15)
-    
+
     def compose(self) -> ComposeResult:
         yield Static(id="adhd-state")
-    
+
     async def on_mount(self) -> None:
         self.set_interval(1.0, self.update_state)
-    
+
     async def update_state(self) -> None:
         async with httpx.AsyncClient() as client:
             resp = await client.get("http://localhost:8001/api/v1/state")
             data = resp.json()
-            
+
             self.energy = data["energy_level"]
             self.attention = data["attention_state"]
             self.cognitive_load = data["cognitive_load"]
             self.in_flow = data["flow_state"]["active"]
             self.break_in = data["break_warning"]["minutes_until"]
-    
+
     def render(self) -> Panel:
         # Create rich panel with current state
         energy_icon = {"high": "⚡↑", "medium": "⚡=", "low": "⚡↓"}[self.energy]
@@ -190,21 +198,21 @@ class ADHDStatePanel(Static):
         load_bar = self._make_gauge(self.cognitive_load)
         flow_status = "🌊 Active" if self.in_flow else ""
         break_warning = f"☕ in {self.break_in}m" if self.break_in < 20 else ""
-        
+
         table = Table.grid(padding=1)
         table.add_column(style="bold cyan")
         table.add_column(style="bold magenta")
         table.add_column(style="bold yellow")
-        
+
         table.add_row(
             f"{energy_icon} {self.energy.title()}",
             f"{attention_icon} {self.attention.title()}",
             f"🧠 {load_bar} {int(self.cognitive_load * 100)}%"
         )
         table.add_row(flow_status, break_warning, "")
-        
+
         return Panel(table, title="ADHD STATE", border_style="green")
-    
+
     def _make_gauge(self, value: float) -> str:
         """Create ASCII gauge"""
         filled = int(value * 10)
@@ -212,37 +220,37 @@ class ADHDStatePanel(Static):
 
 class ProductivityPanel(Static):
     """Tasks and velocity metrics (Tier 2)"""
-    
+
     tasks_completed = reactive(8)
     tasks_total = reactive(10)
     decisions_today = reactive(23)
     velocity = reactive([3, 4, 5, 5, 6, 7, 6, 5, 4])  # sparkline data
-    
+
     async def on_mount(self) -> None:
         self.set_interval(30.0, self.update_metrics)
-    
+
     async def update_metrics(self) -> None:
         async with httpx.AsyncClient() as client:
             tasks_resp = await client.get("http://localhost:8001/api/v1/tasks")
             decisions_resp = await client.get("http://localhost:8005/api/adhd/decisions/recent")
-            
+
             tasks_data = tasks_resp.json()
             decisions_data = decisions_resp.json()
-            
+
             self.tasks_completed = tasks_data["completed"]
             self.tasks_total = tasks_data["total"]
             self.decisions_today = len(decisions_data["today"])
-    
+
     def render(self) -> Panel:
         completion_rate = self.tasks_completed / self.tasks_total
         bar = "█" * int(completion_rate * 10) + "░" * (10 - int(completion_rate * 10))
-        
+
         sparkline = "".join(["▁▂▃▄▅▆▇█"[min(v, 7)] for v in self.velocity])
-        
+
         table = Table.grid(padding=1)
         table.add_column()
         table.add_column()
-        
+
         table.add_row(
             f"Tasks: {self.tasks_completed}/{self.tasks_total} ({int(completion_rate * 100)}%) {bar}",
             f"Decisions: {self.decisions_today} (↑5 today)"
@@ -251,26 +259,26 @@ class ProductivityPanel(Static):
             f"Velocity: {sparkline} 7.2/day",
             f"Completion Rate: {int(completion_rate * 100)}% (target: 85%)"
         )
-        
+
         return Panel(table, title="PRODUCTIVITY", border_style="blue")
 
 class ServicesGrid(Static):
     """Service health matrix (Tier 2)"""
-    
+
     def compose(self) -> ComposeResult:
         yield DataTable(id="services")
-    
+
     async def on_mount(self) -> None:
         table = self.query_one(DataTable)
         table.add_columns("Service", "Status", "Latency", "Metrics")
-        
+
         self.set_interval(30.0, self.update_services)
         await self.update_services()
-    
+
     async def update_services(self) -> None:
         table = self.query_one(DataTable)
         table.clear()
-        
+
         # Fetch all service health
         services = [
             ("ConPort", "http://localhost:8005/health"),
@@ -278,74 +286,74 @@ class ServicesGrid(Static):
             ("Serena", "http://localhost:8003/health"),
             ("MCP Bridge", "http://localhost:8002/health"),
         ]
-        
+
         async with httpx.AsyncClient() as client:
             for name, url in services:
                 try:
                     resp = await client.get(url, timeout=2.0)
                     data = resp.json()
-                    
+
                     status = "✓" if data["status"] == "healthy" else "✗"
                     latency = f"{data['latency_ms']}ms"
                     metrics = data.get("metrics", "")
-                    
+
                     table.add_row(name, status, latency, metrics)
                 except Exception as e:
                     table.add_row(name, "✗", "timeout", str(e)[:20])
 
 class TrendsPanel(Static):
     """Sparkline trends (Tier 3)"""
-    
+
     cognitive_history = reactive([0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3])
     velocity_history = reactive([3, 4, 5, 5, 6, 7, 6, 5, 4, 3, 2, 1])
     switches_history = reactive([2, 1, 2, 3, 5, 3, 2, 1, 2, 1, 1, 1])
-    
+
     def render(self) -> Panel:
         def sparkline(data):
             chars = "▁▂▃▄▅▆▇█"
             normalized = [int((v / max(data)) * 7) for v in data]
             return "".join([chars[min(i, 7)] for i in normalized])
-        
+
         table = Table.grid(padding=1)
         table.add_column(style="dim")
         table.add_column()
         table.add_column(style="dim")
-        
+
         table.add_row("Cognitive Load:", sparkline(self.cognitive_history), "(last 2h)")
         table.add_row("Task Velocity:", sparkline(self.velocity_history), "(last 7d)")
         table.add_row("Context Switches:", sparkline(self.switches_history), "(last 24h)")
-        
+
         return Panel(table, title="TRENDS", border_style="yellow")
 
 class DopemuxDashboard(App):
     """Main Textual dashboard app"""
-    
+
     CSS = """
     Screen {
         background: $surface;
     }
-    
+
     #adhd-state {
         height: 6;
         border: solid green;
     }
-    
+
     #productivity {
         height: 6;
         border: solid blue;
     }
-    
+
     #services {
         height: 8;
         border: solid cyan;
     }
-    
+
     #trends {
         height: 6;
         border: solid yellow;
     }
     """
-    
+
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("t", "toggle_tasks", "Tasks"),
@@ -353,7 +361,7 @@ class DopemuxDashboard(App):
         ("p", "toggle_patterns", "Patterns"),
         ("d", "show_detail", "Detail"),
     ]
-    
+
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
         yield ADHDStatePanel(id="adhd-state")
@@ -361,7 +369,7 @@ class DopemuxDashboard(App):
         yield ServicesGrid(id="services")
         yield TrendsPanel(id="trends")
         yield Footer()
-    
+
     def action_show_detail(self) -> None:
         """Open tmux popup with detailed view"""
         import subprocess
@@ -404,24 +412,24 @@ async def show_tasks():
     async with httpx.AsyncClient() as client:
         resp = await client.get("http://localhost:8001/api/v1/tasks/detailed")
         tasks = resp.json()
-    
+
     table = Table(title="Task Details", show_header=True, header_style="bold magenta")
     table.add_column("Task", style="cyan", width=40)
     table.add_column("Status", justify="center")
     table.add_column("Complexity", justify="right")
     table.add_column("Duration", justify="right")
-    
+
     for task in tasks:
         status_icon = "✓" if task["completed"] else "⧗"
         complexity_bar = "█" * int(task["complexity"] * 5)
-        
+
         table.add_row(
             task["name"][:40],
             status_icon,
             complexity_bar,
             task["duration"]
         )
-    
+
     console.print(Panel(table, border_style="green"))
 
 if __name__ == "__main__":
@@ -442,24 +450,24 @@ COLORS = {
     "surface": "#313244",
     "text": "#cdd6f4",
     "subtext": "#bac2de",
-    
+
     # Semantic colors (ADHD-optimized)
     "success": "#a6e3a1",    # Green - completed, optimal
     "warning": "#f9e2af",    # Yellow - approaching threshold
     "error": "#f38ba8",      # Red - critical, take action
     "info": "#89b4fa",       # Blue - neutral info
-    
+
     # Cognitive load gradient
     "load_low": "#89dceb",    # Cyan - underutilized
     "load_optimal": "#a6e3a1", # Green - sweet spot (0.6-0.7)
     "load_high": "#f9e2af",   # Yellow - getting heavy
     "load_critical": "#f38ba8", # Red - overwhelm
-    
+
     # Energy states
     "energy_high": "#f5c2e7",  # Pink - hyperfocus
     "energy_medium": "#89b4fa", # Blue - baseline
     "energy_low": "#fab387",   # Peach - depleting
-    
+
     # Attention states
     "attention_focused": "#a6e3a1",    # Green - on task
     "attention_scattered": "#f9e2af",  # Yellow - fragmenting
@@ -552,18 +560,18 @@ UPDATE_INTERVALS = {
     "attention_state": 1,
     "cognitive_load": 1,
     "flow_state": 1,
-    
+
     # Fast (5 seconds)
     "break_timer": 5,
     "session_time": 5,
     "token_usage": 5,
-    
+
     # Medium (30 seconds)
     "tasks": 30,
     "decisions": 30,
     "context_switches": 30,
     "cache_stats": 30,
-    
+
     # Slow (60 seconds)
     "patterns": 60,
     "trends": 60,
@@ -581,25 +589,25 @@ class MetricsCache:
         self.memory = {}  # In-memory (instant)
         self.redis = redis.Redis()  # Shared cache (fast)
         self.tmpfs = Path("/dev/shm/dopemux")  # Disk cache (backup)
-    
+
     async def get(self, key: str, fetcher: callable, ttl: int):
         # Check memory cache
         if key in self.memory and not self._is_stale(key, ttl):
             return self.memory[key]
-        
+
         # Check Redis
         cached = await self.redis.get(f"metrics:{key}")
         if cached:
             self.memory[key] = json.loads(cached)
             return self.memory[key]
-        
+
         # Fetch fresh data
         data = await fetcher()
-        
+
         # Store in all caches
         self.memory[key] = data
         await self.redis.setex(f"metrics:{key}", ttl, json.dumps(data))
-        
+
         return data
 ```
 
@@ -616,7 +624,7 @@ RESOURCE_LIMITS = {
 # Throttle updates if system under load
 async def adaptive_update_rate():
     system_load = psutil.cpu_percent()
-    
+
     if system_load > 80:
         return 60  # Update every 60s when busy
     elif system_load > 50:

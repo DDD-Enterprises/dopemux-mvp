@@ -1,3 +1,11 @@
+---
+id: security-overview
+title: Security Overview
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Security Overview - Dopemux Ultra UI
 
 Comprehensive security implementation for the Dopemux Ultra UI platform, focusing on ADHD accommodations while maintaining robust security practices.

@@ -1,9 +1,17 @@
+---
+id: DASHBOARD_DAY8_DEEP_RESEARCH
+title: Dashboard_Day8_Deep_Research
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dashboard Day 8 - Deep Research & Planning
 ## WebSocket Integration + Enhanced Sparklines + Keyboard Navigation
 
-**Date:** 2025-10-29  
-**Phase:** Real-Time Dashboard Integration  
-**Estimated Duration:** 8-10 hours  
+**Date:** 2025-10-29
+**Phase:** Real-Time Dashboard Integration
+**Estimated Duration:** 8-10 hours
 **Risk Level:** Medium (integration complexity)
 
 ---
@@ -42,7 +50,7 @@ class DopemuxDashboard(App):
     async def on_mount(self):
         # Can spawn async tasks directly
         self.run_worker(self.websocket_listener())
-    
+
     async def websocket_listener(self):
         # Runs in background, doesn't block UI
         streaming_client = StreamingClient(...)
@@ -62,12 +70,12 @@ class DopemuxDashboard(App):
 class ADHDStateWidget(Static):
     energy_level = reactive(0.0)
     attention_state = reactive("focused")
-    
+
     async def handle_ws_update(self, data):
         # This automatically triggers re-render
         self.energy_level = data["energy_level"]
         self.attention_state = data["attention_state"]
-    
+
     def render(self):
         # Called automatically when reactive vars change
         return Panel(f"Energy: {self.energy_level}")
@@ -79,7 +87,7 @@ class ADHDStateWidget(Static):
     def __init__(self):
         super().__init__()
         self.data = {}
-    
+
     async def handle_ws_update(self, data):
         self.data = data
         self.refresh()  # Explicit re-render
@@ -100,7 +108,7 @@ class ADHDStateWidget(Static):
 class ConnectionStatus(Static):
     """Footer status indicator"""
     state = reactive("disconnected")  # disconnected|connecting|connected|error
-    
+
     def render(self):
         icons = {
             "connected": "🟢 Live",
@@ -116,7 +124,7 @@ class DopemuxDashboard(App):
         self.streaming = StreamingClient(
             on_connection_change=self.update_connection_status
         )
-    
+
     async def update_connection_status(self, state):
         # Update footer widget
         status_widget = self.query_one(ConnectionStatus)
@@ -131,12 +139,12 @@ class DopemuxDashboard(App):
 ```python
 class MetricsManager:
     """Unified metrics fetcher with automatic fallback"""
-    
+
     def __init__(self):
         self.streaming_client = None
         self.polling_task = None
         self.mode = "websocket"  # or "polling"
-    
+
     async def start(self):
         # Try WebSocket first
         try:
@@ -147,7 +155,7 @@ class MetricsManager:
             # Fall back to polling
             self.mode = "polling"
             self.polling_task = asyncio.create_task(self.poll_loop())
-    
+
     async def poll_loop(self):
         """Fallback polling if WebSocket unavailable"""
         while True:
@@ -218,14 +226,14 @@ import time
 def benchmark_sparkline():
     generator = SparklineGenerator()
     start = time.time()
-    
+
     for i in range(100):
         data = [random.random() for _ in range(168)]
         sparkline = generator.render(data, width=20)
-    
+
     elapsed = time.time() - start
     print(f"Time: {elapsed:.3f}s")  # Target: <100ms
-    
+
 # Result: 23ms for 100 sparklines ✅
 # Per-sparkline: 0.23ms (well under target)
 ```
@@ -244,20 +252,20 @@ def benchmark_sparkline():
 ```python
 class MetricsCache:
     """LRU cache for Prometheus query results"""
-    
+
     def __init__(self, ttl_seconds=30):
         self.cache: Dict[str, Tuple[float, Any]] = {}
         self.ttl = ttl_seconds
-    
+
     async def get_or_fetch(self, query: str, fetcher: Callable):
         """Return cached data if fresh, else fetch"""
         now = time.time()
-        
+
         if query in self.cache:
             timestamp, data = self.cache[query]
             if now - timestamp < self.ttl:
                 return data  # Cache hit
-        
+
         # Cache miss - fetch
         data = await fetcher(query)
         self.cache[query] = (now, data)
@@ -291,19 +299,19 @@ BINDINGS = [
     ("2", "focus_panel('productivity')", "Tasks"),
     ("3", "focus_panel('services')", "Services"),
     ("4", "focus_panel('trends')", "Trends"),
-    
+
     # Navigation (no prefix keys needed)
     ("tab", "next_panel", "Next →"),
     ("shift+tab", "prev_panel", "← Prev"),
     ("up", "scroll_up", "Scroll ↑"),
     ("down", "scroll_down", "Scroll ↓"),
-    
+
     # Actions (universal)
     ("enter", "expand_panel", "Expand ⤢"),
     ("escape", "collapse_panel", "Close ✕"),
     ("d", "show_detail", "Details 🔍"),
     ("r", "refresh", "Refresh ↻"),
-    
+
     # Quick Wins (already implemented)
     ("f", "toggle_focus_mode", "Focus 🎯"),
     ("b", "show_break_timer", "Break ⏱️"),
@@ -351,7 +359,7 @@ BINDINGS = [
 ```python
 class ScrollablePanel(Static):
     scroll_speed = 3  # lines per keypress
-    
+
     def on_key(self, event: events.Key):
         if event.key == "up":
             self.scroll_up(animate=True)  # Smooth animation
@@ -515,7 +523,7 @@ class MetricsManager:
         self.app = app
         self.mode = "websocket"
         self.streaming_client = None
-    
+
     async def start(self):
         try:
             self.streaming_client = StreamingClient(
@@ -531,7 +539,7 @@ class MetricsManager:
             logger.warning(f"WebSocket unavailable: {e}")
             self.mode = "polling"
             self.app.run_worker(self.poll_loop())
-    
+
     async def handle_state_update(self, data):
         # Route to widgets
         adhd_widget = self.app.query_one(ADHDStateWidget)
@@ -541,7 +549,7 @@ class DopemuxDashboard(App):
     def __init__(self):
         super().__init__()
         self.metrics_manager = MetricsManager(self)
-    
+
     async def on_mount(self):
         self.run_worker(self.metrics_manager.start())
 ```
@@ -571,14 +579,14 @@ class ADHDStateWidget(Static):
     energy_level = reactive(0.0)
     attention_state = reactive("focused")
     cognitive_load = reactive(0.0)
-    
+
     def update_from_ws(self, data: Dict[str, Any]):
         """Called by MetricsManager on WebSocket update"""
         self.energy_level = data.get("energy_level", 0.0)
         self.attention_state = data.get("attention_state", "focused")
         self.cognitive_load = data.get("cognitive_load", 0.0)
         # Reactive vars automatically trigger re-render ✨
-    
+
     def render(self):
         # Called automatically when reactive vars change
         return Panel(
@@ -616,38 +624,38 @@ class PrometheusDataFetcher:
     def __init__(self, prometheus_url: str):
         self.prom = PrometheusClient(PrometheusConfig(base_url=prometheus_url))
         self.cache = MetricsCache(ttl_seconds=30)
-    
+
     async def get_cognitive_load_history(self, hours: int = 2) -> List[float]:
         """Fetch cognitive load sparkline data"""
         query = f'adhd_cognitive_load{{user_id="default_user"}}[{hours}h]'
-        
+
         return await self.cache.get_or_fetch(
-            query, 
+            query,
             lambda q: self.prom.query_range(q)
         )
 
 class TrendsWidget(Static):
     sparklines = reactive({})
-    
+
     async def on_mount(self):
         # Start sparkline refresh loop
         self.run_worker(self.refresh_sparklines())
-    
+
     async def refresh_sparklines(self):
         fetcher = PrometheusDataFetcher("http://localhost:9090")
         generator = SparklineGenerator()
-        
+
         while True:
             # Fetch data
             cognitive_data = await fetcher.get_cognitive_load_history(hours=2)
             velocity_data = await fetcher.get_task_velocity_history(hours=168)
-            
+
             # Generate sparklines
             self.sparklines = {
                 "cognitive": generator.render(cognitive_data, width=20),
                 "velocity": generator.render(velocity_data, width=20),
             }
-            
+
             await asyncio.sleep(30)  # Refresh every 30s
 ```
 
@@ -675,19 +683,19 @@ class TrendsWidget(Static):
 ```python
 class DopemuxDashboard(App):
     focused_panel = reactive("adhd")
-    
+
     CSS = """
     .panel {
         border: solid $muted;
         background: $surface;
     }
-    
+
     .panel.focused {
         border: thick $accent;
         background: $surface-lighten-1;
     }
     """
-    
+
     BINDINGS = [
         ("1", "focus_panel('adhd')", "ADHD"),
         ("2", "focus_panel('productivity')", "Tasks"),
@@ -697,18 +705,18 @@ class DopemuxDashboard(App):
         ("enter", "expand_panel", "Expand"),
         ("?", "show_help", "Help"),
     ]
-    
+
     def action_focus_panel(self, panel_id: str):
         # Remove focus from current
         old_panel = self.query_one(f"#{self.focused_panel}")
         old_panel.remove_class("focused")
-        
+
         # Add focus to new
         self.focused_panel = panel_id
         new_panel = self.query_one(f"#{panel_id}")
         new_panel.add_class("focused")
         new_panel.focus()
-    
+
     def action_next_panel(self):
         panels = ["adhd", "productivity", "services", "trends"]
         idx = panels.index(self.focused_panel)
@@ -808,8 +816,8 @@ done
 ## ⚠️ PART 7: RISK ANALYSIS & MITIGATION
 
 ### Risk 1: WebSocket Connection Instability
-**Severity:** High  
-**Likelihood:** Medium  
+**Severity:** High
+**Likelihood:** Medium
 **Impact:** Dashboard shows stale data
 
 **Mitigation:**
@@ -819,8 +827,8 @@ done
 - ✅ Message buffering (no data loss)
 
 ### Risk 2: Prometheus Query Performance
-**Severity:** Medium  
-**Likelihood:** Medium  
+**Severity:** Medium
+**Likelihood:** Medium
 **Impact:** Sparklines lag or freeze UI
 
 **Mitigation:**
@@ -830,8 +838,8 @@ done
 - ✅ Timeout after 2 seconds
 
 ### Risk 3: Reactive Variable Render Storms
-**Severity:** Medium  
-**Likelihood:** Low  
+**Severity:** Medium
+**Likelihood:** Low
 **Impact:** 100% CPU usage, UI freezes
 
 **Mitigation:**
@@ -840,8 +848,8 @@ done
 - ✅ Profile with cProfile to detect hotspots
 
 ### Risk 4: Keyboard Navigation Conflicts
-**Severity:** Low  
-**Likelihood:** Low  
+**Severity:** Low
+**Likelihood:** Low
 **Impact:** Keybindings don't work
 
 **Mitigation:**
@@ -850,8 +858,8 @@ done
 - ✅ Help popup shows all bindings (user clarity)
 
 ### Risk 5: Memory Leaks from WebSocket
-**Severity:** High  
-**Likelihood:** Low  
+**Severity:** High
+**Likelihood:** Low
 **Impact:** Dashboard crashes after hours
 
 **Mitigation:**
@@ -861,8 +869,8 @@ done
 - ✅ 1-hour stress test before deployment
 
 ### Risk 6: ADHD Engine Not Running
-**Severity:** Low  
-**Likelihood:** High (dev environment)  
+**Severity:** Low
+**Likelihood:** High (dev environment)
 **Impact:** Dashboard shows empty panels
 
 **Mitigation:**
@@ -1128,9 +1136,9 @@ Dashboard Day 8 is COMPLETE when:
 
 ## 🎉 SUMMARY
 
-**Total Estimated Time:** 8-10 hours  
-**Complexity:** Medium (integration work)  
-**Risk Level:** Medium (WebSocket stability)  
+**Total Estimated Time:** 8-10 hours
+**Complexity:** Medium (integration work)
+**Risk Level:** Medium (WebSocket stability)
 **Impact:** High (transforms dashboard from "reactive" to "proactive")
 
 **Key Insights:**
