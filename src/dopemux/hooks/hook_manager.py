@@ -38,7 +38,7 @@ class HookManager:
             'git-commit': False,  # Disabled by default due to risk
             'file-watch': False,  # Experimental
         }
-        self.quiet_mode = True  # Silent by default
+        self.quiet_mode = True  # Silent by default for ADHD-friendly operation
         self.timeout_ms = 100  # Strict timeout for safety
 
     def is_hook_enabled(self, hook_type: str) -> bool:

@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+RUN cd /app/src/mcp && pip install -e .
 
 # Copy the entire dope-context service
 COPY . .
@@ -34,4 +35,4 @@ LABEL mcp.priority="high"
 LABEL mcp.description="Semantic code and document search with AST-aware indexing"
 
 # Run the MCP server
-CMD ["sh", "-c", "pip list && python -m src.mcp.server"]
+CMD ["python", "src/mcp/simple_server.py"]

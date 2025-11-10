@@ -5,9 +5,12 @@ windows:
     options:
       main-pane-height: 60%
       status: on
-      status-interval: 30  # Update status bar every 30s
-      status-left: "#[fg=colour33]#[bg=colour0] Dopemux PM #[default]"
-      status-right: "#[fg=colour166]#[bg=colour0] #(./scripts/pm-status.sh) #[default]"
+      status-interval: 15  # Faster updates for better responsiveness
+      status-left: "#[fg=colour33,bg=colour0] 🧠 Dopemux PM #[default]"
+      status-right: "#[fg=blue,bg=colour0] #(./scripts/pm-status.sh) #[default]"
+      status-style: "bg=colour0,fg=colour7"  # Dark theme base
+      window-status-current-style: "bg=colour33,fg=colour0,bold"
+      window-status-style: "bg=colour0,fg=colour244"
     panes:
       # Pane 0: Task Orchestrator + PM Overview (Primary)
       - shell_command:
