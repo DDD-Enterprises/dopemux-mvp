@@ -1,7 +1,11 @@
 #!/bin/bash
-# Dopemux PM Status Bar Script
-# Shows real-time PM metrics in tmux status bar
-# ADHD-optimized: Essential info first, visual indicators
+# Dopemux PM Status Bar Script - Advanced ADHD-Optimized Version
+# Features:
+# - Context-aware prioritization (critical/urgent/important/normal modes)
+# - Adaptive width detection for tmux panes
+# - Progressive disclosure based on available space
+# - Crisis mode for blockers, flow support for focused work
+# - ADHD-optimized: Essential info first, visual indicators
 
 set -euo pipefail
 
@@ -11,21 +15,64 @@ CONPORT_CONTAINER="mcp-conport_main"
 MAX_RETRIES=2
 CACHE_TTL=30  # Cache data for 30 seconds
 
-# Colors for tmux (if supported)
-RED="#[fg=colour196]"
-YELLOW="#[fg=colour226]"
-GREEN="#[fg=colour46]"
-BLUE="#[fg=colour33]"
-PURPLE="#[fg=colour129]"
-RESET="#[default]"
+# Adaptive display configuration
+TMUX_WIDTH_LIMIT=${TMUX_WIDTH_LIMIT:-120}  # Allow override via environment
+CONTEXT_AWARE_PRIORITY=${CONTEXT_AWARE_PRIORITY:-true}  # Enable context-aware display
 
-# Cache file for performance
+# Colors - disabled (handled by tmux configuration)
+RED=""
+YELLOW=""
+GREEN=""
+BLUE=""
+PURPLE=""
+RESET=""
+
+# Enhanced caching for performance optimization
 CACHE_FILE="/tmp/dopemux_pm_status_$$.cache"
-cleanup() { rm -f "$CACHE_FILE"; }
+CONTEXT_CACHE="/tmp/dopemux_pm_context_$$.cache"
+cleanup() {
+    rm -f "$CACHE_FILE" "$CONTEXT_CACHE";
+}
 trap cleanup EXIT
 
-# Check if cache is fresh
-if [[ -f "$CACHE_FILE" ]] && [[ $(($(date +%s) - $(stat -f %m "$CACHE_FILE" 2>/dev/null || date +%s))) -lt $CACHE_TTL ]]; then
+# Smart caching: Different TTL for different data types
+FAST_CACHE_TTL=15   # ADHD metrics change quickly
+SLOW_CACHE_TTL=60   # PM metrics change less frequently
+
+# Detect actual tmux pane width for adaptive display
+detect_pane_width() {
+    # Try to get tmux pane width, fallback to environment or default
+    if [[ -n "${TMUX_PANE:-}" ]]; then
+        tmux display-message -p "#{pane_width}" 2>/dev/null || echo "$TMUX_WIDTH_LIMIT"
+    else
+        echo "$TMUX_WIDTH_LIMIT"
+    fi
+}
+
+# Context-aware prioritization based on ADHD state
+get_context_priority() {
+    local blockers="$1"
+    local attention_state="$2"
+    local energy_level="$3"
+
+    # Priority levels: critical, urgent, important, normal
+    if [[ $blockers -gt 0 ]]; then
+        echo "critical"  # Show blockers prominently
+    elif [[ "$attention_state" == *"HIGH"* ]] || [[ "$energy_level" == *"↓"* ]]; then
+        echo "urgent"    # Show energy/attention help
+    elif [[ "$attention_state" == *"FOCUSED"* ]] || [[ "$energy_level" == *"⚡"* ]]; then
+        echo "important" # Show flow-supporting info
+    else
+        echo "normal"    # Standard balanced display
+    fi
+}
+
+# Smart cache checking with different TTL for different data types
+CACHE_AGE=$(($(date +%s) - $(stat -f %m "$CACHE_FILE" 2>/dev/null || date +%s)))
+CONTEXT_AGE=$(($(date +%s) - $(stat -f %m "$CONTEXT_CACHE" 2>/dev/null || date +%s)))
+
+# Use fast cache for ADHD metrics, slow cache for PM metrics
+if [[ -f "$CACHE_FILE" ]] && [[ -f "$CONTEXT_CACHE" ]] && [[ $CACHE_AGE -lt $FAST_CACHE_TTL ]] && [[ $CONTEXT_AGE -lt $SLOW_CACHE_TTL ]]; then
     cat "$CACHE_FILE"
     exit 0
 fi
@@ -163,7 +210,7 @@ get_pm_metrics() {
         PM_METRICS="${PM_METRICS} ${RED}❌${BLOCKERS_COUNT}${RESET}"
     fi
 
-    # ADHD Metrics (space permitting)
+    # ADHD Metrics with smart truncation
     ADHD_METRICS=""
     if [[ -n "$ATTENTION_ICON" ]]; then
         ADHD_METRICS="${ADHD_METRICS} ${ATTENTION_ICON}"
@@ -178,19 +225,85 @@ get_pm_metrics() {
         ADHD_METRICS="${ADHD_METRICS} ${BREAK_ICON}"
     fi
 
-    # Combine metrics - prioritize essential PM data, add ADHD if space allows
-    # tmux status bars have limited width, so be selective
-    if [[ ${#ADHD_METRICS} -lt 40 ]]; then
-        echo "${PM_METRICS}${ADHD_METRICS}"
-    else
-        # Fallback to essential metrics only if ADHD data is too verbose
-        echo "${PM_METRICS} ${ATTENTION_ICON} ${ENERGY_ICON}"
-    fi
+    # Context-aware status line construction with adaptive width
+    AVAILABLE_WIDTH=$(detect_pane_width)
+    CONTEXT_PRIORITY=$(get_context_priority "$BLOCKERS_COUNT" "$ATTENTION_STATE" "$ENERGY_LEVEL")
+
+    # Function to calculate visual length (excluding tmux color codes)
+    visual_length() {
+        local text="$1"
+        # Remove tmux color codes: #[fg=colourXXX], #[default], etc.
+        text=$(echo "$text" | sed 's/#\[[^]]*\]//g')
+        echo ${#text}
+    }
+
+    # Adjust display based on context priority and available space
+    case "$CONTEXT_PRIORITY" in
+        "critical")
+            # Crisis mode: Show blockers prominently, minimal other info
+            if [[ $BLOCKERS_COUNT -gt 0 ]]; then
+                BALANCED_METRICS="${PM_METRICS} ${RED}🚨 ${BLOCKERS_COUNT} BLOCKERS${RESET}"
+            else
+                BALANCED_METRICS="${PM_METRICS}"
+            fi
+            ;;
+        "urgent")
+            # Urgent help needed: Prioritize energy/attention support
+            BALANCED_METRICS="${PM_METRICS}"
+            [[ -n "$ENERGY_ICON" ]] && BALANCED_METRICS="${BALANCED_METRICS} ${ENERGY_ICON}"
+            [[ -n "$ATTENTION_ICON" ]] && BALANCED_METRICS="${BALANCED_METRICS} ${ATTENTION_ICON}"
+            ;;
+        "important")
+            # Flow support: Show encouraging metrics
+            BALANCED_METRICS="${PM_METRICS}"
+            [[ -n "$ATTENTION_ICON" ]] && BALANCED_METRICS="${BALANCED_METRICS} ${ATTENTION_ICON}"
+            [[ -n "$ENERGY_ICON" ]] && BALANCED_METRICS="${BALANCED_METRICS} ${ENERGY_ICON}"
+            [[ -n "$LOAD_ICON" && $(visual_length "$BALANCED_METRICS") -lt $((AVAILABLE_WIDTH - 20)) ]] && BALANCED_METRICS="${BALANCED_METRICS} ${LOAD_ICON}"
+            ;;
+        "normal"|*)
+            # Balanced display: Progressive disclosure based on space
+            BALANCED_METRICS="${PM_METRICS}"
+
+            # Add ADHD metrics progressively if space allows
+            if [[ $(visual_length "$BALANCED_METRICS") -lt $((AVAILABLE_WIDTH - 40)) ]]; then
+                [[ -n "$ATTENTION_ICON" ]] && BALANCED_METRICS="${BALANCED_METRICS} ${ATTENTION_ICON}"
+            fi
+            if [[ $(visual_length "$BALANCED_METRICS") -lt $((AVAILABLE_WIDTH - 30)) ]]; then
+                [[ -n "$ENERGY_ICON" ]] && BALANCED_METRICS="${BALANCED_METRICS} ${ENERGY_ICON}"
+            fi
+            if [[ $(visual_length "$BALANCED_METRICS") -lt $((AVAILABLE_WIDTH - 20)) ]]; then
+                [[ -n "$LOAD_ICON" ]] && BALANCED_METRICS="${BALANCED_METRICS} ${LOAD_ICON}"
+            fi
+            if [[ $(visual_length "$BALANCED_METRICS") -lt $((AVAILABLE_WIDTH - 15)) ]]; then
+                [[ -n "$BREAK_ICON" ]] && BALANCED_METRICS="${BALANCED_METRICS} ${BREAK_ICON}"
+            fi
+
+            # BALANCED_METRICS is set above, will be returned at end
+            ;;
+    esac
+
+    # Return just the visual metrics (colors handled by tmux)
+    echo "$BALANCED_METRICS"
 }
 
-# Main execution
-METRICS=$(get_pm_metrics 2>/dev/null || echo "${RED}PM: Offline${RESET}")
+# Main execution with enhanced caching and error handling
+if METRICS_AND_CONTEXT=$(get_pm_metrics 2>/dev/null); then
+    # Parse the combined output (metrics|blockers|attention|energy|width)
+    METRICS=$(echo "$METRICS_AND_CONTEXT" | cut -d'|' -f1)
+    BLOCKERS_COUNT=$(echo "$METRICS_AND_CONTEXT" | cut -d'|' -f2)
+    ATTENTION_STATE=$(echo "$METRICS_AND_CONTEXT" | cut -d'|' -f3)
+    ENERGY_LEVEL=$(echo "$METRICS_AND_CONTEXT" | cut -d'|' -f4)
+    AVAILABLE_WIDTH=$(echo "$METRICS_AND_CONTEXT" | cut -d'|' -f5)
 
-# Cache the result
-echo "$METRICS" > "$CACHE_FILE"
-echo "$METRICS"
+    # Success - cache metrics with appropriate TTL and output
+    echo "$METRICS" > "$CACHE_FILE"
+    echo "${BLOCKERS_COUNT}|${ATTENTION_STATE}|${ENERGY_LEVEL}|${AVAILABLE_WIDTH}" > "$CONTEXT_CACHE"
+
+    echo "$METRICS"
+else
+    # Failure - provide clean fallback without verbose errors
+    FALLBACK_METRICS="${RED}PM: Offline${RESET}"
+    echo "$FALLBACK_METRICS" > "$CACHE_FILE"
+    echo "0|unknown|unknown|80" > "$CONTEXT_CACHE"  # Fallback context
+    echo "$FALLBACK_METRICS"
+fi
