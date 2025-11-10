@@ -19,6 +19,7 @@ COPY . .
 # Set environment variables
 ENV MCP_SERVER_PORT=3010
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app/src
 
 # Create data and logs directories
 RUN mkdir -p /app/data /app/logs
@@ -33,4 +34,4 @@ LABEL mcp.priority="high"
 LABEL mcp.description="Semantic code and document search with AST-aware indexing"
 
 # Run the MCP server
-CMD ["python", "-m", "src.mcp.server"]
+CMD ["sh", "-c", "pip list && python -m src.mcp.server"]

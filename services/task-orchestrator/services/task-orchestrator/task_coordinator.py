@@ -23,24 +23,25 @@ Usage:
     await coordinator.coordinate_tasks(tasks, current_adhd_state)
 """
 
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass, asdict
-from datetime import datetime, timezone
-from enum import Enum
-
 import asyncio
 import logging
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
-from enhanced_orchestrator import OrchestrationTask, TaskStatus
 from adapters.conport_adapter import ConPortEventAdapter
+from enhanced_orchestrator import OrchestrationTask, TaskStatus
 from intelligence.cognitive_load_balancer import CognitiveLoadBalancer
 from intelligence.context_switch_recovery import ContextSwitchRecovery
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class CoordinationState:
     """Current coordination state for task execution"""
+
     current_adhd_state: Dict[str, str]  # energy, attention, mode
     active_tasks: List[str]  # task IDs in progress
     blocked_tasks: List[str]  # tasks waiting on dependencies
@@ -48,6 +49,7 @@ class CoordinationState:
     current_batch: List[OrchestrationTask]  # tasks in current batch
     session_id: str
     coordination_mode: str = "ADHD_ADAPTIVE"
+
 
 class TaskCoordinator:
     """
@@ -65,8 +67,12 @@ class TaskCoordinator:
     def __init__(self, workspace_id: str):
         self.workspace_id = workspace_id
         self.conport_adapter = ConPortEventAdapter(workspace_id)
-        self.cognitive_guardian = CognitiveLoadBalancer(workspace_id=workspace_id, conport_client=self.conport_adapter)
-        self.context_recovery = ContextSwitchRecovery(workspace_id, self.conport_adapter)
+        self.cognitive_guardian = CognitiveLoadBalancer(
+            workspace_id=workspace_id, conport_client=self.conport_adapter
+        )
+        self.context_recovery = ContextSwitchRecovery(
+            workspace_id, self.conport_adapter
+        )
 
         # State tracking
         self.coordination_state = CoordinationState(
@@ -75,7 +81,7 @@ class TaskCoordinator:
             blocked_tasks=[],
             focus_session_timer=0,
             current_batch=[],
-            session_id=f"coord_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            session_id=f"coord_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
         )
 
         # Configuration
@@ -85,9 +91,7 @@ class TaskCoordinator:
         self.max_context_switches = 2
 
     async def coordinate_tasks(
-        self,
-        tasks: List[OrchestrationTask],
-        current_adhd_state: Dict[str, str]
+        self, tasks: List[OrchestrationTask], current_adhd_state: Dict[str, str]
     ) -> Dict[str, Any]:
         """
         Main coordination loop for task execution.
@@ -99,11 +103,15 @@ class TaskCoordinator:
         Returns:
             Dict with execution plan, batch assignments, and next actions
         """
-        logger.info(f"🚀 Coordinating {len(tasks)} tasks with ADHD state: {current_adhd_state}")
+        logger.info(
+            f"🚀 Coordinating {len(tasks)} tasks with ADHD state: {current_adhd_state}"
+        )
 
         # Update coordination state
         self.coordination_state.current_adhd_state = current_adhd_state
-        self.coordination_state.active_tasks = [t.id for t in tasks if t.status == TaskStatus.IN_PROGRESS]
+        self.coordination_state.active_tasks = [
+            t.id for t in tasks if t.status == TaskStatus.IN_PROGRESS
+        ]
 
         # Step 1: Assess task batch based on cognitive capacity
         batch_plan = await self._assess_cognitive_batch(tasks, current_adhd_state)
@@ -127,13 +135,13 @@ class TaskCoordinator:
             "execution_results": execution_results,
             "adhd_state": current_adhd_state,
             "recommendations": self._generate_recommendations(current_adhd_state),
-            "next_batch_size": len(execution_results['completed']) if execution_results else 0
+            "next_batch_size": (
+                len(execution_results["completed"]) if execution_results else 0
+            ),
         }
 
     async def _assess_cognitive_batch(
-        self,
-        tasks: List[OrchestrationTask],
-        adhd_state: Dict[str, str]
+        self, tasks: List[OrchestrationTask], adhd_state: Dict[str, str]
     ) -> Dict[str, List[str]]:
         """
         Assess which tasks can be batched based on cognitive capacity.
@@ -152,16 +160,20 @@ class TaskCoordinator:
             load_score = self.cognitive_guardian.calculate_load(task)
 
             if load_score <= cognitive_capacity:
-                viable_tasks.append({
-                    "task": task,
-                    "load": load_score,
-                    "energy_cost": self._estimate_energy_cost(task, adhd_state)
-                })
+                viable_tasks.append(
+                    {
+                        "task": task,
+                        "load": load_score,
+                        "energy_cost": self._estimate_energy_cost(task, adhd_state),
+                    }
+                )
             else:
-                logger.info(f"⏳ Task {task.id} deferred: complexity {load_score:.2f} > capacity {cognitive_capacity:.2f}")
+                logger.info(
+                    f"⏳ Task {task.id} deferred: complexity {load_score:.2f} > capacity {cognitive_capacity:.2f}"
+                )
 
         # Sort by optimal sequence
-        viable_tasks.sort(key=lambda x: x['load'])
+        viable_tasks.sort(key=lambda x: x["load"])
 
         # Create batches (max 3 tasks per batch for ADHD)
         batches = []
@@ -169,30 +181,31 @@ class TaskCoordinator:
         current_load = 0
 
         for task_data in viable_tasks:
-            if current_load + task_data['load'] <= cognitive_capacity:
-                current_batch.append(task_data['task'].id)
-                current_load += task_data['load']
+            if current_load + task_data["load"] <= cognitive_capacity:
+                current_batch.append(task_data["task"].id)
+                current_load += task_data["load"]
             else:
                 if current_batch:
                     batches.append(current_batch)
-                current_batch = [task_data['task'].id]
-                current_load = task_data['load']
+                current_batch = [task_data["task"].id]
+                current_load = task_data["load"]
 
         if current_batch:
             batches.append(current_batch)
 
-        logger.info(f"🧠 Created {len(batches)} batches with avg load {current_load/len(batches):.2f}")
+        logger.info(
+            f"🧠 Created {len(batches)} batches with avg load {current_load/len(batches):.2f}"
+        )
         return {
             "total_tasks": len(tasks),
             "viable_tasks": len(viable_tasks),
             "deferred_tasks": len(tasks) - len(viable_tasks),
             "batches": batches,
-            "capacity": cognitive_capacity
+            "capacity": cognitive_capacity,
         }
 
     async def _resolve_dependencies(
-        self,
-        tasks: List[OrchestrationTask]
+        self, tasks: List[OrchestrationTask]
     ) -> List[OrchestrationTask]:
         """
         Resolve task dependencies across the batch.
@@ -218,15 +231,15 @@ class TaskCoordinator:
                     resolved.append(task)
                 else:
                     blocked.append(task)
-                    logger.info(f"⛓️ Task {task.id} blocked by dependencies: {task.dependencies}")
+                    logger.info(
+                        f"⛓️ Task {task.id} blocked by dependencies: {task.dependencies}"
+                    )
 
         logger.info(f"🔗 Resolved {len(resolved)} tasks, {len(blocked)} blocked")
         return resolved + blocked
 
     async def _sequence_tasks(
-        self,
-        tasks: List[OrchestrationTask],
-        adhd_state: Dict[str, str]
+        self, tasks: List[OrchestrationTask], adhd_state: Dict[str, str]
     ) -> List[str]:
         """
         Sequence tasks optimally based on ADHD state.
@@ -239,7 +252,7 @@ class TaskCoordinator:
         sequenced = []
 
         # Simple heuristic sequencing
-        if adhd_state.get('energy') == 'high':
+        if adhd_state.get("energy") == "high":
             # High energy: complex first
             tasks.sort(key=lambda t: t.complexity_score, reverse=True)
         else:
@@ -247,7 +260,7 @@ class TaskCoordinator:
             tasks.sort(key=lambda t: t.complexity_score)
 
         # Attention state adjustments
-        if adhd_state.get('attention') == 'scattered':
+        if adhd_state.get("attention") == "scattered":
             # Limit parallel execution, interleave with breaks
             sequenced = [task.id for task in tasks[:2]]  # Max 2 for scattered
         else:
@@ -264,12 +277,14 @@ class TaskCoordinator:
             "completed": [],
             "in_progress": [],
             "failed": [],
-            "context_switches": 0
+            "context_switches": 0,
         }
 
         for task_id in sequenced_tasks:
             # Execute task (placeholder - actual execution via agents)
-            task = next((t for t in self.coordination_state.active_tasks if t == task_id), None)
+            task = next(
+                (t for t in self.coordination_state.active_tasks if t == task_id), None
+            )
             if task:
                 try:
                     # Simulate execution with monitoring
@@ -290,13 +305,19 @@ class TaskCoordinator:
         # Check for context switching
         switches = self.context_recovery.detect_switches()
         if switches > self.max_context_switches:
-            logger.warning(f"⚠️ Detected {switches} context switches - recommending break")
+            logger.warning(
+                f"⚠️ Detected {switches} context switches - recommending break"
+            )
             results["recommend_break"] = True
 
-        logger.info(f"🏁 Batch execution: {len(results['in_progress'])} in progress, {len(results['failed'])} failed")
+        logger.info(
+            f"🏁 Batch execution: {len(results['in_progress'])} in progress, {len(results['failed'])} failed"
+        )
         return results
 
-    def _estimate_energy_cost(self, task: OrchestrationTask, adhd_state: Dict[str, str]) -> float:
+    def _estimate_energy_cost(
+        self, task: OrchestrationTask, adhd_state: Dict[str, str]
+    ) -> float:
         """
         Estimate energy cost of task based on current ADHD state.
         """
@@ -304,12 +325,12 @@ class TaskCoordinator:
 
         # Adjust for energy level
         energy_modifiers = {
-            'high': 0.8,    # Tasks cost less energy when energetic
-            'medium': 1.0,
-            'low': 1.3      # Tasks cost more when low energy
+            "high": 0.8,  # Tasks cost less energy when energetic
+            "medium": 1.0,
+            "low": 1.3,  # Tasks cost more when low energy
         }
 
-        energy_cost = base_cost * energy_modifiers.get(adhd_state.get('energy'), 1.0)
+        energy_cost = base_cost * energy_modifiers.get(adhd_state.get("energy"), 1.0)
         return min(1.0, energy_cost)  # Cap at 1.0
 
     async def _monitor_execution(self, task: OrchestrationTask):
@@ -340,12 +361,11 @@ class TaskCoordinator:
             "type": "adh_break",
             "duration": self.break_duration,
             "reason": "cognitive_load_threshold_exceeded",
-            "timestamp": datetime.now()
+            "timestamp": datetime.now(),
         }
 
         await self.conport_adapter.log_progress(
-            status="PAUSED",
-            description=f"ADHD break: {break_recommendation['reason']}"
+            status="PAUSED", description=f"ADHD break: {break_recommendation['reason']}"
         )
 
         logger.info("☕ Taking recommended break...")
@@ -370,7 +390,7 @@ class TaskCoordinator:
                 estimated_minutes=5,
                 assigned_agent=None,
                 energy_required="low",
-                custom_data=state_data  # Store full state as custom data
+                custom_data=state_data,  # Store full state as custom data
             )
         )
 
@@ -380,20 +400,28 @@ class TaskCoordinator:
         """
         recommendations = []
 
-        if adhd_state.get('energy') == 'low':
-            recommendations.append("📉 Low energy: Consider simple tasks or take a break")
-        elif adhd_state.get('energy') == 'high':
+        if adhd_state.get("energy") == "low":
+            recommendations.append(
+                "📉 Low energy: Consider simple tasks or take a break"
+            )
+        elif adhd_state.get("energy") == "high":
             recommendations.append("⚡ High energy: Ready for complex tasks")
 
-        if adhd_state.get('attention') == 'scattered':
+        if adhd_state.get("attention") == "scattered":
             recommendations.append("🌪️ Scattered attention: Limit to 1-2 simple tasks")
-        elif adhd_state.get('attention') == 'focused':
+        elif adhd_state.get("attention") == "focused":
             recommendations.append("🎯 Focused attention: Ready for deep work")
 
-        if self.coordination_state.focus_session_timer > self.focus_session_duration * 0.8:
-            recommendations.append("⏰ Focus session nearing limit - break soon recommended")
+        if (
+            self.coordination_state.focus_session_timer
+            > self.focus_session_duration * 0.8
+        ):
+            recommendations.append(
+                "⏰ Focus session nearing limit - break soon recommended"
+            )
 
         return recommendations
+
 
 # Example usage
 async def main():
@@ -408,7 +436,7 @@ async def main():
             complexity_score=0.7,
             energy_required="high",
             estimated_minutes=120,
-            status=TaskStatus.PENDING
+            status=TaskStatus.PENDING,
         ),
         OrchestrationTask(
             id="task-2",
@@ -417,14 +445,15 @@ async def main():
             complexity_score=0.3,
             energy_required="low",
             estimated_minutes=45,
-            status=TaskStatus.PENDING
-        )
+            status=TaskStatus.PENDING,
+        ),
     ]
 
     adhd_state = {"energy": "medium", "attention": "focused", "load": 0.4}
 
     result = await coordinator.coordinate_tasks(tasks, adhd_state)
     print(f"Coordination complete: {result}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

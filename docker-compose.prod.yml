@@ -1,0 +1,79 @@
+version: '3.6'
+
+networks:
+  dopemux-net:
+    driver: bridge
+
+volumes:
+  grafana-storage:
+
+services:
+  wma:
+    image: dopemux/wma:2.1.0
+    container_name: dopemux-wma-prod
+    restart: unless-stopped
+    ports:
+      - "8096:8096"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=dopemux_knowledge_graph
+      - POSTGRES_USER=dopemux_age
+      - POSTGRES_PASSWORD=dopemux_age_dev_password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ADHD_ENGINE_URL=http://adhd-engine:8095
+      - ADHD_ENGINE_API_KEY=dev-key-123
+      - SERENA_URL=http://serena:3005
+      - WMA_PORT=8096
+    depends_on:
+      - postgres
+      - redis
+      - adhd-engine
+    networks:
+      - dopemux-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8096/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ./services/working-memory-assistant/logs:/app/logs  # For structured logs
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wma.rule=Host(`wma.dopemux.local`)"
+      - "traefik.http.services.wma.loadbalancer.server.port=8096"
+
+  prometheus:
+    image: prom/prometheus:v2.50.1
+    container_name: dopemux-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    restart: unless-stopped
+    networks:
+      - dopemux-net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: dopemux-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - dopemux-net
