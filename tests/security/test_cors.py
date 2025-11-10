@@ -18,8 +18,8 @@ from typing import Optional, Generator
 class TestCORSSecurity:
     """Test CORS security configuration."""
 
-    @pytest_asyncio.fixture(scope="class")
-    async def client(self, request):
+    @pytest_asyncio.fixture(scope="function")
+    async def client(self):
         """Create test client for ADHD Engine."""
         # Start ADHD Engine server for testing
         process = None

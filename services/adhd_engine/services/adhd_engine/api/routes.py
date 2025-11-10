@@ -452,6 +452,34 @@ async def get_user_patterns(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/predict-cognitive-load", response_model=schemas.PredictionResponse)
+async def predict_cognitive_load(
+    request: schemas.PredictionRequest,
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
+):
+    """
+    Predict future cognitive load using ML model.
+
+    Analyzes current features (energy, attention, task complexity, etc.) to predict
+    cognitive load 1 hour ahead, enabling proactive ADHD accommodations.
+    """
+    try:
+        result = await engine.predict_cognitive_load(request.user_id, request.features)
+
+        return schemas.PredictionResponse(
+            user_id=request.user_id,
+            predicted_load=result.predicted_value,
+            confidence=result.confidence,
+            horizon_hours=result.horizon_hours,
+            model_used=result.model_used,
+            feature_importance=result.feature_importance,
+            timestamp=result.timestamp.isoformat()
+        )
+    except Exception as e:
+        logger.error(f"Cognitive load prediction failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/code-complexity", response_model=schemas.ComplexityResponse)
 async def get_code_complexity(
     request: schemas.CodeComplexityRequest,

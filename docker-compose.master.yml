@@ -323,7 +323,7 @@ services:
   # Genetic Agent - AI Code Repair with Genetic Programming
   genetic-agent:
     build:
-      context: ./services/genetic-agent
+      context: ./services/genetic_agent
       dockerfile: Dockerfile
     container_name: dopemux-genetic-agent
     restart: unless-stopped

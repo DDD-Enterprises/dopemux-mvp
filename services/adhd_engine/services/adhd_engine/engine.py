@@ -13,6 +13,21 @@ from datetime import datetime, timezone
 from config import settings
 from models import ADHDProfile, EnergyLevel, AttentionState, CognitiveLoad, BreakRecommendation, MonitorState
 
+# Import ML prediction types if available
+try:
+    from .ml.predictive_engine import PredictionResult
+except ImportError:
+    class PredictionResult:
+        """Fallback PredictionResult for when ML is not available."""
+        def __init__(self, predicted_value=0.5, confidence=0.3, horizon_hours=1,
+                     model_used="fallback", feature_importance=None, timestamp=None):
+            self.predicted_value = predicted_value
+            self.confidence = confidence
+            self.horizon_hours = horizon_hours
+            self.model_used = model_used
+            self.feature_importance = feature_importance or {}
+            self.timestamp = timestamp or datetime.now()
+
 logger = logging.getLogger(__name__)
 
 
@@ -101,8 +116,17 @@ class ADHDAccommodationEngine:
                 check_interval=settings.monitor_check_interval
             )
 
+        # Initialize ML prediction engine
+        try:
+            from .ml.predictive_engine import CognitiveLoadPredictor, PredictionModel
+            self.predictor = CognitiveLoadPredictor(model_type=PredictionModel.LINEAR)
+            logger.info("ML prediction engine initialized")
+        except ImportError as e:
+            logger.warning(f"ML prediction engine not available: {e}")
+            self.predictor = None
+
         self.initialized = True
-        logger.info("ADHD Accommodation Engine fully initialized with 6 monitors")
+        logger.info("ADHD Accommodation Engine fully initialized with 6 monitors and ML predictions")
 
     async def _create_energy_monitor(self) -> Any:
         """Create energy level tracking monitor."""
@@ -540,6 +564,39 @@ class ADHDAccommodationEngine:
             logger.warning(f"Cognitive load calculation failed: {e}")
             return 0.5  # Medium load fallback
 
+    async def predict_cognitive_load(self, user_id: str, features: Dict[str, Any]) -> PredictionResult:
+        """
+        Predict future cognitive load using ML model.
+        """
+        if self.predictor is None:
+            logger.warning("ML predictor not available, using fallback")
+            return self._fallback_prediction(features)
+
+        try:
+            result = await self.predictor.predict(features, horizon_hours=1)
+            logger.info(f"Predicted cognitive load for {user_id}: {result.predicted_value:.2f} (confidence: {result.confidence:.2f})")
+            return result
+        except Exception as e:
+            logger.error(f"Prediction failed for {user_id}: {e}")
+            return self._fallback_prediction(features)
+
+    def _fallback_prediction(self, features: Dict[str, Any]) -> PredictionResult:
+        """
+        Fallback prediction when model fails.
+        """
+        # Use current energy as baseline prediction
+        current_energy = features.get('energy_level', 0.5)
+        prediction = max(0.0, min(1.0, current_energy))
+
+        return PredictionResult(
+            predicted_value=prediction,
+            confidence=0.3,  # Low confidence for fallback
+            horizon_hours=1,
+            model_used="fallback",
+            feature_importance={"current_energy": 1.0},
+            timestamp=datetime.now()
+        )
+
     async def get_engine_state(self) -> Dict[str, Any]:
         """Get current engine state for health monitoring."""
         if not self.initialized:
@@ -553,6 +610,7 @@ class ADHDAccommodationEngine:
             "monitors": self.monitor_states,
             "redis_connected": self.redis_pool is not None,
             "conport_connected": self.conport_client.session is not None,
+            "ml_predictor": self.predictor is not None if hasattr(self, 'predictor') else False,
             "last_health_check": datetime.now(timezone.utc).isoformat(),
             "active_users": len(self.user_states)
         }
