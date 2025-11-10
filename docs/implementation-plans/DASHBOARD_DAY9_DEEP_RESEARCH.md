@@ -1,9 +1,17 @@
+---
+id: DASHBOARD_DAY9_DEEP_RESEARCH
+title: Dashboard_Day9_Deep_Research
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dashboard Day 9 - Deep Research & Planning
 # Enhanced Sparklines, Keyboard Navigation & Polish
 
-**Date:** 2025-10-29  
-**Phase:** Advanced Features Completion  
-**Status:** 📋 PLANNING  
+**Date:** 2025-10-29
+**Phase:** Advanced Features Completion
+**Status:** 📋 PLANNING
 **Estimated Duration:** 8-10 hours (full day)
 
 ---
@@ -53,7 +61,7 @@ After completing WebSocket streaming infrastructure (Day 8), we now focus on:
    - Clear trend direction (▲▼ arrows)
    - Context labels ("Last 7 days")
    - Smooth curves (not jagged)
-   
+
    ❌ DON'T:
    - Gray/muted colors (invisible to ADHD)
    - Unlabeled axes (what am I looking at?)
@@ -119,7 +127,7 @@ quantile_over_time(0.95, adhd_context_switches[24h])
    - Visual (1-4 for panels, not abstract)
    - Muscle memory (vim/emacs patterns)
    - Discoverable (? for help)
-   
+
    ❌ ANTI-PATTERNS:
    - Ctrl+Shift+Alt+K (impossible to remember)
    - No visual feedback (did it work?)
@@ -134,10 +142,10 @@ quantile_over_time(0.95, adhd_context_switches[24h])
        border: thick blue;
        box-shadow: 0 0 8px blue;
    }
-   
+
    # Smooth transitions
    transition: border 150ms ease-in-out;
-   
+
    # Escape hatch always available
    on_key(Escape) -> return to main view
    ```
@@ -193,10 +201,10 @@ async def adhd_user_simulation():
     for _ in range(50):
         random_keypress()
         await asyncio.sleep(0.1)  # 10 keys/sec
-    
+
     # Long idle (user distracted)
     await asyncio.sleep(300)  # 5 minutes
-    
+
     # Another burst
     for _ in range(30):
         random_keypress()
@@ -276,25 +284,25 @@ class SparklineCache:
     - L2: Redis (5ms)
     - L3: Prometheus (50-200ms)
     """
-    
+
     def __init__(self):
         self.memory_cache: Dict[str, Tuple[float, str]] = {}  # (timestamp, sparkline)
         self.ttl = 30  # seconds
-    
+
     async def get(self, key: str) -> Optional[str]:
         # L1: Memory
         if key in self.memory_cache:
             timestamp, sparkline = self.memory_cache[key]
             if time.time() - timestamp < self.ttl:
                 return sparkline  # Cache hit! 0ms
-        
+
         # L2: Redis (future)
         # sparkline = await redis.get(f"sparkline:{key}")
         # if sparkline: return sparkline  # 5ms
-        
+
         # L3: Prometheus (cache miss)
         return None
-    
+
     def set(self, key: str, sparkline: str):
         self.memory_cache[key] = (time.time(), sparkline)
         # await redis.setex(f"sparkline:{key}", self.ttl, sparkline)
@@ -311,7 +319,7 @@ class DopemuxDashboard(App):
     """
     Comprehensive keyboard shortcuts for ADHD-optimized navigation
     """
-    
+
     BINDINGS = [
         # Panel Navigation
         ("1", "focus_panel('adhd')", "ADHD State"),
@@ -320,30 +328,30 @@ class DopemuxDashboard(App):
         ("4", "focus_panel('trends')", "Trends"),
         ("tab", "next_panel", "Next Panel"),
         ("shift+tab", "prev_panel", "Previous Panel"),
-        
+
         # Panel Actions
         ("enter", "expand_panel", "Expand/Details"),
         ("escape", "collapse_all", "Close Modals"),
         ("space", "refresh_panel", "Refresh"),
-        
+
         # Detail Views (when panel focused)
         ("d", "show_task_detail", "Task Details"),
         ("l", "show_service_logs", "Service Logs"),
         ("p", "show_pattern_analysis", "Pattern Analysis"),
         ("h", "show_metric_history", "Metric History"),
-        
+
         # Quick Actions
         ("f", "toggle_focus_mode", "Focus Mode"),
         ("b", "start_break_timer", "Start Break"),
         ("t", "cycle_theme", "Cycle Theme"),
         ("n", "toggle_notifications", "Notifications"),
-        
+
         # Navigation
         ("j", "scroll_down", "Scroll Down"),
         ("k", "scroll_up", "Scroll Up"),
         ("g", "scroll_home", "Jump to Top"),
         ("G", "scroll_end", "Jump to Bottom"),
-        
+
         # Help & Control
         ("?", "show_help", "Show Help"),
         ("r", "force_refresh", "Refresh All"),
@@ -358,24 +366,24 @@ class DopemuxDashboard(App):
 class FocusManager:
     """
     Manages panel focus state and visual indicators.
-    
+
     ADHD Principles:
     - Always clear which panel is focused
     - Smooth transitions (no jarring jumps)
     - Escape always available
     - Visual + auditory feedback
     """
-    
+
     def __init__(self, app: "DopemuxDashboard"):
         self.app = app
         self.focused_panel_id: Optional[str] = "adhd"  # Default focus
         self.focus_history: List[str] = []  # For back navigation
         self.panel_order = ["adhd", "productivity", "services", "trends"]
-    
+
     def focus_panel(self, panel_id: str):
         """
         Focus specific panel with visual feedback.
-        
+
         Visual Changes:
         1. Previous panel → remove focus border
         2. New panel → add thick blue border + shadow
@@ -386,32 +394,32 @@ class FocusManager:
         if self.focused_panel_id:
             prev_panel = self.app.query_one(f"#{self.focused_panel_id}")
             prev_panel.remove_class("focused")
-        
+
         # Focus new
         self.focus_history.append(self.focused_panel_id)
         self.focused_panel_id = panel_id
-        
+
         new_panel = self.app.query_one(f"#{panel_id}")
         new_panel.add_class("focused")
         new_panel.scroll_visible()
-        
+
         # Auditory feedback (macOS only)
         if platform.system() == "Darwin":
-            subprocess.run(["afplay", "/System/Library/Sounds/Tink.aiff"], 
+            subprocess.run(["afplay", "/System/Library/Sounds/Tink.aiff"],
                           check=False, capture_output=True)
-    
+
     def next_panel(self):
         """Tab: cycle to next panel"""
         current_idx = self.panel_order.index(self.focused_panel_id)
         next_idx = (current_idx + 1) % len(self.panel_order)
         self.focus_panel(self.panel_order[next_idx])
-    
+
     def prev_panel(self):
         """Shift+Tab: cycle to previous panel"""
         current_idx = self.panel_order.index(self.focused_panel_id)
         prev_idx = (current_idx - 1) % len(self.panel_order)
         self.focus_panel(self.panel_order[prev_idx])
-    
+
     def go_back(self):
         """Backspace: return to previous focus"""
         if self.focus_history:
@@ -490,38 +498,38 @@ from dopemux_dashboard import SparklineGenerator, SparklineRenderer
 
 class TestSparklineRenderer:
     """Test sparkline generation from raw data"""
-    
+
     def test_normalize_data(self):
         """Normalize data to 0-7 scale"""
         renderer = SparklineRenderer()
         data = [0.0, 0.5, 1.0]
         normalized = renderer.normalize(data, min_val=0.0, max_val=1.0)
-        
+
         assert normalized == [0, 4, 7]  # Maps to sparkline chars
-    
+
     def test_generate_sparkline_basic(self):
         """Generate sparkline from normalized data"""
         renderer = SparklineRenderer()
         data = [0, 2, 4, 6, 7, 6, 4, 2, 0]
         sparkline = renderer.generate_sparkline(data)
-        
+
         assert sparkline == "▁▃▄▆▇▆▄▃▁"
-    
+
     def test_handle_empty_data(self):
         """Gracefully handle empty data"""
         renderer = SparklineRenderer()
         sparkline = renderer.generate_sparkline([])
-        
+
         assert sparkline == "─" * 20  # Placeholder
-    
+
     def test_interpolate_gaps(self):
         """Fill missing data with linear interpolation"""
         renderer = SparklineRenderer()
         data = [1.0, None, None, 4.0]
         filled = renderer.interpolate_gaps(data)
-        
+
         assert filled == [1.0, 2.0, 3.0, 4.0]
-    
+
     @pytest.mark.parametrize("data,expected_trend", [
         ([1, 2, 3, 4], "▲"),        # Increasing
         ([4, 3, 2, 1], "▼"),        # Decreasing
@@ -532,7 +540,7 @@ class TestSparklineRenderer:
         """Detect trend direction from data"""
         renderer = SparklineRenderer()
         trend = renderer.detect_trend(data)
-        
+
         assert trend == expected_trend
 ```
 
@@ -549,23 +557,23 @@ from dopemux_dashboard import DopemuxDashboard
 async def test_tab_navigation():
     """Test Tab key cycles through panels"""
     app = DopemuxDashboard()
-    
+
     async with app.run_test() as pilot:
         # Initial focus on ADHD panel
         assert app.focus_manager.focused_panel_id == "adhd"
-        
+
         # Press Tab → Productivity
         await pilot.press("tab")
         assert app.focus_manager.focused_panel_id == "productivity"
-        
+
         # Press Tab → Services
         await pilot.press("tab")
         assert app.focus_manager.focused_panel_id == "services"
-        
+
         # Press Tab → Trends
         await pilot.press("tab")
         assert app.focus_manager.focused_panel_id == "trends"
-        
+
         # Press Tab → wraps to ADHD
         await pilot.press("tab")
         assert app.focus_manager.focused_panel_id == "adhd"
@@ -574,12 +582,12 @@ async def test_tab_navigation():
 async def test_number_key_focus():
     """Test 1-4 keys focus specific panels"""
     app = DopemuxDashboard()
-    
+
     async with app.run_test() as pilot:
         # Press 3 → Services
         await pilot.press("3")
         assert app.focus_manager.focused_panel_id == "services"
-        
+
         # Press 1 → ADHD
         await pilot.press("1")
         assert app.focus_manager.focused_panel_id == "adhd"
@@ -588,12 +596,12 @@ async def test_number_key_focus():
 async def test_escape_closes_modals():
     """Test Escape key closes all modals"""
     app = DopemuxDashboard()
-    
+
     async with app.run_test() as pilot:
         # Open task detail modal
         await pilot.press("d")
         assert len(app.screen_stack) == 2  # Main + modal
-        
+
         # Press Escape → close modal
         await pilot.press("escape")
         assert len(app.screen_stack) == 1  # Main only
@@ -612,10 +620,10 @@ from dopemux_dashboard import MetricsFetcher, SparklineGenerator
 async def test_sparkline_generation_latency():
     """Sparkline generation must be <50ms"""
     generator = SparklineGenerator("http://localhost:9090")
-    
+
     # Warmup
     await generator.generate("adhd_cognitive_load", hours=24)
-    
+
     # Measure 10 iterations
     times = []
     for _ in range(10):
@@ -623,10 +631,10 @@ async def test_sparkline_generation_latency():
         await generator.generate("adhd_cognitive_load", hours=24)
         end = time.perf_counter()
         times.append((end - start) * 1000)  # Convert to ms
-    
+
     avg_time = sum(times) / len(times)
     p95_time = sorted(times)[int(len(times) * 0.95)]
-    
+
     assert avg_time < 50, f"Average time {avg_time:.2f}ms exceeds 50ms"
     assert p95_time < 100, f"P95 time {p95_time:.2f}ms exceeds 100ms"
 
@@ -634,13 +642,13 @@ async def test_sparkline_generation_latency():
 async def test_dashboard_startup_time():
     """Dashboard must start in <2 seconds"""
     from dopemux_dashboard import DopemuxDashboard
-    
+
     start = time.perf_counter()
     app = DopemuxDashboard()
     async with app.run_test() as pilot:
         await pilot.pause(0.1)  # Wait for first render
     end = time.perf_counter()
-    
+
     startup_time = end - start
     assert startup_time < 2.0, f"Startup time {startup_time:.2f}s exceeds 2s"
 
@@ -650,15 +658,15 @@ async def test_memory_usage_1hour():
     import psutil
     import asyncio
     from dopemux_dashboard import DopemuxDashboard
-    
+
     app = DopemuxDashboard()
     process = psutil.Process()
-    
+
     async with app.run_test():
         # Run for 1 hour (simulated with fast-forward)
         for _ in range(3600):  # 1 second per iteration
             await asyncio.sleep(0.01)  # Fast-forward
-            
+
             if _ % 60 == 0:  # Check every minute
                 memory_mb = process.memory_info().rss / 1024 / 1024
                 assert memory_mb < 100, f"Memory {memory_mb:.1f}MB exceeds 100MB at {_}s"
@@ -690,29 +698,29 @@ from datetime import datetime, timedelta
 
 class PrometheusQueryBuilder:
     """Build Prometheus queries for time-series data"""
-    
+
     def build_range_query(self, metric: str, hours: int, step: str = "5m") -> str:
         """
         Build query for range data.
-        
+
         Examples:
         >>> builder.build_range_query("adhd_cognitive_load", hours=24)
         'rate(adhd_cognitive_load[5m])[24h:5m]'
         """
         return f'rate({metric}[5m])[{hours}h:{step}]'
-    
+
     def build_aggregation_query(self, metric: str, days: int) -> str:
         """Build query for aggregated data over days"""
         return f'avg_over_time({metric}[{days}d])'
 
 class DataFetcher:
     """Fetch time-series data from Prometheus"""
-    
+
     def __init__(self, prometheus_url: str):
         self.url = prometheus_url
         self.cache: Dict[str, Tuple[float, List[float]]] = {}
         self.ttl = 30  # seconds
-    
+
     async def fetch_range(self, query: str) -> List[float]:
         """Fetch range data from Prometheus"""
         # Check cache
@@ -720,7 +728,7 @@ class DataFetcher:
             timestamp, data = self.cache[query]
             if time.time() - timestamp < self.ttl:
                 return data
-        
+
         # Fetch from Prometheus
         async with httpx.AsyncClient() as client:
             response = await client.get(
@@ -728,11 +736,11 @@ class DataFetcher:
                 params={"query": query}
             )
             data = self._parse_response(response.json())
-        
+
         # Cache result
         self.cache[query] = (time.time(), data)
         return data
-    
+
     def _parse_response(self, response: dict) -> List[float]:
         """Parse Prometheus response to list of floats"""
         # Extract values from response
@@ -741,98 +749,98 @@ class DataFetcher:
 
 class SparklineRenderer:
     """Render sparklines from data"""
-    
+
     CHARS = "▁▂▃▄▅▆▇█"
-    
+
     def generate_sparkline(self, data: List[float], width: int = 20) -> str:
         """
         Generate sparkline from data.
-        
+
         Args:
             data: List of floats (raw values)
             width: Number of characters (default 20)
-        
+
         Returns:
             Sparkline string (e.g., "▃▅▄▆▇▆▅▄")
         """
         if not data:
             return "─" * width
-        
+
         # Normalize to 0-7 scale
         normalized = self.normalize(data)
-        
+
         # Sample to width
         sampled = self._sample_data(normalized, width)
-        
+
         # Generate sparkline
         sparkline = "".join([self.CHARS[int(v)] for v in sampled])
-        
+
         # Add trend indicator
         trend = self.detect_trend(data)
         percentage = self._calculate_change(data)
-        
+
         return f"{sparkline} {trend} {percentage:+.0f}%"
-    
+
     def normalize(self, data: List[float]) -> List[float]:
         """Normalize data to 0-7 scale"""
         min_val = min(data)
         max_val = max(data)
-        
+
         if max_val == min_val:
             return [3.5] * len(data)  # Midpoint
-        
+
         return [
             ((v - min_val) / (max_val - min_val)) * 7
             for v in data
         ]
-    
+
     def detect_trend(self, data: List[float]) -> str:
         """Detect overall trend (▲▼─)"""
         if len(data) < 2:
             return "─"
-        
+
         # Linear regression slope
         slope = self._calculate_slope(data)
-        
+
         if slope > 0.1:
             return "▲"
         elif slope < -0.1:
             return "▼"
         else:
             return "─"
-    
+
     def _calculate_slope(self, data: List[float]) -> float:
         """Calculate linear regression slope"""
         n = len(data)
         x = list(range(n))
-        
+
         x_mean = sum(x) / n
         y_mean = sum(data) / n
-        
+
         numerator = sum((x[i] - x_mean) * (data[i] - y_mean) for i in range(n))
         denominator = sum((x[i] - x_mean) ** 2 for i in range(n))
-        
+
         return numerator / denominator if denominator != 0 else 0
-    
+
     def _calculate_change(self, data: List[float]) -> float:
         """Calculate percentage change (first vs last)"""
         if len(data) < 2 or data[0] == 0:
             return 0.0
-        
+
         return ((data[-1] - data[0]) / data[0]) * 100
 
 class SparklineGenerator:
     """High-level sparkline generation API"""
-    
+
     def __init__(self, prometheus_url: str):
         self.query_builder = PrometheusQueryBuilder()
         self.fetcher = DataFetcher(prometheus_url)
         self.renderer = SparklineRenderer()
-    
+
     async def generate(self, metric: str, hours: int = 24, width: int = 20) -> str:
         """
         Generate sparkline for metric.
-        
+
         Usage:
         >>> generator = SparklineGenerator("http://localhost:9090")
         >>> sparkline = await generator.generate("adhd_cognitive_load", hours=2)
@@ -841,14 +849,14 @@ class SparklineGenerator:
         """
         # Build query
         query = self.query_builder.build_range_query(metric, hours)
-        
+
         # Fetch data
         try:
             data = await self.fetcher.fetch_range(query)
         except Exception as e:
             logger.warning(f"Sparkline fetch failed: {e}")
             return "─" * width  # Fallback
-        
+
         # Render sparkline
         return self.renderer.generate_sparkline(data, width)
 ```
@@ -878,17 +886,17 @@ class SparklineGenerator:
 
 class TrendsWidget(Static):
     """Trends panel with real sparklines"""
-    
+
     def __init__(self, prometheus_url: str, **kwargs):
         super().__init__(**kwargs)
         self.generator = SparklineGenerator(prometheus_url)
         self.sparklines: Dict[str, str] = {}
-    
+
     async def on_mount(self):
         """Start sparkline updates"""
         self.set_interval(30, self.update_sparklines)  # Refresh every 30s
         await self.update_sparklines()  # Initial load
-    
+
     async def update_sparklines(self):
         """Fetch all sparklines"""
         try:
@@ -896,58 +904,58 @@ class TrendsWidget(Static):
             self.sparklines["cognitive_load"] = await self.generator.generate(
                 "adhd_cognitive_load", hours=2, width=20
             )
-            
+
             # Task velocity (7 days)
             self.sparklines["velocity"] = await self.generator.generate(
                 "adhd_task_velocity_per_day", hours=168, width=20
             )
-            
+
             # Context switches (24 hours)
             self.sparklines["context_switches"] = await self.generator.generate(
                 "adhd_context_switches_total", hours=24, width=20
             )
-            
+
             # Energy level (24 hours)
             self.sparklines["energy"] = await self.generator.generate(
                 "adhd_energy_level", hours=24, width=20
             )
-            
+
             self.refresh()  # Trigger re-render
-        
+
         except Exception as e:
             logger.error(f"Sparkline update failed: {e}")
             # Keep old sparklines (graceful degradation)
-    
+
     def render(self) -> RenderableType:
         """Render trends panel with sparklines"""
         table = Table.grid(padding=(0, 2))
         table.add_column(justify="left", style="bold")
         table.add_column(justify="right")
-        
+
         # Cognitive Load
         table.add_row(
             "Cognitive Load (2h)",
             self.sparklines.get("cognitive_load", "─" * 20)
         )
-        
+
         # Task Velocity
         table.add_row(
             "Task Velocity (7d)",
             self.sparklines.get("velocity", "─" * 20)
         )
-        
+
         # Context Switches
         table.add_row(
             "Context Switches (24h)",
             self.sparklines.get("context_switches", "─" * 20)
         )
-        
+
         # Energy Level
         table.add_row(
             "Energy Level (24h)",
             self.sparklines.get("energy", "─" * 20)
         )
-        
+
         return Panel(table, title="Trends", border_style="blue")
 ```
 
@@ -976,31 +984,31 @@ class TrendsWidget(Static):
 
 class FocusManager:
     """Manages panel focus state"""
-    
+
     def __init__(self, app: "DopemuxDashboard"):
         self.app = app
         self.focused_panel_id: Optional[str] = "adhd"
         self.panel_order = ["adhd", "productivity", "services", "trends"]
-    
+
     def focus_panel(self, panel_id: str):
         """Focus specific panel"""
         # Unfocus previous
         if self.focused_panel_id:
             prev = self.app.query_one(f"#{self.focused_panel_id}")
             prev.remove_class("focused")
-        
+
         # Focus new
         self.focused_panel_id = panel_id
         new_panel = self.app.query_one(f"#{panel_id}")
         new_panel.add_class("focused")
         new_panel.scroll_visible()
-    
+
     def next_panel(self):
         """Tab: next panel"""
         idx = self.panel_order.index(self.focused_panel_id)
         next_idx = (idx + 1) % len(self.panel_order)
         self.focus_panel(self.panel_order[next_idx])
-    
+
     def prev_panel(self):
         """Shift+Tab: previous panel"""
         idx = self.panel_order.index(self.focused_panel_id)
@@ -1009,7 +1017,7 @@ class FocusManager:
 
 class DopemuxDashboard(App):
     """Enhanced with keyboard navigation"""
-    
+
     BINDINGS = [
         ("1", "focus_panel('adhd')", "ADHD"),
         ("2", "focus_panel('productivity')", "Productivity"),
@@ -1021,23 +1029,23 @@ class DopemuxDashboard(App):
         ("?", "show_help", "Help"),
         ("q", "quit", "Quit"),
     ]
-    
+
     def __init__(self):
         super().__init__()
         self.focus_manager = FocusManager(self)
-    
+
     def action_focus_panel(self, panel_id: str):
         """Action: focus specific panel"""
         self.focus_manager.focus_panel(panel_id)
-    
+
     def action_next_panel(self):
         """Action: focus next panel"""
         self.focus_manager.next_panel()
-    
+
     def action_prev_panel(self):
         """Action: focus previous panel"""
         self.focus_manager.prev_panel()
-    
+
     def action_show_help(self):
         """Action: show help modal"""
         self.push_screen(HelpScreen())
@@ -1232,16 +1240,24 @@ After completion:
 
 ## 🚀 LET'S BUILD THIS!
 
-**Estimated Time:** 8-10 hours  
-**Difficulty:** Medium  
-**Fun Factor:** 🔥🔥🔥🔥🔥  
-**ADHD Friendliness:** ✨✨✨✨✨  
+**Estimated Time:** 8-10 hours
+**Difficulty:** Medium
+**Fun Factor:** 🔥🔥🔥🔥🔥
+**ADHD Friendliness:** ✨✨✨✨✨
 
 **Ready? Let's make the most ADHD-friendly dashboard ever!** 🎯
 
 ---
 
-**Document Version:** 1.0  
-**Date:** 2025-10-29  
-**Author:** Deep Research & Planning Team  
+**Document Version:** 1.0
+**Date:** 2025-10-29
+**Author:** Deep Research & Planning Team
+**Status:** ✅ READY FOR IMPLEMENTATION
+dashboard ever!** 🎯
+
+---
+
+**Document Version:** 1.0
+**Date:** 2025-10-29
+**Author:** Deep Research & Planning Team
 **Status:** ✅ READY FOR IMPLEMENTATION

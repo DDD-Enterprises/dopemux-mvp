@@ -1,3 +1,11 @@
+---
+id: dopemux-overview
+title: Dopemux Overview
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dopemux: Unified AI Development Platform
 
 Dopemux is an ADHD-optimized development platform that integrates AI agents for code repair, bluesky development, and system orchestration. It combines MCP tools (Zen, GPT-Researcher, Serena, Dope-Context, ConPort) with a modular architecture for seamless workflows.

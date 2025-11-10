@@ -1,3 +1,11 @@
+---
+id: DEPENDABOT_SETUP
+title: Dependabot_Setup
+type: how-to
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dependabot Automated Dependency Updates
 
 **Status**: Configured and ready to activate
@@ -103,7 +111,7 @@ Dependabot automatically:
 
 ### Visual Labels
 - 🐍 `python` - Python packages
-- 📦 `javascript` - npm packages  
+- 📦 `javascript` - npm packages
 - 🔒 `security` - Security patches
 - 🤖 `automated` - Auto-generated PR
 - 🎯 `dependencies` - Dependency update

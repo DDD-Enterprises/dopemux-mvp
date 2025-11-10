@@ -1,3 +1,11 @@
+---
+id: README
+title: Readme
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # ADHD Intelligence System (Serena)
 
 The ADHD Intelligence System, powered by Serena AI, provides cognitive support, break management, and productivity optimization specifically designed for ADHD developers.
@@ -135,11 +143,11 @@ adhd_settings:
 
 ## Development Status
 
-✅ **Core Engine**: Production-ready  
-✅ **Pattern Learning**: Active  
-✅ **Dashboard Integration**: Complete  
-🚧 **Advanced Predictions**: In development  
-🚧 **Mobile Companion**: Planned  
+✅ **Core Engine**: Production-ready
+✅ **Pattern Learning**: Active
+✅ **Dashboard Integration**: Complete
+🚧 **Advanced Predictions**: In development
+🚧 **Mobile Companion**: Planned
 
 ## Related Documentation
 
@@ -182,6 +190,6 @@ When working on ADHD intelligence:
 
 ---
 
-**Maintained by:** ADHD Intelligence Team  
-**Last Updated:** 2025-10-29  
+**Maintained by:** ADHD Intelligence Team
+**Last Updated:** 2025-10-29
 **Status:** Production-ready with ongoing enhancements

@@ -1,3 +1,11 @@
+---
+id: conport-event-schema-design
+title: Conport Event Schema Design
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # ConPort Event Schema Design - Architecture 3.0
 
 **Task**: 2.1 - Design ConPort Event Schema

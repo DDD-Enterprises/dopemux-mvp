@@ -1,16 +1,24 @@
+---
+id: DASHBOARD_DAY2_DEEP_RESEARCH
+title: Dashboard_Day2_Deep_Research
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dashboard Day 2: Deep Research & Planning 🔬
 
-**Created:** 2025-10-29  
-**Phase:** Advanced Features - Sparklines & Interactive Navigation  
-**Approach:** Zen Research → Deep Analysis → Surgical Implementation  
+**Created:** 2025-10-29
+**Phase:** Advanced Features - Sparklines & Interactive Navigation
+**Approach:** Zen Research → Deep Analysis → Surgical Implementation
 
 ---
 
 ## 🎯 EXECUTIVE SUMMARY
 
 ### What We're Building (Day 2 Focus)
-**Primary Goal:** Enhanced sparklines with real historical Prometheus data  
-**Secondary Goal:** Interactive keyboard navigation foundation  
+**Primary Goal:** Enhanced sparklines with real historical Prometheus data
+**Secondary Goal:** Interactive keyboard navigation foundation
 
 ### Why This Matters
 - Current dashboard shows static/placeholder data
@@ -78,56 +86,56 @@ lazygit:  Commits ▁▁▂▃▅▇█▇▅▃▂ (last 30 days)
 ```python
 class PrometheusClient:
     """Fetches time-series data from Prometheus"""
-    
+
     def __init__(self, base_url: str = "http://localhost:9090"):
         self.base_url = base_url
         self.client = httpx.AsyncClient(timeout=5.0)
-    
+
     async def query_range(
-        self, 
-        query: str, 
+        self,
+        query: str,
         hours: int = 24,
         step: str = "5m"
     ) -> List[Tuple[datetime, float]]:
         """
         Query Prometheus for time-series data
-        
+
         Args:
             query: PromQL query (e.g., 'adhd_cognitive_load')
             hours: How far back to fetch
             step: Resolution (1m, 5m, 15m, 1h)
-        
+
         Returns:
             List of (timestamp, value) tuples
         """
         end_time = datetime.now()
         start_time = end_time - timedelta(hours=hours)
-        
+
         params = {
             'query': query,
             'start': start_time.isoformat(),
             'end': end_time.isoformat(),
             'step': step
         }
-        
+
         response = await self.client.get(
             f"{self.base_url}/api/v1/query_range",
             params=params
         )
-        
+
         if response.status_code != 200:
             logger.warning(f"Prometheus query failed: {response.text}")
             return []
-        
+
         data = response.json()
         if data['status'] != 'success':
             return []
-        
+
         # Parse result
         result = data['data']['result']
         if not result:
             return []
-        
+
         # Extract values
         values = result[0]['values']  # [[timestamp, value], ...]
         return [(datetime.fromtimestamp(ts), float(val)) for ts, val in values]
@@ -137,35 +145,35 @@ class PrometheusClient:
 ```python
 class SparklineGenerator:
     """Converts time-series data into ASCII/Unicode sparklines"""
-    
+
     # Unicode block characters for smooth rendering
     BLOCKS = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
-    
+
     def generate(
-        self, 
-        data: List[Tuple[datetime, float]], 
+        self,
+        data: List[Tuple[datetime, float]],
         width: int = 20,
         min_val: Optional[float] = None,
         max_val: Optional[float] = None
     ) -> str:
         """
         Generate sparkline from time-series data
-        
+
         Args:
             data: List of (timestamp, value) tuples
             width: Desired character width
             min_val: Force minimum value (for consistent scale)
             max_val: Force maximum value
-        
+
         Returns:
             Unicode sparkline string
         """
         if not data:
             return '─' * width  # Empty line if no data
-        
+
         # Extract values
         values = [v for _, v in data]
-        
+
         # Resample to desired width
         if len(values) > width:
             # Downsample - take every Nth value
@@ -174,51 +182,51 @@ class SparklineGenerator:
         elif len(values) < width:
             # Upsample - interpolate
             values = self._interpolate(values, width)
-        
+
         # Normalize to 0-7 range
         min_v = min_val if min_val is not None else min(values)
         max_v = max_val if max_val is not None else max(values)
-        
+
         if max_v == min_v:
             # Flat line
             return self.BLOCKS[4] * width
-        
+
         normalized = [
             int((v - min_v) / (max_v - min_v) * 7)
             for v in values
         ]
-        
+
         # Render
         return ''.join(self.BLOCKS[n] for n in normalized)
-    
+
     def _interpolate(self, values: List[float], target_len: int) -> List[float]:
         """Linear interpolation to expand data"""
         if len(values) == 1:
             return values * target_len
-        
+
         result = []
         step = (len(values) - 1) / (target_len - 1)
-        
+
         for i in range(target_len):
             idx = i * step
             idx_low = int(idx)
             idx_high = min(idx_low + 1, len(values) - 1)
             weight = idx - idx_low
-            
+
             val = values[idx_low] * (1 - weight) + values[idx_high] * weight
             result.append(val)
-        
+
         return result
-    
+
     def colorize(self, sparkline: str, values: List[float]) -> str:
         """Add ADHD-optimized color based on trends"""
         if len(values) < 2:
             return sparkline
-        
+
         # Calculate trend
         recent_avg = sum(values[-3:]) / min(3, len(values))
         older_avg = sum(values[:3]) / min(3, len(values))
-        
+
         if recent_avg > older_avg * 1.1:
             # Upward trend - green
             return f"[green]{sparkline}[/green]"
@@ -234,16 +242,16 @@ class SparklineGenerator:
 ```python
 class TrendsPanel(Static):
     """Trends panel with live sparklines"""
-    
+
     def __init__(self):
         super().__init__()
         self.prom = PrometheusClient()
         self.sparkline_gen = SparklineGenerator()
         self.sparklines = {}
-    
+
     async def update_sparklines(self):
         """Fetch and render all sparklines"""
-        
+
         # Cognitive Load (last 2 hours, 5min resolution)
         cognitive_data = await self.prom.query_range(
             'adhd_cognitive_load{load_category="optimal"}',
@@ -251,12 +259,12 @@ class TrendsPanel(Static):
             step='5m'
         )
         self.sparklines['cognitive'] = self.sparkline_gen.generate(
-            cognitive_data, 
+            cognitive_data,
             width=24,
             min_val=0,
             max_val=100
         )
-        
+
         # Task Velocity (last 7 days, 1hr resolution)
         velocity_data = await self.prom.query_range(
             'adhd_task_velocity_per_day',
@@ -267,7 +275,7 @@ class TrendsPanel(Static):
             velocity_data,
             width=24
         )
-        
+
         # Context Switches (last 24 hours, 15min resolution)
         switches_data = await self.prom.query_range(
             'adhd_context_switches_total',
@@ -278,13 +286,13 @@ class TrendsPanel(Static):
             switches_data,
             width=24
         )
-        
+
         # Refresh display
         self.refresh()
-    
+
     def render(self) -> Panel:
         """Render trends panel with sparklines"""
-        
+
         content = f"""
 ╔══ 📈 Trends (Live) ═══════════════════════╗
 ║                                            ║
@@ -302,7 +310,7 @@ class TrendsPanel(Static):
 ║                                            ║
 ╚════════════════════════════════════════════╝
         """
-        
+
         return Panel(content, style="cyan")
 ```
 
@@ -530,10 +538,10 @@ def test_sparkline_full_range():
 async def test_dashboard_sparklines_update():
     dashboard = DopemuxDashboard()
     trends = dashboard.query_one(TrendsPanel)
-    
+
     # Trigger update
     await trends.update_sparklines()
-    
+
     # Verify sparklines rendered
     assert 'cognitive' in trends.sparklines
     assert len(trends.sparklines['cognitive']) == 24
@@ -716,8 +724,8 @@ python3 dopemux_dashboard.py
 
 ---
 
-**Status:** 📖 Ready for Implementation  
-**Confidence:** HIGH  
-**Risk Level:** LOW (well-researched, clear path)  
+**Status:** 📖 Ready for Implementation
+**Confidence:** HIGH
+**Risk Level:** LOW (well-researched, clear path)
 
 **Let's build beautiful sparklines! 🎨📊**

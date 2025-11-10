@@ -1,3 +1,11 @@
+---
+id: F-NEW-7_PHASE1_MIGRATION_DESIGN
+title: F New 7_Phase1_Migration_Design
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # F-NEW-7 Phase 1: Multi-Tenancy Migration Design
 
 **Status**: Schema analyzed, migration strategy designed

@@ -1,3 +1,11 @@
+---
+id: QUICK_START_ALT_ROUTING
+title: Quick_Start_Alt_Routing
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # 🚀 Quick Start: Automatic Alternative Routing
 
 Use OpenRouter, XAI (Grok), and Minimax instead of expired Anthropic API credits.
@@ -141,5 +149,5 @@ curl -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
 
 ---
 
-**Created:** 2025-10-29  
+**Created:** 2025-10-29
 **Your Setup:** Ready to go! ✅

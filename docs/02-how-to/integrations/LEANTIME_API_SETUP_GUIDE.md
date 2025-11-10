@@ -1,3 +1,11 @@
+---
+id: LEANTIME_API_SETUP_GUIDE
+title: Leantime_Api_Setup_Guide
+type: how-to
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Leantime API Access Setup Guide - Free Version
 
 ## Research Summary
@@ -19,7 +27,7 @@ lt_<user_id>_<secret>
 
 Example: `lt_a1b2c_xyz789abc...`
 
-- `lt`: Namespace prefix  
+- `lt`: Namespace prefix
 - `<user_id>`: 5-character user identifier
 - `<secret>`: 32-character random secret
 
@@ -100,12 +108,12 @@ USE leantime;
 
 -- Insert API key user
 INSERT INTO zp_user (
-    username, 
-    firstname, 
-    lastname, 
-    password, 
-    role, 
-    source, 
+    username,
+    firstname,
+    lastname,
+    password,
+    role,
+    source,
     status,
     clientId
 ) VALUES (
@@ -145,11 +153,11 @@ SET @api_key = CONCAT('lt_', LEFT(@user_id, 32), '_', LEFT(@secret, 32));
 
 -- Note: This creates a test key. In production, use proper bcrypt hashing
 INSERT INTO zp_user (
-    username, 
-    firstname, 
-    password, 
-    role, 
-    source, 
+    username,
+    firstname,
+    password,
+    role,
+    source,
     status,
     clientId
 ) VALUES (
@@ -222,7 +230,7 @@ From analysis of Leantime source code:
 
 1. **API Key Controller**: `/app/Domain/Api/Controllers/NewApiKey.php`
    - Handles API key creation via web UI
-   
+
 2. **API Service**: `/app/Domain/Api/Services/Api.php`
    - `createAPIKey()` - Creates API keys
    - `getAPIKeyUser()` - Validates API keys
@@ -230,7 +238,7 @@ From analysis of Leantime source code:
 
 3. **JSON-RPC Handler**: `/app/Domain/Api/Controllers/Jsonrpc.php`
    - Routes JSON-RPC 2.0 requests to appropriate services
-   
+
 4. **User Repository**: `/app/Domain/Users/Repositories/Users.php`
    - Stores API keys as users with `source='api'`
 
@@ -291,19 +299,19 @@ python test_http_server.py
 ## Troubleshooting
 
 ### "Redirect to /install"
-**Cause**: Leantime not yet installed  
+**Cause**: Leantime not yet installed
 **Solution**: Complete installation at http://localhost:8080
 
 ### "Invalid API Key"
-**Cause**: Wrong format or key not found  
+**Cause**: Wrong format or key not found
 **Solution**: Verify format is `lt_<user>_<secret>` and key exists in database
 
 ### "Permission Denied"
-**Cause**: API key doesn't have required role/project access  
+**Cause**: API key doesn't have required role/project access
 **Solution**: Update key's role or project assignments in database
 
 ### "Connection Refused"
-**Cause**: Leantime not running or wrong URL  
+**Cause**: Leantime not running or wrong URL
 **Solution**: Check `docker ps` and verify `LEANTIME_API_URL`
 
 ## References

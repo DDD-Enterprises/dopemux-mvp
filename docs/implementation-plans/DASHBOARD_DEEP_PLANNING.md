@@ -1,7 +1,15 @@
+---
+id: DASHBOARD_DEEP_PLANNING
+title: Dashboard_Deep_Planning
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dashboard Deep Architecture Planning 🧠
 
-**Date:** 2025-10-28  
-**Status:** Pre-Implementation Planning Complete  
+**Date:** 2025-10-28
+**Status:** Pre-Implementation Planning Complete
 **Next:** Review & Approve Architecture
 
 ---
@@ -30,7 +38,7 @@ We have a **dashboard prototype with mock data** and **services that already sup
 ### 2. ADHD Engine Service
 - **Has:** Complete FastAPI server with `/api/v1/` endpoints
 - **Port:** 8095 (configurable)
-- **APIs:** 
+- **APIs:**
   - `/api/v1/assess-task`
   - `/api/v1/energy-level/{user_id}`
   - `/api/v1/attention-state/{user_id}`
@@ -60,7 +68,7 @@ We have a **dashboard prototype with mock data** and **services that already sup
 Dashboard Code (Current):
   async with httpx.AsyncClient() as client:
       resp = await client.get("http://localhost:8001/api/v1/state")
-      
+
 Reality:
   Services run as: conport-mcp --mode stdio
   (No HTTP server listening!)
@@ -72,7 +80,7 @@ Reality:
 # Services run BOTH MCP and HTTP simultaneously
 
 # MCP mode (for Claude/Copilot)
-mcp_server.run(stdio=True)  
+mcp_server.run(stdio=True)
 
 # HTTP mode (for dashboard)
 uvicorn.run(fastapi_app, port=8005)
@@ -280,7 +288,7 @@ async def get_adhd_state(self) -> Dict:
                 return json.loads(cached)
         except redis.RedisError:
             pass
-        
+
         # Last resort: return mock data
         logger.warning("All data sources failed, using mock data")
         return {
@@ -473,9 +481,9 @@ Footer: ConPort ✓  ADHD ✓  Serena ⚠  Redis ✗
 
 ---
 
-**Status:** ✅ Planning Complete  
-**Confidence:** HIGH (architecture proven, APIs exist, clear path)  
-**Estimated Time:** 1-2 weeks to production-ready  
+**Status:** ✅ Planning Complete
+**Confidence:** HIGH (architecture proven, APIs exist, clear path)
+**Estimated Time:** 1-2 weeks to production-ready
 **Risk Level:** LOW (worst case: graceful degradation to mock data)
 
 **Ready to proceed?** 🎉

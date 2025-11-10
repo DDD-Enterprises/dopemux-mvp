@@ -1,3 +1,11 @@
+---
+id: phase2_conport_deep_analysis
+title: Phase2_Conport_Deep_Analysis
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dopemux Audit: Phase 2 - ConPort Deep Analysis Report
 
 **Date**: November 10, 2025

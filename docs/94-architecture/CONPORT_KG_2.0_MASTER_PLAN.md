@@ -1,3 +1,11 @@
+---
+id: CONPORT_KG_2.0_MASTER_PLAN
+title: Conport_Kg_2.0_Master_Plan
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # ConPort-KG 2.0: Multi-Agent Memory Hub - Master Plan
 
 **Date**: 2025-10-23
