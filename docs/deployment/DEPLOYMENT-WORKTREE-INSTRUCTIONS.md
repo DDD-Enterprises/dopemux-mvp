@@ -1,3 +1,11 @@
+---
+id: DEPLOYMENT-WORKTREE-INSTRUCTIONS
+title: Deployment Worktree Instructions
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Deployment Instructions - Git Worktree Setup
 **Current**: code-audit branch in `/Users/hue/code/code-audit` worktree
 **Main Branch**: `/Users/hue/code/dopemux-mvp` worktree

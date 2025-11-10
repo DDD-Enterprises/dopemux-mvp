@@ -1,8 +1,16 @@
+---
+id: DOPEMUX_ARCHITECTURE_OVERVIEW
+title: Dopemux_Architecture_Overview
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # 🧠 Dopemux Architecture Overview
 ## The Complete Guide to ADHD-Optimized Development
 
-**Version**: 2.0  
-**Created**: October 2025  
+**Version**: 2.0
+**Created**: October 2025
 **Purpose**: Comprehensive documentation of the Dopemux platform
 
 ---
@@ -1458,4 +1466,3 @@ $ dopemux start
 **Total Startup Time:** ~15-30 seconds (depending on what's already running)
 
 ---
-

@@ -1,8 +1,16 @@
+---
+id: DASHBOARD_DAY4_DEEP_RESEARCH
+title: Dashboard_Day4_Deep_Research
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dashboard Day 4: Data Drill-Downs & Modal Views - Deep Research Plan 🔍
 
-**Created:** 2025-10-29  
-**Phase:** Advanced Features - Interactive Drill-Down System  
-**Estimated Time:** 6-8 hours  
+**Created:** 2025-10-29
+**Phase:** Advanced Features - Interactive Drill-Down System
+**Estimated Time:** 6-8 hours
 **Status:** 🎯 Ready to implement
 
 ---
@@ -79,12 +87,12 @@ Flow: Select process → Press 'F9' → Action menu modal
 ```python
 class ModalView(Screen):
     """Base class for all drill-down modals"""
-    
+
     CSS = """
     ModalView {
         align: center middle;
     }
-    
+
     #modal-container {
         width: 80%;
         height: 80%;
@@ -92,25 +100,25 @@ class ModalView(Screen):
         border: thick $blue;
         border-title-align: center;
     }
-    
+
     #modal-content {
         height: 1fr;
         overflow-y: auto;
     }
-    
+
     #modal-footer {
         dock: bottom;
         height: 3;
         background: $surface1;
     }
     """
-    
+
     BINDINGS = [
         ("escape", "dismiss", "Close"),
         ("q", "dismiss", "Quit"),
         ("?", "help", "Help"),
     ]
-    
+
     def action_dismiss(self):
         """Close modal and return to main view"""
         self.app.pop_screen()
@@ -168,11 +176,11 @@ class ModalView(Screen):
 ```python
 class TaskDetailModal(ModalView):
     """Detailed view of a single task"""
-    
+
     def __init__(self, task_id: int):
         super().__init__()
         self.task_id = task_id
-    
+
     def compose(self) -> ComposeResult:
         with Container(id="modal-container"):
             yield Static(id="modal-header")
@@ -183,12 +191,12 @@ class TaskDetailModal(ModalView):
                 yield Static(id="insights-section")
                 yield Static(id="history-section")
             yield Static(id="modal-footer")
-    
+
     async def on_mount(self):
         """Fetch task data and render"""
         task_data = await self.fetch_task_details()
         self.render_task(task_data)
-    
+
     async def fetch_task_details(self) -> Dict:
         """Fetch all task-related data"""
         async with httpx.AsyncClient() as client:
@@ -199,14 +207,14 @@ class TaskDetailModal(ModalView):
                 client.get(f"http://localhost:9090/api/v1/query?query=adhd_task_duration{{task_id=\"{self.task_id}\"}}"),
                 client.get(f"http://localhost:8006/api/adhd/insights?task_id={self.task_id}")
             )
-            
+
             return {
                 "task": task.json(),
                 "history": history.json(),
                 "metrics": metrics.json(),
                 "insights": insights.json()
             }
-    
+
     BINDINGS = [
         *ModalView.BINDINGS,
         ("c", "complete_task", "Complete"),
@@ -214,7 +222,7 @@ class TaskDetailModal(ModalView):
         ("p", "change_priority", "Priority"),
         ("n", "add_note", "Note"),
     ]
-    
+
     def action_complete_task(self):
         """Mark task as complete and close modal"""
         # Call API to update task
@@ -267,14 +275,14 @@ class TaskDetailModal(ModalView):
 ```python
 class ServiceLogsModal(ModalView):
     """Live log viewer for services"""
-    
+
     def __init__(self, service_name: str):
         super().__init__()
         self.service_name = service_name
         self.auto_scroll = True
         self.filter_level = "ALL"
         self.log_buffer = []
-    
+
     def compose(self) -> ComposeResult:
         with Container(id="modal-container"):
             yield Static(id="log-header")
@@ -283,16 +291,16 @@ class ServiceLogsModal(ModalView):
             with Container(id="log-content", classes="scrollable"):
                 yield DataTable(id="log-table")
             yield Static(id="log-footer")
-    
+
     async def on_mount(self):
         """Start log streaming"""
         # Fetch initial logs
         logs = await self.fetch_logs(lines=100)
         self.render_logs(logs)
-        
+
         # Start live tail in background
         asyncio.create_task(self.stream_logs())
-    
+
     async def stream_logs(self):
         """Stream logs in real-time"""
         # WebSocket or polling approach
@@ -304,17 +312,17 @@ class ServiceLogsModal(ModalView):
                         params={"since": self.last_timestamp, "tail": True}
                     )
                     new_logs = response.json()
-                    
+
                     if new_logs:
                         self.append_logs(new_logs)
                         if self.auto_scroll:
                             self.scroll_to_bottom()
-                    
+
                     await asyncio.sleep(1)  # Poll every second
                 except Exception as e:
                     logger.error(f"Log stream error: {e}")
                     await asyncio.sleep(5)
-    
+
     BINDINGS = [
         *ModalView.BINDINGS,
         ("f", "toggle_filter", "Filter"),
@@ -424,12 +432,12 @@ class ServiceLogsModal(ModalView):
 
 class ModalView(Screen):
     """Base class for all drill-down modals"""
-    
+
     CSS = """
     ModalView {
         align: center middle;
     }
-    
+
     #modal-container {
         width: 80%;
         height: 80%;
@@ -438,12 +446,12 @@ class ModalView(Screen):
         padding: 1 2;
     }
     """
-    
+
     BINDINGS = [
         ("escape", "dismiss", "Close"),
         ("q", "dismiss", "Quit"),
     ]
-    
+
     def action_dismiss(self):
         self.app.pop_screen()
 ```
@@ -452,7 +460,7 @@ class ModalView(Screen):
 ```python
 class TestModal(ModalView):
     """Simple test modal"""
-    
+
     def compose(self) -> ComposeResult:
         with Container(id="modal-container"):
             yield Static("Test Modal - Press Esc to close")
@@ -481,7 +489,7 @@ class TaskDetailModal(ModalView):
     def __init__(self, task_id: int):
         super().__init__()
         self.task_id = task_id
-    
+
     def compose(self) -> ComposeResult:
         with Container(id="modal-container"):
             yield Static(f"Task #{self.task_id} Details", id="header")
@@ -544,7 +552,7 @@ async def on_mount(self):
 def render_logs(self, logs):
     table = self.query_one("#log-table", DataTable)
     table.add_columns("Time", "Level", "Message")
-    
+
     for log in logs:
         # Color-code by level
         level_style = self.get_level_style(log['level'])
@@ -629,22 +637,22 @@ async def stream_logs(self):
 async def test_drill_down_flow():
     """Test complete drill-down workflow"""
     app = DopemuxDashboard()
-    
+
     # Start app
     async with app.run_test() as pilot:
         # Navigate to task
         await pilot.press("2")  # Focus productivity panel
         await pilot.press("down", "down")  # Select task
-        
+
         # Open modal
         await pilot.press("enter")
-        
+
         # Verify modal is open
         assert app.screen is TaskDetailModal
-        
+
         # Close modal
         await pilot.press("escape")
-        
+
         # Verify back on main view
         assert app.screen is DopemuxDashboard
 ```

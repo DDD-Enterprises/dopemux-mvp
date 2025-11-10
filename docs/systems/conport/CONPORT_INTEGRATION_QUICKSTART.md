@@ -1,9 +1,17 @@
+---
+id: CONPORT_INTEGRATION_QUICKSTART
+title: Conport_Integration_Quickstart
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # ConPort Integration Quick Start Guide
 
 **Goal**: Get ConPort-KG API deployed and integrated with one agent in 1 week
 
-**Status**: Ready to implement  
-**Effort**: 5-7 days  
+**Status**: Ready to implement
+**Effort**: 5-7 days
 **ROI**: Extremely high (unlocks entire agent ecosystem)
 
 ---
@@ -84,7 +92,7 @@ async def health():
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     port = int(os.getenv("PORT", 8000))
     uvicorn.run(
         app,
@@ -154,7 +162,7 @@ async def get_recent_decisions(
 ):
     """
     Get recent decisions (Tier 1 - Overview)
-    
+
     ADHD-optimized: Returns Top-3 by default
     Performance: ~2.52ms p95
     """
@@ -169,7 +177,7 @@ async def get_active_decisions(
 ):
     """
     Get currently active decisions (Tier 1)
-    
+
     Returns decisions with status='active' or recent updates
     """
     decisions = await overview.get_active_decisions(workspace_id)
@@ -187,7 +195,7 @@ async def get_decision_neighborhood(
 ):
     """
     Get decision neighborhood graph (Tier 2)
-    
+
     Returns related decisions with relationships
     Performance: ~3.44ms p95
     """
@@ -204,7 +212,7 @@ async def get_decision_genealogy(
 ):
     """
     Get decision genealogy (ancestors and descendants)
-    
+
     Shows complete decision lineage
     """
     genealogy = await exploration.get_decision_genealogy(decision_id)
@@ -221,7 +229,7 @@ async def get_decision_analytics(
 ):
     """
     Get decision analytics (Tier 3)
-    
+
     Complete analysis: importance, blast radius, churn risk
     Performance: ~4.76ms p95
     """
@@ -236,7 +244,7 @@ async def get_impact_graph(
 ):
     """
     Get impact graph (Tier 3)
-    
+
     Shows all decisions affected by this decision
     """
     impact = await deep_context.get_impact_graph(decision_id, max_depth)
@@ -256,7 +264,7 @@ async def search_decisions(
 ):
     """
     Search decisions by query string
-    
+
     Searches across summary, rationale, implementation_details
     """
     # TODO: Implement full-text search
@@ -293,7 +301,7 @@ version: '3.8'
 
 services:
   # Existing services...
-  
+
   # ADD THIS NEW SERVICE
   conport-kg-api:
     build:
@@ -416,14 +424,14 @@ logger = logging.getLogger(__name__)
 class ConPortKGClient:
     """
     Async HTTP client for ConPort-KG API
-    
+
     Features:
     - JWT authentication with auto-refresh
     - Retry logic with exponential backoff
     - Type-safe responses
     - Circuit breaker for reliability
     """
-    
+
     def __init__(
         self,
         base_url: str = "http://localhost:8000",
@@ -438,33 +446,33 @@ class ConPortKGClient:
         self._access_token = access_token
         self._refresh_token = None
         self._token_expires = None
-        
+
         self.client = httpx.AsyncClient(
             base_url=self.base_url,
             timeout=timeout,
             headers={"User-Agent": "ConPort-KG-Client/1.0"}
         )
-    
+
     async def authenticate(self):
         """Authenticate and get JWT tokens"""
         if not self.email or not self.password:
             raise AuthenticationError("Email and password required")
-        
+
         response = await self.client.post(
             "/auth/login",
             json={"email": self.email, "password": self.password}
         )
-        
+
         if response.status_code != 200:
             raise AuthenticationError(f"Login failed: {response.text}")
-        
+
         data = response.json()
         self._access_token = data["access_token"]
         self._refresh_token = data["refresh_token"]
         self._token_expires = datetime.now() + timedelta(minutes=15)
-        
+
         logger.info("Authenticated successfully")
-    
+
     async def _ensure_authenticated(self):
         """Ensure we have a valid access token"""
         if not self._access_token:
@@ -472,64 +480,64 @@ class ConPortKGClient:
         elif self._token_expires and datetime.now() >= self._token_expires:
             # Token expired, refresh it
             await self._refresh_access_token()
-    
+
     async def _refresh_access_token(self):
         """Refresh the access token using refresh token"""
         if not self._refresh_token:
             await self.authenticate()
             return
-        
+
         response = await self.client.post(
             "/auth/refresh",
             json={"refresh_token": self._refresh_token}
         )
-        
+
         if response.status_code != 200:
             # Refresh failed, re-authenticate
             await self.authenticate()
             return
-        
+
         data = response.json()
         self._access_token = data["access_token"]
         self._token_expires = datetime.now() + timedelta(minutes=15)
-        
+
         logger.info("Access token refreshed")
-    
+
     async def _request(self, method: str, path: str, **kwargs):
         """Make authenticated request with retry logic"""
         await self._ensure_authenticated()
-        
+
         headers = kwargs.get('headers', {})
         headers['Authorization'] = f'Bearer {self._access_token}'
         kwargs['headers'] = headers
-        
+
         # Retry logic (3 attempts)
         for attempt in range(3):
             try:
                 response = await self.client.request(method, path, **kwargs)
-                
+
                 if response.status_code == 401:
                     # Token invalid, refresh and retry
                     await self._refresh_access_token()
                     headers['Authorization'] = f'Bearer {self._access_token}'
                     response = await self.client.request(method, path, **kwargs)
-                
+
                 if response.status_code == 404:
                     raise NotFoundError(f"Resource not found: {path}")
-                
+
                 response.raise_for_status()
                 return response.json()
-                
+
             except httpx.HTTPError as e:
                 if attempt == 2:  # Last attempt
                     raise ConPortKGError(f"Request failed: {e}")
                 logger.warning(f"Request failed (attempt {attempt+1}/3): {e}")
                 await asyncio.sleep(2 ** attempt)  # Exponential backoff
-    
+
     # ========================================================================
     # Query Methods
     # ========================================================================
-    
+
     async def get_recent_decisions(
         self,
         limit: int = 3,
@@ -539,10 +547,10 @@ class ConPortKGClient:
         params = {"limit": limit}
         if workspace_id:
             params["workspace_id"] = workspace_id
-        
+
         data = await self._request("GET", "/kg/decisions/recent", params=params)
         return [Decision(**d) for d in data]
-    
+
     async def get_decision_neighborhood(
         self,
         decision_id: int,
@@ -555,7 +563,7 @@ class ConPortKGClient:
             params={"max_hops": max_hops}
         )
         return DecisionNeighborhood(**data)
-    
+
     async def get_decision_analytics(
         self,
         decision_id: int
@@ -566,7 +574,7 @@ class ConPortKGClient:
             f"/kg/decisions/{decision_id}/analytics"
         )
         return DecisionAnalytics(**data)
-    
+
     async def search_decisions(
         self,
         query: str,
@@ -580,10 +588,10 @@ class ConPortKGClient:
             params["workspace_id"] = workspace_id
         if tag:
             params["tag"] = tag
-        
+
         data = await self._request("GET", "/kg/decisions/search", params=params)
         return [Decision(**d) for d in data]
-    
+
     async def close(self):
         """Close HTTP client"""
         await self.client.aclose()
@@ -666,17 +674,17 @@ logger = logging.getLogger(__name__)
 class SerenaKGIntegration:
     """
     ConPort-KG integration for Serena
-    
+
     Features:
     - Decision context in hover tooltips
     - Related decisions for symbols
     - ADHD-friendly formatting
     """
-    
+
     def __init__(self, kg_client: ConPortKGClient):
         self.kg = kg_client
         self._cache = {}  # Simple in-memory cache
-    
+
     async def get_decisions_for_symbol(
         self,
         symbol: str,
@@ -684,17 +692,17 @@ class SerenaKGIntegration:
     ) -> List[Decision]:
         """
         Get decisions related to a code symbol
-        
+
         Searches decision graph for mentions of the symbol
         """
         cache_key = f"{workspace_id}:{symbol}"
-        
+
         # Check cache (5min TTL)
         if cache_key in self._cache:
             cached_time, cached_data = self._cache[cache_key]
             if (asyncio.get_event_loop().time() - cached_time) < 300:
                 return cached_data
-        
+
         try:
             # Search for symbol in decisions
             decisions = await self.kg.search_decisions(
@@ -702,16 +710,16 @@ class SerenaKGIntegration:
                 workspace_id=workspace_id,
                 limit=3  # ADHD Top-3 pattern
             )
-            
+
             # Cache results
             self._cache[cache_key] = (asyncio.get_event_loop().time(), decisions)
-            
+
             return decisions
-            
+
         except Exception as e:
             logger.error(f"Failed to fetch decisions for {symbol}: {e}")
             return []
-    
+
     def format_hover_text(
         self,
         symbol: str,
@@ -719,7 +727,7 @@ class SerenaKGIntegration:
     ) -> str:
         """
         Format decisions for LSP hover tooltip
-        
+
         ADHD-friendly:
         - Top-3 pattern
         - Emoji visual cues
@@ -727,34 +735,34 @@ class SerenaKGIntegration:
         """
         if not decisions:
             return f"**{symbol}**\n\n_(No related decisions found)_"
-        
+
         lines = [
             f"**{symbol}**",
             "",
             "📝 **Related Decisions:**",
             ""
         ]
-        
+
         for i, decision in enumerate(decisions[:3], 1):
             # Truncate long summaries
             summary = decision.summary
             if len(summary) > 60:
                 summary = summary[:57] + "..."
-            
+
             lines.append(f"{i}. {summary}")
-            
+
             # Add tags if present
             if decision.tags:
                 tags = " ".join(f"`{tag}`" for tag in decision.tags[:3])
                 lines.append(f"   {tags}")
-            
+
             lines.append("")
-        
+
         if len(decisions) > 3:
             lines.append(f"_...and {len(decisions) - 3} more_")
-        
+
         return "\n".join(lines)
-    
+
     async def enrich_hover(
         self,
         symbol: str,
@@ -763,16 +771,16 @@ class SerenaKGIntegration:
     ) -> str:
         """
         Enrich existing hover tooltip with decision context
-        
+
         Appends decision context to existing LSP hover text
         """
         decisions = await self.get_decisions_for_symbol(symbol, workspace_id)
-        
+
         if not decisions:
             return original_hover
-        
+
         decision_text = self.format_hover_text(symbol, decisions)
-        
+
         # Combine original hover + decision context
         return f"{original_hover}\n\n---\n\n{decision_text}"
 
@@ -782,17 +790,17 @@ async def handle_hover(params, kg_integration: SerenaKGIntegration):
     """LSP hover request handler"""
     # Get symbol at cursor position
     symbol = extract_symbol_at_position(params)
-    
+
     # Get original hover text (type info, docs, etc)
     original_hover = await get_original_hover(params)
-    
+
     # Enrich with decision context
     enriched_hover = await kg_integration.enrich_hover(
         symbol=symbol,
         original_hover=original_hover,
         workspace_id=params.workspace_id
     )
-    
+
     return {"contents": enriched_hover}
 ```
 
@@ -924,7 +932,7 @@ After 1 week, you should have:
 
 ---
 
-**Quick Start Created**: 2025-10-28  
-**Estimated Time**: 5-7 days  
-**Difficulty**: Medium  
+**Quick Start Created**: 2025-10-28
+**Estimated Time**: 5-7 days
+**Difficulty**: Medium
 **Value**: Extremely High 🚀

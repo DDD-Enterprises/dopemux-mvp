@@ -17,6 +17,19 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
+# Import the global error handling framework (Phase 2)
+try:
+    from dopemux.error_handling import (
+        with_error_handling,
+        create_dopemux_error,
+        ErrorType,
+        ErrorSeverity
+    )
+    ERROR_HANDLING_AVAILABLE = True
+except ImportError:
+    ERROR_HANDLING_AVAILABLE = False
+    logger.warning("⚠️ Error handling framework not available")
+
 # Worktree multi-instance support
 from instance_detector import SimpleInstanceDetector
 
@@ -71,6 +84,11 @@ class EnhancedConPortServer:
         self.auto_save_interval = 30  # seconds
         self.context_cache_ttl = 300  # 5 minutes
 
+        # Database optimization settings (Phase 3)
+        self.query_cache_ttl = 180  # 3 minutes for query results
+        self.connection_pool_min = int(os.getenv('DB_POOL_MIN', '5'))  # Increased for scalability
+        self.connection_pool_max = int(os.getenv('DB_POOL_MAX', '20'))  # Higher for high load
+
         self.shutdown_event = asyncio.Event()
         self.auto_save_task = None
         self.auto_fork_progress = os.getenv('DOPEMUX_AUTO_FORK_PROGRESS', '1') == '1'
@@ -81,12 +99,19 @@ class EnhancedConPortServer:
     async def init_connections(self):
         """Initialize database and Redis connections"""
         try:
-            # PostgreSQL connection pool
+            # PostgreSQL connection pool (optimized for Phase 3 scalability)
             self.db_pool = await asyncpg.create_pool(
                 self.postgres_url,
-                min_size=1,
-                max_size=5,
-                command_timeout=60
+                min_size=self.connection_pool_min,  # Configurable min connections
+                max_size=self.connection_pool_max,  # Configurable max connections for high load
+                max_queries=50000,  # Prevent connection exhaustion
+                max_inactive_connection_lifetime=300,  # Recycle idle connections
+                command_timeout=60,
+                # Connection health checks
+                server_settings={
+                    'application_name': 'dopemux-conport-phase3',
+                    'timezone': 'UTC'
+                }
             )
             logger.info("✅ PostgreSQL connection pool established")
 
@@ -247,9 +272,20 @@ class EnhancedConPortServer:
                 'timestamp': asyncio.get_event_loop().time()
             })
         except Exception as e:
+            # Use DopemuxError for consistent error handling
+            logger.error(f"Health check failed: {e}")
+            from dopemux.error_handling import create_dopemux_error, ErrorType, ErrorSeverity
+            error = create_dopemux_error(
+                error_type=ErrorType.SERVICE_UNAVAILABLE,
+                severity=ErrorSeverity.HIGH,
+                message=f"ConPort health check failed: {e}",
+                service_name="conport-enhanced",
+                operation="health_check",
+                details={"error": str(e)}
+            )
             return web.json_response({
                 'status': 'unhealthy',
-                'error': str(e),
+                'error': error.to_dict(),
                 'timestamp': asyncio.get_event_loop().time()
             }, status=503)
 
@@ -346,6 +382,13 @@ class EnhancedConPortServer:
                 logger.info(f"📋 Context cache hit for workspace: {workspace_id} (instance: {current_instance_id})")
                 return web.json_response(json.loads(cached))
 
+            # Check query result cache first (Phase 3 optimization)
+            query_cache_key = f"query:context:{workspace_id}:{current_instance_id}"
+            cached_query_result = await self.redis.get(query_cache_key)
+            if cached_query_result:
+                logger.debug(f"💾 Query cache hit for context: {workspace_id}")
+                return web.json_response(json.loads(cached_query_result))
+
             # Fetch from database (instance-aware query)
             async with self.db_pool.acquire() as conn:
                 row = await conn.fetchrow("""
@@ -397,6 +440,9 @@ class EnhancedConPortServer:
 
             # Cache in Redis for fast access
             await self.redis.setex(cache_key, self.context_cache_ttl, json.dumps(context))
+
+            # Cache query result for Phase 3 optimization
+            await self.redis.setex(query_cache_key, self.query_cache_ttl, json.dumps(context))
 
             logger.info(f"📋 Retrieved context for workspace: {workspace_id}")
             return web.json_response(context)
@@ -452,6 +498,10 @@ class EnhancedConPortServer:
             # Update Redis cache (instance-specific key)
             cache_key = f"context:{workspace_id}:{current_instance_id}"
             await self.redis.setex(cache_key, self.context_cache_ttl, json.dumps(updated_context))
+
+            # Invalidate query result cache on updates (Phase 3 optimization)
+            query_cache_key = f"query:context:{workspace_id}:{current_instance_id}"
+            await self.redis.delete(query_cache_key)
 
             logger.info(f"📝 Updated context for workspace {workspace_id} (instance: {current_instance_id})")
 
@@ -591,11 +641,17 @@ class EnhancedConPortServer:
         return result, stats
 
     async def get_decisions(self, request):
-        """Get decision history for a workspace (or all if not specified)."""
+        """Get decision history for a workspace (or all if not specified) with caching."""
         workspace_id = request.query.get('workspace_id')
         limit = int(request.query.get('limit', 10))
 
         try:
+            # Check query result cache (Phase 3 optimization)
+            cache_key = f"query:decisions:{workspace_id or 'all'}:{limit}"
+            cached_result = await self.redis.get(cache_key)
+            if cached_result:
+                logger.debug(f"💾 Query cache hit for decisions: {workspace_id or 'all'}")
+                return web.json_response(json.loads(cached_result))
             cache_key = f"decisions:{workspace_id or 'ALL'}:{limit}"
             cached = await self.redis.get(cache_key)
             if cached:
@@ -633,6 +689,10 @@ class EnhancedConPortServer:
             }
 
             await self.redis.setex(cache_key, 300, json.dumps(result))
+
+            # Cache query result for Phase 3 optimization
+            await self.redis.setex(f"query:decisions:{workspace_id or 'all'}:{limit}", self.query_cache_ttl, json.dumps(result))
+
             return web.json_response(result)
 
         except Exception as e:

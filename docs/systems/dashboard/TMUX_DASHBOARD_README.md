@@ -1,3 +1,11 @@
+---
+id: TMUX_DASHBOARD_README
+title: Tmux_Dashboard_Readme
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dopemux Tmux Dashboard
 
 **ADHD-optimized metrics display for maximum productivity awareness**

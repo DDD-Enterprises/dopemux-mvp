@@ -1,3 +1,11 @@
+---
+id: WORKTREE_SYSTEM_V2
+title: Worktree_System_V2
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Worktree System V2: Seamless & Beautiful
 
 **Status**: ✅ Complete (Phase 1-3 implemented and validated)

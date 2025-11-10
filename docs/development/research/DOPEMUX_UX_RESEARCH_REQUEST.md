@@ -1,8 +1,16 @@
+---
+id: DOPEMUX_UX_RESEARCH_REQUEST
+title: Dopemux_Ux_Research_Request
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dopemux UX Enhancement - Comprehensive Research & Design Request
 
-**Date:** 2025-10-30  
-**Status:** Research Request for Zen Multi-Model Analysis  
-**Project:** Dopemux UX + HYPERFOCUS REVIVAL Integration  
+**Date:** 2025-10-30
+**Status:** Research Request for Zen Multi-Model Analysis
+**Project:** Dopemux UX + HYPERFOCUS REVIVAL Integration
 **Output:** Design document ready for Claude Code implementation
 
 ---
@@ -12,7 +20,7 @@
 We're building **4 interconnected UX enhancements** for Dopemux:
 
 1. **HYPERFOCUS REVIVAL TUI** - Interactive dashboard for untracked work management
-2. **Enhanced Status Display** - Better role/persona visualization  
+2. **Enhanced Status Display** - Better role/persona visualization
 3. **Research Mode Launcher** - Quick access to deep research capabilities
 4. **Unified UX Framework** - Consistent ADHD-optimized patterns across all features
 
@@ -429,6 +437,6 @@ Please analyze this entire request and:
 
 ---
 
-**Document Status:** Research Request - Ready for Zen Execution  
-**Priority:** Critical - Foundation for next development phase  
+**Document Status:** Research Request - Ready for Zen Execution
+**Priority:** Critical - Foundation for next development phase
 **Expected Output:** ~50-60 page comprehensive design document

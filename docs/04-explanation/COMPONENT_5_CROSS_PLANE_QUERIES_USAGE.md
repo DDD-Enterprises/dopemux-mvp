@@ -1,3 +1,11 @@
+---
+id: COMPONENT_5_CROSS_PLANE_QUERIES_USAGE
+title: Component_5_Cross_Plane_Queries_Usage
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Component 5: Cross-Plane Query Integration Examples
 
 **Date**: 2025-10-20

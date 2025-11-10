@@ -1,3 +1,11 @@
+---
+id: phase1_foundation_analysis
+title: Phase1_Foundation_Analysis
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dopemux Audit: Phase 1 - Foundation Analysis Report
 
 **Date**: November 10, 2025

@@ -1,9 +1,17 @@
+---
+id: DASHBOARD_DAY10_ZEN_RESEARCH
+title: Dashboard_Day10_Zen_Research
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dashboard Day 10 - Zen Research & Deep Planning 🧘
 # Drill-Down Views, Advanced Interactions & Production Hardening
 
-**Date:** 2025-10-29  
-**Phase:** Advanced Features Completion (Final Push)  
-**Status:** 🧠 DEEP RESEARCH  
+**Date:** 2025-10-29
+**Phase:** Advanced Features Completion (Final Push)
+**Status:** 🧠 DEEP RESEARCH
 **Estimated Duration:** 10-12 hours (full day + polish)
 
 ---
@@ -124,14 +132,14 @@ After completing enhanced sparklines and keyboard navigation (Day 9), we now foc
 ```python
 class DashboardApp(App):
     """Main app with error boundaries"""
-    
+
     async def on_mount(self):
         # Initialize with error handling
         try:
             await self.load_initial_data()
         except Exception as e:
             self.push_screen(ErrorScreen(e))
-    
+
     def action_open_drill_down(self, item_id: str):
         # Lazy load drill-down data
         screen = DrillDownScreen(item_id)
@@ -154,18 +162,18 @@ class DashboardApp(App):
    - **Line Charts:** Best for fluctuating metrics (CPU, memory, latency)
    - **Area Charts:** Show volume/magnitude trends (requests, errors)
    - **Histogram Quantiles:** P50/P95/P99 latency distribution
-   
+
 **3. Prometheus Query Patterns for Dashboards**
    ```promql
    # Error rate trend
    increase(errors_total[1h])
-   
+
    # HTTP request frequency
    rate(http_requests_total[5m])
-   
+
    # CPU usage trends by instance
    avg(rate(container_cpu_usage_seconds_total[5m])) by (instance)
-   
+
    # Latency percentiles
    histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
    ```
@@ -233,22 +241,22 @@ DashboardApp
 ```python
 class DrillDownManager:
     """Manages drill-down screen stack with history"""
-    
+
     def __init__(self, app: App):
         self.app = app
         self.history: List[Screen] = []
-    
+
     async def push(self, screen: Screen):
         """Push drill-down screen onto stack"""
         self.history.append(screen)
         await self.app.push_screen(screen)
-    
+
     async def pop(self):
         """Pop back to previous screen"""
         if self.history:
             self.history.pop()
             await self.app.pop_screen()
-    
+
     async def pop_to_main(self):
         """Pop all drill-downs, return to main"""
         while self.history:
@@ -263,12 +271,12 @@ class DrillDownManager:
 ```python
 class TaskDetailScreen(DrillDownScreen):
     """Lazy-load task data on demand"""
-    
+
     def __init__(self, task_id: str):
         super().__init__()
         self.task_id = task_id
         self.data = None  # Not loaded yet
-    
+
     async def on_mount(self):
         """Load data when screen appears"""
         try:
@@ -277,7 +285,7 @@ class TaskDetailScreen(DrillDownScreen):
             self.render_task_details()
         except Exception as e:
             self.show_error(e)
-    
+
     async def fetch_task_data(self) -> Dict:
         """Fetch from ADHD Engine API"""
         async with httpx.AsyncClient() as client:
@@ -291,28 +299,28 @@ class TaskDetailScreen(DrillDownScreen):
 ```python
 class DrillDownCache:
     """LRU cache for drill-down data"""
-    
+
     def __init__(self, max_size: int = 50, ttl: int = 300):
         self.cache = {}  # {key: (data, timestamp)}
         self.max_size = max_size
         self.ttl = ttl  # 5 minutes
-    
+
     async def get(self, key: str, fetch_fn: Callable):
         """Get from cache or fetch"""
         if key in self.cache:
             data, timestamp = self.cache[key]
             if time.time() - timestamp < self.ttl:
                 return data
-        
+
         # Cache miss or expired
         data = await fetch_fn()
         self.cache[key] = (data, time.time())
-        
+
         # Evict oldest if over max_size
         if len(self.cache) > self.max_size:
             oldest_key = min(self.cache, key=lambda k: self.cache[k][1])
             del self.cache[oldest_key]
-        
+
         return data
 ```
 
@@ -324,20 +332,20 @@ class DrillDownCache:
 ```python
 class ContextMenu(Screen):
     """Base context menu with keyboard/mouse support"""
-    
+
     def __init__(self, items: List[MenuItem], position: Tuple[int, int]):
         super().__init__()
         self.items = items
         self.position = position  # (x, y) in terminal coords
         self.selected_index = 0
-    
+
     BINDINGS = [
         ("up", "prev_item", "Previous"),
         ("down", "next_item", "Next"),
         ("enter", "activate", "Select"),
         ("escape", "close", "Close"),
     ]
-    
+
     def action_activate(self):
         """Execute selected menu item"""
         item = self.items[self.selected_index]
@@ -346,13 +354,13 @@ class ContextMenu(Screen):
 
 class MenuItem:
     """Context menu item"""
-    
-    def __init__(self, label: str, callback: Callable, 
+
+    def __init__(self, label: str, callback: Callable,
                  shortcut: Optional[str] = None):
         self.label = label
         self.callback = callback
         self.shortcut = shortcut
-    
+
     def render(self, selected: bool) -> str:
         """Render menu item with optional shortcut"""
         prefix = "→ " if selected else "  "
@@ -371,7 +379,7 @@ async def action_show_context_menu(self):
     """Show context menu for focused panel"""
     panel = self.get_focused_panel()
     items = panel.get_context_menu_items()
-    
+
     # Position menu at cursor or panel center
     position = self.get_cursor_position()
     menu = ContextMenu(items, position)
@@ -395,41 +403,41 @@ async def on_mouse_click(self, event: events.Click):
 ```python
 class SearchManager:
     """Full-text search across all dashboard data"""
-    
+
     def __init__(self):
         self.index = {}  # {keyword: [item_ids]}
         self.items = {}  # {item_id: data}
-    
+
     def index_item(self, item_id: str, data: Dict):
         """Add item to search index"""
         self.items[item_id] = data
-        
+
         # Index all searchable fields
         text = self._extract_searchable_text(data)
         for keyword in self._tokenize(text):
             if keyword not in self.index:
                 self.index[keyword] = []
             self.index[keyword].append(item_id)
-    
+
     def search(self, query: str) -> List[Dict]:
         """Search and rank results"""
         keywords = self._tokenize(query)
-        
+
         # Find items matching any keyword
         results = set()
         for keyword in keywords:
             if keyword in self.index:
                 results.update(self.index[keyword])
-        
+
         # Rank by number of keyword matches
         ranked = sorted(
             results,
             key=lambda item_id: self._calculate_score(item_id, keywords),
             reverse=True
         )
-        
+
         return [self.items[item_id] for item_id in ranked]
-    
+
     def _calculate_score(self, item_id: str, keywords: List[str]) -> int:
         """Calculate relevance score"""
         text = self._extract_searchable_text(self.items[item_id])
@@ -440,22 +448,22 @@ class SearchManager:
 ```python
 class SearchScreen(Screen):
     """Full-screen search interface"""
-    
+
     def compose(self) -> ComposeResult:
         yield Header()
         yield Input(placeholder="Search tasks, services, patterns...")
         yield DataTable(id="results")
         yield Footer()
-    
+
     async def on_input_changed(self, event: Input.Changed):
         """Live search as user types"""
         query = event.value
         if len(query) < 2:
             return  # Wait for at least 2 chars
-        
+
         results = self.search_manager.search(query)
         await self.update_results_table(results)
-    
+
     async def on_data_table_row_selected(self, event):
         """Drill down into selected result"""
         item = self.results[event.row_index]
@@ -473,12 +481,12 @@ class SearchScreen(Screen):
 ```python
 class ErrorBoundary:
     """Wrap widgets to catch and display errors gracefully"""
-    
+
     def __init__(self, widget: Widget, fallback: Widget):
         self.widget = widget
         self.fallback = fallback
         self.has_error = False
-    
+
     async def on_mount(self):
         """Mount widget with error handling"""
         try:
@@ -487,11 +495,11 @@ class ErrorBoundary:
             self.has_error = True
             self.log_error(e)
             self.display_fallback()
-    
+
     def display_fallback(self):
         """Show fallback UI instead of crash"""
         self.mount(self.fallback)
-    
+
     def log_error(self, error: Exception):
         """Log to Sentry/local logs"""
         logger.exception(f"Widget error: {error}")
@@ -499,11 +507,11 @@ class ErrorBoundary:
 
 class ErrorWidget(Static):
     """Fallback widget for errors"""
-    
+
     def __init__(self, error: Exception):
         super().__init__()
         self.error = error
-    
+
     def render(self) -> str:
         return Panel(
             f"[red]Error loading widget:[/red]\n\n{str(self.error)}\n\n"
@@ -521,26 +529,26 @@ class ErrorWidget(Static):
 ```python
 class StateManager:
     """Persist dashboard state for crash recovery"""
-    
+
     def __init__(self, state_file: Path):
         self.state_file = state_file
         self.state = self.load_state()
-    
+
     def load_state(self) -> Dict:
         """Load state from disk"""
         if self.state_file.exists():
             return json.loads(self.state_file.read_text())
         return self.default_state()
-    
+
     def save_state(self):
         """Save state to disk (async, non-blocking)"""
         asyncio.create_task(self._save_state_async())
-    
+
     async def _save_state_async(self):
         """Save state without blocking UI"""
         data = json.dumps(self.state, indent=2)
         await asyncio.to_thread(self.state_file.write_text, data)
-    
+
     def update(self, key: str, value: Any):
         """Update state and auto-save"""
         self.state[key] = value
@@ -550,14 +558,14 @@ class StateManager:
 class DashboardApp(App):
     async def on_mount(self):
         self.state_manager = StateManager(Path("~/.dopemux/dashboard_state.json"))
-        
+
         # Restore previous state
         if self.state_manager.state.get("crashed"):
             self.notify("Recovered from previous crash", severity="warning")
-        
+
         # Auto-save every 30 seconds
         self.set_interval(30, self.auto_save)
-    
+
     def auto_save(self):
         """Periodic state save"""
         self.state_manager.state["panels"] = self.get_panel_states()
@@ -576,11 +584,11 @@ logger = structlog.get_logger()
 
 class TelemetryManager:
     """Collect and report dashboard telemetry"""
-    
+
     def __init__(self):
         self.events = []
         self.metrics = defaultdict(list)
-    
+
     def track_event(self, event_type: str, data: Dict):
         """Track user interaction or system event"""
         event = {
@@ -590,14 +598,14 @@ class TelemetryManager:
         }
         self.events.append(event)
         logger.info(event_type, **data)
-    
+
     def track_metric(self, metric_name: str, value: float):
         """Track performance metric"""
         self.metrics[metric_name].append({
             "timestamp": time.time(),
             "value": value
         })
-    
+
     async def report_batch(self):
         """Batch report to Prometheus/local logs"""
         # Report metrics to Prometheus
@@ -605,7 +613,7 @@ class TelemetryManager:
             avg_value = sum(v["value"] for v in values) / len(values)
             # Push to Prometheus Pushgateway
             # pushgateway.push(metric, avg_value)
-        
+
         # Clear reported data
         self.events = []
         self.metrics.clear()
@@ -619,11 +627,11 @@ async def action_open_task_detail(self, task_id: str):
         "screen": "task_detail",
         "task_id": task_id
     })
-    
+
     start = time.time()
     await self.app.push_screen(TaskDetailScreen(task_id))
     duration = time.time() - start
-    
+
     telemetry.track_metric("drill_down_latency_ms", duration * 1000)
 ```
 
@@ -637,13 +645,13 @@ async def action_open_task_detail(self, task_id: str):
 ```python
 class VirtualScrollTable(DataTable):
     """Only render visible rows for performance"""
-    
+
     def __init__(self, rows: List[Dict]):
         super().__init__()
         self.all_rows = rows
         self.visible_start = 0
         self.visible_count = 50  # Render 50 rows at a time
-    
+
     def render_visible_rows(self):
         """Render only visible slice"""
         visible = self.all_rows[
@@ -652,7 +660,7 @@ class VirtualScrollTable(DataTable):
         self.clear()
         for row in visible:
             self.add_row(*row.values())
-    
+
     def on_scroll(self, event: events.Scroll):
         """Update visible slice on scroll"""
         # Calculate new visible start based on scroll position
@@ -667,23 +675,23 @@ class VirtualScrollTable(DataTable):
 ```python
 class Debouncer:
     """Debounce rapid function calls"""
-    
+
     def __init__(self, delay: float = 0.3):
         self.delay = delay
         self.timer = None
-    
+
     def debounce(self, func: Callable):
         """Debounce wrapper"""
         async def wrapper(*args, **kwargs):
             if self.timer:
                 self.timer.cancel()
-            
+
             async def delayed_call():
                 await asyncio.sleep(self.delay)
                 await func(*args, **kwargs)
-            
+
             self.timer = asyncio.create_task(delayed_call())
-        
+
         return wrapper
 
 # Usage
@@ -706,18 +714,18 @@ async def on_search_input(self, query: str):
 ```python
 class TaskDetailScreen(DrillDownScreen):
     """Detailed task view with history"""
-    
+
     CSS = """
     TaskDetailScreen {
         layout: grid;
         grid-size: 2 3;
         grid-gutter: 1 2;
     }
-    
+
     #task-info { column-span: 2; }
     #task-history { row-span: 2; }
     """
-    
+
     def compose(self) -> ComposeResult:
         yield Header()
         yield Container(
@@ -728,15 +736,15 @@ class TaskDetailScreen(DrillDownScreen):
             id="task-detail-grid"
         )
         yield Footer()
-    
+
     async def on_mount(self):
         data = await self.fetch_task_data(self.task_id)
-        
+
         # Populate task info
         self.query_one("#task-info").update(
             Panel(self.render_task_info(data), title="Task Details")
         )
-        
+
         # Populate history table
         table = self.query_one("#task-history")
         table.add_columns("Timestamp", "Event", "Details")
@@ -750,43 +758,43 @@ class TaskDetailScreen(DrillDownScreen):
 ```python
 class ServiceLogsScreen(DrillDownScreen):
     """Real-time service logs viewer"""
-    
+
     def __init__(self, service_name: str):
         super().__init__()
         self.service_name = service_name
         self.log_buffer = []
         self.auto_scroll = True
-    
+
     BINDINGS = [
         ("s", "toggle_scroll", "Auto-scroll"),
         ("c", "clear_logs", "Clear"),
         ("slash", "search_logs", "Search"),
     ]
-    
+
     async def on_mount(self):
         # Start log streaming
         asyncio.create_task(self.stream_logs())
-    
+
     async def stream_logs(self):
         """Stream logs from service"""
         async with httpx.AsyncClient() as client:
             async with client.stream(
-                "GET", 
+                "GET",
                 f"http://localhost:8000/services/{self.service_name}/logs"
             ) as response:
                 async for line in response.aiter_lines():
                     self.add_log_line(line)
                     if self.auto_scroll:
                         self.scroll_to_bottom()
-    
+
     def add_log_line(self, line: str):
         """Add line to log buffer and UI"""
         self.log_buffer.append(line)
-        
+
         # Keep only last 1000 lines
         if len(self.log_buffer) > 1000:
             self.log_buffer.pop(0)
-        
+
         # Syntax highlight and render
         highlighted = self.highlight_log_line(line)
         self.query_one("#logs").mount(Static(highlighted))
@@ -798,55 +806,55 @@ class ServiceLogsScreen(DrillDownScreen):
 ```python
 class PatternAnalysisScreen(DrillDownScreen):
     """7-day trend analysis with correlations"""
-    
+
     async def on_mount(self):
         # Fetch 7 days of data
         data = await self.fetch_pattern_data(days=7)
-        
+
         # Generate sparklines for multiple metrics
         sparklines = self.generate_correlation_sparklines(data)
-        
+
         # Render correlation matrix
         matrix = self.calculate_correlation_matrix(data)
-        
+
         self.update_content({
             "sparklines": sparklines,
             "correlations": matrix,
             "insights": self.generate_insights(data, matrix)
         })
-    
+
     def calculate_correlation_matrix(self, data: Dict) -> np.ndarray:
         """Calculate Pearson correlation between metrics"""
         metrics = ["cognitive_load", "task_velocity", "context_switches"]
         matrix = np.zeros((len(metrics), len(metrics)))
-        
+
         for i, metric_a in enumerate(metrics):
             for j, metric_b in enumerate(metrics):
                 matrix[i][j] = np.corrcoef(
                     data[metric_a],
                     data[metric_b]
                 )[0, 1]
-        
+
         return matrix
-    
+
     def generate_insights(self, data: Dict, matrix: np.ndarray) -> List[str]:
         """AI-generated insights from patterns"""
         insights = []
-        
+
         # High correlation (>0.7)
         if matrix[0][2] > 0.7:  # cognitive_load vs context_switches
             insights.append(
                 "⚠️  High cognitive load correlates with context switches. "
                 "Consider blocking distractions during deep work."
             )
-        
+
         # Declining trend
         if self.is_declining(data["task_velocity"]):
             insights.append(
                 "📉 Task velocity declining over 7 days. "
                 "Review energy patterns and break schedule."
             )
-        
+
         return insights
 ```
 
@@ -927,12 +935,12 @@ class PatternAnalysisScreen(DrillDownScreen):
 
 ---
 
-**Status:** ✅ ZEN RESEARCH COMPLETE  
-**Next:** Implementation Ready Guide (DASHBOARD_DAY10_READY.md)  
+**Status:** ✅ ZEN RESEARCH COMPLETE
+**Next:** Implementation Ready Guide (DASHBOARD_DAY10_READY.md)
 **Confidence:** 🔥🔥🔥🔥🔥
 
 ---
 
-*Created: 2025-10-29*  
-*Version: 1.0*  
+*Created: 2025-10-29*
+*Version: 1.0*
 *Research Hours: 3+ hours of web research + deep thinking*

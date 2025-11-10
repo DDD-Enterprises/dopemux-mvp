@@ -1,3 +1,11 @@
+---
+id: testing-audit-2025-10-16
+title: Testing Audit 2025 10 16
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Testing Infrastructure Audit
 **Date**: 2025-10-16
 **Analyst**: Claude Code (Sonnet 4.5)

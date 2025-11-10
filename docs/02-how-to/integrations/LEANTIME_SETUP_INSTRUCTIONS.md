@@ -1,3 +1,11 @@
+---
+id: LEANTIME_SETUP_INSTRUCTIONS
+title: Leantime_Setup_Instructions
+type: how-to
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Leantime Setup Instructions - Quick Start
 
 **Status**: MCP Integration Complete ✅ | Leantime Installation Required ⏳
@@ -86,7 +94,7 @@ Show me all projects in Leantime
 **Cause**: Installation not complete
 **Solution**: Complete steps 1-2 above
 
-### "API Token Invalid"  
+### "API Token Invalid"
 **Cause**: Token not configured or incorrect
 **Solution**: Regenerate token in Leantime UI and update .env
 
@@ -105,7 +113,7 @@ docker ps --filter "name=leantime"
 
 # Expected:
 # ✅ leantime - Up (healthy)
-# ✅ mysql_leantime - Up (healthy)  
+# ✅ mysql_leantime - Up (healthy)
 # ✅ redis_leantime - Up (healthy)
 # ✅ mcp-leantime-bridge - Up (healthy)
 
@@ -120,7 +128,7 @@ After setup, you can:
 - ✅ Create and manage projects via Claude
 - ✅ Add tasks and tickets
 - ✅ Track progress and time
-- ✅ Create milestones  
+- ✅ Create milestones
 - ✅ Sync with other task management systems
 - ✅ Use ADHD-optimized workflows
 

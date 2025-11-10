@@ -1,3 +1,11 @@
+---
+id: audit-overview
+title: Audit Overview
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Code Audit Documentation
 
 This directory contains comprehensive code audit reports and findings.
@@ -32,7 +40,7 @@ This directory contains comprehensive code audit reports and findings.
 ### What Was Fixed
 
 - ✅ 4x CORS wildcards → Environment whitelists
-- ✅ 2x Hardcoded credentials → Environment variables  
+- ✅ 2x Hardcoded credentials → Environment variables
 - ✅ 7x Public endpoints → API key authentication
 - ✅ 1x Critical bug → Document chunking fixed
 

@@ -1,3 +1,11 @@
+---
+id: tmux-setup
+title: Tmux Setup
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dopemux Tmux Setup Guide
 
 ## Overview

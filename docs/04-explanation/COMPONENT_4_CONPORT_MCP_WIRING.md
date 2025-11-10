@@ -1,3 +1,11 @@
+---
+id: COMPONENT_4_CONPORT_MCP_WIRING
+title: Component_4_Conport_Mcp_Wiring
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Component 4: ConPort MCP Client Wiring
 
 **Status**: ✅ Code Complete (Pending MCP Infrastructure Integration)

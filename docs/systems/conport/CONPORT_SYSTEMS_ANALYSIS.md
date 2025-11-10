@@ -1,8 +1,16 @@
+---
+id: CONPORT_SYSTEMS_ANALYSIS
+title: Conport_Systems_Analysis
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # ConPort Systems: Comprehensive Analysis & Integration Strategy
 
-**Date**: 2025-10-28  
-**Analysis Type**: Deep Architecture Review  
-**Status**: ✅ Complete  
+**Date**: 2025-10-28
+**Analysis Type**: Deep Architecture Review
+**Status**: ✅ Complete
 **Systems Analyzed**: 3 (ConPort MCP, ConPort Enhanced Server, ConPort-KG/Decision Graph)
 
 ---
@@ -579,7 +587,7 @@ See **Integration Strategy** below.
    ```python
    # services/serena/kg_integration.py
    from shared.conport_kg_client import ConPortKGClient
-   
+
    async def enrich_hover_with_decisions(symbol):
        decisions = await kg_client.search_decisions(symbol)
        return format_hover_text(symbol, decisions)
@@ -765,7 +773,7 @@ async def validate_request(request):
 ```python
 class ConPortRouter:
     """Routes requests to optimal backend based on query type"""
-    
+
     async def get_decisions(self, workspace_id, limit=10):
         # Use ConPort MCP (SQLite) if:
         # - Single workspace query
@@ -773,14 +781,14 @@ class ConPortRouter:
         # - Local process access available
         if self.is_local_query(workspace_id):
             return await self.mcp_client.get_decisions(...)
-        
+
         # Use ConPort-KG if:
         # - Cross-workspace query
         # - Need relationships
         # - Need ADHD features
         elif self.needs_graph(workspace_id):
             return await self.kg_client.get_decisions(...)
-        
+
         # Use Enhanced Server if:
         # - Medium complexity
         # - EventBus needed
@@ -923,7 +931,7 @@ You have **three excellent systems** that are **complementary, not redundant**:
 
 ---
 
-**Analysis Complete**: 2025-10-28  
-**Confidence**: Very High (0.92)  
-**Effort to Full Integration**: 2-4 weeks  
+**Analysis Complete**: 2025-10-28
+**Confidence**: Very High (0.92)
+**Effort to Full Integration**: 2-4 weeks
 **ROI**: Extremely High (unlocks 6 agents + ADHD dashboard)

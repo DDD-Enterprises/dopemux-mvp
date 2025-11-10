@@ -1,3 +1,11 @@
+---
+id: phase3_adhd_engine_feature_analysis
+title: Phase3_Adhd_Engine_Feature_Analysis
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dopemux Audit: Phase 3 - ADHD Engine Feature Analysis
 
 **Date**: November 10, 2025

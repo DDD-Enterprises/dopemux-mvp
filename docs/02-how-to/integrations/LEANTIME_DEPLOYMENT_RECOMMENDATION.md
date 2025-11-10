@@ -1,3 +1,11 @@
+---
+id: LEANTIME_DEPLOYMENT_RECOMMENDATION
+title: Leantime_Deployment_Recommendation
+type: how-to
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Leantime Deployment Strategy - Recommendation
 
 ## Current Setup Analysis
@@ -148,7 +156,7 @@ leantime:
 2. **Complete Plugin Development**
    ```bash
    cd docker/leantime/app/Plugins/Dopemux
-   
+
    # Add any additional ADHD features
    # Implement Controllers
    # Add language files
@@ -474,6 +482,6 @@ cp docker/leantime/.env docker/leantime/.env.backup
 
 ---
 
-**Decision**: Official Leantime Image + Custom Plugin ✓  
-**Status**: Ready to install and test  
+**Decision**: Official Leantime Image + Custom Plugin ✓
+**Status**: Ready to install and test
 **Next Step**: Complete Leantime installation at http://localhost:8080

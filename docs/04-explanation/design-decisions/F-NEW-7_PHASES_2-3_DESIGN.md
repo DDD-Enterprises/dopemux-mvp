@@ -1,3 +1,11 @@
+---
+id: F-NEW-7_PHASES_2-3_DESIGN
+title: F New 7_Phases_2 3_Design
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # F-NEW-7 Phases 2-3: Unified Queries + Cross-Agent Intelligence
 
 **Status**: Architecture designed (Option 4 from quadruple execution)

@@ -1,3 +1,11 @@
+---
+id: LITELLM_CLAUDE_CODE_SETUP
+title: Litellm_Claude_Code_Setup
+type: how-to
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # LiteLLM + Claude Code Router Setup Guide
 
 **Purpose**: Configure LiteLLM proxy for Claude Code with intelligent routing and fallbacks
