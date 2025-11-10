@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 from collections import deque
+from statistics import mean, stdev
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,27 @@ class CognitiveLoadWindow:
             self.cognitive_states = deque(maxlen=10)
 
 
+@dataclass
+class CognitiveLoadPrediction:
+    """Prediction of future cognitive load with confidence."""
+    predicted_load: float  # 0.0-1.0 scale
+    confidence: float  # 0.0-1.0 scale
+    time_horizon: int  # minutes ahead
+    reason: str  # why this prediction
+    factors: List[str]  # contributing factors
+    timestamp: datetime
+
+
+@dataclass
+class HistoricalPattern:
+    """Learned pattern from historical data."""
+    pattern_type: str  # 'complexity_trend', 'energy_cycle', 'attention_drop'
+    confidence: float  # 0.0-1.0 based on historical accuracy
+    trigger_conditions: List[str]  # when this pattern applies
+    prediction: str  # what it predicts
+    last_updated: datetime
+
+
 class BreakSuggestionEngine:
     """
     Proactive break suggestion engine using event correlation.
@@ -73,7 +95,7 @@ class BreakSuggestionEngine:
 
     def __init__(self, user_id: str = "default", event_bus = None):
         """
-        Initialize break suggestion engine.
+        Initialize break suggestion engine with prediction capabilities.
 
         Args:
             user_id: User identifier for personalization
@@ -89,9 +111,19 @@ class BreakSuggestionEngine:
         self.min_session_duration = 25  # Minutes before suggesting breaks
         self.min_break_interval = 25  # Minutes between break suggestions
 
+        # Prediction settings
+        self.prediction_enabled = True
+        self.prediction_horizon = 15  # minutes ahead to predict
+        self.prediction_threshold = 0.7  # confidence level to trigger proactive suggestions
+
         # State
         self.last_suggestion: Optional[datetime] = None
         self.suggestion_history: deque = deque(maxlen=10)
+
+        # Prediction state
+        self.historical_patterns: Dict[str, HistoricalPattern] = {}
+        self.prediction_history: deque = deque(maxlen=20)  # Keep last 20 predictions
+        self.conport_client = None  # Will be initialized if available
 
         # ADHD personalization
         self.gentle_mode = True  # Use gentle language
@@ -99,6 +131,145 @@ class BreakSuggestionEngine:
 
         # Metrics
         self.suggestions_emitted = 0
+        self.predictions_made = 0
+        self.accurate_predictions = 0  # For tracking prediction accuracy
+
+    async def _predict_cognitive_load(self) -> Optional[CognitiveLoadPrediction]:
+        """
+        Predict future cognitive load based on current trends and historical patterns.
+
+        Uses simple statistical analysis and pattern recognition to forecast
+        when cognitive overload is likely to occur.
+
+        Returns:
+            CognitiveLoadPrediction if prediction confidence is high enough, None otherwise
+        """
+        if not self.prediction_enabled:
+            return None
+
+        now = datetime.now(timezone.utc)
+
+        # Gather current indicators
+        factors = []
+        predicted_load = 0.0
+        confidence = 0.0
+
+        # Factor 1: Complexity trend analysis
+        complexity_scores = [e['score'] for e in self.cognitive_window.complexity_events
+                           if e['timestamp'] > now - timedelta(minutes=self.window_minutes)]
+
+        if complexity_scores:
+            avg_complexity = mean(complexity_scores)
+            factors.append(f"complexity_trend_{avg_complexity:.2f}")
+
+            # High complexity suggests future overload
+            if avg_complexity > 0.6:
+                predicted_load += 0.4
+                confidence += 0.3
+            elif avg_complexity > 0.4:
+                predicted_load += 0.2
+                confidence += 0.2
+
+        # Factor 2: Cognitive state trends
+        if self.cognitive_window.cognitive_states:
+            recent_states = list(self.cognitive_window.cognitive_states)[-3:]  # Last 3 states
+            energy_trend = [s['energy'] for s in recent_states]
+            attention_trend = [s['attention'] for s in recent_states]
+
+            # Check for declining energy
+            if 'low' in energy_trend[-2:]:  # Low energy in last 2 states
+                predicted_load += 0.3
+                confidence += 0.3
+                factors.append("energy_declining")
+
+            # Check for deteriorating attention
+            if 'scattered' in attention_trend[-2:] or 'transitioning' in attention_trend[-2:]:
+                predicted_load += 0.3
+                confidence += 0.2
+                factors.append("attention_deteriorating")
+
+        # Factor 3: Session duration without breaks
+        if self.cognitive_window.session_start and not self.cognitive_window.last_break:
+            session_duration = (now - self.cognitive_window.session_start).total_seconds() / 60
+            if session_duration > self.min_session_duration:
+                predicted_load += 0.2
+                confidence += 0.2
+                factors.append(f"long_session_{session_duration:.0f}min")
+
+        # Factor 4: Historical pattern analysis (if ConPort available)
+        if self.conport_client:
+            try:
+                patterns = await self.conport_client.get_task_completion_patterns(self.user_id)
+                # Simple pattern: if high complexity tasks recently completed, predict fatigue
+                if patterns.get('completion_rate', 0) < 0.7:
+                    predicted_load += 0.2
+                    confidence += 0.1
+                    factors.append("recent_task_failures")
+            except Exception as e:
+                logger.debug(f"Could not get ConPort patterns: {e}")
+
+        # Only return prediction if confidence is sufficient
+        if confidence >= 0.4:  # Minimum confidence threshold
+            prediction = CognitiveLoadPrediction(
+                predicted_load=min(predicted_load, 1.0),  # Cap at 1.0
+                confidence=min(confidence, 1.0),
+                time_horizon=self.prediction_horizon,
+                reason=f"Predicted cognitive load based on {len(factors)} indicators",
+                factors=factors,
+                timestamp=now
+            )
+
+            self.prediction_history.append(prediction)
+            self.predictions_made += 1
+
+            logger.debug(f"Made cognitive load prediction: load={prediction.predicted_load:.2f}, confidence={prediction.confidence:.2f}")
+            return prediction
+
+        return None
+
+    def _create_proactive_suggestion(self, prediction: CognitiveLoadPrediction) -> BreakSuggestion:
+        """
+        Create a proactive break suggestion based on cognitive load prediction.
+
+        Args:
+            prediction: The cognitive load prediction
+
+        Returns:
+            BreakSuggestion with proactive context
+        """
+        # Determine suggestion priority based on predicted load
+        if prediction.predicted_load > 0.8:
+            priority = "high"
+            duration = 15  # Longer break needed
+        elif prediction.predicted_load > 0.6:
+            priority = "medium"
+            duration = 10
+        else:
+            priority = "low"
+            duration = 5
+
+        # Create ADHD-friendly message
+        factors_text = ", ".join(prediction.factors[:3])  # Show top 3 factors
+        message = f"I notice some patterns suggesting you might benefit from a short break soon ({factors_text}). Consider taking {duration} minutes to recharge."
+
+        if self.gentle_mode:
+            message = f"You're doing great! Based on recent patterns, a {duration}-minute break might help maintain your focus."
+
+        suggestion = BreakSuggestion(
+            priority=priority,
+            message=message,
+            reason=f"Proactive prediction: {prediction.reason}",
+            suggested_duration=duration,
+            triggered_by=["cognitive_load_prediction"],
+            timestamp=datetime.now(timezone.utc)
+        )
+
+        # Track metrics
+        self.suggestions_emitted += 1
+        self.last_suggestion = suggestion.timestamp
+        self.suggestion_history.append(suggestion)
+
+        return suggestion
 
     async def on_complexity_event(self, event: Dict):
         """
@@ -197,6 +368,10 @@ class BreakSuggestionEngine:
         high_complexity = len(complexity_in_window) >= self.complexity_event_threshold
 
         if not high_complexity:
+            # Check for proactive prediction even without current high complexity
+            prediction = await self._predict_cognitive_load()
+            if prediction and prediction.predicted_load > self.prediction_threshold:
+                return self._create_proactive_suggestion(prediction)
             return None  # Not enough complexity events
 
         # Rule 2: Cognitive decline?
