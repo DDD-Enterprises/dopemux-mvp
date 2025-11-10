@@ -23,11 +23,13 @@ try:
     from .api import routes
     from .config import settings
     from .middleware.rate_limit import RateLimitMiddleware
+    from ..error_handling import with_error_handling
 except ImportError:  # pragma: no cover - fallback when run as script
     from engine import ADHDAccommodationEngine  # type: ignore
     from api import routes  # type: ignore
     from config import settings  # type: ignore
     from middleware.rate_limit import RateLimitMiddleware  # type: ignore
+    from ..error_handling import with_error_handling
 
 # Import shared Redis pool and cache for performance optimization
 import sys
@@ -36,6 +38,21 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'docker', 'mcp-servers',
 from redis_pool import get_redis_pool
 from cache import get_cache
 
+# Import error handling for circuit breaker protection
+try:
+    from ..error_handling import (
+        GlobalErrorHandler,
+        CircuitBreaker,
+        CircuitBreakerConfig,
+        ErrorType,
+        ErrorSeverity
+    )
+except ImportError:
+    # Fallback if error handling module not available
+    GlobalErrorHandler = None
+    CircuitBreaker = None
+    CircuitBreakerConfig = None
+
 # Configure logging
 logging.basicConfig(
     level=settings.log_level,
@@ -43,8 +60,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Global engine instance
+# Global instances
 engine: ADHDAccommodationEngine = None
+error_handler: GlobalErrorHandler = None
+circuit_breakers = {}
 
 
 @asynccontextmanager
@@ -62,7 +81,7 @@ async def lifespan(app: FastAPI):
     - Close Redis connections
     - Clean up resources
     """
-    global engine
+    global engine, error_handler, circuit_breakers
 
     # STARTUP
     logger.info("=" * 60)
@@ -70,6 +89,42 @@ async def lifespan(app: FastAPI):
     logger.info("=" * 60)
 
     try:
+        # Initialize error handler and circuit breakers
+        error_handler = GlobalErrorHandler("adhd_engine")
+
+        # Initialize circuit breakers for external services
+        circuit_breakers["redis"] = CircuitBreaker(
+            CircuitBreakerConfig(
+                name="redis_circuit",
+                failure_threshold=5,
+                recovery_timeout=60,
+                success_threshold=2,
+                timeout=10.0
+            )
+        )
+
+        circuit_breakers["conport"] = CircuitBreaker(
+            CircuitBreakerConfig(
+                name="conport_circuit",
+                failure_threshold=3,
+                recovery_timeout=90,
+                success_threshold=3,
+                timeout=15.0
+            )
+        )
+
+        circuit_breakers["zen_mcp"] = CircuitBreaker(
+            CircuitBreakerConfig(
+                name="zen_mcp_circuit",
+                failure_threshold=3,
+                recovery_timeout=120,
+                success_threshold=2,
+                timeout=5.0
+            )
+        )
+
+        logger.info("✅ Circuit breakers initialized for external services")
+
         # Initialize engine
         engine = ADHDAccommodationEngine()
         await engine.initialize()
