@@ -1,5 +1,5 @@
 # Task Orchestrator Dockerfile
-# Phase 2: ConPort Integration with ADHD-Aware Task Coordination
+# Phase 2: Production Deployment - Enhanced Python Implementation
 
 FROM python:3.11-slim
 
@@ -30,12 +30,12 @@ RUN useradd --create-home --shell /bin/bash app \
     && chown -R app:app /app
 USER app
 
-# Health check
+# Health check - check both MCP and HTTP API
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3014/health || exit 1
+    CMD curl -f http://localhost:3014/health || curl -f http://localhost:8000/health || exit 1
 
-# Expose port for MCP server
-EXPOSE 3014
+# Expose ports for MCP and HTTP API
+EXPOSE 3014 8000
 
-# Default command - run the MCP server wrapper
-CMD ["python", "server.py"]
+# Default command - run the enhanced orchestrator
+CMD ["python", "enhanced_orchestrator.py"]
