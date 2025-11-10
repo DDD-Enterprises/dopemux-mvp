@@ -4,7 +4,7 @@ import asyncio
 from typing import Dict, Any, List, Optional, Tuple
 import time
 
-from core.agent import BaseAgent
+from ....services.genetic-agent.core.agent import BaseAgent
 from core.state import AgentState
 from shared.mcp.serena_client import SerenaClient
 from shared.mcp.dope_context_client import DopeContextClient

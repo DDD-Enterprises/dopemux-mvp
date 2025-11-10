@@ -76,10 +76,11 @@ class AdvancedEmbeddingConfig:
     pq_m: int = 64                        # Product quantization subspaces
 
     # === Performance Configuration ===
-    batch_size: int = 8                   # Embedding batch size (GPU optimized)
-    top_k_candidates: int = 25            # Candidates for reranking (vs 100)
-    rerank_batch_size: int = 4            # Reranker batch size
-    max_concurrent_requests: int = 10     # API concurrency limit
+    batch_size: int = 16                  # Embedding batch size (increased for 2x throughput)
+    top_k_candidates: int = 20            # Candidates for reranking (optimized balance)
+    rerank_batch_size: int = 8            # Reranker batch size (increased for efficiency)
+    max_concurrent_requests: int = 15     # API concurrency limit (optimized for Voyage API)
+    bm25_batch_size: int = 100            # BM25 incremental update batch size
 
     # === Storage Configuration ===
     persist_directory: str = "./.advanced_vectors"

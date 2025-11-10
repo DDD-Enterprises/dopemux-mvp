@@ -9,6 +9,7 @@ import json
 import subprocess
 import sys
 import os
+import re
 from typing import Dict, List, Any, Optional
 import aiohttp
 
@@ -25,6 +26,22 @@ class MCPClient:
         self.http_session: Optional[aiohttp.ClientSession] = None
         if transport == 'http':
             self.base_url = config.get('base_url', f'http://localhost:{config.get("port", 3000)}')
+            self._validate_base_url(self.base_url)
+
+    def _validate_base_url(self, base_url: str) -> None:
+        """Validate base URL to prevent SSRF attacks"""
+        # Allow only localhost, 127.0.0.1, and docker container names
+        allowed_patterns = [
+            r'^http://localhost(:\d+)?/?$',  # localhost
+            r'^http://127\.0\.0\.1(:\d+)?/?$',  # 127.0.0.1
+            r'^http://[a-zA-Z0-9_-]+(:\d+)?/?$',  # docker container names (no dots)
+        ]
+
+        for pattern in allowed_patterns:
+            if re.match(pattern, base_url):
+                return
+
+        raise ValueError(f"Invalid base URL '{base_url}': only localhost, 127.0.0.1, and docker container names are allowed for security")
 
     async def connect_stdio(self):
         """Connect to stdio-based MCP server"""
@@ -250,11 +267,11 @@ def create_server_configs():
         }
     }
 
-    # Zen (stdio)
+    # Zen (stdio - direct host process)
     configs['zen'] = {
         'transport': 'stdio',
-        'command': 'docker',
-        'args': ['exec', 'mcp-zen', 'bash', '-c', 'source /app/.venv/bin/activate && python zen-mcp-server/server.py'],
+        'command': '/Users/hue/code/dopemux-mvp/docker/mcp-servers/zen/zen-mcp-server/.venv/bin/python',
+        'args': ['/Users/hue/code/dopemux-mvp/docker/mcp-servers/zen/zen-mcp-server/server.py'],
         'env': {
             'OPENAI_API_KEY': os.getenv('OPENAI_API_KEY', ''),
             'OPENROUTER_API_KEY': os.getenv('OPENROUTER_API_KEY', ''),
@@ -296,6 +313,7 @@ async def main():
     configs = create_server_configs()
     for server_name, config in configs.items():
         transport = config.get('transport', 'stdio')
+        print(f"🔧 Configuring {server_name} with transport: {transport}")
         manager.add_server(
             server_name,
             transport,

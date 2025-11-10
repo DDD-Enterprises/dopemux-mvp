@@ -310,7 +310,7 @@ class IVFIndex(BaseVectorIndex):
 
 
 class BM25Index:
-    """BM25 lexical search index for exact keyword matching."""
+    """BM25 lexical search index for exact keyword matching with incremental updates."""
 
     def __init__(self, config: AdvancedEmbeddingConfig):
         self.config = config
@@ -318,6 +318,13 @@ class BM25Index:
         self.documents: List[str] = []
         self.doc_ids: List[str] = []
         self.tokenized_docs: List[List[str]] = []
+
+        # Incremental update optimization
+        self.pending_documents: List[str] = []
+        self.pending_ids: List[str] = []
+        self.pending_tokenized: List[List[str]] = []
+        self.batch_size = getattr(config, 'bm25_batch_size', 100)  # Use config or default to 100
+        self.needs_rebuild = False
 
         if BM25Okapi is None:
             raise ImportError("rank_bm25 not available. Install with: pip install rank-bm25")
@@ -330,25 +337,56 @@ class BM25Index:
         return tokens
 
     def add_documents(self, documents: List[str], ids: List[str]) -> None:
-        """Add documents to BM25 index."""
+        """Add documents to BM25 index with incremental update optimization."""
         if len(documents) != len(ids):
             raise ValueError("Documents and IDs must have same length")
 
         # Tokenize documents
         new_tokenized = [self._tokenize(doc) for doc in documents]
 
-        # Add to collections
-        self.documents.extend(documents)
-        self.doc_ids.extend(ids)
-        self.tokenized_docs.extend(new_tokenized)
+        # Add to pending batch instead of rebuilding immediately
+        self.pending_documents.extend(documents)
+        self.pending_ids.extend(ids)
+        self.pending_tokenized.extend(new_tokenized)
+        self.needs_rebuild = True
 
-        # Rebuild BM25 index (TODO: optimize for incremental updates)
+        # Check if we should rebuild the index
+        if len(self.pending_documents) >= self.batch_size:
+            self._rebuild_index()
+        else:
+            logger.debug(f"📦 Added {len(documents)} documents to BM25 batch ({len(self.pending_documents)} pending)")
+
+    def _rebuild_index(self) -> None:
+        """Rebuild BM25 index with all documents (called on batch full or explicit rebuild)."""
+        if not self.needs_rebuild:
+            return
+
+        # Merge pending documents into main collections
+        self.documents.extend(self.pending_documents)
+        self.doc_ids.extend(self.pending_ids)
+        self.tokenized_docs.extend(self.pending_tokenized)
+
+        # Rebuild BM25 index
         self.bm25 = BM25Okapi(self.tokenized_docs)
+        self.needs_rebuild = False
 
-        logger.debug(f"➕ Added {len(documents)} documents to BM25 index")
+        # Clear pending batch
+        total_added = len(self.pending_documents)
+        self.pending_documents.clear()
+        self.pending_ids.clear()
+        self.pending_tokenized.clear()
+
+        logger.debug(f"🔄 Rebuilt BM25 index with {total_added} new documents (total: {len(self.documents)})")
+
+    def force_rebuild(self) -> None:
+        """Force immediate index rebuild (useful before search operations)."""
+        self._rebuild_index()
 
     def search(self, query: str, k: int) -> List[Tuple[str, float]]:
         """Search BM25 index for relevant documents."""
+        # Ensure index is up to date before searching
+        self._rebuild_index()
+
         if self.bm25 is None or len(self.doc_ids) == 0:
             return []
 
@@ -368,33 +406,52 @@ class BM25Index:
 
         return results
 
+
     def save(self, path: str) -> None:
-        """Save BM25 index."""
+        """Save BM25 index with incremental update optimization."""
+        # Ensure index is up to date before saving
+        self._rebuild_index()
+
         data = {
             "documents": self.documents,
             "doc_ids": self.doc_ids,
-            "tokenized_docs": self.tokenized_docs
+            "tokenized_docs": self.tokenized_docs,
+            # Save pending documents for incremental updates
+            "pending_documents": self.pending_documents,
+            "pending_ids": self.pending_ids,
+            "pending_tokenized": self.pending_tokenized,
+            "batch_size": self.batch_size,
+            "needs_rebuild": self.needs_rebuild
         }
 
         with open(path, 'wb') as f:
             pickle.dump(data, f)
 
-        logger.info(f"💾 BM25 index saved to {path}")
+        logger.info(f"💾 BM25 index saved to {path} ({len(self.doc_ids):,} documents)")
 
     def load(self, path: str) -> None:
-        """Load BM25 index."""
+        """Load BM25 index with incremental update state."""
         with open(path, 'rb') as f:
             data = pickle.load(f)
 
+        # Load main collections
         self.documents = data["documents"]
         self.doc_ids = data["doc_ids"]
         self.tokenized_docs = data["tokenized_docs"]
 
-        # Rebuild BM25
+        # Load incremental update state
+        self.pending_documents = data.get("pending_documents", [])
+        self.pending_ids = data.get("pending_ids", [])
+        self.pending_tokenized = data.get("pending_tokenized", [])
+        self.batch_size = data.get("batch_size", 100)
+        self.needs_rebuild = data.get("needs_rebuild", False)
+
+        # Rebuild BM25 with all available documents
         if self.tokenized_docs:
             self.bm25 = BM25Okapi(self.tokenized_docs)
 
-        logger.info(f"📁 BM25 index loaded from {path} ({len(self.doc_ids):,} documents)")
+        total_docs = len(self.doc_ids) + len(self.pending_ids)
+        logger.info(f"📁 BM25 index loaded from {path} ({total_docs:,} documents, {len(self.pending_ids)} pending)")
 
 
 class HybridRanker:
@@ -565,6 +622,17 @@ class HybridVectorStore:
         # Health metrics
         self.metrics = EmbeddingHealthMetrics()
 
+        # Performance monitoring for search optimization
+        self.search_performance = {
+            "total_searches": 0,
+            "avg_search_time": 0.0,
+            "bm25_time": 0.0,
+            "vector_time": 0.0,
+            "rerank_time": 0.0,
+            "cache_hit_rate": 0.0,
+            "last_search_time": 0.0
+        }
+
         logger.info(f"🚀 HybridVectorStore initialized with {config.index_type.value} index")
 
     def _create_vector_index(self) -> BaseVectorIndex:
@@ -672,18 +740,23 @@ class HybridVectorStore:
         candidate_k = max(k * 4, self.config.top_k_candidates)
 
         # 1. BM25 lexical search
+        bm25_start = time.time()
         bm25_results = self.bm25_index.search(query, candidate_k)
+        bm25_time = time.time() - bm25_start
 
         # 2. Vector semantic search
         vector_results = []
+        vector_time = 0.0
         if self.api_client and not self.config.use_on_premise:
             try:
+                vector_start = time.time()
                 # Generate query embedding
                 query_embeddings = await self.api_client.embed_texts([query])
                 query_vector = np.array(query_embeddings[0], dtype=np.float32)
 
                 # Search vector index
                 scores, indices = self.vector_index.search(query_vector, candidate_k)
+                vector_time = time.time() - vector_start
 
                 # Convert to results format
                 for score, idx in zip(scores, indices):
@@ -704,8 +777,10 @@ class HybridVectorStore:
 
         # 4. Optional reranking
         final_results = []
+        rerank_time = 0.0
         if enable_reranking and self.api_client and len(top_candidates) > 1:
             try:
+                rerank_start = time.time()
                 # Prepare documents for reranking
                 candidate_texts = []
                 candidate_ids = []
@@ -717,6 +792,7 @@ class HybridVectorStore:
 
                 # Get rerank scores
                 rerank_scores = await self.api_client.rerank(query, candidate_texts)
+                rerank_time = time.time() - rerank_start
 
                 # Combine with hybrid scores
                 reranked_results = []
@@ -776,10 +852,24 @@ class HybridVectorStore:
 
         search_time = time.time() - search_start
 
+        # Update performance metrics
+        total = self.search_performance["total_searches"]
+        self.search_performance["total_searches"] = total + 1
+        self.search_performance["bm25_time"] = ((self.search_performance["bm25_time"] * total) + bm25_time) / (total + 1)
+        self.search_performance["vector_time"] = ((self.search_performance["vector_time"] * total) + vector_time) / (total + 1)
+        self.search_performance["rerank_time"] = ((self.search_performance["rerank_time"] * total) + rerank_time) / (total + 1)
+        self.search_performance["avg_search_time"] = ((self.search_performance["avg_search_time"] * total) + search_time) / (total + 1)
+        self.search_performance["last_search_time"] = search_time
+
         if self.config.enable_progress_tracking and self.config.visual_progress_indicators:
             print(f"🔍 Search completed in {search_time*1000:.0f}ms - found {len(final_results)} results")
+            print(f"   • BM25: {bm25_time*1000:.0f}ms | Vector: {vector_time*1000:.0f}ms | Rerank: {rerank_time*1000:.0f}ms")
 
         return final_results
+
+    def get_search_metrics(self) -> Dict[str, float]:
+        """Return current search performance metrics."""
+        return self.search_performance.copy()
 
     def save_index(self, base_path: str) -> None:
         """Save all index components."""
