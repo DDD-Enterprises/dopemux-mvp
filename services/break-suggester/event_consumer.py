@@ -58,8 +58,8 @@ class BreakSuggestionConsumer:
             await self.redis_client.ping()
             logger.info(f"✅ Connected to Redis: {self.redis_url}")
 
-            # Import break engine (absolute import)
-            from services.break_suggester.engine import get_break_suggestion_engine
+            # Import break engine (relative import)
+            from .engine import get_break_suggestion_engine
 
             self.engine = await get_break_suggestion_engine(self.user_id)
             logger.info(f"✅ BreakSuggestionEngine initialized for user {self.user_id}")
@@ -169,17 +169,18 @@ class BreakSuggestionConsumer:
             await self.redis_client.aclose()
 
 
-async def run_break_suggester_service(user_id: str = "default"):
+async def run_break_suggester_service(user_id: str = "default", redis_url: str = "redis://localhost:6379"):
     """
     Run break suggester as background service.
 
     Args:
         user_id: User identifier
+        redis_url: Redis connection URL
 
     Usage:
-        asyncio.create_task(run_break_suggester_service("alice"))
+        asyncio.create_task(run_break_suggester_service("alice", "redis://redis:6379"))
     """
-    consumer = BreakSuggestionConsumer(user_id=user_id)
+    consumer = BreakSuggestionConsumer(user_id=user_id, redis_url=redis_url)
 
     try:
         await consumer.initialize()
@@ -193,10 +194,13 @@ async def run_break_suggester_service(user_id: str = "default"):
 if __name__ == "__main__":
     # Run as standalone service
     import sys
+    import os
 
     user_id = sys.argv[1] if len(sys.argv) > 1 else "default"
+    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
 
     print(f"🚀 Starting F-NEW-8 Break Suggester for user: {user_id}")
+    print(f"   Redis: {redis_url}")
     print(f"   Monitoring events for proactive break suggestions...")
 
-    asyncio.run(run_break_suggester_service(user_id))
+    asyncio.run(run_break_suggester_service(user_id, redis_url))
