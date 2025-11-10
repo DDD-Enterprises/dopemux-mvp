@@ -20,6 +20,8 @@ services:
     volumes:
       - staging_postgres_data:/var/lib/postgresql/data
       - ./docker/mcp-servers/conport/migrations:/docker-entrypoint-initdb.d/migrations
+    networks:
+      - dopemux-staging
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U dopemux_age"]
       interval: 10s
@@ -33,6 +35,8 @@ services:
       - "16379:6379"  # Staging port (completely different range)
     volumes:
       - staging_redis_data:/data
+    networks:
+      - dopemux-staging
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -46,6 +50,8 @@ services:
       - "16333:6333"  # Staging port (completely different range)
     volumes:
       - staging_qdrant_data:/qdrant/storage
+    networks:
+      - dopemux-staging
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
       interval: 10s
@@ -71,6 +77,8 @@ services:
     depends_on:
       - postgres-age
       - redis
+    networks:
+      - dopemux-staging
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
       interval: 15s
@@ -92,6 +100,8 @@ services:
     depends_on:
       - postgres-age
       - redis
+    networks:
+      - dopemux-staging
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
       interval: 15s
@@ -115,6 +125,8 @@ services:
       - "18001:8001"  # Staging port
     depends_on:
       - redis
+    networks:
+      - dopemux-staging
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 15s
@@ -136,8 +148,101 @@ services:
     depends_on:
       - conport-mcp
       - redis
+    networks:
+      - dopemux-staging
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # Additional scaled services for testing (Step 2: Scale to 10-15 services)
+  adhd-engine-2:
+    container_name: staging-adhd-engine-2
+    build:
+      context: ./services/adhd_engine
+      dockerfile: Dockerfile
+    environment:
+      PORT: 8003
+      REDIS_URL: redis://redis:6379
+      ENVIRONMENT: staging
+    ports:
+      - "18003:8003"
+    depends_on:
+      - redis
+    networks:
+      - dopemux-staging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  conport-mcp-2:
+    container_name: staging-conport-mcp-2
+    build:
+      context: ./docker/mcp-servers/conport
+      dockerfile: Dockerfile
+    environment:
+      MCP_SERVER_PORT: 3005
+      DATABASE_URL: postgresql://dopemux_age:dopemux_age_staging_password@postgres-age:5432/dopemux_knowledge_graph
+      REDIS_URL: redis://redis:6379
+      PYTHON_ENV: staging
+    ports:
+      - "13005:3005"
+    depends_on:
+      - postgres-age
+      - redis
+    networks:
+      - dopemux-staging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3005/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  serena-mcp-2:
+    container_name: staging-serena-mcp-2
+    build:
+      context: ./services/serena/v2
+      dockerfile: Dockerfile
+    environment:
+      MCP_SERVER_PORT: 3002
+      REDIS_URL: redis://redis:6379
+      POSTGRES_URL: postgresql://dopemux_age:dopemux_age_staging_password@postgres-age:5432/dopemux_knowledge_graph
+      PYTHON_ENV: staging
+    ports:
+      - "13002:3002"
+    depends_on:
+      - postgres-age
+      - redis
+    networks:
+      - dopemux-staging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  task-orchestrator-2:
+    container_name: staging-task-orchestrator-2
+    build:
+      context: ./services/task-orchestrator
+      dockerfile: Dockerfile
+    environment:
+      PORT: 8004
+      REDIS_URL: redis://redis:6379
+      CONPORT_URL: http://conport-mcp:3004
+      ENVIRONMENT: staging
+    ports:
+      - "18004:8004"
+    depends_on:
+      - conport-mcp
+      - redis
+    networks:
+      - dopemux-staging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
       interval: 15s
       timeout: 5s
       retries: 3
@@ -152,6 +257,8 @@ services:
       USER_ID: staging_user
     depends_on:
       - redis
+    networks:
+      - dopemux-staging
     command: ["python", "start_service.py", "staging_user"]
     restart: unless-stopped
 
@@ -178,6 +285,8 @@ services:
       - serena-mcp
       - adhd-engine
       - task-orchestrator
+    networks:
+      - dopemux-staging
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
       interval: 15s
@@ -198,6 +307,8 @@ services:
       - ./services/monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
     depends_on:
       - prometheus
+    networks:
+      - dopemux-staging
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 15s
@@ -212,5 +323,5 @@ volumes:
   staging_grafana_data:
 
 networks:
-  default:
-    name: dopemux-staging
+  dopemux-staging:
+    driver: bridge
