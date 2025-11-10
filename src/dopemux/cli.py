@@ -6252,5 +6252,111 @@ def main():
         sys.exit(1)
 
 
+@cli.command("hooks")
+@click.option("--setup", "-s", is_flag=True, help="Setup Claude Code hooks")
+@click.option("--teardown", "-t", is_flag=True, help="Stop Claude Code hooks")
+@click.option("--status", "-S", is_flag=True, help="Show hook status")
+@click.option("--enable", "-e", help="Enable specific hook type")
+@click.option("--disable", "-d", help="Disable specific hook type")
+@click.option("--shell-scripts", is_flag=True, help="Generate shell hook scripts")
+@click.option("--install-shell-hooks", is_flag=True, help="Install shell hooks in shell config")
+@click.option("--uninstall-shell-hooks", is_flag=True, help="Remove shell hooks from shell config")
+@click.option("--workspace", "-w", help="Workspace path to monitor")
+@click.option("--force", "-f", is_flag=True, help="Force operations (e.g., reinstall)")
+def hooks_cmd(setup, teardown, status, enable, disable, shell_scripts, install_shell_hooks, uninstall_shell_hooks, workspace, force):
+    """
+    Manage Dopemux hook system for Claude Code integration.
+
+    Provides external monitoring and triggering of Dopemux workflows
+    based on Claude Code activity without interfering with the CLI.
+    """
+    try:
+        from .hooks.claude_code_hooks import claude_hooks, get_shell_hook_scripts
+
+        if setup:
+            claude_hooks.start_monitoring(workspace)
+            console.print("[green]✅ Claude Code hooks started[/green]")
+            console.print(f"   Monitoring paths: {[str(p) for p in claude_hooks.watched_paths]}")
+
+        elif teardown:
+            claude_hooks.stop_monitoring()
+            console.print("[green]✅ Claude Code hooks stopped[/green]")
+
+        elif status:
+            hook_status = claude_hooks.get_status()
+            console.print("[bold]Claude Code Hook Status:[/bold]")
+            console.print(f"   Monitoring active: {hook_status['monitoring_active']}")
+            console.print(f"   Quiet mode: {hook_status['quiet_mode']}")
+            console.print(f"   Watched paths: {hook_status['watched_paths']}")
+            console.print("\n[bold]Hook Types:[/bold]")
+            for hook_type, enabled in hook_status['active_hooks'].items():
+                status_icon = "[green]✓[/green]" if enabled else "[red]✗[/red]"
+                console.print(f"   {status_icon} {hook_type}")
+
+        elif enable:
+            claude_hooks.enable_hook(enable)
+            console.print(f"[green]✅ Hook enabled: {enable}[/green]")
+
+        elif disable:
+            claude_hooks.disable_hook(disable)
+            console.print(f"[green]✅ Hook disabled: {disable}[/green]")
+
+        elif shell_scripts:
+            scripts = get_shell_hook_scripts()
+            console.print("[bold]Shell Hook Scripts:[/bold]")
+            console.print("\n[dim]Add these to your ~/.bashrc or ~/.zshrc:[/dim]\n")
+
+            console.print("[bold cyan]For Bash:[/bold cyan]")
+            console.print(scripts['bash_preexec'])
+            console.print(scripts['bash_precmd'])
+
+            console.print("\n[bold cyan]For Zsh:[/bold cyan]")
+            console.print(scripts['zsh_hooks'])
+
+        elif install_shell_hooks:
+            from .hooks.shell_hook_installer import install_shell_hooks as installer
+            success, message = installer(force=force)
+            if success:
+                console.print(f"[green]{message}[/green]")
+            else:
+                console.print(f"[red]{message}[/red]")
+                sys.exit(1)
+
+        elif uninstall_shell_hooks:
+            from .hooks.shell_hook_installer import uninstall_shell_hooks as uninstaller
+            success, message = uninstaller()
+            if success:
+                console.print(f"[green]{message}[/green]")
+            else:
+                console.print(f"[red]{message}[/red]")
+                sys.exit(1)
+
+        else:
+            # Default: show help
+            console.print("[bold]Dopemux Hook System[/bold]")
+            console.print("Manage external hooks for Claude Code integration.\n")
+            console.print("[bold]Commands:[/bold]")
+            console.print("   --setup               Start monitoring Claude Code activity")
+            console.print("   --teardown            Stop monitoring")
+            console.print("   --status              Show current hook status")
+            console.print("   --enable HOOK         Enable specific hook type")
+            console.print("   --disable HOOK        Disable specific hook type")
+            console.print("   --shell-scripts       Generate shell hook scripts")
+            console.print("   --install-shell-hooks Install shell hooks in shell config")
+            console.print("   --uninstall-shell-hooks Remove shell hooks from shell config")
+            console.print("   --workspace PATH      Set workspace to monitor")
+            console.print("   --force               Force operations (e.g., reinstall)\n")
+            console.print("[bold]Hook Types:[/bold]")
+            console.print("   session-start    Monitor Claude Code process start")
+            console.print("   file-change      Monitor file modifications")
+            console.print("   shell-command    Monitor shell commands")
+            console.print("   git-commit       Monitor git operations (disabled by default)")
+
+    except Exception as e:
+        console.print(f"[red]❌ Hook command failed: {e}[/red]")
+        if ctx.obj.get("verbose"):
+            raise
+        sys.exit(1)
+
 if __name__ == "__main__":
     main()
