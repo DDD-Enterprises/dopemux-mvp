@@ -199,3 +199,22 @@ class ComplexityResponse(BaseModel):
     complexity_level: str = Field(..., description="Complexity level: low, medium, high")
     estimated_reading_time_minutes: int = Field(..., ge=0, description="Estimated time to understand")
     recommendations: List[str] = Field(default_factory=list, description="Suggestions for simplification")
+
+
+# ML Prediction Schemas
+
+class PredictionRequest(BaseModel):
+    """Request for cognitive load prediction."""
+    user_id: str = Field(..., min_length=1, description="User identifier")
+    features: Dict[str, Any] = Field(..., description="Current features for prediction")
+    horizon_hours: Optional[int] = Field(1, ge=1, le=24, description="Prediction horizon in hours")
+
+class PredictionResponse(BaseModel):
+    """Response for cognitive load prediction."""
+    user_id: str = Field(..., description="User identifier")
+    predicted_load: float = Field(..., ge=0.0, le=1.0, description="Predicted cognitive load (0.0-1.0)")
+    confidence: float = Field(..., ge=0.0, le=1.0, description="Prediction confidence (0.0-1.0)")
+    horizon_hours: int = Field(..., description="Prediction horizon in hours")
+    model_used: str = Field(..., description="ML model type used")
+    feature_importance: Dict[str, float] = Field(..., description="Feature importance scores")
+    timestamp: str = Field(..., description="Prediction timestamp")

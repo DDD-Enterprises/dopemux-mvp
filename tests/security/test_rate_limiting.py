@@ -17,8 +17,8 @@ from typing import Optional
 class TestRateLimiting:
     """Test rate limiting functionality."""
 
-    @pytest_asyncio.fixture(scope="class")
-    async def client(self, request):
+    @pytest_asyncio.fixture(scope="function")
+    async def client(self):
         """Create test client for ADHD Engine."""
         process = None
         client = None
@@ -50,24 +50,18 @@ class TestRateLimiting:
             except Exception:
                 pytest.skip("ADHD Engine server failed to start")
 
-            # Add finalizer for cleanup
-            def cleanup():
-                if client:
-                    asyncio.run(client.aclose())
-                if process:
-                    process.terminate()
-                    try:
-                        process.wait(timeout=5)
-                    except subprocess.TimeoutExpired:
-                        process.kill()
+            yield client
 
-            request.addfinalizer(cleanup)
-
-            return client
-
-        except Exception:
-            # Cleanup on setup failure
+        finally:
+            # Cleanup
             if client:
+                await client.aclose()
+            if process:
+                process.terminate()
+                try:
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    process.kill()
                 await client.aclose()
             if process:
                 process.terminate()
