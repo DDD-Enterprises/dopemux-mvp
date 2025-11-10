@@ -2,24 +2,18 @@
   "mcpServers": {
     "zen": {
       "type": "stdio",
-      "command": "docker",
+      "command": "/Users/hue/code/dopemux-mvp/docker/mcp-servers/zen/zen-mcp-server/.venv/bin/python",
       "args": [
-        "exec",
-        "-i",
-        "mcp-zen",
-        "bash",
-        "-c",
-        "source /app/.venv/bin/activate && python zen-mcp-server/server.py"
+        "/Users/hue/code/dopemux-mvp/docker/mcp-servers/zen/zen-mcp-server/server.py"
       ],
       "env": {
-        "OPENAI_API_KEY": "",  // Disabled - no direct OpenAI calls
+        "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
         "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY:-}",
-        "GEMINI_API_KEY": "${GEMINI_API_KEY:-AIzaSyCkYsYc73ouBiRw8nryattIKzEI_qP5UEw}",
-        "GOOGLE_API_KEY": "${GOOGLE_API_KEY:-AIzaSyCkYsYc73ouBiRw8nryattIKzEI_qP5UEw}",
-        "XAI_API_KEY": "${XAI_API_KEY:-xai-ZkmIhVJxh5MbOVzKwRecajBn5O7Jdr1NWuK8u7xtVi93hi6ESaprl7D4itYrgCoebO7mUBknKToAtcEt}",
+        "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
+        "XAI_API_KEY": "${XAI_API_KEY:-}",
         "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
         "DEFAULT_MODEL": "auto",
-        "ZEN_DEFAULT_PROVIDER": "openrouter"  // Prefer OpenRouter for routing
+        "ZEN_DEFAULT_PROVIDER": "openrouter"
       }
     },
     "conport": {
@@ -27,9 +21,9 @@
       "url": "http://localhost:3004/sse",
       "env": {
         "WORKSPACE_ID": "/Users/hue/code/dopemux-mvp",
-        "GEMINI_API_KEY": "${GEMINI_API_KEY}",
-        "VOYAGEAI_API_KEY": "${VOYAGEAI_API_KEY}",
-        "OPENAI_API_KEY": "${OPENAI_API_KEY}"
+        "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
+        "VOYAGEAI_API_KEY": "${VOYAGEAI_API_KEY:-}",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY:-}"
       }
     },
     "serena-v2": {
@@ -41,18 +35,22 @@
     },
     "gpt-researcher": {
       "type": "stdio",
-      "command": "python3",
+      "command": "docker",
       "args": [
-        "/Users/hue/code/dopemux-mvp/scripts/gpt-researcher/mcp_server.py"
+        "exec",
+        "-i",
+        "mcp-gptr-mcp",
+        "python",
+        "/app/server.py"
       ],
       "env": {
-        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-        "TAVILY_API_KEY": "${TAVILY_API_KEY}",
-        "EXA_API_KEY": "${EXA_API_KEY}",
-        "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",
-        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"
+        "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
+        "TAVILY_API_KEY": "${TAVILY_API_KEY:-}",
+        "EXA_API_KEY": "${EXA_API_KEY:-}",
+        "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY:-}",
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY:-}"
       },
-      "description": "Deep research with comprehensive analysis using local MCP server"
+      "description": "Deep research with comprehensive analysis using Docker container"
     },
     "leantime-bridge": {
       "type": "sse",
@@ -73,7 +71,7 @@
         "/app/exa_server.py"
       ],
       "env": {
-        "EXA_API_KEY": "${EXA_API_KEY}"
+        "EXA_API_KEY": "${EXA_API_KEY:-}"
       },
       "description": "Neural web search via Docker container"
     },
@@ -81,9 +79,9 @@
       "type": "sse",
       "url": "http://localhost:3010/mcp",
       "env": {
-        "VOYAGE_API_KEY": "${VOYAGEAI_API_KEY}",
-        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"
+        "VOYAGE_API_KEY": "${VOYAGEAI_API_KEY:-}",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
+        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY:-}"
       }
     },
     "context7": {

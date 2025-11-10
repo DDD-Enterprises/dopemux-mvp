@@ -28,6 +28,6 @@ EXPOSE 3003
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:3003/health || exit 1
 
-# Run the Zen MCP server directly with stdio transport
-# Use absolute path for venv activation for robustness across contexts
-CMD ["bash", "-c", "source /app/.venv/bin/activate && python server.py"]
+# Run the Zen MCP server via HTTP wrapper
+# Use venv python directly instead of activation
+CMD ["/app/.venv/bin/python", "zen_http_wrapper.py"]
