@@ -1,3 +1,11 @@
+---
+id: README
+title: Readme
+type: how-to
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # How-To Guides - Problem-Solving Instructions
 
 **How-to guides are goal-oriented directions** that take you through the steps to solve a real-world problem. These assume you have basic familiarity with Dopemux.

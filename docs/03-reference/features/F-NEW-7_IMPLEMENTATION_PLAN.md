@@ -1,9 +1,17 @@
+---
+id: F-NEW-7_IMPLEMENTATION_PLAN
+title: F New 7_Implementation_Plan
+type: reference
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # F-NEW-7 Implementation Plan - Remaining Work
 
-**Branch**: feature/f-new-7-multi-tenancy  
-**Foundation**: ✅ Complete (Migration 004)  
-**Timeline**: 3-4 weeks  
-**Status**: Ready to execute  
+**Branch**: feature/f-new-7-multi-tenancy
+**Foundation**: ✅ Complete (Migration 004)
+**Timeline**: 3-4 weeks
+**Status**: Ready to execute
 
 ---
 

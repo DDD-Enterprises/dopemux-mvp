@@ -1,3 +1,11 @@
+---
+id: quick-launch-commands
+title: Quick Launch Commands
+type: tutorial
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Quick Launch Commands - Easy Dopemux Shortcuts
 
 **New in Dopemux:** Easy-to-use commands that launch complete configurations without memorizing complex tmux options.
@@ -377,6 +385,6 @@ dopemux launch --preset dope-muted
 
 ---
 
-**Last Updated:** 2025-10-29  
-**Status:** Production ready  
+**Last Updated:** 2025-10-29
+**Status:** Production ready
 **Recommended Command:** `dopemux dope --theme muted` 🌟

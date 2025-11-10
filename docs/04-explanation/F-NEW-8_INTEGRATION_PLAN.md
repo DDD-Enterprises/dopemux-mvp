@@ -1,3 +1,11 @@
+---
+id: F-NEW-8_INTEGRATION_PLAN
+title: F New 8_Integration_Plan
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # F-NEW-8 + ADHD Notifier Integration Plan
 
 **Goal**: Combine intelligent break detection (F-NEW-8) with effective delivery (ADHD Notifier)

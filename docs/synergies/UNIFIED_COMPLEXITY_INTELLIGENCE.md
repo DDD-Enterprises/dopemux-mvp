@@ -1,3 +1,11 @@
+---
+id: UNIFIED_COMPLEXITY_INTELLIGENCE
+title: Unified_Complexity_Intelligence
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Synergy A: Unified Complexity Intelligence
 
 **Status**: Design Complete, Ready for Implementation

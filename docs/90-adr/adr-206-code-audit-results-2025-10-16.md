@@ -1,3 +1,11 @@
+---
+id: adr-206-code-audit-results-2025-10-16
+title: Adr 206 Code Audit Results 2025 10 16
+type: adr
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # ADR-206: Code Audit Results and Security Improvements
 
 **Status**: ✅ Accepted

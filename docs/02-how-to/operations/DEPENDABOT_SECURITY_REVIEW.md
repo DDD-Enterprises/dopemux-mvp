@@ -1,3 +1,11 @@
+---
+id: DEPENDABOT_SECURITY_REVIEW
+title: Dependabot_Security_Review
+type: how-to
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dependabot Security Alert Review
 
 **Date**: 2025-10-25
@@ -10,7 +18,7 @@
 **Package**: `aiohttp>=3.12.14`
 **Fixed CVEs**:
 - CVE-2025-53643
-- CVE-2024-52304  
+- CVE-2024-52304
 - CVE-2024-27306
 - Directory traversal fixes
 - DoS mitigation

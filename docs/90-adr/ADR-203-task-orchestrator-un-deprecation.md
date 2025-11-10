@@ -1,3 +1,11 @@
+---
+id: ADR-203-task-orchestrator-un-deprecation
+title: Adr 203 Task Orchestrator Un Deprecation
+type: adr
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # ADR-203: Task-Orchestrator Un-Deprecation (Reversal of Decision #140)
 
 **Date**: 2025-10-16

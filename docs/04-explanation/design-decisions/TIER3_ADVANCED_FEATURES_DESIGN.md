@@ -1,3 +1,11 @@
+---
+id: TIER3_ADVANCED_FEATURES_DESIGN
+title: Tier3_Advanced_Features_Design
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Tier 3 Advanced Features - Design Document
 
 **Scope**: ML Pattern Learning, Multi-User Support, Mobile App

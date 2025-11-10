@@ -1,3 +1,11 @@
+---
+id: FEATURES_INDEX
+title: Features_Index
+type: reference
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dopemux Features Index
 
 **Last Updated**: 2025-10-25
