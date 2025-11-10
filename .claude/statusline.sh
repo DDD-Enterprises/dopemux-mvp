@@ -133,53 +133,12 @@ if [ -n "${DOPEMUX_INSTANCE_ID:-}" ]; then
     WORKTREE_ICON=" 🌳"  # Tree for linked worktrees
 fi
 
-# Get ConPort status via direct SQLite query (ultra-fast, no HTTP needed)
-CONPORT_STATUS="⚠️"  # Disconnected
-FOCUS=""
-SESSION_INFO=""
-
-# ConPort SQLite database path
-conport_db="$current_dir/context_portal/context.db"
-
-if [ -f "$conport_db" ] && command -v sqlite3 >/dev/null 2>&1; then
-    # Query active_context table (singleton, no workspace_id needed)
-    conport_data=$(sqlite3 "$conport_db" "SELECT content FROM active_context LIMIT 1" 2>/dev/null)
-
-    if [ -n "$conport_data" ]; then
-        CONPORT_STATUS="✅"  # Connected
-
-        # Extract current_focus from JSON (use jq if available, otherwise basic parsing)
-        focus_raw=$(echo "$conport_data" | jq -r '.current_focus // ""' 2>/dev/null)
-        if [ -n "$focus_raw" ] && [ "$focus_raw" != "null" ] && [ "$focus_raw" != "" ]; then
-            FOCUS=$(echo "$focus_raw" | cut -c1-35)
-            [ ${#focus_raw} -gt 35 ] && FOCUS="${FOCUS}..."
-        fi
-
-        # Calculate session time (sexy, intuitive format)
-        session_start=$(echo "$conport_data" | jq -r '.session_start // ""' 2>/dev/null)
-        if [ -n "$session_start" ] && [ "$session_start" != "null" ] && [ "$session_start" != "" ]; then
-            now=$(date +%s)
-            # Remove Z suffix and any fractional seconds for parsing
-            clean_time="${session_start%Z}"
-            clean_time="${clean_time%.*}"
-            start_epoch=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$clean_time" +%s 2>/dev/null || echo "$now")
-            session_sec=$(( now - start_epoch ))
-
-            # Only show positive elapsed time
-            if [ "$session_sec" -gt 0 ]; then
-                session_min=$(( session_sec / 60 ))
-                hours=$(( session_min / 60 ))
-                mins=$(( session_min % 60 ))
-
-                # Format: "1h 23m" or just "23m" if under 1 hour
-                if [ "$hours" -gt 0 ]; then
-                    SESSION_INFO="${hours}h ${mins}m"
-                else
-                    SESSION_INFO="${mins}m"
-                fi
-            fi
-        fi
-    fi
+# Get enhanced PM/MCP/ADHD metrics from pm-status.sh (context-aware)
+PM_STATUS_METRICS=""
+if [ -f "$PROJECT_ROOT/scripts/pm-status.sh" ]; then
+    PM_STATUS_METRICS=$("$PROJECT_ROOT/scripts/pm-status.sh" 2>/dev/null || echo "PM: Offline")
+else
+    PM_STATUS_METRICS="PM: Script Missing"
 fi
 
 # MCP Server Status (fast port checks with nc)
@@ -262,98 +221,9 @@ if nc -z -w 1 localhost 6333 2>/dev/null; then MCP_DOPE="🔎"; fi
 if desktop_port=$(check_mcp_port 12); then MCP_DESKTOP="🖥️"; fi
 if nc -z -w 1 localhost 8096 2>/dev/null; then MCP_ACTIVITY="🎯"; fi
 
-# ADHD Engine comprehensive status
-ADHD_STATUS="💤"
-ENERGY_SYMBOL=""
-ATTENTION_SYMBOL=""
-BREAK_WARNING=""
-ACCOMMODATIONS=""
+# ADHD Engine status is now handled by pm-status.sh integration above
 
-# Get terminal width for progressive disclosure
-term_width=$(tput cols 2>/dev/null || echo 120)
-
-# Check if ADHD Engine is running (quick port check)
-if nc -z localhost 8095 2>/dev/null; then
-    ADHD_STATUS="🧠"
-
-    # Phase 6: Use batched statusline endpoint (1 call instead of 2-3)
-    # Reduces latency from ~100ms to ~30ms
-    statusline_data=$(timeout 0.4s curl -s http://localhost:8095/api/v1/statusline/hue 2>/dev/null)
-
-    if [ -n "$statusline_data" ]; then
-        # Extract energy level
-        energy=$(echo "$statusline_data" | jq -r '.energy_level // ""' 2>/dev/null)
-        if [ -n "$energy" ] && [ "$energy" != "null" ] && [ "$energy" != "" ]; then
-            case "$energy" in
-                "hyperfocus") ENERGY_SYMBOL="⚡⚡" ;;  # Double lightning for hyperfocus
-                "high") ENERGY_SYMBOL="⚡↑" ;;
-                "medium") ENERGY_SYMBOL="⚡=" ;;  # Balanced/level
-                "low") ENERGY_SYMBOL="⚡↓" ;;
-                "very_low") ENERGY_SYMBOL="⚡⇣" ;;
-            esac
-        fi
-
-        # Extract attention state
-        attention=$(echo "$statusline_data" | jq -r '.attention_state // ""' 2>/dev/null)
-        if [ -n "$attention" ] && [ "$attention" != "null" ] && [ "$attention" != "" ]; then
-            case "$attention" in
-                "hyperfocused") ATTENTION_SYMBOL="👁️✨" ;;  # Eye with sparkles for hyperfocus
-                "focused") ATTENTION_SYMBOL="👁️●" ;;  # Eye with solid dot for focused
-                "transitioning") [ "$term_width" -ge 90 ] && ATTENTION_SYMBOL="👁️~" ;;  # Eye with wave for shifting
-                "scattered") ATTENTION_SYMBOL="👁️🌀" ;;  # Eye with spiral for scattered
-                "overwhelmed") ATTENTION_SYMBOL="👁️💥" ;;  # Eye with explosion for overwhelmed
-            esac
-        fi
-
-        # Extract break warnings from batched response
-        breaks_suggested=$(echo "$statusline_data" | jq -r '.breaks_suggested // 0' 2>/dev/null)
-        hyperfocus_protections=$(echo "$statusline_data" | jq -r '.hyperfocus_protections // 0' 2>/dev/null)
-    fi
-
-    # Fallback: Get health data if batched endpoint unavailable (backward compatibility)
-    if [ -z "$statusline_data" ]; then
-        adhd_health=$(timeout 0.2s curl -s http://localhost:8095/health 2>/dev/null)
-        breaks_suggested=$(echo "$adhd_health" | jq -r '.accommodation_stats.breaks_suggested // 0' 2>/dev/null)
-        hyperfocus_protections=0
-    fi
-else
-    adhd_health=""
-    breaks_suggested=0
-    hyperfocus_protections=0
-fi
-
-# Continue with existing break warning logic (now using data from batched endpoint or health fallback)
-if [ -n "$adhd_health" ] || [ -n "$statusline_data" ]; then
-
-    # Check break recommendations
-    # Use breaks_suggested from batched data if available, otherwise from health
-    [ -z "$breaks_suggested" ] && breaks_suggested=$(echo "$adhd_health" | jq -r '.accommodation_stats.breaks_suggested // 0' 2>/dev/null)
-    [ -z "$breaks_suggested" ] && breaks_suggested=0
-
-    active_accommodations=$(echo "$adhd_health" | jq -r '.current_state.active_accommodations.current_user // 0' 2>/dev/null)
-    [ -z "$active_accommodations" ] && active_accommodations=0
-
-    # Check if break needed by looking at active accommodations or stats
-    if [ "$active_accommodations" -gt 0 ] || [ "$breaks_suggested" -gt 0 ]; then
-        # Check if it's urgent (would need to query Redis, so use heuristic)
-        if [ "$energy" = "very_low" ] || [ "$energy" = "low" ]; then
-            BREAK_WARNING=" \033[31m☕!\033[0m"  # Red urgent
-        else
-            BREAK_WARNING=" \033[33m☕\033[0m"   # Yellow soon
-        fi
-    fi
-
-    # Check for active protection
-    # Use hyperfocus_protections from batched data if available
-    [ -z "$hyperfocus_protections" ] && hyperfocus_protections=$(echo "$adhd_health" | jq -r '.accommodation_stats.hyperfocus_protections // 0' 2>/dev/null)
-    [ -z "$hyperfocus_protections" ] && hyperfocus_protections=0
-
-    if [ "$hyperfocus_protections" -gt 0 ] 2>/dev/null && [ "$attention" = "hyperfocused" ]; then
-        ACCOMMODATIONS="🛡️"  # Shield for hyperfocus protection
-    fi
-fi
-
-# Build statusline
+# Build enhanced statusline with integrated PM metrics
 printf "\033[1;36m%s\033[0m" "$dir"
 
 # Git branch + changes
@@ -368,40 +238,8 @@ fi
 
 printf " \033[2m|\033[0m"
 
-# ConPort status
-printf " %s" "$CONPORT_STATUS"
-
-# Focus (if available)
-if [ -n "$FOCUS" ]; then
-    printf " \033[35m%s\033[0m" "$FOCUS"
-fi
-
-# Session time (if available)
-if [ -n "$SESSION_INFO" ]; then
-    printf " \033[36m[%s]\033[0m" "$SESSION_INFO"
-fi
-
-printf " \033[2m|\033[0m"
-
-# MCP Servers - compact status icons
-printf " %s%s%s%s%s%s%s" "$MCP_CONTEXT7" "$MCP_ZEN" "$MCP_SERENA" "$MCP_DDG" "$MCP_DOPE" "$MCP_DESKTOP" "$MCP_ACTIVITY"
-
-printf " \033[2m|\033[0m"
-
-# ADHD Engine - compact emoji state
-printf " %s" "$ADHD_STATUS"
-if [ -n "$ENERGY_SYMBOL" ]; then
-    printf " %s" "$ENERGY_SYMBOL"
-fi
-if [ -n "$ATTENTION_SYMBOL" ]; then
-    printf " %s" "$ATTENTION_SYMBOL"
-fi
-if [ -n "$ACCOMMODATIONS" ]; then
-    printf " %s" "$ACCOMMODATIONS"
-fi
-if [ -n "$BREAK_WARNING" ]; then
-    printf "%s" "$BREAK_WARNING"
-fi
+# Integrated PM/MCP/ADHD metrics from pm-status.sh (context-aware)
+printf "%s" "$PM_STATUS_METRICS"
 
 # Context usage (show tokens + percentage, color coded)
 # Convert to K format for readability (e.g., 86K/200K)
