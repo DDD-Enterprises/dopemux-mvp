@@ -703,6 +703,8 @@ def start(
         if not db_url:
             console.print("[red]❌ LiteLLM metrics database is required for alternative routing.[/red]")
             console.print("[yellow]   Set DOPEMUX_LITELLM_DB_URL in .env.routing and ensure the database is reachable.[/yellow]")
+            console.print("\n[cyan]Example:[/cyan]")
+            console.print("  DOPEMUX_LITELLM_DB_URL=postgresql://user:password@localhost:5432/litellm")
             raise click.ClickException("LiteLLM metrics database not configured.")
 
         stored_master_key: Optional[str] = None
@@ -734,6 +736,13 @@ def start(
         if not is_port_available(litellm_port):
             # Port 4000 is taken, try 4001
             litellm_port = 4001
+            if not is_port_available(litellm_port):
+                # Port 4001 is also taken, try 4002
+                litellm_port = 4002
+                if not is_port_available(litellm_port):
+                    console.print("[red]❌ Ports 4000-4002 are all in use.[/red]")
+                    console.print("[yellow]   Free up a port or stop an existing LiteLLM instance.[/yellow]")
+                    raise click.ClickException("No available ports for LiteLLM proxy.")
             console.print(f"[yellow]⚠️  Port 4000 is in use, using port {litellm_port} instead[/yellow]")
 
         litellm_master_key = ""
@@ -802,7 +811,12 @@ def start(
             db_status_msg, db_enabled = sync_litellm_database(instance_dir, db_url)
         except LiteLLMProxyError as exc:
             console.print(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
-            console.print("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.")
+            console.print("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.[/yellow]")
+            console.print("\n[cyan]Troubleshooting:[/cyan]")
+            console.print("  1. Check if PostgreSQL is running: lsof -i :5432 (or your port)")
+            console.print("  2. Verify database credentials in .env.routing")
+            console.print("  3. Ensure the 'litellm' database exists")
+            console.print("  4. Test connection: psql <your_database_url>")
             raise click.ClickException(str(exc))
 
         if not db_enabled:
@@ -870,8 +884,12 @@ def start(
                 time.sleep(1)
 
             if not ready:
-                console.print("[red]❌ LiteLLM proxy did not become healthy.")
-                console.print(f"[yellow]   Check logs: tail -f {litellm_log}")
+                console.print("[red]❌ LiteLLM proxy did not become healthy.[/red]")
+                console.print(f"[yellow]   Check logs: tail -f {litellm_log}[/yellow]")
+                console.print("\n[cyan]Common issues:[/cyan]")
+                console.print("  • Database connection failed (check PostgreSQL is running)")
+                console.print(f"  • Port {litellm_port} became busy during startup")
+                console.print("  • Configuration error in litellm.config.yaml")
                 raise click.ClickException("LiteLLM proxy failed to start.")
 
             console.print(f"[green]✅ LiteLLM proxy ready on port {litellm_port}[/green]")
