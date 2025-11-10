@@ -1,7 +1,7 @@
 """
 ADHD Engine ConPort MCP Client
 
-Simple client for ConPort integration with mock implementations.
+Simple client for ConPort integration with circuit breaker protection.
 """
 
 import asyncio
@@ -10,6 +10,29 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
+
+# Circuit breaker for ConPort calls
+circuit_breaker = None
+
+def get_conport_circuit_breaker():
+    """Get or create ConPort circuit breaker"""
+    global circuit_breaker
+    if circuit_breaker is None:
+        try:
+            from ..error_handling import CircuitBreaker, CircuitBreakerConfig
+            circuit_breaker = CircuitBreaker(
+                CircuitBreakerConfig(
+                    name="conport_mcp_circuit",
+                    failure_threshold=3,
+                    recovery_timeout=90,
+                    success_threshold=2,
+                    timeout=10.0
+                )
+            )
+        except ImportError:
+            # Fallback if error handling not available
+            circuit_breaker = None
+    return circuit_breaker
 
 
 class ConPortMCPClient:
@@ -38,6 +61,19 @@ class ConPortMCPClient:
         Get recent progress entries from ConPort
         Used for task completion pattern analysis
         """
+        breaker = get_conport_circuit_breaker()
+        if breaker:
+            try:
+                return await breaker.call(self._get_progress_impl, workspace_id, limit)
+            except Exception as e:
+                logger.warning(f"Circuit breaker triggered for ConPort progress: {e}")
+                return []
+        else:
+            # Fallback without circuit breaker
+            return await self._get_progress_impl(workspace_id, limit)
+
+    async def _get_progress_impl(self, workspace_id: str, limit: int = 100) -> List[Dict[str, Any]]:
+        """Actual implementation of progress retrieval"""
         try:
             logger.info(f"Getting progress from ConPort for {workspace_id}")
             # Mock response - would be actual MCP call in production
@@ -52,13 +88,26 @@ class ConPortMCPClient:
             ]
         except Exception as e:
             logger.error(f"Failed to get ConPort progress: {e}")
-            return []
+            raise
 
     async def get_decisions(self, workspace_id: str, limit: int = 50) -> List[Dict[str, Any]]:
         """
         Get recent decisions from ConPort
         Used for decision pattern analysis
         """
+        breaker = get_conport_circuit_breaker()
+        if breaker:
+            try:
+                return await breaker.call(self._get_decisions_impl, workspace_id, limit)
+            except Exception as e:
+                logger.warning(f"Circuit breaker triggered for ConPort decisions: {e}")
+                return []
+        else:
+            # Fallback without circuit breaker
+            return await self._get_decisions_impl(workspace_id, limit)
+
+    async def _get_decisions_impl(self, workspace_id: str, limit: int = 50) -> List[Dict[str, Any]]:
+        """Actual implementation of decisions retrieval"""
         try:
             logger.info(f"Getting decisions from ConPort for {workspace_id}")
             return [
@@ -72,7 +121,7 @@ class ConPortMCPClient:
             ]
         except Exception as e:
             logger.error(f"Failed to get ConPort decisions: {e}")
-            return []
+            raise
 
     async def write_custom_data(self, workspace_id: str, category: str, key: str, value: Any) -> None:
         """
