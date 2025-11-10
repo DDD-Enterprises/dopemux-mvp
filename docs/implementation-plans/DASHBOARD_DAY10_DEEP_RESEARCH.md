@@ -1,9 +1,17 @@
+---
+id: DASHBOARD_DAY10_DEEP_RESEARCH
+title: Dashboard_Day10_Deep_Research
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dashboard Day 10 - Deep Research & Strategic Planning
 # Advanced Sparkline Integration & Keyboard Navigation Excellence
 
-**Date:** 2025-10-29  
-**Phase:** Advanced Features - Sprint Week 2  
-**Status:** 📚 DEEP RESEARCH & PLANNING  
+**Date:** 2025-10-29
+**Phase:** Advanced Features - Sprint Week 2
+**Status:** 📚 DEEP RESEARCH & PLANNING
 **Estimated Duration:** 6-8 hours implementation (after planning)
 
 ---
@@ -31,7 +39,7 @@
    - Wire Prometheus historical data → SparklineGenerator → TrendsWidget
    - Real-time updating sparklines (not static placeholders)
    - Intelligent caching and error recovery
-   
+
 2. **Full Keyboard Navigation** (2-3 hours)
    - Complete keyboard control (zero mouse dependency)
    - Vim-inspired keybindings with visual feedback
@@ -66,11 +74,11 @@
 **Why Visual Data Matters for ADHD:**
 
 From "ADHD and Visual Processing" (Barkley, 2015):
-> "ADHD brains process visual patterns 40-60% faster than abstract numerical data. 
+> "ADHD brains process visual patterns 40-60% faster than abstract numerical data.
 > This is due to enhanced right-hemisphere activity during visual-spatial tasks."
 
 From "Beautiful Evidence" (Tufte, 2006):
-> "Sparklines condense information into the smallest possible space while preserving 
+> "Sparklines condense information into the smallest possible space while preserving
 > meaning - perfect for working memory limitations."
 
 **Key Research Findings:**
@@ -89,7 +97,7 @@ From "Beautiful Evidence" (Tufte, 2006):
    - Time context labels ("Last 2h", "7 days")
    - Smooth curves (averaging, interpolation)
    - Consistent scales (for comparison)
-   
+
    ❌ ADHD-HOSTILE:
    - Gray/muted colors (invisible to many)
    - Unlabeled axes (cognitive overhead)
@@ -100,7 +108,7 @@ From "Beautiful Evidence" (Tufte, 2006):
 
 3. **Ideal Time Windows for Each Metric:**
    Based on ADHD working memory and attention span research:
-   
+
    | Metric | Time Window | Why This Duration |
    |--------|-------------|-------------------|
    | Cognitive Load | 2 hours | Working memory context window |
@@ -112,7 +120,7 @@ From "Beautiful Evidence" (Tufte, 2006):
 
 4. **Color Psychology for ADHD:**
    From Nielsen Norman Group (2019) research on neurodivergent users:
-   
+
    ```python
    ADHD_OPTIMIZED_COLORS = {
        "optimal": "#a6e3a1",     # Green - safe, calm
@@ -133,7 +141,7 @@ From "Beautiful Evidence" (Tufte, 2006):
    ```promql
    # Task completion rate (last 5 minutes)
    rate(adhd_task_completions_total[5m])
-   
+
    # Average cognitive load (instant)
    adhd_cognitive_load{load_category="optimal"}
    ```
@@ -142,10 +150,10 @@ From "Beautiful Evidence" (Tufte, 2006):
    ```promql
    # Cognitive load over 2 hours, 5-min resolution
    adhd_cognitive_load{load_category="optimal"}[2h:5m]
-   
+
    # Task velocity over 7 days, 1-hour resolution
    rate(adhd_task_completions_total[1h])[7d:1h]
-   
+
    # Context switches over 1 hour, 1-min resolution
    increase(adhd_context_switches_total[1m])[1h:1m]
    ```
@@ -154,10 +162,10 @@ From "Beautiful Evidence" (Tufte, 2006):
    ```promql
    # Average energy level over week
    avg_over_time(adhd_energy_level[7d])
-   
+
    # Peak productivity hours
    max_over_time(adhd_task_velocity_per_day[7d])
-   
+
    # 95th percentile cognitive load
    quantile_over_time(0.95, adhd_cognitive_load[24h])
    ```
@@ -211,11 +219,11 @@ Based on Prometheus 2.x documentation and real-world testing:
    # Option A: Interpolation (smooth but potentially misleading)
    if gap_detected:
        values = linear_interpolate(before, after)
-   
+
    # Option B: Honest gaps (accurate but visually jarring)
    if gap_detected:
        sparkline += ' ' * gap_duration  # Show gap
-   
+
    # ADHD-Optimized: Hybrid approach
    if gap_duration < 15_minutes:
        interpolate()  # Small gaps OK to smooth
@@ -253,11 +261,11 @@ Based on Prometheus 2.x documentation and real-world testing:
 **Research Foundation:**
 
 From "The Humane Interface" (Jef Raskin, 2000):
-> "Every moment spent reaching for the mouse is a micro-interruption to flow. 
+> "Every moment spent reaching for the mouse is a micro-interruption to flow.
 > For ADHD users, these add up to complete flow destruction."
 
 From W3C ARIA Authoring Practices (2023):
-> "Keyboard operability is not just an accessibility requirement - it's a 
+> "Keyboard operability is not just an accessibility requirement - it's a
 > productivity multiplier for power users."
 
 **ADHD-Specific Impact:**
@@ -286,14 +294,14 @@ From W3C ARIA Authoring Practices (2023):
    h = Help
    t = Themes
    n = Notifications
-   
+
    Why? First letter = instant mental mapping
    ```
 
 2. **Visual/Spatial Shortcuts (Second Easiest):**
    ```
    1-4 = Panel numbers (ADHD, Productivity, Services, Trends)
-   
+
    Why? Visual layout maps to keyboard layout
    ```
 
@@ -303,7 +311,7 @@ From W3C ARIA Authoring Practices (2023):
    Arrow keys = Navigate within panel
    Enter = Expand/activate
    Escape = Close/return
-   
+
    Why? Matches platform conventions (muscle memory)
    ```
 
@@ -313,7 +321,7 @@ From W3C ARIA Authoring Practices (2023):
    Ctrl+P = Prometheus queries
    Ctrl+L = Logs
    Ctrl+K = Command palette (future)
-   
+
    Why? Familiar to developers (VS Code, Vim)
    ```
 
@@ -346,7 +354,7 @@ From W3C ARIA Authoring Practices (2023):
        border: thick #89b4fa;        /* Blue border */
        box-shadow: 0 0 8px #89b4fa;  /* Glow effect */
    }
-   
+
    /* Smooth transitions (ADHD-friendly) */
    transition: border 150ms ease-in-out;
    ```
@@ -354,7 +362,7 @@ From W3C ARIA Authoring Practices (2023):
 2. **Logical Focus Order:**
    ```
    Top → Bottom, Left → Right
-   
+
    Dashboard Example:
    1. ADHD State panel (top-left)
    2. Productivity panel (top-right)
@@ -399,10 +407,10 @@ From W3C ARIA Authoring Practices (2023):
 # Textual widgets with ARIA semantics
 class Panel(Static):
     DEFAULT_ARIA_ROLE = "region"
-    
+
     def render(self):
         return f"""
-        <div role="region" 
+        <div role="region"
              aria-label="{self.title}"
              tabindex="0">
             {self.content}
@@ -535,14 +543,14 @@ class SparklineResult:
 class PrometheusSparklineIntegration:
     """
     Integrates Prometheus metrics with sparkline visualization.
-    
+
     Features:
     - Batch fetching for efficiency
     - Intelligent caching with TTL
     - Error recovery (fallbacks, retries)
     - Real-time updates via callback
     """
-    
+
     def __init__(
         self,
         prometheus_client: PrometheusClient,
@@ -554,7 +562,7 @@ class PrometheusSparklineIntegration:
         self.cache: Dict[str, Tuple[SparklineResult, float]] = {}
         self.default_ttl = default_cache_ttl
         self.update_callbacks: List[callable] = []
-        
+
     async def generate_sparkline(
         self,
         config: SparklineConfig,
@@ -562,7 +570,7 @@ class PrometheusSparklineIntegration:
     ) -> SparklineResult:
         """
         Generate a single sparkline from Prometheus data.
-        
+
         Process:
         1. Check cache (if enabled)
         2. Query Prometheus for time-series data
@@ -570,11 +578,11 @@ class PrometheusSparklineIntegration:
         4. Add color coding and stats
         5. Cache result
         6. Return SparklineResult
-        
+
         Args:
             config: Sparkline configuration
             use_cache: Whether to use cached data
-            
+
         Returns:
             SparklineResult with sparkline and metadata
         """
@@ -583,7 +591,7 @@ class PrometheusSparklineIntegration:
             cached = self._get_from_cache(config.metric_query)
             if cached:
                 return cached
-        
+
         try:
             # 2. Query Prometheus
             data = await self._query_prometheus(
@@ -591,23 +599,23 @@ class PrometheusSparklineIntegration:
                 config.time_window,
                 config.resolution
             )
-            
+
             if not data:
                 return self._empty_sparkline(config, "No data")
-            
+
             # 3. Generate sparkline
             sparkline = self.sparkgen.generate(
                 data,
                 width=config.width
             )
-            
+
             # 4. Add coloring
             colored = self.sparkgen.colorize(
                 sparkline,
                 data,
                 metric_type=config.metric_type
             )
-            
+
             # 5. Calculate stats
             values = [v for _, v in data]
             stats = {
@@ -616,10 +624,10 @@ class PrometheusSparklineIntegration:
                 "avg": sum(values) / len(values),
                 "current": values[-1] if values else 0
             }
-            
+
             # 6. Detect trend
             trend = self._detect_trend(data)
-            
+
             result = SparklineResult(
                 sparkline=sparkline,
                 colored_sparkline=colored,
@@ -628,23 +636,23 @@ class PrometheusSparklineIntegration:
                 last_updated=datetime.now(),
                 from_cache=False
             )
-            
+
             # 7. Cache result
             self._cache_result(config.metric_query, result, config.cache_ttl)
-            
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Sparkline generation failed: {e}")
             return self._empty_sparkline(config, str(e))
-    
+
     async def generate_batch(
         self,
         configs: List[SparklineConfig]
     ) -> Dict[str, SparklineResult]:
         """
         Generate multiple sparklines in parallel.
-        
+
         More efficient than sequential generation.
         """
         tasks = [
@@ -652,13 +660,13 @@ class PrometheusSparklineIntegration:
             for config in configs
         ]
         results = await asyncio.gather(*tasks, return_exceptions=True)
-        
+
         return {
             config.label: result
             for config, result in zip(configs, results)
             if not isinstance(result, Exception)
         }
-    
+
     async def _query_prometheus(
         self,
         query: str,
@@ -667,25 +675,25 @@ class PrometheusSparklineIntegration:
     ) -> List[Tuple[datetime, float]]:
         """
         Query Prometheus for time-series data.
-        
+
         Args:
             query: Prometheus query (e.g., "adhd_cognitive_load")
             time_window: How far back (e.g., "2h", "7d")
             resolution: Data point interval (e.g., "5m", "1h")
-            
+
         Returns:
             List of (timestamp, value) tuples
         """
         # Construct range query
         range_query = f"{query}[{time_window}:{resolution}]"
-        
+
         try:
             result = await self.prom.query_range(
                 query=range_query,
                 timeout=5.0
             )
             return result
-            
+
         except Exception as e:
             logger.warning(f"Prometheus query failed: {e}")
             # Try simplified query (shorter time window)
@@ -696,51 +704,51 @@ class PrometheusSparklineIntegration:
                 except:
                     pass
             return []
-    
+
     def _detect_trend(self, data: List[Tuple[datetime, float]]) -> str:
         """
         Detect trend direction from time-series data.
-        
+
         Algorithm: Compare first 25% to last 25% of data
         """
         if len(data) < 4:
             return "stable"
-        
+
         values = [v for _, v in data]
         quarter = len(values) // 4
-        
+
         first_quarter_avg = sum(values[:quarter]) / quarter
         last_quarter_avg = sum(values[-quarter:]) / quarter
-        
+
         change_pct = (last_quarter_avg - first_quarter_avg) / first_quarter_avg
-        
+
         if change_pct > 0.1:  # 10% increase
             return "up"
         elif change_pct < -0.1:  # 10% decrease
             return "down"
         else:
             return "stable"
-    
+
     def _get_from_cache(self, key: str) -> Optional[SparklineResult]:
         """Get cached sparkline if still valid"""
         if key not in self.cache:
             return None
-        
+
         result, expires_at = self.cache[key]
-        
+
         if datetime.now().timestamp() > expires_at:
             del self.cache[key]
             return None
-        
+
         # Mark as from cache
         result.from_cache = True
         return result
-    
+
     def _cache_result(self, key: str, result: SparklineResult, ttl: int):
         """Cache sparkline result with TTL"""
         expires_at = datetime.now().timestamp() + ttl
         self.cache[key] = (result, expires_at)
-    
+
     def _empty_sparkline(self, config: SparklineConfig, reason: str) -> SparklineResult:
         """Return empty sparkline on error"""
         empty = "─" * config.width
@@ -752,11 +760,11 @@ class PrometheusSparklineIntegration:
             last_updated=datetime.now(),
             from_cache=False
         )
-    
+
     def register_update_callback(self, callback: callable):
         """Register callback for sparkline updates"""
         self.update_callbacks.append(callback)
-    
+
     async def auto_update_loop(self, interval: int = 30):
         """Background task to auto-update all sparklines"""
         while True:
@@ -841,16 +849,16 @@ class PanelID(Enum):
 class KeybindingRegistry:
     """
     Central registry for all keyboard shortcuts.
-    
+
     Features:
     - Conflict detection
     - Context-aware bindings (modal vs main)
     - Help text generation
     """
-    
+
     def __init__(self):
         self.bindings: Dict[str, Dict[str, Any]] = {}
-        
+
     def register(
         self,
         key: str,
@@ -861,7 +869,7 @@ class KeybindingRegistry:
     ):
         """
         Register a keyboard shortcut.
-        
+
         Args:
             key: Keyboard key (e.g., "f", "ctrl+r", "escape")
             action: Callable to invoke
@@ -871,41 +879,41 @@ class KeybindingRegistry:
         """
         if key in self.bindings:
             logger.warning(f"Overriding existing binding for '{key}'")
-        
+
         self.bindings[key] = {
             "action": action,
             "description": description,
             "context": context,
             "show_in_help": show_in_help
         }
-    
+
     def get_action(self, key: str, context: str = "global") -> Optional[Callable]:
         """Get action for key in given context"""
         binding = self.bindings.get(key)
         if not binding:
             return None
-        
+
         # Check context match
         if binding["context"] not in [context, "global"]:
             return None
-        
+
         return binding["action"]
-    
+
     def generate_help_text(self) -> str:
         """Generate help screen content"""
         lines = ["# Keyboard Shortcuts\n"]
-        
+
         categories = {
             "Navigation": [],
             "Panels": [],
             "Actions": [],
             "Modals": [],
         }
-        
+
         for key, binding in self.bindings.items():
             if not binding["show_in_help"]:
                 continue
-            
+
             # Categorize
             if binding["context"] == "modal":
                 categories["Modals"].append((key, binding["description"]))
@@ -915,25 +923,25 @@ class KeybindingRegistry:
                 categories["Navigation"].append((key, binding["description"]))
             else:
                 categories["Actions"].append((key, binding["description"]))
-        
+
         for category, items in categories.items():
             if items:
                 lines.append(f"\n## {category}\n")
                 for key, desc in sorted(items):
                     lines.append(f"  {key:15} {desc}")
-        
+
         return "\n".join(lines)
 
 class FocusManager:
     """
     Manages focus state across dashboard panels.
-    
+
     Features:
     - Logical focus order (top→bottom, left→right)
     - Focus history (for back navigation)
     - Visual feedback coordination
     """
-    
+
     def __init__(self, app: App):
         self.app = app
         self.current_panel: Optional[PanelID] = None
@@ -945,49 +953,49 @@ class FocusManager:
             PanelID.TRENDS,
             PanelID.FOOTER,
         ]
-        
+
     def focus_panel(self, panel_id: PanelID):
         """Set focus to specific panel"""
         if self.current_panel:
             self.focus_history.append(self.current_panel)
-        
+
         self.current_panel = panel_id
         self._apply_visual_focus(panel_id)
-        
+
     def next_panel(self):
         """Focus next panel in order"""
         if not self.current_panel:
             self.focus_panel(self.panel_order[0])
             return
-        
+
         current_idx = self.panel_order.index(self.current_panel)
         next_idx = (current_idx + 1) % len(self.panel_order)
         self.focus_panel(self.panel_order[next_idx])
-    
+
     def prev_panel(self):
         """Focus previous panel"""
         if not self.current_panel:
             self.focus_panel(self.panel_order[-1])
             return
-        
+
         current_idx = self.panel_order.index(self.current_panel)
         prev_idx = (current_idx - 1) % len(self.panel_order)
         self.focus_panel(self.panel_order[prev_idx])
-    
+
     def back(self):
         """Return to previous focus"""
         if self.focus_history:
             prev_panel = self.focus_history.pop()
             self.current_panel = prev_panel
             self._apply_visual_focus(prev_panel)
-    
+
     def _apply_visual_focus(self, panel_id: PanelID):
         """Apply visual focus indicator to panel"""
         # Remove focus from all panels
         for pid in PanelID:
             widget = self.app.query_one(f"#{pid.value}", Static)
             widget.remove_class("focused")
-        
+
         # Add focus to target panel
         widget = self.app.query_one(f"#{panel_id.value}", Static)
         widget.add_class("focused")
@@ -996,111 +1004,111 @@ class DopemuxDashboard(App):
     """
     Enhanced dashboard with full keyboard navigation.
     """
-    
+
     CSS = """
     .panel {
         border: solid $surface0;
         transition: border 150ms;
     }
-    
+
     .panel.focused {
         border: thick $blue;
         box-shadow: 0 0 8px $blue;
     }
-    
+
     .modal {
         border: thick $mauve;
     }
     """
-    
+
     BINDINGS = [
         # Panel focus (1-4)
         ("1", "focus_panel('adhd')", "ADHD State"),
         ("2", "focus_panel('productivity')", "Productivity"),
         ("3", "focus_panel('services')", "Services"),
         ("4", "focus_panel('trends')", "Trends"),
-        
+
         # Navigation
         ("tab", "next_panel", "Next Panel"),
         ("shift+tab", "prev_panel", "Previous Panel"),
-        
+
         # Actions
         ("f", "toggle_focus_mode", "Focus Mode"),
         ("b", "show_break_timer", "Break Timer"),
         ("t", "cycle_theme", "Themes"),
         ("n", "toggle_notifications", "Notifications"),
         ("r", "refresh_all", "Refresh"),
-        
+
         # Drill-down (requires panel focus)
         ("d", "show_detail", "Details"),
         ("l", "show_logs", "Logs"),
         ("h", "show_history", "History"),
         ("p", "show_patterns", "Patterns"),
-        
+
         # Help
         ("?", "show_help", "Help"),
         ("escape", "close_modal", "Close"),
     ]
-    
+
     def __init__(self):
         super().__init__()
         self.keybindings = KeybindingRegistry()
         self.focus_manager = FocusManager(self)
         self._register_keybindings()
-    
+
     def _register_keybindings(self):
         """Register all keyboard shortcuts"""
         # Navigation
         self.keybindings.register("tab", self.action_next_panel, "Next Panel")
         self.keybindings.register("shift+tab", self.action_prev_panel, "Previous Panel")
-        
+
         # Panel focus
-        for i, panel in enumerate([PanelID.ADHD, PanelID.PRODUCTIVITY, 
+        for i, panel in enumerate([PanelID.ADHD, PanelID.PRODUCTIVITY,
                                     PanelID.SERVICES, PanelID.TRENDS], 1):
             self.keybindings.register(
                 str(i),
                 lambda p=panel: self.action_focus_panel(p.value),
                 f"{panel.value.title()} Panel"
             )
-        
+
         # Actions
         self.keybindings.register("f", self.action_toggle_focus_mode, "Focus Mode")
         self.keybindings.register("b", self.action_show_break_timer, "Break Timer")
         self.keybindings.register("t", self.action_cycle_theme, "Cycle Themes")
         self.keybindings.register("?", self.action_show_help, "Help")
-        
+
         # Modal bindings
         self.keybindings.register("escape", self.action_close_modal, "Close Modal", context="modal")
-    
+
     def action_focus_panel(self, panel_id: str):
         """Focus specific panel"""
         self.focus_manager.focus_panel(PanelID(panel_id))
-    
+
     def action_next_panel(self):
         """Navigate to next panel"""
         self.focus_manager.next_panel()
-    
+
     def action_prev_panel(self):
         """Navigate to previous panel"""
         self.focus_manager.prev_panel()
-    
+
     def action_show_help(self):
         """Show keyboard shortcuts help"""
         help_text = self.keybindings.generate_help_text()
         self.push_screen(HelpModal(help_text))
-    
+
     def action_close_modal(self):
         """Close current modal"""
         self.pop_screen()
-    
+
     def on_key(self, event):
         """Global key handler"""
         # Get current context
         context = "modal" if len(self.screen_stack) > 1 else "global"
-        
+
         # Look up action
         action = self.keybindings.get_action(event.key, context)
-        
+
         if action:
             action()
             event.prevent_default()
@@ -1112,20 +1120,20 @@ class DopemuxDashboard(App):
 class VisualFeedbackController:
     """
     Provides visual feedback for keyboard interactions.
-    
+
     Feedback types:
     - Focus indicators (border, glow)
     - Action confirmation (flash)
     - Error states (red flash)
     - Loading states (pulse)
     """
-    
+
     async def flash_action(self, widget, color: str = "green", duration: float = 0.3):
         """Flash widget to confirm action"""
         widget.add_class(f"flash-{color}")
         await asyncio.sleep(duration)
         widget.remove_class(f"flash-{color}")
-    
+
     async def pulse_loading(self, widget):
         """Pulse widget during loading"""
         widget.add_class("loading-pulse")

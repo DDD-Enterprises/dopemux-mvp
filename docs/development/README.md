@@ -1,3 +1,11 @@
+---
+id: README
+title: Readme
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Development Documentation
 
 This section contains active development documentation, planning, and ongoing work tracking.
@@ -137,5 +145,5 @@ When working on active development:
 
 ---
 
-**Maintained by:** Dopemux Core Team  
+**Maintained by:** Dopemux Core Team
 **Last Updated:** 2025-10-29

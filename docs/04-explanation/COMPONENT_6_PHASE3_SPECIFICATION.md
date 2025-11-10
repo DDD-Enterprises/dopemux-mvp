@@ -1,3 +1,11 @@
+---
+id: COMPONENT_6_PHASE3_SPECIFICATION
+title: Component_6_Phase3_Specification
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Component 6 Phase 3 - Flow Optimization & Advanced Recommendations
 
 **Phase**: 3 of 4

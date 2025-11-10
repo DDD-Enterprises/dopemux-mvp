@@ -1,3 +1,11 @@
+---
+id: SERENA_V2_QUICK_TEST
+title: Serena_V2_Quick_Test
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Serena v2 Quick Test Guide
 
 After restarting Claude Code, Serena v2 will be available via stdio transport with 20 tools.
@@ -147,5 +155,8 @@ After verifying tools work:
 ---
 
 **Status**: ✅ Configured (restart Claude Code to activate)
+**Transport**: stdio (local Python process)
+**Location**: `/Users/hue/code/dopemux-mvp/services/serena/v2/mcp_server.py`
+rt Claude Code to activate)
 **Transport**: stdio (local Python process)
 **Location**: `/Users/hue/code/dopemux-mvp/services/serena/v2/mcp_server.py`

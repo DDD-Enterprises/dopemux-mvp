@@ -1,3 +1,11 @@
+---
+id: COMPREHENSIVE_FEATURE_STATUS_SUMMARY
+title: Comprehensive_Feature_Status_Summary
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Comprehensive Feature Status Summary
 **Generated**: 2025-11-04
 **Source**: Complete audit of all `/docs` files for unfinished work mentions

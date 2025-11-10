@@ -1,3 +1,11 @@
+---
+id: DEPLOYMENT-CHECKLIST
+title: Deployment Checklist
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Deployment Checklist - Security Fixes
 **Status**: ✅ Ready for immediate deployment
 **Critical Fixes**: All applied and tested

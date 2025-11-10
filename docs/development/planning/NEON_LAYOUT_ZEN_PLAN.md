@@ -1,3 +1,11 @@
+---
+id: NEON_LAYOUT_ZEN_PLAN
+title: Neon_Layout_Zen_Plan
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Neon Tmux Dashboard – Zen Ultrathink + Plan Kickoff (Resume Checklist)
 
 Date: 2025-10-28T06:52:26.308Z

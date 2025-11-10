@@ -1,3 +1,11 @@
+---
+id: MEGA_SESSION_2025-10-25_SUMMARY
+title: Mega_Session_2025 10 25_Summary
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Mega-Session Summary: 2025-10-25
 
 **Date**: October 25, 2025

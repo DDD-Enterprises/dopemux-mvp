@@ -1,3 +1,11 @@
+---
+id: COMPONENT_5_CROSS_PLANE_QUERIES
+title: Component_5_Cross_Plane_Queries
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Component 5: Cross-Plane Query Endpoints
 
 **Status**: ✅ Code Complete (Mock Data - Ready for Wiring)
@@ -295,7 +303,7 @@ Currently, all endpoints return mock data. To complete Component 5:
 1. **Wire Task-Orchestrator State**:
    - Add `get_tasks()`, `get_task_by_id()` methods to EnhancedTaskOrchestrator
    - Wire orchestrator_endpoints to call actual orchestrator methods
-   
+
 2. **Wire ADHD Engine**:
    - Connect `/adhd-state` to ADHD Engine current state
    - Connect `/recommendations` to Task-Orchestrator recommendation engine
@@ -329,7 +337,7 @@ async def check_task_progress(task_id: str) -> float:
 async function fetchADHDState() {
   const response = await fetch('http://localhost:3016/orchestrator/adhd-state');
   const state = await response.json();
-  
+
   updateEnergyWidget(state.energy_level);
   updateAttentionWidget(state.attention_level);
   updateBreakTimer(state.time_since_break);

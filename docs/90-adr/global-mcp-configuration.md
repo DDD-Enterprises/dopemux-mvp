@@ -1,7 +1,15 @@
+---
+id: global-mcp-configuration
+title: Global Mcp Configuration
+type: adr
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Decision: Global MCP Configuration for Dopemux Platform-Wide Availability
 
-**Date**: 2025-10-16  
-**Status**: Implemented  
+**Date**: 2025-10-16
+**Status**: Implemented
 **Decision ID**: TBD (to be logged to ConPort)
 
 ## Problem
@@ -115,3 +123,6 @@ All 8 servers now available globally:
 3. ⏳ Document in project architecture docs
 4. ⏳ Update WORKTREE_MCP_SETUP.md with new approach
 
+ion to ConPort (on next session with MCP reload)
+3. ⏳ Document in project architecture docs
+4. ⏳ Update WORKTREE_MCP_SETUP.md with new approach

@@ -1,3 +1,11 @@
+---
+id: mobile-web-setup-guide
+title: Mobile Web Setup Guide
+type: how-to
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # 📱 Dopemux Mobile/Web Setup Guide
 
 **Complete installation and configuration guide for bringing Dopemux to your phone, tablet, or web browser.**

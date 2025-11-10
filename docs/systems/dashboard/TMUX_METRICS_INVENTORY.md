@@ -1,3 +1,11 @@
+---
+id: TMUX_METRICS_INVENTORY
+title: Tmux_Metrics_Inventory
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Tmux Dashboard Metrics - Exhaustive Inventory
 
 **Complete data sources and metrics available for Dopemux tmux monitoring dashboards**

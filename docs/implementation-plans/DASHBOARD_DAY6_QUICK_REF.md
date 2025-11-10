@@ -1,8 +1,16 @@
+---
+id: DASHBOARD_DAY6_QUICK_REF
+title: Dashboard_Day6_Quick_Ref
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dashboard Day 6 - Quick Reference Card 📋
 
-**For:** Developers integrating Day 6 API changes  
-**Status:** ✅ Production Ready  
-**Time to Integrate:** 5 minutes  
+**For:** Developers integrating Day 6 API changes
+**Status:** ✅ Production Ready
+**Time to Integrate:** 5 minutes
 
 ---
 
@@ -44,9 +52,9 @@ def on_mount(self) -> None:
     self.apply_theme(self.active_theme)
     if self.focus_mode:
         self._apply_focus_mode_visuals()
-    
+
     self.prefetcher.start()  # ADD THIS LINE
-    
+
     # Start smart notification monitoring
     self.monitor_task = asyncio.create_task(self.auto_trigger.monitor_loop())
     # ... rest of on_mount ...
@@ -108,11 +116,11 @@ assessment = await self.adhd_client.assess_task(
 
 ## 🎯 KEY FEATURES
 
-✅ **Automatic retry** - Failed API calls retry 3x with backoff  
-✅ **Smart caching** - 75% cache hit rate (5-300s TTL)  
-✅ **Prefetching** - Hot data cached in background  
-✅ **Deduplication** - Prevents duplicate concurrent requests  
-✅ **Fallback** - Graceful degradation on failures  
+✅ **Automatic retry** - Failed API calls retry 3x with backoff
+✅ **Smart caching** - 75% cache hit rate (5-300s TTL)
+✅ **Prefetching** - Hot data cached in background
+✅ **Deduplication** - Prevents duplicate concurrent requests
+✅ **Fallback** - Graceful degradation on failures
 
 ---
 
@@ -187,6 +195,6 @@ Ready to ship:
 
 ---
 
-**Questions?** Check `DASHBOARD_DAY6_HANDOFF.md` for detailed guide.  
-**Issues?** See troubleshooting section above.  
+**Questions?** Check `DASHBOARD_DAY6_HANDOFF.md` for detailed guide.
+**Issues?** See troubleshooting section above.
 **Success?** Move on to Day 7! 🎉

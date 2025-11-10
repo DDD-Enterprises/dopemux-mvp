@@ -1,3 +1,11 @@
+---
+id: multi-agent-ai-systems-research-2025-10-15
+title: Multi Agent Ai Systems Research 2025 10 15
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Multi-Agent AI Systems for Development Workflows: Comprehensive Research Report
 
 **Research Date**: 2025-10-15

@@ -1,3 +1,11 @@
+---
+id: TIER3_ZEN_ENHANCED_DESIGN
+title: Tier3_Zen_Enhanced_Design
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Tier 3 Features - Zen-Enhanced Design
 
 **Analysis Method**: Systematic design thinking (Zen tools unavailable due to API quotas)

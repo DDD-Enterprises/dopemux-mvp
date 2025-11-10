@@ -1,3 +1,11 @@
+---
+id: HAPPY_CODER_USAGE_GUIDE
+title: Happy_Coder_Usage_Guide
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Happy Coder - Practical Usage Guide
 
 **Quick Start**: Get mobile notifications for your Dopemux development workflows in 5 minutes.

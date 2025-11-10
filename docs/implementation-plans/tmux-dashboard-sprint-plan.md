@@ -1,3 +1,11 @@
+---
+id: tmux-dashboard-sprint-plan
+title: Tmux Dashboard Sprint Plan
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Tmux Dashboard Implementation Sprint Plan
 
 **Sprint Duration:** 2 weeks
@@ -42,7 +50,7 @@
 class SparklineGenerator:
     def __init__(self, prometheus_url: str):
         self.prom = PrometheusClient(prometheus_url)
-    
+
     def generate(self, metric: str, hours: int = 24, width: int = 20) -> str:
         """Generate sparkline from time-series data"""
         data = self.prom.query_range(metric, hours)
@@ -58,7 +66,7 @@ async def fetch_cognitive_load_history(hours: int = 24) -> List[float]:
 class TrendsPanel(Static):
     async def update_sparklines(self):
         generator = SparklineGenerator("http://localhost:9090")
-        
+
         self.cognitive_sparkline = generator.generate(
             "adhd_cognitive_load", hours=2
         )
@@ -84,7 +92,7 @@ class TrendsPanel(Static):
 # 1. Add panel focusing
 class DopemuxDashboard(App):
     focused_panel = reactive("adhd")
-    
+
     BINDINGS = [
         ("1", "focus_panel('adhd')", "ADHD State"),
         ("2", "focus_panel('productivity')", "Productivity"),
@@ -95,13 +103,13 @@ class DopemuxDashboard(App):
         ("enter", "expand_panel", "Expand"),
         ("escape", "collapse_panel", "Collapse"),
     ]
-    
+
     def action_focus_panel(self, panel_id: str):
         """Focus specific panel"""
         self.focused_panel = panel_id
         panel = self.query_one(f"#{panel_id}")
         panel.add_class("focused")
-    
+
     def action_next_panel(self):
         """Focus next panel"""
         panels = ["adhd", "productivity", "services", "trends"]
@@ -119,7 +127,7 @@ class DopemuxDashboard(App):
 # 3. Add scroll support
 class ServicesWidget(Static):
     can_focus = True
-    
+
     def on_key(self, event: events.Key) -> None:
         if event.key == "up":
             self.scroll_up()
@@ -144,11 +152,11 @@ class ServicesWidget(Static):
 # 1. Create TaskDetailScreen
 class TaskDetailScreen(Screen):
     """Detailed task view"""
-    
+
     def __init__(self, task_data: Dict):
         super().__init__()
         self.task_data = task_data
-    
+
     def compose(self) -> ComposeResult:
         yield Header()
         yield Container(
@@ -157,7 +165,7 @@ class TaskDetailScreen(Screen):
             Panel(self._render_history(), title="History"),
         )
         yield Footer()
-    
+
     def _render_task_info(self) -> Table:
         table = Table()
         table.add_row("Name", self.task_data["name"])
@@ -168,7 +176,7 @@ class TaskDetailScreen(Screen):
 # 2. Add binding to open popup
 class ProductivityPanel(Static):
     BINDINGS = [("d", "show_detail", "Detail View")]
-    
+
     def action_show_detail(self):
         """Show task detail popup"""
         task_data = self.get_selected_task()
@@ -177,7 +185,7 @@ class ProductivityPanel(Static):
 # 3. Create ServiceLogsScreen
 class ServiceLogsScreen(Screen):
     """Service logs viewer"""
-    
+
     async def on_mount(self):
         logs = await fetch_service_logs(self.service_name, lines=100)
         self.query_one(LogView).update(logs)
@@ -226,7 +234,7 @@ class ADHDStateWidget(Static):
     async def on_mount(self):
         # Start WebSocket subscription
         self.run_worker(self.stream_updates())
-    
+
     async def stream_updates(self):
         metrics = RealtimeMetrics()
         async for data in metrics.subscribe("adhd_state"):
@@ -273,13 +281,13 @@ LAYOUTS = {
 # 2. Add layout switcher
 class DopemuxDashboard(App):
     current_layout = reactive("standard")
-    
+
     BINDINGS = [
         ("alt+1", "set_layout('compact')", "Compact"),
         ("alt+2", "set_layout('standard')", "Standard"),
         ("alt+3", "set_layout('detailed')", "Detailed"),
     ]
-    
+
     def action_set_layout(self, layout: str):
         self.current_layout = layout
         self.apply_layout(LAYOUTS[layout])

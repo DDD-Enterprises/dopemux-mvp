@@ -1,8 +1,16 @@
+---
+id: CONPORT_HTTP_DEEP_PLANNING
+title: Conport_Http_Deep_Planning
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # ConPort HTTP Wrapper - Deep Planning & Analysis
 
-**Date:** 2025-10-29  
-**Task:** Create HTTP API wrapper for ConPort (Day 2 Afternoon)  
-**Status:** Planning Phase  
+**Date:** 2025-10-29
+**Task:** Create HTTP API wrapper for ConPort (Day 2 Afternoon)
+**Status:** Planning Phase
 
 ---
 
@@ -139,7 +147,7 @@ Cons:
 
 **Query Needed:**
 ```sql
-SELECT 
+SELECT
     id,
     title,
     context,
@@ -358,8 +366,8 @@ curl http://localhost:8005/api/adhd/graph/stats | jq '.'
    ```sql
    DESCRIBE decisions;
    -- or
-   SELECT column_name, data_type 
-   FROM information_schema.columns 
+   SELECT column_name, data_type
+   FROM information_schema.columns
    WHERE table_name = 'decisions';
    ```
 
@@ -385,25 +393,25 @@ curl http://localhost:8005/api/adhd/graph/stats | jq '.'
 ## ⚠️ POTENTIAL ISSUES & SOLUTIONS
 
 ### Issue 1: PostgreSQL Not Running
-**Symptom:** Can't connect to database  
-**Check:** `docker ps | grep postgres`  
+**Symptom:** Can't connect to database
+**Check:** `docker ps | grep postgres`
 **Solution:** Start PostgreSQL container or use existing one
 
 ### Issue 2: Database Empty
-**Symptom:** No decisions/nodes found  
-**Impact:** API returns empty arrays (OK for MVP)  
+**Symptom:** No decisions/nodes found
+**Impact:** API returns empty arrays (OK for MVP)
 **Solution:** Return mock data or empty results (dashboard handles gracefully)
 
 ### Issue 3: Schema Unknown
-**Symptom:** Don't know table structure  
-**Solution:** 
+**Symptom:** Don't know table structure
+**Solution:**
 - Inspect existing MCP server code
 - Check migrations or schema files
 - Query information_schema
 - Start with mock data, refine later
 
 ### Issue 4: AGE Extension Not Loaded
-**Symptom:** Can't query graph  
+**Symptom:** Can't query graph
 **Solution:** Use regular PostgreSQL tables for now, AGE for graph later
 
 ---
@@ -518,8 +526,8 @@ curl http://localhost:8005/api/adhd/graph/stats | jq '.'
 
 ---
 
-**Status:** ✅ Planning Complete  
-**Confidence:** HIGH  
-**Estimated Time:** 45 minutes  
-**Risk:** LOW (fallback to mock data if DB issues)  
+**Status:** ✅ Planning Complete
+**Confidence:** HIGH
+**Estimated Time:** 45 minutes
+**Risk:** LOW (fallback to mock data if DB issues)
 **Ready to Execute:** YES 🚀
