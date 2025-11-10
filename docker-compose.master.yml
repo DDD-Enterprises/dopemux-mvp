@@ -291,6 +291,9 @@ services:
       - "traefik.http.services.task-orchestrator.loadbalancer.server.port=8000"
       - "traefik.http.middlewares.task-orchestrator-healthcheck.healthcheck.path=/health"
       - "traefik.http.middlewares.task-orchestrator-healthcheck.healthcheck.interval=10s"
+      - "traefik.http.middlewares.task-orchestrator-session.redis.endpoints=dopemux-redis-primary:6379"
+      - "traefik.http.middlewares.task-orchestrator-session.redis.keyprefix=orchestrator_session"
+      - "traefik.http.routers.task-orchestrator.middlewares=task-orchestrator-session@docker"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       timeout: 10s
@@ -339,7 +342,9 @@ services:
       - "traefik.http.services.adhd-engine.loadbalancer.server.port=8095"
       - "traefik.http.middlewares.adhd-engine-healthcheck.healthcheck.path=/health"
       - "traefik.http.middlewares.adhd-engine-healthcheck.healthcheck.interval=10s"
-      - conport
+      - "traefik.http.middlewares.adhd-engine-session.redis.endpoints=dopemux-redis-primary:6379"
+      - "traefik.http.middlewares.adhd-engine-session.redis.keyprefix=adhd_session"
+      - "traefik.http.routers.adhd-engine.middlewares=adhd-engine-session@docker"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8095/health || exit 1"]
       timeout: 10s
