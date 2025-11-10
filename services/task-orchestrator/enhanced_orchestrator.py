@@ -19,6 +19,24 @@ from enum import Enum
 import aiohttp
 import redis.asyncio as redis
 
+# Import the global error handling framework
+try:
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+    from dopemux.error_handling import (
+        GlobalErrorHandler,
+        with_error_handling,
+        create_dopemux_error,
+        ErrorType,
+        ErrorSeverity,
+        RetryPolicy,
+        CircuitBreakerConfig,
+        CircuitBreaker
+    )
+    ERROR_HANDLING_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Error handling framework not available: {e}")
+    ERROR_HANDLING_AVAILABLE = False
+
 # Configure logging FIRST
 logger = logging.getLogger(__name__)
 
@@ -195,7 +213,34 @@ class EnhancedTaskOrchestrator:
             "implicit_automations_triggered": 0
         }
 
-        # Background workers
+        # Error handling framework integration (Phase 2)
+        if ERROR_HANDLING_AVAILABLE:
+            self.error_handler = GlobalErrorHandler("task_orchestrator")
+
+            # Register circuit breaker for Leantime API calls
+            leantime_config = CircuitBreakerConfig(
+                name="leantime_api",
+                failure_threshold=3,
+                recovery_timeout=30,
+                success_threshold=2,
+                timeout=15.0
+            )
+            self.error_handler.register_circuit_breaker("leantime_api", leantime_config)
+
+            # Register retry policy for API calls
+            api_retry_policy = RetryPolicy(
+                max_attempts=3,
+                initial_delay=1.0,
+                max_delay=10.0,
+                backoff_factor=2.0,
+                jitter=True
+            )
+            self.error_handler.register_retry_policy("api_retry", api_retry_policy)
+        else:
+            self.error_handler = None
+            logger.warning("⚠️ Error handling framework not available")
+
+# Background workers
         self.workers: List[asyncio.Task] = []
         self.running = False
 
@@ -238,6 +283,7 @@ class EnhancedTaskOrchestrator:
             logger.error(f"Failed to connect to Leantime: {e}")
             raise
 
+    @with_error_handling("_test_leantime_connection", retry_policy="api_retry", circuit_breaker="leantime_api")
     async def _test_leantime_connection(self) -> bool:
         """Test Leantime API connectivity."""
         try:
@@ -257,6 +303,15 @@ class EnhancedTaskOrchestrator:
 
         except Exception as e:
             logger.error(f"Leantime connection test failed: {e}")
+            if ERROR_HANDLING_AVAILABLE:
+                raise create_dopemux_error(
+                    error_type=ErrorType.NETWORK,
+                    severity=ErrorSeverity.MEDIUM,
+                    message=f"Leantime connection test failed: {e}",
+                    service_name="task_orchestrator",
+                    operation="_test_leantime_connection",
+                    details={"leantime_url": self.leantime_url}
+                ) from e
             return False
 
     async def _initialize_redis_connection(self) -> None:
@@ -390,6 +445,7 @@ class EnhancedTaskOrchestrator:
                 logger.error(f"Leantime polling error: {e}")
                 await asyncio.sleep(60)  # Back off on error
 
+    @with_error_handling("_fetch_updated_leantime_tasks", retry_policy="api_retry", circuit_breaker="leantime_api")
     async def _fetch_updated_leantime_tasks(self) -> List[Dict[str, Any]]:
         """Fetch tasks updated since last poll."""
         try:
@@ -427,6 +483,15 @@ class EnhancedTaskOrchestrator:
 
         except Exception as e:
             logger.error(f"Failed to fetch Leantime tasks: {e}")
+            if ERROR_HANDLING_AVAILABLE:
+                raise create_dopemux_error(
+                    error_type=ErrorType.NETWORK,
+                    severity=ErrorSeverity.MEDIUM,
+                    message=f"Failed to fetch Leantime tasks: {e}",
+                    service_name="task_orchestrator",
+                    operation="_fetch_updated_leantime_tasks",
+                    details={"leantime_url": self.leantime_url, "error": str(e)}
+                ) from e
 
         return []
 

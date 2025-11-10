@@ -21,6 +21,16 @@ from ..core import (
     AsyncContextManager
 )
 
+# Import the global error handling framework
+from ..error_handling import (
+    GlobalErrorHandler,
+    with_error_handling,
+    create_dopemux_error,
+    ErrorType,
+    ErrorSeverity,
+    RetryPolicy
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -56,6 +66,19 @@ class VoyageAPIClient(EmbeddingProvider, RerankProvider, AsyncContextManager):
         self.embedding_requests = 0
         self.rerank_requests = 0
 
+        # Initialize error handling framework
+        self.error_handler = GlobalErrorHandler("voyage_api_client")
+
+        # Register retry policy for API calls (gentle backoff for external APIs)
+        api_retry_policy = RetryPolicy(
+            max_attempts=3,
+            initial_delay=1.0,
+            max_delay=15.0,
+            backoff_factor=2.0,
+            jitter=True
+        )
+        self.error_handler.register_retry_policy("api_retry", api_retry_policy)
+
         if not self.api_key:
             logger.warning("🔑 Voyage API key not configured - set VOYAGE_API_KEY environment variable")
 
@@ -67,6 +90,7 @@ class VoyageAPIClient(EmbeddingProvider, RerankProvider, AsyncContextManager):
         """Async context manager exit."""
         await self.client.aclose()
 
+    @with_error_handling("embed_texts", retry_policy="api_retry")
     async def embed_texts(self, texts: List[str]) -> List[List[float]]:
         """
         Generate embeddings for multiple texts using voyage-context-3.
@@ -121,15 +145,49 @@ class VoyageAPIClient(EmbeddingProvider, RerankProvider, AsyncContextManager):
             return embeddings
 
         except httpx.HTTPError as e:
+            # Convert HTTP errors to DopemuxError for consistent handling
             if self.config.gentle_error_messages:
                 logger.error(f"💙 API request had trouble: {e}. Taking a short break and trying again...")
             else:
                 logger.error(f"Voyage API error: {e}")
-            raise EmbeddingError(f"Voyage embedding failed: {e}") from e
+
+            # Determine error type based on HTTP status
+            if hasattr(e, 'response') and e.response:
+                if e.response.status_code == 429:
+                    error_type = ErrorType.RATE_LIMIT
+                    severity = ErrorSeverity.MEDIUM
+                elif e.response.status_code >= 500:
+                    error_type = ErrorType.SERVICE_UNAVAILABLE
+                    severity = ErrorSeverity.HIGH
+                elif e.response.status_code >= 400:
+                    error_type = ErrorType.AUTHENTICATION if e.response.status_code == 401 else ErrorType.DATA_VALIDATION
+                    severity = ErrorSeverity.MEDIUM
+                else:
+                    error_type = ErrorType.NETWORK
+                    severity = ErrorSeverity.MEDIUM
+            else:
+                error_type = ErrorType.NETWORK
+                severity = ErrorSeverity.MEDIUM
+
+            raise create_dopemux_error(
+                error_type=error_type,
+                severity=severity,
+                message=f"Voyage API request failed: {e}",
+                service_name="voyage_api_client",
+                operation="embed_texts",
+                details={"http_error": str(e), "texts_count": len(texts)}
+            ) from e
 
         except Exception as e:
             logger.error(f"Unexpected error during embedding: {e}")
-            raise EmbeddingError(f"Unexpected embedding error: {e}") from e
+            raise create_dopemux_error(
+                error_type=ErrorType.UNKNOWN,
+                severity=ErrorSeverity.HIGH,
+                message=f"Unexpected embedding error: {e}",
+                service_name="voyage_api_client",
+                operation="embed_texts",
+                details={"error": str(e), "texts_count": len(texts)}
+            ) from e
 
     async def embed_query(self, query: str) -> List[float]:
         """
@@ -151,6 +209,7 @@ class VoyageAPIClient(EmbeddingProvider, RerankProvider, AsyncContextManager):
         """Get the dimension of embeddings produced by this provider."""
         return self.config.embedding_dimension
 
+    @with_error_handling("rerank", retry_policy="api_retry")
     async def rerank(self, query: str, documents: List[str]) -> List[float]:
         """
         Rerank documents using voyage-rerank-2.5.
@@ -206,15 +265,49 @@ class VoyageAPIClient(EmbeddingProvider, RerankProvider, AsyncContextManager):
             return scores
 
         except httpx.HTTPError as e:
+            # Convert HTTP errors to DopemuxError for consistent handling
             if self.config.gentle_error_messages:
                 logger.error(f"💙 Reranking had trouble: {e}. Your search results might be slightly less optimal, but still good!")
             else:
                 logger.error(f"Voyage rerank error: {e}")
-            raise RerankError(f"Voyage reranking failed: {e}") from e
+
+            # Determine error type based on HTTP status
+            if hasattr(e, 'response') and e.response:
+                if e.response.status_code == 429:
+                    error_type = ErrorType.RATE_LIMIT
+                    severity = ErrorSeverity.MEDIUM
+                elif e.response.status_code >= 500:
+                    error_type = ErrorType.SERVICE_UNAVAILABLE
+                    severity = ErrorSeverity.HIGH
+                elif e.response.status_code >= 400:
+                    error_type = ErrorType.AUTHENTICATION if e.response.status_code == 401 else ErrorType.DATA_VALIDATION
+                    severity = ErrorSeverity.MEDIUM
+                else:
+                    error_type = ErrorType.NETWORK
+                    severity = ErrorSeverity.MEDIUM
+            else:
+                error_type = ErrorType.NETWORK
+                severity = ErrorSeverity.MEDIUM
+
+            raise create_dopemux_error(
+                error_type=error_type,
+                severity=severity,
+                message=f"Voyage API reranking failed: {e}",
+                service_name="voyage_api_client",
+                operation="rerank",
+                details={"http_error": str(e), "documents_count": len(documents)}
+            ) from e
 
         except Exception as e:
             logger.error(f"Unexpected error during reranking: {e}")
-            raise RerankError(f"Unexpected reranking error: {e}") from e
+            raise create_dopemux_error(
+                error_type=ErrorType.UNKNOWN,
+                severity=ErrorSeverity.HIGH,
+                message=f"Unexpected reranking error: {e}",
+                service_name="voyage_api_client",
+                operation="rerank",
+                details={"error": str(e), "documents_count": len(documents)}
+            ) from e
 
     def get_cost_estimate(self) -> Dict[str, float]:
         """

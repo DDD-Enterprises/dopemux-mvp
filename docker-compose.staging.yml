@@ -106,6 +106,10 @@ services:
       - redis
     networks:
       - dopemux-staging
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.serena.rule=Host(`serena.staging.local`)"
+      - "traefik.http.services.serena.loadbalancer.server.port=3001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
       interval: 15s
@@ -160,6 +164,10 @@ services:
       - redis
     networks:
       - dopemux-staging
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.task-orchestrator.rule=Host(`task-orchestrator.staging.local`)"
+      - "traefik.http.services.task-orchestrator.loadbalancer.server.port=8002"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
       interval: 15s
@@ -281,7 +289,7 @@ services:
     image: traefik:v3.0
     ports:
       - "80:80"        # HTTP
-      - "8080:8080"    # Dashboard
+      - "8082:8080"    # Dashboard (changed to avoid conflict)
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     command:
