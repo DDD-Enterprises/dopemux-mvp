@@ -54,7 +54,7 @@ async def main():
     logger.info("")
 
     try:
-        await run_break_suggester_service(user_id)
+        await run_break_suggester_service(user_id, redis_url)
     except KeyboardInterrupt:
         logger.info("\n👋 Break suggester service stopped")
     except Exception as e:
