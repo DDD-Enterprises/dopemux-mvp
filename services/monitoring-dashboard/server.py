@@ -30,7 +30,16 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 # Import the global error handling framework
-from ..error_handling import GlobalErrorHandler, with_error_handling, create_dopemux_error, ErrorType, ErrorSeverity
+from ..error_handling import (
+    GlobalErrorHandler,
+    with_error_handling,
+    create_dopemux_error,
+    ErrorType,
+    ErrorSeverity,
+    CircuitBreaker,
+    CircuitBreakerConfig,
+    CircuitBreakerState
+)
 
 # Add src to path for dopemux imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
@@ -151,6 +160,9 @@ class MonitoringDashboard:
         self.cache = {}
         self.cache_ttl = 30  # 30 seconds cache
 
+        # Initialize circuit breakers for resilience
+        self.circuit_breakers = self._init_circuit_breakers()
+
         # ADHD-optimized alert system
         self.alert_system = ADHDAlertSystem(self)
         self.alert_history = []
@@ -160,6 +172,52 @@ class MonitoringDashboard:
             "progressive_urgency": True,  # Enable progressive alerts
             "break_integration": True  # Integrate with ADHD Engine breaks
         }
+
+    def _init_circuit_breakers(self) -> Dict[str, CircuitBreaker]:
+        """
+        Initialize circuit breakers for each service to prevent cascading failures.
+
+        ADHD-optimized: Different thresholds for different service types.
+        """
+        circuit_breakers = {}
+
+        for service_id, service_config in self.services.items():
+            # Configure circuit breaker based on service type and importance
+            service_type = service_config.get("type", "web_api")
+
+            # ADHD-optimized thresholds: more forgiving for less critical services
+            if service_type == "mcp_server":
+                # MCP servers can fail without breaking core functionality
+                config = CircuitBreakerConfig(
+                    name=f"{service_id}_circuit",
+                    failure_threshold=3,  # Allow 3 failures before opening
+                    recovery_timeout=120,  # 2 minutes before trying again
+                    success_threshold=2,  # Need 2 successes to close
+                    timeout=service_config["timeout"]
+                )
+            elif service_type == "database_api":
+                # Database failures are more critical
+                config = CircuitBreakerConfig(
+                    name=f"{service_id}_circuit",
+                    failure_threshold=2,  # Fail fast for DB issues
+                    recovery_timeout=60,  # 1 minute recovery
+                    success_threshold=3,  # Need more confirmations for DB
+                    timeout=service_config["timeout"]
+                )
+            else:
+                # Default for web APIs and apps
+                config = CircuitBreakerConfig(
+                    name=f"{service_id}_circuit",
+                    failure_threshold=5,  # More forgiving for web services
+                    recovery_timeout=90,  # 1.5 minutes recovery
+                    success_threshold=2,  # Quick recovery
+                    timeout=service_config["timeout"]
+                )
+
+            circuit_breakers[service_id] = CircuitBreaker(config)
+            logger.info(f"Initialized circuit breaker for {service_id}: {config.failure_threshold} failures, {config.recovery_timeout}s recovery")
+
+        return circuit_breakers
 
     async def init_session(self):
         """Initialize aiohttp session for HTTP requests."""
@@ -186,8 +244,8 @@ class MonitoringDashboard:
 
         start_time = datetime.now(timezone.utc)
 
-        # Primary health check via HTTP
-        primary_result = await self._check_http_health(service_config, start_time)
+        # Primary health check via HTTP with circuit breaker protection
+        primary_result = await self._check_http_health(service_id, service_config, start_time)
 
         # If primary check failed and fallback is available, try fallback
         if primary_result["status"] in [HealthLevel.CRITICAL, HealthLevel.UNKNOWN]:
@@ -210,9 +268,132 @@ class MonitoringDashboard:
             adhd_optimized=adhd_optimized
         )
 
-    async def _check_http_health(self, service_config: Dict[str, Any], start_time: datetime) -> Dict[str, Any]:
-        """Check health via HTTP endpoint."""
+    async def _check_http_health(self, service_id: str, service_config: Dict[str, Any], start_time: datetime) -> Dict[str, Any]:
+        """Check health via HTTP endpoint with circuit breaker protection."""
         name = service_config["name"]
+        url = service_config["url"]
+        timeout = service_config["timeout"]
+        auth_required = service_config.get("auth_required", False)
+
+        circuit_breaker = self.circuit_breakers.get(service_id)
+        if not circuit_breaker:
+            # Fallback to direct HTTP call without circuit breaker
+            logger.warning(f"No circuit breaker found for {service_id}, using direct HTTP call")
+            return await self._check_http_health_direct(service_config, start_time)
+
+        # Check circuit breaker state
+        if circuit_breaker.state == CircuitBreakerState.OPEN:
+            logger.warning(f"Circuit breaker for {service_id} is OPEN - skipping health check")
+            return {
+                "status": HealthLevel.CRITICAL,
+                "message": f"Service unavailable (circuit breaker open)",
+                "response_time": None,
+                "details": {
+                    "circuit_breaker": "open",
+                    "consecutive_failures": circuit_breaker.stats.consecutive_failures,
+                    "last_failure": circuit_breaker.stats.last_failure_time.isoformat() if circuit_breaker.stats.last_failure_time else None
+                }
+            }
+        elif circuit_breaker.state == CircuitBreakerState.HALF_OPEN:
+            logger.info(f"Circuit breaker for {service_id} is HALF_OPEN - testing recovery")
+
+        try:
+            # Use circuit breaker to protect the HTTP call
+            result = await circuit_breaker.call(self._make_http_request, service_config, start_time)
+
+            # Circuit breaker succeeded - return the result
+            return result
+
+        except Exception as e:
+            # Circuit breaker failed - this will update failure stats automatically
+            logger.warning(f"Circuit breaker call failed for {service_id}: {e}")
+
+            # Check if circuit breaker opened due to this failure
+            if circuit_breaker.state == CircuitBreakerState.OPEN:
+                logger.error(f"Circuit breaker for {service_id} opened after consecutive failures")
+
+            return {
+                "status": HealthLevel.CRITICAL,
+                "message": f"Service health check failed: {str(e)}",
+                "response_time": None,
+                "details": {
+                    "error": str(e),
+                    "circuit_breaker_state": circuit_breaker.state.value,
+                    "consecutive_failures": circuit_breaker.stats.consecutive_failures
+                }
+            }
+
+    async def _make_http_request(self, service_config: Dict[str, Any], start_time: datetime) -> Dict[str, Any]:
+        """Make the actual HTTP request (called by circuit breaker)."""
+        url = service_config["url"]
+        timeout = service_config["timeout"]
+        auth_required = service_config.get("auth_required", False)
+
+        if not self.session:
+            await self.init_session()
+
+        async with self.session.get(url, timeout=timeout) as response:
+                response_time = (datetime.now(timezone.utc) - start_time).total_seconds()
+
+                if response.status == 200:
+                    try:
+                        data = await response.json()
+                        return {
+                            "status": HealthLevel.HEALTHY,
+                            "message": data.get("message", "Service is healthy"),
+                            "response_time": response_time,
+                            "details": data
+                        }
+                    except:
+                        # Non-JSON response but 200 status
+                        return {
+                            "status": HealthLevel.HEALTHY,
+                            "message": "Service responding",
+                            "response_time": response_time,
+                            "details": {"response": "non-json"}
+                        }
+                elif response.status == 302 and auth_required:
+                    # Redirect to login is expected for auth-required services
+                    return {
+                        "status": HealthLevel.HEALTHY,
+                        "message": "Service responding (auth required)",
+                        "response_time": response_time,
+                        "details": {"redirect": "login_required", "status_code": 302}
+                    }
+                else:
+                    return {
+                        "status": HealthLevel.CRITICAL,
+                        "message": f"HTTP {response.status}",
+                        "response_time": None,
+                        "details": {"status_code": response.status}
+                    }
+
+        except asyncio.TimeoutError:
+            return {
+                "status": HealthLevel.WARNING,
+                "message": "Timeout - service may be slow",
+                "response_time": timeout,
+                "details": {"error": "timeout"}
+            }
+
+        except aiohttp.ClientConnectorError:
+            return {
+                "status": HealthLevel.CRITICAL,
+                "message": "Connection refused - service down",
+                "response_time": None,
+                "details": {"error": "connection_refused"}
+            }
+
+        except Exception as e:
+            return {
+                "status": HealthLevel.WARNING,
+                "message": f"Check failed: {str(e)[:50]}",
+                "response_time": None,
+                "details": {"error": str(e)}
+            }
+
+    async def _check_http_health_direct(self, service_config: Dict[str, Any], start_time: datetime) -> Dict[str, Any]:
+        """Direct HTTP health check without circuit breaker protection (fallback method)."""
         url = service_config["url"]
         timeout = service_config["timeout"]
         auth_required = service_config.get("auth_required", False)
