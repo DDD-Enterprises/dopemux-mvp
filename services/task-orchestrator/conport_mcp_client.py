@@ -14,8 +14,12 @@ Enhanced: 2025-10-20 (Component 5 - Cross-plane query operations)
 import logging
 from typing import Any, Dict, List, Optional
 
-from src.dopemux.mcp.parallel_executor import MCPParallelExecutor
-from src.dopemux.file_ops.batch_handler import BatchFileOps
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+
+from dopemux.mcp.parallel_executor import MCPParallelExecutor
+from dopemux.file_ops.batch_handler import BatchFileOps
 
 logger = logging.getLogger(__name__)
 
