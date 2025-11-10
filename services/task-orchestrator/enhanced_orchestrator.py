@@ -19,6 +19,17 @@ from enum import Enum
 import aiohttp
 import redis.asyncio as redis
 
+# Import cache utility for Redis caching
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+try:
+    from dopemux.cache import get_cache
+    CACHE_AVAILABLE = True
+except ImportError:
+    CACHE_AVAILABLE = False
+    logger.warning("Redis cache not available - using in-memory fallback")
+
 # Import the global error handling framework
 try:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -1557,11 +1568,25 @@ if __name__ == "__main__":
         sprint_id_filter: Optional[str] = None,
         limit: int = 50
     ) -> List[Dict[str, Any]]:
-        """Query tasks from ConPort (Component 5)."""
+        """Query tasks from ConPort (Component 5) with Redis caching."""
         try:
             if not self.conport_adapter:
                 return []
-            
+
+            # Create cache key based on parameters
+            cache_key = f"tasks:{status_filter or 'all'}:{sprint_id_filter or 'all'}:{limit}"
+
+            # Check cache first if available
+            if CACHE_AVAILABLE:
+                try:
+                    cache = await get_cache()
+                    cached_data = await cache.get(cache_key)
+                    if cached_data:
+                        logger.debug(f"Cache hit for tasks query: {cache_key}")
+                        return json.loads(cached_data)
+                except Exception as e:
+                    logger.warning(f"Cache read failed: {e}")
+
             # Query ConPort for progress entries
             progress_entries = await self.conport_adapter.get_progress_entries(
                 status_filter=status_filter,
@@ -1584,8 +1609,17 @@ if __name__ == "__main__":
                     "tags": entry.get("tags", [])
                 })
             
+            # Cache the result for 5 minutes (300 seconds)
+            if CACHE_AVAILABLE and tasks:
+                try:
+                    cache = await get_cache()
+                    await cache.set(cache_key, json.dumps(tasks), ttl=300)
+                    logger.debug(f"Cached tasks result: {cache_key}")
+                except Exception as e:
+                    logger.warning(f"Cache write failed: {e}")
+
             return tasks
-        
+
         except Exception as e:
             logger.error(f"Failed to get tasks: {e}")
             return []
