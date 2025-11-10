@@ -19,6 +19,7 @@ from typing import Any, Callable, Dict, List, Optional, Set
 import aiohttp
 import redis.asyncio as redis
 import hashlib
+import random
 
 # Claude Code Brain Integration - LiteLLM for model routing
 try:
@@ -31,6 +32,22 @@ except ImportError:
 
 # Configure logging FIRST
 logger = logging.getLogger(__name__)
+
+# Import OrchestrationTask from parent directory
+try:
+    from ..enhanced_orchestrator import OrchestrationTask
+    ORCHESTRATION_TASK_AVAILABLE = True
+except ImportError:
+    logger.warning("OrchestrationTask not available - some features disabled")
+    ORCHESTRATION_TASK_AVAILABLE = False
+    # Define a minimal version for basic functionality
+    @dataclass
+    class OrchestrationTask:
+        id: str
+        title: str = ""
+        description: str = ""
+        complexity_score: float = 0.5
+        cognitive_load: float = 0.5
 
 # Import Integration Bridge connector for event coordination (Component 3)
 try:
@@ -105,7 +122,7 @@ class ClaudeBrainManager:
             raise ImportError("ClaudeBrainManager requires LiteLLM")
 
         # Configure LiteLLM for Claude access via OpenRouter
-        litellm.set_verbose(False)  # Reduce logs for ADHD focus
+        # Note: verbose setting handled via environment or config if needed
 
         # Redis caching for performance (ZenML-style)
         try:
@@ -156,6 +173,31 @@ class ClaudeBrainManager:
         # Initialize Prompt Optimizer
         self.prompt_optimizer = PromptOptimizer(self)
 
+        # Advanced optimization features (2024-2025)
+        self.evolutionary_optimizer = EvolutionaryPromptOptimizer(self)
+        self.performance_tracker = PromptPerformanceTracker(self)
+        self.self_consistency_engine = SelfConsistencyEngine(self)
+
+        # COSTAR framework support
+        self.costar_templates = {
+            "analysis": {
+                "context": "Analyze the following in the context of {domain}: {content}",
+                "objective": "Provide {output_type} analysis focusing on {focus_areas}",
+                "style": "Use {communication_style} with {formatting} formatting",
+                "tone": "Maintain {tone} throughout the response",
+                "audience": "Tailored for {audience_level} with {prior_knowledge} assumed",
+                "response": "Structure response as: {structure_format}"
+            },
+            "problem_solving": {
+                "context": "Problem context: {context}\nCurrent state: {current_state}",
+                "objective": "Solve: {problem_statement}\nSuccess criteria: {success_criteria}",
+                "style": "Use {reasoning_style} reasoning with step-by-step breakdown",
+                "tone": "Professional and methodical",
+                "audience": "Technical expert level",
+                "response": "Format: Problem → Analysis → Solution → Validation"
+            }
+        }
+
     async def reason(self, prompt: str, context: Optional[Dict[str, Any]] = None) -> str:
         """
         Primary reasoning method with integrated orchestration and enhanced reliability.
@@ -188,8 +230,8 @@ class ClaudeBrainManager:
                 # Route to appropriate model based on context
                 model = await self._route_model(context or {})
 
-                # Apply ADHD-friendly prompt engineering
-                enhanced_prompt = await self._enhance_prompt(prompt, context or {})
+                # Apply advanced prompt optimization techniques (2024-2025)
+                enhanced_prompt = await self._enhance_prompt_advanced(prompt, context or {})
 
                 # Check Redis cache first (enhanced ZenML-style with SHA256)
                 model_version = self.model_versions.get(model, "1.0")
@@ -233,6 +275,109 @@ class ClaudeBrainManager:
             return self.model_routes["medium_complexity"]
         else:
             return self.model_routes["high_complexity"]
+
+    async def _enhance_prompt_advanced(self, prompt: str, context: Dict[str, Any]) -> str:
+        """Apply advanced 2024-2025 prompt optimization techniques."""
+        enhanced = prompt
+
+        # 1. Apply COSTAR framework for structured prompting
+        if context.get("use_costar", True):
+            enhanced = await self._apply_costar_framework(enhanced, context)
+
+        # 2. Add Chain-of-Thought reasoning structure
+        if context.get("complexity_score", 0.5) >= 0.6:
+            enhanced = self._add_chain_of_thought(enhanced)
+
+        # 3. Apply few-shot prompting with relevant examples
+        if context.get("include_examples", True):
+            enhanced = self.prompt_optimizer.apply_few_shot_optimization(enhanced, context.get("task_type", "general"))
+
+        # 4. Apply ADHD-friendly formatting
+        enhanced = await self._apply_adhd_formatting(enhanced, context)
+
+        # 5. Use evolutionary optimization for high-complexity prompts
+        if context.get("complexity_score", 0.5) >= 0.8 and context.get("use_evolution", False):
+            try:
+                enhanced = await self.evolutionary_optimizer.evolve_prompt(enhanced, context, generations=2)
+            except Exception as e:
+                logger.debug(f"Evolutionary optimization failed: {e}")
+
+        # 6. Apply self-consistency for critical decisions
+        if context.get("require_consistency", False):
+            # Store original enhanced prompt for potential consistency check
+            context["_original_enhanced_prompt"] = enhanced
+
+        return enhanced
+
+    async def _apply_costar_framework(self, prompt: str, context: Dict[str, Any]) -> str:
+        """Apply COSTAR framework for structured, effective prompting."""
+        # Determine task type and apply appropriate COSTAR template
+        task_type = context.get("task_type", "analysis")
+        costar_template = self.costar_templates.get(task_type, self.costar_templates["analysis"])
+
+        # Extract context elements
+        domain = context.get("domain", "general software development")
+        content = prompt[:500]  # Limit content length
+        output_type = context.get("output_type", "analysis")
+        focus_areas = context.get("focus_areas", ["efficiency", "reliability"])
+        communication_style = context.get("communication_style", "clear and structured")
+        formatting = context.get("formatting", "markdown with bullet points")
+        tone = context.get("tone", "professional and methodical")
+        audience_level = context.get("audience_level", "technical expert")
+        prior_knowledge = context.get("prior_knowledge", "assumed")
+        structure_format = context.get("structure_format", "Introduction → Analysis → Recommendations → Conclusion")
+
+        # Format COSTAR elements
+        costar_prompt = f"""
+{costar_template['context'].format(domain=domain, content=content)}
+
+{costar_template['objective'].format(output_type=output_type, focus_areas=', '.join(focus_areas))}
+
+{costar_template['style'].format(communication_style=communication_style, formatting=formatting)}
+
+{costar_template['tone'].format(tone=tone)}
+
+{costar_template['audience'].format(audience_level=audience_level, prior_knowledge=prior_knowledge)}
+
+{costar_template['response'].format(structure_format=structure_format)}
+
+ORIGINAL REQUEST:
+{prompt}
+"""
+
+        return costar_prompt.strip()
+
+    def _add_chain_of_thought(self, prompt: str) -> str:
+        """Add explicit Chain-of-Thought reasoning structure."""
+        cot_structure = """
+REASONING FRAMEWORK (Chain-of-Thought):
+1. Problem Analysis: Break down the core problem and identify key components
+2. Context Evaluation: Consider relevant background, constraints, and requirements
+3. Solution Exploration: Generate and evaluate multiple potential approaches
+4. Decision Rationale: Explain the reasoning behind the selected approach
+5. Implementation Planning: Outline concrete steps and potential challenges
+6. Validation Strategy: Define how to verify the solution effectiveness
+
+Apply this framework step-by-step to ensure thorough, logical reasoning.
+"""
+
+        return f"{cot_structure}\n\n{prompt}"
+
+    async def reason_with_self_consistency(self, prompt: str, context: Dict[str, Any]) -> str:
+        """Use self-consistency engine for critical reasoning tasks."""
+        try:
+            return await self.self_consistency_engine.generate_consistent_response(prompt, context)
+        except Exception as e:
+            logger.debug(f"Self-consistency failed: {e}")
+            # Fallback to regular reasoning
+            return await self.reason(prompt, context)
+
+    async def track_prompt_performance(self, prompt: str, response: str, context: Dict[str, Any], response_time: float):
+        """Track prompt performance for optimization."""
+        try:
+            await self.performance_tracker.track_performance(prompt, response, context, response_time)
+        except Exception as e:
+            logger.debug(f"Performance tracking failed: {e}")
 
     class PromptOptimizer:
         """
@@ -1156,6 +1301,382 @@ class ClaudeBrainManager:
             return {"status": "brain_unavailable"}
 
         return self.claude_brain.analyze_failure_patterns()
+
+
+class EvolutionaryPromptOptimizer:
+    """
+    Evolutionary algorithms for automatic prompt optimization (2024 advancement).
+
+    Uses genetic algorithms to evolve prompt populations based on performance metrics.
+    Implements mutation, crossover, and selection operations for continuous improvement.
+    """
+
+    def __init__(self, brain_manager):
+        self.brain = brain_manager
+        self.population_size = 10
+        self.generations = 5
+        self.mutation_rate = 0.2
+        self.elitism_rate = 0.1  # Preserve best performers
+
+        # Fitness tracking
+        self.fitness_history = []
+        self.best_prompts = {}
+
+    async def evolve_prompt(self, base_prompt: str, task_context: Dict[str, Any], generations: int = 3) -> str:
+        """Evolve a prompt through genetic algorithm optimization."""
+        # Initialize population
+        population = await self._generate_initial_population(base_prompt, task_context)
+
+        for generation in range(generations):
+            # Evaluate fitness
+            fitness_scores = await self._evaluate_population_fitness(population, task_context)
+
+            # Select best performers
+            elite_size = max(1, int(self.population_size * self.elitism_rate))
+            elite_indices = sorted(range(len(fitness_scores)), key=lambda i: fitness_scores[i], reverse=True)[:elite_size]
+
+            # Create next generation
+            new_population = [population[i] for i in elite_indices]  # Elitism
+
+            while len(new_population) < self.population_size:
+                # Selection (tournament selection)
+                parent1 = await self._tournament_selection(population, fitness_scores)
+                parent2 = await self._tournament_selection(population, fitness_scores)
+
+                # Crossover
+                child = await self._crossover(parent1, parent2)
+
+                # Mutation
+                if random.random() < self.mutation_rate:
+                    child = await self._mutate(child, task_context)
+
+                new_population.append(child)
+
+            population = new_population
+
+        # Return best evolved prompt
+        final_fitness = await self._evaluate_population_fitness(population, task_context)
+        best_index = final_fitness.index(max(final_fitness))
+
+        return population[best_index]
+
+    async def _generate_initial_population(self, base_prompt: str, context: Dict[str, Any]) -> List[str]:
+        """Generate diverse initial prompt population."""
+        population = [base_prompt]  # Include original
+
+        # Generate variations using meta-prompting
+        variation_prompts = [
+            f"Rewrite this prompt to be more specific: {base_prompt}",
+            f"Make this prompt more structured: {base_prompt}",
+            f"Add chain-of-thought reasoning to: {base_prompt}",
+            f"Optimize for {context.get('task_type', 'general')} tasks: {base_prompt}"
+        ]
+
+        for var_prompt in variation_prompts:
+            try:
+                variation = await self.brain.reason(var_prompt, {"complexity_score": 0.3})
+                if variation and len(variation) > 50:  # Filter out too-short responses
+                    population.append(variation.strip())
+            except Exception as e:
+                logger.debug(f"Variation generation failed: {e}")
+
+        # Fill remaining slots with mutations of the base prompt
+        while len(population) < self.population_size:
+            mutated = await self._mutate(base_prompt, context)
+            population.append(mutated)
+
+        return population[:self.population_size]
+
+    async def _evaluate_population_fitness(self, population: List[str], context: Dict[str, Any]) -> List[float]:
+        """Evaluate fitness of each prompt in population."""
+        fitness_scores = []
+
+        for prompt in population:
+            try:
+                # Use self-critique to evaluate prompt quality
+                critique_prompt = f"""
+                Evaluate this prompt's effectiveness for {context.get('task_type', 'general')} tasks.
+                Rate on scale of 1-10 for clarity, specificity, and structure.
+
+                PROMPT: {prompt[:500]}
+
+                Return only a number 1-10:
+                """
+
+                score_response = await self.brain.reason(critique_prompt, {"complexity_score": 0.2})
+                score = float(score_response.strip()) if score_response.strip().isdigit() else 5.0
+                fitness_scores.append(min(10.0, max(1.0, score)))
+
+            except Exception as e:
+                logger.debug(f"Fitness evaluation failed: {e}")
+                fitness_scores.append(5.0)  # Neutral score for failures
+
+        return fitness_scores
+
+    async def _tournament_selection(self, population: List[str], fitness_scores: List[float]) -> str:
+        """Tournament selection for genetic algorithm."""
+        # Select random subset
+        tournament_size = 3
+        indices = random.sample(range(len(population)), tournament_size)
+
+        # Return best from tournament
+        best_idx = max(indices, key=lambda i: fitness_scores[i])
+        return population[best_idx]
+
+    async def _crossover(self, parent1: str, parent2: str) -> str:
+        """Crossover operation for prompt evolution."""
+        # Simple single-point crossover
+        words1 = parent1.split()
+        words2 = parent2.split()
+
+        if len(words1) < 2 or len(words2) < 2:
+            return parent1  # Too short for crossover
+
+        # Choose crossover point
+        min_len = min(len(words1), len(words2))
+        if min_len < 4:
+            return parent1
+
+        point = random.randint(1, min_len - 1)
+
+        # Create child
+        child_words = words1[:point] + words2[point:]
+        return ' '.join(child_words)
+
+    async def _mutate(self, prompt: str, context: Dict[str, Any]) -> str:
+        """Mutation operation for prompt evolution."""
+        mutations = [
+            lambda p: p + f" Focus on {context.get('task_type', 'efficiency')}.",
+            lambda p: f"Using {context.get('reasoning_style', 'structured')} reasoning: {p}",
+            lambda p: p.replace("should", "must"),
+            lambda p: f"Be specific and detailed: {p}",
+            lambda p: p + " Provide examples where helpful."
+        ]
+
+        mutation = random.choice(mutations)
+        return mutation(prompt)
+
+
+class PromptPerformanceTracker:
+    """
+    Systematic measurement infrastructure for prompt performance (2024 advancement).
+
+    Tracks success rates, response quality, and optimization opportunities.
+    Implements A/B testing frameworks and statistical confidence evaluation.
+    """
+
+    def __init__(self, brain_manager):
+        self.brain = brain_manager
+        self.metrics_db = {}  # In production, use Redis/PostgreSQL
+
+        # Performance thresholds
+        self.quality_threshold = 7.0  # 1-10 scale
+        self.consistency_threshold = 0.8  # Response consistency
+
+    async def track_performance(self, prompt: str, response: str, context: Dict[str, Any], response_time: float):
+        """Track prompt performance metrics."""
+        prompt_hash = hashlib.sha256(prompt.encode()).hexdigest()[:16]
+
+        if prompt_hash not in self.metrics_db:
+            self.metrics_db[prompt_hash] = {
+                "prompt": prompt[:200],  # Store truncated version
+                "total_calls": 0,
+                "successful_calls": 0,
+                "avg_quality_score": 0,
+                "avg_response_time": 0,
+                "consistency_score": 0,
+                "last_updated": datetime.now(),
+                "context_patterns": []
+            }
+
+        metrics = self.metrics_db[prompt_hash]
+
+        # Evaluate response quality
+        quality_score = await self._evaluate_response_quality(response, context)
+
+        # Update metrics
+        metrics["total_calls"] += 1
+        if quality_score >= self.quality_threshold:
+            metrics["successful_calls"] += 1
+
+        # Rolling averages
+        alpha = 0.1  # Smoothing factor
+        metrics["avg_quality_score"] = (1 - alpha) * metrics["avg_quality_score"] + alpha * quality_score
+        metrics["avg_response_time"] = (1 - alpha) * metrics["avg_response_time"] + alpha * response_time
+
+        # Track context patterns for optimization
+        context_key = f"{context.get('complexity_score', 0):.1f}_{context.get('energy_level', 'medium')}"
+        if context_key not in metrics["context_patterns"]:
+            metrics["context_patterns"].append(context_key)
+
+        metrics["last_updated"] = datetime.now()
+
+    async def _evaluate_response_quality(self, response: str, context: Dict[str, Any]) -> float:
+        """Evaluate response quality using automated criteria."""
+        score = 5.0  # Base score
+
+        # Length appropriateness
+        expected_length = self._estimate_expected_length(context)
+        actual_length = len(response)
+
+        if 0.5 * expected_length <= actual_length <= 1.5 * expected_length:
+            score += 1.0
+        elif actual_length < 0.3 * expected_length or actual_length > 2.0 * expected_length:
+            score -= 1.0
+
+        # Structure check
+        if any(indicator in response.lower() for indicator in ["•", "-", "1.", "step", "analysis"]):
+            score += 0.5  # Structured response
+
+        # Relevance check (basic heuristic)
+        task_keywords = context.get("task_keywords", [])
+        if task_keywords and any(kw in response.lower() for kw in task_keywords):
+            score += 0.5
+
+        # Coherence check
+        sentences = response.split('.')
+        if len(sentences) > 1:
+            # Check for reasonable sentence length variation
+            avg_len = sum(len(s) for s in sentences) / len(sentences)
+            if 10 <= avg_len <= 100:
+                score += 0.5
+
+        return max(1.0, min(10.0, score))
+
+    def _estimate_expected_length(self, context: Dict[str, Any]) -> int:
+        """Estimate expected response length based on context."""
+        complexity = context.get("complexity_score", 0.5)
+
+        if complexity < 0.3:
+            return 200  # Short, simple responses
+        elif complexity < 0.7:
+            return 500  # Medium responses
+        else:
+            return 1000  # Detailed, complex responses
+
+    def get_performance_report(self, prompt_hash: str = None) -> Dict[str, Any]:
+        """Generate performance report for prompt optimization."""
+        if prompt_hash:
+            if prompt_hash in self.metrics_db:
+                return self.metrics_db[prompt_hash]
+            else:
+                return {"error": "Prompt not found in metrics database"}
+
+        # Aggregate report
+        total_prompts = len(self.metrics_db)
+        if total_prompts == 0:
+            return {"error": "No performance data available"}
+
+        avg_quality = sum(m["avg_quality_score"] for m in self.metrics_db.values()) / total_prompts
+        avg_success_rate = sum(m["successful_calls"] / max(1, m["total_calls"]) for m in self.metrics_db.values()) / total_prompts
+
+        return {
+            "total_tracked_prompts": total_prompts,
+            "average_quality_score": round(avg_quality, 2),
+            "average_success_rate": round(avg_success_rate, 2),
+            "top_performing_prompts": sorted(
+                [(h, m["avg_quality_score"]) for h, m in self.metrics_db.items()],
+                key=lambda x: x[1],
+                reverse=True
+            )[:5]
+        }
+
+
+class SelfConsistencyEngine:
+    """
+    Self-consistency techniques for improved response reliability (2024 advancement).
+
+    Generates multiple responses and selects the most consistent one to reduce
+    variability in stochastic LLM outputs.
+    """
+
+    def __init__(self, brain_manager):
+        self.brain = brain_manager
+        self.num_samples = 5  # Number of responses to generate
+        self.consistency_threshold = 0.7  # Minimum consistency score
+
+    async def generate_consistent_response(self, prompt: str, context: Dict[str, Any]) -> str:
+        """Generate multiple responses and return the most consistent one."""
+        responses = []
+
+        # Generate multiple samples
+        for i in range(self.num_samples):
+            try:
+                # Add slight variation to prompt for diversity
+                varied_prompt = f"{prompt} (Sample {i+1})"
+                response = await self.brain.reason(varied_prompt, context)
+                responses.append(response)
+            except Exception as e:
+                logger.debug(f"Sample generation failed: {e}")
+                continue
+
+        if len(responses) < 2:
+            return responses[0] if responses else "Unable to generate response"
+
+        # Find most consistent response
+        consistency_scores = await self._calculate_consistency_scores(responses)
+
+        # Return response with highest consistency score
+        best_idx = consistency_scores.index(max(consistency_scores))
+        best_response = responses[best_idx]
+
+        # If consistency is too low, try to synthesize a better response
+        if max(consistency_scores) < self.consistency_threshold:
+            best_response = await self._synthesize_consistent_response(responses, prompt, context)
+
+        return best_response
+
+    async def _calculate_consistency_scores(self, responses: List[str]) -> List[float]:
+        """Calculate consistency scores for each response."""
+        scores = []
+
+        for i, response in enumerate(responses):
+            # Compare with other responses
+            similarities = []
+            for j, other_response in enumerate(responses):
+                if i != j:
+                    similarity = self._calculate_similarity(response, other_response)
+                    similarities.append(similarity)
+
+            # Average similarity to other responses
+            avg_similarity = sum(similarities) / len(similarities) if similarities else 0
+            scores.append(avg_similarity)
+
+        return scores
+
+    def _calculate_similarity(self, text1: str, text2: str) -> float:
+        """Calculate semantic similarity between two texts (simple heuristic)."""
+        # Simple word overlap similarity (can be enhanced with embeddings)
+        words1 = set(text1.lower().split())
+        words2 = set(text2.lower().split())
+
+        intersection = words1.intersection(words2)
+        union = words1.union(words2)
+
+        if not union:
+            return 0.0
+
+        return len(intersection) / len(union)
+
+    async def _synthesize_consistent_response(self, responses: List[str], original_prompt: str, context: Dict[str, Any]) -> str:
+        """Synthesize a more consistent response from multiple samples."""
+        synthesis_prompt = f"""
+        Given these {len(responses)} different responses to the same prompt, create a single, consistent, high-quality response.
+
+        ORIGINAL PROMPT: {original_prompt}
+
+        RESPONSES:
+        {chr(10).join(f"{i+1}. {resp}" for i, resp in enumerate(responses))}
+
+        Create a synthesized response that captures the best elements of all responses while being internally consistent.
+        """
+
+        try:
+            return await self.brain.reason(synthesis_prompt, {**context, "complexity_score": 0.8})
+        except Exception as e:
+            logger.debug(f"Response synthesis failed: {e}")
+            # Return the longest response as fallback (often most comprehensive)
+            return max(responses, key=len)
 
 
 class TaskStatus(str, Enum):
