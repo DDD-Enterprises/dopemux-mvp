@@ -79,6 +79,10 @@ services:
       - redis
     networks:
       - dopemux-staging
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.conport.rule=Host(`conport.staging.local`)"
+      - "traefik.http.services.conport.loadbalancer.server.port=3004"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
       interval: 15s
