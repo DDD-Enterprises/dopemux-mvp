@@ -252,12 +252,11 @@ services:
       - "dopemux.component=event-processing"
       - "dopemux.description=Event bus and pattern detection for ADHD intelligence"
 
-  # Task Orchestrator - ADHD Task Coordination
+  # Task Orchestrator - ADHD Task Coordination (Scaled to 2 replicas)
   task-orchestrator:
     build:
       context: ./services/task-orchestrator
       dockerfile: Dockerfile
-    container_name: dopemux-task-orchestrator
     restart: unless-stopped
     networks:
       - mcp-network
@@ -270,12 +269,28 @@ services:
       - CONPORT_URL=http://conport:3004
       - TASK_ORCHESTRATOR_API_KEY=${TASK_ORCHESTRATOR_API_KEY:-dev-key-456}
       - INTEGRATION_BRIDGE_REDIS_URL=redis://dopemux-redis-primary:6379
-    ports:
-      - "3014:3014"  # MCP server port
-      - "8000:8000"  # HTTP API port
     depends_on:
       - dopemux-redis-primary
       - conport
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.task-orchestrator.rule=Host(`task-orchestrator.staging.local`)"
+      - "traefik.http.services.task-orchestrator.loadbalancer.server.port=8000"
+      - "traefik.http.middlewares.task-orchestrator-healthcheck.healthcheck.path=/health"
+      - "traefik.http.middlewares.task-orchestrator-healthcheck.healthcheck.interval=10s"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       timeout: 10s
@@ -292,13 +307,10 @@ services:
     build:
       context: ./services/adhd_engine/services/adhd_engine
       dockerfile: Dockerfile
-    container_name: dopemux-adhd-engine
     restart: unless-stopped
     networks:
       - mcp-network
       - dopemux-unified-network
-    ports:
-      - "8095:8095"
     environment:
       - API_PORT=8095
       - HOST=0.0.0.0
@@ -308,6 +320,25 @@ services:
       - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097
     depends_on:
       - dopemux-redis-primary
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8095/health"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adhd-engine.rule=Host(`adhd-engine.staging.local`)"
+      - "traefik.http.services.adhd-engine.loadbalancer.server.port=8095"
+      - "traefik.http.middlewares.adhd-engine-healthcheck.healthcheck.path=/health"
+      - "traefik.http.middlewares.adhd-engine-healthcheck.healthcheck.interval=10s"
       - conport
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8095/health || exit 1"]
