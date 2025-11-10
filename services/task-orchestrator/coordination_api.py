@@ -250,9 +250,42 @@ async def health_check():
     """Basic health check endpoint."""
     return {
         "status": "healthy",
-        "service": "plane-coordination-api",
+        "service": "task-orchestrator-coordination-api",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
+
+
+@app.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint."""
+    coordinator = app.state.coordinator
+
+    # Get orchestration metrics
+    orchestration_stats = getattr(coordinator, 'metrics', {})
+
+    # Format as Prometheus metrics
+    metrics_output = f"""# HELP task_orchestrator_tasks_orchestrated_total Total number of tasks orchestrated
+# TYPE task_orchestrator_tasks_orchestrated_total counter
+task_orchestrator_tasks_orchestrated_total {orchestration_stats.get('tasks_orchestrated', 0)}
+
+# HELP task_orchestrator_sync_events_processed_total Total number of sync events processed
+# TYPE task_orchestrator_sync_events_processed_total counter
+task_orchestrator_sync_events_processed_total {orchestration_stats.get('sync_events_processed', 0)}
+
+# HELP task_orchestrator_ai_agent_dispatches_total Total number of AI agent dispatches
+# TYPE task_orchestrator_ai_agent_dispatches_total counter
+task_orchestrator_ai_agent_dispatches_total {orchestration_stats.get('ai_agent_dispatches', 0)}
+
+# HELP task_orchestrator_active_workers Number of active background workers
+# TYPE task_orchestrator_active_workers gauge
+task_orchestrator_active_workers {len(getattr(coordinator, 'workers', []))}
+
+# HELP task_orchestrator_health_status Service health status (1=healthy, 0=unhealthy)
+# TYPE task_orchestrator_health_status gauge
+task_orchestrator_health_status 1
+"""
+
+    return Response(content=metrics_output, media_type="text/plain; version=0.0.4; charset=utf-8")
 
 
 @app.post("/api/coordination/operations", response_model=CoordinationOperationResponse)

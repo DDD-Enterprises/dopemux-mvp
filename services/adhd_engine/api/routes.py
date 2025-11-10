@@ -498,6 +498,21 @@ async def recommend_break(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/break-recommendation", response_model=schemas.BreakRecommendationResponse)
+async def get_break_recommendation(
+    request: schemas.BreakRecommendationRequest,
+    engine = Depends(get_engine), api_key: str = Security(verify_api_key)
+):
+    """
+    Get intelligent break recommendation based on current ADHD state.
+
+    This is the core endpoint specified in global instructions for ADHD accommodations.
+    Provides personalized break timing based on user profile, energy levels, and attention state.
+    """
+    # Reuse the recommend_break logic for consistency
+    return await recommend_break(request, engine, api_key)
+
+
 @router.post("/user-profile", response_model=schemas.UserProfileResponse)
 async def create_or_update_profile(
     request: schemas.UserProfileRequest,

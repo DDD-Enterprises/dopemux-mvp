@@ -313,31 +313,86 @@ def decision_stats(since: int, workspace: Optional[str]):
 
                 console.print(table)
 
-            # ADHD Insights - analyze decision patterns
-            console.print(f"\n[bold]🧠 ADHD Insights[/bold]")
+            # Enhanced ADHD Insights - analyze decision patterns for ADHD optimization
+            console.print(f"\n[bold]🧠 ADHD Decision Insights[/bold]")
 
-            # Analyze decision outcomes
-            successful_decisions = sum(1 for d in decisions if d.get('outcome') == 'SUCCESSFUL')
-            success_rate = (successful_decisions / len(decisions)) * 100 if decisions else 0
+            # Success Rate & Quality Analysis
+            successful_decisions = sum(1 for d in decisions if d.get('outcome_status') == 'successful')
+            failed_decisions = sum(1 for d in decisions if d.get('outcome_status') == 'failed')
+            mixed_decisions = sum(1 for d in decisions if d.get('outcome_status') == 'mixed')
+            total_with_outcome = successful_decisions + failed_decisions + mixed_decisions
 
-            console.print(f"  📊 Success Rate: {success_rate:.1f}% ({successful_decisions}/{len(decisions)})")
+            if total_with_outcome > 0:
+                success_rate = (successful_decisions / total_with_outcome) * 100
+                console.print(f"  ✅ Success Rate: {success_rate:.1f}% ({successful_decisions}/{total_with_outcome} completed)")
 
-            # Analyze decision types
+                if failed_decisions > 0:
+                    console.print(f"  ⚠️  Failure Rate: {(failed_decisions/total_with_outcome)*100:.1f}% - Consider reviewing decision process")
+                if mixed_decisions > 0:
+                    console.print(f"  ⚖️  Mixed Outcomes: {(mixed_decisions/total_with_outcome)*100:.1f}% - Partial wins need follow-up")
+            else:
+                console.print(f"  ⏳ No outcomes tracked yet - start logging decision results!")
+
+            # Decision Velocity & ADHD Task Chunking
+            recent_decisions = [d for d in decisions if d['created_at'] > since_date]
+            if recent_decisions:
+                daily_rate = len(recent_decisions) / since
+                console.print(f"  📈 Decision Velocity: {daily_rate:.1f} decisions/day")
+
+                if daily_rate > 3:
+                    console.print(f"  ⚡ High velocity! Consider ADHD-friendly breaks every 25 minutes")
+                elif daily_rate < 0.5:
+                    console.print(f"  🐌 Low velocity - may indicate decision paralysis or overload")
+
+            # Confidence Level Analysis (ADHD decision quality)
+            confidence_levels = {}
+            for d in decisions:
+                conf = d.get('confidence_level', 'unknown')
+                confidence_levels[conf] = confidence_levels.get(conf, 0) + 1
+
+            if len(confidence_levels) > 1:
+                high_conf = confidence_levels.get('high', 0)
+                low_conf = confidence_levels.get('low', 0)
+                total_conf = sum(confidence_levels.values())
+
+                if total_conf > 0:
+                    console.print(f"  🎯 Confidence Distribution:")
+                    console.print(f"     High: {high_conf/total_conf*100:.0f}% | Low: {low_conf/total_conf*100:.0f}%")
+
+                    if low_conf > high_conf:
+                        console.print(f"     ⚠️  Many low-confidence decisions - may indicate rushed choices")
+                    if high_conf > low_conf * 2:
+                        console.print(f"     ✅ Strong confidence pattern - good decision hygiene!")
+
+            # Decision Type Analysis (ADHD executive function support)
             decision_types = {}
             for d in decisions:
-                decision_type = d.get('decision_type', 'ARCHITECTURAL')
-                decision_types[decision_type] = decision_types.get(decision_type, 0) + 1
+                dec_type = d.get('decision_type', 'UNKNOWN')
+                decision_types[dec_type] = decision_types.get(dec_type, 0) + 1
 
             if decision_types:
                 most_common = max(decision_types.items(), key=lambda x: x[1])
-                console.print(f"  🎯 Most Common Type: {most_common[0]} ({most_common[1]} decisions)")
+                diversity = len(decision_types)
 
-            # Time-based analysis
-            recent_decisions = [d for d in decisions if 'timestamp' in d]
-            if recent_decisions:
-                console.print(f"  ⏰ Recent Activity: {len(recent_decisions)} decisions in last period")
+                console.print(f"  🏗️  Decision Portfolio: {diversity} types, most common: {most_common[0]} ({most_common[1]}x)")
 
-            # Tag analysis for patterns
+                if diversity < 3:
+                    console.print(f"     ⚠️  Low decision diversity - consider broadening decision scope")
+                elif diversity > 5:
+                    console.print(f"     🎭 Complex portfolio - may benefit from decision categorization")
+
+            # Time Pressure Analysis (ADHD temporal awareness)
+            urgent_decisions = [d for d in decisions if (datetime.now() - d['created_at']).days < 1]
+            if urgent_decisions:
+                urgent_rate = len(urgent_decisions) / len(decisions) * 100
+                console.print(f"  ⏰ Time Pressure: {urgent_rate:.0f}% decisions made same-day")
+
+                if urgent_rate > 50:
+                    console.print(f"     🚨 High urgency pattern - consider implementing decision buffers")
+                elif urgent_rate < 10:
+                    console.print(f"     🧘 Low urgency - good for thoughtful decision-making")
+
+            # Tag Pattern Analysis (ADHD categorization support)
             all_tags = []
             for d in decisions:
                 all_tags.extend(d.get('tags', []))
@@ -345,10 +400,48 @@ def decision_stats(since: int, workspace: Optional[str]):
             if all_tags:
                 from collections import Counter
                 tag_counts = Counter(all_tags)
-                top_tags = tag_counts.most_common(3)
-                console.print(f"  🏷️  Top Tags: {', '.join(f'{tag}({count})' for tag, count in top_tags)}")
+                unique_tags = len(tag_counts)
+                most_used = tag_counts.most_common(1)[0] if tag_counts else ("none", 0)
 
-            console.print(f"\n[dim]Full stats dashboard coming in Phase 2 (Enhanced CLI)[/dim]")
+                console.print(f"  🏷️  Tagging: {unique_tags} unique tags, most used: '{most_used[0]}' ({most_used[1]}x)")
+
+                if unique_tags < 5:
+                    console.print(f"     💭 Consider more granular tagging for better organization")
+                elif unique_tags > 15:
+                    console.print(f"     🗂️  Rich tagging system - excellent for decision retrieval!")
+
+            # ADHD-Specific Recommendations
+            console.print(f"\n[bold]💡 ADHD Optimization Recommendations:[/bold]")
+
+            recommendations = []
+
+            # Success rate recommendations
+            if total_with_outcome > 0 and success_rate < 60:
+                recommendations.append("📈 Decision quality review needed - consider implementing decision checklists")
+
+            # Velocity recommendations
+            if recent_decisions and daily_rate > 5:
+                recommendations.append("⚡ High decision load - implement 25-minute focus sessions with breaks")
+
+            # Confidence recommendations
+            if confidence_levels.get('low', 0) > confidence_levels.get('high', 0):
+                recommendations.append("🎯 Build confidence through small wins - start with low-risk decisions")
+
+            # Diversity recommendations
+            if len(decision_types) < 3:
+                recommendations.append("🎭 Expand decision variety - include technical, process, and strategic decisions")
+
+            # Time pressure recommendations
+            if urgent_decisions and len(urgent_decisions) > len(decisions) * 0.7:
+                recommendations.append("⏰ Reduce decision urgency - implement decision review buffers")
+
+            if not recommendations:
+                recommendations.append("✅ Decision patterns look healthy - keep up the good work!")
+
+            for rec in recommendations[:3]:  # Limit to 3 for ADHD focus
+                console.print(f"  • {rec}")
+
+            console.print(f"\n[dim]🧠 Enhanced ADHD insights available in Phase 3 (ML-powered patterns)[/dim]")
 
         finally:
             await conn.close()
@@ -821,6 +914,111 @@ def energy_analytics(days: int, workspace: Optional[str]):
             await conn.close()
 
     asyncio.run(_analytics())
+
+
+# ============================================================================
+# PHASE 3: Semantic Search Command (~1.5 hours)
+# ============================================================================
+
+@click.command("search")
+@click.argument("query")
+@click.option("--top-k", "-k", default=5, help="Number of results to return (default: 5)")
+@click.option("--type", "-t", help="Filter by item type (decision, progress_entry, system_pattern)")
+@click.option("--tag", help="Filter by tag")
+@click.option("--workspace", "-w", help="Workspace path")
+def semantic_search_cmd(query: str, top_k: int, type: Optional[str], tag: Optional[str], workspace: Optional[str]):
+    """
+    🔍 Semantic search ConPort knowledge graph
+
+    Phase 3 feature: Discover knowledge by meaning, not keywords.
+    Uses vector embeddings to find relevant content through understanding.
+    Perfect for exploring complex relationships and ADHD-friendly discovery.
+
+    \b
+    Examples:
+        dopemux decisions search "ADHD optimization patterns"     # Find related insights
+        dopemux decisions search "performance bottlenecks" -k 10  # More results
+        dopemux decisions search "genetic agent" --type decision  # Filter by type
+        dopemux decisions search "mcp" --tag integration          # Filter by tag
+    """
+
+    async def _search():
+        from ..tools.conport_client import semantic_search
+
+        workspace_id = workspace or get_workspace_id()
+
+        console.print(Panel.fit(
+            f"[bold cyan]🔍 Semantic Search[/bold cyan]\n"
+            f"Query: [yellow]{query}[/yellow] | Workspace: [dim]{workspace_id}[/dim]",
+            border_style="cyan"
+        ))
+
+        try:
+            # Prepare filters
+            filter_item_types = [type] if type else None
+            filter_tags_include_any = [tag] if tag else None
+
+            # Execute semantic search
+            result = await semantic_search(
+                query=query,
+                top_k=top_k,
+                workspace_id=workspace_id,
+                filter_item_types=filter_item_types,
+                filter_tags_include_any=filter_tags_include_any
+            )
+
+            if "error" in result:
+                console.print(f"\n[red]❌ Search failed: {result['error']}[/red]")
+                console.print("[dim]Make sure ConPort server is running (check http://localhost:3004)[/dim]")
+                return
+
+            results = result.get("result", [])
+            if not results:
+                console.print(f"\n[yellow]No results found for: {query}[/yellow]")
+                console.print("[dim]Try a different query or check your filters[/dim]")
+                return
+
+            # Display results
+            console.print(f"\n[bold]🎯 Found {len(results)} semantic matches:[/bold]\n")
+
+            for i, item in enumerate(results, 1):
+                # Extract item details
+                item_type = item.get("metadata", {}).get("conport_item_type", "unknown")
+                item_id = item.get("metadata", {}).get("conport_item_id", "unknown")
+                distance = item.get("distance", 0)
+                score = 1 - distance  # Convert distance to similarity score
+
+                # Get content preview
+                content = item.get("document", {}).get("content", "")
+                if len(content) > 150:
+                    content = content[:147] + "..."
+
+                # Type-specific icons and colors
+                type_config = {
+                    "decision": ("🧠", "cyan"),
+                    "progress_entry": ("📋", "green"),
+                    "system_pattern": ("🔄", "yellow"),
+                    "unknown": ("❓", "dim")
+                }
+                icon, color = type_config.get(item_type, type_config["unknown"])
+
+                console.print(f"[bold {color}]{i}. {icon} {item_type.upper()}[/bold {color}] (ID: {item_id})")
+                console.print(f"   [dim]Similarity: {score:.3f}[/dim]")
+                console.print(f"   [white]{content}[/white]")
+                console.print()
+
+            # ADHD-friendly tips
+            console.print("[bold]💡 Semantic Search Tips:[/bold]")
+            console.print("  • Uses meaning, not keywords - try natural language")
+            console.print("  • Results are ranked by relevance to your intent")
+            console.print("  • Filter with --type or --tag for focused results")
+            console.print("  • Great for discovering connections you didn't know existed")
+
+        except Exception as e:
+            console.print(f"\n[red]❌ Search error: {e}[/red]")
+            console.print("[dim]Check ConPort server connectivity[/dim]")
+
+    asyncio.run(_search())
 
 
 # ============================================================================

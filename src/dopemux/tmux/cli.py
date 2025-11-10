@@ -1355,11 +1355,7 @@ def _setup_dope_layout(
 
         metrics_cmd = (
             f"cd {project_dir}; "
-            "clear; printf '📊 Metrics bar engaged...\\n'; "
-            "if [ -f scripts/neon_dashboard/components/metrics_bar.py ]; then "
-            f"{python_cmd} scripts/neon_dashboard/components/metrics_bar.py "
-            "|| (echo '\u26a0\ufe0f metrics bar crashed; falling back' && while true; do clear; date; echo 'metrics placeholder'; sleep 5; done); "
-            "else while true; do clear; echo 'metrics bar script missing'; date; sleep 5; done; fi"
+            "while true; do clear; dopemux health; sleep 10; done"
         )
         controller.send_keys(
             metrics_bar_id,

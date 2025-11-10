@@ -4,19 +4,23 @@ Provides access to MCP servers (ConPort, Serena, etc.) for the orchestrator
 """
 
 import asyncio
-import aiohttp
 import logging
-from typing import Dict, Any, Optional
 from dataclasses import dataclass
+from typing import Any, Dict, Optional
+
+import aiohttp
 
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class MCPTool:
     """Represents an MCP tool"""
+
     name: str
     description: str
     input_schema: Dict[str, Any]
+
 
 class MCPClient:
     """
@@ -27,8 +31,8 @@ class MCPClient:
         self.session: Optional[aiohttp.ClientSession] = None
         self.tools: Dict[str, MCPTool] = {}
         self.conport_url = "http://localhost:3010"  # ConPort MCP server
-        self.serena_url = "http://localhost:3012"   # Serena MCP server
-        self.zen_url = "http://localhost:3013"      # Zen MCP server
+        self.serena_url = "http://localhost:3012"  # Serena MCP server
+        self.zen_url = "http://localhost:3013"  # Zen MCP server
 
     async def initialize(self):
         """Initialize HTTP session"""
@@ -95,8 +99,10 @@ class MCPClient:
             logger.error(f"Failed to get MCP tools: {e}")
             return None
 
+
 # Global MCP client instance
 _mcp_client: Optional[MCPClient] = None
+
 
 async def get_mcp_client() -> MCPClient:
     """Get or create global MCP client instance"""
@@ -105,6 +111,7 @@ async def get_mcp_client() -> MCPClient:
         _mcp_client = MCPClient()
         await _mcp_client.initialize()
     return _mcp_client
+
 
 async def get_mcp_tools() -> Optional[Any]:
     """Get MCP tools for orchestrator initialization"""

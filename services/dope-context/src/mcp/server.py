@@ -22,7 +22,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from ..preprocessing.code_chunker import CodeChunker, ChunkingConfig
-# from ..context.openai_generator import OpenAIContextGenerator
+from ..context.openai_generator import OpenAIContextGenerator
 from ..embeddings.voyage_embedder import VoyageEmbedder
 from ..embeddings.contextualized_embedder import ContextualizedEmbedder
 from ..search.dense_search import MultiVectorSearch, SearchProfile
