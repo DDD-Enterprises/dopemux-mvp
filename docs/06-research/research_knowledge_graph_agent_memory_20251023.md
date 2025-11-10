@@ -1,3 +1,11 @@
+---
+id: research_knowledge_graph_agent_memory_20251023
+title: Research_Knowledge_Graph_Agent_Memory_20251023
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Multi-Tenant Knowledge Graphs & Agent Memory Architectures: Research Report
 
 **Research Date**: October 23, 2025

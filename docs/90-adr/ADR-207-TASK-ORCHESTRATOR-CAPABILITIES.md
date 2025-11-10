@@ -1,3 +1,11 @@
+---
+id: ADR-207-TASK-ORCHESTRATOR-CAPABILITIES
+title: Adr 207 Task Orchestrator Capabilities
+type: adr
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # ADR-207 Appendix: Task-Orchestrator 37 Tools - Comprehensive Capabilities Inventory
 
 **Date**: 2025-10-19

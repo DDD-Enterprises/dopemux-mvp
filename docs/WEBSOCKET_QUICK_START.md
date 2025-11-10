@@ -1,7 +1,15 @@
+---
+id: WEBSOCKET_QUICK_START
+title: Websocket_Quick_Start
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # WebSocket Streaming - Quick Start Guide
 
-**Feature:** Real-time dashboard updates via WebSocket  
-**Status:** ✅ Backend complete, ready for dashboard integration  
+**Feature:** Real-time dashboard updates via WebSocket
+**Status:** ✅ Backend complete, ready for dashboard integration
 **Date:** 2025-10-29
 
 ---
@@ -59,7 +67,7 @@ async def main():
         on_state_update=lambda data: print(f"State: {data}"),
         on_alert=lambda data: print(f"Alert: {data}"),
     )
-    
+
     # Start streaming
     await client.start()
 
@@ -362,5 +370,5 @@ curl -X POST http://localhost:8001/api/v1/assess-task \
 
 ---
 
-**Status:** ✅ Ready to use  
+**Status:** ✅ Ready to use
 **Next Step:** Integrate into dashboard widgets (Day 8)

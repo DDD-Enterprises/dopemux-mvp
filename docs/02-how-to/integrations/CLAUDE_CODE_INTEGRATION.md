@@ -1,3 +1,11 @@
+---
+id: CLAUDE_CODE_INTEGRATION
+title: Claude_Code_Integration
+type: how-to
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Claude Code Integration - Serena v2 Enhanced Features
 
 **Date**: 2025-10-25

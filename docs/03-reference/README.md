@@ -1,3 +1,11 @@
+---
+id: README
+title: Readme
+type: reference
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Reference - Technical Documentation
 
 **Reference guides are information-oriented technical descriptions** of the machinery and how to operate it. Consult these when you need to look something up.

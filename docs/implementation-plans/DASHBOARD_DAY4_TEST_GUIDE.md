@@ -1,3 +1,11 @@
+---
+id: DASHBOARD_DAY4_TEST_GUIDE
+title: Dashboard_Day4_Test_Guide
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Dashboard Day 4 - Quick Test Guide 🧪
 
 **How to test the new drill-down modals**

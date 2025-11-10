@@ -1,3 +1,11 @@
+---
+id: README
+title: Readme
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Documentation Archive
 
 This directory contains historical documentation, completed project records, and deprecated files.
@@ -9,7 +17,7 @@ Sprint summaries, session notes, and daily progress logs organized by date.
 
 **2025-10/**
 - ADHD Dashboard development sessions
-- ConPort integration milestones  
+- ConPort integration milestones
 - Monitoring design sprints
 - Security audit sessions
 - Various completion summaries

@@ -1,8 +1,16 @@
+---
+id: NEXT_PHASE_DEEP_RESEARCH
+title: Next_Phase_Deep_Research
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Next Phase Deep Research & Planning
 
-**Date:** 2025-10-29  
-**Session:** Post-Day 2 Analysis  
-**Philosophy:** Zen research → Clear thinking → Strategic planning  
+**Date:** 2025-10-29
+**Session:** Post-Day 2 Analysis
+**Philosophy:** Zen research → Clear thinking → Strategic planning
 
 ---
 
@@ -42,7 +50,7 @@ Documentation:
 **Current State (2025-10-29 07:36 UTC):**
 ```
 Port 8000 - ADHD Engine:    ❌ Not running (was running earlier)
-Port 8005 - ConPort:        ❌ Not running (was running earlier)  
+Port 8005 - ConPort:        ❌ Not running (was running earlier)
 Port 8003 - Serena:         ❌ Not running (was running earlier)
 
 Reason: Background processes stopped (normal for testing)
@@ -177,7 +185,7 @@ Risk: Moderate
 
 **Why:**
 - Test foundation (1 hr) → confidence
-- Add quick wins (5-8 hrs) → user value  
+- Add quick wins (5-8 hrs) → user value
 - Then advanced features (2-3 days) → professional polish
 
 ---
@@ -193,10 +201,10 @@ Risk: Moderate
    ```bash
    # Terminal 1: ADHD Engine
    cd services/adhd_engine && source venv/bin/activate && python main.py
-   
+
    # Terminal 2: ConPort
    cd services/conport && python3 http_server.py
-   
+
    # Terminal 3: Serena
    cd services/serena/v2 && python3 http_server.py
    ```
@@ -218,7 +226,7 @@ Risk: Moderate
    python3 -c "
    import asyncio
    from dopemux_dashboard import MetricsFetcher
-   
+
    async def test():
        fetcher = MetricsFetcher()
        adhd = await fetcher.get_adhd_state()
@@ -226,7 +234,7 @@ Risk: Moderate
        patterns = await fetcher.get_patterns()
        print('✅ All endpoints working')
        await fetcher.close()
-   
+
    asyncio.run(test())
    "
    ```
@@ -266,13 +274,13 @@ class DopemuxDashboard(App):
         ("q", "quit", "Quit"),
         ("?", "help", "Help"),
     ]
-    
+
     def action_force_break(self):
         """Trigger break timer"""
         # Call ADHD Engine break endpoint
         asyncio.create_task(self.trigger_break())
         self.notify("Break timer started! ☕")
-    
+
     def action_toggle_focus(self):
         """Toggle focus mode"""
         self.focus_mode = not self.focus_mode
@@ -374,8 +382,8 @@ import subprocess
 async def send_notification(title: str, message: str):
     """Send macOS notification"""
     script = f'''
-    display notification "{message}" 
-    with title "{title}" 
+    display notification "{message}"
+    with title "{title}"
     sound name "Glass"
     '''
     subprocess.run(['osascript', '-e', script])
@@ -398,7 +406,7 @@ await send_notification("Dopemux", "Great focus session! 🎯")
 - [ ] Can be disabled in config
 - [ ] Sound is subtle
 
-**Total Phase 1 Time:** 5-8 hours  
+**Total Phase 1 Time:** 5-8 hours
 **Total Phase 1 Value:** Dashboard becomes actionable and delightful
 
 ---
@@ -505,7 +513,7 @@ From `tmux-dashboard-sprint-plan.md` Week 1:
 ```
 Morning:   Phase 0 - Foundation Validation (1 hr)
            ├── Restart all services
-           ├── Run dashboard  
+           ├── Run dashboard
            └── Verify everything works
 
 Afternoon: Quick Win 1 - Interactive Controls (2-3 hrs)
@@ -583,28 +591,28 @@ Advanced Features (Sprint Plan Week 1):
 ## 💡 ZEN INSIGHTS
 
 ### Insight 1: We Built But Didn't Validate
-**Observation:** 2 days of development, dashboard never actually run  
-**Implication:** Foundation testing is critical before building more  
+**Observation:** 2 days of development, dashboard never actually run
+**Implication:** Foundation testing is critical before building more
 **Action:** Phase 0 (validation) must come first
 
 ### Insight 2: Quick Wins Create Momentum
-**Observation:** 150+ features identified, can't do all  
-**Implication:** Small, high-impact features build confidence  
+**Observation:** 150+ features identified, can't do all
+**Implication:** Small, high-impact features build confidence
 **Action:** Focus on 4-5 quick wins before advanced features
 
 ### Insight 3: Real Data Matters
-**Observation:** Mock data is acceptable for MVP, but...  
-**Implication:** Users want to see their actual patterns  
+**Observation:** Mock data is acceptable for MVP, but...
+**Implication:** Users want to see their actual patterns
 **Action:** Prioritize real data integration
 
 ### Insight 4: ADHD-First Still Applies
-**Observation:** Planning docs emphasize progressive disclosure  
-**Implication:** Don't overwhelm with all features at once  
+**Observation:** Planning docs emphasize progressive disclosure
+**Implication:** Don't overwhelm with all features at once
 **Action:** Ship incrementally, celebrate small wins
 
 ### Insight 5: Documentation is Investment
-**Observation:** 6 planning docs created (49KB)  
-**Implication:** Clear thinking prevents wasted effort  
+**Observation:** 6 planning docs created (49KB)
+**Implication:** Clear thinking prevents wasted effort
 **Action:** Keep documenting decisions and rationale
 
 ---
@@ -691,9 +699,9 @@ Output: Full sprint plan Week 1 complete
 
 ---
 
-**Status:** ✅ **RESEARCH COMPLETE**  
-**Next Action:** Execute Phase 0 (Foundation Validation)  
-**Confidence:** HIGH (clear path forward)  
-**Philosophy:** Test first, build confidently, ship incrementally  
+**Status:** ✅ **RESEARCH COMPLETE**
+**Next Action:** Execute Phase 0 (Foundation Validation)
+**Confidence:** HIGH (clear path forward)
+**Philosophy:** Test first, build confidently, ship incrementally
 
 🎯 **Ready to execute with clarity!**

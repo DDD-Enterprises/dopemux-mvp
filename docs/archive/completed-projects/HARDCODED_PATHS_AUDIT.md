@@ -1,3 +1,11 @@
+---
+id: HARDCODED_PATHS_AUDIT
+title: Hardcoded_Paths_Audit
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Hardcoded Paths Audit - Multi-User Transformation
 
 **Created**: 2025-10-18
@@ -209,6 +217,12 @@ After transformation, verify:
 **Files Modified**: ~30 production files
 **Lines Changed**: ~200-300 lines (mostly find-replace)
 **Time Required**: 2-3 hours (with current 17.6x velocity: **~10 minutes!**)
+**Risk**: LOW (mostly path substitution, easily testable)
+
+---
+
+**Next Step**: Start with `.claude.json` template and workspace detection
+ minutes!**)
 **Risk**: LOW (mostly path substitution, easily testable)
 
 ---

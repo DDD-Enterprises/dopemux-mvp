@@ -1,3 +1,11 @@
+---
+id: ACTION-PLAN-MASTER
+title: Action Plan Master
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Master Action Plan - Extracted from Complete Audit
 **Date**: 2025-10-25 (Updated: F-NEW features, Dependabot, priorities complete)
 **Source**: Synthesis of 51 audit documents + recent completions

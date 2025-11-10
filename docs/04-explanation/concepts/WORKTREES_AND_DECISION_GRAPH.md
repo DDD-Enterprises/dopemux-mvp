@@ -1,3 +1,11 @@
+---
+id: WORKTREES_AND_DECISION_GRAPH
+title: Worktrees_And_Decision_Graph
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Worktrees, ConPort, and Dope Decision Graph
 
 This document explains how per-project ConPort memory integrates with the global Dope Decision Graph (DDG) across multiple worktrees and projects.

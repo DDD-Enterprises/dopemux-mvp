@@ -1,3 +1,11 @@
+---
+id: PHASE-6-INTEGRATION-TESTS-ASSESSMENT
+title: Phase 6 Integration Tests Assessment
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Phase 6: Integration Test Assessment - DEFERRED
 **Date**: 2025-10-16
 **Duration**: 30 minutes (assessment only, not full fix)

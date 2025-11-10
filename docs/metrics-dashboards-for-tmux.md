@@ -1,3 +1,11 @@
+---
+id: metrics-dashboards-for-tmux
+title: Metrics Dashboards For Tmux
+type: explanation
+owner: '@hu3mann'
+last_review: '2025-11-10'
+next_review: '2026-02-08'
+---
 # Metrics & Dashboards for tmux - Dopemux Ultra UI
 
 Comprehensive guide to available metrics, APIs, and data sources for designing tmux dashboards with real-time Dopemux Ultra UI data.
