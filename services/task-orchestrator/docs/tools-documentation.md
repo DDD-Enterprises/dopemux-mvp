@@ -310,7 +310,7 @@ All tools support ADHD metadata and can be configured with user preferences for 
 ### Common Issues
 1. **Dependency Resolution**: Ensure all service dependencies are running
 2. **ADHD Metadata**: Verify ADHD Engine is accessible for state assessment
-3. **Event Coordination**: Check Integration Bridge connectivity
+3. **Event Coordination**: Check DopeconBridge connectivity
 
 ### Debug Mode
 Enable debug logging with `DEBUG=true` to see detailed tool execution traces.

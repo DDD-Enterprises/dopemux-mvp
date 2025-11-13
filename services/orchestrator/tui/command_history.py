@@ -14,7 +14,7 @@ Privacy Features:
 - User screen-sharing safe
 
 Architecture:
-- Uses Integration Bridge HTTP API for ConPort operations
+- Uses DopeconBridge HTTP API for ConPort operations
 - Category: "command_history" in custom_data
 - Provides navigation interface for CommandInput widget
 """
@@ -62,17 +62,17 @@ class CommandHistoryManager:
         "private"
     ]
 
-    def __init__(self, workspace_id: str, integration_bridge_url: str = None):
+    def __init__(self, workspace_id: str, dopecon_bridge_url: str = None):
         """
         Initialize command history manager.
 
         Args:
             workspace_id: Absolute path to workspace
-            integration_bridge_url: Integration Bridge URL
+            dopecon_bridge_url: DopeconBridge URL
         """
         self.workspace_id = workspace_id
-        self.integration_bridge_url = integration_bridge_url or os.getenv(
-            "INTEGRATION_BRIDGE_URL", "http://localhost:3016"
+        self.dopecon_bridge_url = dopecon_bridge_url or os.getenv(
+            "DOPECON_BRIDGE_URL", "http://localhost:3016"
         )
 
         # In-memory history (ADHD-safe size: 100 max)
@@ -160,7 +160,7 @@ class CommandHistoryManager:
             return
 
         try:
-            url = f"{self.integration_bridge_url}/conport/custom_data"
+            url = f"{self.dopecon_bridge_url}/conport/custom_data"
             timestamp_key = f"cmd_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}"
 
             payload = {
@@ -250,7 +250,7 @@ class CommandHistoryManager:
     async def _load_history(self):
         """Load command history from ConPort."""
         try:
-            url = f"{self.integration_bridge_url}/conport/custom_data"
+            url = f"{self.dopecon_bridge_url}/conport/custom_data"
             params = {
                 "workspace_id": self.workspace_id,
                 "category": "command_history",

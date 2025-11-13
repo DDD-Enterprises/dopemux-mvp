@@ -2,7 +2,7 @@
 #
 # This master compose file coordinates all Dopemux services:
 # - MCP Servers (12 services)
-# - Application Services (Integration Bridge, Task Orchestrator)
+# - Application Services (DopeconBridge, Task Orchestrator)
 # - Infrastructure (PostgreSQL, Redis, Qdrant)
 #
 # Usage:
@@ -120,6 +120,24 @@ services:
   # MCP SERVERS (Core Intelligence)
   # ========================================
 
+  # DopeconBridge - Central coordination layer (formerly Integration Bridge)
+  dopecon-bridge:
+    image: dopemux/dopecon-bridge:latest
+    container_name: ${CONTAINER_PREFIX:-mcp-default}-dopecon-bridge
+    ports:
+      - "${PORT_BASE:-3000}16:3016"
+    environment:
+      - DOPECON_BRIDGE_PORT=3016
+      - CONPORT_URL=http://conport:3004
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    networks:
+      - ${NETWORK_NAME:-mcp-network-default}
+    depends_on:
+      - conport
+      - redis
+    restart: unless-stopped
+
   # ConPort - Knowledge Graph & Context Management
   conport:
     build:
@@ -218,10 +236,10 @@ services:
   # APPLICATION SERVICES (Event System)
   # ========================================
 
-  # Integration Bridge - Event Processing & Pattern Detection
-  integration-bridge:
+  # DopeconBridge - Event Processing & Pattern Detection
+  dopecon-bridge:
     build:
-      context: ./services/mcp-integration-bridge
+      context: ./services/mcp-dopecon-bridge
       dockerfile: Dockerfile
     container_name: dope-decision-graph-bridge
     restart: unless-stopped
@@ -267,8 +285,10 @@ services:
       - REDIS_URL=redis://dopemux-redis-primary:6379
       - WORKSPACE_ID=/Users/hue/code/dopemux-mvp
       - CONPORT_URL=http://conport:3004
+      - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
+      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
       - TASK_ORCHESTRATOR_API_KEY=${TASK_ORCHESTRATOR_API_KEY:-dev-key-456}
-      - INTEGRATION_BRIDGE_REDIS_URL=redis://dopemux-redis-primary:6379
+      - DOPECON_BRIDGE_REDIS_URL=redis://dopemux-redis-primary:6379
     depends_on:
       - dopemux-redis-primary
       - conport
@@ -313,6 +333,8 @@ services:
       - ADHD_ENGINE_API_KEY=${ADHD_ENGINE_API_KEY:-dev-key-123}
       - REDIS_URL=redis://dopemux-redis-primary:6379
       - CONPORT_URL=http://conport:3004
+      - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
+      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
       - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097
     depends_on:
       - dopemux-redis-primary
@@ -357,6 +379,8 @@ services:
     environment:
       - GENETIC_AGENT_ZEN_URL=http://zen:3003
       - GENETIC_AGENT_CONPORT_URL=http://conport:3004
+      - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
+      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
       - GENETIC_AGENT_SERENA_URL=http://serena:3005
       - GENETIC_AGENT_DOPE_CONTEXT_URL=http://dope-context:3006
       - GENETIC_AGENT_WORKSPACE_ID=/workspace
