@@ -35,10 +35,10 @@ services:
     networks:
       - conport-kg-network
 
-  # Integration Bridge (HTTP API)
-  integration-bridge:
+  # DopeconBridge (HTTP API)
+  dopecon-bridge:
     build:
-      context: ../../services/mcp-integration-bridge
+      context: ../../services/mcp-dopecon-bridge
       dockerfile: Dockerfile
     container_name: dope-decision-graph-bridge
     ports:

@@ -32,7 +32,7 @@ ConPort KG UI is a **simple, clean terminal UI** using Ink (React for terminals)
 ConPort KG UI (Terminal UI with Ink)
 ├─ App.tsx - Main router (Browser → Explorer → Viewer)
 ├─ api/
-│  └─ client.ts - HTTP client for Integration Bridge API
+│  └─ client.ts - HTTP client for DopeconBridge API
 ├─ components/
 │  ├─ DecisionBrowser.tsx - Tier 1 (Top-3 pattern)
 │  ├─ GenealogyExplorer.tsx - Tier 2 (Progressive disclosure)
@@ -262,7 +262,7 @@ if (error) {
       <Text>{error}</Text>
       <Box marginTop={1}>
         <Text dimColor>
-          Make sure Integration Bridge is running on port 3016
+          Make sure DopeconBridge is running on port 3016
         </Text>
       </Box>
     </Box>
@@ -327,15 +327,15 @@ async searchByTag(tag: string, limit: number = 3): Promise<DecisionCard[]> {
 
 ---
 
-### 🟢 2. No Integration Bridge Mock (LOW)
+### 🟢 2. No DopeconBridge Mock (LOW)
 
-**Observation**: UI requires Integration Bridge running on port 3016
+**Observation**: UI requires DopeconBridge running on port 3016
 
 **Current**:
 - `mock-server.ts` exists for local development
-- But production requires actual Integration Bridge
+- But production requires actual DopeconBridge
 
-**Recommendation**: Document Integration Bridge as prerequisite
+**Recommendation**: Document DopeconBridge as prerequisite
 
 ---
 
@@ -385,7 +385,7 @@ async searchByTag(tag: string, limit: number = 3): Promise<DecisionCard[]> {
 ### ⚠️ Before Deploy (30 min)
 - [ ] Fix URL parameter encoding in client.ts
 - [ ] Test with special characters (tags with &, ?, =)
-- [ ] Verify Integration Bridge connectivity
+- [ ] Verify DopeconBridge connectivity
 
 ### ✅ Ready to Use
 - [x] ADHD progressive disclosure working
@@ -397,7 +397,7 @@ async searchByTag(tag: string, limit: number = 3): Promise<DecisionCard[]> {
 ### 📚 Documentation
 - [ ] Add user guide (how to navigate)
 - [ ] Document keyboard shortcuts
-- [ ] Add Integration Bridge setup guide
+- [ ] Add DopeconBridge setup guide
 
 ---
 
