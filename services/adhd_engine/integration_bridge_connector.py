@@ -1,5 +1,5 @@
 """
-Integration Bridge Connector for ADHD Engine
+DopeconBridge Connector for ADHD Engine
 
 Connects ADHD Engine to ConPort-KG event system for cognitive state tracking.
 Handles buffered state changes (30s intervals) to prevent event storms.
@@ -22,7 +22,7 @@ def initialize_integration(workspace_id: str, event_bus_url: str = "redis://loca
     global _integration_manager, _integration_enabled
 
     try:
-        bridge_path = str(Path(__file__).parent.parent.parent / "mcp-integration-bridge")
+        bridge_path = str(Path(__file__).parent.parent.parent / "mcp-dopecon-bridge")
         if bridge_path not in sys.path:
             sys.path.insert(0, bridge_path)
 

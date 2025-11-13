@@ -3,12 +3,12 @@ ConPort Progress Tracker for Orchestrator TUI
 
 ADHD-Optimized Features:
 - Automatic progress logging for all AI command executions
-- Real-time progress updates to ConPort via Integration Bridge
+- Real-time progress updates to ConPort via DopeconBridge
 - Session context preservation for interrupt recovery
 - Visual progress feedback integration
 
 Architecture:
-- Uses Integration Bridge HTTP API (port 3016) for ConPort operations
+- Uses DopeconBridge HTTP API (port 3016) for ConPort operations
 - Tracks progress_entry items for each command
 - Links commands to active TUI session
 - Provides progress data for ProgressTrackerPane display
@@ -49,17 +49,17 @@ class ConPortProgressTracker:
     - Progress statistics for ProgressTrackerPane
     """
 
-    def __init__(self, workspace_id: str, integration_bridge_url: str = None):
+    def __init__(self, workspace_id: str, dopecon_bridge_url: str = None):
         """
         Initialize ConPort progress tracker.
 
         Args:
             workspace_id: Absolute path to workspace (/Users/hue/code/dopemux-mvp)
-            integration_bridge_url: Integration Bridge URL (default: http://localhost:3016)
+            dopecon_bridge_url: DopeconBridge URL (default: http://localhost:3016)
         """
         self.workspace_id = workspace_id
-        self.integration_bridge_url = integration_bridge_url or os.getenv(
-            "INTEGRATION_BRIDGE_URL", "http://localhost:3016"
+        self.dopecon_bridge_url = dopecon_bridge_url or os.getenv(
+            "DOPECON_BRIDGE_URL", "http://localhost:3016"
         )
 
         # Session tracking
@@ -122,7 +122,7 @@ class ConPortProgressTracker:
             # Create progress_entry in ConPort
             description = f"[{ai_name.upper()}] {command[:100]}"  # Truncate long commands
 
-            url = f"{self.integration_bridge_url}/conport/progress"
+            url = f"{self.dopecon_bridge_url}/conport/progress"
             payload = {
                 "workspace_id": self.workspace_id,
                 "status": "IN_PROGRESS",
@@ -177,7 +177,7 @@ class ConPortProgressTracker:
 
         try:
             # Update progress_entry in ConPort
-            url = f"{self.integration_bridge_url}/conport/progress/{cmd_progress.progress_id}"
+            url = f"{self.dopecon_bridge_url}/conport/progress/{cmd_progress.progress_id}"
             payload = {
                 "workspace_id": self.workspace_id,
                 "status": status
@@ -231,7 +231,7 @@ class ConPortProgressTracker:
     async def _load_active_context(self):
         """Load active context from ConPort for session restoration."""
         try:
-            url = f"{self.integration_bridge_url}/conport/active_context"
+            url = f"{self.dopecon_bridge_url}/conport/active_context"
             params = {"workspace_id": self.workspace_id}
 
             async with self.http_session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=5)) as response:
@@ -248,7 +248,7 @@ class ConPortProgressTracker:
     async def _create_session_entry(self):
         """Create custom_data entry for this TUI session."""
         try:
-            url = f"{self.integration_bridge_url}/conport/custom_data"
+            url = f"{self.dopecon_bridge_url}/conport/custom_data"
 
             # Use timestamp as session ID
             self.session_id = f"tui_session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -280,7 +280,7 @@ class ConPortProgressTracker:
             # Update session with completion info
             stats = await self.get_progress_stats()
 
-            url = f"{self.integration_bridge_url}/conport/custom_data"
+            url = f"{self.dopecon_bridge_url}/conport/custom_data"
             payload = {
                 "workspace_id": self.workspace_id,
                 "category": "tui_sessions",

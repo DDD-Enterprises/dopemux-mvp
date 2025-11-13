@@ -662,9 +662,6 @@ def start(
     if legacy_value is not None:
         use_claude_router = legacy_value
 
-from .workspace_utils import get_workspace_root
-from .workspace_detection import persist_workspace_root
-
     # Handle --alt-routing flag (automatic LiteLLM setup)
     if use_alt_routing:
         use_litellm = True
@@ -1880,7 +1877,7 @@ def instances_resume(ctx, instance_id: str, restore_context: bool):
         "TASK_MASTER_PORT": str(state.port_base + 5),
         "SERENA_PORT": str(state.port_base + 6),
         "CONPORT_PORT": str(state.port_base + 7),
-        "INTEGRATION_BRIDGE_PORT": str(state.port_base + 16),
+        "DOPECON_BRIDGE_PORT": str(state.port_base + 16),
     })
 
     # Change to worktree directory if restoring context
@@ -3479,7 +3476,7 @@ def mcp_start_all_cmd(verify: bool):
 
     Starts all services including:
     - 12 MCP servers (ConPort, Zen, Serena, Context7, etc.)
-    - Integration Bridge (event processing, pattern detection)
+    - DopeconBridge (event processing, pattern detection)
     - Task Orchestrator (ADHD task coordination)
     - All infrastructure (PostgreSQL, Redis, Qdrant)
 
@@ -3505,8 +3502,8 @@ def mcp_start_all_cmd(verify: bool):
             console.print("[blue]Starting MCP servers...[/blue]")
             subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose up -d"], check=True)
 
-            console.print("[blue]Starting Integration Bridge...[/blue]")
-            subprocess.run(["bash","-lc","cd docker/conport-kg && docker-compose up -d --no-deps integration-bridge"], check=True)
+            console.print("[blue]Starting DopeconBridge...[/blue]")
+            subprocess.run(["bash","-lc","cd docker/conport-kg && docker-compose up -d --no-deps dopecon-bridge"], check=True)
 
             console.print("[blue]Starting Task Orchestrator...[/blue]")
             subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose --profile manual up -d task-orchestrator"], check=True)
@@ -6378,6 +6375,270 @@ def hooks_cmd(setup, teardown, status, enable, disable, shell_scripts, install_s
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
+
+
+# ============================================================================
+# 🌉 DOPECONBRIDGE - Integration Gateway Commands
+# ============================================================================
+
+@cli.group()
+def bridge():
+    """
+    🌉 DopeconBridge integration gateway commands.
+    
+    Manage and interact with DopeconBridge - the central coordination
+    point for PM ↔ Cognitive plane communication and KG access.
+    """
+    pass
+
+
+@bridge.command("status")
+@click.option("--url", default=None, help="Bridge URL (default: from env)")
+def bridge_status(url):
+    """Check DopeconBridge health and status."""
+    import httpx
+    
+    bridge_url = url or os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016")
+    
+    try:
+        with httpx.Client(timeout=5.0) as client:
+            resp = client.get(f"{bridge_url}/health")
+            if resp.status_code == 200:
+                console.print(f"[green]✅ DopeconBridge is healthy at {bridge_url}[/green]")
+                if resp.headers.get("content-type", "").startswith("application/json"):
+                    data = resp.json()
+                    console.print(f"  Status: {data.get('status', 'unknown')}")
+            else:
+                console.print(f"[yellow]⚠️  Bridge returned {resp.status_code}[/yellow]")
+    except httpx.ConnectError:
+        console.print(f"[red]❌ Cannot connect to DopeconBridge at {bridge_url}[/red]")
+        console.print("[dim]Check if bridge is running: docker ps | grep dopecon-bridge[/dim]")
+    except Exception as e:
+        console.print(f"[red]❌ Error checking bridge: {e}[/red]")
+
+
+@bridge.command("stats")
+@click.option("--url", default=None, help="Bridge URL")
+def bridge_stats(url):
+    """Show DopeconBridge usage statistics."""
+    import httpx
+    import json
+    
+    bridge_url = url or os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016")
+    
+    try:
+        with httpx.Client(timeout=5.0) as client:
+            resp = client.get(f"{bridge_url}/stats")
+            if resp.status_code == 200:
+                stats = resp.json()
+                console.print(json.dumps(stats, indent=2))
+            else:
+                console.print(f"[yellow]⚠️  Bridge returned {resp.status_code}[/yellow]")
+    except httpx.ConnectError:
+        console.print(f"[red]❌ Cannot connect to DopeconBridge at {bridge_url}[/red]")
+    except Exception as e:
+        console.print(f"[red]❌ Error: {e}[/red]")
+
+
+@bridge.command("event")
+@click.argument("event_type")
+@click.argument("data")
+@click.option("--stream", default="dopemux:events", help="Event stream name")
+@click.option("--url", default=None, help="Bridge URL")
+def bridge_event(event_type, data, stream, url):
+    """
+    Publish an event to DopeconBridge.
+    
+    Example:
+        dopemux bridge event test.event '{"key": "value"}'
+    """
+    import httpx
+    import json
+    
+    bridge_url = url or os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016")
+    
+    try:
+        event_data = json.loads(data)
+    except json.JSONDecodeError as e:
+        console.print(f"[red]❌ Invalid JSON data: {e}[/red]")
+        return
+    
+    payload = {
+        "event_type": event_type,
+        "data": event_data,
+        "stream": stream,
+        "source": "dopemux_cli",
+    }
+    
+    try:
+        with httpx.Client(timeout=10.0) as client:
+            resp = client.post(f"{bridge_url}/events", json=payload)
+            if resp.status_code == 200:
+                result = resp.json()
+                console.print(f"[green]✅ Event published[/green]")
+                console.print(f"  Message ID: {result.get('message_id')}")
+                console.print(f"  Stream: {result.get('stream')}")
+            else:
+                console.print(f"[red]❌ Failed: {resp.status_code}[/red]")
+                console.print(resp.text)
+    except Exception as e:
+        console.print(f"[red]❌ Error: {e}[/red]")
+
+
+@bridge.command("decisions")
+@click.option("--limit", default=10, help="Number of decisions to show")
+@click.option("--search", default=None, help="Search query")
+@click.option("--workspace", default=None, help="Workspace ID")
+@click.option("--url", default=None, help="Bridge URL")
+def bridge_decisions(limit, search, workspace, url):
+    """Query recent decisions via DopeconBridge."""
+    import httpx
+    
+    bridge_url = url or os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016")
+    workspace_id = workspace or os.getenv("WORKSPACE_ID") or os.getcwd()
+    
+    try:
+        with httpx.Client(timeout=10.0) as client:
+            if search:
+                resp = client.get(
+                    f"{bridge_url}/ddg/decisions/search",
+                    params={"query": search, "workspace_id": workspace_id, "limit": limit}
+                )
+            else:
+                resp = client.get(
+                    f"{bridge_url}/ddg/decisions/recent",
+                    params={"workspace_id": workspace_id, "limit": limit}
+                )
+            
+            if resp.status_code == 200:
+                result = resp.json()
+                decisions = result.get("items", [])
+                console.print(f"[cyan]Found {len(decisions)} decisions:[/cyan]\n")
+                
+                for dec in decisions:
+                    console.print(f"[bold]{dec.get('title', 'Untitled')}[/bold]")
+                    console.print(f"  ID: {dec.get('id')}")
+                    console.print(f"  Date: {dec.get('timestamp', 'unknown')}")
+                    console.print()
+            else:
+                console.print(f"[red]❌ Failed: {resp.status_code}[/red]")
+    except Exception as e:
+        console.print(f"[red]❌ Error: {e}[/red]")
+
+
+@bridge.command("route")
+@click.argument("plane", type=click.Choice(["pm", "cognitive"]))
+@click.argument("operation")
+@click.argument("data")
+@click.option("--url", default=None, help="Bridge URL")
+def bridge_route(plane, operation, data, url):
+    """
+    Route an operation to PM or Cognitive plane.
+    
+    Example:
+        dopemux bridge route pm leantime.create_task '{"title": "Fix bug"}'
+    """
+    import httpx
+    import json
+    
+    bridge_url = url or os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016")
+    
+    try:
+        op_data = json.loads(data)
+    except json.JSONDecodeError as e:
+        console.print(f"[red]❌ Invalid JSON data: {e}[/red]")
+        return
+    
+    payload = {
+        "operation": operation,
+        "data": op_data,
+        "requester": "dopemux_cli",
+    }
+    
+    try:
+        with httpx.Client(timeout=15.0) as client:
+            resp = client.post(f"{bridge_url}/route/{plane}", json=payload)
+            if resp.status_code == 200:
+                result = resp.json()
+                if result.get("success"):
+                    console.print(f"[green]✅ Operation succeeded[/green]")
+                    console.print(json.dumps(result.get("data"), indent=2))
+                else:
+                    console.print(f"[yellow]⚠️  Operation failed: {result.get('error')}[/yellow]")
+            else:
+                console.print(f"[red]❌ HTTP {resp.status_code}[/red]")
+    except Exception as e:
+        console.print(f"[red]❌ Error: {e}[/red]")
+
+
+@bridge.command("data")
+@click.argument("action", type=click.Choice(["save", "get"]))
+@click.argument("category")
+@click.option("--key", default=None, help="Data key (required for save)")
+@click.option("--value", default=None, help="Data value as JSON (required for save)")
+@click.option("--workspace", default=None, help="Workspace ID")
+@click.option("--url", default=None, help="Bridge URL")
+def bridge_data(action, category, key, value, workspace, url):
+    """
+    Manage custom data via DopeconBridge.
+    
+    Examples:
+        dopemux bridge data save adhd_state --key focus --value '{"level": 8}' 
+        dopemux bridge data get adhd_state
+    """
+    import httpx
+    import json
+    
+    bridge_url = url or os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016")
+    workspace_id = workspace or os.getenv("WORKSPACE_ID") or os.getcwd()
+    
+    try:
+        with httpx.Client(timeout=10.0) as client:
+            if action == "save":
+                if not key or not value:
+                    console.print("[red]❌ --key and --value required for save[/red]")
+                    return
+                
+                try:
+                    value_data = json.loads(value)
+                except json.JSONDecodeError as e:
+                    console.print(f"[red]❌ Invalid JSON value: {e}[/red]")
+                    return
+                
+                payload = {
+                    "workspace_id": workspace_id,
+                    "category": category,
+                    "key": key,
+                    "value": value_data,
+                }
+                
+                resp = client.post(f"{bridge_url}/kg/custom_data", json=payload)
+                if resp.status_code == 200:
+                    result = resp.json()
+                    if result.get("success"):
+                        console.print(f"[green]✅ Data saved: {category}/{key}[/green]")
+                    else:
+                        console.print(f"[red]❌ Save failed[/red]")
+                else:
+                    console.print(f"[red]❌ HTTP {resp.status_code}[/red]")
+            
+            else:  # get
+                params = {"workspace_id": workspace_id, "category": category}
+                if key:
+                    params["key"] = key
+                
+                resp = client.get(f"{bridge_url}/kg/custom_data", params=params)
+                if resp.status_code == 200:
+                    result = resp.json()
+                    data = result.get("data", [])
+                    console.print(f"[cyan]Found {len(data)} entries:[/cyan]\n")
+                    console.print(json.dumps(data, indent=2))
+                else:
+                    console.print(f"[red]❌ HTTP {resp.status_code}[/red]")
+    
+    except Exception as e:
+        console.print(f"[red]❌ Error: {e}[/red]")
+
 
 if __name__ == "__main__":
     main()
