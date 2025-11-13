@@ -104,7 +104,7 @@ return chunks
 1. `services/adhd_engine/main.py:93-102`
 2. `services/dopemux-gpt-researcher/backend/main.py:110-119`
 3. `services/dopemux-gpt-researcher/backend/api/main.py:233-242`
-4. `services/mcp-integration-bridge/main.py:1164-1172`
+4. `services/mcp-dopecon-bridge/main.py:1164-1172`
 
 **Change Pattern**:
 ```python
@@ -207,24 +207,24 @@ async def verify_api_key(api_key: str = Security(api_key_header)):
 
 ## Critical Discoveries
 
-### Discovery 1: Integration Bridge Root Cause 🎯
+### Discovery 1: DopeconBridge Root Cause 🎯
 
-**The Mystery**: Why don't services use the well-designed Integration Bridge?
+**The Mystery**: Why don't services use the well-designed DopeconBridge?
 
 **Investigation Path**:
-1. Phase 1: Found Integration Bridge at port 3016, services bypass it
+1. Phase 1: Found DopeconBridge at port 3016, services bypass it
 2. Documented as "architecture violation" (ADHD Engine direct SQLite writes)
 3. Phase 2: Read all 3 bridge files (1,589 lines total)
 4. **Found**: Custom data endpoints are STUBS!
 
-**Evidence** (`services/mcp-integration-bridge/kg_endpoints.py:357-363`):
+**Evidence** (`services/mcp-dopecon-bridge/kg_endpoints.py:357-363`):
 ```python
 @router.post("/custom_data")
 async def save_custom_data(request: CustomDataRequest, ...):
     """Save custom data to ConPort (for orchestrator checkpoints)"""
     # Call ConPort MCP to save custom data
     # In Claude Code context, mcp__conport tools are available
-    # This will be called from Integration Bridge which has MCP access
+    # This will be called from DopeconBridge which has MCP access
 
     # For now, return success (bridge will implement actual MCP call)
     return {
@@ -305,7 +305,7 @@ async def get_custom_data(...):
 4. **ConPort KG UI**: React terminal UI, clean code, proper patterns
 
 **Functional with Issues** (4 services):
-5. **Integration Bridge**: 80% done, custom_data stubs (12h to complete)
+5. **DopeconBridge**: 80% done, custom_data stubs (12h to complete)
 6. **ConPort KG**: Orchestrator with bridge TODOs (works independently)
 7. **GPT-Researcher**: FastAPI service, CORS fixed, 67 TODOs found
 8. **Zen MCP**: External Docker, 27 models, 9 tools (validated working)
@@ -340,7 +340,7 @@ All claims tested against actual code:
   6. PUT /api/v1/activity/{user_id}
   7-8. GET /, GET /health (root endpoints)
 
-**Integration Bridge**:
+**DopeconBridge**:
 - ✅ "Authority enforcement" → Code exists, well-implemented
 - ⚠️ "Cross-plane coordination" → Design exists, endpoints are stubs
 - ⚠️ "Full KG access" → 5 endpoints work, 2 are stubs
@@ -454,7 +454,7 @@ self.process = subprocess.Popen(
 - ✅ Dope-Context - Semantic search
 - ✅ ADHD Engine (port 8090) - Accommodations
 
-**Integration Bridge** (port 3016):
+**DopeconBridge** (port 3016):
 - ✅ Design: Excellent (authority middleware, multi-instance)
 - ⚠️ Implementation: 80% done
 - ❌ Adoption: 0% (services bypass it)
@@ -468,12 +468,12 @@ Task-Master       | PRD parsing            | Unknown
 Task-Orchestrator | Dependencies           | Unknown
 ConPort           | Decisions, patterns    | ✅ Yes
 Serena            | Code navigation        | ✅ Yes
-Integration Bridge| Cross-plane coord      | ⚠️ Incomplete
+DopeconBridge| Cross-plane coord      | ⚠️ Incomplete
 ```
 
 **Violations Found**:
 1. ADHD Engine → ConPort direct SQLite (should use bridge HTTP API)
-2. ConPort Orchestrator → Integration Bridge TODOs (not wired)
+2. ConPort Orchestrator → DopeconBridge TODOs (not wired)
 
 ---
 
@@ -505,7 +505,7 @@ Integration Bridge| Cross-plane coord      | ⚠️ Incomplete
    - Rate limits: Vary by model
 
 **Service-to-Service**:
-- ConPort KG UI → Integration Bridge (HTTP, port 3016) - ✅ Working
+- ConPort KG UI → DopeconBridge (HTTP, port 3016) - ✅ Working
 - ADHD Engine → ConPort (Direct SQLite) - ❌ Violation
 - Task-Orchestrator → Event Bus (Redis Streams) - ✅ Working
 - Serena → Event Bus (Redis Streams) - ✅ Working
@@ -553,7 +553,7 @@ Integration Bridge| Cross-plane coord      | ⚠️ Incomplete
 
 ### Excellent Patterns Found ✅
 
-**FastAPI Applications** (ADHD Engine, GPT-Researcher, Integration Bridge):
+**FastAPI Applications** (ADHD Engine, GPT-Researcher, DopeconBridge):
 ```python
 # Proper lifespan management
 @asynccontextmanager
@@ -578,7 +578,7 @@ app = FastAPI(lifespan=lifespan)
 - Graceful degradation (return empty vs crash)
 
 **ADHD Optimization Patterns**:
-- Top-3 display limits (ConPort KG UI, Integration Bridge)
+- Top-3 display limits (ConPort KG UI, DopeconBridge)
 - Progressive disclosure (1-hop → 2-hop expansion)
 - Keyboard-first UI (ConPort KG UI)
 - Visual indicators (cognitive load, energy level)
@@ -595,7 +595,7 @@ app = FastAPI(lifespan=lifespan)
 - **Indicates**: Incomplete features, technical debt
 
 **Incomplete Features**:
-- Integration Bridge custom_data (stubs)
+- DopeconBridge custom_data (stubs)
 - ADHD Engine Redis persistence (TODOs at Day 4)
 - Various "Week 7" integration markers
 
@@ -629,7 +629,7 @@ app = FastAPI(lifespan=lifespan)
    - `backend/main.py:110-119`
    - `backend/api/main.py:233-242`
 
-8. `services/mcp-integration-bridge/main.py`
+8. `services/mcp-dopecon-bridge/main.py`
    - CORS fix (lines 1164-1172)
 
 9-10. Serena credential fixes:
@@ -702,7 +702,7 @@ Total: **38 documents** in claudedocs/
 **Verification Tasks** (2h):
 - [ ] Verify SQL injection candidates (trace graph_name source)
 - [ ] Full subprocess audit (54 instances)
-- [ ] Integration Bridge completion assessment
+- [ ] DopeconBridge completion assessment
 - [ ] ConPort orchestrator bridge TODO review
 
 ---
@@ -715,7 +715,7 @@ Total: **38 documents** in claudedocs/
 - [ ] Document which examples work vs broken
 
 **API Documentation** (30min):
-- [ ] Integration Bridge API docs (5 working endpoints, 2 stubs)
+- [ ] DopeconBridge API docs (5 working endpoints, 2 stubs)
 - [ ] ADHD Engine API (7 endpoints verified)
 - [ ] GPT-Researcher API (endpoints from main.py)
 
@@ -751,7 +751,7 @@ Total: **38 documents** in claudedocs/
 **ADR Documentation** (1h):
 - [ ] ADR-206: Audit Results
 - [ ] Document architectural decisions
-- [ ] Integration Bridge completion plan
+- [ ] DopeconBridge completion plan
 
 ---
 
@@ -770,7 +770,7 @@ Total: **38 documents** in claudedocs/
 
 ### Key Insights to Remember
 
-1. **Integration Bridge is 80% complete** - custom_data endpoints are stubs
+1. **DopeconBridge is 80% complete** - custom_data endpoints are stubs
 2. **Workspace is documentation-heavy** - 26 code chunks, 4,413 doc chunks
 3. **Security fixes applied** - all committed, tested, ready for deployment
 4. **MCP tools working** - semantic search operational, no token overflow

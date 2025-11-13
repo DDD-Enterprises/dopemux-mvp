@@ -21,7 +21,7 @@ Phase 1 transformed Dopemux's 30+ services integration from prototype to product
 
 ### Systematic Investigation Methodology
 - **Zen Thinkdeep Analysis**: 6-step systematic investigation
-- **Code Review**: IntegrationBridgeConnector, ConPort adapter, MCP servers
+- **Code Review**: DopeconBridgeConnector, ConPort adapter, MCP servers
 - **Edge Case Analysis**: Failure scenarios, scalability limits, coupling trade-offs
 - **Synthesis**: Comprehensive roadmap with implementation priorities
 

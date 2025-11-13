@@ -204,11 +204,11 @@ pip install textual textual-dev
 
 **Check**:
 ```bash
-# Is Integration Bridge running?
+# Is DopeconBridge running?
 curl http://localhost:3016/health
 
 # If not, start it:
-cd services/mcp-integration-bridge
+cd services/mcp-dopecon-bridge
 python main.py
 ```
 
@@ -311,7 +311,7 @@ python main.py
 - Textual 0.40+ ✅
 
 **Optional Dependencies**:
-- Integration Bridge (port 3016) - For session persistence
+- DopeconBridge (port 3016) - For session persistence
 - ADHD Engine - For energy level tracking
 
 **Graceful Degradation**: TUI works without optional deps, just fewer features
@@ -321,7 +321,7 @@ python main.py
 **In-App**: Press `?` for quick reference
 
 **Issues**:
-- Session not persisting → Check Integration Bridge running
+- Session not persisting → Check DopeconBridge running
 - CLI not found → Install and add to PATH
 - Timeout errors → Simplify prompts or check network
 

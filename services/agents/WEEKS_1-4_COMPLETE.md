@@ -332,7 +332,7 @@ await guardian.stop_monitoring()
 - ToolOrchestrator: 80% Zen/listmodels
 - DopemuxEnforcer: 70% Serena complexity
 - WorkflowCoordinator: 60% Zen continuation
-- TwoPlaneOrchestrator: 60% Integration Bridge
+- TwoPlaneOrchestrator: 60% DopeconBridge
 
 **Average**: 74% code reuse (as predicted)
 

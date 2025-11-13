@@ -46,7 +46,7 @@ Built an **intelligent, automatic, ADHD-optimized knowledge graph system** for d
 7. Serena LSP integration
 
 **API Layer** - 346 lines:
-8. Integration Bridge REST API (5 endpoints)
+8. DopeconBridge REST API (5 endpoints)
 9. Authority middleware (Two-Plane enforcement)
 
 **Frontend (TypeScript)** - 887 lines:
@@ -86,7 +86,7 @@ Built an **intelligent, automatic, ADHD-optimized knowledge graph system** for d
 - Phase 6: Deep Context Queries (25 min)
 - Phase 7: Performance Validation (25 min)
 - Phase 8: Intelligence Orchestrator (50 min)
-- Phase 10: Integration Bridge (80 min)
+- Phase 10: DopeconBridge (80 min)
 - Phase 9: React Ink UI (75 min)
 
 **Remaining (Optional)**:

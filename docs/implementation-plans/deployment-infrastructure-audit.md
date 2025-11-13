@@ -19,7 +19,7 @@ next_review: '2026-02-08'
 
 Task-Orchestrator **lacks dedicated deployment infrastructure** - no Dockerfile, no docker-compose configuration, and no Makefile targets. This is expected for Phase 1 since the service hasn't been integrated yet.
 
-**Key Finding**: Dopemux has **mature deployment infrastructure** for all other services (Integration Bridge, ConPort, Serena, GPT-Researcher, etc.) with ADHD-optimized CI/CD. Task-Orchestrator can follow these established patterns.
+**Key Finding**: Dopemux has **mature deployment infrastructure** for all other services (DopeconBridge, ConPort, Serena, GPT-Researcher, etc.) with ADHD-optimized CI/CD. Task-Orchestrator can follow these established patterns.
 
 **Deployment Readiness**: 🟡 **NEEDS CREATION** (expected for Phase 1)
 - Environment variables: ✅ Documented in .env.example
@@ -27,7 +27,7 @@ Task-Orchestrator **lacks dedicated deployment infrastructure** - no Dockerfile,
 - Docker patterns: ✅ Established in other services (templates available)
 - Build automation: ✅ Makefile exists (needs task-orchestrator targets)
 
-**Recommendation**: Create task-orchestrator deployment config in **Component 3 (Integration Bridge Wiring)** using existing service patterns as templates.
+**Recommendation**: Create task-orchestrator deployment config in **Component 3 (DopeconBridge Wiring)** using existing service patterns as templates.
 
 ## Docker Infrastructure Audit
 
@@ -35,7 +35,7 @@ Task-Orchestrator **lacks dedicated deployment infrastructure** - no Dockerfile,
 
 | Service | Dockerfile | docker-compose | Port | Status |
 |---------|------------|----------------|------|--------|
-| **Integration Bridge** | ✅ `services/mcp-integration-bridge/Dockerfile` | ✅ Embedded | 3016 | Running |
+| **DopeconBridge** | ✅ `services/mcp-dopecon-bridge/Dockerfile` | ✅ Embedded | 3016 | Running |
 | **ConPort** | ✅ `services/conport/Dockerfile` | ✅ `docker/memory-stack/` | 5455 | Running |
 | **Serena LSP** | ✅ Via scripts | ✅ Process-based | N/A | Running |
 | **GPT-Researcher** | ✅ `services/dopemux-gpt-researcher/Dockerfile` | ✅ `gptr-mcp/` | 3009 | Running |
@@ -53,16 +53,16 @@ Task-Orchestrator **lacks dedicated deployment infrastructure** - no Dockerfile,
 - Service exists as code only (8,889 lines ready)
 
 **Expected State (Phase 1 Component 3)**:
-- Create `Dockerfile` using Integration Bridge as template
+- Create `Dockerfile` using DopeconBridge as template
 - Add docker-compose service definition
 - Configure MCP stdio interface
 - Integrate with existing networks (dopemux-unified-network)
 
 ### Docker Patterns Analysis
 
-**Integration Bridge Pattern** (best template):
+**DopeconBridge Pattern** (best template):
 ```dockerfile
-# FROM services/mcp-integration-bridge/Dockerfile
+# FROM services/mcp-dopecon-bridge/Dockerfile
 FROM python:3.11-slim
 WORKDIR /app
 COPY requirements.txt .
@@ -333,9 +333,9 @@ orchestrator-logs:
 
 ## Deployment Patterns (from Existing Services)
 
-### Integration Bridge Pattern (Best Match)
+### DopeconBridge Pattern (Best Match)
 
-**Dockerfile**: `services/mcp-integration-bridge/Dockerfile`
+**Dockerfile**: `services/mcp-dopecon-bridge/Dockerfile`
 ```dockerfile
 FROM python:3.11-slim
 WORKDIR /app
@@ -347,9 +347,9 @@ CMD ["python", "-u", "main.py"]
 
 **docker-compose** (embedded in unified stack):
 ```yaml
-mcp-integration-bridge:
-  build: ./services/mcp-integration-bridge
-  container_name: dopemux-integration-bridge
+mcp-dopecon-bridge:
+  build: ./services/mcp-dopecon-bridge
+  container_name: dopemux-dopecon-bridge
   ports: ["3016:3016"]
   environment:
     - REDIS_URL=redis://redis-primary:6379
@@ -374,7 +374,7 @@ mcp-integration-bridge:
 
 ### Deployment Strategy
 
-**Phase 1 Component 3** (Integration Bridge Wiring) should create:
+**Phase 1 Component 3** (DopeconBridge Wiring) should create:
 
 1. **Dockerfile** (`services/task-orchestrator/Dockerfile`)
    - Base: `python:3.11-slim`
@@ -500,8 +500,8 @@ task-orchestrator:
 
 1. **No Dockerfile** (EXPECTED - creates in Component 3)
    - **Impact**: Cannot containerize yet
-   - **Timeline**: Task 3.1 (Configure Integration Bridge)
-   - **Effort**: 30 minutes (use Integration Bridge template)
+   - **Timeline**: Task 3.1 (Configure DopeconBridge)
+   - **Effort**: 30 minutes (use DopeconBridge template)
 
 2. **No docker-compose Service** (EXPECTED - creates in Component 3)
    - **Impact**: Cannot deploy to stack yet
@@ -520,9 +520,9 @@ task-orchestrator:
 
 ### Deployment Creation Roadmap
 
-**Component 3: Integration Bridge Wiring** (Tasks 3.1-3.4)
+**Component 3: DopeconBridge Wiring** (Tasks 3.1-3.4)
 ```
-Task 3.1: Configure Integration Bridge (60 min)
+Task 3.1: Configure DopeconBridge (60 min)
   ├─ Create services/task-orchestrator/Dockerfile
   ├─ Add docker-compose service definition
   ├─ Configure network and dependencies
@@ -568,8 +568,8 @@ Task 5.2: Performance and Load Testing (60 min)
 ### Recommendations
 
 1. **Create Dockerfile in Component 3** (HIGH PRIORITY)
-   - **Task**: 3.1 (Configure Integration Bridge)
-   - **Template**: Use Integration Bridge Dockerfile
+   - **Task**: 3.1 (Configure DopeconBridge)
+   - **Template**: Use DopeconBridge Dockerfile
    - **Fix**: Include `redis>=4.5.0` (from Task 1.1)
    - **Effort**: 30 minutes
 
@@ -706,8 +706,8 @@ python-dotenv>=1.0.0
 
 ### Component 3 Deployment (After Component 2)
 
-**Task 3.1: Configure Integration Bridge** (60 min)
-- Create Dockerfile using Integration Bridge template
+**Task 3.1: Configure DopeconBridge** (60 min)
+- Create Dockerfile using DopeconBridge template
 - Add docker-compose service definition
 - Set up environment variable injection
 - Configure health checks
@@ -717,7 +717,7 @@ python-dotenv>=1.0.0
 **Task 1.4 Status**: ✅ **COMPLETE**
 **Deployment Infrastructure**: 🟡 **NEEDS CREATION** (expected for Phase 1)
 **Blocking Issues**: 0 (infrastructure exists, just needs task-orchestrator specific config)
-**Template Availability**: 🟢 **READY** (Integration Bridge provides excellent pattern)
+**Template Availability**: 🟢 **READY** (DopeconBridge provides excellent pattern)
 
 **Go/No-Go for Task-Orchestrator Deployment Creation**: 🟢 **GO**
 
@@ -727,7 +727,7 @@ Dopemux has mature, ADHD-optimized deployment infrastructure with:
 - CI/CD with ADHD optimizations (visual summaries, Pomodoro timing)
 - Build automation ready (Makefile extensible)
 
-Task-Orchestrator deployment config creation is straightforward - copy Integration Bridge pattern, add service-specific tweaks, integrate in Component 3 (Tasks 3.1-3.4).
+Task-Orchestrator deployment config creation is straightforward - copy DopeconBridge pattern, add service-specific tweaks, integrate in Component 3 (Tasks 3.1-3.4).
 
 ---
 

@@ -5,13 +5,42 @@ Document processing and chunking utilities.
 import hashlib
 import re
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
-import tiktoken
-from bs4 import BeautifulSoup
-from docx import Document as DocxDocument
-from markdown import markdown
-from PyPDF2 import PdfReader
+try:
+    import tiktoken
+    TIKTOKEN_AVAILABLE = True
+except ImportError:  # pragma: no cover - exercised in constrained envs
+    TIKTOKEN_AVAILABLE = False
+    tiktoken = Any  # type: ignore
+
+try:
+    from bs4 import BeautifulSoup
+    BS4_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    BS4_AVAILABLE = False
+    BeautifulSoup = Any  # type: ignore
+
+try:
+    from docx import Document as DocxDocument
+    DOCX_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    DOCX_AVAILABLE = False
+    DocxDocument = Any  # type: ignore
+
+try:
+    from markdown import markdown
+    MARKDOWN_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    MARKDOWN_AVAILABLE = False
+    markdown = Any  # type: ignore
+
+try:
+    from PyPDF2 import PdfReader
+    PYPDF2_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    PYPDF2_AVAILABLE = False
+    PdfReader = Any  # type: ignore
 
 try:
     import magic
@@ -27,7 +56,10 @@ class DocumentProcessor:
 
     def __init__(self, encoding_name: str = "cl100k_base"):
         """Initialize document processor."""
-        self.encoding = tiktoken.get_encoding(encoding_name)
+        if TIKTOKEN_AVAILABLE:
+            self.encoding = tiktoken.get_encoding(encoding_name)
+        else:
+            self.encoding = None
         self.magic = magic.Magic(mime=True) if MAGIC_AVAILABLE else None
 
     def detect_document_type(self, file_path: str) -> DocumentType:
@@ -396,7 +428,10 @@ class DocumentProcessor:
 
     def count_tokens(self, text: str) -> int:
         """Count tokens in text using tiktoken."""
-        return len(self.encoding.encode(text))
+        if self.encoding:
+            return len(self.encoding.encode(text))
+        # Fallback: rough estimation (4 chars per token)
+        return len(text) // 4
 
     def compute_content_hash(self, content: str) -> str:
         """Compute SHA-256 hash of content."""

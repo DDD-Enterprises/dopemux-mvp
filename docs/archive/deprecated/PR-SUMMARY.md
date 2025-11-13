@@ -96,7 +96,7 @@ Completed comprehensive systematic audit covering all 6 original phases (54-67h 
 | ADHD Engine | - | 7/10 | ⚠️ Localhost-only |
 | Task-Orchestrator | Deprecated | Active | ✅ Un-deprecated |
 | ML Risk Assessment | - | New | 📦 Extracted |
-| Integration Bridge | - | 7/10 | ⚠️ Unused |
+| DopeconBridge | - | 7/10 | ⚠️ Unused |
 | Documentation | 2/10 | 6/10 | ✅ ADRs created |
 | Testing | - | 5/10 | ⚠️ Import blocked |
 | Architecture | - | 6/10 | ⚠️ Integration gaps |
@@ -147,7 +147,7 @@ Completed comprehensive systematic audit covering all 6 original phases (54-67h 
 **Medium Priority** (Week 7 work, ~32h total):
 1. ADHD Engine service boundaries - Fix (3h)
 2. ADHD Engine missing auth - Add OR localhost-only (2h)
-3. Integration Bridge wiring - Complete (12h)
+3. DopeconBridge wiring - Complete (12h)
 4. Task-Orchestrator integration - Complete (13h)
 5. Testing import dependencies - Fix (2-4h)
 
@@ -185,7 +185,7 @@ cd services/conport_kg_ui && node test_url_encoding.js
 
 ### Week 7 Integration
 
-- [ ] Wire services to Integration Bridge
+- [ ] Wire services to DopeconBridge
 - [ ] Fix service boundary violations
 - [ ] Resolve testing import issues
 - [ ] Validate all 785 tests pass

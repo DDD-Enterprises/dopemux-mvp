@@ -196,7 +196,7 @@ fi
    - Status: KEEP
 
 2. dopemux-redis-events (port 6380):
-   - Used by: Integration Bridge (db=6)
+   - Used by: DopeconBridge (db=6)
    - Purpose: Event bus pub/sub
    - Status: KEEP (dedicated for events)
 
@@ -630,7 +630,7 @@ services:
       - redis-primary-data:/data
     command: redis-server --appendonly yes
 
-  # Events Redis (Integration Bridge)
+  # Events Redis (DopeconBridge)
   dopemux-redis-events:
     image: redis:7-alpine
     container_name: dopemux-redis-events

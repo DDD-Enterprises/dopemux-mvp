@@ -216,8 +216,8 @@ class ADHDFeatureFlags:
 FEATURE_ADHD_ENGINE_SERENA = "adhd_engine_integration_serena"
 FEATURE_ADHD_ENGINE_CONPORT = "adhd_engine_integration_conport"
 FEATURE_ADHD_ENGINE_DOPE_CONTEXT = "adhd_engine_integration_dope_context"
-FEATURE_ADHD_ENGINE_INTEGRATION_BRIDGE = "adhd_engine_integration_bridge"
+FEATURE_ADHD_ENGINE_DOPECON_BRIDGE = "adhd_engine_dopecon_bridge"
 
 # Future feature flags (placeholders)
-FEATURE_INTEGRATION_BRIDGE_EVENTS = "integration_bridge_events"
+FEATURE_DOPECON_BRIDGE_EVENTS = "dopecon_bridge_events"
 FEATURE_CONPORT_SEARCH_DELEGATION = "conport_search_delegation"

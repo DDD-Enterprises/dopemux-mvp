@@ -7,7 +7,7 @@ Features:
 - 6 API endpoints (/api/v1/*) + 2 utility endpoints for ADHD assessments
 - 6 background async monitors (energy, attention, cognitive load, breaks, hyperfocus, context switching)
 - Redis persistence for user profiles and state
-- Integration Bridge connection for ConPort data (✅ COMPLETE as of 2025-10-16)
+- DopeconBridge connection for ConPort data (✅ COMPLETE as of 2025-10-16)
 - API key authentication (X-API-Key header)
 - Environment-based CORS configuration
 """
@@ -17,6 +17,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
+from prometheus_client import make_asgi_app
 
 try:
     from .engine import ADHDAccommodationEngine
@@ -37,6 +38,10 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'docker', 'mcp-servers', 'shared'))
 from redis_pool import get_redis_pool
 from cache import get_cache
+
+# Import monitoring
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+from shared.monitoring.base import DopemuxMonitoring
 
 # Import error handling for circuit breaker protection
 try:
@@ -64,6 +69,7 @@ logger = logging.getLogger(__name__)
 engine: ADHDAccommodationEngine = None
 error_handler: GlobalErrorHandler = None
 circuit_breakers = {}
+monitoring: DopemuxMonitoring = None
 
 
 @asynccontextmanager
@@ -81,7 +87,7 @@ async def lifespan(app: FastAPI):
     - Close Redis connections
     - Clean up resources
     """
-    global engine, error_handler, circuit_breakers
+    global engine, error_handler, circuit_breakers, monitoring
 
     # STARTUP
     logger.info("=" * 60)
@@ -89,6 +95,14 @@ async def lifespan(app: FastAPI):
     logger.info("=" * 60)
 
     try:
+        # Initialize monitoring
+        monitoring = DopemuxMonitoring(
+            service_name="adhd-engine",
+            workspace_id=os.getenv("WORKSPACE_ID"),
+            instance_id=os.getenv("INSTANCE_ID"),
+            version=os.getenv("SERVICE_VERSION", "1.0.0")
+        )
+        logger.info("✅ Monitoring initialized")
         # Initialize error handler and circuit breakers
         error_handler = GlobalErrorHandler("adhd_engine")
 
@@ -176,8 +190,50 @@ app.add_middleware(
 # Rate limiting middleware - protect against abuse
 app.add_middleware(RateLimitMiddleware)
 
+# Monitoring middleware - track all requests
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+import time
+
+class MonitoringMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if monitoring and not request.url.path.startswith("/metrics"):
+            start_time = time.time()
+            monitoring.requests_in_progress.labels(**monitoring.core_labels).inc()
+            
+            try:
+                response = await call_next(request)
+                duration = time.time() - start_time
+                
+                # Record metrics
+                monitoring.record_request(
+                    endpoint=request.url.path,
+                    method=request.method,
+                    status=response.status_code,
+                    duration=duration
+                )
+                
+                return response
+            finally:
+                monitoring.requests_in_progress.labels(**monitoring.core_labels).dec()
+        else:
+            return await call_next(request)
+
+app.add_middleware(MonitoringMiddleware)
+
 # Include API routes
 app.include_router(routes.router, prefix="/api/v1", tags=["adhd"])
+
+# Metrics endpoint
+@app.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint"""
+    if monitoring:
+        from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+        from starlette.responses import Response
+        metrics_output = generate_latest(monitoring.registry)
+        return Response(content=metrics_output, media_type=CONTENT_TYPE_LATEST)
+    return {"error": "Monitoring not initialized"}
 
 
 # Root endpoint

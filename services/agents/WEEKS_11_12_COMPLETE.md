@@ -9,9 +9,9 @@
 
 ## What Was Built
 
-### Real Service Integration (Integration Bridge)
+### Real Service Integration (DopeconBridge)
 
-**File Modified**: `services/mcp-integration-bridge/main.py` (+60 lines)
+**File Modified**: `services/mcp-dopecon-bridge/main.py` (+60 lines)
 
 **Wired Services**:
 
@@ -57,7 +57,7 @@
 ```
 TwoPlaneOrchestrator (Agent)
     ↓ HTTP POST /route/pm or /route/cognitive
-Integration Bridge (Port 3016)
+DopeconBridge (Port 3016)
     ├─ Try real service
     │   ↓ HTTP GET
     │ Task Orchestrator (Port 3017)
@@ -84,7 +84,7 @@ Integration Bridge (Port 3016)
 
 **Current State**:
 - Services exist but need infrastructure
-- Integration Bridge wired (with fallback)
+- DopeconBridge wired (with fallback)
 - All tests pass with mocks
 - Ready to deploy with Docker Compose
 
@@ -96,8 +96,8 @@ Integration Bridge (Port 3016)
 
 **With Mocks** (current):
 ```bash
-# Start Integration Bridge
-python services/mcp-integration-bridge/main.py
+# Start DopeconBridge
+python services/mcp-dopecon-bridge/main.py
 
 # All tests pass
 python services/agents/test_week6_orchestrator.py  # 8/8 ✅
@@ -120,7 +120,7 @@ python services/agents/test_week6_orchestrator.py  # 8/8 ✅
 docker-compose up -d redis postgresql leantime
 
 # Start services
-docker-compose up -d task-orchestrator leantime-bridge integration-bridge
+docker-compose up -d task-orchestrator leantime-bridge dopecon-bridge
 
 # Tests use REAL data
 python services/agents/test_week6_orchestrator.py  # 8/8 ✅
@@ -171,8 +171,8 @@ services:
     ports: ["3015:3015"]
     depends_on: [leantime]
 
-  integration-bridge:
-    build: ./services/mcp-integration-bridge
+  dopecon-bridge:
+    build: ./services/mcp-dopecon-bridge
     ports: ["3016:3016"]
     depends_on: [redis, postgresql, task-orchestrator]
 ```
@@ -188,7 +188,7 @@ docker-compose up -d
 
 | Metric | Target | Achieved | Status |
 |--------|--------|----------|--------|
-| Real service wiring | Complete | Integration Bridge wired | ✅ |
+| Real service wiring | Complete | DopeconBridge wired | ✅ |
 | Graceful fallback | Required | Mock fallback implemented | ✅ |
 | Tests passing (no infra) | 100% | 48/48 (100%) | ✅ |
 | Deployment readiness | Production | Docker Compose ready | ✅ |
@@ -223,7 +223,7 @@ docker-compose up -d
 - Load testing
 
 **Test Scenarios**:
-1. Get tasks from Leantime → TwoPlaneOrchestrator → Integration Bridge → Task Orchestrator → Leantime
+1. Get tasks from Leantime → TwoPlaneOrchestrator → DopeconBridge → Task Orchestrator → Leantime
 2. Get ADHD state → Cognitive plane → ADHD Engine
 3. Update task status → Cognitive → PM plane
 4. Cross-plane workflow automation
@@ -247,7 +247,7 @@ docker-compose up -d
 - Sprint management
 - Project data
 
-**Integration Bridge** (port 3016):
+**DopeconBridge** (port 3016):
 - `/route/pm` - Route to PM plane (wired)
 - `/route/cognitive` - Route to Cognitive plane (wired)
 - EventBus publishing (operational)
@@ -261,8 +261,8 @@ docker-compose up -d
 
 **Current Setup**:
 ```bash
-# Just start Integration Bridge
-cd services/mcp-integration-bridge
+# Just start DopeconBridge
+cd services/mcp-dopecon-bridge
 python main.py
 
 # All tests pass with mocks
@@ -289,12 +289,12 @@ docker-compose up -d redis postgresql leantime
 
 **Step 2: Start Dopemux Services**
 ```bash
-docker-compose up -d task-orchestrator leantime-bridge integration-bridge
+docker-compose up -d task-orchestrator leantime-bridge dopecon-bridge
 ```
 
 **Step 3: Validate Health**
 ```bash
-curl http://localhost:3016/health  # Integration Bridge
+curl http://localhost:3016/health  # DopeconBridge
 curl http://localhost:3017/health  # Task Orchestrator
 curl http://localhost:3015/health  # Leantime Bridge
 ```

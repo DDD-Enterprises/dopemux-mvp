@@ -96,7 +96,7 @@ python3 test_fnew8_break_suggester.py
 
 ## Next Steps
 
-1. Wire to ConPort-KG EventBus (services/mcp-integration-bridge)
+1. Wire to ConPort-KG EventBus (services/mcp-dopecon-bridge)
 2. Add to startup services (docker-compose or systemd)
 3. Integrate suggestions into F-NEW-6 dashboard
 4. Monitor effectiveness (telemetry + user feedback)

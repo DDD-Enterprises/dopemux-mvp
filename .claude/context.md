@@ -199,7 +199,7 @@ ConPort.update_active_context() → Save current state
 - dope-context uses Serena's Tree-sitter for AST chunking
 - Serena's complexity scores feed dope-context ranking
 
-### Integration Bridge (Cross-Plane)
+### DopeconBridge (Cross-Plane)
 - Coordinates ConPort (cognitive) with Leantime (PM plane)
 - Port: PORT_BASE+16
 - Enforces authority boundaries

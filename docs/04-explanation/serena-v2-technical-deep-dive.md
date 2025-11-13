@@ -49,7 +49,7 @@ Serena v2 serves three primary objectives within the Dopemux two-plane architect
 - Adaptive learning that personalizes to developer patterns
 - **Target**: 85% ADHD task completion rate (Decision #119 validates 87.2%)
 
-**3. Integration Bridge to Project Knowledge**
+**3. DopeconBridge to Project Knowledge**
 - ConPort knowledge graph integration for decision-code linkage
 - Pattern learning from historical navigation behaviors
 - Cross-session context preservation with session restoration
@@ -2982,7 +2982,7 @@ Target Achievement Validation Report:
 **Authority Boundary Validation** (Decision #78, #95):
 - ConPort: Decision authority (Cognitive Plane)
 - Serena: Code navigation authority (Cognitive Plane)
-- Integration Bridge: Cross-plane coordination only
+- DopeconBridge: Cross-plane coordination only
 - Validation: ConPortBridge respects boundaries (read-only decision access)
 
 ---

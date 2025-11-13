@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Integration Bridge Connector for Task-Orchestrator
+DopeconBridge Connector for Task-Orchestrator
 
 Provides event-driven communication with other Dopemux services via Redis streams.
-Implements Component 3: Integration Bridge wiring for bidirectional coordination.
+Implements Component 3: DopeconBridge wiring for bidirectional coordination.
 
 Features:
 - Redis Stream-based event publishing/subscription
@@ -23,9 +23,9 @@ import redis.asyncio as redis
 
 logger = logging.getLogger(__name__)
 
-# Integration Bridge Configuration
-INTEGRATION_BRIDGE_CONFIG = {
-    "redis_url": os.getenv("INTEGRATION_BRIDGE_REDIS_URL", "redis://localhost:6379"),
+# DopeconBridge Configuration
+DOPECON_BRIDGE_CONFIG = {
+    "redis_url": os.getenv("DOPECON_BRIDGE_REDIS_URL", "redis://localhost:6379"),
     "stream_name": "dopemux:events",
     "consumer_group": "task-orchestrator",
     "max_stream_length": 1000,
@@ -33,16 +33,16 @@ INTEGRATION_BRIDGE_CONFIG = {
 }
 
 
-class IntegrationBridgeConnector:
+class DopeconBridgeConnector:
     """
-    Integration Bridge connector for task-orchestrator.
+    DopeconBridge connector for task-orchestrator.
 
     Handles event publishing and subscription for cross-service coordination.
     """
 
     def __init__(self, workspace_id: str, consumer_name: Optional[str] = None):
         """
-        Initialize Integration Bridge connector.
+        Initialize DopeconBridge connector.
 
         Args:
             workspace_id: Workspace identifier for event routing
@@ -57,7 +57,7 @@ class IntegrationBridgeConnector:
 
     async def connect(self) -> bool:
         """
-        Connect to Integration Bridge Redis instance.
+        Connect to DopeconBridge Redis instance.
 
         Returns:
             True if connection successful, False otherwise
@@ -65,7 +65,7 @@ class IntegrationBridgeConnector:
         try:
             if not self.redis_client:
                 self.redis_client = redis.from_url(
-                    INTEGRATION_BRIDGE_CONFIG["redis_url"]
+                    DOPECON_BRIDGE_CONFIG["redis_url"]
                 )
 
             # Test connection
@@ -75,8 +75,8 @@ class IntegrationBridgeConnector:
             # Create consumer group if it doesn't exist
             try:
                 await self.redis_client.xgroup_create(
-                    INTEGRATION_BRIDGE_CONFIG["stream_name"],
-                    INTEGRATION_BRIDGE_CONFIG["consumer_group"],
+                    DOPECON_BRIDGE_CONFIG["stream_name"],
+                    DOPECON_BRIDGE_CONFIG["consumer_group"],
                     "$",  # Start from end of stream
                     mkstream=True,
                 )
@@ -84,21 +84,21 @@ class IntegrationBridgeConnector:
                 if "BUSYGROUP" not in str(e):
                     logger.warning(f"Consumer group creation failed: {e}")
 
-            logger.info("✅ Connected to Integration Bridge")
+            logger.info("✅ Connected to DopeconBridge")
             return True
 
         except Exception as e:
-            logger.error(f"Failed to connect to Integration Bridge: {e}")
+            logger.error(f"Failed to connect to DopeconBridge: {e}")
             self._connected = False
             return False
 
     async def disconnect(self):
-        """Disconnect from Integration Bridge."""
+        """Disconnect from DopeconBridge."""
         if self.redis_client:
             await self.redis_client.close()
             self.redis_client = None
         self._connected = False
-        logger.info("🛑 Disconnected from Integration Bridge")
+        logger.info("🛑 Disconnected from DopeconBridge")
 
     async def emit_event(
         self,
@@ -107,7 +107,7 @@ class IntegrationBridgeConnector:
         correlation_id: Optional[str] = None,
     ) -> bool:
         """
-        Emit event to Integration Bridge.
+        Emit event to DopeconBridge.
 
         Args:
             event_type: Type of event (e.g., "task.status.changed")
@@ -118,7 +118,7 @@ class IntegrationBridgeConnector:
             True if event emitted successfully, False otherwise
         """
         if not self._connected:
-            logger.warning("Integration Bridge not connected, cannot emit event")
+            logger.warning("DopeconBridge not connected, cannot emit event")
             return False
 
         try:
@@ -133,9 +133,9 @@ class IntegrationBridgeConnector:
 
             # Add to stream
             message_id = await self.redis_client.xadd(
-                INTEGRATION_BRIDGE_CONFIG["stream_name"],
+                DOPECON_BRIDGE_CONFIG["stream_name"],
                 {"data": json.dumps(event_data)},
-                maxlen=INTEGRATION_BRIDGE_CONFIG["max_stream_length"],
+                maxlen=DOPECON_BRIDGE_CONFIG["max_stream_length"],
             )
 
             logger.debug(f"📤 Emitted event: {event_type} (ID: {message_id})")
@@ -151,29 +151,29 @@ class IntegrationBridgeConnector:
         event_filter: Optional[Callable[[Dict[str, Any]], bool]] = None,
     ):
         """
-        Subscribe to events from Integration Bridge.
+        Subscribe to events from DopeconBridge.
 
         Args:
             callback: Async function to handle events
             event_filter: Optional filter function (return True to process event)
         """
         if not self._connected:
-            logger.warning("Integration Bridge not connected, cannot subscribe")
+            logger.warning("DopeconBridge not connected, cannot subscribe")
             return
 
         logger.info(
-            f"📡 Subscribed to Integration Bridge events as {self.consumer_name}"
+            f"📡 Subscribed to DopeconBridge events as {self.consumer_name}"
         )
 
         while self._connected:
             try:
                 # Read from stream
                 messages = await self.redis_client.xreadgroup(
-                    INTEGRATION_BRIDGE_CONFIG["consumer_group"],
+                    DOPECON_BRIDGE_CONFIG["consumer_group"],
                     self.consumer_name,
-                    {INTEGRATION_BRIDGE_CONFIG["stream_name"]: ">"},
+                    {DOPECON_BRIDGE_CONFIG["stream_name"]: ">"},
                     count=10,
-                    block=INTEGRATION_BRIDGE_CONFIG["read_timeout_ms"],
+                    block=DOPECON_BRIDGE_CONFIG["read_timeout_ms"],
                 )
 
                 for stream_name, message_list in messages:
@@ -191,8 +191,8 @@ class IntegrationBridgeConnector:
 
                             # Acknowledge message
                             await self.redis_client.xack(
-                                INTEGRATION_BRIDGE_CONFIG["stream_name"],
-                                INTEGRATION_BRIDGE_CONFIG["consumer_group"],
+                                DOPECON_BRIDGE_CONFIG["stream_name"],
+                                DOPECON_BRIDGE_CONFIG["consumer_group"],
                                 message_id,
                             )
 
@@ -205,7 +205,7 @@ class IntegrationBridgeConnector:
 
     async def health_check(self) -> Dict[str, Any]:
         """
-        Check Integration Bridge health.
+        Check DopeconBridge health.
 
         Returns:
             Health status dictionary
@@ -213,7 +213,7 @@ class IntegrationBridgeConnector:
         if not self._connected:
             return {
                 "status": "disconnected",
-                "service": "integration_bridge",
+                "service": "dopecon_bridge",
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
 
@@ -223,12 +223,12 @@ class IntegrationBridgeConnector:
 
             # Check stream info
             stream_info = await self.redis_client.xinfo_stream(
-                INTEGRATION_BRIDGE_CONFIG["stream_name"]
+                DOPECON_BRIDGE_CONFIG["stream_name"]
             )
 
             return {
                 "status": "healthy",
-                "service": "integration_bridge",
+                "service": "dopecon_bridge",
                 "stream_length": stream_info.get("length", 0),
                 "consumer_groups": len(stream_info.get("groups", [])),
                 "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -237,32 +237,32 @@ class IntegrationBridgeConnector:
         except Exception as e:
             return {
                 "status": "error",
-                "service": "integration_bridge",
+                "service": "dopecon_bridge",
                 "error": str(e),
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
 
 
 # Global connector instance
-_bridge_connector: Optional[IntegrationBridgeConnector] = None
+_bridge_connector: Optional[DopeconBridgeConnector] = None
 
 
-async def get_integration_bridge_connector(
+async def get_dopecon_bridge_connector(
     workspace_id: str,
-) -> IntegrationBridgeConnector:
+) -> DopeconBridgeConnector:
     """
-    Get or create Integration Bridge connector instance.
+    Get or create DopeconBridge connector instance.
 
     Args:
         workspace_id: Workspace identifier
 
     Returns:
-        IntegrationBridgeConnector instance
+        DopeconBridgeConnector instance
     """
     global _bridge_connector
 
     if not _bridge_connector:
-        _bridge_connector = IntegrationBridgeConnector(workspace_id)
+        _bridge_connector = DopeconBridgeConnector(workspace_id)
         await _bridge_connector.connect()
 
     return _bridge_connector
@@ -276,7 +276,7 @@ async def emit_task_status_change(
     additional_data: Optional[Dict[str, Any]] = None,
 ):
     """
-    Emit task status change event to Integration Bridge.
+    Emit task status change event to DopeconBridge.
 
     Args:
         task_id: Task identifier
@@ -285,7 +285,7 @@ async def emit_task_status_change(
         workspace_id: Workspace identifier
         additional_data: Optional additional event data
     """
-    connector = await get_integration_bridge_connector(workspace_id)
+    connector = await get_dopecon_bridge_connector(workspace_id)
 
     payload = {
         "task_id": task_id,
@@ -316,7 +316,7 @@ async def emit_service_coordination_event(
         payload: Event payload
         workspace_id: Workspace identifier
     """
-    connector = await get_integration_bridge_connector(workspace_id)
+    connector = await get_dopecon_bridge_connector(workspace_id)
     success = await connector.emit_event(f"service.{event_type}", payload)
 
     if success:
@@ -336,7 +336,7 @@ async def emit_adhd_coordination_event(
         payload: Event payload
         workspace_id: Workspace identifier
     """
-    connector = await get_integration_bridge_connector(workspace_id)
+    connector = await get_dopecon_bridge_connector(workspace_id)
     success = await connector.emit_event(f"adhd.{event_type}", payload)
 
     if success:
@@ -347,9 +347,9 @@ async def emit_adhd_coordination_event(
 
 # Export functions for use by enhanced_orchestrator.py
 __all__ = [
-    "get_integration_bridge_connector",
+    "get_dopecon_bridge_connector",
     "emit_task_status_change",
     "emit_service_coordination_event",
     "emit_adhd_coordination_event",
-    "IntegrationBridgeConnector",
+    "DopeconBridgeConnector",
 ]

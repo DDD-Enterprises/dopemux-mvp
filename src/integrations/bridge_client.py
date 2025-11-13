@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Integration Bridge HTTP Client.
+DopeconBridge HTTP Client.
 
-Used by services to call Integration Bridge instead of direct database access.
+Used by services to call DopeconBridge instead of direct database access.
 Respects two-plane architecture and authority boundaries.
 """
 
@@ -14,9 +14,9 @@ from typing import Dict, Any, List, Optional
 logger = logging.getLogger(__name__)
 
 
-class IntegrationBridgeClient:
+class DopeconBridgeClient:
     """
-    HTTP client for Integration Bridge API.
+    HTTP client for DopeconBridge API.
 
     Services use this to access ConPort data through the bridge,
     respecting authority boundaries and avoiding direct database access.
@@ -35,13 +35,13 @@ class IntegrationBridgeClient:
             source_plane: Calling service's plane (default: cognitive_plane)
         """
         self.base_url = base_url or os.getenv(
-            "INTEGRATION_BRIDGE_URL",
+            "DOPECON_BRIDGE_URL",
             f"http://localhost:{int(os.getenv('PORT_BASE', '3000')) + 16}"
         )
         self.source_plane = source_plane
         self.timeout = aiohttp.ClientTimeout(total=10)
 
-        logger.info(f"Integration Bridge client initialized: {self.base_url}")
+        logger.info(f"DopeconBridge client initialized: {self.base_url}")
 
     async def save_custom_data(
         self,
@@ -51,7 +51,7 @@ class IntegrationBridgeClient:
         value: Dict[str, Any]
     ) -> bool:
         """
-        Save custom data via Integration Bridge.
+        Save custom data via DopeconBridge.
 
         Args:
             workspace_id: Workspace identifier
@@ -98,7 +98,7 @@ class IntegrationBridgeClient:
         limit: int = 10
     ) -> Any:
         """
-        Get custom data via Integration Bridge.
+        Get custom data via DopeconBridge.
 
         Args:
             workspace_id: Workspace identifier
@@ -149,7 +149,7 @@ class IntegrationBridgeClient:
 
     async def health_check(self) -> Dict[str, Any]:
         """
-        Check Integration Bridge health.
+        Check DopeconBridge health.
 
         Returns:
             Health status dict
@@ -178,7 +178,7 @@ class IntegrationBridgeClient:
 # Example usage
 async def main():
     """Test bridge client"""
-    client = IntegrationBridgeClient()
+    client = DopeconBridgeClient()
 
     # Test save
     success = await client.save_custom_data(

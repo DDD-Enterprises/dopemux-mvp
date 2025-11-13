@@ -46,20 +46,20 @@ Comprehensive research validation reveals **Dopemux is 85% implemented but only 
 **Deliverables**:
 - ADHDConfigService shared library
 - Feature flag rollout system
-- Serena, ConPort, dope-context, Integration Bridge migrations
+- Serena, ConPort, dope-context, DopeconBridge migrations
 - Comprehensive tests and rollback procedures
 
 ---
 
-#### [IP-002: Integration Bridge Completion](02-INTEGRATION-BRIDGE-COMPLETION.md)
+#### [IP-002: DopeconBridge Completion](02-INTEGRATION-BRIDGE-COMPLETION.md)
 **Duration**: 9 days (18 focus blocks)
 **Complexity**: 0.75 (HIGH)
 **Risk**: HIGH
 **ROI**: 🔥🔥 VERY HIGH
 
-**Problem**: Integration Bridge designed as event orchestrator but only has 5 read-only GET endpoints. No cross-service coordination.
+**Problem**: DopeconBridge designed as event orchestrator but only has 5 read-only GET endpoints. No cross-service coordination.
 
-**Solution**: Complete Integration Bridge with Redis pub/sub event bus, cross-service task routing, and MCP-to-MCP communication.
+**Solution**: Complete DopeconBridge with Redis pub/sub event bus, cross-service task routing, and MCP-to-MCP communication.
 
 **Impact**:
 - Enables MCP-to-MCP communication (currently isolated silos)
@@ -163,7 +163,7 @@ Comprehensive research validation reveals **Dopemux is 85% implemented but only 
 ### Option A: Critical Path (Fastest Value)
 1. **IP-004** (1 day) - ConPort Search Delegation → Immediate quality boost
 2. **IP-001** (7 days) - ADHD Engine Integration → Unlock personalization
-3. **IP-002** (9 days) - Integration Bridge → Enable coordination
+3. **IP-002** (9 days) - DopeconBridge → Enable coordination
 4. **IP-003** (6-9 days) - Infrastructure Consolidation → Optimize resources
 5. **IP-005** (14 days) - Orchestrator TUI → Beautiful interface
 
@@ -175,7 +175,7 @@ Comprehensive research validation reveals **Dopemux is 85% implemented but only 
 
 **Week 1-2** (Parallel):
 - Team A: IP-001 (ADHD Engine Integration)
-- Team B: IP-002 (Integration Bridge)
+- Team B: IP-002 (DopeconBridge)
 - Quick Win: IP-004 (ConPort Search, 1 day)
 
 **Week 3-4** (Parallel):
@@ -194,7 +194,7 @@ Comprehensive research validation reveals **Dopemux is 85% implemented but only 
 ### Option C: Quick Wins First (Best for Morale)
 1. **IP-004** (1 day) - Easy win, huge quality boost → **Celebrate! 🎉**
 2. **IP-001** (7 days) - ADHD Engine Integration → **Unlock major capability! 🚀**
-3. **IP-002** (9 days) - Integration Bridge → **Enable coordination! 🔗**
+3. **IP-002** (9 days) - DopeconBridge → **Enable coordination! 🔗**
 4. **IP-003** (6-9 days) - Infrastructure → **Clean house! 🧹**
 5. **IP-005** (14 days) - TUI → **Beautiful interface! ✨**
 
@@ -290,7 +290,7 @@ Comprehensive research validation reveals **Dopemux is 85% implemented but only 
 ## Document Links
 
 - [IP-001: ADHD Engine Integration](01-ADHD-ENGINE-INTEGRATION.md) - 7 days, EXTREME ROI
-- [IP-002: Integration Bridge Completion](02-INTEGRATION-BRIDGE-COMPLETION.md) - 9 days, VERY HIGH ROI
+- [IP-002: DopeconBridge Completion](02-INTEGRATION-BRIDGE-COMPLETION.md) - 9 days, VERY HIGH ROI
 - [IP-003: Infrastructure Consolidation](03-INFRASTRUCTURE-CONSOLIDATION.md) - 6-9 days, HIGH ROI
 - [IP-004: ConPort Search Delegation](04-CONPORT-SEARCH-DELEGATION.md) - 1 day, EXTREME ROI
 - [IP-005: Orchestrator TUI](05-ORCHESTRATOR-TUI.md) - 14 days, MEDIUM-HIGH ROI

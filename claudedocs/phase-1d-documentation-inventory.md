@@ -25,7 +25,7 @@
 - `.claude/modules/_index.md` (module directory index)
 - `.claude/agents/_index.md` (agent coordination)
 
-**Content**: Two-plane architecture, Integration Bridge, authority matrix
+**Content**: Two-plane architecture, DopeconBridge, authority matrix
 
 ---
 
@@ -121,7 +121,7 @@
 
 From README files and architectural docs:
 
-1. **"Two-Plane Architecture with Integration Bridge"**
+1. **"Two-Plane Architecture with DopeconBridge"**
    - ✅ Design documented
    - ⚠️ Implementation partial (bridge disconnected)
 
@@ -185,7 +185,7 @@ From README files and architectural docs:
 
 ### Gaps Identified (⚠️)
 
-**Integration Bridge**:
+**DopeconBridge**:
 - Implementation exists
 - Missing: "How to integrate services" guide
 - Missing: "Authority enforcement" examples

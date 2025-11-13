@@ -655,7 +655,7 @@ Based on module analysis, here are the 37 specialized orchestration tools:
 
 **Capabilities**:
 - Stdio proxy to underlying orchestrator
-- Event emission to Integration Bridge
+- Event emission to DopeconBridge
 - ADHD-friendly progress visualization
 - Statistics tracking
 
@@ -731,11 +731,11 @@ Based on module analysis, here are the 37 specialized orchestration tools:
 1. **ConPort as Authority**:
    - Replace local `orchestrated_tasks` dict with ConPort queries
    - Use ConPort HTTP API for task storage
-   - Publish insights to ConPort via Integration Bridge
+   - Publish insights to ConPort via DopeconBridge
 
 2. **Event-Driven Integration**:
    - Subscribe to ConPort events (not direct API calls)
-   - Publish results via Integration Bridge (not direct ConPort writes)
+   - Publish results via DopeconBridge (not direct ConPort writes)
    - Version event schemas
 
 3. **Authority Boundaries**:

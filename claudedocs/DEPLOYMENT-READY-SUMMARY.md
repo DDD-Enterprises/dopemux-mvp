@@ -23,7 +23,7 @@ ALLOWED_ORIGINS=https://yourdomain.com,https://app.yourdomain.com
 - `services/adhd_engine/main.py`
 - `services/dopemux-gpt-researcher/backend/main.py`
 - `services/dopemux-gpt-researcher/backend/api/main.py`
-- `services/mcp-integration-bridge/main.py`
+- `services/mcp-dopecon-bridge/main.py`
 
 **2. Credential Security** (2 files fixed):
 ```bash
@@ -124,7 +124,7 @@ docker-compose up -d
 
 ## Known Limitations (Documented, Non-Blocking)
 
-**Integration Bridge** (Week 7):
+**DopeconBridge** (Week 7):
 - Custom data endpoints are stubs (return hardcoded success)
 - Services use direct SQLite instead (works, but violates architecture)
 - Fix effort: 4-6h to complete + 6-8h migration

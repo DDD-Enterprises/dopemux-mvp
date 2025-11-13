@@ -282,8 +282,8 @@ class InstanceManager:
             "SERENA_PORT": str(port_base + 6),
             "CONPORT_PORT": str(conport_port),
 
-            # Integration Bridge
-            "INTEGRATION_BRIDGE_PORT": str(port_base + 16),
+            # DopeconBridge
+            "DOPECON_BRIDGE_PORT": str(port_base + 16),
 
             # Leantime (shared, always on port 3001)
             "LEANTIME_URL": "http://localhost:3001",

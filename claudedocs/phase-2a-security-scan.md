@@ -47,7 +47,7 @@
    allow_origins=["*"]
    ```
 
-4. `services/mcp-integration-bridge/main.py:1166`
+4. `services/mcp-dopecon-bridge/main.py:1166`
    ```python
    allow_origins=["*"],
    ```

@@ -3,7 +3,7 @@ Configuration settings for ADHD Accommodation Engine.
 """
 
 import os
-from typing import List
+from typing import List, Optional
 
 
 class Settings:
@@ -30,10 +30,13 @@ class Settings:
     # Logging
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
     
-    # ConPort integration
+    # ConPort / DopeconBridge
     conport_url: str = os.getenv("CONPORT_URL", "http://localhost:3010")
     zen_url: str = os.getenv("ZEN_URL", "http://localhost:3003")
     workspace_id: str = os.getenv("ADHD_WORKSPACE_ID", os.getcwd())
+    dopecon_bridge_url: str = os.getenv("DOPECON_BRIDGE_URL", os.getenv("CONPORT_BRIDGE_URL", "http://localhost:3016"))
+    dopecon_bridge_token: Optional[str] = os.getenv("DOPECON_BRIDGE_TOKEN")
+    dopecon_bridge_source_plane: str = os.getenv("DOPECON_BRIDGE_SOURCE_PLANE", "cognitive_plane")
     
     # Monitor settings
     monitor_check_interval: int = int(os.getenv("MONITOR_CHECK_INTERVAL", "60"))

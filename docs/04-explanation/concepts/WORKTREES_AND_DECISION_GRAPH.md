@@ -22,7 +22,7 @@ Isolation rules:
 ## ConPort Behavior
 
 - Storage: PostgreSQL (relational) + Redis cache.
-- Event publishing: decision/progress events to Integration Bridge.
+- Event publishing: decision/progress events to DopeconBridge.
 - Auto seeding for new worktrees: first context read seeds from shared context if present.
 - Auto fork (enabled): first progress read copies PLANNED/IN_PROGRESS items from shared into the new instance.
   - Toggle: `DOPEMUX_AUTO_FORK_PROGRESS=1` (default on)

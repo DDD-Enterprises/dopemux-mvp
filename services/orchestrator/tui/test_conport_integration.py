@@ -9,8 +9,8 @@ Tests:
 4. Session finalization
 
 Requirements:
-- Integration Bridge running on port 3016
-- ConPort operational (via Integration Bridge)
+- DopeconBridge running on port 3016
+- ConPort operational (via DopeconBridge)
 """
 
 import asyncio
@@ -41,7 +41,7 @@ async def test_conport_integration():
         print(f"   📝 Session ID: {tracker.session_id}")
     except Exception as e:
         print(f"   ❌ Initialization failed: {e}")
-        print("   ⚠️  Make sure Integration Bridge is running on port 3016")
+        print("   ⚠️  Make sure DopeconBridge is running on port 3016")
         return
 
     # Test 2: Log command start
@@ -125,7 +125,7 @@ async def test_conport_integration():
 if __name__ == "__main__":
     print("\n🚀 Starting ConPort Integration Test...")
     print("📍 Workspace: /Users/hue/code/dopemux-mvp")
-    print("🔗 Integration Bridge: http://localhost:3016")
+    print("🔗 DopeconBridge: http://localhost:3016")
     print()
 
     asyncio.run(test_conport_integration())

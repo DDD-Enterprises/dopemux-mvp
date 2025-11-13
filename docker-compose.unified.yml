@@ -62,6 +62,24 @@ services:
     networks:
       - dopemux-network
 
+  # DopeconBridge - Central coordination layer (formerly Integration Bridge)
+  dopecon-bridge:
+    image: dopemux/dopecon-bridge:latest
+    container_name: dopecon-bridge-unified
+    ports:
+      - "3016:3016"
+    environment:
+      - DOPECON_BRIDGE_PORT=3016
+      - CONPORT_URL=http://conport:3004
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    networks:
+      - dopemux-unified-network
+    depends_on:
+      - conport
+      - redis
+    restart: unless-stopped
+
   # ConPort - Knowledge Graph & Context Management
   conport:
     build:
@@ -103,6 +121,8 @@ services:
       - ADHD_ENGINE_API_KEY=dev-key-123
       - REDIS_URL=redis://redis:6379
       - CONPORT_URL=http://conport:3004
+      - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
+      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
       - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097
     depends_on:
       redis:
@@ -128,6 +148,8 @@ services:
       - REDIS_URL=redis://redis:6379
       - WORKSPACE_ID=/Users/hue/code/dopemux-mvp
       - CONPORT_URL=http://conport:3004
+      - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
+      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
       - TASK_ORCHESTRATOR_API_KEY=dev-key-456
     ports:
       - "8000:8000"

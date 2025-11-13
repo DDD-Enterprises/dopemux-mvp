@@ -17,8 +17,8 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-# Add Integration Bridge to path for EventBus
-bridge_path = Path(__file__).parent.parent.parent / "services" / "mcp-integration-bridge"
+# Add DopeconBridge to path for EventBus
+bridge_path = Path(__file__).parent.parent.parent / "services" / "mcp-dopecon-bridge"
 if str(bridge_path) not in sys.path:
     sys.path.insert(0, str(bridge_path))
 
