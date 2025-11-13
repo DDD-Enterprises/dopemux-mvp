@@ -1,9 +1,51 @@
 #!/usr/bin/env bash
 # DopeconBridge Migration Verification Script
+# Usage: ./verify_dopecon_bridge.sh [--workspace /path/to/workspace]
 
 set -e
 
+# Parse arguments
+WORKSPACE_PATH=""
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --workspace|-w)
+            WORKSPACE_PATH="$2"
+            shift 2
+            ;;
+        --help|-h)
+            cat << 'HELP'
+Usage: ./verify_dopecon_bridge.sh [OPTIONS]
+
+OPTIONS:
+    --workspace, -w PATH    Verify for specific workspace
+    --help, -h             Show this help message
+
+EXAMPLES:
+    ./verify_dopecon_bridge.sh                    # Verify current workspace
+    ./verify_dopecon_bridge.sh -w ~/code/project  # Verify specific workspace
+HELP
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
+# Determine workspace
+if [ -n "$WORKSPACE_PATH" ]; then
+    WORKSPACE_ID="$WORKSPACE_PATH"
+elif [ -n "$DEFAULT_WORKSPACE_PATH" ]; then
+    WORKSPACE_ID="$DEFAULT_WORKSPACE_PATH"
+else
+    WORKSPACE_ID="$(pwd)"
+fi
+
 echo "🔍 DopeconBridge Migration Verification"
+if [ -n "$WORKSPACE_PATH" ]; then
+    echo "Workspace: $WORKSPACE_ID"
+fi
 echo "========================================"
 echo
 

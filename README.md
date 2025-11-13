@@ -21,6 +21,56 @@ Dopemux is a comprehensive development platform designed specifically for develo
 - **👁️ Attention State Management** - Detect and accommodate different attention states
 - **☕ Smart Break Reminders** - Context-aware break suggestions
 - **🔄 Session Continuity** - Resume work exactly where you left off
+- **🗂️ Multi-Workspace Support** - Seamlessly work across multiple projects with isolated contexts
+
+---
+
+## 🗂️ Multi-Workspace Architecture
+
+Dopemux now supports **multiple workspaces** with complete isolation and cross-workspace queries.
+
+### What is a Workspace?
+
+A workspace is a distinct project or codebase with its own:
+- Isolated cognitive state (energy, attention, breaks)
+- Separate knowledge graph (decisions, tasks, context)
+- Independent session history
+- Workspace-specific configurations
+
+### Quick Multi-Workspace Setup
+
+```bash
+# Set your default workspace
+export DEFAULT_WORKSPACE_PATH=~/code/dopemux-mvp
+
+# Work with a specific workspace
+dopemux --workspace ~/code/my-project init
+
+# Query across multiple workspaces
+dopemux query --workspaces ~/code/project1,~/code/project2 "recent decisions"
+
+# Switch workspaces in active session
+dopemux workspace switch ~/code/another-project
+```
+
+### Workspace Isolation Features
+
+✅ **Complete Data Isolation**
+- Cognitive state tracked separately per workspace
+- Knowledge graphs don't cross-contaminate
+- Session history isolated by workspace
+
+✅ **Cross-Workspace Queries**  
+- Search decisions across all your projects
+- Aggregate insights from multiple workspaces
+- Compare patterns between workspaces
+
+✅ **Smart Context Switching**
+- Auto-detect workspace from current directory
+- Visual workspace indicator in statusline
+- Gentle reminders when switching workspaces
+
+See [Multi-Workspace Guide](#multi-workspace-usage) for detailed usage.
 
 ---
 
@@ -791,3 +841,169 @@ Built with insights from the ADHD development community and powered by Claude AI
 ---
 
 **Made with ❤️ and ☕ by developers with ADHD, for developers with ADHD**
+
+---
+
+## 🗂️ Multi-Workspace Usage
+
+### Working with Multiple Projects
+
+**Scenario: You're working on 3 different projects**
+
+```bash
+# Configure your workspaces
+export DEFAULT_WORKSPACE_PATH=~/code/dopemux-mvp
+export WORKSPACE_PATHS=~/code/client-app,~/code/api-backend,~/code/mobile-app
+
+# Start dopemux (uses DEFAULT_WORKSPACE_PATH)
+dopemux start
+
+# Switch to another workspace
+dopemux workspace switch ~/code/client-app
+
+# Check workspace status
+dopemux workspace status
+# Output:
+# Current Workspace: ~/code/client-app
+# Energy Level: Medium
+# Attention: Focused
+# Session Duration: 45 minutes
+# Uncommitted Changes: 3 files
+```
+
+### Cross-Workspace Queries
+
+**Find decisions across all projects:**
+
+```bash
+# Search decisions in all configured workspaces
+dopemux query decisions --all-workspaces "authentication"
+
+# Compare energy patterns across workspaces
+dopemux analyze energy --workspaces ~/code/project1,~/code/project2
+
+# View today's work across all projects
+dopemux sessions today --all-workspaces
+```
+
+### Workspace-Specific Configuration
+
+**Each workspace can have custom settings:**
+
+```bash
+# Initialize workspace with custom config
+cd ~/code/my-project
+dopemux init --workspace-config .dopemux/workspace.yaml
+
+# Example workspace.yaml:
+# break_interval: 30  # Minutes between break reminders
+# complexity_threshold: 0.7  # When to warn about complexity
+# energy_tracking: true  # Enable energy monitoring
+# preferred_models: ["claude-sonnet-4.5", "gpt-5"]
+```
+
+### Statusline Workspace Indicator
+
+The statusline shows your current workspace:
+
+```
+[client-app] main | ✅ Implementing auth [1h 30m] | 🧠 ⚡● 👁️● | Sonnet 4.5
+└─────┬────┘
+      └─ Current workspace name
+```
+
+### Multi-Workspace Best Practices
+
+**✅ Do:**
+- Set `DEFAULT_WORKSPACE_PATH` in your shell profile
+- Use workspace switching when context switching between projects
+- Leverage cross-workspace queries for insights
+- Keep workspace-specific configs in `.dopemux/workspace.yaml`
+
+**❌ Don't:**
+- Mix workspace data manually (let Dopemux handle isolation)
+- Forget to commit before switching workspaces
+- Override workspace auto-detection without good reason
+
+### Environment Variables Reference
+
+```bash
+# Core workspace configuration
+DEFAULT_WORKSPACE_PATH=~/code/main-project  # Default workspace
+WORKSPACE_PATHS=~/code/p1,~/code/p2         # Additional workspaces
+ENABLE_WORKSPACE_ISOLATION=true             # Isolate data per workspace
+ENABLE_CROSS_WORKSPACE_QUERIES=true         # Allow cross-workspace queries
+WORKSPACE_CACHE_TTL=3600                    # Cache TTL in seconds
+```
+
+### API Usage with Workspaces
+
+**Services automatically detect workspace from context:**
+
+```python
+# Python - Auto-detect workspace
+from dopemux import DopemuxClient
+
+client = DopemuxClient()  # Uses current directory as workspace
+state = await client.get_adhd_state()
+
+# Python - Explicit workspace
+client = DopemuxClient(workspace_path="~/code/my-project")
+state = await client.get_adhd_state()
+
+# Python - Multi-workspace query
+results = await client.query_decisions(
+    query="refactoring",
+    workspace_paths=["~/code/project1", "~/code/project2"]
+)
+```
+
+**MCP Tools with workspace parameters:**
+
+```javascript
+// Use serena in specific workspace
+await use_mcp_tool("serena", "find_symbol", {
+  symbol: "authenticate",
+  workspace_path: "~/code/api-backend"
+});
+
+// Query ConPort across workspaces
+await use_mcp_tool("conport", "search_decisions", {
+  query: "database migration",
+  workspace_paths: ["~/code/frontend", "~/code/backend"]
+});
+```
+
+### Performance Considerations
+
+**Workspace isolation is highly optimized:**
+- Single workspace queries: <50ms (cached: <5ms)
+- Multi-workspace queries: <200ms for 5 workspaces
+- Database indexed on workspace_id for fast lookups
+- Redis caching with workspace-scoped keys
+
+### Troubleshooting
+
+**Workspace not detected:**
+```bash
+# Check current workspace detection
+dopemux workspace detect
+
+# Force workspace path
+dopemux --workspace ~/code/my-project start
+```
+
+**Data showing in wrong workspace:**
+```bash
+# Verify workspace isolation
+dopemux doctor --check-isolation
+
+# Re-initialize workspace
+dopemux workspace reset
+```
+
+For more details, see:
+- [Multi-Workspace Implementation Guide](MULTI_WORKSPACE_IMPLEMENTATION_GUIDE.md)
+- [Workspace API Reference](docs/api/workspace.md)
+- [Troubleshooting Guide](docs/troubleshooting/workspaces.md)
+
