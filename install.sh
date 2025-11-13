@@ -29,6 +29,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR" && pwd)"
 LOG_FILE="$PROJECT_ROOT/install.log"
 ERROR_LOG="$PROJECT_ROOT/install-errors.log"
 DIAGNOSTICS_DIR="$PROJECT_ROOT/diagnostics"
+DEFAULT_WORKSPACE_FILE="$HOME/.dopemux/default_workspace"
 
 # Installation modes
 QUICK_MODE=false
@@ -37,6 +38,7 @@ VERIFY_MODE=false
 SKIP_CONFIRM=false
 DEBUG_MODE=false
 NO_DOCKER_MODE=false
+IN_CONTAINER=false
 
 # Error codes for better troubleshooting
 ERROR_NO_DOCKER=10
@@ -609,6 +611,24 @@ log_success() {
     echo -e "${GREEN}[SUCCESS]${NC} $1" | tee -a "$LOG_FILE"
 }
 
+ensure_docker_network() {
+    local network_name=$1
+    if docker network ls --format '{{.Name}}' | grep -qx "$network_name"; then
+        return
+    fi
+
+    if docker network create "$network_name" >/dev/null 2>&1; then
+        log_info "Created missing Docker network: $network_name"
+    else
+        log_warn "Could not create Docker network: $network_name (continuing anyway)"
+    fi
+}
+
+persist_default_workspace() {
+    mkdir -p "$(dirname "$DEFAULT_WORKSPACE_FILE")"
+    printf "%s\n" "$PROJECT_ROOT" > "$DEFAULT_WORKSPACE_FILE"
+}
+
 # Initialize log file
 echo "Dopemux Installation Log - $(date)" > "$LOG_FILE"
 echo "=================================" >> "$LOG_FILE"
@@ -1117,6 +1137,14 @@ show_progress() {
     echo -e "${CYAN}[$CURRENT_STEP/$TOTAL_STEPS]${NC} $1"
 }
 
+# Detect whether we're running inside a container so Docker errors can be clearer.
+detect_container_environment() {
+    IN_CONTAINER=false
+    if [[ -f /.dockerenv ]] || grep -q "docker\|containerd" /proc/1/cgroup 2>/dev/null; then
+        IN_CONTAINER=true
+    fi
+}
+
 # Check if running as root (not recommended)
 check_root() {
     if [[ $EUID -eq 0 ]]; then
@@ -1173,36 +1201,6 @@ check_prerequisites() {
                     "macOS: Launch Docker Desktop from Applications\nLinux: sudo systemctl start docker (systemd) or sudo service docker start (init.d)\nWindows: Start Docker Desktop\nDocker containers: Ensure host Docker is running"
             fi
         fi
-    fi
-
-    # Detect container environment
-    detect_container_environment() {
-        IN_CONTAINER=false
-        if [[ -f /.dockerenv ]] || grep -q "docker\|containerd" /proc/1/cgroup 2>/dev/null; then
-            IN_CONTAINER=true
-        fi
-    }
-        if ! docker info &> /dev/null; then
-            # Detect if we're in a container
-            local in_container=false
-            if [[ -f /.dockerenv ]] || grep -q "docker\|containerd" /proc/1/cgroup 2>/dev/null; then
-                in_container=true
-            fi
-
-            if [[ $in_container == true ]]; then
-                handle_error $ERROR_DOCKER_NOT_RUNNING \
-                    "Docker daemon is not accessible from within this container." \
-                    "Containerized Environment Solutions:\n• Mount Docker socket: docker run -v /var/run/docker.sock:/var/run/docker.sock\n• Use Docker-in-Docker: docker run --privileged -v /var/run/docker.sock:/var/run/docker.sock\n• Run on host: Exit container and run installer on host system\n• Use --no-docker flag to skip Docker services and install CLI tools only"
-            else
-                handle_error $ERROR_DOCKER_NOT_RUNNING \
-                    "Docker daemon is not running. Please start Docker first." \
-                    "macOS: Launch Docker Desktop from Applications\nLinux: sudo systemctl start docker (systemd) or sudo service docker start (init.d)\nWindows: Start Docker Desktop\nDocker containers: Ensure host Docker is running"
-            fi
-        fi
-    else
-        log_warn "Docker not found - this is expected in some environments"
-        log_info "You can install services manually or use pre-built containers"
-        log_info "See INSTALL.md for manual installation instructions"
     fi
 
     # Check available disk space (need at least 10GB for full installation)
@@ -1468,6 +1466,12 @@ install_docker_services() {
 
     local compose_file=""
     local compose_result=0
+
+    # Ensure external networks exist before running compose files that expect them
+    local required_networks=("mcp-network" "dopemux-unified-network" "leantime-net")
+    for net in "${required_networks[@]}"; do
+        ensure_docker_network "$net"
+    done
 
     if [[ $QUICK_MODE == true ]]; then
         log_info "Quick mode: Starting core services only"
@@ -2232,6 +2236,8 @@ main() {
     echo -e "${CYAN}║  🚀 Dopemux Installer - ADHD-Optimized Development Platform ║${NC}"
     echo -e "${CYAN}╚══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
+
+    persist_default_workspace
 
     if [[ $VERIFY_MODE == true ]]; then
         verify_installation
