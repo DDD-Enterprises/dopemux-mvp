@@ -11,7 +11,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies for enhanced server with database persistence
-RUN pip install uv aiohttp asyncpg redis mcp
+RUN pip install uv aiohttp asyncpg redis mcp prometheus-client
+
+# Copy shared monitoring module
+RUN mkdir -p /app/shared/monitoring
+COPY shared_monitoring.py /app/shared/monitoring/base.py
+COPY shared_monitoring_init.py /app/shared/monitoring/__init__.py
 
 # Copy the enhanced server with PostgreSQL + Redis persistence
 COPY enhanced_server.py .

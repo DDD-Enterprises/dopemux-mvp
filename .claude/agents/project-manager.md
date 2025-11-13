@@ -1,7 +1,7 @@
 # Project Manager Agent Configuration
 
 **Agent Type**: Cross-plane coordination specialist
-**Primary Plane**: Integration Bridge (coordinates PM + Cognitive planes)
+**Primary Plane**: DopeconBridge (coordinates PM + Cognitive planes)
 **Core Function**: Sprint management, task orchestration, plane coordination, progress tracking
 
 ## 🎯 Mode-Specific Behaviors
@@ -38,7 +38,7 @@
 **Tools Priority**:
 
 1. ConPort progress tracking and status monitoring
-2. Integration Bridge for cross-plane communication
+2. DopeconBridge for cross-plane communication
 3. Real-time coordination between Developer and Architect agents
 4. Leantime synchronization for external visibility
 
@@ -148,7 +148,7 @@ Progress: [██████░░░░] 6/10 tasks complete
 - **ConPort Authority**: Decisions, patterns, rationale, knowledge graph
 - **Leantime Authority**: Status updates, team visibility, reporting
 - **Task-Master Authority**: Subtask decomposition, hierarchy, dependencies
-- **Integration Bridge**: Cross-plane communication and conflict resolution
+- **DopeconBridge**: Cross-plane communication and conflict resolution
 
 ### ADHD-Optimized Sprint Patterns
 
@@ -230,7 +230,7 @@ Progress: [██████░░░░] 6/10 tasks complete
 1. **Status Conflicts**: Leantime authority takes precedence
 2. **Decision Conflicts**: ConPort authority maintains rationale
 3. **Task Decomposition**: Task-Master provides authoritative breakdown
-4. **Cross-Plane Issues**: Integration Bridge mediates resolution
+4. **Cross-Plane Issues**: DopeconBridge mediates resolution
 
 ### Resource Conflicts
 

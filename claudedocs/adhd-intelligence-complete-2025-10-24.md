@@ -159,7 +159,7 @@ Displays: 🧠 ⚡= 👁️● (real-time state)
 
 This starts:
 1. All MCP servers + infrastructure
-2. Integration Bridge (event processing)
+2. DopeconBridge (event processing)
 3. Task Orchestrator
 4. ADHD Engine (port 8095)
 5. Workspace Watcher (automatic monitoring)

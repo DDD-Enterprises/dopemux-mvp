@@ -103,7 +103,7 @@ An **HTTP/SSE bridge** that connects Claude Code to PostgreSQL AGE instead of SQ
 │      ConPort Enhanced Server            │
 │  - enhanced_server.py (FastAPI)         │
 │  - unified_queries.py                   │
-│  - integration_bridge_client.py         │
+│  - dopecon_bridge_client.py         │
 └───┬─────────────────────────┬───────────┘
     │                         │
     ▼ PostgreSQL AGE          ▼ EventBus
@@ -133,7 +133,7 @@ An **HTTP/SSE bridge** that connects Claude Code to PostgreSQL AGE instead of SQ
 docker/mcp-servers/conport/
 ├── enhanced_server.py          (67,531 bytes) - Main server
 ├── unified_queries.py          (11,805 bytes) - F-NEW-7 queries
-├── integration_bridge_client.py (5,283 bytes) - EventBus client
+├── dopecon_bridge_client.py (5,283 bytes) - EventBus client
 ├── instance_detector.py        (6,587 bytes) - Worktree detection
 ├── direct_server.py            (9,120 bytes) - Legacy
 └── migrations/                 - Schema evolution
@@ -250,7 +250,7 @@ A **multi-tenant, multi-agent knowledge graph** with full authentication, RBAC, 
 ### Current Status
 - **Deployment**: ❌ NOT DEPLOYED (Docker Compose exists but not running)
 - **Database**: Port 5455 has `dope-decision-graph-postgres` container
-- **Integration Bridge**: Running on port 3016 (`dope-decision-graph-bridge`)
+- **DopeconBridge**: Running on port 3016 (`dope-decision-graph-bridge`)
 - **Code Complete**: Phase 1 only (18% of 11-week plan)
 
 ### Code Files

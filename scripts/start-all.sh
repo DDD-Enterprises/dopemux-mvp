@@ -4,7 +4,7 @@
 #
 # This script starts ALL Dopemux services including:
 # - 12 MCP servers (ConPort, Zen, Serena, Context7, etc.)
-# - Integration Bridge (event processing, pattern detection)
+# - DopeconBridge (event processing, pattern detection)
 # - Task Orchestrator (ADHD task coordination)
 # - All infrastructure (PostgreSQL, Redis, Qdrant)
 #
@@ -36,11 +36,11 @@ docker-compose up -d
 echo "✅ MCP servers started"
 echo ""
 
-# Step 2: Start ConPort-KG services (Integration Bridge)
-echo "🔗 Step 2/3: Starting Integration Bridge..."
+# Step 2: Start ConPort-KG services (DopeconBridge)
+echo "🔗 Step 2/3: Starting DopeconBridge..."
 cd "$PROJECT_ROOT/docker/conport-kg"
-docker-compose up -d integration-bridge
-echo "✅ Integration Bridge started (port 3016)"
+docker-compose up -d dopecon-bridge
+echo "✅ DopeconBridge started (port 3016)"
 echo ""
 
 # Step 3: Start Task Orchestrator (manual profile)
@@ -157,7 +157,7 @@ echo ""
 # Show running services
 echo "📊 Running Services:"
 docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | \
-  grep -E "(NAMES|integration-bridge|task-orchestrator|mcp-|dopemux-|redis|postgres|qdrant)" | \
+  grep -E "(NAMES|dopecon-bridge|task-orchestrator|mcp-|dopemux-|redis|postgres|qdrant)" | \
   head -20
 
 echo ""
@@ -167,8 +167,8 @@ if [ "$VERIFY" = true ]; then
     echo "🔍 Verifying service health..."
     echo ""
 
-    # Check Integration Bridge
-    echo -n "  Integration Bridge (3016): "
+    # Check DopeconBridge
+    echo -n "  DopeconBridge (3016): "
     if curl -sf http://localhost:3016/health > /dev/null 2>&1; then
         echo "✅ Healthy"
     else
@@ -219,7 +219,7 @@ if [ "$VERIFY" = true ]; then
 fi
 
 echo "🔗 Service URLs:"
-echo "  Integration Bridge: http://localhost:3016/health"
+echo "  DopeconBridge: http://localhost:3016/health"
 echo "  Task Orchestrator:  http://localhost:3014/health (stdio MCP)"
 echo "  Activity Capture:   http://localhost:8096/health"
 echo "  ADHD Engine:        http://localhost:8095/health"

@@ -55,7 +55,7 @@ Dopemux MVP exhibits **enterprise-grade architectural sophistication** with a we
 - `dddp/` - Reinforcement learning
 
 #### Integration & Coordination
-- `mcp-integration-bridge/` - **WELL-IMPLEMENTED** - Cross-service communication
+- `mcp-dopecon-bridge/` - **WELL-IMPLEMENTED** - Cross-service communication
 - `task-router/` - Intelligent task distribution
 - `taskmaster/` - External AI research tool
 - `taskmaster-mcp-client/` - Taskmaster integration
@@ -97,7 +97,7 @@ Dopemux MVP exhibits **enterprise-grade architectural sophistication** with a we
 
 ### Integration Patterns (Validated)
 
-#### MCP Integration Bridge (Functional)
+#### MCP DopeconBridge (Functional)
 - **Event Bus**: Redis-based cross-service communication
 - **Circuit Breakers**: Fault tolerance and service isolation
 - **Rate Limiting**: API protection and resource management
@@ -211,7 +211,7 @@ Core ADHD Functionality
 
 ## Conclusion
 
-Dopemux MVP demonstrates **exceptional architectural design** with a sophisticated two-plane system and comprehensive ADHD optimization framework. The **MCP Integration Bridge proves the architecture works** when properly implemented. However, **critical implementation gaps** prevent production deployment, most notably the missing ADHD Dashboard service.
+Dopemux MVP demonstrates **exceptional architectural design** with a sophisticated two-plane system and comprehensive ADHD optimization framework. The **MCP DopeconBridge proves the architecture works** when properly implemented. However, **critical implementation gaps** prevent production deployment, most notably the missing ADHD Dashboard service.
 
 **The system is NOT over-engineered** - it's appropriately architected for its ambitious goals of enterprise-grade ADHD optimization. The issue is **incomplete execution** across multiple services.
 

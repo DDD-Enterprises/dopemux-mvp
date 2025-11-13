@@ -110,7 +110,7 @@ Extracted **all action items** from comprehensive audit and categorized by:
 
 ### ✅ COMPLETE (This Session)
 
-8. **Integration Bridge Completion** 🔴 CRITICAL
+8. **DopeconBridge Completion** 🔴 CRITICAL
    - Status: ✅ DONE (80% → 100%)
    - Impact: custom_data endpoints now functional
    - Evidence: mcp_client.py created, commit 1b76ef66
@@ -125,7 +125,7 @@ Extracted **all action items** from comprehensive audit and categorized by:
 
 10. **ConPort Orchestrator Bridge Wiring** 🟡 HIGH (ALREADY COMPLETE)
    - Location: `services/conport_kg/orchestrator.py:127`
-   - Issue: TODO for Integration Bridge event publishing
+   - Issue: TODO for DopeconBridge event publishing
    - Current: Events not published
    - Fix: Wire orchestrator to bridge HTTP API
    - Effort: 2-3 hours
@@ -203,7 +203,7 @@ Extracted **all action items** from comprehensive audit and categorized by:
    - Status: ✅ FOUND during synthesis!
    - **Action**: Document this feature
 
-17. **Integration Bridge Event Bus** 🟠
+17. **DopeconBridge Event Bus** 🟠
    - Feature: Event publishing/subscription
    - Current: Infrastructure exists, partial adoption
    - Effort: 6-8 hours
@@ -249,7 +249,7 @@ Extracted **all action items** from comprehensive audit and categorized by:
 
 ### ⚠️ MINOR UPDATES NEEDED
 
-21. **Integration Bridge Docs** 🟢
+21. **DopeconBridge Docs** 🟢
    - Update: Remove "stub" notes (now 100% complete!)
    - Files: README.md, kg_endpoints.py docstrings
    - Effort: 15 minutes
@@ -322,7 +322,7 @@ fetch(`${baseUrl}/decisions/search?${params}`);
 
 **Performance** (8-10h total):
 - ConPort full-text search → PostgreSQL tsvector
-- Integration Bridge caching layer
+- DopeconBridge caching layer
 - Dope-Context reranking optimization
 
 **Quality** (4-6h total):
@@ -331,7 +331,7 @@ fetch(`${baseUrl}/decisions/search?${params}`);
 - Performance profiling automation
 
 **Documentation** (2h total):
-- Update Integration Bridge completion
+- Update DopeconBridge completion
 - Standardize endpoint counting
 - Document event bus adoption
 
@@ -358,7 +358,7 @@ fetch(`${baseUrl}/decisions/search?${params}`);
 
 ### Architectural Insights
 
-**1. Integration Bridge Design Pattern** ✅
+**1. DopeconBridge Design Pattern** ✅
 - **Discovery**: Coordination layer should have database access
 - **Validation**: Direct PostgreSQL from bridge is architecturally sound
 - **Reason**: Bridge is coordination layer (allowed shared state)
@@ -378,7 +378,7 @@ fetch(`${baseUrl}/decisions/search?${params}`);
 - **Application**: Check workspace composition before choosing tools
 
 **4. Stub Endpoints Create Confusion** ✅
-- **Discovery**: Integration Bridge 80% complete with stubs
+- **Discovery**: DopeconBridge 80% complete with stubs
 - **Impact**: Services bypassed incomplete bridge (rational choice)
 - **Learning**: Incomplete implementations worse than no implementation
 - **Application**: Either complete features or don't expose endpoints
@@ -394,7 +394,7 @@ fetch(`${baseUrl}/decisions/search?${params}`);
 
 **Key Architectural Decisions** (for ADR updates):
 
-**1. Integration Bridge → Direct Database Access**
+**1. DopeconBridge → Direct Database Access**
 - Decision: Use asyncpg direct to PostgreSQL
 - Alternative: HTTP/stdio to ConPort MCP server
 - Rationale: Performance (no triple hop), bridge is coordination layer
@@ -414,7 +414,7 @@ fetch(`${baseUrl}/decisions/search?${params}`);
 - Status: Deferred to separate task
 
 **4. Audit Scope → Focused + Complete Bridge**
-- Decision: Phases 1-4 + Integration Bridge completion
+- Decision: Phases 1-4 + DopeconBridge completion
 - Alternative: Full 93h exhaustive audit
 - Rationale: 80/20 rule - critical value in 12h
 - Result: 87% time savings, all critical objectives achieved

@@ -1,5 +1,5 @@
 """
-Task-Master AI MCP Integration Bridge for Dopemux
+Task-Master AI MCP DopeconBridge for Dopemux
 
 This module provides integration with Claude-Task-Master AI for intelligent
 task decomposition, complexity analysis, and AI-powered project management.

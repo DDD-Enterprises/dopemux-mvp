@@ -42,6 +42,7 @@ dependencies = [
     "pydantic>=2.0.0",
     "toml>=0.10.0",
     "docker>=7.0.0",
+    "litellm>=1.0.0",
     # Document processing dependencies
     "chardet>=5.0.0",
     "pymilvus>=2.3.0",

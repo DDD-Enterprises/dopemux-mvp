@@ -37,6 +37,7 @@ class BreakSuggestion:
     suggested_duration: int  # minutes
     triggered_by: List[str]  # Event types that triggered this
     timestamp: datetime
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 @dataclass

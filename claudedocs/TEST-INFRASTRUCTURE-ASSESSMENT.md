@@ -47,7 +47,7 @@ from dopemux.embeddings import (...)
 - Auth: Module tested (100% pass)
 - Credentials: Env loading tested (100% pass)
 
-**Integration Bridge**: ✅ Validated
+**DopeconBridge**: ✅ Validated
 - Imports successful
 - MCP client working
 - Endpoints wired correctly

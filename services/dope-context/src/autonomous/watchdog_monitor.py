@@ -9,10 +9,25 @@ import asyncio
 import logging
 import time
 from pathlib import Path
-from typing import Callable, List, Set
+from typing import Callable, List, Optional, Set
 
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler, FileSystemEvent
+try:
+    from watchdog.observers import Observer  # type: ignore
+    from watchdog.events import FileSystemEventHandler, FileSystemEvent  # type: ignore
+except ImportError:  # pragma: no cover - exercised in constrained envs
+    Observer = None  # type: ignore
+
+    class FileSystemEventHandler:  # type: ignore
+        """Fallback handler so imports succeed without watchdog."""
+
+        def __init__(self, *args, **kwargs):
+            pass
+
+    class FileSystemEvent:  # type: ignore
+        """Fallback event."""
+
+        is_directory: bool = False
+        src_path: str = ""
 
 
 logger = logging.getLogger(__name__)
@@ -179,7 +194,7 @@ class WatchdogMonitor:
         self.include_patterns = include_patterns
         self.exclude_patterns = exclude_patterns
 
-        self.observer: Observer = None
+        self.observer: Optional[Observer] = None
         self.event_handler: DebouncedFileHandler = None
         self._running: bool = False
 
@@ -188,6 +203,12 @@ class WatchdogMonitor:
         if self._running:
             logger.warning("Watchdog already running")
             return
+
+        if Observer is None:
+            raise RuntimeError(
+                "watchdog package is required for autonomous indexing. "
+                "Install it with `pip install watchdog`."
+            )
 
         logger.info(f"Starting watchdog monitor for {self.workspace_path}")
 

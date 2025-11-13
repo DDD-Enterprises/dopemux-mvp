@@ -18,12 +18,12 @@
 - **Infrastructure Layer**: PostgreSQL (5432), Redis Primary (6379), Redis Leantime (6380), MySQL (3306), Milvus (19530)
 - **PM Plane**: LeanTime (8080)
 - **Cognitive Plane**: Context7 (3002), Zen (3003), ConPort (3004), Serena (3006), Claude Context (3007)
-- **Coordination**: Integration Bridge (3016) ✅ **NEWLY IMPLEMENTED**
+- **Coordination**: DopeconBridge (3016) ✅ **NEWLY IMPLEMENTED**
 - **Monitoring**: Redis Commander (8081), Minio Console (9001)
 
-### ✅ **2. Integration Bridge: Complete Implementation**
+### ✅ **2. DopeconBridge: Complete Implementation**
 
-**Path**: `/services/mcp-integration-bridge/main.py` (1,578 lines of production-ready code)
+**Path**: `/services/mcp-dopecon-bridge/main.py` (1,578 lines of production-ready code)
 
 **Key Features Implemented:**
 - **Cross-plane coordination** at PORT_BASE+16 (3016)
@@ -39,7 +39,7 @@
 ### ✅ **3. Service Optimization & Fixes**
 
 **Issues Resolved:**
-- **Integration Bridge Path**: Fixed `./src/integration_bridge` → `./services/mcp-integration-bridge`
+- **DopeconBridge Path**: Fixed `./src/dopecon_bridge` → `./services/mcp-dopecon-bridge`
 - **Claude Context MCP**: Fixed Dockerfile, service now running and connected (port 3007)
 - **Redis Commander Authentication**: Fixed password configuration for dual Redis instances
 - **Task Master AI**: Disabled problematic external dependency (caused restart loops)
@@ -70,14 +70,14 @@
 - **Context7**: Document structure extraction and analysis
 - **Claude Context**: Semantic understanding with vector search (Milvus + VoyageAI)
 - **ConPort**: Learning system with decision memory
-- **Integration Bridge**: Complete task orchestration engine (already built!)
+- **DopeconBridge**: Complete task orchestration engine (already built!)
 
 **Competitive Advantage Matrix:**
 
 | **Capability** | **Research Report** | **Our Implementation** | **Advantage** |
 |---|---|---|---|
 | **Document→Tasks** | TaskMaster-AI (broken) | Context7 + Zen Analyze | ✅ Multi-model intelligence |
-| **Task Orchestration** | 37 external tools | Integration Bridge + 5 MCP services | ✅ Internal control |
+| **Task Orchestration** | 37 external tools | DopeconBridge + 5 MCP services | ✅ Internal control |
 | **Intelligence** | Single model | Multi-model consensus | ✅ Superior AI coordination |
 | **Learning** | Static templates | ConPort decision memory | ✅ Adaptive intelligence |
 | **ADHD Support** | None | Built-in throughout | ✅ Neurodivergent-native |
@@ -93,9 +93,9 @@
 
 ## 🏗️ **Technical Implementations Completed**
 
-### **Integration Bridge Service (MAJOR)**
+### **DopeconBridge Service (MAJOR)**
 
-**Location**: `/services/mcp-integration-bridge/`
+**Location**: `/services/mcp-dopecon-bridge/`
 **Status**: ✅ Complete production implementation
 **Capabilities**:
 - FastAPI server with comprehensive task management
@@ -169,7 +169,7 @@
 **ADHD Features**: Context preservation, decision logging, pattern learning
 **Potential**: Learn from successful decomposition patterns, improve over time
 
-### **Integration Bridge - Task Orchestration Engine**
+### **DopeconBridge - Task Orchestration Engine**
 
 **Status**: Complete implementation with sophisticated features
 **Templates Already Built**:
@@ -196,7 +196,7 @@ Context7 (structure extraction) →
 Zen Analyze (systematic understanding) →
 Zen Planner (step-by-step decomposition) →
 Zen Consensus (multi-model validation) →
-Integration Bridge (task synthesis + ADHD optimization) →
+DopeconBridge (task synthesis + ADHD optimization) →
 LeanTime (ticket creation via bridge)
 ```
 
@@ -215,7 +215,7 @@ LeanTime (ticket creation via bridge)
 Epic Ticket →
 Zen Analysis (complexity, scope) →
 Context7 (similar patterns) →
-Integration Bridge (ADHD-optimized breakdown) →
+DopeconBridge (ADHD-optimized breakdown) →
 Sub-tickets in LeanTime
 ```
 
@@ -266,9 +266,9 @@ Sub-tickets in LeanTime
 3. **Enable LeanTime Bridge Service**
    - Uncomment bridge service in docker-compose
    - Test MCP server startup and health
-   - Verify Integration Bridge → LeanTime communication
+   - Verify DopeconBridge → LeanTime communication
 
-**Expected Outcome**: Bidirectional task sync between Integration Bridge and LeanTime
+**Expected Outcome**: Bidirectional task sync between DopeconBridge and LeanTime
 
 ### **Phase 2: Document Intelligence Pipeline** (2-3 sessions)
 
@@ -276,7 +276,7 @@ Sub-tickets in LeanTime
 1. **Context7 Integration**: Document structure extraction from PRDs, designs, diagrams
 2. **Zen Multi-Model Analysis**: Systematic understanding using Analyze + Planner tools
 3. **Claude Context Semantic Search**: Vector-based pattern matching with previous decompositions
-4. **Integration Bridge Enhancement**: AI-generated tasks with ADHD optimization
+4. **DopeconBridge Enhancement**: AI-generated tasks with ADHD optimization
 
 **Expected Outcome**: Documents automatically become actionable task hierarchies
 
@@ -298,16 +298,16 @@ Sub-tickets in LeanTime
 - Unified architecture deployed and operational
 - All MCP services running with health monitoring
 - Database infrastructure ready for complex data models
-- Cross-plane coordination via Integration Bridge
+- Cross-plane coordination via DopeconBridge
 
 ### **Basic LeanTime Integration**: 70% Complete ⚠️
-- Integration Bridge has complete sync logic implemented
+- DopeconBridge has complete sync logic implemented
 - LeanTime Bridge service Dockerfile ready
 - Only blocked by port mapping fix and API configuration
 
 ### **Document Intelligence Pipeline**: 30% Complete 🔄
 - All required MCP services operational (Context7, Zen, Claude Context)
-- Integration Bridge has template system foundation
+- DopeconBridge has template system foundation
 - Need to implement Context7 → Zen → Claude Context workflow
 
 ### **Advanced AI Features**: 10% Complete 🚀
@@ -344,7 +344,7 @@ Sub-tickets in LeanTime
 
 ## 🔧 **Technical Implementations Completed**
 
-### **Integration Bridge Service** (`services/mcp-integration-bridge/`)
+### **DopeconBridge Service** (`services/mcp-dopecon-bridge/`)
 
 **Complete Python FastAPI Implementation (1,578 lines):**
 
@@ -389,7 +389,7 @@ class MCPClientManager:
 - `scripts/init-multiple-databases.sql`: PostgreSQL setup for multiple databases
 
 **Service Fixes:**
-- Integration Bridge: Correct path, health checks, environment variables
+- DopeconBridge: Correct path, health checks, environment variables
 - Claude Context: Fixed Dockerfile for Node.js wrapper execution
 - Redis Commander: Fixed authentication for password-protected Redis instances
 - GPT-Researcher: Enabled with health monitoring
@@ -397,7 +397,7 @@ class MCPClientManager:
 ### **ADHD Optimization Implementation**
 
 **Context Preservation:**
-- ConPort middleware in Integration Bridge
+- ConPort middleware in DopeconBridge
 - Automatic context saving every 30 seconds
 - Request-level context hydration and delta persistence
 - Fallback caching for resilience
@@ -440,7 +440,7 @@ Context7 (structure) →
 Zen Analyze (understanding) →
 Zen Planner (decomposition) →
 Zen Consensus (validation) →
-Integration Bridge (synthesis) →
+DopeconBridge (synthesis) →
 LeanTime (tracking)
 ```
 
@@ -458,7 +458,7 @@ LeanTime (tracking)
 ### **✅ Ready to Implement (90% Complete)**
 
 **LeanTime Integration:**
-- Integration Bridge has complete sync logic
+- DopeconBridge has complete sync logic
 - LeanTime Bridge Dockerfile and requirements ready
 - Only needs port mapping fix and API configuration
 
@@ -467,7 +467,7 @@ LeanTime (tracking)
 **Document Intelligence Pipeline:**
 - All MCP services operational and accessible
 - Need to implement Context7 → Zen workflow coordination
-- Integration Bridge template system ready for AI enhancement
+- DopeconBridge template system ready for AI enhancement
 
 ### **🚀 Advanced Features (10% Complete)**
 
@@ -493,7 +493,7 @@ LeanTime (tracking)
 
 3. **Enable LeanTime Bridge** (10 minutes)
    - Uncomment bridge service
-   - Test Integration Bridge → LeanTime communication
+   - Test DopeconBridge → LeanTime communication
    - Verify basic ticket creation
 
 ### **Development Sessions (2-4)**
@@ -524,7 +524,7 @@ LeanTime (tracking)
 - ADHD-optimized authority boundaries established
 
 ### **Coordination**: ✅ Operational
-- Integration Bridge providing cross-plane communication
+- DopeconBridge providing cross-plane communication
 - Multi-instance support with shared state
 - Complete task lifecycle management
 
@@ -548,7 +548,7 @@ LeanTime (tracking)
 
 **Key Files:**
 - `docker-compose.unified.yml`: Master service orchestration
-- `services/mcp-integration-bridge/`: Complete task orchestration engine
+- `services/mcp-dopecon-bridge/`: Complete task orchestration engine
 - `UNIFIED_ARCHITECTURE_GUIDE.md`: Deployment and management guide
 - `SESSION_HANDOFF.md`: Fresh session startup instructions
 - `.env.unified`: Environment configuration template
@@ -574,7 +574,7 @@ LeanTime (tracking)
 1. **Multi-Model Coordination**: Zen MCP enables sophisticated AI orchestration beyond single-model solutions
 2. **Context Preservation**: ConPort middleware provides seamless ADHD accommodation across all services
 3. **Vector-Based Learning**: Claude Context enables semantic pattern recognition for continuous improvement
-4. **Template + AI Synthesis**: Integration Bridge combines structured templates with dynamic AI generation
+4. **Template + AI Synthesis**: DopeconBridge combines structured templates with dynamic AI generation
 
 ### **Strategic Insights**
 
@@ -592,8 +592,8 @@ LeanTime (tracking)
 ### **Phase 1 Success Criteria**
 - ✅ LeanTime web interface accessible in browser
 - ✅ API authentication working with existing token
-- ✅ Integration Bridge ↔ LeanTime bidirectional sync working
-- ✅ Basic ticket creation via Integration Bridge API
+- ✅ DopeconBridge ↔ LeanTime bidirectional sync working
+- ✅ Basic ticket creation via DopeconBridge API
 
 ### **Phase 2 Success Criteria**
 - ✅ Documents (PRDs, designs) automatically generate task hierarchies

@@ -6,7 +6,7 @@
 
 **Dope-Context Search**: ~2s (target: < 3s) ✅
 **ADHD Engine Imports**: ~50ms (target: < 100ms) ✅
-**Integration Bridge**: Endpoints < 10ms (estimated from design) ✅
+**DopeconBridge**: Endpoints < 10ms (estimated from design) ✅
 **MCP Tools**: All operational, no timeouts ✅
 
 ## Assessment

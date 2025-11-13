@@ -1,0 +1,126 @@
+#!/bin/bash
+# Day 1 Quick Start - Production Readiness
+# Complete: orchestrator → activity-capture → serena (start)
+
+set -e
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_ROOT"
+
+echo "=========================================="
+echo "Day 1 Quick Start - Production Readiness"
+echo "=========================================="
+echo ""
+
+# Colors
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+echo -e "${BLUE}📋 Today's Goals:${NC}"
+echo "  1. orchestrator integration (90min)"
+echo "  2. activity-capture integration (90min)"
+echo "  3. serena MCP tools (4h)"
+echo ""
+echo "  Target: 15+ new tests passing"
+echo ""
+echo "=========================================="
+echo ""
+
+# Task 1: orchestrator
+echo -e "${YELLOW}Task 1: Orchestrator Integration${NC}"
+echo ""
+echo "Files to modify:"
+echo "  - services/orchestrator/src/router.py"
+echo "  - services/orchestrator/tui/main.py (optional)"
+echo ""
+echo "Changes needed:"
+echo "  1. Import workspace_support utilities"
+echo "  2. Add workspace_context to route() method"
+echo "  3. Parse workspace from request"
+echo ""
+echo "Example:"
+echo "  from workspace_support import add_workspace_context"
+echo "  request = add_workspace_context(request)"
+echo ""
+echo "Test with:"
+echo "  pytest services/orchestrator/tests/test_workspace_support.py -v"
+echo ""
+read -p "Press Enter when Task 1 complete..."
+echo ""
+
+# Task 2: activity-capture
+echo -e "${YELLOW}Task 2: Activity-Capture Integration${NC}"
+echo ""
+echo "Files to modify:"
+echo "  - services/activity-capture/activity_tracker.py"
+echo "  - services/activity-capture/event_subscriber.py (optional)"
+echo ""
+echo "Changes needed:"
+echo "  1. Import workspace enrichment"
+echo "  2. Call enrich_event_with_workspace() on events"
+echo "  3. Ensure workspace metadata preserved"
+echo ""
+echo "Example:"
+echo "  from workspace_support import enrich_event_with_workspace"
+echo "  event = enrich_event_with_workspace(event)"
+echo ""
+echo "Test with:"
+echo "  pytest services/activity-capture/tests/ -v"
+echo ""
+read -p "Press Enter when Task 2 complete..."
+echo ""
+
+# Task 3: serena
+echo -e "${YELLOW}Task 3: Serena MCP Integration (Start)${NC}"
+echo ""
+echo "Files to modify:"
+echo "  - services/serena/v2/mcp_server.py (main file)"
+echo ""
+echo "Functions to update (10 total):"
+echo "  1. find_symbol_tool (line ~1499)"
+echo "  2. get_context_tool (line ~1814)"
+echo "  3. find_references_tool (line ~1913)"
+echo "  4. analyze_complexity_tool (line ~2126)"
+echo "  5. get_reading_order_tool (line ~2411)"
+echo "  6. find_relationships_tool (line ~2493)"
+echo "  7. get_navigation_patterns_tool (line ~2586)"
+echo "  8. find_similar_code_tool (line ~4493)"
+echo "  9. find_test_file_tool (line ~4654)"
+echo "  10. get_unified_complexity_tool (line ~4753)"
+echo ""
+echo "Pattern for each function:"
+echo "  1. Add workspace_path & workspace_paths params"
+echo "  2. Import SerenaMultiWorkspace wrapper"
+echo "  3. Delegate to wrapper if multi-workspace"
+echo "  4. Fallback to self.workspace for single"
+echo ""
+echo "See COMPLETION_CHECKLIST.md for detailed example"
+echo ""
+echo "Test with:"
+echo "  pytest services/serena/tests/test_multi_workspace.py -v"
+echo ""
+read -p "Press Enter when ready to start..."
+echo ""
+
+# Run baseline tests
+echo -e "${BLUE}Running baseline tests...${NC}"
+echo ""
+./run_all_multi_workspace_tests.sh
+
+echo ""
+echo "=========================================="
+echo -e "${GREEN}Day 1 Setup Complete!${NC}"
+echo "=========================================="
+echo ""
+echo "Next steps:"
+echo "  1. Start with orchestrator (easiest)"
+echo "  2. Move to activity-capture"
+echo "  3. Begin serena integration (largest task)"
+echo ""
+echo "Track progress with:"
+echo "  ./scripts/production_tracker.sh 1"
+echo ""
+echo "Good luck! 🚀"
+echo ""

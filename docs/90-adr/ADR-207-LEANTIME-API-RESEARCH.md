@@ -232,7 +232,7 @@ await self._publish_to_conport(task)
 
 #### 2. Event-Driven Architecture
 **Current**: Direct method calls
-**Needed**: Integration Bridge pub/sub
+**Needed**: DopeconBridge pub/sub
 
 **Changes**:
 ```python
@@ -240,7 +240,7 @@ await self._publish_to_conport(task)
 await self._process_leantime_task_update(leantime_task)
 
 # NEW:
-await self.integration_bridge.publish_event({
+await self.dopecon_bridge.publish_event({
     "type": "leantime.task.updated",
     "source": "task-orchestrator",
     "data": leantime_task
@@ -254,7 +254,7 @@ await self.integration_bridge.publish_event({
 **New Flow**:
 ```
 ConPort task created
-  → Integration Bridge event
+  → DopeconBridge event
     → Task-Orchestrator receives
       → Sync to Leantime
         → Leantime task created
@@ -268,7 +268,7 @@ ConPort task created
 **Changes**:
 - Remove `self.orchestrated_tasks` storage
 - Query ConPort for task data
-- Store analysis results in ConPort (via Integration Bridge)
+- Store analysis results in ConPort (via DopeconBridge)
 
 ---
 
@@ -286,12 +286,12 @@ ConPort task created
 **Code Changes**:
 ```python
 async def _subscribe_to_conport_events(self):
-    """Subscribe to ConPort task events via Integration Bridge."""
-    await self.integration_bridge.subscribe(
+    """Subscribe to ConPort task events via DopeconBridge."""
+    await self.dopecon_bridge.subscribe(
         event_type="conport.progress.created",
         handler=self._handle_conport_task_created
     )
-    await self.integration_bridge.subscribe(
+    await self.dopecon_bridge.subscribe(
         event_type="conport.progress.updated",
         handler=self._handle_conport_task_updated
     )
@@ -337,7 +337,7 @@ class LeantimeSyncAdapter:
 **Goal**: Flow Leantime updates through ConPort
 
 **Tasks**:
-1. Modify poller to publish to Integration Bridge (not direct storage)
+1. Modify poller to publish to DopeconBridge (not direct storage)
 2. Create ConPort update handler
 3. Validate authority boundaries (Leantime → ConPort only, not direct)
 
@@ -349,8 +349,8 @@ async def _process_leantime_task_update(self, leantime_task: Dict) -> None:
     # Map Leantime schema → ConPort schema
     conport_update = self._map_leantime_to_conport(leantime_task)
 
-    # Publish to Integration Bridge (ConPort will handle storage)
-    await self.integration_bridge.publish_event({
+    # Publish to DopeconBridge (ConPort will handle storage)
+    await self.dopecon_bridge.publish_event({
         "type": "leantime.task.updated",
         "source": "task-orchestrator",
         "target": "conport",

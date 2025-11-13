@@ -27,8 +27,8 @@ else
   EXIT_CODE=1
 fi
 
-# 2. Check Integration Bridge API
-echo -n "[2/5] Integration Bridge API: "
+# 2. Check DopeconBridge API
+echo -n "[2/5] DopeconBridge API: "
 HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3016/kg/health 2>/dev/null || echo "000")
 if [ "$HTTP_STATUS" = "200" ]; then
   echo "✅ Healthy (HTTP $HTTP_STATUS)"

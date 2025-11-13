@@ -147,7 +147,7 @@ Change: +45 percentage points! 🚀
 
 **3 Projects Left** (planned: ~30 days, likely: ~6-8 days at current pace):
 
-- **IP-002**: Integration Bridge (9 days planned → 2-3 days likely)
+- **IP-002**: DopeconBridge (9 days planned → 2-3 days likely)
 - **IP-003**: Infrastructure (6-9 days planned → 1-2 days likely, may be mostly done)
 - **IP-005**: Orchestrator TUI (14 days planned → 3-4 days likely)
 

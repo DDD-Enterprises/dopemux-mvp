@@ -190,7 +190,7 @@ class SerenaSchemaManager:
                 estimated_duration_ms=5000
             ),
             MigrationStep(
-                step_id="create_integration_bridge",
+                step_id="create_dopecon_bridge",
                 description="Create integration bridge for Layer 1 compatibility",
                 sql_commands=[
                     """

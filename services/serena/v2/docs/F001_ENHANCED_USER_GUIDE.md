@@ -141,7 +141,7 @@ New untracked work detected:
 📐 DESIGN-FIRST RECOMMENDATION
 ─────────────────────────────────────────────
 
-Work detected: 'Integration Bridge Refactor'
+Work detected: 'DopeconBridge Refactor'
 Confidence: 65% this needs design
 
 Why formal design helps:

@@ -51,6 +51,7 @@ class AutonomousController:
         index_callback: Callable[[Path, Optional[Set[str]]], asyncio.Future],
         sync_callback: Callable[[Path], asyncio.Future],
         config: Optional[AutonomousConfig] = None,
+        registry_key: Optional[str] = None,
     ):
         """
         Initialize autonomous controller.
@@ -60,11 +61,13 @@ class AutonomousController:
             index_callback: Async function to trigger indexing
             sync_callback: Async function to trigger sync
             config: Configuration options
+            registry_key: Optional custom key for registry (allows multiple controllers per workspace)
         """
         self.workspace_path = workspace_path.resolve()
         self.index_callback = index_callback
         self.sync_callback = sync_callback
         self.config = config or AutonomousConfig()
+        self.registry_key = registry_key or str(self.workspace_path)
 
         # Components
         self.watchdog: Optional[WatchdogMonitor] = None
@@ -176,8 +179,7 @@ class AutonomousController:
         self._running = True
 
         # Register in global registry
-        workspace_key = str(self.workspace_path)
-        AutonomousController._active_controllers[workspace_key] = self
+        AutonomousController._active_controllers[self.registry_key] = self
 
         logger.info(
             f"Autonomous indexing active for {self.workspace_path.name}"
@@ -198,9 +200,8 @@ class AutonomousController:
         self._running = False
 
         # Unregister from global registry
-        workspace_key = str(self.workspace_path)
-        if workspace_key in AutonomousController._active_controllers:
-            del AutonomousController._active_controllers[workspace_key]
+        if self.registry_key in AutonomousController._active_controllers:
+            del AutonomousController._active_controllers[self.registry_key]
 
         logger.info("Autonomous indexing stopped")
 

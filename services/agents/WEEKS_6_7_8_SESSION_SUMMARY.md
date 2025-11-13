@@ -25,7 +25,7 @@
 **Objective**: Bidirectional PM ↔ Cognitive coordination
 
 **What Was Built**:
-1. Integration Bridge REST endpoints (+217 lines)
+1. DopeconBridge REST endpoints (+217 lines)
    - POST /route/pm - Cognitive → PM requests
    - POST /route/cognitive - PM → Cognitive requests
    - REST → EventBus translation layer
@@ -121,7 +121,7 @@
 - 3 support files (test_route_endpoints.py, session summary, etc.)
 
 **Files Modified**: 2 files
-- services/mcp-integration-bridge/main.py (+217 lines)
+- services/mcp-dopecon-bridge/main.py (+217 lines)
 - services/agents/two_plane_orchestrator.py (+180 lines)
 
 **Total Lines**: ~2,150 lines
@@ -329,7 +329,7 @@ Session decisions:
 ## Code Reuse Validation
 
 **Predicted** (from Week 1 analysis):
-- TwoPlaneOrchestrator: 60% Integration Bridge → **Actual: 65%**
+- TwoPlaneOrchestrator: 60% DopeconBridge → **Actual: 65%**
 - DopemuxEnforcer: 70% Serena complexity → **Actual: 60%** (used heuristics for MVP)
 - ToolOrchestrator: 80% Zen listmodels → **Actual: 75%**
 
