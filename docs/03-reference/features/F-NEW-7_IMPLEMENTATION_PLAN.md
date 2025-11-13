@@ -45,7 +45,7 @@ next_review: '2026-02-08'
 - [ ] Add user authentication middleware
 - [ ] Update HTTP endpoints with user context
 - [ ] Add RBAC checks (owner/collaborator/viewer)
-- [ ] Update Integration Bridge for user context
+- [ ] Update DopeconBridge for user context
 
 **Day 8-9 (3 hours)**: Integration Testing
 - [ ] Multi-user scenarios

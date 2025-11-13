@@ -283,7 +283,7 @@ POST /cache/flush        # Clear all cache
 **Services**:
 - PostgreSQL AGE (port 5455) → ConPort knowledge graph
 - Redis (port 6379) → Caching + event bus
-- Integration Bridge (port 3016) → Cross-plane coordination
+- DopeconBridge (port 3016) → Cross-plane coordination
 - Task-Orchestrator (port 3017) → Component 6 intelligence
 - Prometheus (optional, port 9090) → Metrics collection
 - Grafana (optional, port 3000) → Visualization
@@ -294,7 +294,7 @@ POST /cache/flush        # Clear all cache
 docker-compose up -d postgres redis
 
 # Start coordination layer
-docker-compose up -d integration-bridge
+docker-compose up -d dopecon-bridge
 
 # Start ADHD intelligence
 docker-compose up -d task-orchestrator
@@ -306,7 +306,7 @@ docker-compose --profile monitoring up -d prometheus grafana
 **Health Checks**:
 ```bash
 # Check service health
-curl http://localhost:3016/health  # Integration Bridge
+curl http://localhost:3016/health  # DopeconBridge
 curl http://localhost:3017/health  # Task-Orchestrator
 
 # Check cache performance

@@ -16,16 +16,16 @@ next_review: '2026-02-08'
 
 ## Executive Summary
 
-Two-plane architecture is **well-designed** (9/10) but **partially implemented** (5/10). Integration Bridge exists with authority enforcement, but services are **not wired to use it**. Services operate independently with direct database access patterns bypassing the coordination layer.
+Two-plane architecture is **well-designed** (9/10) but **partially implemented** (5/10). DopeconBridge exists with authority enforcement, but services are **not wired to use it**. Services operate independently with direct database access patterns bypassing the coordination layer.
 
 ### Architecture Quality Score: 6/10 ⚠️
 - **Design**: 9/10 (✅ Clear separation, authority matrix)
 - **Implementation**: 5/10 (⚠️ Partial - cognitive plane works, coordination disconnected)
-- **Integration**: 3/10 (❌ Services bypass Integration Bridge)
+- **Integration**: 3/10 (❌ Services bypass DopeconBridge)
 - **Enforcement**: 4/10 (⚠️ Authority code exists but not used)
 
 ### Recommendation: ⚠️ **WEEK 7 INTEGRATION REQUIRED**
-- Wire services to Integration Bridge (8-12 hours)
+- Wire services to DopeconBridge (8-12 hours)
 - Remove direct database access patterns
 - Enforce authority boundaries
 - Validate cross-plane coordination
@@ -44,7 +44,7 @@ Two-plane architecture is **well-designed** (9/10) but **partially implemented**
 - **Authorities**: Decisions, code navigation, memory, context, semantic search
 - **Services**: Serena LSP, ConPort, Dope-Context
 
-**Integration Bridge** (Coordination):
+**DopeconBridge** (Coordination):
 - **Port**: PORT_BASE+16 (3016 default)
 - **Purpose**: Cross-plane communication, authority enforcement, event routing
 - **Rule**: "No direct cross-plane communication allowed"
@@ -59,7 +59,7 @@ Two-plane architecture is **well-designed** (9/10) but **partially implemented**
 - Decision logging ✅
 - Knowledge graph ✅
 - Context preservation ✅
-- **Issue**: Orchestrator has Integration Bridge TODOs
+- **Issue**: Orchestrator has DopeconBridge TODOs
 
 **Serena v2** (8.5/10):
 - LSP code navigation ✅
@@ -75,9 +75,9 @@ Two-plane architecture is **well-designed** (9/10) but **partially implemented**
 
 ---
 
-### ⚠️ Integration Bridge: Exists But Disconnected
+### ⚠️ DopeconBridge: Exists But Disconnected
 
-**Integration Bridge Service** (`services/mcp-integration-bridge/`):
+**DopeconBridge Service** (`services/mcp-dopecon-bridge/`):
 
 **Files**:
 - main.py (FastAPI application) ✅
@@ -103,7 +103,7 @@ class KGAuthorityMiddleware:
     }
 ```
 
-✅ **Integration Bridge is implemented**
+✅ **DopeconBridge is implemented**
 
 **Problem**: **Services don't use it!**
 
@@ -116,7 +116,7 @@ class KGAuthorityMiddleware:
 # Line 127
 if impl_decisions:
     print(f"   → Would publish decision.requires_implementation event")
-    # TODO: Publish to Integration Bridge event bus  # ❌ Not wired
+    # TODO: Publish to DopeconBridge event bus  # ❌ Not wired
 
 # Line 211
 # TODO: Update Serena sidebar  # ❌ Not wired
@@ -125,7 +125,7 @@ if impl_decisions:
 # TODO: Cache for Leantime  # ❌ Not wired
 ```
 
-**All Integration Bridge calls are TODOs!**
+**All DopeconBridge calls are TODOs!**
 
 **Evidence from ADHD Engine**:
 ```python
@@ -135,10 +135,10 @@ conn.execute(
     "INSERT INTO custom_data (category, key, value) VALUES (?, ?, ?)",
     (category, key, json_value)
 )
-# Should use Integration Bridge HTTP API instead!
+# Should use DopeconBridge HTTP API instead!
 ```
 
-**Status**: ❌ **Services bypass Integration Bridge**
+**Status**: ❌ **Services bypass DopeconBridge**
 
 ---
 
@@ -148,7 +148,7 @@ conn.execute(
 
 **What Should Happen**:
 ```
-ADHD Engine → Integration Bridge → ConPort HTTP API → ConPort Database
+ADHD Engine → DopeconBridge → ConPort HTTP API → ConPort Database
 (respects authority boundaries)
 ```
 
@@ -172,7 +172,7 @@ ADHD Engine → ConPort SQLite Database (direct write)
 
 **What Should Happen**:
 ```
-ConPort Orchestrator → Integration Bridge → Event Bus → Services
+ConPort Orchestrator → DopeconBridge → Event Bus → Services
 (proper event routing)
 ```
 
@@ -185,7 +185,7 @@ ConPort Orchestrator → (TODOs, events not published)
 **Impact**:
 - Event-driven automation non-functional
 - Cross-plane coordination broken
-- Integration Bridge unused
+- DopeconBridge unused
 
 **Severity**: MEDIUM (automation layer incomplete)
 
@@ -206,14 +206,14 @@ ConPort Orchestrator → (TODOs, events not published)
 
 ### Week 7 Integration Plan (8-12 hours)
 
-**1. Wire ConPort to Integration Bridge** (3 hours):
+**1. Wire ConPort to DopeconBridge** (3 hours):
 - Replace orchestrator TODOs with actual event publishing
-- Implement Integration Bridge client
+- Implement DopeconBridge client
 - Add error handling and retries
 
 **2. Wire ADHD Engine to ConPort API** (3 hours):
 - Replace direct SQLite access
-- Use Integration Bridge HTTP endpoints
+- Use DopeconBridge HTTP endpoints
 - Respect service boundaries
 
 **3. Authority Enforcement Validation** (2 hours):
@@ -243,7 +243,7 @@ ConPort Orchestrator → (TODOs, events not published)
 ### Week 7 (Integration Work)
 
 3. **Complete Service Integration** (12 hours)
-   - Wire all services to Integration Bridge
+   - Wire all services to DopeconBridge
    - Remove direct database access
    - Enforce authority boundaries
    - Validate event routing
@@ -259,13 +259,13 @@ ConPort Orchestrator → (TODOs, events not published)
 
 ## Architecture Compliance Matrix
 
-| Service | Plane | Authority Respected | Integration Bridge | Status |
+| Service | Plane | Authority Respected | DopeconBridge | Status |
 |---------|-------|--------------------|--------------------|--------|
 | ConPort | Cognitive | ✅ Yes (decisions) | ❌ Not wired | ⚠️ Partial |
 | Serena v2 | Cognitive | ✅ Yes (navigation) | Unknown | ✅ Independent |
 | ADHD Engine | Cognitive | ❌ **Violates** | ❌ Bypasses | ❌ Non-compliant |
 | Dope-Context | Cognitive | ✅ Yes (search) | Unknown | ✅ Independent |
-| Integration Bridge | Coordination | N/A | ✅ Implemented | ⚠️ Unused |
+| DopeconBridge | Coordination | N/A | ✅ Implemented | ⚠️ Unused |
 
 ---
 
@@ -274,19 +274,19 @@ ConPort Orchestrator → (TODOs, events not published)
 ```
 Decision #[NEW]: Two-Plane Architecture Partially Implemented
 
-Summary: Architecture is well-designed but coordination layer (Integration Bridge)
+Summary: Architecture is well-designed but coordination layer (DopeconBridge)
          is disconnected from services. Services operate independently with
          some authority boundary violations (ADHD Engine direct DB writes).
 
 Rationale:
 - Design quality: Excellent (9/10) - clear separation, authority matrix
 - Implementation: Partial (5/10) - cognitive plane works, coordination disconnected
-- Integration Bridge: Exists (0 TODOs) but services don't use it
+- DopeconBridge: Exists (0 TODOs) but services don't use it
 - Violations: ADHD Engine direct DB writes, ConPort orchestrator not wired
 - Impact: Services work independently, cross-plane coordination non-functional
 
 Implementation:
-- Week 7 (12h): Wire services to Integration Bridge
+- Week 7 (12h): Wire services to DopeconBridge
 - Remove direct database access patterns
 - Enforce authority boundaries
 - Validate event routing and cross-plane coordination
@@ -301,7 +301,7 @@ PRIORITY: Week 7 integration work required
 
 ## Conclusion
 
-Two-plane architecture demonstrates **excellent design thinking** but **incomplete execution**. Integration Bridge exists with proper authority enforcement, but services bypass it through direct database access and missing event wiring.
+Two-plane architecture demonstrates **excellent design thinking** but **incomplete execution**. DopeconBridge exists with proper authority enforcement, but services bypass it through direct database access and missing event wiring.
 
 **For Production**: Services can operate independently (they work)
 **For Architecture Maturity**: Integration work needed (Week 7, 12 hours)

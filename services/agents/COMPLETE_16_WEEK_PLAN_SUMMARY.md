@@ -73,7 +73,7 @@ TOTAL: 16/16 personas, ~2,500 lines, ~81 KB
 ```
 [████████████████████████████████████████] 100%
 
-✅ Integration Bridge    REST → EventBus wired
+✅ DopeconBridge    REST → EventBus wired
 ✅ Real Service Calls    Task Orchestrator integrated
 ✅ Mock Fallback         Graceful degradation
 ✅ Cross-Plane Routing   PM ↔ Cognitive operational
@@ -97,7 +97,7 @@ TOTAL: 16/16 personas, ~2,500 lines, ~81 KB
 - Dependencies identified
 
 **Implementation**:
-- Integration Bridge REST endpoints (+217 lines)
+- DopeconBridge REST endpoints (+217 lines)
 - TwoPlaneOrchestrator enhancements (+180 lines)
 - Test suite (320 lines) + test server (180 lines)
 - **Result**: 8/8 tests passing
@@ -169,7 +169,7 @@ TOTAL: 16/16 personas, ~2,500 lines, ~81 KB
 
 ### Hours 8.25-8.75: Weeks 11-12 (Integration Testing)
 **Implementation**:
-- Real service wiring (Integration Bridge +60 lines)
+- Real service wiring (DopeconBridge +60 lines)
 - Try-real-fallback-mock pattern
 - Graceful degradation
 - **Result**: 49/49 tests passing with OR without infrastructure
@@ -664,7 +664,7 @@ REMAINING: Weeks 15-16 (SuperClaude integration)
 docker-compose up -d
 
 # All services operational:
-# - Integration Bridge (3016)
+# - DopeconBridge (3016)
 # - Task Orchestrator (3017)
 # - Leantime Bridge (3015)
 # - Redis, PostgreSQL, Leantime
@@ -674,8 +674,8 @@ docker-compose up -d
 
 **Without Infrastructure** (Development):
 ```bash
-# Just start Integration Bridge
-python services/mcp-integration-bridge/main.py
+# Just start DopeconBridge
+python services/mcp-dopecon-bridge/main.py
 
 # All 49 tests pass with mocks
 # Full agent logic validated
