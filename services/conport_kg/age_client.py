@@ -87,13 +87,19 @@ class AGEClient:
             self.pool = None
             raise
 
-    def execute_cypher(self, cypher_query: str, params: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    def execute_cypher(
+        self, 
+        cypher_query: str, 
+        params: Optional[Dict[str, Any]] = None,
+        workspace_path: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
         """
         Execute Cypher query via AGE and return parsed results
 
         Args:
             cypher_query: Cypher query string (embedded in SELECT FROM cypher())
             params: Optional query parameters (for parameterized queries)
+            workspace_path: Optional workspace path for scoped queries
 
         Returns:
             List of dictionaries with parsed results
@@ -102,13 +108,28 @@ class AGEClient:
         if self.pool is None:
             raise Exception("Connection pool not initialized - use docker exec fallback")
 
+        # Multi-workspace mode: use workspace-specific graph
+        graph_name_to_use = self.graph_name
+        if workspace_path:
+            from pathlib import Path
+            from workspace_support import get_workspace_graph_name
+            
+            workspace = Path(workspace_path)
+            graph_name_to_use = get_workspace_graph_name(workspace)
+            
+            # Add workspace params
+            if params:
+                params = {**params, "workspace_graph": graph_name_to_use}
+            else:
+                params = {"workspace_graph": graph_name_to_use}
+
         conn = self.pool.getconn()
         try:
             cursor = conn.cursor()
 
             # Ensure AGE is loaded and search path is set
             cursor.execute("LOAD 'age';")
-            cursor.execute(f"SET search_path = ag_catalog, {self.graph_name}, public;")
+            cursor.execute(f"SET search_path = ag_catalog, {graph_name_to_use}, public;")
 
             # Execute query
             cursor.execute(cypher_query, params or {})
