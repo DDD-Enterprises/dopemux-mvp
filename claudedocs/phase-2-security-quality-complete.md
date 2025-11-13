@@ -10,10 +10,10 @@
 
 ## Executive Summary
 
-Found **10 HIGH-severity issues** requiring immediate fixes and uncovered the **root cause** of Integration Bridge disconnection: endpoints are 80% complete stubs, making direct database access simpler for services.
+Found **10 HIGH-severity issues** requiring immediate fixes and uncovered the **root cause** of DopeconBridge disconnection: endpoints are 80% complete stubs, making direct database access simpler for services.
 
 **Security**: 6 HIGH-risk issues (CORS, no auth, hardcoded creds)
-**Architecture**: Integration Bridge incomplete (custom_data endpoints are stubs)
+**Architecture**: DopeconBridge incomplete (custom_data endpoints are stubs)
 **Quality**: Production-ready patterns in reviewed services
 
 ---
@@ -28,7 +28,7 @@ Found **10 HIGH-severity issues** requiring immediate fixes and uncovered the **
 services/adhd_engine/main.py:96
 services/dopemux-gpt-researcher/backend/main.py:113
 services/dopemux-gpt-researcher/backend/api/main.py:236
-services/mcp-integration-bridge/main.py:1166
+services/mcp-dopecon-bridge/main.py:1166
 ```
 **Impact**: Any website can make requests (CSRF vulnerability)
 **Fix**: Environment-based whitelist (10 min per service)
@@ -61,8 +61,8 @@ cursor.execute(f"SET search_path = ag_catalog, {graph_name}, public;")
 services/adhd_engine/conport_client.py:296-302
 conn.execute("INSERT OR REPLACE INTO custom_data ...")  # Direct SQLite write
 ```
-**Impact**: Bypasses Integration Bridge, two services write same DB
-**Fix**: Migrate to Integration Bridge HTTP API (Week 7)
+**Impact**: Bypasses DopeconBridge, two services write same DB
+**Fix**: Migrate to DopeconBridge HTTP API (Week 7)
 
 ### 🟢 POSITIVE Findings
 
@@ -97,7 +97,7 @@ conn.execute("INSERT OR REPLACE INTO custom_data ...")  # Direct SQLite write
 
 ---
 
-### Service 2: Integration Bridge (Validated by gpt-5-codex)
+### Service 2: DopeconBridge (Validated by gpt-5-codex)
 
 **ROOT CAUSE DISCOVERED**: Why services bypass the bridge
 
@@ -168,7 +168,7 @@ Scanned remaining 10 services for CORS/TODO/FIXME patterns:
 **Bridge Integration TODOs Found**:
 ```bash
 # Services that WANT to use bridge but can't:
-services/conport_kg/orchestrator.py - Multiple "TODO: Integration Bridge" comments
+services/conport_kg/orchestrator.py - Multiple "TODO: DopeconBridge" comments
 ```
 
 ---
@@ -196,7 +196,7 @@ services/conport_kg/orchestrator.py - Multiple "TODO: Integration Bridge" commen
 - Clean service boundaries (in design)
 
 **Incomplete (3/10):**
-- Integration Bridge 80% done (stubs!)
+- DopeconBridge 80% done (stubs!)
 - Services bypass coordination
 - Direct database access
 - Authority not enforced
@@ -236,7 +236,7 @@ services/conport_kg/orchestrator.py - Multiple "TODO: Integration Bridge" commen
 
 ### Week 7 (Integration Work) - 12 hours
 
-4. **Complete Integration Bridge** (4-6h)
+4. **Complete DopeconBridge** (4-6h)
    - Implement MCP→ConPort integration
    - Wire custom_data endpoints
    - Test end-to-end
@@ -285,7 +285,7 @@ services/conport_kg/orchestrator.py - Multiple "TODO: Integration Bridge" commen
 ## Next: Phase 3 - Targeted Manual Review (15h planned)
 
 Based on Phase 2 findings, Phase 3 should focus on:
-1. Integration Bridge completion verification
+1. DopeconBridge completion verification
 2. ADHD Engine background monitors (claim not verified)
 3. ConPort orchestrator bridge TODOs
 4. GPT-Researcher (67 TODOs found)
@@ -293,5 +293,5 @@ Based on Phase 2 findings, Phase 3 should focus on:
 ---
 
 **PHASE 2 COMPLETE** ✅
-**Critical Discoveries**: Integration Bridge incomplete (explains disconnection), 6 HIGH security issues
+**Critical Discoveries**: DopeconBridge incomplete (explains disconnection), 6 HIGH security issues
 **Recommendation**: Fix CORS + credentials immediately (2h), complete bridge in Week 7 (12h)

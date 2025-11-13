@@ -66,7 +66,7 @@
 
 ---
 
-## 🌉 Integration Bridge: REBUILDING
+## 🌉 DopeconBridge: REBUILDING
 
 ### Current Status
 - **Container:** Stopped and removed (was in restart loop)
@@ -75,7 +75,7 @@
 - **Fix Applied:** Changed `from mcp.client import Client` → `from mcp.client.session import ClientSession as Client`
 
 ### Dependencies
-**Integration Bridge connects to:**
+**DopeconBridge connects to:**
 1. ✅ Serena (port 3006) - RUNNING
 2. 🔄 Task-Orchestrator (port 3014) - BUILDING
 3. 🔄 Leantime-Bridge (port 3015) - BUILDING
@@ -112,7 +112,7 @@
 4. TaskMaster (3005) ❌ DISABLED
 
 ### Coordination Layer (1 Rebuilding)
-1. Integration Bridge (3016) 🔄 REBUILDING
+1. DopeconBridge (3016) 🔄 REBUILDING
 
 ---
 
@@ -121,7 +121,7 @@
 **Currently Building:**
 1. Task-Orchestrator (docker-compose task-orchestrator leantime-bridge)
 2. Leantime-Bridge (docker-compose task-orchestrator leantime-bridge)
-3. Integration Bridge (docker-compose integration-bridge --build)
+3. DopeconBridge (docker-compose dopecon-bridge --build)
 4. gptr-mcp (docker-compose mcp-gptr-mcp) - Optional
 
 **Check build status:**
@@ -129,8 +129,8 @@
 # Task-Orchestrator & Leantime-Bridge
 docker ps -a | grep -E "task-orchestrator|leantime-bridge"
 
-# Integration Bridge
-docker ps -a | grep integration-bridge
+# DopeconBridge
+docker ps -a | grep dopecon-bridge
 
 # gptr-mcp
 docker ps -a | grep gptr-mcp
@@ -140,7 +140,7 @@ docker ps -a | grep gptr-mcp
 ```bash
 docker logs mcp-task-orchestrator --tail 50
 docker logs mcp-leantime-bridge --tail 50
-docker logs dopemux-integration-bridge --tail 50
+docker logs dopemux-dopecon-bridge --tail 50
 ```
 
 ---
@@ -155,13 +155,13 @@ docker ps | grep -E "task-orchestrator|leantime-bridge"
 # Test connectivity
 curl http://localhost:3014/health  # Task-Orchestrator
 curl http://localhost:3015/health  # Leantime-Bridge
-curl http://localhost:3016/health  # Integration Bridge
+curl http://localhost:3016/health  # DopeconBridge
 ```
 
-### 2. Verify Integration Bridge Connections (5 min)
+### 2. Verify DopeconBridge Connections (5 min)
 ```bash
-# Check Integration Bridge logs
-docker logs dopemux-integration-bridge --tail 100
+# Check DopeconBridge logs
+docker logs dopemux-dopecon-bridge --tail 100
 
 # Should see connections to:
 # - Serena (3006) ✅
@@ -173,10 +173,10 @@ docker logs dopemux-integration-bridge --tail 100
 ### 3. Test Two-Plane Architecture (10 min)
 ```bash
 # Test event routing
-# Create task in Leantime → Should route through Integration Bridge → ConPort logs it
+# Create task in Leantime → Should route through DopeconBridge → ConPort logs it
 
 # Test code change routing
-# Serena detects change → Integration Bridge → Leantime updates task status
+# Serena detects change → DopeconBridge → Leantime updates task status
 ```
 
 ### 4. Configure All Services in MetaMCP (25 min)
@@ -192,7 +192,7 @@ Follow METAMCP_COMPLETE_SETUP.md with all 7 MCP servers
 - **Workaround:** Use Task-Orchestrator directly or manual task creation in Leantime
 - **Future:** Fix dependency issues and enable
 
-### Integration Bridge Requires 4 Services
+### DopeconBridge Requires 4 Services
 - **Current:** Only Serena available (1/4)
 - **After builds:** Serena + Task-Orchestrator + Leantime-Bridge available (3/4)
 - **Missing:** TaskMaster (disabled)
@@ -218,7 +218,7 @@ Follow METAMCP_COMPLETE_SETUP.md with all 7 MCP servers
 - Leantime-Bridge: 🔄 Building
 - TaskMaster: ❌ Disabled
 
-**Phase 4: Integration Bridge** 🔄 IN PROGRESS
+**Phase 4: DopeconBridge** 🔄 IN PROGRESS
 - MCP SDK fix: ✅ Applied
 - Rebuild: 🔄 In progress
 - Testing: ⏳ Pending builds
@@ -236,7 +236,7 @@ Follow METAMCP_COMPLETE_SETUP.md with all 7 MCP servers
 **Coming Soon (builds completing):**
 5. **Task-Orchestrator** for dependency analysis
 6. **Leantime-Bridge** for PM sync
-7. **Integration Bridge** for cross-plane coordination
+7. **DopeconBridge** for cross-plane coordination
 
 ---
 

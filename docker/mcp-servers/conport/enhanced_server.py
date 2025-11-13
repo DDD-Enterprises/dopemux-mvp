@@ -33,8 +33,18 @@ except ImportError:
 # Worktree multi-instance support
 from instance_detector import SimpleInstanceDetector
 
-# Integration Bridge event publishing
-from integration_bridge_client import IntegrationBridgeClient
+# DopeconBridge event publishing
+from dopecon_bridge_client import DopeconBridgeClient
+
+# Monitoring
+sys.path.insert(0, '/app/shared')
+try:
+    from monitoring.base import DopemuxMonitoring
+    from prometheus_client import make_asgi_app, generate_latest
+    MONITORING_AVAILABLE = True
+except ImportError:
+    MONITORING_AVAILABLE = False
+    logger.warning("⚠️ Monitoring not available")
 
 # Database and caching dependencies
 try:
@@ -70,8 +80,19 @@ class EnhancedConPortServer:
         # Database connections
         self.db_pool = None
         self.redis = None
-        self.integration_bridge = None  # EventBus client for cross-service coordination
+        self.dopecon_bridge = None  # EventBus client for cross-service coordination
         self.unified_query_api = None  # F-NEW-7 Phase 2: Cross-workspace queries
+        
+        # Monitoring
+        self.monitoring = None
+        if MONITORING_AVAILABLE:
+            self.monitoring = DopemuxMonitoring(
+                service_name="conport",
+                workspace_id=os.getenv("WORKSPACE_ID"),
+                instance_id=os.getenv("INSTANCE_ID"),
+                version=os.getenv("SERVICE_VERSION", "1.0.0")
+            )
+            logger.info("✅ Monitoring initialized")
 
         # Configuration
         self.postgres_url = os.getenv(
@@ -110,6 +131,10 @@ class EnhancedConPortServer:
         self.auto_save_task = None
         self.auto_fork_progress = os.getenv('DOPEMUX_AUTO_FORK_PROGRESS', '1') == '1'
 
+        # Setup monitoring middleware
+        if MONITORING_AVAILABLE and self.monitoring:
+            self.app.middlewares.append(self.monitoring_middleware)
+        
         # Setup routes
         self.setup_routes()
 
@@ -149,9 +174,9 @@ class EnhancedConPortServer:
             await self.redis.ping()
             logger.info("✅ Redis connection established")
 
-            # Integration Bridge client for event publishing
-            self.integration_bridge = IntegrationBridgeClient()
-            await self.integration_bridge.initialize()
+            # DopeconBridge client for event publishing
+            self.dopecon_bridge = DopeconBridgeClient()
+            await self.dopecon_bridge.initialize()
 
             # F-NEW-7 Phase 2: Initialize unified query API
             from unified_queries import UnifiedQueryAPI
@@ -174,8 +199,8 @@ class EnhancedConPortServer:
         if self.auto_save_task:
             self.auto_save_task.cancel()
 
-        if self.integration_bridge:
-            await self.integration_bridge.close()
+        if self.dopecon_bridge:
+            await self.dopecon_bridge.close()
 
         if self.redis:
             await self.redis.close()
@@ -187,6 +212,10 @@ class EnhancedConPortServer:
 
     def setup_routes(self):
         """Setup HTTP API routes for ConPort access"""
+        # Metrics endpoint
+        if MONITORING_AVAILABLE:
+            self.app.router.add_get('/metrics', self.metrics_handler)
+        
         # Health check endpoint
         self.app.router.add_get('/health', self.health_check)
 
@@ -268,6 +297,42 @@ class EnhancedConPortServer:
                 count += 1
             return count
 
+    @web.middleware
+    async def monitoring_middleware(self, request, handler):
+        """Track request metrics"""
+        if not self.monitoring or request.path == '/metrics':
+            return await handler(request)
+        
+        import time
+        start_time = time.time()
+        self.monitoring.requests_in_progress.labels(**self.monitoring.core_labels).inc()
+        
+        try:
+            response = await handler(request)
+            duration = time.time() - start_time
+            
+            # Record metrics
+            self.monitoring.record_request(
+                endpoint=request.path,
+                method=request.method,
+                status=response.status,
+                duration=duration
+            )
+            
+            return response
+        except Exception as e:
+            duration = time.time() - start_time
+            self.monitoring.record_request(
+                endpoint=request.path,
+                method=request.method,
+                status=500,
+                duration=duration
+            )
+            self.monitoring.record_error("request_error", request.path)
+            raise
+        finally:
+            self.monitoring.requests_in_progress.labels(**self.monitoring.core_labels).dec()
+
     @with_error_handling("health_check", retry_policy="api_retry")
     async def health_check(self, request):
         """Health check endpoint with connection status"""
@@ -306,6 +371,17 @@ class EnhancedConPortServer:
                 'error': error.to_dict(),
                 'timestamp': asyncio.get_event_loop().time()
             }, status=503)
+
+    async def metrics_handler(self, request):
+        """Prometheus metrics endpoint"""
+        if not MONITORING_AVAILABLE or not self.monitoring:
+            return web.Response(text="Monitoring not available", status=404)
+        
+        metrics_output = generate_latest(self.monitoring.registry)
+        return web.Response(
+            body=metrics_output,
+            content_type='text/plain; charset=utf-8'
+        )
 
     async def _ensure_schema(self) -> None:
         """Ensure required tables exist; apply schema.sql via psql if missing."""
@@ -572,10 +648,10 @@ class EnhancedConPortServer:
                 await self.redis.delete(f"decisions:{workspace_id}")
                 await self.redis.delete(f"recent_activity:{workspace_id}")
 
-            # Publish decision_logged event to Integration Bridge
-            if self.integration_bridge:
+            # Publish decision_logged event to DopeconBridge
+            if self.dopecon_bridge:
                 current_instance_id = SimpleInstanceDetector.get_instance_id()
-                await self.integration_bridge.publish_decision_logged(
+                await self.dopecon_bridge.publish_decision_logged(
                     decision_id=decision_id,
                     summary=data.get('summary'),
                     workspace_id=workspace_id,
@@ -883,8 +959,8 @@ class EnhancedConPortServer:
                 )
 
             # Publish event for DDG
-            if self.integration_bridge:
-                await self.integration_bridge.publish_progress_updated(
+            if self.dopecon_bridge:
+                await self.dopecon_bridge.publish_progress_updated(
                     progress_id=progress_id,
                     status=row['status'],
                     description=row['description'],
@@ -927,8 +1003,8 @@ class EnhancedConPortServer:
                         r['id'],
                     )
                     count += 1
-                    if self.integration_bridge:
-                        await self.integration_bridge.publish_progress_updated(
+                    if self.dopecon_bridge:
+                        await self.dopecon_bridge.publish_progress_updated(
                             progress_id=str(r['id']),
                             status=r['status'],
                             description=r['description'],
@@ -995,8 +1071,8 @@ class EnhancedConPortServer:
             await self.redis.delete(f"recent_activity:{workspace_id}")
 
             # Publish event (best-effort)
-            if self.integration_bridge:
-                await self.integration_bridge.publish_progress_updated(
+            if self.dopecon_bridge:
+                await self.dopecon_bridge.publish_progress_updated(
                     progress_id=pid,
                     status=entry['status'],
                     description=entry['description'],
@@ -1094,10 +1170,10 @@ class EnhancedConPortServer:
                 await self.redis.delete(f"progress:{workspace_id}")
                 await self.redis.delete(f"active_work:{workspace_id}")
 
-            # Publish progress_updated event to Integration Bridge
-            if self.integration_bridge:
+            # Publish progress_updated event to DopeconBridge
+            if self.dopecon_bridge:
                 current_instance_id = SimpleInstanceDetector.get_instance_id()
-                await self.integration_bridge.publish_progress_updated(
+                await self.dopecon_bridge.publish_progress_updated(
                     progress_id=progress_id,
                     status=progress_entry['status'],
                     description=progress_entry['description'],

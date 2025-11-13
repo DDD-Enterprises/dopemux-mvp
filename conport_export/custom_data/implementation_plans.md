@@ -160,7 +160,7 @@
       "tasks": [
         {
           "task": "Two-plane architecture compliance",
-          "review": "Authority boundaries, cross-plane communication, Integration Bridge usage",
+          "review": "Authority boundaries, cross-plane communication, DopeconBridge usage",
           "use_tool": "Zen thinkdeep for analysis",
           "estimated_time": "3 hours"
         },

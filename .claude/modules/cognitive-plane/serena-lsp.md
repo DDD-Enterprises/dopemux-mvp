@@ -99,9 +99,9 @@ HANDLE_CODE_CHANGE() {
 
     # Serena detects code changes through LSP
     # ConPort logs implementation decisions
-    # Integration Bridge notifies Leantime
+    # DopeconBridge notifies Leantime
 
-    # Flow: Serena → ConPort → Integration Bridge → Leantime
+    # Flow: Serena → ConPort → DopeconBridge → Leantime
     mcp__conport__log_decision --workspace_id "/Users/hue/code/dopemux-mvp" \
       --summary "Code change detected in $FILE_PATH" \
       --rationale "Serena LSP detected $CHANGE_TYPE change, updating project context" \
