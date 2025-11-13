@@ -597,11 +597,36 @@ configure_shell_integration() {
 export PATH="$HOME/.local/bin:$PATH"
 export DOPEMUX_HOME="$HOME/.dopemux"
 alias dopemux="python3 -m dopemux.cli"
+
+# Multi-Workspace Support
+export DEFAULT_WORKSPACE_PATH="$PWD"  # Set to your main project
+# export WORKSPACE_PATHS="~/code/project1,~/code/project2"  # Optional: additional workspaces
+export ENABLE_WORKSPACE_ISOLATION=true
+export ENABLE_CROSS_WORKSPACE_QUERIES=true
 EOF
         success "Shell integration added to $shell_rc"
         warning "Run 'source $shell_rc' or restart your terminal to activate"
     else
         success "Shell integration already configured"
+    fi
+    
+    # Prompt user to set default workspace
+    log ""
+    log "${BOLD}Multi-Workspace Configuration${NC}"
+    log "Dopemux can now track multiple projects separately."
+    log "Current directory will be set as DEFAULT_WORKSPACE_PATH: $PWD"
+    
+    if ask_yes_no "Is this your main workspace?" "y"; then
+        # Already set to $PWD above
+        success "Default workspace: $PWD"
+    else
+        read -p "Enter your main workspace path: " custom_workspace
+        if [ -d "$custom_workspace" ]; then
+            sed -i.bak "s|export DEFAULT_WORKSPACE_PATH=.*|export DEFAULT_WORKSPACE_PATH=\"$custom_workspace\"|" "$shell_rc"
+            success "Default workspace: $custom_workspace"
+        else
+            warning "Directory not found, keeping: $PWD"
+        fi
     fi
 }
 

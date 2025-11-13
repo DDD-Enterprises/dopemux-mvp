@@ -59,19 +59,47 @@
 
 ### Phase 1: Service Integration (Day 1-3)
 
-**Next: Integrate ADHD Engine** 🔲
+**✅ ADHD Engine - Code Complete, Deployment Pending**
 
-Tasks:
-1. Add monitoring import to ADHD Engine
-2. Initialize DopemuxMonitoring class
-3. Mount /metrics endpoint
-4. Add middleware for automatic tracking
-5. Test metrics export
-6. Verify workspace_id labels
+Completed:
+- ✅ Added monitoring import to main.py
+- ✅ Initialize DopemuxMonitoring class in startup
+- ✅ Created /metrics endpoint
+- ✅ Added middleware for automatic request tracking
+- ✅ Added prometheus-client import
 
-**After ADHD Engine: ConPort** 🔲
+Pending:
+- 🔲 Install prometheus-client in container
+- 🔲 Mount shared/monitoring module in container
+- 🔲 Rebuild container
+- 🔲 Test metrics export
+- 🔲 Verify workspace_id labels
 
-Same steps as ADHD Engine
+**✅ ConPort - Code Complete, Deployment Pending**
+
+Completed:
+- ✅ Added monitoring initialization
+- ✅ Created aiohttp middleware for request tracking
+- ✅ Added /metrics endpoint handler
+- ✅ Updated Dockerfile with prometheus-client
+
+Pending:
+- 🔲 Rebuild ConPort container
+- 🔲 Test metrics export
+- 🔲 Verify workspace_id labels
+
+**✅ Prometheus Configuration**
+
+All 6 service targets configured and actively scraping:
+- ✅ adhd-engine → http://host.docker.internal:8001/metrics
+- ✅ conport → http://host.docker.internal:3004/metrics
+- ✅ dope-context → http://host.docker.internal:8005/metrics
+- ✅ dopecon-bridge → http://host.docker.internal:8080/metrics
+- ✅ orchestrator → http://host.docker.internal:8000/metrics
+- ✅ serena → http://host.docker.internal:3001/metrics
+- ✅ prometheus → http://localhost:9090/metrics (UP)
+
+Currently all showing "down" - expected until containers are rebuilt with monitoring code.
 
 ---
 
@@ -83,8 +111,9 @@ Same steps as ADHD Engine
 - [x] Deploy AlertManager
 - [x] Create monitoring base class
 - [x] Configure Prometheus targets
-- [ ] Integrate ADHD Engine
-- [ ] Integrate ConPort
+- [x] Integrate ADHD Engine code
+- [x] Integrate ConPort code
+- [ ] Rebuild containers with monitoring
 - [ ] Verify metrics export
 - [ ] Test workspace filtering
 - [ ] Basic end-to-end tests
@@ -95,55 +124,67 @@ Same steps as ADHD Engine
 
 ### Working
 
-✅ Monitoring stack operational
-✅ All containers running
-✅ Health checks passing
-✅ Monitoring base class ready
+✅ Monitoring stack operational (Prometheus, Grafana, AlertManager)
+✅ All monitoring containers running and healthy
+✅ Prometheus health checks passing
+✅ Monitoring base class ready and tested
+✅ Code integration complete for ADHD Engine
+✅ Code integration complete for ConPort
+✅ All 6 services configured in Prometheus
 
 ### Pending
 
-🔲 Services not yet exporting metrics
-🔲 Prometheus targets showing "down" (expected - services need integration)
+🔲 Container rebuilds with prometheus-client package
+🔲 Services not yet exporting metrics (code ready, containers need rebuild)
+🔲 Prometheus targets showing "down" (expected - waiting for deployment)
 🔲 No metrics data yet
 🔲 Grafana dashboards not created yet
+
+**Progress: 60% Complete** (Infrastructure + Code done, Deployment pending)
 
 ---
 
 ## 📊 Service Integration Status
 
-| Service | Status | Priority | ETA |
-|---------|--------|----------|-----|
-| ADHD Engine | 🔲 Next | HIGH | Today |
-| ConPort | 🔲 Pending | HIGH | Today |
-| Orchestrator | 🔲 Pending | MEDIUM | Day 2 |
-| Serena | 🔲 Pending | MEDIUM | Day 2 |
-| Dopecon Bridge | 🔲 Pending | LOW | Day 3 |
-| Dope Context | 🔲 Pending | LOW | Day 3 |
+| Service | Code | Container | Metrics | Priority | ETA |
+|---------|------|-----------|---------|----------|-----|
+| ADHD Engine | ✅ | 🔲 | 🔲 | HIGH | Next |
+| ConPort | ✅ | 🔲 | 🔲 | HIGH | Next |
+| Orchestrator | 🔲 | 🔲 | 🔲 | MEDIUM | Day 2 |
+| Serena | 🔲 | 🔲 | 🔲 | MEDIUM | Day 2 |
+| Dopecon Bridge | 🔲 | 🔲 | 🔲 | LOW | Day 3 |
+| Dope Context | 🔲 | 🔲 | 🔲 | LOW | Day 3 |
 
 ---
 
 ## 🚀 Next Actions
 
-### Immediate (Next 2 hours)
+### Immediate (Next Session)
 
-1. **Find ADHD Engine code location**
+1. **Rebuild ADHD Engine container with dependencies**
    ```bash
-   find . -name "main.py" -path "*/adhd*" | head -5
-   ```
-
-2. **Add monitoring to ADHD Engine**
-   ```python
-   from shared.monitoring import DopemuxMonitoring
-   from prometheus_client import make_asgi_app
+   # Add to requirements.txt or Dockerfile
+   pip install prometheus-client
    
-   monitoring = DopemuxMonitoring("adhd-engine")
-   app.mount("/metrics", make_asgi_app(registry=monitoring.registry))
-   app.middleware("http")(monitoring.create_middleware())
+   # Copy shared monitoring module
+   COPY shared/monitoring /app/shared/monitoring
+   
+   # Rebuild
+   docker-compose build adhd-engine
+   docker-compose up -d adhd-engine
    ```
 
-3. **Test metrics endpoint**
+2. **Rebuild ConPort container**
    ```bash
-   curl http://localhost:8001/metrics
+   # Already updated Dockerfile with prometheus-client
+   docker-compose build conport
+   docker-compose up -d conport
+   ```
+
+3. **Test metrics endpoints**
+   ```bash
+   curl http://localhost:8001/metrics  # ADHD Engine
+   curl http://localhost:3004/metrics  # ConPort
    ```
 
 4. **Verify in Prometheus**

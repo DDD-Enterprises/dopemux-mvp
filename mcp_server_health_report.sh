@@ -1,9 +1,58 @@
 #!/bin/bash
 # MCP Server Health Report
 # Checks all dopemux MCP servers and generates status report
+# Usage: ./mcp_server_health_report.sh [--workspace /path/to/workspace]
+
+# Parse arguments
+WORKSPACE_PATH=""
+VERBOSE=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --workspace|-w)
+            WORKSPACE_PATH="$2"
+            shift 2
+            ;;
+        --verbose|-v)
+            VERBOSE=true
+            shift
+            ;;
+        --help|-h)
+            cat << 'HELP'
+Usage: ./mcp_server_health_report.sh [OPTIONS]
+
+OPTIONS:
+    --workspace, -w PATH    Check servers for specific workspace
+    --verbose, -v           Show detailed information
+    --help, -h             Show this help message
+
+EXAMPLES:
+    ./mcp_server_health_report.sh                    # All workspaces
+    ./mcp_server_health_report.sh -w ~/code/project  # Specific workspace
+HELP
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
+# Determine workspace
+if [ -n "$WORKSPACE_PATH" ]; then
+    WORKSPACE_ID="$WORKSPACE_PATH"
+elif [ -n "$DEFAULT_WORKSPACE_PATH" ]; then
+    WORKSPACE_ID="$DEFAULT_WORKSPACE_PATH"
+else
+    WORKSPACE_ID="$(pwd)"
+fi
 
 echo "=========================================="
 echo "MCP Server Health Report"
+if [ -n "$WORKSPACE_PATH" ]; then
+    echo "Workspace: $WORKSPACE_ID"
+fi
 echo "=========================================="
 echo ""
 date
