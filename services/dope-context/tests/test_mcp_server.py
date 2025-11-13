@@ -2,19 +2,96 @@
 Tests for FastMCP Server - Task 8
 """
 
+import json
+import sys
+import types
 import pytest
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
+
+
+class _StubAsyncClient:
+    """Minimal voyageai.AsyncClient stub for tests."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    async def embed(self, texts, model=None, input_type=None, truncation=True):
+        return types.SimpleNamespace(
+            embeddings=[[0.0] * 4 for _ in texts],
+            total_tokens=len(texts),
+        )
+
+
+sys.modules.setdefault("voyageai", types.SimpleNamespace(AsyncClient=_StubAsyncClient))
+
+
+class _StubAsyncQdrantClient:
+    def __init__(self, *args, **kwargs):
+        pass
+
+
+def _register_qdrant_stub():
+    models_module = types.ModuleType("qdrant_client.http.models")
+
+    class _StubStruct:
+        def __init__(self, *args, **kwargs):
+            self.__dict__.update(kwargs)
+
+    for name in [
+        "HnswConfigDiff",
+        "VectorParams",
+        "PointStruct",
+        "SearchRequest",
+        "NamedVector",
+        "Filter",
+        "FieldCondition",
+        "MatchValue",
+    ]:
+        setattr(models_module, name, type(name, (), {"__init__": lambda self, *args, **kwargs: None}))
+
+    models_module.PayloadSchemaType = types.SimpleNamespace(KEYWORD="keyword")
+    models_module.Distance = types.SimpleNamespace(DOT="dot")
+
+    qdrant_module = types.ModuleType("qdrant_client")
+    qdrant_module.AsyncQdrantClient = _StubAsyncQdrantClient  # type: ignore
+
+    http_module = types.ModuleType("qdrant_client.http")
+    http_module.models = models_module
+
+    sys.modules.setdefault("qdrant_client", qdrant_module)
+    sys.modules.setdefault("qdrant_client.http", http_module)
+    sys.modules.setdefault("qdrant_client.http.models", models_module)
+
+
+_register_qdrant_stub()
+
+
+class _StubBM25:
+    def __init__(self, corpus):
+        self.corpus = corpus
+
+    def get_scores(self, query):
+        return [0.0] * len(self.corpus)
+
+
+sys.modules.setdefault("rank_bm25", types.SimpleNamespace(BM25Okapi=_StubBM25))
 
 from src.mcp.server import (
     _index_workspace_impl,
     _search_code_impl,
     _get_index_status_impl,
     _clear_index_impl,
+    search_code,
+    docs_search,
+    search_all,
+    sync_workspace,
+    sync_docs,
 )
 from src.pipeline.indexing_pipeline import IndexingProgress
 from src.search.dense_search import SearchResult
 from src.rerank.voyage_reranker import RerankResult, RerankResponse
+from src.utils.workspace import workspace_to_hash
 
 
 @pytest.fixture
@@ -44,7 +121,7 @@ def mock_components():
     }
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_index_workspace_tool(tmp_path):
     """Test index_workspace MCP tool."""
     with patch("src.mcp.server._initialize_components") as mock_init, patch(
@@ -75,7 +152,7 @@ async def test_index_workspace_tool(tmp_path):
         assert "completion" in result
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_search_code_tool():
     """Test search_code MCP tool."""
     with patch("src.mcp.server._initialize_components"), patch(
@@ -138,7 +215,7 @@ async def test_search_code_tool():
         assert "relevance_score" in results[0]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_search_code_without_reranking():
     """Test search_code without reranking."""
     with patch("src.mcp.server._initialize_components"), patch(
@@ -181,7 +258,7 @@ async def test_search_code_without_reranking():
         assert "score" in results[0]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_search_code_with_language_filter():
     """Test search_code with language filter."""
     with patch("src.mcp.server._initialize_components"), patch(
@@ -221,54 +298,229 @@ async def test_search_code_with_language_filter():
         assert call_args[1].get("filter_by") == {"language": "python"}
 
 
-@pytest.mark.asyncio
-async def test_get_index_status_tool():
+@pytest.mark.anyio
+async def test_get_index_status_tool(tmp_path, monkeypatch):
     """Test get_index_status MCP tool."""
-    with patch("src.mcp.server._initialize_components"), patch(
-        "src.mcp.server._pipeline"
-    ) as mock_pipeline, patch("src.mcp.server._embedder") as mock_embedder:
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    workspace_hash = workspace_to_hash(workspace)
 
-        # Mock collection info
-        mock_pipeline.vector_search.get_collection_info = AsyncMock(
-            return_value={
-                "name": "code_index",
-                "vectors_count": 1000,
-                "status": "green",
+    # Create fake snapshot metadata under mocked HOME
+    fake_home = tmp_path / "home"
+    snapshot_dir = fake_home / ".dope-context" / "snapshots" / workspace_hash
+    snapshot_dir.mkdir(parents=True)
+    (snapshot_dir / "snapshot.json").write_text(
+        json.dumps(
+            {
+                "workspace_path": str(workspace),
+                "files": {"foo.py": {"sha256": "abc", "size": 10, "mtime": 0.0}},
+                "created_at": "2025-01-01T00:00:00",
             }
         )
+    )
+    (snapshot_dir / "chunk_snapshot.json").write_text(
+        json.dumps(
+            {
+                "workspace_path": str(workspace),
+                "files": {
+                    "foo.py": {
+                        "file_hash": "abc",
+                        "chunks": [
+                            {
+                                "chunk_id": "1",
+                                "file_path": "foo.py",
+                                "start_line": 1,
+                                "end_line": 10,
+                                "content_hash": "def",
+                            }
+                        ],
+                    }
+                },
+            }
+        )
+    )
 
-        mock_embedder.get_cost_summary.return_value = {"total_cost_usd": 0.50}
+    monkeypatch.setattr("src.mcp.server.Path.home", lambda: fake_home)
 
-        mock_pipeline.context_generator = MagicMock()
-        mock_pipeline.context_generator.get_cost_summary.return_value = {
-            "total_cost_usd": 0.20
-        }
+    class DummyVectorSearch:
+        def __init__(self, collection_name, url="localhost", port=6333, vector_size=1024):
+            self.collection_name = collection_name
 
-        # Call tool impl
-        status = await _get_index_status_impl()
+        async def get_collection_info(self):
+            return {
+                "name": self.collection_name,
+                "vectors_count": 123,
+                "status": "green",
+            }
 
-        # Check status
-        assert status["collection_name"] == "code_index"
-        assert status["total_vectors"] == 1000
-        assert status["status"] == "green"
-        assert "embedding_cost_summary" in status
+    monkeypatch.setattr("src.mcp.server.MultiVectorSearch", DummyVectorSearch)
+
+    status = await _get_index_status_impl(workspace_path=str(workspace))
+
+    assert status["workspace_count"] == 1
+    assert status["workspaces"][0]["workspace"] == str(workspace)
+    assert status["code_collections"][workspace_hash]["total_vectors"] == 123
+    assert status["code_collections"][workspace_hash]["files_indexed"] == 1
+    assert status["code_collections"][workspace_hash]["total_chunks"] == 1
 
 
-@pytest.mark.asyncio
-async def test_clear_index_tool():
+@pytest.mark.anyio
+async def test_clear_index_tool(tmp_path, monkeypatch):
     """Test clear_index MCP tool."""
-    with patch("src.mcp.server._initialize_components"), patch(
-        "src.mcp.server._pipeline"
-    ) as mock_pipeline:
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    workspace_hash = workspace_to_hash(workspace)
 
-        mock_pipeline.vector_search.delete_collection = AsyncMock()
+    fake_home = tmp_path / "home"
+    bm25_path = fake_home / ".dope-context" / "snapshots" / workspace_hash / "bm25_index.pkl"
+    bm25_path.parent.mkdir(parents=True, exist_ok=True)
+    bm25_path.write_bytes(b"cache")
 
-        # Call tool impl
-        result = await _clear_index_impl()
+    monkeypatch.setattr("src.mcp.server.Path.home", lambda: fake_home)
 
-        # Check result
-        assert result["status"] == "success"
-        mock_pipeline.vector_search.delete_collection.assert_called_once()
+    deleted = []
+
+    class DummyVectorSearch:
+        def __init__(self, collection_name, url="localhost", port=6333, vector_size=1024):
+            self.collection_name = collection_name
+
+        async def delete_collection(self):
+            deleted.append(self.collection_name)
+
+    monkeypatch.setattr("src.mcp.server.MultiVectorSearch", DummyVectorSearch)
+
+    result = await _clear_index_impl(workspace_path=str(workspace), target="both")
+
+    assert result["status"] == "success"
+    assert set(deleted) == {f"code_{workspace_hash}", f"docs_{workspace_hash}"}
+    assert not bm25_path.exists()
+
+
+@pytest.mark.anyio
+async def test_search_code_multi_workspace(tmp_path, monkeypatch):
+    """search_code should aggregate results across workspace_paths."""
+    ws1 = tmp_path / "ws1"
+    ws2 = tmp_path / "ws2"
+    ws1.mkdir()
+    ws2.mkdir()
+
+    fake_results = [["ws1-result"], ["ws2-result"]]
+    mock_impl = AsyncMock(side_effect=fake_results)
+    monkeypatch.setattr("src.mcp.server._search_code_impl", mock_impl)
+
+    result = await search_code(
+        query="test",
+        workspace_paths=[str(ws1), str(ws2)],
+    )
+
+    assert result["workspace_count"] == 2
+    assert result["total_results"] == 2
+    assert [entry["results"][0] for entry in result["results"]] == ["ws1-result", "ws2-result"]
+
+
+@pytest.mark.anyio
+async def test_sync_workspace_multi(tmp_path, monkeypatch):
+    """sync_workspace should process multiple workspaces sequentially."""
+    ws1 = tmp_path / "ws1"
+    ws2 = tmp_path / "ws2"
+    ws1.mkdir()
+    ws2.mkdir()
+
+    mock_impl = AsyncMock(
+        side_effect=[
+            {"workspace": str(ws1), "changes": 1},
+            {"workspace": str(ws2), "changes": 0},
+        ]
+    )
+    monkeypatch.setattr("src.mcp.server._sync_workspace_impl", mock_impl)
+
+    result = await sync_workspace(
+        workspace_paths=[str(ws1), str(ws2)],
+        include_patterns=["*.py"],
+    )
+
+    assert result["workspace_count"] == 2
+    assert len(result["results"]) == 2
+
+
+@pytest.mark.anyio
+async def test_docs_search_multi_workspace(tmp_path, monkeypatch):
+    """docs_search should aggregate results across workspace_paths."""
+    ws1 = tmp_path / "ws1"
+    ws2 = tmp_path / "ws2"
+    ws1.mkdir()
+    ws2.mkdir()
+
+    fake_results = [
+        [{"doc": "doc1", "score": 0.9}],
+        [{"doc": "doc2", "score": 0.8}],
+    ]
+    mock_impl = AsyncMock(side_effect=fake_results)
+    monkeypatch.setattr("src.mcp.server._docs_search_impl", mock_impl)
+
+    result = await docs_search(
+        query="test query",
+        workspace_paths=[str(ws1), str(ws2)],
+    )
+
+    assert result["workspace_count"] == 2
+    assert result["total_results"] == 2
+    assert len(result["results"]) == 2
+    assert result["results"][0]["workspace"] == str(ws1)
+    assert result["results"][1]["workspace"] == str(ws2)
+    assert result["results"][0]["result_count"] == 1
+    assert result["results"][1]["result_count"] == 1
+
+
+@pytest.mark.anyio
+async def test_search_all_multi_workspace(tmp_path, monkeypatch):
+    """search_all should aggregate results across workspace_paths."""
+    ws1 = tmp_path / "ws1"
+    ws2 = tmp_path / "ws2"
+    ws1.mkdir()
+    ws2.mkdir()
+
+    fake_results = [
+        {"code": ["code1"], "docs": ["doc1"], "total_results": 2},
+        {"code": ["code2"], "docs": ["doc2"], "total_results": 2},
+    ]
+    mock_impl = AsyncMock(side_effect=fake_results)
+    monkeypatch.setattr("src.mcp.server._search_all_impl", mock_impl)
+
+    result = await search_all(
+        query="test query",
+        workspace_paths=[str(ws1), str(ws2)],
+    )
+
+    assert result["workspace_count"] == 2
+    assert result["total_results"] == 4  # sum of 2 + 2
+    assert len(result["results"]) == 2
+
+
+@pytest.mark.anyio
+async def test_sync_docs_multi_workspace(tmp_path, monkeypatch):
+    """sync_docs should process multiple workspaces sequentially."""
+    ws1 = tmp_path / "ws1"
+    ws2 = tmp_path / "ws2"
+    ws1.mkdir()
+    ws2.mkdir()
+
+    mock_impl = AsyncMock(
+        side_effect=[
+            {"workspace": str(ws1), "docs_indexed": 5},
+            {"workspace": str(ws2), "docs_indexed": 3},
+        ]
+    )
+    monkeypatch.setattr("src.mcp.server._sync_docs_impl", mock_impl)
+
+    result = await sync_docs(
+        workspace_paths=[str(ws1), str(ws2)],
+    )
+
+    assert result["workspace_count"] == 2
+    assert len(result["results"]) == 2
+    assert result["results"][0]["docs_indexed"] == 5
+    assert result["results"][1]["docs_indexed"] == 3
 
 
 def test_search_profiles():
