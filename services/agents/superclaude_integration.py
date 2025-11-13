@@ -70,7 +70,7 @@ class SuperClaudeIntegration:
 
         Args:
             workspace_id: Absolute path to workspace
-            bridge_url: Integration Bridge URL
+            bridge_url: DopeconBridge URL
             conport_client: ConPort MCP client
         """
         self.workspace_id = workspace_id
