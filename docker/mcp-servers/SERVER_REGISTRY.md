@@ -101,7 +101,7 @@ docker-compose logs -f mas-sequential-thinking        # Tail logs
 - ADHD-optimized context preservation
 
 **Foundational Role:**
-- **Serves ALL Systems**: Task-Master, Task-Orchestrator, Leantime, Serena, Integration Bridge
+- **Serves ALL Systems**: Task-Master, Task-Orchestrator, Leantime, Serena, DopeconBridge
 - **Persistent Memory**: Maintains context across the entire Two-Plane Architecture
 - **Decision Authority**: Single source of truth for "why we made this choice"
 - **Context Bridge**: Connects decisions to code changes, tasks, and outcomes
@@ -128,7 +128,7 @@ docker-compose logs -f mas-sequential-thinking        # Tail logs
 
 **Integration Boundaries:**
 - **Hands off to**: Task-Orchestrator for dependency analysis and execution planning
-- **Coordinates with**: ConPort for decision logging, Integration Bridge for workflow orchestration
+- **Coordinates with**: ConPort for decision logging, DopeconBridge for workflow orchestration
 - **Does NOT**: Manage task status (Leantime authority), handle code context (Serena authority)
 
 ### Task Orchestrator - Dependency Analysis & Task Orchestration
@@ -157,7 +157,7 @@ docker-compose logs -f mas-sequential-thinking        # Tail logs
 - **Receives from**: Task-Master-AI for initial task breakdown
 - **Hands off to**: Leantime Bridge for status management and team coordination
 - **Provides to**: Serena LSP for file and symbol context during development
-- **Coordinates with**: Integration Bridge for execution workflow, ConPort for dependency decisions
+- **Coordinates with**: DopeconBridge for execution workflow, ConPort for dependency decisions
 - **Does NOT**: Create or modify tasks (Task-Master authority), manage status (Leantime authority)
 
 ### Serena - ADHD-Optimized Code Navigation & Project Memory
@@ -188,7 +188,7 @@ docker-compose logs -f mas-sequential-thinking        # Tail logs
 **Integration Boundaries:**
 - **Receives from**: Task-Orchestrator for file and symbol context when working on specific tasks
 - **Coordinates with**: ConPort for decision logging during code changes, Event Bus for attention state
-- **Provides to**: Developers through LSP protocol, Integration Bridge for progress updates
+- **Provides to**: Developers through LSP protocol, DopeconBridge for progress updates
 - **Does NOT**: Create or manage tasks (Task-Master/Orchestrator authority), determine project priorities (Leantime authority)
 
 **ADHD Configuration:**
@@ -311,14 +311,14 @@ optimization: "min_query_length: 10, max_results: 3"
 
 ## 📋 External Integrations
 
-### Integration Bridge - Two-Plane Coordinator
-- **Container**: `mcp-integration-bridge`
+### DopeconBridge - Two-Plane Coordinator
+- **Container**: `mcp-dopecon-bridge`
 - **Port**: `3016`
 - **Role**: `critical_path`
 - **Package**: Custom FastAPI service
 - **Description**: Central coordination layer for Two-Plane Architecture task management
 - **Health Check**: `http://localhost:3016/health`
-- **Source**: `/services/mcp-integration-bridge/`
+- **Source**: `/services/mcp-dopecon-bridge/`
 
 **Key Features:**
 - Coordinates Project Management Plane (Task-Master + Task-Orchestrator + Leantime)
@@ -339,7 +339,7 @@ cognitive_plane:
   - serena: "LSP server with ADHD code navigation"
   - conport: "Decision memory and knowledge graph"
 
-coordination: "Integration Bridge manages data flow between planes"
+coordination: "DopeconBridge manages data flow between planes"
 ```
 
 ### Leantime Bridge - Status Authority
@@ -358,7 +358,7 @@ coordination: "Integration Bridge manages data flow between planes"
 
 **Integration Features:**
 - Bidirectional sync with Task-Master-AI and Task-Orchestrator
-- Status broadcast to all systems via Integration Bridge
+- Status broadcast to all systems via DopeconBridge
 - Team dashboard and reporting capabilities
 - Conflict resolution for cross-system updates
 

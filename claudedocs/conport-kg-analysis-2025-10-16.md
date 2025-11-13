@@ -151,7 +151,7 @@ cypher = f"""
 **Severity**: HIGH
 **Impact**: Automation layer completely non-functional
 **Locations**:
-- `orchestrator.py:127` - "TODO: Publish to Integration Bridge"
+- `orchestrator.py:127` - "TODO: Publish to DopeconBridge"
 - `orchestrator.py:211` - "TODO: Update Serena sidebar"
 - `orchestrator.py:254` - "TODO: Cache for Leantime"
 
@@ -160,11 +160,11 @@ cypher = f"""
 # orchestrator.py:127
 if impl_decisions:
     print(f"   → Would publish decision.requires_implementation event")
-    # TODO: Publish to Integration Bridge event bus  # ❌ Not implemented
+    # TODO: Publish to DopeconBridge event bus  # ❌ Not implemented
 ```
 
 **Fix (3h)**:
-1. Wire Integration Bridge client (1h)
+1. Wire DopeconBridge client (1h)
 2. Implement event publishing (1h)
 3. Add error handling + retries (1h)
 
@@ -450,7 +450,7 @@ else:
 ### NOT Ready (Document as Phase 2)
 1. ❌ **Attention Monitoring** - No data source
 2. ❌ **Flow State Protection** - No activity tracking
-3. ❌ **Event Automation** - No Integration Bridge wiring
+3. ❌ **Event Automation** - No DopeconBridge wiring
 
 ---
 
@@ -474,7 +474,7 @@ else:
 
 | Task | Time | Priority |
 |------|------|----------|
-| Wire Integration Bridge events | 3h | HIGH |
+| Wire DopeconBridge events | 3h | HIGH |
 | Add activity tracking integration | 3h | HIGH |
 | Configure Redis or remove code | 2h | HIGH |
 
@@ -509,7 +509,7 @@ else:
 - [ ] Add query result caching
 - [ ] Add connection health checks
 - [ ] Add query timeouts
-- [ ] Wire Integration Bridge
+- [ ] Wire DopeconBridge
 - [ ] Add activity tracking
 - [ ] Configure Redis
 
@@ -587,7 +587,7 @@ Rationale:
 
 Implementation:
 - Phase 1 (4h, REQUIRED): Fix SQL injection, ReDoS, N+1 query
-- Phase 2 (8h, OPTIONAL): Wire Integration Bridge, activity tracking, Redis
+- Phase 2 (8h, OPTIONAL): Wire DopeconBridge, activity tracking, Redis
 - Phase 3 (6h, RECOMMENDED): Add caching, health checks, timeouts
 
 Tags: ["security", "production-readiness", "conport-kg", "phased-deployment"]

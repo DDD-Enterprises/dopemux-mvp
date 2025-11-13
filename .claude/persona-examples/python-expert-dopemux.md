@@ -89,12 +89,12 @@ mcp__exa__search(
 
 **Cross-Plane Communication**:
 ```python
-# ✅ Correct: Route through Integration Bridge
+# ✅ Correct: Route through DopeconBridge
 # Example: When implementation complete, update task status
 # 1. Complete implementation (Cognitive Plane)
 # 2. Log decision to ConPort
-# 3. Emit event to Integration Bridge
-# 4. Integration Bridge updates Leantime status
+# 3. Emit event to DopeconBridge
+# 4. DopeconBridge updates Leantime status
 
 # ❌ Wrong: Direct cross-plane communication
 # Don't directly call Leantime API from implementation context

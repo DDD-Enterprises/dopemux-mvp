@@ -28,8 +28,8 @@
 ### ✅ Phase 2: Security & Quality Scan (2h / 4h)
 - 10 HIGH-severity vulnerabilities found
 - All 10 FIXED immediately
-- Zen validation (ADHD Engine, Integration Bridge)
-- Root cause discovered (Integration Bridge 80% complete)
+- Zen validation (ADHD Engine, DopeconBridge)
+- Root cause discovered (DopeconBridge 80% complete)
 
 ### ✅ Phase 3: Service Deep Review (2.5h / 10h)
 - All 12 services reviewed
@@ -58,7 +58,7 @@
 
 ## Critical Discoveries (3)
 
-**1. Integration Bridge Root Cause** 🎯
+**1. DopeconBridge Root Cause** 🎯
 - Mystery: Why bypass well-designed bridge?
 - Answer: Custom data endpoints are **STUBS** (return success, do nothing)
 - Evidence: `kg_endpoints.py:357` returns hardcoded `{"success": True}`
@@ -90,7 +90,7 @@
 | ML Risk | ✅ Ready | 9/10 | 8/10 | High value |
 | Orchestrator | ✅ Ready | 8/10 | 8/10 | MVP complete |
 | Taskmaster | ✅ Ready | 8/10 | 8/10 | Clean wrapper |
-| Integration Bridge | ⚠️ 80% | 7/10 | 9/10 | Stubs! |
+| DopeconBridge | ⚠️ 80% | 7/10 | 9/10 | Stubs! |
 | ConPort KG | ⚠️ Partial | 8/10 | 8/10 | Bridge TODOs |
 | Zen MCP | ✅ External | 9/10 | 9/10 | Docker |
 | Claude-Context | ❓ Legacy | ?/10 | ?/10 | Unclear |
@@ -151,7 +151,7 @@
    - Verify security fixes active
 
 **Week 7 Integration** (12h):
-1. Complete Integration Bridge MCP layer (4-6h)
+1. Complete DopeconBridge MCP layer (4-6h)
 2. Migrate ADHD Engine + ConPort to bridge (6-8h)
 
 ---
@@ -255,7 +255,7 @@
 
 **If Week 7 Integration**:
 
-1. Read: `DEEP-DOCUMENTATION-ALL-FINDINGS.md` (Integration Bridge section)
+1. Read: `DEEP-DOCUMENTATION-ALL-FINDINGS.md` (DopeconBridge section)
 2. Complete: Bridge MCP integration (4-6h)
 3. Migrate: Services to bridge (6-8h)
 
@@ -298,7 +298,7 @@
 - [ ] Create final synthesis (Phase 8)
 
 ### Week 7 (Recommended, 12h)
-- [ ] Complete Integration Bridge (4-6h)
+- [ ] Complete DopeconBridge (4-6h)
 - [ ] Migrate services to bridge (6-8h)
 - [ ] Full architecture compliance
 
