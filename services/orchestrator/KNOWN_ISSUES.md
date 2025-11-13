@@ -94,9 +94,9 @@ def log_custom_data(..., value: dict):
 - **Severity**: MEDIUM
 - **Description**: Bridge URL defaults to `localhost:3016` (hard-coded)
 - **Impact**: Less flexible for containerized/cloud deployments
-- **Fix**: Read from `INTEGRATION_BRIDGE_URL` environment variable (already does!) or config file
+- **Fix**: Read from `DOPECON_BRIDGE_URL` environment variable (already does!) or config file
 - **Effort**: 5 minutes (already using env var, just document it)
-- **Current**: `os.getenv("INTEGRATION_BRIDGE_URL", "http://localhost:3016")` ✅
+- **Current**: `os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016")` ✅
 
 ### Issue #6: No JSON Validation
 - **Location**: All public methods accepting `value: dict`

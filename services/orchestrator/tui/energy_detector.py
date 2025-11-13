@@ -58,17 +58,17 @@ class EnergyDetector:
     3. ConPort learned patterns - personalization over time
     """
 
-    def __init__(self, workspace_id: str, integration_bridge_url: str = None):
+    def __init__(self, workspace_id: str, dopecon_bridge_url: str = None):
         """
         Initialize energy detector.
 
         Args:
             workspace_id: Absolute path to workspace
-            integration_bridge_url: Integration Bridge URL for ConPort
+            dopecon_bridge_url: DopeconBridge URL for ConPort
         """
         self.workspace_id = workspace_id
-        self.integration_bridge_url = integration_bridge_url or os.getenv(
-            "INTEGRATION_BRIDGE_URL", "http://localhost:3016"
+        self.dopecon_bridge_url = dopecon_bridge_url or os.getenv(
+            "DOPECON_BRIDGE_URL", "http://localhost:3016"
         )
 
         # ADHD Engine integration
@@ -256,7 +256,7 @@ class EnergyDetector:
     async def _load_energy_patterns(self):
         """Load learned energy patterns from ConPort."""
         try:
-            url = f"{self.integration_bridge_url}/conport/custom_data"
+            url = f"{self.dopecon_bridge_url}/conport/custom_data"
             params = {
                 "workspace_id": self.workspace_id,
                 "category": "energy_tracking",
@@ -281,7 +281,7 @@ class EnergyDetector:
             return
 
         try:
-            url = f"{self.integration_bridge_url}/conport/custom_data"
+            url = f"{self.dopecon_bridge_url}/conport/custom_data"
             timestamp_key = f"energy_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
             payload = {
