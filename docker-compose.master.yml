@@ -294,13 +294,6 @@ services:
       - "traefik.http.middlewares.task-orchestrator-session.redis.endpoints=dopemux-redis-primary:6379"
       - "traefik.http.middlewares.task-orchestrator-session.redis.keyprefix=orchestrator_session"
       - "traefik.http.routers.task-orchestrator.middlewares=task-orchestrator-session@docker"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      timeout: 10s
-      retries: 3
-      interval: 30s
-      start_period: 40s
-    labels:
       - "dopemux.service=application"
       - "dopemux.component=task-coordination"
       - "dopemux.description=ADHD-optimized task orchestration and agent coordination"
@@ -330,12 +323,6 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8095/health"]
-      timeout: 10s
-      retries: 3
-      interval: 30s
-      start_period: 40s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.adhd-engine.rule=Host(`adhd-engine.staging.local`)"
@@ -345,16 +332,15 @@ services:
       - "traefik.http.middlewares.adhd-engine-session.redis.endpoints=dopemux-redis-primary:6379"
       - "traefik.http.middlewares.adhd-engine-session.redis.keyprefix=adhd_session"
       - "traefik.http.routers.adhd-engine.middlewares=adhd-engine-session@docker"
+      - "dopemux.service=application"
+      - "dopemux.component=adhd-accommodation"
+      - "dopemux.description=Real-time ADHD task assessment, energy monitoring, and accommodation recommendations"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8095/health || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
       start_period: 30s
-    labels:
-      - "dopemux.service=application"
-      - "dopemux.component=adhd-accommodation"
-      - "dopemux.description=Real-time ADHD task assessment, energy monitoring, and accommodation recommendations"
 
   # Genetic Agent - AI Code Repair with Genetic Programming
   genetic-agent:

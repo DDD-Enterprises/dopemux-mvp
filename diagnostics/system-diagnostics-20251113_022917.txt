@@ -1,0 +1,7 @@
+Dopemux Diagnostics - Thu 13 Nov 2025 02:29:17 PST
+====================
+OS: Darwin 24.5.0
+Architecture: arm64
+Shell: /bin/zsh
+User: dopemux
+Working Directory: /Users/dopemux/code/dopemux-mvp
