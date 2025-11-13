@@ -10,16 +10,36 @@ MCP Tools:
 """
 
 import asyncio
+import json
 import logging
 import os
 import pickle
+from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from fastmcp import FastMCP
-from starlette.requests import Request
-from starlette.responses import JSONResponse
+FASTMCP_AVAILABLE = True
+try:
+    from fastmcp import FastMCP
+except ImportError:  # pragma: no cover - exercised in constrained envs
+    from .fastmcp_stub import FastMCP
+    FASTMCP_AVAILABLE = False
+try:
+    from starlette.requests import Request
+    from starlette.responses import JSONResponse
+except ImportError:  # pragma: no cover - for constrained test envs
+    class Request:  # type: ignore
+        """Fallback request stub."""
+
+        def __init__(self, *args, **kwargs):
+            pass
+
+    class JSONResponse(dict):  # type: ignore
+        """Fallback JSON response stub."""
+
+        def __init__(self, content=None, **kwargs):
+            super().__init__(content or {})
 
 from ..preprocessing.code_chunker import CodeChunker, ChunkingConfig
 from ..context.openai_generator import OpenAIContextGenerator
@@ -35,7 +55,7 @@ from ..pipeline.indexing_pipeline import (
 )
 from ..pipeline.docs_pipeline import DocIndexingPipeline
 from ..search.docs_search import DocumentSearch
-from ..utils.workspace import get_workspace_root, get_collection_names, get_snapshot_dir
+from ..utils.workspace import get_workspace_root, get_collection_names, get_snapshot_dir, workspace_to_hash
 from ..sync.file_synchronizer import FileSynchronizer, ChangeSet
 from ..utils.metrics_tracker import get_tracker
 from ..utils.token_budget import truncate_code_results, truncate_docs_results
@@ -43,13 +63,19 @@ from ..autonomous.autonomous_controller import AutonomousController, AutonomousC
 
 # ConPort-KG Integration (optional)
 try:
-    from integration_bridge_connector import emit_search_completed
+    from dopecon_bridge_connector import emit_search_completed
     CONPORT_INTEGRATION_AVAILABLE = True
 except ImportError:
     CONPORT_INTEGRATION_AVAILABLE = False
 
 
 logger = logging.getLogger(__name__)
+
+if not FASTMCP_AVAILABLE:
+    logger.warning(
+        "fastmcp package not installed; falling back to stub FastMCP. "
+        "MCP tools remain importable but server.run() is a no-op."
+    )
 
 
 # Initialize FastMCP server
@@ -235,12 +261,186 @@ _reranker: Optional[VoyageReranker] = None
 _embedder: Optional[VoyageEmbedder] = None
 _bm25_index: Optional[BM25Index] = None
 
-# Docs pipeline (new)
+# Docs pipeline (legacy globals retained for backward compatibility)
 _docs_pipeline: Optional[DocIndexingPipeline] = None
 _docs_search: Optional[DocumentSearch] = None
 _docs_embedder: Optional[ContextualizedEmbedder] = None
 
 VOYAGE_KEY_ENV_VARS: Tuple[str, ...] = ("VOYAGE_API_KEY", "VOYAGEAI_API_KEY")
+
+
+def _snapshot_root() -> Path:
+    """Return base snapshot directory without creating it."""
+    return Path.home() / ".dope-context" / "snapshots"
+
+
+def _snapshot_dir_for_hash(workspace_hash: str) -> Path:
+    """Get snapshot directory for a workspace hash."""
+    return _snapshot_root() / workspace_hash
+
+
+def _load_snapshot_metadata(workspace: Path, workspace_hash: str) -> Dict[str, Any]:
+    """
+    Load stored snapshot metadata (if available) for workspace.
+
+    Returns:
+        Dictionary with optional keys: files_indexed, total_chunks, last_snapshot
+    """
+    snapshot_dir = _snapshot_dir_for_hash(workspace_hash)
+    metadata: Dict[str, Any] = {
+        "snapshot_dir": str(snapshot_dir),
+    }
+
+    snapshot_file = snapshot_dir / "snapshot.json"
+    if snapshot_file.exists():
+        try:
+            data = json.loads(snapshot_file.read_text())
+            metadata["files_indexed"] = len(data.get("files", {}))
+            metadata["last_snapshot"] = data.get("created_at") or datetime.fromtimestamp(
+                snapshot_file.stat().st_mtime
+            ).isoformat()
+        except Exception as exc:
+            logger.debug("Failed to parse snapshot %s: %s", snapshot_file, exc)
+
+    chunk_snapshot_file = snapshot_dir / "chunk_snapshot.json"
+    if chunk_snapshot_file.exists():
+        try:
+            data = json.loads(chunk_snapshot_file.read_text())
+            files = data.get("files", {})
+            metadata["total_chunks"] = sum(len(file.get("chunks", [])) for file in files.values())
+        except Exception as exc:
+            logger.debug("Failed to parse chunk snapshot %s: %s", chunk_snapshot_file, exc)
+
+    metadata["workspace_exists"] = workspace.exists()
+    return metadata
+
+
+def _discover_workspaces_from_snapshots() -> List[Path]:
+    """
+    Discover previously indexed workspaces by reading snapshot metadata.
+
+    Returns:
+        List of workspace paths (may include paths that no longer exist)
+    """
+    base = _snapshot_root()
+    if not base.exists():
+        return []
+
+    discovered: List[Path] = []
+    for child in sorted(base.iterdir()):
+        if not child.is_dir():
+            continue
+
+        workspace_path: Optional[Path] = None
+        for candidate in ("snapshot.json", "chunk_snapshot.json"):
+            file_path = child / candidate
+            if not file_path.exists():
+                continue
+            try:
+                data = json.loads(file_path.read_text())
+                workspace_str = data.get("workspace_path")
+            except Exception:
+                continue
+
+            if workspace_str:
+                workspace_path = Path(workspace_str)
+                break
+
+        if workspace_path:
+            discovered.append(workspace_path)
+
+    return discovered
+
+
+def _resolve_target_workspaces(
+    workspace_path: Optional[str] = None,
+    workspace_paths: Optional[List[str]] = None,
+) -> List[Path]:
+    """
+    Resolve a unique ordered list of workspaces to operate on.
+    """
+    candidates: List[Path] = []
+
+    if workspace_paths:
+        candidates.extend(Path(p).expanduser() for p in workspace_paths if p)
+    if workspace_path:
+        candidates.append(Path(workspace_path).expanduser())
+
+    if not candidates:
+        discovered = _discover_workspaces_from_snapshots()
+        if discovered:
+            candidates.extend(discovered)
+        else:
+            candidates.append(get_workspace_root())
+
+    resolved: List[Path] = []
+    seen: Set[str] = set()
+    for candidate in candidates:
+        resolved_path = candidate.resolve()
+        key = str(resolved_path)
+        if key not in seen:
+            resolved.append(resolved_path)
+            seen.add(key)
+
+    return resolved
+
+
+def _resolve_explicit_workspaces(
+    workspace_path: Optional[str] = None,
+    workspace_paths: Optional[List[str]] = None,
+    *,
+    fallback_to_current: bool = True,
+) -> List[Path]:
+    """
+    Resolve explicitly requested workspaces (without snapshot discovery).
+    """
+    candidates: List[Path] = []
+
+    if workspace_paths:
+        candidates.extend(Path(p).expanduser() for p in workspace_paths if p)
+    if workspace_path:
+        candidates.append(Path(workspace_path).expanduser())
+
+    if not candidates and fallback_to_current:
+        candidates.append(get_workspace_root())
+
+    resolved: List[Path] = []
+    seen: Set[str] = set()
+    for candidate in candidates:
+        resolved_path = candidate.resolve()
+        key = str(resolved_path)
+        if key not in seen:
+            resolved.append(resolved_path)
+            seen.add(key)
+
+    return resolved
+
+
+async def _describe_collection(collection_name: str, url: str, port: int) -> Dict[str, Any]:
+    """
+    Fetch collection information from Qdrant with graceful error handling.
+    """
+    search = MultiVectorSearch(
+        collection_name=collection_name,
+        url=url,
+        port=port,
+    )
+
+    try:
+        info = await search.get_collection_info()
+        return {
+            "collection_name": info.get("name", collection_name),
+            "status": info.get("status", "unknown"),
+            "total_vectors": info.get("vectors_count", 0),
+        }
+    except Exception as exc:
+        logger.warning("Collection '%s' unavailable: %s", collection_name, exc)
+        return {
+            "collection_name": collection_name,
+            "status": "unavailable",
+            "error": str(exc),
+            "total_vectors": 0,
+        }
 
 
 def _get_voyage_api_key(required: bool = True) -> Optional[str]:
@@ -440,7 +640,8 @@ async def _index_workspace_impl(
 
 @mcp.tool()
 async def index_workspace(
-    workspace_path: str,
+    workspace_path: Optional[str] = None,
+    workspace_paths: Optional[List[str]] = None,
     include_patterns: Optional[List[str]] = None,
     exclude_patterns: Optional[List[str]] = None,
     max_files: Optional[int] = None,
@@ -464,12 +665,32 @@ async def index_workspace(
         exclude_patterns: File patterns to exclude (e.g., ["*test*"])
         max_files: Maximum files to index (optional, for large repos)
 
+    Args:
+        workspace_path: Path to index (defaults to current repo)
+        workspace_paths: Optional list of paths to batch index
+
     Returns:
-        Indexing progress summary
+        Indexing progress summary (single workspace) or aggregated results
     """
-    return await _index_workspace_impl(
-        workspace_path, include_patterns, exclude_patterns, max_files
-    )
+    targets = _resolve_explicit_workspaces(workspace_path, workspace_paths)
+    results = []
+
+    for workspace in targets:
+        summary = await _index_workspace_impl(
+            workspace_path=str(workspace),
+            include_patterns=include_patterns,
+            exclude_patterns=exclude_patterns,
+            max_files=max_files,
+        )
+        results.append({"workspace": str(workspace), "summary": summary})
+
+    if len(results) == 1:
+        return results[0]["summary"]
+
+    return {
+        "workspace_count": len(results),
+        "results": results,
+    }
 
 
 async def _search_code_impl(
@@ -758,8 +979,9 @@ async def search_code(
     use_reranking: bool = True,
     filter_language: Optional[str] = None,
     workspace_path: Optional[str] = None,
+    workspace_paths: Optional[List[str]] = None,
     enrich_with_graph: bool = False,  # F-NEW-5: Add code graph relationships
-) -> List[Dict]:
+) -> Any:
     """
     Search indexed code with hybrid dense + sparse search.
 
@@ -787,6 +1009,7 @@ async def search_code(
         use_reranking: Whether to rerank with Voyage (default: True)
         filter_language: Filter by language (python, javascript, typescript)
         workspace_path: Optional workspace path (auto-detects if None)
+        workspace_paths: Optional list of workspaces to query sequentially
         enrich_with_graph: Add code graph relationships from Serena (F-NEW-5)
 
     Returns:
@@ -799,57 +1022,190 @@ async def search_code(
         - impact_level: none/low/medium/high/critical
         - impact_message: ADHD-friendly impact description
     """
-    return await _search_code_impl(
-        query, top_k, profile, use_reranking, filter_language, workspace_path,
-        enrich_with_graph=enrich_with_graph
+    targets = _resolve_explicit_workspaces(
+        workspace_path,
+        workspace_paths,
+        fallback_to_current=True,
     )
 
+    multi = len(targets) > 1
+    aggregated_results = []
+    total_results = 0
 
-async def _get_index_status_impl() -> Dict:
-    """Implementation of get_index_status tool."""
-    if not _pipeline:
-        _initialize_components()
+    for workspace in targets:
+        workspace_results = await _search_code_impl(
+            query,
+            top_k,
+            profile,
+            use_reranking,
+            filter_language,
+            str(workspace),
+            enrich_with_graph=enrich_with_graph,
+        )
+        aggregated_results.append(
+            {
+                "workspace": str(workspace),
+                "results": workspace_results,
+                "result_count": len(workspace_results),
+            }
+        )
+        total_results += len(workspace_results)
 
-    info = await _pipeline.vector_search.get_collection_info()
+    if not multi:
+        return aggregated_results[0]["results"]
 
     return {
-        "collection_name": info.get("name", "code_index"),
-        "total_vectors": info.get("vectors_count", 0),
-        "status": info.get("status", "unknown"),
-        "cost_summary": _pipeline.get_cost_summary() if _pipeline else {},
+        "workspace_count": len(aggregated_results),
+        "total_results": total_results,
+        "results": aggregated_results,
+    }
+
+
+async def _get_index_status_impl(
+    workspace_path: Optional[str] = None,
+    workspace_paths: Optional[List[str]] = None,
+) -> Dict:
+    """Implementation of get_index_status tool."""
+    target_workspaces = _resolve_target_workspaces(workspace_path, workspace_paths)
+    qdrant_url = os.getenv("QDRANT_URL", "localhost")
+    qdrant_port = int(os.getenv("QDRANT_PORT", "6333"))
+
+    workspaces_summary: List[Dict[str, Any]] = []
+    code_collections: Dict[str, Dict[str, Any]] = {}
+    docs_collections: Dict[str, Dict[str, Any]] = {}
+
+    for workspace in target_workspaces:
+        workspace_hash = workspace_to_hash(workspace)
+        code_collection, docs_collection = get_collection_names(workspace)
+
+        code_status = await _describe_collection(code_collection, qdrant_url, qdrant_port)
+        docs_status = await _describe_collection(docs_collection, qdrant_url, qdrant_port)
+        snapshot_meta = _load_snapshot_metadata(workspace, workspace_hash)
+
+        workspace_entry = {
+            "workspace": str(workspace),
+            "workspace_hash": workspace_hash,
+            "workspace_exists": workspace.exists(),
+            "code_collection": code_status,
+            "docs_collection": docs_status,
+            "snapshot": snapshot_meta,
+        }
+        workspaces_summary.append(workspace_entry)
+
+        code_details = dict(code_status)
+        code_details.update(
+            {
+                key: value
+                for key, value in snapshot_meta.items()
+                if key in {"files_indexed", "total_chunks", "last_snapshot"}
+            }
+        )
+        code_collections[workspace_hash] = code_details
+        docs_collections[workspace_hash] = dict(docs_status)
+
+    return {
+        "workspace_count": len(workspaces_summary),
+        "workspaces": workspaces_summary,
+        "code_collections": code_collections,
+        "docs_collections": docs_collections,
     }
 
 
 @mcp.tool()
-async def get_index_status() -> Dict:
+async def get_index_status(
+    workspace_path: Optional[str] = None,
+    workspace_paths: Optional[List[str]] = None,
+) -> Dict:
     """
-    Get status of code index.
+    Get status of code/doc indexes for one or more workspaces.
+
+    Args:
+        workspace_path: Optional single workspace path
+        workspace_paths: Optional list of workspace paths to aggregate
 
     Returns:
-        Collection information and statistics
+        Collection information and statistics per workspace
     """
-    return await _get_index_status_impl()
+    return await _get_index_status_impl(workspace_path, workspace_paths)
 
 
-async def _clear_index_impl() -> Dict:
+async def _clear_index_impl(
+    workspace_path: Optional[str] = None,
+    target: str = "code",
+) -> Dict:
     """Implementation of clear_index tool."""
-    if not _pipeline:
-        _initialize_components()
+    workspace = (
+        Path(workspace_path).expanduser().resolve()
+        if workspace_path
+        else get_workspace_root()
+    )
+    target_normalized = (target or "code").lower()
+    if target_normalized not in {"code", "docs", "both"}:
+        raise ValueError("target must be one of: code, docs, both")
 
-    await _pipeline.vector_search.delete_collection()
+    code_collection, docs_collection = get_collection_names(workspace)
+    workspace_hash = workspace_to_hash(workspace)
+    qdrant_url = os.getenv("QDRANT_URL", "localhost")
+    qdrant_port = int(os.getenv("QDRANT_PORT", "6333"))
 
-    return {"status": "success", "message": "Code index cleared"}
+    cleared: List[str] = []
+    errors: List[Dict[str, str]] = []
+
+    async def _delete_collection(collection_name: str, label: str):
+        try:
+            search = MultiVectorSearch(
+                collection_name=collection_name,
+                url=qdrant_url,
+                port=qdrant_port,
+            )
+            await search.delete_collection()
+            cleared.append(label)
+        except Exception as exc:
+            errors.append({"index": label, "error": str(exc)})
+
+    if target_normalized in {"code", "both"}:
+        await _delete_collection(code_collection, "code")
+        bm25_cache_path = _snapshot_dir_for_hash(workspace_hash) / "bm25_index.pkl"
+        if bm25_cache_path.exists():
+            try:
+                bm25_cache_path.unlink()
+            except OSError as exc:
+                logger.debug("Failed to delete BM25 cache %s: %s", bm25_cache_path, exc)
+
+    if target_normalized in {"docs", "both"}:
+        await _delete_collection(docs_collection, "docs")
+
+    status = "success"
+    if errors and cleared:
+        status = "partial"
+    elif errors and not cleared:
+        status = "failed"
+
+    return {
+        "status": status,
+        "workspace": str(workspace),
+        "target": target_normalized,
+        "cleared": cleared,
+        "errors": errors,
+    }
 
 
 @mcp.tool()
-async def clear_index() -> Dict:
+async def clear_index(
+    workspace_path: Optional[str] = None,
+    target: str = "code",
+) -> Dict:
     """
-    Clear the code index (delete collection).
+    Clear a workspace's index/indices.
+
+    Args:
+        workspace_path: Workspace root (defaults to auto-detected root)
+        target: Which index to clear - "code", "docs", or "both"
 
     Returns:
         Success message
     """
-    return await _clear_index_impl()
+    return await _clear_index_impl(workspace_path, target)
 
 
 # NEW DOCS TOOLS
@@ -893,20 +1249,38 @@ async def _index_docs_impl(
 
 @mcp.tool()
 async def index_docs(
-    workspace_path: str,
+    workspace_path: Optional[str] = None,
+    workspace_paths: Optional[List[str]] = None,
     include_patterns: Optional[List[str]] = None,
 ) -> Dict:
     """
     Index documents (PDF, Markdown, HTML, text) in workspace.
 
     Args:
-        workspace_path: Path to workspace root
+        workspace_path: Path to workspace root (defaults to current repo)
+        workspace_paths: Optional list of workspaces to batch index
         include_patterns: File patterns (e.g., ["*.md", "*.pdf"])
 
     Returns:
-        Indexing summary
+        Indexing summary for one or many workspaces
     """
-    return await _index_docs_impl(workspace_path, include_patterns)
+    targets = _resolve_explicit_workspaces(workspace_path, workspace_paths)
+    results = []
+
+    for workspace in targets:
+        summary = await _index_docs_impl(
+            workspace_path=str(workspace),
+            include_patterns=include_patterns,
+        )
+        results.append({"workspace": str(workspace), "summary": summary})
+
+    if len(results) == 1:
+        return results[0]["summary"]
+
+    return {
+        "workspace_count": len(results),
+        "results": results,
+    }
 
 
 async def _docs_search_impl(
@@ -1018,7 +1392,8 @@ async def docs_search(
     filter_doc_type: Optional[str] = None,
     workspace_path: Optional[str] = None,
     max_content_length: int = 2000,
-) -> List[Dict]:
+    workspace_paths: Optional[List[str]] = None,
+) -> Any:
     """
     Search indexed documents (PDF, Markdown, HTML, text).
 
@@ -1036,13 +1411,48 @@ async def docs_search(
         top_k: Number of results to return (default 10)
         filter_doc_type: Filter by document type (md, pdf, html, txt)
         workspace_path: Optional workspace path (auto-detects if None)
+        workspace_paths: Optional list of workspaces to query sequentially
         max_content_length: Max characters per doc (default 2000, prevents token overflow)
 
     Returns:
         List of document search results with truncated text and scores.
         Each result includes 'truncated' boolean and 'original_length' for reference.
     """
-    return await _docs_search_impl(query, top_k, filter_doc_type, workspace_path, max_content_length)
+    targets = _resolve_explicit_workspaces(
+        workspace_path,
+        workspace_paths,
+        fallback_to_current=True,
+    )
+
+    multi = len(targets) > 1
+    aggregated_results = []
+    total_results = 0
+
+    for workspace in targets:
+        workspace_results = await _docs_search_impl(
+            query,
+            top_k,
+            filter_doc_type,
+            str(workspace),
+            max_content_length,
+        )
+        aggregated_results.append(
+            {
+                "workspace": str(workspace),
+                "results": workspace_results,
+                "result_count": len(workspace_results),
+            }
+        )
+        total_results += len(workspace_results)
+
+    if not multi:
+        return aggregated_results[0]["results"]
+
+    return {
+        "workspace_count": len(aggregated_results),
+        "total_results": total_results,
+        "results": aggregated_results,
+    }
 
 
 async def _search_all_impl(
@@ -1092,7 +1502,8 @@ async def search_all(
     query: str,
     top_k: int = 10,
     workspace_path: Optional[str] = None,
-) -> Dict:
+    workspace_paths: Optional[List[str]] = None,
+) -> Any:
     """
     Unified search across BOTH code and docs.
 
@@ -1108,11 +1519,38 @@ async def search_all(
         query: Natural language search query
         top_k: Total results (split between code and docs, default 10)
         workspace_path: Optional workspace path (auto-detects if None)
+        workspace_paths: Optional list of workspaces to query sequentially
 
     Returns:
         Combined results with workspace, code_results, docs_results, total_results
     """
-    return await _search_all_impl(query, top_k, workspace_path)
+    targets = _resolve_explicit_workspaces(
+        workspace_path,
+        workspace_paths,
+        fallback_to_current=True,
+    )
+
+    multi = len(targets) > 1
+    aggregated_results = []
+    total_results = 0
+
+    for workspace in targets:
+        workspace_results = await _search_all_impl(
+            query,
+            top_k,
+            str(workspace),
+        )
+        aggregated_results.append(workspace_results)
+        total_results += workspace_results.get("total_results", 0)
+
+    if not multi:
+        return aggregated_results[0]
+
+    return {
+        "workspace_count": len(aggregated_results),
+        "total_results": total_results,
+        "results": aggregated_results,
+    }
 
 
 # SYNC TOOLS
@@ -1248,10 +1686,11 @@ async def _sync_workspace_impl(
 
 @mcp.tool()
 async def sync_workspace(
-    workspace_path: str,
+    workspace_path: Optional[str] = None,
+    workspace_paths: Optional[List[str]] = None,
     include_patterns: Optional[List[str]] = None,
     auto_reindex: bool = False,
-) -> Dict:
+) -> Any:
     """
     Sync workspace index with file changes (incremental).
 
@@ -1260,13 +1699,31 @@ async def sync_workspace(
 
     Args:
         workspace_path: Absolute workspace path
+        workspace_paths: Optional list of workspaces to process sequentially
         include_patterns: File patterns to track (default: code files)
         auto_reindex: Automatically reindex changed files (default: False)
 
     Returns:
         Change statistics and reindex results
     """
-    return await _sync_workspace_impl(workspace_path, include_patterns, auto_reindex)
+    targets = _resolve_explicit_workspaces(
+        workspace_path,
+        workspace_paths,
+        fallback_to_current=True,
+    )
+
+    results = []
+    for workspace in targets:
+        result = await _sync_workspace_impl(str(workspace), include_patterns, auto_reindex)
+        results.append(result)
+
+    if len(results) == 1:
+        return results[0]
+
+    return {
+        "workspace_count": len(results),
+        "results": results,
+    }
 
 
 async def _sync_docs_impl(
@@ -1305,9 +1762,10 @@ async def _sync_docs_impl(
 
 @mcp.tool()
 async def sync_docs(
-    workspace_path: str,
+    workspace_path: Optional[str] = None,
+    workspace_paths: Optional[List[str]] = None,
     include_patterns: Optional[List[str]] = None,
-) -> Dict:
+) -> Any:
     """
     Sync docs index with file changes (incremental).
 
@@ -1315,12 +1773,30 @@ async def sync_docs(
 
     Args:
         workspace_path: Absolute workspace path
+        workspace_paths: Optional list of workspaces to process sequentially
         include_patterns: File patterns to track (default: doc files)
 
     Returns:
         Change statistics
     """
-    return await _sync_docs_impl(workspace_path, include_patterns)
+    targets = _resolve_explicit_workspaces(
+        workspace_path,
+        workspace_paths,
+        fallback_to_current=True,
+    )
+
+    results = []
+    for workspace in targets:
+        result = await _sync_docs_impl(str(workspace), include_patterns)
+        results.append(result)
+
+    if len(results) == 1:
+        return results[0]
+
+    return {
+        "workspace_count": len(results),
+        "results": results,
+    }
 
 
 @mcp.tool()
@@ -1368,36 +1844,16 @@ async def clear_search_metrics() -> Dict:
 # ============================================================================
 
 
-@mcp.tool()
-async def start_autonomous_indexing(
-    workspace_path: str = None,
-    debounce_seconds: float = 5.0,
-    periodic_interval: int = 600,
+async def _start_autonomous_indexing_single(
+    workspace_override: Optional[Path],
+    debounce_seconds: float,
+    periodic_interval: int,
 ) -> Dict:
-    """
-    Enable autonomous indexing for workspace.
-
-    🎯 **ADHD BENEFIT**: Zero mental overhead - index updates automatically
-    as you code. No manual sync needed ever again!
-
-    Starts three monitoring systems:
-    1. File watcher (watchdog) - Immediate response to changes
-    2. 5s debouncing - Batches rapid saves for efficiency
-    3. 10min periodic fallback - Catches any missed events
-
-    Args:
-        workspace_path: Workspace to monitor (defaults to cwd)
-        debounce_seconds: Wait time after file changes (default: 5.0)
-        periodic_interval: Fallback check interval (default: 600s/10min)
-
-    Returns:
-        Status and configuration info
-    """
-    workspace = get_workspace_root(workspace_path)
+    """Start autonomous indexing for a single workspace."""
+    workspace = get_workspace_root(workspace_override)
 
     logger.info(f"Starting autonomous indexing for {workspace}")
 
-    # Check if already running
     workspace_key = str(workspace)
     active = AutonomousController.get_active_controllers()
 
@@ -1408,16 +1864,13 @@ async def start_autonomous_indexing(
             "message": "Autonomous indexing already active for this workspace",
         }
 
-    # Create config
     config = AutonomousConfig(
         enabled=True,
         debounce_seconds=debounce_seconds,
         periodic_interval=periodic_interval,
     )
 
-    # Create callbacks
     async def index_callback(ws_path: Path, changed_files: Optional[Set[str]]):
-        """Callback to trigger indexing."""
         await _index_workspace_impl(
             workspace_path=str(ws_path),
             include_patterns=config.include_patterns,
@@ -1425,10 +1878,8 @@ async def start_autonomous_indexing(
         )
 
     async def sync_callback(ws_path: Path):
-        """Callback to trigger sync."""
         return await _sync_workspace_impl(str(ws_path))
 
-    # Create and start controller
     controller = AutonomousController(
         workspace_path=workspace,
         index_callback=index_callback,
@@ -1450,7 +1901,62 @@ async def start_autonomous_indexing(
 
 
 @mcp.tool()
-async def stop_autonomous_indexing(workspace_path: str = None) -> Dict:
+async def start_autonomous_indexing(
+    workspace_path: Optional[str] = None,
+    workspace_paths: Optional[List[str]] = None,
+    debounce_seconds: float = 5.0,
+    periodic_interval: int = 600,
+) -> Dict:
+    """
+    Enable autonomous indexing for one or many workspaces.
+
+    🎯 **ADHD BENEFIT**: Zero mental overhead - index updates automatically
+    as you code. No manual sync needed ever again!
+
+    Starts three monitoring systems:
+    1. File watcher (watchdog) - Immediate response to changes
+    2. 5s debouncing - Batches rapid saves for efficiency
+    3. 10min periodic fallback - Catches any missed events
+
+    Args:
+        workspace_path: Workspace to monitor (defaults to cwd)
+        workspace_paths: Optional list of workspaces to monitor
+        debounce_seconds: Wait time after file changes (default: 5.0)
+        periodic_interval: Fallback check interval (default: 600s/10min)
+
+    Returns:
+        Status and configuration info (single or aggregated)
+    """
+    explicit_targets = _resolve_explicit_workspaces(
+        workspace_path,
+        workspace_paths,
+        fallback_to_current=False,
+    )
+    target_overrides: List[Optional[Path]] = explicit_targets or [None]
+
+    results = []
+    for override in target_overrides:
+        status = await _start_autonomous_indexing_single(
+            workspace_override=override,
+            debounce_seconds=debounce_seconds,
+            periodic_interval=periodic_interval,
+        )
+        results.append(status)
+
+    if len(results) == 1:
+        return results[0]
+
+    return {
+        "workspace_count": len(results),
+        "results": results,
+    }
+
+
+@mcp.tool()
+async def stop_autonomous_indexing(
+    workspace_path: Optional[str] = None,
+    workspace_paths: Optional[List[str]] = None,
+) -> Dict:
     """
     Stop autonomous indexing for workspace.
 
@@ -1458,30 +1964,51 @@ async def stop_autonomous_indexing(workspace_path: str = None) -> Dict:
 
     Args:
         workspace_path: Workspace to stop monitoring (defaults to cwd)
+        workspace_paths: Optional list of workspaces to stop
 
     Returns:
         Status info
     """
-    workspace = get_workspace_root(workspace_path)
-    workspace_key = str(workspace)
+    explicit_targets = _resolve_explicit_workspaces(
+        workspace_path,
+        workspace_paths,
+        fallback_to_current=False,
+    )
+    target_overrides: List[Optional[Path]] = explicit_targets or [None]
 
+    results = []
     active = AutonomousController.get_active_controllers()
 
-    if workspace_key not in active:
-        return {
-            "status": "not_running",
-            "workspace": str(workspace),
-            "message": "No autonomous indexing active for this workspace",
-        }
+    for override in target_overrides:
+        workspace = get_workspace_root(override)
+        workspace_key = str(workspace)
 
-    # Stop controller
-    controller = active[workspace_key]
-    await controller.stop()
+        if workspace_key not in active:
+            results.append(
+                {
+                    "status": "not_running",
+                    "workspace": str(workspace),
+                    "message": "No autonomous indexing active for this workspace",
+                }
+            )
+            continue
+
+        controller = active[workspace_key]
+        await controller.stop()
+        results.append(
+            {
+                "status": "stopped",
+                "workspace": str(workspace),
+                "message": f"Autonomous indexing stopped for {workspace.name}",
+            }
+        )
+
+    if len(results) == 1:
+        return results[0]
 
     return {
-        "status": "stopped",
-        "workspace": str(workspace),
-        "message": f"Autonomous indexing stopped for {workspace.name}",
+        "workspace_count": len(results),
+        "results": results,
     }
 
 
@@ -1542,36 +2069,17 @@ async def get_autonomous_status() -> Dict:
 
 # AUTONOMOUS DOCS INDEXING
 
-@mcp.tool()
-async def start_autonomous_docs_indexing(
-    workspace_path: str = None,
-    debounce_seconds: float = 5.0,
-    periodic_interval: int = 600,
+
+async def _start_autonomous_docs_indexing_single(
+    workspace_override: Optional[Path],
+    debounce_seconds: float,
+    periodic_interval: int,
 ) -> Dict:
-    """
-    Enable autonomous docs indexing for workspace.
-
-    🎯 **ADHD BENEFIT**: Zero mental overhead - docs index updates automatically
-    as you edit markdown/PDFs. No manual sync needed!
-
-    Starts three monitoring systems:
-    1. File watcher (watchdog) - Immediate response to doc changes
-    2. 5s debouncing - Batches rapid saves for efficiency
-    3. 10min periodic fallback - Catches any missed events
-
-    Args:
-        workspace_path: Workspace to monitor (defaults to cwd)
-        debounce_seconds: Wait time after file changes (default: 5.0)
-        periodic_interval: Fallback check interval (default: 600s/10min)
-
-    Returns:
-        Status and configuration info
-    """
-    workspace = get_workspace_root(workspace_path)
+    """Start autonomous docs indexing for a single workspace."""
+    workspace = get_workspace_root(workspace_override)
 
     logger.info(f"Starting autonomous docs indexing for {workspace}")
 
-    # Check if already running (use different key for docs)
     workspace_key = f"{workspace}:docs"
     active = AutonomousController.get_active_controllers()
 
@@ -1583,7 +2091,6 @@ async def start_autonomous_docs_indexing(
             "message": "Autonomous docs indexing already active for this workspace",
         }
 
-    # Create config for docs (different patterns)
     config = AutonomousConfig(
         enabled=True,
         debounce_seconds=debounce_seconds,
@@ -1600,33 +2107,27 @@ async def start_autonomous_docs_indexing(
         ],
     )
 
-    # Create callbacks
     async def docs_index_callback(ws_path: Path, changed_files: Optional[Set[str]]):
-        """Callback to trigger docs indexing."""
         await _index_docs_impl(
             workspace_path=str(ws_path),
             include_patterns=config.include_patterns,
         )
 
     async def docs_sync_callback(ws_path: Path):
-        """Callback to trigger docs sync."""
         return await _sync_docs_impl(
             str(ws_path),
             config.include_patterns,
         )
 
-    # Create and start controller
     controller = AutonomousController(
         workspace_path=workspace,
         index_callback=docs_index_callback,
         sync_callback=docs_sync_callback,
         config=config,
+        registry_key=workspace_key,
     )
 
     await controller.start()
-
-    # Register with docs-specific key
-    AutonomousController._active_controllers[workspace_key] = controller
 
     return {
         "status": "started",
@@ -1642,7 +2143,62 @@ async def start_autonomous_docs_indexing(
 
 
 @mcp.tool()
-async def stop_autonomous_docs_indexing(workspace_path: str = None) -> Dict:
+async def start_autonomous_docs_indexing(
+    workspace_path: Optional[str] = None,
+    workspace_paths: Optional[List[str]] = None,
+    debounce_seconds: float = 5.0,
+    periodic_interval: int = 600,
+) -> Dict:
+    """
+    Enable autonomous docs indexing for workspace.
+
+    🎯 **ADHD BENEFIT**: Zero mental overhead - docs index updates automatically
+    as you edit markdown/PDFs. No manual sync needed!
+
+    Starts three monitoring systems:
+    1. File watcher (watchdog) - Immediate response to doc changes
+    2. 5s debouncing - Batches rapid saves for efficiency
+    3. 10min periodic fallback - Catches any missed events
+
+    Args:
+        workspace_path: Workspace to monitor (defaults to cwd)
+        workspace_paths: Optional list of workspaces to monitor
+        debounce_seconds: Wait time after file changes (default: 5.0)
+        periodic_interval: Fallback check interval (default: 600s/10min)
+
+    Returns:
+        Status and configuration info (single or aggregated)
+    """
+    explicit_targets = _resolve_explicit_workspaces(
+        workspace_path,
+        workspace_paths,
+        fallback_to_current=False,
+    )
+    target_overrides: List[Optional[Path]] = explicit_targets or [None]
+
+    results = []
+    for override in target_overrides:
+        status = await _start_autonomous_docs_indexing_single(
+            workspace_override=override,
+            debounce_seconds=debounce_seconds,
+            periodic_interval=periodic_interval,
+        )
+        results.append(status)
+
+    if len(results) == 1:
+        return results[0]
+
+    return {
+        "workspace_count": len(results),
+        "results": results,
+    }
+
+
+@mcp.tool()
+async def stop_autonomous_docs_indexing(
+    workspace_path: Optional[str] = None,
+    workspace_paths: Optional[List[str]] = None,
+) -> Dict:
     """
     Stop autonomous docs indexing for workspace.
 
@@ -1650,32 +2206,54 @@ async def stop_autonomous_docs_indexing(workspace_path: str = None) -> Dict:
 
     Args:
         workspace_path: Workspace to stop monitoring (defaults to cwd)
+        workspace_paths: Optional list of workspaces to stop
 
     Returns:
         Status info
     """
-    workspace = get_workspace_root(workspace_path)
-    workspace_key = f"{workspace}:docs"
+    explicit_targets = _resolve_explicit_workspaces(
+        workspace_path,
+        workspace_paths,
+        fallback_to_current=False,
+    )
+    target_overrides: List[Optional[Path]] = explicit_targets or [None]
 
+    results = []
     active = AutonomousController.get_active_controllers()
 
-    if workspace_key not in active:
-        return {
-            "status": "not_running",
-            "workspace": str(workspace),
-            "type": "docs",
-            "message": "No autonomous docs indexing active for this workspace",
-        }
+    for override in target_overrides:
+        workspace = get_workspace_root(override)
+        workspace_key = f"{workspace}:docs"
 
-    # Stop controller
-    controller = active[workspace_key]
-    await controller.stop()
+        if workspace_key not in active:
+            results.append(
+                {
+                    "status": "not_running",
+                    "workspace": str(workspace),
+                    "type": "docs",
+                    "message": "No autonomous docs indexing active for this workspace",
+                }
+            )
+            continue
+
+        controller = active[workspace_key]
+        await controller.stop()
+
+        results.append(
+            {
+                "status": "stopped",
+                "workspace": str(workspace),
+                "type": "docs",
+                "message": f"Autonomous docs indexing stopped for {workspace.name}",
+            }
+        )
+
+    if len(results) == 1:
+        return results[0]
 
     return {
-        "status": "stopped",
-        "workspace": str(workspace),
-        "type": "docs",
-        "message": f"Autonomous docs indexing stopped for {workspace.name}",
+        "workspace_count": len(results),
+        "results": results,
     }
 
 
