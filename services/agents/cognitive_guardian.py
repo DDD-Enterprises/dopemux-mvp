@@ -51,6 +51,7 @@ class UserState:
     last_break: Optional[str]
     current_task_complexity: float
     time_of_day_hour: int
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 @dataclass
@@ -61,6 +62,7 @@ class BreakReminder:
     duration_worked_minutes: int
     suggested_break_minutes: int
     is_mandatory: bool
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 class CognitiveGuardian:

@@ -46,6 +46,7 @@ class CrossPlaneRequest:
     data: Dict[str, Any]
     timestamp: datetime
     requester: str  # Agent or service name
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 @dataclass
@@ -55,6 +56,7 @@ class AuthorityRule:
     authority_plane: Plane  # Which plane is the source of truth
     read_allowed_from: List[Plane]  # Planes that can read
     write_allowed_from: List[Plane]  # Planes that can write
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 class TwoPlaneOrchestrator:
