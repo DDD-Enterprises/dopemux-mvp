@@ -81,7 +81,11 @@ class DeepContextQueries:
             print(f"❌ AGEClient initialization failed: {e}")
             raise
 
-    def get_full_decision_context(self, decision_id: int) -> FullDecisionContext:
+    def get_full_decision_context(
+        self, 
+        decision_id: int,
+        workspace_path: Optional[str] = None
+    ) -> FullDecisionContext:
         """
         Get complete decision context with 3-hop traversal
 
@@ -90,9 +94,11 @@ class DeepContextQueries:
         - 3-hop neighborhood
         - Complete tags and metadata
         - cognitive_load = "high" (always)
+        - Multi-workspace: Context from specific workspace
 
         Args:
             decision_id: Decision to analyze
+            workspace_path: Optional workspace path for scoped query
 
         Returns:
             FullDecisionContext with complete data
@@ -106,7 +112,7 @@ class DeepContextQueries:
             $$) as (id agtype, summary agtype, rationale agtype, impl agtype, tags agtype, ts agtype);
         """
 
-        decision_result = self.client.execute_cypher(cypher_decision)
+        decision_result = self.client.execute_cypher(cypher_decision, workspace_path=workspace_path)
 
         if not decision_result:
             # Return empty context
@@ -128,7 +134,7 @@ class DeepContextQueries:
         )
 
         # Get all relationships (will use get_all_relationships method)
-        relationships = self.get_all_relationships(decision_id)
+        relationships = self.get_all_relationships(decision_id, workspace_path=workspace_path)
 
         # Get related decisions (1-hop)
         cypher_related = f"""
@@ -139,7 +145,7 @@ class DeepContextQueries:
             $$) as (id agtype, summary agtype, timestamp agtype);
         """
 
-        related_results = self.client.execute_cypher(cypher_related)
+        related_results = self.client.execute_cypher(cypher_related, workspace_path=workspace_path)
 
         related_decisions = [
             DecisionCard(
@@ -161,7 +167,11 @@ class DeepContextQueries:
             cognitive_load="high"  # Always high for Tier 3
         )
 
-    def get_all_relationships(self, decision_id: int) -> List[Relationship]:
+    def get_all_relationships(
+        self, 
+        decision_id: int,
+        workspace_path: Optional[str] = None
+    ) -> List[Relationship]:
         """
         Get ALL relationships for a decision
 
@@ -169,9 +179,11 @@ class DeepContextQueries:
         - Returns every relationship
         - Full metadata for each edge
         - Direction detection (incoming/outgoing)
+        - Multi-workspace: Relationships from specific workspace
 
         Args:
             decision_id: Decision to analyze
+            workspace_path: Optional workspace path for scoped query
 
         Returns:
             List[Relationship] with complete metadata
@@ -189,7 +201,7 @@ class DeepContextQueries:
             $$) as (source agtype, target agtype, rel_type agtype, descr agtype, ts agtype);
         """
 
-        results = self.client.execute_cypher(cypher)
+        results = self.client.execute_cypher(cypher, workspace_path=workspace_path)
 
         relationships = []
         for row in results:

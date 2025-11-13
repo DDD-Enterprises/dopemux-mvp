@@ -22,7 +22,7 @@ from datetime import datetime
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Add Integration Bridge client
+# Add DopeconBridge client
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 try:
@@ -34,11 +34,11 @@ except ImportError:
     print("⚠️  Query modules not yet available")
 
 try:
-    from src.integrations.bridge_client import IntegrationBridgeClient
+    from src.integrations.bridge_client import DopeconBridgeClient
     BRIDGE_AVAILABLE = True
 except ImportError:
     BRIDGE_AVAILABLE = False
-    print("⚠️  Integration Bridge client not available (will skip event publishing)")
+    print("⚠️  DopeconBridge client not available (will skip event publishing)")
 
 
 @dataclass
@@ -79,10 +79,10 @@ class KGOrchestrator:
         self.exploration = ExplorationQueries()
         self.deep_context = DeepContextQueries()
 
-        # Initialize Integration Bridge client for event publishing
-        self.bridge = IntegrationBridgeClient() if BRIDGE_AVAILABLE else None
+        # Initialize DopeconBridge client for event publishing
+        self.bridge = DopeconBridgeClient() if BRIDGE_AVAILABLE else None
 
-        status = "with Integration Bridge" if self.bridge else "without Integration Bridge (events disabled)"
+        status = "with DopeconBridge" if self.bridge else "without DopeconBridge (events disabled)"
         print(f"✅ KG Orchestrator initialized {status}")
         print("   Event handlers: decision.logged, task.started, file.opened")
 
@@ -137,9 +137,9 @@ class KGOrchestrator:
 
             if impl_decisions and self.bridge:
                 print(f"   → Found {len(impl_decisions)} IMPLEMENTS relationships")
-                print(f"   → Publishing decision.requires_implementation event to Integration Bridge")
+                print(f"   → Publishing decision.requires_implementation event to DopeconBridge")
 
-                # Publish event to Integration Bridge
+                # Publish event to DopeconBridge
                 await self.bridge.save_custom_data(
                     workspace_id=os.getenv("WORKSPACE_ID", "/Users/hue/code/dopemux-mvp"),
                     category="automation_events",
@@ -152,7 +152,7 @@ class KGOrchestrator:
                         "priority": event.priority
                     }
                 )
-                print(f"   ✅ Event published to Integration Bridge")
+                print(f"   ✅ Event published to DopeconBridge")
 
         except Exception as e:
             print(f"   ⚠️  IMPLEMENTS check failed: {e}")
