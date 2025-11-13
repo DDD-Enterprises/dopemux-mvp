@@ -39,6 +39,7 @@ class SessionState:
     branch: str
     current_focus: Optional[str]
     session_duration_minutes: int
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 @dataclass
@@ -49,6 +50,7 @@ class CognitiveState:
     attention_state: str  # scattered, transitioning, focused, hyperfocus
     last_break_timestamp: Optional[str]
     minutes_since_break: Optional[int]
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 @dataclass
@@ -129,7 +131,8 @@ class SessionIntelligenceCoordinator:
                 worktree=result.get('worktree', ''),
                 branch=result.get('branch', ''),
                 current_focus=result.get('current_focus'),
-                session_duration_minutes=result.get('session_duration_minutes', 0)
+                session_duration_minutes=result.get('session_duration_minutes', 0),
+                workspace_path=str(self.workspace)
             )
 
         except Exception as e:
@@ -194,7 +197,8 @@ class SessionIntelligenceCoordinator:
                 energy_level=energy,
                 attention_state=attention,
                 last_break_timestamp=None,  # Not tracked by ADHD Engine yet
-                minutes_since_break=minutes_since
+                minutes_since_break=minutes_since,
+                workspace_path=str(self.workspace)
             )
 
         except Exception as e:
