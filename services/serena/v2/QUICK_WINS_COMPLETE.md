@@ -191,7 +191,7 @@ await navigation_cache.cache_navigation_result(cache_key, result, ttl=600)
 4. Integration testing
 
 **Phase 3 Week 2** (Add F-NEW-3, F-NEW-4):
-1. Database schema + Integration Bridge events
+1. Database schema + DopeconBridge events
 2. Pattern learning + Session fatigue detection
 3. Final validation
 

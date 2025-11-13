@@ -1,5 +1,5 @@
 """
-ConPort HTTP Client - Production-Ready Integration Bridge Client
+ConPort HTTP Client - Production-Ready DopeconBridge Client
 
 Async HTTP client with ADHD optimizations:
 - 5-second fast-fail timeout (no waiting)
@@ -33,7 +33,7 @@ class CircuitBreakerState:
 
 class ConPortHTTPClient:
     """
-    Production HTTP client for ConPort Integration Bridge.
+    Production HTTP client for ConPort DopeconBridge.
 
     Features:
     - Async httpx with connection pooling
@@ -55,7 +55,7 @@ class ConPortHTTPClient:
 
         Args:
             workspace_id: Absolute path to workspace
-            bridge_url: Integration Bridge URL (default: http://localhost:3016)
+            bridge_url: DopeconBridge URL (default: http://localhost:3016)
             fallback_dir: Directory for JSON fallback (default: /tmp/dopemux_fallback)
             cleanup_old_files: Auto-cleanup fallback files >7 days old (default: True)
         """
@@ -481,7 +481,7 @@ class ConPortHTTPClient:
 
     async def health_check(self) -> Dict[str, Any]:
         """
-        Check Integration Bridge health.
+        Check DopeconBridge health.
 
         Returns:
             Health status
@@ -560,7 +560,7 @@ def get_http_client(workspace_id: str) -> ConPortHTTPClient:
 
 class ConPortHTTPClientSync:
     """
-    Synchronous HTTP client for ConPort Integration Bridge.
+    Synchronous HTTP client for ConPort DopeconBridge.
 
     Use this for threading-based code (like checkpoint_manager.py).
     Same features as async version but with blocking calls.
@@ -578,7 +578,7 @@ class ConPortHTTPClientSync:
 
         Args:
             workspace_id: Absolute path to workspace
-            bridge_url: Integration Bridge URL (default: http://localhost:3016)
+            bridge_url: DopeconBridge URL (default: http://localhost:3016)
             fallback_dir: Directory for JSON fallback (default: /tmp/dopemux_fallback)
             cleanup_old_files: Auto-cleanup fallback files >7 days old (default: True)
         """
