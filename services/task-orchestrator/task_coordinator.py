@@ -49,6 +49,7 @@ class CoordinationState:
     current_batch: List[OrchestrationTask]  # tasks in current batch
     session_id: str
     coordination_mode: str = "ADHD_ADAPTIVE"
+    workspace_path: Optional[str] = None  # Track workspace context
 
 class TaskCoordinator:
     """

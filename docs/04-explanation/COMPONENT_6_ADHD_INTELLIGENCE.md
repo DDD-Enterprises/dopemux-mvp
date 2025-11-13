@@ -396,7 +396,7 @@ Component 5: Cross-Plane Queries (get decisions, patterns, ADHD state)
   ↓ Uses
 Component 4: ConPort MCP Sync (log progress, decisions)
   ↓ Uses
-Component 3: Integration Bridge EventBus (coordinate events)
+Component 3: DopeconBridge EventBus (coordinate events)
   ↓ Uses
 Component 2: Data Contract Adapters (transform data)
   ↓ Uses
@@ -410,7 +410,7 @@ Component 1: Dependency Audit (understand codebase)
 3. ConPort → Returns recent decisions, in-progress tasks
 4. Context Switch Recovery → Queries Serena (navigation state)
 5. Context Switch Recovery → Generates recovery context
-6. Integration Bridge → Routes recovery event (Component 3)
+6. DopeconBridge → Routes recovery event (Component 3)
 7. Metrics Collector → Records switch metrics (Component 6)
 8. Grafana → Displays recovery dashboard
 ```
@@ -471,7 +471,7 @@ Component 1: Dependency Audit (understand codebase)
 - **Intelligence Features**: `services/task-orchestrator/intelligence/README.md` (TBD)
 - **Component 5 (Queries)**: `docs/COMPONENT_5_CONPORT_MCP_QUERIES.md`
 - **Component 4 (Sync)**: `docs/COMPONENT_4_CONPORT_MCP_WIRING.md`
-- **Component 3 (Events)**: `docs/COMPONENT_3_INTEGRATION_BRIDGE_WIRING.md`
+- **Component 3 (Events)**: `docs/COMPONENT_3_DOPECON_BRIDGE_WIRING.md`
 
 ---
 
@@ -481,7 +481,7 @@ Component 1: Dependency Audit (understand codebase)
 
 - ✅ Component 1: Dependency Audit
 - ✅ Component 2: Data Contract Adapters
-- ✅ Component 3: Integration Bridge EventBus
+- ✅ Component 3: DopeconBridge EventBus
 - ✅ Component 4: ConPort MCP Real-Time Sync (Push)
 - ✅ Component 5: Cross-Plane Queries (Pull)
 - 🟡 **Component 6: ADHD Intelligence Layer** ⬅ **Phase 1 Complete (25%)**

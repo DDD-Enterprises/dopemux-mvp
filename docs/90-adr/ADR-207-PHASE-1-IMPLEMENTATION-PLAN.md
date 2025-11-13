@@ -12,7 +12,7 @@ next_review: '2026-02-08'
 **Related**: ADR-207 (Architecture 3.0)
 **Phase**: Phase 1 - Core Orchestration Integration
 **Duration**: 20 hours over 2 weeks
-**Goal**: Integrate Task-Orchestrator dependency analysis with ConPort via Integration Bridge
+**Goal**: Integrate Task-Orchestrator dependency analysis with ConPort via DopeconBridge
 
 ---
 
@@ -193,7 +193,7 @@ next_review: '2026-02-08'
 **Objective**: Define event schemas for ConPort → Task-Orchestrator communication
 
 **Specific Actions**:
-1. Review ConPort's current event structure (Integration Bridge)
+1. Review ConPort's current event structure (DopeconBridge)
 2. Map ConPort `progress_entry` fields to OrchestrationTask
 3. Define event types (progress.created, progress.updated, progress.deleted)
 4. Add versioning to schemas (v1.0)
@@ -277,7 +277,7 @@ class ConPortEventAdapter:
 1. Create `adapters/insight_publisher.py`
 2. Define insight event schemas (dependency_analysis_complete, risk_assessment_complete)
 3. Implement `InsightPublisher` class
-4. Add Integration Bridge publishing logic
+4. Add DopeconBridge publishing logic
 5. Handle publishing failures (queue for retry)
 
 **Deliverable**: `adapters/insight_publisher.py` with:
@@ -307,14 +307,14 @@ class InsightPublisher:
                 "critical_path": critical_path
             }
         }
-        return await self.integration_bridge.publish(event)
+        return await self.dopecon_bridge.publish(event)
 ```
 
 **Acceptance Criteria**:
 - ✅ Publisher class complete
 - ✅ All insight types supported
 - ✅ Retry logic implemented
-- ✅ Integration Bridge integration working
+- ✅ DopeconBridge integration working
 
 ---
 
@@ -353,7 +353,7 @@ class InsightPublisher:
 
 **Specific Actions**:
 1. Find all `self.orchestrated_tasks` usage in enhanced_orchestrator.py
-2. Replace with ConPort queries via Integration Bridge
+2. Replace with ConPort queries via DopeconBridge
 3. Update to event-driven pattern (subscribe/publish)
 4. Remove local storage dictionary
 5. Update all methods that read/write tasks
@@ -408,28 +408,28 @@ await self.insight_publisher.publish_task_update(updated_task)
 
 ---
 
-### Component 3: Integration Bridge Wiring (4 hours, 240 minutes)
+### Component 3: DopeconBridge Wiring (4 hours, 240 minutes)
 
-#### Task 3.1: Configure Integration Bridge for Task-Orchestrator
+#### Task 3.1: Configure DopeconBridge for Task-Orchestrator
 **Duration**: 60 minutes
 **Complexity**: 0.6 (moderate-high)
 **Energy**: Medium
 **Dependencies**: None (can start early)
 
-**Objective**: Set up Integration Bridge routing for Task-Orchestrator
+**Objective**: Set up DopeconBridge routing for Task-Orchestrator
 
 **Specific Actions**:
-1. Review Integration Bridge configuration (PORT_BASE+16)
+1. Review DopeconBridge configuration (PORT_BASE+16)
 2. Add Task-Orchestrator as subscriber/publisher
 3. Configure event routing rules
 4. Set up Redis Streams integration
-5. Test connection to Integration Bridge
+5. Test connection to DopeconBridge
 
-**Deliverable**: Integration Bridge config updated
+**Deliverable**: DopeconBridge config updated
 
 **Configuration**:
 ```python
-# Integration Bridge config
+# DopeconBridge config
 task_orchestrator_config = {
     "service_name": "task-orchestrator",
     "subscriptions": [
@@ -448,7 +448,7 @@ task_orchestrator_config = {
 ```
 
 **Acceptance Criteria**:
-- ✅ Integration Bridge recognizes Task-Orchestrator
+- ✅ DopeconBridge recognizes Task-Orchestrator
 - ✅ Subscriptions configured
 - ✅ Publications configured
 - ✅ Connection test passes
@@ -475,12 +475,12 @@ task_orchestrator_config = {
 **Code Implementation**:
 ```python
 async def _subscribe_to_conport_events(self):
-    """Subscribe to ConPort task events via Integration Bridge."""
-    await self.integration_bridge.subscribe(
+    """Subscribe to ConPort task events via DopeconBridge."""
+    await self.dopecon_bridge.subscribe(
         event_type="conport.progress.created",
         handler=self._handle_task_created
     )
-    await self.integration_bridge.subscribe(
+    await self.dopecon_bridge.subscribe(
         event_type="conport.progress.updated",
         handler=self._handle_task_updated
     )
@@ -509,7 +509,7 @@ async def _handle_task_created(self, event: Dict):
 
 **Specific Actions**:
 1. Update dependency analysis methods to use InsightPublisher
-2. Publish results via Integration Bridge
+2. Publish results via DopeconBridge
 3. Format insights for ConPort decision logging
 4. Add retry logic for failed publishes
 5. Log all publish events
@@ -536,7 +536,7 @@ async def _analyze_task_dependencies(self, task: OrchestrationTask):
 
 **Acceptance Criteria**:
 - ✅ All analysis methods publish insights
-- ✅ Integration Bridge receives events
+- ✅ DopeconBridge receives events
 - ✅ ConPort receives and stores insights
 - ✅ Retry logic working
 
@@ -548,16 +548,16 @@ async def _analyze_task_dependencies(self, task: OrchestrationTask):
 **Energy**: Medium
 **Dependencies**: Task 3.2, 3.3 (subscription + publishing working)
 
-**Objective**: Validate bidirectional Integration Bridge communication
+**Objective**: Validate bidirectional DopeconBridge communication
 
 **Specific Actions**:
-1. Create `tests/integration/test_integration_bridge.py`
-2. Test: ConPort event → Integration Bridge → Task-Orchestrator
-3. Test: Task-Orchestrator insight → Integration Bridge → ConPort
+1. Create `tests/integration/test_dopecon_bridge.py`
+2. Test: ConPort event → DopeconBridge → Task-Orchestrator
+3. Test: Task-Orchestrator insight → DopeconBridge → ConPort
 4. Test: Event latency < 2 seconds
 5. Test: Error handling (Bridge down, malformed events)
 
-**Deliverable**: Integration Bridge test suite
+**Deliverable**: DopeconBridge test suite
 
 **Acceptance Criteria**:
 - ✅ Bidirectional communication working
@@ -752,7 +752,7 @@ Total latency target: < 2 seconds
 5. Critical path accuracy
 6. Authority boundary enforcement
 7. Error recovery (ConPort unavailable)
-8. Error recovery (Integration Bridge unavailable)
+8. Error recovery (DopeconBridge unavailable)
 
 **Acceptance Criteria**:
 - ✅ All test cases pass
@@ -815,7 +815,7 @@ Total latency target: < 2 seconds
 | 2.4 | Implement Schema Mapping | 45m | 0.5 | Medium | 2.2 | Adapters |
 | 2.5 | Remove Direct Storage | 75m | 0.7 | High | 2.2, 2.3 | Adapters |
 | 2.6 | Integration Test Event Flow | 50m | 0.6 | High | 2.2, 2.3, 2.5 | Adapters |
-| 3.1 | Configure Integration Bridge | 60m | 0.6 | Medium | - | Bridge |
+| 3.1 | Configure DopeconBridge | 60m | 0.6 | Medium | - | Bridge |
 | 3.2 | Implement Event Subscription | 75m | 0.7 | High | 3.1, 2.2 | Bridge |
 | 3.3 | Implement Insight Publishing | 60m | 0.6 | Medium | 3.1, 2.3 | Bridge |
 | 3.4 | Test Bridge Communication | 45m | 0.5 | Medium | 3.2, 3.3 | Bridge |
@@ -942,7 +942,7 @@ Start
 **Mitigation**: Task 1.3 audits early, Task 2.1 designs schemas with validation
 **Owner**: Task 1.3, 2.1
 
-### Risk 3: Integration Bridge Not Ready
+### Risk 3: DopeconBridge Not Ready
 **Impact**: High (can't communicate)
 **Probability**: Low (existing infrastructure)
 **Mitigation**: Task 3.1 validates early, can use direct Redis if needed
@@ -1017,7 +1017,7 @@ Start
 - Task 3.2 (Event Subscription)
 - Task 3.3 (Insight Publishing)
 - Task 3.4 (Test Bridge)
-- **Deliverable**: Integration Bridge wired and working
+- **Deliverable**: DopeconBridge wired and working
 
 **Thursday** (4h):
 - Task 4.1 (Enable Analysis)

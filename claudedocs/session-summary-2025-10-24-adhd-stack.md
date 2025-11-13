@@ -256,7 +256,7 @@ Dashboard (8097): Web UI + API
 
 Starts 6 steps:
 1. MCP servers + infrastructure
-2. Integration Bridge
+2. DopeconBridge
 3. Task Orchestrator
 4. ADHD Engine (8095)
 5. Workspace Watcher

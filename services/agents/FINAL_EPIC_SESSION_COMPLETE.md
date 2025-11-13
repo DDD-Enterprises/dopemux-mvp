@@ -280,7 +280,7 @@ cd dopemux-mvp
 docker-compose up -d
 
 # Verify health
-curl http://localhost:3016/health  # Integration Bridge ✅
+curl http://localhost:3016/health  # DopeconBridge ✅
 curl http://localhost:3017/health  # Task Orchestrator ✅
 curl http://localhost:3015/health  # Leantime Bridge ✅
 
@@ -309,9 +309,9 @@ python test_workflow_coordinator.py # 7/7 ✅
 
 ### Development Mode (No Infrastructure)
 
-**Just Start Integration Bridge**:
+**Just Start DopeconBridge**:
 ```bash
-python services/mcp-integration-bridge/main.py
+python services/mcp-dopecon-bridge/main.py
 
 # All tests pass with mocks
 python services/agents/test_*.py  # All passing
@@ -450,7 +450,7 @@ python services/agents/test_*.py  # All passing
 14-29. All 16 persona-dopemux.md files
 
 **Integration** (1 file, +60 lines):
-30. Integration Bridge main.py (service wiring)
+30. DopeconBridge main.py (service wiring)
 
 **Documentation** (9 files, ~2,200 lines):
 31. WEEK6_COMPLETE.md
@@ -566,7 +566,7 @@ EFFICIENCY: 300x FASTER!
 
 ### Services ✅
 
-- [ ] Integration Bridge (3016): ✅ OPERATIONAL
+- [ ] DopeconBridge (3016): ✅ OPERATIONAL
 - [ ] Task Orchestrator (3017): ✅ WIRED
 - [ ] Leantime Bridge (3015): ✅ WIRED
 - [ ] EventBus (Redis Streams): ✅ OPERATIONAL

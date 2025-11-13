@@ -1,8 +1,8 @@
 """
-Test script for Component 3: Integration Bridge Event Subscription
+Test script for Component 3: DopeconBridge Event Subscription
 
 Validates bidirectional event flow:
-1. Publish event to Integration Bridge
+1. Publish event to DopeconBridge
 2. Verify Task-Orchestrator receives event via EventBus
 3. Test all 8 event types
 """
@@ -15,11 +15,11 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-INTEGRATION_BRIDGE_URL = "http://localhost:3016"
+DOPECON_BRIDGE_URL = "http://localhost:3016"
 
 
 async def test_event_publication():
-    """Test publishing events to Integration Bridge."""
+    """Test publishing events to DopeconBridge."""
 
     async with aiohttp.ClientSession() as session:
         # Test 1: Publish TASKS_IMPORTED event
@@ -35,7 +35,7 @@ async def test_event_publication():
         }
 
         async with session.post(
-            f"{INTEGRATION_BRIDGE_URL}/events",
+            f"{DOPECON_BRIDGE_URL}/events",
             json=tasks_imported_event
         ) as response:
             if response.status == 200:
@@ -59,7 +59,7 @@ async def test_event_publication():
         }
 
         async with session.post(
-            f"{INTEGRATION_BRIDGE_URL}/events",
+            f"{DOPECON_BRIDGE_URL}/events",
             json=session_started_event
         ) as response:
             if response.status == 200:
@@ -84,7 +84,7 @@ async def test_event_publication():
         }
 
         async with session.post(
-            f"{INTEGRATION_BRIDGE_URL}/events",
+            f"{DOPECON_BRIDGE_URL}/events",
             json=progress_updated_event
         ) as response:
             if response.status == 200:
@@ -101,14 +101,14 @@ async def test_event_publication():
             "stream": "dopemux:events",
             "event_type": "decision_logged",
             "data": {
-                "summary": "Use Integration Bridge for event coordination",
+                "summary": "Use DopeconBridge for event coordination",
                 "decision_id": "test-decision-001"
             },
             "source": "test-script"
         }
 
         async with session.post(
-            f"{INTEGRATION_BRIDGE_URL}/events",
+            f"{DOPECON_BRIDGE_URL}/events",
             json=decision_logged_event
         ) as response:
             if response.status == 200:
@@ -133,7 +133,7 @@ async def test_event_publication():
         }
 
         async with session.post(
-            f"{INTEGRATION_BRIDGE_URL}/events",
+            f"{DOPECON_BRIDGE_URL}/events",
             json=adhd_state_event
         ) as response:
             if response.status == 200:
@@ -157,7 +157,7 @@ async def test_event_publication():
         }
 
         async with session.post(
-            f"{INTEGRATION_BRIDGE_URL}/events",
+            f"{DOPECON_BRIDGE_URL}/events",
             json=break_reminder_event
         ) as response:
             if response.status == 200:
@@ -168,12 +168,12 @@ async def test_event_publication():
 
 
 async def check_stream_info():
-    """Check Integration Bridge stream information."""
-    logger.info("\n📊 Checking Integration Bridge stream info...")
+    """Check DopeconBridge stream information."""
+    logger.info("\n📊 Checking DopeconBridge stream info...")
 
     async with aiohttp.ClientSession() as session:
         async with session.get(
-            f"{INTEGRATION_BRIDGE_URL}/events/dopemux:events"
+            f"{DOPECON_BRIDGE_URL}/events/dopemux:events"
         ) as response:
             if response.status == 200:
                 result = await response.json()
@@ -185,7 +185,7 @@ async def check_stream_info():
 async def main():
     """Main test execution."""
     logger.info("=" * 60)
-    logger.info("Component 3: Integration Bridge Event Subscription Test")
+    logger.info("Component 3: DopeconBridge Event Subscription Test")
     logger.info("=" * 60)
 
     # Test event publication

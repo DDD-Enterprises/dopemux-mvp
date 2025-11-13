@@ -129,6 +129,7 @@ mcp__dope-context__search_all(
 
 **Parameters**:
 - `workspace_path`: Path to index
+- `workspace_paths`: Optional list of workspaces to batch (sequential) index
 - `include_patterns`: File patterns (default: code files)
 - `exclude_patterns`: Files to exclude
 - `max_files`: Limit for large repos
@@ -148,6 +149,7 @@ mcp__dope-context__index_workspace(
 
 **Parameters**:
 - `workspace_path`: Path to docs
+- `workspace_paths`: Optional list of workspaces to process in one call
 - `include_patterns`: Doc patterns (default: md/pdf/html)
 
 **Example**:
@@ -178,10 +180,15 @@ mcp__dope-context__index_docs(
 - 10-minute periodic fallback
 - ADHD-friendly: no manual intervention needed
 
+Provide `workspace_paths` to enable watchers across multiple repositories/worktrees in one call.
+
 **Example**:
 ```python
 mcp__dope-context__start_autonomous_indexing(
-    workspace_path="/path/to/project",
+    workspace_paths=[
+        "/path/to/project",
+        "/path/to/worktree-b"
+    ],
     debounce_seconds=5,
     periodic_interval=600
 )
@@ -196,15 +203,42 @@ mcp__dope-context__start_autonomous_indexing(
 - Automatic reindexing on changes
 - Structure-aware chunking for better search
 
+`workspace_paths` works here too, so you can monitor multiple docs directories per command.
+
+```python
+mcp__dope-context__start_autonomous_docs_indexing(
+    workspace_paths=[
+        "/path/to/project",
+        "/path/to/worktree-b"
+    ],
+    debounce_seconds=5,
+    periodic_interval=600
+)
+```
+
 ## 📊 Management APIs
 
 ### Index Status - `mcp__dope-context__get_index_status`
 
 **Purpose**: Check indexing status and statistics
 
+**Parameters**:
+- `workspace_path`: Single workspace to inspect (defaults to current)
+- `workspace_paths`: Optional list of workspaces for aggregated reporting
+
 **Returns**:
 ```json
 {
+  "workspace_count": 2,
+  "workspaces": [
+    {
+      "workspace": "/Users/hue/code/dopemux-mvp",
+      "workspace_hash": "3ca12e07",
+      "code_collection": {"status": "green", "total_vectors": 15432},
+      "docs_collection": {"status": "green", "total_vectors": 2156},
+      "snapshot": {"files_indexed": 1250, "total_chunks": 15432, "last_snapshot": "2025-01-31T10:30:00Z"}
+    }
+  ],
   "code_collections": {
     "workspace_hash": {
       "files_indexed": 1250,
@@ -225,6 +259,10 @@ mcp__dope-context__start_autonomous_indexing(
 ### Clear Indexes - `mcp__dope-context__clear_index`
 
 **Purpose**: Reset indexes for fresh start
+
+**Parameters**:
+- `workspace_path`: Workspace whose indexes should be removed
+- `target`: `"code"`, `"docs"`, or `"both"` (default `"code"`)
 
 ### Search Metrics - `mcp__dope-context__get_search_metrics`
 

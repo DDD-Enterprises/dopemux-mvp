@@ -11,10 +11,10 @@
 
 ### Technical Implementation Decision
 
-**Decision**: Integration Bridge as central task orchestration engine
+**Decision**: DopeconBridge as central task orchestration engine
 **Context**: Complete 1,578-line implementation provides task lifecycle, LeanTime sync, ADHD workflows
 **Impact**: Cross-plane coordination, multi-instance support, template system ready
-**Tags**: integration-bridge, task-orchestration, implementation
+**Tags**: dopecon-bridge, task-orchestration, implementation
 
 ### ADHD Workflow Decision
 
@@ -32,7 +32,7 @@
   "session_date": "2025-09-28",
   "achievements": {
     "unified_architecture_deployed": true,
-    "integration_bridge_implemented": true,
+    "dopecon_bridge_implemented": true,
     "service_optimization_completed": true,
     "strategic_vision_discovered": true
   },
@@ -92,7 +92,7 @@
 ### Completion Status
 
 - ✅ Infrastructure: Unified architecture operational
-- ✅ Coordination: Integration Bridge providing cross-plane communication
+- ✅ Coordination: DopeconBridge providing cross-plane communication
 - ✅ Intelligence: Multi-model MCP ecosystem ready
 - ⚠️  Integration: LeanTime bridge needs port fix and API configuration
 - 🚀 Pipeline: Document intelligence ready for implementation
@@ -110,7 +110,7 @@
 ### Current Mental Model
 
 - Unified architecture is our stable foundation
-- Integration Bridge is the orchestration powerhouse
+- DopeconBridge is the orchestration powerhouse
 - Multi-model intelligence via Zen exceeds research report solutions
 - LeanTime integration is nearly complete (port fix needed)
 - Custom implementation path chosen over external dependencies

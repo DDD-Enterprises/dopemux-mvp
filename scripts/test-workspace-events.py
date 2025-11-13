@@ -17,8 +17,8 @@ import sys
 import argparse
 from pathlib import Path
 
-# Add Integration Bridge to path for EventBus
-bridge_path = Path(__file__).parent.parent / "services" / "mcp-integration-bridge"
+# Add DopeconBridge to path for EventBus
+bridge_path = Path(__file__).parent.parent / "services" / "mcp-dopecon-bridge"
 sys.path.insert(0, str(bridge_path))
 
 from event_bus import Event, EventBus

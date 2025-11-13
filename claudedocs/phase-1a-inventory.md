@@ -46,7 +46,7 @@ Via Serena `list_dir(services/)`:
 4. **conport_kg_ui/** - ✅ React UI (substantial code found)
 5. **dope-context/** - Semantic search (just indexed!)
 6. **dopemux-gpt-researcher/** - Research orchestration
-7. **mcp-integration-bridge/** - Cross-plane coordination
+7. **mcp-dopecon-bridge/** - Cross-plane coordination
 8. **ml-risk-assessment/** - ML risk prediction
 9. **orchestrator/** - Task orchestration
 10. **serena/** - LSP and code intelligence
@@ -105,7 +105,7 @@ Via Serena `list_dir(services/)`:
 **Results**: TypeScript client code (kgClient.getRecentDecisions, getNeighborhood, getFullContext)
 
 **Frontend database client** found:
-- Integration Bridge client in React UI
+- DopeconBridge client in React UI
 - HTTP API calls to port 3016
 - Error handling for failed connections
 

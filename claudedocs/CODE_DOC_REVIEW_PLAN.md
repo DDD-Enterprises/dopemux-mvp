@@ -187,7 +187,7 @@ pytest --cov --cov-report=html --cov-report=term-missing -v
 - **Review**:
   - Authority boundaries respected (PM vs Cognitive)
   - No direct cross-plane communication
-  - Integration Bridge used correctly
+  - DopeconBridge used correctly
   - Authority matrix compliance
 - **Tool**: Zen thinkdeep for deep analysis
 - **Output**: Architecture compliance report

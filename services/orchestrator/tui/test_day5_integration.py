@@ -10,7 +10,7 @@ Comprehensive test suite for all Day 5 advanced ADHD features:
 5. Integration across all managers
 
 Requirements:
-- Integration Bridge running on port 3016
+- DopeconBridge running on port 3016
 - ConPort operational
 """
 
@@ -56,7 +56,7 @@ async def test_day5_integration():
             print(f"      ⚠️  Warnings: {init_result['warnings']}")
     except Exception as e:
         print(f"   ❌ Initialization failed: {e}")
-        print(f"      Make sure Integration Bridge is running on port 3016")
+        print(f"      Make sure DopeconBridge is running on port 3016")
         return
 
     # ========================================================================
@@ -279,7 +279,7 @@ async def test_day5_integration():
 if __name__ == "__main__":
     print("\n🧪 Starting IP-005 Day 5 Integration Tests...")
     print("📍 Workspace: /Users/hue/code/dopemux-mvp")
-    print("🔗 Integration Bridge: http://localhost:3016")
+    print("🔗 DopeconBridge: http://localhost:3016")
     print()
 
     asyncio.run(test_day5_integration())
