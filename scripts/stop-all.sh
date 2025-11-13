@@ -51,11 +51,11 @@ docker-compose --profile manual down task-orchestrator 2>/dev/null || true
 echo "✅ Task Orchestrator stopped"
 echo ""
 
-# Stop Integration Bridge
-echo "🔗 Stopping Integration Bridge..."
+# Stop DopeconBridge
+echo "🔗 Stopping DopeconBridge..."
 cd "$PROJECT_ROOT/docker/conport-kg"
-docker-compose down integration-bridge 2>/dev/null || true
-echo "✅ Integration Bridge stopped"
+docker-compose down dopecon-bridge 2>/dev/null || true
+echo "✅ DopeconBridge stopped"
 echo ""
 
 # Stop MCP servers (but keep infrastructure running)
