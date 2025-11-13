@@ -1,5 +1,5 @@
 """
-Integration Bridge Connector for Serena
+DopeconBridge Connector for Serena
 
 Connects Serena to ConPort-KG event system for automatic event emission.
 Lazy-loads to avoid circular dependencies and allows graceful degradation.
@@ -31,8 +31,8 @@ def initialize_integration(workspace_id: str, event_bus_url: str = "redis://loca
     global _integration_manager, _integration_enabled
 
     try:
-        # Add mcp-integration-bridge to path
-        bridge_path = str(Path(__file__).parent.parent.parent / "mcp-integration-bridge")
+        # Add mcp-dopecon-bridge to path
+        bridge_path = str(Path(__file__).parent.parent.parent / "mcp-dopecon-bridge")
         if bridge_path not in sys.path:
             sys.path.insert(0, bridge_path)
 

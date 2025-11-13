@@ -25,6 +25,8 @@ import os
 from typing import Optional
 import logging
 
+from .global_config import get_default_workspace, set_default_workspace
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_WORKSPACE_FILE = Path.home() / ".dopemux" / "default_workspace"
@@ -37,6 +39,11 @@ def _load_persisted_default_workspace() -> Optional[Path]:
     Returns:
         Path if the persisted location exists, otherwise None.
     """
+    # Prefer the new global config (supports multi-workspace concurrency)
+    default_from_config = get_default_workspace()
+    if default_from_config:
+        return default_from_config
+
     try:
         if not DEFAULT_WORKSPACE_FILE.exists():
             return None
@@ -63,6 +70,9 @@ def persist_workspace_root(workspace_path: Path) -> None:
         if not workspace_path.exists():
             logger.debug("Skipping workspace persistence (missing path: %s)", workspace_path)
             return
+        # Update the global config first so scripts and other repos can source
+        # their environment from ~/.dopemux/workspaces/<slug>.
+        set_default_workspace(workspace_path)
         DEFAULT_WORKSPACE_FILE.parent.mkdir(parents=True, exist_ok=True)
         DEFAULT_WORKSPACE_FILE.write_text(str(workspace_path), encoding="utf-8")
     except OSError as exc:

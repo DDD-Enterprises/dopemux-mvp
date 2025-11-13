@@ -51,7 +51,7 @@ def get_conport_port(instance_id: Optional[str] = None) -> int:
         return port_base + 7  # ConPort offset is +7
 
     # Default: Instance A ConPort on port 3004
-    # (Integration Bridge at 3000, ConPort MCP at 3007, HTTP API at 3004)
+    # (DopeconBridge at 3000, ConPort MCP at 3007, HTTP API at 3004)
     return 3004
 
 

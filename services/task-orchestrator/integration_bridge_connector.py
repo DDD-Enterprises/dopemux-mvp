@@ -1,5 +1,5 @@
 """
-Integration Bridge Connector for Task-Orchestrator
+DopeconBridge Connector for Task-Orchestrator
 
 Connects Task-Orchestrator to ConPort-KG event system for task progress tracking.
 Enhances existing event subscription with publishing capabilities.
@@ -22,7 +22,7 @@ def initialize_integration(workspace_id: str, event_bus_url: str = "redis://loca
     global _integration_manager, _integration_enabled
 
     try:
-        bridge_path = str(Path(__file__).parent.parent / "mcp-integration-bridge")
+        bridge_path = str(Path(__file__).parent.parent / "mcp-dopecon-bridge")
         if bridge_path not in sys.path:
             sys.path.insert(0, bridge_path)
 
