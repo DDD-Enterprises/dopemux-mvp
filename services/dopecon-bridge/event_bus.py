@@ -41,6 +41,7 @@ class Event:
     data: Dict[str, Any]
     timestamp: Optional[str] = None
     source: Optional[str] = None
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
     def __post_init__(self):
         if not self.timestamp:
