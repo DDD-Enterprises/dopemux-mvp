@@ -203,7 +203,7 @@ crew = Crew(
 | **MetaGPT (SDLC Simulation)** | Complete project generation | High | Medium | Medium (many phases) |
 | **BabyAGI (Task Queue)** | Goal decomposition, planning | Low | Limited (single agent) | Low (task explosion risk) |
 
-**Recommendation for Dopemux**: **Hybrid approach** - CrewAI-style role orchestration for structured workflows (PM Plane) + AutoGen-style conversational agents for implementation (Cognitive Plane). Use event-driven coordination (Integration Bridge) to prevent tight coupling.
+**Recommendation for Dopemux**: **Hybrid approach** - CrewAI-style role orchestration for structured workflows (PM Plane) + AutoGen-style conversational agents for implementation (Cognitive Plane). Use event-driven coordination (DopeconBridge) to prevent tight coupling.
 
 ---
 
@@ -721,7 +721,7 @@ planner_agent.initialize(context=previous_research)
 
 **Dopemux Application**:
 - **Task-Master** produces structured PRD breakdown
-- **Integration Bridge** translates PM tasks → Cognitive tasks
+- **DopeconBridge** translates PM tasks → Cognitive tasks
 - **Serena LSP** + **ConPort** maintain implementation context
 - **Acceptance criteria** stored as progress_entry metadata
 
@@ -794,7 +794,7 @@ LeadResearcher:
 **Recommendation for Dopemux**:
 - Use **ConPort** as persistent memory across phases
 - **Parallel research agents** (multiple Zen MCP instances)
-- **Integration Bridge** as coordinator (LeadResearcher equivalent)
+- **DopeconBridge** as coordinator (LeadResearcher equivalent)
 
 ---
 
@@ -963,7 +963,7 @@ LeadResearcher:
 **Recommendation for Dopemux**:
 - **Sweep AI model** for Task-Master → PR workflow (PM Plane)
 - **Aider model** for Serena + ConPort integration (Cognitive Plane)
-- **Multi-agent dispatch** (Devin-inspired) via Integration Bridge
+- **Multi-agent dispatch** (Devin-inspired) via DopeconBridge
 - **Human-in-loop** (Smol AI philosophy) throughout
 
 ---
@@ -1329,7 +1329,7 @@ class PMPlaneOrchestrator:
         dependencies = self.agents["task_orchestrator"].analyze_dependencies(parsed_tasks)
         status_updates = self.agents["leantime"].update_project_plan(dependencies)
 
-        # Publish to Integration Bridge
+        # Publish to DopeconBridge
         self.message_bus.publish("pm_plane.tasks_ready", {
             "tasks": parsed_tasks,
             "dependencies": dependencies
@@ -1361,9 +1361,9 @@ class CognitivePlaneAgent:
             return self.answer_question(user_message)
 ```
 
-**Integration Bridge (Event-Driven)**:
+**DopeconBridge (Event-Driven)**:
 ```python
-class IntegrationBridge:
+class DopeconBridge:
     def __init__(self):
         self.pm_bus = RedisPubSub(channel="pm_plane.*")
         self.cog_bus = RedisPubSub(channel="cognitive_plane.*")
@@ -1862,7 +1862,7 @@ class CachedLLMClient:
 
 **Message Bus**: Redis Pub/Sub
 - Fast, simple, already in Dopemux stack
-- Use for Integration Bridge event routing
+- Use for DopeconBridge event routing
 - Supports PM ↔ Cognitive communication
 
 **Persistent Memory**: ConPort (PostgreSQL AGE)
@@ -2448,7 +2448,7 @@ if __name__ == "__main__":
 │                               │                                 │
 │                               ▼                                 │
 │                    ┌─────────────────────┐                      │
-│                    │ Integration Bridge  │                      │
+│                    │ DopeconBridge  │                      │
 │                    │  (Event Router)     │                      │
 │                    │  PORT_BASE+16       │                      │
 │                    └─────────────────────┘                      │

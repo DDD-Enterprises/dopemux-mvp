@@ -203,13 +203,13 @@ After Week 5:
 **Objective**: Enforce two-plane architecture boundaries
 
 **Day 1: Skeleton** (2 focus blocks)
-- Base class with Integration Bridge client
+- Base class with DopeconBridge client
 - Authority matrix loading
 - Complexity: 0.4, Energy: Medium
 
 **Day 2-3: Cross-Plane Routing** (4 focus blocks)
 - Detect cross-plane requests
-- Route through Integration Bridge
+- Route through DopeconBridge
 - Request/response logging
 - Complexity: 0.6, Energy: High
 - Break: After Day 2
@@ -227,11 +227,11 @@ After Week 5:
 - Complexity: 0.3, Energy: Low
 
 **Deliverables**:
-- Cross-plane routing via Integration Bridge
+- Cross-plane routing via DopeconBridge
 - Authority validation active
 - Zero cross-plane violations
 
-**Dependencies**: Integration Bridge, ConPort
+**Dependencies**: DopeconBridge, ConPort
 
 ---
 
@@ -687,7 +687,7 @@ SuperClaude Integration (W15-16) --> [GATE: Full system complete]
 | MCP Wiring (W2) | MemoryAgent | - |
 | CognitiveGuardian (W3-4) | MemoryAgent, ConPort | - |
 | ADHD Routing (W5) | CognitiveGuardian | - |
-| TwoPlaneOrchestrator (W6) | Integration Bridge | ToolOrchestrator |
+| TwoPlaneOrchestrator (W6) | DopeconBridge | ToolOrchestrator |
 | DopemuxEnforcer (W7) | CognitiveGuardian, Serena | ToolOrchestrator |
 | ToolOrchestrator (W8) | Zen, CognitiveGuardian | TwoPlane, Enforcer |
 | TaskDecomposer (W9) | Zen, Serena, ConPort | - |

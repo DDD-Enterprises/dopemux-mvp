@@ -32,7 +32,7 @@ Deep analysis reveals ConPort as a highly sophisticated, production-ready knowle
 - **Event-Driven Architecture**: Triggers queries based on system events
 - **Background Automation**: Automatic decision similarity, task context loading
 - **ADHD-Safe Operations**: Passive background processing without interruption
-- **Integration Points**: ConPort MCP client, Integration Bridge fallback
+- **Integration Points**: ConPort MCP client, DopeconBridge fallback
 
 **Query Models (queries/models.py - 100+ lines)**
 - **ADHD-Optimized Dataclasses**: DecisionCard (Tier 1), DecisionSummary (Tier 2), DecisionNeighborhood (progressive disclosure)

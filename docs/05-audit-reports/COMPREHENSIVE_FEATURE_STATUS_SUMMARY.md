@@ -45,7 +45,7 @@ A comprehensive line-by-line audit of all documentation in `/docs` (200+ files) 
 | Task | Status | ConPort ID | Time Estimate |
 |------|--------|------------|---------------|
 | Enable Leantime API for Full Sync | ❌ Not Started | 290 | Unknown |
-| Fix Integration Bridge ConPort Errors | ❌ Not Started | 291 | Unknown |
+| Fix DopeconBridge ConPort Errors | ❌ Not Started | 291 | Unknown |
 | Complete E2E Testing | ❌ Not Started | 292 | Unknown |
 | Production Deployment | ❌ Not Started | 293 | Unknown |
 | Update Documentation | ❌ Not Started | 294 | Unknown |
@@ -73,7 +73,7 @@ A comprehensive line-by-line audit of all documentation in `/docs` (200+ files) 
 3. **SQL Injection Verification** (from audit) - 30 minutes security check
 
 ### Short-term (1-2 Weeks)
-4. **Integration Bridge Fixes** (291) - Critical for service communication
+4. **DopeconBridge Fixes** (291) - Critical for service communication
 5. **Phase 3 Service Reviews** (279) - Complete audit coverage
 6. **Replace Mock Data** (296) - Production readiness
 

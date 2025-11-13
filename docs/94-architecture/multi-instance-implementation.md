@@ -151,7 +151,7 @@ Each instance gets 30 ports (port_base + offset):
 | Task-Master         | +5     | 3005       | 3035       | 3065       |
 | Serena              | +6     | 3006       | 3036       | 3066       |
 | ConPort             | +7     | 3007       | 3037       | 3067       |
-| Integration Bridge  | +16    | 3016       | 3046       | 3076       |
+| DopeconBridge  | +16    | 3016       | 3046       | 3076       |
 
 ### Environment Variables
 
@@ -163,7 +163,7 @@ DOPEMUX_PORT_BASE="3000"
 TASK_MASTER_PORT="3005"
 SERENA_PORT="3006"
 CONPORT_PORT="3007"
-INTEGRATION_BRIDGE_PORT="3016"
+DOPECON_BRIDGE_PORT="3016"
 LEANTIME_URL="http://localhost:3001"               # Always shared
 ```
 
@@ -175,7 +175,7 @@ DOPEMUX_PORT_BASE="3030"
 TASK_MASTER_PORT="3035"
 SERENA_PORT="3036"
 CONPORT_PORT="3037"
-INTEGRATION_BRIDGE_PORT="3046"
+DOPECON_BRIDGE_PORT="3046"
 LEANTIME_URL="http://localhost:3001"               # Always shared
 ```
 
@@ -239,7 +239,7 @@ InstanceManager.detect_running_instances()
 - Detects workspace root from current directory
 - No instance-specific modifications required
 
-### Task-Master & Integration Bridge
+### Task-Master & DopeconBridge
 
 **Port-Based Isolation**:
 - Each instance gets unique port (e.g., 3005 vs 3035)

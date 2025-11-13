@@ -26,7 +26,7 @@ nano .env
 ALLOWED_ORIGINS=https://yourdomain.com,https://app.yourdomain.com
 ADHD_ENGINE_API_KEY=$(openssl rand -hex 32)
 SERENA_DB_PASSWORD=<your-secure-password>
-USE_INTEGRATION_BRIDGE=true  # Full architecture compliance
+USE_DOPECON_BRIDGE=true  # Full architecture compliance
 ```
 
 ---
@@ -44,7 +44,7 @@ docker-compose up -d
 # Verify all healthy
 docker-compose ps
 curl http://localhost:8000/health  # ADHD Engine
-curl http://localhost:3016/kg/health  # Integration Bridge
+curl http://localhost:3016/kg/health  # DopeconBridge
 ```
 
 **If running directly**:
@@ -55,9 +55,9 @@ export ADHD_ENGINE_API_KEY="your-key"
 export ALLOWED_ORIGINS="https://yourdomain.com"
 python main.py &
 
-# Integration Bridge
-cd services/mcp-integration-bridge
-export USE_INTEGRATION_BRIDGE=true
+# DopeconBridge
+cd services/mcp-dopecon-bridge
+export USE_DOPECON_BRIDGE=true
 python main.py &
 
 # Other services as needed...
@@ -87,7 +87,7 @@ curl -H "Origin: https://yourdomain.com" http://localhost:8000/health
 
 **Architecture Validation**:
 ```bash
-# Test Integration Bridge
+# Test DopeconBridge
 curl -X POST http://localhost:3016/custom_data \
   -H "X-Source-Plane: cognitive_plane" \
   -H "Content-Type: application/json" \
@@ -122,7 +122,7 @@ time curl -H "X-API-Key: your-key" http://localhost:8000/health
 **Watch For**:
 - [ ] No 401/403 errors from legitimate users
 - [ ] CORS working for allowed origins
-- [ ] Integration Bridge receiving requests
+- [ ] DopeconBridge receiving requests
 - [ ] Database connections stable
 - [ ] Memory usage normal
 - [ ] No credential exposure in logs
@@ -152,7 +152,7 @@ docker-compose restart
 **Most Likely Issues** (and fixes):
 1. CORS too restrictive → Add origin to ALLOWED_ORIGINS
 2. API key not set → Services run in dev mode (no auth)
-3. Bridge not connecting → Check INTEGRATION_BRIDGE_URL
+3. Bridge not connecting → Check DOPECON_BRIDGE_URL
 
 **All changes are backwards compatible** - rollback is safe
 
@@ -165,7 +165,7 @@ docker-compose restart
 - [x] Health checks return 200 OK
 - [x] API authentication works
 - [x] CORS configuration correct
-- [x] Integration Bridge functional
+- [x] DopeconBridge functional
 - [x] No security errors in logs
 
 ---
@@ -178,7 +178,7 @@ docker-compose restart
 - Credentials: From environment (was hardcoded)
 
 **Architecture**:
-- Integration Bridge: Complete (was 80% stubs)
+- DopeconBridge: Complete (was 80% stubs)
 - ADHD Engine: Uses bridge (was direct SQLite)
 - Violations: 0 (was 2)
 

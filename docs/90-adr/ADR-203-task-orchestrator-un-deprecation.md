@@ -203,7 +203,7 @@ f9a176f feat(task-orchestrator): complete 37 specialized tools implementation
 1. Security audit (2h) - Apply ConPort/Serena learnings
 2. Fix service boundaries (3h) - Use ConPort HTTP API
 3. Add authentication (2h) - Follow ADHD Engine pattern
-4. Integration Bridge wiring (4h)
+4. DopeconBridge wiring (4h)
 5. Run tests and validate (2h)
 
 **Result**: Fully integrated active service

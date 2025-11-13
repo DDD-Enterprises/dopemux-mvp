@@ -222,7 +222,7 @@ serena.analyze_complexity(file_path="services/task-orchestrator/src/risk_predict
 # Find direct database access (should go through ConPort)
 search_code(query="direct SQLite database write ADHD engine", profile="debugging")
 
-# Find Integration Bridge bypasses
+# Find DopeconBridge bypasses
 search_code(query="service to service direct call no bridge", profile="debugging")
 
 # Find authority violations

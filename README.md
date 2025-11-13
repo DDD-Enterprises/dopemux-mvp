@@ -2,9 +2,11 @@
 
 **Real-time context awareness, knowledge graphs, and cognitive load management for developers with ADHD**
 
-![Version](https://img.shields.io/badge/version-2.0-blue)
-![Python](https://img.shields.io/badge/python-3.11+-green)
+![Version](https://img.shields.io/badge/version-0.1.0-blue)
+![Python](https://img.shields.io/badge/python-3.10+-green)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
+![PyPI](https://img.shields.io/badge/pypi-dopemux-blue)
+![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey)
 
 ## 🎯 What is Dopemux?
 
@@ -14,10 +16,69 @@ Dopemux is a comprehensive development platform designed specifically for develo
 
 - **🧠 ADHD-Optimized Statusline** - Real-time context awareness without breaking focus
 - **📊 ConPort Knowledge Graph** - Persistent memory and decision logging across sessions
+- **🌉 DopeconBridge** - Single integration point for cross-plane communication & KG access
 - **⚡ Adaptive Energy Tracking** - Monitor and adapt to your energy levels
 - **👁️ Attention State Management** - Detect and accommodate different attention states
 - **☕ Smart Break Reminders** - Context-aware break suggestions
 - **🔄 Session Continuity** - Resume work exactly where you left off
+
+---
+
+## 📦 Installation
+
+### Quick Install (Recommended)
+
+**PyPI (Python Package)**
+```bash
+pip install dopemux
+```
+
+**Homebrew (macOS)**
+```bash
+brew install dopemux/tap/dopemux
+```
+
+**Universal Installer (All Platforms)**
+```bash
+curl -fsSL https://raw.githubusercontent.com/dopemux/dopemux-mvp/main/install.sh | bash
+```
+
+### Requirements
+
+- **Python:** 3.10 or higher (3.8+ supported in package)
+- **Git:** 2.30 or higher
+- **Docker:** 20.10 or higher (optional but recommended)
+- **tmux, jq, curl, sqlite3**
+
+### Platform Support
+
+| Platform | Status | Installation Method |
+|----------|--------|---------------------|
+| macOS (Apple Silicon) | ✅ Tested | Homebrew, PyPI, Installer |
+| macOS (Intel) | ✅ Supported | Homebrew, PyPI, Installer |
+| Ubuntu 22.04+ | ✅ Tested | PyPI, Installer |
+| Arch Linux | ✅ Supported | PyPI, Installer |
+| Fedora 39+ | ✅ Supported | PyPI, Installer |
+
+**Quick Start:**
+```bash
+dopemux --version    # Verify installation
+dopemux doctor       # Run health check
+dopemux init         # Initialize in project
+```
+
+### 🎨 Terminal Environment Setup (Optional)
+
+Get an ADHD-optimized terminal with Kitty, zsh, Starship, and productivity tools:
+
+```bash
+./install.sh --terminal
+```
+
+Includes: GPU-accelerated terminal, modern shell, beautiful prompt, fzf, ripgrep, bat, and more.  
+See [Terminal Setup Guide](docs/TERMINAL_SETUP.md) for details.
+
+For detailed instructions, see [INSTALL.md](INSTALL.md)
 
 ---
 
@@ -147,17 +208,23 @@ my-project bugfix/login-redirect
 git clone https://github.com/your-org/dopemux-mvp
 cd dopemux-mvp
 
-# 2. Start core services
+# 2. Generate workspace-aware configs (one-time per clone)
+python3 scripts/render_workspace_configs.py --set-default
+
+# 3. Load the env for this shell (or add to your shell profile)
+source "$(python3 scripts/workspace_env_path.py)"
+
+# 4. Start core services (reads DOPEMUX_* from the sourced env)
 docker-compose -f docker-compose.unified.yml up -d
 
-# 3. Configure statusline in Claude Code settings
+# 5. Configure statusline in Claude Code settings
 {
   "statusline": {
     "command": "bash $(pwd)/.claude/statusline.sh"
   }
 }
 
-# 4. Initialize your first session
+# 6. Initialize your first session
 mcp__conport__update_active_context \
   --workspace_id $(pwd) \
   --patch_content "{
@@ -186,8 +253,10 @@ dopemux start
   before `dopemux start`:
   - `CLAUDE_CODE_ROUTER_UPSTREAM_URL` – full `/v1/chat/completions` endpoint
   - `CLAUDE_CODE_ROUTER_UPSTREAM_KEY` – API key if required
-  - `CLAUDE_CODE_ROUTER_MODELS` – comma-separated model names (e.g. `deepseek-chat,deepseek-reasoner`)
+- `CLAUDE_CODE_ROUTER_MODELS` – comma-separated model names (e.g. `deepseek-chat,deepseek-reasoner`)
 - Use `--no-claude-router` if you need to fall back to direct Anthropics access.
+
+💡 **Multi-workspace tip:** running `python3 scripts/render_workspace_configs.py` inside any clone creates `~/.dopemux/workspaces/<slug>/env`. Source that file before starting Dopemux so Docker containers, MCP proxies, and scripts share the correct `DOPEMUX_WORKSPACE_*` variables per clone.
 
 ### Role-aware launch
 
@@ -241,9 +310,28 @@ Your statusline should now show:
 
 ## 📚 Core Components
 
+### DopeconBridge - Integration Gateway
+
+**Single coordination point for all cross-plane communication:**
+
+- **Event Streaming** - Redis-backed EventBus for real-time updates
+- **Cross-Plane Routing** - PM ↔ Cognitive plane coordination
+- **KG Access** - Centralized ConPort/Decision Graph gateway
+- **Custom Data** - Workspace-scoped key-value persistence
+- **Security** - Token-based auth, plane isolation
+
+**Architecture:**
+- PM Plane: Leantime, Task-Master, Taskmaster → Owns tasks/projects
+- Cognitive Plane: ADHD Engine, Serena, GPT-Researcher → Owns context/reasoning
+- DopeconBridge: Single choke point between planes
+
+**No service** should access ConPort DB or Redis directly - all via DopeconBridge.
+
+[📖 DopeconBridge Documentation](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md)
+
 ### ConPort Knowledge Graph
 
-**Persistent memory system for development context:**
+**Persistent memory system for development context (accessed via DopeconBridge):**
 
 - **Product Context** - Project goals, architecture, tech stack
 - **Active Context** - Current focus, session state, recent changes
@@ -254,10 +342,11 @@ Your statusline should now show:
 
 **Key Features:**
 
-- SQLite-based for sub-5ms queries
+- PostgreSQL AGE backend for graph operations
 - Full-text and semantic search
 - Session continuity across interruptions
 - Decision genealogy tracking
+- All access via DopeconBridge for consistency
 
 [📖 ConPort Documentation](./docs/04-explanation/conport-technical-deep-dive.md)
 
@@ -438,7 +527,7 @@ Dopemux uses a **two-plane architecture** for separation of concerns:
 - **ConPort** - Knowledge graph, decision logging, memory
 - **ADHD Engine** - Energy tracking, attention management
 
-### Integration Bridge
+### DopeconBridge
 
 - Cross-plane event routing
 - Authority enforcement

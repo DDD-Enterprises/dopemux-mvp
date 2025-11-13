@@ -31,7 +31,7 @@ next_review: '2026-02-08'
 - [x] **Security Score**: 4/10 → 10/10 ⭐⭐⭐⭐⭐
 
 ### Architecture (100%)
-- [x] Integration Bridge completed (80% → 100%)
+- [x] DopeconBridge completed (80% → 100%)
 - [x] MCP client implemented (209 lines)
 - [x] Custom data endpoints working
 - [x] ADHD Engine migrated to bridge
@@ -74,7 +74,7 @@ nano .env  # Configure production values
 
 # Deploy services
 cd services/adhd_engine && python main.py &
-cd services/mcp-integration-bridge && python main.py &
+cd services/mcp-dopecon-bridge && python main.py &
 ```
 
 **See**: DEPLOYMENT-INSTRUCTIONS.md
@@ -121,7 +121,7 @@ Documentation:  9/10 ⭐⭐⭐⭐⭐
 
 **Bonus Achievements**:
 - ✅ All security issues fixed
-- ✅ Integration Bridge completed
+- ✅ DopeconBridge completed
 - ✅ Full architecture compliance
 - ✅ 87% time savings achieved
 

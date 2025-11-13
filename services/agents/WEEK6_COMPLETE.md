@@ -9,10 +9,10 @@
 
 ## What Was Built
 
-### Part 1: Integration Bridge REST Endpoints (Days 1-2)
+### Part 1: DopeconBridge REST Endpoints (Days 1-2)
 
 **Files Modified**:
-- `services/mcp-integration-bridge/main.py` (+217 lines)
+- `services/mcp-dopecon-bridge/main.py` (+217 lines)
 
 **Features Added**:
 1. **POST /route/pm** - Route Cognitive → PM requests
@@ -37,7 +37,7 @@
 ```
 TwoPlaneOrchestrator (REST client)
     ↓ POST /route/pm or /route/cognitive
-Integration Bridge (REST → EventBus translator)
+DopeconBridge (REST → EventBus translator)
     ↓ EventBus.publish("dopemux:cross-plane")
 Redis Streams (async coordination)
 ```
@@ -134,7 +134,7 @@ Redis Streams (async coordination)
 **Test Infrastructure**:
 - Standalone test server (week6_test_server.py on port 3017)
 - Mock responses for PM and Cognitive planes
-- No Integration Bridge dependencies needed
+- No DopeconBridge dependencies needed
 - ADHD-friendly: Fast, isolated, deterministic
 
 ---
@@ -143,11 +143,11 @@ Redis Streams (async coordination)
 
 **Problem Discovered**:
 - TwoPlaneOrchestrator assumed REST endpoints (/route/pm, /route/cognitive)
-- Integration Bridge implemented only event-driven architecture (Redis Streams)
+- DopeconBridge implemented only event-driven architecture (Redis Streams)
 - Architecture mismatch: No REST routing endpoints existed
 
 **Solution Implemented**:
-- Added REST → EventBus translation layer to Integration Bridge
+- Added REST → EventBus translation layer to DopeconBridge
 - Maintains clean separation: Orchestrator handles authority, Bridge handles protocol
 - Synchronous REST interface for simple cross-plane coordination
 - EventBus publishing for async event-driven communication
@@ -205,7 +205,7 @@ Redis Streams (async coordination)
 3. `services/agents/WEEK6_COMPLETE.md` (this file)
 
 **Modified** (2 files):
-4. `services/mcp-integration-bridge/main.py` (+217 lines) - REST endpoints
+4. `services/mcp-dopecon-bridge/main.py` (+217 lines) - REST endpoints
 5. `services/agents/two_plane_orchestrator.py` (+180 lines) - Enhancements
 
 **Total**: 5 files, ~897 lines
@@ -410,9 +410,9 @@ await orchestrator.close()
 
 ## Technical Notes
 
-### Integration Bridge Startup Issue
+### DopeconBridge Startup Issue
 
-**Problem**: Integration Bridge (port 3016) has database connection failures preventing full startup
+**Problem**: DopeconBridge (port 3016) has database connection failures preventing full startup
 - Tried to connect to PostgreSQL on localhost:5455
 - Connection refused (database not running)
 - Server starts but in degraded mode
@@ -425,7 +425,7 @@ await orchestrator.close()
 
 **TODO for Production**:
 - Start PostgreSQL AGE on port 5455
-- Update Integration Bridge to handle DB connection failures gracefully
+- Update DopeconBridge to handle DB connection failures gracefully
 - Or deploy via Docker Compose with all dependencies
 
 ### Mock Responses

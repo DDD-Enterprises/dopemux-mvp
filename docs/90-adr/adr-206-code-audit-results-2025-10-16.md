@@ -32,7 +32,7 @@ Conducted comprehensive code audit of code-audit workspace to:
 **Immediate Actions** (Applied):
 1. Fix all 10 HIGH-severity security vulnerabilities immediately
 2. Fix critical infrastructure bug (document chunking)
-3. Document Integration Bridge completion for Week 7
+3. Document DopeconBridge completion for Week 7
 4. Defer non-critical work (integration tests) as pre-existing issues
 
 **Security Fixes Applied**:
@@ -86,7 +86,7 @@ Conducted comprehensive code audit of code-audit workspace to:
 - Clear roadmap for remaining work
 
 **Knowledge**:
-- Integration Bridge mystery solved (80% complete stubs)
+- DopeconBridge mystery solved (80% complete stubs)
 - All 12 services assessed (8 production-ready)
 - Documentation 95% accurate (validated)
 - Architecture gaps documented with fix plans
@@ -95,16 +95,16 @@ Conducted comprehensive code audit of code-audit workspace to:
 
 **Incomplete Work**:
 - Integration tests not fixed (deferred as pre-existing)
-- Integration Bridge needs Week 7 completion (12h)
+- DopeconBridge needs Week 7 completion (12h)
 - Some services have minor TODOs (non-blocking)
 
 **Accepted Risks**:
-- Services bypass Integration Bridge (temporary, documented)
+- Services bypass DopeconBridge (temporary, documented)
 - Direct database access continues (Week 7 migration)
 - Some documentation minor inaccuracies (95% vs 100%)
 
 **Mitigation**:
-- Week 7 plan created for Integration Bridge completion
+- Week 7 plan created for DopeconBridge completion
 - All risks documented with effort estimates
 - No production-critical issues remain
 
@@ -124,7 +124,7 @@ ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://loc
 allow_origins=ALLOWED_ORIGINS
 ```
 
-**Files**: adhd_engine/main.py, gpt-researcher/backend/main.py, gpt-researcher/backend/api/main.py, mcp-integration-bridge/main.py
+**Files**: adhd_engine/main.py, gpt-researcher/backend/main.py, gpt-researcher/backend/api/main.py, mcp-dopecon-bridge/main.py
 
 **2. Hardcoded Credentials** (2 files):
 ```python
@@ -194,12 +194,12 @@ password: str = os.getenv("SERENA_DB_PASSWORD", "serena_dev_pass")
 - [ ] Final synthesis report (1h) - This ADR serves as synthesis
 
 ### Week 7 (Recommended, 12h)
-- [ ] Complete Integration Bridge MCP integration (4-6h)
+- [ ] Complete DopeconBridge MCP integration (4-6h)
 - [ ] Migrate ADHD Engine to bridge HTTP API (2-3h)
 - [ ] Migrate ConPort Orchestrator to bridge (2-3h)
 - [ ] Integration testing (2h)
 
-**Detailed Plan**: See "Week 7 Integration Bridge Completion Plan" document
+**Detailed Plan**: See "Week 7 DopeconBridge Completion Plan" document
 
 ---
 
@@ -231,7 +231,7 @@ password: str = os.getenv("SERENA_DB_PASSWORD", "serena_dev_pass")
 - Immediate fixes > documentation-only approach
 - Hybrid methodology (MCP + bash + AI) optimal
 
-**Key Insight**: Integration Bridge disconnection root cause (custom_data stubs) would have been missed in traditional audit—required reading actual endpoint implementations, not just architecture docs.
+**Key Insight**: DopeconBridge disconnection root cause (custom_data stubs) would have been missed in traditional audit—required reading actual endpoint implementations, not just architecture docs.
 
 **Process Innovation**: Fix-as-you-go approach delivered immediate production value rather than accumulating a "fix later" backlog.
 

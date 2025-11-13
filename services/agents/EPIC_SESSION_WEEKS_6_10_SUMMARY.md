@@ -59,7 +59,7 @@ TOTAL: 7/7 agents (100%), 48/48 tests (100%)
 - Result: 8/8 tests passing
 
 **Deliverables**:
-- Integration Bridge endpoints (+217 lines)
+- DopeconBridge endpoints (+217 lines)
 - TwoPlaneOrchestrator enhancements (+180 lines)
 - Test suite (320 lines)
 - Test server (180 lines)
@@ -615,7 +615,7 @@ async def production_feature_workflow(feature_description: str):
 **Predicted** (from Week 1 analysis):
 - MemoryAgent: 90% ConPort wrapper → Actual: 90% ✅
 - CognitiveGuardian: 70% ConPort + timing → Actual: 70% ✅
-- TwoPlaneOrchestrator: 60% Integration Bridge → Actual: 65% ✅
+- TwoPlaneOrchestrator: 60% DopeconBridge → Actual: 65% ✅
 - DopemuxEnforcer: 70% Serena complexity → Actual: 60% (heuristics)
 - ToolOrchestrator: 80% Zen listmodels → Actual: 75% ✅
 - TaskDecomposer: 90% Zen planner → Actual: 85% (simplified)

@@ -26,7 +26,7 @@ next_review: '2026-01-15'
 **Depends On**:
 - ConPort Memory System (Decision #196)
 - Leantime PM Plane (active component)
-- Integration Bridge (coordination layer)
+- DopeconBridge (coordination layer)
 
 **Validated By**:
 - Zen Ultrathink: 8 steps, VERY HIGH confidence
@@ -52,7 +52,7 @@ Dopemux currently lacks a comprehensive workflow system for tracking ideas from 
 - Two-Plane Architecture (PM Plane + Cognitive Plane)
 - Leantime = PM Plane presentation layer (status authority)
 - ConPort = Cognitive Plane knowledge graph (knowledge authority)
-- Integration Bridge = Cross-plane coordination (PORT_BASE+16)
+- DopeconBridge = Cross-plane coordination (PORT_BASE+16)
 
 **Critical Correction** (Decision #195):
 - Initial design incorrectly assumed Leantime deprecated
@@ -121,7 +121,7 @@ WorkflowEpic = {
 **Leantime Sync**: ✅ Bidirectional (Epic ↔ Leantime Project)
 - **Status Authority**: Leantime (planned→active→done)
 - **Knowledge Authority**: ConPort (business value, acceptance criteria, relationships)
-- **Sync Frequency**: 30 seconds (Integration Bridge webhook)
+- **Sync Frequency**: 30 seconds (DopeconBridge webhook)
 - **Conflict Resolution**: Leantime status wins, ConPort knowledge wins
 
 **ADHD Optimizations**:
@@ -160,7 +160,7 @@ WorkflowTask = {
 - **Status Authority**: Leantime (TODO→In Progress→Done)
 - **Knowledge Authority**: ConPort (complexity, dependencies, file links)
 - **Sync Frequency**: 30 seconds
-- **Dependency Visualization**: Integration Bridge provides dependency graph
+- **Dependency Visualization**: DopeconBridge provides dependency graph
 
 **ADHD Optimizations**:
 - Max 3 active tasks (focus preservation)
@@ -181,7 +181,7 @@ WorkflowTask = {
 - Detect scope creep (files changed beyond `linked_files`)
 
 **Leantime Sync**: ✅ Real-time (Status updates via webhooks)
-- Integration Bridge listens for Leantime status changes
+- DopeconBridge listens for Leantime status changes
 - Updates ConPort progress_entry immediately
 - Triggers Serena LSP file tracking when status → IN_PROGRESS
 
@@ -203,13 +203,13 @@ WorkflowTask = {
 | File Links | ConPort + Serena (Cognitive Plane) | Semantic code understanding |
 | Business Value | ConPort (Cognitive Plane) | Strategic context, acceptance criteria |
 
-### Integration Bridge Sync Mechanics
+### DopeconBridge Sync Mechanics
 
 **Webhook Architecture**:
 ```
 Leantime Status Change (Task updated)
     ↓
-Webhook → Integration Bridge (PORT_BASE+16)
+Webhook → DopeconBridge (PORT_BASE+16)
     ↓
 ConPort Update (progress_entry.status)
     ↓ (if status → IN_PROGRESS)
@@ -247,7 +247,7 @@ def promote_idea_to_epic(idea_id: str) -> str:
     epic_id = log_custom_data("workflow_epics", epic)
 
     # Create Leantime project
-    leantime_project_id = integration_bridge.create_project(epic)
+    leantime_project_id = dopecon_bridge.create_project(epic)
     epic["leantime_project_id"] = leantime_project_id
     update_custom_data("workflow_epics", epic_id, epic)
 
@@ -275,7 +275,7 @@ def decompose_epic_to_tasks(epic_id: str, tasks: List[TaskSchema]) -> List[int]:
         )
 
         # Create Leantime task
-        leantime_task_id = integration_bridge.create_task(
+        leantime_task_id = dopecon_bridge.create_task(
             epic["leantime_project_id"],
             task
         )
@@ -293,7 +293,7 @@ def decompose_epic_to_tasks(epic_id: str, tasks: List[TaskSchema]) -> List[int]:
 
 **Tasks → Execution**:
 - User updates status in Leantime: TODO → IN_PROGRESS
-- Webhook triggers Integration Bridge
+- Webhook triggers DopeconBridge
 - ConPort updates progress_entry status
 - Serena LSP starts file tracking
 - Auto-save activates (every 30s)
@@ -318,7 +318,7 @@ def decompose_epic_to_tasks(epic_id: str, tasks: List[TaskSchema]) -> List[int]:
 - Leantime provides team visibility and collaboration
 - ConPort preserves knowledge graph and technical context
 - Clear authority boundaries prevent conflicts
-- Integration Bridge handles sync complexity
+- DopeconBridge handles sync complexity
 
 **4. Leverages Existing Infrastructure**
 - Zero new databases or services required
@@ -336,7 +336,7 @@ def decompose_epic_to_tasks(epic_id: str, tasks: List[TaskSchema]) -> List[int]:
 ### Negative
 
 **1. Sync Complexity**
-- Integration Bridge must maintain consistency
+- DopeconBridge must maintain consistency
 - Webhook delivery failures require retry logic
 - Conflict resolution rules must be clear
 - Monitoring overhead (sync status, failures)
@@ -373,7 +373,7 @@ try:
     epics = get_custom_data("workflow_epics")
 except ConPortUnavailable:
     console.print("[yellow]⚠️  ConPort unavailable, showing Leantime data only[/yellow]")
-    epics = integration_bridge.get_leantime_projects()
+    epics = dopecon_bridge.get_leantime_projects()
 ```
 
 **Leantime Unavailable**:
@@ -447,7 +447,7 @@ except LeantimeUnavailable:
 - Create ConPort custom_data helper functions
 - Write unit tests for schema validation
 
-**Sprint 2: Integration Bridge Setup (3 hours)**
+**Sprint 2: DopeconBridge Setup (3 hours)**
 - Idempotent webhook handlers (status sync only)
 - Leantime API client (create project, create task, update status)
 - Retry queue with exponential backoff
@@ -507,7 +507,7 @@ def test_workflow_epic_creation():
 def test_promote_idea_to_epic():
     """Test idea→epic promotion flow."""
 
-# test_integration_bridge.py
+# test_dopecon_bridge.py
 def test_idempotent_webhook_handler():
     """Test duplicate events ignored within 5-second window."""
 
@@ -559,11 +559,11 @@ def test_conport_unavailable_fallback():
 
 ### Reference
 - `docs/03-reference/workflow-schema.md` - Complete schema documentation
-- `docs/03-reference/integration-bridge-api.md` - Webhook spec, retry logic
+- `docs/03-reference/dopecon-bridge-api.md` - Webhook spec, retry logic
 
 ### Architecture
 - Update `docs/01-architecture/two-plane-model.md` - Add workflow system
-- Update `docs/01-architecture/integration-bridge.md` - Add sync mechanics
+- Update `docs/01-architecture/dopecon-bridge.md` - Add sync mechanics
 
 ## Success Metrics
 
@@ -611,7 +611,7 @@ def test_conport_unavailable_fallback():
 
 **Rationale**:
 1. **Multi-Model Consensus**: Both FOR and AGAINST perspectives (8/10 + 8/10) recommended one-way promotion architecture
-2. **Zero New Infrastructure**: Uses existing ConPort + Leantime + Integration Bridge
+2. **Zero New Infrastructure**: Uses existing ConPort + Leantime + DopeconBridge
 3. **Industry Alignment**: Matches proven patterns (Salesforce→Jira)
 4. **ADHD Value**: Prevents idea loss, reduces context switching, preserves focus
 5. **Low Risk**: Phase 1+2 = 12 hours, well-defined scope, clear success criteria

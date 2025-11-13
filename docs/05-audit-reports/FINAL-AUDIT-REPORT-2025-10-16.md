@@ -343,7 +343,7 @@ Completed comprehensive systematic audit of Dopemux codebase using Zen MCP think
 6. **Task-Orchestrator Integration** (13h)
    - Security audit
    - Service boundary fixes
-   - Integration Bridge wiring
+   - DopeconBridge wiring
 
 7. **ML Risk Assessment API** (4h)
    - FastAPI layer

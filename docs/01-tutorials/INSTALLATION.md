@@ -39,12 +39,18 @@ cd dopemux-mvp
 # 2. Run setup script (creates ~/.dopemux/, installs deps, starts Docker)
 ./scripts/setup.sh
 
-# 3. Edit .env with your API keys
+# 3. Generate per-workspace config + env file
+python3 scripts/render_workspace_configs.py --set-default
+
+# 4. Load your workspace env (add to shell profile for convenience)
+source "$(python3 scripts/workspace_env_path.py)"
+
+# 5. Edit .env with your API keys
 nano .env
 # Required: OPENAI_API_KEY, VOYAGEAI_API_KEY
 # Optional: ANTHROPIC_API_KEY, GEMINI_API_KEY, CONTEXT7_API_KEY
 
-# 4. Verify installation
+# 6. Verify installation
 dopemux health
 
 # 5. Initialize your first project
