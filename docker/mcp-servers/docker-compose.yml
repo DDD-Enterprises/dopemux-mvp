@@ -9,7 +9,7 @@ services:
     build:
       context: ./context7
       dockerfile: Dockerfile
-    container_name: mcp-context7
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-context7"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -37,7 +37,7 @@ services:
     build:
       context: ./zen
       dockerfile: Dockerfile
-    container_name: mcp-zen
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-zen"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -68,7 +68,7 @@ services:
     build:
       context: ../../
       dockerfile: docker/mcp-servers/litellm/Dockerfile
-    container_name: mcp-litellm
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-litellm"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -106,7 +106,7 @@ services:
     build:
       context: ./mcp-server-mas-sequential-thinking
       dockerfile: Dockerfile
-    container_name: mcp-mas-sequential-thinking
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-mas-sequential-thinking"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -138,7 +138,7 @@ services:
     build:
       context: ./task-master-ai
       dockerfile: Dockerfile
-    container_name: mcp-task-master-ai
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-task-master-ai"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -171,7 +171,7 @@ services:
     build:
       context: ../../services/mcp-client
       dockerfile: Dockerfile
-    container_name: dopemux-mcp-client
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-client"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -195,7 +195,7 @@ services:
     build:
       context: ../../services/task-orchestrator
       dockerfile: Dockerfile
-    container_name: mcp-task-orchestrator
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-task-orchestrator"
     # Now always-on MCP server
     restart: unless-stopped
     networks:
@@ -231,7 +231,7 @@ services:
     build:
       context: ./leantime-bridge
       dockerfile: Dockerfile
-    container_name: mcp-leantime-bridge
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-leantime-bridge"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -269,7 +269,7 @@ services:
     build:
       context: ../../services/task-orchestrator
       dockerfile: Dockerfile.coordination
-    container_name: mcp-plane-coordinator
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-plane-coordinator"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -305,7 +305,7 @@ services:
     build:
       context: ./serena
       dockerfile: Dockerfile
-    container_name: mcp-serena${DOPEMUX_INSTANCE_ID:+_}${DOPEMUX_INSTANCE_ID}  # Multi-instance naming
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-serena${DOPEMUX_INSTANCE_ID:+_}${DOPEMUX_INSTANCE_ID}"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -335,7 +335,7 @@ services:
     build:
       context: ../../services/dopemux-gpt-researcher
       dockerfile: Dockerfile
-    container_name: dopemux-gpt-researcher
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-gpt-researcher"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -374,7 +374,7 @@ services:
     build:
       context: ./exa
       dockerfile: Dockerfile
-    container_name: mcp-exa
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-exa"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -400,7 +400,7 @@ services:
     build:
       context: ../../services/dope-context
       dockerfile: Dockerfile
-    container_name: mcp-dope-context
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-dope-context"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -443,7 +443,7 @@ services:
     build:
       context: ./gptr-mcp
       dockerfile: Dockerfile
-    container_name: mcp-gptr-mcp
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-gptr-mcp"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -534,7 +534,7 @@ services:
     build:
       context: ./desktop-commander
       dockerfile: Dockerfile
-    container_name: mcp-desktop-commander
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-desktop-commander"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -564,7 +564,7 @@ services:
     build:
       context: ../../services/activity-capture
       dockerfile: Dockerfile
-    container_name: dopemux-activity-capture
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-activity-capture"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -596,7 +596,7 @@ services:
   # Redis Primary - Shared cache for MCP servers (ConPort, etc.)
   redis-primary:
     image: redis:7-alpine
-    container_name: dopemux-redis-primary
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-redis-primary"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -616,7 +616,7 @@ services:
   # Qdrant - Vector database for dope-context semantic search
   qdrant:
     image: qdrant/qdrant:latest
-    container_name: mcp-qdrant
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-qdrant"
     restart: unless-stopped
     networks:
       - mcp-network
