@@ -7,7 +7,7 @@
       ],
       "env": {
         "DOPEMUX_INSTANCE_ID": "${DOPEMUX_INSTANCE_ID:-main}",
-        "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
+        "DOPEMUX_WORKSPACE_ID": "__WORKSPACE_ROOT__"
       },
       "type": "stdio"
     },
@@ -23,7 +23,7 @@
       "env": {
         "CONPORT_URL": "http://localhost:3004",
         "DOPEMUX_INSTANCE_ID": "main",
-        "DOPEMUX_WORKSPACE_ID": "/Users/hue/code/dopemux-mvp",
+        "DOPEMUX_WORKSPACE_ID": "__WORKSPACE_ROOT__",
         "CONPORT_DB_URL": "postgres://localhost:5432/conport",
         "CONPORT_GRAPH_DIR": "./.conport/graph"
       },
@@ -32,7 +32,7 @@
     "gpt-researcher_wrapped": {
       "command": "python",
       "args": [
-        "/Users/hue/code/dopemux-mvp/scripts/mcp_event_wrapper.py",
+        "__WORKSPACE_ROOT__/scripts/mcp_event_wrapper.py",
         "--server",
         "gpt-researcher",
         "--instance",
@@ -43,7 +43,7 @@
         "6379"
       ],
       "env": {
-        "WORKSPACE_PATH": "/Users/hue/code/dopemux-mvp",
+        "WORKSPACE_PATH": "__WORKSPACE_ROOT__",
         "EXA_API_KEY": "${EXA_API_KEY}",
         "TAVILY_API_KEY": "${TAVILY_API_KEY}",
         "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",
