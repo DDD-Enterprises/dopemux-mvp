@@ -7,7 +7,7 @@ Features:
 - 6 API endpoints (/api/v1/*) + 2 utility endpoints for ADHD assessments
 - 6 background async monitors (energy, attention, cognitive load, breaks, hyperfocus, context switching)
 - Redis persistence for user profiles and state
-- Integration Bridge connection for ConPort data (✅ COMPLETE as of 2025-10-16)
+- DopeconBridge connection for ConPort data (✅ COMPLETE as of 2025-10-16)
 - API key authentication (X-API-Key header)
 - Environment-based CORS configuration
 """

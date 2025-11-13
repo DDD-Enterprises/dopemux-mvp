@@ -1501,7 +1501,9 @@ class SerenaV2MCPServer:
         query: str,
         symbol_type: Optional[str] = None,
         max_results: int = 10,
-        user_id: str = "default"
+        user_id: str = "default",
+        workspace_path: Optional[str] = None,
+        workspace_paths: Optional[List[str]] = None,
     ) -> str:
         """
         Search for symbols (functions, classes, variables) by name
@@ -1511,16 +1513,30 @@ class SerenaV2MCPServer:
         - ADHD-aware: Dynamic result limits (3-40 based on attention state)
         - Complexity scoring if tree_sitter available
         - Fallback: Simple file search if LSP unavailable
+        - Multi-workspace: Search across multiple workspaces
 
         Args:
             query: Search query (symbol name or partial match)
             symbol_type: Optional filter by type
             max_results: Max results (default 10, dynamically adjusted by ADHD Engine)
             user_id: User identifier for ADHD state lookup
+            workspace_path: Optional single workspace path
+            workspace_paths: Optional multiple workspace paths
 
         Returns:
             JSON array of symbols with file, line, type, complexity
         """
+        # Multi-workspace mode
+        if workspace_paths or workspace_path:
+            from multi_workspace_wrapper import SerenaMultiWorkspace
+            wrapper = SerenaMultiWorkspace()
+            result = await wrapper.find_symbol_multi(
+                query, symbol_type, max_results, user_id,
+                workspace_path, workspace_paths
+            )
+            return json.dumps(result, indent=2)
+        
+        # Single workspace mode (backward compatible)
         # Get dynamic max_results from ADHD Engine (F-NEW-1)
         max_results = await get_dynamic_max_results(user_id, max_results)
 
@@ -1816,7 +1832,9 @@ class SerenaV2MCPServer:
         file_path: str,
         line: int,
         context_lines: int = 10,
-        include_complexity: bool = True
+        include_complexity: bool = True,
+        workspace_path: Optional[str] = None,
+        workspace_paths: Optional[List[str]] = None,
     ) -> str:
         """
         Get surrounding code context with optional complexity annotations
@@ -1826,16 +1844,30 @@ class SerenaV2MCPServer:
         - ADHD optimization: Max 50 context lines (prevents overwhelm)
         - Optional complexity scoring via Tree-sitter
         - Highlights the center line
+        - Multi-workspace: Get context from multiple workspaces
 
         Args:
             file_path: File path (relative to workspace)
             line: Center line number (1-indexed)
             context_lines: Lines before/after center (default: 10, max: 50)
             include_complexity: Add complexity score (default: true)
+            workspace_path: Optional single workspace path
+            workspace_paths: Optional multiple workspace paths
 
         Returns:
             JSON with context and optional complexity
         """
+        # Multi-workspace mode
+        if workspace_paths or workspace_path:
+            from multi_workspace_wrapper import SerenaMultiWorkspace
+            wrapper = SerenaMultiWorkspace()
+            result = await wrapper.get_context_multi(
+                file_path, line, context_lines,
+                workspace_path, workspace_paths
+            )
+            return json.dumps(result, indent=2)
+        
+        # Single workspace mode (backward compatible)
         start_time = datetime.now()
 
         # Enforce ADHD max context constraint
@@ -1917,7 +1949,9 @@ class SerenaV2MCPServer:
         column: int,
         max_results: int = 10,
         include_declaration: bool = True,
-        user_id: str = "default"
+        user_id: str = "default",
+        workspace_path: Optional[str] = None,
+        workspace_paths: Optional[List[str]] = None,
     ) -> str:
         """
         Find all references/usages of symbol at position
@@ -1927,6 +1961,7 @@ class SerenaV2MCPServer:
         - ADHD-aware: Dynamic result limits (3-40 based on attention state)
         - Returns each reference with 3-line context snippet
         - Fallback: Grep-based search if LSP unavailable
+        - Multi-workspace: Find references across workspaces
 
         Args:
             file_path: File path (relative to workspace)
@@ -1935,10 +1970,24 @@ class SerenaV2MCPServer:
             max_results: Max results (default: 10, dynamically adjusted by ADHD Engine)
             include_declaration: Include declaration in results
             user_id: User identifier for ADHD state lookup
+            workspace_path: Optional single workspace path
+            workspace_paths: Optional multiple workspace paths
 
         Returns:
             JSON with reference locations and context snippets
         """
+        # Multi-workspace mode
+        if workspace_paths or workspace_path:
+            from multi_workspace_wrapper import SerenaMultiWorkspace
+            wrapper = SerenaMultiWorkspace()
+            result = await wrapper.find_references_multi(
+                file_path, line, column, max_results,
+                include_declaration, user_id,
+                workspace_path, workspace_paths
+            )
+            return json.dumps(result, indent=2)
+        
+        # Single workspace mode (backward compatible)
         start_time = datetime.now()
 
         # Get dynamic max_results from ADHD Engine (F-NEW-1)
@@ -2126,7 +2175,9 @@ class SerenaV2MCPServer:
     async def analyze_complexity_tool(
         self,
         file_path: str,
-        symbol_name: Optional[str] = None
+        symbol_name: Optional[str] = None,
+        workspace_path: Optional[str] = None,
+        workspace_paths: Optional[List[str]] = None,
     ) -> str:
         """
         Analyze code complexity for ADHD-safe reading assessment
@@ -2137,14 +2188,28 @@ class SerenaV2MCPServer:
         - Provides breakdown (cyclomatic, nesting, lines)
         - Estimates safe reading time based on complexity
         - Fallback: Basic metrics if Tree-sitter unavailable
+        - Multi-workspace: Analyze complexity across workspaces
 
         Args:
             file_path: File path (relative to workspace)
             symbol_name: Optional symbol to analyze (null = whole file)
+            workspace_path: Optional single workspace path
+            workspace_paths: Optional multiple workspace paths
 
         Returns:
             JSON with complexity score, breakdown, reading time
         """
+        # Multi-workspace mode
+        if workspace_paths or workspace_path:
+            from multi_workspace_wrapper import SerenaMultiWorkspace
+            wrapper = SerenaMultiWorkspace()
+            result = await wrapper.analyze_complexity_multi(
+                file_path, symbol_name,
+                workspace_path, workspace_paths
+            )
+            return json.dumps(result, indent=2)
+        
+        # Single workspace mode (backward compatible)
         start_time = datetime.now()
 
         # Resolve path
@@ -2411,7 +2476,9 @@ class SerenaV2MCPServer:
     async def get_reading_order_tool(
         self,
         files: List[str],
-        symbols: Optional[List[str]] = None
+        symbols: Optional[List[str]] = None,
+        workspace_path: Optional[str] = None,
+        workspace_paths: Optional[List[str]] = None,
     ) -> str:
         """
         Optimal reading order for understanding code
@@ -2420,14 +2487,27 @@ class SerenaV2MCPServer:
         - Orders by complexity (simple → complex)
         - Progressive disclosure for learning
         - Estimates reading session breakdown
+        - Multi-workspace: Reading order across workspaces
 
         Args:
             files: File paths to order
             symbols: Optional symbol names
+            workspace_path: Optional single workspace path
+            workspace_paths: Optional multiple workspace paths
 
         Returns:
             Ordered files with complexity progression
         """
+        # Multi-workspace mode
+        if workspace_paths or workspace_path:
+            from multi_workspace_wrapper import SerenaMultiWorkspace
+            wrapper = SerenaMultiWorkspace()
+            result = await wrapper.get_reading_order_multi(
+                files, symbols, workspace_path, workspace_paths
+            )
+            return json.dumps(result, indent=2)
+        
+        # Single workspace mode (backward compatible)
         start_time = datetime.now()
 
         # Analyze complexity for each file
@@ -2494,7 +2574,9 @@ class SerenaV2MCPServer:
         self,
         symbol: str,
         relationship_type: str = "all",
-        depth: int = 2
+        depth: int = 2,
+        workspace_path: Optional[str] = None,
+        workspace_paths: Optional[List[str]] = None,
     ) -> str:
         """
         Find code dependencies via grep-based detection
@@ -2503,15 +2585,29 @@ class SerenaV2MCPServer:
         - Searches for function calls, imports, inheritance
         - ADHD-optimized: max 10 results, max 3 depth levels
         - Phase 3: Will upgrade to PostgreSQL graph operations
+        - Multi-workspace: Relationships across workspaces
 
         Args:
             symbol: Symbol to find relationships for
             relationship_type: calls, imports, inherits, or all
             depth: Maximum traversal depth (default: 2, max: 3)
+            workspace_path: Optional single workspace path
+            workspace_paths: Optional multiple workspace paths
 
         Returns:
             JSON with relationships found
         """
+        # Multi-workspace mode
+        if workspace_paths or workspace_path:
+            from multi_workspace_wrapper import SerenaMultiWorkspace
+            wrapper = SerenaMultiWorkspace()
+            result = await wrapper.find_relationships_multi(
+                symbol, relationship_type, depth,
+                workspace_path, workspace_paths
+            )
+            return json.dumps(result, indent=2)
+        
+        # Single workspace mode (backward compatible)
         start_time = datetime.now()
 
         # Enforce ADHD depth limit
@@ -2585,7 +2681,9 @@ class SerenaV2MCPServer:
 
     async def get_navigation_patterns_tool(
         self,
-        days_back: int = 7
+        days_back: int = 7,
+        workspace_path: Optional[str] = None,
+        workspace_paths: Optional[List[str]] = None,
     ) -> str:
         """
         Analyze navigation patterns from history
@@ -2593,13 +2691,26 @@ class SerenaV2MCPServer:
         Tier 3 Advanced Tool (Phase 2D Placeholder):
         - Phase 2D: Returns placeholder message
         - Phase 3: Full pattern recognition with database
+        - Multi-workspace: Navigation patterns across workspaces
 
         Args:
             days_back: Days of history to analyze
+            workspace_path: Optional single workspace path
+            workspace_paths: Optional multiple workspace paths
 
         Returns:
             JSON with pattern analysis (placeholder in Phase 2D)
         """
+        # Multi-workspace mode
+        if workspace_paths or workspace_path:
+            from multi_workspace_wrapper import SerenaMultiWorkspace
+            wrapper = SerenaMultiWorkspace()
+            result = await wrapper.get_navigation_patterns_multi(
+                days_back, workspace_path, workspace_paths
+            )
+            return json.dumps(result, indent=2)
+        
+        # Single workspace mode (backward compatible)
         result = {
             "status": "learning_phase",
             "message": "Pattern learning requires navigation history database",
@@ -4494,7 +4605,9 @@ class SerenaV2MCPServer:
         self,
         query: str,
         top_k: int = 10,
-        user_id: str = "default"
+        user_id: str = "default",
+        workspace_path: Optional[str] = None,
+        workspace_paths: Optional[List[str]] = None,
     ) -> str:
         """
         Find code semantically similar to natural language query (F-NEW-2)
@@ -4504,14 +4617,29 @@ class SerenaV2MCPServer:
         - Voyage embeddings with neural reranking
         - Natural language queries vs exact name matching
         - Enriched with Serena's complexity scores
+        - Multi-workspace: Semantic search across workspaces
 
         Args:
             query: Natural language query (e.g., "authentication middleware patterns")
             top_k: Number of results (default: 10, ADHD-adjusted)
             user_id: User identifier for ADHD state lookup
+            workspace_path: Optional single workspace path
+            workspace_paths: Optional multiple workspace paths
 
         Returns:
             JSON with semantic search results + complexity scores
+        """
+        # Multi-workspace mode
+        if workspace_paths or workspace_path:
+            from multi_workspace_wrapper import SerenaMultiWorkspace
+            wrapper = SerenaMultiWorkspace()
+            result = await wrapper.find_similar_code_multi(
+                query, top_k, user_id,
+                workspace_path, workspace_paths
+            )
+            return json.dumps(result, indent=2)
+        
+        # Single workspace mode (backward compatible)
         """
         start_time = datetime.now()
 
@@ -4653,7 +4781,9 @@ class SerenaV2MCPServer:
 
     async def find_test_file_tool(
         self,
-        file_path: str
+        file_path: str,
+        workspace_path: Optional[str] = None,
+        workspace_paths: Optional[List[str]] = None,
     ) -> str:
         """
         Smart test navigation - find test file for implementation or vice versa (F-NEW-18)
@@ -4663,13 +4793,26 @@ class SerenaV2MCPServer:
         - auth.py → test_auth.py
         - services/api.py → tests/test_api.py
         - test_api.py → services/api.py (reverse)
+        - Multi-workspace: Find tests across workspaces
 
         Args:
             file_path: Current file path (relative)
+            workspace_path: Optional single workspace path
+            workspace_paths: Optional multiple workspace paths
 
         Returns:
             JSON with test file path or creation suggestion
         """
+        # Multi-workspace mode
+        if workspace_paths or workspace_path:
+            from multi_workspace_wrapper import SerenaMultiWorkspace
+            wrapper = SerenaMultiWorkspace()
+            result = await wrapper.find_test_file_multi(
+                file_path, workspace_path, workspace_paths
+            )
+            return json.dumps(result, indent=2)
+        
+        # Single workspace mode (backward compatible)
         try:
             path = Path(file_path)
             filename = path.name
@@ -4754,7 +4897,9 @@ class SerenaV2MCPServer:
         self,
         file_path: str,
         symbol: Optional[str] = None,
-        user_id: str = "default"
+        user_id: str = "default",
+        workspace_path: Optional[str] = None,
+        workspace_paths: Optional[List[str]] = None,
     ) -> str:
         """
         F-NEW-3: Get unified complexity score combining AST, LSP, usage, and ADHD.
@@ -4764,15 +4909,29 @@ class SerenaV2MCPServer:
         - LSP complexity (Serena code analysis)
         - Usage complexity (reference counts)
         - ADHD multiplier (user-specific adjustments)
+        - Multi-workspace: Unified complexity across workspaces
 
         Args:
             file_path: File path to analyze
             symbol: Optional function/class name
             user_id: User identifier for ADHD adjustments
+            workspace_path: Optional single workspace path
+            workspace_paths: Optional multiple workspace paths
 
         Returns:
             JSON with complexity breakdown and interpretation
         """
+        # Multi-workspace mode
+        if workspace_paths or workspace_path:
+            from multi_workspace_wrapper import SerenaMultiWorkspace
+            wrapper = SerenaMultiWorkspace()
+            result = await wrapper.get_unified_complexity_multi(
+                file_path, symbol, user_id,
+                workspace_path, workspace_paths
+            )
+            return json.dumps(result, indent=2)
+        
+        # Single workspace mode (backward compatible)
         try:
             # Import complexity coordinator
             import sys

@@ -43,7 +43,7 @@ Validated documentation against code reality using semantic search across 4,413 
 
 ## 4B: API Documentation Accuracy ✅
 
-**Integration Bridge** (`kg_endpoints.py` vs docs):
+**DopeconBridge** (`kg_endpoints.py` vs docs):
 - ✅ 5 working endpoints documented correctly
 - ⚠️ 2 stub endpoints documented (but marked as Phase 10/future)
 - **Accuracy**: 100% (stubs disclosed)
@@ -82,7 +82,7 @@ Validated documentation against code reality using semantic search across 4,413 
    - Status: ✅ VERIFIED
    - Evidence: 3 vectors (content 0.7, title 0.2, breadcrumb 0.1) in code
 
-5. **"Integration Bridge cross-plane coordination"**
+5. **"DopeconBridge cross-plane coordination"**
    - Status: ⚠️ PARTIAL (authority code exists, custom_data stubs)
    - Evidence: kg_authority.py working, kg_endpoints.py has stubs
 
@@ -108,7 +108,7 @@ Validated documentation against code reality using semantic search across 4,413 
 - ADHD patterns research-backed
 
 **Minor Gaps** ⚠️:
-- Integration Bridge stubs could be more clearly marked as incomplete
+- DopeconBridge stubs could be more clearly marked as incomplete
 - Some feature claims need "partial" qualifier (event bus adoption)
 - Endpoint counts vary by interpretation (6 vs 7 vs 8)
 
@@ -120,7 +120,7 @@ Validated documentation against code reality using semantic search across 4,413 
 
 **API References** ✅:
 - `services/dope-context/API_REFERENCE.md` - 100% accurate
-- Integration Bridge endpoints doc - Accurate (stubs disclosed)
+- DopeconBridge endpoints doc - Accurate (stubs disclosed)
 - ADHD Engine API claims - Accurate
 
 **Architecture** ✅:
@@ -138,7 +138,7 @@ Validated documentation against code reality using semantic search across 4,413 
 ## Recommendations
 
 **Documentation Updates** (Optional, 30min):
-1. Add "STUB" markers to Integration Bridge custom_data endpoint docs
+1. Add "STUB" markers to DopeconBridge custom_data endpoint docs
 2. Clarify "partial adoption" for event bus
 3. Standardize endpoint counting (e.g., "6 API endpoints + 2 utility endpoints")
 

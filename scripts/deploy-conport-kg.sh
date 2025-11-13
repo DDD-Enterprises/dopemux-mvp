@@ -44,7 +44,7 @@ fi
 
 # 3. Build Docker images
 echo "[Step 3/6] Building Docker images..."
-docker-compose -f "$COMPOSE_FILE" build --no-cache integration-bridge
+docker-compose -f "$COMPOSE_FILE" build --no-cache dopecon-bridge
 echo "  ✅ Images built"
 echo ""
 
@@ -81,15 +81,15 @@ else
   exit 1
 fi
 
-# Integration Bridge
-echo -n "  Integration Bridge: "
+# DopeconBridge
+echo -n "  DopeconBridge: "
 HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3016/kg/health 2>/dev/null || echo "000")
 if [ "$HTTP_STATUS" = "200" ]; then
   echo "✅ (HTTP $HTTP_STATUS)"
 else
   echo "❌ FAILED (HTTP $HTTP_STATUS)"
   echo "  Logs:"
-  docker-compose -f "$COMPOSE_FILE" logs --tail=20 integration-bridge
+  docker-compose -f "$COMPOSE_FILE" logs --tail=20 dopecon-bridge
   exit 1
 fi
 
@@ -127,7 +127,7 @@ echo "======================================================================"
 echo ""
 echo "Services:"
 echo "  PostgreSQL AGE:      localhost:5455"
-echo "  Integration Bridge:  http://localhost:3016/kg"
+echo "  DopeconBridge:  http://localhost:3016/kg"
 echo "  Redis:               localhost:6379"
 echo ""
 echo "Quick Tests:"

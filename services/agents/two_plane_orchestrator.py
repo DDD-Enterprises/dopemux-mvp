@@ -2,7 +2,7 @@
 TwoPlaneOrchestrator - Two-Plane Architecture Enforcement Agent
 
 Coordinates between PM plane (Leantime) and Cognitive plane (AI agents)
-via Integration Bridge. Enforces authority boundaries and routes cross-plane
+via DopeconBridge. Enforces authority boundaries and routes cross-plane
 requests correctly.
 
 Authority: Cross-plane coordination and boundary enforcement
@@ -62,7 +62,7 @@ class TwoPlaneOrchestrator:
     Two-Plane Architecture Coordinator.
 
     Responsibilities:
-    1. Route cross-plane requests through Integration Bridge
+    1. Route cross-plane requests through DopeconBridge
     2. Validate against authority matrix (warn on violations)
     3. Log cross-plane communication for debugging
     4. Prevent authority boundary violations
@@ -96,7 +96,7 @@ class TwoPlaneOrchestrator:
 
         Args:
             workspace_id: Absolute path to workspace
-            bridge_url: Integration Bridge URL
+            bridge_url: DopeconBridge URL
             conport_client: ConPort MCP client for logging
             strict_mode: If True, BLOCK violations (default: warn only)
         """
@@ -105,7 +105,7 @@ class TwoPlaneOrchestrator:
         self.conport_client = conport_client
         self.strict_mode = strict_mode
 
-        # Integration Bridge client
+        # DopeconBridge client
         self.bridge_client: Optional[Any] = None
 
         # Authority matrix (loaded from Configuration 3.0)
@@ -129,10 +129,10 @@ class TwoPlaneOrchestrator:
         )
 
     async def initialize(self):
-        """Initialize Integration Bridge connection and authority matrix."""
+        """Initialize DopeconBridge connection and authority matrix."""
         logger.info("🚀 Initializing TwoPlaneOrchestrator...")
 
-        # Initialize Integration Bridge client
+        # Initialize DopeconBridge client
         await self._initialize_bridge_client()
 
         # Load authority matrix
@@ -141,7 +141,7 @@ class TwoPlaneOrchestrator:
         logger.info("✅ TwoPlaneOrchestrator ready for cross-plane coordination")
 
     async def _initialize_bridge_client(self):
-        """Initialize connection to Integration Bridge."""
+        """Initialize connection to DopeconBridge."""
         try:
             import aiohttp
 
@@ -153,12 +153,12 @@ class TwoPlaneOrchestrator:
             # Test connection
             async with self.bridge_client.get("/health") as response:
                 if response.status == 200:
-                    logger.info(f"🔗 Connected to Integration Bridge ({self.bridge_url})")
+                    logger.info(f"🔗 Connected to DopeconBridge ({self.bridge_url})")
                 else:
                     logger.warning(f"⚠️ Bridge health check failed: {response.status}")
 
         except Exception as e:
-            logger.error(f"Failed to connect to Integration Bridge: {e}")
+            logger.error(f"Failed to connect to DopeconBridge: {e}")
             logger.warning("⚠️ Cross-plane routing will be degraded")
             self.bridge_client = None
 
@@ -213,7 +213,7 @@ class TwoPlaneOrchestrator:
         requester: str = "unknown"
     ) -> Dict[str, Any]:
         """
-        Route cross-plane request through Integration Bridge.
+        Route cross-plane request through DopeconBridge.
 
         Args:
             source_plane: Originating plane
@@ -269,7 +269,7 @@ class TwoPlaneOrchestrator:
             else:
                 logger.warning(f"⚠️ Authority violation (allowed): {validation['reason']}")
 
-        # Route through Integration Bridge
+        # Route through DopeconBridge
         try:
             response = await self._send_through_bridge(request)
             self.metrics["successful_routes"] += 1
@@ -409,9 +409,9 @@ class TwoPlaneOrchestrator:
         request: CrossPlaneRequest
     ) -> Dict[str, Any]:
         """
-        Send request through Integration Bridge with retry logic.
+        Send request through DopeconBridge with retry logic.
 
-        Integration Bridge handles:
+        DopeconBridge handles:
         - Event routing between planes
         - Data transformation
         - Async communication
@@ -598,7 +598,7 @@ class TwoPlaneOrchestrator:
 
     async def health_check(self) -> Dict[str, Any]:
         """
-        Check health of TwoPlaneOrchestrator and Integration Bridge connection.
+        Check health of TwoPlaneOrchestrator and DopeconBridge connection.
 
         Week 6 Enhancement: Production health monitoring
         """

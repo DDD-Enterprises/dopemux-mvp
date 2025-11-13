@@ -47,7 +47,7 @@ Task-Orchestrator un-deprecation (ADR-203) restored 5,577 lines of code. To maxi
 **2. Reusability**:
 - PM plane: Risk assessment for sprint planning
 - Cognitive plane: Blocker prediction during development
-- Integration Bridge: Cross-plane risk coordination
+- DopeconBridge: Cross-plane risk coordination
 
 **3. Service Independence**:
 - Self-contained ML logic
@@ -184,7 +184,7 @@ Response:
 
 **Integration Points**:
 - ConPort HTTP API (replace direct SQLite)
-- Integration Bridge (event publishing)
+- DopeconBridge (event publishing)
 - PM Plane (sprint risk assessment)
 - Cognitive Plane (development blocker prediction)
 

@@ -366,7 +366,7 @@ async def persona_workflow(task_description: str, complexity: float):
 **Objectives**:
 - Wire real Leantime Bridge (port 3015)
 - Wire real Task Orchestrator (port 3017)
-- Replace mock responses in Integration Bridge
+- Replace mock responses in DopeconBridge
 - End-to-end validation
 - Performance benchmarking
 

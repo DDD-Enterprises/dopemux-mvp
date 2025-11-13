@@ -18,7 +18,7 @@
 
 ## ✅ What Was Built Today (Phase 2 Contribution)
 
-### Step 8: HTTP Client for Integration Bridge (3 blocks, 75 min planned → 30 min actual)
+### Step 8: HTTP Client for DopeconBridge (3 blocks, 75 min planned → 30 min actual)
 
 **File**: `src/conport_http_client.py` (**712 lines**)
 
@@ -71,7 +71,7 @@
 ```
 
 **Silent Degradation Working**:
-- Integration Bridge not running → No errors shown to user
+- DopeconBridge not running → No errors shown to user
 - Circuit breaker opens → Automatic JSON fallback
 - User sees: `💾` save icons (no error spam)
 - ADHD benefit: No anxiety from error messages

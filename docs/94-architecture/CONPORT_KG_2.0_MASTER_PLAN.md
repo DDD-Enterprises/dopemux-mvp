@@ -502,7 +502,7 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
 - **Benefit**: 90% auto-linking, decision validation through execution
 - **Effort**: 5 days | **Complexity**: Medium | **Value**: High
 
-#### S5. Integration Bridge → ConPort: Event-Driven Updates
+#### S5. DopeconBridge → ConPort: Event-Driven Updates
 - **Integration**: All system events flow through Redis Streams
 - **Benefit**: 80% reduction in manual context updates
 - **Effort**: 7 days | **Complexity**: Medium | **Value**: High

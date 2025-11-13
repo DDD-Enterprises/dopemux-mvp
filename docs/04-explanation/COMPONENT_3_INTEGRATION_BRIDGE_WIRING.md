@@ -1,12 +1,12 @@
 ---
-id: COMPONENT_3_INTEGRATION_BRIDGE_WIRING
+id: COMPONENT_3_DOPECON_BRIDGE_WIRING
 title: Component_3_Integration_Bridge_Wiring
 type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
 ---
-# Component 3: Integration Bridge Wiring
+# Component 3: DopeconBridge Wiring
 
 **Status**: ✅ Complete
 **Date**: 2025-10-19
@@ -15,13 +15,13 @@ next_review: '2026-02-08'
 
 ## Overview
 
-Component 3 completes the bidirectional event communication between Task-Orchestrator and ConPort via the Integration Bridge, enabling real-time task synchronization and ADHD state coordination across the PM Plane and Cognitive Plane.
+Component 3 completes the bidirectional event communication between Task-Orchestrator and ConPort via the DopeconBridge, enabling real-time task synchronization and ADHD state coordination across the PM Plane and Cognitive Plane.
 
 **Architecture Flow**:
 ```
 Task-Orchestrator
   ↕ EventBus (Redis Streams)
-Integration Bridge (PORT_BASE+16)
+DopeconBridge (PORT_BASE+16)
   ↕ ConPort MCP
 ConPort (PostgreSQL AGE)
 ```
@@ -31,9 +31,9 @@ ConPort (PostgreSQL AGE)
 ### 1. enhanced_orchestrator.py (180+ lines added)
 
 **EventBus Integration** (lines 22-31):
-- Imported `EventBus`, `Event`, `EventType` from Integration Bridge
+- Imported `EventBus`, `Event`, `EventType` from DopeconBridge
 - Graceful fallback if EventBus unavailable (`EVENTBUS_AVAILABLE` flag)
-- Path resolution: `../mcp-integration-bridge/event_bus.py`
+- Path resolution: `../mcp-dopecon-bridge/event_bus.py`
 
 **Initialization** (lines 148, 248-254):
 - Added `self.event_bus: Optional[EventBus]` to component connections
@@ -41,15 +41,15 @@ ConPort (PostgreSQL AGE)
 - Connects to same Redis instance as orchestrator (localhost:6379)
 
 **Background Worker** (lines 313-316):
-- Added `_integration_bridge_subscriber()` to background workers
+- Added `_dopecon_bridge_subscriber()` to background workers
 - Conditional activation based on EventBus availability
 - 6th background worker (joins poller, sync processor, ADHD monitor, automation, correlator)
 
 **Event Subscription** (lines 925-941):
 ```python
-async def _integration_bridge_subscriber(self) -> None:
-    """Subscribe to Integration Bridge events for bidirectional ConPort communication."""
-    logger.info("📡 Started Integration Bridge event subscriber")
+async def _dopecon_bridge_subscriber(self) -> None:
+    """Subscribe to DopeconBridge events for bidirectional ConPort communication."""
+    logger.info("📡 Started DopeconBridge event subscriber")
 
     while self.running:
         try:
@@ -59,15 +59,15 @@ async def _integration_bridge_subscriber(self) -> None:
                 consumer_group="task-orchestrator",
                 consumer_name=f"orchestrator-{self.workspace_id.split('/')[-1]}"
             ):
-                await self._handle_integration_bridge_event(event)
+                await self._handle_dopecon_bridge_event(event)
 
         except Exception as e:
-            logger.error(f"Integration Bridge subscription error: {e}")
+            logger.error(f"DopeconBridge subscription error: {e}")
             await asyncio.sleep(30)  # Reconnect after 30 seconds
 ```
 
 **Event Handlers** (lines 943-1097):
-1. `_handle_integration_bridge_event()` - Main event dispatcher (8 event types)
+1. `_handle_dopecon_bridge_event()` - Main event dispatcher (8 event types)
 2. `_handle_tasks_imported()` - Sync imported tasks to ConPort
 3. `_handle_session_started()` - Update task status to IN_PROGRESS
 4. `_handle_session_paused()` - Update task status to PAUSED
@@ -79,10 +79,10 @@ async def _integration_bridge_subscriber(self) -> None:
 
 **Graceful Shutdown** (lines 1169-1172):
 ```python
-# Close Integration Bridge EventBus (Component 3)
+# Close DopeconBridge EventBus (Component 3)
 if self.event_bus:
     await self.event_bus.close()
-    logger.info("📪 Integration Bridge EventBus closed")
+    logger.info("📪 DopeconBridge EventBus closed")
 ```
 
 ### 2. Test Scripts Created
@@ -93,8 +93,8 @@ if self.event_bus:
 - Validates 4 event types: tasks_imported, session_started, progress_updated, adhd_state_changed
 - **Results**: ✅ 6/6 events received (4 published + 2 historical)
 
-**test_integration_bridge_events.py** (160 lines):
-- HTTP API test for Integration Bridge event publication
+**test_dopecon_bridge_events.py** (160 lines):
+- HTTP API test for DopeconBridge event publication
 - Publishes 6 event types via POST /events endpoint
 - Validates stream info retrieval
 
@@ -157,9 +157,9 @@ Event details:
 ## Architecture Compliance
 
 ### Two-Plane Separation ✅
-- Task-Orchestrator (PM Plane) → Integration Bridge → ConPort (Cognitive Plane)
+- Task-Orchestrator (PM Plane) → DopeconBridge → ConPort (Cognitive Plane)
 - No direct cross-plane communication
-- All coordination via Integration Bridge EventBus
+- All coordination via DopeconBridge EventBus
 
 ### Authority Enforcement ✅
 - ConPort remains storage authority (decisions, progress, patterns)
@@ -180,10 +180,10 @@ Event details:
 🚀 Initializing Enhanced Task Orchestrator...
 🔗 Connected to Leantime API
 🔗 Connected to Redis for coordination
-🔗 Connected to Integration Bridge EventBus
+🔗 Connected to DopeconBridge EventBus
 📊 ConPort adapter initialized (storage authority)
 🤖 AI agent pool initialized
-📡 Integration Bridge event subscriber enabled
+📡 DopeconBridge event subscriber enabled
 👥 Background workers started
 ✅ Enhanced Task Orchestrator ready for PM automation!
 ```
@@ -191,11 +191,11 @@ Event details:
 ### Event Flow Example
 
 ```
-# ConPort logs decision via Integration Bridge
+# ConPort logs decision via DopeconBridge
 ConPort → POST /events {type: "decision_logged", data: {decision_id: "123", summary: "Use Zen MCP"}}
 
-# Integration Bridge publishes to Redis Stream
-Integration Bridge → XADD dopemux:events {event_type: "decision_logged", ...}
+# DopeconBridge publishes to Redis Stream
+DopeconBridge → XADD dopemux:events {event_type: "decision_logged", ...}
 
 # Task-Orchestrator receives event
 Task-Orchestrator → 📥 Received event: decision_logged from conport
@@ -211,7 +211,7 @@ Task-Orchestrator → 📊 Linking decision 123 to related tasks in ConPort
   "components": {
     "leantime_api": "🟢 Connected",
     "redis_coordination": "🟢 Connected",
-    "integration_bridge_eventbus": "🟢 Connected",
+    "dopecon_bridge_eventbus": "🟢 Connected",
     "workers_active": "6/6"
   }
 }
@@ -235,7 +235,7 @@ if self.conport_adapter:
 - `link_decision_to_tasks(decision_id)`
 - `adjust_task_recommendations(energy_level, attention_level)`
 
-### Integration Bridge HTTP API
+### DopeconBridge HTTP API
 
 Task-Orchestrator can also publish events:
 ```python
@@ -246,7 +246,7 @@ event = Event(
 )
 await self.event_bus.publish("dopemux:events", event)
 
-# Or via Integration Bridge HTTP API
+# Or via DopeconBridge HTTP API
 async with aiohttp.post("http://localhost:3016/events", json={
     "stream": "dopemux:events",
     "event_type": "progress_updated",
@@ -258,16 +258,16 @@ async with aiohttp.post("http://localhost:3016/events", json={
 
 1. **Wire ConPort MCP Client** to ConPortEventAdapter
 2. **Implement ConPortEventAdapter methods** (update_task_status, etc.)
-3. **Test full event flow**: Task-Orchestrator → Integration Bridge → ConPort → Integration Bridge → Task-Orchestrator
+3. **Test full event flow**: Task-Orchestrator → DopeconBridge → ConPort → DopeconBridge → Task-Orchestrator
 4. **Validate bidirectional sync**: Leantime updates sync to ConPort, ConPort decisions sync to Leantime
 5. **Add event metrics**: Track event publish/subscribe counts, latency, errors
 
 ## Troubleshooting
 
 ### EventBus not available
-**Symptom**: `⚠️ EventBus not available - Integration Bridge events disabled`
-**Cause**: Integration Bridge path not found or event_bus.py import failed
-**Fix**: Verify `../mcp-integration-bridge/event_bus.py` exists
+**Symptom**: `⚠️ EventBus not available - DopeconBridge events disabled`
+**Cause**: DopeconBridge path not found or event_bus.py import failed
+**Fix**: Verify `../mcp-dopecon-bridge/event_bus.py` exists
 
 ### Consumer group already exists
 **Symptom**: Redis error "BUSYGROUP Consumer Group name already exists"
@@ -277,7 +277,7 @@ async with aiohttp.post("http://localhost:3016/events", json={
 ### No events received
 **Symptom**: Subscription active but no events processed
 **Cause**: No events published to dopemux:events stream
-**Fix**: Publish test event via `test_integration_bridge_events.py`
+**Fix**: Publish test event via `test_dopecon_bridge_events.py`
 
 ### Connection refused to Redis
 **Symptom**: `Failed to connect to Redis: [Errno 61] Connection refused`
@@ -307,16 +307,16 @@ async with aiohttp.post("http://localhost:3016/events", json={
 
 ## Decision Log
 
-**ConPort Decision #XXX**: Component 3 Integration Bridge Wiring Complete
-**Summary**: Task-Orchestrator successfully integrated with Integration Bridge EventBus
+**ConPort Decision #XXX**: Component 3 DopeconBridge Wiring Complete
+**Summary**: Task-Orchestrator successfully integrated with DopeconBridge EventBus
 **Rationale**: Enables bidirectional PM↔Cognitive coordination without authority violations
 **Implementation**: EventBus subscription with 8 event handlers, Redis Streams consumer group
 **Performance**: 50% under time estimate, 100% test coverage, < 1ms event latency
-**Tags**: `component-3`, `integration-bridge`, `event-bus`, `two-plane-architecture`
+**Tags**: `component-3`, `dopecon-bridge`, `event-bus`, `two-plane-architecture`
 
 ---
 
 **Validated By**: Claude Code Integration Testing
 **Validation Date**: 2025-10-19
-**Validation Method**: Direct EventBus subscription test + Integration Bridge HTTP API test
+**Validation Method**: Direct EventBus subscription test + DopeconBridge HTTP API test
 **Status**: ✅ Production Ready (pending Component 4 ConPort MCP wiring)

@@ -28,7 +28,7 @@
 - Remove DEPRECATED.md
 - Security audit
 - Fix service boundaries
-- Integration Bridge wiring
+- DopeconBridge wiring
 - Deploy as active service
 
 ### Option B: Extract ML Components (4 hours) 🟡 COMPROMISE

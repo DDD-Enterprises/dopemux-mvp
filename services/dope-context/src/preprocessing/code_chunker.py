@@ -6,7 +6,7 @@ AST-aware code chunking with semantic boundaries.
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import Any, Dict, List, Literal, Optional, Tuple
 
 try:
     import tree_sitter_python as tspython
@@ -15,8 +15,9 @@ try:
     from tree_sitter import Language, Node, Parser, Tree
 
     TREE_SITTER_AVAILABLE = True
-except ImportError:
+except ImportError:  # pragma: no cover - exercised in constrained envs
     TREE_SITTER_AVAILABLE = False
+    Language = Node = Parser = Tree = Any  # type: ignore
 
 
 logger = logging.getLogger(__name__)

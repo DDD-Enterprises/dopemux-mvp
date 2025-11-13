@@ -103,7 +103,7 @@ Comprehensive multi-tool design and execution session for CONPORT-KG-2025 decisi
 
 ### 3. Two-Plane Integration (FastAPI + Redis Streams)
 
-**Integration Bridge Extensions:**
+**DopeconBridge Extensions:**
 - REST endpoints at PORT_BASE+16/kg/
 - Event handlers for decision-logged, task-completed
 - Authority middleware (X-Source-Plane validation)
@@ -112,12 +112,12 @@ Comprehensive multi-tool design and execution session for CONPORT-KG-2025 decisi
 **Event Flow:**
 ```
 Decision Logged (ConPort)
-  → Integration Bridge checks IMPLEMENTS
+  → DopeconBridge checks IMPLEMENTS
   → Publishes decision.requires_implementation
   → Task Orchestrator creates tasks
 
 Task Completed (Leantime)
-  → Integration Bridge receives task.completed
+  → DopeconBridge receives task.completed
   → Updates IMPLEMENTS edge in AGE
   → ConPort KG reflects completion status
 ```
@@ -125,7 +125,7 @@ Task Completed (Leantime)
 **Authority Boundaries:**
 - PM Plane (read-only KG access): Leantime (status), Task Orchestrator (tasks)
 - Cognitive Plane (full KG access): ConPort (decisions), Serena (code)
-- Integration Bridge: Routing only, no direct data modification
+- DopeconBridge: Routing only, no direct data modification
 
 ---
 
@@ -148,7 +148,7 @@ Task Completed (Leantime)
 6. Implement progressive disclosure
 7. Apply ADHD styling
 
-### Phase 3: Integration Bridge (7 tasks, 25min each)
+### Phase 3: DopeconBridge (7 tasks, 25min each)
 1. Design /kg REST endpoints
 2. Implement KnowledgeGraphBridge
 3. Implement DecisionTaskCoordinator
@@ -212,7 +212,7 @@ scripts/migration/
 3. Test ADHD features with real users
 
 **Finally Phases 3-4 (Integration & Testing)**
-1. Extend Integration Bridge with /kg endpoints
+1. Extend DopeconBridge with /kg endpoints
 2. Add event handlers
 3. Comprehensive testing
 

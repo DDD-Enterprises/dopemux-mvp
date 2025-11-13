@@ -85,7 +85,7 @@ Dopemux implements a **three-layer context architecture** designed specifically 
 - **Serena**: Bidirectional - ConPort stores navigation patterns, Serena queries decisions
 - **dope-context**: Unidirectional - dope-context indexes ConPort decisions for search
 - **ADHD Engine**: Provides task complexity and energy metadata
-- **Integration Bridge**: Cross-plane communication at PORT_BASE+16
+- **DopeconBridge**: Cross-plane communication at PORT_BASE+16
 
 **MCP Tools** (25+ exposed):
 - `log_decision`, `get_decisions`, `search_decisions_fts`
@@ -511,7 +511,7 @@ git log --oneline --since="60 days ago" -- services/ | wc -l  # Result: 18
 - **Tree-sitter Sharing**: dope-context uses Serena's AST parsing for code chunking
 - **Complexity Coordination**: Serena's complexity scores feed dope-context ranking
 
-### Integration Bridge (Cross-Plane)
+### DopeconBridge (Cross-Plane)
 - **Port**: PORT_BASE+16
 - **Role**: Coordinates ConPort (cognitive) with Leantime (PM plane)
 - **Authority**: Enforces no direct cross-plane communication

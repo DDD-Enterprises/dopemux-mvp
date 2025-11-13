@@ -39,7 +39,7 @@ from .zen_client import ADHDZenClient
 
 # ConPort-KG Integration (optional)
 try:
-    from integration_bridge_connector import emit_state_update
+    from dopecon_bridge_connector import emit_state_update
     CONPORT_KG_INTEGRATION = True
 except ImportError:
     CONPORT_KG_INTEGRATION = False
@@ -108,9 +108,8 @@ class ADHDAccommodationEngine:
         # Activity tracker (initialized in initialize())
         self.activity_tracker: Optional[ActivityTracker] = None
 
-        # ConPort client for persistent tracking
-        # Feature-flagged: Use bridge (default) or direct SQLite (legacy)
-        self.conport: Optional[Any] = None  # Either ConPortSQLiteClient or ConPortBridgeAdapter
+        # ConPort client for persistent tracking via DopeconBridge
+        self.conport: Optional[ConPortBridgeAdapter] = None
 
         # Machine Learning predictive engine (IP-005 Days 11-12)
         self.predictive_engine: Optional[Any] = None  # PredictiveADHDEngine if ML enabled
@@ -152,13 +151,14 @@ class ADHDAccommodationEngine:
         )
         logger.info("✅ ActivityTracker initialized with ConPort MCP integration")
 
-        # Keep SQLite client for backwards compatibility/fallback
-        self.conport = ConPortSQLiteClient(
-            db_path=conport_db_path,
+        # DopeconBridge adapter (falls back to stub automatically)
+        self.conport = ConPortBridgeAdapter(
             workspace_id=settings.workspace_id,
-            read_only=False  # Week 3: Enable writes for persistent tracking
+            base_url=settings.dopecon_bridge_url,
+            token=settings.dopecon_bridge_token,
+            source_plane=settings.dopecon_bridge_source_plane,
         )
-        logger.info("✅ ConPort SQLite client initialized (fallback mode)")
+        logger.info("✅ DopeconBridge adapter initialized for ADHD state persistence")
 
         # Initialize ML predictive engine (IP-005 Days 11-12)
         if settings.enable_ml_predictions and ML_AVAILABLE:

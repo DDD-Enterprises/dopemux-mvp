@@ -63,7 +63,7 @@
 1. Security audit (2h - apply ConPort/Serena learnings)
 2. Fix service boundaries (3h - use ConPort HTTP API)
 3. Add authentication (2h - follow ADHD Engine pattern)
-4. Integration Bridge wiring (4h)
+4. DopeconBridge wiring (4h)
 5. Run tests and validate (2h)
 
 **Phase 2: Production Deployment**

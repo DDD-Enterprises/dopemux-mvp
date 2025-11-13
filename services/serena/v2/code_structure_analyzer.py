@@ -16,7 +16,7 @@ from enum import Enum
 
 # ConPort-KG Integration (optional, graceful degradation if unavailable)
 try:
-    from integration_bridge_connector import emit_complexity_analyzed
+    from dopecon_bridge_connector import emit_complexity_analyzed
     CONPORT_INTEGRATION_AVAILABLE = True
 except ImportError:
     CONPORT_INTEGRATION_AVAILABLE = False

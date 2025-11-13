@@ -108,7 +108,7 @@ services:
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     # ... rest of config
 
-  integration-bridge:
+  dopecon-bridge:
     environment:
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     # ... rest of config
@@ -124,7 +124,7 @@ docker-compose up -d
 
 # Check health
 curl http://localhost:8000/health  # ADHD Engine
-curl http://localhost:3016/kg/health  # Integration Bridge
+curl http://localhost:3016/kg/health  # DopeconBridge
 ```
 
 ---
@@ -157,7 +157,7 @@ curl http://localhost:3016/kg/health  # Integration Bridge
 # Health check endpoints
 curl http://localhost:8000/health  # ADHD Engine
 curl http://localhost:8080/health  # GPT-Researcher (if running)
-curl http://localhost:3016/kg/health  # Integration Bridge
+curl http://localhost:3016/kg/health  # DopeconBridge
 
 # Check for security errors in logs
 docker logs adhd-engine | grep "403\|401\|CORS"

@@ -51,11 +51,11 @@ except ImportError as e:
 # Configure logging FIRST
 logger = logging.getLogger(__name__)
 
-# Import Integration Bridge EventBus for event coordination (Component 3)
+# Import DopeconBridge EventBus for event coordination (Component 3)
 try:
     # Add integration bridge path
-    integration_bridge_path = os.path.join(os.path.dirname(__file__), '..', 'mcp-integration-bridge')
-    sys.path.insert(0, integration_bridge_path)
+    dopecon_bridge_path = os.path.join(os.path.dirname(__file__), '..', 'mcp-dopecon-bridge')
+    sys.path.insert(0, dopecon_bridge_path)
     from event_bus import EventBus, Event, EventType
     EVENTBUS_AVAILABLE = True
 except ImportError as e:
@@ -84,7 +84,7 @@ except ImportError as e:
 
 # ConPort-KG Integration for task progress events
 try:
-    from integration_bridge_connector import emit_task_status_change
+    from dopecon_bridge_connector import emit_task_status_change
     CONPORT_KG_INTEGRATION = True
 except ImportError:
     CONPORT_KG_INTEGRATION = False
@@ -194,7 +194,7 @@ class EnhancedTaskOrchestrator:
         # Component connections
         self.leantime_session: Optional[aiohttp.ClientSession] = None
         self.redis_client: Optional[redis.Redis] = None
-        self.event_bus: Optional[EventBus] = None  # Integration Bridge EventBus (Component 3)
+        self.event_bus: Optional[EventBus] = None  # DopeconBridge EventBus (Component 3)
 
         # Task coordination state - Architecture 3.0: ConPort is storage authority
         # REMOVED: self.orchestrated_tasks dict (Authority violation - fixed in Component 2 Task 2.5)
@@ -337,13 +337,13 @@ class EnhancedTaskOrchestrator:
             await self.redis_client.ping()
             logger.info("🔗 Connected to Redis for coordination")
 
-            # Initialize Integration Bridge EventBus (Component 3)
+            # Initialize DopeconBridge EventBus (Component 3)
             if EVENTBUS_AVAILABLE:
                 self.event_bus = EventBus(self.redis_url, password=None)
                 await self.event_bus.initialize()
-                logger.info("🔗 Connected to Integration Bridge EventBus")
+                logger.info("🔗 Connected to DopeconBridge EventBus")
             else:
-                logger.warning("⚠️ EventBus not available - Integration Bridge events disabled")
+                logger.warning("⚠️ EventBus not available - DopeconBridge events disabled")
 
         except Exception as e:
             logger.error(f"Failed to connect to Redis: {e}")
@@ -427,10 +427,10 @@ class EnhancedTaskOrchestrator:
             self._progress_correlator()
         ]
 
-        # Add Integration Bridge event subscriber (Component 3)
+        # Add DopeconBridge event subscriber (Component 3)
         if self.event_bus:
-            workers.append(self._integration_bridge_subscriber())
-            logger.info("📡 Integration Bridge event subscriber enabled")
+            workers.append(self._dopecon_bridge_subscriber())
+            logger.info("📡 DopeconBridge event subscriber enabled")
 
         self.workers = [asyncio.create_task(worker) for worker in workers]
         logger.info("👥 Background workers started")
@@ -1255,11 +1255,11 @@ class EnhancedTaskOrchestrator:
         # Placeholder - would integrate with Serena file monitoring
         pass
 
-    # Integration Bridge Event Subscription (Component 3)
+    # DopeconBridge Event Subscription (Component 3)
 
-    async def _integration_bridge_subscriber(self) -> None:
-        """Subscribe to Integration Bridge events for bidirectional ConPort communication."""
-        logger.info("📡 Started Integration Bridge event subscriber")
+    async def _dopecon_bridge_subscriber(self) -> None:
+        """Subscribe to DopeconBridge events for bidirectional ConPort communication."""
+        logger.info("📡 Started DopeconBridge event subscriber")
 
         while self.running:
             try:
@@ -1269,14 +1269,14 @@ class EnhancedTaskOrchestrator:
                     consumer_group="task-orchestrator",
                     consumer_name=f"orchestrator-{self.workspace_id.split('/')[-1]}"
                 ):
-                    await self._handle_integration_bridge_event(event)
+                    await self._handle_dopecon_bridge_event(event)
 
             except Exception as e:
-                logger.error(f"Integration Bridge subscription error: {e}")
+                logger.error(f"DopeconBridge subscription error: {e}")
                 await asyncio.sleep(30)  # Reconnect after 30 seconds
 
-    async def _handle_integration_bridge_event(self, event: Any) -> None:
-        """Handle events from Integration Bridge."""
+    async def _handle_dopecon_bridge_event(self, event: Any) -> None:
+        """Handle events from DopeconBridge."""
         try:
             logger.debug(f"📥 Received event: {event.type} from {event.source}")
 
@@ -1303,7 +1303,7 @@ class EnhancedTaskOrchestrator:
             logger.error(f"Event handling failed: {e}")
 
     async def _handle_tasks_imported(self, event: Any) -> None:
-        """Handle tasks_imported event from Integration Bridge."""
+        """Handle tasks_imported event from DopeconBridge."""
         try:
             task_count = event.data.get("task_count", 0)
             sprint_id = event.data.get("sprint_id", "unknown")
@@ -1319,7 +1319,7 @@ class EnhancedTaskOrchestrator:
             logger.error(f"Failed to handle tasks_imported: {e}")
 
     async def _handle_session_started(self, event: Any) -> None:
-        """Handle session_started event from Integration Bridge."""
+        """Handle session_started event from DopeconBridge."""
         try:
             task_id = event.data.get("task_id", "")
             duration_minutes = event.data.get("duration_minutes", 25)
@@ -1335,7 +1335,7 @@ class EnhancedTaskOrchestrator:
             logger.error(f"Failed to handle session_started: {e}")
 
     async def _handle_session_paused(self, event: Any) -> None:
-        """Handle session_paused event from Integration Bridge."""
+        """Handle session_paused event from DopeconBridge."""
         try:
             task_id = event.data.get("task_id", "")
 
@@ -1350,7 +1350,7 @@ class EnhancedTaskOrchestrator:
             logger.error(f"Failed to handle session_paused: {e}")
 
     async def _handle_session_completed(self, event: Any) -> None:
-        """Handle session_completed event from Integration Bridge."""
+        """Handle session_completed event from DopeconBridge."""
         try:
             task_id = event.data.get("task_id", "")
 
@@ -1365,7 +1365,7 @@ class EnhancedTaskOrchestrator:
             logger.error(f"Failed to handle session_completed: {e}")
 
     async def _handle_progress_updated(self, event: Any) -> None:
-        """Handle progress_updated event from Integration Bridge."""
+        """Handle progress_updated event from DopeconBridge."""
         try:
             task_id = event.data.get("task_id", "")
             status = event.data.get("status", "")
@@ -1382,7 +1382,7 @@ class EnhancedTaskOrchestrator:
             logger.error(f"Failed to handle progress_updated: {e}")
 
     async def _handle_decision_logged(self, event: Any) -> None:
-        """Handle decision_logged event from Integration Bridge."""
+        """Handle decision_logged event from DopeconBridge."""
         try:
             decision_summary = event.data.get("summary", "")
             decision_id = event.data.get("decision_id", "")
@@ -1398,7 +1398,7 @@ class EnhancedTaskOrchestrator:
             logger.error(f"Failed to handle decision_logged: {e}")
 
     async def _handle_adhd_state_changed(self, event: Any) -> None:
-        """Handle adhd_state_changed event from Integration Bridge."""
+        """Handle adhd_state_changed event from DopeconBridge."""
         try:
             state = event.data.get("state", "")
             energy_level = event.data.get("energy_level", "medium")
@@ -1415,7 +1415,7 @@ class EnhancedTaskOrchestrator:
             logger.error(f"Failed to handle adhd_state_changed: {e}")
 
     async def _handle_break_reminder(self, event: Any) -> None:
-        """Handle break_reminder event from Integration Bridge."""
+        """Handle break_reminder event from DopeconBridge."""
         try:
             task_id = event.data.get("task_id", "")
             duration_minutes = event.data.get("duration_minutes", 5)
@@ -1500,10 +1500,10 @@ class EnhancedTaskOrchestrator:
                 worker.cancel()
             await asyncio.gather(*self.workers, return_exceptions=True)
 
-        # Close Integration Bridge EventBus (Component 3)
+        # Close DopeconBridge EventBus (Component 3)
         if self.event_bus:
             await self.event_bus.close()
-            logger.info("📪 Integration Bridge EventBus closed")
+            logger.info("📪 DopeconBridge EventBus closed")
 
         # Close connections
         if self.leantime_session:

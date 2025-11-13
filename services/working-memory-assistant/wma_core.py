@@ -106,6 +106,7 @@ class DevelopmentSnapshot:
     is_incremental: bool = False
     parent_snapshot_id: Optional[str] = None
     changes_only: Optional[Dict[str, Any]] = None  # Only changed fields for incremental snapshots
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
     def __post_init__(self):
         if self.open_files is None:

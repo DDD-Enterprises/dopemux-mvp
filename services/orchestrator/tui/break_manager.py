@@ -15,7 +15,7 @@ Research-Backed Design:
 - Pattern tracking enables personalized optimization
 
 Architecture:
-- Uses Integration Bridge HTTP API for ConPort logging
+- Uses DopeconBridge HTTP API for ConPort logging
 - Tracks break compliance for self-awareness
 - Provides state for ProgressTrackerPane display
 """
@@ -57,17 +57,17 @@ class PomodoroBreakManager:
     - ConPort pattern learning
     """
 
-    def __init__(self, workspace_id: str, integration_bridge_url: str = None):
+    def __init__(self, workspace_id: str, dopecon_bridge_url: str = None):
         """
         Initialize break manager.
 
         Args:
             workspace_id: Absolute path to workspace
-            integration_bridge_url: Integration Bridge URL (default: http://localhost:3016)
+            dopecon_bridge_url: DopeconBridge URL (default: http://localhost:3016)
         """
         self.workspace_id = workspace_id
-        self.integration_bridge_url = integration_bridge_url or os.getenv(
-            "INTEGRATION_BRIDGE_URL", "http://localhost:3016"
+        self.dopecon_bridge_url = dopecon_bridge_url or os.getenv(
+            "DOPECON_BRIDGE_URL", "http://localhost:3016"
         )
 
         # Configuration (Pomodoro standard)
@@ -271,7 +271,7 @@ class PomodoroBreakManager:
             return
 
         try:
-            url = f"{self.integration_bridge_url}/conport/custom_data"
+            url = f"{self.dopecon_bridge_url}/conport/custom_data"
             payload = {
                 "workspace_id": self.workspace_id,
                 "category": "break_sessions",

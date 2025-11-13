@@ -17,7 +17,7 @@ from typing import Dict, Any, Optional
 from datetime import datetime, timezone
 
 from config import settings
-from conport_client_unified import ConPortSQLiteClient
+from bridge_integration import ConPortBridgeAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -47,18 +47,16 @@ class ActivityTracker:
         self.redis = redis_client
         self.conport_mcp = conport_mcp_client
 
-        # Use MCP client if available, otherwise fallback to SQLite stub
+        self.conport = ConPortBridgeAdapter(
+            workspace_id=settings.workspace_id,
+            base_url=settings.dopecon_bridge_url,
+            token=settings.dopecon_bridge_token,
+            source_plane=settings.dopecon_bridge_source_plane,
+        )
         if self.conport_mcp:
-            logger.info("ActivityTracker using ConPort MCP client for real data access")
-            self.conport = None  # Don't use SQLite when we have MCP
+            logger.info("ActivityTracker using ConPort MCP client for progress data + bridge for custom data")
         else:
-            # Week 3: Enable write mode for persistent tracking
-            self.conport = ConPortSQLiteClient(
-                db_path=conport_db_path,
-                workspace_id=settings.workspace_id,
-                read_only=False  # Week 3: Enable writes for state persistence
-            )
-            logger.warning("ActivityTracker using ConPort SQLite stub - no real data access")
+            logger.info("ActivityTracker using DopeconBridge adapter for activity data")
 
         # In-memory cache (5min TTL) to prevent excessive SQLite queries
         self._activity_cache: Dict[str, tuple] = {}

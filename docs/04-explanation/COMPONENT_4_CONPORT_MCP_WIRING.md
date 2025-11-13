@@ -15,7 +15,7 @@ next_review: '2026-02-08'
 
 ## Overview
 
-Component 4 completes the ConPort MCP client wiring to enable full bidirectional task synchronization between Task-Orchestrator and ConPort via the Integration Bridge. All code infrastructure is in place and ready for final deployment integration with the MCP server.
+Component 4 completes the ConPort MCP client wiring to enable full bidirectional task synchronization between Task-Orchestrator and ConPort via the DopeconBridge. All code infrastructure is in place and ready for final deployment integration with the MCP server.
 
 **Architecture Flow** (Now Complete):
 ```
@@ -23,7 +23,7 @@ Task-Orchestrator
   ↕ ConPortEventAdapter (✅ All methods implemented)
 ConPortMCPClient (✅ Wrapper created)
   ↕ ConPort MCP Tools (via mcp__conport__*)
-Integration Bridge (PORT_BASE+16)
+DopeconBridge (PORT_BASE+16)
   ↕ EventBus (Redis Streams)
 ConPort (PostgreSQL AGE)
 ```
@@ -207,9 +207,9 @@ class ConPortMCPHTTPClient:
     # ... other methods
 ```
 
-**Option 3: Integration Bridge Extension**:
+**Option 3: DopeconBridge Extension**:
 ```python
-# Add ConPort operations to Integration Bridge HTTP API
+# Add ConPort operations to DopeconBridge HTTP API
 POST /conport/progress → mcp__conport__log_progress
 PUT /conport/progress/{id} → mcp__conport__update_progress
 GET /conport/progress → mcp__conport__get_progress
@@ -299,7 +299,7 @@ assert success
 
 **3. Event Handler Flow**:
 ```python
-# Publish event via Integration Bridge
+# Publish event via DopeconBridge
 POST /events {
     "stream": "dopemux:events",
     "event_type": "session_started",
@@ -316,7 +316,7 @@ POST /events {
 **Full Integration Test**:
 ```
 1. Start ConPort MCP server
-2. Start Integration Bridge
+2. Start DopeconBridge
 3. Start Task-Orchestrator with MCP client configured
 4. Publish tasks_imported event
 5. Verify ConPort active_context updated
@@ -333,7 +333,7 @@ POST /events {
 ### Two-Plane Separation ✅
 - Task-Orchestrator (PM Plane) → ConPort (Cognitive Plane) via MCP
 - No direct database access
-- All coordination via Integration Bridge events + MCP calls
+- All coordination via DopeconBridge events + MCP calls
 
 ### Authority Enforcement ✅
 - ConPort remains storage authority (decisions, progress, patterns)
@@ -368,7 +368,7 @@ POST /events {
 **Prerequisites**:
 - [ ] ConPort MCP server running and accessible
 - [ ] MCP tools library integrated with Task-Orchestrator
-- [ ] Integration Bridge running (PORT_BASE+16)
+- [ ] DopeconBridge running (PORT_BASE+16)
 - [ ] Redis Streams accessible
 - [ ] PostgreSQL AGE (ConPort) accessible
 
@@ -376,7 +376,7 @@ POST /events {
 - [ ] Configure MCP tools access in Task-Orchestrator
 - [ ] Set workspace_id in environment
 - [ ] Set ConPort MCP server URL/credentials (if using HTTP option)
-- [ ] Verify Integration Bridge connection
+- [ ] Verify DopeconBridge connection
 
 **Validation**:
 - [ ] Run unit tests (Component 2 tests)

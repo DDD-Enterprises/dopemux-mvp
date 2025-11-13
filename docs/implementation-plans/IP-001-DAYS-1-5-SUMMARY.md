@@ -101,7 +101,7 @@ Overall Progress: [██████████████░░] 71% (5/7 da
 | **Serena** | ✅ DONE | 6 eliminated | All tests passed |
 | **ConPort** | ✅ DONE | 2 eliminated | Simpler than expected |
 | **dope-context** | 🔄 IN PROGRESS | 2-3 to migrate | DEFAULT_TOP_K, MAX_RESULTS |
-| **Integration Bridge** | ⏳ PENDING | Unknown | Need to investigate |
+| **DopeconBridge** | ⏳ PENDING | Unknown | Need to investigate |
 
 **Total Eliminated**: 8/23 thresholds (35%)
 **Remaining**: ~15 thresholds across 2 services
@@ -150,7 +150,7 @@ complexity_threshold = 1.0
 
 **Remaining Migrations** (1-2 focus blocks, ~25-50 minutes):
 1. dope-context: Migrate DEFAULT_TOP_K and MAX_RESULTS
-2. Integration Bridge: Investigate and migrate (if ADHD code exists)
+2. DopeconBridge: Investigate and migrate (if ADHD code exists)
 
 **Estimated Effort**: 25-50 minutes
 **Complexity**: LOW (following established pattern)

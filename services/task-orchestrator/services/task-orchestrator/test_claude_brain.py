@@ -21,11 +21,11 @@ class MockEvent:
 
 # Mock missing classes if not available
 try:
-    from integration_bridge_connector import IntegrationBridgeConnector
+    from dopecon_bridge_connector import DopeconBridgeConnector
 except ImportError:
-    class MockIntegrationBridgeConnector:
+    class MockDopeconBridgeConnector:
         pass
-    IntegrationBridgeConnector = MockIntegrationBridgeConnector
+    DopeconBridgeConnector = MockDopeconBridgeConnector
 
 # Mock other dependencies
 try:
