@@ -50,7 +50,7 @@ ML-powered risk assessment engine that predicts potential blockers before they i
 
 **Future Integration** (Week 7+):
 - ConPort HTTP API (replace direct SQLite)
-- Integration Bridge events
+- DopeconBridge events
 - FastAPI REST endpoints (like ADHD Engine)
 
 ---
