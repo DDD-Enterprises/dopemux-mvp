@@ -153,28 +153,28 @@ PHASE1_TASKS = [
         "dependencies": ["2.2", "2.3", "2.5"],
         "tags": ["phase-1", "adapters", "testing", "component-2"]
     },
-    # Component 3: Integration Bridge Wiring (4 hours)
+    # Component 3: DopeconBridge Wiring (4 hours)
     {
         "task_id": "3.1",
-        "description": "Configure Integration Bridge",
-        "full_description": "Task 3.1: Configure Integration Bridge | Duration: 60m | Complexity: 0.6 | Energy: Medium | Set up Integration Bridge routing for Task-Orchestrator",
+        "description": "Configure DopeconBridge",
+        "full_description": "Task 3.1: Configure DopeconBridge | Duration: 60m | Complexity: 0.6 | Energy: Medium | Set up DopeconBridge routing for Task-Orchestrator",
         "duration_minutes": 60,
         "complexity_score": 0.6,
         "energy_required": "medium",
         "cognitive_load": 0.6,
-        "component": "Integration Bridge Wiring",
+        "component": "DopeconBridge Wiring",
         "dependencies": [],
         "tags": ["phase-1", "bridge", "configuration", "component-3"]
     },
     {
         "task_id": "3.2",
         "description": "Implement Event Subscription",
-        "full_description": "Task 3.2: Implement Event Subscription | Duration: 75m | Complexity: 0.7 | Energy: High | Enable Task-Orchestrator to receive ConPort events via Integration Bridge",
+        "full_description": "Task 3.2: Implement Event Subscription | Duration: 75m | Complexity: 0.7 | Energy: High | Enable Task-Orchestrator to receive ConPort events via DopeconBridge",
         "duration_minutes": 75,
         "complexity_score": 0.7,
         "energy_required": "high",
         "cognitive_load": 0.7,
-        "component": "Integration Bridge Wiring",
+        "component": "DopeconBridge Wiring",
         "dependencies": ["3.1", "2.2"],
         "tags": ["phase-1", "bridge", "subscription", "component-3", "critical"]
     },
@@ -186,19 +186,19 @@ PHASE1_TASKS = [
         "complexity_score": 0.6,
         "energy_required": "medium",
         "cognitive_load": 0.6,
-        "component": "Integration Bridge Wiring",
+        "component": "DopeconBridge Wiring",
         "dependencies": ["3.1", "2.3"],
         "tags": ["phase-1", "bridge", "publishing", "component-3"]
     },
     {
         "task_id": "3.4",
         "description": "Test Bridge Communication",
-        "full_description": "Task 3.4: Test Bridge Communication | Duration: 45m | Complexity: 0.5 | Energy: Medium | Validate bidirectional Integration Bridge communication",
+        "full_description": "Task 3.4: Test Bridge Communication | Duration: 45m | Complexity: 0.5 | Energy: Medium | Validate bidirectional DopeconBridge communication",
         "duration_minutes": 45,
         "complexity_score": 0.5,
         "energy_required": "medium",
         "cognitive_load": 0.5,
-        "component": "Integration Bridge Wiring",
+        "component": "DopeconBridge Wiring",
         "dependencies": ["3.2", "3.3"],
         "tags": ["phase-1", "bridge", "testing", "component-3"]
     },
