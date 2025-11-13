@@ -110,7 +110,7 @@ next_review: '2026-02-08'
 **20 Tasks, 20 Hours, 2 Weeks**:
 - Component 1: Dependency Audit (5 tasks, 4h)
 - Component 2: Data Contract Adapters (6 tasks, 6h)
-- Component 3: Integration Bridge Wiring (4 tasks, 4h)
+- Component 3: DopeconBridge Wiring (4 tasks, 4h)
 - Component 4: Core Module Activation (4 tasks, 4h)
 - Component 5: Testing (2 tasks, 2h)
 
@@ -437,7 +437,7 @@ Architecture 3.0 restores the missing layers while preserving 2.0's simplificati
 - [ ] Complete Component 1 (Dependency Audit) - 4 hours
 - [ ] Make go/no-go decision based on audit
 - [ ] Begin Component 2 (Adapters) if go
-- [ ] Parallel work: Configure Integration Bridge (Task 3.1)
+- [ ] Parallel work: Configure DopeconBridge (Task 3.1)
 
 ### Success Indicators
 

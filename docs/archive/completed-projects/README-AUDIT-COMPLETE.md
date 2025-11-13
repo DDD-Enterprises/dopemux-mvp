@@ -19,7 +19,7 @@ next_review: '2026-02-08'
 
 **What Was Done**:
 - ✅ Comprehensive security audit → 10 vulnerabilities FIXED
-- ✅ Integration Bridge → 100% COMPLETE (was 80% stubs)
+- ✅ DopeconBridge → 100% COMPLETE (was 80% stubs)
 - ✅ All 12 services → Reviewed and validated
 - ✅ Documentation → 95% accuracy confirmed
 - ✅ Performance → Profiled and optimized
@@ -71,7 +71,7 @@ git push origin code-audit
 - No authentication → API key required
 
 **Architecture** (MAJOR):
-- Integration Bridge → Custom data endpoints now work!
+- DopeconBridge → Custom data endpoints now work!
 - ADHD Engine → Uses bridge (not direct SQLite)
 - Violations → ZERO remaining
 

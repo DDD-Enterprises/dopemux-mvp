@@ -198,7 +198,7 @@ ADHD-optimized code intelligence (21 tools)
 
 **Phase 3 Week 2**:
 1. Implement F-NEW-3 (session fatigue)
-2. Implement F-NEW-4 (Integration Bridge events)
+2. Implement F-NEW-4 (DopeconBridge events)
 3. Complete pattern learning
 4. Final validation
 
