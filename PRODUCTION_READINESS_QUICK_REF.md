@@ -1,8 +1,8 @@
 # 🚀 Dopemux Production Readiness - Quick Reference
 
-**Last Updated:** 2025-11-13  
-**Status:** Week 0 (Planning Complete)  
-**Next Milestone:** Week 1 - Universal Installer
+**Last Updated:** 2025-11-13 14:15 UTC  
+**Status:** Week 1, Day 1 (Installer 85% Complete)  
+**Next Milestone:** Week 1 - Platform Testing
 
 ---
 
@@ -21,16 +21,16 @@
 
 ### Top 3 Priorities
 
-1. **Universal Installer** - `install.sh` that works on macOS, Ubuntu, WSL2
-2. **Package Distribution** - Homebrew formula, PyPI package, Docker image
-3. **First-Run Wizard** - `dopemux init` interactive setup
+1. **Universal Installer** - `install.sh` that works on macOS, Ubuntu, WSL2 ← 85% DONE ✅
+2. **Package Distribution** - Homebrew formula, PyPI package, Docker image ← NEXT
+3. **First-Run Wizard** - `dopemux init` interactive setup ← LATER
 
 ### Success Criteria
 
-- ✅ Install succeeds on 3 platforms (macOS, Ubuntu, WSL2)
-- ✅ Setup time <5 minutes from download
-- ✅ Pre-flight checks catch 90% of issues
-- ✅ Clear error messages with next steps
+- ⏳ Install succeeds on 3 platforms (macOS ✅, Ubuntu testing, WSL2 pending)
+- ⏳ Setup time <5 minutes from download (measuring)
+- ✅ Pre-flight checks catch 90% of issues (disk, ports, permissions)
+- ✅ Clear error messages with next steps (color-coded, helpful)
 
 ---
 
@@ -38,13 +38,13 @@
 
 | Item | Description | Target Week | Status |
 |------|-------------|-------------|--------|
-| **P1.1** | Universal installer (all platforms) | Week 1-2 | ☐ Not Started |
+| **P1.1** | Universal installer (all platforms) | Week 1-2 | 🟡 85% (testing) |
 | **P2.1** | Workspace isolation (no conflicts) | Week 2 | ☐ Not Started |
 | **P4.1** | Auto-backups (never lose data) | Week 4 | ☐ Not Started |
 | **P7.1** | Secure secrets (no plaintext keys) | Week 7 | ☐ Not Started |
 | **P8.1** | Fast startup (<10s) | Week 8 | ☐ Not Started |
 
-**Progress:** 0/5 blockers cleared
+**Progress:** 0.85/5 blockers cleared (17%)
 
 ---
 
