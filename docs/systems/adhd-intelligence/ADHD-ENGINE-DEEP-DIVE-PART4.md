@@ -23,7 +23,7 @@ next_review: '2026-01-15'
 3. [Context Preservation Flow](#context-preservation)
 4. [Cross-System Coordination](#cross-system-coordination)
 5. [A Day in the Life](#day-in-the-life)
-6. [Integration Bridge Event Routing](#event-routing)
+6. [DopeconBridge Event Routing](#event-routing)
 7. [Performance Validation](#performance)
 8. [Future Enhancements](#future-enhancements)
 9. [Conclusion](#conclusion)
@@ -34,7 +34,7 @@ next_review: '2026-01-15'
 
 Parts 1-3 explained **how** the ADHD Engine works in isolation. Part 4 reveals **how it integrates** with ConPort, Serena, and the broader Dopemux ecosystem to create a seamless ADHD-optimized development experience.
 
-This is where theory becomes practice. We'll follow real workflows from developer command (`/dx:implement`) through multi-system coordination, showing exactly how the ADHD Engine, ConPort knowledge graph, Serena code intelligence, and Integration Bridge work together.
+This is where theory becomes practice. We'll follow real workflows from developer command (`/dx:implement`) through multi-system coordination, showing exactly how the ADHD Engine, ConPort knowledge graph, Serena code intelligence, and DopeconBridge work together.
 
 ### The Integration Challenge
 
@@ -321,7 +321,7 @@ async def start_implementation_session(user_id: str, task_id: int):
     # 3. Start auto-save background task
     asyncio.create_task(auto_save_loop(user_id, interval=300))  # 5min
 
-    # 4. Publish session_started event via Integration Bridge
+    # 4. Publish session_started event via DopeconBridge
     await event_bus.publish("dopemux:events", {
         "type": "session_started",
         "data": {
@@ -525,9 +525,9 @@ async def load_session_context(user_id: str) -> Dict:
 
 ## Cross-System Coordination
 
-### The Integration Bridge Role
+### The DopeconBridge Role
 
-The Integration Bridge provides **event-driven coordination** without violating authority boundaries:
+The DopeconBridge provides **event-driven coordination** without violating authority boundaries:
 
 **Example: Task Completion Event Chain**
 
@@ -545,7 +545,7 @@ The Integration Bridge provides **event-driven coordination** without violating 
    → Updates progress_entry status to DONE
    → Logs completion timestamp
    ↓
-5. Integration Bridge routes events to Dashboard
+5. DopeconBridge routes events to Dashboard
    → Updates UI with completion animation
    → Shows updated task list
    ↓
@@ -563,7 +563,7 @@ The Integration Bridge provides **event-driven coordination** without violating 
 | **ADHD Engine** | Energy/attention assessment, task routing, break recommendations | Store tasks, parse PRDs, provide LSP |
 | **ConPort** | Task storage, decision logging, progress tracking | Calculate ADHD metrics, route tasks |
 | **Serena** | Code navigation, complexity scoring, LSP operations | Store decisions, manage sessions |
-| **Integration Bridge** | Event routing, async coordination | Store data, make routing decisions |
+| **DopeconBridge** | Event routing, async coordination | Store data, make routing decisions |
 
 ### Real Coordination Example
 
@@ -589,7 +589,7 @@ async def _assess_current_energy_level(user_id: str):
             }
         })
 
-# 2. Integration Bridge routes event to multiple subscribers
+# 2. DopeconBridge routes event to multiple subscribers
 
 # 3a. Dashboard receives event → Updates UI
 await dashboard.handle_energy_change({
@@ -804,13 +804,13 @@ Recommendations:
 
 ---
 
-## Integration Bridge Event Routing
+## DopeconBridge Event Routing
 
 ### Event Flow Architecture
 
 ```
                   ┌─────────────────────────┐
-                  │  Integration Bridge     │
+                  │  DopeconBridge     │
                   │  (Redis Streams)        │
                   └──────────┬──────────────┘
                              │
@@ -1037,5 +1037,5 @@ That's not a tradeoff. That's **innovation**.
 For implementation details, see:
 - Source code: `/services/adhd_engine/`
 - ConPort integration: `/services/conport/`
-- Integration Bridge: `/services/mcp-integration-bridge/`
+- DopeconBridge: `/services/mcp-dopecon-bridge/`
 - Documentation: `/docs/CONPORT-DEEP-DIVE.md`, `/docs/SERENA-V2-DEEP-DIVE.md`
