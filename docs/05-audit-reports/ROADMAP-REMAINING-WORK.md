@@ -84,7 +84,7 @@ next_review: '2026-02-08'
    # Check: All use list args (not shell=True)
    ```
 
-7. **Integration Bridge Completion Assessment** (30min)
+7. **DopeconBridge Completion Assessment** (30min)
    - Read kg_endpoints.py custom_data stubs
    - Estimate effort to implement MCP integration
    - Create Week 7 implementation plan
@@ -142,7 +142,7 @@ grep -rn "@router\.\|@app\." services/ --include="*.py"
 #    - Are response schemas correct?
 
 # Services to check:
-# - Integration Bridge (5 endpoints + 2 stubs documented)
+# - DopeconBridge (5 endpoints + 2 stubs documented)
 # - ADHD Engine (7-8 endpoints documented, NOW SECURED)
 # - GPT-Researcher (websocket, research API)
 ```
@@ -162,7 +162,7 @@ grep -rn "DOPEMUX_INSTANCE\|PORT_BASE" services/ --include="*.py"
 # 3. "6 background monitors" (ADHD Engine)
 # Status: ✅ VERIFIED (already done in Phase 3A)
 
-# 4. "Integration Bridge cross-plane coordination"
+# 4. "DopeconBridge cross-plane coordination"
 # Status: ⚠️ STUBS (already found—documented)
 ```
 
@@ -258,7 +258,7 @@ cat claudedocs/phase-*.md > all_findings.txt
 Create actionable roadmap:
 
 **Week 7 (12h)**:
-1. Complete Integration Bridge MCP integration (4-6h)
+1. Complete DopeconBridge MCP integration (4-6h)
 2. Migrate ADHD Engine to bridge HTTP API (2-3h)
 3. Wire ConPort Orchestrator to bridge (2-3h)
 4. Integration tests (2h)
@@ -414,7 +414,7 @@ grep -rn "subprocess\.Popen\|subprocess\.run\|os\.system" services/ --include="*
 **Bridge Completion** (30min):
 ```bash
 # Read kg_endpoints.py stubs
-cat services/mcp-integration-bridge/kg_endpoints.py
+cat services/mcp-dopecon-bridge/kg_endpoints.py
 
 # Estimate implementation:
 # - MCP client setup: 2h
@@ -423,7 +423,7 @@ cat services/mcp-integration-bridge/kg_endpoints.py
 # - Testing: 1-2h
 # Total: 4-6h
 
-# Document in: integration_bridge_completion_plan.md
+# Document in: dopecon_bridge_completion_plan.md
 ```
 
 ---
@@ -588,7 +588,7 @@ python test_security_fixes.py
 - [x] API authentication
 
 ## Week 7 (12h)
-- [ ] Complete Integration Bridge (4-6h)
+- [ ] Complete DopeconBridge (4-6h)
 - [ ] Migrate services (6-8h)
 
 ## Future (Optional)
@@ -613,7 +613,7 @@ and identify security/quality issues.
 
 ## Decision
 1. Fix all HIGH-severity issues immediately (CORS, credentials, auth)
-2. Document Integration Bridge completion for Week 7
+2. Document DopeconBridge completion for Week 7
 3. Defer deep audit of all services (focus on critical)
 
 ## Consequences

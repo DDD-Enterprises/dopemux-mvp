@@ -32,7 +32,7 @@ next_review: '2026-01-15'
   - **Database Consolidation**: 3 PostgreSQL → 1 (2 orphaned eliminated) [#31], Vector DBs: Milvus (3-service) → Qdrant (1-service) [#31]
   - **ADHD Consistency**: 100% (23+ scattered thresholds → centralized) [Decision #6]
   - **Port Conflicts**: Resolved (5455 conflict eliminated) [Decision #31]
-- ⚠️ **Critical Blockers**: 3 (PostgreSQL AGE compatibility [#4], Integration Bridge completion [#8], Unknown decision flow [#8])
+- ⚠️ **Critical Blockers**: 3 (PostgreSQL AGE compatibility [#4], DopeconBridge completion [#8], Unknown decision flow [#8])
 - ✅ **Quick Wins**: 8 identified (ConPort search removal, embedding upgrade, ADHD centralization, API pooling, Redis event activation, decommission orphaned DBs [#31], selective middleware [#32], standardize ConPort SDK [#32])
 - 🔗 **Synergies**: 8 opportunities (unified graph, semantic nav, auto-indexing, service mesh, event-driven, decision flow tracing, Docker DNS service discovery [#32], connection pooling [#32])
 
@@ -86,7 +86,7 @@ next_review: '2026-01-15'
 **Method**: Zen thinkdeep with infrastructure duplication analysis
 **Key Findings**:
 - **6 Active MCP Servers**: context7, zen, conport, serena, claude-context, gptr-mcp (3002-3009 ports)
-- **5 Duplication Categories**: API clients (4 use OpenAI, 2 use VoyageAI), embeddings (2 pipelines), vector DBs (3), databases (ConPort split-brain), coordination (Integration Bridge underutilized)
+- **5 Duplication Categories**: API clients (4 use OpenAI, 2 use VoyageAI), embeddings (2 pipelines), vector DBs (3), databases (ConPort split-brain), coordination (DopeconBridge underutilized)
 - **No Shared Infrastructure**: Each MCP isolated, duplicated API clients/caching/error handling
 **Recommendation**: 3-tier strategy - dopemux-core shared library (Tier 1), infrastructure consolidation (Tier 2), maintain MCP independence (Tier 3). 17 days → 21 days with Decision #8
 
@@ -94,14 +94,14 @@ next_review: '2026-01-15'
 **Method**: Zen thinkdeep with anti-pattern detection
 **Key Findings**:
 - **7 Anti-Patterns Identified**:
-  1. Phantom Orchestrator: Integration Bridge documented as event orchestrator but only 5 read-only GET endpoints
+  1. Phantom Orchestrator: DopeconBridge documented as event orchestrator but only 5 read-only GET endpoints
   2. Isolated Islands: Zero MCP-to-MCP communication despite same Cognitive Plane
   3. Unknown Decision Flow: Cannot trace how decisions get logged in ConPort
   4. Redis Ghost Bus: Deployed for events but unused (only ADHD Engine uses for state)
   5. Synchronous API Gauntlet: 4 MCPs duplicate OpenAI calls, no pooling/coordination
   6. ConPort Split-Brain: Writes to 2 PostgreSQL instances
   7. No Circuit Breakers: Single point of failure for external APIs
-**Recommendation**: Complete Integration Bridge (9d), implement service mesh (7d), activate Redis event bus (4d), document decision flow (4d). -75% API costs, -60% latency, +200% throughput
+**Recommendation**: Complete DopeconBridge (9d), implement service mesh (7d), activate Redis event bus (4d), document decision flow (4d). -75% API costs, -60% latency, +200% throughput
 
 ### Decision #31: MCP Infrastructure Consolidation (2025-10-16) ✅
 **Method**: Direct infrastructure analysis of Docker Compose configurations
@@ -113,7 +113,7 @@ next_review: '2026-01-15'
 **Recommendation**: 3-Phase consolidation - (1) Decommission orphaned PostgreSQL (2 containers eliminated, ZERO risk), (2) Consolidate Redis to dopemux-redis-shared + dopemux-redis-events (MEDIUM risk), (3) Migrate claude-context from Milvus to Qdrant (3 containers eliminated, MEDIUM-HIGH risk). **Total savings: 8 containers, 2-3GB memory, resolved port conflicts**
 
 ### Decision #32: Data Flow & Call Pattern Optimization (2025-10-16) ✅
-**Method**: Direct analysis of Integration Bridge and cross-service communication patterns
+**Method**: Direct analysis of DopeconBridge and cross-service communication patterns
 **Key Findings**:
 - **6 Anti-Patterns Identified**:
   1. Fragile Service Discovery: Hardcoded `{CONTAINER_PREFIX}-task-master-ai:3005`, environment variable dependencies
@@ -121,9 +121,9 @@ next_review: '2026-01-15'
   3. HTTP N+1 Pattern: Individual HTTP calls, no batching/pooling, 30s timeouts
   4. ConPortMiddleware Overhead: Wraps ALL HTTP requests (should be selective)
   5. Multi-Instance Port Offset Complexity: PORT_BASE+16 system (Decision #29 cleanup incomplete)
-  6. Circular Dependency Risk: Serena → ConPort → Integration Bridge → Serena (potential 4-hop loop)
+  6. Circular Dependency Risk: Serena → ConPort → DopeconBridge → Serena (potential 4-hop loop)
 - **Correct Patterns**: PM/Cognitive plane isolation ✅, KGAuthorityMiddleware ✅, Event bus coordination ✅
-- **Inefficient Patterns**: 3-hop PM→Integration Bridge→ConPort→PostgreSQL (better: direct with authority), HTTP overhead for every cross-plane query
+- **Inefficient Patterns**: 3-hop PM→DopeconBridge→ConPort→PostgreSQL (better: direct with authority), HTTP overhead for every cross-plane query
 **Recommendation**: 4-Phase optimization - (1) Quick wins (remove multi-instance code, selective middleware, standardize ConPort SDK - 1-2 days, HIGH ROI), (2) Service discovery (Docker DNS, health check registry - 2-3 days, MEDIUM ROI), (3) HTTP optimization (connection pooling, batch endpoints, Redis caching - 3-4 days, MEDIUM-HIGH ROI), (4) Advanced (gRPC, GraphQL, Event Sourcing - future consideration)
 
 ---
@@ -291,8 +291,8 @@ src/dopemux-core/
 
 ---
 
-#### Task 1.4: Complete Integration Bridge Implementation (9 days, parallel) [Decision #8]
-**Problem**: Integration Bridge is read-only KG gateway, not event orchestrator
+#### Task 1.4: Complete DopeconBridge Implementation (9 days, parallel) [Decision #8]
+**Problem**: DopeconBridge is read-only KG gateway, not event orchestrator
 
 **Current State**: Only 5 GET /kg/* endpoints (recent, summary, neighborhood, context, search)
 **Target State**: Full cross-plane orchestrator with write/event capabilities
@@ -320,7 +320,7 @@ src/dopemux-core/
 - Audit logging for all cross-plane operations
 
 **Success Criteria**:
-- ✅ Integration Bridge matches documented architecture
+- ✅ DopeconBridge matches documented architecture
 - ✅ Write operations functional (POST/PUT/DELETE)
 - ✅ Event routing operational with durable delivery
 - ✅ Cross-plane communication validated
@@ -390,7 +390,7 @@ src/dopemux-core/
    - cross_plane_events: Bridge-mediated events
 
 2. **Publisher/Subscriber Pattern**:
-   - Integration Bridge: Primary cross-plane publisher
+   - DopeconBridge: Primary cross-plane publisher
    - ADHD Engine: Publishes state changes
    - Leantime Bridge: Subscribes to task events
    - MCPs: Publish domain events, subscribe to relevant channels
@@ -408,7 +408,7 @@ src/dopemux-core/
 
 **Success Criteria**:
 - ✅ Redis event bus fully operational
-- ✅ Cross-plane events flowing through Integration Bridge
+- ✅ Cross-plane events flowing through DopeconBridge
 - ✅ ADHD state changes published and consumed
 - ✅ +200% throughput with async event-driven
 
@@ -519,11 +519,11 @@ src/dopemux-core/
 1. **PM → Cognitive**: Task status changes trigger ADHD context updates
 2. **Cognitive → PM**: Decision creation triggers Leantime notifications
 3. **ADHD Alerts**: Energy/focus state changes notify both planes
-4. **Bidirectional Sync**: Status updates flow PM ↔ Cognitive via Integration Bridge
+4. **Bidirectional Sync**: Status updates flow PM ↔ Cognitive via DopeconBridge
 
 **Success Criteria**:
 - ✅ Events flow correctly between planes
-- ✅ Integration Bridge routes all cross-plane events
+- ✅ DopeconBridge routes all cross-plane events
 - ✅ No direct cross-plane calls (enforced)
 - ✅ Audit log captures all cross-plane communication
 
@@ -533,7 +533,7 @@ src/dopemux-core/
 **Objective**: Validate entire consolidated architecture
 
 **Test Scenarios**:
-1. **Full Decision Flow**: Create decision → Log in ConPort → Index in Milvus → Query via Integration Bridge → Display in Leantime
+1. **Full Decision Flow**: Create decision → Log in ConPort → Index in Milvus → Query via DopeconBridge → Display in Leantime
 2. **Service Mesh**: mcp-serena calls mcp-conport via service registry
 3. **ADHD Consistency**: All services query ADHDConfigService, verify consistent thresholds
 4. **Event Routing**: Publish PM plane event → Bridge routes → Cognitive plane receives

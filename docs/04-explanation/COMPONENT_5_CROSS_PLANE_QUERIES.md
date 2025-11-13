@@ -21,7 +21,7 @@ Component 5 completes the bidirectional communication architecture by adding que
 ```
 ConPort/UI/CLI
     ↓ HTTP GET
-Integration Bridge (PORT 3016)
+DopeconBridge (PORT 3016)
     ↓ Query Endpoints
 Task-Orchestrator (internal)
     ↓ State Provider
@@ -191,20 +191,20 @@ Get active sprint information.
 
 ### Files Created
 
-1. **services/mcp-integration-bridge/orchestrator_endpoints.py** (313 lines)
+1. **services/mcp-dopecon-bridge/orchestrator_endpoints.py** (313 lines)
    - FastAPI router with 8 query endpoints
    - Pydantic response models (TaskDetail, ADHDState, etc.)
    - Mock data implementations (ready for wiring)
    - Comprehensive docstrings with use cases
 
-2. **services/mcp-integration-bridge/test_orchestrator_queries.py** (100 lines)
+2. **services/mcp-dopecon-bridge/test_orchestrator_queries.py** (100 lines)
    - Async test suite for all endpoints
    - aiohttp client for HTTP testing
    - Test summary and pass/fail reporting
 
 ### Files Modified
 
-1. **services/mcp-integration-bridge/main.py** (+2 lines)
+1. **services/mcp-dopecon-bridge/main.py** (+2 lines)
    - Import: `from orchestrator_endpoints import router as orchestrator_router`
    - Include: `app.include_router(orchestrator_router)`
 
@@ -257,9 +257,9 @@ Get active sprint information.
 
 ### Running Tests
 ```bash
-cd services/mcp-integration-bridge
+cd services/mcp-dopecon-bridge
 
-# Start Integration Bridge (if not running)
+# Start DopeconBridge (if not running)
 python main.py
 
 # Run tests in another terminal
@@ -323,7 +323,7 @@ Currently, all endpoints return mock data. To complete Component 5:
 import aiohttp
 
 async def check_task_progress(task_id: str) -> float:
-    """Query task progress from Task-Orchestrator via Integration Bridge."""
+    """Query task progress from Task-Orchestrator via DopeconBridge."""
     async with aiohttp.ClientSession() as session:
         url = f"http://localhost:3016/orchestrator/tasks/{task_id}/status"
         async with session.get(url) as response:
@@ -383,7 +383,7 @@ curl http://localhost:3016/orchestrator/recommendations?limit=3
 - **Authentication**: None currently (internal service)
 - **Authorization**: None currently (to be added in Component 6+)
 - **Rate Limiting**: None currently (FastAPI default limits apply)
-- **CORS**: Enabled in Integration Bridge
+- **CORS**: Enabled in DopeconBridge
 
 ## ADHD Benefits
 
