@@ -327,7 +327,7 @@ conport log_decision \
 
 Each instance uses a different port base:
 
-| Instance | Port Base | ConPort | Serena | Task-Master | Integration Bridge |
+| Instance | Port Base | ConPort | Serena | Task-Master | DopeconBridge |
 | -------- | --------- | ------- | ------ | ----------- | ------------------ |
 | A        | 3000      | 3007    | 3006   | 3005        | 3016               |
 | B        | 3030      | 3037    | 3036   | 3035        | 3046               |
