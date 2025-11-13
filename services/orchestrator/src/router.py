@@ -68,12 +68,19 @@ class CommandRouter:
         self.bus = message_bus
         self.context = context_protocol
 
-    def route_command(self, user_input: str) -> dict:
+    def route_command(
+        self, 
+        user_input: str,
+        workspace_path: Optional[str] = None,
+        workspace_paths: Optional[list[str]] = None,
+    ) -> dict:
         """
         Route user command to appropriate AI agent(s).
 
         Args:
             user_input: Raw user input
+            workspace_path: Single workspace path (optional)
+            workspace_paths: Multiple workspace paths (optional)
 
         Returns:
             Routing result with agent responses
@@ -85,6 +92,27 @@ class CommandRouter:
         """
         # Step 1: Parse command
         parsed = self.parser.parse(user_input)
+        
+        # Add workspace context if provided
+        if workspace_path or workspace_paths:
+            try:
+                from workspace_support import add_workspace_context
+                # Enhance parsed command with workspace context
+                parsed_dict = {
+                    "command": user_input,
+                    "mode": parsed.mode.value,
+                    "target": parsed.target_agent.value,
+                }
+                parsed_dict = add_workspace_context(
+                    parsed_dict,
+                    workspace_path,
+                    workspace_paths,
+                )
+                # Store workspace context for downstream use
+                parsed.workspace_context = parsed_dict.get("_workspace_context")
+            except Exception as e:
+                # Workspace support optional - don't fail if unavailable
+                parsed.workspace_context = None
 
         # Step 2: Make routing decision
         routing = self._make_routing_decision(parsed)
