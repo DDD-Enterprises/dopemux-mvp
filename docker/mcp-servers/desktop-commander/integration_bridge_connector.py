@@ -1,5 +1,5 @@
 """
-Integration Bridge Connector for Desktop Commander
+DopeconBridge Connector for Desktop Commander
 
 Connects Desktop Commander to ConPort-KG event system for workspace switch tracking.
 """
@@ -21,7 +21,7 @@ def initialize_integration(workspace_id: str, event_bus_url: str = "redis://loca
     global _integration_manager, _integration_enabled
 
     try:
-        bridge_path = str(Path(__file__).parent.parent.parent.parent / "services" / "mcp-integration-bridge")
+        bridge_path = str(Path(__file__).parent.parent.parent.parent / "services" / "mcp-dopecon-bridge")
         if bridge_path not in sys.path:
             sys.path.insert(0, bridge_path)
 

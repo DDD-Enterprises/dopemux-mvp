@@ -199,7 +199,7 @@ From research doc (2,517 lines) and architecture docs:
 | CognitiveGuardian | ConPort ADHD data | Medium (timing + logic) | 70% |
 | DopemuxEnforcer | Serena complexity | Medium (rule validation) | 70% |
 | WorkflowCoordinator | Zen continuation | Medium (orchestration) | 60% |
-| TwoPlaneOrchestrator | Integration Bridge | Medium (routing) | 60% |
+| TwoPlaneOrchestrator | DopeconBridge | Medium (routing) | 60% |
 
 **Average Code Reuse**: 74%
 
@@ -225,7 +225,7 @@ From research doc (2,517 lines) and architecture docs:
 - WorkflowCoordinator: Orchestrates thinkdeep, consensus, codereview
 - All agents: Use fast models (gpt-5-mini, gemini-flash) for speed
 
-**Integration Bridge (Cross-Plane)**:
+**DopeconBridge (Cross-Plane)**:
 - TwoPlaneOrchestrator: Primary coordination interface
 - All agents: Route cross-plane requests through bridge
 
@@ -455,7 +455,7 @@ async def _dispatch_to_serena(self, task):
 
 ### Two-Plane Awareness
 - Cognitive Plane: Serena, ConPort
-- PM Plane: Route through Integration Bridge
+- PM Plane: Route through DopeconBridge
 
 ### ADHD Accommodations
 - Progressive disclosure (essential → details)
