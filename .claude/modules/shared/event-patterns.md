@@ -10,9 +10,9 @@
 ### Mandatory Event Routing Rules
 
 ```
-🚨 CRITICAL: All cross-plane communication MUST go through Integration Bridge
+🚨 CRITICAL: All cross-plane communication MUST go through DopeconBridge
 
-SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashboard/Serena
+SuperClaude → Python ADHD Engine → ConPort → DopeconBridge → Dashboard/Serena
 ```
 
 ### Event Flow Sequences
@@ -20,10 +20,10 @@ SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashbo
 #### Task Lifecycle Events
 
 ```
-1. Tasks Imported: SuperClaude `/dx:prd-parse` → ConPort → Integration Bridge → Dashboard/ADHD Engine
-2. Task Status Changed: ConPort `update_progress` → Integration Bridge → Dashboard
+1. Tasks Imported: SuperClaude `/dx:prd-parse` → ConPort → DopeconBridge → Dashboard/ADHD Engine
+2. Task Status Changed: ConPort `update_progress` → DopeconBridge → Dashboard
 3. Code Changed: Serena → ConPort (optional decision logging)
-4. Decision Made: ConPort → Integration Bridge (broadcast) → All systems
+4. Decision Made: ConPort → DopeconBridge (broadcast) → All systems
 ```
 
 #### Event Priority Levels
@@ -45,7 +45,7 @@ SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashbo
   "event_id": "uuid",
   "timestamp": "2025-09-28T04:22:00Z",
   "source_system": "task-master",
-  "target_systems": ["integration-bridge", "conport", "serena"],
+  "target_systems": ["dopecon-bridge", "conport", "serena"],
   "priority": "medium",
   "data": {
     "task_id": "S-2025.09-T1",
@@ -57,7 +57,7 @@ SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashbo
     "tags": ["implementation", "claude-md"]
   },
   "routing": {
-    "next_hop": "integration-bridge",
+    "next_hop": "dopecon-bridge",
     "final_destinations": ["conport", "serena"],
     "requires_ack": true
   }
@@ -72,7 +72,7 @@ SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashbo
   "event_id": "uuid",
   "timestamp": "2025-09-28T04:22:00Z",
   "source_system": "leantime",
-  "target_systems": ["integration-bridge", "conport"],
+  "target_systems": ["dopecon-bridge", "conport"],
   "priority": "high",
   "data": {
     "task_id": "S-2025.09-T1",
@@ -97,7 +97,7 @@ SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashbo
   "event_id": "uuid",
   "timestamp": "2025-09-28T04:22:00Z",
   "source_system": "serena",
-  "target_systems": ["conport", "integration-bridge", "leantime"],
+  "target_systems": ["conport", "dopecon-bridge", "leantime"],
   "priority": "medium",
   "data": {
     "file_path": "/Users/hue/code/dopemux-mvp/.claude/modules/shared/sprint.md",
@@ -124,7 +124,7 @@ SuperClaude → Python ADHD Engine → ConPort → Integration Bridge → Dashbo
   "event_id": "uuid",
   "timestamp": "2025-09-28T04:22:00Z",
   "source_system": "conport",
-  "target_systems": ["integration-bridge"],
+  "target_systems": ["dopecon-bridge"],
   "priority": "medium",
   "data": {
     "decision_id": "D-123",

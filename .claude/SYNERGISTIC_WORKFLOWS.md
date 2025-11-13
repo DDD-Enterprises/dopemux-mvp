@@ -305,7 +305,7 @@ mcp__dope-context__search_all(
 mcp__conport__log_system_pattern(
     workspace_id="/Users/hue/code/dopemux-mvp",
     name="Two-Plane Architecture Pattern",
-    description="PM plane (Leantime) + Cognitive plane (Serena/ConPort) coordinated via Integration Bridge",
+    description="PM plane (Leantime) + Cognitive plane (Serena/ConPort) coordinated via DopeconBridge",
     tags=["architecture", "learning", "pattern"]
 )
 

@@ -33,7 +33,7 @@ mcp__desktop-commander__screenshot(
 # Log decision with visual evidence
 mcp__conport__log_decision(
     workspace_id="/Users/hue/code/dopemux-mvp",
-    summary="Two-plane architecture with Integration Bridge",
+    summary="Two-plane architecture with DopeconBridge",
     rationale="Clear separation of concerns, authority enforcement",
     implementation_details="See screenshot: /tmp/architecture-diagram.png",
     tags=["architecture", "visual-documentation"]
@@ -169,10 +169,10 @@ mcp__desktop-commander__screenshot(
 # Step 2: Log decision with visual reference
 mcp__conport__log_decision(
     workspace_id="/Users/hue/code/dopemux-mvp",
-    summary="Implement Integration Bridge for cross-plane communication",
+    summary="Implement DopeconBridge for cross-plane communication",
     rationale="Enforce authority boundaries, prevent direct PM→Cognitive coupling",
     implementation_details="Architecture diagram: /tmp/two-plane-architecture.png\nPort: BASE+16, HTTP bridge with event routing",
-    tags=["architecture", "integration-bridge", "visual-doc"]
+    tags=["architecture", "dopecon-bridge", "visual-doc"]
 )
 ```
 

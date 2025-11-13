@@ -52,12 +52,12 @@
     },
     {
       "id": 138,
-      "summary": "Design two-plane architecture with Integration Bridge coordination",
+      "summary": "Design two-plane architecture with DopeconBridge coordination",
       "timestamp": "2025-10-10T16:00:00Z",
       "related_count": 15,
       "tags": ["architecture", "two-plane", "authority", "coordination"],
-      "rationale": "Separate PM concerns (status, tasks, team visibility) from cognitive concerns (decisions, code, memory) with clear authority boundaries. Integration Bridge enforces no direct cross-plane communication, routing all events through authoritative systems.",
-      "implementation": "PM Plane: Leantime (status authority), Task-Master (PRD parsing), Task-Orchestrator (37 tools). Cognitive Plane: Serena (code navigation), ConPort (decisions/memory). Integration Bridge at PORT_BASE+16 for event routing and conflict resolution.",
+      "rationale": "Separate PM concerns (status, tasks, team visibility) from cognitive concerns (decisions, code, memory) with clear authority boundaries. DopeconBridge enforces no direct cross-plane communication, routing all events through authoritative systems.",
+      "implementation": "PM Plane: Leantime (status authority), Task-Master (PRD parsing), Task-Orchestrator (37 tools). Cognitive Plane: Serena (code navigation), ConPort (decisions/memory). DopeconBridge at PORT_BASE+16 for event routing and conflict resolution.",
       "cognitive_load": "high"
     }
   ],
