@@ -27,6 +27,47 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_WORKSPACE_FILE = Path.home() / ".dopemux" / "default_workspace"
+
+
+def _load_persisted_default_workspace() -> Optional[Path]:
+    """
+    Load the last known Dopemux workspace recorded on disk.
+
+    Returns:
+        Path if the persisted location exists, otherwise None.
+    """
+    try:
+        if not DEFAULT_WORKSPACE_FILE.exists():
+            return None
+        value = DEFAULT_WORKSPACE_FILE.read_text(encoding="utf-8").strip()
+        if not value:
+            return None
+        candidate = Path(value).expanduser().resolve()
+        if candidate.exists() and candidate.is_dir():
+            return candidate
+    except OSError as exc:
+        logger.debug(f"Unable to read default workspace file: {exc}")
+    return None
+
+
+def persist_workspace_root(workspace_path: Path) -> None:
+    """
+    Persist a workspace path so Dopemux can be launched from any directory.
+
+    Args:
+        workspace_path: Project root to persist.
+    """
+    try:
+        workspace_path = workspace_path.expanduser().resolve()
+        if not workspace_path.exists():
+            logger.debug("Skipping workspace persistence (missing path: %s)", workspace_path)
+            return
+        DEFAULT_WORKSPACE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        DEFAULT_WORKSPACE_FILE.write_text(str(workspace_path), encoding="utf-8")
+    except OSError as exc:
+        logger.debug(f"Unable to persist workspace root: {exc}")
+
 
 def get_workspace_root(start_path: Optional[Path] = None) -> Path:
     """
@@ -94,6 +135,10 @@ def get_workspace_root(start_path: Optional[Path] = None) -> Path:
             return git_root.resolve()
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError) as e:
         logger.debug(f"Git detection failed: {e}. Trying project markers.")
+        persisted = _load_persisted_default_workspace()
+        if persisted:
+            logger.debug(f"Workspace detected via persisted default: {persisted}")
+            return persisted
 
     # Priority 3: Project marker detection (fallback for non-git projects)
     # Walk up directory tree looking for common project markers
