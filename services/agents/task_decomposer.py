@@ -49,6 +49,7 @@ class TaskInput:
     complexity: float  # 0.0-1.0
     priority: int = 5  # 1-10
     tags: List[str] = field(default_factory=list)
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 @dataclass
@@ -63,6 +64,7 @@ class SubTask:
     parent_task_id: str
     task_type: TaskType = TaskType.UNKNOWN
     sequence_number: int = 0
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 @dataclass
@@ -77,6 +79,7 @@ class DecompositionResult:
     total_estimated_cost: float = 0.0
     complexity_distribution: List[float] = field(default_factory=list)
     recommendations: List[str] = field(default_factory=list)
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 class TaskDecomposer:
