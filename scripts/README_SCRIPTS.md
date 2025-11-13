@@ -14,7 +14,7 @@ Utility scripts for managing Dopemux services and autonomous features.
 
 **Starts**:
 - 12 MCP servers (ConPort, Zen, Serena, Context7, Exa, etc.)
-- Integration Bridge (event processing, port 3016)
+- DopeconBridge (event processing, port 3016)
 - Task Orchestrator (ADHD coordination, port 3014)
 - All infrastructure (PostgreSQL, Redis, Qdrant)
 
