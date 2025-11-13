@@ -2,7 +2,7 @@
 
 **Purpose**: Generate comprehensive, source-validated technical analysis of Dopemux components for integration design, validation, and living documentation.
 
-**Target Components**: Serena v2, ConPort, dope-context, ADHD Engine, Integration Bridge, Task Orchestrator
+**Target Components**: Serena v2, ConPort, dope-context, ADHD Engine, DopeconBridge, Task Orchestrator
 
 ---
 

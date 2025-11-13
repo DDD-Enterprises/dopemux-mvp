@@ -61,7 +61,7 @@
 ┌────────────────▼────────────────────────────────────────────────┐
 │  Layer 4: Tools (MCP Servers)                                    │
 │  Zen, ConPort, Serena, Context7, GPT-Researcher, Exa,            │
-│  Magic, Playwright, Integration Bridge, Leantime API             │
+│  Magic, Playwright, DopeconBridge, Leantime API             │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -192,10 +192,10 @@ async def design_architecture():
 
 **Purpose**: Enforce two-plane architecture boundaries
 
-**Authority**: Integration Bridge coordination, authority enforcement
+**Authority**: DopeconBridge coordination, authority enforcement
 
 **Capabilities**:
-- Route cross-plane requests through Integration Bridge
+- Route cross-plane requests through DopeconBridge
 - Validate authority matrix (ConPort for decisions, Leantime for status)
 - Audit cross-plane communication
 - Resolve conflicts between planes

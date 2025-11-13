@@ -1639,7 +1639,7 @@ Cognitive load: {task['cognitive_load_trend']} ([green]trend: decreasing ✓[/gr
                 "Serena",
                 "Zen MCP",
                 "Task Orchestrator",
-                "Integration Bridge",
+                "DopeconBridge",
                 "Dope Context",
                 "Desktop Commander"
             ]

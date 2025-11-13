@@ -67,7 +67,7 @@
 | MorphLLM | +11 | 3011 | MCP | ? |
 | Desktop Commander | +12 | 3012 | MCP | ? |
 | Leantime Bridge | +15 | 3015 | MCP | ? |
-| **Integration Bridge** | **+16** | **3016** | **API** | **Implemented** |
+| **DopeconBridge** | **+16** | **3016** | **API** | **Implemented** |
 
 **Additional Services**:
 - Leantime: 8080 (PM plane web UI)
@@ -140,16 +140,16 @@
 **ADHD Engine → ConPort SQLite**:
 - **Pattern**: Direct SQLite writes
 - **Location**: `conport_client.py:296`
-- **Violation**: Bypasses Integration Bridge authority
+- **Violation**: Bypasses DopeconBridge authority
 - **Impact**: Two services writing same database
 - **Severity**: MEDIUM (documented, Week 7 fix)
 
 ### HTTP API Dependencies
 
-**ConPort KG UI → Integration Bridge**:
+**ConPort KG UI → DopeconBridge**:
 - **Client**: `kgClient.ts`
 - **Methods**: `getRecentDecisions(3)`, `getNeighborhood()`, `getFullContext()`
-- **Port**: 3016 (Integration Bridge)
+- **Port**: 3016 (DopeconBridge)
 - **Status**: ✅ Proper integration
 
 ### Event Bus Dependencies (Redis Streams)
@@ -160,7 +160,7 @@
 - (ADHD Engine planned)
 
 **Consumers**:
-- Integration Bridge (coordinator)
+- DopeconBridge (coordinator)
 - ConPort Orchestrator (automation triggers)
 
 **Status**: Infrastructure exists, partial adoption
@@ -181,7 +181,7 @@
 - Service-specific offsets (+1 to +18)
 
 **Feature Flags**:
-- `KG_DIRECT_CONNECTION` (Integration Bridge)
+- `KG_DIRECT_CONNECTION` (DopeconBridge)
 - `CONFLICT_ALERTS` (Task-Orchestrator)
 - `DEPENDENCY_VIZ` (Task-Orchestrator)
 - `SMART_BATCHING` (Task-Orchestrator)
@@ -281,7 +281,7 @@
 
 ❌ **Architecture Violations**:
 - Direct database access (ADHD Engine)
-- Integration Bridge bypassed
+- DopeconBridge bypassed
 
 ---
 

@@ -27,7 +27,7 @@ next_review: '2026-02-08'
 
 **Quality**: Well-documented, extracted from Task-Orchestrator during audit
 **Status**: ✅ Production-quality code (562 lines comprehensive)
-**Integration**: Pending Week 7 (FastAPI endpoints, Integration Bridge)
+**Integration**: Pending Week 7 (FastAPI endpoints, DopeconBridge)
 
 **Security**: No issues found (grep for subprocess, execute, etc. - clean)
 **Verdict**: HIGH VALUE service, ready for deployment
@@ -133,7 +133,7 @@ subprocess.Popen(
 8. Taskmaster ✅
 
 **Needs Completion** (2):
-9. Integration Bridge ⚠️ (80% done, 4-6h to finish)
+9. DopeconBridge ⚠️ (80% done, 4-6h to finish)
 10. ConPort Orchestrator ⚠️ (bridge TODOs)
 
 **Legacy/Unknown** (2):

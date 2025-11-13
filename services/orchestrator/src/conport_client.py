@@ -19,20 +19,20 @@ class ConPortClient:
     Client for ConPort MCP operations.
 
     Wraps MCP tool calls in Python-friendly API.
-    Supports both MCP (when available) and HTTP to Integration Bridge (standalone).
+    Supports both MCP (when available) and HTTP to DopeconBridge (standalone).
     """
 
-    def __init__(self, workspace_id: str, integration_bridge_url: Optional[str] = None):
+    def __init__(self, workspace_id: str, dopecon_bridge_url: Optional[str] = None):
         """
         Initialize ConPort client.
 
         Args:
             workspace_id: Absolute path to workspace
-            integration_bridge_url: Integration Bridge URL (default: http://localhost:3016)
+            dopecon_bridge_url: DopeconBridge URL (default: http://localhost:3016)
         """
         self.workspace_id = workspace_id
-        self.integration_bridge_url = integration_bridge_url or os.getenv(
-            "INTEGRATION_BRIDGE_URL", "http://localhost:3016"
+        self.dopecon_bridge_url = dopecon_bridge_url or os.getenv(
+            "DOPECON_BRIDGE_URL", "http://localhost:3016"
         )
 
         # Check if we're running in Claude Code with MCP available
@@ -67,10 +67,10 @@ class ConPortClient:
             # Note: mcp__conport__log_custom_data would be available in globals()
             return {"success": True, "key": key, "mode": "mcp"}
         else:
-            # HTTP call to Integration Bridge (standalone mode)
+            # HTTP call to DopeconBridge (standalone mode)
             try:
                 response = requests.post(
-                    f"{self.integration_bridge_url}/conport/custom_data",
+                    f"{self.dopecon_bridge_url}/conport/custom_data",
                     json={
                         "workspace_id": self.workspace_id,
                         "category": category,
@@ -107,7 +107,7 @@ class ConPortClient:
             # Direct MCP call
             return []
         else:
-            # HTTP call to Integration Bridge
+            # HTTP call to DopeconBridge
             try:
                 params = {
                     "workspace_id": self.workspace_id,
@@ -118,7 +118,7 @@ class ConPortClient:
                     params["key"] = key
 
                 response = requests.get(
-                    f"{self.integration_bridge_url}/conport/custom_data",
+                    f"{self.dopecon_bridge_url}/conport/custom_data",
                     params=params,
                     headers={"X-Source-Plane": "cognitive_plane"},
                     timeout=5
@@ -146,10 +146,10 @@ class ConPortClient:
             # Direct MCP call
             return []
         else:
-            # HTTP call to Integration Bridge
+            # HTTP call to DopeconBridge
             try:
                 response = requests.post(
-                    f"{self.integration_bridge_url}/conport/semantic_search",
+                    f"{self.dopecon_bridge_url}/conport/semantic_search",
                     json={
                         "workspace_id": self.workspace_id,
                         "query_text": query,
@@ -183,10 +183,10 @@ class ConPortClient:
             # Direct MCP call
             return {"success": True, "mode": "mcp"}
         else:
-            # HTTP call to Integration Bridge
+            # HTTP call to DopeconBridge
             try:
                 response = requests.post(
-                    f"{self.integration_bridge_url}/conport/decision",
+                    f"{self.dopecon_bridge_url}/conport/decision",
                     json={
                         "workspace_id": self.workspace_id,
                         "summary": summary,

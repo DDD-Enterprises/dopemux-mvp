@@ -57,7 +57,7 @@ Total Query Latency Budget: 200ms
 - Async non-blocking I/O (uvloop)
 - JSON response caching (for static data)
 
-### 2. Integration Bridge (PORT 3016)
+### 2. DopeconBridge (PORT 3016)
 
 **Role**: HTTP proxy + request routing
 
@@ -143,7 +143,7 @@ response = {
 
 ### Strategy 3: Connection Pooling
 
-**aiohttp ClientSession** (Integration Bridge):
+**aiohttp ClientSession** (DopeconBridge):
 - Persistent connections to orchestrator
 - Connection reuse across requests
 - Reduces connection establishment overhead (10ms → 1ms)
@@ -201,10 +201,10 @@ tasks, adhd, session = await asyncio.gather(
 ```bash
 # Start servers
 python services/task-orchestrator/query_server.py  # PORT 3017
-python services/mcp-integration-bridge/main.py     # PORT 3016
+python services/mcp-dopecon-bridge/main.py     # PORT 3016
 
 # Run performance tests
-python services/mcp-integration-bridge/test_component5_performance.py
+python services/mcp-dopecon-bridge/test_component5_performance.py
 ```
 
 ## Expected Performance Results
@@ -237,7 +237,7 @@ python services/mcp-integration-bridge/test_component5_performance.py
 | Metric | Expected Value | Acceptable |
 |--------|----------------|------------|
 | Direct orchestrator | 60ms | Baseline |
-| Via Integration Bridge | 75ms | ✅ Yes |
+| Via DopeconBridge | 75ms | ✅ Yes |
 | Overhead | 15ms (25%) | ✅ Yes (< 50ms) |
 
 ## Performance Tuning Recommendations

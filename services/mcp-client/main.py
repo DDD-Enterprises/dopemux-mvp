@@ -151,15 +151,29 @@ class MCPClient:
 
         return response.get("result", {}).get("tools", [])
 
-    async def call_tool(self, tool_name: str, arguments: Dict[str, Any] = None) -> Any:
-        """Call a tool"""
+    async def call_tool(
+        self, 
+        tool_name: str, 
+        arguments: Dict[str, Any] = None,
+        workspace_path: Optional[str] = None,
+        workspace_paths: Optional[List[str]] = None
+    ) -> Any:
+        """Call a tool with optional workspace params"""
+        args = arguments or {}
+        
+        # Add workspace params if provided
+        if workspace_path:
+            args['workspace_path'] = workspace_path
+        if workspace_paths:
+            args['workspace_paths'] = workspace_paths
+        
         request = {
             "jsonrpc": "2.0",
             "id": 3,
             "method": "tools/call",
             "params": {
                 "name": tool_name,
-                "arguments": arguments or {}
+                "arguments": args
             }
         }
 
@@ -214,7 +228,13 @@ class MCPClientManager:
 
         return results
 
-    async def call_tool_by_name(self, tool_name: str, arguments: Dict[str, Any] = None) -> Any:
+    async def call_tool_by_name(
+        self, 
+        tool_name: str, 
+        arguments: Dict[str, Any] = None,
+        workspace_path: Optional[str] = None,
+        workspace_paths: Optional[List[str]] = None
+    ) -> Any:
         """Call a tool by name, searching across all servers"""
         for server_name, client in self.clients.items():
             try:
@@ -222,7 +242,10 @@ class MCPClientManager:
                 tool_names = [tool["name"] for tool in tools]
 
                 if tool_name in tool_names:
-                    return await client.call_tool(tool_name, arguments)
+                    return await client.call_tool(
+                        tool_name, arguments, 
+                        workspace_path, workspace_paths
+                    )
             except Exception as e:
                 print(f"Failed to check tools for {server_name}: {e}")
                 continue

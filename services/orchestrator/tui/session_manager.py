@@ -79,10 +79,10 @@ class SessionManager:
     - Restore session on startup
     - Command history preservation
     - Pane state persistence
-    - Integration Bridge HTTP API
+    - DopeconBridge HTTP API
     """
 
-    # ConPort Integration Bridge endpoints
+    # ConPort DopeconBridge endpoints
     BRIDGE_BASE_URL = "http://localhost:3016"
     CONPORT_CATEGORY = "tui_session_state"
     AUTO_SAVE_INTERVAL = 30  # seconds
@@ -141,7 +141,7 @@ class SessionManager:
                 ai: asdict(pane) for ai, pane in state.pane_states.items()
             }
 
-            # Save via Integration Bridge
+            # Save via DopeconBridge
             url = f"{self.BRIDGE_BASE_URL}/api/custom-data"
             payload = {
                 "workspace_id": self.workspace_id,
