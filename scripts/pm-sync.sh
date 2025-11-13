@@ -10,7 +10,7 @@ CONPORT_URL="http://localhost:3004"
 ORCHESTRATOR_URL="http://localhost:3014"
 LEANTIME_URL="http://localhost:8080"
 LEAN_MCP_TOKEN="${LEAN_MCP_TOKEN:-}"
-INTEGRATION_BRIDGE_URL="http://localhost:3016"
+DOPECON_BRIDGE_URL="http://localhost:3016"
 
 # Colors for status messages
 RED='\033[0;31m'
@@ -61,8 +61,8 @@ sync_leantime_to_orchestrator() {
         source: "leantime",
         leantime_id: .id
     }' | while IFS= read -r line; do
-        # Send to Task Orchestrator via Integration Bridge
-        curl -s -X POST "$INTEGRATION_BRIDGE_URL/orchestrator/tasks" \
+        # Send to Task Orchestrator via DopeconBridge
+        curl -s -X POST "$DOPECON_BRIDGE_URL/orchestrator/tasks" \
             -H "Content-Type: application/json" \
             -d "$line" >/dev/null || log_status "warning" "Failed to sync project to orchestrator"
     done
@@ -80,7 +80,7 @@ sync_orchestrator_to_leantime() {
     log_status "info" "Syncing Task Orchestrator tasks to Leantime..."
 
     # Get tasks from Task Orchestrator
-    local tasks=$(curl -s "$INTEGRATION_BRIDGE_URL/orchestrator/tasks" 2>/dev/null || echo "[]")
+    local tasks=$(curl -s "$DOPECON_BRIDGE_URL/orchestrator/tasks" 2>/dev/null || echo "[]")
 
     if [[ "$tasks" == "[]" ]]; then
         log_status "warning" "No tasks found in Task Orchestrator"
@@ -110,7 +110,7 @@ sync_conport_to_orchestrator() {
     log_status "info" "Syncing ConPort progress to Task Orchestrator..."
 
     # Get recent progress entries from ConPort (mock data for now)
-    local progress_count=$(curl -s "$INTEGRATION_BRIDGE_URL/orchestrator/tasks" 2>/dev/null | jq -r 'length' 2>/dev/null || echo "2")
+    local progress_count=$(curl -s "$DOPECON_BRIDGE_URL/orchestrator/tasks" 2>/dev/null | jq -r 'length' 2>/dev/null || echo "2")
 
     # Create sample ConPort progress entries
     local progress=$(cat << EOF
@@ -151,7 +151,7 @@ EOF
 EOF
 )
 
-        curl -s -X POST "$INTEGRATION_BRIDGE_URL/orchestrator/tasks" \
+        curl -s -X POST "$DOPECON_BRIDGE_URL/orchestrator/tasks" \
             -H "Content-Type: application/json" \
             -d "$task_json" >/dev/null || log_status "warning" "Failed to sync ConPort progress ${id}"
     done
@@ -163,7 +163,7 @@ EOF
 sync_orchestrator_to_conport() {
     log_status "info" "Syncing Task Orchestrator tasks to ConPort..."
 
-    local tasks=$(curl -s "$INTEGRATION_BRIDGE_URL/orchestrator/tasks" 2>/dev/null || echo "[]")
+    local tasks=$(curl -s "$DOPECON_BRIDGE_URL/orchestrator/tasks" 2>/dev/null || echo "[]")
 
     if [[ "$tasks" == "[]" ]] || [[ $(echo "$tasks" | jq -r '. | length') == "0" ]]; then
         log_status "warning" "No tasks found in Task Orchestrator"
