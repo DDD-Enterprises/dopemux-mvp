@@ -137,6 +137,7 @@ class ContextSnapshot(BaseModel):
 
     metadata: Optional[Dict[str, Any]] = Field(None, max_items=20)
     checksum: Optional[str] = None
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
     @validator('mental_model', 'active_focus', 'current_task', 'metadata')
     def validate_dict_size(cls, v):
