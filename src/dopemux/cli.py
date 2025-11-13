@@ -6036,6 +6036,182 @@ register_commands(cli)
 
 
 # ============================================================================
+# 🧘 Zen Tools – Unified automation across phases
+# ============================================================================
+
+@cli.group()
+@click.pass_context
+def zen(ctx):
+    """
+    🧘 Zen tools: plan, build, test, release, debug, improve, monitor.
+
+    Uses the Zen MCP server to coordinate multi-model reasoning and automation.
+    """
+    pass
+
+
+def _zen_post(base_url: str, path: str, payload: dict, timeout: float = 30.0):
+    try:
+        import httpx
+        url = f"{base_url.rstrip('/')}{path}"
+        with httpx.Client(timeout=timeout) as client:
+            resp = client.post(url, json=payload)
+            if resp.status_code == 200:
+                return resp.json()
+            return {"error": f"HTTP {resp.status_code}", "text": resp.text[:4000]}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@zen.command("plan")
+@click.argument("goal")
+@click.option("--model", default="sonnet", help="Model to use (e.g., sonnet, gemini, gpt-5)")
+@click.option("--base-url", envvar="ZEN_BASE_URL", default="http://localhost:8002", help="Zen base URL")
+def zen_plan(goal: str, model: str, base_url: str):
+    data = {
+        "step": goal,
+        "step_number": 1,
+        "total_steps": 1,
+        "next_step_required": True,
+        "model": model,
+    }
+    result = _zen_post(base_url, "/mcp/zen/planner", data)
+    if "error" in result:
+        console.print(f"[yellow]Zen planner unavailable:[/yellow] {result['error']}")
+        return
+    console.print(result.get("content") or result.get("response") or "(no content)")
+
+
+@zen.command("debug")
+@click.argument("issue")
+@click.option("--hypothesis", default="", help="Hypothesis to test")
+@click.option("--model", default="gemini", help="Model to use")
+@click.option("--base-url", envvar="ZEN_BASE_URL", default="http://localhost:8002", help="Zen base URL")
+def zen_debug(issue: str, hypothesis: str, model: str, base_url: str):
+    data = {
+        "step": issue,
+        "step_number": 1,
+        "total_steps": 1,
+        "next_step_required": False,
+        "findings": {},
+        "hypothesis": hypothesis,
+        "model": model,
+        "temperature": 0.2,
+        "thinking_mode": "high",
+    }
+    result = _zen_post(base_url, "/mcp/zen/debug", data)
+    if "error" in result:
+        console.print(f"[yellow]Zen debug unavailable:[/yellow] {result['error']}")
+        return
+    console.print(result.get("content") or result.get("response") or "(no content)")
+
+
+@zen.command("review")
+@click.argument("files", nargs=-1)
+@click.option("--type", "review_type", type=click.Choice(["full", "security", "performance", "quick"]), default="full")
+@click.option("--model", default="gemini", help="Primary model")
+@click.option("--base-url", envvar="ZEN_BASE_URL", default="http://localhost:8002", help="Zen base URL")
+def zen_review(files, review_type, model, base_url):
+    if not files:
+        console.print("[red]Provide one or more files to review[/red]")
+        raise SystemExit(1)
+    data = {
+        "step": f"Review {len(files)} files with {review_type} focus",
+        "step_number": 1,
+        "total_steps": 1,
+        "next_step_required": False,
+        "findings": {},
+        "relevant_files": list(files),
+        "review_type": review_type,
+        "focus_on": review_type,
+        "model": model,
+        "review_validation_type": "external",
+        "severity_filter": "all",
+    }
+    result = _zen_post(base_url, "/mcp/zen/codereview", data, timeout=60.0)
+    if "error" in result:
+        console.print(f"[yellow]Zen review unavailable:[/yellow] {result['error']}")
+        return
+    console.print(result.get("content") or result.get("response") or "(no content)")
+
+
+@zen.command("chat")
+@click.argument("prompt")
+@click.option("--model", default="grok-code", help="Model to use")
+@click.option("--base-url", envvar="ZEN_BASE_URL", default="http://localhost:8002", help="Zen base URL")
+def zen_chat(prompt: str, model: str, base_url: str):
+    data = {
+        "prompt": prompt,
+        "working_directory": str(Path.cwd()),
+        "model": model,
+        "temperature": 0.7,
+        "thinking_mode": "medium",
+        "continuation_id": "",
+    }
+    result = _zen_post(base_url, "/mcp/zen/chat", data)
+    if "error" in result:
+        console.print(f"[yellow]Zen chat unavailable:[/yellow] {result['error']}")
+        return
+    console.print(result.get("response") or result.get("content") or "(no content)")
+
+
+@zen.command("flow")
+@click.argument("goal")
+@click.option("--model-plan", default="sonnet")
+@click.option("--model-review", default="gemini")
+@click.option("--model-debug", default="gemini")
+@click.option("--files", multiple=True, help="Files to review in build/test phase")
+@click.option("--base-url", envvar="ZEN_BASE_URL", default="http://localhost:8002")
+def zen_flow(goal, model_plan, model_review, model_debug, files, base_url):
+    """Run a smart pipeline: plan -> (optional) review -> debug."""
+    console.print(f"[cyan]Planning:[/cyan] {goal}")
+    plan = _zen_post(base_url, "/mcp/zen/planner", {
+        "step": goal, "step_number": 1, "total_steps": 1, "next_step_required": True, "model": model_plan,
+    })
+    if "error" in plan:
+        console.print(f"[yellow]Planner error:[/yellow] {plan['error']}")
+    else:
+        console.print(plan.get("content") or plan.get("response") or "(no plan)")
+
+    if files:
+        console.print("\n[cyan]Code review:[/cyan]")
+        review = _zen_post(base_url, "/mcp/zen/codereview", {
+            "step": f"Review {len(files)} files",
+            "step_number": 1,
+            "total_steps": 1,
+            "next_step_required": False,
+            "findings": {},
+            "relevant_files": list(files),
+            "review_type": "full",
+            "focus_on": "full",
+            "model": model_review,
+            "review_validation_type": "external",
+            "severity_filter": "all",
+        }, timeout=60.0)
+        if "error" in review:
+            console.print(f"[yellow]Review error:[/yellow] {review['error']}")
+        else:
+            console.print(review.get("content") or review.get("response") or "(no review)")
+
+    console.print("\n[cyan]Debugging:[/cyan]")
+    debug = _zen_post(base_url, "/mcp/zen/debug", {
+        "step": f"Validate plan for: {goal}",
+        "step_number": 1,
+        "total_steps": 1,
+        "next_step_required": False,
+        "findings": {},
+        "hypothesis": "Plan assumptions hold; identify risks and test gaps",
+        "model": model_debug,
+        "temperature": 0.2,
+        "thinking_mode": "high",
+    })
+    if "error" in debug:
+        console.print(f"[yellow]Debug error:[/yellow] {debug['error']}")
+    else:
+        console.print(debug.get("content") or debug.get("response") or "(no debug)")
+
+
+# ============================================================================
 # 🚀 EASY LAUNCH SHORTCUTS - Quick commands for common workflows
 # ============================================================================
 
