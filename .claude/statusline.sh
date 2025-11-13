@@ -224,6 +224,9 @@ if nc -z -w 1 localhost 8096 2>/dev/null; then MCP_ACTIVITY="🎯"; fi
 # ADHD Engine status is now handled by pm-status.sh integration above
 
 # Build enhanced statusline with integrated PM metrics
+if [ -n "$WORKSPACE_NAME" ]; then
+    printf "\033[1;35m%s\033[0m " "$WORKSPACE_NAME"
+fi
 printf "\033[1;36m%s\033[0m" "$dir"
 
 # Git branch + changes
