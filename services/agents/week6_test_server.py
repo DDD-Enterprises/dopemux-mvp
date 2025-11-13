@@ -2,7 +2,7 @@
 Week 6: Standalone Two-Plane Routing Test Server
 
 Minimal server for testing /route/pm and /route/cognitive endpoints
-without Integration Bridge dependencies.
+without DopeconBridge dependencies.
 """
 import uuid
 from datetime import datetime
@@ -186,6 +186,6 @@ if __name__ == "__main__":
     uvicorn.run(
         "week6_test_server:app",
         host="0.0.0.0",
-        port=3017,  # Using 3017 to avoid conflict with Integration Bridge
+        port=3017,  # Using 3017 to avoid conflict with DopeconBridge
         reload=False
     )
