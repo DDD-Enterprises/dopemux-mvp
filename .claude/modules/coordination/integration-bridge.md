@@ -1,14 +1,14 @@
-# Integration Bridge Module
+# DopeconBridge Module
 
 **Module Version**: 2.0.0 (Simplified Architecture)
 **Authority**: Event Coordination and Async Communication
 **Modes**: Both PLAN and ACT
-**Service**: `/services/mcp-integration-bridge/` at PORT_BASE+16
+**Service**: `/services/mcp-dopecon-bridge/` at PORT_BASE+16
 **Decision Reference**: #132 (Simplified architecture)
 
 ## Purpose
 
-The Integration Bridge provides **event-driven coordination** between:
+The DopeconBridge provides **event-driven coordination** between:
 
 - ConPort (task & decision storage)
 - SuperClaude (PRD parsing via `/dx:prd-parse`)
@@ -19,7 +19,7 @@ It is **NOT** a Two-Plane coordinator - that architecture was simplified. It's n
 
 ## Authority Boundaries
 
-**Integration Bridge ONLY Authority:**
+**DopeconBridge ONLY Authority:**
 
 - Async event routing between services
 - Redis Streams queue management
@@ -27,7 +27,7 @@ It is **NOT** a Two-Plane coordinator - that architecture was simplified. It's n
 - Multi-instance event isolation
 - MetaMCP role-based tool filtering enforcement
 
-**Integration Bridge NEVER:**
+**DopeconBridge NEVER:**
 
 - Stores task data (ConPort authority)
 - Parses PRDs (SuperClaude authority)
@@ -46,7 +46,7 @@ It is **NOT** a Two-Plane coordinator - that architecture was simplified. It's n
 3. Human reviews and approves
 4. Python validator → adds ADHD metadata
 5. ConPort batch import → progress_entry + custom_data + links
-6. Integration Bridge → publishes "tasks_imported" event
+6. DopeconBridge → publishes "tasks_imported" event
 7. Dashboard → updates UI with new tasks
 8. ADHD Engine → analyzes tasks and calculates recommendations
 
@@ -54,10 +54,10 @@ It is **NOT** a Two-Plane coordinator - that architecture was simplified. It's n
 1. User runs: /dx:implement
 2. ADHD Engine → queries ConPort for optimal task
 3. Python session manager → starts 25min timer
-4. Integration Bridge → publishes "session_started" event
+4. DopeconBridge → publishes "session_started" event
 5. Dashboard → shows timer + current task
 6. Auto-save every 5min → ConPort update_progress
-7. Integration Bridge → publishes "progress_updated" event
+7. DopeconBridge → publishes "progress_updated" event
 8. Dashboard → updates progress bar
 ```
 
@@ -132,7 +132,7 @@ async for msg_id, msg_data in bus.subscribe("dopemux:events", "dashboard"):
 
 ## REST API Endpoints
 
-### Integration Bridge HTTP API
+### DopeconBridge HTTP API
 
 ```bash
 # Base URL: http://localhost:3016 (or PORT_BASE+16)
@@ -172,10 +172,10 @@ Content-Type: application/json
 
 ## MetaMCP Role-Based Tool Filtering
 
-The Integration Bridge enforces **tool-level boundaries** via MetaMCP configuration:
+The DopeconBridge enforces **tool-level boundaries** via MetaMCP configuration:
 
 ```yaml
-# MetaMCP Role Configuration (enforced by Integration Bridge)
+# MetaMCP Role Configuration (enforced by DopeconBridge)
 roles:
   dopemux-quickfix:
     tools:

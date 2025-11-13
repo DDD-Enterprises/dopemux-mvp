@@ -78,7 +78,7 @@ Conducted comprehensive MCP-enhanced code audit delivering **immediate productio
 
 ---
 
-## Critical Discovery: Integration Bridge Root Cause
+## Critical Discovery: DopeconBridge Root Cause
 
 **The Mystery**: Why bypass well-designed coordination layer?
 
@@ -114,7 +114,7 @@ async def save_custom_data(...):
 8. ✅ Taskmaster - PRD parsing (clean wrapper)
 
 **Needs Week 7 Work** (2/12):
-9. ⚠️ Integration Bridge - 80% done (stubs)
+9. ⚠️ DopeconBridge - 80% done (stubs)
 10. ⚠️ ConPort Orchestrator - Bridge TODOs
 
 **Legacy/Unknown** (2/12):
@@ -202,7 +202,7 @@ cp .env.example .env
 **Guide**: `ROADMAP-REMAINING-WORK.md`
 
 ### Week 7: Full Compliance (12h)
-- Complete Integration Bridge (4-6h)
+- Complete DopeconBridge (4-6h)
 - Migrate services (6-8h)
 **Guide**: `DEEP-DOCUMENTATION-ALL-FINDINGS.md`
 

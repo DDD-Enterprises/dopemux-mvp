@@ -418,7 +418,7 @@ max_results = await self.get_max_initial_results()
 **Status**: Schema migration ready, MCP client integration pending
 
 #### ADHD Engine ↔ ConPort
-**Data Flow**: Integration Bridge HTTP (current) → Direct SQLite (planned Week 3)
+**Data Flow**: DopeconBridge HTTP (current) → Direct SQLite (planned Week 3)
 
 **ADHD Engine → ConPort**:
 - Learned patterns (ML persistence)

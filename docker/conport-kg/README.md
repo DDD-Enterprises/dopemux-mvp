@@ -47,7 +47,7 @@ cd services/conport_kg_ui && npm run dev
 - Graph: conport_knowledge
 - Health: `docker exec dope-decision-graph-postgres pg_isready`
 
-**Integration Bridge**:
+**DopeconBridge**:
 - Port: 3016 (PORT_BASE + 16)
 - API: http://localhost:3016/kg
 - Health: GET /kg/health
@@ -80,13 +80,13 @@ docker-compose -f docker/conport-kg/docker-compose.yml down
 docker-compose -f docker/conport-kg/docker-compose.yml logs -f
 
 # Specific service
-docker-compose -f docker/conport-kg/docker-compose.yml logs -f integration-bridge
+docker-compose -f docker/conport-kg/docker-compose.yml logs -f dopecon-bridge
 ```
 
 ### Restart Service
 
 ```bash
-docker-compose -f docker/conport-kg/docker-compose.yml restart integration-bridge
+docker-compose -f docker/conport-kg/docker-compose.yml restart dopecon-bridge
 ```
 
 ---
@@ -155,7 +155,7 @@ export ALERT_WEBHOOK=https://discord.com/api/webhooks/YOUR/WEBHOOK
 
 ```bash
 # Check logs
-docker-compose -f docker/conport-kg/docker-compose.yml logs integration-bridge
+docker-compose -f docker/conport-kg/docker-compose.yml logs dopecon-bridge
 
 # Check health
 docker ps --filter "name=dope-decision-graph"
@@ -167,8 +167,8 @@ docker-compose -f docker/conport-kg/docker-compose.yml restart
 ### Database Connection Issues
 
 ```bash
-# Test connection from Integration Bridge
-docker-compose -f docker/conport-kg/docker-compose.yml exec integration-bridge \
+# Test connection from DopeconBridge
+docker-compose -f docker/conport-kg/docker-compose.yml exec dopecon-bridge \
   python -c "from services.conport_kg.age_client import AGEClient; AGEClient()"
 ```
 
@@ -176,7 +176,7 @@ docker-compose -f docker/conport-kg/docker-compose.yml exec integration-bridge \
 
 ```bash
 # Check connection pool
-docker-compose -f docker/conport-kg/docker-compose.yml logs integration-bridge | grep "Pool stats"
+docker-compose -f docker/conport-kg/docker-compose.yml logs dopecon-bridge | grep "Pool stats"
 
 # Check query times
 curl -w "Time: %{time_total}s\n" http://localhost:3016/kg/decisions/recent
