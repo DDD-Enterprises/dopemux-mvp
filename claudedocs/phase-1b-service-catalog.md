@@ -16,7 +16,7 @@
 | 4 | conport_kg_ui | App.tsx:18 | React CLI | - | ✅ Implemented |
 | 5 | dope-context | server.py:1170 | FastMCP | - | ✅ Implemented |
 | 6 | dopemux-gpt-researcher | main.py | FastAPI | 8000 | ✅ Implemented |
-| 7 | mcp-integration-bridge | main.py | FastAPI | 3016 | ⚠️ Disconnected |
+| 7 | mcp-dopecon-bridge | main.py | FastAPI | 3016 | ✅ Production |
 | 8 | ml-risk-assessment | TBD | Python | - | ? |
 | 9 | orchestrator | main.py | Python | - | ? |
 | 10 | serena | server.py:1 | MCP Wrapper | - | ✅ Implemented |
@@ -37,7 +37,7 @@
 - 7 REST API endpoints for ADHD assessments
 - 6 background async monitors
 - Redis persistence for user profiles
-- Integration Bridge connection planned (Day 4)
+- DopeconBridge connection planned (Day 4)
 
 **API Endpoints**:
 - `GET /` - Service info
@@ -100,7 +100,7 @@
 **Features**:
 - ADHD-optimized (Top-3 display, progressive disclosure)
 - Keyboard-first UI (↑↓ navigate, Enter select, 'q' quit)
-- Integration Bridge client (HTTP API on port 3016)
+- DopeconBridge client (HTTP API on port 3016)
 - React Ink terminal rendering
 
 **Technology**: React + Ink + TypeScript
@@ -157,8 +157,8 @@
 
 ---
 
-### 7. MCP Integration Bridge ⚠️
-**Path**: `services/mcp-integration-bridge/`
+### 7. MCP DopeconBridge ⚠️
+**Path**: `services/mcp-dopecon-bridge/`
 **Entry**: `main.py` (large file, hit token limit)
 **Type**: FastAPI coordination layer
 **Port**: BASE+16 (3016 default)
@@ -173,7 +173,7 @@
 - Port allocation
 
 **Status**: ⚠️ **Implemented but disconnected** (services don't use it!)
-**Finding**: Architecture violation - services bypass Integration Bridge
+**Finding**: Architecture violation - services bypass DopeconBridge
 
 ---
 
@@ -236,7 +236,7 @@
 **FastAPI Services** (4):
 - ADHD Engine (8090)
 - GPT-Researcher (8000)
-- Integration Bridge (3016)
+- DopeconBridge (3016)
 - (ML Risk Assessment - TBD)
 
 **MCP Servers** (4):
@@ -268,7 +268,7 @@
 - ADHD Engine (accommodations)
 
 **Coordination Layer**:
-- Integration Bridge (PORT+16) - ⚠️ **DISCONNECTED**
+- DopeconBridge (PORT+16) - ⚠️ **DISCONNECTED**
 
 **Cross-Plane**:
 - GPT-Researcher
@@ -282,13 +282,13 @@
 
 **PostgreSQL**:
 - ConPort KG (AGE extension for graph)
-- Integration Bridge (shared state)
+- DopeconBridge (shared state)
 
 **Redis**:
 - ADHD Engine (user profiles, state)
 - Serena (caching, navigation)
 - Task-Orchestrator (event bus)
-- Integration Bridge (caching)
+- DopeconBridge (caching)
 
 **Qdrant**:
 - Dope-Context (vector storage)
@@ -304,7 +304,7 @@
 - Task-Orchestrator (producer/consumer)
 - Serena (producer/consumer)
 - ADHD Engine (planned integration)
-- Integration Bridge (coordinator)
+- DopeconBridge (coordinator)
 
 **Status**: Event bus infrastructure exists, partial adoption
 
@@ -320,13 +320,13 @@
 - Event-driven coordination (designed)
 
 ⚠️ **Partially Implemented**:
-- Integration Bridge exists but services bypass it
+- DopeconBridge exists but services bypass it
 - Direct database access patterns (ADHD Engine → ConPort SQLite)
 - Event bus partially adopted
 
 ❌ **Violations Found**:
 - ADHD Engine direct ConPort database writes
-- ConPort orchestrator not wired to Integration Bridge (TODOs)
+- ConPort orchestrator not wired to DopeconBridge (TODOs)
 
 ### Service Maturity Levels
 
@@ -337,7 +337,7 @@
 - Serena v2 ✅ (LSP with ADHD features)
 
 **Functional But Disconnected** (2):
-- Integration Bridge (exists, unused)
+- DopeconBridge (exists, unused)
 - ConPort Orchestrator (TODOs for bridge integration)
 
 **Wrapper/Proxy Services** (2):
@@ -356,7 +356,7 @@
 
 **12 services cataloged** with varying maturity levels.
 
-**Critical Architectural Finding**: Integration Bridge is implemented but disconnected from services, leading to authority boundary violations.
+**Critical Architectural Finding**: DopeconBridge is implemented but disconnected from services, leading to authority boundary violations.
 
 **Next Phase**: Map actual dependencies and config to verify architecture compliance.
 

@@ -91,7 +91,7 @@ e) Never actually working despite code existing
 
 **Claimed replacements**:
 - ADHD Engine → ✅ Energy/attention/breaks (works)
-- ConPort + Integration Bridge → ⚠️ Orchestration functionality?
+- ConPort + DopeconBridge → ⚠️ Orchestration functionality?
 - SuperClaude commands → ⚠️ Workflow automation?
 
 **Missing**:

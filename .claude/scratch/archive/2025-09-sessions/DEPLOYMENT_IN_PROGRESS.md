@@ -12,8 +12,8 @@
 - Status: Building (background process)
 - Expected completion: 2-5 minutes
 
-**2. Integration Bridge**
-- Command: `docker-compose up -d --build integration-bridge`
+**2. DopeconBridge**
+- Command: `docker-compose up -d --build dopecon-bridge`
 - Status: Rebuilding with MCP SDK fix
 - Expected completion: 2-3 minutes
 
@@ -49,13 +49,13 @@
 **When builds complete (5-10 minutes):**
 1. Task-Orchestrator available (port 3014)
 2. Leantime-Bridge available (port 3015)
-3. Integration Bridge operational (port 3016)
+3. DopeconBridge operational (port 3016)
 4. Complete Two-Plane Architecture functional
 
 **Then you can:**
 - Sync Leantime tasks with ConPort
 - Use Task-Orchestrator's 37 dependency tools
-- Have Integration Bridge route cross-plane events
+- Have DopeconBridge route cross-plane events
 - Full PLAN/ACT mode coordination
 
 ---
@@ -67,7 +67,7 @@
 - Serena v2 comprehensive validation (75 tests, 3 bugs fixed)
 - All 7 MCP servers started and validated
 - PM Plane deployment initiated
-- Integration Bridge fix applied
+- DopeconBridge fix applied
 - Complete documentation (8 guides created)
 
 **In Progress:**
@@ -76,7 +76,7 @@
 
 **Next:**
 - Verify builds completed
-- Test Integration Bridge connectivity
+- Test DopeconBridge connectivity
 - Configure MetaMCP with all services
 - Validate complete architecture
 
