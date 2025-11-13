@@ -59,6 +59,7 @@ class ActivityTracker:
         self.session_active = False
         self.session_start_time: Optional[float] = None
         self.session_interruptions = 0
+        self.current_workspace: Optional[str] = None  # Track workspace
 
         # Metrics
         self.sessions_tracked = 0
@@ -69,13 +70,16 @@ class ActivityTracker:
         self.window_task: Optional[asyncio.Task] = None
         self.running = False
 
-    async def start_session(self):
+    async def start_session(self, workspace_path: Optional[str] = None):
         """
         Start a new activity session.
 
         Called when workspace switches TO dopemux workspace.
+        
+        Args:
+            workspace_path: Optional workspace path for session
         """
-        logger.debug(f"start_session() called (active: {self.session_active})")
+        logger.debug(f"start_session() called (active: {self.session_active}, workspace: {workspace_path})")
 
         if self.session_active:
             # Already in session, might be redundant event
@@ -86,8 +90,9 @@ class ActivityTracker:
         self.session_start_time = time.time()
         self.session_interruptions = 0
         self.sessions_tracked += 1
+        self.current_workspace = workspace_path  # Track workspace for session
 
-        logger.info(f"📍 Session started (#{self.sessions_tracked})")
+        logger.info(f"📍 Session started (#{self.sessions_tracked}, workspace: {workspace_path or 'auto'})")
 
         # Start aggregation window timer if not running
         if not self.running:
@@ -162,18 +167,34 @@ class ActivityTracker:
             activity_type: Type of activity (coding/reviewing/debugging)
         """
         try:
-            success = await self.adhd_client.log_activity(
-                activity_type=activity_type,
-                duration_minutes=duration_minutes,
-                complexity=complexity,
-                interruptions=interruptions
-            )
+            # Enrich with workspace if available
+            activity_data = {
+                "activity_type": activity_type,
+                "duration_minutes": duration_minutes,
+                "complexity": complexity,
+                "interruptions": interruptions,
+            }
+            
+            if self.current_workspace:
+                try:
+                    from workspace_support import enrich_event_with_workspace
+                    activity_data = enrich_event_with_workspace(
+                        activity_data,
+                        workspace_path=self.current_workspace,
+                        auto_detect=False,
+                    )
+                except Exception:
+                    # Workspace enrichment is optional
+                    pass
+            
+            success = await self.adhd_client.log_activity(**activity_data)
 
             if success:
                 self.activities_logged += 1
+                workspace_info = f" (workspace: {self.current_workspace})" if self.current_workspace else ""
                 logger.info(
                     f"✅ Activity logged to ADHD Engine "
-                    f"({duration_minutes}min, {interruptions} interruptions)"
+                    f"({duration_minutes}min, {interruptions} interruptions){workspace_info}"
                 )
             else:
                 self.logging_errors += 1
