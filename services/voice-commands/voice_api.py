@@ -44,18 +44,21 @@ async def decompose_task(request: VoiceCommandRequest):
 
     try:
         zen_url = os.getenv("ZEN_URL", "http://localhost:3003")
-        conport_url = os.getenv("CONPORT_URL", "http://localhost:3004")
+        bridge_url = os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016")
         workspace_id = os.getenv("WORKSPACE_ID", "/Users/hue/code/dopemux-mvp")
 
-        async with VoiceTaskDecomposer(zen_url) as decomposer, VoiceConPortIntegration(conport_url) as conport:
+        # Import bridge adapter instead of direct ConPort integration
+        from bridge_adapter import VoiceCommandsBridgeAdapter
+        
+        async with VoiceTaskDecomposer(zen_url) as decomposer, VoiceCommandsBridgeAdapter(workspace_id, bridge_url) as bridge:
             result = await decomposer.process_voice_command(
                 request.voice_input,
                 request.user_id
             )
 
             if result["success"]:
-                # Store in ConPort
-                conport_result = await conport.store_voice_decomposition(
+                # Store via DopeconBridge
+                bridge_result = await bridge.store_voice_decomposition(
                     user_id=request.user_id,
                     original_task=result["task_description"],
                     decomposition=result["decomposition"],
@@ -68,7 +71,7 @@ async def decompose_task(request: VoiceCommandRequest):
                     decomposition=result["decomposition"],
                     voice_response=result["voice_response"],
                     sub_tasks=result["sub_tasks"],
-                    conport_result=conport_result
+                    conport_result=bridge_result
                 )
             else:
                 return VoiceCommandResponse(
