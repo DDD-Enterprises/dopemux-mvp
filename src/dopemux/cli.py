@@ -662,7 +662,8 @@ def start(
     if legacy_value is not None:
         use_claude_router = legacy_value
 
-    from .workspace_utils import get_workspace_root
+from .workspace_utils import get_workspace_root
+from .workspace_detection import persist_workspace_root
 
     # Handle --alt-routing flag (automatic LiteLLM setup)
     if use_alt_routing:
@@ -1070,6 +1071,8 @@ def start(
         return
 
     if project_path_real_exists:
+        persist_workspace_root(project_path)
+        os.environ["DOPEMUX_WORKSPACE_ROOT"] = str(project_path)
         try:
             from subprocess import check_call
             wire_script = Path(__file__).resolve().parents[2] / "scripts" / "wire_conport_project.py"
