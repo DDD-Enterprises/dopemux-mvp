@@ -25,6 +25,7 @@ class UserActivity:
     idle_time_seconds: int = 0
     last_action_time: Optional[datetime] = None
     cognitive_load: float = 0.0  # 0.0-1.0
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 @dataclass
@@ -34,6 +35,7 @@ class QuerySuggestion:
     summary: str
     relevance_score: float = 0.0
     priority: str = "normal"  # normal, high, critical
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 class AttentionStateMonitor:

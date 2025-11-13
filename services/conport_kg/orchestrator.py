@@ -48,6 +48,7 @@ class KGEvent:
     payload: Dict[str, Any]
     timestamp: str
     priority: str = "normal"  # normal, high, critical
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 class KGOrchestrator:
