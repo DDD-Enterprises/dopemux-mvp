@@ -45,7 +45,7 @@ next_review: '2026-02-08'
 
 ## Critical Insight Discovered
 
-**Integration Bridge Mystery SOLVED**:
+**DopeconBridge Mystery SOLVED**:
 - Bridge is 80% complete
 - Custom data endpoints are STUBS (return hardcoded success, do nothing)
 - Services bypass it because incomplete bridge < working direct access

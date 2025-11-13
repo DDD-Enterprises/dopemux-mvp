@@ -1,0 +1,61 @@
+# Service Workspace Analysis
+
+## Services by Workspace Dependency
+
+### ✅ NEEDS Multi-Workspace (File/Code Operations)
+1. **dope-context** - DONE ✅
+2. **serena** - Code graph analysis
+3. **conport_kg** - Knowledge graph (workspace-scoped contexts)
+4. **workspace-watcher** - Different use case (detects active workspace)
+
+### ⚠️ WORKSPACE-AWARE (Route by workspace)
+5. **mcp-integration-bridge** - Routes requests with workspace context
+6. **orchestrator** - Coordinates services with workspace context
+7. **task-orchestrator** - Tasks associated with workspaces
+8. **session_intelligence** - Sessions per workspace
+
+### 🤷 WORKSPACE-AGNOSTIC (No file operations)
+9. **adhd_engine** - Energy/attention (user-focused, not workspace)
+10. **activity-capture** - Logs events (workspace is metadata)
+11. **context-switch-tracker** - Tracks switches (workspace is data)
+12. **intelligence** - AI coordination (workspace-agnostic)
+
+## Implementation Priority
+
+### HIGH PRIORITY (Direct file/code operations)
+1. ✅ dope-context - Search/index code/docs
+2. 🔄 serena - Code graph, LSP operations
+3. 🔄 conport_kg - Context storage per workspace
+
+### MEDIUM PRIORITY (Workspace routing/context)
+4. 🔄 mcp-integration-bridge - Forward workspace in requests
+5. 🔄 task-orchestrator - Tag tasks with workspace
+6. 🔄 session_intelligence - Track sessions per workspace
+
+### LOW PRIORITY (Workspace as metadata)
+7. 🔄 orchestrator - Include workspace in service calls
+8. 🔄 adhd_engine - Tag metrics with workspace
+9. 🔄 activity-capture - Tag events with workspace
+
+### NOT NEEDED (Workspace-agnostic)
+10. ❌ workspace-watcher - Different use case
+11. ❌ context-switch-tracker - Workspace is the data being tracked
+12. ❌ intelligence - Workspace-agnostic AI routing
+
+## Revised Implementation Plan
+
+### Phase 1: Core Services (File Operations)
+- serena (3-4 hours) - Complex, LSP clients per workspace
+- conport_kg (2-3 hours) - Workspace-scoped graphs
+
+### Phase 2: Routing & Coordination (Quick wins)
+- mcp-integration-bridge (30 min) - Just forward workspace params
+- task-orchestrator (1 hour) - Tag tasks with workspace
+- session_intelligence (1 hour) - Session tracking
+
+### Phase 3: Metadata Enhancement (Optional)
+- orchestrator (30 min) - Pass workspace context
+- adhd_engine (30 min) - Tag metrics
+- activity-capture (30 min) - Tag events
+
+**Estimated Total**: 8-12 hours for all critical services
