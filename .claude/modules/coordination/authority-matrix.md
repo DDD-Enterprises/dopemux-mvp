@@ -16,7 +16,7 @@
 | **Python ADHD Engine** | Energy tracking & matching<br/>Cognitive load calculation (0-1)<br/>Break monitoring (25/60/90min)<br/>Attention state analysis<br/>Smart task recommendation<br/>Hyperfocus protection | Task storage<br/>PRD parsing<br/>LSP operations<br/>Knowledge graph management |
 | **Serena LSP** | LSP protocol operations<br/>Code navigation & completion<br/>Symbol search & analysis<br/>Semantic code understanding<br/>Tree-sitter parsing<br/>Navigation caching | Task management<br/>Decision storage<br/>PRD decomposition<br/>Session timing |
 | **React Ink Dashboard** | Visual task progress display<br/>ADHD metric visualization<br/>Real-time event rendering<br/>User interaction (task selection)<br/>Break reminders & notifications | Task data storage<br/>Business logic<br/>Authority decisions<br/>Data persistence |
-| **Integration Bridge** | Async event routing (Redis Streams)<br/>Event bus pub/sub coordination<br/>MetaMCP role enforcement<br/>Multi-instance isolation | Task storage<br/>Decision logic<br/>PRD parsing<br/>ADHD calculations |
+| **DopeconBridge** | Async event routing (Redis Streams)<br/>Event bus pub/sub coordination<br/>MetaMCP role enforcement<br/>Multi-instance isolation | Task storage<br/>Decision logic<br/>PRD parsing<br/>ADHD calculations |
 
 ## 🔄 Communication Flow Patterns
 
@@ -50,18 +50,18 @@
    └─> ADHD Engine queries ConPort for optimal task
        └─> ConPort returns task with metadata
            └─> ADHD Engine starts 25min session
-               └─> Integration Bridge publishes "session_started"
+               └─> DopeconBridge publishes "session_started"
                    ├─> Dashboard shows timer
                    └─> ConPort updates active_context
 
 2. Every 5 minutes: Auto-save
    └─> ConPort.update_progress(task_id, status)
-       └─> Integration Bridge publishes "progress_updated"
+       └─> DopeconBridge publishes "progress_updated"
            └─> Dashboard updates progress bar
 
 3. At 25 minutes: Break reminder
    └─> ADHD Engine triggers break
-       └─> Integration Bridge publishes "break_reminder"
+       └─> DopeconBridge publishes "break_reminder"
            └─> Dashboard shows notification: "Great work! Time for 5min break"
                └─> ConPort logs break in custom_data
 ```
@@ -72,7 +72,7 @@
 
 | Event Type | Authoritative Source | Can Update | Can Read | Event Flow |
 |------------|---------------------|------------|----------|-----------|
-| **Task Storage** | ConPort | ConPort only | All systems | ConPort → Integration Bridge → All subscribers |
+| **Task Storage** | ConPort | ConPort only | All systems | ConPort → DopeconBridge → All subscribers |
 | **Task Creation** | SuperClaude + Human | SuperClaude validates → ConPort stores | All systems | SuperClaude → Validator → ConPort → Bridge → All |
 | **Decisions** | ConPort | ConPort only | All systems | ConPort → Bridge → All |
 | **ADHD State** | Python ADHD Engine | ADHD Engine only | Dashboard, ConPort | ADHD Engine → Bridge → Dashboard |
@@ -103,7 +103,7 @@
 - **Why wrong**: Dashboard is view layer only
 - **Correct**: Dashboard triggers user action → Python service → ConPort update → Bridge event → Dashboard re-render
 
-❌ **Integration Bridge storing data**
+❌ **DopeconBridge storing data**
 
 - **Why wrong**: Bridge is routing only, not storage
 - **Correct**: Bridge routes events, ConPort/Serena/ADHD Engine store data
@@ -111,7 +111,7 @@
 ### Authority Enforcement Checks
 
 ```python
-# Integration Bridge enforces these rules
+# DopeconBridge enforces these rules
 def check_authority(operation: str, requester: str) -> bool:
     AUTHORITY_RULES = {
         "update_task_status": ["conport"],
@@ -119,7 +119,7 @@ def check_authority(operation: str, requester: str) -> bool:
         "parse_prd": ["superclaude"],
         "calculate_adhd_metrics": ["adhd_engine"],
         "lsp_operations": ["serena"],
-        "route_events": ["integration_bridge"],
+        "route_events": ["dopecon_bridge"],
     }
 
     allowed_systems = AUTHORITY_RULES.get(operation, [])
@@ -138,10 +138,10 @@ def check_authority(operation: str, requester: str) -> bool:
 **Need to calculate energy level?** → Python ADHD Engine
 **Need code navigation?** → Serena LSP
 **Need to log a decision?** → ConPort `log_decision`
-**Need to route events?** → Integration Bridge
+**Need to route events?** → DopeconBridge
 **Need to show UI?** → React Ink Dashboard
 
-**Need to coordinate multiple systems?** → Integration Bridge publishes event → All subscribers react
+**Need to coordinate multiple systems?** → DopeconBridge publishes event → All subscribers react
 
 ## 📊 Authority Decision Tree
 
@@ -158,7 +158,7 @@ def check_authority(operation: str, requester: str) -> bool:
 │  └─> Python ADHD Engine queries ConPort → recommends → user selects
 │
 └─ Display tasks in UI?
-   └─> React Ink Dashboard subscribes to Integration Bridge events
+   └─> React Ink Dashboard subscribes to DopeconBridge events
 
 ┌─ Need to interact with code?
 │
@@ -183,12 +183,12 @@ def check_authority(operation: str, requester: str) -> bool:
 │  └─> Python ADHD Engine (25min timer) → ConPort (stores history)
 │
 └─ Show break reminders?
-   └─> Python ADHD Engine triggers → Integration Bridge → Dashboard displays
+   └─> Python ADHD Engine triggers → DopeconBridge → Dashboard displays
 ```
 
 ## 🔐 MetaMCP Role-Based Boundaries
 
-Integration Bridge enforces tool-level access per role:
+DopeconBridge enforces tool-level access per role:
 
 | Role | Max Tools | Allowed Operations | Authority Enforcement |
 |------|-----------|-------------------|---------------------|
@@ -213,13 +213,13 @@ Integration Bridge enforces tool-level access per role:
 - ✅ Simplified: ConPort as single source of truth for tasks AND decisions
 - ✅ Added: SuperClaude for PRD parsing with human review
 - ✅ Added: Python ADHD Engine for cognitive optimization
-- ✅ Kept: Integration Bridge (now simpler event routing, not cross-plane coordination)
+- ✅ Kept: DopeconBridge (now simpler event routing, not cross-plane coordination)
 - ✅ Kept: Serena LSP (code intelligence)
 
 ---
 
 **See Also:**
 
-- `.claude/modules/coordination/integration-bridge.md` - Event routing details
+- `.claude/modules/coordination/dopecon-bridge.md` - Event routing details
 - `.claude/modules/superclaude-integration.md` - SuperClaude configuration
 - `.claude/modules/pm-plane/task-orchestrator.md` - ConPort task management

@@ -148,3 +148,37 @@ pm-down:
 
 pm-logs:
 	cd docker/leantime && docker-compose logs -f
+
+# ---- DopeconBridge Integration ----
+bridge-status:
+	@echo "DopeconBridge Status:"
+	@curl -s http://localhost:3016/health || echo "❌ Bridge offline"
+	@echo ""
+
+bridge-stats:
+	@curl -s http://localhost:3016/stats | jq . || echo "❌ Bridge offline"
+
+bridge-test-event:
+	@curl -X POST http://localhost:3016/events \
+	  -H "Content-Type: application/json" \
+	  -d '{"event_type": "test.makefile", "data": {"test": true}, "stream": "dopemux:events"}' | jq .
+
+bridge-logs:
+	@docker logs -f dopecon-bridge 2>/dev/null || docker logs -f mcp-conport-bridge 2>/dev/null || echo "❌ Bridge container not found"
+
+bridge-up:
+	@docker-compose -f docker-compose.master.yml up -d dopecon-bridge || \
+	 docker-compose -f docker/mcp-servers/docker-compose.yml up -d conport-bridge
+
+bridge-down:
+	@docker-compose -f docker-compose.master.yml stop dopecon-bridge || \
+	 docker-compose -f docker/mcp-servers/docker-compose.yml stop conport-bridge
+
+bridge-restart: bridge-down bridge-up
+	@echo "✓ DopeconBridge restarted"
+
+bridge-validate:
+	@python3 scripts/validate_integration_bridge.py
+
+bridge-client-test:
+	@pytest tests/shared/test_dopecon_bridge_client.py -v

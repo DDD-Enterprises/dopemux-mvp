@@ -222,7 +222,7 @@ python test_security_fixes.py
 3. Add connection health checks (1 hour task)
 
 ### Long-term (Phase 2)
-1. Wire Integration Bridge events
+1. Wire DopeconBridge events
 2. Add activity tracking for ADHD features
 3. Implement full-text search with PostgreSQL GIN index
 

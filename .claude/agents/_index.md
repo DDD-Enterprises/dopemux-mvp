@@ -31,7 +31,7 @@
 
 #### Project Manager Agent
 
-- **Primary Plane**: Integration Bridge
+- **Primary Plane**: DopeconBridge
 - **Specialization**: Sprint coordination, cross-plane orchestration, progress tracking
 - **Best For**: PLAN mode (primary), coordination across all states
 - **Key Strengths**: Team alignment, authority coordination, progress visibility
@@ -121,7 +121,7 @@ Developer Agent (progress/blockers)
 #### Cognitive Plane → PM Plane
 
 1. **Technical Progress** (Developer Agent) → **Project Manager Agent**
-2. **Status Coordination** → **Integration Bridge** → **Leantime**
+2. **Status Coordination** → **DopeconBridge** → **Leantime**
 3. **Decision Logging** → **ConPort** (memory preservation)
 
 ## 🧠 ADHD-Optimized Agent Behaviors
