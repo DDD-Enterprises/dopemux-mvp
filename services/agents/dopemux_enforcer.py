@@ -49,6 +49,7 @@ class ComplianceViolation:
     line_number: Optional[int] = None
     suggestion: Optional[str] = None
     related_rule: Optional[str] = None
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 @dataclass
@@ -60,6 +61,7 @@ class ComplianceReport:
     blocking: bool  # Has critical violations in strict mode
     summary: str
     timestamp: datetime
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 class DopemuxEnforcer:
