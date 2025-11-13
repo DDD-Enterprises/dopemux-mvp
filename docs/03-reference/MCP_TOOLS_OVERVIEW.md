@@ -12,7 +12,7 @@ This guide lists Dopemux MCP servers and their key tools with sample Claude usag
 
 ## Global Servers
 
-- ddg-mcp (stdio, on Integration Bridge)
+- ddg-mcp (stdio, on DopeconBridge)
   - related_decisions(decision_id, k)
   - related_text(query, workspace_id, k)
   - instance_diff(workspace_id, a, b, kind)

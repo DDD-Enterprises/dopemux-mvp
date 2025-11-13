@@ -19,7 +19,7 @@ next_review: '2026-02-08'
 
 We completed a **comprehensive security audit** that:
 1. Found and **FIXED all 10 critical vulnerabilities**
-2. **Completed the Integration Bridge** (was 80% done with stubs)
+2. **Completed the DopeconBridge** (was 80% done with stubs)
 3. Achieved **perfect security (10/10)** and **perfect architecture (10/10)**
 4. Created **52 comprehensive reports** documenting everything
 5. Validated **95% documentation accuracy**
@@ -37,13 +37,13 @@ We completed a **comprehensive security audit** that:
 2. ✅ Hardcoded credentials (2 files) → Environment variables
 3. ✅ No authentication (7 endpoints) → API key required
 4. ✅ Missing imports → Fixed
-5. ✅ Integration Bridge stubs → Fully implemented
+5. ✅ DopeconBridge stubs → Fully implemented
 
 **Impact**: All production-critical vulnerabilities eliminated
 
 ---
 
-## Integration Bridge - COMPLETE ✅
+## DopeconBridge - COMPLETE ✅
 
 **Before**: 80% done (custom_data endpoints were stubs)
 **After**: **100% complete** ⭐⭐⭐⭐⭐
@@ -65,7 +65,7 @@ We completed a **comprehensive security audit** that:
 - Complete audit findings (Phases 1-4)
 - Security analysis and fixes
 - Service reviews (all 12)
-- Integration Bridge completion
+- DopeconBridge completion
 - Deployment guides
 - Performance assessments
 - ADR-206 (formal record)
@@ -85,7 +85,7 @@ git push origin code-audit
 # 2. Create PR with this template:
 ```
 
-**PR Title**: Security fixes + Integration Bridge completion + Comprehensive audit
+**PR Title**: Security fixes + DopeconBridge completion + Comprehensive audit
 
 **PR Description**:
 ```markdown
@@ -93,7 +93,7 @@ Complete code audit delivering production-ready security + architecture complian
 
 ## Summary
 - 10 security vulnerabilities fixed
-- Integration Bridge 100% complete
+- DopeconBridge 100% complete
 - Full architecture compliance (ZERO violations)
 - 95% documentation accuracy validated
 
@@ -109,7 +109,7 @@ Complete code audit delivering production-ready security + architecture complian
 
 ## Testing
 ✅ Security fixes validated
-✅ Integration Bridge tested
+✅ DopeconBridge tested
 ✅ Performance profiled
 ✅ Code examples: 100% pass rate
 
@@ -158,7 +158,7 @@ nano .env  # Set production values
 
 # Deploy services directly
 cd services/adhd_engine && python main.py &
-cd services/mcp-integration-bridge && python main.py &
+cd services/mcp-dopecon-bridge && python main.py &
 # etc.
 ```
 
@@ -176,7 +176,7 @@ cp .env.example .env
 ALLOWED_ORIGINS=https://yourdomain.com
 ADHD_ENGINE_API_KEY=$(openssl rand -hex 32)
 SERENA_DB_PASSWORD=your-password
-USE_INTEGRATION_BRIDGE=true
+USE_DOPECON_BRIDGE=true
 ```
 
 **Time**: 5 minutes
@@ -199,7 +199,7 @@ curl -H "X-API-Key: your-key" http://localhost:8000/api/v1/energy-level/test
 curl http://localhost:8000/api/v1/energy-level/test
 # Should fail (no key) ✅
 
-# 3. Integration Bridge test
+# 3. DopeconBridge test
 curl -X POST http://localhost:3016/custom_data \
   -H "X-Source-Plane: cognitive_plane" \
   -d '{"workspace_id":"/test","category":"test","key":"k","value":{"v":1}}'

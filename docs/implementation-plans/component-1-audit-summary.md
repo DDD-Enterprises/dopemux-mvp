@@ -126,14 +126,14 @@ self.orchestrated_tasks: Dict[str, OrchestrationTask] = {}
 
 **Key Findings**:
 - Dopemux infrastructure: Production-grade with ADHD optimizations
-- Deployment patterns: 6 services operational (Integration Bridge is best template)
+- Deployment patterns: 6 services operational (DopeconBridge is best template)
 - Environment management: 100% coverage in .env.example
 - CI/CD: ADHD-optimized GitHub Actions (Pomodoro timing, visual summaries)
 - Build automation: Makefile extensible (needs orchestrator targets)
 
 **Task-Orchestrator Deployment Status**:
 ```
-❌ No Dockerfile → Create in Task 3.1 (use Integration Bridge template)
+❌ No Dockerfile → Create in Task 3.1 (use DopeconBridge template)
 ❌ No docker-compose → Create in Task 3.1 (30 min effort)
 ❌ No Makefile targets → Optional enhancement
 ❌ No CI/CD job → Create in Task 5.1 (30 min effort)
@@ -179,7 +179,7 @@ self.orchestrated_tasks: Dict[str, OrchestrationTask] = {}
 | ConPort KG | 5455 | ✅ Critical | 🟢 Running | Task 1.1 | PostgreSQL AGE, 100% API compatible |
 | PostgreSQL Primary | 5432 | Optional | 🟢 Running | Assumed | For future features |
 | MySQL (Leantime) | 3306 | ✅ Critical | 🟡 Available | Task 1.4 | Part of Leantime stack |
-| Integration Bridge | 3016 | Optional | 🟢 Running | Task 1.4 | Event routing layer |
+| DopeconBridge | 3016 | Optional | 🟢 Running | Task 1.4 | Event routing layer |
 
 **Verdict**: 🟢 **ALL CRITICAL SERVICES READY**
 - Redis: ✅ Running and verified
@@ -459,8 +459,8 @@ Average: 24% ahead of schedule
 
 ### Component 3 Deployment Creation
 
-**Task 3.1: Configure Integration Bridge** (60 min):
-- Create Dockerfile using Integration Bridge template (Task 1.4)
+**Task 3.1: Configure DopeconBridge** (60 min):
+- Create Dockerfile using DopeconBridge template (Task 1.4)
 - Add docker-compose service (Task 1.4 template)
 - Set environment variables (Task 1.1 inventory)
 - Wire Redis connection (Task 1.2 verification)
@@ -500,7 +500,7 @@ Average: 24% ahead of schedule
 **Components**:
 - Component 1 (Dependency Audit): ✅ **100% COMPLETE** (Tasks 1.1-1.5)
 - Component 2 (Data Contract Adapters): 🟡 Ready to start (Tasks 2.1-2.6)
-- Component 3 (Integration Bridge Wiring): 🟡 Ready after Component 2
+- Component 3 (DopeconBridge Wiring): 🟡 Ready after Component 2
 - Component 4 (Core Module Activation): 🟡 Ready after Component 3
 - Component 5 (Testing): 🟡 Ready after Component 4
 

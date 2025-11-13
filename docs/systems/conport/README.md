@@ -86,7 +86,7 @@ ConPort integrates with:
 ## Related Documentation
 
 - [ConPort MCP Queries](../../COMPONENT_5_CONPORT_MCP_QUERIES.md)
-- [Integration Bridge](../../COMPONENT_3_INTEGRATION_BRIDGE_WIRING.md)
+- [DopeconBridge](../../COMPONENT_3_DOPECON_BRIDGE_WIRING.md)
 - [Architecture Overview](../../04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md)
 
 ## Development Status

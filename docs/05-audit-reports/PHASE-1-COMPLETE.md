@@ -20,7 +20,7 @@ next_review: '2026-02-08'
 
 Phase 1 successfully mapped the code-audit workspace using MCP semantic search and direct navigation. Key finding: **workspace contains minimal substantive code** (26 chunks from 497 files) but extensive documentation (4,413 chunks from 403 files).
 
-**Critical Discovery**: Integration Bridge is **implemented but disconnected** - services bypass it through direct database access, creating architecture violations.
+**Critical Discovery**: DopeconBridge is **implemented but disconnected** - services bypass it through direct database access, creating architecture violations.
 
 ---
 
@@ -57,7 +57,7 @@ Phase 1 successfully mapped the code-audit workspace using MCP semantic search a
 5. **GPT-Researcher** - FastAPI research service
 6. **Task-Orchestrator** - MCP wrapper (37 Kotlin tools)
 7. **ConPort KG** - Knowledge graph orchestrator
-8. **Integration Bridge** - ⚠️ Implemented but **DISCONNECTED**
+8. **DopeconBridge** - ⚠️ Implemented but **DISCONNECTED**
 
 **Needs Investigation** (4):
 9. Claude-Context (legacy?)
@@ -83,7 +83,7 @@ Phase 1 successfully mapped the code-audit workspace using MCP semantic search a
 
 **Architecture Violations**:
 - ❌ ADHD Engine → ConPort direct SQLite writes (bypasses bridge)
-- ❌ ConPort Orchestrator → Integration Bridge TODOs (not wired)
+- ❌ ConPort Orchestrator → DopeconBridge TODOs (not wired)
 
 ---
 
@@ -110,7 +110,7 @@ Phase 1 successfully mapped the code-audit workspace using MCP semantic search a
 
 ### 🎯 Critical Issues Found
 
-**1. Integration Bridge Disconnection** (Severity: MEDIUM)
+**1. DopeconBridge Disconnection** (Severity: MEDIUM)
 - **Design**: 9/10 (excellent architecture)
 - **Implementation**: 3/10 (services don't use it)
 - **Impact**: Authority violations, direct DB access
@@ -183,7 +183,7 @@ Phase 1 successfully mapped the code-audit workspace using MCP semantic search a
 - Dope-Context (semantic search)
 - ADHD Engine (accommodations)
 
-**Integration Bridge** (Coordination):
+**DopeconBridge** (Coordination):
 - Port: 3016
 - Status: **IMPLEMENTED BUT UNUSED** ⚠️
 
@@ -234,7 +234,7 @@ Phase 1 successfully mapped the code-audit workspace using MCP semantic search a
 Based on Phase 1 findings, the audit should prioritize:
 
 **High Priority**:
-1. ✅ **Integration Bridge disconnection** (already documented)
+1. ✅ **DopeconBridge disconnection** (already documented)
 2. **ADHD Engine direct DB writes** (verify scope of violation)
 3. **Security**: Hardcoded passwords, CORS wildcards
 4. **Feature claim validation** (ADHD features, API endpoints)
@@ -299,7 +299,7 @@ zen.codereview(
 3. Use Zen codereview for automated function validation
 
 **Week 7** (post-audit):
-1. Wire Integration Bridge (8-12 hours)
+1. Wire DopeconBridge (8-12 hours)
 2. Remove direct database access patterns
 3. Complete event bus adoption
 
@@ -309,5 +309,5 @@ zen.codereview(
 
 **Time**: 1.5 hours (25% faster than planned)
 **MCP Value**: Eliminated manual grep, instant semantic search
-**Critical Finding**: Architecture violations (Integration Bridge disconnection)
+**Critical Finding**: Architecture violations (DopeconBridge disconnection)
 **Ready**: Phase 2 - Automated Security & Quality Scan (4 hours planned)

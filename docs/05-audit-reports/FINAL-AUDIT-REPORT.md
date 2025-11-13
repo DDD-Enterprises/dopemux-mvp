@@ -39,7 +39,7 @@ next_review: '2026-02-08'
 
 **Security Score**: 4/10 → **8/10** (production-ready)
 
-### 2. Discovered Integration Bridge Root Cause 🎯
+### 2. Discovered DopeconBridge Root Cause 🎯
 
 **Mystery Solved**: Why don't services use the well-designed bridge?
 
@@ -94,13 +94,13 @@ async def save_custom_data(...):
 
 **Implementation**: 5/10 (Partial)
 - ✅ Cognitive plane fully operational (Serena, ConPort, Dope-Context)
-- ⚠️ Integration Bridge 80% done (**custom_data stubs**)
+- ⚠️ DopeconBridge 80% done (**custom_data stubs**)
 - ❌ Services bypass bridge (direct SQLite writes)
 - ⚠️ PM plane not audited (out of scope)
 
 **Violations Found**:
 1. ADHD Engine → ConPort direct writes (`conport_client.py:296`)
-2. ConPort Orchestrator → Integration Bridge TODOs (line 127)
+2. ConPort Orchestrator → DopeconBridge TODOs (line 127)
 
 **Recommended Fix** (Week 7, 12h):
 1. Complete bridge MCP integration (4-6h)
@@ -122,7 +122,7 @@ async def save_custom_data(...):
 **Weaknesses** ⚠️:
 - Multiple TODO comments (incomplete features)
 - In-memory state with persistence TODOs
-- Stub implementations (Integration Bridge custom_data)
+- Stub implementations (DopeconBridge custom_data)
 - Some services need deeper investigation
 
 **Testing**: Not assessed (import issues known, deferred)
@@ -138,7 +138,7 @@ async def save_custom_data(...):
 4. **ConPort KG UI** ✅ - React CLI, well-structured
 
 **Functional But Issues** (4):
-5. **Integration Bridge** ⚠️ - 80% done, stubs for custom_data
+5. **DopeconBridge** ⚠️ - 80% done, stubs for custom_data
 6. **ConPort KG** ⚠️ - Bridge TODOs not wired
 7. **GPT-Researcher** ⚠️ - CORS fixed, 67 TODOs found
 8. **Zen MCP** ✅ - 27 models, 9 tools (external Docker)
@@ -189,8 +189,8 @@ async def save_custom_data(...):
 **Accuracy** (spot-checked):
 - ✅ ADHD Engine "6 monitors" → Verified (6/6 found!)
 - ✅ ADHD Engine "7 endpoints" → Close (6-8 depending on count)
-- ✅ Integration Bridge "authority enforcement" → Code exists
-- ⚠️ Integration Bridge "cross-plane coordination" → Stubs (incomplete)
+- ✅ DopeconBridge "authority enforcement" → Code exists
+- ⚠️ DopeconBridge "cross-plane coordination" → Stubs (incomplete)
 
 ---
 
@@ -201,7 +201,7 @@ async def save_custom_data(...):
 | "6 background monitors" | ADHD docs | ✅ VERIFIED | All 6 found in engine.py:150-156 |
 | "7 API endpoints" | ADHD docs | ✅ CLOSE | 6 v1 + 2 root = 8 total |
 | "Two-plane architecture" | Architecture docs | ✅ DESIGNED | Authority code exists |
-| "Integration Bridge coordination" | Architecture docs | ⚠️ PARTIAL | 80% done, stubs |
+| "DopeconBridge coordination" | Architecture docs | ⚠️ PARTIAL | 80% done, stubs |
 | "Event-driven automation" | Architecture docs | ⚠️ PARTIAL | Infrastructure exists, partial adoption |
 | "AST-aware code chunking" | Dope-Context docs | ✅ VERIFIED | Tree-sitter working |
 | "Multi-vector embeddings" | Dope-Context docs | ✅ VERIFIED | 3 vectors confirmed |
@@ -233,14 +233,14 @@ async def save_custom_data(...):
 
 ### Remaining MEDIUM Risks (4)
 
-1. **Integration Bridge Incomplete** (4-6h to fix) ⚠️ **NOW LOGGED AS CONPORT TASK**
+1. **DopeconBridge Incomplete** (4-6h to fix) ⚠️ **NOW LOGGED AS CONPORT TASK**
    - Custom data endpoints are stubs
    - Missing MCP→ConPort layer
-   - **ConPort Task ID**: 291 - "Fix Integration Bridge - Debug and resolve ConPort communication errors"
+   - **ConPort Task ID**: 291 - "Fix DopeconBridge - Debug and resolve ConPort communication errors"
 
 2. **Direct Database Access** (6-8h to migrate) ⚠️ **NOW LOGGED AS CONPORT TASK**
    - ADHD Engine → ConPort SQLite
-   - Should use Integration Bridge HTTP API
+   - Should use DopeconBridge HTTP API
    - **ConPort Task ID**: 296 - "Replace Mock Data - Replace mock data in sync functions with real API calls"
 
 3. **SQL Injection Candidates** (30min to verify)
@@ -278,7 +278,7 @@ async def save_custom_data(...):
 
 ### Week 7 (Integration Work)
 
-9. [ ] Complete Integration Bridge (4-6h)
+9. [ ] Complete DopeconBridge (4-6h)
    - Implement MCP client
    - Wire custom_data to actual ConPort calls
 
@@ -305,7 +305,7 @@ async def save_custom_data(...):
 
 **Zen Codereview**:
 - ⭐⭐⭐⭐⭐ for architectural insights
-- Discovered Integration Bridge root cause
+- Discovered DopeconBridge root cause
 - Validated security findings
 
 **Hybrid Approach Best**:
@@ -354,11 +354,11 @@ async def save_custom_data(...):
 - Credentials secured
 
 **Known Limitations** ⚠️:
-- Integration Bridge incomplete (works without it)
+- DopeconBridge incomplete (works without it)
 - Direct DB access (documented, fixable)
 - Some features have TODOs (non-blocking)
 
-**Recommendation**: **Deploy with current fixes**, complete Integration Bridge in Week 7
+**Recommendation**: **Deploy with current fixes**, complete DopeconBridge in Week 7
 
 ### Code Quality: 🟢 High (8/10)
 
@@ -385,7 +385,7 @@ async def save_custom_data(...):
 **Value Delivered**:
 - 10 security vulnerabilities eliminated
 - 1 critical bug fixed (chunking)
-- 1 architectural mystery solved (Integration Bridge)
+- 1 architectural mystery solved (DopeconBridge)
 - 12 services cataloged
 - 4,439 chunks indexed
 - Production-ready security
@@ -426,7 +426,7 @@ async def save_custom_data(...):
 
 ## Conclusion
 
-This audit successfully identified and **immediately fixed** all production-critical security issues while discovering the root cause of the Integration Bridge architectural mystery.
+This audit successfully identified and **immediately fixed** all production-critical security issues while discovering the root cause of the DopeconBridge architectural mystery.
 
 **The code-audit workspace is production-ready** with documented caveats for Week 7 integration work.
 
@@ -439,7 +439,7 @@ MCP-enhanced methodology delivered **72% time savings** while maintaining compre
 **Recommended Next Steps**:
 1. Deploy with security fixes
 2. Test in staging environment
-3. Schedule Week 7 Integration Bridge completion
+3. Schedule Week 7 DopeconBridge completion
 4. Optional: Continue full audit (Phases 3-8, ~20h) for complete coverage
 
 ---

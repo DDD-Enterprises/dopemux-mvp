@@ -22,7 +22,7 @@ next_review: '2026-02-08'
 git push origin code-audit
 
 # 2. Create PR on GitHub
-# Title: "Security fixes + Integration Bridge completion + Comprehensive audit"
+# Title: "Security fixes + DopeconBridge completion + Comprehensive audit"
 # Description: Use ULTIMATE-AUDIT-SUCCESS.md as template
 
 # 3. Review and merge PR
@@ -34,12 +34,12 @@ git push origin code-audit
 # Complete Security Audit + Architecture Compliance
 
 ## Summary
-Comprehensive code audit delivering 10 security fixes, Integration Bridge completion,
+Comprehensive code audit delivering 10 security fixes, DopeconBridge completion,
 and full architecture compliance in 12 hours (87% faster than planned).
 
 ## Changes (25 commits, 61 files)
 ✅ Security: 10 vulnerabilities fixed (CORS, credentials, auth)
-✅ Architecture: Integration Bridge 100% complete
+✅ Architecture: DopeconBridge 100% complete
 ✅ Quality: All 12 services reviewed
 ✅ Documentation: 95% accuracy validated
 
@@ -93,8 +93,8 @@ nano .env  # Set production values
 cd services/adhd_engine
 python main.py  # Runs with all security fixes
 
-# 3. Deploy Integration Bridge
-cd ../mcp-integration-bridge
+# 3. Deploy DopeconBridge
+cd ../mcp-dopecon-bridge
 python main.py  # Now 100% complete!
 
 # 4. Deploy other services as needed
@@ -139,8 +139,8 @@ ADHD_ENGINE_API_KEY=$(openssl rand -hex 32)
 SERENA_DB_PASSWORD=your-secure-db-password
 
 # Architecture (RECOMMENDED)
-USE_INTEGRATION_BRIDGE=true
-INTEGRATION_BRIDGE_URL=http://localhost:3016
+USE_DOPECON_BRIDGE=true
+DOPECON_BRIDGE_URL=http://localhost:3016
 
 # External APIs (if using)
 VOYAGE_API_KEY=your-voyage-key
@@ -168,7 +168,7 @@ curl -H "X-API-Key: your-key" http://localhost:8000/api/v1/energy-level/test
 curl http://localhost:8000/api/v1/energy-level/test
 # Should fail (no API key)
 
-# 3. Integration Bridge
+# 3. DopeconBridge
 curl -X POST http://localhost:3016/custom_data \
   -H "X-Source-Plane: cognitive_plane" \
   -H "Content-Type: application/json" \
@@ -189,7 +189,7 @@ tail -f logs/*.log
 - ✅ Health endpoints return 200 OK
 - ✅ API authentication working
 - ✅ CORS blocking unauthorized origins
-- ✅ Integration Bridge persisting data
+- ✅ DopeconBridge persisting data
 - ✅ No security errors in logs
 
 ---

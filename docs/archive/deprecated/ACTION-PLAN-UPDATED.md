@@ -35,12 +35,12 @@ next_review: '2026-02-08'
 1. ✅ CORS wildcards → Fixed (this session)
 2. ✅ Hardcoded credentials → Fixed (this session)
 3. ✅ API authentication → Fixed (this session)
-4. ✅ Integration Bridge stubs → Fixed (this session)
+4. ✅ DopeconBridge stubs → Fixed (this session)
 5. ✅ ConPort SQL injection → Already fixed (pre-session)
 6. ✅ ConPort ReDoS → Already fixed (pre-session)
 
 **Architecture** (ALL DONE):
-7. ✅ Integration Bridge 100% → Complete (this session)
+7. ✅ DopeconBridge 100% → Complete (this session)
 8. ✅ ADHD Engine migration → Complete (this session)
 
 **Result**: **PERFECT 10/10 security across all services!** ⭐⭐⭐⭐⭐
@@ -66,7 +66,7 @@ next_review: '2026-02-08'
 3. **ConPort Orchestrator → Bridge Wiring** (2-3h)
    - Priority: 🟠 MEDIUM (completes automation)
    - Location: `services/conport_kg/orchestrator.py:127`
-   - Fix: Wire event publishing to Integration Bridge
+   - Fix: Wire event publishing to DopeconBridge
    - Benefit: Event-driven automation functional
 
 ---

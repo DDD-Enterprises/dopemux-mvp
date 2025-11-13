@@ -204,7 +204,7 @@ Conclusion: ✅ Sufficient capacity
 ```
 ConPort (Port 5455)
       ↓
-Integration Bridge (EventBus)
+DopeconBridge (EventBus)
       ↓
 Redis Streams (Port 6379)  ← Task 1.2 VERIFIED
       ↓

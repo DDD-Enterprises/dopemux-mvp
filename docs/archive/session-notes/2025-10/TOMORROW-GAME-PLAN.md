@@ -28,7 +28,7 @@ next_review: '2026-01-15'
 
 **If Done**: Cross off entire 6-9 day project! 🎉
 
-### 🥈 SECOND: IP-002 Integration Bridge (2-3 days at your pace)
+### 🥈 SECOND: IP-002 DopeconBridge (2-3 days at your pace)
 **Why**: Highest strategic value
 **What**: Enable cross-service coordination with event bus
 **Impact**: MCP-to-MCP communication, true two-plane architecture

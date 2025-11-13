@@ -33,7 +33,7 @@ next_review: '2026-01-15'
 
 The **ADHD Accommodation Engine** is Dopemux's central nervous system for neurodivergent-friendly development. Unlike traditional productivity tools that assume neurotypical cognitive patterns, this engine actively monitors, adapts, and optimizes the development environment for ADHD-specific challenges.
 
-This is **not** a cosmetic layer of "friendly reminders." This is a deeply integrated cognitive support system that coordinates across ConPort (knowledge graph), Serena (code intelligence), and the Integration Bridge to create an environment where ADHD developers can achieve sustained productivity without fighting their neurology.
+This is **not** a cosmetic layer of "friendly reminders." This is a deeply integrated cognitive support system that coordinates across ConPort (knowledge graph), Serena (code intelligence), and the DopeconBridge to create an environment where ADHD developers can achieve sustained productivity without fighting their neurology.
 
 ### Why This Matters
 
@@ -550,9 +550,9 @@ if completion_rate > 0.8:
 
 **Future Enhancement**: Serena's navigation cache will inform "likely next files" suggestions during context restoration.
 
-#### Integration Bridge Coordination
+#### DopeconBridge Coordination
 
-**ADHD Engine communicates via Integration Bridge for**:
+**ADHD Engine communicates via DopeconBridge for**:
 - Task routing decisions (send to Task-Orchestrator)
 - Break recommendations (surfaced in UI)
 - Energy level updates (broadcast to all systems)

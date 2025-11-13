@@ -18,7 +18,7 @@ next_review: '2026-02-08'
 ## TL;DR - What You Got
 
 ✅ **Security**: 10/10 (all vulnerabilities fixed)
-✅ **Architecture**: 10/10 (Integration Bridge complete, zero violations)
+✅ **Architecture**: 10/10 (DopeconBridge complete, zero violations)
 ✅ **Quality**: 8.3/10 (excellent patterns across all services)
 ✅ **Documentation**: 9/10 (95% accuracy validated)
 
@@ -39,7 +39,7 @@ next_review: '2026-02-08'
 **✅ Fixes**: Security improvements (2h)
 **✅ Docs**: Comprehensive reporting (2h)
 
-### Integration Bridge Completion (1 hour!)
+### DopeconBridge Completion (1 hour!)
 
 **✅ MCP Client**: Created with PostgreSQL integration (209 lines)
 **✅ Endpoints**: Wired custom_data POST/GET (working, not stubs!)
@@ -57,7 +57,7 @@ next_review: '2026-02-08'
 5-6. Hardcoded credentials → Environment variables
 7. No authentication → API key middleware (7 endpoints)
 8. Missing import → Fixed (deployment blocker)
-9-10. Integration Bridge stubs → Fully implemented
+9-10. DopeconBridge stubs → Fully implemented
 
 **Verified SAFE**:
 - SQL injection: LOW risk (config source)
@@ -71,12 +71,12 @@ next_review: '2026-02-08'
 ## Architecture - FULL COMPLIANCE ✅
 
 **Before**: 3/10
-- Integration Bridge 80% done (stubs)
+- DopeconBridge 80% done (stubs)
 - Services bypass bridge (direct SQLite)
 - Authority violations present
 
 **After**: 10/10
-- ✅ Integration Bridge 100% complete
+- ✅ DopeconBridge 100% complete
 - ✅ Custom data endpoints working
 - ✅ ADHD Engine uses bridge (feature-flagged)
 - ✅ Zero violations remaining
@@ -84,7 +84,7 @@ next_review: '2026-02-08'
 **Compliance Matrix**:
 - Two-plane separation: ✅ Enforced
 - Authority boundaries: ✅ Respected
-- Integration Bridge: ✅ Complete and functional
+- DopeconBridge: ✅ Complete and functional
 - Service isolation: ✅ Achieved
 
 ---
@@ -102,7 +102,7 @@ next_review: '2026-02-08'
 8. Taskmaster ✅
 
 **Infrastructure** (2/12):
-9. Integration Bridge ✅ (100% COMPLETE!)
+9. DopeconBridge ✅ (100% COMPLETE!)
 10. Dope Decision Graph ✅ (formerly ConPort KG; can now use complete bridge)
 
 **Legacy** (2/12):
@@ -140,7 +140,7 @@ next_review: '2026-02-08'
 **Hour 7-8**: Security fixes (CORS, credentials, auth)
 **Hour 9-10**: Phase 3 Service reviews (all 12 services)
 **Hour 11**: Phase 4 Documentation validation (95% accuracy)
-**Hour 12**: Integration Bridge completion (stubs → working!)
+**Hour 12**: DopeconBridge completion (stubs → working!)
 
 **Efficiency**: 87% faster than 93h plan = **81 hours saved!**
 
@@ -148,7 +148,7 @@ next_review: '2026-02-08'
 
 ## Critical Breakthroughs
 
-**1. Integration Bridge Root Cause** 🎯
+**1. DopeconBridge Root Cause** 🎯
 - Discovered: Custom data endpoints were stubs
 - Understood: Why services bypassed it
 - Fixed: Implemented MCP client + wired endpoints
@@ -177,7 +177,7 @@ cp .env.example .env
 nano .env  # Set: ALLOWED_ORIGINS, API keys, passwords
 
 # 2. Deploy ADHD Engine with bridge
-export USE_INTEGRATION_BRIDGE=true
+export USE_DOPECON_BRIDGE=true
 cd services/adhd_engine && python main.py
 
 # 3. Verify security
@@ -186,7 +186,7 @@ curl -H "X-API-Key: your-key" http://localhost:8000/health
 
 # 4. Verify bridge integration
 # ADHD Engine will use bridge HTTP API (no direct SQLite)
-# Check logs for "Integration Bridge" mentions
+# Check logs for "DopeconBridge" mentions
 
 # 5. Full deployment
 # Update docker-compose with environment variables
@@ -197,7 +197,7 @@ curl -H "X-API-Key: your-key" http://localhost:8000/health
 - `ALLOWED_ORIGINS`: Comma-separated list
 - `ADHD_ENGINE_API_KEY`: Secure random key
 - `SERENA_DB_PASSWORD`: Database password
-- `USE_INTEGRATION_BRIDGE`: true (default, recommended)
+- `USE_DOPECON_BRIDGE`: true (default, recommended)
 
 ---
 
@@ -245,7 +245,7 @@ curl -H "X-API-Key: your-key" http://localhost:8000/health
 **Key Commits**:
 1. `26b2f285` - Chunking bug fix
 2. `62202733` - Security fixes
-3. `1b76ef66` - Integration Bridge completion
+3. `1b76ef66` - DopeconBridge completion
 4. `2c8e7fbc` - Architecture compliance
 
 ---
@@ -256,7 +256,7 @@ curl -H "X-API-Key: your-key" http://localhost:8000/health
 **Achievement**: ✅ 95% accuracy validated + 100% critical issues fixed
 
 **Bonus Achievements**:
-- ✅ Integration Bridge completed (wasn't in scope!)
+- ✅ DopeconBridge completed (wasn't in scope!)
 - ✅ Critical infrastructure bug fixed
 - ✅ Full architecture compliance achieved
 - ✅ Production deployment ready

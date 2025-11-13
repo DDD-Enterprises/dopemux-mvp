@@ -174,7 +174,7 @@ Dopemux MCP Servers
     ├─ Exa (web search)
     └─ GPT-Researcher (deep research)
     ↓
-Integration Bridge (cross-plane coordination)
+DopeconBridge (cross-plane coordination)
     ├─ Task Orchestrator (Cognitive plane API)
     └─ Leantime Bridge (PM plane API)
 ```
@@ -325,7 +325,7 @@ docker-compose up -d
 
 **Verify Health**:
 ```bash
-curl http://localhost:3016/health  # Integration Bridge
+curl http://localhost:3016/health  # DopeconBridge
 curl http://localhost:3017/health  # Task Orchestrator
 curl http://localhost:3015/health  # Leantime Bridge
 ```
