@@ -142,17 +142,4 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       timeout: 10s
       retries: 3
-      interval: 30s</content>
-</xai:function_call koleg> I created a simplified docker-compose.unified.yml file that includes the core services needed for Dopemux to work: PostgreSQL, Redis, Qdrant, ConPort, ADHD Engine, and Task Orchestrator. This should resolve the README reference issue.
-
-Now let me fix the pytest fixture scope issues. The tests are failing because of scope mismatches between fixture definitions and usage. Let me examine the test file to understand the issue.
-
-`★ Insight ─────────────────────────────────────`
-The core problem is architectural: the docker-compose.master.yml has too many dependencies and missing Dockerfiles, while the README references a non-existent file. This creates a broken setup that's impossible for new users to get running.
-`─────────────────────────────────────────────────`
-
-`★ Insight ─────────────────────────────────────`
-pytest fixture scope mismatches occur when async fixtures are defined with class scope but used in function-scoped tests. This is a common async testing issue in pytest.
-`─────────────────────────────────────────────────`</content>
-</xai:function_call name="Read">
-<parameter name="file_path">tests/security/test_cors.py
+      interval: 30s
