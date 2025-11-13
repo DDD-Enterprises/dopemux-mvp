@@ -305,7 +305,7 @@ DOPEMUX_PORT_BASE         # 3000, 3030, 3060, 3090, 3120
 TASK_MASTER_PORT          # port_base + 5
 SERENA_PORT               # port_base + 6
 CONPORT_PORT              # port_base + 7
-INTEGRATION_BRIDGE_PORT   # port_base + 16
+DOPECON_BRIDGE_PORT   # port_base + 16
 LEANTIME_URL              # http://localhost:3001 (always shared)
 ```
 

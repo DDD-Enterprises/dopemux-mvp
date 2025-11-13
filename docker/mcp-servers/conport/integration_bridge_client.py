@@ -1,9 +1,9 @@
 """
-Integration Bridge Client for ConPort
-Publishes events to Integration Bridge EventBus
+DopeconBridge Client for ConPort
+Publishes events to DopeconBridge EventBus
 
 Configuration:
-    INTEGRATION_BRIDGE_URL: Base URL for the bridge (default resolves to
+    DOPECON_BRIDGE_URL: Base URL for the bridge (default resolves to
         dope-decision-graph bridge inside Docker or falls back to service name)
         Examples:
           - http://dope-decision-graph-bridge:3016  (same compose project)
@@ -19,9 +19,9 @@ import aiohttp
 logger = logging.getLogger(__name__)
 
 
-class IntegrationBridgeClient:
+class DopeconBridgeClient:
     """
-    HTTP client for publishing events to Integration Bridge
+    HTTP client for publishing events to DopeconBridge
 
     Enables ConPort to publish events when decisions/progress changes occur,
     allowing Dashboard and ADHD Engine to react in real-time.
@@ -29,17 +29,17 @@ class IntegrationBridgeClient:
 
     def __init__(self, bridge_url: str | None = None):
         """
-        Initialize Integration Bridge client
+        Initialize DopeconBridge client
 
         Args:
-            bridge_url: Base URL for Integration Bridge service
+            bridge_url: Base URL for DopeconBridge service
         """
         # Prefer explicit arg → env override → sane defaults
         if bridge_url:
             self.bridge_url = bridge_url
         else:
             self.bridge_url = (
-                os.getenv("INTEGRATION_BRIDGE_URL")
+                os.getenv("DOPECON_BRIDGE_URL")
                 or "http://dope-decision-graph-bridge:3016"
             )
         self.events_endpoint = f"{self.bridge_url}/events"
@@ -55,13 +55,13 @@ class IntegrationBridgeClient:
         try:
             async with self.session.get(f"{self.bridge_url}/health") as response:
                 if response.status == 200:
-                    logger.info("✅ Integration Bridge client initialized")
+                    logger.info("✅ DopeconBridge client initialized")
                     self._enabled = True
                 else:
-                    logger.warning(f"⚠️  Integration Bridge unhealthy: {response.status}")
+                    logger.warning(f"⚠️  DopeconBridge unhealthy: {response.status}")
                     self._enabled = False
         except Exception as e:
-            logger.warning(f"⚠️  Integration Bridge unavailable: {e}")
+            logger.warning(f"⚠️  DopeconBridge unavailable: {e}")
             self._enabled = False
 
     async def close(self):
@@ -76,7 +76,7 @@ class IntegrationBridgeClient:
         source: str = "conport"
     ) -> bool:
         """
-        Publish event to Integration Bridge
+        Publish event to DopeconBridge
 
         Args:
             event_type: Event type (e.g., decision_logged, progress_updated)

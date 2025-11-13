@@ -26,7 +26,7 @@ Modules for developer support and code intelligence:
 
 Modules for cross-plane communication and integration patterns:
 
-- `integration-bridge.md` - Event routing patterns and cross-plane coordination (PORT_BASE+16)
+- `dopecon-bridge.md` - Event routing patterns and cross-plane coordination (PORT_BASE+16)
 - `authority-matrix.md` - Clear reference for system authority boundaries
 
 ### Shared (`shared/`)
@@ -60,7 +60,7 @@ Each module respects the authority matrix:
 
 ## Cross-Plane Communication
 
-All cross-plane communication MUST route through the Integration Bridge. No direct tool calls between planes are permitted.
+All cross-plane communication MUST route through the DopeconBridge. No direct tool calls between planes are permitted.
 
 ## ADHD Optimizations
 

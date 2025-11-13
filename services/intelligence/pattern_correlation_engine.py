@@ -35,6 +35,7 @@ class IntelligenceInsight:
     triggered_by: List[str]  # Event IDs that triggered this
     confidence: float  # 0.0-1.0
     timestamp: datetime
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 class PatternCorrelationEngine:

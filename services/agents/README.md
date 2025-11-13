@@ -105,17 +105,17 @@ summary = await agent.end_session(outcome="completed")
 ### ⏳ 3. TwoPlaneOrchestrator - Cross-Plane Coordination
 
 **Status**: ⏳ **PENDING** (Week 6)
-**Authority**: Integration Bridge coordination, authority enforcement
+**Authority**: DopeconBridge coordination, authority enforcement
 **ADHD Benefit**: Clear boundaries reduce confusion
 
 **Planned Capabilities**:
-- Route cross-plane requests through Integration Bridge
+- Route cross-plane requests through DopeconBridge
 - Validate authority matrix (ConPort for decisions, Leantime for status)
 - Audit cross-plane communication
 - Resolve conflicts between planes
 
 **Integration**:
-- Coordinates with Integration Bridge (Component 3)
+- Coordinates with DopeconBridge (Component 3)
 - Enforces two-plane architecture boundaries
 - Validates operation authority
 

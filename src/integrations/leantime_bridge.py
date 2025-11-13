@@ -1,5 +1,5 @@
 """
-Leantime JSON-RPC Integration Bridge for Dopemux
+Leantime JSON-RPC DopeconBridge for Dopemux
 
 This module provides a bridge between Dopemux and Leantime through JSON-RPC 2.0 API.
 Handles project management, task tracking, and ADHD-optimized workflows.

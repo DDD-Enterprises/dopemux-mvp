@@ -7,7 +7,7 @@ ADHD-optimized terminal interface for exploring the ConPort Knowledge Graph with
 - **Top-3 ADHD Pattern**: Start with 3 most recent decisions to reduce overwhelm
 - **Progressive Disclosure**: Expand from 1-hop → 2-hop → full context on demand
 - **Keyboard Navigation**: Arrow keys, Enter, and single-key commands
-- **Real-time API**: Connects to Integration Bridge on port 3016
+- **Real-time API**: Connects to DopeconBridge on port 3016
 - **Demo Mode**: Standalone mode with mock data for development
 
 ## Quick Start
@@ -62,7 +62,7 @@ npm start
 
 ### API Integration
 
-Connects to Integration Bridge at `http://localhost:3016/kg`:
+Connects to DopeconBridge at `http://localhost:3016/kg`:
 
 - `GET /kg/decisions/recent?limit=3` - Recent decisions
 - `GET /kg/decisions/{id}/neighborhood?max_hops=1` - Decision genealogy
@@ -79,7 +79,7 @@ conport_kg_ui/
 │   ├── cli.tsx                  # CLI entry point
 │   ├── mock-server.ts          # Mock API for demo mode
 │   ├── api/
-│   │   └── client.ts           # HTTP client for Integration Bridge
+│   │   └── client.ts           # HTTP client for DopeconBridge
 │   ├── components/
 │   │   ├── DecisionBrowser.tsx     # Tier 1: Top-3 view
 │   │   ├── GenealogyExplorer.tsx   # Tier 2: Progressive neighbors
@@ -136,7 +136,7 @@ npm run dev
 
 ### Mock Server
 
-The mock server simulates Integration Bridge API with fixture data:
+The mock server simulates DopeconBridge API with fixture data:
 
 ```bash
 # Run mock server only
@@ -147,7 +147,7 @@ npm run mock-server
 
 ### Testing with Real Backend
 
-1. Start Integration Bridge (port 3016)
+1. Start DopeconBridge (port 3016)
 2. Ensure ConPort database is running
 3. Run UI: `npm run dev`
 
@@ -168,14 +168,14 @@ npm run mock-server
 
 ## Environment Variables
 
-- `KG_API_URL` - Integration Bridge base URL (default: `http://localhost:3016/kg`)
+- `KG_API_URL` - DopeconBridge base URL (default: `http://localhost:3016/kg`)
 - `NODE_ENV` - Set to `development` for verbose logging
 
 ## Troubleshooting
 
 ### "Error loading decisions"
 
-- Check Integration Bridge is running on port 3016
+- Check DopeconBridge is running on port 3016
 - Try demo mode: `./demo.sh`
 - Verify API connectivity: `curl http://localhost:3016/kg/decisions/recent?limit=3`
 

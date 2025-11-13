@@ -1,4 +1,4 @@
-# Week 7: Integration Bridge Completion Plan
+# Week 7: DopeconBridge Completion Plan
 **Effort**: 12 hours total (4-6h bridge + 6-8h migration)
 **Priority**: HIGH (eliminates architecture violations)
 **Prerequisites**: Security fixes deployed and validated
@@ -7,22 +7,22 @@
 
 ## Overview
 
-Complete the Integration Bridge by implementing the missing MCP→ConPort integration layer, then migrate services from direct SQLite access to proper HTTP API calls.
+Complete the DopeconBridge by implementing the missing MCP→ConPort integration layer, then migrate services from direct SQLite access to proper HTTP API calls.
 
 **Current State**: Bridge is 80% complete (authority, endpoints exist, but custom_data are stubs)
 **Target State**: Full cross-plane coordination with all services using bridge
 
 ---
 
-## Phase 1: Complete Integration Bridge (4-6 hours)
+## Phase 1: Complete DopeconBridge (4-6 hours)
 
 ### Task 1.1: Add MCP Client to Bridge (2h)
 
-**File**: `services/mcp-integration-bridge/mcp_client.py` (NEW)
+**File**: `services/mcp-dopecon-bridge/mcp_client.py` (NEW)
 
 ```python
 """
-MCP Client for Integration Bridge.
+MCP Client for DopeconBridge.
 Connects to ConPort MCP server to enable custom_data persistence.
 """
 
@@ -32,7 +32,7 @@ from typing import Dict, Any, List, Optional
 
 # This would use MCP SDK or direct HTTP to ConPort MCP server
 class ConPortMCPClient:
-    """Client for calling ConPort MCP tools from Integration Bridge"""
+    """Client for calling ConPort MCP tools from DopeconBridge"""
 
     def __init__(self, conport_url: str = "http://localhost:3004"):
         self.conport_url = conport_url
@@ -104,7 +104,7 @@ class ConPortMCPClient:
 
 ### Task 1.2: Wire custom_data Endpoints (2h)
 
-**File**: `services/mcp-integration-bridge/kg_endpoints.py`
+**File**: `services/mcp-dopecon-bridge/kg_endpoints.py`
 
 **Change Line 357-363** (save_custom_data):
 ```python
@@ -218,13 +218,13 @@ curl -X POST http://localhost:3016/custom_data \
 
 ## Phase 2: Migrate Services (6-8 hours)
 
-### Task 2.1: Create Integration Bridge HTTP Client (2h)
+### Task 2.1: Create DopeconBridge HTTP Client (2h)
 
 **File**: `src/integrations/bridge_client.py` (NEW, shared library)
 
 ```python
 """
-Integration Bridge HTTP Client.
+DopeconBridge HTTP Client.
 Used by services to call bridge instead of direct SQLite.
 """
 
@@ -232,12 +232,12 @@ import os
 import aiohttp
 from typing import Dict, Any, Optional
 
-class IntegrationBridgeClient:
-    """HTTP client for Integration Bridge API"""
+class DopeconBridgeClient:
+    """HTTP client for DopeconBridge API"""
 
     def __init__(self, base_url: Optional[str] = None):
         self.base_url = base_url or os.getenv(
-            "INTEGRATION_BRIDGE_URL",
+            "DOPECON_BRIDGE_URL",
             "http://localhost:3016"
         )
         self.source_plane = "cognitive_plane"  # Services are cognitive plane
@@ -315,12 +315,12 @@ class ConPortSQLiteClient:
         conn.execute("INSERT OR REPLACE INTO custom_data ...")
 
 # AFTER (HTTP API):
-from src.integrations.bridge_client import IntegrationBridgeClient
+from src.integrations.bridge_client import DopeconBridgeClient
 
 class ConPortBridgeClient:
     def __init__(self, workspace_id: str):
         self.workspace_id = workspace_id
-        self.bridge = IntegrationBridgeClient()
+        self.bridge = DopeconBridgeClient()
 
     async def write_custom_data(self, category, key, value):
         result = await self.bridge.save_custom_data(
@@ -353,7 +353,7 @@ class ConPortBridgeClient:
 # BEFORE:
 if impl_decisions:
     print(f"   → Would publish decision.requires_implementation event")
-    # TODO: Publish to Integration Bridge event bus
+    # TODO: Publish to DopeconBridge event bus
 
 # AFTER:
 if impl_decisions:
@@ -431,7 +431,7 @@ if impl_decisions:
 
 ## Success Criteria
 
-### Integration Bridge Complete When:
+### DopeconBridge Complete When:
 - [ ] MCP client implemented and tested
 - [ ] custom_data POST actually saves to ConPort
 - [ ] custom_data GET retrieves real data
@@ -498,7 +498,7 @@ curl "http://localhost:3016/custom_data?workspace_id=...&category=test" \
 # Should return the data we saved
 
 # 3. Verify services using bridge
-# Check ADHD Engine logs for "Integration Bridge" or HTTP calls
+# Check ADHD Engine logs for "DopeconBridge" or HTTP calls
 # Check no more direct SQLite writes
 
 # 4. Verify authority enforcement
@@ -514,12 +514,12 @@ curl "http://localhost:3016/custom_data?workspace_id=...&category=test" \
 
 **Files to Update**:
 1. `.claude/CLAUDE.md` - Update authority routing (bridge now complete)
-2. `services/mcp-integration-bridge/README.md` - Remove "stub" notes
+2. `services/mcp-dopecon-bridge/README.md` - Remove "stub" notes
 3. `services/adhd_engine/README.md` - Document bridge integration
 4. `docs/94-architecture/` - Update architecture diagrams
 
 **Create**:
-5. ADR-207: Integration Bridge Completion (document decisions made)
+5. ADR-207: DopeconBridge Completion (document decisions made)
 6. Integration guide: How to use bridge for new services
 
 ---

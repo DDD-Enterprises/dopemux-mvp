@@ -164,7 +164,7 @@ Generated: 2025-10-28
 
 ### 6. MCP Servers
 
-**MCP Integration Bridge:**
+**MCP DopeconBridge:**
 - Tool call counts by server/tool
 - Tool execution duration
 - Tool errors by type

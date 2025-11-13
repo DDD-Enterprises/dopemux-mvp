@@ -27,7 +27,7 @@ next_review: '2026-02-08'
 | 4 | **ADHD Engine** | 7/10 | 2 medium | Localhost-only | 2.5h |
 | 5 | **Task-Orchestrator** | Active | Un-deprecated | Week 7 integration | 2h |
 | 6 | **ML Risk** | New | Extracted | Standalone service | 1h |
-| 7 | **Integration Bridge** | 7/10 | Not wired | Week 7 wiring | 1h |
+| 7 | **DopeconBridge** | 7/10 | Not wired | Week 7 wiring | 1h |
 | 8 | **TaskMaster** | N/A | ❌ **Missing dependency** | Non-functional | 0.5h |
 
 **Subtotal**: 13.5 hours
@@ -116,7 +116,7 @@ next_review: '2026-02-08'
 
 ---
 
-### 5. Integration Bridge Disconnected ⚠️
+### 5. DopeconBridge Disconnected ⚠️
 
 **Finding**: Bridge exists but services don't use it
 - ConPort orchestrator: Event publishing TODOs
@@ -161,7 +161,7 @@ next_review: '2026-02-08'
 
 **Tier 2: Deploy with Restrictions** ⚠️
 7. ADHD Engine (7/10) - Localhost-only OR add auth
-8. Integration Bridge (7/10) - Exists, needs wiring
+8. DopeconBridge (7/10) - Exists, needs wiring
 
 **Tier 3: Future Work Required** 📦
 9. Task-Orchestrator (Active) - Week 7 integration (13h)
@@ -216,7 +216,7 @@ next_review: '2026-02-08'
 ### Week 7 Integration (3 components)
 - Task-Orchestrator (integration work)
 - ML Risk Assessment (API layer)
-- Integration Bridge (service wiring)
+- DopeconBridge (service wiring)
 
 ### Fix or Remove (2 services) ❌
 - TaskMaster (missing external package)
@@ -227,14 +227,14 @@ next_review: '2026-02-08'
 ## 📋 WEEK 7 INTEGRATION WORK (~37h total)
 
 **Service Wiring** (12h):
-- Wire ConPort orchestrator to Integration Bridge
+- Wire ConPort orchestrator to DopeconBridge
 - Wire ADHD Engine to ConPort HTTP API
 - Validate event routing
 
 **Task-Orchestrator** (13h):
 - Security audit
 - Service boundary fixes
-- Integration Bridge connection
+- DopeconBridge connection
 
 **ML Risk Assessment** (4h):
 - FastAPI REST layer
@@ -304,7 +304,7 @@ Complete audit trail with:
 
 ### Week 7 Integration Sprint (~37h)
 
-7. Complete Integration Bridge wiring (12h)
+7. Complete DopeconBridge wiring (12h)
 8. Task-Orchestrator integration (13h)
 9. ML Risk Assessment API (4h)
 10. Fix testing imports (2-4h)

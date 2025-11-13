@@ -77,7 +77,7 @@ Dopemux Multi-AI Orchestrator is a **chat-driven mission control** for coordinat
 │  │ > Complexity: 0.6 (medium)         │ │  │ ✅ Redis Pub/Sub         1ms             │ │
 │  │                                    │ │  │ ⚠️  Zen MCP (3003)       350ms (slow)    │ │
 │  │ [v] View full  [i] Interrupt      │ │  │ ✅ GPT-Researcher        -               │ │
-│  └────────────────────────────────────┘ │  │ ✅ Integration Bridge    5ms             │ │
+│  └────────────────────────────────────┘ │  │ ✅ DopeconBridge    5ms             │ │
 │                                         │  │                                          │ │
 │  ┌────────────────────────────────────┐ │  │ 📋 Current Task                          │ │
 │  │ 🤖 Gemini CLI (Pane 1)             │ │  │ #T-234: Implement OAuth system           │ │
@@ -323,7 +323,7 @@ Orchestrator routes to:
 │  │ xAI: 0K/∞ tokens (FREE!)     │  │  │ Infrastructure:                          │  │
 │  │                              │  │  │ ✅ Redis Pub/Sub       0.8ms             │  │
 │  │ Network: 2.3 Mbps ▂▄▆█▆▃▁    │  │  │ ✅ PostgreSQL AGE      4.2ms             │  │
-│  │                              │  │  │ ✅ Integration Bridge  5.1ms             │  │
+│  │                              │  │  │ ✅ DopeconBridge  5.1ms             │  │
 │  │                              │  │  │                                          │ │
 │  └──────────────────────────────┘  │  └──────────────────────────────────────────┘ │
 │                                    │                                                │
@@ -699,7 +699,7 @@ Save to ConPort? [Y/n]: y
 **Coordination**:
 - Redis Pub/Sub (message bus)
 - ConPort (PostgreSQL AGE knowledge graph)
-- Integration Bridge (authority enforcement)
+- DopeconBridge (authority enforcement)
 - Zen MCP (multi-model reasoning)
 
 **Monitoring**:

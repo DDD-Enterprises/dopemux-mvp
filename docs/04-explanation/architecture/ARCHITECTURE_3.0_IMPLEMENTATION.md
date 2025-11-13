@@ -16,7 +16,7 @@ next_review: '2026-02-08'
 
 ## Executive Summary
 
-Architecture 3.0 implements **complete bidirectional communication** between the **PM Plane** (Project Management) and **Cognitive Plane** (Knowledge & Memory) through the **Integration Bridge**, enabling real-time task synchronization, ADHD-aware coordination, and cross-plane queries with sub-200ms latency.
+Architecture 3.0 implements **complete bidirectional communication** between the **PM Plane** (Project Management) and **Cognitive Plane** (Knowledge & Memory) through the **DopeconBridge**, enabling real-time task synchronization, ADHD-aware coordination, and cross-plane queries with sub-200ms latency.
 
 ### Core Achievement: Full Bidirectional Communication ✅
 
@@ -31,7 +31,7 @@ Architecture 3.0 implements **complete bidirectional communication** between the
              │                                    │
              │                                    │
 ┌────────────▼────────────────────────────────────▼───────────┐
-│           Integration Bridge (PORT 3016)                     │
+│           DopeconBridge (PORT 3016)                     │
 │   Authority Enforcement • Event Routing • HTTP Proxy        │
 └────────────┬────────────────────────────────────┬───────────┘
              │                                    │
@@ -77,7 +77,7 @@ Architecture 3.0 implements **complete bidirectional communication** between the
 
 **Achievements**:
 - ✅ PostgreSQL AGE knowledge graph (ConPort)
-- ✅ Redis Streams event bus (Integration Bridge)
+- ✅ Redis Streams event bus (DopeconBridge)
 - ✅ Task-Orchestrator with 37 specialized tools
 - ✅ 6 background workers (poller, sync, ADHD monitor, automation, correlator, EventBus)
 
@@ -95,7 +95,7 @@ Architecture 3.0 implements **complete bidirectional communication** between the
 
 **Files**: `conport_adapter.py` transformation functions
 
-### Component 3: Integration Bridge Wiring (EventBus)
+### Component 3: DopeconBridge Wiring (EventBus)
 
 **Purpose**: PM Plane → Cognitive Plane event streaming
 
@@ -111,7 +111,7 @@ Architecture 3.0 implements **complete bidirectional communication** between the
 - Event reception: < 1ms latency
 - Consumer group creation: < 50ms
 
-**Documentation**: `COMPONENT_3_INTEGRATION_BRIDGE_WIRING.md`
+**Documentation**: `COMPONENT_3_DOPECON_BRIDGE_WIRING.md`
 
 ### Component 4: ConPort MCP Client Wiring
 
@@ -146,7 +146,7 @@ Architecture 3.0 implements **complete bidirectional communication** between the
 - ✅ ADHD-aware recommendations
 
 #### Part B: HTTP Query Infrastructure
-- ✅ Integration Bridge REST API (8 endpoints)
+- ✅ DopeconBridge REST API (8 endpoints)
 - ✅ Task-Orchestrator HTTP server (PORT 3017, 7 endpoints)
 - ✅ Complete HTTP wiring (aiohttp async client)
 - ✅ Error handling (503 for unavailable, pass-through errors)
@@ -190,7 +190,7 @@ Architecture 3.0 implements **complete bidirectional communication** between the
 1. Leantime updates task status → "in_progress"
 2. Task-Orchestrator detects change
 3. Component 3: Publishes event to Redis Streams
-4. Integration Bridge routes event
+4. DopeconBridge routes event
 5. Component 4: Task-Orchestrator calls ConPort MCP
 6. ConPort updates progress_entry + knowledge graph
 ```
@@ -203,7 +203,7 @@ Architecture 3.0 implements **complete bidirectional communication** between the
 
 ```
 1. UI requests ADHD state
-2. Integration Bridge receives GET /orchestrator/adhd-state
+2. DopeconBridge receives GET /orchestrator/adhd-state
 3. Component 5: Bridge queries Orchestrator HTTP (PORT 3017)
 4. Orchestrator queries ConPort MCP
 5. ConPort returns ADHD state from active_context
@@ -218,7 +218,7 @@ Architecture 3.0 implements **complete bidirectional communication** between the
 
 ```
 1. User asks: "What should I work on?"
-2. Integration Bridge: GET /orchestrator/recommendations
+2. DopeconBridge: GET /orchestrator/recommendations
 3. Orchestrator:
    a. Queries ConPort for decisions (via Component 5)
    b. Queries ConPort for patterns (via Component 5)
@@ -245,7 +245,7 @@ Architecture 3.0 implements **complete bidirectional communication** between the
 
 ```
 HTTP Layer:          10ms (14%)  ✅ Fast
-Integration Bridge:  15ms (21%)  ✅ Fast
+DopeconBridge:  15ms (21%)  ✅ Fast
 Task-Orchestrator:   65ms (93%)  ✅ Acceptable
 ├─ Method dispatch:   2ms
 ├─ State aggregation: 13ms
@@ -282,7 +282,7 @@ Task-Orchestrator:   65ms (93%)  ✅ Acceptable
 
 **Access**: ConPort MCP (exclusive write access)
 
-### Integration Bridge (Coordination Layer)
+### DopeconBridge (Coordination Layer)
 
 **Enforcement**:
 - ✅ No direct cross-plane communication
@@ -355,11 +355,11 @@ Task-Orchestrator:   65ms (93%)  ✅ Acceptable
 
 **Full Integration Flow**:
 1. Start ConPort MCP server
-2. Start Integration Bridge (PORT 3016)
+2. Start DopeconBridge (PORT 3016)
 3. Start Task-Orchestrator with query server (PORT 3017)
 4. Publish tasks_imported event
 5. Verify ConPort active_context updated
-6. Query orchestrator via Integration Bridge
+6. Query orchestrator via DopeconBridge
 7. Verify ADHD state returned
 8. Update task status in Leantime
 9. Verify status synced to ConPort
@@ -370,17 +370,17 @@ Task-Orchestrator:   65ms (93%)  ✅ Acceptable
 
 **Services**:
 - ✅ PostgreSQL AGE (ConPort knowledge graph)
-- ✅ Redis Streams (Integration Bridge EventBus)
+- ✅ Redis Streams (DopeconBridge EventBus)
 - ✅ Leantime API (PM Plane)
 - ✅ Task-Orchestrator (coordination)
-- ✅ Integration Bridge (PORT 3016)
+- ✅ DopeconBridge (PORT 3016)
 - ✅ Orchestrator Query Server (PORT 3017)
 
 **Configuration**:
 ```bash
 # Port allocation
 PORT_BASE=3000          # Base port (worktree-aware)
-BRIDGE_PORT=3016        # Integration Bridge (PORT_BASE + 16)
+BRIDGE_PORT=3016        # DopeconBridge (PORT_BASE + 16)
 QUERY_PORT=3017         # Orchestrator HTTP (PORT_BASE + 17)
 
 # Performance tuning
@@ -392,14 +392,14 @@ USE_MOCK_FALLBACK=false        # Production: disable
 
 ### Health Checks
 
-**GET /health** (Integration Bridge):
+**GET /health** (DopeconBridge):
 ```json
 {
   "overall_status": "🚀 Excellent",
   "components": {
     "leantime_api": "🟢 Connected",
     "redis_coordination": "🟢 Connected",
-    "integration_bridge_eventbus": "🟢 Connected",
+    "dopecon_bridge_eventbus": "🟢 Connected",
     "orchestrator_http": "🟢 Connected",
     "workers_active": "6/6"
   }
@@ -424,7 +424,7 @@ USE_MOCK_FALLBACK=false        # Production: disable
 
 ### Current State
 
-1. **Mock Fallback Enabled**: Integration Bridge uses mock data when orchestrator unavailable (development only)
+1. **Mock Fallback Enabled**: DopeconBridge uses mock data when orchestrator unavailable (development only)
 2. **Single Worker**: Query server runs single uvicorn worker (scaling requires load balancer)
 3. **No Authentication**: HTTP endpoints public (Phase 11+ feature)
 4. **No Rate Limiting**: Unlimited requests (Phase 11+ feature)
@@ -441,7 +441,7 @@ USE_MOCK_FALLBACK=false        # Production: disable
 
 | Document | Purpose | Lines |
 |----------|---------|-------|
-| `COMPONENT_3_INTEGRATION_BRIDGE_WIRING.md` | EventBus subscription | 314 |
+| `COMPONENT_3_DOPECON_BRIDGE_WIRING.md` | EventBus subscription | 314 |
 | `COMPONENT_4_CONPORT_MCP_WIRING.md` | MCP client wiring | 458 |
 | `COMPONENT_5_CROSS_PLANE_QUERIES.md` | HTTP API reference | 405 |
 | `COMPONENT_5_CONPORT_MCP_QUERIES.md` | MCP tools reference | 300+ |
@@ -456,7 +456,7 @@ USE_MOCK_FALLBACK=false        # Production: disable
 | File | Lines | Purpose |
 |------|-------|---------|
 | `conport_mcp_client.py` | 312 | ConPort MCP wrapper |
-| `orchestrator_endpoints.py` | 313 | Integration Bridge REST API |
+| `orchestrator_endpoints.py` | 313 | DopeconBridge REST API |
 | `query_server.py` | 165 | Orchestrator HTTP server |
 | `test_component5_performance.py` | 300 | Performance benchmark suite |
 | `test_eventbus_subscription.py` | 207 | EventBus integration test |
