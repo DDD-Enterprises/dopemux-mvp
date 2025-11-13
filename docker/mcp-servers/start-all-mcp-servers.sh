@@ -5,6 +5,16 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+WORKSPACE_ENV_PATH="$(python3 "$PROJECT_ROOT/scripts/workspace_env_path.py" 2>/dev/null || true)"
+if [ -n "$WORKSPACE_ENV_PATH" ] && [ -f "$WORKSPACE_ENV_PATH" ]; then
+  echo "📦 Loading workspace environment from $WORKSPACE_ENV_PATH"
+  # shellcheck source=/dev/null
+  source "$WORKSPACE_ENV_PATH"
+else
+  echo "⚠️  Workspace env file not found; defaulting to current directory"
+fi
+
 echo "🚀 Starting all Dopemux MCP servers..."
 echo "=========================================="
 
