@@ -43,6 +43,7 @@ class SessionState:
     complexity: float
     energy_level: str  # "high", "medium", "low"
     attention_state: str  # "focused", "scattered", "hyperfocus"
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 class MemoryAgent:
