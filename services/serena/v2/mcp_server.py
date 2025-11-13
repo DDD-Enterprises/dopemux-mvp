@@ -4897,7 +4897,9 @@ class SerenaV2MCPServer:
         self,
         file_path: str,
         symbol: Optional[str] = None,
-        user_id: str = "default"
+        user_id: str = "default",
+        workspace_path: Optional[str] = None,
+        workspace_paths: Optional[List[str]] = None,
     ) -> str:
         """
         F-NEW-3: Get unified complexity score combining AST, LSP, usage, and ADHD.
@@ -4907,15 +4909,29 @@ class SerenaV2MCPServer:
         - LSP complexity (Serena code analysis)
         - Usage complexity (reference counts)
         - ADHD multiplier (user-specific adjustments)
+        - Multi-workspace: Unified complexity across workspaces
 
         Args:
             file_path: File path to analyze
             symbol: Optional function/class name
             user_id: User identifier for ADHD adjustments
+            workspace_path: Optional single workspace path
+            workspace_paths: Optional multiple workspace paths
 
         Returns:
             JSON with complexity breakdown and interpretation
         """
+        # Multi-workspace mode
+        if workspace_paths or workspace_path:
+            from multi_workspace_wrapper import SerenaMultiWorkspace
+            wrapper = SerenaMultiWorkspace()
+            result = await wrapper.get_unified_complexity_multi(
+                file_path, symbol, user_id,
+                workspace_path, workspace_paths
+            )
+            return json.dumps(result, indent=2)
+        
+        # Single workspace mode (backward compatible)
         try:
             # Import complexity coordinator
             import sys
