@@ -17,6 +17,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Copy shared monitoring module
+COPY ../../shared/monitoring /app/shared/monitoring
+
 # Create non-root user for security
 RUN useradd -m -u 1000 adhd && chown -R adhd:adhd /app
 USER adhd
