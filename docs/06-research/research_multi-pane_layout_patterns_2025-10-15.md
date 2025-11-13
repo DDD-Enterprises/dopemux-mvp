@@ -521,7 +521,7 @@ layout:
 1. **PM Plane**: Status updates, task decomposition, team visibility
 2. **Cognitive Plane**: Decisions, code navigation, memory, context
 
-**Integration Bridge**: Cross-plane coordination at PORT_BASE+16
+**DopeconBridge**: Cross-plane coordination at PORT_BASE+16
 
 ### Recommended Primary Layout
 

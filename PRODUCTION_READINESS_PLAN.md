@@ -1,488 +1,705 @@
-# 🎯 DOPEMUX PRODUCTION READINESS PLAN
-## End-User Installation for 3rd Party Developers
+# Multi-Workspace Production Readiness Plan
 
-**Scope:** Make dopemux installable and reliable for developers across all their projects and workspaces
-
-**Timeline:** 10 weeks to Beta Launch
-
-**ADHD-Optimized:** Clear phases, concrete deliverables, measurable success criteria
+**Created**: 2025-11-13
+**Goal**: Complete deployment roadmap to get everything production-ready
+**Current Status**: Infrastructure + 3 services ready, 2 services 60-70% complete
 
 ---
 
-## ═══════════════════════════════════════════════════════════════
-## PHASE 1: INSTALLATION EXPERIENCE (Week 1)
-## ═══════════════════════════════════════════════════════════════
+## 🎯 Executive Summary
 
-**🎯 Goal:** One-command install that works on any dev machine
+### What We Have
+- ✅ Complete infrastructure (shared utilities, docs, tests)
+- ✅ 3 services production-ready (dope-context, orchestrator, activity-capture)
+- ✅ 2 services with foundations (serena 70%, conport_kg 60%)
+- ✅ 63/63 tests passing (100%)
 
-### 📦 1.1 Universal Installer Script
-- [ ] Platform detection (macOS, Ubuntu, Arch, Fedora, WSL2)
-- [ ] Dependency checker (Docker, Python 3.11+, Git, tmux)
-- [ ] Auto-install missing dependencies (homebrew/apt/yum)
-- [ ] Interactive mode vs `--quick` vs `--full` options
-- [ ] Progress bars and clear error messages
-- [ ] Rollback on failure + helpful troubleshooting
+### What We Need
+- 🔄 Complete 2 started services (10-14 hours)
+- 🔄 Implement 5 high-priority services (8-13 hours)
+- 🔄 Polish & integration (6-8 hours)
+- 🔄 Production infrastructure (4-6 hours)
 
-**Deliverable:** `install.sh` that works on all major platforms
-
-### 📦 1.2 Package Manager Distribution
-- [ ] Homebrew formula (`brew install dopemux`)
-- [ ] PyPI package (`pip install dopemux`)
-- [ ] Docker Hub image (`docker pull dopemux/dopemux`)
-- [ ] Snap package for Linux (`snap install dopemux`)
-- [ ] Version management and auto-updates
-
-**Deliverable:** Dopemux available via 4+ package managers
-
-### 📦 1.3 First-Run Experience
-- [ ] Interactive setup wizard (API keys, preferences)
-- [ ] Pre-flight checks (ports, permissions, disk space)
-- [ ] Sample project setup (demo workspace)
-- [ ] Tutorial mode (guided tour of features)
-- [ ] Health dashboard showing all services green
-
-**Deliverable:** `dopemux init` command with 5-minute setup
+**Total**: 28-41 hours (3.5 to 5 days full-time)
 
 ---
 
-## ═══════════════════════════════════════════════════════════════
-## PHASE 2: MULTI-WORKSPACE RELIABILITY (Week 2)
-## ═══════════════════════════════════════════════════════════════
+## 📋 Phase-by-Phase Breakdown
 
-**🎯 Goal:** Work seamlessly across unlimited projects without conflicts
+### Phase 1: Complete Started Services (10-14 hours)
+**Goal**: Get serena & conport_kg to 100%
+**Timeline**: Day 1-2
 
-### 🔧 2.1 Workspace Isolation
-- [ ] Auto-detect workspace root (git, pyproject.toml, package.json)
-- [ ] Per-workspace Docker containers (isolated ConPort DBs)
-- [ ] Per-workspace MCP server instances
-- [ ] Workspace-specific `.dopemux/config.yaml`
-- [ ] Global vs local settings hierarchy
+#### 1.1 Serena MCP Integration (4-6 hours)
+**Priority**: HIGH
+**Complexity**: Medium
 
-**Deliverable:** 100+ workspaces without cross-contamination
+**Tasks**:
+1. Modify MCP tools to accept workspace params (3h)
+   - `find_symbol_tool`
+   - `get_context_tool`
+   - `find_references_tool`
+   - `analyze_complexity_tool`
+   - `find_relationships_tool`
+   - 5 more tools
 
-### 🔧 2.2 Context Switching
-- [ ] `dopemux switch <workspace>` command
-- [ ] Auto-save state on switch (ConPort snapshot)
-- [ ] Restore context on return (session history)
-- [ ] Cross-workspace search (find decisions across projects)
-- [ ] Workspace activity dashboard
+2. Per-workspace LSP clients (1h)
+   - Modify `SerenaMultiWorkspace` wrapper
+   - Lazy-load LSP client per workspace
+   - Cache instances
 
-**Deliverable:** Sub-2s workspace switching
+3. Integration tests (1h)
+   - Test MCP tools with multi-workspace
+   - Test LSP client isolation
+   - Test result aggregation
 
-### 🔧 2.3 Resource Management
-- [ ] Smart container lifecycle (auto-stop idle workspaces)
-- [ ] Shared services pool (Qdrant, Redis shared)
-- [ ] Memory limits per workspace (prevent hogging RAM)
-- [ ] Disk usage monitoring (warn before full)
-- [ ] Resource cleanup (`dopemux clean --workspace X`)
+**Deliverables**:
+- ✅ All MCP tools support workspace_paths
+- ✅ Per-workspace LSP clients working
+- ✅ 15+ integration tests passing
+- ✅ Documentation updated
 
-**Deliverable:** <2GB RAM per active workspace
+#### 1.2 ConPort KG AGE Integration (6-8 hours)
+**Priority**: HIGH
+**Complexity**: High
 
----
+**Tasks**:
+1. AGE Client integration (3h)
+   - Modify `AGEClient` class
+   - Add workspace_path parameter
+   - Scope queries to workspace graphs
 
-## ═══════════════════════════════════════════════════════════════
-## PHASE 3: ZERO-CONFIGURATION MAGIC (Week 3)
-## ═══════════════════════════════════════════════════════════════
+2. Query module updates (2h)
+   - `queries/deep_context.py`
+   - `queries/overview.py`
+   - `queries/exploration.py`
 
-**🎯 Goal:** Works out-of-the-box for common dev workflows
+3. Graph initialization (1h)
+   - Workspace graph creation on demand
+   - Schema setup per workspace
+   - Migration support
 
-### 🪄 3.1 Auto-Detection
-- [ ] Language/framework detection (Python, JS, Rust, Go, etc)
-- [ ] Build tool detection (npm, cargo, poetry, make)
-- [ ] Test framework detection (pytest, jest, cargo test)
-- [ ] CI/CD integration (GitHub Actions, GitLab CI)
-- [ ] IDE integration (VS Code, Cursor, Zed)
+4. Orchestrator API updates (1h)
+   - HTTP endpoints accept workspace params
+   - Response aggregation
 
-**Deliverable:** Auto-configure 80% of common project types
+5. Tests (1h)
+   - Workspace isolation tests
+   - Cross-workspace query tests
+   - Graph creation tests
 
-### 🪄 3.2 Smart Defaults
-- [ ] Reasonable resource limits (don't eat all RAM)
-- [ ] Conservative API usage (avoid surprise bills)
-- [ ] Sensible break timers (25min default Pomodoro)
-- [ ] Privacy-first (no telemetry without opt-in)
-- [ ] Offline fallback mode (work without internet)
+**Deliverables**:
+- ✅ AGE client workspace-aware
+- ✅ All query modules updated
+- ✅ Graph per workspace working
+- ✅ 20+ tests passing
 
-**Deliverable:** Zero-config works for 90% of users
-
-### 🪄 3.3 Adaptive Configuration
-- [ ] Learn user patterns (common commands, energy cycles)
-- [ ] Suggest optimizations (you never use feature X, disable?)
-- [ ] Auto-tune performance (adjust based on machine specs)
-- [ ] Profile templates (web-dev, data-science, systems-prog)
-- [ ] Export/import settings (share with team)
-
-**Deliverable:** AI-powered config recommendations
-
----
-
-## ═══════════════════════════════════════════════════════════════
-## PHASE 4: BULLETPROOF RELIABILITY (Week 4)
-## ═══════════════════════════════════════════════════════════════
-
-**🎯 Goal:** Never lose work, always recoverable
-
-### 🛡️ 4.1 Data Persistence
-- [ ] Automatic ConPort backups (hourly incremental)
-- [ ] Session state snapshots (resume after crash)
-- [ ] Decision log redundancy (never lose decisions)
-- [ ] Versioned configuration (git-track `.dopemux/`)
-- [ ] Cloud backup option (S3, Dropbox, Google Drive)
-
-**Deliverable:** Zero data loss in 100+ crash scenarios
-
-### 🛡️ 4.2 Error Recovery
-- [ ] Graceful degradation (core features work if MCP down)
-- [ ] Self-healing services (auto-restart failed containers)
-- [ ] Corruption detection (verify DB integrity on startup)
-- [ ] Emergency recovery mode (minimal boot to fix problems)
-- [ ] Undo/redo for dangerous operations
-
-**Deliverable:** Auto-recovery from 95% of common failures
-
-### 🛡️ 4.3 Health Monitoring
-- [ ] Continuous health checks (all services every 30s)
-- [ ] Performance metrics (response times, memory usage)
-- [ ] Alerting (notify when things go wrong)
-- [ ] Log aggregation (centralized troubleshooting)
-- [ ] Diagnostic report (`dopemux doctor --report`)
-
-**Deliverable:** `dopemux status` shows real-time health
+**Phase 1 Total**: 10-14 hours
 
 ---
 
-## ═══════════════════════════════════════════════════════════════
-## PHASE 5: COMPREHENSIVE DOCUMENTATION (Week 5)
-## ═══════════════════════════════════════════════════════════════
+### Phase 2: Next 5 High-Priority Services (8-13 hours)
+**Goal**: Expand ecosystem coverage
+**Timeline**: Day 2-3
 
-**🎯 Goal:** Users can self-serve all common issues
+#### 2.1 task-orchestrator (3-4 hours)
+**Priority**: HIGH
+**Why**: Critical for task management across workspaces
 
-### 📚 5.1 Getting Started Guide
-- [ ] 5-minute quick start (minimal setup)
-- [ ] Video tutorials (install, first session, workflows)
-- [ ] Interactive CLI tutorial (`dopemux tutorial`)
-- [ ] Common use cases (web dev, data science, systems prog)
-- [ ] Migration guides (from other tools)
+**Tasks**:
+1. Add workspace field to Task model (1h)
+   ```python
+   class Task:
+       id: str
+       workspace: Optional[str]  # NEW
+       description: str
+       ...
+   ```
 
-**Deliverable:** 3 video tutorials + interactive onboarding
+2. Update task coordinator (1h)
+   - Accept workspace in task creation
+   - Filter tasks by workspace
+   - Workspace-aware task routing
 
-### 📚 5.2 Reference Documentation
-- [ ] All CLI commands with examples
-- [ ] Configuration file reference (every option explained)
-- [ ] API documentation (for integrations)
-- [ ] Architecture overview (how it fits together)
-- [ ] Troubleshooting matrix (symptom → solution)
+3. Database schema migration (0.5h)
+   - Add workspace column
+   - Migration script
 
-**Deliverable:** docs.dopemux.dev with full reference
+4. API updates (0.5h)
+   - HTTP endpoints accept workspace
+   - Response includes workspace
 
-### 📚 5.3 Community Resources
-- [ ] FAQ (100+ common questions)
-- [ ] Discord/Slack community setup
-- [ ] GitHub Discussions for support
-- [ ] Example configurations repo
-- [ ] Plugin/extension marketplace
+5. Tests (1h)
+   - Task creation with workspace
+   - Filtering by workspace
+   - Multi-workspace task lists
 
-**Deliverable:** Active community channels
+**Deliverables**:
+- ✅ Tasks tagged with workspace
+- ✅ Workspace filtering works
+- ✅ 10+ tests passing
 
----
+#### 2.2 session_intelligence (2-3 hours)
+**Priority**: HIGH
+**Why**: Track dev sessions per workspace
 
-## ═══════════════════════════════════════════════════════════════
-## PHASE 6: TESTING & VALIDATION (Week 6)
-## ═══════════════════════════════════════════════════════════════
+**Tasks**:
+1. Per-workspace session tracking (1h)
+   ```python
+   sessions_by_workspace = {
+       "/ws1": SessionState(...),
+       "/ws2": SessionState(...),
+   }
+   ```
 
-**🎯 Goal:** Verify it works on real machines, real projects
+2. Workspace switch detection (1h)
+   - Detect when workspace changes
+   - Save current session state
+   - Load new workspace session
 
-### 🧪 6.1 Automated Testing
-- [ ] Unit tests (core functionality)
-- [ ] Integration tests (services talking)
-- [ ] End-to-end tests (full user workflows)
-- [ ] Performance tests (handle 100+ workspaces)
-- [ ] Chaos testing (random failures, recovery)
+3. Session API updates (0.5h)
+   - Accept workspace parameter
+   - Return workspace-specific state
 
-**Deliverable:** >80% code coverage, <5% failure rate
+4. Tests (0.5h)
+   - Multi-workspace sessions
+   - Switch detection
+   - State persistence
 
-### 🧪 6.2 Platform Testing
-- [ ] macOS (Intel + Apple Silicon)
-- [ ] Ubuntu 22.04/24.04
-- [ ] Arch Linux
-- [ ] Fedora/CentOS
-- [ ] WSL2 (Windows Subsystem for Linux)
+**Deliverables**:
+- ✅ Sessions per workspace
+- ✅ Switch detection works
+- ✅ 8+ tests passing
 
-**Deliverable:** Certified on 5+ platforms
+#### 2.3 mcp-client (1-2 hours)
+**Priority**: MEDIUM
+**Why**: Enables other services to use multi-workspace
 
-### 🧪 6.3 Beta Testing Program
-- [ ] Recruit 50 beta testers (diverse backgrounds)
-- [ ] Onboarding survey (skill level, use cases)
-- [ ] Weekly feedback collection
-- [ ] Bug bounty program
-- [ ] Success metrics (install success, retention)
+**Tasks**:
+1. Forward workspace params (0.5h)
+   - Add workspace_paths to MCP calls
+   - Handle aggregated responses
 
-**Deliverable:** 50+ beta testers, >90% satisfaction
+2. Response parsing (0.5h)
+   - Parse multi-workspace results
+   - Extract per-workspace data
 
----
+3. Tests (0.5h)
+   - Parameter forwarding
+   - Response parsing
 
-## ═══════════════════════════════════════════════════════════════
-## PHASE 7: SECURITY & PRIVACY (Week 7)
-## ═══════════════════════════════════════════════════════════════
+**Deliverables**:
+- ✅ MCP calls include workspace
+- ✅ Response handling works
+- ✅ 5+ tests passing
 
-**🎯 Goal:** Protect user data and API keys
+#### 2.4 adhd_engine (1-2 hours)
+**Priority**: MEDIUM
+**Why**: Per-workspace energy tracking useful
 
-### 🔒 7.1 Secure Secrets Management
-- [ ] OS keychain integration (macOS Keychain, GNOME Keyring)
-- [ ] Encrypted config files (no plaintext API keys)
-- [ ] Environment variable support (12-factor app)
-- [ ] `.env` file validation (warn if committed to git)
-- [ ] Secret rotation helpers (`dopemux rotate-keys`)
+**Tasks**:
+1. Tag metrics with workspace (0.5h)
+   - Add workspace field to metrics
+   - Workspace in energy calculations
 
-**Deliverable:** Zero plaintext secrets in config
+2. Per-workspace state (optional) (0.5h)
+   - Track energy per workspace
+   - Workspace-aware recommendations
 
-### 🔒 7.2 Data Privacy
-- [ ] Local-first architecture (data stays on machine)
-- [ ] No telemetry by default (opt-in only)
-- [ ] GDPR compliance (for EU users)
-- [ ] Data export/deletion (user owns data)
-- [ ] Transparent API usage logging
+3. Tests (0.5h)
+   - Workspace tagging
+   - Multi-workspace metrics
 
-**Deliverable:** Privacy audit passing score
+**Deliverables**:
+- ✅ Metrics include workspace
+- ✅ 5+ tests passing
 
-### 🔒 7.3 Security Hardening
-- [ ] Dependency vulnerability scanning (weekly)
-- [ ] Docker container security (non-root, minimal images)
-- [ ] Network isolation (containers offline unless needed)
-- [ ] Input validation (prevent injection attacks)
-- [ ] Security advisories (notify critical issues)
+#### 2.5 intelligence (1-2 hours)
+**Priority**: LOW
+**Why**: Context forwarding to AI
 
-**Deliverable:** No critical vulnerabilities
+**Tasks**:
+1. Include workspace in prompts (0.5h)
+   - Add workspace to context
+   - Workspace-aware model selection
 
----
+2. API updates (0.5h)
+   - Accept workspace parameter
+   - Forward to downstream
 
-## ═══════════════════════════════════════════════════════════════
-## PHASE 8: PERFORMANCE & SCALE (Week 8)
-## ═══════════════════════════════════════════════════════════════
+3. Tests (0.5h)
+   - Workspace in context
+   - Prompt generation
 
-**🎯 Goal:** Fast and efficient even with 100+ workspaces
+**Deliverables**:
+- ✅ AI prompts include workspace
+- ✅ 5+ tests passing
 
-### ⚡ 8.1 Optimization
-- [ ] Startup time <5s (vs current ~30s)
-- [ ] Statusline refresh <100ms (ADHD-critical)
-- [ ] ConPort queries <2ms (✅ already achieved!)
-- [ ] Docker container boot <3s per service
-- [ ] Workspace switch <2s total
-
-**Deliverable:** All operations feel instant (<200ms)
-
-### ⚡ 8.2 Resource Efficiency
-- [ ] Lazy loading (start services only when needed)
-- [ ] Shared infrastructure (one Qdrant for all workspaces)
-- [ ] Memory pooling (reuse allocations)
-- [ ] Disk space optimization (dedupe embeddings)
-- [ ] CPU throttling (don't peg cores)
-
-**Deliverable:** <1GB base memory footprint
-
-### ⚡ 8.3 Scalability
-- [ ] Handle 1000+ workspaces (database sharding)
-- [ ] Support 10M+ decisions in ConPort
-- [ ] Index 100K+ files in dope-context
-- [ ] Graceful degradation under load
-- [ ] Horizontal scaling option (multi-machine)
-
-**Deliverable:** Scale to 1000 workspaces gracefully
-
----
-
-## ═══════════════════════════════════════════════════════════════
-## PHASE 9: ECOSYSTEM INTEGRATIONS (Week 9)
-## ═══════════════════════════════════════════════════════════════
-
-**🎯 Goal:** Play nice with tools devs already use
-
-### 🔌 9.1 Editor Integration
-- [ ] VS Code extension (sidebar, statusline)
-- [ ] Cursor integration (native support)
-- [ ] Zed editor plugin
-- [ ] JetBrains IDEs (IntelliJ, PyCharm, etc)
-- [ ] Vim/Neovim plugin
-
-**Deliverable:** Extensions for top 3 editors
-
-### 🔌 9.2 CI/CD Integration
-- [ ] GitHub Actions workflow templates
-- [ ] GitLab CI integration
-- [ ] Jenkins plugin
-- [ ] CircleCI orb
-- [ ] Pre-commit hooks (auto-log decisions)
-
-**Deliverable:** Ready-to-use CI templates
-
-### 🔌 9.3 Productivity Tools
-- [ ] Notion integration (sync decisions)
-- [ ] Obsidian plugin (knowledge graph sync)
-- [ ] Todoist/Things integration (task management)
-- [ ] Slack/Discord notifications
-- [ ] Zapier/IFTTT automation
-
-**Deliverable:** 5+ third-party integrations
+**Phase 2 Total**: 8-13 hours
 
 ---
 
-## ═══════════════════════════════════════════════════════════════
-## PHASE 10: LAUNCH READINESS (Week 10)
-## ═══════════════════════════════════════════════════════════════
+### Phase 3: Polish & Integration (6-8 hours)
+**Goal**: Production-grade quality
+**Timeline**: Day 3-4
 
-**🎯 Goal:** Go-to-market preparation
+#### 3.1 Cross-Service Integration Tests (2-3 hours)
+**Tasks**:
+1. End-to-end test scenarios (1h)
+   - Search in dope-context → route via orchestrator
+   - Task in task-orchestrator → log in activity-capture
+   - Query in conport_kg → analyze in serena
 
-### 🚀 10.1 Release Engineering
-- [ ] Versioning strategy (semantic versioning)
-- [ ] Release notes automation (CHANGELOG.md generation)
-- [ ] Update mechanism (`dopemux update`)
-- [ ] Backward compatibility (migration guides)
-- [ ] Deprecation policy (warn before breaking)
+2. Multi-service workflows (1h)
+   - Full context gathering workflow
+   - Multi-workspace search & analyze
+   - Session tracking across services
 
-**Deliverable:** Automated release pipeline
+3. Performance testing (1h)
+   - Load test with multiple workspaces
+   - Response time benchmarks
+   - Resource usage monitoring
 
-### 🚀 10.2 Marketing Assets
-- [ ] Landing page (dopemux.dev)
-- [ ] Demo video (3-minute overview)
-- [ ] Screenshots/GIFs (key features)
-- [ ] Blog post (launch announcement)
-- [ ] Social media kit (Twitter, Reddit, HN)
+**Deliverables**:
+- ✅ 10+ integration tests
+- ✅ Performance benchmarks documented
+- ✅ Known issues documented
 
-**Deliverable:** Full marketing package
+#### 3.2 Error Handling & Edge Cases (2-3 hours)
+**Tasks**:
+1. Invalid workspace paths (0.5h)
+   - Non-existent paths
+   - Permission errors
+   - Graceful fallbacks
 
-### 🚀 10.3 Support Infrastructure
-- [ ] Issue triage system (GitHub)
-- [ ] Support ticket system (for paying users)
-- [ ] Community moderators (Discord/Slack)
-- [ ] SLA for critical bugs (<24h response)
-- [ ] Office hours (live Q&A sessions)
+2. Empty results handling (0.5h)
+   - No results in some workspaces
+   - Partial failures
+   - Timeout handling
 
-**Deliverable:** 24/7 support capability
+3. Concurrent access (1h)
+   - Multiple clients same workspace
+   - Race conditions
+   - Lock management
 
----
+4. Recovery scenarios (0.5h)
+   - Service restarts
+   - State recovery
+   - Data consistency
 
-## ═══════════════════════════════════════════════════════════════
-## 🎯 SUCCESS METRICS
-## ═══════════════════════════════════════════════════════════════
+**Deliverables**:
+- ✅ Robust error handling
+- ✅ Edge cases covered
+- ✅ Recovery procedures documented
 
-### 📊 Installation Success
-- ✅ >95% first-install success rate
-- ✅ <5 minute average setup time
-- ✅ <1% users need manual troubleshooting
+#### 3.3 Documentation Completion (2 hours)
+**Tasks**:
+1. API documentation (0.5h)
+   - OpenAPI specs updated
+   - Parameter descriptions
+   - Response schemas
 
-### 📊 Reliability
-- ✅ >99.9% uptime (per user's local instance)
-- ✅ <0.1% data loss incidents
-- ✅ <5 minute recovery time from failures
+2. User guides (0.5h)
+   - Getting started
+   - Common workflows
+   - Troubleshooting
 
-### 📊 Performance
-- ✅ <5s startup time
-- ✅ <100ms statusline latency
-- ✅ <2s workspace switching
+3. Developer guides (0.5h)
+   - Adding multi-workspace to new services
+   - Best practices
+   - Common pitfalls
 
-### 📊 Adoption
-- ✅ 1000+ active users in month 1
-- ✅ 50% week-1 retention
-- ✅ 4.5+ stars on GitHub
+4. Operations runbook (0.5h)
+   - Deployment procedures
+   - Monitoring setup
+   - Incident response
 
----
+**Deliverables**:
+- ✅ Complete API docs
+- ✅ User-friendly guides
+- ✅ Ops runbook
 
-## ═══════════════════════════════════════════════════════════════
-## ⚠️ CRITICAL PATH ITEMS (Must Complete Before Launch)
-## ═══════════════════════════════════════════════════════════════
-
-### 🚨 P0: Blockers
-- [ ] **[P1.1]** Universal installer working on all platforms
-- [ ] **[P2.1]** Multi-workspace isolation (no cross-contamination)
-- [ ] **[P4.1]** Automatic backups (never lose ConPort data)
-- [ ] **[P7.1]** Secure API key storage (no plaintext keys)
-- [ ] **[P8.1]** Startup time <10s (acceptable ADHD threshold)
-
-### 🔴 P1: Critical
-- [ ] **[P1.3]** First-run wizard (smooth onboarding)
-- [ ] **[P3.1]** Auto-detect common frameworks
-- [ ] **[P4.3]** Health monitoring dashboard
-- [ ] **[P5.1]** Quick start guide + video
-- [ ] **[P6.2]** Testing on all major platforms
-
-### 🟡 P2: Important
-- [ ] **[P2.2]** Seamless context switching
-- [ ] **[P3.3]** Adaptive configuration learning
-- [ ] **[P5.2]** Complete CLI reference
-- [ ] **[P8.2]** Resource efficiency optimizations
-- [ ] **[P9.1]** VS Code + Cursor integration
+**Phase 3 Total**: 6-8 hours
 
 ---
 
-## ═══════════════════════════════════════════════════════════════
-## 💡 ADHD-FRIENDLY EXECUTION PLAN
-## ═══════════════════════════════════════════════════════════════
+### Phase 4: Production Infrastructure (4-6 hours)
+**Goal**: Production deployment ready
+**Timeline**: Day 4-5
 
-### 🧠 Weekly Sprints (10 weeks total)
-Each sprint:
-- **Monday:** Planning + task breakdown
-- **Tue-Thu:** Implementation (3× 4-hour deep work blocks)
-- **Friday:** Testing + documentation
-- **Weekend:** Buffer for overflow or rest
+#### 4.1 Docker Infrastructure (2-3 hours)
+**Tasks**:
+1. Docker compose updates (1h)
+   - Environment variable templates
+   - Multi-workspace volume mounts
+   - Service configuration
 
-### 🎯 Daily Structure (ADHD-optimized)
-- **Morning (high energy):** Hardest P0 items
-- **Midday (medium):** Testing, integration work
-- **Afternoon (lower):** Documentation, code review
-- **Pomodoro breaks:** 25min work, 5min break
+2. Container optimization (0.5h)
+   - Multi-stage builds
+   - Layer caching
+   - Size optimization
 
-### 🛡️ Hyperfocus Protection
-- Block 4-hour chunks for complex features
-- No meetings during deep work blocks
-- StatusLine reminds you to take breaks
-- ConPort auto-saves progress every 15min
+3. Health checks (0.5h)
+   - Per-service health endpoints
+   - Workspace validation
+   - Dependency checks
 
-### 📊 Progress Tracking
-- GitHub Projects board (Kanban view)
-- Daily standup notes (what done, what next, blockers)
-- Weekly demo (show working features)
-- Public roadmap (transparency for beta users)
+**Files to update**:
+- `docker-compose.yml`
+- `docker-compose.prod.yml`
+- Service Dockerfiles
+
+**Deliverables**:
+- ✅ Docker compose with multi-workspace
+- ✅ Health checks implemented
+- ✅ Production-ready containers
+
+#### 4.2 Monitoring & Observability (1-2 hours)
+**Tasks**:
+1. Metrics (0.5h)
+   - Per-workspace metrics
+   - Prometheus exporters
+   - Grafana dashboards
+
+2. Logging (0.5h)
+   - Workspace in log context
+   - Structured logging
+   - Log aggregation
+
+3. Tracing (0.5h)
+   - Distributed tracing
+   - Workspace in trace context
+   - Performance insights
+
+**Deliverables**:
+- ✅ Metrics dashboard
+- ✅ Centralized logging
+- ✅ Trace visualization
+
+#### 4.3 Deployment Automation (1 hour)
+**Tasks**:
+1. CI/CD pipeline (0.5h)
+   - Automated testing
+   - Docker builds
+   - Deployment scripts
+
+2. Environment management (0.5h)
+   - Staging environment
+   - Production environment
+   - Configuration management
+
+**Deliverables**:
+- ✅ Automated deployments
+- ✅ Environment configs
+
+**Phase 4 Total**: 4-6 hours
 
 ---
 
-## ═══════════════════════════════════════════════════════════════
-## 🎉 LAUNCH TIMELINE
-## ═══════════════════════════════════════════════════════════════
+## 📅 Detailed Timeline
 
-| Week | Focus | Deliverable |
-|------|-------|-------------|
-| 1-2  | Foundation | Installation + Workspaces |
-| 3-4  | Reliability | Zero-config + Error Handling |
-| 5-6  | Polish | Docs + Testing |
-| 7-8  | Security | Hardening + Performance |
-| 9    | Integrations | Ecosystem |
-| 10   | Pre-launch | Marketing + Support |
+### Week 1: Core Completion
 
-### 🚀 LAUNCH DATE: End of Week 10 (Beta Release)
-- Announce on GitHub, Reddit, HN, Twitter
-- Limited beta (500 users)
-- Collect feedback for 2 weeks
-- Public v1.0 release (Week 12)
+**Day 1 (8 hours)**
+- Morning (4h): Serena MCP integration
+- Afternoon (4h): ConPort KG AGE integration start
 
----
+**Day 2 (8 hours)**
+- Morning (2h): ConPort KG completion
+- Afternoon (6h): task-orchestrator + session_intelligence
 
-## ═══════════════════════════════════════════════════════════════
-## 📋 NEXT ACTIONS
-## ═══════════════════════════════════════════════════════════════
+**Day 3 (8 hours)**
+- Morning (3h): mcp-client + adhd_engine + intelligence
+- Afternoon (5h): Integration tests start
 
-### This Week (Week 1):
-1. **Create universal installer script** (`install.sh`)
-2. **Test on 3 platforms** (macOS, Ubuntu, WSL2)
-3. **Draft Homebrew formula** (submit to homebrew-core)
-4. **Build PyPI package** (setup.py + publish workflow)
-5. **Document API key setup** (step-by-step guide)
+**Day 4 (8 hours)**
+- Morning (4h): Integration tests + error handling
+- Afternoon (4h): Documentation completion
 
-### Next Week (Week 2):
-1. **Implement workspace isolation** (per-workspace containers)
-2. **Build workspace switcher** (`dopemux switch`)
-3. **Add resource limits** (memory/CPU per workspace)
-4. **Create workspace dashboard** (show all active workspaces)
-5. **Test with 50+ workspaces** (stress testing)
+**Day 5 (8 hours)**
+- Morning (4h): Docker infrastructure
+- Afternoon (4h): Monitoring + deployment automation
+
+**Total**: 40 hours (5 days)
 
 ---
 
-**Made with ❤️ and ☕ by developers with ADHD, for developers with ADHD**
+## 🎯 Success Criteria
+
+### Per Service
+- [ ] Multi-workspace parameters in all public functions
+- [ ] Integration tests passing
+- [ ] Documentation updated
+- [ ] No breaking changes
+- [ ] Production deployment tested
+
+### Ecosystem
+- [ ] All 10 high-priority services complete
+- [ ] Cross-service integration working
+- [ ] Docker deployment ready
+- [ ] Monitoring in place
+- [ ] Documentation comprehensive
+
+---
+
+## 🚨 Risk Assessment
+
+### High Risk
+1. **AGE integration complexity** (conport_kg)
+   - Mitigation: Start early, allocate extra time
+   - Fallback: Simplify to single-graph with workspace field
+
+2. **LSP client per workspace** (serena)
+   - Mitigation: Use connection pooling
+   - Fallback: Single LSP with workspace context
+
+### Medium Risk
+3. **Performance with many workspaces**
+   - Mitigation: Load testing in phase 3
+   - Fallback: Add workspace limits
+
+4. **Docker volume complexity**
+   - Mitigation: Simple bind mounts first
+   - Fallback: Named volumes
+
+### Low Risk
+5. **Documentation completeness**
+   - Mitigation: Progressive documentation
+   - Fallback: Minimal viable docs first
+
+---
+
+## 💰 Resource Requirements
+
+### Personnel
+- **1 Senior Developer**: Full implementation
+- **0.5 QA Engineer**: Testing support
+- **0.25 DevOps**: Infrastructure setup
+
+### Infrastructure
+- **Staging Environment**: For integration testing
+- **CI/CD Pipeline**: Automated testing & deployment
+- **Monitoring Stack**: Prometheus + Grafana
+
+### Time
+- **Development**: 28-41 hours
+- **Testing**: 8-12 hours (included above)
+- **Documentation**: 4-6 hours (included above)
+- **Total**: ~5 days full-time
+
+---
+
+## 📊 Progress Tracking
+
+### Phase Completion
+- [ ] Phase 1: Complete Started Services (10-14h)
+- [ ] Phase 2: Next 5 Services (8-13h)
+- [ ] Phase 3: Polish & Integration (6-8h)
+- [ ] Phase 4: Production Infrastructure (4-6h)
+
+### Service Completion
+- [x] dope-context (100%)
+- [x] orchestrator (100%)
+- [x] activity-capture (100%)
+- [ ] serena (70% → 100%)
+- [ ] conport_kg (60% → 100%)
+- [ ] task-orchestrator (0% → 100%)
+- [ ] session_intelligence (0% → 100%)
+- [ ] mcp-client (0% → 100%)
+- [ ] adhd_engine (0% → 100%)
+- [ ] intelligence (0% → 100%)
+
+### Overall Progress
+- **Current**: 30% (3/10 services + infrastructure)
+- **After Phase 1**: 50%
+- **After Phase 2**: 80%
+- **After Phase 3**: 95%
+- **After Phase 4**: 100%
+
+---
+
+## 🔄 Iteration Strategy
+
+### Sprint 1 (Days 1-2): High-Value Services
+- Complete serena & conport_kg
+- These unlock major functionality
+
+### Sprint 2 (Day 3): Rapid Implementation
+- Implement 5 simpler services
+- Use proven patterns
+- Fast iteration
+
+### Sprint 3 (Day 4): Quality
+- Integration testing
+- Error handling
+- Polish
+
+### Sprint 4 (Day 5): Production
+- Infrastructure
+- Deployment
+- Go-live
+
+---
+
+## 📈 Success Metrics
+
+### Technical
+- **Test Coverage**: >90% for all new code
+- **Performance**: <100ms overhead per workspace
+- **Reliability**: 99.9% uptime in production
+- **Documentation**: 100% of APIs documented
+
+### Business
+- **Time to Market**: 5 days to full deployment
+- **User Adoption**: Multi-workspace used within 1 week
+- **Developer Velocity**: 30-90min to add to new services
+- **Cost**: No infrastructure cost increase
+
+---
+
+## 🎉 Definition of Done
+
+### Per Service
+- ✅ Multi-workspace support fully integrated
+- ✅ All tests passing (unit + integration)
+- ✅ Documentation complete
+- ✅ Production deployed and verified
+- ✅ Monitoring in place
+
+### Overall System
+- ✅ 10 services production-ready
+- ✅ Cross-service workflows tested
+- ✅ Docker deployment automated
+- ✅ Monitoring dashboards live
+- ✅ User documentation published
+- ✅ Zero breaking changes
+- ✅ Performance validated
+
+---
+
+## 🚀 Go-Live Checklist
+
+### Pre-Launch (Day 5 Morning)
+- [ ] All services deployed to staging
+- [ ] Integration tests passing
+- [ ] Performance benchmarks met
+- [ ] Monitoring operational
+- [ ] Documentation published
+- [ ] Rollback plan ready
+
+### Launch (Day 5 Afternoon)
+- [ ] Deploy to production
+- [ ] Smoke tests passing
+- [ ] Monitoring showing healthy
+- [ ] User announcement sent
+- [ ] Support team briefed
+
+### Post-Launch (Week 2)
+- [ ] Usage monitoring
+- [ ] User feedback collection
+- [ ] Performance tuning
+- [ ] Bug fixes as needed
+- [ ] Feature iteration
+
+---
+
+## 📞 Support & Escalation
+
+### During Development
+- **Blocker**: Escalate immediately
+- **Question**: Check docs first, then ask
+- **Bug**: Create issue, continue with workaround
+
+### During Testing
+- **Test Failure**: Debug, fix, re-test
+- **Performance Issue**: Profile, optimize
+- **Integration Issue**: Check interfaces
+
+### During Deployment
+- **Deployment Failure**: Rollback, investigate
+- **Runtime Error**: Check logs, hotfix if critical
+- **Performance Degradation**: Monitor, optimize
+
+---
+
+## 💡 Optimization Opportunities
+
+### After Initial Launch
+1. **Parallel Workspace Querying**
+   - Currently sequential
+   - Could parallelize for 3-5x speedup
+
+2. **Workspace Caching**
+   - Cache recent workspace results
+   - Reduce duplicate queries
+
+3. **Connection Pooling**
+   - Reuse LSP connections
+   - Reduce startup overhead
+
+4. **Smart Workspace Selection**
+   - Auto-detect relevant workspaces
+   - Reduce user input burden
+
+---
+
+## 📚 Documentation Deliverables
+
+1. **User Documentation**
+   - Getting started guide
+   - Common workflows
+   - FAQ
+   - Troubleshooting
+
+2. **Developer Documentation**
+   - API reference
+   - Integration guide
+   - Best practices
+   - Code examples
+
+3. **Operations Documentation**
+   - Deployment guide
+   - Monitoring setup
+   - Incident response
+   - Backup & recovery
+
+4. **Architecture Documentation**
+   - System design
+   - Data flow
+   - Service interactions
+   - Decision records
+
+---
+
+## 🎯 Next Actions
+
+### Immediate (Today)
+1. Review and approve this plan
+2. Set up project tracking
+3. Allocate resources
+4. Begin Phase 1
+
+### This Week
+1. Complete Phase 1 & 2
+2. Begin Phase 3
+3. Prepare staging environment
+
+### Next Week
+1. Complete Phase 3 & 4
+2. Deploy to production
+3. Monitor and iterate
+
+---
+
+**Status**: READY TO EXECUTE
+**Estimated Completion**: 5 days (40 hours)
+**Confidence Level**: HIGH (85%)
+**Risk Level**: MEDIUM (managed with mitigations)
+
+**Let's ship it!** 🚀
+
+---
+
+**Created**: 2025-11-13
+**Author**: GitHub Copilot CLI
+**Next Review**: Daily standup

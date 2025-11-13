@@ -358,7 +358,7 @@ localhost:3003  - Zen MCP
 localhost:3006  - Serena MCP
 localhost:3012  - Desktop-Commander MCP
 localhost:3014  - Task Orchestrator
-localhost:3016  - Integration Bridge
+localhost:3016  - DopeconBridge
 localhost:5455  - PostgreSQL AGE
 localhost:6333  - Qdrant
 localhost:6379  - Redis

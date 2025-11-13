@@ -149,7 +149,7 @@ That's **exceptional productivity** for one day. The remaining 30% of IP-004 can
    - Test quality improvement
    - Celebrate 2nd completion!
 
-2. **Option B**: Start IP-002 (Integration Bridge)
+2. **Option B**: Start IP-002 (DopeconBridge)
    - High strategic value
    - Enables cross-service coordination
    - 9-day plan ready to execute

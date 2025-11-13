@@ -89,7 +89,7 @@ Completed comprehensive systematic audit covering **ALL major phases** of your o
 | 4 | ADHD Engine | 7/10 | 2 medium | Analysis | Localhost-only |
 | 5 | Task-Orch | Active | Reversed | ✅ UN-DEPRECATED | Week 7 integration |
 | 6 | ML Risk | New | N/A | ✅ EXTRACTED | Standalone service |
-| 7 | Integration Bridge | 7/10 | Not wired | Analysis | Exists, unused |
+| 7 | DopeconBridge | 7/10 | Not wired | Analysis | Exists, unused |
 | 8 | Documentation | 6/10 | ADR gap | ✅ FIXED | 5 ADRs created |
 | 9 | Testing | 5/10 | Import issues | Assessment | 785 tests blocked |
 | 10 | Architecture | 6/10 | Integration gap | Assessment | Week 7 required |
@@ -113,7 +113,7 @@ Completed comprehensive systematic audit covering **ALL major phases** of your o
 4. ConPort UI URL encoding - ✅ FIXED
 5. ADHD Engine service boundary violations - Week 7 fix
 6. ADHD Engine missing authentication - Localhost-only OR add auth
-7. ConPort orchestrator Integration Bridge TODOs - Week 7 fix
+7. ConPort orchestrator DopeconBridge TODOs - Week 7 fix
 8. Testing import dependencies - Fix required (2-4h)
 9. Documentation coverage gaps - Partially addressed
 
@@ -125,7 +125,7 @@ Completed comprehensive systematic audit covering **ALL major phases** of your o
 
 10. Serena v2 hardcoded password - 15min optional
 11. ConPort N+1 query - Documented for Phase 2
-12. Integration Bridge unused - Week 7 integration
+12. DopeconBridge unused - Week 7 integration
 13. Documentation 22 TODOs - Long-term cleanup
 
 **Status**: Non-blocking
@@ -189,7 +189,7 @@ Completed comprehensive systematic audit covering **ALL major phases** of your o
 - Coordination layers exist ✅
 - But services don't use them ❌
 
-**Found in**: ConPort orchestrator, ADHD Engine, Integration Bridge
+**Found in**: ConPort orchestrator, ADHD Engine, DopeconBridge
 
 ---
 
@@ -211,7 +211,7 @@ Completed comprehensive systematic audit covering **ALL major phases** of your o
 
 7. **Task-Orchestrator** - Week 7 integration (13h)
 8. **ML Risk Assessment** - Week 7 API layer (4h)
-9. **Integration Bridge** - Week 7 service wiring (12h)
+9. **DopeconBridge** - Week 7 service wiring (12h)
 
 ---
 
@@ -327,7 +327,7 @@ Completed comprehensive systematic audit covering **ALL major phases** of your o
 
 7. **Task-Orchestrator Integration** (13h)
 8. **ML Risk Assessment API** (4h)
-9. **Integration Bridge Wiring** (12h)
+9. **DopeconBridge Wiring** (12h)
 10. **ADHD Engine Service Boundaries** (3h)
 
 **Total Week 7**: ~32 hours
@@ -345,7 +345,7 @@ Completed comprehensive systematic audit covering **ALL major phases** of your o
 - ✅ Comprehensive ADHD features across all services
 
 **Areas for Improvement**:
-- ⚠️ Integration Bridge disconnected from services
+- ⚠️ DopeconBridge disconnected from services
 - ⚠️ Service boundary violations (ADHD Engine)
 - ⚠️ Testing blocked by import issues
 - ⚠️ Documentation coverage gaps (57%)
