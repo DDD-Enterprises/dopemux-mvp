@@ -40,7 +40,7 @@ class ShieldConPortClient:
 
         Args:
             workspace_id: ConPort workspace identifier
-            bridge_url: Integration Bridge URL
+            bridge_url: DopeconBridge URL
         """
         self.workspace_id = workspace_id
         self.bridge_url = bridge_url
