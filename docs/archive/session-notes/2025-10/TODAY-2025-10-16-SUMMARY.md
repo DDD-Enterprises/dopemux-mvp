@@ -46,7 +46,7 @@ next_review: '2026-01-15'
 **Total Roadmap**: 37-40 days of integration work fully documented
 
 1. **IP-001**: ADHD Engine Integration (7 days) ✅ **EXECUTED TODAY!**
-2. **IP-002**: Integration Bridge Completion (9 days) - Ready
+2. **IP-002**: DopeconBridge Completion (9 days) - Ready
 3. **IP-003**: Infrastructure Consolidation (6-9 days) - Ready
 4. **IP-004**: ConPort Search Delegation (1 day) - 70% complete today
 5. **IP-005**: Orchestrator TUI (14 days) - Ready
@@ -204,7 +204,7 @@ next_review: '2026-01-15'
 - **Impact**: Immediate quality improvement
 - **Difficulty**: Medium
 
-### Option 2: Start IP-002 (Integration Bridge)
+### Option 2: Start IP-002 (DopeconBridge)
 - Enable cross-service coordination
 - Activate event bus
 - **Impact**: High strategic value
@@ -253,7 +253,7 @@ next_review: '2026-01-15'
 Integration Roadmap Progress:
 
 IP-001: ADHD Engine        [████████████████████] 100% ✅ DONE
-IP-002: Integration Bridge [░░░░░░░░░░░░░░░░░░░░]   0%
+IP-002: DopeconBridge [░░░░░░░░░░░░░░░░░░░░]   0%
 IP-003: Infrastructure     [░░░░░░░░░░░░░░░░░░░░]   0%
 IP-004: Search Delegation  [██████████████░░░░░░]  70% 🟡
 IP-005: Orchestrator TUI   [░░░░░░░░░░░░░░░░░░░░]   0%

@@ -313,7 +313,7 @@ EOF
 
 **Review Integration Patterns**:
 - ConPort ↔ ADHD Engine (direct SQLite - already flagged)
-- ConPort ↔ Integration Bridge (TODOs - already flagged)
+- ConPort ↔ DopeconBridge (TODOs - already flagged)
 - Serena ↔ ConPort (integration status)
 - Dope-Context ↔ Services (search integration)
 - Event Bus usage across all services
@@ -423,7 +423,7 @@ except Exception as e:
 4. **Document Gaps**: Where does reality differ from diagrams?
 
 **Examples**:
-- Two-plane diagram shows Integration Bridge coordination
+- Two-plane diagram shows DopeconBridge coordination
 - Code shows direct database access (ADHD Engine)
 - **Action**: Update diagram OR fix code
 
@@ -470,7 +470,7 @@ except Exception as e:
 **For services with state**:
 - ADHD Engine (energy states, attention states)
 - Task-Orchestrator (task status transitions)
-- Integration Bridge (connection states)
+- DopeconBridge (connection states)
 
 **Validate**:
 - All state transitions are valid
@@ -600,7 +600,7 @@ curl -X POST localhost:8095/assess-task -d '{"user_id": "test"}'
 **Example Claims**:
 - "ConPort is the single source of truth for decisions"
   - **Verify**: Does ADHD Engine write to ConPort DB directly? (YES - violation)
-- "Integration Bridge handles all cross-plane communication"
+- "DopeconBridge handles all cross-plane communication"
   - **Verify**: Do services use it? (NO - they bypass it)
 - "ADHD Engine provides energy tracking"
   - **Verify**: Does it? (YES - implementation exists)
