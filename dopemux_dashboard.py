@@ -22,6 +22,7 @@ import sys
 import subprocess
 import json
 import logging
+import os
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, Optional, List, Tuple
@@ -60,6 +61,11 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 # Configuration
 # =============================================================================
+
+# Workspace configuration
+DEFAULT_WORKSPACE = os.getenv("DEFAULT_WORKSPACE_PATH", os.getcwd())
+WORKSPACE_PATHS = os.getenv("WORKSPACE_PATHS", "").split(",") if os.getenv("WORKSPACE_PATHS") else []
+ALL_WORKSPACES = [DEFAULT_WORKSPACE] + [w.strip() for w in WORKSPACE_PATHS if w.strip()]
 
 ENDPOINTS = {
     "adhd_state": "http://localhost:8000/api/v1/state",  # ADHD Engine (REAL)

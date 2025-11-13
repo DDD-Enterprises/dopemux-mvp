@@ -2,17 +2,67 @@
 
 set -e
 
+# Usage: ./start-all-mcp-servers.sh [--workspace /path/to/workspace]
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Parse arguments
+WORKSPACE_PATH=""
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --workspace|-w)
+            WORKSPACE_PATH="$2"
+            shift 2
+            ;;
+        --help|-h)
+            cat << 'HELP'
+Usage: ./start-all-mcp-servers.sh [OPTIONS]
+
+OPTIONS:
+    --workspace, -w PATH    Set workspace path for MCP servers
+    --help, -h             Show this help message
+
+EXAMPLES:
+    ./start-all-mcp-servers.sh                    # Use current workspace
+    ./start-all-mcp-servers.sh -w ~/code/project  # Specific workspace
+
+ENVIRONMENT VARIABLES:
+    DEFAULT_WORKSPACE_PATH    Fallback workspace if not specified
+    WORKSPACE_PATHS          Additional workspaces to monitor
+HELP
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
+# Determine workspace
+if [ -n "$WORKSPACE_PATH" ]; then
+    export DOPEMUX_WORKSPACE_ID="$WORKSPACE_PATH"
+    echo "📁 Using explicit workspace: $WORKSPACE_PATH"
+elif [ -n "$DEFAULT_WORKSPACE_PATH" ]; then
+    export DOPEMUX_WORKSPACE_ID="$DEFAULT_WORKSPACE_PATH"
+    echo "📁 Using default workspace: $DEFAULT_WORKSPACE_PATH"
+else
+    export DOPEMUX_WORKSPACE_ID="$(pwd)"
+    echo "📁 Using current directory as workspace: $(pwd)"
+fi
+
+# Load workspace environment
 WORKSPACE_ENV_PATH="$(python3 "$PROJECT_ROOT/scripts/workspace_env_path.py" 2>/dev/null || true)"
 if [ -n "$WORKSPACE_ENV_PATH" ] && [ -f "$WORKSPACE_ENV_PATH" ]; then
   echo "📦 Loading workspace environment from $WORKSPACE_ENV_PATH"
   # shellcheck source=/dev/null
   source "$WORKSPACE_ENV_PATH"
 else
-  echo "⚠️  Workspace env file not found; defaulting to current directory"
+  echo "⚠️  Workspace env file not found; using current settings"
 fi
 
 echo "🚀 Starting all Dopemux MCP servers..."
