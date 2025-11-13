@@ -135,3 +135,4 @@ class EngineState:
     conport_connected: bool = False
     last_health_check: Optional[datetime] = None
     uptime_seconds: int = 0
+    workspace_path: Optional[str] = None  # Track workspace context
