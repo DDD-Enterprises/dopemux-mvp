@@ -39,10 +39,10 @@ if [ "$CONFIRM" != "yes" ]; then
 fi
 
 echo ""
-echo "[Step 1/5] Stopping Integration Bridge..."
-docker-compose -f docker/conport-kg/docker-compose.yml stop integration-bridge 2>/dev/null || \
-  docker stop conport-kg-integration-bridge 2>/dev/null || \
-  echo "  Integration Bridge not running"
+echo "[Step 1/5] Stopping DopeconBridge..."
+docker-compose -f docker/conport-kg/docker-compose.yml stop dopecon-bridge 2>/dev/null || \
+  docker stop conport-kg-dopecon-bridge 2>/dev/null || \
+  echo "  DopeconBridge not running"
 
 echo ""
 echo "[Step 2/5] Dropping existing database..."
@@ -73,9 +73,9 @@ DECISION_COUNT=$(docker exec conport-kg-postgres-age psql -U dopemux_age -d dope
 echo "  ✅ Decisions restored: $DECISION_COUNT"
 
 echo ""
-echo "[Step 5/5] Restarting Integration Bridge..."
-docker-compose -f docker/conport-kg/docker-compose.yml start integration-bridge 2>/dev/null || \
-  docker start conport-kg-integration-bridge 2>/dev/null || \
+echo "[Step 5/5] Restarting DopeconBridge..."
+docker-compose -f docker/conport-kg/docker-compose.yml start dopecon-bridge 2>/dev/null || \
+  docker start conport-kg-dopecon-bridge 2>/dev/null || \
   echo "  Start manually with: docker-compose up -d"
 
 echo ""

@@ -2,16 +2,28 @@
 """
 Enable Autonomous Indexing - ADHD Zero-Touch Setup
 
-Starts autonomous file monitoring and indexing for code and docs.
-Once enabled, all file changes automatically update the search index.
+Bootstrap script that sets up autonomous file monitoring and indexing for code and docs.
+This script starts the controllers but exits immediately after setup.
+
+For long-running background monitoring, use autonomous-indexing-daemon.py instead.
 
 Usage:
-    python scripts/enable-autonomous-indexing.py
+    python scripts/enable-autonomous-indexing.py \
+        --workspace /path/to/project \
+        --workspace /path/to/worktree-b
+
+    # or via environment variable
+    DOPE_CONTEXT_WORKSPACES="/path/a,/path/b" python scripts/enable-autonomous-indexing.py
+
+Note: This is a setup/bootstrap script. Use autonomous-indexing-daemon.py for persistent monitoring.
 """
 
+import argparse
 import asyncio
+import os
 import sys
 from pathlib import Path
+from typing import List
 
 # Add dope-context to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "services" / "dope-context" / "src"))
@@ -27,21 +39,19 @@ from enrichment.docs_chunker import DocsChunker
 from search.docs_search import DocsVectorSearch
 
 
-async def enable_autonomous_indexing():
-    """Enable autonomous indexing for code and docs."""
+async def enable_autonomous_indexing_for_workspace(workspace_path: Path) -> None:
+    """Enable autonomous indexing for a specific workspace."""
+    workspace_path = workspace_path.resolve()
 
-    # Detect workspace
-    workspace_path = Path.cwd().resolve()
+    print("=" * 70)
     print(f"📂 Workspace: {workspace_path}")
-    print()
 
-    # Configuration
     code_config = AutonomousConfig(
         enabled=True,
         debounce_seconds=5.0,
         periodic_interval=600,  # 10 minutes
         include_patterns=["*.py", "*.js", "*.ts", "*.tsx"],
-        exclude_patterns=["*test*", "*__pycache__*", "*node_modules*", "*.git*"]
+        exclude_patterns=["*test*", "*__pycache__*", "*node_modules*", "*.git*"],
     )
 
     docs_config = AutonomousConfig(
@@ -49,10 +59,9 @@ async def enable_autonomous_indexing():
         debounce_seconds=5.0,
         periodic_interval=600,
         include_patterns=["*.md", "*.pdf", "*.html", "*.txt"],
-        exclude_patterns=["*node_modules*", "*.git*", "*__pycache__*"]
+        exclude_patterns=["*node_modules*", "*.git*", "*__pycache__*"],
     )
 
-    # Get collection names
     detector = WorkspaceDetector()
     workspace_hash = detector.get_workspace_hash(workspace_path)
     code_collection = f"dopemux_code_{workspace_hash}"
@@ -70,24 +79,21 @@ async def enable_autonomous_indexing():
 
         print("🔧 Step 1/2: Enabling autonomous CODE indexing...")
 
-        # Create code indexing pipeline
         code_vector_search = MultiVectorSearch(
             collection_name=code_collection,
             url="localhost",
-            port=6333
+            port=6333,
         )
 
         code_chunker = CodeChunker()
 
         context_generator = None
         if os.getenv("OPENAI_API_KEY"):
-            context_generator = OpenAIContextGenerator(
-                api_key=os.getenv("OPENAI_API_KEY")
-            )
+            context_generator = OpenAIContextGenerator(api_key=os.getenv("OPENAI_API_KEY"))
 
         embedder = VoyageEmbedder(
             api_key=os.getenv("VOYAGE_API_KEY"),
-            default_model="voyage-code-3"
+            default_model="voyage-code-3",
         )
 
         from pipeline.indexing_pipeline import IndexingConfig
@@ -96,7 +102,7 @@ async def enable_autonomous_indexing():
             workspace_path=workspace_path,
             include_patterns=code_config.include_patterns,
             exclude_patterns=code_config.exclude_patterns,
-            workspace_id=str(workspace_path)
+            workspace_id=str(workspace_path),
         )
 
         code_pipeline = IndexingPipeline(
@@ -104,29 +110,23 @@ async def enable_autonomous_indexing():
             context_generator=context_generator,
             embedder=embedder,
             vector_search=code_vector_search,
-            config=indexing_config
+            config=indexing_config,
         )
 
-        # Create callback for file changes
         async def code_index_callback(file_path: Path, changed_files=None):
-            """Callback to reindex changed files."""
             try:
                 print(f"📝 Reindexing: {file_path}")
-                # Reindex just this file
                 await code_pipeline.index_file(file_path)
                 return True
-            except Exception as e:
-                print(f"❌ Reindex failed: {e}")
+            except Exception as exc:  # pragma: no cover - best effort logging
+                print(f"❌ Reindex failed: {exc}")
                 return False
 
-        # Create autonomous controller
         code_controller = AutonomousController(
             workspace_path=workspace_path,
             config=code_config,
-            index_callback=code_index_callback
+            index_callback=code_index_callback,
         )
-
-        # Start autonomous monitoring
         await code_controller.start()
 
         print("✅ Autonomous CODE indexing enabled!")
@@ -142,41 +142,34 @@ async def enable_autonomous_indexing():
 
         print("🔧 Step 2/2: Enabling autonomous DOCS indexing...")
 
-        # Create docs indexing pipeline
         docs_vector_search = DocsVectorSearch(
             collection_name=docs_collection,
             url="localhost",
-            port=6333
+            port=6333,
         )
 
         docs_chunker = DocsChunker()
 
-        # Reuse context generator and embedder (or create new ones)
         docs_embedder = VoyageEmbedder(
             api_key=os.getenv("VOYAGE_API_KEY"),
-            default_model="voyage-context-3"  # Different model for docs
+            default_model="voyage-context-3",
         )
 
-        # Create callback for doc changes
         async def docs_index_callback(file_path: Path, changed_files=None):
-            """Callback to reindex changed docs."""
             try:
                 print(f"📄 Reindexing doc: {file_path}")
-                # Reindex this document
                 await docs_chunker.chunk_and_index(file_path, docs_vector_search, docs_embedder)
                 return True
-            except Exception as e:
-                print(f"❌ Doc reindex failed: {e}")
+            except Exception as exc:  # pragma: no cover - best effort logging
+                print(f"❌ Doc reindex failed: {exc}")
                 return False
 
-        # Create autonomous controller for docs
         docs_controller = AutonomousController(
             workspace_path=workspace_path,
             config=docs_config,
-            index_callback=docs_index_callback
+            index_callback=docs_index_callback,
+            registry_key=f"{workspace_path}:docs",
         )
-
-        # Start autonomous monitoring
         await docs_controller.start()
 
         print("✅ Autonomous DOCS indexing enabled!")
@@ -186,71 +179,49 @@ async def enable_autonomous_indexing():
         print(f"   Periodic sync: {docs_config.periodic_interval}s")
         print()
 
-        # ========================================
-        # SUMMARY & VERIFICATION
-        # ========================================
-
-        print("=" * 60)
         print("🎉 AUTONOMOUS INDEXING ENABLED!")
-        print("=" * 60)
-        print()
-        print("✨ Benefits:")
         print("   • Files auto-reindex 5s after save")
-        print("   • Periodic sync every 10 minutes catches missed changes")
+        print("   • Periodic sync every 10 minutes")
         print("   • Zero mental overhead - search always current")
-        print("   • Interrupt-safe - background operation")
-        print()
-        print("🧠 ADHD Impact:")
-        print("   • 100% cognitive load reduction for indexing")
-        print("   • No 'did I reindex?' anxiety")
-        print("   • Always-current search results")
-        print()
-        print("🔍 Try it:")
-        print("   1. Edit any .py file and save")
-        print("   2. Wait 5 seconds")
-        print("   3. Search will include your changes!")
-        print()
-        print("⚙️  Controllers running in background...")
-        print("   Press Ctrl+C to stop (not recommended - keep running!)")
         print()
 
-        # Keep running indefinitely
-        try:
-            while True:
-                await asyncio.sleep(60)
-                # Optional: Print periodic status
-                code_status = code_controller.get_status()
-                docs_status = docs_controller.get_status()
+    except Exception as exc:  # pragma: no cover - best effort logging
+        print(f"❌ Failed to enable autonomous indexing: {exc}")
 
-                if code_status["pending_files"] > 0 or docs_status["pending_files"] > 0:
-                    print(f"📊 Status: {code_status['pending_files']} code files, "
-                          f"{docs_status['pending_files']} docs pending indexing")
 
-        except KeyboardInterrupt:
-            print("\n")
-            print("🛑 Stopping autonomous indexing...")
-            await code_controller.stop()
-            await docs_controller.stop()
-            print("✅ Stopped cleanly")
+def _parse_workspace_args() -> List[Path]:
+    parser = argparse.ArgumentParser(description="Enable autonomous indexing across one or more workspaces.")
+    parser.add_argument(
+        "-w",
+        "--workspace",
+        action="append",
+        dest="workspaces",
+        help="Workspace path to monitor (repeatable). Defaults to current directory.",
+    )
+    args = parser.parse_args()
 
-    except Exception as e:
-        print(f"❌ Failed to enable autonomous indexing: {e}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
+    workspace_inputs: List[str] = []
+    if args.workspaces:
+        workspace_inputs.extend(args.workspaces)
+
+    env_value = os.getenv("DOPE_CONTEXT_WORKSPACES")
+    if env_value:
+        workspace_inputs.extend(
+            [item.strip() for item in env_value.replace(";", ",").split(",") if item.strip()]
+        )
+
+    if not workspace_inputs:
+        workspace_inputs = [str(Path.cwd())]
+
+    resolved = [Path(path).expanduser().resolve() for path in workspace_inputs]
+    return resolved
+
+
+async def main() -> None:
+    workspaces = _parse_workspace_args()
+    for workspace in workspaces:
+        await enable_autonomous_indexing_for_workspace(workspace)
 
 
 if __name__ == "__main__":
-    import os
-
-    # Verify environment
-    if not os.getenv("VOYAGE_API_KEY"):
-        print("❌ VOYAGE_API_KEY not set")
-        print("   export VOYAGE_API_KEY='your-key'")
-        sys.exit(1)
-
-    print("🚀 Starting Autonomous Indexing Setup")
-    print("=" * 60)
-    print()
-
-    asyncio.run(enable_autonomous_indexing())
+    asyncio.run(main())
