@@ -31,7 +31,7 @@ INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 BACKUP_DIR="$HOME/.dopemux.backup.$(date +%Y%m%d_%H%M%S)"
 
 # Required versions
-REQUIRED_PYTHON_VERSION="3.11"
+REQUIRED_PYTHON_VERSION="3.10"
 REQUIRED_DOCKER_VERSION="20.10"
 REQUIRED_GIT_VERSION="2.30"
 
@@ -326,7 +326,7 @@ install_dependencies() {
             ;;
         *)
             warning "Unknown package manager. Please install dependencies manually:"
-            echo "  - Python 3.11+"
+            echo "  - Python 3.10+"
             echo "  - Git 2.30+"
             echo "  - Docker 20.10+"
             echo "  - tmux, jq, curl, sqlite3 (optional)"
@@ -764,7 +764,7 @@ quick_install() {
     log "Quick installation mode (core services only)..."
     
     detect_platform
-    check_python || fatal "Python 3.11+ required"
+    check_python || fatal "Python 3.10+ required"
     check_git || fatal "Git required"
     check_docker || fatal "Docker required"
     
@@ -780,6 +780,27 @@ full_install() {
     
     AUTO_CONFIRM=true
     interactive_install
+}
+
+# ============================================================================
+# Terminal Environment Setup
+# ============================================================================
+
+setup_terminal_environment() {
+    log "Setting up ADHD-optimized terminal environment..."
+    
+    # Check if terminal setup script exists
+    local script_path="${SCRIPT_DIR}/scripts/setup-terminal-env.sh"
+    
+    if [[ ! -f "$script_path" ]]; then
+        error "Terminal setup script not found: $script_path"
+        log "Please run this from the dopemux-mvp directory"
+        exit 1
+    fi
+    
+    # Run the terminal setup script
+    chmod +x "$script_path"
+    exec "$script_path"
 }
 
 # ============================================================================
@@ -846,6 +867,10 @@ parse_args() {
                 INSTALL_MODE="uninstall"
                 shift
                 ;;
+            --terminal)
+                INSTALL_MODE="terminal"
+                shift
+                ;;
             --yes|-y)
                 AUTO_CONFIRM=true
                 shift
@@ -863,6 +888,7 @@ Usage: $0 [OPTIONS]
 OPTIONS:
     --quick         Quick installation (core services only)
     --full          Full installation (all features, no prompts)
+    --terminal      Setup ADHD-optimized terminal environment
     --verify        Verify existing installation
     --uninstall     Remove Dopemux from system
     -y, --yes       Auto-confirm all prompts
@@ -873,6 +899,7 @@ EXAMPLES:
     $0                      # Interactive installation
     $0 --quick              # Quick install
     $0 --full --yes         # Full install, no prompts
+    $0 --terminal           # Setup terminal (zsh, kitty, starship)
     $0 --verify             # Check installation health
     $0 --uninstall          # Remove Dopemux
 
@@ -904,6 +931,9 @@ main() {
         verify)
             detect_platform
             verify_installation
+            ;;
+        terminal)
+            setup_terminal_environment
             ;;
         uninstall)
             uninstall_dopemux
