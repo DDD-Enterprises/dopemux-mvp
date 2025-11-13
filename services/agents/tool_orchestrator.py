@@ -46,6 +46,7 @@ class ToolSelection:
     rationale: Optional[str] = None  # Why this selection
     estimated_cost: Optional[float] = None  # Estimated cost in USD
     estimated_latency: Optional[float] = None  # Estimated latency in seconds
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 @dataclass
@@ -58,6 +59,7 @@ class TaskToolRequirements:
     requires_documentation: bool = False
     requires_web_search: bool = False
     performance_priority: str = "balanced"  # fast, balanced, quality
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 class ToolOrchestrator:

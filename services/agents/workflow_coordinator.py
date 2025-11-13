@@ -55,6 +55,7 @@ class WorkflowStep:
     estimated_minutes: int = 45
     requires_checkpoint: bool = True
     dependencies: List[str] = field(default_factory=list)
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 @dataclass
@@ -66,6 +67,7 @@ class WorkflowTemplate:
     steps: List[WorkflowStep]
     total_estimated_minutes: int
     recommended_breaks: int
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 @dataclass
@@ -78,6 +80,7 @@ class WorkflowExecution:
     completed_steps: List[str]
     checkpoints: List[Dict[str, Any]]
     metadata: Dict[str, Any]
+    workspace_path: Optional[str] = None  # Multi-workspace tracking
 
 
 class WorkflowCoordinator:
