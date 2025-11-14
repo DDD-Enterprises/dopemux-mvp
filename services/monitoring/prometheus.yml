@@ -24,7 +24,7 @@ scrape_configs:
   - job_name: 'adhd-engine'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['host.docker.internal:8001']
+      - targets: ['adhd-engine:8095']
         labels:
           service: 'adhd-engine'
 
@@ -32,7 +32,7 @@ scrape_configs:
   - job_name: 'conport'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['host.docker.internal:3004']
+      - targets: ['mcp-conport:3004']
         labels:
           service: 'conport'
 
@@ -40,7 +40,7 @@ scrape_configs:
   - job_name: 'serena'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['host.docker.internal:3001']
+      - targets: ['serena:3001']
         labels:
           service: 'serena'
 
@@ -48,7 +48,7 @@ scrape_configs:
   - job_name: 'orchestrator'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['host.docker.internal:8000']
+      - targets: ['orchestrator:8000']
         labels:
           service: 'orchestrator'
 
@@ -56,7 +56,7 @@ scrape_configs:
   - job_name: 'dopecon-bridge'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['host.docker.internal:8080']
+      - targets: ['dopecon-bridge:8080']
         labels:
           service: 'dopecon-bridge'
 
@@ -64,6 +64,6 @@ scrape_configs:
   - job_name: 'dope-context'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['host.docker.internal:8005']
+      - targets: ['dope-context:8005']
         labels:
           service: 'dope-context'

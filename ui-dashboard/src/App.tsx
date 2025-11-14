@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import {
   Box,
   Container,
@@ -7,11 +7,12 @@ import {
   Paper,
   Typography,
   ThemeProvider,
-  createTheme,
   CssBaseline,
-  useMediaQuery
+  Chip,
+  Divider
 } from '@mui/material';
-import { Brain, Zap, Eye, TrendingUp } from 'lucide-react';
+import { Brain, Zap, Eye, TrendingUp, Droplet } from 'lucide-react';
+import theme, { brandTokens, statusStyles } from './theme';
 
 // Import components
 import CognitiveLoadGauge from './components/CognitiveLoadGauge';
@@ -29,38 +30,6 @@ interface CognitiveState {
   recommendation: string;
 }
 
-// ADHD-friendly dark theme
-const theme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#00bcd4',
-    },
-    secondary: {
-      main: '#ff9800',
-    },
-    background: {
-      default: '#121212',
-      paper: '#1e1e1e',
-    },
-  },
-  typography: {
-    fontSize: 14,
-    h1: { fontSize: '2rem' },
-    h2: { fontSize: '1.5rem' },
-    h3: { fontSize: '1.25rem' },
-  },
-  components: {
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backgroundImage: 'none',
-        },
-      },
-    },
-  },
-});
-
 function App() {
   const [cognitiveState, setCognitiveState] = useState<CognitiveState>({
     energy: 0.7,
@@ -69,9 +38,6 @@ function App() {
     status: 'optimal',
     recommendation: 'Continue current work patterns'
   });
-
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Connect to real-time data
   useEffect(() => {
@@ -89,8 +55,6 @@ function App() {
         prediction
       }));
     });
-
-    setSocket(newSocket);
 
     return () => {
       newSocket.close();
@@ -125,64 +89,123 @@ function App() {
 
   const layout = getLayoutConfig();
 
+  const statusMeta = statusStyles[cognitiveState.status];
+
+  const metricCards = [
+    {
+      label: 'Energy Level',
+      value: cognitiveState.energy,
+      icon: <Zap color={brandTokens.colors.serumMint} size={24} />,
+      roast: "You're sipping ambition like it's lukewarm coffee.",
+    },
+    {
+      label: 'Attention Focus',
+      value: cognitiveState.attention,
+      icon: <Eye color={brandTokens.colors.ritualCyan} size={24} />,
+      roast: "Focus is flirting with you; stop ghosting it.",
+    },
+    {
+      label: 'Cognitive Load',
+      value: cognitiveState.load,
+      icon: <Brain color={brandTokens.colors.saintGold} size={24} />,
+      roast: "Load creeping up like a brat testing limits.",
+    },
+    {
+      label: '15-min Prediction',
+      value: cognitiveState.prediction ?? null,
+      icon: <TrendingUp color={brandTokens.colors.giltEdge} size={24} />,
+      roast: "Future you is pacing. Hydrate before they mutiny.",
+    },
+  ];
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container maxWidth="xl" sx={{ py: 2 }}>
-        {/* Header */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h3" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Brain size={32} />
+      <Container maxWidth="xl" sx={{ py: 3 }}>
+        <Box
+          sx={{
+            mb: 4,
+            p: 3,
+            borderRadius: 4,
+            background: brandTokens.gradients.velvet,
+            border: `1px solid rgba(148, 250, 219, 0.35)`,
+            boxShadow: '0 30px 80px rgba(2, 6, 23, 0.6)',
+          }}
+        >
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Chip
+              label={`${brandTokens.chips.live} DØPEMÜX Ritual Daemon`}
+              className="dopemux-chip"
+              color="primary"
+            />
+            <Chip
+              label={`${brandTokens.chips.consent}`}
+              className="dopemux-chip"
+              variant="outlined"
+              sx={{ borderColor: 'rgba(255, 207, 120, 0.9)', color: brandTokens.colors.saintGold }}
+            />
+            <Chip
+              icon={<Droplet size={16} color={brandTokens.colors.aftercareViolet} />}
+              label="[AFTERCARE] Logged. Hydrate."
+              className="dopemux-chip"
+              sx={{ borderColor: 'rgba(155, 120, 255, 0.8)', color: brandTokens.colors.aftercareViolet }}
+            />
+          </Box>
+          <Typography variant="h2" sx={{ fontWeight: 600, mb: 1, letterSpacing: '0.08em' }}>
             Dopemux Ultra UI
           </Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            Cognitive Intelligence Dashboard - Status: {cognitiveState.status.toUpperCase()}
+          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 720 }}>
+            Luxury filth meets lab precision. I track your cognitive drips, roast your sprint sins,
+            and still remind you to hydrate. Status: <strong>{brandTokens.chips.live}</strong> {statusMeta.label}.
           </Typography>
+          <Divider sx={{ my: 2, borderColor: 'rgba(125, 251, 246, 0.3)' }} />
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <Chip
+              label={`${statusMeta.label} • ${(cognitiveState.load * 100).toFixed(0)}% load`}
+              sx={{
+                backgroundColor: `${statusMeta.color}1A`,
+                color: statusMeta.color,
+                border: `1px solid ${statusMeta.color}`,
+              }}
+            />
+            <Chip
+              label={`Recommendation: ${cognitiveState.recommendation}`}
+              sx={{
+                backgroundColor: 'rgba(32, 50, 72, 0.65)',
+                color: brandTokens.colors.serumMint,
+                border: '1px solid rgba(148, 250, 219, 0.35)',
+              }}
+            />
+          </Box>
         </Box>
 
-        {/* Cognitive State Overview */}
         <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={6} lg={3}>
-            <Paper sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Zap color="#4caf50" size={24} />
-              <Box>
-                <Typography variant="h6">{(cognitiveState.energy * 100).toFixed(0)}%</Typography>
-                <Typography variant="body2" color="text.secondary">Energy Level</Typography>
-              </Box>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={3}>
-            <Paper sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Eye color="#2196f3" size={24} />
-              <Box>
-                <Typography variant="h6">{(cognitiveState.attention * 100).toFixed(0)}%</Typography>
-                <Typography variant="body2" color="text.secondary">Attention Focus</Typography>
-              </Box>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={3}>
-            <Paper sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Brain color="#ff9800" size={24} />
-              <Box>
-                <Typography variant="h6">{(cognitiveState.load * 100).toFixed(0)}%</Typography>
-                <Typography variant="body2" color="text.secondary">Cognitive Load</Typography>
-              </Box>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} md={6} lg={3}>
-            <Paper sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-              <TrendingUp color="#f44336" size={24} />
-              <Box>
-                <Typography variant="h6">
-                  {cognitiveState.prediction ? (cognitiveState.prediction * 100).toFixed(0) + '%' : 'N/A'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">15-min Prediction</Typography>
-              </Box>
-            </Paper>
-          </Grid>
+          {metricCards.map((metric, index) => (
+            <Grid item xs={12} md={6} lg={3} key={metric.label}>
+              <Paper
+                sx={{
+                  p: 2.5,
+                  minHeight: 140,
+                  borderRadius: 3,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1.2,
+                  border: `1px solid rgba(255,255,255,0.08)`,
+                  background: 'linear-gradient(135deg, rgba(4,22,40,0.9), rgba(10,10,26,0.9))',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  {metric.icon}
+                  <Box>
+                    <Typography variant="h6">{metric.value !== null ? `${(metric.value * 100).toFixed(0)}%` : 'N/A'}</Typography>
+                    <Typography variant="body2" color="text.secondary">{metric.label}</Typography>
+                  </Box>
+                </Box>
+                <Typography className="dopemux-roast">{metric.roast}</Typography>
+                <Typography className="dopemux-aftercare">Logged. Hydrate.</Typography>
+              </Paper>
+            </Grid>
+          ))}
         </Grid>
 
         {/* Main Dashboard */}

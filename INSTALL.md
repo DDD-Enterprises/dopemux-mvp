@@ -32,16 +32,25 @@ That's it! The installer handles everything automatically.
 ./install.sh --quick
 ```
 - Fastest option for first-time users
-- Includes essential services only
-- Takes ~3-5 minutes
+- Non-interactive run (auto-confirms prompts)
+- Boots **core docker-compose stack** (`postgres`, `redis`, `qdrant`, `conport`, `adhd-engine`, `task-orchestrator`)
+- Takes ~3-5 minutes depending on image pulls
 
 ### Full Setup (All Services)
 ```bash
 ./install.sh --full
 ```
-- Complete installation with all MCP servers
-- Includes advanced features and integrations
+- Installs everything from quick mode **plus** Zen, Context7, LiteLLM, DopeconBridge, Genetic Agent, coordination plane services, and shared Redis/PostgreSQL infra
+- Requires API keys (Anthropic, OpenRouter, Context7, etc.) stored in a repo-local `.env` file
 - Takes ~10-15 minutes
+- Use `./install.sh --full --yes` for unattended installs **after** pre-populating `.env`
+- Skip the interactive prompt with `./install.sh --stack full`
+
+### Advanced Flags
+- `--stack core|full` – Preselect which compose bundle to run (useful for CI or scripted installs)
+- `--env-file /path/to/.env` – Override where API keys/secrets are read/written (defaults to repo-root `.env`)
+- `--yes` – Auto-confirm every prompt (implied by `--quick` and `--full`)
+- `INSTALLER_TEST_MODE=1 ./install.sh ...` – CI-friendly dry-run that skips Docker/pip/shell side effects (used by automated tests)
 
 ### Verify Installation
 ```bash
@@ -50,6 +59,31 @@ That's it! The installer handles everything automatically.
 - Checks if Dopemux is properly installed
 - Verifies all services are running
 - Shows status of each component
+
+## 🧱 Service Bundles
+
+| Mode | Compose File | Services Included |
+|------|--------------|-------------------|
+| **Core (default/quick)** | `docker-compose.unified.yml` | PostgreSQL + AGE, Redis, Qdrant, ConPort MCP, ADHD Engine, Task Orchestrator |
+| **Full (--full)** | `docker-compose.master.yml` | Core stack **plus** Zen MCP, Context7, LiteLLM router, DopeconBridge, Genetic Agent, coordination plane, Redis Insight, multi-network wiring |
+
+During interactive runs the installer now previews each bundle (services + estimated runtime) so you know exactly what will be launched. Passing `--stack` skips the prompt but still prints the summary. Full installs automatically create the required Docker networks (`mcp-network`, `dopemux-unified-network`, `leantime-net`).
+
+### Environment Variables & `.env`
+
+Full installs prompt for the secrets listed below and store them in a git-ignored `.env` at the repo root so Docker Compose can reuse them:
+
+- `AGE_PASSWORD`
+- `ANTHROPIC_API_KEY`
+- `OPENROUTER_API_KEY`
+- `OPENAI_API_KEY` (optional but recommended)
+- `GEMINI_API_KEY` / `XAI_API_KEY` (optional)
+- `CONTEXT7_API_KEY`
+- `LEANTIME_URL` / `LEANTIME_TOKEN`
+- `TASK_ORCHESTRATOR_API_KEY` / `ADHD_ENGINE_API_KEY`
+- `LITELLM_DATABASE_URL` (defaults to the bundled Postgres DSN)
+
+Running `./install.sh --full --yes` expects these values to be present ahead of time either in `.env` or exported in your shell. The [API Key Setup Guide](#-api-key-setup-guide) below walks through generating each credential.
 
 ## 🔧 Complete Installation Tools & Services
 

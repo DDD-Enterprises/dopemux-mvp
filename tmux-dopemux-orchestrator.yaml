@@ -1,16 +1,18 @@
 session_name: dopemux-orchestrator
 windows:
   - window_name: orchestration
-    layout: tiled
+    layout: main-vertical
     options:
       main-pane-height: 60%
       status: on
-      status-interval: 15  # Faster updates for better responsiveness
-      status-left: "#[fg=colour33,bg=colour0] 🧠 Dopemux PM #[default]"
-      status-right: "#[fg=blue,bg=colour0] #(./scripts/pm-status.sh) #[default]"
-      status-style: "bg=colour0,fg=colour7"  # Dark theme base
-      window-status-current-style: "bg=colour33,fg=colour0,bold"
-      window-status-style: "bg=colour0,fg=colour244"
+      status-interval: 10  # Faster updates for better responsiveness
+      status-left: "#[bg=#020617,fg=#7dfbf6,bold] [LIVE] DØPEMÜX #[default] #[fg=#f5f26d]⚡ #{session_name} [WS: #{@workspace}] "
+      status-right: "#[bg=#020617,fg=#94fadb] #(./scripts/pm-status.sh) #[fg=#ff8bd1] [CONSENT CHECK? y/N] #[fg=#9b78ff]💧 Logged. Hydrate."
+      status-style: "bg=#020617,fg=#94fadb"
+      window-status-current-style: "bg=#041628,fg=#7dfbf6,bold"
+      window-status-style: "bg=#020617,fg=#777777"
+      pane-border-style: "fg=#1a0520"
+      pane-active-border-style: "fg=#7dfbf6"
     panes:
       # Pane 0: Task Orchestrator + PM Overview (Primary)
       - shell_command:
