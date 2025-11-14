@@ -1,3 +1,6 @@
+import asyncio
+import functools
+
 import pytest
 from pathlib import Path
 
@@ -55,45 +58,58 @@ class DummyPeriodic:
         return {"running": self.started}
 
 
-@pytest.mark.asyncio
-async def test_autonomous_controller_registry_keys(tmp_path, monkeypatch):
+if not hasattr(pytest.mark, "asyncio"):
+    def _asyncio_marker(func):
+        @functools.wraps(func)
+        def _wrapper(*args, **kwargs):
+            return asyncio.run(func(*args, **kwargs))
+
+        return _wrapper
+
+    pytest.mark.asyncio = _asyncio_marker
+
+
+def test_autonomous_controller_registry_keys(tmp_path, monkeypatch):
     """Ensure controllers register under custom keys for docs/code isolation."""
-    workspace = tmp_path / "repo"
-    workspace.mkdir()
+    async def _run():
+        workspace = tmp_path / "repo"
+        workspace.mkdir()
 
-    monkeypatch.setattr(
-        "src.autonomous.autonomous_controller.IndexingWorker",
-        DummyWorker,
-    )
-    monkeypatch.setattr(
-        "src.autonomous.autonomous_controller.WatchdogMonitor",
-        DummyWatchdog,
-    )
-    monkeypatch.setattr(
-        "src.autonomous.autonomous_controller.PeriodicSync",
-        DummyPeriodic,
-    )
+        monkeypatch.setattr(
+            "src.autonomous.autonomous_controller.IndexingWorker",
+            DummyWorker,
+        )
+        monkeypatch.setattr(
+            "src.autonomous.autonomous_controller.WatchdogMonitor",
+            DummyWatchdog,
+        )
+        monkeypatch.setattr(
+            "src.autonomous.autonomous_controller.PeriodicSync",
+            DummyPeriodic,
+        )
 
-    async def noop_index(*args, **kwargs):
-        return None
+        async def noop_index(*args, **kwargs):
+            return None
 
-    async def noop_sync(*args, **kwargs):
-        return {}
+        async def noop_sync(*args, **kwargs):
+            return {}
 
-    controller = AutonomousController(
-        workspace_path=workspace,
-        index_callback=noop_index,
-        sync_callback=noop_sync,
-        config=AutonomousConfig(),
-        registry_key="custom-docs",
-    )
+        controller = AutonomousController(
+            workspace_path=workspace,
+            index_callback=noop_index,
+            sync_callback=noop_sync,
+            config=AutonomousConfig(),
+            registry_key="custom-docs",
+        )
 
-    await controller.start()
+        await controller.start()
 
-    active = AutonomousController.get_active_controllers()
-    assert "custom-docs" in active
-    assert active["custom-docs"] is controller
+        active = AutonomousController.get_active_controllers()
+        assert "custom-docs" in active
+        assert active["custom-docs"] is controller
 
-    await controller.stop()
-    active_after = AutonomousController.get_active_controllers()
-    assert "custom-docs" not in active_after
+        await controller.stop()
+        active_after = AutonomousController.get_active_controllers()
+        assert "custom-docs" not in active_after
+
+    asyncio.run(_run())
