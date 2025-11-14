@@ -83,6 +83,25 @@ curl -X POST http://localhost:4000/v1/chat/completions \
 ### Other Providers 🌐
 - `glm-4.6` - Z-AI's GLM model
 
+## Pick Your Default Route (Optional)
+
+Want Claude to always use a specific provider when you launch with `--alt-routing`?
+
+```bash
+# Inspect current models and see which one is active
+dopemux alt-routing --list-models
+
+# Choose a preset (balanced, research, budget)
+dopemux alt-routing --preset balanced
+
+# Or fully customize the fallback chain
+dopemux alt-routing --primary openrouter-openai-gpt-5-mini \
+  --fallbacks "openrouter-openai-gpt-5,openrouter-xai-grok-4-fast"
+```
+
+This updates `.dopemux/litellm/A/litellm.config.yaml`, so every future
+`dopemux start --alt-routing` session reuses the selection automatically.
+
 ## Aliases (Shortcuts)
 
 - `grok` → `grok-4-fast`
