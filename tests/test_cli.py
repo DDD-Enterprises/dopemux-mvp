@@ -6,9 +6,11 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
+import yaml
 from click.testing import CliRunner
 
 from dopemux.cli import cli, _invoke_switch_role_script
+from dopemux.litellm_proxy import DEFAULT_LITELLM_CONFIG
 import os
 import subprocess
 
@@ -444,6 +446,55 @@ class TestCLI:
 
         assert result.exit_code == 1
         assert "Description required" in result.output
+
+    def test_alt_routing_updates_config(self):
+        """Ensure alt-routing command rewrites LiteLLM config."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            config_dir = Path(".dopemux/litellm/A")
+            config_dir.mkdir(parents=True)
+            config_file = config_dir / "litellm.config.yaml"
+            config_file.write_text(DEFAULT_LITELLM_CONFIG)
+
+            result = runner.invoke(
+                cli,
+                [
+                    "alt-routing",
+                    "--primary",
+                    "openrouter-gpt-5",
+                    "--fallbacks",
+                    "grok-4-fast,xai-grok-code-fast-1",
+                ],
+            )
+
+            assert result.exit_code == 0, result.output
+            data = yaml.safe_load(config_file.read_text())
+            general = data.get("general_settings", {})
+            litellm_settings = data.get("litellm_settings", {})
+            alias_map = litellm_settings.get("model_alias_map", {})
+            assert general.get("dopemux_selected_model") == "openrouter-gpt-5"
+            assert alias_map.get("claude-sonnet") == "openrouter-gpt-5"
+            assert litellm_settings.get("default_fallbacks") == [
+                "grok-4-fast",
+                "xai-grok-code-fast-1",
+            ]
+
+    def test_alt_routing_list_models_is_read_only(self):
+        """Listing models should not mutate the config file."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            config_dir = Path(".dopemux/litellm/A")
+            config_dir.mkdir(parents=True)
+            config_file = config_dir / "litellm.config.yaml"
+            config_file.write_text(DEFAULT_LITELLM_CONFIG)
+            before = config_file.read_text()
+
+            result = runner.invoke(cli, ["alt-routing", "--list-models"])
+
+            after = config_file.read_text()
+            assert result.exit_code == 0
+            assert "LiteLLM Models" in result.output
+            assert before == after
 
     def test_attention_emoji_mapping(self):
         """Test _get_attention_emoji function."""
