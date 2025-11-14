@@ -218,6 +218,25 @@ dopemux tmux list
 dopemux tmux theme neon
 ```
 
+### Alternative Routing Presets
+
+Need Claude Code to hit a specific provider when using `--alt-routing`?
+
+```bash
+# Inspect all configured LiteLLM models
+dopemux alt-routing --list-models
+
+# Route every claude-* alias to Grok Code Fast with GPT-5 fallbacks
+dopemux alt-routing --preset balanced
+
+# Manually pick models + fallback chain
+dopemux alt-routing --primary openrouter-openai-gpt-5-pro \
+  --fallbacks "openrouter-openai-gpt-5,openrouter-xai-grok-4-fast"
+```
+
+The command rewrites `.dopemux/litellm/A/litellm.config.yaml`, so the preference
+sticks for the next `dopemux start --alt-routing` run.
+
 ### Combining Options
 
 ```bash
