@@ -10,6 +10,7 @@ from typing import Literal, Optional
 import libtmux
 from pathlib import Path
 import yaml
+import os
 
 
 EnergyLevel = Literal["low", "medium", "high"]
@@ -32,6 +33,10 @@ class TmuxLayoutManager:
         Args:
             session_name: Name of tmux session to manage
         """
+        # Auto-suffix workspace when using default session name
+        ws = os.getenv("WORKSPACE_ID") or os.getenv("DOPEMUX_WORKSPACE") or ""
+        if session_name == "dopemux-orchestrator" and ws:
+            session_name = f"{session_name}-{ws}"
         self.session_name = session_name
         self.server = libtmux.Server()
         self.session: Optional[libtmux.Session] = None

@@ -1,71 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --ink-black: #020617;
+  --void-navy: #041628;
+  --ritual-cyan: #7dfbf6;
+  --serum-mint: #94fadb;
+  --gilt-edge: #f5f26d;
+  --velvet-plum: #1a0520;
+  --gremlin-pink: #ff8bd1;
+  --aftercare-violet: #9b78ff;
+  --halo-gradient: radial-gradient(circle at 20% 20%, rgba(125, 251, 246, 0.2), rgba(2, 6, 23, 0.95));
+}
+
+* {
+  box-sizing: border-box;
+  transition: all 0.25s ease;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  min-height: 100vh;
+  font-family: 'Inter', 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-image: var(--halo-gradient);
+  color: #f6f7fb;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #121212;
-  color: #ffffff;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 80% 0%, rgba(255, 139, 209, 0.15), transparent 45%);
+  pointer-events: none;
+  z-index: -1;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', 'SF Mono', monospace;
+  letter-spacing: 0.05em;
 }
 
-.MuiPaper-root {
-  background-color: #1e1e1e !important;
-  color: #ffffff !important;
+.dopemux-chip {
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 251, 246, 0.45);
+  background: rgba(2, 6, 23, 0.6);
+  box-shadow: 0 0 20px rgba(125, 251, 246, 0.2);
 }
 
-.MuiTypography-root {
-  color: #ffffff !important;
+.dopemux-panel {
+  background: linear-gradient(135deg, rgba(4, 22, 40, 0.9), rgba(26, 5, 32, 0.9));
+  border: 1px solid rgba(125, 251, 246, 0.25);
+  box-shadow: 0 20px 60px rgba(2, 6, 23, 0.65);
 }
 
-.MuiLinearProgress-root {
-  background-color: rgba(255, 255, 255, 0.1) !important;
+.dopemux-roast {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: #ff8bd1;
+  letter-spacing: 0.05em;
 }
 
-.MuiAlert-root {
-  color: #ffffff !important;
-  background-color: rgba(255, 255, 255, 0.1) !important;
+.dopemux-aftercare {
+  color: var(--aftercare-violet);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
 }
 
-/* ADHD-friendly animations - minimal and smooth */
-* {
-  transition: all 0.3s ease-in-out;
-}
-
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none !important;
-    animation: none !important;
-  }
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .MuiPaper-root {
-    border: 2px solid #ffffff !important;
-  }
-}
-
-/* Custom scrollbar for better UX */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1e1e1e;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #00bcd4;
+  background: linear-gradient(var(--ritual-cyan), var(--gremlin-pink));
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2196f3;
+  background: linear-gradient(var(--serum-mint), var(--gilt-edge));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }

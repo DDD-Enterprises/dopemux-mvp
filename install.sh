@@ -29,6 +29,54 @@ VERSION="1.0.0"
 DOPEMUX_HOME="${DOPEMUX_HOME:-$HOME/.dopemux}"
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 BACKUP_DIR="$HOME/.dopemux.backup.$(date +%Y%m%d_%H%M%S)"
+DOCKER_COMPOSE_CORE="docker-compose.unified.yml"
+DOCKER_COMPOSE_FULL="docker-compose.master.yml"
+SELECTED_STACK="core"  # core | full
+SELECTED_COMPOSE_FILE="$DOCKER_COMPOSE_CORE"
+ENV_FILE="${ENV_FILE:-.env}"
+STACK_SELECTED_FROM_FLAG=false
+INSTALLER_TEST_MODE="${INSTALLER_TEST_MODE:-0}"
+
+CORE_STACK_PORTS=(5432 6379 6333 6334 3004 8000 8095)
+FULL_STACK_EXTRA_PORTS=(3002 3003 3011 3016 4000 8081 8090)
+
+CORE_STACK_ENV_VARS=()
+FULL_STACK_ENV_VARS=(
+    AGE_PASSWORD
+    ANTHROPIC_API_KEY
+    OPENAI_API_KEY
+    OPENROUTER_API_KEY
+    GEMINI_API_KEY
+    XAI_API_KEY
+    CONTEXT7_API_KEY
+    LEANTIME_URL
+    LEANTIME_TOKEN
+    TASK_ORCHESTRATOR_API_KEY
+    ADHD_ENGINE_API_KEY
+    LITELLM_DATABASE_URL
+)
+
+CORE_STACK_SUMMARY=(
+    "PostgreSQL 16 + AGE extension"
+    "Redis 7 (cache/event bus)"
+    "Qdrant vector DB"
+    "ConPort MCP server"
+    "ADHD Engine API"
+    "Task Orchestrator"
+)
+FULL_STACK_SUMMARY=(
+    "Everything from core stack"
+    "Zen MCP (multi-model reasoning)"
+    "Context7 documentation MCP"
+    "LiteLLM router (Anthropic/OpenAI/OpenRouter/Gemini)"
+    "DopeconBridge + coordination plane"
+    "Genetic Agent + monitoring"
+    "Redis Insight dashboard"
+)
+
+CORE_STACK_ESTIMATE="~3-5 minutes (initial pull may add time)"
+FULL_STACK_ESTIMATE="~10-15 minutes (initial pull heavier due to MCP images)"
+
 
 # Required versions
 REQUIRED_PYTHON_VERSION="3.10"
@@ -82,6 +130,324 @@ debug() {
     if [ "$VERBOSE" = true ]; then
         echo -e "${MAGENTA}🔍${NC} $*"
     fi
+}
+
+# ============================================================================
+# Stack & Environment Helpers
+# ============================================================================
+
+compose_file_for_stack() {
+    local stack="${1:-core}"
+    if [ "$stack" = "full" ]; then
+        echo "$DOCKER_COMPOSE_FULL"
+    else
+        echo "$DOCKER_COMPOSE_CORE"
+    fi
+}
+
+stack_estimate() {
+    case "$1" in
+        full) echo "$FULL_STACK_ESTIMATE" ;;
+        *) echo "$CORE_STACK_ESTIMATE" ;;
+    esac
+}
+
+stack_summary_items() {
+    case "$1" in
+        full)
+            printf "%s\n" "${FULL_STACK_SUMMARY[@]}"
+            ;;
+        *)
+            printf "%s\n" "${CORE_STACK_SUMMARY[@]}"
+            ;;
+    esac
+}
+
+show_stack_summary() {
+    local stack="${1:-core}"
+    local estimate
+    estimate=$(stack_estimate "$stack")
+    local stack_upper
+    stack_upper=$(printf '%s' "$stack" | tr '[:lower:]' '[:upper:]')
+    echo
+    echo -e "${BOLD}Selected stack:${NC} ${stack_upper}  |  Estimated runtime: $estimate"
+    echo "Includes:"
+    local item
+    while IFS= read -r item; do
+        [ -z "$item" ] && continue
+        echo "  - $item"
+    done <<EOF
+$(stack_summary_items "$stack")
+EOF
+    echo
+}
+
+env_prompt() {
+    case "$1" in
+        AGE_PASSWORD) echo "PostgreSQL AGE password (ConPort, LiteLLM, bridge)" ;;
+        ANTHROPIC_API_KEY) echo "Anthropic Claude API key (sk-ant-...)" ;;
+        OPENAI_API_KEY) echo "OpenAI API key (Zen/LiteLLM fallback)" ;;
+        OPENROUTER_API_KEY) echo "OpenRouter API key (Grok/GPT routing)" ;;
+        GEMINI_API_KEY) echo "Google Gemini API key (optional)" ;;
+        XAI_API_KEY) echo "xAI Grok API key (optional)" ;;
+        CONTEXT7_API_KEY) echo "Context7 documentation API key" ;;
+        LEANTIME_URL) echo "Leantime base URL" ;;
+        LEANTIME_TOKEN) echo "Leantime API token" ;;
+        TASK_ORCHESTRATOR_API_KEY) echo "Task Orchestrator API key" ;;
+        ADHD_ENGINE_API_KEY) echo "ADHD Engine API key" ;;
+        LITELLM_DATABASE_URL) echo "LiteLLM database URL (PostgreSQL DSN)" ;;
+        *) echo "$1" ;;
+    esac
+}
+
+env_default() {
+    case "$1" in
+        AGE_PASSWORD) echo "dopemux_age_dev_password" ;;
+        LEANTIME_URL) echo "http://localhost:8097" ;;
+        TASK_ORCHESTRATOR_API_KEY) echo "dev-key-456" ;;
+        ADHD_ENGINE_API_KEY) echo "dev-key-123" ;;
+        LITELLM_DATABASE_URL) echo "postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm" ;;
+        *) echo "" ;;
+    esac
+}
+
+env_is_sensitive() {
+    case "$1" in
+        AGE_PASSWORD|ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|XAI_API_KEY|CONTEXT7_API_KEY|LEANTIME_TOKEN|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+env_is_required() {
+    case "$1" in
+        OPENAI_API_KEY|GEMINI_API_KEY|XAI_API_KEY|LEANTIME_URL|LEANTIME_TOKEN|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY|LITELLM_DATABASE_URL)
+            return 1  # optional
+            ;;
+        *)
+            return 0  # required
+            ;;
+    esac
+}
+
+read_env_file_value() {
+    local var="$1"
+    local env_file="$2"
+    if [ ! -f "$env_file" ]; then
+        echo ""
+        return 0
+    fi
+    set +e
+    local line
+    line=$(grep -E "^${var}=" "$env_file" | tail -1)
+    local status=$?
+    set -e
+    if [ $status -ne 0 ] || [ -z "$line" ]; then
+        echo ""
+        return 0
+    fi
+    echo "${line#*=}"
+}
+
+choose_install_stack() {
+    if [ "$STACK_SELECTED_FROM_FLAG" = true ]; then
+        show_stack_summary "$SELECTED_STACK"
+        return 0
+    fi
+    
+    if [ "$AUTO_CONFIRM" = true ]; then
+        log "Auto mode using ${SELECTED_STACK} stack"
+        show_stack_summary "$SELECTED_STACK"
+        return 0
+    fi
+
+    while true; do
+        echo "Select installation scope:"
+        echo "  1) Core services (Postgres, Redis, Qdrant, ConPort, ADHD Engine, Task Orchestrator)"
+        echo "  2) Full stack (adds Zen, Context7, LiteLLM, DopeconBridge, Genetic Agent, monitoring)"
+        read -p "$(echo -e "${CYAN}?${NC} Choose [1/2]: ")" stack_choice
+        case "${stack_choice:-1}" in
+            2) SELECTED_STACK="full" ;;
+            1|*) SELECTED_STACK="core" ;;
+        esac
+        show_stack_summary "$SELECTED_STACK"
+        if ask_yes_no "Proceed with the ${SELECTED_STACK} stack?" "y"; then
+            break
+        fi
+        echo
+    done
+}
+
+ensure_docker_networks() {
+    local stack="${1:-core}"
+    if [ "$stack" != "full" ]; then
+        return 0
+    fi
+    if [ "$INSTALLER_TEST_MODE" = "1" ]; then
+        warning "[test-mode] Skipping docker network creation"
+        return 0
+    fi
+    local networks=("mcp-network" "dopemux-unified-network" "leantime-net")
+    for network in "${networks[@]}"; do
+        if docker network ls --format '{{.Name}}' | grep -q "^${network}$"; then
+            debug "Docker network already exists: $network"
+        else
+            log "Creating docker network: $network"
+            docker network create "$network" >/dev/null
+        fi
+    done
+}
+
+resolve_env_value() {
+    local var="$1"
+    local current="$2"
+    local prompt
+    prompt=$(env_prompt "$var")
+    local default
+    default=$(env_default "$var")
+    local required="true"
+    if ! env_is_required "$var"; then
+        required="false"
+    fi
+    local sensitive="false"
+    if env_is_sensitive "$var"; then
+        sensitive="true"
+    fi
+
+    if [ -n "$current" ]; then
+        if [ "$AUTO_CONFIRM" = true ]; then
+            echo "$current"
+            return 0
+        fi
+        # Show masked value for sensitive fields
+        local display_value="$current"
+        if [ "$sensitive" = "true" ] && [ ${#current} -gt 8 ]; then
+            display_value="${current:0:4}...${current: -4}"
+        fi
+        log "$var currently set to: $display_value"
+        if ask_yes_no "Keep existing value?" "y"; then
+            echo "$current"
+            return 0
+        fi
+    fi
+
+    if [ "$AUTO_CONFIRM" = true ]; then
+        if [ "$required" = "true" ] && [ -z "$default" ]; then
+            fatal "$var is required for full installation. Export it or add it to $ENV_FILE before using --full/--yes."
+        else
+            echo "$default"
+            return 0
+        fi
+    fi
+
+    local input=""
+    while true; do
+        # Build prompt with hint
+        local prompt_hint=""
+        if [ "$required" = "false" ]; then
+            prompt_hint=" (optional, press Enter to skip)"
+        elif [ -n "$default" ]; then
+            prompt_hint=" (press Enter for default)"
+        fi
+        
+        if [ "$sensitive" = "true" ]; then
+            if [ -n "$default" ]; then
+                read -s -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint} [****]: ")" input
+                echo >&2
+            else
+                read -s -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint}: ")" input
+                echo >&2
+            fi
+        else
+            if [ -n "$default" ]; then
+                read -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint} [$default]: ")" input
+            else
+                read -p "$(echo -e "${CYAN}?${NC} $prompt${prompt_hint}: ")" input
+            fi
+        fi
+        
+        input=${input:-$default}
+        
+        if [ -n "$input" ]; then
+            echo "$input"
+            return 0
+        fi
+        
+        if [ "$required" = "false" ]; then
+            log "Setting $var to empty (optional field)"
+            if ask_yes_no "Confirm leaving $var empty?" "y"; then
+                echo ""
+                return 0
+            fi
+            continue
+        fi
+        
+        warning "$var is required and cannot be empty"
+    done
+}
+
+ensure_env_file() {
+    local stack="${1:-core}"
+    local env_file="$ENV_FILE"
+    local -a required_vars=()
+    if [ "$stack" = "full" ]; then
+        required_vars=("${FULL_STACK_ENV_VARS[@]}")
+    fi
+
+    if [ ${#required_vars[@]} -eq 0 ]; then
+        return 0
+    fi
+
+    log "Checking environment variables for ${stack} stack..."
+
+    local -a collected_vars=()
+    local -a collected_values=()
+    local var value current env_override
+
+    for var in "${required_vars[@]}"; do
+        current=$(read_env_file_value "$var" "$env_file")
+        env_override="${!var:-}"
+        if [ -z "$current" ] && [ -n "$env_override" ]; then
+            current="$env_override"
+        fi
+        value=$(resolve_env_value "$var" "$current")
+        collected_vars+=("$var")
+        collected_values+=("$value")
+    done
+
+    local tmp_file
+    tmp_file=$(mktemp -t dopemux-env.XXXXXX)
+
+    {
+        echo "# Dopemux installer managed values ($(date -Iseconds))"
+        local idx
+        for idx in "${!collected_vars[@]}"; do
+            echo "${collected_vars[$idx]}=${collected_values[$idx]}"
+        done
+        if [ -f "$env_file" ]; then
+            while IFS= read -r line || [ -n "$line" ]; do
+                [[ -z "$line" ]] && continue
+                [[ "$line" == \#* ]] && continue
+                local key="${line%%=*}"
+                local skip="false"
+                for var in "${collected_vars[@]}"; do
+                    if [ "$key" = "$var" ]; then
+                        skip="true"
+                        break
+                    fi
+                done
+                if [ "$skip" = "false" ]; then
+                    echo "$line"
+                fi
+            done < "$env_file"
+        fi
+    } > "$tmp_file"
+    mv "$tmp_file" "$env_file"
+
+    success "Environment variables saved to $env_file"
 }
 
 spinner() {
@@ -258,6 +624,11 @@ check_git() {
 
 check_docker() {
     log "Checking Docker..."
+
+    if [ "$INSTALLER_TEST_MODE" = "1" ]; then
+        warning "[test-mode] Skipping Docker checks"
+        return 0
+    fi
     
     if ! check_command docker; then
         error "Docker not found"
@@ -470,6 +841,13 @@ install_with_pacman() {
 # ============================================================================
 
 preflight_checks() {
+    local stack="${1:-core}"
+    
+    if [ "$INSTALLER_TEST_MODE" = "1" ]; then
+        warning "[test-mode] Skipping pre-flight checks"
+        return 0
+    fi
+
     log "Running pre-flight checks..."
     
     # Check disk space (need at least 10GB free)
@@ -488,7 +866,10 @@ preflight_checks() {
     fi
     
     # Check port availability
-    local ports=(5432 6379 6333 8095 3004)
+    local -a ports=("${CORE_STACK_PORTS[@]}")
+    if [ "$stack" = "full" ]; then
+        ports+=("${FULL_STACK_EXTRA_PORTS[@]}")
+    fi
     local busy_ports=()
     
     for port in "${ports[@]}"; do
@@ -531,12 +912,16 @@ create_directory_structure() {
 install_dopemux_core() {
     log "Installing Dopemux core..."
     
-    # Install Python package
-    if [ -f "pyproject.toml" ]; then
-        python3 -m pip install --user -e . || fatal "Failed to install Python package"
-        success "Python package installed"
+    if [ "$INSTALLER_TEST_MODE" = "1" ]; then
+        warning "[test-mode] Skipping Python package install"
     else
-        warning "pyproject.toml not found, skipping Python package install"
+        # Install Python package
+        if [ -f "pyproject.toml" ]; then
+            python3 -m pip install --user -e . || fatal "Failed to install Python package"
+            success "Python package installed"
+        else
+            warning "pyproject.toml not found, skipping Python package install"
+        fi
     fi
     
     # Copy configuration files
@@ -547,33 +932,47 @@ install_dopemux_core() {
 }
 
 install_docker_services() {
-    log "Setting up Docker services..."
+    local stack="${1:-$SELECTED_STACK}"
+    local compose_file
+    compose_file=$(compose_file_for_stack "$stack")
+
+    log "Setting up Docker services for ${stack} stack..."
     
-    if [ ! -f "docker-compose.unified.yml" ]; then
-        warning "docker-compose.unified.yml not found"
-        return 1
+    if [ ! -f "$compose_file" ]; then
+        fatal "Compose file not found: $compose_file"
+    fi
+
+    ensure_env_file "$stack"
+    ensure_docker_networks "$stack"
+
+    if [ "$INSTALLER_TEST_MODE" = "1" ]; then
+        warning "[test-mode] Skipping docker-compose pull/up"
+        SELECTED_COMPOSE_FILE="$compose_file"
+        return 0
     fi
     
-    # Pull images (with progress)
-    log "Pulling Docker images (this may take a few minutes)..."
-    docker-compose -f docker-compose.unified.yml pull &
+    log "Pulling Docker images from $compose_file (this may take a few minutes)..."
+    docker-compose -f "$compose_file" pull &
     spinner $!
-    
     success "Docker images pulled"
     
-    # Start services
     log "Starting Docker services..."
-    docker-compose -f docker-compose.unified.yml up -d || fatal "Failed to start Docker services"
+    docker-compose -f "$compose_file" up -d || fatal "Failed to start Docker services"
     
-    # Wait for services to be healthy
     log "Waiting for services to be ready..."
     sleep 10
-    
-    success "Docker services started"
+
+    SELECTED_COMPOSE_FILE="$compose_file"
+    success "Docker services started (${stack} stack)"
 }
 
 configure_shell_integration() {
     log "Configuring shell integration..."
+    
+    if [ "$INSTALLER_TEST_MODE" = "1" ]; then
+        warning "[test-mode] Skipping shell configuration"
+        return 0
+    fi
     
     local shell_rc
     case "$SHELL" in
@@ -589,22 +988,33 @@ configure_shell_integration() {
             ;;
     esac
     
+    # Detect Python user bin directory
+    local py_version
+    py_version=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null || echo "")
+    local python_user_bin="$HOME/Library/Python/${py_version}/bin"
+    
+    # Fallback to common paths if version detection fails
+    if [ ! -d "$python_user_bin" ]; then
+        python_user_bin="$HOME/.local/bin"
+    fi
+    
     # Add dopemux to PATH if not already there
     if ! grep -q "dopemux" "$shell_rc" 2>/dev/null; then
-        cat >> "$shell_rc" << 'EOF'
+        cat >> "$shell_rc" << EOF
 
 # Dopemux
-export PATH="$HOME/.local/bin:$PATH"
-export DOPEMUX_HOME="$HOME/.dopemux"
+export PATH="$python_user_bin:\$HOME/.local/bin:\$PATH"
+export DOPEMUX_HOME="\$HOME/.dopemux"
 alias dopemux="python3 -m dopemux.cli"
 
 # Multi-Workspace Support
-export DEFAULT_WORKSPACE_PATH="$PWD"  # Set to your main project
+export DEFAULT_WORKSPACE_PATH="\$PWD"  # Set to your main project
 # export WORKSPACE_PATHS="~/code/project1,~/code/project2"  # Optional: additional workspaces
 export ENABLE_WORKSPACE_ISOLATION=true
 export ENABLE_CROSS_WORKSPACE_QUERIES=true
 EOF
         success "Shell integration added to $shell_rc"
+        success "Python bin directory added to PATH: $python_user_bin"
         warning "Run 'source $shell_rc' or restart your terminal to activate"
     else
         success "Shell integration already configured"
@@ -632,6 +1042,11 @@ EOF
 
 verify_installation() {
     log "Verifying installation..."
+
+    if [ "$INSTALLER_TEST_MODE" = "1" ]; then
+        warning "[test-mode] Skipping verification (assumed success)"
+        return 0
+    fi
     
     local checks_passed=0
     local checks_total=5
@@ -653,10 +1068,28 @@ verify_installation() {
     fi
     
     # Check 3: Docker services
-    if docker-compose -f docker-compose.unified.yml ps | grep -q "Up"; then
-        success "Docker services OK"
-        ((checks_passed++))
-    else
+    local docker_ok=false
+    local -a compose_candidates=()
+    if [ -f "$SELECTED_COMPOSE_FILE" ]; then
+        compose_candidates+=("$SELECTED_COMPOSE_FILE")
+    fi
+    if [ "$SELECTED_COMPOSE_FILE" != "$DOCKER_COMPOSE_FULL" ] && [ -f "$DOCKER_COMPOSE_FULL" ]; then
+        compose_candidates+=("$DOCKER_COMPOSE_FULL")
+    fi
+    if [ "$SELECTED_COMPOSE_FILE" != "$DOCKER_COMPOSE_CORE" ] && [ -f "$DOCKER_COMPOSE_CORE" ]; then
+        compose_candidates+=("$DOCKER_COMPOSE_CORE")
+    fi
+
+    for compose_file in "${compose_candidates[@]}"; do
+        if docker-compose -f "$compose_file" ps >/dev/null 2>&1 && docker-compose -f "$compose_file" ps | grep -q "Up"; then
+            success "Docker services OK ($compose_file)"
+            docker_ok=true
+            ((checks_passed++))
+            break
+        fi
+    done
+
+    if [ "$docker_ok" = false ]; then
         warning "Docker services not running"
     fi
     
@@ -746,15 +1179,17 @@ EOF
             fatal "Required dependencies missing. Please install manually and retry."
         fi
     fi
+
+    choose_install_stack
     
     # Pre-flight checks
-    preflight_checks
+    preflight_checks "$SELECTED_STACK"
     echo
     
     # Main installation
     create_directory_structure
     install_dopemux_core
-    install_docker_services
+    install_docker_services "$SELECTED_STACK"
     configure_shell_integration
     echo
     
@@ -787,23 +1222,31 @@ EOF
 
 quick_install() {
     log "Quick installation mode (core services only)..."
-    
+    AUTO_CONFIRM=true
+    SELECTED_STACK="core"
+
     detect_platform
     check_python || fatal "Python 3.10+ required"
     check_git || fatal "Git required"
     check_docker || fatal "Docker required"
-    
+    check_optional_tools
+
+    preflight_checks "$SELECTED_STACK"
     create_directory_structure
     install_dopemux_core
+    install_docker_services "$SELECTED_STACK"
+    configure_shell_integration
+    verify_installation
     
-    success "Quick installation complete!"
-    warning "Docker services not started. Run 'dopemux start' when ready."
+    success "Quick installation complete (core stack)!"
+    log "Run 'dopemux start' anytime to restart services."
 }
 
 full_install() {
     log "Full installation mode (all features)..."
     
     AUTO_CONFIRM=true
+    SELECTED_STACK="full"
     interactive_install
 }
 
@@ -896,6 +1339,28 @@ parse_args() {
                 INSTALL_MODE="terminal"
                 shift
                 ;;
+            --stack)
+                if [ $# -lt 2 ]; then
+                    fatal "--stack requires an argument (core|full)"
+                fi
+                case "$2" in
+                    core|full)
+                        SELECTED_STACK="$2"
+                        STACK_SELECTED_FROM_FLAG=true
+                        ;;
+                    *)
+                        fatal "Invalid stack '$2'. Expected 'core' or 'full'"
+                        ;;
+                esac
+                shift 2
+                ;;
+            --env-file)
+                if [ $# -lt 2 ]; then
+                    fatal "--env-file requires a path argument"
+                fi
+                ENV_FILE="$2"
+                shift 2
+                ;;
             --yes|-y)
                 AUTO_CONFIRM=true
                 shift
@@ -913,9 +1378,11 @@ Usage: $0 [OPTIONS]
 OPTIONS:
     --quick         Quick installation (core services only)
     --full          Full installation (all features, no prompts)
+    --stack <mode>  Force stack selection (core|full) in interactive mode
     --terminal      Setup ADHD-optimized terminal environment
     --verify        Verify existing installation
     --uninstall     Remove Dopemux from system
+    --env-file PATH Write/read env vars from PATH instead of .env
     -y, --yes       Auto-confirm all prompts
     -v, --verbose   Verbose output
     -h, --help      Show this help message

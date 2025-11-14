@@ -1,6 +1,7 @@
 import React from 'react';
 import { Paper, Box, Typography, LinearProgress, Chip } from '@mui/material';
-import { Brain, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Brain, AlertTriangle, CheckCircle, XCircle, Droplet } from 'lucide-react';
+import { brandTokens, statusStyles } from '../theme';
 
 interface CognitiveLoadGaugeProps {
   load: number;
@@ -13,22 +14,14 @@ const CognitiveLoadGauge: React.FC<CognitiveLoadGaugeProps> = ({
   status,
   recommendation
 }) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'low': return '#4caf50'; // Green
-      case 'optimal': return '#2196f3'; // Blue
-      case 'high': return '#ff9800'; // Orange
-      case 'critical': return '#f44336'; // Red
-      default: return '#9e9e9e';
-    }
-  };
+  const tone = statusStyles[status];
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'low': return <CheckCircle size={20} color="#4caf50" />;
-      case 'optimal': return <CheckCircle size={20} color="#2196f3" />;
-      case 'high': return <AlertTriangle size={20} color="#ff9800" />;
-      case 'critical': return <XCircle size={20} color="#f44336" />;
+      case 'low': return <CheckCircle size={20} color={statusStyles.low.color} />;
+      case 'optimal': return <CheckCircle size={20} color={statusStyles.optimal.color} />;
+      case 'high': return <AlertTriangle size={20} color={statusStyles.high.color} />;
+      case 'critical': return <XCircle size={20} color={statusStyles.critical.color} />;
       default: return <Brain size={20} />;
     }
   };
@@ -44,7 +37,7 @@ const CognitiveLoadGauge: React.FC<CognitiveLoadGaugeProps> = ({
   };
 
   return (
-    <Paper sx={{ p: 3, height: '100%' }}>
+    <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         <Brain size={24} style={{ marginRight: 8 }} />
         <Typography variant="h6">Cognitive Load</Typography>
@@ -56,16 +49,17 @@ const CognitiveLoadGauge: React.FC<CognitiveLoadGaugeProps> = ({
           icon={getStatusIcon(status)}
           label={getStatusLabel(status)}
           sx={{
-            bgcolor: getStatusColor(status),
-            color: 'white',
-            fontWeight: 'bold'
+            bgcolor: `${tone.color}22`,
+            color: tone.color,
+            border: `1px solid ${tone.color}`,
+            fontWeight: 'bold',
           }}
         />
       </Box>
 
       {/* Load Percentage */}
       <Box sx={{ mb: 2 }}>
-        <Typography variant="h4" sx={{ color: getStatusColor(status), fontWeight: 'bold' }}>
+        <Typography variant="h4" sx={{ color: tone.color, fontWeight: 'bold' }}>
           {(load * 100).toFixed(0)}%
         </Typography>
         <Typography variant="body2" color="text.secondary">
@@ -81,17 +75,18 @@ const CognitiveLoadGauge: React.FC<CognitiveLoadGaugeProps> = ({
           sx={{
             height: 12,
             borderRadius: 6,
-            bgcolor: 'rgba(255, 255, 255, 0.1)',
+            bgcolor: 'rgba(255, 255, 255, 0.06)',
             '& .MuiLinearProgress-bar': {
-              bgcolor: getStatusColor(status),
-              borderRadius: 6
+              bgcolor: tone.color,
+              borderRadius: 6,
+              boxShadow: `0 0 20px ${tone.color}`,
             }
           }}
         />
       </Box>
 
       {/* Recommendation */}
-      <Box sx={{ p: 2, bgcolor: 'rgba(255, 255, 255, 0.05)', borderRadius: 1 }}>
+      <Box sx={{ p: 2, bgcolor: 'rgba(2, 6, 23, 0.45)', borderRadius: 2, border: `1px dashed rgba(148, 250, 219, 0.4)` }}>
         <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
           Recommendation:
         </Typography>
@@ -100,10 +95,15 @@ const CognitiveLoadGauge: React.FC<CognitiveLoadGaugeProps> = ({
         </Typography>
       </Box>
 
-      {/* ADHD-Friendly Design Notes */}
-      <Box sx={{ mt: 2, p: 1, bgcolor: 'rgba(255, 255, 255, 0.03)', borderRadius: 1 }}>
-        <Typography variant="caption" color="text.secondary">
-          Interface adapts automatically based on cognitive load status
+      <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 0.6 }}>
+        <Typography className="dopemux-roast">
+          {status === 'critical'
+            ? "[BLOCKER] You're cooked. Drop everything and sip water."
+            : "I log your restraint, even when you pretend you don't need any."}
+        </Typography>
+        <Typography className="dopemux-aftercare">
+          <Droplet size={14} style={{ marginRight: 6 }} />
+          Logged. Hydrate. Ask nicely if you want aftercare.
         </Typography>
       </Box>
     </Paper>

@@ -8,7 +8,8 @@ import {
   Divider,
   Alert
 } from '@mui/material';
-import { TrendingUp, Clock, AlertCircle } from 'lucide-react';
+import { TrendingUp, Clock, AlertCircle, Sparkles } from 'lucide-react';
+import { brandTokens } from '../theme';
 
 interface PredictionPanelProps {
   prediction?: number;
@@ -17,14 +18,14 @@ interface PredictionPanelProps {
 const PredictionPanel: React.FC<PredictionPanelProps> = ({ prediction }) => {
   if (prediction === undefined) {
     return (
-      <Paper sx={{ p: 3, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Paper sx={{ p: 3, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="dopemux-panel">
         <Box sx={{ textAlign: 'center' }}>
-          <Clock size={48} style={{ color: '#666', marginBottom: 16 }} />
+          <Clock size={48} style={{ color: brandTokens.colors.aftercareViolet, marginBottom: 16 }} />
           <Typography variant="h6" color="text.secondary">
             Prediction Loading...
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            LSTM model analyzing cognitive patterns
+            LSTM daemon is teasing the future. Hold still.
           </Typography>
         </Box>
       </Paper>
@@ -55,21 +56,31 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({ prediction }) => {
   const color = getPredictionColor(prediction);
 
   return (
-    <Paper sx={{ p: 3, height: '100%' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <TrendingUp size={24} style={{ marginRight: 8 }} />
-        <Typography variant="h6">15-Minute Prediction</Typography>
+    <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }} className="dopemux-panel">
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
+        <TrendingUp size={24} />
+        <Typography variant="h6" sx={{ letterSpacing: '0.12em' }}>15-Minute Prediction</Typography>
+        <Chip
+          size="small"
+          label="[EDGE]"
+          className="dopemux-chip"
+          sx={{ ml: 'auto', borderColor: 'rgba(255, 139, 209, 0.7)', color: brandTokens.colors.gremlinPink }}
+        />
       </Box>
+      <Typography className="dopemux-roast" sx={{ mb: 2 }}>
+        I edge your curiosity until the model finally spills percentages.
+      </Typography>
 
       {/* Prediction Value */}
       <Box sx={{ mb: 3 }}>
         <Typography
-          variant="h3"
+          variant="h2"
           sx={{
             color: color,
             fontWeight: 'bold',
             textAlign: 'center',
-            mb: 1
+            mb: 1,
+            fontFamily: '"Space Grotesk", sans-serif'
           }}
         >
           {(prediction * 100).toFixed(0)}%
@@ -90,10 +101,11 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({ prediction }) => {
           sx={{
             height: 16,
             borderRadius: 8,
-            bgcolor: 'rgba(255, 255, 255, 0.1)',
+            bgcolor: 'rgba(255, 255, 255, 0.08)',
             '& .MuiLinearProgress-bar': {
               bgcolor: color,
-              borderRadius: 8
+              borderRadius: 8,
+              boxShadow: `0 0 20px ${color}`
             }
           }}
         />
@@ -126,12 +138,15 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({ prediction }) => {
       </Box>
 
       {/* ADHD-Friendly Features */}
-      <Alert severity="info" sx={{ mt: 2 }}>
+      <Alert severity="info" sx={{ mt: 2, bgcolor: 'rgba(4,22,40,0.6)', color: brandTokens.colors.serumMint }}>
         <Typography variant="caption">
-          <strong>ADHD Optimization:</strong> Predictions update every 5 minutes.
-          Critical load alerts trigger immediate break recommendations.
+          <Sparkles size={12} style={{ marginRight: 6 }} />
+          <strong>ADHD Optimization:</strong> Predictions update every 5 minutes. Critical load alerts trigger ritual breaks + hydration orders.
         </Typography>
       </Alert>
+      <Typography className="dopemux-aftercare" sx={{ mt: 1.5 }}>
+        [AFTERCARE] Log the plan, sip water, thank the daemon when you're ready for chaos again.
+      </Typography>
     </Paper>
   );
 };
