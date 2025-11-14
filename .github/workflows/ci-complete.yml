@@ -121,6 +121,11 @@ jobs:
         run: |
           pytest tests/unit --maxfail=1 --disable-warnings
 
+      - name: 🧪 Installer Smoke Tests (core + full stacks)
+        run: |
+          cd /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+          ./test_installer_basic.sh
+
       - name: 📈 Upload coverage artifact
         if: success()
         uses: actions/upload-artifact@v4
