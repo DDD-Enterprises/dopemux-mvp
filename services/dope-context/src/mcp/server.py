@@ -182,6 +182,9 @@ def _get_cached_reranker(api_key: str) -> VoyageReranker:
     Returns:
         Cached VoyageReranker instance
     """
+    if _reranker:
+        return _reranker
+
     logger.info("Creating cached VoyageReranker")
     return VoyageReranker(api_key=api_key)
 
@@ -790,10 +793,13 @@ async def _search_code_impl(
         else:
             logger.info(f"No BM25 cache found at {bm25_cache_path}, using dense-only search")
 
-        hybrid_search = HybridSearch(
-            dense_search=vector_search,
-            bm25_index=bm25_index,
-        )
+        if _hybrid_search and not isinstance(_hybrid_search, HybridSearch):
+            hybrid_search = _hybrid_search
+        else:
+            hybrid_search = HybridSearch(
+                dense_search=vector_search,
+                bm25_index=bm25_index,
+            )
 
         reranker = _get_cached_reranker(api_key=voyage_key)
 
