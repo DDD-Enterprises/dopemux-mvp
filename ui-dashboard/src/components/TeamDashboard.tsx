@@ -9,7 +9,8 @@ import {
   LinearProgress,
   Tooltip
 } from '@mui/material';
-import { Users, Brain, Zap, Eye, TrendingUp } from 'lucide-react';
+import { Users } from 'lucide-react';
+import { brandTokens, statusStyles } from '../theme';
 
 interface TeamMember {
   id: string;
@@ -85,16 +86,6 @@ const TeamDashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'low': return '#4caf50';
-      case 'optimal': return '#2196f3';
-      case 'high': return '#ff9800';
-      case 'critical': return '#f44336';
-      default: return '#9e9e9e';
-    }
-  };
-
   const getTeamLoadAverage = () => {
     const average = teamMembers.reduce((sum, member) => sum + member.load, 0) / teamMembers.length;
     return average;
@@ -103,23 +94,25 @@ const TeamDashboard: React.FC = () => {
   const teamLoadAvg = getTeamLoadAverage();
 
   return (
-    <Paper sx={{ p: 3, height: '100%' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <Users size={24} style={{ marginRight: 8 }} />
-        <Typography variant="h6">Team Cognitive Status</Typography>
+    <Paper sx={{ p: 3, height: '100%', borderRadius: 4 }} className="dopemux-panel">
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 1.5 }}>
+        <Users size={24} />
+        <Typography variant="h6" sx={{ letterSpacing: '0.15em' }}>
+          Team Cognitive Status
+        </Typography>
         <Chip
           label={`${(teamLoadAvg * 100).toFixed(0)}% Average Load`}
           sx={{
-            ml: 2,
-            bgcolor: getStatusColor(
-              teamLoadAvg < 0.3 ? 'low' :
-              teamLoadAvg < 0.6 ? 'optimal' :
-              teamLoadAvg < 0.8 ? 'high' : 'critical'
-            ),
-            color: 'white'
+            ml: 'auto',
+            bgcolor: 'rgba(148, 250, 219, 0.08)',
+            color: brandTokens.colors.serumMint,
+            border: '1px solid rgba(148, 250, 219, 0.4)'
           }}
         />
       </Box>
+      <Typography className="dopemux-roast" sx={{ mb: 2 }}>
+        Your team is a choir of gremlins; I keep them harmonized with status chips and thinly veiled threats.
+      </Typography>
 
       {/* Team Load Progress */}
       <Box sx={{ mb: 3 }}>
@@ -132,14 +125,17 @@ const TeamDashboard: React.FC = () => {
           sx={{
             height: 12,
             borderRadius: 6,
-            bgcolor: 'rgba(255, 255, 255, 0.1)',
+            bgcolor: 'rgba(255, 255, 255, 0.08)',
             '& .MuiLinearProgress-bar': {
-              bgcolor: getStatusColor(
-                teamLoadAvg < 0.3 ? 'low' :
-                teamLoadAvg < 0.6 ? 'optimal' :
-                teamLoadAvg < 0.8 ? 'high' : 'critical'
-              ),
-              borderRadius: 6
+              bgcolor: teamLoadAvg < 0.3
+                ? statusStyles.low.color
+                : teamLoadAvg < 0.6
+                ? statusStyles.optimal.color
+                : teamLoadAvg < 0.8
+                ? statusStyles.high.color
+                : statusStyles.critical.color,
+              borderRadius: 6,
+              boxShadow: '0 0 20px rgba(125, 251, 246, 0.35)'
             }
           }}
         />
@@ -148,9 +144,9 @@ const TeamDashboard: React.FC = () => {
       <Grid container spacing={2}>
         {teamMembers.map(member => (
           <Grid item xs={12} sm={6} md={3} key={member.id}>
-            <Paper sx={{ p: 2, height: 200 }}>
+            <Paper sx={{ p: 2, height: 220, borderRadius: 3 }} className="dopemux-panel">
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
+                <Avatar sx={{ bgcolor: 'rgba(125, 251, 246, 0.2)', color: brandTokens.colors.serumMint, mr: 2 }}>
                   {member.avatar}
                 </Avatar>
                 <Box sx={{ flexGrow: 1 }}>
@@ -165,8 +161,9 @@ const TeamDashboard: React.FC = () => {
                   size="small"
                   label={member.status.toUpperCase()}
                   sx={{
-                    bgcolor: getStatusColor(member.status),
-                    color: 'white'
+                    bgcolor: `${statusStyles[member.status].color}22`,
+                    color: statusStyles[member.status].color,
+                    border: `1px solid ${statusStyles[member.status].color}`
                   }}
                 />
               </Box>
@@ -181,9 +178,9 @@ const TeamDashboard: React.FC = () => {
                 sx={{
                   height: 8,
                   borderRadius: 4,
-                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  bgcolor: 'rgba(255, 255, 255, 0.05)',
                   '& .MuiLinearProgress-bar': {
-                    bgcolor: getStatusColor(member.status),
+                    bgcolor: statusStyles[member.status].color,
                     borderRadius: 4
                   }
                 }}
@@ -193,14 +190,32 @@ const TeamDashboard: React.FC = () => {
                 <Chip
                   size="small"
                   label={`${(member.energy * 100).toFixed(0)}% Energy`}
-                  sx={{ bgcolor: member.energy > 0.6 ? '#4caf50' : '#ff9800', color: 'white' }}
+                  sx={{
+                    bgcolor: 'rgba(4,22,40,0.7)',
+                    color: member.energy > 0.6 ? brandTokens.colors.serumMint : brandTokens.colors.giltEdge,
+                    border: `1px solid ${
+                      member.energy > 0.6 ? brandTokens.colors.serumMint : brandTokens.colors.giltEdge
+                    }`
+                  }}
                 />
                 <Chip
                   size="small"
                   label={`${(member.attention * 100).toFixed(0)}% Attention`}
-                  sx={{ bgcolor: member.attention > 0.6 ? '#2196f3' : '#ff9800', color: 'white' }}
+                  sx={{
+                    bgcolor: 'rgba(4,22,40,0.7)',
+                    color: member.attention > 0.6 ? brandTokens.colors.ritualCyan : brandTokens.colors.giltEdge,
+                    border: `1px solid ${
+                      member.attention > 0.6 ? brandTokens.colors.ritualCyan : brandTokens.colors.giltEdge
+                    }`
+                  }}
                 />
               </Box>
+
+              <Typography className="dopemux-roast" sx={{ mt: 1 }}>
+                {member.status === 'critical'
+                  ? "[BLOCKER] Send this dev water and a hug. Now."
+                  : "I archive every sigh they make. Use the intel."}
+              </Typography>
             </Paper>
           </Grid>
         ))}

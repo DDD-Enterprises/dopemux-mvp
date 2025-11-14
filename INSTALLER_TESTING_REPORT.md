@@ -109,6 +109,19 @@ REQUIRED_PYTHON_VERSION="3.10"
 - Fast execution (~3 seconds)
 - CI/CD friendly
 
+### 3. Stack Selection + `.env` Bootstrap (NEW)
+**Files:** `install.sh`, `INSTALL.md`
+- Installer now differentiates **core** vs **full** stacks and auto-selects the right docker-compose file (`--quick` ⇒ core, `--full` ⇒ master)
+- Full installs prompt for required API keys/secrets and store them in a git-ignored `.env`
+- Automatically creates external Docker networks (`mcp-network`, `dopemux-unified-network`, `leantime-net`) required by the full stack
+
+### 4. Interactive Installer UX Improvements (NEW)
+**Files:** `install.sh`, `INSTALL.md`
+- Added stack summaries with estimated runtimes so users know what each bundle includes before proceeding
+- Introduced `--stack core|full` and `--env-file <path>` flags for CI/unattended workflows
+- Added `INSTALLER_TEST_MODE=1` escape hatch so automated tests can exercise the full interactive flow without touching Docker, pip, or user shell configs
+- `test_installer_basic.sh` validates the new help output *and* runs an interactive smoke test under test mode
+
 ---
 
 ## Performance Metrics

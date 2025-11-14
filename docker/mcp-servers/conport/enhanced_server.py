@@ -17,6 +17,10 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
+# Setup logging first
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Import the global error handling framework (Phase 2)
 try:
     from dopemux.error_handling import (
@@ -29,12 +33,25 @@ try:
 except ImportError:
     ERROR_HANDLING_AVAILABLE = False
     logger.warning("⚠️ Error handling framework not available")
+    # Create dummy decorator
+    def with_error_handling(*args, **kwargs):
+        def decorator(func):
+            return func
+        return decorator
 
 # Worktree multi-instance support
-from instance_detector import SimpleInstanceDetector
+try:
+    from instance_detector import SimpleInstanceDetector
+except ImportError:
+    logger.warning("⚠️ Instance detector not available")
+    SimpleInstanceDetector = None
 
 # DopeconBridge event publishing
-from dopecon_bridge_client import DopeconBridgeClient
+try:
+    from dopecon_bridge_client import DopeconBridgeClient
+except ImportError:
+    logger.warning("⚠️ DopeconBridge client not available")
+    DopeconBridgeClient = None
 
 # Monitoring
 sys.path.insert(0, '/app/shared')
@@ -62,9 +79,6 @@ except ImportError:
     import asyncpg
     import redis.asyncio as aioredis
     import uuid
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 class EnhancedConPortServer:
     """
@@ -175,17 +189,25 @@ class EnhancedConPortServer:
             logger.info("✅ Redis connection established")
 
             # DopeconBridge client for event publishing
-            self.dopecon_bridge = DopeconBridgeClient()
-            await self.dopecon_bridge.initialize()
+            if DopeconBridgeClient:
+                self.dopecon_bridge = DopeconBridgeClient()
+                await self.dopecon_bridge.initialize()
+            else:
+                self.dopecon_bridge = None
+                logger.warning("⚠️ DopeconBridge not available")
 
             # F-NEW-7 Phase 2: Initialize unified query API
-            from unified_queries import UnifiedQueryAPI
-            self.unified_query_api = UnifiedQueryAPI(
-                db_pool=self.db_pool,
-                redis_client=self.redis,
-                schema='ag_catalog'
-            )
-            logger.info("✅ F-NEW-7 Unified Query API initialized")
+            try:
+                from unified_queries import UnifiedQueryAPI
+                self.unified_query_api = UnifiedQueryAPI(
+                    db_pool=self.db_pool,
+                    redis_client=self.redis,
+                    schema='ag_catalog'
+                )
+                logger.info("✅ F-NEW-7 Unified Query API initialized")
+            except ImportError:
+                self.unified_query_api = None
+                logger.warning("⚠️ Unified query API not available")
 
             # Start auto-save task for ADHD context preservation
             self.auto_save_task = asyncio.create_task(self.auto_save_loop())

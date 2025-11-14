@@ -799,6 +799,7 @@ def _setup_orchestrator_layout(
     start_dir: str,
     config,
     dual_agent: bool,
+    pm_mode: bool = False,
 ) -> OrchestratorLayout:
     shell_cmd = os.environ.get("SHELL", "/bin/bash")
     theme = _resolve_theme(config)
@@ -971,33 +972,47 @@ def _setup_orchestrator_layout(
         interval = 8
         return f"while true; do clear; {raw}; sleep {interval}; done"
 
-    for pane_id, title in pane_titles:
-        cmd = monitor_commands.get(title)
-        if cmd:
-            prepared = _prepare_monitor_command(cmd)
-            if prepared:
-                try:
-                    controller.send_keys(
-                        pane_id,
-                        prepared,
-                        enter=True,
-                        raw=True,
-                        respect_rate_limit=False,
-                    )
-                except Exception:
-                    pass
-        else:
-            if title.startswith("monitor:"):
-                placeholder = (
-                    f"clear; printf '📊 Configure monitor_commands[\"{title}\"] in dopemux.toml.\\n'"
-                )
+    if pm_mode:
+        project_dir = shlex.quote(start_dir)
+        try:
+            for pane_id in (top_monitors_id, monitor_right_id):
                 controller.send_keys(
                     pane_id,
-                    placeholder,
+                    f"cd {project_dir}; clear; bash scripts/pm-dashboard.sh pm",
                     enter=True,
                     raw=True,
                     respect_rate_limit=False,
                 )
+        except Exception:
+            pass
+    else:
+        for pane_id, title in pane_titles:
+            cmd = monitor_commands.get(title)
+            if cmd:
+                prepared = _prepare_monitor_command(cmd)
+                if prepared:
+                    try:
+                        controller.send_keys(
+                            pane_id,
+                            prepared,
+                            enter=True,
+                            raw=True,
+                            respect_rate_limit=False,
+                        )
+                    except Exception:
+                        pass
+            else:
+                if title.startswith("monitor:"):
+                    placeholder = (
+                        f"clear; printf '📊 Configure monitor_commands[\"{title}\"] in dopemux.toml.\\n'"
+                    )
+                    controller.send_keys(
+                        pane_id,
+                        placeholder,
+                        enter=True,
+                        raw=True,
+                        respect_rate_limit=False,
+                    )
 
     orchestrator_cmd = (
         getattr(config, "orchestrator_command", None) or "dopemux start --role orchestrator --no-recovery"
@@ -1025,6 +1040,7 @@ def _setup_orchestrator_layout(
             f"export DOPEMUX_TMUX_SESSION={session}; "
             f"unset DOPEMUX_NON_INTERACTIVE; "
             f"export DOPEMUX_AGENT_ROLE=orchestrator; "
+            f"export ZEN_THINKING_MODE=deep; export ZEN_THINKING_LEVEL=high; export ZEN_MULTI_MODEL=1; "
             f"export DOPEMUX_SANDBOX_PANE={sandbox_id}; "
             f"export DOPEMUX_AGENT_PANE={agent_pane_id}; "
         )
@@ -1108,13 +1124,13 @@ def _setup_orchestrator_layout(
     )
 
     if secondary_agent_id:
-        secondary_cmd = getattr(config, "secondary_agent_command", None) or "dopemux start --role secondary"
+        secondary_cmd = getattr(config, "secondary_agent_command", None) or ("dopemux start --role research" if pm_mode else "dopemux start --role secondary")
         secondary_prefix = (
             f"{litellm_env}"
             f"export DOPEMUX_DEFAULT_LITELLM=1; "
             f"export DOPEMUX_TMUX_SESSION={session}; "
             f"export DOPEMUX_NON_INTERACTIVE=1; "
-            f"export DOPEMUX_AGENT_ROLE=secondary; "
+            f"export DOPEMUX_AGENT_ROLE={'research' if pm_mode else 'secondary'}; "
             f"export DOPEMUX_ORCHESTRATOR_PANE={orchestrator_id}; "
             f"export DOPEMUX_PRIMARY_AGENT_PANE={agent_pane_id}; "
         )
@@ -1150,6 +1166,7 @@ def _setup_dope_layout(
     config,
     dual_agent: bool,
     bootstrap: bool,
+    pm_mode: bool = False,
 ) -> OrchestratorLayout:
     shell_cmd = os.environ.get("SHELL", "/bin/bash")
     theme = _resolve_theme(config)
@@ -1325,45 +1342,84 @@ def _setup_dope_layout(
     project_dir = shlex.quote(start_dir)
 
     if bootstrap:
-        dashboard_left_cmd = (
-            f"cd {project_dir}; "
-            "clear; printf '💡 Loading Neon dashboard (implementation) ...\\n'; "
-            "export NEON_DASHBOARD_PANE_ROLE=left; "
-            f"{python_cmd} scripts/neon_dashboard/core/app.py"
-        )
-        controller.send_keys(
-            monitors_left_id,
-            dashboard_left_cmd,
-            enter=True,
-            raw=True,
-            respect_rate_limit=False,
-        )
+        if pm_mode:
+            pm_cmd_left = (
+                f"cd {project_dir}; "
+                "clear; printf '📋 PM Dashboard (Epics/Tasks) ...\\n'; "
+                "bash scripts/pm-dashboard.sh pm"
+            )
+            controller.send_keys(
+                monitors_left_id,
+                pm_cmd_left,
+                enter=True,
+                raw=True,
+                respect_rate_limit=False,
+            )
 
-        dashboard_right_cmd = (
-            f"cd {project_dir}; "
-            "clear; printf '🧭 Loading Neon dashboard (system/PM) ...\\n'; "
-            "export NEON_DASHBOARD_PANE_ROLE=right; "
-            f"{python_cmd} scripts/neon_dashboard/core/app.py"
-        )
-        controller.send_keys(
-            monitor_right_id,
-            dashboard_right_cmd,
-            enter=True,
-            raw=True,
-            respect_rate_limit=False,
-        )
+            pm_cmd_right = (
+                f"cd {project_dir}; "
+                "clear; printf '🧠 PM Orchestrator (Zen) ...\\n'; "
+                "DASHBOARD_MODE=pm bash scripts/pm-dashboard.sh orchestrator"
+            )
+            controller.send_keys(
+                monitor_right_id,
+                pm_cmd_right,
+                enter=True,
+                raw=True,
+                respect_rate_limit=False,
+            )
 
-        metrics_cmd = (
-            f"cd {project_dir}; "
-            "while true; do clear; dopemux health; sleep 10; done"
-        )
-        controller.send_keys(
-            metrics_bar_id,
-            metrics_cmd,
-            enter=True,
-            raw=True,
-            respect_rate_limit=False,
-        )
+            metrics_cmd = (
+                f"cd {project_dir}; "
+                "while true; do clear; dopemux bridge stats || dopemux health; sleep 15; done"
+            )
+            controller.send_keys(
+                metrics_bar_id,
+                metrics_cmd,
+                enter=True,
+                raw=True,
+                respect_rate_limit=False,
+            )
+        else:
+            dashboard_left_cmd = (
+                f"cd {project_dir}; "
+                "clear; printf '💡 Loading Neon dashboard (implementation) ...\\n'; "
+                "export NEON_DASHBOARD_PANE_ROLE=left; "
+                f"{python_cmd} scripts/neon_dashboard/core/app.py"
+            )
+            controller.send_keys(
+                monitors_left_id,
+                dashboard_left_cmd,
+                enter=True,
+                raw=True,
+                respect_rate_limit=False,
+            )
+
+            dashboard_right_cmd = (
+                f"cd {project_dir}; "
+                "clear; printf '🧭 Loading Neon dashboard (system/PM) ...\\n'; "
+                "export NEON_DASHBOARD_PANE_ROLE=right; "
+                f"{python_cmd} scripts/neon_dashboard/core/app.py"
+            )
+            controller.send_keys(
+                monitor_right_id,
+                dashboard_right_cmd,
+                enter=True,
+                raw=True,
+                respect_rate_limit=False,
+            )
+
+            metrics_cmd = (
+                f"cd {project_dir}; "
+                "while true; do clear; dopemux health; sleep 10; done"
+            )
+            controller.send_keys(
+                metrics_bar_id,
+                metrics_cmd,
+                enter=True,
+                raw=True,
+                respect_rate_limit=False,
+            )
     else:
         for pane_id in (monitors_left_id, monitor_right_id, metrics_bar_id):
             controller.send_keys(
@@ -1401,6 +1457,7 @@ def _setup_dope_layout(
                 f"export DOPEMUX_TMUX_SESSION={session}; "
                 f"unset DOPEMUX_NON_INTERACTIVE; "
                 f"export DOPEMUX_AGENT_ROLE=orchestrator; "
+                f"export ZEN_THINKING_MODE=deep; export ZEN_THINKING_LEVEL=high; export ZEN_MULTI_MODEL=1; "
                 f"export DOPEMUX_SANDBOX_PANE={sandbox_id}; "
                 f"export DOPEMUX_AGENT_PANE={agent_pane_id}; "
             )
@@ -1482,13 +1539,13 @@ def _setup_dope_layout(
         )
 
         if secondary_agent_id:
-            secondary_cmd = getattr(config, "secondary_agent_command", None) or "dopemux start --role secondary"
+            secondary_cmd = getattr(config, "secondary_agent_command", None) or ("dopemux start --role research" if pm_mode else "dopemux start --role secondary")
             secondary_prefix = (
                 f"{litellm_env_agent}"
                 f"export DOPEMUX_DEFAULT_LITELLM=1; "
                 f"export DOPEMUX_TMUX_SESSION={session}; "
                 f"export DOPEMUX_NON_INTERACTIVE=1; "
-                f"export DOPEMUX_AGENT_ROLE=secondary; "
+                f"export DOPEMUX_AGENT_ROLE={'research' if pm_mode else 'secondary'}; "
                 f"export DOPEMUX_ORCHESTRATOR_PANE={orchestrator_id}; "
                 f"export DOPEMUX_PRIMARY_AGENT_PANE={agent_pane_id}; "
             )
@@ -2142,6 +2199,13 @@ def start_tmux(
     split_vertical = layout_choice != "low"
 
     layout_handles: Optional[OrchestratorLayout] = None
+    # Detect PM mode from config
+    try:
+        dope_cfg = cfg_manager.load_config().dope_layout
+        pm_mode = getattr(dope_cfg, "default_mode", "implementation") == "pm"
+    except Exception:
+        pm_mode = False
+
     if layout_choice == "orchestrator":
         try:
             base_pane = _prepare_orchestrator_base(
@@ -2163,6 +2227,7 @@ def start_tmux(
                 start_dir,
                 tmux_cfg,
                 dual_agent,
+                pm_mode,
             )
         except Exception as e:
             click.echo(f"[red]❌ Error setting up orchestrator layout: {e}[/red]")
@@ -2189,6 +2254,7 @@ def start_tmux(
                 tmux_cfg,
                 dual_agent,
                 bootstrap,
+                pm_mode,
             )
         except Exception as e:
             click.echo(f"[red]❌ Error setting up Dope layout: {e}[/red]")
