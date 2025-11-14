@@ -6,6 +6,65 @@
 
 set -e
 
+strip_ansi_tail() {
+    perl -pe 's/\e\[[0-9;]*[A-Za-z]//g' "$1" | tail -n 40
+}
+
+run_install_smoke() {
+    local label="$1"
+    local stack="$2"
+    local auto="$3"
+    local stdin_input="${4:-y}"
+    
+    local tmp_root
+    tmp_root=$(mktemp -d)
+    local home_dir="$tmp_root/home"
+    mkdir -p "$home_dir"
+    local env_file="$tmp_root/.env"
+    local log_file="$tmp_root/install.log"
+
+    if [ "$stack" = "full" ]; then
+        cat > "$env_file" <<'EOF'
+AGE_PASSWORD=test_age_password
+ANTHROPIC_API_KEY=test_anthropic_key
+OPENAI_API_KEY=test_openai_key
+OPENROUTER_API_KEY=test_openrouter_key
+GEMINI_API_KEY=test_gemini_key
+XAI_API_KEY=test_xai_key
+CONTEXT7_API_KEY=test_context7_key
+LEANTIME_URL=http://localhost:8097
+LEANTIME_TOKEN=test_leantime_token
+TASK_ORCHESTRATOR_API_KEY=test_task_key
+ADHD_ENGINE_API_KEY=test_adhd_key
+LITELLM_DATABASE_URL=postgresql://dopemux_age:test_age_password@localhost:5432/litellm
+EOF
+    fi
+    
+    local cmd=(./install.sh --stack "$stack" --env-file "$env_file")
+    if [ "$auto" = "yes" ]; then
+        cmd+=(--yes)
+        if INSTALLER_TEST_MODE=1 HOME="$home_dir" DOPEMUX_HOME="$home_dir/.dopemux" "${cmd[@]}" >"$log_file" 2>&1; then
+            echo "✅ $label"
+        else
+            echo "❌ $label"
+            strip_ansi_tail "$log_file"
+            rm -rf "$tmp_root"
+            exit 1
+        fi
+    else
+        if INSTALLER_TEST_MODE=1 HOME="$home_dir" DOPEMUX_HOME="$home_dir/.dopemux" "${cmd[@]}" >"$log_file" 2>&1 <<<"$stdin_input"; then
+            echo "✅ $label"
+        else
+            echo "❌ $label"
+            strip_ansi_tail "$log_file"
+            rm -rf "$tmp_root"
+            exit 1
+        fi
+    fi
+    
+    rm -rf "$tmp_root"
+}
+
 echo "🧪 Running basic installer tests..."
 echo ""
 
@@ -70,6 +129,18 @@ else
 fi
 echo ""
 
+# Test 6: Installer Smoke (Core stack, auto-confirm, test mode)
+echo "Test 6: Installer Smoke (Core stack, auto-confirm, test mode)"
+echo "============================================================"
+run_install_smoke "Core stack smoke test" "core" "yes"
+echo ""
+
+# Test 7: Installer Smoke (Full stack, interactive, test mode)
+echo "Test 7: Installer Smoke (Full stack, interactive, test mode)"
+echo "==========================================================="
+run_install_smoke "Full stack interactive smoke test" "full" "no" "y"
+echo ""
+
 echo "📊 Test Summary"
 echo "==============="
 echo "Basic tests complete! ✅"
@@ -78,4 +149,3 @@ echo "Note: Full installation tests require:"
 echo "  - Docker (for service deployment)"
 echo "  - Platform-specific package managers"
 echo "  - Root/sudo access (for system packages)"
-
