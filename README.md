@@ -1,6 +1,14 @@
-# Dopemux MVP - ADHD-Optimized Development Platform
+# Dopemux MVP — Ritual Daemon Edition
 
-**Real-time context awareness, knowledge graphs, and cognitive load management for developers with ADHD**
+```
+━━━◆ Ø ◆━━━
+[LIVE] Dopemuse online. Luxury filth plus lab precision. I roast myself first, then your backlog.
+[CONSENT CHECK? y/N]
+```
+
+**Terminal-native ADHD accommodations, horny brand voice, and precision tooling for devs who crave ritualized focus**
+
+> Need the full aesthetic spec? See [DØPEMÜX Brand System](docs/branding/DØPEMUX_BRAND_SYSTEM.md). All surfaces — UI, tmux, CLI, docs — must honor that contract. Logged. Hydrate.
 
 ![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![Python](https://img.shields.io/badge/python-3.10+-green)
@@ -10,7 +18,7 @@
 
 ## 🎯 What is Dopemux?
 
-Dopemux is a comprehensive development platform designed specifically for developers with ADHD. It combines real-time statusline awareness, persistent knowledge graphs, and adaptive accommodations to reduce cognitive load and maximize productivity.
+DØPEMÜX is the filthy brain-gremlin living in your terminal: a cognitive ops stack that keeps receipts, preserves dopamine, and drips aftercare summaries on command. Real-time statusline awareness, persistent memory graphs, adaptive ritual scripts — all kink-coded, all consent-first, all logged.
 
 ### Key Features
 
@@ -1006,4 +1014,3 @@ For more details, see:
 - [Multi-Workspace Implementation Guide](MULTI_WORKSPACE_IMPLEMENTATION_GUIDE.md)
 - [Workspace API Reference](docs/api/workspace.md)
 - [Troubleshooting Guide](docs/troubleshooting/workspaces.md)
-
