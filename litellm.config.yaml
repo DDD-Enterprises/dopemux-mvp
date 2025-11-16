@@ -120,6 +120,7 @@ litellm_settings:
     claude-3-7-sonnet-20250219: openrouter-xai-grok-code-fast
     claude-3.5: openrouter-xai-grok-code-fast
     claude-3-5-sonnet-20240620: openrouter-xai-grok-code-fast
+    claude-3-5-sonnet-20241022: openrouter-xai-grok-code-fast
   fallbacks:
   - openrouter-openai-gpt-5-pro:
     - openrouter-openai-gpt-5-codex
@@ -145,5 +146,6 @@ litellm_settings:
   - openrouter-openai-gpt-5-codex
 general_settings:
   master_key: sk-master-dopemux-local-20251101
-  # Use the in-network service name so LiteLLM can reach Postgres from inside Docker
-  database_url: postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm
+  # Use localhost for local/native runs, dopemux-postgres-age for docker runs
+  # Override with DATABASE_URL env var if needed
+  database_url: postgresql://dopemux_age:dopemux_age_dev_password@localhost:5432/litellm
