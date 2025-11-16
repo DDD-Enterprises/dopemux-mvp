@@ -80,6 +80,7 @@ def test_ensure_started_regenerates_legacy_master_key(monkeypatch, tmp_path):
 
     manager = LiteLLMProxyManager(tmp_path, "A", 3000)
     monkeypatch.setattr(manager, "_is_port_in_use", lambda: True)
+    monkeypatch.setattr(manager, "_check_proxy_health", lambda: True)
 
     info = manager.ensure_started()
 

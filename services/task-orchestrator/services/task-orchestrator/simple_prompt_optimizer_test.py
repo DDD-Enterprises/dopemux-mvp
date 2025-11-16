@@ -23,7 +23,7 @@ async def test_prompt_optimizer():
     print("🧪 Starting PromptOptimizer tests...")
 
     # Initialize brain manager
-    brain = ClaudeBrainManager()
+    brain = DopeBrainzManager()
     optimizer = brain.prompt_optimizer
 
     # Sample task

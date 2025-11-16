@@ -13,7 +13,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from enhanced_orchestrator import ClaudeBrainManager, OrchestrationTask, TaskStatus
+from enhanced_orchestrator import DopeBrainzManager, OrchestrationTask, TaskStatus
 
 # Mock missing dependencies for test
 class MockEvent:
@@ -53,7 +53,7 @@ async def test_basic_reasoning():
     """Test basic reasoning functionality."""
     logger.info("🧪 Testing basic reasoning...")
 
-    brain = ClaudeBrainManager()
+    brain = DopeBrainzManager()
 
     # Test 1: Simple reasoning
     prompt = "What is 2+2?"
@@ -76,7 +76,7 @@ async def test_caching():
     """Test Redis caching functionality."""
     logger.info("🧪 Testing Redis caching...")
 
-    brain = ClaudeBrainManager()
+    brain = DopeBrainzManager()
 
     # Test repeated prompt (should cache)
     prompt = "Hello world"
@@ -101,7 +101,7 @@ async def test_security():
     """Test input validation and sanitization."""
     logger.info("🧪 Testing security measures...")
 
-    brain = ClaudeBrainManager()
+    brain = DopeBrainzManager()
 
     # Test valid input
     valid_prompt = "What is Python?"
@@ -127,7 +127,7 @@ async def test_concurrency():
     """Test concurrency limits."""
     logger.info("🧪 Testing concurrency limits...")
 
-    brain = ClaudeBrainManager()
+    brain = DopeBrainzManager()
 
     # Simulate multiple concurrent calls
     async def concurrent_call(i):
@@ -193,7 +193,7 @@ async def test_orchestrator_integration():
 
 async def run_all_tests():
     """Run all brain tests."""
-    logger.info("🚀 Starting ClaudeBrainManager end-to-end tests...")
+    logger.info("🚀 Starting DopeBrainzManager end-to-end tests...")
 
     tests = [
         ("Basic Reasoning", test_basic_reasoning),
@@ -223,7 +223,7 @@ async def run_all_tests():
     logger.info(f"Test Results: {sum(results)}/{len(results)} passed")
 
     if all(results):
-        logger.info("🎉 All tests passed! ClaudeBrainManager is ready for production.")
+        logger.info("🎉 All tests passed! DopeBrainzManager is ready for production.")
         return True
     else:
         logger.warning("⚠️ Some tests failed. Review implementation before deployment.")
