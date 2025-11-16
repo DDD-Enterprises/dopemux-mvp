@@ -904,6 +904,24 @@ def start(
         # Configure Claude Code Router to use this LiteLLM instance
         os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = f"http://localhost:{litellm_port}/v1/chat/completions"
         os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
+        
+        # Extract models from litellm config
+        litellm_config = Path.cwd() / "litellm.config.yaml"
+        models_list = []
+        if litellm_config.exists():
+            try:
+                import yaml
+                with open(litellm_config) as f:
+                    config = yaml.safe_load(f)
+                    if config and "model_list" in config:
+                        models_list = [m["model_name"] for m in config["model_list"] if "model_name" in m]
+            except Exception as e:
+                console.print(f"[yellow]⚠️  Could not parse litellm.config.yaml: {e}[/yellow]")
+        
+        if models_list:
+            os.environ["CLAUDE_CODE_ROUTER_MODELS"] = ",".join(models_list)
+        else:
+            console.print("[yellow]⚠️  No models found in litellm.config.yaml[/yellow]")
 
         os.environ["DOPEMUX_LITELLM_DB_URL"] = db_url
         os.environ.setdefault("LITELLM_DATABASE_URL", db_url)
