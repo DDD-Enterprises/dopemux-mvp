@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script for ClaudeBrainManager end-to-end functionality.
+Test script for DopeBrainzManager end-to-end functionality.
 Tests reasoning, caching, security, and integration with orchestrator.
 """
 
@@ -158,7 +158,7 @@ async def test_orchestrator_integration():
     # Mock orchestrator (minimal setup)
     class MockOrchestrator:
         def __init__(self):
-            self.claude_brain = ClaudeBrainManager()
+            self.claude_brain = DopeBrainzManager()
             self.agent_pool = {
                 "CONPORT": {"available": True},
                 "SERENA": {"available": True},
