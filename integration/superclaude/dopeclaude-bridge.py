@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-DopeClaude: SuperClaude Enhanced with Dopemux Intelligence
+DopeClaude: DopeClaude Enhanced with Dopemux Intelligence
 
-This bridge system preserves SuperClaude's elegant command structure while
+This bridge system preserves DopeClaude's elegant command structure while
 transparently adding Dopemux's advanced MCP orchestration, ADHD optimizations,
 and intelligence amplification.
 
 Architecture:
-- Intercepts SuperClaude /sc: commands
+- Intercepts DopeClaude /sc: commands
 - Routes through MetaMCP for intelligent tool selection
 - Applies ADHD accommodations and session management
-- Preserves SuperClaude's workflow patterns with enhanced capabilities
+- Preserves DopeClaude's workflow patterns with enhanced capabilities
 """
 
 import asyncio
@@ -270,7 +270,7 @@ class DopeCladueBridge:
 
     def parse_command(self, input_text: str) -> Tuple[str, str, Dict[str, Any]]:
         """
-        Parse SuperClaude and DopeClaude commands
+        Parse DopeClaude and DopeClaude commands
 
         Supported formats:
         - /sc:analyze "microservices" --focus security --persona architect
