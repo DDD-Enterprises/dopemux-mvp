@@ -1445,6 +1445,9 @@ def start(
         # Do not restore original ANTHROPIC_API_KEY here — in API-key proxy mode,
         # the router (or LiteLLM) master key must be used by Claude to avoid login/API errors.
         os.environ.update(router_env)
+        
+        # Re-export env with router variables so Claude Code can pick them up
+        _persist_instance_env_exports(project_path, instance_id, dict(os.environ))
 
         if router_info.already_running:
             console.print(
