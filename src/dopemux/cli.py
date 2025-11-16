@@ -45,9 +45,9 @@ from .claude_tools.cli import register_commands
 load_dotenv()
 from .adhd import AttentionMonitor, ContextManager, TaskDecomposer
 from .claude import ClaudeConfigurator, ClaudeLauncher
-from .claude_code_router import (
-    ClaudeCodeRouterError,
-    ClaudeCodeRouterManager,
+from .dope_brainz_router import (
+    DopeBrainzRouterError,
+    DopeBrainzRouterManager,
 )
 from .config import ConfigManager
 from .health import HealthChecker
@@ -98,56 +98,7 @@ from .roles.catalog import (
 if "-litellm" in sys.argv:
     sys.argv = ["--litellm" if arg == "-litellm" else arg for arg in sys.argv]
 
-class RitualConsole(Console):
-    """Custom console that auto-injects DØPEMÜX status chips."""
-
-    def print(
-        self,
-        *objects,
-        brand_chip: Optional[str] = None,
-        brand_style: str = "cyan",
-        **kwargs,
-    ):
-        if brand_chip == "":
-            super().print(*objects, **kwargs)
-            return
-
-        candidate_chip = brand_chip
-        if candidate_chip is None and len(objects) == 1 and isinstance(objects[0], (str, Text)):
-            candidate_chip = "[LIVE]"
-
-        if candidate_chip:
-            text = " ".join(str(obj) for obj in objects)
-            super().print(f"[{brand_style}]{candidate_chip} {text}[/{brand_style}]", **kwargs)
-        else:
-            super().print(*objects, **kwargs)
-
-
-console = RitualConsole()
-
-BRAND_DIVIDER = "━━━◆ Ø ◆━━━"
-_brand_banner_printed = False
-
-
-def print_brand_banner() -> None:
-    """Render the Ritual Daemon banner once per invocation."""
-    global _brand_banner_printed
-    if _brand_banner_printed or os.getenv("DOPEMUX_SUPPRESS_BANNER") == "1":
-        return
-
-    banner_text = (
-        f"{BRAND_DIVIDER}\n"
-        "[LIVE] DØPEMÜX Ritual Daemon online. Luxury filth meets lab precision.\n"
-        "[CONSENT CHECK? y/N] I roast myself first, then your backlog. Logged. Hydrate.\n"
-        f"{BRAND_DIVIDER}"
-    )
-    console.print(Panel(banner_text, border_style="cyan", padding=(1, 2)))
-    _brand_banner_printed = True
-
-
-def brand_status(message: str, chip: str = "[LIVE]", style: str = "cyan") -> None:
-    """Consistent brand-forward console output."""
-    console.print(message, brand_chip=chip, brand_style=style)
+console = Console()
 
 if not _DOTENV_AVAILABLE:  # pragma: no cover - environment warning
     warnings.warn(
@@ -235,212 +186,14 @@ def _persist_instance_env_exports(
         shutil.copyfile(env_path, target_dir / "current.env")
 
         relative_export = export_path.relative_to(project_root)
-        brand_status(
-            f"Instance environment exported to {relative_export} "
-            f"(source .dopemux/env/current.sh to mirror in this shell)",
-            chip="[LOGGED]",
-            style="dim",
+        console.print(
+            f"[dim]✓ Instance environment exported to {relative_export} "
+            f"(source .dopemux/env/current.sh to mirror in this shell)[/dim]"
         )
     except Exception as exc:  # pragma: no cover - best effort persistence
-        brand_status(
-            f"Could not persist instance environment: {exc}",
-            chip="[OVERRIDE]",
-            style="yellow",
+        console.print(
+            f"[yellow]⚠️  Could not persist instance environment: {exc}[/yellow]"
         )
-
-
-ROUTING_PRESETS = {
-    "balanced": {
-        "description": "Grok Code Fast primary with GPT-5 and Grok-4 fallbacks.",
-        "primary_candidates": ["openrouter-xai-grok-code-fast", "xai-grok-code-fast-1"],
-        "fallback_candidates": [
-            ["openrouter-xai-grok-4-fast", "grok-4-fast"],
-            ["openrouter-openai-gpt-5", "openrouter-gpt-5", "gpt-5"],
-        ],
-        "opus_candidates": ["openrouter-openai-gpt-5-codex", "openrouter-gpt-5-codex", "gpt-5-codex"],
-        "haiku_candidates": ["openrouter-openai-gpt-5-mini", "openrouter-gpt-5-mini", "gpt-5-mini"],
-    },
-    "research": {
-        "description": "GPT-5 Pro primary with Grok + GPT-5 fallbacks.",
-        "primary_candidates": ["openrouter-openai-gpt-5-pro", "openrouter-gpt-5-pro", "gpt-5-pro"],
-        "fallback_candidates": [
-            ["openrouter-openai-gpt-5", "openrouter-gpt-5", "gpt-5"],
-            ["openrouter-xai-grok-4-fast", "grok-4-fast"],
-        ],
-        "opus_candidates": ["openrouter-openai-gpt-5-pro", "openrouter-openai-gpt-5-codex", "gpt-5-pro"],
-        "haiku_candidates": ["openrouter-openai-gpt-5-mini", "gpt-5-mini"],
-    },
-    "budget": {
-        "description": "GPT-5 Mini primary to minimize spend, with GPT-5 + Grok backup.",
-        "primary_candidates": ["openrouter-openai-gpt-5-mini", "openrouter-gpt-5-mini", "gpt-5-mini"],
-        "fallback_candidates": [
-            ["openrouter-openai-gpt-5", "openrouter-gpt-5", "gpt-5"],
-            ["openrouter-xai-grok-4-fast", "grok-4-fast"],
-        ],
-        "opus_candidates": ["openrouter-openai-gpt-5-codex", "gpt-5-codex"],
-        "haiku_candidates": ["openrouter-openai-gpt-5-mini", "gpt-5-mini"],
-    },
-}
-
-CLAUDE_ALIAS_GROUPS = {
-    "primary": [
-        "claude-sonnet",
-        "claude-sonnet-4-5-20250929",
-        "claude-sonnet-4.5",
-        "claude-4",
-        "claude-4-sonnet",
-        "claude-3.7",
-        "claude-3-7-sonnet-20250219",
-        "claude-3.5",
-        "claude-3-5-sonnet-20240620",
-        "claude-haiku-20240307",
-        "anthropic/claude-3-5-sonnet-latest",
-    ],
-    "haiku": [
-        "claude-haiku",
-        "claude-3-5-haiku-20241022",
-    ],
-    "opus": [
-        "claude-opus",
-        "claude-opus-4-20250514",
-        "claude-opus-4-1-20250805",
-        "claude-4-opus",
-    ],
-}
-
-
-def _resolve_first_available(candidates: Optional[Sequence[str]], available: Sequence[str]) -> Optional[str]:
-    """Return the first candidate present in available models."""
-    if not candidates:
-        return None
-    if isinstance(candidates, str):
-        candidates = [candidates]
-    available_set = set(available)
-    for candidate in candidates:
-        if candidate in available_set:
-            return candidate
-    return None
-
-
-def _normalize_fallbacks(
-    fallback_candidates: Optional[Sequence[Sequence[str]]],
-    available: Sequence[str],
-) -> List[str]:
-    """Flatten fallback candidate groups into an ordered list."""
-    ordered: List[str] = []
-    if not fallback_candidates:
-        return ordered
-    for group in fallback_candidates:
-        chosen = _resolve_first_available(group, available)
-        if chosen and chosen not in ordered:
-            ordered.append(chosen)
-    return ordered
-
-
-def _litellm_config_candidates(project_root: Path) -> List[Path]:
-    """Return candidate config paths ordered by preference."""
-    return [
-        project_root / ".dopemux" / "litellm" / "A" / "litellm.config.yaml",
-        project_root / ".dopemux" / "litellm" / "litellm.config.yaml",
-        project_root / "litellm.config.yaml",
-    ]
-
-
-def _ensure_litellm_config(path: Path) -> Path:
-    """Ensure a LiteLLM config file exists at the requested path."""
-    if path.exists():
-        return path
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(DEFAULT_LITELLM_CONFIG, encoding="utf-8")
-    return path
-
-
-def _load_litellm_config(path: Path) -> Dict:
-    """Load LiteLLM YAML safe-ly, falling back to default."""
-    try:
-        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    except FileNotFoundError:
-        ensured = _ensure_litellm_config(path)
-        return yaml.safe_load(ensured.read_text(encoding="utf-8")) or {}
-    except yaml.YAMLError as exc:
-        raise click.ClickException(f"Invalid LiteLLM config at {path}: {exc}")
-
-
-def _save_litellm_config(path: Path, data: Dict) -> None:
-    """Persist LiteLLM config."""
-    path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
-
-
-def _extract_model_catalog(config: Dict) -> List[Dict[str, str]]:
-    """Return simplified metadata for each model entry."""
-    catalog: List[Dict[str, str]] = []
-    for entry in config.get("model_list", []) or []:
-        if not isinstance(entry, dict):
-            continue
-        name = entry.get("model_name")
-        params = entry.get("litellm_params", {}) or {}
-        if not name:
-            continue
-        catalog.append(
-            {
-                "name": name,
-                "provider": params.get("model", "unknown"),
-                "api_key": params.get("api_key", ""),
-            }
-        )
-    return catalog
-
-
-def _render_model_catalog(catalog: Sequence[Dict[str, str]], selected: Optional[str]) -> None:
-    """Display models in a table for quick reference."""
-    if not catalog:
-        brand_status(
-            "LiteLLM config is empty—add models to model_list first.",
-            chip="[BLOCKER]",
-            style="yellow",
-        )
-        return
-    table = Table(title="LiteLLM Models", show_lines=False, header_style="cyan")
-    table.add_column("#", justify="right", style="dim")
-    table.add_column("Model Name", style="white")
-    table.add_column("Provider Path", style="magenta")
-    table.add_column("API Key Source", style="green")
-    table.add_column("Selected", style="yellow")
-    for idx, info in enumerate(catalog, start=1):
-        marker = "⭐" if selected and info["name"] == selected else ""
-        table.add_row(str(idx), info["name"], info["provider"], info["api_key"], marker)
-    console.print(table)
-
-
-def _fallback_list_to_dict(raw_value: Optional[Sequence]) -> Dict[str, List[str]]:
-    """Convert LiteLLM fallback YAML list into dict."""
-    mapping: Dict[str, List[str]] = {}
-    if not raw_value:
-        return mapping
-    for item in raw_value:
-        if isinstance(item, dict):
-            for key, value in item.items():
-                if isinstance(value, list):
-                    mapping[key] = [v for v in value if v]
-                elif isinstance(value, str):
-                    mapping[key] = [value]
-    return mapping
-
-
-def _dict_to_fallback_list(mapping: Dict[str, List[str]]) -> List[Dict[str, List[str]]]:
-    """Convert fallback dict back to LiteLLM list format."""
-    items: List[Dict[str, List[str]]] = []
-    for key, value in mapping.items():
-        items.append({key: value})
-    return items
-
-
-def _relative_path_or_same(path: Path, root: Path) -> str:
-    """Return relative path if possible, otherwise the absolute path."""
-    try:
-        return str(path.relative_to(root))
-    except Exception:
-        return str(path)
 
 
 def _ensure_role_profile(spec) -> Optional[object]:  # returns DopemuxProfile when available
@@ -588,15 +341,11 @@ def _suggest_server_start(missing_servers: Iterable[str]) -> None:
     if not services:
         return
     service_arg = ",".join(services)
-    brand_status(
-        f"💡 Start required services: dopemux mcp up --services {service_arg}",
-        chip="[OVERRIDE]",
-        style="yellow",
+    console.print(
+        f"[yellow]💡 Start required services: dopemux mcp up --services {service_arg}[/yellow]"
     )
-    brand_status(
-        "or bring up the full stack: dopemux mcp start-all --verify",
-        chip="[LOGGED]",
-        style="dim",
+    console.print(
+        "[dim]   or bring up the full stack: dopemux mcp start-all --verify[/dim]"
     )
 
 
@@ -610,16 +359,12 @@ def _invoke_switch_role_script(role_key: str) -> None:
 
     try:
         subprocess.run([str(script_path), role_key], check=True)
-        brand_status(
-            f"Synced MetaMCP role via {script_path} {role_key}",
-            chip="[LOGGED]",
-            style="dim",
+        console.print(
+            f"[dim]✓ Synced MetaMCP role via {script_path} {role_key}[/dim]"
         )
     except subprocess.CalledProcessError as exc:
-        brand_status(
-            f"switch-role.sh failed (exit {exc.returncode}); continuing",
-            chip="[OVERRIDE]",
-            style="yellow",
+        console.print(
+            f"[yellow]⚠ switch-role.sh failed (exit {exc.returncode}); continuing[/yellow]"
         )
 
 
@@ -658,11 +403,7 @@ def _start_minimal_session(
         pass
 
     if not background:
-        brand_status(
-            "✨ Claude Code is running (minimal mode)",
-            chip="[LIVE]",
-            style="green",
-        )
+        console.print("[green]✨ Claude Code is running (minimal mode)\n[/green]")
 
 
 @click.group()
@@ -680,7 +421,6 @@ def cli(ctx, config: Optional[str], verbose: bool, debug_log: Optional[Path]):
     Provides context preservation, attention monitoring, and task decomposition
     for enhanced productivity in software development.
     """
-    print_brand_banner()
     ctx.ensure_object(dict)
     ctx.obj["verbose"] = verbose
     ctx.obj["config_manager"] = ConfigManager(config_path=config)
@@ -743,11 +483,11 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, te
         pass
 
     if directory and not workspace_exists and not dopemux_exists:
-        brand_status(f"Directory does not exist: {workspace}", chip="[BLOCKER]", style="red")
+        console.print(f"[red]Directory does not exist: {workspace}[/red]")
         sys.exit(1)
 
     if not force and not workspace_exists and dopemux_exists:
-        brand_status("Project already initialized (.dopemux/ exists)", chip="[OVERRIDE]", style="yellow")
+        console.print(f"[yellow]⚠️  Project already initialized (.dopemux/ exists)[/yellow]")
         sys.exit(1)
 
     try:
@@ -758,10 +498,10 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, te
     success = init_project(workspace, profile, force)
 
     if not success:
-        brand_status("Initialization cancelled. No rituals were harmed.", chip="[AFTERCARE]", style="yellow")
+        console.print("[yellow]Initialization cancelled.[/yellow]")
         sys.exit(1)
 
-    brand_status("Project initialized. Logged. Hydrate.", chip="[LOGGED]", style="green")
+    click.echo("Project Initialized")
 
     try:
         configurator = ClaudeConfigurator(config_manager)
@@ -922,14 +662,12 @@ def start(
     if legacy_value is not None:
         use_claude_router = legacy_value
 
+    from .workspace_utils import get_workspace_root
+
     # Handle --alt-routing flag (automatic LiteLLM setup)
     if use_alt_routing:
         use_litellm = True
-        brand_status(
-            "🚀 Alternative routing enabled - starting LiteLLM automatically...",
-            chip="[LIVE]",
-            style="cyan",
-        )
+        console.print("[cyan]🚀 Alternative routing enabled - starting LiteLLM automatically...[/cyan]")
 
         from pathlib import Path as EnvPath
         from dotenv import load_dotenv
@@ -937,13 +675,9 @@ def start(
         routing_env = EnvPath.cwd() / ".env.routing"
         if routing_env.exists():
             load_dotenv(routing_env)
-            brand_status("Loaded .env.routing", chip="[LOGGED]", style="dim")
+            console.print("[dim]✓ Loaded .env.routing[/dim]")
         else:
-            brand_status(
-                ".env.routing not found - using defaults",
-                chip="[OVERRIDE]",
-                style="yellow",
-            )
+            console.print("[yellow]⚠️  .env.routing not found - using defaults[/yellow]")
 
         instance_dir = Path.cwd() / ".dopemux" / "litellm" / "A"
         instance_dir.mkdir(parents=True, exist_ok=True)
@@ -967,26 +701,10 @@ def start(
                 pass
 
         if not db_url:
-            brand_status(
-                "LiteLLM metrics database is required for alternative routing.",
-                chip="[BLOCKER]",
-                style="red",
-            )
-            brand_status(
-                "Set DOPEMUX_LITELLM_DB_URL in .env.routing and ensure the database is reachable.",
-                chip="[AFTERCARE]",
-                style="yellow",
-            )
-            brand_status(
-                "Example database URL for your ritual ledger:",
-                chip="[REFERENCE]",
-                style="cyan",
-            )
-            brand_status(
-                "DOPEMUX_LITELLM_DB_URL=postgresql://user:password@localhost:5432/litellm",
-                chip="[REFERENCE]",
-                style="dim",
-            )
+            console.print("[red]❌ LiteLLM metrics database is required for alternative routing.[/red]")
+            console.print("[yellow]   Set DOPEMUX_LITELLM_DB_URL in .env.routing and ensure the database is reachable.[/yellow]")
+            console.print("\n[cyan]Example:[/cyan]")
+            console.print("  DOPEMUX_LITELLM_DB_URL=postgresql://user:password@localhost:5432/litellm")
             raise click.ClickException("LiteLLM metrics database not configured.")
 
         stored_master_key: Optional[str] = None
@@ -1022,22 +740,10 @@ def start(
                 # Port 4001 is also taken, try 4002
                 litellm_port = 4002
                 if not is_port_available(litellm_port):
-                    brand_status(
-                        "Ports 4000-4002 are all in use.",
-                        chip="[BLOCKER]",
-                        style="red",
-                    )
-                    brand_status(
-                        "Free up a port or stop an existing LiteLLM instance.",
-                        chip="[AFTERCARE]",
-                        style="yellow",
-                    )
+                    console.print("[red]❌ Ports 4000-4002 are all in use.[/red]")
+                    console.print("[yellow]   Free up a port or stop an existing LiteLLM instance.[/yellow]")
                     raise click.ClickException("No available ports for LiteLLM proxy.")
-            brand_status(
-                f"Port 4000 is in use, using port {litellm_port} instead",
-                chip="[OVERRIDE]",
-                style="yellow",
-            )
+            console.print(f"[yellow]⚠️  Port 4000 is in use, using port {litellm_port} instead[/yellow]")
 
         litellm_master_key = ""
         regenerated_master_key = False
@@ -1056,10 +762,8 @@ def start(
         except httpx.HTTPError as exc:
             cause = getattr(exc, "__cause__", None)
             if isinstance(cause, OSError) and getattr(cause, "errno", None) == 1:
-                brand_status(
-                    "LiteLLM health probe blocked by OS (operation not permitted); proceeding without inline check.",
-                    chip="[OVERRIDE]",
-                    style="yellow",
+                console.print(
+                    "[yellow]⚠️ LiteLLM health probe blocked by OS (operation not permitted); proceeding without inline check.[/yellow]"
                 )
         except Exception:
             pass
@@ -1068,11 +772,7 @@ def start(
             base_candidate = env_master_key_raw or stored_master_key
             litellm_master_key, regenerated_master_key = ensure_master_key(base_candidate)
             if regenerated_master_key:
-                brand_status(
-                    "Generated LiteLLM master key with sk- prefix for proxy auth",
-                    chip="[OVERRIDE]",
-                    style="yellow",
-                )
+                console.print("[yellow]⚠️  Generated LiteLLM master key with sk- prefix for proxy auth[/yellow]")
         else:
             regenerated_master_key = False
 
@@ -1110,50 +810,21 @@ def start(
         try:
             db_status_msg, db_enabled = sync_litellm_database(instance_dir, db_url)
         except LiteLLMProxyError as exc:
-            brand_status(
-                f"LiteLLM database setup failed: {exc}",
-                chip="[BLOCKER]",
-                style="red",
-            )
-            brand_status(
-                "Fix the database connection (is Postgres running? credentials valid?) and retry.",
-                chip="[AFTERCARE]",
-                style="yellow",
-            )
-            console.print("")
-            brand_status("Troubleshooting:", chip="[AFTERCARE]", style="cyan")
-            brand_status(
-                "1. Verify PostgreSQL is listening (try lsof -i :5432).",
-                chip="[AFTERCARE]",
-                style="dim",
-            )
-            brand_status(
-                "2. Double-check credentials inside .env.routing.",
-                chip="[AFTERCARE]",
-                style="dim",
-            )
-            brand_status(
-                "3. Confirm the 'litellm' database actually exists.",
-                chip="[AFTERCARE]",
-                style="dim",
-            )
-            brand_status(
-                "4. Quick sanity test: psql <your_database_url>.",
-                chip="[AFTERCARE]",
-                style="dim",
-            )
+            console.print(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
+            console.print("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.[/yellow]")
+            console.print("\n[cyan]Troubleshooting:[/cyan]")
+            console.print("  1. Check if PostgreSQL is running: lsof -i :5432 (or your port)")
+            console.print("  2. Verify database credentials in .env.routing")
+            console.print("  3. Ensure the 'litellm' database exists")
+            console.print("  4. Test connection: psql <your_database_url>")
             raise click.ClickException(str(exc))
 
         if not db_enabled:
-            brand_status(db_status_msg, chip="[BLOCKER]", style="red")
-            brand_status(
-                "LiteLLM metrics must be available. Resolve the database issue and retry.",
-                chip="[AFTERCARE]",
-                style="yellow",
-            )
+            console.print(f"[red]❌ {db_status_msg}[/red]")
+            console.print("[yellow]   LiteLLM metrics must be available. Resolve the database issue and retry.")
             raise click.ClickException("LiteLLM metrics database not ready.")
 
-        brand_status(db_status_msg, chip="[LOGGED]", style="dim")
+        console.print(f"[dim]{db_status_msg}[/dim]")
         general_settings["database_url"] = db_url
 
         config_path = instance_dir / "litellm.config.yaml"
@@ -1166,31 +837,19 @@ def start(
             pass
 
         if litellm_running:
-            brand_status(
-                f"LiteLLM proxy already running on port {litellm_port}",
-                chip="[LIVE]",
-                style="green",
-            )
+            console.print(f"[green]✓ LiteLLM proxy already running on port {litellm_port}[/green]")
         else:
             import subprocess
 
-            brand_status("🔄 Starting LiteLLM proxy...", chip="[LIVE]", style="blue")
+            console.print("[blue]🔄 Starting LiteLLM proxy...[/blue]")
             kill_result = subprocess.run(
                 ["pkill", "-f", "litellm"],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
             if kill_result.returncode not in (0, 1):
-                brand_status(
-                    "Unable to manage existing LiteLLM processes automatically (permission denied).",
-                    chip="[BLOCKER]",
-                    style="red",
-                )
-                brand_status(
-                    f"Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.",
-                    chip="[AFTERCARE]",
-                    style="yellow",
-                )
+                console.print("[red]❌ Unable to manage existing LiteLLM processes automatically (permission denied).")
+                console.print(f"[yellow]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
                 raise click.ClickException("LiteLLM proxy still running.")
 
             time.sleep(1)
@@ -1203,7 +862,7 @@ def start(
                     start_new_session=True,
                 )
 
-            brand_status("⏳ Waiting for LiteLLM to start...", chip="[LIVE]", style="dim")
+            console.print("[dim]⏳ Waiting for LiteLLM to start...[/dim]")
             ready = False
             for _ in range(20):
                 try:
@@ -1217,50 +876,23 @@ def start(
                 except httpx.HTTPError as exc:
                     cause = getattr(exc, "__cause__", None)
                     if isinstance(cause, OSError) and getattr(cause, "errno", None) == 1:
-                        brand_status(
-                            "LiteLLM health probe blocked by OS (operation not permitted); assuming proxy is running.",
-                            chip="[OVERRIDE]",
-                            style="yellow",
+                        console.print(
+                            "[yellow]⚠️ LiteLLM health probe blocked by OS (operation not permitted); assuming proxy is running.[/yellow]"
                         )
                         ready = True
                         break
                 time.sleep(1)
 
             if not ready:
-                brand_status(
-                    "LiteLLM proxy did not become healthy.",
-                    chip="[BLOCKER]",
-                    style="red",
-                )
-                brand_status(
-                    f"Check logs: tail -f {litellm_log}",
-                    chip="[AFTERCARE]",
-                    style="yellow",
-                )
-                console.print("")
-                brand_status("Common issues:", chip="[AFTERCARE]", style="cyan")
-                brand_status(
-                    "• Database handshake died (is PostgreSQL awake?).",
-                    chip="[AFTERCARE]",
-                    style="dim",
-                )
-                brand_status(
-                    f"• Port {litellm_port} got hijacked mid-launch.",
-                    chip="[AFTERCARE]",
-                    style="dim",
-                )
-                brand_status(
-                    "• Syntax borked inside litellm.config.yaml.",
-                    chip="[AFTERCARE]",
-                    style="dim",
-                )
+                console.print("[red]❌ LiteLLM proxy did not become healthy.[/red]")
+                console.print(f"[yellow]   Check logs: tail -f {litellm_log}[/yellow]")
+                console.print("\n[cyan]Common issues:[/cyan]")
+                console.print("  • Database connection failed (check PostgreSQL is running)")
+                console.print(f"  • Port {litellm_port} became busy during startup")
+                console.print("  • Configuration error in litellm.config.yaml")
                 raise click.ClickException("LiteLLM proxy failed to start.")
 
-            brand_status(
-                f"✅ LiteLLM proxy ready on port {litellm_port}",
-                chip="[LIVE]",
-                style="green",
-            )
+            console.print(f"[green]✅ LiteLLM proxy ready on port {litellm_port}[/green]")
 
         os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
         os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
@@ -1278,16 +910,8 @@ def start(
                 db_url_path.write_text(db_url, encoding="utf-8")
             except Exception:
                 pass
-        brand_status(
-            "ℹ️ LiteLLM metrics database synchronised",
-            chip="[LOGGED]",
-            style="dim",
-        )
-        brand_status(
-            "Claude Code configured to use LiteLLM proxy",
-            chip="[LOGGED]",
-            style="dim",
-        )
+        console.print("[dim]ℹ️ LiteLLM metrics database synchronised[/dim]")
+        console.print("[dim]✓ Claude Code configured to use LiteLLM proxy[/dim]")
         console.print("")
     # Default to LiteLLM + Router if configured (Option A)
     if not use_litellm and not use_claude_router:
@@ -1306,15 +930,9 @@ def start(
             role_activation = activate_role(requested_role, config_manager, console)
         except RoleNotFoundError:
             available = ", ".join(available_roles())
-            brand_status(
-                f"Unknown role: {requested_role}",
-                chip="[BLOCKER]",
-                style="red",
-            )
-            brand_status(
-                f"Available roles: {available}",
-                chip="[LOGGED]",
-                style="dim",
+            console.print(
+                f"[red]❌ Unknown role: {requested_role}[/red]\n"
+                f"[dim]Available roles: {available}[/dim]"
             )
             sys.exit(1)
 
@@ -1322,56 +940,40 @@ def start(
         role_profile = _ensure_role_profile(spec)
         pending_profile_name = getattr(role_profile, "name", spec.profile_name)
         if role:
-            brand_status(
-                f"🎭 Role activated: {spec.label} ({spec.key}) — {spec.description}",
-                chip="[LIVE]",
-                style="cyan",
+            console.print(
+                f"[cyan]🎭 Role activated:[/cyan] {spec.label} "
+                f"[dim]({spec.key})[/dim] — {spec.description}"
             )
             if role_activation.enabled_servers:
-                brand_status(
-                    f"Enabled MCP servers: {', '.join(role_activation.enabled_servers)}",
-                    chip="[LOGGED]",
-                    style="dim",
+                console.print(
+                    f"[dim]Enabled MCP servers: {', '.join(role_activation.enabled_servers)}[/dim]"
                 )
             if role_activation.disabled_servers:
-                brand_status(
-                    f"Disabled MCP servers: {', '.join(role_activation.disabled_servers)}",
-                    chip="[LOGGED]",
-                    style="dim",
+                console.print(
+                    f"[dim]Disabled MCP servers: {', '.join(role_activation.disabled_servers)}[/dim]"
                 )
         else:
-            brand_status(
-                f"🎭 Active role: {spec.label} ({spec.key})",
-                chip="[LOGGED]",
-                style="dim",
+            console.print(
+                f"[dim]🎭 Active role:[/dim] {spec.label} "
+                f"[dim]({spec.key})[/dim]"
             )
     else:
         pending_profile_name = None
 
     if dry_run:
-        brand_status(
-            "Dry run: no tmux or Claude Code processes will be started.",
-            chip="[LIVE]",
-            style="cyan",
-        )
+        console.print("[cyan]Dry run: no tmux or Claude Code processes will be started.[/cyan]")
         if role_activation:
             spec = role_activation.spec
-            brand_status(
-                f"Role: {spec.label} ({spec.key}) — {spec.description}",
-                chip="[LOGGED]",
-                style="dim",
+            console.print(
+                f"[dim]Role:[/dim] {spec.label} ({spec.key}) — {spec.description}"
             )
             if role_activation.enabled_servers:
-                brand_status(
-                    f"MCP servers that would remain enabled: {', '.join(role_activation.enabled_servers)}",
-                    chip="[LOGGED]",
-                    style="dim",
+                console.print(
+                    f"[dim]MCP servers that would remain enabled: {', '.join(role_activation.enabled_servers)}[/dim]"
                 )
             if role_activation.disabled_servers:
-                brand_status(
-                    f"MCP servers that would be disabled: {', '.join(role_activation.disabled_servers)}",
-                    chip="[LOGGED]",
-                    style="dim",
+                console.print(
+                    f"[dim]MCP servers that would be disabled: {', '.join(role_activation.disabled_servers)}[/dim]"
                 )
         else:
             current_config = config_manager.load_config()
@@ -1380,10 +982,8 @@ def start(
                 for name, server in current_config.mcp_servers.items()
                 if server.enabled
             )
-            brand_status(
-                f"No role specified — current enabled MCP servers: {', '.join(enabled_now)}",
-                chip="[LOGGED]",
-                style="dim",
+            console.print(
+                f"[dim]No role specified — current enabled MCP servers: {', '.join(enabled_now)}[/dim]"
             )
 
         if role_activation and role_activation.missing_required:
@@ -1400,38 +1000,26 @@ def start(
                         dry_run=True,
                     )
                     preview_servers = sorted(preview.get("mcpServers", {}).keys())
-                    brand_status(
-                        f"Profile '{profile.name}' would mount MCP servers: {', '.join(preview_servers)}",
-                        chip="[LOGGED]",
-                        style="dim",
+                    console.print(
+                        f"[dim]Profile '{profile.name}' would mount MCP servers: {', '.join(preview_servers)}[/dim]"
                     )
                 except ClaudeConfigError as err:
-                    brand_status(
-                        f"Claude config preview failed: {err}",
-                        chip="[OVERRIDE]",
-                        style="yellow",
+                    console.print(
+                        f"[yellow]⚠ Claude config preview failed: {err}[/yellow]"
                     )
             else:
-                brand_status(
-                    f"Profile '{pending_profile_name}' is not defined.",
-                    chip="[OVERRIDE]",
-                    style="yellow",
-                )
+                    console.print(
+                        f"[yellow]⚠ Profile '{pending_profile_name}' is not defined."
+                    )
 
-        brand_status(
-            "Dry run complete. No changes were made.",
-            chip="[AFTERCARE]",
-            style="green",
-        )
+        console.print("[green]Dry run complete. No changes were made.[/green]")
         ctx.exit(0)
 
     if role_activation and role_activation.missing_required:
         _suggest_server_start(role_activation.missing_required)
     if role_activation and role_activation.missing_optional:
-        brand_status(
-            f"Optional services currently offline: {', '.join(role_activation.missing_optional)}",
-            chip="[LOGGED]",
-            style="dim",
+        console.print(
+            f"[dim]Optional services currently offline: {', '.join(role_activation.missing_optional)}[/dim]"
         )
 
     # Kill all active tmux sessions at start (requested behavior)
@@ -1467,10 +1055,8 @@ def start(
 
     # Check if project is initialized
     if not dopemux_exists:
-        brand_status(
-            "Project not initialized. Run 'dopemux init' first.",
-            chip="[BLOCKER]",
-            style="yellow",
+        console.print(
+            "[yellow]Project not initialized. Run 'dopemux init' first.[/yellow]"
         )
         if click.confirm("Initialize now?"):
             ctx.invoke(init, directory=str(project_path))
@@ -1484,8 +1070,6 @@ def start(
         return
 
     if project_path_real_exists:
-        persist_workspace_root(project_path)
-        os.environ["DOPEMUX_WORKSPACE_ROOT"] = str(project_path)
         try:
             from subprocess import check_call
             wire_script = Path(__file__).resolve().parents[2] / "scripts" / "wire_conport_project.py"
@@ -1507,25 +1091,13 @@ def start(
                 )
 
             if selected_worktree:
-                brand_status(
-                    f"🔄 Recovering worktree session: {selected_worktree}",
-                    chip="[LIVE]",
-                    style="blue",
-                )
+                console.print(f"\n[blue]🔄 Recovering worktree session: {selected_worktree}[/blue]")
                 os.chdir(selected_worktree)
                 project_path = Path(selected_worktree)
-                brand_status(
-                    f"✅ Switched to worktree: {project_path.name}",
-                    chip="[LIVE]",
-                    style="green",
-                )
-                brand_status(f"Path: {project_path}", chip="[LOGGED]", style="dim")
+                console.print(f"[green]✅ Switched to worktree: {project_path.name}[/green]")
+                console.print(f"[dim]   Path: {project_path}[/dim]\n")
         except Exception as e:
-            brand_status(
-                f"Recovery menu unavailable: {e}",
-                chip="[OVERRIDE]",
-                style="yellow",
-            )
+            console.print(f"[yellow]⚠️ Recovery menu unavailable: {e}[/yellow]")
 
         try:
             should_exit = False
@@ -1539,12 +1111,8 @@ def start(
             if new_worktree:
                 os.chdir(new_worktree)
                 project_path = Path.cwd()
-                brand_status(
-                    f"🔀 Switched to worktree: {project_path.name}",
-                    chip="[LIVE]",
-                    style="green",
-                )
-                brand_status(f"Path: {project_path}", chip="[LOGGED]", style="dim")
+                console.print(f"[green]🔀 Switched to worktree: {project_path.name}[/green]")
+                console.print(f"[dim]   Path: {project_path}[/dim]")
 
             if should_exit and not new_worktree:
                 sys.exit(0)
@@ -1561,11 +1129,7 @@ def start(
         running_instances = detect_instances_sync(project_path)
 
         if running_instances:
-            brand_status(
-                f"Found {len(running_instances)} running instance(s).",
-                chip="[OVERRIDE]",
-                style="yellow",
-            )
+            console.print(f"\n[yellow]⚠️  Found {len(running_instances)} running instance(s):[/yellow]")
 
             table = Table(title="Running Instances")
             table.add_column("Instance", style="cyan")
@@ -1586,10 +1150,8 @@ def start(
             try:
                 instance_id, port_base = instance_manager.get_next_available_instance(running_instances)
 
-                brand_status(
-                    f"💡 Multi-instance mode: Creating new worktree for instance {instance_id}",
-                    chip="[LIVE]",
-                    style="blue",
+                console.print(
+                    f"\n[blue]💡 Multi-instance mode: Creating new worktree for instance {instance_id}[/blue]"
                 )
 
                 if click.confirm(f"Create new worktree on port {port_base}?", default=True):
@@ -1600,18 +1162,10 @@ def start(
                         show_default=True
                     )
 
-                    brand_status(
-                        f"📁 Creating worktree for {branch_name}...",
-                        chip="[LIVE]",
-                        style="blue",
-                    )
+                    console.print(f"[blue]📁 Creating worktree for {branch_name}...[/blue]")
                     worktree_path = instance_manager.create_worktree(instance_id, branch_name)
 
-                    brand_status(
-                        f"✅ Worktree created at {worktree_path}",
-                        chip="[LIVE]",
-                        style="green",
-                    )
+                    console.print(f"[green]✅ Worktree created at {worktree_path}[/green]")
 
                     instance_env_vars = instance_manager.get_instance_env_vars(
                         instance_id,
@@ -1619,36 +1173,18 @@ def start(
                         worktree_path
                     )
 
-                    brand_status(
-                        f"🎯 Starting instance {instance_id} on port {port_base}",
-                        chip="[LIVE]",
-                        style="green",
+                    console.print(
+                        f"\n[green]🎯 Starting instance {instance_id} on port {port_base}[/green]"
                     )
-                    brand_status(
-                        f"Environment: DOPEMUX_INSTANCE_ID={instance_id}",
-                        chip="[LOGGED]",
-                        style="dim",
-                    )
-                    brand_status(
-                        f"Workspace: {project_path}",
-                        chip="[LOGGED]",
-                        style="dim",
-                    )
-                    brand_status(
-                        f"Worktree: {worktree_path}",
-                        chip="[LOGGED]",
-                        style="dim",
-                    )
+                    console.print(f"[dim]   Environment: DOPEMUX_INSTANCE_ID={instance_id}[/dim]")
+                    console.print(f"[dim]   Workspace: {project_path}[/dim]")
+                    console.print(f"[dim]   Worktree: {worktree_path}[/dim]")
 
                 else:
-                    brand_status(
-                        "Cancelled. Continuing with single instance.",
-                        chip="[AFTERCARE]",
-                        style="yellow",
-                    )
+                    console.print("[yellow]Cancelled. Continuing with single instance.[/yellow]")
 
             except RuntimeError as e:
-                brand_status(str(e), chip="[BLOCKER]", style="red")
+                console.print(f"[red]❌ {str(e)}[/red]")
                 sys.exit(1)
 
         if instance_id is None:
@@ -1662,11 +1198,7 @@ def start(
                 worktree_path
             )
 
-            brand_status(
-                "🆕 Starting first instance (A) on port 3000",
-                chip="[LIVE]",
-                style="blue",
-            )
+            console.print("[blue]🆕 Starting first instance (A) on port 3000[/blue]")
     else:
         instance_id = 'A'
         port_base = 3000
@@ -1695,17 +1227,9 @@ def start(
                     port_base,
                     worktree_path
                 )
-                brand_status(
-                    f"⚙️  Forced instance id: {instance_id} (port {port_base})",
-                    chip="[LOGGED]",
-                    style="dim",
-                )
+                console.print(f"[dim]⚙️  Forced instance id: {instance_id} (port {port_base})[/dim]")
             else:
-                brand_status(
-                    f"⚠️  DOPEMUX_FORCE_INSTANCE_ID={force_id} already in use; ignoring",
-                    chip="[OVERRIDE]",
-                    style="dim",
-                )
+                console.print(f"[dim]⚠️  DOPEMUX_FORCE_INSTANCE_ID={force_id} already in use; ignoring[/dim]")
     except Exception:
         pass
 
@@ -1722,11 +1246,7 @@ def start(
         os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = "http://localhost:4000/v1/chat/completions"
         os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
         
-        brand_status(
-            "✅ Forced Claude Code to use LiteLLM proxy",
-            chip="[LIVE]",
-            style="green",
-        )
+        console.print("[green]✅ Forced Claude Code to use LiteLLM proxy[/green]")
 
     # Inject instance environment variables
     if instance_env_vars:
@@ -1736,11 +1256,7 @@ def start(
         for key, value in instance_env_vars.items():
             os.environ[key] = value
 
-        brand_status(
-            "✅ Instance environment variables configured",
-            chip="[LOGGED]",
-            style="dim",
-        )
+        console.print("[dim]✅ Instance environment variables configured[/dim]")
         _persist_instance_env_exports(project_path, instance_id or "A", instance_env_vars)
 
     active_profile_applied = False
@@ -1755,23 +1271,17 @@ def start(
                     profile_manager.set_active_profile(project_path, profile.name)
                 except Exception:
                     pass
-                brand_status(
-                    f"Activated profile '{profile.name}' for Claude Code",
-                    chip="[LOGGED]",
-                    style="dim",
+                console.print(
+                    f"[dim]✓ Activated profile '{profile.name}' for Claude Code[/dim]"
                 )
                 active_profile_applied = True
             except ClaudeConfigError as err:
-                brand_status(
-                    f"Could not apply profile '{profile.name}': {err}",
-                    chip="[OVERRIDE]",
-                    style="yellow",
+                console.print(
+                    f"[yellow]⚠ Could not apply profile '{profile.name}': {err}[/yellow]"
                 )
         else:
-            brand_status(
-                f"Profile '{pending_profile_name}' is not defined.",
-                chip="[OVERRIDE]",
-                style="yellow",
+            console.print(
+                f"[yellow]⚠ Profile '{pending_profile_name}' is not defined."
             )
 
     if role_activation and not dry_run:
@@ -1786,16 +1296,8 @@ def start(
     if litellm_enabled:
         # Require OpenRouter since LiteLLM proxy is configured to route through it
         if not os.environ.get("OPENROUTER_API_KEY"):
-            brand_status(
-                "OPENROUTER_API_KEY is not set.",
-                chip="[BLOCKER]",
-                style="red",
-            )
-            brand_status(
-                "Set OPENROUTER_API_KEY before using --litellm",
-                chip="[LOGGED]",
-                style="dim",
-            )
+            console.print("[red]❌ OPENROUTER_API_KEY is not set.[/red]")
+            console.print("[dim]Set OPENROUTER_API_KEY before using --litellm[/dim]")
             sys.exit(1)
 
         try:
@@ -1813,10 +1315,8 @@ def start(
                     os.environ.pop(var, None)
 
             if litellm_proxy_info.already_running:
-                brand_status(
-                    f"✅ Reusing LiteLLM proxy at {litellm_proxy_info.base_url}",
-                    chip="[LIVE]",
-                    style="green",
+                console.print(
+                    f"[green]✅ Reusing LiteLLM proxy at {litellm_proxy_info.base_url}[/green]"
                 )
             else:
                 console.print(
@@ -1887,27 +1387,24 @@ def start(
             provider_key = os.environ.get("CLAUDE_CODE_ROUTER_UPSTREAM_KEY")
 
         if not provider_url:
-            brand_status(
-                "Claude Code Router upstream URL missing—set CLAUDE_CODE_ROUTER_UPSTREAM_URL or lean on --litellm.",
-                chip="[BLOCKER]",
-                style="red",
+            console.print(
+                "[red]❌ Claude Code Router upstream URL is not configured.[/red]"
+            )
+            console.print(
+                "[dim]Set CLAUDE_CODE_ROUTER_UPSTREAM_URL or enable --litellm.[/dim]"
             )
             sys.exit(1)
 
         if not provider_models:
-            brand_status(
-                "Claude Code Router has no upstream models configured (CLAUDE_CODE_ROUTER_MODELS).",
-                chip="[BLOCKER]",
-                style="red",
+            console.print(
+                "[red]❌ No models configured for Claude Code Router upstream.[/red]"
             )
-            brand_status(
-                "Either list models in the env var or fall back to --litellm defaults.",
-                chip="[AFTERCARE]",
-                style="yellow",
+            console.print(
+                "[dim]Set CLAUDE_CODE_ROUTER_MODELS or rely on --litellm defaults.[/dim]"
             )
             sys.exit(1)
 
-        router_manager = ClaudeCodeRouterManager(project_path, instance_id, port_base)
+        router_manager = DopeBrainzRouterManager(project_path, instance_id, port_base)
 
         try:
             router_info = router_manager.ensure_started(
@@ -1918,12 +1415,8 @@ def start(
                 provider_key_env_var=provider_key_env,
                 router_overrides=router_overrides if router_overrides else None,
             )
-        except ClaudeCodeRouterError as exc:
-            brand_status(
-                f"Claude Code Router faceplanted: {exc}",
-                chip="[BLOCKER]",
-                style="red",
-            )
+        except DopeBrainzRouterError as exc:
+            console.print(f"[red]❌ DopeBrainz Router failed: {exc}[/red]")
             sys.exit(1)
 
         router_env = router_manager.build_client_env(router_info)
@@ -1933,27 +1426,15 @@ def start(
         os.environ.update(router_env)
 
         if router_info.already_running:
-            brand_status(
-                f"Reusing Claude Code Router at {router_info.base_url}",
-                chip="[LIVE]",
-                style="green",
+            console.print(
+                f"[green]✅ Reusing Claude Code Router at {router_info.base_url}[/green]"
             )
         else:
-            brand_status(
-                f"Claude Code Router warmed up at {router_info.base_url}",
-                chip="[LIVE]",
-                style="green",
+            console.print(
+                f"[green]✅ Claude Code Router ready at {router_info.base_url}[/green]"
             )
-            brand_status(
-                f"Config: {router_info.config_path}",
-                chip="[LOGGED]",
-                style="dim",
-            )
-            brand_status(
-                f"Logs: {router_info.log_path}",
-                chip="[LOGGED]",
-                style="dim",
-            )
+            console.print(f"[dim]   Config: {router_info.config_path}[/dim]")
+            console.print(f"[dim]   Logs: {router_info.log_path}[/dim]")
 
     with Progress(
         SpinnerColumn(),
@@ -1977,18 +1458,12 @@ def start(
                 task,
                 description=f"Restored session from {context.get('timestamp', 'unknown')}",
             )
-            brand_status(
-                f"📍 Welcome back—last obsession: {context.get('current_goal', 'Unknown task')}",
-                chip="[LIVE]",
-                style="green",
+            console.print(
+                f"[green]📍 Welcome back! You were working on: {context.get('current_goal', 'Unknown task')}[/green]"
             )
         else:
             progress.update(task, description="Starting fresh session")
-            brand_status(
-                "Fresh canvas unlocked—new session, new dopamine.",
-                chip="[LIVE]",
-                style="blue",
-            )
+            console.print("[blue]🆕 Starting new session[/blue]")
 
         # Check if dangerous mode has expired
         _check_dangerous_mode_expiry()
@@ -2015,18 +1490,14 @@ def start(
                 progress.update(task, description="✅ MCP auto-configuration complete")
             else:
                 progress.update(task, description="⚠️ MCP auto-configuration skipped")
-                brand_status(message, chip="[OVERRIDE]", style="dim")
+                console.print(f"[dim]{message}[/dim]")
 
         # Start MCP servers by default (ADHD-optimized experience)
         if not no_mcp:
             # CRITICAL FIX: Pass instance_env_vars so MCP servers get workspace isolation
             _start_mcp_servers_with_progress(project_path, instance_env=instance_env_vars)
         else:
-            brand_status(
-                "You opted to skip MCP servers—expect a lighter (and duller) ride.",
-                chip="[OVERRIDE]",
-                style="yellow",
-            )
+            console.print("[yellow]⚠️  Skipping MCP servers (reduced ADHD experience)[/yellow]")
 
         # Launch Claude Code
         progress.update(task, description="Launching Claude Code...")
@@ -2079,33 +1550,18 @@ def start(
             workspace_id=str(project_path.resolve()),
             conport_port=3004  # Always save via instance A's ConPort
         )
-        brand_status(
-            "Instance state stashed for crash necromancy.",
-            chip="[LOGGED]",
-            style="dim",
-        )
+        console.print("[dim]✅ Instance state saved for crash recovery[/dim]")
 
     if not background:
-        brand_status(
-            "Claude Code is live with full ADHD armor.",
-            chip="[LIVE]",
-            style="green",
+        console.print(
+            "[green]✨ Claude Code is running with ADHD optimizations[/green]"
         )
-        brand_status(
-            "Press Ctrl+C anytime to tuck context into bed.",
-            chip="[AFTERCARE]",
-            style="dim",
-        )
+        console.print("Press Ctrl+C to stop monitoring and save context")
 
         try:
             claude_process.wait()
         except KeyboardInterrupt:
-            console.print("")
-            brand_status(
-                "⏸️ Graceful exit requested—saving context now.",
-                chip="[AFTERCARE]",
-                style="yellow",
-            )
+            console.print("\n[yellow]⏸️ Saving context and stopping...[/yellow]")
 
             # Mark instance as stopped in ConPort
             if instance_id:
@@ -2118,11 +1574,7 @@ def start(
                     state.status = 'stopped'
                     state.last_active = datetime.now(timezone.utc)
                     save_instance_state_sync(state, workspace_id, conport_port=3004)
-                    brand_status(
-                        "Instance marked as stopped in ConPort.",
-                        chip="[LOGGED]",
-                        style="dim",
-                    )
+                    console.print("[dim]✅ Instance marked as stopped[/dim]")
 
             ctx.invoke(save)
             attention_monitor.stop_monitoring()
@@ -2142,11 +1594,7 @@ def save(ctx, message: Optional[str], force: bool):
     project_path = Path.cwd()
 
     if not (project_path / ".dopemux").exists():
-        brand_status(
-            "No Dopemux project detected here—run 'dopemux init' first.",
-            chip="[BLOCKER]",
-            style="red",
-        )
+        console.print("[red]No Dopemux project found in current directory[/red]")
         sys.exit(1)
 
     with Progress(
@@ -2161,13 +1609,9 @@ def save(ctx, message: Optional[str], force: bool):
 
         progress.update(task, description="Context saved!", completed=True)
 
-    brand_status(
-        f"Context bottled (session {session_id[:8]}).",
-        chip="[LIVE]",
-        style="green",
-    )
+    console.print(f"[green]✅ Context saved (session: {session_id[:8]})[/green]")
     if message:
-        brand_status(f"Note: {message}", chip="[LOGGED]", style="dim")
+        console.print(f"[dim]Note: {message}[/dim]")
 
 
 @cli.command()
@@ -2185,11 +1629,7 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
     project_path = Path.cwd()
 
     if not (project_path / ".dopemux").exists():
-        brand_status(
-            "No Dopemux project detected here—can't restore vibes that never existed.",
-            chip="[BLOCKER]",
-            style="red",
-        )
+        console.print("[red]No Dopemux project found in current directory[/red]")
         sys.exit(1)
 
     context_manager = ContextManager(project_path)
@@ -2197,11 +1637,7 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
     if list_sessions:
         sessions = context_manager.list_sessions()
         if not sessions:
-            brand_status(
-                "No sessions saved yet—hit 'dopemux save' after your next breakthrough.",
-                chip="[AFTERCARE]",
-                style="yellow",
-            )
+            console.print("[yellow]No saved sessions found[/yellow]")
             return
 
         table = Table(title="Available Sessions")
@@ -2238,27 +1674,17 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
         progress.update(task, description="Context restored!", completed=True)
 
     if context:
-        brand_status(
-            f"Session {context.get('timestamp', 'unknown')} restored from the vault.",
-            chip="[LIVE]",
-            style="green",
+        console.print(
+            f"[green]✅ Restored session from {context.get('timestamp', 'unknown')}[/green]"
         )
-        brand_status(
-            f"🎯 Goal: {context.get('current_goal', 'No goal set')}",
-            chip="[LOGGED]",
-            style="blue",
+        console.print(
+            f"[blue]🎯 Goal: {context.get('current_goal', 'No goal set')}[/blue]"
         )
-        brand_status(
-            f"📁 Files resurrected: {len(context.get('open_files', []))}",
-            chip="[LOGGED]",
-            style="yellow",
+        console.print(
+            f"[yellow]📁 Files: {len(context.get('open_files', []))} files restored[/yellow]"
         )
     else:
-        brand_status(
-            "No context snapshots found—did you save earlier?",
-            chip="[BLOCKER]",
-            style="red",
-        )
+        console.print("[red]❌ No context found to restore[/red]")
 
 
 @cli.group()
@@ -2451,7 +1877,7 @@ def instances_resume(ctx, instance_id: str, restore_context: bool):
         "TASK_MASTER_PORT": str(state.port_base + 5),
         "SERENA_PORT": str(state.port_base + 6),
         "CONPORT_PORT": str(state.port_base + 7),
-        "DOPECON_BRIDGE_PORT": str(state.port_base + 16),
+        "INTEGRATION_BRIDGE_PORT": str(state.port_base + 16),
     })
 
     # Change to worktree directory if restoring context
@@ -4050,7 +3476,7 @@ def mcp_start_all_cmd(verify: bool):
 
     Starts all services including:
     - 12 MCP servers (ConPort, Zen, Serena, Context7, etc.)
-    - DopeconBridge (event processing, pattern detection)
+    - Integration Bridge (event processing, pattern detection)
     - Task Orchestrator (ADHD task coordination)
     - All infrastructure (PostgreSQL, Redis, Qdrant)
 
@@ -4076,8 +3502,8 @@ def mcp_start_all_cmd(verify: bool):
             console.print("[blue]Starting MCP servers...[/blue]")
             subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose up -d"], check=True)
 
-            console.print("[blue]Starting DopeconBridge...[/blue]")
-            subprocess.run(["bash","-lc","cd docker/conport-kg && docker-compose up -d --no-deps dopecon-bridge"], check=True)
+            console.print("[blue]Starting Integration Bridge...[/blue]")
+            subprocess.run(["bash","-lc","cd docker/conport-kg && docker-compose up -d --no-deps integration-bridge"], check=True)
 
             console.print("[blue]Starting Task Orchestrator...[/blue]")
             subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose --profile manual up -d task-orchestrator"], check=True)
@@ -6610,182 +6036,6 @@ register_commands(cli)
 
 
 # ============================================================================
-# 🧘 Zen Tools – Unified automation across phases
-# ============================================================================
-
-@cli.group()
-@click.pass_context
-def zen(ctx):
-    """
-    🧘 Zen tools: plan, build, test, release, debug, improve, monitor.
-
-    Uses the Zen MCP server to coordinate multi-model reasoning and automation.
-    """
-    pass
-
-
-def _zen_post(base_url: str, path: str, payload: dict, timeout: float = 30.0):
-    try:
-        import httpx
-        url = f"{base_url.rstrip('/')}{path}"
-        with httpx.Client(timeout=timeout) as client:
-            resp = client.post(url, json=payload)
-            if resp.status_code == 200:
-                return resp.json()
-            return {"error": f"HTTP {resp.status_code}", "text": resp.text[:4000]}
-    except Exception as e:
-        return {"error": str(e)}
-
-
-@zen.command("plan")
-@click.argument("goal")
-@click.option("--model", default="sonnet", help="Model to use (e.g., sonnet, gemini, gpt-5)")
-@click.option("--base-url", envvar="ZEN_BASE_URL", default="http://localhost:8002", help="Zen base URL")
-def zen_plan(goal: str, model: str, base_url: str):
-    data = {
-        "step": goal,
-        "step_number": 1,
-        "total_steps": 1,
-        "next_step_required": True,
-        "model": model,
-    }
-    result = _zen_post(base_url, "/mcp/zen/planner", data)
-    if "error" in result:
-        console.print(f"[yellow]Zen planner unavailable:[/yellow] {result['error']}")
-        return
-    console.print(result.get("content") or result.get("response") or "(no content)")
-
-
-@zen.command("debug")
-@click.argument("issue")
-@click.option("--hypothesis", default="", help="Hypothesis to test")
-@click.option("--model", default="gemini", help="Model to use")
-@click.option("--base-url", envvar="ZEN_BASE_URL", default="http://localhost:8002", help="Zen base URL")
-def zen_debug(issue: str, hypothesis: str, model: str, base_url: str):
-    data = {
-        "step": issue,
-        "step_number": 1,
-        "total_steps": 1,
-        "next_step_required": False,
-        "findings": {},
-        "hypothesis": hypothesis,
-        "model": model,
-        "temperature": 0.2,
-        "thinking_mode": "high",
-    }
-    result = _zen_post(base_url, "/mcp/zen/debug", data)
-    if "error" in result:
-        console.print(f"[yellow]Zen debug unavailable:[/yellow] {result['error']}")
-        return
-    console.print(result.get("content") or result.get("response") or "(no content)")
-
-
-@zen.command("review")
-@click.argument("files", nargs=-1)
-@click.option("--type", "review_type", type=click.Choice(["full", "security", "performance", "quick"]), default="full")
-@click.option("--model", default="gemini", help="Primary model")
-@click.option("--base-url", envvar="ZEN_BASE_URL", default="http://localhost:8002", help="Zen base URL")
-def zen_review(files, review_type, model, base_url):
-    if not files:
-        console.print("[red]Provide one or more files to review[/red]")
-        raise SystemExit(1)
-    data = {
-        "step": f"Review {len(files)} files with {review_type} focus",
-        "step_number": 1,
-        "total_steps": 1,
-        "next_step_required": False,
-        "findings": {},
-        "relevant_files": list(files),
-        "review_type": review_type,
-        "focus_on": review_type,
-        "model": model,
-        "review_validation_type": "external",
-        "severity_filter": "all",
-    }
-    result = _zen_post(base_url, "/mcp/zen/codereview", data, timeout=60.0)
-    if "error" in result:
-        console.print(f"[yellow]Zen review unavailable:[/yellow] {result['error']}")
-        return
-    console.print(result.get("content") or result.get("response") or "(no content)")
-
-
-@zen.command("chat")
-@click.argument("prompt")
-@click.option("--model", default="grok-code", help="Model to use")
-@click.option("--base-url", envvar="ZEN_BASE_URL", default="http://localhost:8002", help="Zen base URL")
-def zen_chat(prompt: str, model: str, base_url: str):
-    data = {
-        "prompt": prompt,
-        "working_directory": str(Path.cwd()),
-        "model": model,
-        "temperature": 0.7,
-        "thinking_mode": "medium",
-        "continuation_id": "",
-    }
-    result = _zen_post(base_url, "/mcp/zen/chat", data)
-    if "error" in result:
-        console.print(f"[yellow]Zen chat unavailable:[/yellow] {result['error']}")
-        return
-    console.print(result.get("response") or result.get("content") or "(no content)")
-
-
-@zen.command("flow")
-@click.argument("goal")
-@click.option("--model-plan", default="sonnet")
-@click.option("--model-review", default="gemini")
-@click.option("--model-debug", default="gemini")
-@click.option("--files", multiple=True, help="Files to review in build/test phase")
-@click.option("--base-url", envvar="ZEN_BASE_URL", default="http://localhost:8002")
-def zen_flow(goal, model_plan, model_review, model_debug, files, base_url):
-    """Run a smart pipeline: plan -> (optional) review -> debug."""
-    console.print(f"[cyan]Planning:[/cyan] {goal}")
-    plan = _zen_post(base_url, "/mcp/zen/planner", {
-        "step": goal, "step_number": 1, "total_steps": 1, "next_step_required": True, "model": model_plan,
-    })
-    if "error" in plan:
-        console.print(f"[yellow]Planner error:[/yellow] {plan['error']}")
-    else:
-        console.print(plan.get("content") or plan.get("response") or "(no plan)")
-
-    if files:
-        console.print("\n[cyan]Code review:[/cyan]")
-        review = _zen_post(base_url, "/mcp/zen/codereview", {
-            "step": f"Review {len(files)} files",
-            "step_number": 1,
-            "total_steps": 1,
-            "next_step_required": False,
-            "findings": {},
-            "relevant_files": list(files),
-            "review_type": "full",
-            "focus_on": "full",
-            "model": model_review,
-            "review_validation_type": "external",
-            "severity_filter": "all",
-        }, timeout=60.0)
-        if "error" in review:
-            console.print(f"[yellow]Review error:[/yellow] {review['error']}")
-        else:
-            console.print(review.get("content") or review.get("response") or "(no review)")
-
-    console.print("\n[cyan]Debugging:[/cyan]")
-    debug = _zen_post(base_url, "/mcp/zen/debug", {
-        "step": f"Validate plan for: {goal}",
-        "step_number": 1,
-        "total_steps": 1,
-        "next_step_required": False,
-        "findings": {},
-        "hypothesis": "Plan assumptions hold; identify risks and test gaps",
-        "model": model_debug,
-        "temperature": 0.2,
-        "thinking_mode": "high",
-    })
-    if "error" in debug:
-        console.print(f"[yellow]Debug error:[/yellow] {debug['error']}")
-    else:
-        console.print(debug.get("content") or debug.get("response") or "(no debug)")
-
-
-# ============================================================================
 # 🚀 EASY LAUNCH SHORTCUTS - Quick commands for common workflows
 # ============================================================================
 
@@ -7005,222 +6255,6 @@ dopemux tmux theme neon
     console.print(Markdown(help_text))
 
 
-@cli.command("alt-routing")
-@click.option(
-    "--preset",
-    type=click.Choice(sorted(ROUTING_PRESETS.keys())),
-    help="Apply a predefined routing preset (balanced, research, budget).",
-)
-@click.option("--primary", help="Primary model name from litellm.config to route claude* requests to.")
-@click.option("--fallbacks", help="Comma-separated fallback model list (in priority order).")
-@click.option("--opus-model", help="Override model for claude-opus aliases (defaults to primary).")
-@click.option("--haiku-model", help="Override model for claude-haiku aliases (defaults to primary).")
-@click.option("--list-models", is_flag=True, help="List configured LiteLLM models and exit.")
-@click.option(
-    "--config-path",
-    type=click.Path(file_okay=True, dir_okay=False, path_type=Path),
-    help="Explicit LiteLLM config path to inspect/update.",
-)
-@click.option("--dry-run", is_flag=True, help="Preview changes without writing to disk.")
-def alt_routing(
-    preset: Optional[str],
-    primary: Optional[str],
-    fallbacks: Optional[str],
-    opus_model: Optional[str],
-    haiku_model: Optional[str],
-    list_models: bool,
-    config_path: Optional[Path],
-    dry_run: bool,
-):
-    """
-    🎛️ Select and customize alternative routing targets for Anthropic model names.
-
-    Updates LiteLLM config so every `claude-*` alias uses the chosen model +
-    fallback chain. Helpful when `dopemux start --alt-routing` should prefer a
-    specific provider (OpenRouter, XAI, GPT-5 mini, etc.).
-    """
-    project_root = Path.cwd()
-    candidate_path: Optional[Path] = None
-    if config_path:
-        candidate_path = config_path.expanduser().resolve()
-    else:
-        for option in _litellm_config_candidates(project_root):
-            if option.exists():
-                candidate_path = option
-                break
-        if candidate_path is None:
-            candidate_path = _litellm_config_candidates(project_root)[0]
-
-    config_file = _ensure_litellm_config(candidate_path)
-    config_data = _load_litellm_config(config_file)
-    catalog = _extract_model_catalog(config_data)
-    available_models = [entry["name"] for entry in catalog]
-
-    general_settings = config_data.setdefault("general_settings", {})
-    saved_meta = general_settings.get("dopemux_alt_routing", {}) or {}
-    saved_primary = general_settings.get("dopemux_selected_model") or saved_meta.get("primary")
-
-    if list_models:
-        _render_model_catalog(catalog, saved_primary)
-        rel_path = _relative_path_or_same(config_file, project_root)
-        console.print(f"[dim]Config: {rel_path}[/dim]")
-        return
-
-    if not available_models:
-        raise click.ClickException("No models defined in LiteLLM config. Add entries to model_list first.")
-
-    preset_data = ROUTING_PRESETS.get(preset) if preset else None
-    preset_primary = (
-        _resolve_first_available(preset_data.get("primary_candidates"), available_models)
-        if preset_data
-        else None
-    )
-    preset_fallbacks = (
-        _normalize_fallbacks(preset_data.get("fallback_candidates"), available_models)
-        if preset_data
-        else []
-    )
-    preset_opus = (
-        _resolve_first_available(preset_data.get("opus_candidates"), available_models)
-        if preset_data
-        else None
-    )
-    preset_haiku = (
-        _resolve_first_available(preset_data.get("haiku_candidates"), available_models)
-        if preset_data
-        else None
-    )
-
-    primary_model = primary or preset_primary or saved_primary
-    if not primary_model:
-        _render_model_catalog(catalog, None)
-        choice = click.prompt(
-            "Select primary model",
-            type=click.Choice(available_models),
-            default=available_models[0],
-        )
-        primary_model = choice
-
-    if primary_model not in available_models:
-        raise click.BadParameter(
-            f"Model '{primary_model}' not found in LiteLLM config.",
-            param_hint="--primary",
-        )
-
-    fallback_models: List[str] = []
-    if fallbacks:
-        fallback_models = [item.strip() for item in fallbacks.split(",") if item.strip()]
-    elif preset_fallbacks:
-        fallback_models = preset_fallbacks
-    elif saved_meta.get("fallbacks"):
-        fallback_models = list(saved_meta["fallbacks"])
-    else:
-        fallback_models = config_data.get("litellm_settings", {}).get("default_fallbacks", []) or []
-
-    def _dedupe(sequence: Sequence[str]) -> List[str]:
-        seen = set()
-        ordered: List[str] = []
-        for item in sequence:
-            if not item or item == primary_model or item in seen:
-                continue
-            if item not in available_models:
-                brand_status(
-                    f"Ignoring unknown fallback model '{item}' (not present in LiteLLM config).",
-                    chip="[OVERRIDE]",
-                    style="yellow",
-                )
-                continue
-            ordered.append(item)
-            seen.add(item)
-        return ordered
-
-    fallback_models = _dedupe(fallback_models)
-    opus_target = opus_model or preset_opus or saved_meta.get("opus_model") or primary_model
-    haiku_target = haiku_model or preset_haiku or saved_meta.get("haiku_model") or primary_model
-
-    for target_value, option_name in (
-        (opus_target, "--opus-model"),
-        (haiku_target, "--haiku-model"),
-    ):
-        if target_value and target_value not in available_models:
-            raise click.BadParameter(f"Model '{target_value}' not found.", param_hint=option_name)
-
-    # Update alias map
-    litellm_settings = config_data.setdefault("litellm_settings", {})
-    alias_map = litellm_settings.setdefault("model_alias_map", {})
-
-    def _apply_aliases(keys: Sequence[str], target: str) -> None:
-        if not target:
-            return
-        for key in keys:
-            alias_map[key] = target
-
-    _apply_aliases(CLAUDE_ALIAS_GROUPS["primary"], primary_model)
-    _apply_aliases(CLAUDE_ALIAS_GROUPS["haiku"], haiku_target)
-    _apply_aliases(CLAUDE_ALIAS_GROUPS["opus"], opus_target)
-
-    for alias in list(alias_map.keys()):
-        lowered = alias.lower()
-        if "claude" not in lowered:
-            continue
-        if "opus" in lowered:
-            alias_map[alias] = opus_target
-        elif "haiku" in lowered:
-            alias_map[alias] = haiku_target
-        else:
-            alias_map[alias] = primary_model
-
-    fallback_map = _fallback_list_to_dict(litellm_settings.get("fallbacks"))
-    fallback_map[primary_model] = fallback_models
-    litellm_settings["fallbacks"] = _dict_to_fallback_list(fallback_map)
-    litellm_settings["default_fallbacks"] = fallback_models
-
-    # Persist metadata
-    general_settings["dopemux_selected_model"] = primary_model
-    routing_meta = {
-        "preset": preset,
-        "primary": primary_model,
-        "fallbacks": fallback_models,
-        "opus_model": opus_target,
-        "haiku_model": haiku_target,
-        "updated_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
-    }
-    general_settings["dopemux_alt_routing"] = routing_meta
-
-    rel_path = _relative_path_or_same(config_file, project_root)
-    if dry_run:
-        brand_status(
-            f"[dry-run] Would route claude* to {primary_model} (config: {rel_path})",
-            chip="[OVERRIDE]",
-            style="yellow",
-        )
-        return
-
-    _save_litellm_config(config_file, config_data)
-    brand_status(
-        f"Claudes now route to {primary_model}",
-        chip="[LIVE]",
-        style="green",
-    )
-    if fallback_models:
-        brand_status(
-            f"Fallback order: {', '.join(fallback_models)}",
-            chip="[LOGGED]",
-            style="dim",
-        )
-    if preset and preset_data:
-        brand_status(
-            f"Preset '{preset}' applied ({preset_data['description']})",
-            chip="[LOGGED]",
-            style="dim",
-        )
-    brand_status(
-        f"LiteLLM config updated: {rel_path}",
-        chip="[LOGGED]",
-        style="dim",
-    )
-
-
 def main():
     """Main entry point."""
     try:
@@ -7341,270 +6375,6 @@ def hooks_cmd(setup, teardown, status, enable, disable, shell_scripts, install_s
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
-
-
-# ============================================================================
-# 🌉 DOPECONBRIDGE - Integration Gateway Commands
-# ============================================================================
-
-@cli.group()
-def bridge():
-    """
-    🌉 DopeconBridge integration gateway commands.
-    
-    Manage and interact with DopeconBridge - the central coordination
-    point for PM ↔ Cognitive plane communication and KG access.
-    """
-    pass
-
-
-@bridge.command("status")
-@click.option("--url", default=None, help="Bridge URL (default: from env)")
-def bridge_status(url):
-    """Check DopeconBridge health and status."""
-    import httpx
-    
-    bridge_url = url or os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016")
-    
-    try:
-        with httpx.Client(timeout=5.0) as client:
-            resp = client.get(f"{bridge_url}/health")
-            if resp.status_code == 200:
-                console.print(f"[green]✅ DopeconBridge is healthy at {bridge_url}[/green]")
-                if resp.headers.get("content-type", "").startswith("application/json"):
-                    data = resp.json()
-                    console.print(f"  Status: {data.get('status', 'unknown')}")
-            else:
-                console.print(f"[yellow]⚠️  Bridge returned {resp.status_code}[/yellow]")
-    except httpx.ConnectError:
-        console.print(f"[red]❌ Cannot connect to DopeconBridge at {bridge_url}[/red]")
-        console.print("[dim]Check if bridge is running: docker ps | grep dopecon-bridge[/dim]")
-    except Exception as e:
-        console.print(f"[red]❌ Error checking bridge: {e}[/red]")
-
-
-@bridge.command("stats")
-@click.option("--url", default=None, help="Bridge URL")
-def bridge_stats(url):
-    """Show DopeconBridge usage statistics."""
-    import httpx
-    import json
-    
-    bridge_url = url or os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016")
-    
-    try:
-        with httpx.Client(timeout=5.0) as client:
-            resp = client.get(f"{bridge_url}/stats")
-            if resp.status_code == 200:
-                stats = resp.json()
-                console.print(json.dumps(stats, indent=2))
-            else:
-                console.print(f"[yellow]⚠️  Bridge returned {resp.status_code}[/yellow]")
-    except httpx.ConnectError:
-        console.print(f"[red]❌ Cannot connect to DopeconBridge at {bridge_url}[/red]")
-    except Exception as e:
-        console.print(f"[red]❌ Error: {e}[/red]")
-
-
-@bridge.command("event")
-@click.argument("event_type")
-@click.argument("data")
-@click.option("--stream", default="dopemux:events", help="Event stream name")
-@click.option("--url", default=None, help="Bridge URL")
-def bridge_event(event_type, data, stream, url):
-    """
-    Publish an event to DopeconBridge.
-    
-    Example:
-        dopemux bridge event test.event '{"key": "value"}'
-    """
-    import httpx
-    import json
-    
-    bridge_url = url or os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016")
-    
-    try:
-        event_data = json.loads(data)
-    except json.JSONDecodeError as e:
-        console.print(f"[red]❌ Invalid JSON data: {e}[/red]")
-        return
-    
-    payload = {
-        "event_type": event_type,
-        "data": event_data,
-        "stream": stream,
-        "source": "dopemux_cli",
-    }
-    
-    try:
-        with httpx.Client(timeout=10.0) as client:
-            resp = client.post(f"{bridge_url}/events", json=payload)
-            if resp.status_code == 200:
-                result = resp.json()
-                console.print(f"[green]✅ Event published[/green]")
-                console.print(f"  Message ID: {result.get('message_id')}")
-                console.print(f"  Stream: {result.get('stream')}")
-            else:
-                console.print(f"[red]❌ Failed: {resp.status_code}[/red]")
-                console.print(resp.text)
-    except Exception as e:
-        console.print(f"[red]❌ Error: {e}[/red]")
-
-
-@bridge.command("decisions")
-@click.option("--limit", default=10, help="Number of decisions to show")
-@click.option("--search", default=None, help="Search query")
-@click.option("--workspace", default=None, help="Workspace ID")
-@click.option("--url", default=None, help="Bridge URL")
-def bridge_decisions(limit, search, workspace, url):
-    """Query recent decisions via DopeconBridge."""
-    import httpx
-    
-    bridge_url = url or os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016")
-    workspace_id = workspace or os.getenv("WORKSPACE_ID") or os.getcwd()
-    
-    try:
-        with httpx.Client(timeout=10.0) as client:
-            if search:
-                resp = client.get(
-                    f"{bridge_url}/ddg/decisions/search",
-                    params={"query": search, "workspace_id": workspace_id, "limit": limit}
-                )
-            else:
-                resp = client.get(
-                    f"{bridge_url}/ddg/decisions/recent",
-                    params={"workspace_id": workspace_id, "limit": limit}
-                )
-            
-            if resp.status_code == 200:
-                result = resp.json()
-                decisions = result.get("items", [])
-                console.print(f"[cyan]Found {len(decisions)} decisions:[/cyan]\n")
-                
-                for dec in decisions:
-                    console.print(f"[bold]{dec.get('title', 'Untitled')}[/bold]")
-                    console.print(f"  ID: {dec.get('id')}")
-                    console.print(f"  Date: {dec.get('timestamp', 'unknown')}")
-                    console.print()
-            else:
-                console.print(f"[red]❌ Failed: {resp.status_code}[/red]")
-    except Exception as e:
-        console.print(f"[red]❌ Error: {e}[/red]")
-
-
-@bridge.command("route")
-@click.argument("plane", type=click.Choice(["pm", "cognitive"]))
-@click.argument("operation")
-@click.argument("data")
-@click.option("--url", default=None, help="Bridge URL")
-def bridge_route(plane, operation, data, url):
-    """
-    Route an operation to PM or Cognitive plane.
-    
-    Example:
-        dopemux bridge route pm leantime.create_task '{"title": "Fix bug"}'
-    """
-    import httpx
-    import json
-    
-    bridge_url = url or os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016")
-    
-    try:
-        op_data = json.loads(data)
-    except json.JSONDecodeError as e:
-        console.print(f"[red]❌ Invalid JSON data: {e}[/red]")
-        return
-    
-    payload = {
-        "operation": operation,
-        "data": op_data,
-        "requester": "dopemux_cli",
-    }
-    
-    try:
-        with httpx.Client(timeout=15.0) as client:
-            resp = client.post(f"{bridge_url}/route/{plane}", json=payload)
-            if resp.status_code == 200:
-                result = resp.json()
-                if result.get("success"):
-                    console.print(f"[green]✅ Operation succeeded[/green]")
-                    console.print(json.dumps(result.get("data"), indent=2))
-                else:
-                    console.print(f"[yellow]⚠️  Operation failed: {result.get('error')}[/yellow]")
-            else:
-                console.print(f"[red]❌ HTTP {resp.status_code}[/red]")
-    except Exception as e:
-        console.print(f"[red]❌ Error: {e}[/red]")
-
-
-@bridge.command("data")
-@click.argument("action", type=click.Choice(["save", "get"]))
-@click.argument("category")
-@click.option("--key", default=None, help="Data key (required for save)")
-@click.option("--value", default=None, help="Data value as JSON (required for save)")
-@click.option("--workspace", default=None, help="Workspace ID")
-@click.option("--url", default=None, help="Bridge URL")
-def bridge_data(action, category, key, value, workspace, url):
-    """
-    Manage custom data via DopeconBridge.
-    
-    Examples:
-        dopemux bridge data save adhd_state --key focus --value '{"level": 8}' 
-        dopemux bridge data get adhd_state
-    """
-    import httpx
-    import json
-    
-    bridge_url = url or os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016")
-    workspace_id = workspace or os.getenv("WORKSPACE_ID") or os.getcwd()
-    
-    try:
-        with httpx.Client(timeout=10.0) as client:
-            if action == "save":
-                if not key or not value:
-                    console.print("[red]❌ --key and --value required for save[/red]")
-                    return
-                
-                try:
-                    value_data = json.loads(value)
-                except json.JSONDecodeError as e:
-                    console.print(f"[red]❌ Invalid JSON value: {e}[/red]")
-                    return
-                
-                payload = {
-                    "workspace_id": workspace_id,
-                    "category": category,
-                    "key": key,
-                    "value": value_data,
-                }
-                
-                resp = client.post(f"{bridge_url}/kg/custom_data", json=payload)
-                if resp.status_code == 200:
-                    result = resp.json()
-                    if result.get("success"):
-                        console.print(f"[green]✅ Data saved: {category}/{key}[/green]")
-                    else:
-                        console.print(f"[red]❌ Save failed[/red]")
-                else:
-                    console.print(f"[red]❌ HTTP {resp.status_code}[/red]")
-            
-            else:  # get
-                params = {"workspace_id": workspace_id, "category": category}
-                if key:
-                    params["key"] = key
-                
-                resp = client.get(f"{bridge_url}/kg/custom_data", params=params)
-                if resp.status_code == 200:
-                    result = resp.json()
-                    data = result.get("data", [])
-                    console.print(f"[cyan]Found {len(data)} entries:[/cyan]\n")
-                    console.print(json.dumps(data, indent=2))
-                else:
-                    console.print(f"[red]❌ HTTP {resp.status_code}[/red]")
-    
-    except Exception as e:
-        console.print(f"[red]❌ Error: {e}[/red]")
-
 
 if __name__ == "__main__":
     main()
