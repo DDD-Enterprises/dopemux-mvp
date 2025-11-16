@@ -900,6 +900,10 @@ def start(
         os.environ["LITELLM_MASTER_KEY"] = litellm_master_key
         os.environ["DOPEMUX_LITELLM_MASTER_KEY"] = litellm_master_key
         os.environ["ANTHROPIC_API_KEY"] = litellm_master_key
+        
+        # Configure Claude Code Router to use this LiteLLM instance
+        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = f"http://localhost:{litellm_port}/v1/chat/completions"
+        os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
 
         os.environ["DOPEMUX_LITELLM_DB_URL"] = db_url
         os.environ.setdefault("LITELLM_DATABASE_URL", db_url)
