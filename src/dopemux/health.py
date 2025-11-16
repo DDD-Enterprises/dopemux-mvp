@@ -50,7 +50,7 @@ class HealthChecker:
 
     Monitors:
     - Dopemux core services
-    - Claude Code integration
+    - DopeBrainz integration
     - MCP servers (both Python and Docker-based)
     - System resources
     - ADHD feature effectiveness
@@ -170,18 +170,18 @@ class HealthChecker:
                 details={"error": str(e)},
             )
 
-    def _check_claude_code(self, detailed: bool = False) -> ServiceHealth:
-        """Check Claude Code integration health."""
+    def _check_dope_brainz(self, detailed: bool = False) -> ServiceHealth:
+        """Check DopeBrainz integration health."""
         details = {}
 
         try:
-            # Check for Claude Code processes
-            claude_processes = []
+            # Check for DopeBrainz processes
+            dope_brainz_processes = []
             for proc in psutil.process_iter(["pid", "name", "cmdline"]):
                 try:
                     cmdline = " ".join(proc.info.get("cmdline") or [])
-                    if "claude" in cmdline.lower() and "code" in cmdline.lower():
-                        claude_processes.append(
+                    if "dope" in cmdline.lower() and "brainz" in cmdline.lower():
+                        dope_brainz_processes.append(
                             {
                                 "pid": proc.info["pid"],
                                 "name": proc.info["name"],
@@ -191,26 +191,26 @@ class HealthChecker:
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     continue
 
-            if not claude_processes:
+            if not dope_brainz_processes:
                 status = HealthStatus.WARNING
-                message = "Claude Code not running"
-                details["suggestion"] = "Run 'dopemux start' to launch Claude Code"
+                message = "DopeBrainz not running"
+                details["suggestion"] = "Run 'dopemux start' to launch DopeBrainz"
             else:
                 status = HealthStatus.HEALTHY
-                message = f"Claude Code running ({len(claude_processes)} processes)"
+                message = f"DopeBrainz running ({len(dope_brainz_processes)} processes)"
 
             if detailed:
-                details["processes"] = claude_processes
+                details["processes"] = dope_brainz_processes
 
             return ServiceHealth(
-                name="claude_code", status=status, message=message, details=details
+                name="dope_brainz", status=status, message=message, details=details
             )
 
         except Exception as e:
             return ServiceHealth(
-                name="claude_code",
+                name="dope_brainz",
                 status=HealthStatus.CRITICAL,
-                message=f"Claude Code check failed: {e}",
+                message=f"DopeBrainz check failed: {e}",
                 details={"error": str(e)},
             )
 

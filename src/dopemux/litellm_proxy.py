@@ -6,6 +6,7 @@ import hashlib
 import os
 import secrets
 import shutil
+import signal
 import socket
 import subprocess
 import time
@@ -291,8 +292,25 @@ class LiteLLMProxyManager:
             proxy_info.db_status = "LiteLLM metrics disabled"
 
         if self._is_port_in_use():
-            proxy_info.already_running = True
-            return proxy_info
+            if self._check_proxy_health():
+                proxy_info.already_running = True
+                return proxy_info
+            # Port in use but unhealthy - wait for it to clear or terminate it
+            time.sleep(2)
+            if not self._is_port_in_use():
+                # Port cleared, continue to start new instance
+                pass
+            elif self._check_proxy_health():
+                # Now healthy after brief wait
+                proxy_info.already_running = True
+                return proxy_info
+            else:
+                # Still unhealthy - try to cleanup
+                self._cleanup_stale_instance()
+                if self._is_port_in_use():
+                    raise LiteLLMProxyError(
+                        f"Port {self.port} is occupied by an unhealthy process"
+                    )
 
         attempts = 0
         max_attempts = 2
@@ -482,6 +500,18 @@ class LiteLLMProxyManager:
             except (ConnectionRefusedError, OSError):
                 return False
 
+    def _check_proxy_health(self) -> bool:
+        """Check if the proxy at the configured port is healthy and responding."""
+        try:
+            import urllib.request
+            import urllib.error
+            url = f"http://{self.host}:{self.port}/health"
+            req = urllib.request.Request(url, method='GET')
+            with urllib.request.urlopen(req, timeout=2.0) as response:
+                return response.status == 200
+        except Exception:
+            return False
+
     def _launch_proxy_process(
         self,
         env: Dict[str, str],
@@ -519,6 +549,31 @@ class LiteLLMProxyManager:
     def _write_state(self, pid: int) -> None:
         state_path = self.instance_dir / "litellm.state"
         state_path.write_text(str(pid))
+
+    def _cleanup_stale_instance(self) -> None:
+        """Try to cleanup a stale litellm instance on this port."""
+        state_path = self.instance_dir / "litellm.state"
+        if not state_path.exists():
+            return
+        
+        try:
+            pid = int(state_path.read_text().strip())
+            try:
+                os.kill(pid, signal.SIGTERM)
+                time.sleep(1)
+                # Check if process is still alive
+                os.kill(pid, 0)
+                # Still alive, force kill
+                os.kill(pid, signal.SIGKILL)
+                time.sleep(0.5)
+            except ProcessLookupError:
+                # Process already dead
+                pass
+        except (ValueError, OSError):
+            pass
+        
+        # Remove stale state file
+        state_path.unlink(missing_ok=True)
 
     @staticmethod
     def _read_tail(path: Path, length: int = 2000) -> str:

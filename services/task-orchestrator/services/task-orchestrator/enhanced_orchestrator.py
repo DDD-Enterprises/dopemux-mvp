@@ -108,9 +108,9 @@ except ImportError:
     CONPORT_KG_INTEGRATION = False
 
 
-class ClaudeBrainManager:
+class DopeBrainzManager:
     """
-    Claude Code Brain Manager - Intelligent reasoning layer for Dopemux.
+    DopeBrainz Manager - Intelligent reasoning layer for Dopemux.
 
     Integrates LiteLLM for cost-optimized model routing, ZenML-style orchestration
     with retries/caching, ADHD-friendly prompt engineering, and LangChain-inspired
@@ -119,7 +119,7 @@ class ClaudeBrainManager:
 
     def __init__(self):
         if not LITELLM_AVAILABLE:
-            raise ImportError("ClaudeBrainManager requires LiteLLM")
+            raise ImportError("DopeBrainzManager requires LiteLLM")
 
         # Configure LiteLLM for Claude access via OpenRouter
         # Note: verbose setting handled via environment or config if needed
@@ -1697,7 +1697,7 @@ class AgentType(str, Enum):
     CONPORT = "conport"
     SERENA = "serena"
     TASKMASTER = "taskmaster"
-    CLAUDE_FLOW = "claude_flow"
+    DOPE_BRAINZ_FLOW = "dope_brainz_flow"
     ZEN = "zen"
 
 

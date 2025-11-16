@@ -1,7 +1,7 @@
 """
 Dopemux Profile Manager - Config Generator
 
-Transforms profile YAML to Claude config.json format.
+Transforms profile YAML to DopeBrainz config.json format.
 Filters MCP servers based on profile selection.
 """
 
@@ -15,9 +15,9 @@ from .profile_models import Profile
 
 
 class ConfigGenerator:
-    """Generate Claude config.json from profile definitions"""
+    """Generate DopeBrainz config.json from profile definitions"""
 
-    def __init__(self, claude_config_path: Optional[Path] = None):
+    def __init__(self, dope_brainz_config_path: Optional[Path] = None):
         """
         Initialize generator with Claude config path.
 
@@ -26,7 +26,7 @@ class ConfigGenerator:
                               Defaults to ~/.claude/settings.json
         """
         if claude_config_path is None:
-            claude_config_path = Path.home() / ".claude" / "settings.json"
+            dope_brainz_config_path = Path.home() / ".dope-brainz" / "settings.json"
 
         self.config_path = Path(claude_config_path)
         self._full_config = None
