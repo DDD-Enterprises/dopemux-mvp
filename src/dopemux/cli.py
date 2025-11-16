@@ -910,7 +910,6 @@ def start(
         models_list = []
         if litellm_config.exists():
             try:
-                import yaml
                 with open(litellm_config) as f:
                     config = yaml.safe_load(f)
                     if config and "model_list" in config:
