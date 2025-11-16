@@ -226,6 +226,15 @@ class DopeBrainzRouterManager:
         self.dope_brainz_home.mkdir(parents=True, exist_ok=True)
         (self.dope_brainz_home / "projects").mkdir(parents=True, exist_ok=True)
         (self.dope_brainz_home / "sessions").mkdir(parents=True, exist_ok=True)
+        
+        # CCR is hardcoded to look for .claude-code-router in $HOME
+        # Create symlink so it finds our .dope-brainz-router directory
+        ccr_legacy_path = self.instance_home / ".claude-code-router"
+        if not ccr_legacy_path.exists():
+            try:
+                ccr_legacy_path.symlink_to(self.router_home, target_is_directory=True)
+            except OSError:
+                pass  # Symlink might already exist or filesystem doesn't support it
 
     def _load_config(self) -> Dict[str, object]:
         if not self.config_path.exists():
