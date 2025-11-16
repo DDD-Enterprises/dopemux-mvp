@@ -212,31 +212,8 @@ class ClaudeCodeHooks:
 
         Uses Dopemux's trigger command for external integration.
         """
-        try:
-            # Use Dopemux trigger command (external call to avoid circular imports)
-            cmd = [
-                'dopemux', 'trigger', event_type,
-                '--context', str(context).replace("'", '"'),  # Simple JSON conversion
-                '--async',  # Background execution
-                '--quiet'   # Silent operation
-            ]
-
-            # Execute with timeout to prevent blocking
-            process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.DEVNULL,
-                stderr=asyncio.subprocess.DEVNULL
-            )
-
-            try:
-                await asyncio.wait_for(process.wait(), timeout=0.5)
-            except asyncio.TimeoutError:
-                # Kill if it takes too long
-                process.terminate()
-                logger.warning(f"Hook trigger timed out: {event_type}")
-
-        except Exception as e:
-            logger.error(f"Hook trigger failed ({event_type}): {e}")
+        # TODO: Implement dopemux trigger command or use alternative event system
+        logger.debug(f"Hook event (not processed): {event_type} - {context}")
 
     # Shell integration helpers
     def generate_shell_hooks(self) -> Dict[str, str]:
@@ -248,38 +225,41 @@ class ClaudeCodeHooks:
         return {
             'bash_preexec': f'''
 # Dopemux Claude Code pre-exec hook
+# TODO: Implement dopemux trigger command
 dopemux_trigger_preexec() {{
-    if [[ "$1" == *"claude"* ]] || [[ "$1" == *"dopemux"* ]];then
-        dopemux trigger shell-command --context "{{\\"command\\": \\"$1\\"}}" --async --quiet &
-    fi
+    # Disabled until dopemux trigger command is implemented
+    :
 }}
-trap 'dopemux_trigger_preexec "$_"' DEBUG
+# trap 'dopemux_trigger_preexec "$_"' DEBUG
 ''',
 
             'bash_precmd': '''
 # Dopemux Claude Code post-exec hook
+# TODO: Implement dopemux trigger command
 dopemux_trigger_precmd() {
-    dopemux trigger command-done --async --quiet &
+    # Disabled until dopemux trigger command is implemented
+    :
 }
 PROMPT_COMMAND="${PROMPT_COMMAND};dopemux_trigger_precmd"
 ''',
 
             'zsh_hooks': '''
 # Dopemux Claude Code hooks for zsh
+# TODO: Implement dopemux trigger command
 autoload -U add-zsh-hook
 
 dopemux_preexec() {
-    if [[ "$1" == *"claude"* ]] || [[ "$1" == *"dopemux"* ]];then
-        dopemux trigger shell-command --context "{\\"command\\": \\"$1\\"}" --async --quiet &
-    fi
+    # Disabled until dopemux trigger command is implemented
+    :
 }
 
 dopemux_precmd() {
-    dopemux trigger command-done --async --quiet &
+    # Disabled until dopemux trigger command is implemented
+    :
 }
 
-add-zsh-hook preexec dopemux_preexec
-add-zsh-hook precmd dopemux_precmd
+# add-zsh-hook preexec dopemux_preexec
+# add-zsh-hook precmd dopemux_precmd
 '''
         }
 
