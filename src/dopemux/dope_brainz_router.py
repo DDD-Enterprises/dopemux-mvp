@@ -1,4 +1,4 @@
-"""Claude Code Router orchestration for Dopemux multi-instance environments."""
+"""DopeBrainz Router orchestration for Dopemux multi-instance environments."""
 
 from __future__ import annotations
 
@@ -14,13 +14,13 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence
 
 
-class ClaudeCodeRouterError(RuntimeError):
-    """Raised when the Claude Code Router cannot be prepared or launched."""
+class DopeBrainzRouterError(RuntimeError):
+    """Raised when the DopeBrainz Router cannot be prepared or launched."""
 
 
 @dataclass
-class ClaudeCodeRouterInfo:
-    """Details about a Claude Code Router process."""
+class DopeBrainzRouterInfo:
+    """Details about a DopeBrainz Router process."""
 
     host: str
     port: int
@@ -36,8 +36,8 @@ class ClaudeCodeRouterInfo:
         return f"http://{self.host}:{self.port}"
 
 
-class ClaudeCodeRouterManager:
-    """Manage a Claude Code Router instance per Dopemux workspace instance."""
+class DopeBrainzRouterManager:
+    """Manage a DopeBrainz Router instance per Dopemux workspace instance."""
 
     MAIN_PORT_BASE = 3000
     ROUTER_PORT_BASE = 3456
@@ -51,15 +51,15 @@ class ClaudeCodeRouterManager:
         self.host = "127.0.0.1"
         self.port = self.ROUTER_PORT_BASE + offset
 
-        self.base_dir = self.project_root / ".dopemux" / "claude-code-router"
+        self.base_dir = self.project_root / ".dopemux" / "dope-brainz-router"
         self.instance_home = self.base_dir / instance_id
-        self.router_home = self.instance_home / ".claude-code-router"
-        self.claude_home = self.instance_home / ".claude"
+        self.router_home = self.instance_home / ".dope-brainz-router"
+        self.dope_brainz_home = self.instance_home / ".dope-brainz"
 
         self.config_path = self.router_home / "config.json"
         self.api_key_path = self.router_home / "api.key"
-        self.pid_path = self.router_home / ".claude-code-router.pid"
-        self.log_path = self.instance_home / "claude-code-router.log"
+        self.pid_path = self.router_home / ".dope-brainz-router.pid"
+        self.log_path = self.instance_home / "dope-brainz-router.log"
 
         self._api_key: Optional[str] = None
         self._process_env_overrides: Dict[str, str] = {}
@@ -77,7 +77,7 @@ class ClaudeCodeRouterManager:
     ) -> Path:
         """Create or update the router configuration for this instance."""
         if not provider_models:
-            raise ClaudeCodeRouterError("At least one upstream model must be provided")
+            raise DopeBrainzRouterError("At least one upstream model must be provided")
 
         self._ensure_directories()
         api_key = self._ensure_api_key()
@@ -187,7 +187,7 @@ class ClaudeCodeRouterManager:
 
         executable = shutil.which("ccr")
         if not executable:
-            raise ClaudeCodeRouterError(
+            raise DopeBrainzRouterError(
                 "ccr executable not found. Install with `npm install -g @musistudio/claude-code-router`."
             )
 
@@ -195,13 +195,13 @@ class ClaudeCodeRouterManager:
         self._launch_router_process(executable, env)
 
         if not self._wait_until_ready(startup_timeout):
-            raise ClaudeCodeRouterError(
+            raise DopeBrainzRouterError(
                 f"Claude Code Router did not become ready on {self.host}:{self.port}"
             )
 
         return self._build_info(already_running=False)
 
-    def build_client_env(self, info: ClaudeCodeRouterInfo) -> Dict[str, str]:
+    def build_client_env(self, info: DopeBrainzRouterInfo) -> Dict[str, str]:
         """Environment variables for clients that should use the router."""
         return {
             "ANTHROPIC_BASE_URL": info.base_url,
@@ -223,9 +223,9 @@ class ClaudeCodeRouterManager:
 
         # Claude Code Router expects the legacy Claude desktop layout under $HOME/.claude
         # Ensure the directories exist so CCR doesn't crash while scanning for projects.
-        self.claude_home.mkdir(parents=True, exist_ok=True)
-        (self.claude_home / "projects").mkdir(parents=True, exist_ok=True)
-        (self.claude_home / "sessions").mkdir(parents=True, exist_ok=True)
+        self.dope_brainz_home.mkdir(parents=True, exist_ok=True)
+        (self.dope_brainz_home / "projects").mkdir(parents=True, exist_ok=True)
+        (self.dope_brainz_home / "sessions").mkdir(parents=True, exist_ok=True)
 
     def _load_config(self) -> Dict[str, object]:
         if not self.config_path.exists():
@@ -235,7 +235,7 @@ class ClaudeCodeRouterManager:
         except json.JSONDecodeError:
             backup_path = self.config_path.with_suffix(".corrupt")
             self.config_path.replace(backup_path)
-            raise ClaudeCodeRouterError(
+            raise DopeBrainzRouterError(
                 f"Existing router config was invalid JSON. Moved to {backup_path}."
             )
 
@@ -329,7 +329,7 @@ class ClaudeCodeRouterManager:
         env = os.environ.copy()
         env.update(self._process_env_overrides)
         if self._provider_key_env_var and self._provider_key_env_var not in env:
-            raise ClaudeCodeRouterError(
+            raise DopeBrainzRouterError(
                 f"Upstream credential {self._provider_key_env_var} missing from environment"
             )
         return env
@@ -363,10 +363,10 @@ class ClaudeCodeRouterManager:
             except OSError:
                 return False
 
-    def _build_info(self, *, already_running: bool) -> ClaudeCodeRouterInfo:
+    def _build_info(self, *, already_running: bool) -> DopeBrainzRouterInfo:
         if not self._api_key:
-            raise ClaudeCodeRouterError("Router API key not initialized")
-        return ClaudeCodeRouterInfo(
+            raise DopeBrainzRouterError("Router API key not initialized")
+        return DopeBrainzRouterInfo(
             host=self.host,
             port=self.port,
             config_path=self.config_path,
