@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script for enhanced ClaudeBrainManager with 2024-2025 prompt optimization techniques.
+Test script for enhanced DopeBrainzManager with 2024-2025 prompt optimization techniques.
 """
 
 import asyncio
@@ -11,14 +11,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 async def test_enhanced_brain():
-    """Test the enhanced ClaudeBrainManager with advanced techniques."""
-    print("🧠 Testing Enhanced ClaudeBrainManager...")
+    """Test the enhanced DopeBrainzManager with advanced techniques."""
+    print("🧠 Testing Enhanced DopeBrainzManager...")
 
     try:
-        from enhanced_orchestrator import ClaudeBrainManager
+        from enhanced_orchestrator import DopeBrainzManager
 
-        brain = ClaudeBrainManager()
-        print("✅ ClaudeBrainManager initialized with advanced features")
+        brain = DopeBrainzManager()
+        print("✅ DopeBrainzManager initialized with advanced features")
 
         # Test 1: Basic reasoning with COSTAR framework
         print("\n1. Testing COSTAR Framework...")
@@ -86,7 +86,7 @@ async def test_enhanced_brain():
         except Exception as e:
             print(f"ℹ️  Evolutionary test skipped: {e}")
 
-        print("\n🎉 All enhanced ClaudeBrainManager tests completed successfully!")
+        print("\n🎉 All enhanced DopeBrainzManager tests completed successfully!")
         print("\n🚀 Advanced Features Implemented:")
         print("   ✅ COSTAR Framework for structured prompting")
         print("   ✅ Chain-of-Thought reasoning")

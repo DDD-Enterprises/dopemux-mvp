@@ -24,7 +24,7 @@ import libtmux
 class AgentType(Enum):
     """Available AI CLI agents."""
 
-    CLAUDE = "claude"
+    DOPE_BRAINZ = "dope_brainz"
     GEMINI = "gemini"
     CODEX = "codex"
     AIDER = "aider"
