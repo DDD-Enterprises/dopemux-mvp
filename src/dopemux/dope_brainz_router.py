@@ -58,7 +58,8 @@ class DopeBrainzRouterManager:
 
         self.config_path = self.router_home / "config.json"
         self.api_key_path = self.router_home / "api.key"
-        self.pid_path = self.router_home / ".dope-brainz-router.pid"
+        # CCR creates PID file with its own name (.claude-code-router.pid)
+        self.pid_path = self.router_home / ".claude-code-router.pid"
         self.log_path = self.instance_home / "dope-brainz-router.log"
 
         self._api_key: Optional[str] = None
