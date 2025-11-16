@@ -1293,7 +1293,7 @@ def start(
         use_claude_router = True
     litellm_enabled = use_litellm or use_claude_router
 
-    if litellm_enabled:
+    if litellm_enabled and not use_alt_routing:
         # Require OpenRouter since LiteLLM proxy is configured to route through it
         if not os.environ.get("OPENROUTER_API_KEY"):
             console.print("[red]❌ OPENROUTER_API_KEY is not set.[/red]")
