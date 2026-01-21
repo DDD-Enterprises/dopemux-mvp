@@ -13,6 +13,9 @@ Based on Claude-Code-Tools tmux-cli functionality.
 import subprocess
 import json
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
@@ -71,21 +74,17 @@ class TmuxCli:
         try:
             # Create new window with the command
             window_name = f"claude-tool-{hash(command) % 1000}"
-            tmux_cmd = f"tmux new-window -d -n '{window_name}' '{command}'"
-
-            # Run the tmux command
-            import subprocess
-            result = subprocess.run(tmux_cmd, shell=True, capture_output=True, text=True)
+            # Run the tmux command safely without shell
+            from dopemux.safe_subprocess import run
+            result = run(["tmux", "new-window", "-d", "-n", window_name, command])
 
             if result.returncode != 0:
                 raise TmuxCliError(f"Tmux command failed: {result.stderr}")
 
             # Get the current session name if not provided
             if not session_name:
-                session_result = subprocess.run(
-                    "tmux display-message -p '#{session_name}'",
-                    shell=True, capture_output=True, text=True
-                )
+                from dopemux.safe_subprocess import run
+                session_result = run(["tmux", "display-message", "-p", "#{session_name}"], check=False)
                 session_name = session_result.stdout.strip() if session_result.returncode == 0 else "dopemux"
 
             return PaneInfo(
@@ -97,6 +96,7 @@ class TmuxCli:
         except Exception as e:
             raise TmuxCliError(f"Failed to launch command: {e}")
 
+            logger.error(f"Error: {e}")
     def send(self, text: str, pane_id: str, enter: bool = True,
              delay_enter: float = 0.1) -> None:
         """
@@ -112,8 +112,8 @@ class TmuxCli:
             import subprocess
 
             # Send the text to the pane
-            send_cmd = f"tmux send-keys -t '{pane_id}' '{text}'"
-            result = subprocess.run(send_cmd, shell=True, capture_output=True, text=True)
+            from dopemux.safe_subprocess import run
+            result = run(["tmux", "send-keys", "-t", pane_id, text])
 
             if result.returncode != 0:
                 raise TmuxCliError(f"Failed to send text: {result.stderr}")
@@ -122,14 +122,15 @@ class TmuxCli:
             if enter:
                 if delay_enter > 0:
                     time.sleep(delay_enter)
-                enter_cmd = f"tmux send-keys -t '{pane_id}' Enter"
-                enter_result = subprocess.run(enter_cmd, shell=True, capture_output=True, text=True)
+                from dopemux.safe_subprocess import run
+                enter_result = run(["tmux", "send-keys", "-t", pane_id, "Enter"], check=False)
                 if enter_result.returncode != 0:
                     raise TmuxCliError(f"Failed to send Enter: {enter_result.stderr}")
 
         except Exception as e:
             raise TmuxCliError(f"Failed to send input to pane {pane_id}: {e}")
 
+            logger.error(f"Error: {e}")
     def capture(self, pane_id: str, lines: int = 100) -> str:
         """
         Capture output from a tmux pane.
@@ -145,8 +146,8 @@ class TmuxCli:
             import subprocess
 
             # Capture pane content using tmux capture-pane
-            capture_cmd = f"tmux capture-pane -p -S -{lines} -t '{pane_id}'"
-            result = subprocess.run(capture_cmd, shell=True, capture_output=True, text=True)
+            from dopemux.safe_subprocess import run
+            result = run(["tmux", "capture-pane", "-p", "-S", f"-{lines}", "-t", pane_id])
 
             if result.returncode != 0:
                 raise TmuxCliError(f"Failed to capture pane: {result.stderr}")
@@ -156,6 +157,7 @@ class TmuxCli:
         except Exception as e:
             raise TmuxCliError(f"Failed to capture output from pane {pane_id}: {e}")
 
+            logger.error(f"Error: {e}")
     def interrupt(self, pane_id: str) -> None:
         """
         Send interrupt signal (Ctrl+C) to a pane.
@@ -167,8 +169,8 @@ class TmuxCli:
             import subprocess
 
             # Send Ctrl+C to the pane
-            interrupt_cmd = f"tmux send-keys -t '{pane_id}' C-c"
-            result = subprocess.run(interrupt_cmd, shell=True, capture_output=True, text=True)
+            from dopemux.safe_subprocess import run
+            result = run(["tmux", "send-keys", "-t", pane_id, "C-c"], check=False)
 
             if result.returncode != 0:
                 raise TmuxCliError(f"Failed to interrupt pane: {result.stderr}")
@@ -176,6 +178,7 @@ class TmuxCli:
         except Exception as e:
             raise TmuxCliError(f"Failed to interrupt pane {pane_id}: {e}")
 
+            logger.error(f"Error: {e}")
     def kill(self, pane_id: str) -> None:
         """
         Kill a tmux pane.
@@ -187,8 +190,8 @@ class TmuxCli:
             import subprocess
 
             # Kill the pane using tmux kill-pane
-            kill_cmd = f"tmux kill-pane -t '{pane_id}'"
-            result = subprocess.run(kill_cmd, shell=True, capture_output=True, text=True)
+            from dopemux.safe_subprocess import run
+            result = run(["tmux", "kill-pane", "-t", pane_id])
 
             if result.returncode != 0:
                 raise TmuxCliError(f"Failed to kill pane: {result.stderr}")
@@ -196,6 +199,7 @@ class TmuxCli:
         except Exception as e:
             raise TmuxCliError(f"Failed to kill pane {pane_id}: {e}")
 
+            logger.error(f"Error: {e}")
     def list_panes(self, session_name: Optional[str] = None) -> List[PaneInfo]:
         """
         List all panes in a session.
@@ -210,11 +214,12 @@ class TmuxCli:
             import subprocess
 
             if session_name:
-                list_cmd = f"tmux list-panes -s -t '{session_name}' -F '{{session_name}} {{window_index}} {{pane_index}} {{pane_active}} {{pane_command}}'"
+                args = ["tmux", "list-panes", "-s", "-t", session_name, "-F", "#{session_name} #{window_index} #{pane_index} #{pane_active} #{pane_command}"]
             else:
-                list_cmd = "tmux list-panes -s -F '{{session_name}} {{window_index}} {{pane_index}} {{pane_active}} {{pane_command}}'"
+                args = ["tmux", "list-panes", "-s", "-F", "#{session_name} #{window_index} #{pane_index} #{pane_active} #{pane_command}"]
 
-            result = subprocess.run(list_cmd, shell=True, capture_output=True, text=True)
+            from dopemux.safe_subprocess import run
+            result = run(args, check=False)
 
             if result.returncode != 0:
                 raise TmuxCliError(f"Tmux list-panes failed: {result.stderr}")
@@ -238,6 +243,7 @@ class TmuxCli:
         except Exception as e:
             raise TmuxCliError(f"Failed to list panes: {e}")
 
+            logger.error(f"Error: {e}")
     def wait_idle(self, pane_id: str, idle_time: float = 2.0,
                   timeout: float = 30.0) -> bool:
         """
@@ -264,9 +270,10 @@ class TmuxCli:
                 else:
                     last_output = current_output
                     start_time = time.time()  # Reset timer
-            except Exception:
+            except Exception as e:
                 pass  # Continue waiting
 
+                logger.error(f"Error: {e}")
             time.sleep(0.1)
 
         return False
@@ -282,8 +289,8 @@ class TmuxCli:
             import subprocess
 
             # Get current pane
-            current_cmd = "tmux display-message -p '#{session_name}:#{window_index}.#{pane_index}'"
-            current_result = subprocess.run(current_cmd, shell=True, capture_output=True, text=True)
+            from dopemux.safe_subprocess import run
+            current_result = run(["tmux", "display-message", "-p", "#{session_name}:#{window_index}.#{pane_index}"], check=False)
 
             if current_result.returncode == 0:
                 current_location = current_result.stdout.strip()

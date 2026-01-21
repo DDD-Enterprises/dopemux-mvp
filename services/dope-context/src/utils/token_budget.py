@@ -69,11 +69,12 @@ def estimate_dict_tokens(data: Dict[str, Any]) -> int:
     try:
         json_str = json.dumps(data)
         return estimate_tokens(json_str)
-    except Exception:
+    except Exception as e:
         # Fallback: rough estimate from string representation
         return estimate_tokens(str(data))
 
 
+        logger.error(f"Error: {e}")
 def truncate_text(text: str, max_chars: int, suffix: str = "... [truncated]") -> tuple[str, bool]:
     """
     Truncate text to maximum character count.

@@ -20,6 +20,11 @@ Usage:
 
 from __future__ import annotations
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 import argparse
 import difflib
 import os
@@ -60,10 +65,11 @@ class DocInfo:
 def read_text(path: Path) -> str:
     try:
         return path.read_text(encoding="utf-8", errors="ignore")
-    except Exception:
+    except Exception as e:
         return ""
 
 
+        logger.error(f"Error: {e}")
 def strip_frontmatter(text: str) -> str:
     if text.startswith("---\n"):
         end = text.find("\n---\n", 4)
@@ -225,11 +231,11 @@ def main() -> None:
 
     results = shortlist_external(top_n=args.top, no_write=args.no_write)
 
-    print(f"Found {len(results)} external high-quality unique docs.\n")
+    logger.info(f"Found {len(results)} external high-quality unique docs.\n")
     for d in results:
-        print(f"- {d.quality_score:.1f} | {d.words:4d}w | {d.headings:2d}h | {d.code_blocks:2d}c | {d.path.relative_to(REPO)} | {d.title}")
+        logger.info(f"- {d.quality_score:.1f} | {d.words:4d}w | {d.headings:2d}h | {d.code_blocks:2d}c | {d.path.relative_to(REPO)} | {d.title}")
     if not args.no_write:
-        print(f"\nShortlist written to: {SHORTLIST_PATH}")
+        logger.info(f"\nShortlist written to: {SHORTLIST_PATH}")
 
 
 if __name__ == "__main__":

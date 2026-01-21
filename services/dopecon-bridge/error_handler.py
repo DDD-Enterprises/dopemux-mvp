@@ -262,9 +262,10 @@ class ErrorHandler:
                 try:
                     item = json.loads(item_raw)
                     items.append(item)
-                except:
+                except Exception as e:
                     pass
 
+                    logger.error(f"Error: {e}")
             return items
 
         except Exception as e:

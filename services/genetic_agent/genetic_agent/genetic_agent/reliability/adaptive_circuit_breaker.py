@@ -187,9 +187,10 @@ class AdaptiveCircuitBreaker:
             if fallback:
                 try:
                     return await self._execute_operation(fallback, is_fallback=True)
-                except Exception:
+                except Exception as e:
                     pass  # Fallback also failed
 
+                    logger.error(f"Error: {e}")
             raise e
 
     async def _execute_operation(self, operation: Callable[[], Any], is_fallback: bool = False) -> Any:
@@ -254,9 +255,10 @@ class AdaptiveCircuitBreaker:
                         if stats.should_attempt_recovery(policy["recovery_timeout"]):
                             self.service_states[service_name] = CircuitBreakerState.HALF_OPEN
 
-                except Exception:
+                except Exception as e:
                     stats.update_health_status(False)
 
+                    logger.error(f"Error: {e}")
     async def _perform_health_check(self, service_name: str) -> bool:
         """Perform a health check for the service."""
         # Placeholder implementation
@@ -265,9 +267,10 @@ class AdaptiveCircuitBreaker:
             # Simulate health check
             await asyncio.sleep(0.1)  # Small delay
             return True  # Assume healthy for demo
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     def get_service_status(self, service_name: str) -> Dict[str, Any]:
         """Get the current status of a service."""
         if service_name not in self.service_stats:

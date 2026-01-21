@@ -13,7 +13,7 @@ import pytest
 
 from core.config import Config
 from integrations.leantime_bridge import (
-    LeantimeMCPClient,
+    LeantimeBridge,
     LeantimeTask,
     TaskPriority,
 )
@@ -53,7 +53,7 @@ class TestLeantimeTaskMasterIntegration:
     @pytest.fixture
     async def leantime_client(self, config):
         """Create mock Leantime client."""
-        client = LeantimeMCPClient(config)
+        client = LeantimeBridge(config)
         client._connected = True
         client.session = AsyncMock()
         return client

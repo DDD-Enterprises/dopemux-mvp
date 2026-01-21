@@ -37,8 +37,9 @@ def mobile_task_notification(
         message = success_template if (exc.code is None or exc.code == 0) else failure_template
         notify_mobile_event(config_manager, message)
         raise
-    except Exception:
+    except Exception as e:
         notify_mobile_event(config_manager, failure_template)
         raise
+        logger.error(f"Error: {e}")
     else:
         notify_mobile_event(config_manager, success_template)

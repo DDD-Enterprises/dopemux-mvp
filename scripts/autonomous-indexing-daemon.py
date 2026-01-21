@@ -61,10 +61,10 @@ async def _start_workspace_controllers(
     workspace_path = workspace_path.resolve()
     workspace_hash = workspace_to_hash(workspace_path)
 
-    print("=" * 70)
-    print(f"🚀 Starting autonomous indexing for {workspace_path}")
-    print(f"🔑 Hash: {workspace_hash}")
-    print(f"📊 Collections: code_{workspace_hash}, docs_{workspace_hash}")
+    logger.info("=" * 70)
+    logger.info(f"🚀 Starting autonomous indexing for {workspace_path}")
+    logger.info(f"🔑 Hash: {workspace_hash}")
+    logger.info(f"📊 Collections: code_{workspace_hash}, docs_{workspace_hash}")
 
     from autonomous.autonomous_controller import AutonomousController, AutonomousConfig
     from preprocessing.code_chunker import CodeChunker
@@ -179,8 +179,8 @@ async def _start_workspace_controllers(
     )
     await docs_controller.start()
 
-    print("✅ Controllers ready – code + docs monitoring active.")
-    print()
+    logger.info("✅ Controllers ready – code + docs monitoring active.")
+    logger.info()
 
     return {
         "workspace": workspace_path,
@@ -196,30 +196,30 @@ async def run_autonomous_indexing(workspaces: List[Path]):
     """Main autonomous indexing loop for one or many workspaces."""
     voyage_key = os.getenv("VOYAGE_API_KEY")
     if not voyage_key:
-        print("❌ VOYAGE_API_KEY not set - required for embeddings")
-        print("   export VOYAGE_API_KEY='your-key'")
+        logger.info("❌ VOYAGE_API_KEY not set - required for embeddings")
+        logger.info("   export VOYAGE_API_KEY='your-key'")
         sys.exit(1)
 
     openai_key = os.getenv("OPENAI_API_KEY")
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
     if not openai_key and not anthropic_key:
-        print("⚠️  Warning: Neither OPENAI_API_KEY nor ANTHROPIC_API_KEY set")
-        print("   Context generation will be skipped (quality reduced)")
-        print()
+        logger.warning("⚠️  Warning: Neither OPENAI_API_KEY nor ANTHROPIC_API_KEY set")
+        logger.info("   Context generation will be skipped (quality reduced)")
+        logger.info()
 
     workspace_states = []
     for workspace in workspaces:
         state = await _start_workspace_controllers(workspace, voyage_key, openai_key)
         workspace_states.append(state)
 
-    print("=" * 70)
-    print("🎉 AUTONOMOUS INDEXING DAEMON RUNNING")
-    print("=" * 70)
-    print("🧠 ADHD Impact:")
-    print("   • Files auto-reindex 5s after save")
-    print("   • Periodic sync every 10 minutes")
-    print("   • No 'did I reindex?' anxiety")
-    print()
+    logger.info("=" * 70)
+    logger.info("🎉 AUTONOMOUS INDEXING DAEMON RUNNING")
+    logger.info("=" * 70)
+    logger.info("🧠 ADHD Impact:")
+    logger.info("   • Files auto-reindex 5s after save")
+    logger.info("   • Periodic sync every 10 minutes")
+    logger.info("   • No 'did I reindex?' anxiety")
+    logger.info()
 
     shutdown_event = asyncio.Event()
 

@@ -4,6 +4,11 @@ Simple test to verify Leantime JSON-RPC integration is working
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import aiohttp
 import json
 
@@ -18,13 +23,13 @@ async def test_integration():
         'Content-Type': 'application/json'
     }
 
-    print("🎉 Leantime Integration Success Test")
-    print("=" * 40)
+    logger.info("🎉 Leantime Integration Success Test")
+    logger.info("=" * 40)
 
     async with aiohttp.ClientSession(headers=headers) as session:
 
         # Test 1: Get Projects
-        print("\n📋 Testing project retrieval...")
+        logger.info("\n📋 Testing project retrieval...")
         request_data = {
             "jsonrpc": "2.0",
             "id": 1,
@@ -37,18 +42,18 @@ async def test_integration():
                 data = await response.json()
                 if 'result' in data:
                     projects = data['result'] if isinstance(data['result'], list) else [data['result']]
-                    print(f"✅ SUCCESS: Retrieved {len(projects)} projects")
+                    logger.info(f"✅ SUCCESS: Retrieved {len(projects)} projects")
                     for i, project in enumerate(projects[:3], 1):
                         name = project.get('name', 'Unknown')
                         proj_id = project.get('id', 'N/A')
-                        print(f"   {i}. {name} (ID: {proj_id})")
+                        logger.info(f"   {i}. {name} (ID: {proj_id})")
                 else:
-                    print(f"⚠️  Response: {data}")
+                    logger.info(f"⚠️  Response: {data}")
             else:
-                print(f"❌ Failed: HTTP {response.status}")
+                logger.error(f"❌ Failed: HTTP {response.status}")
 
         # Test 2: Try to get current user
-        print("\n👤 Testing user authentication...")
+        logger.info("\n👤 Testing user authentication...")
         request_data = {
             "jsonrpc": "2.0",
             "id": 2,
@@ -60,16 +65,16 @@ async def test_integration():
             if response.status == 200:
                 data = await response.json()
                 if 'result' in data:
-                    print("✅ SUCCESS: User authentication working")
+                    logger.info("✅ SUCCESS: User authentication working")
                 elif 'error' in data:
-                    print(f"⚠️  API Error: {data['error'].get('message', 'Unknown')}")
+                    logger.error(f"⚠️  API Error: {data['error'].get('message', 'Unknown')}")
                 else:
-                    print(f"⚠️  Response: {data}")
+                    logger.info(f"⚠️  Response: {data}")
             else:
-                print(f"❌ Failed: HTTP {response.status}")
+                logger.error(f"❌ Failed: HTTP {response.status}")
 
         # Test 3: Try different ticket methods
-        print("\n📝 Testing task/ticket access...")
+        logger.info("\n📝 Testing task/ticket access...")
         ticket_methods = [
             "leantime.rpc.Tickets.getAllTickets",
             "leantime.rpc.tickets.getAllTickets"
@@ -88,19 +93,19 @@ async def test_integration():
                     data = await response.json()
                     if 'result' in data:
                         tickets = data['result'] if isinstance(data['result'], list) else [data['result']]
-                        print(f"✅ SUCCESS with {method}: {len(tickets)} tickets")
+                        logger.info(f"✅ SUCCESS with {method}: {len(tickets)} tickets")
                         break
                     elif 'error' in data:
-                        print(f"⚠️  {method}: {data['error'].get('message', 'Unknown error')}")
+                        logger.error(f"⚠️  {method}: {data['error'].get('message', 'Unknown error')}")
                 else:
-                    print(f"❌ {method}: HTTP {response.status}")
+                    logger.info(f"❌ {method}: HTTP {response.status}")
 
-    print("\n🎯 Integration Status:")
-    print("✅ API Authentication: WORKING")
-    print("✅ Project Management: WORKING")
-    print("✅ JSON-RPC Protocol: WORKING")
-    print("🔧 Task Management: Needs method refinement")
-    print("\n🎉 LEANTIME INTEGRATION IS SUCCESSFULLY OPERATIONAL!")
+    logger.info("\n🎯 Integration Status:")
+    logger.info("✅ API Authentication: WORKING")
+    logger.info("✅ Project Management: WORKING")
+    logger.info("✅ JSON-RPC Protocol: WORKING")
+    logger.info("🔧 Task Management: Needs method refinement")
+    logger.info("\n🎉 LEANTIME INTEGRATION IS SUCCESSFULLY OPERATIONAL!")
 
 if __name__ == "__main__":
     asyncio.run(test_integration())

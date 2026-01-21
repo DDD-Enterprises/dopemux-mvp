@@ -783,12 +783,12 @@ class EnhancedTaskOrchestrator:
             # NEW: Handle break-required state
             if agent == "break_required":
                 logger.warning("🛑 MANDATORY BREAK - Task deferred")
-                print("\n" + "="*70)
-                print("🛑 MANDATORY BREAK REQUIRED")
-                print("   You've been working too long.")
-                print("   Take a 10-minute break, then return.")
-                print("   Task will be available after break.")
-                print("="*70 + "\n")
+                logger.info("\n" + "="*70)
+                logger.info("🛑 MANDATORY BREAK REQUIRED")
+                logger.info("   You've been working too long.")
+                logger.info("   Take a 10-minute break, then return.")
+                logger.info("   Task will be available after break.")
+                logger.info("="*70 + "\n")
                 
                 # Track ADHD accommodation
                 self.metrics["adhd_accommodations_applied"] += 1
@@ -1072,9 +1072,10 @@ class EnhancedTaskOrchestrator:
             total_load = min(base_load + duration_load + complexity_load + priority_load, 1.0)
             return total_load
 
-        except Exception:
+        except Exception as e:
             return 0.5  # Default moderate load
 
+            logger.error(f"Error: {e}")
     async def _get_task_count_from_conport(self) -> int:
         """Get total task count from ConPort (Architecture 3.0 storage authority)."""
         try:
@@ -1158,12 +1159,12 @@ class EnhancedTaskOrchestrator:
             new_sprints = await self._check_for_new_sprints()
 
             for sprint in new_sprints:
-                await self._auto_setup_sprint(sprint)
+                await self._auto_setup_slogger.info(sprint)
 
         except Exception as e:
             logger.error(f"Sprint automation check failed: {e}")
 
-    async def _auto_setup_sprint(self, sprint_data: Dict[str, Any]) -> None:
+    async def _auto_setup_slogger.info(self, sprint_data: Dict[str, Any]) -> None:
         """Automatically setup sprint with ADHD optimizations."""
         try:
             sprint_id = sprint_data.get("id", "unknown")
@@ -1227,9 +1228,10 @@ class EnhancedTaskOrchestrator:
 
             return base_duration
 
-        except Exception:
+        except Exception as e:
             return 25  # Default ADHD-friendly duration
 
+            logger.error(f"Error: {e}")
     def _next_request_id(self) -> int:
         """Generate next request ID."""
         return int(datetime.now().timestamp() * 1000)
@@ -1684,7 +1686,7 @@ if __name__ == "__main__":
             "tasks_completed": self.metrics.get("tasks_orchestrated", 0)
         }
 
-    async def get_active_sprint(self) -> Dict[str, Any]:
+    async def get_active_slogger.info(self) -> Dict[str, Any]:
         """Get active sprint info (Component 5)."""
         # Query ConPort for sprint context
         return {

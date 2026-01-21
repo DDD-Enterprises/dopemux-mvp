@@ -8,6 +8,11 @@ Simple 1:1 copy - no transformations needed!
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncpg
 import psycopg2
 import sys
@@ -28,7 +33,7 @@ class AGENodeLoader:
         self.conport_conn = await asyncpg.connect(self.conport_url)
         # AGE requires psycopg2 for Cypher queries
         self.age_conn = psycopg2.connect(self.age_url)
-        print(f"✓ Connected to ConPort and AGE databases")
+        logger.info(f"✓ Connected to ConPort and AGE databases")
 
     def disconnect(self):
         """Close database connections"""
@@ -62,7 +67,7 @@ class AGENodeLoader:
         rows = await self.conport_conn.fetch(query, workspace_id)
 
         decisions = [dict(row) for row in rows]
-        print(f"✓ Extracted {len(decisions)} decisions from ConPort")
+        logger.info(f"✓ Extracted {len(decisions)} decisions from ConPort")
 
         return decisions
 
@@ -115,6 +120,7 @@ class AGENodeLoader:
         except Exception as e:
             self.age_conn.rollback()
             raise e
+            logger.error(f"Error: {e}")
         finally:
             cursor.close()
 
@@ -126,7 +132,7 @@ class AGENodeLoader:
         try:
             decisions = await self.extract_decisions(workspace_id)
 
-            print(f"\nLoading {len(decisions)} decisions to AGE graph...")
+            logger.info(f"\nLoading {len(decisions)} decisions to AGE graph...")
 
             successful = 0
             failed = []
@@ -137,7 +143,7 @@ class AGENodeLoader:
                     successful += 1
 
                     if successful % 10 == 0:
-                        print(f"  Progress: {successful}/{len(decisions)}")
+                        logger.info(f"  Progress: {successful}/{len(decisions)}")
 
                 except Exception as e:
                     failed.append({
@@ -145,14 +151,14 @@ class AGENodeLoader:
                         'summary': decision['summary'][:50],
                         'error': str(e)
                     })
-                    print(f"  ✗ Failed decision {decision['id']}: {e}")
+                    logger.error(f"  ✗ Failed decision {decision['id']}: {e}")
 
-            print(f"\n✓ Loaded {successful} nodes to AGE")
+            logger.info(f"\n✓ Loaded {successful} nodes to AGE")
 
             if failed:
-                print(f"\n✗ {len(failed)} failures:")
+                logger.error(f"\n✗ {len(failed)} failures:")
                 for f in failed:
-                    print(f"  - ID {f['id']}: {f['summary']}... ({f['error']})")
+                    logger.error(f"  - ID {f['id']}: {f['summary']}... ({f['error']})")
                 return False
 
             return True
@@ -169,11 +175,11 @@ async def main():
     AGE_URL = "postgresql://dopemux_age:dopemux_age_password@localhost:5455/dopemux_knowledge_graph"
     WORKSPACE_ID = "/Users/hue/code/dopemux-mvp"
 
-    print("=" * 60)
-    print("AGE Node Loading (Phase 2)")
-    print("=" * 60)
-    print(f"Workspace: {WORKSPACE_ID}")
-    print()
+    logger.info("=" * 60)
+    logger.info("AGE Node Loading (Phase 2)")
+    logger.info("=" * 60)
+    logger.info(f"Workspace: {WORKSPACE_ID}")
+    logger.info()
 
     loader = AGENodeLoader(CONPORT_URL, AGE_URL)
 
@@ -181,17 +187,17 @@ async def main():
         success = await loader.load_all_nodes(WORKSPACE_ID)
 
         if success:
-            print("\n✓ SUCCESS: All nodes loaded to AGE")
-            print("\nNext steps:")
-            print("  1. Run load_age_edges.py")
+            logger.info("\n✓ SUCCESS: All nodes loaded to AGE")
+            logger.info("\nNext steps:")
+            logger.info("  1. Run load_age_edges.py")
             return 0
         else:
-            print("\n✗ FAILURE: Some nodes failed to load")
+            logger.error("\n✗ FAILURE: Some nodes failed to load")
             return 1
 
     except Exception as e:
-        print(f"\n✗ ERROR: Node loading failed")
-        print(f"  {str(e)}")
+        logger.error(f"\n✗ ERROR: Node loading failed")
+        logger.info(f"  {str(e)}")
         return 1
 
 

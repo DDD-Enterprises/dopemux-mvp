@@ -9,6 +9,11 @@ Architecture:
 """
 
 from typing import Dict, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from enum import Enum
 
 
@@ -68,7 +73,7 @@ class TimeoutManager:
         for key, value in user_timeouts.items():
             if key in mapping:
                 self.timeouts[mapping[key]] = value
-                print(f"ℹ️  Timeout override: {key} = {value}s")
+                logger.info(f"ℹ️  Timeout override: {key} = {value}s")
 
     def get_timeout(
         self,
@@ -111,7 +116,7 @@ class TimeoutManager:
             seconds: Timeout in seconds
         """
         self.timeouts[operation_type] = seconds
-        print(f"✅ Updated {operation_type.value} timeout: {seconds}s")
+        logger.info(f"✅ Updated {operation_type.value} timeout: {seconds}s")
 
 
 # Convenience function
@@ -135,19 +140,19 @@ def create_timeout_manager(config: Optional[Dict] = None) -> TimeoutManager:
 
 if __name__ == "__main__":
     """Test timeout manager."""
-    print("🧪 Testing Timeout Manager")
-    print("=" * 60)
+    logger.info("🧪 Testing Timeout Manager")
+    logger.info("=" * 60)
 
     # Test 1: Default timeouts
-    print("\n1. Testing default timeouts...")
+    logger.info("\n1. Testing default timeouts...")
     manager = TimeoutManager()
 
     for op_type in OperationType:
         timeout = manager.get_timeout(op_type)
-        print(f"   {op_type.value}: {timeout}s")
+        logger.info(f"   {op_type.value}: {timeout}s")
 
     # Test 2: Custom configuration
-    print("\n2. Testing custom configuration...")
+    logger.info("\n2. Testing custom configuration...")
     custom_config = {
         'advanced': {
             'timeouts': {
@@ -160,18 +165,18 @@ if __name__ == "__main__":
 
     manager2 = TimeoutManager(custom_config)
 
-    print(f"   spawn: {manager2.get_timeout(OperationType.SPAWN)}s (was 10s)")
-    print(f"   quick_response: {manager2.get_timeout(OperationType.QUICK_RESPONSE)}s (was 30s)")
-    print(f"   research: {manager2.get_timeout(OperationType.RESEARCH)}s (was 600s)")
+    logger.info(f"   spawn: {manager2.get_timeout(OperationType.SPAWN)}s (was 10s)")
+    logger.info(f"   quick_response: {manager2.get_timeout(OperationType.QUICK_RESPONSE)}s (was 30s)")
+    logger.info(f"   research: {manager2.get_timeout(OperationType.RESEARCH)}s (was 600s)")
 
     # Test 3: Runtime updates
-    print("\n3. Testing runtime timeout updates...")
+    logger.info("\n3. Testing runtime timeout updates...")
     manager.set_timeout(OperationType.SPAWN, 20)
-    print(f"   Updated spawn timeout: {manager.get_timeout(OperationType.SPAWN)}s")
+    logger.info(f"   Updated spawn timeout: {manager.get_timeout(OperationType.SPAWN)}s")
 
     # Test 4: Get all timeouts
-    print("\n4. Getting all timeouts...")
+    logger.info("\n4. Getting all timeouts...")
     all_timeouts = manager.get_all_timeouts()
-    print(f"   Total configured: {len(all_timeouts)}")
+    logger.info(f"   Total configured: {len(all_timeouts)}")
 
-    print("\n✅ Timeout manager test complete!")
+    logger.info("\n✅ Timeout manager test complete!")

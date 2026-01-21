@@ -88,7 +88,7 @@ class TmuxLayoutManager:
             else:
                 raise Exception("Session not found")
 
-        except Exception:
+        except Exception as e:
             # Create new session
             self.session = self.server.new_session(
                 session_name=self.session_name,

@@ -5,6 +5,11 @@ Manages hot cache for 20-30x faster context access.
 """
 
 import json
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import time
 import asyncio
 import redis.asyncio as redis
@@ -220,7 +225,7 @@ class CacheManager:
             if full_context:
                 await self.set_context(context['id'], full_context)
 
-        print(f"Warmed cache for {user_id} with {len(contexts)} contexts")
+        logger.info(f"Warmed cache for {user_id} with {len(contexts)} contexts")
 
     async def invalidate_cache(self, snapshot_id: str, user_id: str) -> None:
         """Invalidate cache for specific snapshot"""

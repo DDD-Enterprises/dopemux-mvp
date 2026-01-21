@@ -659,9 +659,10 @@ class GitWorkDetector:
                     try:
                         commit_timestamp = int(lines[1])
                         commit_date = datetime.fromtimestamp(commit_timestamp)
-                    except:
+                    except Exception as e:
                         pass
 
+                        logger.error(f"Error: {e}")
             # Calculate overlap: how many tracked files appear in this commit?
             committed_files = [
                 f for f in file_list

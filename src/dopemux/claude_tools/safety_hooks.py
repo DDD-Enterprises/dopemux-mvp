@@ -254,17 +254,19 @@ class SafetyHooks:
                 chunk = f.read(1024)
                 # Check for null bytes (binary file indicator)
                 return b'\x00' not in chunk
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     def _count_lines(self, file_path: str) -> int:
         """Count lines in a text file."""
         try:
             with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
                 return sum(1 for _ in f)
-        except Exception:
+        except Exception as e:
             return 0
 
+            logger.error(f"Error: {e}")
     def log_violation(self, command: str, violation_type: str, context: Optional[Dict] = None) -> None:
         """Log a safety violation."""
         logger.warning(f"Safety violation ({violation_type}): {command}", extra=context or {})

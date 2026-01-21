@@ -155,7 +155,7 @@ class HybridVectorStore(VectorStore):
                 return
 
             if self.config.enable_progress_tracking:
-                print(f"📚 Adding {len(documents)} documents to hybrid index...")
+                logger.info(f"📚 Adding {len(documents)} documents to hybrid index...")
 
             start_time = time.time()
             doc_contents = []
@@ -185,7 +185,7 @@ class HybridVectorStore(VectorStore):
                 except Exception as e:
                     logger.error(f"❌ Embedding generation failed: {e}")
                     if self.config.gentle_error_messages:
-                        print("💙 Having trouble with embeddings, but don't worry - BM25 search will still work!")
+                        logger.info("💙 Having trouble with embeddings, but don't worry - BM25 search will still work!")
                     raise
 
             # Add to BM25 index
@@ -198,7 +198,7 @@ class HybridVectorStore(VectorStore):
 
             if self.config.enable_progress_tracking:
                 speed = len(documents) / processing_time
-                print(f"✅ Added {len(documents)} documents in {processing_time:.1f}s ({speed:.1f} docs/sec)")
+                logger.info(f"✅ Added {len(documents)} documents in {processing_time:.1f}s ({speed:.1f} docs/sec)")
 
         except Exception as e:
             logger.error(f"❌ Failed to add documents: {e}")
@@ -301,7 +301,7 @@ class HybridVectorStore(VectorStore):
                 except Exception as e:
                     logger.warning(f"⚠️ Vector search failed: {e}")
                     if self.config.gentle_error_messages:
-                        print("💙 Vector search had trouble - using lexical search only")
+                        logger.info("💙 Vector search had trouble - using lexical search only")
 
             # 3. Hybrid fusion
             fused_results = self.ranker.fuse_scores(bm25_results, vector_results)
@@ -345,7 +345,7 @@ class HybridVectorStore(VectorStore):
             # Update metrics
             search_time = (time.time() - search_start) * 1000
             if self.config.enable_progress_tracking and search_time > 1000:
-                print(f"🔍 Search completed in {search_time:.0f}ms")
+                logger.info(f"🔍 Search completed in {search_time:.0f}ms")
 
             return final_results[:k]
 

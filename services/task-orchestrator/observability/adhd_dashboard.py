@@ -16,6 +16,11 @@ Dashboard Panels:
 """
 
 from typing import Dict, List, Any
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import json
 
 
@@ -298,8 +303,8 @@ class ADHDDashboard:
         with open(filename, 'w') as f:
             json.dump(config, f, indent=2)
 
-        print(f"✅ Dashboard exported to {filename}")
-        print(f"Import to Grafana: Dashboards → Import → Upload JSON file")
+        logger.info(f"✅ Dashboard exported to {filename}")
+        logger.info(f"Import to Grafana: Dashboards → Import → Upload JSON file")
 
 
 def generate_default_dashboard() -> str:
@@ -318,9 +323,9 @@ def generate_default_dashboard() -> str:
 if __name__ == "__main__":
     # Generate dashboard when run directly
     path = generate_default_dashboard()
-    print(f"\n📊 Dashboard ready: {path}")
-    print("\nNext steps:")
-    print("1. Start Prometheus (if not running)")
-    print("2. Start Grafana (if not running)")
-    print("3. Import dashboard JSON to Grafana")
-    print("4. Configure Prometheus datasource in Grafana")
+    logger.info(f"\n📊 Dashboard ready: {path}")
+    logger.info("\nNext steps:")
+    logger.info("1. Start Prometheus (if not running)")
+    logger.info("2. Start Grafana (if not running)")
+    logger.info("3. Import dashboard JSON to Grafana")
+    logger.info("4. Configure Prometheus datasource in Grafana")

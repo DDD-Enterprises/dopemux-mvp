@@ -325,6 +325,7 @@ class TaskOrchestratorWrapper:
                 }
             }
 
+            logger.error(f"Error: {e}")
     def _handle_shutdown(self, msg_id: int) -> Dict[str, Any]:
         """Handle shutdown request."""
         return {

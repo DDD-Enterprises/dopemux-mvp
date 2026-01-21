@@ -462,6 +462,7 @@ class TmuxController:
                     f"libtmux backend unavailable ({exc}); falling back to tmux CLI.",
                     RuntimeWarning,
                 )
+                logger.error(f"Error: {exc}")
         return CliTmuxBackend()
 
     def _filter_allowed_sessions(self, panes: Iterable[PaneInfo]) -> List[PaneInfo]:

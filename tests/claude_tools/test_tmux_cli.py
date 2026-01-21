@@ -42,7 +42,7 @@ class TestTmuxCli:
         mock_result.stderr = "tmux error"
         mock_subprocess.return_value = mock_result
 
-        with pytest.raises(TmuxCliError, match="Tmux command failed"):
+        with pytest.raises(TmuxCliError, match="Failed to launch command"):
             self.tmux_cli.launch("invalid command")
 
     @patch('subprocess.run')

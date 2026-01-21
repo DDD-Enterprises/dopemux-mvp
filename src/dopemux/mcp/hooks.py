@@ -606,14 +606,14 @@ async def example_usage():
         original_call, session_context
     )
 
-    print("Original call:", original_call)
-    print("Optimized call:", optimized_call)
-    print("Optimizations applied:", len(optimizations))
+    logger.info("Original call:", original_call)
+    logger.info("Optimized call:", optimized_call)
+    logger.info("Optimizations applied:", len(optimizations))
 
     for opt in optimizations:
-        print(f"- {opt.action_taken.value}: {opt.explanation}")
+        logger.info(f"- {opt.action_taken.value}: {opt.explanation}")
         if opt.user_message:
-            print(f"  User message: {opt.user_message}")
+            logger.info(f"  User message: {opt.user_message}")
 
 
 if __name__ == "__main__":

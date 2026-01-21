@@ -8,6 +8,11 @@ Simple 1:1 copy - schemas now match!
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncpg
 import psycopg2
 import sys
@@ -27,7 +32,7 @@ class AGEEdgeLoader:
         """Establish database connections"""
         self.conport_conn = await asyncpg.connect(self.conport_url)
         self.age_conn = psycopg2.connect(self.age_url)
-        print(f"✓ Connected to ConPort and AGE databases")
+        logger.info(f"✓ Connected to ConPort and AGE databases")
 
     def disconnect(self):
         """Close database connections"""
@@ -56,7 +61,7 @@ class AGEEdgeLoader:
         rows = await self.conport_conn.fetch(query)
 
         relationships = [dict(row) for row in rows]
-        print(f"✓ Extracted {len(relationships)} relationships from ConPort")
+        logger.info(f"✓ Extracted {len(relationships)} relationships from ConPort")
 
         return relationships
 
@@ -94,6 +99,7 @@ class AGEEdgeLoader:
         except Exception as e:
             self.age_conn.rollback()
             raise e
+            logger.error(f"Error: {e}")
         finally:
             cursor.close()
 
@@ -105,7 +111,7 @@ class AGEEdgeLoader:
         try:
             relationships = await self.extract_relationships()
 
-            print(f"\nLoading {len(relationships)} edges to AGE graph...")
+            logger.info(f"\nLoading {len(relationships)} edges to AGE graph...")
 
             successful = 0
             failed = []
@@ -116,7 +122,7 @@ class AGEEdgeLoader:
                     successful += 1
 
                     if successful % 5 == 0:
-                        print(f"  Progress: {successful}/{len(relationships)}")
+                        logger.info(f"  Progress: {successful}/{len(relationships)}")
 
                 except Exception as e:
                     failed.append({
@@ -125,14 +131,14 @@ class AGEEdgeLoader:
                         'type': rel['relationship_type'],
                         'error': str(e)
                     })
-                    print(f"  ✗ Failed edge {rel['source_id']}→{rel['target_id']}: {e}")
+                    logger.error(f"  ✗ Failed edge {rel['source_id']}→{rel['target_id']}: {e}")
 
-            print(f"\n✓ Loaded {successful} edges to AGE")
+            logger.info(f"\n✓ Loaded {successful} edges to AGE")
 
             if failed:
-                print(f"\n✗ {len(failed)} failures:")
+                logger.error(f"\n✗ {len(failed)} failures:")
                 for f in failed:
-                    print(f"  - {f['source_id']}→{f['target_id']} ({f['type']}): {f['error']}")
+                    logger.info(f"  - {f['source_id']}→{f['target_id']} ({f['type']}): {f['error']}")
                 return False
 
             # Validate no orphaned edges
@@ -146,7 +152,7 @@ class AGEEdgeLoader:
             edge_count = cursor.fetchone()[0]
             cursor.close()
 
-            print(f"\nValidation: {edge_count} edges in AGE graph")
+            logger.info(f"\nValidation: {edge_count} edges in AGE graph")
 
             return True
 
@@ -161,10 +167,10 @@ async def main():
     CONPORT_URL = "postgresql://dopemux:dopemux_dev_password@localhost:5432/dopemux_memory"
     AGE_URL = "postgresql://dopemux_age:dopemux_age_password@localhost:5455/dopemux_knowledge_graph"
 
-    print("=" * 60)
-    print("AGE Edge Loading (Phase 2)")
-    print("=" * 60)
-    print()
+    logger.info("=" * 60)
+    logger.info("AGE Edge Loading (Phase 2)")
+    logger.info("=" * 60)
+    logger.info()
 
     loader = AGEEdgeLoader(CONPORT_URL, AGE_URL)
 
@@ -172,18 +178,18 @@ async def main():
         success = await loader.load_all_edges()
 
         if success:
-            print("\n✓ SUCCESS: All edges loaded to AGE")
-            print("\nNext steps:")
-            print("  1. Run 003_create_age_indexes.sql")
-            print("  2. Run compute_hop_distance.py")
+            logger.info("\n✓ SUCCESS: All edges loaded to AGE")
+            logger.info("\nNext steps:")
+            logger.info("  1. Run 003_create_age_indexes.sql")
+            logger.info("  2. Run compute_hop_distance.py")
             return 0
         else:
-            print("\n✗ FAILURE: Some edges failed to load")
+            logger.error("\n✗ FAILURE: Some edges failed to load")
             return 1
 
     except Exception as e:
-        print(f"\n✗ ERROR: Edge loading failed")
-        print(f"  {str(e)}")
+        logger.error(f"\n✗ ERROR: Edge loading failed")
+        logger.info(f"  {str(e)}")
         return 1
 
 

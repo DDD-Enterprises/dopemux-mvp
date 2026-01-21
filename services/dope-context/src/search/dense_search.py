@@ -519,7 +519,7 @@ async def main():
         payload=payload,
     )
 
-    print(f"Inserted point: {point_id}")
+    logger.info(f"Inserted point: {point_id}")
 
     # Search
     query_content = [0.15] * 1024
@@ -533,13 +533,13 @@ async def main():
         profile=SearchProfile.implementation(),
     )
 
-    print(f"\nFound {len(results)} results:")
+    logger.info(f"\nFound {len(results)} results:")
     for r in results[:5]:
-        print(f"  {r.file_path}:{r.function_name} (score: {r.score:.4f})")
+        logger.info(f"  {r.file_path}:{r.function_name} (score: {r.score:.4f})")
 
     # Collection info
     info = await search.get_collection_info()
-    print(f"\nCollection info: {info}")
+    logger.info(f"\nCollection info: {info}")
 
 
 if __name__ == "__main__":

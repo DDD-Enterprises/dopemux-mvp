@@ -788,9 +788,10 @@ class EffectivenessEvolutionSystem:
             else:  # patch
                 return f"{major}.{minor}.{patch + 1}"
 
-        except Exception:
+        except Exception as e:
             return "1.0.1"  # Default if parsing fails
 
+            logger.error(f"Error: {e}")
     def _assess_adhd_benefit_potential(self, effectiveness_data: Dict[str, Any]) -> float:
         """Assess potential ADHD benefit from evolution."""
         # High benefit if cognitive load can be reduced
@@ -896,8 +897,8 @@ async def run_evolution_monitoring_cycle(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("🧬 Serena Effectiveness-Based Evolution System")
-        print("Automatic template improvement with A/B testing and ADHD optimization")
-        print("✅ Module loaded successfully")
+        logger.info("🧬 Serena Effectiveness-Based Evolution System")
+        logger.info("Automatic template improvement with A/B testing and ADHD optimization")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

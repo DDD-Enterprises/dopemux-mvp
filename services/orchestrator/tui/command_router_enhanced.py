@@ -11,6 +11,11 @@ Part of IP-005 Day 4: Progress tracking, error recovery, and testing
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import os
 import shutil
 import subprocess
@@ -130,9 +135,9 @@ class EnhancedCommandRouter:
             config.available = executable_path is not None
 
             if config.available:
-                print(f"✅ {ai_type.value} CLI detected: {executable_path}")
+                logger.info(f"✅ {ai_type.value} CLI detected: {executable_path}")
             else:
-                print(f"⚠️  {ai_type.value} CLI not found in PATH")
+                logger.info(f"⚠️  {ai_type.value} CLI not found in PATH")
 
     def is_available(self, ai: str) -> bool:
         """Check if a specific AI CLI is available."""
@@ -363,8 +368,9 @@ class EnhancedCommandRouter:
             try:
                 process.kill()
                 await process.wait()
-            except:
+            except Exception as e:
                 pass
+                logger.error(f"Error: {e}")
             raise  # Re-raise for retry handling
         except Exception as e:
             return CommandResult(
@@ -376,6 +382,7 @@ class EnhancedCommandRouter:
                 error_message=f"Unexpected error: {e}"
             )
 
+            logger.error(f"Error: {e}")
     async def _read_stream(self, stream: asyncio.StreamReader) -> AsyncIterator[str]:
         """Read lines from stream asynchronously."""
         while True:
@@ -431,7 +438,7 @@ class EnhancedCommandRouter:
             pass
         except Exception as e:
             # Fail silently - ConPort logging is optional
-            print(f"ConPort logging failed (non-critical): {e}")
+            logger.error(f"ConPort logging failed (non-critical): {e}")
 
     def get_cli_status_report(self) -> str:
         """Generate status report of available CLIs."""

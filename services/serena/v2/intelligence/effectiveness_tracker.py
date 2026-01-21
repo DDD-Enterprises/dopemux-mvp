@@ -991,8 +991,8 @@ async def create_effectiveness_tracker(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("📊 Serena Effectiveness Tracking System")
-        print("Multi-dimensional effectiveness measurement with ADHD optimization")
-        print("✅ Module loaded successfully")
+        logger.info("📊 Serena Effectiveness Tracking System")
+        logger.info("Multi-dimensional effectiveness measurement with ADHD optimization")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

@@ -24,10 +24,10 @@ logger = logging.getLogger(__name__)
 
 async def run_comprehensive_integration_validation():
     """Run comprehensive validation of all 31 components working together."""
-    print("🧪 Serena v2 Phase 2: Comprehensive System Integration Validation")
-    print("=" * 70)
-    print("Testing 31 Components • 5 Phases • All Target Achievements")
-    print("=" * 70)
+    logger.info("🧪 Serena v2 Phase 2: Comprehensive System Integration Validation")
+    logger.info("=" * 70)
+    logger.info("Testing 31 Components • 5 Phases • All Target Achievements")
+    logger.info("=" * 70)
 
     validation_results = {
         "total_tests": 0,
@@ -40,7 +40,7 @@ async def run_comprehensive_integration_validation():
 
     try:
         # Test 1: Component Import Validation
-        print("\n📦 Test 1: Component Import Validation")
+        logger.info("\n📦 Test 1: Component Import Validation")
         import_result = await test_component_imports()
         validation_results["component_health"]["imports"] = import_result
         validation_results["total_tests"] += 1
@@ -48,7 +48,7 @@ async def run_comprehensive_integration_validation():
             validation_results["tests_passed"] += 1
 
         # Test 2: Layer 1 Integration
-        print("\n🏗️ Test 2: Layer 1 Integration Validation")
+        logger.info("\n🏗️ Test 2: Layer 1 Integration Validation")
         layer1_result = await test_layer1_integration()
         validation_results["component_health"]["layer1"] = layer1_result
         validation_results["total_tests"] += 1
@@ -56,7 +56,7 @@ async def run_comprehensive_integration_validation():
             validation_results["tests_passed"] += 1
 
         # Test 3: Phase 2A Database Foundation
-        print("\n🗄️ Test 3: Phase 2A Database Foundation")
+        logger.info("\n🗄️ Test 3: Phase 2A Database Foundation")
         phase2a_result = await test_phase2a_foundation()
         validation_results["component_health"]["phase2a"] = phase2a_result
         validation_results["total_tests"] += 1
@@ -64,7 +64,7 @@ async def run_comprehensive_integration_validation():
             validation_results["tests_passed"] += 1
 
         # Test 4: Phase 2B Adaptive Learning
-        print("\n🧠 Test 4: Phase 2B Adaptive Learning")
+        logger.info("\n🧠 Test 4: Phase 2B Adaptive Learning")
         phase2b_result = await test_phase2b_learning()
         validation_results["component_health"]["phase2b"] = phase2b_result
         validation_results["total_tests"] += 1
@@ -72,7 +72,7 @@ async def run_comprehensive_integration_validation():
             validation_results["tests_passed"] += 1
 
         # Test 5: Phase 2C Intelligent Relationships
-        print("\n🔗 Test 5: Phase 2C Intelligent Relationships")
+        logger.info("\n🔗 Test 5: Phase 2C Intelligent Relationships")
         phase2c_result = await test_phase2c_relationships()
         validation_results["component_health"]["phase2c"] = phase2c_result
         validation_results["total_tests"] += 1
@@ -80,7 +80,7 @@ async def run_comprehensive_integration_validation():
             validation_results["tests_passed"] += 1
 
         # Test 6: Phase 2D Pattern Store
-        print("\n📋 Test 6: Phase 2D Pattern Store & Reuse")
+        logger.info("\n📋 Test 6: Phase 2D Pattern Store & Reuse")
         phase2d_result = await test_phase2d_patterns()
         validation_results["component_health"]["phase2d"] = phase2d_result
         validation_results["total_tests"] += 1
@@ -88,7 +88,7 @@ async def run_comprehensive_integration_validation():
             validation_results["tests_passed"] += 1
 
         # Test 7: Phase 2E Cognitive Load Management
-        print("\n🎼 Test 7: Phase 2E Cognitive Load Management")
+        logger.info("\n🎼 Test 7: Phase 2E Cognitive Load Management")
         phase2e_result = await test_phase2e_cognitive_load()
         validation_results["component_health"]["phase2e"] = phase2e_result
         validation_results["total_tests"] += 1
@@ -96,7 +96,7 @@ async def run_comprehensive_integration_validation():
             validation_results["tests_passed"] += 1
 
         # Test 8: Target Achievement Validation
-        print("\n🎯 Test 8: Target Achievement Validation")
+        logger.info("\n🎯 Test 8: Target Achievement Validation")
         target_result = await validate_target_achievements()
         validation_results["target_achievements"] = target_result
         validation_results["total_tests"] += 1
@@ -104,7 +104,7 @@ async def run_comprehensive_integration_validation():
             validation_results["tests_passed"] += 1
 
         # Test 9: Performance Integration
-        print("\n⚡ Test 9: Performance Integration Validation")
+        logger.info("\n⚡ Test 9: Performance Integration Validation")
         performance_result = await test_performance_integration()
         validation_results["component_health"]["performance"] = performance_result
         validation_results["total_tests"] += 1
@@ -112,7 +112,7 @@ async def run_comprehensive_integration_validation():
             validation_results["tests_passed"] += 1
 
         # Test 10: ADHD Optimization Integration
-        print("\n🧠 Test 10: ADHD Optimization Integration")
+        logger.info("\n🧠 Test 10: ADHD Optimization Integration")
         adhd_result = await test_adhd_optimization_integration()
         validation_results["component_health"]["adhd_optimization"] = adhd_result
         validation_results["total_tests"] += 1
@@ -124,24 +124,24 @@ async def run_comprehensive_integration_validation():
         validation_results["production_ready"] = validation_results["integration_score"] >= 0.9
 
         # Print comprehensive results
-        print("\n" + "=" * 70)
-        print("📊 COMPREHENSIVE INTEGRATION VALIDATION RESULTS")
-        print("=" * 70)
+        logger.info("\n" + "=" * 70)
+        logger.info("📊 COMPREHENSIVE INTEGRATION VALIDATION RESULTS")
+        logger.info("=" * 70)
 
-        print(f"Tests Passed: {validation_results['tests_passed']}/{validation_results['total_tests']}")
-        print(f"Integration Score: {validation_results['integration_score']:.1%}")
-        print(f"Production Ready: {'✅ YES' if validation_results['production_ready'] else '❌ NO'}")
+        logger.info(f"Tests Passed: {validation_results['tests_passed']}/{validation_results['total_tests']}")
+        logger.info(f"Integration Score: {validation_results['integration_score']:.1%}")
+        logger.info(f"Production Ready: {'✅ YES' if validation_results['production_ready'] else '❌ NO'}")
 
         if validation_results["production_ready"]:
-            print("\n🎉 INTEGRATION VALIDATION SUCCESS!")
-            print("All 31 components working together perfectly")
+            logger.info("\n🎉 INTEGRATION VALIDATION SUCCESS!")
+            logger.info("All 31 components working together perfectly")
         else:
-            print("\n⚠️ Integration validation issues detected")
+            logger.info("\n⚠️ Integration validation issues detected")
 
         return validation_results
 
     except Exception as e:
-        print(f"💥 Integration validation failed: {e}")
+        logger.error(f"💥 Integration validation failed: {e}")
         import traceback
         traceback.print_exc()
         validation_results["error"] = str(e)
@@ -151,53 +151,53 @@ async def run_comprehensive_integration_validation():
 async def test_component_imports():
     """Test that all 31 components can be imported successfully."""
     try:
-        print("  📦 Testing component imports...")
+        logger.info("  📦 Testing component imports...")
 
         # Test core system setup import
         from services.serena.v2.intelligence import setup_complete_cognitive_load_management_system
-        print("    ✅ Complete system setup function")
+        logger.info("    ✅ Complete system setup function")
 
         # Test Layer 1 imports (these are from different modules)
         from services.serena.v2.performance_monitor import PerformanceMonitor
         from services.serena.v2.adhd_features import ADHDCodeNavigator
         from services.serena.v2.tree_sitter_analyzer import TreeSitterAnalyzer
-        print("    ✅ Layer 1 components (3/3)")
+        logger.info("    ✅ Layer 1 components (3/3)")
 
         # Test Phase 2A imports
         from services.serena.v2.intelligence import SerenaIntelligenceDatabase, SerenaGraphOperations, SerenaSchemaManager
-        print("    ✅ Phase 2A components (6/6)")
+        logger.info("    ✅ Phase 2A components (6/6)")
 
         # Test Phase 2B imports
         from services.serena.v2.intelligence import AdaptiveLearningEngine, PersonalLearningProfileManager, AdvancedPatternRecognition
-        print("    ✅ Phase 2B components (7/7)")
+        logger.info("    ✅ Phase 2B components (7/7)")
 
         # Test Phase 2C imports
         from services.serena.v2.intelligence import IntelligentRelationshipBuilder, ADHDRelationshipFilter, RealtimeRelevanceScorer
-        print("    ✅ Phase 2C components (6/6)")
+        logger.info("    ✅ Phase 2C components (6/6)")
 
         # Test Phase 2D imports
         from services.serena.v2.intelligence import StrategyTemplateManager, PatternReuseRecommendationEngine, PerformanceValidationSystem
-        print("    ✅ Phase 2D components (6/6)")
+        logger.info("    ✅ Phase 2D components (6/6)")
 
         # Test Phase 2E imports
         from services.serena.v2.intelligence import CognitiveLoadOrchestrator, ProgressiveDisclosureDirector, FatigueDetectionEngine
-        print("    ✅ Phase 2E components (6/6)")
+        logger.info("    ✅ Phase 2E components (6/6)")
 
         # Test convenience functions
         from services.serena.v2.intelligence import validate_production_readiness, run_complete_system_integration_test
-        print("    ✅ Integration and validation functions")
+        logger.info("    ✅ Integration and validation functions")
 
         return {"success": True, "components_imported": 31}
 
     except Exception as e:
-        print(f"    ❌ Import failed: {e}")
+        logger.error(f"    ❌ Import failed: {e}")
         return {"success": False, "error": str(e)}
 
 
 async def test_layer1_integration():
     """Test Layer 1 component integration and ADHD features."""
     try:
-        print("  🏗️ Testing Layer 1 integration...")
+        logger.info("  🏗️ Testing Layer 1 integration...")
 
         # Test performance monitor
         from services.serena.v2.performance_monitor import PerformanceMonitor, PerformanceTarget
@@ -211,7 +211,7 @@ async def test_layer1_integration():
         await asyncio.sleep(0.01)  # Simulate 10ms operation
         metrics = performance_monitor.end_operation(operation_id, success=True)
 
-        print(f"    ✅ Performance Monitor: Operation tracked successfully")
+        logger.info(f"    ✅ Performance Monitor: Operation tracked successfully")
 
         # Test ADHD features
         from services.serena.v2.adhd_features import ADHDCodeNavigator, CodeComplexityAnalyzer
@@ -229,7 +229,7 @@ async def test_layer1_integration():
         complexity_score = complexity_analyzer.calculate_function_complexity(test_symbol)
         complexity_category, description = complexity_analyzer.categorize_complexity(complexity_score)
 
-        print(f"    ✅ ADHD Features: Complexity analysis functional ({complexity_category})")
+        logger.info(f"    ✅ ADHD Features: Complexity analysis functional ({complexity_category})")
 
         # Test Tree-sitter analyzer initialization
         from services.serena.v2.tree_sitter_analyzer import TreeSitterAnalyzer
@@ -237,7 +237,7 @@ async def test_layer1_integration():
         tree_sitter = TreeSitterAnalyzer()
         await tree_sitter.initialize()
 
-        print(f"    ✅ Tree-sitter Analyzer: Initialized (available: {tree_sitter.initialized})")
+        logger.info(f"    ✅ Tree-sitter Analyzer: Initialized (available: {tree_sitter.initialized})")
 
         return {
             "success": True,
@@ -247,14 +247,14 @@ async def test_layer1_integration():
         }
 
     except Exception as e:
-        print(f"    ❌ Layer 1 integration failed: {e}")
+        logger.error(f"    ❌ Layer 1 integration failed: {e}")
         return {"success": False, "error": str(e)}
 
 
 async def test_phase2a_foundation():
     """Test Phase 2A PostgreSQL intelligence foundation."""
     try:
-        print("  🗄️ Testing Phase 2A foundation...")
+        logger.info("  🗄️ Testing Phase 2A foundation...")
 
         # Test database configuration (without actual connection for demo)
         from services.serena.v2.intelligence import DatabaseConfig, SerenaIntelligenceDatabase
@@ -269,22 +269,22 @@ async def test_phase2a_foundation():
             max_results_per_query=50
         )
 
-        print(f"    ✅ Database Configuration: ADHD-optimized settings applied")
+        logger.info(f"    ✅ Database Configuration: ADHD-optimized settings applied")
 
         # Test schema manager
         from services.serena.v2.intelligence import SerenaSchemaManager
 
-        print(f"    ✅ Schema Manager: Migration system ready")
+        logger.info(f"    ✅ Schema Manager: Migration system ready")
 
         # Test graph operations configuration
         from services.serena.v2.intelligence import SerenaGraphOperations, NavigationMode, RelationshipType
 
-        print(f"    ✅ Graph Operations: Navigation modes and relationship types defined")
+        logger.info(f"    ✅ Graph Operations: Navigation modes and relationship types defined")
 
         # Test integration testing framework
         from services.serena.v2.intelligence import SerenaLayer1IntegrationTest
 
-        print(f"    ✅ Integration Testing: Framework ready for validation")
+        logger.info(f"    ✅ Integration Testing: Framework ready for validation")
 
         return {
             "success": True,
@@ -295,14 +295,14 @@ async def test_phase2a_foundation():
         }
 
     except Exception as e:
-        print(f"    ❌ Phase 2A foundation failed: {e}")
+        logger.error(f"    ❌ Phase 2A foundation failed: {e}")
         return {"success": False, "error": str(e)}
 
 
 async def test_phase2b_learning():
     """Test Phase 2B adaptive learning engine."""
     try:
-        print("  🧠 Testing Phase 2B adaptive learning...")
+        logger.info("  🧠 Testing Phase 2B adaptive learning...")
 
         # Test learning engine components
         from services.serena.v2.intelligence import (
@@ -323,25 +323,25 @@ async def test_phase2b_learning():
             session_count=0
         )
 
-        print(f"    ✅ Learning Profiles: Structure validated")
+        logger.info(f"    ✅ Learning Profiles: Structure validated")
 
         # Test pattern recognition
         from services.serena.v2.intelligence import AdvancedPatternRecognition, NavigationPatternType
 
         pattern_types = list(NavigationPatternType)
-        print(f"    ✅ Pattern Recognition: {len(pattern_types)} pattern types supported")
+        logger.info(f"    ✅ Pattern Recognition: {len(pattern_types)} pattern types supported")
 
         # Test effectiveness tracking
         from services.serena.v2.intelligence import EffectivenessTracker, EffectivenessDimension
 
         effectiveness_dimensions = list(EffectivenessDimension)
-        print(f"    ✅ Effectiveness Tracker: {len(effectiveness_dimensions)} dimensions tracked")
+        logger.info(f"    ✅ Effectiveness Tracker: {len(effectiveness_dimensions)} dimensions tracked")
 
         # Test convergence validation
         from services.serena.v2.intelligence import LearningConvergenceValidator, ConvergenceMetric
 
         convergence_metrics = list(ConvergenceMetric)
-        print(f"    ✅ Convergence Validation: {len(convergence_metrics)} metrics measured")
+        logger.info(f"    ✅ Convergence Validation: {len(convergence_metrics)} metrics measured")
 
         return {
             "success": True,
@@ -352,14 +352,14 @@ async def test_phase2b_learning():
         }
 
     except Exception as e:
-        print(f"    ❌ Phase 2B learning failed: {e}")
+        logger.error(f"    ❌ Phase 2B learning failed: {e}")
         return {"success": False, "error": str(e)}
 
 
 async def test_phase2c_relationships():
     """Test Phase 2C intelligent relationship builder."""
     try:
-        print("  🔗 Testing Phase 2C intelligent relationships...")
+        logger.info("  🔗 Testing Phase 2C intelligent relationships...")
 
         # Test intelligent relationship builder
         from services.serena.v2.intelligence import (
@@ -369,29 +369,29 @@ async def test_phase2c_relationships():
 
         # Test relationship relevance levels
         relevance_levels = list(RelationshipRelevance)
-        print(f"    ✅ Relationship Relevance: {len(relevance_levels)} levels defined")
+        logger.info(f"    ✅ Relationship Relevance: {len(relevance_levels)} levels defined")
 
         # Test context types
         context_types = list(RelationshipContext)
-        print(f"    ✅ Relationship Context: {len(context_types)} discovery sources")
+        logger.info(f"    ✅ Relationship Context: {len(context_types)} discovery sources")
 
         # Test ADHD relationship filter
         from services.serena.v2.intelligence import ADHDRelationshipFilter, FilteringStrategy
 
         filtering_strategies = list(FilteringStrategy)
-        print(f"    ✅ ADHD Filter: {len(filtering_strategies)} filtering strategies")
+        logger.info(f"    ✅ ADHD Filter: {len(filtering_strategies)} filtering strategies")
 
         # Test real-time scoring
         from services.serena.v2.intelligence import RealtimeRelevanceScorer, ScoringDimension
 
         scoring_dimensions = list(ScoringDimension)
-        print(f"    ✅ Real-time Scorer: {len(scoring_dimensions)} scoring dimensions")
+        logger.info(f"    ✅ Real-time Scorer: {len(scoring_dimensions)} scoring dimensions")
 
         # Test navigation success validation
         from services.serena.v2.intelligence import NavigationSuccessValidator, TestScenario
 
         test_scenarios = list(TestScenario)
-        print(f"    ✅ Success Validator: {len(test_scenarios)} ADHD test scenarios")
+        logger.info(f"    ✅ Success Validator: {len(test_scenarios)} ADHD test scenarios")
 
         return {
             "success": True,
@@ -402,14 +402,14 @@ async def test_phase2c_relationships():
         }
 
     except Exception as e:
-        print(f"    ❌ Phase 2C relationships failed: {e}")
+        logger.error(f"    ❌ Phase 2C relationships failed: {e}")
         return {"success": False, "error": str(e)}
 
 
 async def test_phase2d_patterns():
     """Test Phase 2D pattern store and reuse system."""
     try:
-        print("  📋 Testing Phase 2D pattern store...")
+        logger.info("  📋 Testing Phase 2D pattern store...")
 
         # Test strategy template manager
         from services.serena.v2.intelligence import (
@@ -418,32 +418,32 @@ async def test_phase2d_patterns():
 
         template_complexities = list(TemplateComplexity)
         accommodation_types = list(AccommodationType)
-        print(f"    ✅ Template Manager: {len(template_complexities)} complexity levels, {len(accommodation_types)} accommodations")
+        logger.info(f"    ✅ Template Manager: {len(template_complexities)} complexity levels, {len(accommodation_types)} accommodations")
 
         # Test personal pattern adapter
         from services.serena.v2.intelligence import PersonalPatternAdapter, PersonalizationType
 
         personalization_types = list(PersonalizationType)
-        print(f"    ✅ Pattern Adapter: {len(personalization_types)} personalization types")
+        logger.info(f"    ✅ Pattern Adapter: {len(personalization_types)} personalization types")
 
         # Test cross-session persistence
         from services.serena.v2.intelligence import CrossSessionPersistenceBridge, SyncStatus
 
         sync_statuses = list(SyncStatus)
-        print(f"    ✅ Persistence Bridge: {len(sync_statuses)} sync states managed")
+        logger.info(f"    ✅ Persistence Bridge: {len(sync_statuses)} sync states managed")
 
         # Test recommendation engine
         from services.serena.v2.intelligence import PatternReuseRecommendationEngine, RecommendationConfidence, TimeReductionCategory
 
         confidence_levels = list(RecommendationConfidence)
         time_categories = list(TimeReductionCategory)
-        print(f"    ✅ Recommendation Engine: {len(confidence_levels)} confidence levels, {len(time_categories)} time categories")
+        logger.info(f"    ✅ Recommendation Engine: {len(confidence_levels)} confidence levels, {len(time_categories)} time categories")
 
         # Test performance validation
         from services.serena.v2.intelligence import PerformanceValidationSystem, NavigationGoalType
 
         goal_types = list(NavigationGoalType)
-        print(f"    ✅ Performance Validation: {len(goal_types)} navigation goal types")
+        logger.info(f"    ✅ Performance Validation: {len(goal_types)} navigation goal types")
 
         return {
             "success": True,
@@ -455,51 +455,51 @@ async def test_phase2d_patterns():
         }
 
     except Exception as e:
-        print(f"    ❌ Phase 2D patterns failed: {e}")
+        logger.error(f"    ❌ Phase 2D patterns failed: {e}")
         return {"success": False, "error": str(e)}
 
 
 async def test_phase2e_cognitive_load():
     """Test Phase 2E cognitive load management."""
     try:
-        print("  🎼 Testing Phase 2E cognitive load management...")
+        logger.info("  🎼 Testing Phase 2E cognitive load management...")
 
         # Test cognitive load orchestrator
         from services.serena.v2.intelligence import CognitiveLoadOrchestrator, CognitiveLoadState, AdaptiveResponse
 
         load_states = list(CognitiveLoadState)
         adaptive_responses = list(AdaptiveResponse)
-        print(f"    ✅ Cognitive Orchestrator: {len(load_states)} load states, {len(adaptive_responses)} responses")
+        logger.info(f"    ✅ Cognitive Orchestrator: {len(load_states)} load states, {len(adaptive_responses)} responses")
 
         # Test progressive disclosure director
         from services.serena.v2.intelligence import ProgressiveDisclosureDirector, DisclosureLevel
 
         disclosure_levels = list(DisclosureLevel)
-        print(f"    ✅ Disclosure Director: {len(disclosure_levels)} disclosure levels")
+        logger.info(f"    ✅ Disclosure Director: {len(disclosure_levels)} disclosure levels")
 
         # Test fatigue detection engine
         from services.serena.v2.intelligence import FatigueDetectionEngine, FatigueSeverity, FatigueIndicator
 
         fatigue_severities = list(FatigueSeverity)
         fatigue_indicators = list(FatigueIndicator)
-        print(f"    ✅ Fatigue Engine: {len(fatigue_severities)} severity levels, {len(fatigue_indicators)} indicators")
+        logger.info(f"    ✅ Fatigue Engine: {len(fatigue_severities)} severity levels, {len(fatigue_indicators)} indicators")
 
         # Test threshold coordinator
         from services.serena.v2.intelligence import PersonalizedThresholdCoordinator, ThresholdType
 
         threshold_types = list(ThresholdType)
-        print(f"    ✅ Threshold Coordinator: {len(threshold_types)} threshold types managed")
+        logger.info(f"    ✅ Threshold Coordinator: {len(threshold_types)} threshold types managed")
 
         # Test accommodation harmonizer
         from services.serena.v2.intelligence import AccommodationHarmonizer, SystemAccommodationType
 
         accommodation_types = list(SystemAccommodationType)
-        print(f"    ✅ Accommodation Harmonizer: {len(accommodation_types)} accommodation types")
+        logger.info(f"    ✅ Accommodation Harmonizer: {len(accommodation_types)} accommodation types")
 
         # Test complete integration test
         from services.serena.v2.intelligence import CompleteSystemIntegrationTest
 
-        print(f"    ✅ Integration Test Framework: Complete system validation ready")
+        logger.info(f"    ✅ Integration Test Framework: Complete system validation ready")
 
         return {
             "success": True,
@@ -512,14 +512,14 @@ async def test_phase2e_cognitive_load():
         }
 
     except Exception as e:
-        print(f"    ❌ Phase 2E cognitive load failed: {e}")
+        logger.error(f"    ❌ Phase 2E cognitive load failed: {e}")
         return {"success": False, "error": str(e)}
 
 
 async def validate_target_achievements():
     """Validate that all major targets are architecturally achieved."""
     try:
-        print("  🎯 Validating target achievements...")
+        logger.info("  🎯 Validating target achievements...")
 
         target_results = {
             "convergence_target": False,
@@ -534,41 +534,41 @@ async def validate_target_achievements():
         try:
             from services.serena.v2.intelligence import LearningConvergenceValidator
             target_results["convergence_target"] = True
-            print("    ✅ 1-Week Convergence: Validation framework ready (target: 6.2 days)")
-        except:
-            print("    ❌ 1-Week Convergence: Framework missing")
+            logger.info("    ✅ 1-Week Convergence: Validation framework ready (target: 6.2 days)")
+        except Exception as e:
+            logger.info("    ❌ 1-Week Convergence: Framework missing")
 
         # Target 2: >85% Navigation Success (Phase 2C)
         try:
             from services.serena.v2.intelligence import NavigationSuccessValidator
             target_results["success_rate_target"] = True
-            print("    ✅ >85% Success Rate: Validation framework ready (target: 87.2%)")
-        except:
-            print("    ❌ >85% Success Rate: Framework missing")
+            logger.info("    ✅ >85% Success Rate: Validation framework ready (target: 87.2%)")
+        except Exception as e:
+            logger.info("    ❌ >85% Success Rate: Framework missing")
 
         # Target 3: 30% Time Reduction (Phase 2D)
         try:
             from services.serena.v2.intelligence import PerformanceValidationSystem, validate_30_percent_target
             target_results["time_reduction_target"] = True
-            print("    ✅ 30% Time Reduction: Validation framework ready (target: 32.1%)")
-        except:
-            print("    ❌ 30% Time Reduction: Framework missing")
+            logger.info("    ✅ 30% Time Reduction: Validation framework ready (target: 32.1%)")
+        except Exception as e:
+            logger.info("    ❌ 30% Time Reduction: Framework missing")
 
         # Target 4: <200ms Performance (All Phases)
         try:
             from services.serena.v2.intelligence import PerformanceMonitor
             target_results["performance_target"] = True
-            print("    ✅ <200ms Performance: Monitoring ready (target: 142.3ms avg)")
-        except:
-            print("    ❌ <200ms Performance: Monitoring missing")
+            logger.info("    ✅ <200ms Performance: Monitoring ready (target: 142.3ms avg)")
+        except Exception as e:
+            logger.info("    ❌ <200ms Performance: Monitoring missing")
 
         # Target 5: Cognitive Load Management (Phase 2E)
         try:
             from services.serena.v2.intelligence import CognitiveLoadOrchestrator, FatigueDetectionEngine
             target_results["cognitive_load_target"] = True
-            print("    ✅ Cognitive Load Management: Orchestration ready (target: 94.3% prevention)")
-        except:
-            print("    ❌ Cognitive Load Management: Framework missing")
+            logger.info("    ✅ Cognitive Load Management: Orchestration ready (target: 94.3% prevention)")
+        except Exception as e:
+            logger.info("    ❌ Cognitive Load Management: Framework missing")
 
         # Overall target validation
         target_results["all_targets_validated"] = all(target_results[k] for k in target_results if k != "all_targets_validated")
@@ -576,14 +576,14 @@ async def validate_target_achievements():
         return target_results
 
     except Exception as e:
-        print(f"    ❌ Target validation failed: {e}")
+        logger.error(f"    ❌ Target validation failed: {e}")
         return {"all_targets_validated": False, "error": str(e)}
 
 
 async def test_performance_integration():
     """Test performance integration across all components."""
     try:
-        print("  ⚡ Testing performance integration...")
+        logger.info("  ⚡ Testing performance integration...")
 
         # Test that performance monitoring is available
         from services.serena.v2.performance_monitor import PerformanceMonitor
@@ -606,9 +606,9 @@ async def test_performance_integration():
 
         avg_component_time = sum(component_load_times) / len(component_load_times)
 
-        print(f"    ✅ Component Load Time: {avg_component_time:.1f}ms average")
-        print(f"    ✅ Total System Load: {total_load_time:.1f}ms")
-        print(f"    ✅ Performance Target: {'Met' if avg_component_time < 200 else 'Needs optimization'}")
+        logger.info(f"    ✅ Component Load Time: {avg_component_time:.1f}ms average")
+        logger.info(f"    ✅ Total System Load: {total_load_time:.1f}ms")
+        logger.info(f"    ✅ Performance Target: {'Met' if avg_component_time < 200 else 'Needs optimization'}")
 
         return {
             "success": True,
@@ -618,38 +618,38 @@ async def test_performance_integration():
         }
 
     except Exception as e:
-        print(f"    ❌ Performance integration failed: {e}")
+        logger.error(f"    ❌ Performance integration failed: {e}")
         return {"success": False, "error": str(e)}
 
 
 async def test_adhd_optimization_integration():
     """Test ADHD optimization integration across all components."""
     try:
-        print("  🧠 Testing ADHD optimization integration...")
+        logger.info("  🧠 Testing ADHD optimization integration...")
 
         # Test accommodation types
         from services.serena.v2.intelligence import SystemAccommodationType
 
         accommodation_count = len(list(SystemAccommodationType))
-        print(f"    ✅ System Accommodations: {accommodation_count} types available")
+        logger.info(f"    ✅ System Accommodations: {accommodation_count} types available")
 
         # Test cognitive load states
         from services.serena.v2.intelligence import CognitiveLoadState
 
         load_states = list(CognitiveLoadState)
-        print(f"    ✅ Cognitive Load States: {len(load_states)} states managed")
+        logger.info(f"    ✅ Cognitive Load States: {len(load_states)} states managed")
 
         # Test attention states
         from services.serena.v2.intelligence import AttentionState
 
         attention_states = list(AttentionState)
-        print(f"    ✅ Attention States: {len(attention_states)} states supported")
+        logger.info(f"    ✅ Attention States: {len(attention_states)} states supported")
 
         # Test disclosure levels
         from services.serena.v2.intelligence import DisclosureLevel
 
         disclosure_levels = list(DisclosureLevel)
-        print(f"    ✅ Progressive Disclosure: {len(disclosure_levels)} levels available")
+        logger.info(f"    ✅ Progressive Disclosure: {len(disclosure_levels)} levels available")
 
         # Test ADHD-specific components
         adhd_components_status = {}
@@ -657,42 +657,42 @@ async def test_adhd_optimization_integration():
         try:
             from services.serena.v2.intelligence import ADHDRelationshipFilter
             adhd_components_status["ADHDRelationshipFilter"] = True
-            print(f"    ✅ ADHDRelationshipFilter: Available")
+            logger.info(f"    ✅ ADHDRelationshipFilter: Available")
         except Exception as e:
             adhd_components_status["ADHDRelationshipFilter"] = False
-            print(f"    ⚠️ ADHDRelationshipFilter: {e}")
+            logger.info(f"    ⚠️ ADHDRelationshipFilter: {e}")
 
         try:
             from services.serena.v2.intelligence import AccommodationHarmonizer
             adhd_components_status["AccommodationHarmonizer"] = True
-            print(f"    ✅ AccommodationHarmonizer: Available")
+            logger.info(f"    ✅ AccommodationHarmonizer: Available")
         except Exception as e:
             adhd_components_status["AccommodationHarmonizer"] = False
-            print(f"    ⚠️ AccommodationHarmonizer: {e}")
+            logger.info(f"    ⚠️ AccommodationHarmonizer: {e}")
 
         try:
             from services.serena.v2.intelligence import FatigueDetectionEngine
             adhd_components_status["FatigueDetectionEngine"] = True
-            print(f"    ✅ FatigueDetectionEngine: Available")
+            logger.info(f"    ✅ FatigueDetectionEngine: Available")
         except Exception as e:
             adhd_components_status["FatigueDetectionEngine"] = False
-            print(f"    ⚠️ FatigueDetectionEngine: {e}")
+            logger.info(f"    ⚠️ FatigueDetectionEngine: {e}")
 
         try:
             from services.serena.v2.intelligence import ProgressiveDisclosureDirector
             adhd_components_status["ProgressiveDisclosureDirector"] = True
-            print(f"    ✅ ProgressiveDisclosureDirector: Available")
+            logger.info(f"    ✅ ProgressiveDisclosureDirector: Available")
         except Exception as e:
             adhd_components_status["ProgressiveDisclosureDirector"] = False
-            print(f"    ⚠️ ProgressiveDisclosureDirector: {e}")
+            logger.info(f"    ⚠️ ProgressiveDisclosureDirector: {e}")
 
         try:
             from services.serena.v2.intelligence import CognitiveLoadOrchestrator
             adhd_components_status["CognitiveLoadOrchestrator"] = True
-            print(f"    ✅ CognitiveLoadOrchestrator: Available")
+            logger.info(f"    ✅ CognitiveLoadOrchestrator: Available")
         except Exception as e:
             adhd_components_status["CognitiveLoadOrchestrator"] = False
-            print(f"    ⚠️ CognitiveLoadOrchestrator: {e}")
+            logger.info(f"    ⚠️ CognitiveLoadOrchestrator: {e}")
 
         return {
             "success": True,
@@ -704,7 +704,7 @@ async def test_adhd_optimization_integration():
         }
 
     except Exception as e:
-        print(f"    ❌ ADHD optimization integration failed: {e}")
+        logger.error(f"    ❌ ADHD optimization integration failed: {e}")
         return {"success": False, "error": str(e)}
 
 
@@ -714,59 +714,59 @@ async def main():
         validation_results = await run_comprehensive_integration_validation()
 
         # Create validation summary
-        print("\n" + "=" * 70)
-        print("📋 FINAL VALIDATION SUMMARY")
-        print("=" * 70)
+        logger.info("\n" + "=" * 70)
+        logger.info("📋 FINAL VALIDATION SUMMARY")
+        logger.info("=" * 70)
 
-        print(f"🏗️ System Architecture: 31 components across 5 phases")
-        print(f"📊 Integration Score: {validation_results['integration_score']:.1%}")
-        print(f"🎯 Tests Passed: {validation_results['tests_passed']}/{validation_results['total_tests']}")
-        print(f"🚀 Production Ready: {'YES' if validation_results['production_ready'] else 'NO'}")
+        logger.info(f"🏗️ System Architecture: 31 components across 5 phases")
+        logger.info(f"📊 Integration Score: {validation_results['integration_score']:.1%}")
+        logger.info(f"🎯 Tests Passed: {validation_results['tests_passed']}/{validation_results['total_tests']}")
+        logger.info(f"🚀 Production Ready: {'YES' if validation_results['production_ready'] else 'NO'}")
 
         # Component health summary
-        print("\n📦 Component Health by Phase:")
+        logger.info("\n📦 Component Health by Phase:")
         for phase, health in validation_results["component_health"].items():
             status = "✅" if health.get("success", False) else "⚠️"
-            print(f"  {status} {phase.upper()}: {'Healthy' if health.get('success', False) else 'Needs attention'}")
+            logger.info(f"  {status} {phase.upper()}: {'Healthy' if health.get('success', False) else 'Needs attention'}")
 
         # Target achievements summary
         if validation_results["target_achievements"]:
             targets = validation_results["target_achievements"]
-            print("\n🎯 Target Achievement Validation:")
-            print(f"  ✅ 1-Week Convergence: {'Ready' if targets.get('convergence_target', False) else 'Not ready'}")
-            print(f"  ✅ >85% Success Rate: {'Ready' if targets.get('success_rate_target', False) else 'Not ready'}")
-            print(f"  ✅ 30% Time Reduction: {'Ready' if targets.get('time_reduction_target', False) else 'Not ready'}")
-            print(f"  ✅ <200ms Performance: {'Ready' if targets.get('performance_target', False) else 'Not ready'}")
-            print(f"  ✅ Cognitive Load Mgmt: {'Ready' if targets.get('cognitive_load_target', False) else 'Not ready'}")
+            logger.info("\n🎯 Target Achievement Validation:")
+            logger.info(f"  ✅ 1-Week Convergence: {'Ready' if targets.get('convergence_target', False) else 'Not ready'}")
+            logger.info(f"  ✅ >85% Success Rate: {'Ready' if targets.get('success_rate_target', False) else 'Not ready'}")
+            logger.info(f"  ✅ 30% Time Reduction: {'Ready' if targets.get('time_reduction_target', False) else 'Not ready'}")
+            logger.info(f"  ✅ <200ms Performance: {'Ready' if targets.get('performance_target', False) else 'Not ready'}")
+            logger.info(f"  ✅ Cognitive Load Mgmt: {'Ready' if targets.get('cognitive_load_target', False) else 'Not ready'}")
 
         if validation_results["production_ready"]:
-            print("\n🎉 COMPLETE SYSTEM VALIDATION SUCCESS!")
-            print("🚀 All 31 components validated and ready for production")
-            print("📚 Expert-validated architecture with comprehensive ADHD optimization")
-            print("🎯 All major targets achieved with statistical confidence")
+            logger.info("\n🎉 COMPLETE SYSTEM VALIDATION SUCCESS!")
+            logger.info("🚀 All 31 components validated and ready for production")
+            logger.info("📚 Expert-validated architecture with comprehensive ADHD optimization")
+            logger.info("🎯 All major targets achieved with statistical confidence")
         else:
-            print("\n⚠️ Validation incomplete - review component health before production")
+            logger.info("\n⚠️ Validation incomplete - review component health before production")
 
         return validation_results
 
     except Exception as e:
-        print(f"💥 Main validation failed: {e}")
+        logger.error(f"💥 Main validation failed: {e}")
         import traceback
         traceback.print_exc()
 
 
 if __name__ == "__main__":
-    print("🧪 Starting Serena v2 Phase 2 Complete System Integration Validation")
-    print(f"Timestamp: {datetime.now().isoformat()}")
-    print()
+    logger.info("🧪 Starting Serena v2 Phase 2 Complete System Integration Validation")
+    logger.info(f"Timestamp: {datetime.now().isoformat()}")
+    logger.info()
 
     try:
         results = asyncio.run(main())
         exit_code = 0 if results and results.get("production_ready", False) else 1
         sys.exit(exit_code)
     except KeyboardInterrupt:
-        print("\n👋 Validation interrupted by user")
+        logger.info("\n👋 Validation interrupted by user")
         sys.exit(130)
     except Exception as e:
-        print(f"\n💥 Validation script failed: {e}")
+        logger.error(f"\n💥 Validation script failed: {e}")
         sys.exit(1)

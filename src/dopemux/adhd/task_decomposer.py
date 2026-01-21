@@ -89,10 +89,11 @@ class TaskDecomposer:
         fallback = None
         try:
             self.workspace = self.workspace.resolve()
-        except Exception:
+        except Exception as e:
             fallback = Path(tempfile.mkdtemp(prefix="dopemux-tasks-"))
             self.workspace = fallback
 
+            logger.error(f"Error: {e}")
         self.dopemux_dir = self.workspace / ".dopemux"
         self.tasks_dir = self.dopemux_dir / "tasks"
         self.tasks_file = self.tasks_dir / "tasks.json"
@@ -249,9 +250,10 @@ class TaskDecomposer:
             try:
                 record = TaskRecord.from_dict(entry)
                 self._tasks[record.id] = record
-            except Exception:
+            except Exception as e:
                 continue
 
+                logger.error(f"Error: {e}")
     def _save(self) -> None:
         """Persist tasks to disk."""
         payload = {

@@ -182,6 +182,7 @@ class HealthChecker:
             except Exception as e:
                 info['container_error'] = str(e)
 
+                logger.error(f"Error: {e}")
         # Add URL information for HTTP services
         if service_config['type'] == 'http':
             info['url'] = service_config['url']
@@ -214,9 +215,10 @@ class HealthChecker:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.get(url)
                 return response.status_code == 200
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def _check_docker_health(self, container_name: str) -> bool:
         """Check Docker container health."""
         if not self.docker_client:
@@ -225,9 +227,10 @@ class HealthChecker:
         try:
             container = self.docker_client.containers.get(container_name)
             return container.status == 'running'
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def _check_redis_health(self) -> bool:
         """Check Redis connectivity."""
         try:
@@ -236,9 +239,10 @@ class HealthChecker:
                 capture_output=True, text=True, timeout=10
             )
             return result.returncode == 0 and "PONG" in result.stdout
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def _check_postgres_health(self) -> bool:
         """Check PostgreSQL connectivity."""
         try:
@@ -247,9 +251,10 @@ class HealthChecker:
                 capture_output=True, text=True, timeout=10
             )
             return result.returncode == 0
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def check_critical_paths(self) -> Dict[str, bool]:
         """
         Check critical application paths beyond basic service health.
@@ -282,9 +287,10 @@ class HealthChecker:
                         # Try a basic ConPort operation
                         response = await client.get("http://localhost:3004/api/status")
                         return response.status_code in [200, 404]  # 404 is ok for basic connectivity
-            except Exception:
+            except Exception as e:
                 pass
 
+                logger.error(f"Error: {e}")
             return True  # Database file exists
 
         except Exception as e:
@@ -343,9 +349,10 @@ class HealthChecker:
                     try:
                         test_file.write_text("test")
                         test_file.unlink()
-                    except Exception:
+                    except Exception as e:
                         return False
 
+                        logger.error(f"Error: {e}")
             return True
 
         except Exception as e:

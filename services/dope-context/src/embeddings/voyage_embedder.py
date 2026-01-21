@@ -383,7 +383,7 @@ async def main():
 
     api_key = os.getenv("VOYAGE_API_KEY")
     if not api_key:
-        print("Set VOYAGE_API_KEY environment variable")
+        logger.info("Set VOYAGE_API_KEY environment variable")
         return
 
     embedder = VoyageEmbedder(api_key=api_key, cache_ttl_hours=24)
@@ -394,7 +394,7 @@ async def main():
         model="voyage-code-3",
         input_type="document",
     )
-    print(f"Single embedding: {len(response.embedding)}d, ${response.cost_usd:.6f}")
+    logger.info(f"Single embedding: {len(response.embedding)}d, ${response.cost_usd:.6f}")
 
     # Batch embedding
     code_chunks = [
@@ -408,11 +408,11 @@ async def main():
         model="voyage-code-3",
         input_type="document",
     )
-    print(f"Batch: {len(responses)} embeddings")
+    logger.info(f"Batch: {len(responses)} embeddings")
 
     # Cost summary
     summary = embedder.get_cost_summary()
-    print(f"Cost summary: {summary}")
+    logger.info(f"Cost summary: {summary}")
 
 
 if __name__ == "__main__":

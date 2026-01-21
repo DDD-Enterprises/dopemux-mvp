@@ -16,6 +16,8 @@ class SystemMonitorPane(Static):
     DEFAULT_CSS = """
     SystemMonitorPane {
         padding: 1 1;
+        height: 100%;
+        overflow-y: auto;
     }
     """
 
@@ -31,14 +33,25 @@ class SystemMonitorPane(Static):
         total = docker.get("total") or 0
         healthy = docker.get("healthy") or 0
         docker_text = Text(f"{healthy}/{total}", style="green" if healthy == total else "red")
-        table.add_row("Docker containers", docker_text)
+        table.add_row("Docker", docker_text)
+        for c in docker.get("containers", [])[:25]:
+            state_style = "green" if c["state"].startswith("up") else "red"
+            table.add_row(f"  {c['name']}", Text(c['state'], style=state_style))
+        # Compose services (normalized view)
+        compose = docker.get("compose") or {}
+        if compose:
+            table.add_row("Compose Services", Text("", style="dim"))
+            for svc, meta in compose.items():
+                s = meta.get("state", "missing")
+                style = "green" if s.startswith("up") else ("yellow" if s != "missing" else "red")
+                table.add_row(f"  {svc}", Text(s, style=style))
 
-        mcp_val = mcp.get("healthy")
-        if mcp_val is None:
-            mcp_text = Text("N/A", style="dim")
-        else:
-            mcp_text = Text(str(mcp_val), style="cyan")
-        table.add_row("MCP servers", mcp_text)
+        mcp_services = (mcp.get("services") or {})
+        for server, info in mcp_services.items():
+            style = "green" if info.get("healthy") else "red"
+            latency = info.get("latency_ms")
+            lat_text = f" {latency}ms" if latency is not None else ""
+            table.add_row(f"MCP {server}", Text(("up" if info.get("healthy") else "down") + lat_text, style=style))
 
         cost = litellm.get("hourly_cost")
         if cost is None:

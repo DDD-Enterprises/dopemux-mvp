@@ -26,7 +26,10 @@ class Environment(str, Enum):
 @dataclass
 class DatabaseConfig:
     """Database configuration."""
-    url: str = "postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph"
+    url: str = os.getenv(
+        "DATABASE_URL",
+        "postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph"
+    )
     pool_min_size: int = 5
     pool_max_size: int = 20
     connection_timeout: float = 30.0
@@ -35,7 +38,7 @@ class DatabaseConfig:
 @dataclass
 class RedisConfig:
     """Redis configuration."""
-    url: str = "redis://redis-primary:6379"
+    url: str = os.getenv("REDIS_URL", "redis://redis-primary:6379")
     max_connections: int = 20
     connection_timeout: float = 5.0
     retry_on_timeout: bool = True
@@ -316,9 +319,10 @@ class ConfigurationManager:
                 else:
                     return default
             return value
-        except:
+        except Exception as e:
             return default
 
+            logger.error(f"Error: {e}")
     def set(self, key: str, value: Any):
         """
         Set configuration value.

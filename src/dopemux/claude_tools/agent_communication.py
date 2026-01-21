@@ -146,6 +146,7 @@ class AgentCommunicator:
         except Exception as e:
             raise AgentCommunicationError(f"Failed to send message to {pane_id}: {e}")
 
+            logger.error(f"Error: {e}")
     def receive_message(self, pane_id: str, timeout: float = 5.0) -> Optional[AgentMessage]:
         """
         Receive a message from an agent in a tmux pane.
@@ -181,6 +182,7 @@ class AgentCommunicator:
         except Exception as e:
             raise AgentCommunicationError(f"Failed to receive message from {pane_id}: {e}")
 
+            logger.error(f"Error: {e}")
     def _wait_for_response(self, pane_id: str, original_message: AgentMessage,
                           timeout: float = 30.0) -> Optional[AgentMessage]:
         """
@@ -288,6 +290,7 @@ class AgentCommunicator:
                 "error": str(e)
             }
 
+            logger.error(f"Error: {e}")
     def debug_collaboratively(self, debugger_pane: str, assistant_pane: str,
                             error_description: str) -> Dict[str, Any]:
         """
@@ -344,6 +347,7 @@ class AgentCommunicator:
                 "error": str(e)
             }
 
+            logger.error(f"Error: {e}")
     # Message handlers
     def _handle_ping(self, message: AgentMessage) -> AgentMessage:
         """Handle ping messages."""
@@ -428,6 +432,7 @@ class AgentCommunicator:
                     content=f"Handler error: {e}",
                     metadata={"original_message": message.to_json()}
                 )
+                logger.error(f"Error: {e}")
         else:
             return AgentMessage(
                 sender="system",

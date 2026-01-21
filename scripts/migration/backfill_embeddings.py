@@ -9,6 +9,11 @@ Based on proven dope-context pattern: Qdrant + Voyage + reranking
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncpg
 import sys
 import os
@@ -36,11 +41,11 @@ class EmbeddingBackfill:
 
     async def connect(self):
         """Connect to DDG PostgreSQL and Qdrant"""
-        print("🔌 Connecting to DDG PostgreSQL...")
+        logger.info("🔌 Connecting to DDG PostgreSQL...")
         self.conn = await asyncpg.connect(self.ddg_db_url)
-        print("   ✅ PostgreSQL connected")
+        logger.info("   ✅ PostgreSQL connected")
 
-        print("🔌 Initializing Qdrant vector store...")
+        logger.info("🔌 Initializing Qdrant vector store...")
         from core.vector_store import VectorStoreConfig
 
         config = VectorStoreConfig(
@@ -51,14 +56,14 @@ class EmbeddingBackfill:
         )
         self.vector_store = QdrantVectorStore(config)
         await self.vector_store.initialize()
-        print("   ✅ Qdrant initialized (collection: ddg_global_decisions)")
+        logger.info("   ✅ Qdrant initialized (collection: ddg_global_decisions)")
 
-        print("🔌 Initializing Voyage embedder...")
+        logger.info("🔌 Initializing Voyage embedder...")
         self.voyage_embedder = VoyageEmbedder(
             api_key=self.voyage_api_key,
             default_model="voyage-3-large"
         )
-        print("   ✅ Voyage embedder ready (model: voyage-3-large)")
+        logger.info("   ✅ Voyage embedder ready (model: voyage-3-large)")
 
     async def close(self):
         """Close connections"""
@@ -69,7 +74,7 @@ class EmbeddingBackfill:
 
     async def fetch_all_decisions(self) -> List[Dict[str, Any]]:
         """Fetch all decisions from DDG database"""
-        print("\n📋 Fetching all DDG decisions...")
+        logger.info("\n📋 Fetching all DDG decisions...")
 
         rows = await self.conn.fetch("""
             SELECT id, workspace_id, instance_id, summary, tags, source, created_at
@@ -78,7 +83,7 @@ class EmbeddingBackfill:
         """)
 
         decisions = [dict(row) for row in rows]
-        print(f"   ✅ Found {len(decisions)} decisions")
+        logger.info(f"   ✅ Found {len(decisions)} decisions")
         return decisions
 
     async def check_existing_in_qdrant(self, decision_id: str) -> bool:
@@ -90,9 +95,10 @@ class EmbeddingBackfill:
                 limit=1
             )
             return len(result) > 0
-        except:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def upsert_embedding(self, decision: Dict[str, Any]) -> bool:
         """
         Create and store embedding for a decision in Qdrant.
@@ -142,7 +148,7 @@ class EmbeddingBackfill:
             return True
 
         except Exception as e:
-            print(f"   ⚠️  Failed for {decision.get('id', 'unknown')}: {e}")
+            logger.error(f"   ⚠️  Failed for {decision.get('id', 'unknown')}: {e}")
             return False
 
     async def backfill_all_embeddings(self, batch_size: int = 50) -> Dict[str, int]:
@@ -158,13 +164,13 @@ class EmbeddingBackfill:
         decisions = await self.fetch_all_decisions()
 
         if not decisions:
-            print("\n⚠️  No decisions found!")
+            logger.info("\n⚠️  No decisions found!")
             return {"total": 0, "created": 0, "failed": 0, "skipped": 0}
 
-        print(f"\n🎨 Creating Qdrant embeddings for {len(decisions)} decisions...")
-        print(f"   Model: voyage-3-large (1024 dimensions)")
-        print(f"   Target: Qdrant collection 'ddg_global_decisions'")
-        print(f"   Batch size: {batch_size}")
+        logger.info(f"\n🎨 Creating Qdrant embeddings for {len(decisions)} decisions...")
+        logger.info(f"   Model: voyage-3-large (1024 dimensions)")
+        logger.info(f"   Target: Qdrant collection 'ddg_global_decisions'")
+        logger.info(f"   Batch size: {batch_size}")
 
         created = 0
         failed = 0
@@ -186,7 +192,7 @@ class EmbeddingBackfill:
 
             # Progress
             if i % batch_size == 0:
-                print(f"   Progress: {i}/{len(decisions)} ({created} created, {skipped} skipped, {failed} failed)")
+                logger.info(f"   Progress: {i}/{len(decisions)} ({created} created, {skipped} skipped, {failed} failed)")
                 await asyncio.sleep(0.2)  # Rate limiting
 
         stats = {
@@ -196,15 +202,15 @@ class EmbeddingBackfill:
             "skipped": skipped
         }
 
-        print("\n" + "=" * 60)
-        print("✅ QDRANT EMBEDDING BACKFILL COMPLETE")
-        print("=" * 60)
-        print(f"Total decisions:    {stats['total']}")
-        print(f"Embeddings created: {stats['created']}")
-        print(f"Skipped (existing): {stats['skipped']}")
-        print(f"Failed:             {stats['failed']}")
+        logger.info("\n" + "=" * 60)
+        logger.info("✅ QDRANT EMBEDDING BACKFILL COMPLETE")
+        logger.info("=" * 60)
+        logger.info(f"Total decisions:    {stats['total']}")
+        logger.info(f"Embeddings created: {stats['created']}")
+        logger.info(f"Skipped (existing): {stats['skipped']}")
+        logger.error(f"Failed:             {stats['failed']}")
         if stats['total'] > 0:
-            print(f"Success rate:       {100 * stats['created'] / (stats['total'] - stats['skipped']):.1f}%")
+            logger.info(f"Success rate:       {100 * stats['created'] / (stats['total'] - stats['skipped']):.1f}%")
 
         return stats
 
@@ -219,8 +225,8 @@ async def main(
     """Main backfill workflow"""
 
     if not voyage_api_key:
-        print("❌ VOYAGE_API_KEY not set!")
-        print("   export VOYAGE_API_KEY=your_key")
+        logger.info("❌ VOYAGE_API_KEY not set!")
+        logger.info("   export VOYAGE_API_KEY=your_key")
         sys.exit(1)
 
     backfill = EmbeddingBackfill(ddg_db_url, qdrant_url, qdrant_port, voyage_api_key)
@@ -270,13 +276,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    print("🚀 DDG Embedding Backfill to Qdrant")
-    print("=" * 60)
-    print(f"DDG DB:      {args.ddg_db}")
-    print(f"Qdrant:      {args.qdrant_url}:{args.qdrant_port}")
-    print(f"API Key:     {'✅ Set' if args.api_key else '❌ Missing'}")
-    print(f"Batch size:  {args.batch_size}")
-    print()
+    logger.info("🚀 DDG Embedding Backfill to Qdrant")
+    logger.info("=" * 60)
+    logger.info(f"DDG DB:      {args.ddg_db}")
+    logger.info(f"Qdrant:      {args.qdrant_url}:{args.qdrant_port}")
+    logger.info(f"API Key:     {'✅ Set' if args.api_key else '❌ Missing'}")
+    logger.info(f"Batch size:  {args.batch_size}")
+    logger.info()
 
     try:
         stats = asyncio.run(main(
@@ -288,14 +294,14 @@ if __name__ == "__main__":
         ))
 
         if stats['failed'] == 0:
-            print("\n🎉 Embedding backfill 100% successful!")
+            logger.info("\n🎉 Embedding backfill 100% successful!")
             sys.exit(0)
         else:
-            print(f"\n⚠️  Backfill completed with {stats['failed']} failures")
+            logger.error(f"\n⚠️  Backfill completed with {stats['failed']} failures")
             sys.exit(1)
 
     except Exception as e:
-        print(f"\n❌ Backfill failed: {e}")
+        logger.error(f"\n❌ Backfill failed: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

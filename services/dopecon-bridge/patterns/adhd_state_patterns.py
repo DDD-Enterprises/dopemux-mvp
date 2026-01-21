@@ -96,9 +96,10 @@ class ADHDStatePattern(BasePattern):
                 dt = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
                 hour = dt.hour
                 hour_loads[hour].append(cognitive_load)
-            except:
+            except Exception as e:
                 continue
 
+                logger.error(f"Error: {e}")
         # Find hours with consistently high cognitive load
         high_load_hours = []
 

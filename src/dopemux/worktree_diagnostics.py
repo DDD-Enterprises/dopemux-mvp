@@ -16,6 +16,11 @@ Target: < 1 second execution for instant feedback
 """
 
 import json
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import os
 import subprocess
 from pathlib import Path
@@ -61,22 +66,22 @@ class WorktreeDiagnostics:
         Returns:
             True if all critical checks passed
         """
-        console.print("\n[bold cyan]🏥 Dopemux Worktree Diagnostics[/bold cyan]\n")
+        console.logger.info("\n[bold cyan]🏥 Dopemux Worktree Diagnostics[/bold cyan]\n")
 
         # Phase 1: Workspace Detection
-        console.print("[bold]Phase 1: Workspace Detection[/bold]")
+        console.logger.info("[bold]Phase 1: Workspace Detection[/bold]")
         workspace_ok = self._check_workspace_detection(verbose)
 
         # Phase 2: MCP Auto-Configuration
-        console.print("\n[bold]Phase 2: MCP Auto-Configuration[/bold]")
+        console.logger.info("\n[bold]Phase 2: MCP Auto-Configuration[/bold]")
         mcp_ok = self._check_mcp_configuration(verbose)
 
         # Phase 3: Template Coverage
-        console.print("\n[bold]Phase 3: Template Coverage[/bold]")
+        console.logger.info("\n[bold]Phase 3: Template Coverage[/bold]")
         template_ok = self._check_template_coverage(verbose)
 
         # Phase 3: Shell Integration
-        console.print("\n[bold]Phase 3: Shell Integration[/bold]")
+        console.logger.info("\n[bold]Phase 3: Shell Integration[/bold]")
         shell_ok = self._check_shell_integration(verbose)
 
         # Summary
@@ -96,9 +101,9 @@ class WorktreeDiagnostics:
                 self._check_pass(f"Workspace detected: {workspace}")
 
                 if verbose:
-                    console.print(f"  [dim]Git repo: {workspace_info.get('is_git_repo')}[/dim]")
-                    console.print(f"  [dim]Worktree: {workspace_info.get('is_worktree')}[/dim]")
-                    console.print(f"  [dim]Method: {workspace_info.get('detection_method')}[/dim]")
+                    console.logger.info(f"  [dim]Git repo: {workspace_info.get('is_git_repo')}[/dim]")
+                    console.logger.info(f"  [dim]Worktree: {workspace_info.get('is_worktree')}[/dim]")
+                    console.logger.info(f"  [dim]Method: {workspace_info.get('detection_method')}[/dim]")
 
                 return True
             else:
@@ -109,6 +114,7 @@ class WorktreeDiagnostics:
             self._check_fail(f"Workspace detection error: {e}")
             return False
 
+            logger.error(f"Error: {e}")
     def _check_mcp_configuration(self, verbose: bool) -> bool:
         """Check Phase 2: MCP auto-configuration status."""
         try:
@@ -121,7 +127,7 @@ class WorktreeDiagnostics:
 
             if not status.get("config_exists"):
                 self._check_fail("~/.claude.json not found")
-                console.print("  [yellow]💡 Fix: Create .claude.json or run 'dopemux start'[/yellow]")
+                console.logger.info("  [yellow]💡 Fix: Create .claude.json or run 'dopemux start'[/yellow]")
                 return False
 
             workspace = Path(status["current_workspace"])
@@ -129,12 +135,12 @@ class WorktreeDiagnostics:
 
             if needs_update:
                 self._check_warning(f"MCP configuration needs update for {workspace}")
-                console.print("  [yellow]💡 Fix: Run 'dopemux start' or 'dwt <branch>' to auto-configure[/yellow]")
+                console.logger.info("  [yellow]💡 Fix: Run 'dopemux start' or 'dwt <branch>' to auto-configure[/yellow]")
             else:
                 self._check_pass(f"MCP configuration correct for {workspace}")
 
             if verbose:
-                console.print(f"  [dim]Config path: {status.get('config_path')}[/dim]")
+                console.logger.info(f"  [dim]Config path: {status.get('config_path')}[/dim]")
 
             return True
 
@@ -142,6 +148,7 @@ class WorktreeDiagnostics:
             self._check_fail(f"MCP configuration check error: {e}")
             return False
 
+            logger.error(f"Error: {e}")
     def _check_template_coverage(self, verbose: bool) -> bool:
         """Check Phase 3: Template file coverage."""
         try:
@@ -163,11 +170,11 @@ class WorktreeDiagnostics:
                 self._check_fail(f"Template coverage: {coverage:.1f}% (low)")
 
             if missing and verbose:
-                console.print(f"  [dim]Missing templates:[/dim]")
+                console.logger.info(f"  [dim]Missing templates:[/dim]")
                 for file in missing[:5]:  # Show first 5
-                    console.print(f"    [dim]- {file}[/dim]")
+                    console.logger.info(f"    [dim]- {file}[/dim]")
                 if len(missing) > 5:
-                    console.print(f"    [dim]... and {len(missing) - 5} more[/dim]")
+                    console.logger.info(f"    [dim]... and {len(missing) - 5} more[/dim]")
 
             return True
 
@@ -175,6 +182,7 @@ class WorktreeDiagnostics:
             self._check_fail(f"Template coverage check error: {e}")
             return False
 
+            logger.error(f"Error: {e}")
     def _check_shell_integration(self, verbose: bool) -> bool:
         """Check Phase 3: Shell integration status."""
         try:
@@ -205,37 +213,38 @@ class WorktreeDiagnostics:
                 self._check_pass("Shell integration installed")
 
                 if verbose:
-                    console.print(f"  [dim]Shell: {shell_name}[/dim]")
-                    console.print(f"  [dim]Config: {shell_config}[/dim]")
+                    console.logger.info(f"  [dim]Shell: {shell_name}[/dim]")
+                    console.logger.info(f"  [dim]Config: {shell_config}[/dim]")
 
                 return True
             else:
                 self._check_warning("Shell integration not installed")
-                console.print(f"  [yellow]💡 Fix: Run 'dopemux shell-setup {shell_name} >> ~/{shell_config.name} && source ~/{shell_config.name}'[/yellow]")
+                console.logger.info(f"  [yellow]💡 Fix: Run 'dopemux shell-setup {shell_name} >> ~/{shell_config.name} && source ~/{shell_config.name}'[/yellow]")
                 return True
 
         except Exception as e:
             self._check_fail(f"Shell integration check error: {e}")
             return False
 
+            logger.error(f"Error: {e}")
     def _check_pass(self, message: str):
         """Record a passed check."""
         self.checks_passed += 1
-        console.print(f"  [green]✅ {message}[/green]")
+        console.logger.info(f"  [green]✅ {message}[/green]")
 
     def _check_fail(self, message: str):
         """Record a failed check."""
         self.checks_failed += 1
-        console.print(f"  [red]❌ {message}[/red]")
+        console.logger.info(f"  [red]❌ {message}[/red]")
 
     def _check_warning(self, message: str):
         """Record a warning."""
         self.checks_warnings += 1
-        console.print(f"  [yellow]⚠️  {message}[/yellow]")
+        console.logger.info(f"  [yellow]⚠️  {message}[/yellow]")
 
     def _print_summary(self):
         """Print diagnostic summary."""
-        console.print("\n[bold]Summary[/bold]")
+        console.logger.info("\n[bold]Summary[/bold]")
 
         total = self.checks_passed + self.checks_failed + self.checks_warnings
 
@@ -251,16 +260,16 @@ class WorktreeDiagnostics:
         if self.checks_failed > 0:
             table.add_row("❌ Failed", f"[red]{self.checks_failed}/{total}[/red]")
 
-        console.print(table)
+        console.logger.info(table)
 
         # Overall status
         if self.checks_failed == 0:
             if self.checks_warnings == 0:
-                console.print("\n[bold green]🎉 All checks passed! Worktree system is healthy.[/bold green]")
+                console.logger.info("\n[bold green]🎉 All checks passed! Worktree system is healthy.[/bold green]")
             else:
-                console.print("\n[bold yellow]⚠️  Some warnings found. System functional but not optimal.[/bold yellow]")
+                console.logger.warning("\n[bold yellow]⚠️  Some warnings found. System functional but not optimal.[/bold yellow]")
         else:
-            console.print("\n[bold red]❌ Critical issues found. Please address failures above.[/bold red]")
+            console.logger.error("\n[bold red]❌ Critical issues found. Please address failures above.[/bold red]")
 
 
 def run_diagnostics(verbose: bool = False) -> bool:

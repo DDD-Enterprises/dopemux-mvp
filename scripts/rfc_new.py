@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 import os, re, sys, datetime, textwrap
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 if len(sys.argv) < 2:
     sys.exit("Usage: rfc_new.py "Title" [feature_id]")
 title = sys.argv[1]
@@ -47,4 +52,4 @@ tags: []
 ## Reviewers
 """
 open(path,"w",encoding="utf-8").write(fm)
-print("Created", path)
+logger.info("Created", path)

@@ -93,9 +93,10 @@ class TransientMessageManager:
         for callback in list(self._listeners):
             try:
                 callback(self._current)
-            except Exception:
+            except Exception as e:
                 continue
 
+                logger.error(f"Error: {e}")
     def enqueue(self, payload: TransientMessagePayload) -> None:
         """Add a message honouring priority ordering."""
         # Remove existing message with same id
