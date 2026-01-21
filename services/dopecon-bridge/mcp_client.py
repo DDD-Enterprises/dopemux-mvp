@@ -230,6 +230,7 @@ class ConPortMCPClient:
             }
 
 
+            logger.error(f"Error: {e}")
 # Example usage
 async def main():
     """Test MCP client"""
@@ -243,7 +244,7 @@ async def main():
         key="test_key",
         value={"message": "test"}
     )
-    print(f"Save result: {result}")
+    logger.info(f"Save result: {result}")
 
     # Test get
     data = await client.get_custom_data(
@@ -251,11 +252,11 @@ async def main():
         category="test_category",
         key="test_key"
     )
-    print(f"Get result: {data}")
+    logger.info(f"Get result: {data}")
 
     # Health check
     health = await client.health_check()
-    print(f"Health: {health}")
+    logger.info(f"Health: {health}")
 
     await client.close()
 

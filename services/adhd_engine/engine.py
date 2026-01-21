@@ -367,9 +367,10 @@ class ADHDAccommodationEngine:
 
             return total_load
 
-        except Exception:
+        except Exception as e:
             return 0.5  # Default moderate load
 
+            logger.error(f"Error: {e}")
     def _assess_energy_match(
         self,
         current_energy: EnergyLevel,
@@ -403,9 +404,10 @@ class ADHDAccommodationEngine:
 
             return min(energy_match, 1.0)
 
-        except Exception:
+        except Exception as e:
             return 0.5
 
+            logger.error(f"Error: {e}")
     def _assess_attention_compatibility(
         self,
         attention_state: AttentionState,
@@ -462,9 +464,10 @@ class ADHDAccommodationEngine:
 
             return adjusted_compatibility
 
-        except Exception:
+        except Exception as e:
             return 0.5
 
+            logger.error(f"Error: {e}")
     async def _analyze_task_with_zen(
         self,
         task_data: Dict[str, Any],
@@ -527,7 +530,7 @@ Format: {{
                 })
 
         except Exception as e:
-            print(f"Zen task analysis failed: {e}")
+            logger.error(f"Zen task analysis failed: {e}")
             return {
                 'true_complexity': task_complexity,
                 'adhd_challenges': ['Analysis failed'],

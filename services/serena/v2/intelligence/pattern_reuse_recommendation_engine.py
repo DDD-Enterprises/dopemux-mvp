@@ -1046,8 +1046,8 @@ async def test_recommendation_engine(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("🎯 Serena Pattern Reuse Recommendation Engine")
-        print("Intelligent pattern suggestions for 30% navigation time reduction")
-        print("✅ Module loaded successfully")
+        logger.info("🎯 Serena Pattern Reuse Recommendation Engine")
+        logger.info("Intelligent pattern suggestions for 30% navigation time reduction")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

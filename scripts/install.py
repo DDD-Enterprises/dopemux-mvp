@@ -7,6 +7,11 @@ that can be invoked with 'dopemux analyze <directory>'.
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 import subprocess
 import shutil
@@ -16,9 +21,9 @@ from pathlib import Path
 def check_python_version():
     """Ensure Python 3.8+ is available."""
     if sys.version_info < (3, 8):
-        print("❌ Python 3.8+ required. Current version:", sys.version)
+        logger.info("❌ Python 3.8+ required. Current version:", sys.version)
         sys.exit(1)
-    print(f"✅ Python {sys.version.split()[0]} detected")
+    logger.info(f"✅ Python {sys.version.split()[0]} detected")
 
 
 def check_dependencies():
@@ -26,17 +31,17 @@ def check_dependencies():
     try:
         subprocess.run([sys.executable, "-m", "pip", "--version"],
                       check=True, capture_output=True)
-        print("✅ pip is available")
+        logger.info("✅ pip is available")
     except subprocess.CalledProcessError:
-        print("❌ pip is not available. Please install pip.")
+        logger.info("❌ pip is not available. Please install pip.")
         sys.exit(1)
 
     try:
         subprocess.run([sys.executable, "-m", "venv", "--help"],
                       check=True, capture_output=True)
-        print("✅ venv is available")
+        logger.info("✅ venv is available")
     except subprocess.CalledProcessError:
-        print("❌ venv is not available. Please install python3-venv.")
+        logger.info("❌ venv is not available. Please install python3-venv.")
         sys.exit(1)
 
 
@@ -45,14 +50,14 @@ def create_virtual_environment():
     venv_path = Path.home() / ".dopemux" / "venv"
 
     if venv_path.exists():
-        print(f"⚠️ Virtual environment already exists at {venv_path}")
+        logger.info(f"⚠️ Virtual environment already exists at {venv_path}")
         return venv_path
 
-    print(f"📦 Creating virtual environment at {venv_path}")
+    logger.info(f"📦 Creating virtual environment at {venv_path}")
     venv_path.parent.mkdir(parents=True, exist_ok=True)
 
     subprocess.run([sys.executable, "-m", "venv", str(venv_path)], check=True)
-    print("✅ Virtual environment created")
+    logger.info("✅ Virtual environment created")
 
     return venv_path
 
@@ -66,7 +71,7 @@ def install_package(venv_path):
         pip_path = venv_path / "bin" / "pip"
         python_path = venv_path / "bin" / "python"
 
-    print("📥 Installing Dopemux package...")
+    logger.info("📥 Installing Dopemux package...")
 
     # Install in development mode from current directory
     current_dir = Path(__file__).parent
@@ -74,7 +79,7 @@ def install_package(venv_path):
         str(pip_path), "install", "-e", str(current_dir)
     ], check=True)
 
-    print("✅ Package installed")
+    logger.info("✅ Package installed")
 
     return python_path
 
@@ -104,7 +109,7 @@ def create_launcher_script(python_path):
     if os.name != 'nt':  # Make executable on Unix systems
         os.chmod(script_path, 0o755)
 
-    print(f"✅ Launcher script created at {script_path}")
+    logger.info(f"✅ Launcher script created at {script_path}")
 
     return script_path, bin_dir
 
@@ -158,22 +163,22 @@ def test_installation(script_path):
                                   capture_output=True, text=True)
 
         if result.returncode == 0:
-            print("✅ Installation test passed")
+            logger.info("✅ Installation test passed")
             return True
         else:
-            print("❌ Installation test failed")
-            print("Error:", result.stderr)
+            logger.error("❌ Installation test failed")
+            logger.error("Error:", result.stderr)
             return False
 
     except Exception as e:
-        print(f"❌ Installation test error: {e}")
+        logger.error(f"❌ Installation test error: {e}")
         return False
 
 
 def main():
     """Main installation process."""
-    print("🧠 Dopemux Standalone CLI Installer")
-    print("=" * 40)
+    logger.info("🧠 Dopemux Standalone CLI Installer")
+    logger.info("=" * 40)
 
     # Pre-checks
     check_python_version()
@@ -186,7 +191,7 @@ def main():
 
     # Test installation
     if test_installation(script_path):
-        print("\n🎉 Installation successful!")
+        logger.info("\n🎉 Installation successful!")
         update_path_instructions(bin_dir)
 
         print("""
@@ -202,7 +207,7 @@ def main():
   • Structured knowledge extraction
 """)
     else:
-        print("\n❌ Installation failed. Please check the errors above.")
+        logger.error("\n❌ Installation failed. Please check the errors above.")
         sys.exit(1)
 
 

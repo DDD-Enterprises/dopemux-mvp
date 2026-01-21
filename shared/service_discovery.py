@@ -331,10 +331,11 @@ class ServiceDiscovery:
 
                             endpoint.response_time = response_time * 1000  # Convert to ms
 
-                    except Exception:
+                    except Exception as e:
                         endpoint.status = ServiceStatus.DOWN
                         endpoint.response_time = None
 
+                        logger.error(f"Error: {e}")
             endpoint.last_check = time.time()
 
         except Exception as e:

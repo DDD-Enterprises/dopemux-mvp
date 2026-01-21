@@ -215,7 +215,7 @@ async def main():
                 print("✅ API is running!")
             else:
                 print("⚠️ API returned unexpected status")
-    except:
+    except Exception as e:
         print("❌ API is not running. Please start it with:")
         print("   cd backend && ./start_api.sh")
         return

@@ -6,16 +6,11 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     curl \
     git \
-    build-essential \
-    python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
-# Create and activate virtual environment
-RUN python3 -m venv /app/venv
-ENV PATH="/app/venv/bin:$PATH"
-
-# Install uv for fast package management
-RUN pip install uv
+# Install dependencies (including serena from git)
+# Pinning to main branch for now, ideally should be a tag
+RUN pip install "git+https://github.com/oraios/serena.git" mcp-proxy
 
 # Copy wrapper script
 COPY wrapper.py /app/wrapper.py

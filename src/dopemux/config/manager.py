@@ -6,6 +6,11 @@ with support for environment variable substitution and ADHD-specific defaults.
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -681,7 +686,7 @@ class ConfigManager:
                 else:
                     raise ValueError(f"Unsupported config file format: {path.suffix}")
         except Exception as e:
-            print(f"Warning: Failed to load config file {path}: {e}", file=sys.stderr)
+            logger.error(f"Warning: Failed to load config file {path}: {e}", file=sys.stderr)
             return {}
 
     def _deep_merge(

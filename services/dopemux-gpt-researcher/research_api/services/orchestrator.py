@@ -242,9 +242,10 @@ class ResearchTaskOrchestrator:
             try:
                 # Discretely log research task initiation
                 await self.conport.save_task_state(task)
-            except Exception:
+            except Exception as e:
                 pass  # Fail silently - research continues
 
+                logger.error(f"Error: {e}")
         # Step 6: Discrete Context7 documentation hints (ADHD cognitive support)
         try:
             doc_hints = await analyze_for_documentation_hints(prompt)
@@ -254,9 +255,10 @@ class ResearchTaskOrchestrator:
                     {'library': h.library, 'topic': h.topic, 'confidence': h.confidence}
                     for h in doc_hints[:2]  # Limit to prevent overwhelm
                 ]
-        except Exception:
+        except Exception as e:
             pass  # Ultra-discrete - any failure is invisible
 
+            logger.error(f"Error: {e}")
         # Step 7: Emit classification results via WebSocket
         if self.websocket:
             await self.websocket.emit_progress(task.id, {
@@ -601,6 +603,7 @@ class ResearchTaskOrchestrator:
                 'meta': {}
             }
 
+            logger.error(f"Error: {e}")
     async def _enhance_prompt(self, task: ResearchTask) -> str:
         """Enhance the original prompt with context"""
         enhanced = task.initial_prompt
@@ -716,9 +719,10 @@ class ResearchTaskOrchestrator:
                 enhanced_sources = await discrete_enhance_research(question.question, sources)
                 if enhanced_sources != sources:
                     logger.debug(f"Context7 discretely enhanced results for '{question.question}'")
-            except Exception:
+            except Exception as e:
                 pass  # Ultra-discrete - any failure is invisible
 
+                logger.error(f"Error: {e}")
             return {
                 "answer": answer,
                 "sources": enhanced_sources,

@@ -1033,8 +1033,8 @@ async def create_context_switching_optimizer(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("🔄 Serena Context Switching Optimizer")
-        print("ADHD-optimized interruption handling and task continuation")
-        print("✅ Module loaded successfully")
+        logger.info("🔄 Serena Context Switching Optimizer")
+        logger.info("ADHD-optimized interruption handling and task continuation")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

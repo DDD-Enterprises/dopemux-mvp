@@ -425,8 +425,8 @@ async def get_unified_complexity(
 
     Example:
         >>> complexity = await get_unified_complexity("auth.py", "login")
-        >>> print(f"Complexity: {complexity['unified_score']:.2f}")
-        >>> print(f"Interpretation: {complexity['interpretation']}")
+        >>> logger.info(f"Complexity: {complexity['unified_score']:.2f}")
+        >>> logger.info(f"Interpretation: {complexity['interpretation']}")
     """
     coordinator = await get_complexity_coordinator()
     breakdown = await coordinator.get_unified_complexity(file_path, symbol, user_id)

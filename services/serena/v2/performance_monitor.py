@@ -502,6 +502,7 @@ class PerformanceMonitor:
                     except Exception as e:
                         self.end_operation(operation_id, success=False)
                         raise e
+                        logger.error(f"Error: {e}")
                 return async_wrapper
             else:
                 def sync_wrapper(*args, **kwargs):
@@ -513,6 +514,7 @@ class PerformanceMonitor:
                     except Exception as e:
                         self.end_operation(operation_id, success=False)
                         raise e
+                        logger.error(f"Error: {e}")
                 return sync_wrapper
         return decorator
 

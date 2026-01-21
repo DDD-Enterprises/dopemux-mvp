@@ -392,13 +392,15 @@ class TaskMasterMCPClient:
 
         except Exception as exc:
             raise AIServiceError(f"Failed to parse PRD: {exc}") from exc
+            logger.error(f"Error: {e}")
         finally:
             # Clean up temporary file
             try:
                 os.unlink(temp_file_path)
-            except Exception:
+            except Exception as e:
                 pass
 
+                logger.error(f"Error: {e}")
         raise AIServiceError("Failed to parse PRD")
 
     def _parse_subtasks(self, subtasks_data: List[Dict]) -> List[TaskMasterTask]:
@@ -690,6 +692,7 @@ class TaskMasterMCPClient:
                 "error": str(e),
             }
 
+            logger.error(f"Error: {e}")
     def get_available_providers(self) -> List[str]:
         """Get list of available AI providers with valid API keys."""
         available = []

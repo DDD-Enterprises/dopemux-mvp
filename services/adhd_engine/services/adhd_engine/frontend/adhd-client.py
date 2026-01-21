@@ -6,6 +6,11 @@ Uses X-API-Key for Leantime as per user configuration.
 """
 
 import requests
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import json
 from datetime import datetime
 from config import LEANTIME_URL, LEANTIME_API_KEY, ADHD_ENGINE_URL, ADHD_API_KEY, USER_ID
@@ -38,10 +43,10 @@ def create_leantime_task(title, description):
     )
     if response.status_code in [200, 201]:
         data = response.json()
-        print(f"✅ Task created in Leantime: ID {data.get('id', 'unknown')}")
+        logger.info(f"✅ Task created in Leantime: ID {data.get('id', 'unknown')}")
         return data.get('id')
     else:
-        print(f"❌ Leantime task creation failed: {response.status_code} - {response.text}")
+        logger.error(f"❌ Leantime task creation failed: {response.status_code} - {response.text}")
         return None
 
 def assess_task_with_adhd_engine(task_description, estimated_hours=2.0, technologies=["python", "docker"]):
@@ -59,16 +64,16 @@ def assess_task_with_adhd_engine(task_description, estimated_hours=2.0, technolo
     )
     if response.status_code == 200:
         data = response.json()
-        print(f"✅ ADHD Assessment:")
-        print(f"   • Complexity Score: {data['complexity_score']:.2f}")
-        print(f"   • Cognitive Load: {data['cognitive_load']}")
-        print(f"   • Recommended Chunks: {data['recommended_chunks']}")
-        print(f"   • Break Frequency: {data['break_frequency']}")
-        print(f"   • Energy Requirement: {data['energy_requirement']}")
-        print(f"   • Accommodations: {', '.join([rec['accommodation_type'] for rec in data['accommodations']])}")
+        logger.info(f"✅ ADHD Assessment:")
+        logger.info(f"   • Complexity Score: {data['complexity_score']:.2f}")
+        logger.info(f"   • Cognitive Load: {data['cognitive_load']}")
+        logger.info(f"   • Recommended Chunks: {data['recommended_chunks']}")
+        logger.info(f"   • Break Frequency: {data['break_frequency']}")
+        logger.info(f"   • Energy Requirement: {data['energy_requirement']}")
+        logger.info(f"   • Accommodations: {', '.join([rec['accommodation_type'] for rec in data['accommodations']])}")
         return data
     else:
-        print(f"❌ ADHD Engine assessment failed: {response.status_code} - {response.text}")
+        logger.error(f"❌ ADHD Engine assessment failed: {response.status_code} - {response.text}")
         return None
 
 def log_activity_to_engine(event_type, event_data):
@@ -83,13 +88,13 @@ def log_activity_to_engine(event_type, event_data):
         data=json.dumps(payload)
     )
     if response.status_code == 200:
-        print(f"✅ Activity logged: {response.json().get('analysis', {}).get('pattern_matched', 'unknown')}")
+        logger.info(f"✅ Activity logged: {response.json().get('analysis', {}).get('pattern_matched', 'unknown')}")
     else:
-        print(f"⚠️ Activity logging failed: {response.status_code}")
+        logger.error(f"⚠️ Activity logging failed: {response.status_code}")
 
 if __name__ == "__main__":
-    print("🚀 Dopemux ADHD Integration Test")
-    print("=" * 40)
+    logger.info("🚀 Dopemux ADHD Integration Test")
+    logger.info("=" * 40)
 
     # Step 1: Create task in Leantime
     task_title = "Updated X-API-Key Integration Test"
@@ -108,4 +113,4 @@ if __name__ == "__main__":
                 "cognitive_load": assessment['cognitive_load']
             })
 
-    print("\n✅ Integration test complete! Check the outputs above.")
+    logger.info("\n✅ Integration test complete! Check the outputs above.")

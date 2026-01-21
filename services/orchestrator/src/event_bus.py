@@ -174,6 +174,7 @@ class EventBusBridge:
         except Exception as e:
             await self._handle_event_error("bug_detected", e, {"event": genetic_event})
 
+            logger.error(f"Error: {e}")
     async def _handle_repair_attempted(self, genetic_event: GeneticEvent):
         \"\"\"Handle repair attempt events from genetic agent.\"\"\"
 

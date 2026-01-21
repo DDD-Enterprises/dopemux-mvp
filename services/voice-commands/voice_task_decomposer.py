@@ -265,16 +265,16 @@ async def main():
         result = await decomposer.process_voice_command(args.voice_input, args.user_id)
 
         if result["success"]:
-            print("✅ Task Decomposition Successful")
-            print(f"📝 Original Task: {result['task_description']}")
-            print(f"🎯 Voice Response: {result['voice_response']}")
-            print("\n📋 Sub-tasks:")
+            logger.info("✅ Task Decomposition Successful")
+            logger.info(f"📝 Original Task: {result['task_description']}")
+            logger.info(f"🎯 Voice Response: {result['voice_response']}")
+            logger.info("\n📋 Sub-tasks:")
             for i, task in enumerate(result['sub_tasks'], 1):
-                print(f"  {i}. {task['description']} ({task.get('estimated_time', '?')} min)")
+                logger.info(f"  {i}. {task['description']} ({task.get('estimated_time', '?')} min)")
                 if 'accommodations' in task:
-                    print(f"     💡 {task['accommodations']}")
+                    logger.info(f"     💡 {task['accommodations']}")
         else:
-            print(f"❌ Failed: {result['response']}")
+            logger.error(f"❌ Failed: {result['response']}")
 
 if __name__ == "__main__":
     asyncio.run(main())

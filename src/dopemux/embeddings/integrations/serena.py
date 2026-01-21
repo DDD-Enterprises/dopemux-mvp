@@ -128,7 +128,7 @@ class SerenaAdapter(BaseIntegration):
             }
 
             if self.config.enable_progress_tracking:
-                print(f"🔄 Scanning project files from {self.project_root}...")
+                logger.info(f"🔄 Scanning project files from {self.project_root}...")
 
             # Sync different file types
             file_processors = [
@@ -141,7 +141,7 @@ class SerenaAdapter(BaseIntegration):
             for file_type, processor in file_processors:
                 try:
                     if self.config.enable_progress_tracking:
-                        print(f"📁 Processing {file_type} files...")
+                        logger.info(f"📁 Processing {file_type} files...")
 
                     type_docs = await processor()
                     sync_results["documents"].extend(type_docs)
@@ -159,7 +159,7 @@ class SerenaAdapter(BaseIntegration):
 
             # ADHD-friendly completion feedback
             if self.config.enable_progress_tracking:
-                print(f"✅ Serena sync complete: {documents_synced} files in {sync_duration:.1f}s")
+                logger.info(f"✅ Serena sync complete: {documents_synced} files in {sync_duration:.1f}s")
 
             return {
                 "documents_synced": documents_synced,
@@ -347,10 +347,11 @@ class SerenaAdapter(BaseIntegration):
             try:
                 # Fallback to latin-1
                 return file_path.read_text(encoding='latin-1')
-            except Exception:
+            except Exception as e:
                 # Skip binary files
                 return ""
 
+                logger.error(f"Error: {e}")
     def _should_exclude_file(self, file_path: Path) -> bool:
         """Check if file should be excluded from processing."""
         path_parts = file_path.parts
@@ -495,7 +496,7 @@ class SerenaAdapter(BaseIntegration):
                     logger.warning(f"⚠️ Failed to store embedding for {doc['id']}: {e}")
 
             if self.config.enable_progress_tracking:
-                print(f"💾 Stored {stored_count} code embeddings")
+                logger.info(f"💾 Stored {stored_count} code embeddings")
 
         except Exception as e:
             logger.error(f"❌ Failed to store embeddings for Serena: {e}")

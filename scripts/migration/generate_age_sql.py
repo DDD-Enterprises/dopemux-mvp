@@ -5,6 +5,11 @@ Creates SQL file that can be executed via docker exec
 """
 
 import json
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from pathlib import Path
 
 
@@ -49,7 +54,7 @@ $$) as (v agtype);
             f.write(sql)
 
             if i % 20 == 0:
-                print(f"  Generated {i}/{len(data['decisions'])} decisions")
+                logger.info(f"  Generated {i}/{len(data['decisions'])} decisions")
 
         # Load relationships
         f.write(f"\n-- Loading {len(data['relationships'])} relationships\n")
@@ -69,8 +74,8 @@ $$) as (e agtype);
             f.write(sql)
 
     file_size = output_file.stat().st_size / 1024
-    print(f"\n✓ Generated {output_file} ({file_size:.1f} KB)")
-    print(f"  Execute with: docker exec dopemux-postgres-age psql -U dopemux_age -d dopemux_knowledge_graph -f /path/to/file")
+    logger.info(f"\n✓ Generated {output_file} ({file_size:.1f} KB)")
+    logger.info(f"  Execute with: docker exec dopemux-postgres-age psql -U dopemux_age -d dopemux_knowledge_graph -f /path/to/file")
 
 
 if __name__ == "__main__":

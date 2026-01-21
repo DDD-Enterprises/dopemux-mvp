@@ -20,6 +20,11 @@ Backs up existing config next to it with a .bak timestamp suffix.
 """
 
 import json
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import os
 import platform
 import shutil
@@ -147,9 +152,10 @@ def main():
     if config_path.exists():
         try:
             existing = json.loads(config_path.read_text())
-        except Exception:
+        except Exception as e:
             existing = {}
 
+            logger.error(f"Error: {e}")
     # Ensure base structure
     if not isinstance(existing, dict):
         existing = {}
@@ -168,9 +174,10 @@ def main():
                 if "=" in line:
                     k, v = line.split("=", 1)
                     env.setdefault(k.strip(), v.strip())
-        except Exception:
+        except Exception as e:
             pass
 
+            logger.error(f"Error: {e}")
     servers = build_mcp_servers(env)
 
     merged = deep_merge(existing, {"mcpServers": servers})
@@ -181,15 +188,16 @@ def main():
         backup_path = config_path.with_suffix(f".json.bak_{ts}")
         try:
             shutil.copy2(config_path, backup_path)
-        except Exception:
+        except Exception as e:
             pass
 
+            logger.error(f"Error: {e}")
     # Write
     config_path.write_text(json.dumps(merged, indent=2))
-    print(f"✅ Updated Claude config: {config_path}")
-    print("Added/updated MCP servers:")
+    logger.info(f"✅ Updated Claude config: {config_path}")
+    logger.info("Added/updated MCP servers:")
     for name in servers.keys():
-        print(f"  - {name}")
+        logger.info(f"  - {name}")
 
 
 if __name__ == "__main__":

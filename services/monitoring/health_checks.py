@@ -128,7 +128,7 @@ class HealthCheckOrchestrator:
                                 details=data,
                                 checked_at=datetime.now()
                             )
-                        except:
+                        except Exception as e:
                             # Non-JSON response but 200 OK
                             return ServiceHealth(
                                 service_name=service_name,
@@ -137,6 +137,7 @@ class HealthCheckOrchestrator:
                                 details={'status': 'ok'},
                                 checked_at=datetime.now()
                             )
+                            logger.error(f"Error: {e}")
                     else:
                         return ServiceHealth(
                             service_name=service_name,
@@ -166,6 +167,7 @@ class HealthCheckOrchestrator:
                 error=str(e)
             )
 
+            logger.error(f"Error: {e}")
     async def _check_postgresql(self) -> ServiceHealth:
         """Check PostgreSQL database health."""
         start = datetime.now()
@@ -201,6 +203,7 @@ class HealthCheckOrchestrator:
                 error=str(e)
             )
 
+            logger.error(f"Error: {e}")
     async def _check_redis(self) -> ServiceHealth:
         """Check Redis health."""
         start = datetime.now()
@@ -213,9 +216,10 @@ class HealthCheckOrchestrator:
             try:
                 stream_len = await client.xlen("dopemux:events")
                 details = {'stream_length': stream_len}
-            except:
+            except Exception as e:
                 details = {}
 
+                logger.error(f"Error: {e}")
             response_time = (datetime.now() - start).total_seconds() * 1000
 
             await client.aclose()
@@ -238,6 +242,7 @@ class HealthCheckOrchestrator:
                 error=str(e)
             )
 
+            logger.error(f"Error: {e}")
     def get_overall_status(self, health_results: Dict[str, ServiceHealth]) -> HealthStatus:
         """
         Determine overall system health.
@@ -292,7 +297,7 @@ async def main():
     logger.info("Running Dopemux health checks...")
     health_results = await orchestrator.check_all()
 
-    print(orchestrator.format_health_report(health_results))
+    logger.info(orchestrator.format_health_report(health_results))
 
     # Exit code based on overall status
     overall = orchestrator.get_overall_status(health_results)

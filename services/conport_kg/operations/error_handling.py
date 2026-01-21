@@ -389,6 +389,7 @@ class HealthChecker:
                     error_message=str(e)
                 )
 
+                logger.error(f"Error: {e}")
             self.services[service_name] = status
             results[service_name] = status
 

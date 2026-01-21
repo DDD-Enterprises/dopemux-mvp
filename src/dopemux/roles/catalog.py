@@ -285,6 +285,7 @@ def activate_role(
     except RoleNotFoundError as exc:
         raise RoleNotFoundError(str(exc)) from exc
 
+        logger.error(f"Error: {e}")
     canonical_key = spec.key
     if role_name.strip().lower() != canonical_key:
         alias_used = role_name.strip()

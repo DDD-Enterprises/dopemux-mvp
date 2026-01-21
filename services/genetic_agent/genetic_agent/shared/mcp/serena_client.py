@@ -12,9 +12,10 @@ class SerenaClient(MCPClient):
         try:
             async with self.session.get(f"{self.base_url}/health") as response:
                 return response.status == 200
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def analyze_complexity(self, file_path: str, symbol: str = "") -> Dict[str, Any]:
         """Analyze code complexity for ADHD-safe reading."""
         data = {

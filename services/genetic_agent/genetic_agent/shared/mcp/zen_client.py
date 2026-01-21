@@ -12,9 +12,10 @@ class ZenClient(MCPClient):
         try:
             async with self.session.get(f"{self.base_url}/version") as response:
                 return response.status == 200
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def thinkdeep(self, step: str, step_number: int, total_steps: int,
                        next_step_required: bool, findings: str,
                        model: str = "gemini-2.5-pro") -> Dict[str, Any]:

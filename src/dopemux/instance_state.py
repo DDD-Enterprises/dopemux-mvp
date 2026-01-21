@@ -58,9 +58,10 @@ class InstanceState:
                 s2 = s.replace('Z', '+00:00')
                 try:
                     return datetime.fromisoformat(s2)
-                except Exception:
+                except Exception as e:
                     # Fallback to naive parse
                     return datetime.strptime(s.split('.')[0], '%Y-%m-%dT%H:%M:%S')
+                    logger.error(f"Error: {e}")
             return datetime.now(timezone.utc)
 
         data['created_at'] = _parse_iso(data['created_at'])
@@ -84,6 +85,44 @@ class InstanceStateManager:
         self.workspace_id = workspace_id
         self.conport_url = f"http://localhost:{conport_port}"
         self.session: Optional[aiohttp.ClientSession] = None
+        self._last_error: Optional[Exception] = None
+        self._conport_available: bool = True
+
+    @property
+    def conport_available(self) -> bool:
+        """Return whether the last ConPort interaction succeeded."""
+        return self._conport_available
+
+    @property
+    def last_error(self) -> Optional[Exception]:
+        """Return the last ConPort-related error, if any."""
+        return self._last_error
+
+    def _mark_conport_ok(self) -> None:
+        self._last_error = None
+        self._conport_available = True
+
+    def _mark_conport_error(self, exc: Exception) -> None:
+        self._last_error = exc
+        self._conport_available = False
+
+    def _is_connection_error(self, exc: Exception) -> bool:
+        return isinstance(
+            exc,
+            (
+                aiohttp.ClientConnectorError,
+                aiohttp.ClientConnectionError,
+                aiohttp.ClientOSError,
+                asyncio.TimeoutError,
+                OSError,
+            ),
+        )
+
+    def _log_conport_error(self, action: str, exc: Exception) -> None:
+        if self._is_connection_error(exc):
+            logger.debug("ConPort unavailable while %s: %s", action, exc)
+        else:
+            logger.warning("ConPort error while %s: %s", action, exc)
 
     async def _ensure_session(self):
         """Ensure aiohttp session exists."""
@@ -132,6 +171,7 @@ class InstanceStateManager:
                 json=data,
                 timeout=aiohttp.ClientTimeout(total=5.0)
             ) as response:
+                self._mark_conport_ok()
                 if response.status == 200:
                     logger.info(f"✅ Saved instance state for {state.instance_id}")
                     return True
@@ -140,7 +180,8 @@ class InstanceStateManager:
                     return False
 
         except Exception as e:
-            logger.warning(f"⚠️ Could not save instance state (ConPort unavailable?): {e}")
+            self._mark_conport_error(e)
+            self._log_conport_error("saving instance state", e)
             return False
 
     async def load_instance_state(self, instance_id: str) -> Optional[InstanceState]:
@@ -168,6 +209,7 @@ class InstanceStateManager:
                 params=params,
                 timeout=aiohttp.ClientTimeout(total=5.0)
             ) as response:
+                self._mark_conport_ok()
                 if response.status == 200:
                     result = await response.json()
                     # Result format: {"category": "...", "key": "...", "value": {...}}
@@ -183,7 +225,8 @@ class InstanceStateManager:
                     return None
 
         except Exception as e:
-            logger.warning(f"⚠️ Could not load instance state (ConPort unavailable?): {e}")
+            self._mark_conport_error(e)
+            self._log_conport_error("loading instance state", e)
             return None
 
     async def list_all_instance_states(self) -> List[InstanceState]:
@@ -207,6 +250,7 @@ class InstanceStateManager:
                 params=params,
                 timeout=aiohttp.ClientTimeout(total=5.0)
             ) as response:
+                self._mark_conport_ok()
                 if response.status == 200:
                     result = await response.json()
                     # Result format: [{"category": "...", "key": "...", "value": {...}}, ...]
@@ -222,7 +266,8 @@ class InstanceStateManager:
                     return []
 
         except Exception as e:
-            logger.warning(f"⚠️ Could not list instance states (ConPort unavailable?): {e}")
+            self._mark_conport_error(e)
+            self._log_conport_error("listing instance states", e)
             return []
 
     async def mark_instance_stopped(self, instance_id: str) -> bool:
@@ -335,6 +380,7 @@ class InstanceStateManager:
                 params=params,
                 timeout=aiohttp.ClientTimeout(total=5.0)
             ) as response:
+                self._mark_conport_ok()
                 if response.status == 200:
                     logger.info(f"✅ Cleaned up instance state for {instance_id}")
                     return True
@@ -346,7 +392,8 @@ class InstanceStateManager:
                     return False
 
         except Exception as e:
-            logger.warning(f"⚠️ Could not cleanup instance state (ConPort unavailable?): {e}")
+            self._mark_conport_error(e)
+            self._log_conport_error("cleaning instance state", e)
             return False
 
 

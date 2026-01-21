@@ -5,6 +5,11 @@ for ADHD-friendly visual feedback testing.
 """
 
 import time
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 from pathlib import Path
 
@@ -15,21 +20,21 @@ from metamcp_status import MetaMCPStatusBar
 
 def demo_role_variations():
     """Demo different role indicators."""
-    print("\n🎨 MetaMCP Status Bar Demo - Role Variations\n")
+    logger.info("\n🎨 MetaMCP Status Bar Demo - Role Variations\n")
 
     status_bar = MetaMCPStatusBar()
 
     roles = ['developer', 'researcher', 'planner', 'reviewer', 'ops', 'architect', 'debugger']
 
     for role in roles:
-        print(f"Role: {role}")
+        logger.info(f"Role: {role}")
         formatted = status_bar.format_role_indicator(role)
-        print(f"  Status: {formatted}")
-        print()
+        logger.info(f"  Status: {formatted}")
+        logger.info()
 
 def demo_token_usage_progression():
     """Demo token usage at different levels."""
-    print("\n💚 Token Usage Progression Demo\n")
+    logger.info("\n💚 Token Usage Progression Demo\n")
 
     status_bar = MetaMCPStatusBar()
     budget = 10000
@@ -39,13 +44,13 @@ def demo_token_usage_progression():
     for usage in usage_levels:
         percentage = (usage / budget) * 100
         formatted = status_bar.format_token_usage(usage, budget)
-        print(f"Usage: {usage:,} tokens ({percentage:.1f}%)")
-        print(f"  Status: {formatted}")
-        print()
+        logger.info(f"Usage: {usage:,} tokens ({percentage:.1f}%)")
+        logger.info(f"  Status: {formatted}")
+        logger.info()
 
 def demo_session_duration_warnings():
     """Demo session duration with break reminders."""
-    print("\n⏰ Session Duration & Break Reminders Demo\n")
+    logger.info("\n⏰ Session Duration & Break Reminders Demo\n")
 
     status_bar = MetaMCPStatusBar()
 
@@ -53,13 +58,13 @@ def demo_session_duration_warnings():
 
     for duration in durations:
         formatted = status_bar.format_session_duration(duration)
-        print(f"Duration: {duration} minutes")
-        print(f"  Status: {formatted}")
-        print()
+        logger.info(f"Duration: {duration} minutes")
+        logger.info(f"  Status: {formatted}")
+        logger.info()
 
 def demo_health_indicators():
     """Demo health status indicators."""
-    print("\n🏥 Health Status Demo\n")
+    logger.info("\n🏥 Health Status Demo\n")
 
     status_bar = MetaMCPStatusBar()
 
@@ -72,13 +77,13 @@ def demo_health_indicators():
 
     for health, tools in health_states:
         formatted = status_bar.format_health_status(health, tools)
-        print(f"Health: {health}, Tools: {tools}")
-        print(f"  Status: {formatted}")
-        print()
+        logger.info(f"Health: {health}, Tools: {tools}")
+        logger.info(f"  Status: {formatted}")
+        logger.info()
 
 def demo_full_status_bar():
     """Demo complete status bar in different scenarios."""
-    print("\n🎯 Complete Status Bar Scenarios\n")
+    logger.info("\n🎯 Complete Status Bar Scenarios\n")
 
     status_bar = MetaMCPStatusBar()
 
@@ -126,37 +131,37 @@ def demo_full_status_bar():
     ]
 
     for scenario in scenarios:
-        print(f"Scenario: {scenario['name']}")
+        logger.info(f"Scenario: {scenario['name']}")
 
         # Override the get_metamcp_status method temporarily
         original_method = status_bar.get_metamcp_status
         status_bar.get_metamcp_status = lambda: scenario
 
         full_status = status_bar.generate_status_bar()
-        print(f"  Status: {full_status}")
-        print()
+        logger.info(f"  Status: {full_status}")
+        logger.info()
 
         # Restore original method
         status_bar.get_metamcp_status = original_method
 
 def interactive_demo():
     """Interactive demo with live updates."""
-    print("\n🚀 Interactive Live Demo (Press Ctrl+C to stop)\n")
+    logger.info("\n🚀 Interactive Live Demo (Press Ctrl+C to stop)\n")
 
     status_bar = MetaMCPStatusBar()
 
     try:
         while True:
             full_status = status_bar.generate_status_bar()
-            print(f"\r{full_status}", end='', flush=True)
+            logger.info(f"\r{full_status}", end='', flush=True)
             time.sleep(1)
     except KeyboardInterrupt:
-        print("\n\nDemo stopped.")
+        logger.info("\n\nDemo stopped.")
 
 def main():
     """Run all demos."""
-    print("🎨 MetaMCP ADHD-Friendly Status Bar Demo")
-    print("=" * 50)
+    logger.info("🎨 MetaMCP ADHD-Friendly Status Bar Demo")
+    logger.info("=" * 50)
 
     demo_role_variations()
     demo_token_usage_progression()

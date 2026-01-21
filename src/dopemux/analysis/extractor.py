@@ -6,6 +6,11 @@ atomic document units with comprehensive evidence linking.
 """
 
 import csv
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import re
 from collections import defaultdict
 from dataclasses import dataclass

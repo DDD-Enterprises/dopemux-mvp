@@ -870,8 +870,8 @@ async def test_adhd_filtering(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("🎯 Serena ADHD Relationship Filter")
-        print("Cognitive load management with max 5 suggestions rule")
-        print("✅ Module loaded successfully")
+        logger.info("🎯 Serena ADHD Relationship Filter")
+        logger.info("Cognitive load management with max 5 suggestions rule")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

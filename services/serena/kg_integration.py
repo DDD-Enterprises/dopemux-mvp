@@ -117,9 +117,10 @@ def _format_markdown(symbol: str, decisions: List[Dict[str, Any]]) -> str:
                 if tags:
                     tag_str = " ".join(f"`{tag}`" for tag in tags[:3])
                     lines.append(f"   {tag_str}")
-            except:
+            except Exception as e:
                 pass
 
+                logger.error(f"Error: {e}")
         lines.append("")
 
     if len(decisions) > 3:
@@ -155,9 +156,10 @@ def _format_plain(symbol: str, decisions: List[Dict[str, Any]]) -> str:
                 tags = json.loads(decision["tags"])
                 if tags:
                     lines.append(f"   🏷️  {', '.join(tags[:3])}")
-            except:
+            except Exception as e:
                 pass
         
+                logger.error(f"Error: {e}")
         lines.append("")
     
     if len(decisions) > 3:
@@ -242,37 +244,37 @@ if __name__ == "__main__":
     async def test_cli():
         """Test the KG integration from command line"""
         # Initialize consumer
-        print("🔌 Initializing EventBus consumer...")
+        logger.info("🔌 Initializing EventBus consumer...")
         await init_consumer()
         await asyncio.sleep(2)  # Let it consume existing events
         
         if len(sys.argv) > 1:
             # Search for specific symbol
             symbol = " ".join(sys.argv[1:])
-            print(f"\n🔍 Searching for decisions about '{symbol}'...\n")
+            logger.info(f"\n🔍 Searching for decisions about '{symbol}'...\n")
             
             decisions = get_decisions_for_symbol(symbol, limit=5)
             
             if decisions:
                 output = format_decision_context(symbol, decisions, "plain")
-                print(output)
+                logger.info(output)
             else:
-                print(f"❌ No decisions found for '{symbol}'")
+                logger.info(f"❌ No decisions found for '{symbol}'")
         else:
             # Show stats and recent decisions
-            print("\n📊 Decision Cache Statistics:\n")
+            logger.info("\n📊 Decision Cache Statistics:\n")
             stats = get_decision_stats()
             
-            print(f"Status: {stats['status']}")
-            print(f"Total Decisions: {stats['total_decisions']}")
-            print(f"Indexed Words: {stats['indexed_words']}")
+            logger.info(f"Status: {stats['status']}")
+            logger.info(f"Total Decisions: {stats['total_decisions']}")
+            logger.info(f"Indexed Words: {stats['indexed_words']}")
             
             if stats['recent_decisions']:
-                print(f"\n📝 Recent Decisions:")
+                logger.info(f"\n📝 Recent Decisions:")
                 for i, d in enumerate(stats['recent_decisions'], 1):
-                    print(f"  {i}. #{d['id']}: {d['summary']}")
+                    logger.info(f"  {i}. #{d['id']}: {d['summary']}")
             
-            print("\n💡 Try: python kg_integration.py <search_term>")
+            logger.info("\n💡 Try: python kg_integration.py <search_term>")
         
         # Cleanup
         consumer = get_consumer()

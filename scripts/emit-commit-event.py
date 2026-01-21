@@ -78,11 +78,12 @@ async def emit_commit_event(
 
         await event_bus.close()
 
-    except Exception:
+    except Exception as e:
         # Silently fail - don't break git commits
         pass
 
 
+        logger.error(f"Error: {e}")
 if __name__ == "__main__":
     if len(sys.argv) < 7:
         sys.exit(0)  # Missing args, exit silently

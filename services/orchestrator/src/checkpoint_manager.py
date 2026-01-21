@@ -11,6 +11,11 @@ Effort: 4 focus blocks (100 minutes)
 """
 
 from typing import Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from dataclasses import dataclass, asdict
 from datetime import datetime
 import threading
@@ -84,14 +89,14 @@ class CheckpointManager:
     def start_auto_save(self) -> None:
         """Start auto-save background thread."""
         if self.auto_save_thread and self.auto_save_thread.is_alive():
-            print("⚠️ Auto-save already running")
+            logger.info("⚠️ Auto-save already running")
             return
 
         self.running = True
         self.auto_save_thread = threading.Thread(target=self._auto_save_loop, daemon=True)
         self.auto_save_thread.start()
 
-        print(f"💾 Auto-save started (every {self.checkpoint_interval}s)")
+        logger.info(f"💾 Auto-save started (every {self.checkpoint_interval}s)")
 
     def stop_auto_save(self) -> None:
         """Stop auto-save thread."""
@@ -99,7 +104,7 @@ class CheckpointManager:
         if self.auto_save_thread:
             self.auto_save_thread.join(timeout=2)
 
-        print("🛑 Auto-save stopped")
+        logger.info("🛑 Auto-save stopped")
 
     def _auto_save_loop(self) -> None:
         """Background auto-save loop."""
@@ -109,7 +114,7 @@ class CheckpointManager:
             try:
                 self.save_checkpoint()
             except Exception as e:
-                print(f"⚠️ Checkpoint failed: {e}")
+                logger.error(f"⚠️ Checkpoint failed: {e}")
 
     def save_checkpoint(self, verbose: bool = False) -> str:
         """
@@ -154,7 +159,7 @@ class CheckpointManager:
             )
         else:
             # Subtle feedback - just icon
-            print("💾", end="", flush=True)
+            logger.info("💾", end="", flush=True)
 
         return checkpoint_id
 
@@ -187,7 +192,7 @@ class CheckpointManager:
             self._save_to_conport_mcp(checkpoint_id, checkpoint)
 
         except Exception as e:
-            print(f"⚠️ Checkpoint save error: {e}")
+            logger.error(f"⚠️ Checkpoint save error: {e}")
             # Fail gracefully - ADHD accommodation (don't break flow)
 
         return checkpoint_id
@@ -225,6 +230,7 @@ class CheckpointManager:
             # Silent failure - HTTP client already fell back to JSON
             pass
 
+            logger.error(f"Error: {e}")
     def load_latest_checkpoint(self) -> Optional[Checkpoint]:
         """
         Load most recent checkpoint for this session.
@@ -268,7 +274,7 @@ class CheckpointManager:
         except FileNotFoundError:
             return None
         except Exception as e:
-            print(f"⚠️ Failed to load checkpoint: {e}")
+            logger.error(f"⚠️ Failed to load checkpoint: {e}")
             return None
 
     def _load_from_conport_mcp(self) -> Optional[Checkpoint]:
@@ -313,6 +319,7 @@ class CheckpointManager:
             # Silent failure - fall back to JSON
             return None
 
+            logger.error(f"Error: {e}")
     def update_state(
         self,
         mode: Optional[str] = None,
@@ -353,8 +360,8 @@ class CheckpointManager:
 if __name__ == "__main__":
     """Test checkpoint manager."""
 
-    print("Testing Checkpoint Manager:")
-    print("=" * 60)
+    logger.info("Testing Checkpoint Manager:")
+    logger.info("=" * 60)
 
     manager = CheckpointManager(
         workspace_id="/Users/hue/code/ui-build",
@@ -371,31 +378,31 @@ if __name__ == "__main__":
 
     # Save checkpoint
     checkpoint_id = manager.save_checkpoint(verbose=True)
-    print(f"✅ Saved: {checkpoint_id}")
+    logger.info(f"✅ Saved: {checkpoint_id}")
 
     # Load checkpoint
     loaded = manager.load_latest_checkpoint()
     if loaded:
-        print(f"\n✅ Loaded checkpoint:")
-        print(f"  Mode: {loaded.mode}")
-        print(f"  Energy: {loaded.energy_level}")
-        print(f"  Agents: {len(loaded.active_agents)}")
-        print(f"  Messages: {len(loaded.chat_history)}")
-        print(f"  Duration: {loaded.session_duration_seconds}s")
+        logger.info(f"\n✅ Loaded checkpoint:")
+        logger.info(f"  Mode: {loaded.mode}")
+        logger.info(f"  Energy: {loaded.energy_level}")
+        logger.info(f"  Agents: {len(loaded.active_agents)}")
+        logger.info(f"  Messages: {len(loaded.chat_history)}")
+        logger.info(f"  Duration: {loaded.session_duration_seconds}s")
 
     # Test auto-save
-    print(f"\nStarting auto-save (will save in {manager.checkpoint_interval}s)...")
+    logger.info(f"\nStarting auto-save (will save in {manager.checkpoint_interval}s)...")
     manager.start_auto_save()
 
-    print("Simulating work for 65 seconds...")
+    logger.info("Simulating work for 65 seconds...")
     for i in range(13):
         time.sleep(5)
         manager.update_state(
             message={"role": "assistant", "content": f"Working... step {i+1}"}
         )
-        print(".", end="", flush=True)
+        logger.info(".", end="", flush=True)
 
-    print("\n")
+    logger.info("\n")
     manager.stop_auto_save()
 
-    print(f"✅ Auto-save test complete ({manager.checkpoint_count} checkpoints saved)")
+    logger.info(f"✅ Auto-save test complete ({manager.checkpoint_count} checkpoints saved)")

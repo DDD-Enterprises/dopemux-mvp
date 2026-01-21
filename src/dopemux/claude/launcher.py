@@ -6,6 +6,11 @@ ADHD-optimized settings and MCP server integration.
 """
 
 import atexit
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import json
 import os
 import shutil
@@ -98,13 +103,13 @@ class ClaudeLauncher:
                     )
                     if result.returncode == 0 and "claude" in result.stdout.lower():
                         self.claude_path = path
-                        console.print(f"[green]✓ Found Claude Code at {path}[/green]")
+                        console.logger.info(f"[green]✓ Found Claude Code at {path}[/green]")
                         return
                 except (subprocess.TimeoutExpired, subprocess.SubprocessError):
                     continue
 
         # Not found
-        console.print("[yellow]⚠️ Claude Code not found in standard locations[/yellow]")
+        console.logger.info("[yellow]⚠️ Claude Code not found in standard locations[/yellow]")
 
     def is_available(self) -> bool:
         """Check if Claude Code is available."""
@@ -282,10 +287,11 @@ Alternative: Set CLAUDE_PATH environment variable
         try:
             with os.fdopen(fd, "w") as f:
                 json.dump(config, f, indent=2)
-        except Exception:
+        except Exception as e:
             os.unlink(temp_path)
             raise
 
+            logger.error(f"Error: {e}")
         return Path(temp_path)
 
     def _prepare_environment(self) -> Dict[str, str]:
@@ -317,8 +323,9 @@ Alternative: Set CLAUDE_PATH environment variable
                 claude_home = _Path(ws) / ".dopemux" / "claude-platform" / inst
                 claude_home.mkdir(parents=True, exist_ok=True)
                 env["CLAUDE_PLATFORM_HOME"] = str(claude_home)
-            except Exception:
+            except Exception as e:
                 pass
+                logger.error(f"Error: {e}")
             # Remove any residual OAuth-related env to prevent mixed auth modes
             for k in list(env.keys()):
                 if k.upper().startswith("ANTHROPIC_OAUTH") or k.upper() in {"ANTHROPIC_TOKEN", "CLAUDE_TOKEN"}:
@@ -342,7 +349,7 @@ Alternative: Set CLAUDE_PATH environment variable
         # This allows MCP servers to use the key while Claude Code uses OAuth
 
         if not via_litellm:
-            console.print("[dim]ℹ️  Claude Pro Max: Authenticate through the app[/dim]")
+            console.logger.info("[dim]ℹ️  Claude Pro Max: Authenticate through the app[/dim]")
 
         # Add other API keys for MCP server fallback
         # These are needed by MCP servers for fallback when Claude Pro Max hits rate limits
@@ -435,6 +442,7 @@ Alternative: Set CLAUDE_PATH environment variable
             except Exception as e:
                 result["issues"].append(f"Error checking command: {e}")
 
+                logger.error(f"Error: {e}")
             # Check environment variables
             for env_key, env_value in server_config.env.items():
                 if env_value.startswith("${") and env_value.endswith("}"):
@@ -464,7 +472,7 @@ Alternative: Set CLAUDE_PATH environment variable
             ]
 
             for package in node_packages:
-                console.print(f"[blue]Installing {package}...[/blue]")
+                console.logger.info(f"[blue]Installing {package}...[/blue]")
                 result = subprocess.run(
                     ["npm", "install", "-g", package], capture_output=True, text=True
                 )
@@ -477,7 +485,7 @@ Alternative: Set CLAUDE_PATH environment variable
             python_packages = ["context-portal-mcp"]  # Removed task-master-ai (crashes)
 
             for package in python_packages:
-                console.print(f"[blue]Installing {package}...[/blue]")
+                console.logger.info(f"[blue]Installing {package}...[/blue]")
                 result = subprocess.run(
                     ["pip", "install", package], capture_output=True, text=True
                 )
@@ -489,7 +497,7 @@ Alternative: Set CLAUDE_PATH environment variable
             return True
 
         except Exception as e:
-            console.print(f"[red]Error installing dependencies: {e}[/red]")
+            console.logger.error(f"[red]Error installing dependencies: {e}[/red]")
             return False
 
     def _cleanup(self) -> None:
@@ -505,17 +513,19 @@ Alternative: Set CLAUDE_PATH environment variable
                         # Force kill if doesn't terminate gracefully
                         process.kill()
                         process.wait(timeout=2)
-            except Exception:
+            except Exception as e:
                 # Silent cleanup - don't spam errors on exit
                 pass
 
+                logger.error(f"Error: {e}")
         # Clean up temporary settings files
         for temp_file in self._temp_files:
             try:
                 temp_file.unlink(missing_ok=True)
-            except Exception:
+            except Exception as e:
                 pass
 
+                logger.error(f"Error: {e}")
         # Clear tracking lists
         self._spawned_processes.clear()
         self._temp_files.clear()

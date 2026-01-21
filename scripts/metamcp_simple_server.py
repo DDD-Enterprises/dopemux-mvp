@@ -466,6 +466,7 @@ class SimpleMetaMCPServer:
         except Exception as e:
             return {"error": f"Failed to call {server_name}: {str(e)}"}
 
+            logger.error(f"Error: {e}")
     async def handle_mcp_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
         """Handle incoming MCP requests"""
         try:
@@ -1053,7 +1054,7 @@ class SimpleMetaMCPServer:
                     response = await self.handle_mcp_request(request)
 
                     # Write response to stdout
-                    print(json.dumps(response))
+                    logger.info(json.dumps(response))
                     sys.stdout.flush()
 
                 except json.JSONDecodeError as e:
@@ -1065,7 +1066,7 @@ class SimpleMetaMCPServer:
                             "message": "Parse error"
                         }
                     }
-                    print(json.dumps(error_response))
+                    logger.error(json.dumps(error_response))
                     sys.stdout.flush()
 
         except KeyboardInterrupt:

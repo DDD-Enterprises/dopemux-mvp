@@ -32,18 +32,18 @@ async def main():
     # API key
     voyage_api_key = os.getenv("VOYAGE_API_KEY")
     if not voyage_api_key:
-        print("❌ Error: VOYAGE_API_KEY not set")
+        logger.error("❌ Error: VOYAGE_API_KEY not set")
         return 1
 
-    print("=" * 70)
-    print("📚 DOCUMENTATION INDEXING")
-    print("=" * 70)
-    print(f"📁 Workspace: {workspace_path}")
-    print(f"🔑 Voyage API: ✅ Configured")
-    print()
+    logger.info("=" * 70)
+    logger.info("📚 DOCUMENTATION INDEXING")
+    logger.info("=" * 70)
+    logger.info(f"📁 Workspace: {workspace_path}")
+    logger.info(f"🔑 Voyage API: ✅ Configured")
+    logger.info()
 
     # Initialize components
-    print("⚙️  Initializing components...")
+    logger.info("⚙️  Initializing components...")
 
     # Contextualized embedder for docs
     embedder = ContextualizedEmbedder(
@@ -51,7 +51,7 @@ async def main():
         cache_ttl_hours=24,
         rate_limit_rpm=2000  # Voyage voyage-context-3 limit
     )
-    print("   ✅ ContextualizedEmbedder (voyage-context-3, 2000 RPM)")
+    logger.info("   ✅ ContextualizedEmbedder (voyage-context-3, 2000 RPM)")
 
     # Docs search (Qdrant)
     qdrant_url = os.getenv("QDRANT_URL", "localhost")
@@ -66,7 +66,7 @@ async def main():
         url=qdrant_url,
         port=qdrant_port
     )
-    print(f"   ✅ DocumentSearch (collection: {collection_name})")
+    logger.info(f"   ✅ DocumentSearch (collection: {collection_name})")
 
     # Docs pipeline
     pipeline = DocIndexingPipeline(
@@ -75,8 +75,8 @@ async def main():
         workspace_path=workspace_path,
         workspace_id="code-audit"
     )
-    print("   ✅ DocIndexingPipeline")
-    print()
+    logger.info("   ✅ DocIndexingPipeline")
+    logger.info()
 
     # Indexing configuration
     include_patterns = [
@@ -86,48 +86,48 @@ async def main():
         "*.rst",     # reStructuredText
     ]
 
-    print("📋 Indexing Configuration:")
-    print(f"   Include: {', '.join(include_patterns)}")
-    print(f"   Max files: ALL (no limit)")
-    print(f"   Model: voyage-context-3 (optimized for documents)")
-    print()
+    logger.info("📋 Indexing Configuration:")
+    logger.info(f"   Include: {', '.join(include_patterns)}")
+    logger.info(f"   Max files: ALL (no limit)")
+    logger.info(f"   Model: voyage-context-3 (optimized for documents)")
+    logger.info()
 
     # Index docs
-    print("🔄 Indexing documentation files (5-10 minutes)...")
-    print()
+    logger.info("🔄 Indexing documentation files (5-10 minutes)...")
+    logger.info()
 
     try:
         result = await pipeline.index_workspace(
             include_patterns=include_patterns
         )
 
-        print()
-        print("=" * 70)
-        print("✅ DOCUMENTATION INDEXING COMPLETE!")
-        print("=" * 70)
-        print(f"Files processed: {result.get('files_processed', 0)}")
-        print(f"Chunks indexed: {result.get('chunks_indexed', 0)}")
-        print(f"Errors: {result.get('errors', 0)}")
-        print()
+        logger.info()
+        logger.info("=" * 70)
+        logger.info("✅ DOCUMENTATION INDEXING COMPLETE!")
+        logger.info("=" * 70)
+        logger.info(f"Files processed: {result.get('files_processed', 0)}")
+        logger.info(f"Chunks indexed: {result.get('chunks_indexed', 0)}")
+        logger.error(f"Errors: {result.get('errors', 0)}")
+        logger.info()
 
         # Cost summary
-        print("💰 Cost Summary:")
-        print(f"   Embeddings: ${result.get('embedding_cost', 0):.4f}")
-        print()
+        logger.info("💰 Cost Summary:")
+        logger.info(f"   Embeddings: ${result.get('embedding_cost', 0):.4f}")
+        logger.info()
 
-        print("🎯 Next Steps:")
-        print("   1. Test: mcp__dope-context__docs_search('architecture')")
-        print("   2. Unified: mcp__dope-context__search_all('features')")
-        print()
+        logger.info("🎯 Next Steps:")
+        logger.info("   1. Test: mcp__dope-context__docs_search('architecture')")
+        logger.info("   2. Unified: mcp__dope-context__search_all('features')")
+        logger.info()
 
         return 0
 
     except Exception as e:
-        print()
-        print("=" * 70)
-        print("❌ INDEXING FAILED")
-        print("=" * 70)
-        print(f"Error: {e}")
+        logger.info()
+        logger.info("=" * 70)
+        logger.error("❌ INDEXING FAILED")
+        logger.info("=" * 70)
+        logger.error(f"Error: {e}")
         logger.exception("Docs indexing failed")
         return 1
 

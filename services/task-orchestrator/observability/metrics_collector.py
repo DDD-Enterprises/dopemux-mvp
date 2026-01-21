@@ -16,6 +16,11 @@ Key Metrics:
 """
 
 import time
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 from enum import Enum
@@ -81,7 +86,7 @@ class MetricsCollector:
         if self.enabled:
             self._initialize_prometheus_metrics()
         else:
-            print("⚠️  Prometheus not available - metrics collection disabled")
+            logger.info("⚠️  Prometheus not available - metrics collection disabled")
 
     def _initialize_prometheus_metrics(self):
         """Initialize all Prometheus metrics."""

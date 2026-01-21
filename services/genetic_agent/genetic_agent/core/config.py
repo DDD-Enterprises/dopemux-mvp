@@ -64,6 +64,7 @@ class AgentConfig(BaseSettings):
         except Exception as e:
             raise ValueError(f"Invalid MCP URL '{v}': {e}")
 
+            logger.error(f"Error: {e}")
         return v
 
     async def validate_mcp_connectivity(self) -> List[Tuple[str, bool, str]]:
@@ -98,6 +99,7 @@ class AgentConfig(BaseSettings):
                 except Exception as e:
                     error_msg = f"Unexpected error: {str(e)}"
 
+                    logger.error(f"Error: {e}")
                 results.append((name, reachable, error_msg))
                 if reachable:
                     logger.info(f"✓ {name} service reachable at {url}")

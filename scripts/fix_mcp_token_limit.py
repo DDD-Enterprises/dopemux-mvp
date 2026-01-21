@@ -4,6 +4,11 @@ Fix MCP token limit issue by adding content truncation to docs_search.
 """
 
 import re
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from pathlib import Path
 
 mcp_server_file = Path("/Users/hue/code/code-audit/services/dope-context/src/mcp/server.py")
@@ -95,9 +100,9 @@ content = content.replace(old_search_all_call, new_search_all_call)
 with open(mcp_server_file, 'w') as f:
     f.write(content)
 
-print("✅ Patched server.py with content truncation:")
-print("   - Added max_content_length parameter (default 2000 chars)")
-print("   - Truncates doc content with '...' indicator")
-print("   - Adds 'truncated' and 'original_length' fields")
-print()
-print("🔄 Restart required: Restart Claude Code session to load updated MCP server")
+logger.info("✅ Patched server.py with content truncation:")
+logger.info("   - Added max_content_length parameter (default 2000 chars)")
+logger.info("   - Truncates doc content with '...' indicator")
+logger.info("   - Adds 'truncated' and 'original_length' fields")
+logger.info()
+logger.info("🔄 Restart required: Restart Claude Code session to load updated MCP server")

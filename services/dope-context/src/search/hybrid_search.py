@@ -378,9 +378,9 @@ async def main():
         sparse_weight=0.3,
     )
 
-    print(f"Found {len(results)} results:")
+    logger.info(f"Found {len(results)} results:")
     for r in results:
-        print(f"  {r.file_path}:{r.function_name} (score: {r.score:.4f})")
+        logger.info(f"  {r.file_path}:{r.function_name} (score: {r.score:.4f})")
 
 
 if __name__ == "__main__":

@@ -7,6 +7,11 @@ Effort: 5 focus blocks (125 minutes)
 """
 
 from typing import Optional, Literal
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from dataclasses import dataclass
 from enum import Enum
 import re
@@ -522,16 +527,16 @@ if __name__ == "__main__":
         "/context save",
     ]
 
-    print("Testing Command Parser:")
-    print("=" * 60)
+    logger.info("Testing Command Parser:")
+    logger.info("=" * 60)
 
     for inp in test_inputs:
         result = parser.parse(inp)
-        print(f"\nInput: {inp}")
-        print(f"  Type: {result.command_type}")
-        print(f"  Mode: {result.mode.value}")
-        print(f"  Agent: {result.target_agent.value}")
-        print(f"  Message: {result.message}")
-        print(f"  Complexity: {result.complexity_score:.2f}")
+        logger.info(f"\nInput: {inp}")
+        logger.info(f"  Type: {result.command_type}")
+        logger.info(f"  Mode: {result.mode.value}")
+        logger.info(f"  Agent: {result.target_agent.value}")
+        logger.info(f"  Message: {result.message}")
+        logger.info(f"  Complexity: {result.complexity_score:.2f}")
         if result.parameters:
-            print(f"  Params: {result.parameters}")
+            logger.info(f"  Params: {result.parameters}")

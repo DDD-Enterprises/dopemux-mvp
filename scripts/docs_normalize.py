@@ -21,6 +21,11 @@ Notes:
 
 from __future__ import annotations
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 import argparse
 import os
 import re
@@ -112,10 +117,11 @@ def try_git_mv(src: Path, dst: Path) -> bool:
     try:
         subprocess.run(["git", "mv", str(src), str(dst)], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return True
-    except Exception:
+    except Exception as e:
         return False
 
 
+        logger.error(f"Error: {e}")
 def move_file(src: Path, dst: Path) -> None:
     dst.parent.mkdir(parents=True, exist_ok=True)
     if not try_git_mv(src, dst):
@@ -175,20 +181,20 @@ def main() -> None:
     ensure_dirs()
     plan = build_plan()
 
-    print("Proposed documentation normalization plan:\n")
+    logger.info("Proposed documentation normalization plan:\n")
     for it in plan:
-        print(f"[{it.action}] {it.src.relative_to(REPO_ROOT)} -> {it.dst.relative_to(REPO_ROOT)}")
+        logger.info(f"[{it.action}] {it.src.relative_to(REPO_ROOT)} -> {it.dst.relative_to(REPO_ROOT)}")
 
     if not args.apply:
-        print(f"\nDry run only. Items: {len(plan)}. Use --apply to make changes.")
+        logger.info(f"\nDry run only. Items: {len(plan)}. Use --apply to make changes.")
         return
 
-    print("\nApplying changes...")
+    logger.info("\nApplying changes...")
     for it in plan:
         move_file(it.src, it.dst)
-        print(f"  {it.action}: {it.src.relative_to(REPO_ROOT)} -> {it.dst.relative_to(REPO_ROOT)}")
+        logger.info(f"  {it.action}: {it.src.relative_to(REPO_ROOT)} -> {it.dst.relative_to(REPO_ROOT)}")
 
-    print("\nNormalization complete.")
+    logger.info("\nNormalization complete.")
 
 
 if __name__ == "__main__":

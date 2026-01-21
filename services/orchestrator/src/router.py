@@ -13,6 +13,11 @@ Effort: 5 focus blocks (125 minutes)
 """
 
 from typing import Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from dataclasses import dataclass
 from enum import Enum
 import time
@@ -114,6 +119,7 @@ class CommandRouter:
                 # Workspace support optional - don't fail if unavailable
                 parsed.workspace_context = None
 
+                logger.error(f"Error: {e}")
         # Step 2: Make routing decision
         routing = self._make_routing_decision(parsed)
 
@@ -364,8 +370,8 @@ if __name__ == "__main__":
     """Test command router (dry run without real agents)."""
     from datetime import datetime
 
-    print("Testing Command Router:")
-    print("=" * 60)
+    logger.info("Testing Command Router:")
+    logger.info("=" * 60)
 
     # Mock components
     from message_bus_v2 import create_message_bus
@@ -380,7 +386,7 @@ if __name__ == "__main__":
     # Note: Can't fully test without spawner having agents
     # But we can test routing decisions
 
-    print("\nTesting routing decisions:")
+    logger.info("\nTesting routing decisions:")
 
     test_commands = [
         "Research OAuth2 PKCE flow",
@@ -393,10 +399,10 @@ if __name__ == "__main__":
         parsed = parser.parse(cmd)
         # routing = router._make_routing_decision(parsed)  # Would need router instance
 
-        print(f"\nCommand: {cmd}")
-        print(f"  Mode: {parsed.mode.value}")
-        print(f"  Agent: {parsed.target_agent.value}")
-        print(f"  Complexity: {parsed.complexity_score:.2f}")
+        logger.info(f"\nCommand: {cmd}")
+        logger.info(f"  Mode: {parsed.mode.value}")
+        logger.info(f"  Agent: {parsed.target_agent.value}")
+        logger.info(f"  Complexity: {parsed.complexity_score:.2f}")
 
     bus.shutdown()
-    print("\n✅ Router logic test complete")
+    logger.info("\n✅ Router logic test complete")

@@ -324,6 +324,7 @@ def monitor_request(method: str = "", endpoint: str = "") -> callable:
                         context=request.state.monitoring_context
                     )
                 raise
+                logger.error(f"Error: {e}")
             finally:
                 if request and hasattr(request.state, 'monitoring_context'):
                     status_code = getattr(request.state, 'status_code', 500)

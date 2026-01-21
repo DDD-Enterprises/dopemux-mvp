@@ -31,6 +31,11 @@ Integration Points:
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import os
 import subprocess
 from datetime import datetime, timedelta
@@ -239,7 +244,7 @@ class ContextSwitchRecovery:
                 state["window"] = active_window
             except Exception as e:
                 state["window"] = None
-                print(f"⚠️  Desktop-Commander unavailable: {e}")
+                logger.info(f"⚠️  Desktop-Commander unavailable: {e}")
 
         # Task state (Task-Orchestrator)
         if self.orchestrator:
@@ -249,15 +254,17 @@ class ContextSwitchRecovery:
             except Exception as e:
                 state["task"] = None
 
+                logger.error(f"Error: {e}")
         # Worktree state (Git)
         try:
             worktree_info = await self._get_current_worktree()
             state["worktree"] = worktree_info["path"]
             state["branch"] = worktree_info["branch"]
-        except Exception:
+        except Exception as e:
             state["worktree"] = None
             state["branch"] = None
 
+            logger.error(f"Error: {e}")
         # File state (Serena)
         if self.serena:
             try:
@@ -267,6 +274,7 @@ class ContextSwitchRecovery:
             except Exception as e:
                 state["open_files"] = []
 
+                logger.error(f"Error: {e}")
         return state
 
     def _is_context_switch(
@@ -370,7 +378,7 @@ class ContextSwitchRecovery:
             )
             recovery.in_progress_tasks = in_progress.get("result", [])
         except Exception as e:
-            print(f"⚠️  Could not retrieve tasks: {e}")
+            logger.info(f"⚠️  Could not retrieve tasks: {e}")
 
         # 4. Recent decisions
         try:
@@ -380,7 +388,7 @@ class ContextSwitchRecovery:
             )
             recovery.recent_decisions = decisions.get("result", [])
         except Exception as e:
-            print(f"⚠️  Could not retrieve decisions: {e}")
+            logger.info(f"⚠️  Could not retrieve decisions: {e}")
 
         # 5. Worktree context
         recovery.current_worktree = switch.from_context.get("worktree")
@@ -397,7 +405,7 @@ class ContextSwitchRecovery:
             try:
                 await self.serena.restore_navigation_state(recovery.current_task)
             except Exception as e:
-                print(f"⚠️  Could not restore navigation: {e}")
+                logger.info(f"⚠️  Could not restore navigation: {e}")
 
         # 9. Log switch for learning
         await self._log_context_switch(switch, recovery)
@@ -471,20 +479,20 @@ class ContextSwitchRecovery:
         - Recent decisions
         - Quick actions (resume, switch, dismiss)
         """
-        print("\n" + "="*60)
-        print("🔄 Context Switch Recovery")
-        print("="*60)
-        print(f"\n{recovery.summary}")
+        logger.info("\n" + "="*60)
+        logger.info("🔄 Context Switch Recovery")
+        logger.info("="*60)
+        logger.info(f"\n{recovery.summary}")
 
         if recovery.last_screenshot_path and os.path.exists(recovery.last_screenshot_path):
-            print(f"\n📸 Last state: {recovery.last_screenshot_path}")
+            logger.info(f"\n📸 Last state: {recovery.last_screenshot_path}")
 
         if recovery.in_progress_tasks:
-            print(f"\n📋 In Progress ({len(recovery.in_progress_tasks)} tasks):")
+            logger.info(f"\n📋 In Progress ({len(recovery.in_progress_tasks)} tasks):")
             for task in recovery.in_progress_tasks[:3]:
-                print(f"  • {task.get('description', 'Untitled')}")
+                logger.info(f"  • {task.get('description', 'Untitled')}")
 
-        print("\n" + "="*60)
+        logger.info("\n" + "="*60)
 
     # ========================================================================
     # Background Monitoring
@@ -499,7 +507,7 @@ class ContextSwitchRecovery:
         """
         self._monitoring = True
 
-        print(f"🔄 Context Switch Recovery monitoring started (checking every {interval_seconds}s)")
+        logger.info(f"🔄 Context Switch Recovery monitoring started (checking every {interval_seconds}s)")
 
         while self._monitoring:
             try:
@@ -510,20 +518,20 @@ class ContextSwitchRecovery:
                 switch = await self.detect_context_switch()
 
                 if switch:
-                    print(f"\n⚠️  Context switch detected: {switch.switch_reason.value}")
+                    logger.info(f"\n⚠️  Context switch detected: {switch.switch_reason.value}")
                     await self.provide_recovery_assistance(switch)
 
                 # Wait before next check
                 await asyncio.sleep(interval_seconds)
 
             except Exception as e:
-                print(f"⚠️  Monitoring error: {e}")
+                logger.error(f"⚠️  Monitoring error: {e}")
                 await asyncio.sleep(interval_seconds)
 
     def stop_monitoring(self):
         """Stop background monitoring."""
         self._monitoring = False
-        print("🛑 Context Switch Recovery monitoring stopped")
+        logger.info("🛑 Context Switch Recovery monitoring stopped")
 
     # ========================================================================
     # Helper Methods
@@ -556,9 +564,10 @@ class ContextSwitchRecovery:
                 "path": worktree_path,
                 "branch": branch_name
             }
-        except Exception:
+        except Exception as e:
             return {"path": None, "branch": None}
 
+            logger.error(f"Error: {e}")
     async def _capture_screenshot(self):
         """Capture screenshot for visual memory aid."""
         if not self.desktop:
@@ -569,7 +578,7 @@ class ContextSwitchRecovery:
             await self.desktop.screenshot(filename=screenshot_path)
             self._last_screenshot_path = screenshot_path
         except Exception as e:
-            print(f"⚠️  Screenshot failed: {e}")
+            logger.error(f"⚠️  Screenshot failed: {e}")
 
     def _extract_cursor_positions(
         self,
@@ -615,7 +624,7 @@ class ContextSwitchRecovery:
                 }
             )
         except Exception as e:
-            print(f"⚠️  Could not log switch: {e}")
+            logger.info(f"⚠️  Could not log switch: {e}")
 
     # ========================================================================
     # Query & Statistics

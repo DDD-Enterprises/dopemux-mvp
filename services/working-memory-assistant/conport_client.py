@@ -5,6 +5,11 @@ Client wrapper for ConPort MCP tools to provide semantic context enrichment.
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
 
@@ -18,7 +23,7 @@ try:
     from mcp__conport__semantic_search_conport import semantic_search_conport
 except ImportError:
     # Fallback for development/testing
-    print("ConPort MCP tools not available, using mock implementations")
+    logger.info("ConPort MCP tools not available, using mock implementations")
 
     async def get_decisions(workspace_id: str, limit: int = 10) -> List[Dict[str, Any]]:
         return [{
@@ -102,7 +107,7 @@ class ConPortClient:
             )
             return result.get('decisions', []) if isinstance(result, dict) else result
         except Exception as e:
-            print(f"Failed to get decisions: {e}")
+            logger.error(f"Failed to get decisions: {e}")
             return []
 
     async def get_progress(self, status_filter: Optional[str] = None, limit: int = 10) -> List[Dict[str, Any]]:
@@ -115,7 +120,7 @@ class ConPortClient:
             )
             return result.get('progress_entries', []) if isinstance(result, dict) else result
         except Exception as e:
-            print(f"Failed to get progress: {e}")
+            logger.error(f"Failed to get progress: {e}")
             return []
 
     async def get_system_patterns(self, limit: int = 10, tags_filter_include_any: Optional[List[str]] = None) -> List[Dict[str, Any]]:
@@ -128,7 +133,7 @@ class ConPortClient:
             )
             return result.get('patterns', []) if isinstance(result, dict) else result
         except Exception as e:
-            print(f"Failed to get patterns: {e}")
+            logger.error(f"Failed to get patterns: {e}")
             return []
 
     async def link_conport_items(self, source_item_type: str, source_item_id: str,
@@ -146,7 +151,7 @@ class ConPortClient:
                 description=description
             )
         except Exception as e:
-            print(f"Failed to link items: {e}")
+            logger.error(f"Failed to link items: {e}")
 
     async def get_linked_items(self, item_type: str, item_id: str) -> List[Dict[str, Any]]:
         """Get items linked to a specific item"""
@@ -158,7 +163,7 @@ class ConPortClient:
             )
             return result.get('linked_items', []) if isinstance(result, dict) else result
         except Exception as e:
-            print(f"Failed to get linked items: {e}")
+            logger.error(f"Failed to get linked items: {e}")
             return []
 
     async def semantic_search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
@@ -171,7 +176,7 @@ class ConPortClient:
             )
             return result.get('results', []) if isinstance(result, dict) else result
         except Exception as e:
-            print(f"Failed to perform semantic search: {e}")
+            logger.error(f"Failed to perform semantic search: {e}")
             return []
 
 async def test_conport_client():
@@ -180,15 +185,15 @@ async def test_conport_client():
 
     # Test getting decisions
     decisions = await client.get_decisions(limit=5)
-    print(f"Decisions: {len(decisions)}")
+    logger.info(f"Decisions: {len(decisions)}")
 
     # Test getting progress
     progress = await client.get_progress(status_filter="IN_PROGRESS", limit=5)
-    print(f"Progress: {len(progress)}")
+    logger.info(f"Progress: {len(progress)}")
 
     # Test getting patterns
     patterns = await client.get_system_patterns(limit=5)
-    print(f"Patterns: {len(patterns)}")
+    logger.info(f"Patterns: {len(patterns)}")
 
 if __name__ == "__main__":
     asyncio.run(test_conport_client())
