@@ -91,7 +91,7 @@ class DopemuxEnforcer:
 
         if not report.compliant:
             for violation in report.violations:
-                print(f"{violation.severity}: {violation.message}")
+                logger.info(f"{violation.severity}: {violation.message}")
     """
 
     def __init__(
@@ -533,9 +533,9 @@ class DopemuxEnforcer:
 async def demo():
     """Demonstrate DopemuxEnforcer"""
 
-    print("\n" + "="*70)
-    print("DOPEMUX ENFORCER DEMO")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("DOPEMUX ENFORCER DEMO")
+    logger.info("="*70)
 
     enforcer = DopemuxEnforcer(
         workspace_id="/Users/hue/code/dopemux-mvp",
@@ -545,9 +545,9 @@ async def demo():
     await enforcer.initialize()
 
     # Example 1: Validate code with bash usage
-    print("\n" + "="*70)
-    print("Example 1: Tool Preference Violation (bash cat)")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("Example 1: Tool Preference Violation (bash cat)")
+    logger.info("="*70)
 
     code_with_bash = '''
 async def read_file():
@@ -561,17 +561,17 @@ async def read_file():
         content=code_with_bash
     )
 
-    print(f"\nCompliance: {report.compliant}")
-    print(f"Summary: {report.summary}")
+    logger.info(f"\nCompliance: {report.compliant}")
+    logger.info(f"Summary: {report.summary}")
     for v in report.violations:
-        print(f"  {v.severity.upper()}: {v.message}")
+        logger.info(f"  {v.severity.upper()}: {v.message}")
         if v.suggestion:
-            print(f"    Suggestion: {v.suggestion}")
+            logger.info(f"    Suggestion: {v.suggestion}")
 
     # Example 2: Validate authority matrix
-    print("\n" + "="*70)
-    print("Example 2: Authority Matrix Validation")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("Example 2: Authority Matrix Validation")
+    logger.info("="*70)
 
     report = await enforcer.validate_operation(
         operation="update_decision",
@@ -579,29 +579,29 @@ async def read_file():
         source_plane="pm"  # PM trying to write decisions!
     )
 
-    print(f"\nCompliance: {report.compliant}")
-    print(f"Summary: {report.summary}")
+    logger.info(f"\nCompliance: {report.compliant}")
+    logger.info(f"Summary: {report.summary}")
     for v in report.violations:
-        print(f"  {v.severity.upper()}: {v.message}")
+        logger.info(f"  {v.severity.upper()}: {v.message}")
         if v.suggestion:
-            print(f"    Suggestion: {v.suggestion}")
+            logger.info(f"    Suggestion: {v.suggestion}")
 
     # Metrics
-    print("\n" + "="*70)
-    print("Enforcement Metrics")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("Enforcement Metrics")
+    logger.info("="*70)
 
     metrics = await enforcer.get_metrics_summary()
-    print(f"\nValidations Performed: {metrics['validations_performed']}")
-    print(f"Violations Found: {metrics['violations_found']}")
-    print(f"Warnings Issued: {metrics['warnings_issued']}")
-    print(f"Strict Mode: {metrics['strict_mode']}")
+    logger.info(f"\nValidations Performed: {metrics['validations_performed']}")
+    logger.info(f"Violations Found: {metrics['violations_found']}")
+    logger.warning(f"Warnings Issued: {metrics['warnings_issued']}")
+    logger.info(f"Strict Mode: {metrics['strict_mode']}")
 
     await enforcer.close()
 
-    print("\n" + "="*70)
-    print("✅ Demo complete!")
-    print("="*70 + "\n")
+    logger.info("\n" + "="*70)
+    logger.info("✅ Demo complete!")
+    logger.info("="*70 + "\n")
 
 
 if __name__ == "__main__":

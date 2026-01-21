@@ -8,6 +8,11 @@ NO schema upgrade needed - SQLite schema is AGE-compatible!
 """
 
 import sqlite3
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import json
 import sys
 from pathlib import Path
@@ -37,7 +42,7 @@ class SQLiteExporter:
 
         conn.close()
 
-        print(f"✓ Exported {len(decisions)} decisions from SQLite")
+        logger.info(f"✓ Exported {len(decisions)} decisions from SQLite")
         return decisions
 
     def export_relationships(self) -> list:
@@ -67,7 +72,7 @@ class SQLiteExporter:
 
         conn.close()
 
-        print(f"✓ Exported {len(relationships)} relationships from SQLite")
+        logger.info(f"✓ Exported {len(relationships)} relationships from SQLite")
         return relationships
 
     def export_all(self, output_file: Path):
@@ -98,11 +103,11 @@ class SQLiteExporter:
 
         file_size = output_file.stat().st_size / 1024
 
-        print(f"\n✓ Export complete: {output_file}")
-        print(f"  - Decisions: {len(decisions)}")
-        print(f"  - Relationships: {len(relationships)}")
-        print(f"  - Relationship types: {len(rel_types)} ({', '.join(sorted(rel_types))})")
-        print(f"  - File size: {file_size:.1f} KB")
+        logger.info(f"\n✓ Export complete: {output_file}")
+        logger.info(f"  - Decisions: {len(decisions)}")
+        logger.info(f"  - Relationships: {len(relationships)}")
+        logger.info(f"  - Relationship types: {len(rel_types)} ({', '.join(sorted(rel_types))})")
+        logger.info(f"  - File size: {file_size:.1f} KB")
 
         return export_data
 
@@ -113,33 +118,33 @@ def main():
     SQLITE_PATH = "/Users/hue/code/dopemux-mvp/context_portal/context.db"
     OUTPUT_FILE = Path("conport_sqlite_export.json")
 
-    print("=" * 60)
-    print("ConPort SQLite Export (Simplified Migration)")
-    print("=" * 60)
-    print(f"SQLite: {SQLITE_PATH}")
-    print(f"Output: {OUTPUT_FILE}")
-    print()
+    logger.info("=" * 60)
+    logger.info("ConPort SQLite Export (Simplified Migration)")
+    logger.info("=" * 60)
+    logger.info(f"SQLite: {SQLITE_PATH}")
+    logger.info(f"Output: {OUTPUT_FILE}")
+    logger.info()
 
     exporter = SQLiteExporter(SQLITE_PATH)
 
     try:
         export_data = exporter.export_all(OUTPUT_FILE)
 
-        print("\n✓ SUCCESS: Data exported from SQLite")
-        print("\n✓ Schema advantages:")
-        print("  - INTEGER IDs (no UUID conversion needed!)")
-        print("  - implementation_details field present")
-        print("  - 9 relationship types (exceeds our 8-type design)")
-        print("  - JSON tags compatible with JSONB")
-        print("\nNext steps:")
-        print("  1. Review export file")
-        print("  2. Run load_age_direct.py (direct copy!)")
+        logger.info("\n✓ SUCCESS: Data exported from SQLite")
+        logger.info("\n✓ Schema advantages:")
+        logger.info("  - INTEGER IDs (no UUID conversion needed!)")
+        logger.info("  - implementation_details field present")
+        logger.info("  - 9 relationship types (exceeds our 8-type design)")
+        logger.info("  - JSON tags compatible with JSONB")
+        logger.info("\nNext steps:")
+        logger.info("  1. Review export file")
+        logger.info("  2. Run load_age_direct.py (direct copy!)")
 
         return 0
 
     except Exception as e:
-        print(f"\n✗ ERROR: Export failed")
-        print(f"  {str(e)}")
+        logger.error(f"\n✗ ERROR: Export failed")
+        logger.info(f"  {str(e)}")
         return 1
 
 

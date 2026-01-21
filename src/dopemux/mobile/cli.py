@@ -140,6 +140,7 @@ def start(
         click.echo(f"❌ tmux error: {exc}")
         sys.exit(1)
 
+        logger.error(f"Error: {e}")
     if outcome.started:
         for label in outcome.started:
             click.echo(f"✅ Happy session ready: {label}")
@@ -170,6 +171,7 @@ def detach(ctx: click.Context, pane: Sequence[str], detach_all: bool):
         click.echo(f"❌ tmux error: {exc}")
         sys.exit(1)
 
+        logger.error(f"Error: {e}")
     if not detached:
         click.echo("No Happy sessions found to detach.")
     else:

@@ -150,12 +150,12 @@ async def get_session():
 
 
 @app.get("/active-sprint")
-async def get_active_sprint():
+async def get_active_slogger.info():
     """Get active sprint information."""
     if not orchestrator:
         raise HTTPException(status_code=503, detail="Orchestrator not initialized")
     
-    return await orchestrator.get_active_sprint()
+    return await orchestrator.get_active_slogger.info()
 
 
 if __name__ == "__main__":

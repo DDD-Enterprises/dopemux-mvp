@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 import argparse
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sqlite3
 from pathlib import Path
 
@@ -34,7 +39,7 @@ def main():
         for r in rows:
             f.write("\t".join(str(v) if v is not None else "" for v in r) + "\n")
 
-    print(f"✅ Wrote report: {out_path}")
+    logger.info(f"✅ Wrote report: {out_path}")
 
 
 if __name__ == "__main__":

@@ -76,7 +76,7 @@ class BreakSuggestionConsumer:
                     mkstream=True
                 )
                 logger.info(f"✅ Consumer group created: {self.consumer_group}")
-            except Exception:
+            except Exception as e:
                 # Group already exists
                 pass
 
@@ -203,8 +203,8 @@ if __name__ == "__main__":
     user_id = sys.argv[1] if len(sys.argv) > 1 else "default"
     redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
 
-    print(f"🚀 Starting F-NEW-8 Break Suggester for user: {user_id}")
-    print(f"   Redis: {redis_url}")
-    print(f"   Monitoring events for proactive break suggestions...")
+    logger.info(f"🚀 Starting F-NEW-8 Break Suggester for user: {user_id}")
+    logger.info(f"   Redis: {redis_url}")
+    logger.info(f"   Monitoring events for proactive break suggestions...")
 
     asyncio.run(run_break_suggester_service(user_id, redis_url))

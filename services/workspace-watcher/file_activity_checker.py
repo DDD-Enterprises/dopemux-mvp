@@ -90,9 +90,10 @@ class FileActivityChecker:
                             if age <= self.recency_threshold:
                                 recent_files.append((file, age))
 
-                        except Exception:
+                        except Exception as e:
                             continue  # Skip files we can't stat
 
+                            logger.error(f"Error: {e}")
             # Sort by age (most recent first)
             recent_files.sort(key=lambda x: x[1])
 

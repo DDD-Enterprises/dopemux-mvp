@@ -12,6 +12,11 @@ Commands:
 """
 
 import click
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from rich.console import Console
 from typing import Optional
 
@@ -40,22 +45,22 @@ def env_list(status: bool):
     """List environment variable keys safely."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         variables = integration.env_list(status)
         if status:
-            console.print("[cyan]Environment Variables:[/cyan]")
+            console.logger.info("[cyan]Environment Variables:[/cyan]")
             for key, info in variables.items():
                 status_str = info.get('status', 'UNKNOWN')
-                console.print(f"  {key}: {status_str}")
+                console.logger.info(f"  {key}: {status_str}")
         else:
-            console.print("[cyan]Environment Variable Keys:[/cyan]")
+            console.logger.info("[cyan]Environment Variable Keys:[/cyan]")
             for key in variables.keys():
-                console.print(f"  {key}")
+                console.logger.info(f"  {key}")
     except Exception as e:
-        console.print(f"[red]Failed to list environment variables: {e}[/red]")
+        console.logger.error(f"[red]Failed to list environment variables: {e}[/red]")
 
 
 @env_group.command("check")
@@ -64,17 +69,17 @@ def env_check(key: str):
     """Check if environment variable exists."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         exists = integration.env_check(key)
         if exists:
-            console.print(f"[green]Variable '{key}' exists[/green]")
+            console.logger.info(f"[green]Variable '{key}' exists[/green]")
         else:
-            console.print(f"[yellow]Variable '{key}' not found[/yellow]")
+            console.logger.info(f"[yellow]Variable '{key}' not found[/yellow]")
     except Exception as e:
-        console.print(f"[red]Failed to check variable: {e}[/red]")
+        console.logger.error(f"[red]Failed to check variable: {e}[/red]")
 
 
 @env_group.command("count")
@@ -82,17 +87,17 @@ def env_count():
     """Count environment variables."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         counts = integration.env_count()
-        console.print(f"[cyan]Environment Variables Summary:[/cyan]")
-        console.print(f"  Total: {counts['total']}")
-        console.print(f"  Set: {counts['set']}")
-        console.print(f"  Empty: {counts['empty']}")
+        console.logger.info(f"[cyan]Environment Variables Summary:[/cyan]")
+        console.logger.info(f"  Total: {counts['total']}")
+        console.logger.info(f"  Set: {counts['set']}")
+        console.logger.info(f"  Empty: {counts['empty']}")
     except Exception as e:
-        console.print(f"[red]Failed to count variables: {e}[/red]")
+        console.logger.error(f"[red]Failed to count variables: {e}[/red]")
 
 
 @env_group.command("validate")
@@ -100,21 +105,21 @@ def env_validate():
     """Validate .env file syntax."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         result = integration.env_validate()
         if result['valid']:
-            console.print("[green].env file is valid[/green]")
+            console.logger.info("[green].env file is valid[/green]")
         else:
-            console.print("[red].env file validation failed:[/red]")
+            console.logger.error("[red].env file validation failed:[/red]")
             for error in result['errors']:
-                console.print(f"  [red]Error:[/red] {error}")
+                console.logger.error(f"  [red]Error:[/red] {error}")
             for warning in result['warnings']:
-                console.print(f"  [yellow]Warning:[/yellow] {warning}")
+                console.logger.warning(f"  [yellow]Warning:[/yellow] {warning}")
     except Exception as e:
-        console.print(f"[red]Failed to validate .env file: {e}[/red]")
+        console.logger.error(f"[red]Failed to validate .env file: {e}[/red]")
 
 
 # Session management commands
@@ -132,14 +137,14 @@ def session_find(keywords: Optional[str], agent: Optional[str], limit: int):
     """Search for sessions."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         sessions = integration.session_find(keywords, agent, limit)
         integration.session_display(sessions)
     except Exception as e:
-        console.print(f"[red]Failed to search sessions: {e}[/red]")
+        console.logger.error(f"[red]Failed to search sessions: {e}[/red]")
 
 
 @session_group.command("resume")
@@ -148,7 +153,7 @@ def session_resume(session_id: str):
     """Resume a session by ID."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
@@ -157,17 +162,17 @@ def session_resume(session_id: str):
         session = next((s for s in sessions if str(s['id']) == session_id), None)
 
         if not session:
-            console.print(f"[red]Session '{session_id}' not found[/red]")
+            console.logger.info(f"[red]Session '{session_id}' not found[/red]")
             return
 
         success = integration.session_resume(session)
         if success:
-            console.print(f"[green]✓ Resumed session '{session_id}'[/green]")
+            console.logger.info(f"[green]✓ Resumed session '{session_id}'[/green]")
         else:
-            console.print(f"[red]✗ Failed to resume session '{session_id}'[/red]")
+            console.logger.error(f"[red]✗ Failed to resume session '{session_id}'[/red]")
 
     except Exception as e:
-        console.print(f"[red]Failed to resume session: {e}[/red]")
+        console.logger.error(f"[red]Failed to resume session: {e}[/red]")
 
 
 # Safety management commands
@@ -182,16 +187,16 @@ def safe_status():
     """Show safety hook status."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
-    console.print("[cyan]Safety Hooks Status:[/cyan]")
-    console.print("  Command interception: Active")
-    console.print("  File deletion protection: Active")
-    console.print("  Git operation safeguards: Active")
-    console.print("  Environment file locks: Active")
-    console.print("  File size limits: Active")
-    console.print("  Grep enforcement: Active")
+    console.logger.info("[cyan]Safety Hooks Status:[/cyan]")
+    console.logger.info("  Command interception: Active")
+    console.logger.info("  File deletion protection: Active")
+    console.logger.info("  Git operation safeguards: Active")
+    console.logger.info("  Environment file locks: Active")
+    console.logger.info("  File size limits: Active")
+    console.logger.info("  Grep enforcement: Active")
 
 
 @safe_group.command("check")
@@ -201,18 +206,18 @@ def safe_check(command: str, confirmed: bool):
     """Check command safety."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     context = {'confirmed': confirmed} if confirmed else {}
     result = integration.intercept_command(command, context)
 
     if result['allowed']:
-        console.print(f"[green]✓ Command allowed: {result['message']}[/green]")
+        console.logger.info(f"[green]✓ Command allowed: {result['message']}[/green]")
     else:
-        console.print(f"[red]✗ Command blocked: {result['message']}[/red]")
+        console.logger.info(f"[red]✗ Command blocked: {result['message']}[/red]")
         if result.get('safe_command'):
-            console.print(f"[yellow]Suggested safe command: {result['safe_command']}[/yellow]")
+            console.logger.info(f"[yellow]Suggested safe command: {result['safe_command']}[/yellow]")
 
 # Vault commands
 @click.group(name="vault")
@@ -227,17 +232,17 @@ def vault_encrypt(env_file: str):
     """Encrypt .env file to vault."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         success = integration.vault.encrypt_env(env_file)
         if success:
-            console.print(f"[green]✓ Encrypted {env_file} to vault[/green]")
+            console.logger.info(f"[green]✓ Encrypted {env_file} to vault[/green]")
         else:
-            console.print(f"[red]✗ Failed to encrypt {env_file}[/red]")
+            console.logger.error(f"[red]✗ Failed to encrypt {env_file}[/red]")
     except Exception as e:
-        console.print(f"[red]Encryption failed: {e}[/red]")
+        console.logger.error(f"[red]Encryption failed: {e}[/red]")
 
 
 @vault_group.command("decrypt")
@@ -246,17 +251,17 @@ def vault_decrypt(vault_file: Optional[str]):
     """Decrypt vault file to .env."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         content = integration.vault.decrypt_env(vault_file)
         if content:
-            console.print(f"[green]✓ Decrypted vault to .env[/green]")
+            console.logger.info(f"[green]✓ Decrypted vault to .env[/green]")
         else:
-            console.print(f"[red]✗ Failed to decrypt vault[/red]")
+            console.logger.error(f"[red]✗ Failed to decrypt vault[/red]")
     except Exception as e:
-        console.print(f"[red]Decryption failed: {e}[/red]")
+        console.logger.error(f"[red]Decryption failed: {e}[/red]")
 
 
 @vault_group.command("sync")
@@ -265,17 +270,17 @@ def vault_sync(env_file: str):
     """Sync environment file to vault."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         success = integration.vault.sync_env(env_file)
         if success:
-            console.print(f"[green]✓ Synced {env_file} to vault[/green]")
+            console.logger.info(f"[green]✓ Synced {env_file} to vault[/green]")
         else:
-            console.print(f"[red]✗ Failed to sync {env_file}[/red]")
+            console.logger.error(f"[red]✗ Failed to sync {env_file}[/red]")
     except Exception as e:
-        console.print(f"[red]Sync failed: {e}[/red]")
+        console.logger.error(f"[red]Sync failed: {e}[/red]")
 
 
 @vault_group.command("list")
@@ -283,19 +288,19 @@ def vault_list():
     """List all vault files."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         vaults = integration.vault.list_vaults()
         if vaults:
-            console.print("[cyan]Vault Files:[/cyan]")
+            console.logger.info("[cyan]Vault Files:[/cyan]")
             for vault in vaults:
-                console.print(f"  {vault}")
+                console.logger.info(f"  {vault}")
         else:
-            console.print("[yellow]No vault files found[/yellow]")
+            console.logger.info("[yellow]No vault files found[/yellow]")
     except Exception as e:
-        console.print(f"[red]Failed to list vaults: {e}[/red]")
+        console.logger.error(f"[red]Failed to list vaults: {e}[/red]")
 
 
 # Agent Communication commands
@@ -314,7 +319,7 @@ def agent_send(pane_id: str, message: str, message_type: str, sync: bool):
     """Send message to agent in pane."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
@@ -329,12 +334,12 @@ def agent_send(pane_id: str, message: str, message_type: str, sync: bool):
         response = integration.send_agent_message(pane_id, agent_msg, mode=mode)
 
         if response:
-            console.print(f"[green]Response: {response.content}[/green]")
+            console.logger.info(f"[green]Response: {response.content}[/green]")
         else:
-            console.print(f"[green]Message sent to {pane_id}[/green]")
+            console.logger.info(f"[green]Message sent to {pane_id}[/green]")
 
     except Exception as e:
-        console.print(f"[red]Failed to send message: {e}[/red]")
+        console.logger.error(f"[red]Failed to send message: {e}[/red]")
 
 
 @agent_group.command("receive")
@@ -344,21 +349,21 @@ def agent_receive(pane_id: str, timeout: float):
     """Receive message from agent in pane."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         message = integration.receive_agent_message(pane_id, timeout=timeout)
 
         if message:
-            console.print(f"[cyan]Message from {message.sender}:[/cyan]")
-            console.print(f"  Type: {message.message_type}")
-            console.print(f"  Content: {message.content}")
+            console.logger.info(f"[cyan]Message from {message.sender}:[/cyan]")
+            console.logger.info(f"  Type: {message.message_type}")
+            console.logger.info(f"  Content: {message.content}")
         else:
-            console.print(f"[yellow]No message received from {pane_id} within {timeout}s[/yellow]")
+            console.logger.info(f"[yellow]No message received from {pane_id} within {timeout}s[/yellow]")
 
     except Exception as e:
-        console.print(f"[red]Failed to receive message: {e}[/red]")
+        console.logger.error(f"[red]Failed to receive message: {e}[/red]")
 
 
 @agent_group.command("collaborate")
@@ -370,20 +375,20 @@ def agent_collaborate(primary_pane: str, secondary_pane: str, task_description: 
     """Enable agent collaboration on task."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         result = integration.collaborate_on_task(primary_pane, secondary_pane, task_description, timeout=timeout)
 
         if result['success']:
-            console.print("[green]✓ Collaboration completed successfully[/green]")
-            console.print(f"Duration: {result.get('collaboration_time', 0):.1f}s")
+            console.logger.info("[green]✓ Collaboration completed successfully[/green]")
+            console.logger.info(f"Duration: {result.get('collaboration_time', 0):.1f}s")
         else:
-            console.print(f"[red]✗ Collaboration failed: {result.get('error', 'Unknown error')}[/red]")
+            console.logger.error(f"[red]✗ Collaboration failed: {result.get('error', 'Unknown error')}[/red]")
 
     except Exception as e:
-        console.print(f"[red]Collaboration error: {e}[/red]")
+        console.logger.error(f"[red]Collaboration error: {e}[/red]")
 
 
 # Debugging commands
@@ -401,19 +406,19 @@ def debug_start(command: str, debugger: str, pane: Optional[str]):
     """Start debugging session."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         debugger_type = DebuggerType[debugger.upper()]
         session = integration.start_debug_session(command, debugger_type, pane_name=pane)
 
-        console.print(f"[green]✓ Debug session started: {session.session_id}[/green]")
-        console.print(f"  Pane: {session.pane_id}")
-        console.print(f"  Debugger: {session.debugger_type.value}")
+        console.logger.debug(f"[green]✓ Debug session started: {session.session_id}[/green]")
+        console.logger.info(f"  Pane: {session.pane_id}")
+        console.logger.debug(f"  Debugger: {session.debugger_type.value}")
 
     except Exception as e:
-        console.print(f"[red]Failed to start debug session: {e}[/red]")
+        console.logger.error(f"[red]Failed to start debug session: {e}[/red]")
 
 
 @debug_group.command("breakpoint")
@@ -424,24 +429,24 @@ def debug_breakpoint(session_id: str, file_path: str, line: int):
     """Set breakpoint in debug session."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         session = integration.interactive_debugger.get_session(session_id)
         if not session:
-            console.print(f"[red]Session not found: {session_id}[/red]")
+            console.logger.info(f"[red]Session not found: {session_id}[/red]")
             return
 
         success = integration.set_debug_breakpoint(session, file_path, line)
 
         if success:
-            console.print(f"[green]✓ Breakpoint set at {file_path}:{line}[/green]")
+            console.logger.info(f"[green]✓ Breakpoint set at {file_path}:{line}[/green]")
         else:
-            console.print(f"[red]✗ Failed to set breakpoint[/red]")
+            console.logger.error(f"[red]✗ Failed to set breakpoint[/red]")
 
     except Exception as e:
-        console.print(f"[red]Breakpoint error: {e}[/red]")
+        console.logger.error(f"[red]Breakpoint error: {e}[/red]")
 
 
 @debug_group.command("continue")
@@ -450,20 +455,20 @@ def debug_continue(session_id: str):
     """Continue execution in debug session."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         session = integration.interactive_debugger.get_session(session_id)
         if not session:
-            console.print(f"[red]Session not found: {session_id}[/red]")
+            console.logger.info(f"[red]Session not found: {session_id}[/red]")
             return
 
         new_state = integration.continue_debugging(session)
-        console.print(f"[green]Execution continued, state: {new_state.name}[/green]")
+        console.logger.info(f"[green]Execution continued, state: {new_state.name}[/green]")
 
     except Exception as e:
-        console.print(f"[red]Continue error: {e}[/red]")
+        console.logger.error(f"[red]Continue error: {e}[/red]")
 
 
 @debug_group.command("step")
@@ -473,20 +478,20 @@ def debug_step(session_id: str, step_type: str):
     """Step through debug session."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         session = integration.interactive_debugger.get_session(session_id)
         if not session:
-            console.print(f"[red]Session not found: {session_id}[/red]")
+            console.logger.info(f"[red]Session not found: {session_id}[/red]")
             return
 
         new_state = integration.step_debugging(session, step_type)
-        console.print(f"[green]Stepped ({step_type}), state: {new_state.name}[/green]")
+        console.logger.info(f"[green]Stepped ({step_type}), state: {new_state.name}[/green]")
 
     except Exception as e:
-        console.print(f"[red]Step error: {e}[/red]")
+        console.logger.error(f"[red]Step error: {e}[/red]")
 
 
 @debug_group.command("inspect")
@@ -496,20 +501,20 @@ def debug_inspect(session_id: str, variable: str):
     """Inspect variable in debug session."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         session = integration.interactive_debugger.get_session(session_id)
         if not session:
-            console.print(f"[red]Session not found: {session_id}[/red]")
+            console.logger.info(f"[red]Session not found: {session_id}[/red]")
             return
 
         value = integration.inspect_debug_variable(session, variable)
-        console.print(f"[cyan]{variable} = {value}[/cyan]")
+        console.logger.info(f"[cyan]{variable} = {value}[/cyan]")
 
     except Exception as e:
-        console.print(f"[red]Inspection error: {e}[/red]")
+        console.logger.error(f"[red]Inspection error: {e}[/red]")
 
 
 @debug_group.command("stack")
@@ -518,22 +523,22 @@ def debug_stack(session_id: str):
     """Get stack trace from debug session."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         session = integration.interactive_debugger.get_session(session_id)
         if not session:
-            console.print(f"[red]Session not found: {session_id}[/red]")
+            console.logger.info(f"[red]Session not found: {session_id}[/red]")
             return
 
         stack = integration.get_debug_stack_trace(session)
-        console.print("[cyan]Stack Trace:[/cyan]")
+        console.logger.debug("[cyan]Stack Trace:[/cyan]")
         for i, frame in enumerate(stack, 1):
-            console.print(f"  {i}. {frame}")
+            console.logger.info(f"  {i}. {frame}")
 
     except Exception as e:
-        console.print(f"[red]Stack trace error: {e}[/red]")
+        console.logger.error(f"[red]Stack trace error: {e}[/red]")
 
 
 @debug_group.command("locals")
@@ -542,22 +547,22 @@ def debug_locals(session_id: str):
     """Get local variables from debug session."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         session = integration.interactive_debugger.get_session(session_id)
         if not session:
-            console.print(f"[red]Session not found: {session_id}[/red]")
+            console.logger.info(f"[red]Session not found: {session_id}[/red]")
             return
 
         locals_vars = integration.get_debug_locals(session)
-        console.print("[cyan]Local Variables:[/cyan]")
+        console.logger.info("[cyan]Local Variables:[/cyan]")
         for var_name, var_value in locals_vars.items():
-            console.print(f"  {var_name} = {var_value}")
+            console.logger.info(f"  {var_name} = {var_value}")
 
     except Exception as e:
-        console.print(f"[red]Locals error: {e}[/red]")
+        console.logger.error(f"[red]Locals error: {e}[/red]")
 
 
 @debug_group.command("quit")
@@ -566,20 +571,20 @@ def debug_quit(session_id: str):
     """Quit debug session."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         session = integration.interactive_debugger.get_session(session_id)
         if not session:
-            console.print(f"[red]Session not found: {session_id}[/red]")
+            console.logger.info(f"[red]Session not found: {session_id}[/red]")
             return
 
         integration.quit_debugging(session)
-        console.print(f"[green]✓ Debug session {session_id} terminated[/green]")
+        console.logger.debug(f"[green]✓ Debug session {session_id} terminated[/green]")
 
     except Exception as e:
-        console.print(f"[red]Quit error: {e}[/red]")
+        console.logger.error(f"[red]Quit error: {e}[/red]")
 
 
 @debug_group.command("analyze-error")
@@ -588,19 +593,19 @@ def debug_analyze_error(error_text: str):
     """Analyze error output for debugging insights."""
     integration = get_global_integration()
     if not integration:
-        console.print("[red]Claude-Code-Tools integration not initialized[/red]")
+        console.logger.info("[red]Claude-Code-Tools integration not initialized[/red]")
         return
 
     try:
         analysis = integration.analyze_error(error_text)
-        console.print(f"[cyan]Error Analysis: {analysis['error_type']}[/cyan]")
-        console.print(f"Likely Cause: {analysis['likely_cause']}")
-        console.print("Suggested Fixes:")
+        console.logger.error(f"[cyan]Error Analysis: {analysis['error_type']}[/cyan]")
+        console.logger.info(f"Likely Cause: {analysis['likely_cause']}")
+        console.logger.info("Suggested Fixes:")
         for fix in analysis['suggested_fixes']:
-            console.print(f"  • {fix}")
+            console.logger.info(f"  • {fix}")
 
     except Exception as e:
-        console.print(f"[red]Analysis error: {e}[/red]")
+        console.logger.error(f"[red]Analysis error: {e}[/red]")
 
 
 # Register command groups

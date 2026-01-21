@@ -76,15 +76,17 @@ class VanillaAgent(BaseAgent):
         try:
             async with self.serena_client:
                 complexity = await self.serena_client.analyze_complexity(file_path, "")
-        except Exception:
+        except Exception as e:
             complexity = {"score": 0.5, "error": "Serena unavailable"}
 
+            logger.error(f"Error: {e}")
         try:
             async with self.dope_client:
                 similar_repairs = await self.dope_client.search_code(f"fix {description}")
-        except Exception:
+        except Exception as e:
             similar_repairs = {"results": [], "error": "Dope-Context unavailable"}
 
+            logger.error(f"Error: {e}")
         return {
             "description": description,
             "file_path": file_path,

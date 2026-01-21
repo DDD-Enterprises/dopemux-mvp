@@ -6,6 +6,11 @@ attention states to provide adaptive interface adjustments.
 """
 
 import json
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import threading
 import time
 from collections import deque
@@ -96,7 +101,7 @@ class AttentionMonitor:
         self._monitor_thread = threading.Thread(target=self._monitor_loop, daemon=True)
         self._monitor_thread.start()
 
-        console.print("[green]🧠 Attention monitoring started[/green]")
+        console.logger.info("[green]🧠 Attention monitoring started[/green]")
 
     def stop_monitoring(self) -> None:
         """Stop attention monitoring."""
@@ -106,7 +111,7 @@ class AttentionMonitor:
 
         # Save final metrics
         self._save_session_metrics()
-        console.print("[blue]Attention monitoring stopped[/blue]")
+        console.logger.info("[blue]Attention monitoring stopped[/blue]")
 
     def get_current_metrics(self) -> Dict[str, Any]:
         """Get current attention metrics."""
@@ -194,7 +199,7 @@ class AttentionMonitor:
                 self._collect_metrics()
                 time.sleep(self.sample_interval)
             except Exception as e:
-                console.print(f"[red]Attention monitoring error: {e}[/red]")
+                console.logger.error(f"[red]Attention monitoring error: {e}[/red]")
                 time.sleep(self.sample_interval)
 
     def _collect_metrics(self) -> None:
@@ -239,7 +244,7 @@ class AttentionMonitor:
             try:
                 callback(metrics)
             except Exception as e:
-                console.print(f"[yellow]Callback error: {e}[/yellow]")
+                console.logger.error(f"[yellow]Callback error: {e}[/yellow]")
 
     def _calculate_keystroke_rate(self) -> float:
         """Calculate current keystroke rate (keys per minute)."""
@@ -344,7 +349,7 @@ class AttentionMonitor:
                 self._log_focus_session(focus_duration)
                 self._focus_session_start = None
 
-            console.print(f"[blue]Attention state: {new_state}[/blue]")
+            console.logger.info(f"[blue]Attention state: {new_state}[/blue]")
         else:
             # Same state, increment duration
             self._state_duration += self.sample_interval

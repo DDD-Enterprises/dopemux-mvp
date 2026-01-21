@@ -5,6 +5,9 @@ from __future__ import annotations
 import asyncio
 import json
 import shutil
+import os
+import time
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 from .base_collector import BaseCollector
@@ -67,13 +70,33 @@ class ImplementationCollector(BaseCollector):
         url = f"{self.services.serena_url.rstrip('/')}/detect-untracked"
         payload = await self._http_json(url)
         if not payload:
-            return {"file_count": 0, "age_days": 0, "confidence": 0.0, "files": []}
+            return await self._detect_untracked_via_git()
         return {
             "file_count": payload.get("file_count", 0),
             "age_days": payload.get("age_days", 0),
             "confidence": payload.get("confidence", 0.0),
             "files": payload.get("files_list", []),
         }
+
+    async def _detect_untracked_via_git(self) -> Dict[str, Any]:
+        proc = await asyncio.create_subprocess_exec(
+            "git", "status", "--porcelain", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        )
+        stdout, _ = await proc.communicate()
+        lines = [l for l in stdout.decode("utf-8", "ignore").splitlines() if l.strip()]
+        untracked = [l[3:] for l in lines if l.startswith("?? ")]
+        file_count = len(untracked)
+        # Compute age_days as days since most recently modified untracked file
+        now = time.time()
+        ages = []
+        for rel in untracked:
+            try:
+                mtime = os.path.getmtime(rel)
+                ages.append((now - mtime) / 86400.0)
+            except OSError:
+                continue
+        age_days = int(max(ages) if ages else 0)
+        return {"file_count": file_count, "age_days": age_days, "confidence": 0.0, "files": untracked[:20]}
 
     async def fetch_activity_capture(self) -> Dict[str, Any]:
         url = f"{self.services.activity_capture_url.rstrip('/')}/recent"
@@ -118,19 +141,86 @@ class ImplementationCollector(BaseCollector):
             return {"available": True, "healthy": 0, "total": 0}
         healthy = 0
         total = 0
+        containers = []
         for line in text.splitlines():
             total += 1
             try:
                 entry = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            if (entry.get("State") or "").lower().startswith("up"):
+            state = (entry.get("State") or "").lower()
+            name = entry.get("Name") or entry.get("Service") or "unknown"
+            image = entry.get("Image") or ""
+            if state.startswith("up"):
                 healthy += 1
-        return {"available": True, "healthy": healthy, "total": total}
+            containers.append({"name": name, "state": state, "image": image})
+        # Discover compose-defined services (aggregate all compose files)
+        compose_services: Dict[str, Dict[str, Any]] = {}
+        try:
+            root = Path.cwd()
+            for compose_file in root.glob("docker-compose*.yml"):
+                try:
+                    text_comp = compose_file.read_text(encoding="utf-8", errors="ignore")
+                except Exception:
+                    continue
+                in_services = False
+                for raw_line in text_comp.splitlines():
+                    line = raw_line.rstrip()
+                    if line.strip().startswith("services:"):
+                        in_services = True
+                        continue
+                    if in_services:
+                        # End of services section when a top-level key appears
+                        if line and not line.startswith(" "):
+                            in_services = False
+                            continue
+                        if not line.strip():
+                            continue
+                        # Match service lines like '  service-name:'
+                        if ":" in line:
+                            left = line.split(":", 1)[0]
+                            name_candidate = left.strip()
+                            # heuristic: skip keys that are not top-level service entries (e.g. image, build, depends_on)
+                            if " " not in left and name_candidate and name_candidate.isascii() and name_candidate not in {"image","build","depends_on","volumes","networks","environment","restart","ports","healthcheck"}:
+                                compose_services.setdefault(name_candidate, {})
+        except Exception:
+            pass
+        # Map container states to compose services
+        container_state_map = {c["name"]: c["state"] for c in containers}
+        for svc in compose_services.keys():
+            # try direct name and common prefix patterns
+            state = None
+            # direct match
+            state = container_state_map.get(svc)
+            if state is None:
+                # look for container containing svc
+                for cname, cstate in container_state_map.items():
+                    if svc in cname:
+                        state = cstate
+                        break
+            compose_services[svc]["state"] = state or "missing"
+        return {"available": True, "healthy": healthy, "total": total, "containers": containers, "compose": compose_services}
 
     async def fetch_mcp_health(self) -> Dict[str, Any]:
-        # Placeholder: eventually poll MCP supervisor
-        return {"healthy": None}
+        servers = {
+            "zen": "http://localhost:3003",
+            "conport": "http://localhost:3004",
+            "serena": self.services.activity_capture_url.rstrip("/"),
+            "context7": "http://localhost:3002",
+            "gptr-mcp": "http://localhost:3009",
+        }
+        services: Dict[str, Dict[str, Any]] = {}
+        for name, base in servers.items():
+            url = base.rstrip("/") + "/health"
+            start = time.time()
+            payload = await self._http_json(url)
+            latency = int((time.time() - start) * 1000)
+            services[name] = {
+                "healthy": bool(payload),
+                "latency_ms": latency,
+            }
+        healthy_count = sum(1 for v in services.values() if v["healthy"])
+        return {"summary": healthy_count, "services": services}
 
     async def fetch_litellm_costs(self) -> Dict[str, Any]:
         url = f"{self.services.litellm_url.rstrip('/')}/metrics"

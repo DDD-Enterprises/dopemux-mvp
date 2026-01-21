@@ -8,6 +8,11 @@ Preserves created_at order to ensure SERIAL ID sequence matches temporal order.
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncpg
 import json
 import sys
@@ -26,7 +31,7 @@ class ConPortExporter:
     async def connect(self):
         """Establish database connection"""
         self.conn = await asyncpg.connect(self.db_url)
-        print(f"✓ Connected to ConPort PostgreSQL")
+        logger.info(f"✓ Connected to ConPort PostgreSQL")
 
     async def disconnect(self):
         """Close database connection"""
@@ -66,7 +71,7 @@ class ConPortExporter:
             decision['updated_at'] = decision['updated_at'].isoformat()
             decisions.append(decision)
 
-        print(f"✓ Exported {len(decisions)} decisions (ordered by created_at)")
+        logger.info(f"✓ Exported {len(decisions)} decisions (ordered by created_at)")
         return decisions
 
     async def export_relationships(self) -> List[Dict]:
@@ -96,7 +101,7 @@ class ConPortExporter:
             rel['created_at'] = rel['created_at'].isoformat()
             relationships.append(rel)
 
-        print(f"✓ Exported {len(relationships)} relationships")
+        logger.info(f"✓ Exported {len(relationships)} relationships")
         return relationships
 
     async def export_all(self, workspace_id: str, output_file: Path):
@@ -124,10 +129,10 @@ class ConPortExporter:
             with open(output_file, 'w') as f:
                 json.dump(export_data, f, indent=2)
 
-            print(f"\n✓ Export complete: {output_file}")
-            print(f"  - Decisions: {len(decisions)}")
-            print(f"  - Relationships: {len(relationships)}")
-            print(f"  - File size: {output_file.stat().st_size / 1024:.1f} KB")
+            logger.info(f"\n✓ Export complete: {output_file}")
+            logger.info(f"  - Decisions: {len(decisions)}")
+            logger.info(f"  - Relationships: {len(relationships)}")
+            logger.info(f"  - File size: {output_file.stat().st_size / 1024:.1f} KB")
 
             return export_data
 
@@ -143,29 +148,29 @@ async def main():
     WORKSPACE_ID = "/Users/hue/code/dopemux-mvp"
     OUTPUT_FILE = Path("conport_backup_dopemux-mvp.json")
 
-    print("=" * 60)
-    print("ConPort Data Export for Schema Upgrade")
-    print("=" * 60)
-    print(f"Workspace: {WORKSPACE_ID}")
-    print(f"Output: {OUTPUT_FILE}")
-    print()
+    logger.info("=" * 60)
+    logger.info("ConPort Data Export for Schema Upgrade")
+    logger.info("=" * 60)
+    logger.info(f"Workspace: {WORKSPACE_ID}")
+    logger.info(f"Output: {OUTPUT_FILE}")
+    logger.info()
 
     exporter = ConPortExporter(DB_URL)
 
     try:
         export_data = await exporter.export_all(WORKSPACE_ID, OUTPUT_FILE)
 
-        print("\n✓ SUCCESS: Data exported successfully")
-        print("\nNext steps:")
-        print("  1. Review backup file")
-        print("  2. Create decisions_v2 and entity_relationships_v2 tables")
-        print("  3. Run transformation and re-ingestion")
+        logger.info("\n✓ SUCCESS: Data exported successfully")
+        logger.info("\nNext steps:")
+        logger.info("  1. Review backup file")
+        logger.info("  2. Create decisions_v2 and entity_relationships_v2 tables")
+        logger.info("  3. Run transformation and re-ingestion")
 
         return 0
 
     except Exception as e:
-        print(f"\n✗ ERROR: Export failed")
-        print(f"  {str(e)}")
+        logger.error(f"\n✗ ERROR: Export failed")
+        logger.info(f"  {str(e)}")
         return 1
 
 

@@ -6,6 +6,11 @@ Tests that services correctly query ADHD Engine for dynamic accommodations.
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import redis.asyncio as redis
 import json
 import sys
@@ -22,7 +27,7 @@ from adhd_features import ADHDCodeNavigator, CognitiveLoadManager
 
 async def setup_test_adhd_state():
     """Setup test ADHD state in Redis."""
-    print("🔧 Setting up test ADHD state in Redis...")
+    logger.info("🔧 Setting up test ADHD state in Redis...")
 
     client = redis.from_url("redis://localhost:6379/5", decode_responses=True)
 
@@ -40,18 +45,18 @@ async def setup_test_adhd_state():
     }
     await client.set("adhd:profile:test_user", json.dumps(profile))
 
-    print("✅ Test state configured:")
-    print(f"   Attention: scattered (should limit to 5 results)")
-    print(f"   Energy: low (should use 0.5 complexity threshold)")
+    logger.info("✅ Test state configured:")
+    logger.info(f"   Attention: scattered (should limit to 5 results)")
+    logger.info(f"   Energy: low (should use 0.5 complexity threshold)")
 
     await client.aclose()
 
 
 async def test_feature_flag_off():
     """Test with feature flag OFF (should use hardcoded defaults)."""
-    print("\n" + "="*60)
-    print("TEST 1: Feature Flag OFF (Legacy Behavior)")
-    print("="*60)
+    logger.info("\n" + "="*60)
+    logger.info("TEST 1: Feature Flag OFF (Legacy Behavior)")
+    logger.info("="*60)
 
     # Ensure flag is OFF
     client = redis.from_url("redis://localhost:6379/5", decode_responses=True)
@@ -70,24 +75,24 @@ async def test_feature_flag_off():
     complexity = await navigator.get_complexity_threshold()
     context_depth = await navigator.get_max_context_depth()
 
-    print(f"\n📊 Results (Flag OFF):")
-    print(f"   max_results: {max_results} (expected: 10 - hardcoded default)")
-    print(f"   complexity_threshold: {complexity} (expected: 0.7 - hardcoded default)")
-    print(f"   context_depth: {context_depth} (expected: 3 - hardcoded default)")
+    logger.info(f"\n📊 Results (Flag OFF):")
+    logger.info(f"   max_results: {max_results} (expected: 10 - hardcoded default)")
+    logger.info(f"   complexity_threshold: {complexity} (expected: 0.7 - hardcoded default)")
+    logger.info(f"   context_depth: {context_depth} (expected: 3 - hardcoded default)")
 
     # Verify using defaults
     assert max_results == 10, "Should use hardcoded default when flag OFF"
     assert complexity == 0.7, "Should use hardcoded default when flag OFF"
     assert context_depth == 3, "Should use hardcoded default when flag OFF"
 
-    print("\n✅ PASS: Legacy behavior preserved (backward compatibility verified)")
+    logger.info("\n✅ PASS: Legacy behavior preserved (backward compatibility verified)")
 
 
 async def test_feature_flag_on():
     """Test with feature flag ON (should use ADHD Engine)."""
-    print("\n" + "="*60)
-    print("TEST 2: Feature Flag ON (ADHD Engine Integration)")
-    print("="*60)
+    logger.info("\n" + "="*60)
+    logger.info("TEST 2: Feature Flag ON (ADHD Engine Integration)")
+    logger.info("="*60)
 
     # Enable flag
     client = redis.from_url("redis://localhost:6379/5", decode_responses=True)
@@ -106,24 +111,24 @@ async def test_feature_flag_on():
     complexity = await navigator.get_complexity_threshold()
     context_depth = await navigator.get_max_context_depth()
 
-    print(f"\n📊 Results (Flag ON, User: scattered + low energy):")
-    print(f"   max_results: {max_results} (expected: 5 - scattered attention)")
-    print(f"   complexity_threshold: {complexity} (expected: 0.5 - low energy)")
-    print(f"   context_depth: {context_depth} (expected: 1 - scattered attention)")
+    logger.info(f"\n📊 Results (Flag ON, User: scattered + low energy):")
+    logger.info(f"   max_results: {max_results} (expected: 5 - scattered attention)")
+    logger.info(f"   complexity_threshold: {complexity} (expected: 0.5 - low energy)")
+    logger.info(f"   context_depth: {context_depth} (expected: 1 - scattered attention)")
 
     # Verify using ADHD Engine
     assert max_results == 5, "Scattered attention should limit to 5 results"
     assert complexity == 0.5, "Low energy should lower threshold to 0.5"
     assert context_depth == 1, "Scattered should limit depth to 1"
 
-    print("\n✅ PASS: ADHD Engine integration working! Accommodations adapt to user state!")
+    logger.info("\n✅ PASS: ADHD Engine integration working! Accommodations adapt to user state!")
 
 
 async def test_cognitive_load_manager():
     """Test CognitiveLoadManager integration."""
-    print("\n" + "="*60)
-    print("TEST 3: CognitiveLoadManager Integration")
-    print("="*60)
+    logger.info("\n" + "="*60)
+    logger.info("TEST 3: CognitiveLoadManager Integration")
+    logger.info("="*60)
 
     # Ensure flag ON
     client = redis.from_url("redis://localhost:6379/5", decode_responses=True)
@@ -141,10 +146,10 @@ async def test_cognitive_load_manager():
     max_threshold = await manager.get_max_load_threshold()
     break_threshold = await manager.get_break_suggestion_threshold()
 
-    print(f"\n📊 Cognitive Load Thresholds:")
-    print(f"   max_load_threshold: {max_threshold:.2f}")
-    print(f"   break_suggestion_threshold: {break_threshold:.2f}")
-    print(f"   (Personalized based on user's distraction_sensitivity: 0.7)")
+    logger.info(f"\n📊 Cognitive Load Thresholds:")
+    logger.info(f"   max_load_threshold: {max_threshold:.2f}")
+    logger.info(f"   break_suggestion_threshold: {break_threshold:.2f}")
+    logger.info(f"   (Personalized based on user's distraction_sensitivity: 0.7)")
 
     # Assess navigation load
     assessment = await manager.assess_navigation_load(
@@ -153,21 +158,21 @@ async def test_cognitive_load_manager():
         result_count=15
     )
 
-    print(f"\n📊 Load Assessment:")
-    print(f"   current_load: {assessment['current_load']:.2f}")
-    print(f"   recommendations: {assessment['recommendations']}")
-    print(f"   adhd_engine_active: {assessment.get('adhd_engine_active', False)}")
+    logger.info(f"\n📊 Load Assessment:")
+    logger.info(f"   current_load: {assessment['current_load']:.2f}")
+    logger.info(f"   recommendations: {assessment['recommendations']}")
+    logger.info(f"   adhd_engine_active: {assessment.get('adhd_engine_active', False)}")
 
     assert assessment['adhd_engine_active'] is True, "Should show ADHD Engine is active"
 
-    print("\n✅ PASS: CognitiveLoadManager using ADHD Engine!")
+    logger.info("\n✅ PASS: CognitiveLoadManager using ADHD Engine!")
 
 
 async def test_state_adaptation():
     """Test that accommodations adapt when user state changes."""
-    print("\n" + "="*60)
-    print("TEST 4: State Adaptation (Dynamic Behavior)")
-    print("="*60)
+    logger.info("\n" + "="*60)
+    logger.info("TEST 4: State Adaptation (Dynamic Behavior)")
+    logger.info("="*60)
 
     # Enable flag
     client = redis.from_url("redis://localhost:6379/5", decode_responses=True)
@@ -182,7 +187,7 @@ async def test_state_adaptation():
     await navigator.initialize(Path("/test"))
     max_scattered = await navigator.get_max_initial_results()
 
-    print(f"\n📊 Scattered attention: max_results = {max_scattered}")
+    logger.info(f"\n📊 Scattered attention: max_results = {max_scattered}")
 
     # Test 2: Change to focused state
     await client.set("adhd:attention_state:test_user", "focused")
@@ -192,7 +197,7 @@ async def test_state_adaptation():
 
     max_focused = await navigator.get_max_initial_results()
 
-    print(f"📊 Focused attention: max_results = {max_focused}")
+    logger.info(f"📊 Focused attention: max_results = {max_focused}")
 
     # Test 3: Change to hyperfocused
     await client.set("adhd:attention_state:test_user", "hyperfocused")
@@ -201,7 +206,7 @@ async def test_state_adaptation():
 
     max_hyperfocused = await navigator.get_max_initial_results()
 
-    print(f"📊 Hyperfocused: max_results = {max_hyperfocused}")
+    logger.info(f"📊 Hyperfocused: max_results = {max_hyperfocused}")
 
     await client.aclose()
 
@@ -211,13 +216,13 @@ async def test_state_adaptation():
     assert max_focused == 15, "Focused = 15"
     assert max_hyperfocused == 40, "Hyperfocused = 40"
 
-    print("\n✅ PASS: Accommodations dynamically adapt to user state changes!")
+    logger.info("\n✅ PASS: Accommodations dynamically adapt to user state changes!")
 
 
 async def main():
     """Run all verification tests."""
-    print("\n🚀 ADHD Engine Integration Verification")
-    print("="*60)
+    logger.info("\n🚀 ADHD Engine Integration Verification")
+    logger.info("="*60)
 
     try:
         # Setup test state
@@ -229,20 +234,20 @@ async def main():
         await test_cognitive_load_manager()
         await test_state_adaptation()
 
-        print("\n" + "="*60)
-        print("🎉 ALL TESTS PASSED!")
-        print("="*60)
-        print("\n✅ Serena successfully integrated with ADHD Engine")
-        print("✅ Feature flags working correctly")
-        print("✅ Backward compatibility maintained")
-        print("✅ Dynamic accommodations operational")
-        print("\n🎯 Ready for rollout!")
+        logger.info("\n" + "="*60)
+        logger.info("🎉 ALL TESTS PASSED!")
+        logger.info("="*60)
+        logger.info("\n✅ Serena successfully integrated with ADHD Engine")
+        logger.info("✅ Feature flags working correctly")
+        logger.info("✅ Backward compatibility maintained")
+        logger.info("✅ Dynamic accommodations operational")
+        logger.info("\n🎯 Ready for rollout!")
 
     except AssertionError as e:
-        print(f"\n❌ TEST FAILED: {e}")
+        logger.error(f"\n❌ TEST FAILED: {e}")
         sys.exit(1)
     except Exception as e:
-        print(f"\n💥 ERROR: {e}")
+        logger.error(f"\n💥 ERROR: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

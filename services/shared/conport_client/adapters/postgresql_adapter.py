@@ -56,6 +56,7 @@ class PostgreSQLAGEAdapter:
         except Exception as e:
             raise RuntimeError(f"Failed to create PostgreSQL pool: {e}")
 
+            logger.error(f"Error: {e}")
     async def log_decision(
         self,
         workspace_id: str,

@@ -23,6 +23,11 @@ class RepairCandidate:
     """Represents a repair candidate with metadata."""
 
     def __init__(self, code: str, explanation: str, confidence: float, source: str = "unknown"):
+
+import logging
+
+logger = logging.getLogger(__name__)
+
         self.code = code
         self.explanation = explanation
         self.confidence = confidence
@@ -273,7 +278,7 @@ class GeneticAgent(BaseAgent):
 
         except Exception as e:
             # Fallback to standard GP on error
-            print(f"Strategy determination failed: {e}")
+            logger.error(f"Strategy determination failed: {e}")
             return "standard_gp"
 
     async def _run_selective_gp(self, llm_repair: RepairCandidate, context: Dict[str, Any]) -> bool:
@@ -359,7 +364,7 @@ class GeneticAgent(BaseAgent):
 
         except Exception as e:
             # Selective GP failed, log and continue
-            print(f"Selective GP failed: {e}")
+            logger.error(f"Selective GP failed: {e}")
             return False
 
     async def _analyze_bug(self, description: str, file_path: str, line: int) -> Dict[str, Any]:
@@ -367,15 +372,17 @@ class GeneticAgent(BaseAgent):
         try:
             async with self.serena_client:
                 complexity = await self.serena_client.analyze_complexity(file_path, "")
-        except Exception:
+        except Exception as e:
             complexity = {"score": 0.5, "error": "Serena unavailable"}
 
+            logger.error(f"Error: {e}")
         try:
             async with self.dope_client:
                 similar_repairs = await self.dope_client.search_code(f"fix {description}")
-        except Exception:
+        except Exception as e:
             similar_repairs = {"results": [], "error": "Dope-Context unavailable"}
 
+            logger.error(f"Error: {e}")
         return {
             "description": description,
             "file_path": file_path,
@@ -413,14 +420,14 @@ Do not include any other text, markdown formatting, or explanations outside the 
                 confidence = float(llm_response.get("confidence", 0.5))
             except (json.JSONDecodeError, ValueError) as e:
                 # Fallback if JSON parsing fails
-                print(f"LLM response parsing failed: {e}, response: {zen_response}")
+                logger.error(f"LLM response parsing failed: {e}, response: {zen_response}")
                 code = f"# LLM-generated fix for: {context['description']}\n# Error parsing response\npass"
                 explanation = f"LLM response parsing failed, using fallback"
                 confidence = 0.3
 
         except Exception as e:
             # Fallback to basic template if MCP call fails
-            print(f"LLM MCP call failed: {e}")
+            logger.error(f"LLM MCP call failed: {e}")
             code = f"# LLM-generated fix for: {context['description']}\n# MCP error: {str(e)}\npass"
             explanation = f"LLM MCP call failed, using fallback template"
             confidence = 0.2
@@ -499,7 +506,7 @@ Do not include any other text, markdown formatting, or explanations outside the 
 
         except Exception as e:
             # GP failed, log and continue
-            print(f"GP optimization failed: {e}")
+            logger.error(f"GP optimization failed: {e}")
             return False
 
     def _evaluate_fitness(self, code: str, context: Dict[str, Any]) -> Tuple[float, Dict[str, float]]:

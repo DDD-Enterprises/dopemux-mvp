@@ -65,10 +65,11 @@ class DashboardStateStore:
         for callback in list(self._listeners):
             try:
                 callback(self._state)
-            except Exception:
+            except Exception as e:
                 # Listeners should be resilient; ignore failures to avoid loops.
                 continue
 
+                logger.error(f"Error: {e}")
     async def load(self) -> DashboardState:
         """Load state from disk if present."""
         if not self.path.exists():

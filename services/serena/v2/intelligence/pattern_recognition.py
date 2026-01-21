@@ -793,9 +793,10 @@ class AdvancedPatternRecognition:
                 return PatternComplexity.COMPLEX
             else:
                 return PatternComplexity.CHAOTIC
-        except Exception:
+        except Exception as e:
             return PatternComplexity.MODERATE
 
+            logger.error(f"Error: {e}")
     async def _find_relevant_patterns(
         self, user_session_id: str, context_type: str, learning_phase: LearningPhase
     ) -> List[RecognizedPattern]:
@@ -1045,8 +1046,8 @@ async def create_pattern_recognition_engine(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("🔍 Serena Advanced Pattern Recognition Engine")
-        print("ADHD-optimized navigation pattern analysis and prediction")
-        print("✅ Module loaded successfully")
+        logger.info("🔍 Serena Advanced Pattern Recognition Engine")
+        logger.info("ADHD-optimized navigation pattern analysis and prediction")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

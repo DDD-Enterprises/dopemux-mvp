@@ -7,6 +7,11 @@ enabling transparent event emission for all MCP tool calls.
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import json
 import os
 import sys
@@ -30,17 +35,17 @@ async def setup_claude_code_integration():
     This function configures the event wrapper to intercept
     all MCP communications transparently.
     """
-    print("🔗 Claude Code Event Integration Setup")
-    print("=" * 50)
+    logger.info("🔗 Claude Code Event Integration Setup")
+    logger.info("=" * 50)
 
     # Get instance configuration
     instance_id = os.environ.get("DOPEMUX_INSTANCE_ID", "A")
-    print(f"Instance ID: {instance_id}")
+    logger.info(f"Instance ID: {instance_id}")
 
     # Initialize event bus
     event_bus = RedisStreamsAdapter("redis://localhost:6379")
     await event_bus.connect()
-    print("✅ Connected to Redis event bus")
+    logger.info("✅ Connected to Redis event bus")
 
     # Create orchestrator
     orchestrator = MCPProtocolOrchestrator(event_bus, instance_id)
@@ -82,7 +87,7 @@ async def setup_claude_code_integration():
             instance_id=instance_id
         )
         orchestrator.register_server(config)
-        print(f"📝 Registered {server_info['name']} for event wrapping")
+        logger.info(f"📝 Registered {server_info['name']} for event wrapping")
 
     return orchestrator, event_bus
 
@@ -94,8 +99,8 @@ async def demonstrate_integration():
     This shows how events are automatically emitted when
     Claude Code makes MCP tool calls.
     """
-    print("\n🎯 Integration Demonstration")
-    print("=" * 50)
+    logger.info("\n🎯 Integration Demonstration")
+    logger.info("=" * 50)
 
     # Setup integration
     orchestrator, event_bus = await setup_claude_code_integration()
@@ -106,28 +111,28 @@ async def demonstrate_integration():
     def handle_event(event):
         """Handle received events for demonstration."""
         events_received.append(event)
-        print(f"📨 Event: {event.envelope.type}")
+        logger.info(f"📨 Event: {event.envelope.type}")
         if "mcp.tool_call" in event.envelope.type:
             tool = event.payload.get("tool_name", "unknown")
             if event.envelope.type.endswith(".started"):
-                print(f"   🔧 Started: {tool}")
+                logger.info(f"   🔧 Started: {tool}")
             elif event.envelope.type.endswith(".completed"):
                 duration = event.payload.get("duration_ms", 0)
-                print(f"   ✅ Completed: {tool} ({duration}ms)")
+                logger.info(f"   ✅ Completed: {tool} ({duration}ms)")
 
     # Subscribe to MCP events
     subscription_id = await event_bus.subscribe(
         "instance.*.mcp.*",
         handle_event
     )
-    print("👂 Listening for MCP events...\n")
+    logger.info("👂 Listening for MCP events...\n")
 
     # Simulate Claude Code operations
-    print("📋 Simulating Claude Code MCP calls:")
-    print("1. ConPort: Getting active context")
-    print("2. Context7: Fetching documentation")
-    print("3. Zen: Multi-model reasoning")
-    print()
+    logger.info("📋 Simulating Claude Code MCP calls:")
+    logger.info("1. ConPort: Getting active context")
+    logger.info("2. Context7: Fetching documentation")
+    logger.info("3. Zen: Multi-model reasoning")
+    logger.info()
 
     # Note: In production, these would be actual MCP calls from Claude Code
     # The wrapper intercepts the stdio/TCP communications transparently
@@ -136,9 +141,9 @@ async def demonstrate_integration():
     await asyncio.sleep(2)
 
     # Show summary
-    print(f"\n📊 Integration Summary:")
-    print(f"   Events captured: {len(events_received)}")
-    print(f"   Integration ready for production use")
+    logger.info(f"\n📊 Integration Summary:")
+    logger.info(f"   Events captured: {len(events_received)}")
+    logger.info(f"   Integration ready for production use")
 
     # Cleanup
     await event_bus.unsubscribe(subscription_id)
@@ -152,9 +157,9 @@ def generate_claude_config_update():
     This shows what changes are needed in .claude/claude.json
     to enable event integration.
     """
-    print("\n📝 Claude Code Configuration Update")
-    print("=" * 50)
-    print("Add this wrapper configuration to .claude/claude.json:\n")
+    logger.info("\n📝 Claude Code Configuration Update")
+    logger.info("=" * 50)
+    logger.info("Add this wrapper configuration to .claude/claude.json:\n")
 
     config = {
         "mcpServers": {
@@ -195,17 +200,17 @@ def generate_claude_config_update():
         }
     }
 
-    print(json.dumps(config, indent=2))
-    print("\nThis configuration wraps each MCP server with event emission.")
+    logger.info(json.dumps(config, indent=2))
+    logger.info("\nThis configuration wraps each MCP server with event emission.")
 
 
 async def main():
     """Main entry point for Claude Code event integration."""
-    print("🚀 Claude Code Event Integration System")
-    print("=" * 50)
-    print("This system enables transparent event emission for all MCP tool calls")
-    print("made by Claude Code, without modifying the MCP servers themselves.")
-    print()
+    logger.info("🚀 Claude Code Event Integration System")
+    logger.info("=" * 50)
+    logger.info("This system enables transparent event emission for all MCP tool calls")
+    logger.info("made by Claude Code, without modifying the MCP servers themselves.")
+    logger.info()
 
     # Show how to update Claude configuration
     generate_claude_config_update()
@@ -213,18 +218,18 @@ async def main():
     # Demonstrate the integration
     await demonstrate_integration()
 
-    print("\n✅ Integration Complete!")
-    print("\nBenefits:")
-    print("• All MCP calls automatically emit events")
-    print("• Multi-instance coordination enabled")
-    print("• ConPort operations trigger domain events")
-    print("• Performance metrics collected automatically")
-    print("• ADHD-optimized cognitive load management")
-    print("\nNext Steps:")
-    print("1. Update .claude/claude.json with wrapper configuration")
-    print("2. Set DOPEMUX_INSTANCE_ID environment variable")
-    print("3. Start Claude Code with event integration")
-    print("4. Monitor events in Redis Commander (localhost:8081)")
+    logger.info("\n✅ Integration Complete!")
+    logger.info("\nBenefits:")
+    logger.info("• All MCP calls automatically emit events")
+    logger.info("• Multi-instance coordination enabled")
+    logger.info("• ConPort operations trigger domain events")
+    logger.info("• Performance metrics collected automatically")
+    logger.info("• ADHD-optimized cognitive load management")
+    logger.info("\nNext Steps:")
+    logger.info("1. Update .claude/claude.json with wrapper configuration")
+    logger.info("2. Set DOPEMUX_INSTANCE_ID environment variable")
+    logger.info("3. Start Claude Code with event integration")
+    logger.info("4. Monitor events in Redis Commander (localhost:8081)")
 
 
 if __name__ == "__main__":

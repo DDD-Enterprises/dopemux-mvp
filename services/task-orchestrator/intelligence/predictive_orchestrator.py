@@ -34,6 +34,11 @@ Integration Points:
 """
 
 from datetime import datetime, timedelta
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from enum import Enum
 from typing import List, Dict, Optional, Tuple, Any
 from dataclasses import dataclass, field
@@ -134,9 +139,9 @@ class RuleBasedRecommender:
         recommendations = await recommender.recommend_tasks(context, limit=3)
 
         for rec in recommendations:
-            print(f"{rec.task.description}")
-            print(f"  Confidence: {rec.confidence:.0%}")
-            print(f"  Rationale: {rec.rationale}")
+            logger.info(f"{rec.task.description}")
+            logger.info(f"  Confidence: {rec.confidence:.0%}")
+            logger.info(f"  Rationale: {rec.rationale}")
     """
 
     # Energy to complexity mapping (research-backed)
@@ -462,7 +467,7 @@ try:
     ML_AVAILABLE = True
 except ImportError as e:
     ML_AVAILABLE = False
-    print(f"⚠️ ML modules unavailable: {e}")
+    logger.info(f"⚠️ ML modules unavailable: {e}")
 
 
 class ContextualBanditRecommender:
@@ -714,7 +719,7 @@ class HybridTaskRecommender:
             )
             self.ml_available = ML_AVAILABLE
         except Exception as e:
-            print(f"⚠️ ML initialization failed: {e}")
+            logger.error(f"⚠️ ML initialization failed: {e}")
             self.ml_based = None
             self.ml_available = False
 
@@ -815,7 +820,7 @@ class HybridTaskRecommender:
 
         except Exception as e:
             # ML failed - fall back to rules
-            print(f"⚠️ ML prediction failed: {e}")
+            logger.error(f"⚠️ ML prediction failed: {e}")
             recommendations = await self.rule_based.recommend_tasks(context, limit)
             self._rule_recommendations += 1
 
@@ -986,8 +991,8 @@ async def get_task_recommendations(
         )
 
         for rec in recommendations:
-            print(f"→ {rec.task.description}")
-            print(f"  {rec.rationale}")
+            logger.info(f"→ {rec.task.description}")
+            logger.info(f"  {rec.rationale}")
     """
     context = RecommendationContext(
         energy_level=energy_level,

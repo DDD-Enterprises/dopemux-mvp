@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 import os, re, sys, datetime, yaml
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 if len(sys.argv) < 2: sys.exit("Usage: rfc_promote.py docs/91-rfc/rfc-####-slug.md")
 rfc_path = sys.argv[1]
 txt = open(rfc_path,"r",encoding="utf-8").read()
@@ -37,4 +42,4 @@ derived_from: {rid}
 
 ## Consequences
 """)
-print("Created", path)
+logger.info("Created", path)

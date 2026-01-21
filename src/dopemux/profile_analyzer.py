@@ -6,6 +6,11 @@ profile generation. ADHD-optimized with gentle guidance and clear insights.
 """
 
 import subprocess
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import datetime, time
@@ -172,9 +177,10 @@ class GitHistoryAnalyzer:
 
             return commits
 
-        except Exception:
+        except Exception as e:
             return []
 
+            logger.error(f"Error: {e}")
     def _infer_branch_from_subject(self, subject: str) -> Optional[str]:
         """Infer branch type from commit subject."""
         subject_lower = subject.lower()
@@ -323,41 +329,41 @@ class GitHistoryAnalyzer:
             analysis: GitAnalysis results to display
         """
         if analysis.total_commits == 0:
-            console.print("[yellow]⚠️  No git history found - using defaults[/yellow]")
+            console.logger.info("[yellow]⚠️  No git history found - using defaults[/yellow]")
             return
 
-        console.print("\n[bold cyan]📊 Your Development Pattern Analysis[/bold cyan]\n")
+        console.logger.info("\n[bold cyan]📊 Your Development Pattern Analysis[/bold cyan]\n")
 
         # Commit activity
-        console.print(f"[green]📈 Activity:[/green] {analysis.total_commits} commits ({analysis.avg_commits_per_day} per day avg)")
+        console.logger.info(f"[green]📈 Activity:[/green] {analysis.total_commits} commits ({analysis.avg_commits_per_day} per day avg)")
 
         # Branch patterns
         if analysis.common_branch_prefixes:
-            console.print(f"\n[green]🌿 Branch Patterns:[/green]")
+            console.logger.info(f"\n[green]🌿 Branch Patterns:[/green]")
             for prefix, count in analysis.common_branch_prefixes[:3]:
-                console.print(f"   • {prefix}: {count} commits")
+                console.logger.info(f"   • {prefix}: {count} commits")
 
         # Directory patterns
         if analysis.common_directories:
-            console.print(f"\n[green]📁 Common Directories:[/green]")
+            console.logger.info(f"\n[green]📁 Common Directories:[/green]")
             table = Table(show_header=False, box=None, padding=(0, 2))
             for directory, count in analysis.common_directories[:5]:
                 table.add_row(f"• {directory}", f"{count} changes")
-            console.print(table)
+            console.logger.info(table)
 
         # Temporal patterns
         if analysis.common_work_hours:
             hours_str = ", ".join(f"{h:02d}:00" for h in analysis.common_work_hours[:4])
-            console.print(f"\n[green]⏰ Peak Work Hours:[/green] {hours_str}")
+            console.logger.info(f"\n[green]⏰ Peak Work Hours:[/green] {hours_str}")
             if analysis.peak_work_time:
-                console.print(f"   → Typically works in the [cyan]{analysis.peak_work_time}[/cyan]")
+                console.logger.info(f"   → Typically works in the [cyan]{analysis.peak_work_time}[/cyan]")
 
         # Energy/Session inference
-        console.print(f"\n[green]⚡ Suggested Settings:[/green]")
-        console.print(f"   • Energy Level: [cyan]{analysis.suggested_energy_level}[/cyan]")
-        console.print(f"   • Session Duration: [cyan]{analysis.suggested_session_duration} minutes[/cyan]")
+        console.logger.info(f"\n[green]⚡ Suggested Settings:[/green]")
+        console.logger.info(f"   • Energy Level: [cyan]{analysis.suggested_energy_level}[/cyan]")
+        console.logger.info(f"   • Session Duration: [cyan]{analysis.suggested_session_duration} minutes[/cyan]")
 
         # MCP suggestions
-        console.print(f"\n[green]🔧 Recommended MCP Servers:[/green]")
+        console.logger.info(f"\n[green]🔧 Recommended MCP Servers:[/green]")
         for mcp in analysis.suggested_mcps:
-            console.print(f"   • {mcp}")
+            console.logger.info(f"   • {mcp}")

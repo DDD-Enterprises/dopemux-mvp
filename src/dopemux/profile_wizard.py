@@ -6,6 +6,11 @@ git history analysis and user preferences. Gentle guidance with max 3 questions.
 """
 
 from pathlib import Path
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import Dict, List, Optional
 
 import click
@@ -68,13 +73,13 @@ class ProfileWizard:
         ))
 
         # Step 1: Analyze git history
-        console.print("\n[cyan]📊 Analyzing your development patterns...[/cyan]")
+        console.logger.info("\n[cyan]📊 Analyzing your development patterns...[/cyan]")
         analysis = self.analyzer.analyze(days_back=90, max_commits=100)
         self.analyzer.display_analysis(analysis)
 
         # Step 2: Ask for profile name
         if not profile_name:
-            console.print("\n[bold]Question 1 of 3:[/bold] What should we call this profile?")
+            console.logger.info("\n[bold]Question 1 of 3:[/bold] What should we call this profile?")
             profile_name = Prompt.ask(
                 "Profile name",
                 default="my-workflow",
@@ -82,8 +87,8 @@ class ProfileWizard:
             )
 
         # Step 3: Confirm MCP servers (with smart defaults)
-        console.print(f"\n[bold]Question 2 of 3:[/bold] Which MCP servers do you want?")
-        console.print(f"[dim]Based on your git history, I recommend: {', '.join(analysis.suggested_mcps)}[/dim]")
+        console.logger.info(f"\n[bold]Question 2 of 3:[/bold] Which MCP servers do you want?")
+        console.logger.info(f"[dim]Based on your git history, I recommend: {', '.join(analysis.suggested_mcps)}[/dim]")
 
         mcp_choice = Prompt.ask(
             "MCP selection",
@@ -98,17 +103,17 @@ class ProfileWizard:
         elif mcp_choice == "full":
             selected_mcps = self.ALL_MCPS
         else:  # custom
-            console.print("\n[cyan]Available MCPs:[/cyan]")
+            console.logger.info("\n[cyan]Available MCPs:[/cyan]")
             for i, mcp in enumerate(self.ALL_MCPS, 1):
-                console.print(f"  {i}. {mcp}")
-            console.print("\n[dim]Enter numbers separated by commas (e.g., 1,2,4)[/dim]")
+                console.logger.info(f"  {i}. {mcp}")
+            console.logger.info("\n[dim]Enter numbers separated by commas (e.g., 1,2,4)[/dim]")
             selection = Prompt.ask("MCP numbers")
             indices = [int(x.strip()) - 1 for x in selection.split(',') if x.strip().isdigit()]
             selected_mcps = [self.ALL_MCPS[i] for i in indices if 0 <= i < len(self.ALL_MCPS)]
 
         # Step 4: ADHD preferences
-        console.print(f"\n[bold]Question 3 of 3:[/bold] ADHD session preferences")
-        console.print(f"[dim]Suggested: {analysis.suggested_session_duration} min sessions, {analysis.suggested_energy_level} energy[/dim]")
+        console.logger.info(f"\n[bold]Question 3 of 3:[/bold] ADHD session preferences")
+        console.logger.info(f"[dim]Suggested: {analysis.suggested_session_duration} min sessions, {analysis.suggested_energy_level} energy[/dim]")
 
         use_suggested = Confirm.ask(
             "Use suggested ADHD settings?",
@@ -146,24 +151,24 @@ class ProfileWizard:
         output_file = output_dir / f"{profile_name}.yaml"
 
         # Confirm before writing
-        console.print(f"\n[bold]Profile Summary:[/bold]")
-        console.print(f"   • Name: [cyan]{profile.name}[/cyan]")
-        console.print(f"   • MCPs: [cyan]{len(profile.mcps)} servers[/cyan]")
-        console.print(f"   • Session: [cyan]{session_duration} min[/cyan]")
-        console.print(f"   • Energy: [cyan]{energy_level}[/cyan]")
-        console.print(f"   • File: [dim]{output_file}[/dim]")
+        console.logger.info(f"\n[bold]Profile Summary:[/bold]")
+        console.logger.info(f"   • Name: [cyan]{profile.name}[/cyan]")
+        console.logger.info(f"   • MCPs: [cyan]{len(profile.mcps)} servers[/cyan]")
+        console.logger.info(f"   • Session: [cyan]{session_duration} min[/cyan]")
+        console.logger.info(f"   • Energy: [cyan]{energy_level}[/cyan]")
+        console.logger.info(f"   • File: [dim]{output_file}[/dim]")
 
         if not Confirm.ask(f"\nSave profile to {output_file}?", default=True):
-            console.print("[yellow]❌ Profile creation cancelled[/yellow]")
+            console.logger.info("[yellow]❌ Profile creation cancelled[/yellow]")
             return None
 
         # Write profile YAML
         self._save_profile(profile, output_file)
 
-        console.print(f"\n[green]✅ Profile '{profile_name}' created successfully![/green]")
-        console.print(f"\n[dim]💡 Next steps:[/dim]")
-        console.print(f"   • Test it: [cyan]dopemux profile show {profile_name}[/cyan]")
-        console.print(f"   • Apply it: [cyan]dopemux profile apply {profile_name}[/cyan]")
+        console.logger.info(f"\n[green]✅ Profile '{profile_name}' created successfully![/green]")
+        console.logger.info(f"\n[dim]💡 Next steps:[/dim]")
+        console.logger.info(f"   • Test it: [cyan]dopemux profile show {profile_name}[/cyan]")
+        console.logger.info(f"   • Apply it: [cyan]dopemux profile apply {profile_name}[/cyan]")
 
         return output_file
 
@@ -217,4 +222,4 @@ class ProfileWizard:
 
             yaml.dump(profile_dict, f, default_flow_style=False, indent=2, sort_keys=False)
 
-        console.print(f"[dim]   Written {output_file.stat().st_size} bytes to {output_file.name}[/dim]")
+        console.logger.info(f"[dim]   Written {output_file.stat().st_size} bytes to {output_file.name}[/dim]")

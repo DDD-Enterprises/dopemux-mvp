@@ -745,6 +745,7 @@ async def quick_performance_test(database: SerenaIntelligenceDatabase) -> Dict[s
                 })
                 test_results["all_under_200ms"] = False
 
+                logger.error(f"Error: {e}")
         test_results["average_time_ms"] = round(total_time / len(test_queries), 2)
         test_results["adhd_compliant"] = test_results["all_under_200ms"] and test_results["average_time_ms"] < 150
 
@@ -754,13 +755,14 @@ async def quick_performance_test(database: SerenaIntelligenceDatabase) -> Dict[s
         return {"error": str(e), "adhd_compliant": False}
 
 
+        logger.error(f"Error: {e}")
 if __name__ == "__main__":
     # Performance test when run directly
     async def main():
-        print("🗄️ Serena Graph Operations Performance Test")
+        logger.info("🗄️ Serena Graph Operations Performance Test")
 
         # Would need actual database connection for real test
-        print("⚠️ Requires database connection for full testing")
-        print("✅ Graph operations module loaded successfully")
+        logger.info("⚠️ Requires database connection for full testing")
+        logger.info("✅ Graph operations module loaded successfully")
 
     asyncio.run(main())

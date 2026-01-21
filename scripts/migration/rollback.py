@@ -8,6 +8,11 @@ Restores old schema tables.
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncpg
 import sys
 
@@ -22,7 +27,7 @@ class SchemaRollback:
     async def connect(self):
         """Establish database connection"""
         self.conn = await asyncpg.connect(self.db_url)
-        print(f"✓ Connected to ConPort PostgreSQL")
+        logger.info(f"✓ Connected to ConPort PostgreSQL")
 
     async def disconnect(self):
         """Close database connection"""
@@ -32,41 +37,41 @@ class SchemaRollback:
     async def execute_rollback(self):
         """Execute rollback to old schema"""
 
-        print("\n⚠️  WARNING: This will rollback to old schema")
-        print("Any data in new schema will be LOST")
-        print()
+        logger.warning("\n⚠️  WARNING: This will rollback to old schema")
+        logger.info("Any data in new schema will be LOST")
+        logger.info()
 
         response = input("Type 'ROLLBACK' to confirm: ")
 
         if response != "ROLLBACK":
-            print("Aborted - no changes made")
+            logger.info("Aborted - no changes made")
             return False
 
         await self.connect()
 
         try:
-            print("\nExecuting rollback...")
+            logger.info("\nExecuting rollback...")
 
             async with self.conn.transaction():
                 # Drop new tables if they exist
-                print("  1. Dropping new schema tables...")
+                logger.info("  1. Dropping new schema tables...")
                 await self.conn.execute("DROP TABLE IF EXISTS decisions CASCADE")
                 await self.conn.execute("DROP TABLE IF EXISTS entity_relationships CASCADE")
                 await self.conn.execute("DROP TABLE IF EXISTS decisions_v2 CASCADE")
                 await self.conn.execute("DROP TABLE IF EXISTS entity_relationships_v2 CASCADE")
 
                 # Restore old tables
-                print("  2. Restoring old schema tables...")
+                logger.info("  2. Restoring old schema tables...")
                 await self.conn.execute("ALTER TABLE decisions_old RENAME TO decisions")
                 await self.conn.execute("ALTER TABLE entity_relationships_old RENAME TO entity_relationships")
 
-                print("  3. Transaction committed")
+                logger.info("  3. Transaction committed")
 
-            print("\n✓ Rollback complete - old schema restored")
+            logger.info("\n✓ Rollback complete - old schema restored")
 
             # Verify
             count = await self.conn.fetchval("SELECT COUNT(*) FROM decisions")
-            print(f"\nVerification: {count} decisions in old schema")
+            logger.info(f"\nVerification: {count} decisions in old schema")
 
             return True
 
@@ -80,10 +85,10 @@ async def main():
     # Configuration
     DB_URL = "postgresql://dopemux:dopemux_dev_password@localhost:5432/dopemux_memory"
 
-    print("=" * 60)
-    print("ConPort Schema Rollback (EMERGENCY)")
-    print("=" * 60)
-    print()
+    logger.info("=" * 60)
+    logger.info("ConPort Schema Rollback (EMERGENCY)")
+    logger.info("=" * 60)
+    logger.info()
 
     rollback = SchemaRollback(DB_URL)
 
@@ -91,27 +96,27 @@ async def main():
         success = await rollback.execute_rollback()
 
         if success:
-            print("\n" + "=" * 60)
-            print("✓ ROLLBACK COMPLETE")
-            print("=" * 60)
-            print("\nMANUAL STEPS REQUIRED:")
-            print("  1. Restart ConPort MCP server:")
-            print("     docker restart conport-mcp-server")
-            print()
-            print("  2. Verify old schema working:")
-            print("     (Use ConPort via Claude to query decisions)")
-            print()
-            print("  3. Investigate rollback cause")
-            print("  4. Fix issues before re-attempting migration")
+            logger.info("\n" + "=" * 60)
+            logger.info("✓ ROLLBACK COMPLETE")
+            logger.info("=" * 60)
+            logger.info("\nMANUAL STEPS REQUIRED:")
+            logger.info("  1. Restart ConPort MCP server:")
+            logger.info("     docker restart conport-mcp-server")
+            logger.info()
+            logger.info("  2. Verify old schema working:")
+            logger.info("     (Use ConPort via Claude to query decisions)")
+            logger.info()
+            logger.info("  3. Investigate rollback cause")
+            logger.info("  4. Fix issues before re-attempting migration")
 
             return 0
         else:
             return 1
 
     except Exception as e:
-        print(f"\n✗ ERROR: Rollback failed")
-        print(f"  {str(e)}")
-        print("\nContact administrator for manual recovery")
+        logger.error(f"\n✗ ERROR: Rollback failed")
+        logger.info(f"  {str(e)}")
+        logger.info("\nContact administrator for manual recovery")
         return 1
 
 

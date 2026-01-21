@@ -12,9 +12,10 @@ class DopeContextClient(MCPClient):
         try:
             async with self.session.get(f"{self.base_url}/health") as response:
                 return response.status == 200
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def search_code(self, query: str, top_k: int = 10) -> Dict[str, Any]:
         """Search code semantically."""
         data = {

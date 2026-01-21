@@ -15,6 +15,11 @@ Complexity: 0.65 (Higher due to production requirements)
 """
 
 from abc import ABC, abstractmethod
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import Iterator, Optional, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -188,7 +193,7 @@ class InMemoryMessageBus(MessageBus):
                 if not block:
                     # Drop event
                     self.metrics_events_dropped += 1
-                    print(f"⚠️ Event buffer full, dropped event from {event.source}")
+                    logger.info(f"⚠️ Event buffer full, dropped event from {event.source}")
                     return False
                 else:
                     # Wait for space (release lock while waiting)
@@ -353,7 +358,7 @@ class InMemoryMessageBus(MessageBus):
 
     def shutdown(self, timeout: float = 5.0) -> None:
         """Gracefully shutdown bus."""
-        print("🛑 Shutting down message bus...")
+        logger.info("🛑 Shutting down message bus...")
 
         with self._lock:
             self._running = False
@@ -362,9 +367,9 @@ class InMemoryMessageBus(MessageBus):
         # Note: timeout parameter added in Python 3.9+
         self._executor.shutdown(wait=True)
 
-        print(f"✅ Message bus shutdown complete")
-        print(f"   Published: {self.metrics_events_published}")
-        print(f"   Dropped: {self.metrics_events_dropped}")
+        logger.info(f"✅ Message bus shutdown complete")
+        logger.info(f"   Published: {self.metrics_events_published}")
+        logger.info(f"   Dropped: {self.metrics_events_dropped}")
 
 
 # Factory updated for v2
@@ -390,25 +395,25 @@ def create_message_bus(
 if __name__ == "__main__":
     """Test hardened message bus."""
 
-    print("Testing Hardened InMemoryMessageBus:")
-    print("=" * 60)
+    logger.info("Testing Hardened InMemoryMessageBus:")
+    logger.info("=" * 60)
 
     bus = create_message_bus("in_memory", max_events=100)
 
     # Test metrics
-    print("\nInitial metrics:")
+    logger.info("\nInitial metrics:")
     metrics = bus.get_metrics()
-    print(f"  Buffer: {metrics.current_buffer_size}/{metrics.max_buffer_size}")
-    print(f"  Published: {metrics.total_events_published}")
-    print(f"  Subscribers: {metrics.subscriber_count}")
+    logger.info(f"  Buffer: {metrics.current_buffer_size}/{metrics.max_buffer_size}")
+    logger.info(f"  Published: {metrics.total_events_published}")
+    logger.info(f"  Subscribers: {metrics.subscriber_count}")
 
     # Subscribe with filter
     def slow_callback(event: Event):
         time.sleep(0.1)  # Simulate slow processing
-        print(f"  Slow callback: {event.source}")
+        logger.info(f"  Slow callback: {event.source}")
 
     def fast_callback(event: Event):
-        print(f"  Fast callback: {event.source}")
+        logger.info(f"  Fast callback: {event.source}")
 
     # Only get events from "claude"
     sub1 = bus.subscribe(
@@ -419,10 +424,10 @@ if __name__ == "__main__":
 
     sub2 = bus.subscribe(EventType.AGENT_OUTPUT, fast_callback)
 
-    print(f"\nCreated subscriptions: {sub1}, {sub2}")
+    logger.info(f"\nCreated subscriptions: {sub1}, {sub2}")
 
     # Publish events
-    print("\nPublishing events:")
+    logger.info("\nPublishing events:")
     for i in range(5):
         success = bus.publish(
             Event(
@@ -438,18 +443,18 @@ if __name__ == "__main__":
     time.sleep(0.5)
 
     # Check metrics
-    print("\nFinal metrics:")
+    logger.info("\nFinal metrics:")
     metrics = bus.get_metrics()
-    print(f"  Published: {metrics.total_events_published}")
-    print(f"  Dropped: {metrics.total_events_dropped}")
-    print(f"  Buffer: {metrics.current_buffer_size}/{metrics.max_buffer_size}")
-    print(f"  Avg callback time: {metrics.avg_callback_time_ms:.1f}ms")
-    print(f"  Slow subscribers: {metrics.slow_subscribers}")
+    logger.info(f"  Published: {metrics.total_events_published}")
+    logger.info(f"  Dropped: {metrics.total_events_dropped}")
+    logger.info(f"  Buffer: {metrics.current_buffer_size}/{metrics.max_buffer_size}")
+    logger.info(f"  Avg callback time: {metrics.avg_callback_time_ms:.1f}ms")
+    logger.info(f"  Slow subscribers: {metrics.slow_subscribers}")
 
     # Test unsubscribe
-    print(f"\nUnsubscribing {sub1}...")
+    logger.info(f"\nUnsubscribing {sub1}...")
     bus.unsubscribe(sub1)
 
     # Shutdown
     bus.shutdown()
-    print("\n✅ Message bus v2 test complete")
+    logger.info("\n✅ Message bus v2 test complete")

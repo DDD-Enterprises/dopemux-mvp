@@ -252,8 +252,8 @@ async def main():
     # Check for API key
     api_key = os.getenv("OPENROUTER_API_KEY")
     if not api_key:
-        print("❌ OPENROUTER_API_KEY not set")
-        print("Set with: export OPENROUTER_API_KEY=your_key_here")
+        logger.info("❌ OPENROUTER_API_KEY not set")
+        logger.info("Set with: export OPENROUTER_API_KEY=your_key_here")
         return
 
     generator = GrokContextGenerator(
@@ -287,9 +287,9 @@ def calculate_complexity(node: Node) -> float:
     return round(complexity, 2)
 """
 
-    print("=" * 80)
-    print("TESTING GROK-CODE-FAST-1 CONTEXT GENERATION")
-    print("=" * 80)
+    logger.info("=" * 80)
+    logger.info("TESTING GROK-CODE-FAST-1 CONTEXT GENERATION")
+    logger.info("=" * 80)
 
     response = await generator.generate_context(
         chunk_content=code,
@@ -297,13 +297,13 @@ def calculate_complexity(node: Node) -> float:
         function_name="calculate_complexity",
     )
 
-    print(f"\nContext: {response.context}")
-    print(f"Tokens: {response.tokens}")
-    print(f"Cost: ${response.cost_usd:.6f} (FREE!)")
+    logger.info(f"\nContext: {response.context}")
+    logger.info(f"Tokens: {response.tokens}")
+    logger.info(f"Cost: ${response.cost_usd:.6f} (FREE!)")
 
     # Cost summary
     summary = generator.get_cost_summary()
-    print(f"\nSummary: {summary}")
+    logger.info(f"\nSummary: {summary}")
 
 
 if __name__ == "__main__":

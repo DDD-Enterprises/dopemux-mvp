@@ -13,6 +13,11 @@ Part of CONPORT-KG-2025 Phase 6 (Decision #117)
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 import re
 from typing import List, Dict, Optional
@@ -29,7 +34,17 @@ try:
 except ImportError:
     sys.path.insert(0, '/Users/hue/code/dopemux-mvp/services/conport_kg')
     from age_client import AGEClient
-    exec(open('/Users/hue/code/dopemux-mvp/services/conport_kg/queries/models.py').read())
+    # Safe fallback import instead of exec
+    import importlib.util
+    _models_path = '/Users/hue/code/dopemux-mvp/services/conport_kg/queries/models.py'
+    spec = importlib.util.spec_from_file_location('queries.models_fallback', _models_path)
+    models_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(models_mod)
+    DecisionCard = models_mod.DecisionCard
+    DecisionSummary = models_mod.DecisionSummary
+    FullDecisionContext = models_mod.FullDecisionContext
+    Relationship = models_mod.Relationship
+    DecisionAnalytics = models_mod.DecisionAnalytics
 
 
 class DeepContextQueries:
@@ -76,9 +91,9 @@ class DeepContextQueries:
         """Initialize with AGEClient"""
         try:
             self.client = AGEClient()
-            print(f"✅ DeepContextQueries using AGEClient")
+            logger.info(f"✅ DeepContextQueries using AGEClient")
         except Exception as e:
-            print(f"❌ AGEClient initialization failed: {e}")
+            logger.error(f"❌ AGEClient initialization failed: {e}")
             raise
 
     def get_full_decision_context(
@@ -342,45 +357,45 @@ class DeepContextQueries:
 
 if __name__ == "__main__":
     # Test Tier 3 Deep Context queries
-    print("=" * 60)
-    print("Tier 3: Deep Context Queries (NO LIMITS)")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("Tier 3: Deep Context Queries (NO LIMITS)")
+    logger.info("=" * 60)
 
     queries = DeepContextQueries()
 
     # Test with decision #85
     test_id = 85
 
-    print(f"\n[1] Full Decision Context:")
+    logger.info(f"\n[1] Full Decision Context:")
     context = queries.get_full_decision_context(test_id)
-    print(f"   Decision: #{context.decision.id}")
-    print(f"   Summary: {context.decision.summary[:60]}...")
-    print(f"   Rationale length: {len(context.decision.rationale or '')} chars")
-    print(f"   Direct relationships: {len(context.direct_relationships)}")
-    print(f"   Related decisions: {len(context.related_decisions)}")
-    print(f"   Cognitive load: {context.cognitive_load}")
-    print(f"   Total related: {context.total_related}")
+    logger.info(f"   Decision: #{context.decision.id}")
+    logger.info(f"   Summary: {context.decision.summary[:60]}...")
+    logger.info(f"   Rationale length: {len(context.decision.rationale or '')} chars")
+    logger.info(f"   Direct relationships: {len(context.direct_relationships)}")
+    logger.info(f"   Related decisions: {len(context.related_decisions)}")
+    logger.info(f"   Cognitive load: {context.cognitive_load}")
+    logger.info(f"   Total related: {context.total_related}")
 
-    print(f"\n[2] All Relationships:")
+    logger.info(f"\n[2] All Relationships:")
     relationships = queries.get_all_relationships(test_id)
-    print(f"   Total relationships: {len(relationships)}")
+    logger.info(f"   Total relationships: {len(relationships)}")
     for i, rel in enumerate(relationships[:5], 1):
-        print(f"      {i}. {rel.to_display_string()} - {rel.type}")
+        logger.info(f"      {i}. {rel.to_display_string()} - {rel.type}")
 
-    print(f"\n[3] Full-Text Search (no limit=20):")
+    logger.info(f"\n[3] Full-Text Search (no limit=20):")
     search_results = queries.search_full_text("Serena", limit=20)
-    print(f"   Found {len(search_results)} decisions matching 'Serena'")
+    logger.info(f"   Found {len(search_results)} decisions matching 'Serena'")
     for i, d in enumerate(search_results[:5], 1):
-        print(f"      {i}. #{d.id}: {d.summary[:50]}...")
+        logger.info(f"      {i}. #{d.id}: {d.summary[:50]}...")
 
-    print(f"\n[4] Decision Analytics:")
+    logger.info(f"\n[4] Decision Analytics:")
     analytics = queries.get_decision_analytics(test_id)
-    print(f"   Decision #{analytics.decision_id}")
-    print(f"   Degree centrality: {analytics.degree_centrality}")
-    print(f"   Influence score: {analytics.influence_score}")
-    print(f"   Is foundational: {analytics.is_foundational}")
-    print(f"   Hub score: {analytics.hub_score:.2f}")
-    print(f"   Importance: {analytics.get_importance_level()}")
-    print(f"   Relationship distribution: {analytics.relationship_distribution}")
+    logger.info(f"   Decision #{analytics.decision_id}")
+    logger.info(f"   Degree centrality: {analytics.degree_centrality}")
+    logger.info(f"   Influence score: {analytics.influence_score}")
+    logger.info(f"   Is foundational: {analytics.is_foundational}")
+    logger.info(f"   Hub score: {analytics.hub_score:.2f}")
+    logger.info(f"   Importance: {analytics.get_importance_level()}")
+    logger.info(f"   Relationship distribution: {analytics.relationship_distribution}")
 
-    print(f"\n✅ All Tier 3 deep context queries tested!")
+    logger.info(f"\n✅ All Tier 3 deep context queries tested!")

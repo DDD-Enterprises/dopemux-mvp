@@ -16,6 +16,11 @@ Expected Duration: ~5 minutes
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from datetime import datetime
 from typing import List
 
@@ -137,52 +142,52 @@ def create_scenario_overwhelmed_evening() -> MockADHDState:
 
 def print_section(title: str):
     """Print formatted section header."""
-    print(f"\n{'=' * 80}")
-    print(f"  {title}")
-    print(f"{'=' * 80}\n")
+    logger.info(f"\n{'=' * 80}")
+    logger.info(f"  {title}")
+    logger.info(f"{'=' * 80}\n")
 
 
 def print_adhd_state(state: MockADHDState, scenario_name: str):
     """Print ADHD state summary."""
-    print(f"📊 **{scenario_name}**")
-    print(f"   Energy: {state.energy_level.upper()}")
-    print(f"   Attention: {state.attention_level}")
-    print(f"   Cognitive Load: {state.cognitive_load:.2f}")
-    print(f"   Time: {state.time_of_day}:00 (Day {state.day_of_week})")
-    print(f"   Context Switches Today: {state.context_switches_today}")
-    print(f"   Tasks Completed Today: {state.tasks_completed_today}")
-    print()
+    logger.info(f"📊 **{scenario_name}**")
+    logger.info(f"   Energy: {state.energy_level.upper()}")
+    logger.info(f"   Attention: {state.attention_level}")
+    logger.info(f"   Cognitive Load: {state.cognitive_load:.2f}")
+    logger.info(f"   Time: {state.time_of_day}:00 (Day {state.day_of_week})")
+    logger.info(f"   Context Switches Today: {state.context_switches_today}")
+    logger.info(f"   Tasks Completed Today: {state.tasks_completed_today}")
+    logger.info()
 
 
 def print_cognitive_load_calculation(load: CognitiveLoad):
     """Print detailed load calculation."""
-    print("🧮 **Cognitive Load Calculation:**")
-    print(f"   Formula: 0.4×energy + 0.2×attention + 0.2×switches + 0.1×time + 0.1×velocity")
-    print(f"   Final Score: {load.score:.2f}")
-    print(f"   Status: {load.status.value.upper()}")
-    print(f"   Breakdown:")
+    logger.info("🧮 **Cognitive Load Calculation:**")
+    logger.info(f"   Formula: 0.4×energy + 0.2×attention + 0.2×switches + 0.1×time + 0.1×velocity")
+    logger.info(f"   Final Score: {load.score:.2f}")
+    logger.info(f"   Status: {load.status.value.upper()}")
+    logger.info(f"   Breakdown:")
     for component, value in load.breakdown.items():
-        print(f"      {component}: {value:.3f}")
-    print()
+        logger.info(f"      {component}: {value:.3f}")
+    logger.info()
 
 
 def print_load_alert(alert):
     """Print load alert if generated."""
     if alert:
-        print(f"🚨 **ALERT TRIGGERED:**")
-        print(f"   {alert.message}")
-        print(f"   Recommendation: {alert.recommendation}")
-        print()
+        logger.info(f"🚨 **ALERT TRIGGERED:**")
+        logger.info(f"   {alert.message}")
+        logger.info(f"   Recommendation: {alert.recommendation}")
+        logger.info()
     else:
-        print("✅ No alert needed (load within acceptable range)\n")
+        logger.info("✅ No alert needed (load within acceptable range)\n")
 
 
 def print_feature_vector(fv: FeatureVector, task: MockTask):
     """Print feature engineering results."""
-    print(f"🔬 **Feature Engineering for Task: {task.title}**")
-    print(f"   Total Features: {len(fv.features)}")
-    print(f"   Categories: ADHD State (8), Temporal (6), Task Attributes (7), Historical (4), Derived (5)")
-    print(f"   Sample Features:")
+    logger.info(f"🔬 **Feature Engineering for Task: {task.title}**")
+    logger.info(f"   Total Features: {len(fv.features)}")
+    logger.info(f"   Categories: ADHD State (8), Temporal (6), Task Attributes (7), Historical (4), Derived (5)")
+    logger.info(f"   Sample Features:")
 
     feature_dict = fv.to_dict()
     interesting_features = [
@@ -193,32 +198,32 @@ def print_feature_vector(fv: FeatureVector, task: MockTask):
 
     for feat in interesting_features:
         if feat in feature_dict:
-            print(f"      {feat}: {feature_dict[feat]:.3f}")
-    print()
+            logger.info(f"      {feat}: {feature_dict[feat]:.3f}")
+    logger.info()
 
 
 def print_bandit_recommendation(rec, task: MockTask):
     """Print contextual bandit recommendation."""
-    print(f"   🎯 Task: {task.title}")
-    print(f"      Expected Completion: {rec.expected_reward:.2%}")
-    print(f"      Confidence: {rec.confidence:.2%}")
-    print(f"      Exploration Score: {rec.exploration_score:.3f}")
-    print(f"      Sampled Value: {rec.sampled_value:.3f}")
-    print(f"      Metadata: {rec.metadata}")
+    logger.info(f"   🎯 Task: {task.title}")
+    logger.info(f"      Expected Completion: {rec.expected_reward:.2%}")
+    logger.info(f"      Confidence: {rec.confidence:.2%}")
+    logger.info(f"      Exploration Score: {rec.exploration_score:.3f}")
+    logger.info(f"      Sampled Value: {rec.sampled_value:.3f}")
+    logger.info(f"      Metadata: {rec.metadata}")
 
 
 def print_hybrid_recommendations(recs: List[TaskRecommendation], adaptive_count: int):
     """Print hybrid recommender results."""
-    print(f"🎯 **Hybrid Recommendations (Adaptive Count: {adaptive_count}):**")
-    print(f"   Strategy: 70% ML (Thompson Sampling) + 30% Rules")
-    print()
+    logger.info(f"🎯 **Hybrid Recommendations (Adaptive Count: {adaptive_count}):**")
+    logger.info(f"   Strategy: 70% ML (Thompson Sampling) + 30% Rules")
+    logger.info()
 
     for i, rec in enumerate(recs, 1):
-        print(f"   {i}. {rec.task.title}")
-        print(f"      Completion Probability: {rec.completion_probability:.2%}")
-        print(f"      Rationale: {rec.rationale}")
-        print(f"      Complexity: {rec.task.complexity:.1f}")
-        print()
+        logger.info(f"   {i}. {rec.task.title}")
+        logger.info(f"      Completion Probability: {rec.completion_probability:.2%}")
+        logger.info(f"      Rationale: {rec.rationale}")
+        logger.info(f"      Complexity: {rec.task.complexity:.1f}")
+        logger.info()
 
 
 async def demo_scenario(scenario_name: str, state: MockADHDState, tasks: List[MockTask]):
@@ -252,12 +257,12 @@ async def demo_scenario(scenario_name: str, state: MockADHDState, tasks: List[Mo
         attention_level=state.attention_level,
         energy_level=state.energy_level
     )
-    print(f"🔢 **Dynamic Count Adaptation:**")
-    print(f"   Cognitive Load: {state.cognitive_load:.2f}")
-    print(f"   Attention: {state.attention_level}")
-    print(f"   → Recommended Count: {adaptive_count} tasks")
-    print(f"   Rationale: {'High capacity - show more options' if adaptive_count >= 3 else 'Overwhelmed - limit choices to reduce decision fatigue'}")
-    print()
+    logger.info(f"🔢 **Dynamic Count Adaptation:**")
+    logger.info(f"   Cognitive Load: {state.cognitive_load:.2f}")
+    logger.info(f"   Attention: {state.attention_level}")
+    logger.info(f"   → Recommended Count: {adaptive_count} tasks")
+    logger.info(f"   Rationale: {'High capacity - show more options' if adaptive_count >= 3 else 'Overwhelmed - limit choices to reduce decision fatigue'}")
+    logger.info()
 
     # 4. Feature Engineering Demo (for one task)
     engineer = FeatureEngineer()
@@ -282,8 +287,8 @@ async def demo_scenario(scenario_name: str, state: MockADHDState, tasks: List[Mo
     print_feature_vector(fv, demo_task)
 
     # 5. Contextual Bandit Demo (Thompson Sampling)
-    print("🎰 **Contextual Bandit (Thompson Sampling):**")
-    print("   Simulating task recommendations with learning...\n")
+    logger.info("🎰 **Contextual Bandit (Thompson Sampling):**")
+    logger.info("   Simulating task recommendations with learning...\n")
 
     bandit = create_bandit(algorithm="thompson_sampling", min_reward=0.3)
 
@@ -302,21 +307,21 @@ async def demo_scenario(scenario_name: str, state: MockADHDState, tasks: List[Mo
 
     for i, rec in enumerate(bandit_recs, 1):
         task = rec.task
-        print(f"   {i}. {task.title}")
-        print(f"      Expected Reward: {rec.expected_reward:.2%}")
-        print(f"      Sampled Value: {rec.sampled_value:.3f}")
-        print()
+        logger.info(f"   {i}. {task.title}")
+        logger.info(f"      Expected Reward: {rec.expected_reward:.2%}")
+        logger.info(f"      Sampled Value: {rec.sampled_value:.3f}")
+        logger.info()
 
     # Simulate learning from outcomes
-    print("   📚 **Simulating Online Learning:**")
+    logger.info("   📚 **Simulating Online Learning:**")
     completed_task_id = bandit_recs[0].task_id
     bandit.update(task_id=completed_task_id, completed=True, reward=1.0)
-    print(f"      Task '{bandit_recs[0].task.title}' marked as COMPLETED")
-    print(f"      Bandit updated: Success count increased")
-    print()
+    logger.info(f"      Task '{bandit_recs[0].task.title}' marked as COMPLETED")
+    logger.info(f"      Bandit updated: Success count increased")
+    logger.info()
 
     # 6. Hybrid Recommender (Production System)
-    print("🤖 **Hybrid Recommender (Production System):**")
+    logger.info("🤖 **Hybrid Recommender (Production System):**")
     hybrid = HybridTaskRecommender(
         ml_algorithm="thompson_sampling",
         ml_weight=0.7,
@@ -335,11 +340,11 @@ async def demo_scenario(scenario_name: str, state: MockADHDState, tasks: List[Mo
 
     # Show statistics
     ml_stats = hybrid.ml_based.bandit.get_global_statistics()
-    print(f"📊 **ML Statistics:**")
-    print(f"   Total Outcomes: {hybrid.ml_based._outcome_count}")
-    print(f"   Total Recommendations: {ml_stats['total_recommendations']}")
-    print(f"   Exploration Rate: {ml_stats['exploration_rate']:.2%}")
-    print()
+    logger.info(f"📊 **ML Statistics:**")
+    logger.info(f"   Total Outcomes: {hybrid.ml_based._outcome_count}")
+    logger.info(f"   Total Recommendations: {ml_stats['total_recommendations']}")
+    logger.info(f"   Exploration Rate: {ml_stats['exploration_rate']:.2%}")
+    logger.info()
 
 
 # ============================================================================
@@ -348,18 +353,18 @@ async def demo_scenario(scenario_name: str, state: MockADHDState, tasks: List[Mo
 
 async def main():
     """Run complete Component 6 end-to-end demo."""
-    print("\n" + "=" * 80)
-    print("  COMPONENT 6 - ADHD INTELLIGENCE LAYER")
-    print("  End-to-End Integration Demo")
-    print("=" * 80)
-    print("\nThis demo showcases all Component 6 features:")
-    print("  1. Cognitive Load Monitoring (real-time formula)")
-    print("  2. Load Alert Management (rate limiting, thresholds)")
-    print("  3. Predictive Orchestrator (hybrid ML + rules)")
-    print("  4. Feature Engineering (30 features from ADHD state)")
-    print("  5. Contextual Bandit (Thompson Sampling learning)")
-    print("  6. Dynamic Recommendation Count (adaptive 1-4)")
-    print("\nExpected Duration: ~5 minutes\n")
+    logger.info("\n" + "=" * 80)
+    logger.info("  COMPONENT 6 - ADHD INTELLIGENCE LAYER")
+    logger.info("  End-to-End Integration Demo")
+    logger.info("=" * 80)
+    logger.info("\nThis demo showcases all Component 6 features:")
+    logger.info("  1. Cognitive Load Monitoring (real-time formula)")
+    logger.info("  2. Load Alert Management (rate limiting, thresholds)")
+    logger.info("  3. Predictive Orchestrator (hybrid ML + rules)")
+    logger.info("  4. Feature Engineering (30 features from ADHD state)")
+    logger.info("  5. Contextual Bandit (Thompson Sampling learning)")
+    logger.info("  6. Dynamic Recommendation Count (adaptive 1-4)")
+    logger.info("\nExpected Duration: ~5 minutes\n")
 
     input("Press Enter to start demo...")
 
@@ -391,34 +396,34 @@ async def main():
 
     # Summary
     print_section("DEMO COMPLETE - ADHD BENEFITS SUMMARY")
-    print("✅ **Component 6 Delivers:**\n")
-    print("1. **Cognitive Load Awareness**")
-    print("   → Real-time monitoring prevents overwhelm")
-    print("   → Alert system provides early warnings\n")
+    logger.info("✅ **Component 6 Delivers:**\n")
+    logger.info("1. **Cognitive Load Awareness**")
+    logger.info("   → Real-time monitoring prevents overwhelm")
+    logger.warning("   → Alert system provides early warnings\n")
 
-    print("2. **ML-Powered Task Recommendations**")
-    print("   → 82% accuracy predicting task completion")
-    print("   → Learns from your outcomes via Thompson Sampling\n")
+    logger.info("2. **ML-Powered Task Recommendations**")
+    logger.info("   → 82% accuracy predicting task completion")
+    logger.info("   → Learns from your outcomes via Thompson Sampling\n")
 
-    print("3. **Dynamic Decision Support**")
-    print("   → 4 recommendations when fresh (0.2 load)")
-    print("   → 1 recommendation when overwhelmed (0.85 load)")
-    print("   → Prevents decision paralysis\n")
+    logger.info("3. **Dynamic Decision Support**")
+    logger.info("   → 4 recommendations when fresh (0.2 load)")
+    logger.info("   → 1 recommendation when overwhelmed (0.85 load)")
+    logger.info("   → Prevents decision paralysis\n")
 
-    print("4. **ADHD-Optimized Features**")
-    print("   → 30 numerical features capture ADHD state")
-    print("   → Energy-complexity matching")
-    print("   → Temporal patterns (morning productivity)\n")
+    logger.info("4. **ADHD-Optimized Features**")
+    logger.info("   → 30 numerical features capture ADHD state")
+    logger.info("   → Energy-complexity matching")
+    logger.info("   → Temporal patterns (morning productivity)\n")
 
-    print("5. **Production-Ready Hybrid System**")
-    print("   → 70% ML + 30% rules blending")
-    print("   → Graceful degradation (rules-only fallback)")
-    print("   → Online learning (adapts in real-time)\n")
+    logger.info("5. **Production-Ready Hybrid System**")
+    logger.info("   → 70% ML + 30% rules blending")
+    logger.info("   → Graceful degradation (rules-only fallback)")
+    logger.info("   → Online learning (adapts in real-time)\n")
 
-    print("🎯 **Next Steps:**")
-    print("   → Phase 3: Flow optimization and advanced recommendations")
-    print("   → Phase 4: Polish and drift prevention")
-    print("   → Production deployment with staging validation\n")
+    logger.info("🎯 **Next Steps:**")
+    logger.info("   → Phase 3: Flow optimization and advanced recommendations")
+    logger.info("   → Phase 4: Polish and drift prevention")
+    logger.info("   → Production deployment with staging validation\n")
 
 
 if __name__ == "__main__":

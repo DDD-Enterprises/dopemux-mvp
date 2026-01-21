@@ -7,6 +7,11 @@ DDG ingestion task will consume events and create embeddings.
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncpg
 import redis.asyncio as aioredis
 import json
@@ -28,14 +33,14 @@ class DDGBackfill:
 
     async def connect(self):
         """Connect to ConPort PostgreSQL and Redis EventBus"""
-        print("🔌 Connecting to ConPort PostgreSQL...")
+        logger.info("🔌 Connecting to ConPort PostgreSQL...")
         self.conn = await asyncpg.connect(self.conport_db_url)
-        print("   ✅ PostgreSQL connected")
+        logger.info("   ✅ PostgreSQL connected")
 
-        print("🔌 Connecting to Redis EventBus...")
+        logger.info("🔌 Connecting to Redis EventBus...")
         self.redis = await aioredis.from_url(self.redis_url, decode_responses=False)
         await self.redis.ping()
-        print("   ✅ Redis connected")
+        logger.info("   ✅ Redis connected")
 
     async def close(self):
         """Close connections"""
@@ -46,7 +51,7 @@ class DDGBackfill:
 
     async def fetch_all_decisions(self) -> List[Dict[str, Any]]:
         """Fetch all decisions from ConPort PostgreSQL"""
-        print("\n📋 Fetching decisions from ConPort...")
+        logger.info("\n📋 Fetching decisions from ConPort...")
 
         rows = await self.conn.fetch("""
             SELECT id, workspace_id, summary, rationale, alternatives, tags,
@@ -63,7 +68,7 @@ class DDGBackfill:
             decision['updated_at'] = decision['updated_at'].isoformat()
             decisions.append(decision)
 
-        print(f"   ✅ Found {len(decisions)} decisions")
+        logger.info(f"   ✅ Found {len(decisions)} decisions")
         return decisions
 
     async def publish_decision_event(self, decision: Dict[str, Any]) -> bool:
@@ -106,7 +111,7 @@ class DDGBackfill:
             return True
 
         except Exception as e:
-            print(f"   ⚠️  Event publish error: {e}")
+            logger.error(f"   ⚠️  Event publish error: {e}")
             return False
 
     async def backfill_all_decisions(self, batch_size: int = 50) -> Dict[str, int]:
@@ -122,13 +127,13 @@ class DDGBackfill:
         decisions = await self.fetch_all_decisions()
 
         if not decisions:
-            print("\n⚠️  No decisions to backfill")
+            logger.info("\n⚠️  No decisions to backfill")
             return {"total": 0, "published": 0, "failed": 0}
 
-        print(f"\n📡 Publishing {len(decisions)} events to Redis EventBus...")
-        print(f"   Redis: {self.redis_url}")
-        print(f"   Stream: dopemux:events")
-        print(f"   Batch size: {batch_size}")
+        logger.info(f"\n📡 Publishing {len(decisions)} events to Redis EventBus...")
+        logger.info(f"   Redis: {self.redis_url}")
+        logger.info(f"   Stream: dopemux:events")
+        logger.info(f"   Batch size: {batch_size}")
 
         published = 0
         failed = 0
@@ -143,7 +148,7 @@ class DDGBackfill:
 
             # Progress indicator
             if i % batch_size == 0:
-                print(f"   Progress: {i}/{len(decisions)} ({published} published, {failed} failed)")
+                logger.info(f"   Progress: {i}/{len(decisions)} ({published} published, {failed} failed)")
                 # Small delay to avoid overwhelming the system
                 await asyncio.sleep(0.05)
 
@@ -153,13 +158,13 @@ class DDGBackfill:
             "failed": failed
         }
 
-        print("\n" + "=" * 60)
-        print("✅ BACKFILL COMPLETE")
-        print("=" * 60)
-        print(f"Total decisions:  {stats['total']}")
-        print(f"Published:        {stats['published']}")
-        print(f"Failed:           {stats['failed']}")
-        print(f"Success rate:     {100 * stats['published'] / stats['total']:.1f}%")
+        logger.info("\n" + "=" * 60)
+        logger.info("✅ BACKFILL COMPLETE")
+        logger.info("=" * 60)
+        logger.info(f"Total decisions:  {stats['total']}")
+        logger.info(f"Published:        {stats['published']}")
+        logger.error(f"Failed:           {stats['failed']}")
+        logger.info(f"Success rate:     {100 * stats['published'] / stats['total']:.1f}%")
 
         return stats
 
@@ -173,7 +178,7 @@ class DDGBackfill:
         Returns:
             True if ingestion successful
         """
-        print("\n🔍 Verifying DDG ingestion...")
+        logger.info("\n🔍 Verifying DDG ingestion...")
 
         try:
             ddg_conn = await asyncpg.connect(ddg_db_url)
@@ -190,18 +195,18 @@ class DDGBackfill:
 
             await ddg_conn.close()
 
-            print(f"   DDG Decisions:  {decision_count}")
-            print(f"   DDG Embeddings: {embedding_count}")
+            logger.info(f"   DDG Decisions:  {decision_count}")
+            logger.info(f"   DDG Embeddings: {embedding_count}")
 
             if decision_count > 0:
-                print("   ✅ DDG ingestion working!")
+                logger.info("   ✅ DDG ingestion working!")
                 return True
             else:
-                print("   ⚠️  DDG still empty (may need time to process)")
+                logger.info("   ⚠️  DDG still empty (may need time to process)")
                 return False
 
         except Exception as e:
-            print(f"   ⚠️  Verification failed: {e}")
+            logger.error(f"   ⚠️  Verification failed: {e}")
             return False
 
 
@@ -224,7 +229,7 @@ async def main(
 
         # Verify if requested
         if verify and stats['published'] > 0:
-            print("\n⏳ Waiting 5 seconds for DDG to process events...")
+            logger.info("\n⏳ Waiting 5 seconds for DDG to process events...")
             await asyncio.sleep(5)
             await backfill.verify_ddg_ingestion(ddg_db_url)
 
@@ -270,12 +275,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    print("🚀 DDG Backfill Script")
-    print("=" * 60)
-    print(f"ConPort DB:  {args.conport_db}")
-    print(f"Redis:       {args.redis_url}")
-    print(f"Batch size:  {args.batch_size}")
-    print()
+    logger.info("🚀 DDG Backfill Script")
+    logger.info("=" * 60)
+    logger.info(f"ConPort DB:  {args.conport_db}")
+    logger.info(f"Redis:       {args.redis_url}")
+    logger.info(f"Batch size:  {args.batch_size}")
+    logger.info()
 
     try:
         stats = asyncio.run(main(
@@ -287,14 +292,14 @@ if __name__ == "__main__":
         ))
 
         if stats['failed'] == 0:
-            print("\n🎉 Backfill 100% successful!")
+            logger.info("\n🎉 Backfill 100% successful!")
             sys.exit(0)
         else:
-            print(f"\n⚠️  Backfill completed with {stats['failed']} failures")
+            logger.error(f"\n⚠️  Backfill completed with {stats['failed']} failures")
             sys.exit(1)
 
     except Exception as e:
-        print(f"\n❌ Backfill failed: {e}")
+        logger.error(f"\n❌ Backfill failed: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

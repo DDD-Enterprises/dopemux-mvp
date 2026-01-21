@@ -347,6 +347,7 @@ class CompleteSystemIntegrationTest:
                     health.error_message = str(e)
                     health.integration_successful = False
 
+                    logger.error(f"Error: {e}")
                 phase_results["components"][component_id] = health
                 self._component_health[f"phase2e_{component_id}"] = health
 
@@ -792,23 +793,23 @@ async def validate_production_readiness(workspace_id: str = "/test/workspace") -
 if __name__ == "__main__":
     # Run integration test when executed directly
     async def main():
-        print("🧪 Serena v2 Complete System Integration Test")
-        print("Testing all 31 components across Phase 2A-2E")
+        logger.info("🧪 Serena v2 Complete System Integration Test")
+        logger.info("Testing all 31 components across Phase 2A-2E")
 
         try:
             result = await run_complete_system_integration_test()
 
-            print(f"\n📊 Integration Test Results:")
-            print(f"Components: {result.healthy_components}/{result.total_components} healthy")
-            print(f"Integration Score: {result.system_integration_score:.1%}")
-            print(f"Production Ready: {'✅ YES' if result.production_ready else '❌ NO'}")
+            logger.info(f"\n📊 Integration Test Results:")
+            logger.info(f"Components: {result.healthy_components}/{result.total_components} healthy")
+            logger.info(f"Integration Score: {result.system_integration_score:.1%}")
+            logger.info(f"Production Ready: {'✅ YES' if result.production_ready else '❌ NO'}")
 
             if result.production_ready:
-                print("🎉 COMPLETE SYSTEM INTEGRATION SUCCESS!")
+                logger.info("🎉 COMPLETE SYSTEM INTEGRATION SUCCESS!")
             else:
-                print("⚠️ Integration issues detected - review recommendations")
+                logger.info("⚠️ Integration issues detected - review recommendations")
 
         except Exception as e:
-            print(f"💥 Integration test failed: {e}")
+            logger.error(f"💥 Integration test failed: {e}")
 
     asyncio.run(main())

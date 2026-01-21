@@ -606,9 +606,10 @@ class UntrackedWorkStorage:
                 try:
                     task_data = json.loads(task_result)
                     task_id = task_data.get("id")
-                except:
+                except Exception as e:
                     pass
 
+                    logger.error(f"Error: {e}")
             if task_id:
                 logger.info(f"Auto-created task #{task_id}: {description}")
 
