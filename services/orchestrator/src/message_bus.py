@@ -12,6 +12,11 @@ Effort: 5 focus blocks (125 minutes)
 """
 
 from abc import ABC, abstractmethod
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import Iterator, Optional, Callable
 from dataclasses import dataclass
 from datetime import datetime
@@ -128,7 +133,7 @@ class InMemoryMessageBus(MessageBus):
                 try:
                     callback(event)
                 except Exception as e:
-                    print(f"⚠️ Subscriber error: {e}")
+                    logger.error(f"⚠️ Subscriber error: {e}")
 
     def subscribe(
         self, event_type: EventType, callback: Callable[[Event], None]
@@ -183,7 +188,7 @@ class TmuxCaptureMessageBus(MessageBus):
                 try:
                     callback(event)
                 except Exception as e:
-                    print(f"⚠️ Subscriber error: {e}")
+                    logger.error(f"⚠️ Subscriber error: {e}")
 
     def subscribe(
         self, event_type: EventType, callback: Callable[[Event], None]
@@ -213,10 +218,10 @@ class TmuxCaptureMessageBus(MessageBus):
             )
             self.pane_watchers[pane_id] = 0  # Start at 0
 
-            print(f"👀 Watching pane {pane_id} for {agent_name}")
+            logger.info(f"👀 Watching pane {pane_id} for {agent_name}")
 
         except Exception as e:
-            print(f"⚠️ Failed to watch pane {pane_id}: {e}")
+            logger.error(f"⚠️ Failed to watch pane {pane_id}: {e}")
 
     def capture_pane_output(self, pane_id: str, agent_name: str) -> list[str]:
         """
@@ -264,7 +269,7 @@ class TmuxCaptureMessageBus(MessageBus):
             return new_lines
 
         except Exception as e:
-            print(f"⚠️ Failed to capture pane {pane_id}: {e}")
+            logger.error(f"⚠️ Failed to capture pane {pane_id}: {e}")
             return []
 
     def get_recent_events(
@@ -303,14 +308,14 @@ def create_message_bus(
 if __name__ == "__main__":
     """Test message bus."""
 
-    print("Testing InMemoryMessageBus:")
-    print("=" * 60)
+    logger.info("Testing InMemoryMessageBus:")
+    logger.info("=" * 60)
 
     bus = create_message_bus("in_memory")
 
     # Subscribe to agent output
     def on_output(event: Event):
-        print(f"📨 Received: {event.source} → {event.payload}")
+        logger.info(f"📨 Received: {event.source} → {event.payload}")
 
     bus.subscribe(EventType.AGENT_OUTPUT, on_output)
 
@@ -335,6 +340,6 @@ if __name__ == "__main__":
 
     # Get recent events
     recent = bus.get_recent_events(limit=5)
-    print(f"\nRecent events: {len(recent)}")
+    logger.info(f"\nRecent events: {len(recent)}")
 
-    print("\n✅ Message bus test complete")
+    logger.info("\n✅ Message bus test complete")

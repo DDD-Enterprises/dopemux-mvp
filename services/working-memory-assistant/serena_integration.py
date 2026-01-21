@@ -7,6 +7,11 @@ navigation history, and complexity scoring.
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 
@@ -21,7 +26,7 @@ try:
     from mcp__serena_v2__list_dir import list_dir
 except ImportError:
     # Fallback for development/testing
-    print("Serena MCP tools not available, using mock implementations")
+    logger.info("Serena MCP tools not available, using mock implementations")
 
     async def goto_definition(**kwargs):
         return {"success": True, "location": {"line": 42, "column": 10}}
@@ -100,7 +105,7 @@ class SerenaIntegration:
 
         except Exception as e:
             # Fallback to basic context if Serena unavailable
-            print(f"Serena unavailable, using fallback: {e}")
+            logger.info(f"Serena unavailable, using fallback: {e}")
             return CodeContext(
                 current_file={"file_path": "/src/main.py", "language": "python"},
                 cursor_position={"line": 1, "column": 1},
@@ -131,7 +136,7 @@ class SerenaIntegration:
             }
 
         except Exception as e:
-            print(f"IDE state restoration failed: {e}")
+            logger.error(f"IDE state restoration failed: {e}")
             return {
                 'success': False,
                 'error': str(e)
@@ -143,15 +148,15 @@ async def test_serena_integration():
 
     # Test code context capture
     context = await integration.get_code_context()
-    print("Code Context:")
-    print(f"Current file: {context.current_file}")
-    print(f"Cursor position: {context.cursor_position}")
-    print(f"Complexity score: {context.complexity_score}")
+    logger.info("Code Context:")
+    logger.info(f"Current file: {context.current_file}")
+    logger.info(f"Cursor position: {context.cursor_position}")
+    logger.info(f"Complexity score: {context.complexity_score}")
 
     # Test IDE state restoration
     if context.current_file and context.cursor_position:
         restore_result = await integration.restore_ide_state(context)
-        print(f"IDE restoration: {restore_result}")
+        logger.info(f"IDE restoration: {restore_result}")
 
 if __name__ == "__main__":
     asyncio.run(test_serena_integration())

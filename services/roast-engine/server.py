@@ -73,6 +73,7 @@ def generate_roast(request: RoastRequest) -> RoastResponse:
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
+        logger.error(f"Error: {e}")
     return RoastResponse(persona=PERSONA_NAME, count=len(roasts), roasts=roasts)
 
 

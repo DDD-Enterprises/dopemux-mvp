@@ -9,6 +9,11 @@ Based on Zen architectural recommendation:
 """
 
 from typing import Optional, Any
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from dataclasses import dataclass
 from datetime import datetime
 import json
@@ -52,7 +57,7 @@ class ContextSharingProtocol:
             from .conport_http_client import ConPortHTTPClient
             self.conport_client = ConPortHTTPClient(workspace_id)
         except Exception as e:
-            print(f"⚠️ ConPort client initialization failed: {e}")
+            logger.error(f"⚠️ ConPort client initialization failed: {e}")
             self.conport_client = None
 
     def publish_artifact(
@@ -116,9 +121,9 @@ class ContextSharingProtocol:
                 }
             )
             # Silent operation - circuit breaker handles fallback
-            print(f"📦 Published {artifact_type} from {agent_type} (confidence: {confidence:.0%})")
+            logger.info(f"📦 Published {artifact_type} from {agent_type} (confidence: {confidence:.0%})")
         except Exception as e:
-            print(f"📦 Published {artifact_type} from {agent_type} (confidence: {confidence:.0%}) [local only]")
+            logger.info(f"📦 Published {artifact_type} from {agent_type} (confidence: {confidence:.0%}) [local only]")
 
         return key
 
@@ -173,7 +178,7 @@ class ContextSharingProtocol:
                 ))
             return artifacts
         except Exception as e:
-            print(f"⚠️ Failed to query artifacts from ConPort: {e}")
+            logger.error(f"⚠️ Failed to query artifacts from ConPort: {e}")
             return []
 
     def semantic_search(self, query: str, top_k: int = 5) -> list[AIArtifact]:
@@ -218,7 +223,7 @@ class ContextSharingProtocol:
                 ))
             return artifacts
         except Exception as e:
-            print(f"⚠️ Failed to semantic search artifacts: {e}")
+            logger.error(f"⚠️ Failed to semantic search artifacts: {e}")
             return []
 
     def get_context_for_agent(
@@ -276,7 +281,7 @@ class ContextSharingProtocol:
                         context["session_duration_minutes"] = 0
                         context["context_switches_count"] = 0
                 except Exception as e:
-                    print(f"⚠️ Failed to get active context from ConPort: {e}")
+                    logger.error(f"⚠️ Failed to get active context from ConPort: {e}")
                     context["current_focus"] = "context unavailable"
                     context["session_duration_minutes"] = 0
                     context["context_switches_count"] = 0
@@ -323,7 +328,7 @@ if __name__ == "__main__":
     )
 
     # Test publishing
-    print("Testing artifact publishing:")
+    logger.info("Testing artifact publishing:")
     artifact_id = protocol.publish_artifact(
         artifact_type="decision",
         agent_type="claude",
@@ -334,19 +339,19 @@ if __name__ == "__main__":
             "alternatives_considered": ["sessions", "cookies"],
         },
     )
-    print(f"✅ Published: {artifact_id}")
+    logger.info(f"✅ Published: {artifact_id}")
 
     # Test querying
-    print("\nTesting artifact query:")
+    logger.info("\nTesting artifact query:")
     artifacts = protocol.query_artifacts(artifact_type="decision")
-    print(f"Found {len(artifacts)} decisions")
+    logger.info(f"Found {len(artifacts)} decisions")
 
     # Test context assembly
-    print("\nTesting context assembly:")
+    logger.info("\nTesting context assembly:")
     context = protocol.get_context_for_agent(
         agent_type="grok",
         task_description="Implement JWT token generation",
         detail_level=2,
     )
-    print(f"Context keys: {list(context.keys())}")
-    print(json.dumps(context, indent=2, default=str))
+    logger.info(f"Context keys: {list(context.keys())}")
+    logger.info(json.dumps(context, indent=2, default=str))

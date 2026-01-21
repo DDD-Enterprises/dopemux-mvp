@@ -13,6 +13,11 @@ Usage:
 
 from __future__ import annotations
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 import argparse
 import os
 import re
@@ -60,8 +65,9 @@ def unique_destination(dst: Path, src: Path) -> Path:
     try:
         if dst.read_bytes() == src.read_bytes():
             return dst  # identical; ok to treat as same
-    except Exception:
+    except Exception as e:
         pass
+        logger.error(f"Error: {e}")
     base = dst.stem
     ext = dst.suffix
     parent_slug = re.sub(r"[^a-z0-9]+", "-", src.parent.name.lower()).strip("-") or "ext"
@@ -91,39 +97,40 @@ def ensure_frontmatter(path: Path) -> None:
     # Reuse docs_frontmatter_guard in fix mode for just this file
     try:
         subprocess.run(["python3", str(REPO / "scripts" / "docs_frontmatter_guard.py"), "--fix"], check=True)
-    except Exception:
+    except Exception as e:
         pass
 
 
+        logger.error(f"Error: {e}")
 def main() -> None:
     ap = argparse.ArgumentParser(description="Restore shortlisted external docs into docs/")
     ap.add_argument("--dry", action="store_true", help="Only print actions")
     args = ap.parse_args()
 
     if not SHORTLIST.exists():
-        print("Shortlist not found:", SHORTLIST)
+        logger.info("Shortlist not found:", SHORTLIST)
         raise SystemExit(1)
 
     sources = parse_marked_paths(SHORTLIST)
     if not sources:
-        print("No XXX-marked items found in shortlist.")
+        logger.info("No XXX-marked items found in shortlist.")
         return
 
-    print(f"Restoring {len(sources)} docs:")
+    logger.info(f"Restoring {len(sources)} docs:")
     for src in sources:
         dst = choose_target(src)
         dst = unique_destination(dst, src)
         action = f"COPY {src.relative_to(REPO)} -> {dst.relative_to(REPO)}"
         if args.dry:
-            print("-", action)
+            logger.info("-", action)
             continue
         dst.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dst)
         ensure_frontmatter(dst)
-        print("-", action)
+        logger.info("-", action)
 
     if not args.dry:
-        print("\nDone. Consider updating mkdocs.yml navigation if needed.")
+        logger.info("\nDone. Consider updating mkdocs.yml navigation if needed.")
 
 
 if __name__ == "__main__":

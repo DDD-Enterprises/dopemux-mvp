@@ -6,6 +6,11 @@ Supports bash, zsh, and fish shells with backup and rollback capabilities.
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -119,7 +124,7 @@ class ShellHookInstaller:
                 # Create backup
                 if config_path.exists():
                     backup_path = self.create_backup(config_path)
-                    print(f"Created backup: {backup_path}")
+                    logger.info(f"Created backup: {backup_path}")
 
                 # Ensure config file exists
                 config_path.parent.mkdir(parents=True, exist_ok=True)
@@ -144,11 +149,12 @@ class ShellHookInstaller:
                     f.write('\n')
 
                 installed_count += 1
-                print(f"Installed hooks in: {config_path}")
+                logger.info(f"Installed hooks in: {config_path}")
 
             except Exception as e:
                 return False, f"Failed to install hooks in {config_path}: {e}"
 
+                logger.error(f"Error: {e}")
         if installed_count > 0:
             message = f"Successfully installed Dopemux shell hooks for {shell_type} in {installed_count} configuration file(s)."
             message += "\n\nTo activate: Restart your shell or run 'source ~/.bashrc' (or ~/.zshrc)"
@@ -183,7 +189,7 @@ class ShellHookInstaller:
                 # Try to restore backup first
                 if self.restore_backup(config_path):
                     restored_count += 1
-                    print(f"Restored backup for: {config_path}")
+                    logger.info(f"Restored backup for: {config_path}")
                 else:
                     # Manual removal needed
                     if config_path.exists():
@@ -215,6 +221,7 @@ class ShellHookInstaller:
             except Exception as e:
                 return False, f"Failed to uninstall hooks from {config_path}: {e}"
 
+                logger.error(f"Error: {e}")
         if restored_count > 0:
             message = f"Successfully uninstalled hooks from {restored_count} configuration file(s) using backups."
         else:

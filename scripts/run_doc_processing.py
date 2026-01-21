@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 import argparse
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncio
 import json
 import sys
@@ -39,9 +44,9 @@ def main():
     with open(summary_path, "w") as f:
         json.dump(results, f, indent=2)
 
-    print("\n=== Processing Summary ===")
+    logger.info("\n=== Processing Summary ===")
     for k, v in results.items():
-        print(f"{k}: {v}")
+        logger.info(f"{k}: {v}")
 
 
 if __name__ == "__main__":

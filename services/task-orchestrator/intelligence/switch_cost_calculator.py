@@ -424,7 +424,7 @@ def calculate_switch_cost(
             adhd_state=current_adhd_state
         )
         if cost.recommendation == "switch_risky":
-            print(f"High switch cost: {cost.recovery_time_minutes:.1f} min recovery")
+            logger.info(f"High switch cost: {cost.recovery_time_minutes:.1f} min recovery")
     """
     calculator = SwitchCostCalculator()
     return calculator.calculate_switch_cost(from_task, to_task, adhd_state, flow_state)

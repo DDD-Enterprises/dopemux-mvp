@@ -298,7 +298,8 @@ class PatternCorrelationEngine:
                     timestamp = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
                     if timestamp >= cutoff:
                         recent.append(event)
-                except:
+                except Exception as e:
                     pass
 
+                    logger.error(f"Error: {e}")
         return recent

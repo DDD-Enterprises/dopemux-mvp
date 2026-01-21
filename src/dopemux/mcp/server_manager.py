@@ -259,6 +259,7 @@ class MCPServerManager:
             self._record_failure(server_name)
             raise e
 
+            logger.error(f"Error: {e}")
     async def health_check_all(self) -> Dict[str, ServerHealth]:
         """Perform health check on all servers"""
         health_results = {}
@@ -395,6 +396,7 @@ class MCPServerManager:
             connection.health.last_error = str(e)
             raise e
 
+            logger.error(f"Error: {e}")
     async def _start_stdio_server(self, connection: ServerConnection) -> None:
         """Start a stdio-based MCP server"""
         config = connection.config
@@ -495,9 +497,10 @@ class MCPServerManager:
 
                 await asyncio.sleep(0.5)  # Check every 500ms
 
-            except Exception:
+            except Exception as e:
                 await asyncio.sleep(0.5)
 
+                logger.error(f"Error: {e}")
         raise TimeoutError(
             f"Server {connection.name} did not become ready within {timeout}s"
         )
@@ -546,6 +549,7 @@ class MCPServerManager:
                 uptime_seconds=connection.age_seconds,
             )
 
+            logger.error(f"Error: {e}")
     async def _health_check_stdio(self, connection: ServerConnection) -> bool:
         """Health check for stdio server"""
         if not connection.process or connection.process.poll() is not None:
@@ -569,9 +573,10 @@ class MCPServerManager:
                 url, timeout=aiohttp.ClientTimeout(total=5)
             ) as response:
                 return response.status == 200
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def _health_check_websocket(self, connection: ServerConnection) -> bool:
         """Health check for WebSocket server"""
         if not connection.websocket:
@@ -581,9 +586,10 @@ class MCPServerManager:
             # Send a ping frame
             await connection.websocket.ping()
             return True
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def _call_stdio_tool(
         self,
         connection: ServerConnection,
@@ -628,6 +634,7 @@ class MCPServerManager:
         except Exception as e:
             raise RuntimeError(f"Tool call failed: {e}")
 
+            logger.error(f"Error: {e}")
     async def _read_stdio_line(self, process: subprocess.Popen) -> str:
         """Read a line from stdio process asynchronously"""
         loop = asyncio.get_event_loop()
@@ -669,6 +676,7 @@ class MCPServerManager:
         except Exception as e:
             raise RuntimeError(f"HTTP tool call failed: {e}")
 
+            logger.error(f"Error: {e}")
     async def _call_websocket_tool(
         self,
         connection: ServerConnection,
@@ -709,6 +717,7 @@ class MCPServerManager:
         except Exception as e:
             raise RuntimeError(f"WebSocket tool call failed: {e}")
 
+            logger.error(f"Error: {e}")
     async def _stop_server(self, server_name: str) -> None:
         """Stop a specific MCP server"""
         connection = self.connections.get(server_name)

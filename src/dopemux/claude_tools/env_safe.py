@@ -65,6 +65,7 @@ class EnvSafe:
         except Exception as e:
             raise EnvSafeError(f"Failed to list environment variables: {e}")
 
+            logger.error(f"Error: {e}")
     def check(self, key: str) -> bool:
         """
         Check if an environment variable is present.
@@ -105,6 +106,7 @@ class EnvSafe:
         except Exception as e:
             raise EnvSafeError(f"Failed to count variables: {e}")
 
+            logger.error(f"Error: {e}")
     def validate(self) -> Dict[str, Any]:
         """
         Validate .env file syntax.
@@ -167,6 +169,7 @@ class EnvSafe:
                 "warnings": []
             }
 
+            logger.error(f"Error: {e}")
     def _load_env_file(self) -> Dict[str, str]:
         """
         Load and parse .env file.

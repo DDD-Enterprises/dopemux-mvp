@@ -183,10 +183,11 @@ class ActivityTracker:
                         workspace_path=self.current_workspace,
                         auto_detect=False,
                     )
-                except Exception:
+                except Exception as e:
                     # Workspace enrichment is optional
                     pass
             
+                    logger.error(f"Error: {e}")
             success = await self.adhd_client.log_activity(**activity_data)
 
             if success:

@@ -7,6 +7,11 @@ ADHD-optimized snapshots and recovery.
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import aiohttp
 from typing import Dict, Any, Optional
 from dataclasses import dataclass
@@ -105,7 +110,7 @@ async def test_adhd_integration():
     """Test ADHD Engine integration"""
     async with ADHDEngineClient() as client:
         context = await get_adhd_context("test_user")
-        print(f"ADHD Context: {context}")
+        logger.info(f"ADHD Context: {context}")
 
 if __name__ == "__main__":
     asyncio.run(test_adhd_integration())

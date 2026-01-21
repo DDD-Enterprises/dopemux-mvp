@@ -8,6 +8,11 @@ to the main WMA FastAPI application.
 
 # Add these imports to main.py
 AUTOMATIC_SNAPSHOTS_IMPORTS = """
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from automatic_snapshots import create_automatic_snapshots_service
 from automatic_snapshots_api import router as automatic_router
 from adhd_engine_client import ADHDEngineClient
@@ -42,15 +47,15 @@ AUTOMATIC_SNAPSHOTS_ROUTER = """
 app.include_router(automatic_router)
 """
 
-print("Automatic Snapshots Integration Ready!")
-print("=" * 50)
-print("To integrate automatic snapshots into main.py:")
-print("1. Add the imports at the top:")
-print(AUTOMATIC_SNAPSHOTS_IMPORTS)
-print()
-print("2. Modify the lifespan function to include:")
-print(AUTOMATIC_SNAPSHOTS_LIFESPAN)
-print()
-print("3. Add the router inclusion:")
-print(AUTOMATIC_SNAPSHOTS_ROUTER)
-print("=" * 50)
+logger.info("Automatic Snapshots Integration Ready!")
+logger.info("=" * 50)
+logger.info("To integrate automatic snapshots into main.py:")
+logger.info("1. Add the imports at the top:")
+logger.info(AUTOMATIC_SNAPSHOTS_IMPORTS)
+logger.info()
+logger.info("2. Modify the lifespan function to include:")
+logger.info(AUTOMATIC_SNAPSHOTS_LIFESPAN)
+logger.info()
+logger.info("3. Add the router inclusion:")
+logger.info(AUTOMATIC_SNAPSHOTS_ROUTER)
+logger.info("=" * 50)

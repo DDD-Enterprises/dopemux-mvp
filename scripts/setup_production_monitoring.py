@@ -25,10 +25,10 @@ logger = logging.getLogger(__name__)
 
 async def setup_production_monitoring():
     """Set up comprehensive production monitoring for all 31 components."""
-    print("📊 Serena v2 Phase 2: Production Monitoring & Alerting Setup")
-    print("=" * 65)
-    print("Monitoring 31 Components • ADHD-Optimized Alerting • Real-time Health")
-    print("=" * 65)
+    logger.info("📊 Serena v2 Phase 2: Production Monitoring & Alerting Setup")
+    logger.info("=" * 65)
+    logger.info("Monitoring 31 Components • ADHD-Optimized Alerting • Real-time Health")
+    logger.info("=" * 65)
 
     monitoring_config = {
         "monitoring_active": False,
@@ -40,59 +40,59 @@ async def setup_production_monitoring():
 
     try:
         # Setup 1: Component Health Monitoring
-        print("\n🏥 Setup 1: Component Health Monitoring")
+        logger.info("\n🏥 Setup 1: Component Health Monitoring")
         health_monitoring_result = await setup_component_health_monitoring()
         monitoring_config["components_monitored"] = health_monitoring_result["components_configured"]
         monitoring_config["health_checks_enabled"] = health_monitoring_result["health_checks_enabled"]
 
         # Setup 2: Performance Monitoring
-        print("\n⚡ Setup 2: Performance Monitoring & ADHD Compliance")
+        logger.info("\n⚡ Setup 2: Performance Monitoring & ADHD Compliance")
         performance_monitoring_result = await setup_performance_monitoring()
         monitoring_config["performance_monitoring"] = performance_monitoring_result
 
         # Setup 3: ADHD-Specific Alerting
-        print("\n🧠 Setup 3: ADHD-Optimized Alerting System")
+        logger.info("\n🧠 Setup 3: ADHD-Optimized Alerting System")
         adhd_alerting_result = await setup_adhd_alerting_system()
         monitoring_config["alerts_configured"] = adhd_alerting_result["alerts_configured"]
 
         # Setup 4: Real-time Dashboards
-        print("\n📈 Setup 4: Real-time Monitoring Dashboards")
+        logger.info("\n📈 Setup 4: Real-time Monitoring Dashboards")
         dashboard_result = await setup_monitoring_dashboards()
         monitoring_config["dashboards_created"] = dashboard_result["dashboards_created"]
 
         # Setup 5: Automated Recovery
-        print("\n🔧 Setup 5: Automated Recovery & Self-Healing")
+        logger.info("\n🔧 Setup 5: Automated Recovery & Self-Healing")
         recovery_result = await setup_automated_recovery()
         monitoring_config["automated_recovery"] = recovery_result
 
         # Setup 6: Cognitive Load Monitoring
-        print("\n🧠 Setup 6: Cognitive Load & ADHD Accommodation Monitoring")
+        logger.info("\n🧠 Setup 6: Cognitive Load & ADHD Accommodation Monitoring")
         cognitive_monitoring_result = await setup_cognitive_load_monitoring()
         monitoring_config["cognitive_monitoring"] = cognitive_monitoring_result
 
         monitoring_config["monitoring_active"] = True
 
         # Print comprehensive setup results
-        print("\n" + "=" * 65)
-        print("📊 PRODUCTION MONITORING SETUP COMPLETE")
-        print("=" * 65)
+        logger.info("\n" + "=" * 65)
+        logger.info("📊 PRODUCTION MONITORING SETUP COMPLETE")
+        logger.info("=" * 65)
 
-        print(f"Components Monitored: {monitoring_config['components_monitored']}/31")
-        print(f"Health Checks: {monitoring_config['health_checks_enabled']} enabled")
-        print(f"Alerts Configured: {monitoring_config['alerts_configured']} alerts")
-        print(f"Dashboards Created: {monitoring_config['dashboards_created']} dashboards")
-        print(f"Monitoring Active: {'✅ YES' if monitoring_config['monitoring_active'] else '❌ NO'}")
+        logger.info(f"Components Monitored: {monitoring_config['components_monitored']}/31")
+        logger.info(f"Health Checks: {monitoring_config['health_checks_enabled']} enabled")
+        logger.info(f"Alerts Configured: {monitoring_config['alerts_configured']} alerts")
+        logger.info(f"Dashboards Created: {monitoring_config['dashboards_created']} dashboards")
+        logger.info(f"Monitoring Active: {'✅ YES' if monitoring_config['monitoring_active'] else '❌ NO'}")
 
         if monitoring_config["monitoring_active"]:
-            print("\n🎉 PRODUCTION MONITORING OPERATIONAL!")
-            print("Complete system ready for production deployment with full observability")
+            logger.info("\n🎉 PRODUCTION MONITORING OPERATIONAL!")
+            logger.info("Complete system ready for production deployment with full observability")
         else:
-            print("\n⚠️ Monitoring setup incomplete")
+            logger.info("\n⚠️ Monitoring setup incomplete")
 
         return monitoring_config
 
     except Exception as e:
-        print(f"💥 Monitoring setup failed: {e}")
+        logger.error(f"💥 Monitoring setup failed: {e}")
         import traceback
         traceback.print_exc()
         return monitoring_config
@@ -101,7 +101,7 @@ async def setup_production_monitoring():
 async def setup_component_health_monitoring():
     """Set up health monitoring for all 31 components."""
     try:
-        print("  🏥 Configuring component health monitoring...")
+        logger.info("  🏥 Configuring component health monitoring...")
 
         # Define all 31 components for monitoring
         components_to_monitor = {
@@ -118,7 +118,7 @@ async def setup_component_health_monitoring():
 
         for phase, components in components_to_monitor.items():
             total_components += len(components)
-            print(f"    📊 {phase}: {len(components)} components")
+            logger.info(f"    📊 {phase}: {len(components)} components")
 
             for component in components:
                 # Configure health check for component
@@ -138,11 +138,11 @@ async def setup_component_health_monitoring():
                 # Simulate health check configuration
                 health_checks_configured += 1
 
-            print(f"      ✅ {len(components)} health checks configured")
+            logger.info(f"      ✅ {len(components)} health checks configured")
 
-        print(f"    📊 Total Health Checks: {health_checks_configured}")
-        print(f"    ⏱️ Check Frequency: Every 60 seconds")
-        print(f"    🎯 ADHD Targets: <200ms response, gentle alerting")
+        logger.info(f"    📊 Total Health Checks: {health_checks_configured}")
+        logger.info(f"    ⏱️ Check Frequency: Every 60 seconds")
+        logger.info(f"    🎯 ADHD Targets: <200ms response, gentle alerting")
 
         return {
             "components_configured": total_components,
@@ -152,14 +152,14 @@ async def setup_component_health_monitoring():
         }
 
     except Exception as e:
-        print(f"    ❌ Component health monitoring setup failed: {e}")
+        logger.error(f"    ❌ Component health monitoring setup failed: {e}")
         return {"components_configured": 0, "health_checks_enabled": 0}
 
 
 async def setup_performance_monitoring():
     """Set up performance monitoring with ADHD compliance tracking."""
     try:
-        print("  ⚡ Configuring performance monitoring...")
+        logger.info("  ⚡ Configuring performance monitoring...")
 
         performance_metrics = [
             {
@@ -206,15 +206,15 @@ async def setup_performance_monitoring():
             }
         ]
 
-        print(f"    📊 Performance Metrics Configured: {len(performance_metrics)}")
+        logger.info(f"    📊 Performance Metrics Configured: {len(performance_metrics)}")
 
         for metric in performance_metrics:
             priority = "🔴 CRITICAL" if metric["adhd_critical"] else "🟡 STANDARD"
-            print(f"      {priority} {metric['metric']}: {metric['target']}")
+            logger.info(f"      {priority} {metric['metric']}: {metric['target']}")
 
-        print(f"    🎯 ADHD-Critical Metrics: {sum(1 for m in performance_metrics if m['adhd_critical'])}")
-        print(f"    ⚠️ Alert Thresholds: Configured for proactive intervention")
-        print(f"    📈 Trend Analysis: Enabled for performance optimization")
+        logger.error(f"    🎯 ADHD-Critical Metrics: {sum(1 for m in performance_metrics if m['adhd_critical'])}")
+        logger.info(f"    ⚠️ Alert Thresholds: Configured for proactive intervention")
+        logger.info(f"    📈 Trend Analysis: Enabled for performance optimization")
 
         return {
             "metrics_configured": len(performance_metrics),
@@ -224,14 +224,14 @@ async def setup_performance_monitoring():
         }
 
     except Exception as e:
-        print(f"    ❌ Performance monitoring setup failed: {e}")
+        logger.error(f"    ❌ Performance monitoring setup failed: {e}")
         return {"metrics_configured": 0}
 
 
 async def setup_adhd_alerting_system():
     """Set up ADHD-optimized alerting system."""
     try:
-        print("  🧠 Configuring ADHD-optimized alerting...")
+        logger.info("  🧠 Configuring ADHD-optimized alerting...")
 
         # ADHD-specific alert types
         adhd_alerts = [
@@ -286,21 +286,21 @@ async def setup_adhd_alerting_system():
             }
         ]
 
-        print(f"    🚨 ADHD Alert Types: {len(adhd_alerts)} configured")
+        logger.info(f"    🚨 ADHD Alert Types: {len(adhd_alerts)} configured")
 
         for alert in adhd_alerts:
             severity_icon = {"low": "🟢", "medium": "🟡", "high": "🔴"}.get(alert["severity"], "⚪")
-            print(f"      {severity_icon} {alert['alert']}")
-            print(f"        Trigger: {alert['trigger']}")
-            print(f"        Response: {alert['response']}")
-            print(f"        ADHD Optimization: {alert['adhd_optimization']}")
+            logger.info(f"      {severity_icon} {alert['alert']}")
+            logger.info(f"        Trigger: {alert['trigger']}")
+            logger.info(f"        Response: {alert['response']}")
+            logger.info(f"        ADHD Optimization: {alert['adhd_optimization']}")
 
-        print(f"\n    🤝 ADHD Alerting Principles:")
-        print(f"      • Supportive messaging instead of alarm-style alerts")
-        print(f"      • Actionable guidance with clear next steps")
-        print(f"      • Automatic problem resolution when possible")
-        print(f"      • Encouraging tone focusing on solutions")
-        print(f"      • Minimal cognitive disruption during alerts")
+        logger.info(f"\n    🤝 ADHD Alerting Principles:")
+        logger.info(f"      • Supportive messaging instead of alarm-style alerts")
+        logger.info(f"      • Actionable guidance with clear next steps")
+        logger.info(f"      • Automatic problem resolution when possible")
+        logger.info(f"      • Encouraging tone focusing on solutions")
+        logger.info(f"      • Minimal cognitive disruption during alerts")
 
         return {
             "alerts_configured": len(adhd_alerts),
@@ -310,14 +310,14 @@ async def setup_adhd_alerting_system():
         }
 
     except Exception as e:
-        print(f"    ❌ ADHD alerting setup failed: {e}")
+        logger.error(f"    ❌ ADHD alerting setup failed: {e}")
         return {"alerts_configured": 0}
 
 
 async def setup_monitoring_dashboards():
     """Set up real-time monitoring dashboards."""
     try:
-        print("  📈 Configuring monitoring dashboards...")
+        logger.info("  📈 Configuring monitoring dashboards...")
 
         # Dashboard configurations
         dashboards = [
@@ -387,20 +387,20 @@ async def setup_monitoring_dashboards():
             }
         ]
 
-        print(f"    📈 Dashboards Configured: {len(dashboards)}")
+        logger.info(f"    📈 Dashboards Configured: {len(dashboards)}")
 
         for dashboard in dashboards:
             adhd_icon = "🧠" if dashboard["adhd_friendly"] else "📊"
-            print(f"      {adhd_icon} {dashboard['name']}")
-            print(f"        Widgets: {len(dashboard['widgets'])} configured")
-            print(f"        Refresh: {dashboard['refresh_interval']}")
-            print(f"        ADHD-Friendly: {dashboard['adhd_friendly']}")
+            logger.info(f"      {adhd_icon} {dashboard['name']}")
+            logger.info(f"        Widgets: {len(dashboard['widgets'])} configured")
+            logger.info(f"        Refresh: {dashboard['refresh_interval']}")
+            logger.info(f"        ADHD-Friendly: {dashboard['adhd_friendly']}")
 
         # Dashboard access configuration
-        print(f"\n    🔐 Dashboard Access:")
-        print(f"      • ADHD Dashboard: Simplified, high-contrast, gentle colors")
-        print(f"      • Technical Dashboard: Comprehensive metrics for system administrators")
-        print(f"      • User Dashboard: Personal analytics and accommodation effectiveness")
+        logger.info(f"\n    🔐 Dashboard Access:")
+        logger.info(f"      • ADHD Dashboard: Simplified, high-contrast, gentle colors")
+        logger.info(f"      • Technical Dashboard: Comprehensive metrics for system administrators")
+        logger.info(f"      • User Dashboard: Personal analytics and accommodation effectiveness")
 
         return {
             "dashboards_created": len(dashboards),
@@ -410,14 +410,14 @@ async def setup_monitoring_dashboards():
         }
 
     except Exception as e:
-        print(f"    ❌ Dashboard setup failed: {e}")
+        logger.error(f"    ❌ Dashboard setup failed: {e}")
         return {"dashboards_created": 0}
 
 
 async def setup_automated_recovery():
     """Set up automated recovery and self-healing."""
     try:
-        print("  🔧 Configuring automated recovery...")
+        logger.info("  🔧 Configuring automated recovery...")
 
         recovery_strategies = [
             {
@@ -464,19 +464,19 @@ async def setup_automated_recovery():
             }
         ]
 
-        print(f"    🔧 Recovery Strategies: {len(recovery_strategies)} configured")
+        logger.info(f"    🔧 Recovery Strategies: {len(recovery_strategies)} configured")
 
         for strategy in recovery_strategies:
-            print(f"      🛠️ {strategy['failure_type']}")
-            print(f"        Detection: {strategy['detection']}")
-            print(f"        Recovery: {strategy['recovery']}")
-            print(f"        ADHD Consideration: {strategy['adhd_consideration']}")
+            logger.error(f"      🛠️ {strategy['failure_type']}")
+            logger.info(f"        Detection: {strategy['detection']}")
+            logger.info(f"        Recovery: {strategy['recovery']}")
+            logger.info(f"        ADHD Consideration: {strategy['adhd_consideration']}")
 
-        print(f"\n    🤖 Automated Recovery Features:")
-        print(f"      • Proactive issue detection before user impact")
-        print(f"      • Graceful fallback strategies maintaining functionality")
-        print(f"      • ADHD-friendly recovery with minimal cognitive disruption")
-        print(f"      • Self-healing system with automatic optimization")
+        logger.info(f"\n    🤖 Automated Recovery Features:")
+        logger.info(f"      • Proactive issue detection before user impact")
+        logger.info(f"      • Graceful fallback strategies maintaining functionality")
+        logger.info(f"      • ADHD-friendly recovery with minimal cognitive disruption")
+        logger.info(f"      • Self-healing system with automatic optimization")
 
         return {
             "recovery_strategies": len(recovery_strategies),
@@ -486,14 +486,14 @@ async def setup_automated_recovery():
         }
 
     except Exception as e:
-        print(f"    ❌ Automated recovery setup failed: {e}")
+        logger.error(f"    ❌ Automated recovery setup failed: {e}")
         return {"recovery_strategies": 0}
 
 
 async def setup_cognitive_load_monitoring():
     """Set up cognitive load and ADHD accommodation monitoring."""
     try:
-        print("  🧠 Configuring cognitive load monitoring...")
+        logger.info("  🧠 Configuring cognitive load monitoring...")
 
         cognitive_monitoring_config = {
             "load_measurement_frequency": "200ms",  # Real-time
@@ -541,20 +541,20 @@ async def setup_cognitive_load_monitoring():
             }
         ]
 
-        print(f"    🧠 Cognitive Metrics: {len(cognitive_metrics)} metrics tracked")
+        logger.info(f"    🧠 Cognitive Metrics: {len(cognitive_metrics)} metrics tracked")
 
         for metric in cognitive_metrics:
-            print(f"      📊 {metric['metric']}")
-            print(f"        Frequency: {metric['frequency']}")
-            print(f"        Alert: {metric['alert_threshold']}")
-            print(f"        Response: {metric['response']}")
+            logger.info(f"      📊 {metric['metric']}")
+            logger.info(f"        Frequency: {metric['frequency']}")
+            logger.info(f"        Alert: {metric['alert_threshold']}")
+            logger.info(f"        Response: {metric['response']}")
 
-        print(f"\n    🎯 ADHD Monitoring Features:")
-        print(f"      • Real-time cognitive load aggregation across all components")
-        print(f"      • Proactive fatigue detection with early intervention")
-        print(f"      • Accommodation effectiveness continuous optimization")
-        print(f"      • Progressive disclosure adaptation based on user response")
-        print(f"      • Attention preservation monitoring and enhancement")
+        logger.info(f"\n    🎯 ADHD Monitoring Features:")
+        logger.info(f"      • Real-time cognitive load aggregation across all components")
+        logger.info(f"      • Proactive fatigue detection with early intervention")
+        logger.info(f"      • Accommodation effectiveness continuous optimization")
+        logger.info(f"      • Progressive disclosure adaptation based on user response")
+        logger.info(f"      • Attention preservation monitoring and enhancement")
 
         return {
             "cognitive_metrics": len(cognitive_metrics),
@@ -564,14 +564,14 @@ async def setup_cognitive_load_monitoring():
         }
 
     except Exception as e:
-        print(f"    ❌ Cognitive load monitoring setup failed: {e}")
+        logger.error(f"    ❌ Cognitive load monitoring setup failed: {e}")
         return {"cognitive_metrics": 0}
 
 
 async def create_monitoring_summary():
     """Create monitoring setup summary and next steps."""
-    print("\n📋 Production Monitoring Summary & Next Steps")
-    print("=" * 50)
+    logger.info("\n📋 Production Monitoring Summary & Next Steps")
+    logger.info("=" * 50)
 
     monitoring_summary = {
         "monitoring_capabilities": [
@@ -594,16 +594,16 @@ async def create_monitoring_summary():
         ]
     }
 
-    print("🎯 Monitoring Capabilities:")
+    logger.info("🎯 Monitoring Capabilities:")
     for capability in monitoring_summary["monitoring_capabilities"]:
-        print(f"  {capability}")
+        logger.info(f"  {capability}")
 
-    print("\n🚀 Next Steps for Production:")
+    logger.info("\n🚀 Next Steps for Production:")
     for step in monitoring_summary["next_steps"]:
-        print(f"  {step}")
+        logger.info(f"  {step}")
 
-    print("\n🏆 PRODUCTION MONITORING COMPLETE!")
-    print("System ready for production deployment with comprehensive observability")
+    logger.info("\n🏆 PRODUCTION MONITORING COMPLETE!")
+    logger.info("System ready for production deployment with comprehensive observability")
 
     return monitoring_summary
 
@@ -616,57 +616,57 @@ async def main():
         # Create monitoring summary
         summary = await create_monitoring_summary()
 
-        print("\n" + "=" * 65)
-        print("🎉 SERENA V2 PHASE 2 PRODUCTION DEPLOYMENT COMPLETE!")
-        print("=" * 65)
+        logger.info("\n" + "=" * 65)
+        logger.info("🎉 SERENA V2 PHASE 2 PRODUCTION DEPLOYMENT COMPLETE!")
+        logger.info("=" * 65)
 
-        print("🏆 HISTORIC ACHIEVEMENT SUMMARY:")
-        print("  • 31-Component Adaptive Intelligence System ✅")
-        print("  • Expert-Validated Architecture (Zen Ultrathink) ✅")
-        print("  • All 5 Major Targets Exceeded ✅")
-        print("  • 100% Real Navigation Success Rate ✅")
-        print("  • Comprehensive ADHD Optimization ✅")
-        print("  • Production Monitoring & Alerting ✅")
-        print("  • Complete Documentation Suite ✅")
+        logger.info("🏆 HISTORIC ACHIEVEMENT SUMMARY:")
+        logger.info("  • 31-Component Adaptive Intelligence System ✅")
+        logger.info("  • Expert-Validated Architecture (Zen Ultrathink) ✅")
+        logger.info("  • All 5 Major Targets Exceeded ✅")
+        logger.info("  • 100% Real Navigation Success Rate ✅")
+        logger.info("  • Comprehensive ADHD Optimization ✅")
+        logger.info("  • Production Monitoring & Alerting ✅")
+        logger.info("  • Complete Documentation Suite ✅")
 
-        print("\n🎯 TARGET ACHIEVEMENTS:")
-        print("  ✅ 6.2-day Learning Convergence (target: 7 days)")
-        print("  ✅ 87.2% Navigation Success (target: 85%)")
-        print("  ✅ 32.1% Time Reduction (target: 30%)")
-        print("  ✅ 168.3ms Performance (target: <200ms)")
-        print("  ✅ 100% Cognitive Load Management")
+        logger.info("\n🎯 TARGET ACHIEVEMENTS:")
+        logger.info("  ✅ 6.2-day Learning Convergence (target: 7 days)")
+        logger.info("  ✅ 87.2% Navigation Success (target: 85%)")
+        logger.info("  ✅ 32.1% Time Reduction (target: 30%)")
+        logger.info("  ✅ 168.3ms Performance (target: <200ms)")
+        logger.info("  ✅ 100% Cognitive Load Management")
 
-        print("\n📊 SYSTEM READINESS:")
-        print("  🚀 Production Deployment: READY")
-        print("  📊 Monitoring & Alerting: OPERATIONAL")
-        print("  🧠 ADHD Accommodations: COMPREHENSIVE")
-        print("  📚 Documentation: COMPLETE")
-        print("  🎯 Target Validation: ALL ACHIEVED")
+        logger.info("\n📊 SYSTEM READINESS:")
+        logger.info("  🚀 Production Deployment: READY")
+        logger.info("  📊 Monitoring & Alerting: OPERATIONAL")
+        logger.info("  🧠 ADHD Accommodations: COMPREHENSIVE")
+        logger.info("  📚 Documentation: COMPLETE")
+        logger.info("  🎯 Target Validation: ALL ACHIEVED")
 
-        print("\n🌟 IMPACT:")
-        print("  This represents the most comprehensive ADHD-optimized")
-        print("  development intelligence system ever created, establishing")
-        print("  a new standard for neurodivergent-friendly development tools.")
+        logger.info("\n🌟 IMPACT:")
+        logger.info("  This represents the most comprehensive ADHD-optimized")
+        logger.info("  development intelligence system ever created, establishing")
+        logger.info("  a new standard for neurodivergent-friendly development tools.")
 
         return monitoring_config
 
     except Exception as e:
-        print(f"💥 Monitoring setup process failed: {e}")
+        logger.error(f"💥 Monitoring setup process failed: {e}")
         import traceback
         traceback.print_exc()
 
 
 if __name__ == "__main__":
-    print("📊 Starting Production Monitoring & Alerting Setup")
-    print(f"Timestamp: {datetime.now().isoformat()}")
-    print()
+    logger.info("📊 Starting Production Monitoring & Alerting Setup")
+    logger.info(f"Timestamp: {datetime.now().isoformat()}")
+    logger.info()
 
     try:
         results = asyncio.run(main())
         sys.exit(0)
     except KeyboardInterrupt:
-        print("\n👋 Monitoring setup interrupted by user")
+        logger.info("\n👋 Monitoring setup interrupted by user")
         sys.exit(130)
     except Exception as e:
-        print(f"\n💥 Monitoring setup script failed: {e}")
+        logger.error(f"\n💥 Monitoring setup script failed: {e}")
         sys.exit(1)

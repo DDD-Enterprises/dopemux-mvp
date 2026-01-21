@@ -478,9 +478,10 @@ class RollbackManager:
         try:
             with open(self.rollback_registry) as f:
                 return json.load(f)
-        except Exception:
+        except Exception as e:
             return {'backups': [], 'rollback_points': [], 'last_successful_state': None}
 
+            logger.error(f"Error: {e}")
     def _save_registry(self, registry: Dict[str, Any]) -> None:
         """Save rollback registry."""
         with open(self.rollback_registry, 'w') as f:
@@ -494,9 +495,10 @@ class RollbackManager:
                 capture_output=True, text=True, timeout=10
             )
             return result.stdout.strip() if result.returncode == 0 else None
-        except Exception:
+        except Exception as e:
             return None
 
+            logger.error(f"Error: {e}")
     def _get_current_version(self) -> str:
         """Get current version from VERSION file."""
         version_file = self.project_root / "VERSION"
@@ -517,5 +519,5 @@ class RollbackManager:
 
             return f"{total_size:.1f} TB"
 
-        except Exception:
+        except Exception as e:
             return "unknown"

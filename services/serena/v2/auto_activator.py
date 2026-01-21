@@ -315,9 +315,9 @@ class SerenaAutoActivator:
         Args:
             context: Restored session context or None for fresh workspace
         """
-        print("\n" + "=" * 60)
-        print("  SERENA V2 - ADHD-OPTIMIZED CODE INTELLIGENCE")
-        print("=" * 60)
+        logger.info("\n" + "=" * 60)
+        logger.info("  SERENA V2 - ADHD-OPTIMIZED CODE INTELLIGENCE")
+        logger.info("=" * 60)
 
         if context:
             last_active = context.get('last_active')
@@ -330,24 +330,24 @@ class SerenaAutoActivator:
                 else:
                     time_str = f"{time_ago.seconds // 60} minutes ago"
 
-                print(f"\n  Welcome back! Last session was {time_str}")
+                logger.info(f"\n  Welcome back! Last session was {time_str}")
             else:
-                print(f"\n  Welcome back!")
+                logger.info(f"\n  Welcome back!")
 
-            print(f"  Pattern: {context.get('pattern_type', 'exploration')}")
-            print(f"  Effectiveness: {context.get('effectiveness_score', 0.0):.1%}")
+            logger.info(f"  Pattern: {context.get('pattern_type', 'exploration')}")
+            logger.info(f"  Effectiveness: {context.get('effectiveness_score', 0.0):.1%}")
 
             if context.get('attention_span_seconds', 0) > 0:
                 attention_min = context.get('attention_span_seconds') // 60
-                print(f"  Last attention span: {attention_min} minutes")
+                logger.info(f"  Last attention span: {attention_min} minutes")
 
-            print("\n  Ready to continue where you left off!")
+            logger.info("\n  Ready to continue where you left off!")
         else:
-            print("\n  Welcome to a fresh workspace!")
-            print("  Serena v2 is ready to learn your navigation patterns.")
+            logger.info("\n  Welcome to a fresh workspace!")
+            logger.info("  Serena v2 is ready to learn your navigation patterns.")
 
-        print("\n" + "=" * 60)
-        print()
+        logger.info("\n" + "=" * 60)
+        logger.info()
 
     def start_file_watcher(self) -> bool:
         """
@@ -438,9 +438,9 @@ async def main():
         logger.info("EPIC 2 COMPLETE: File Watcher Active")
         logger.info("All seamless integration components operational")
         logger.info("=" * 60)
-        print("\nSerena v2 is now watching your workspace...")
-        print("Code changes will be automatically analyzed!")
-        print("\nPress Ctrl+C to stop\n")
+        logger.info("\nSerena v2 is now watching your workspace...")
+        logger.info("Code changes will be automatically analyzed!")
+        logger.info("\nPress Ctrl+C to stop\n")
 
         try:
             # Keep running until interrupted

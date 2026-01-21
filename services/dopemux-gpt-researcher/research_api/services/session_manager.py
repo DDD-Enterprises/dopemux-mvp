@@ -4,6 +4,11 @@ Provides persistence and recovery for research sessions with ADHD support
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import json
 import os
 from datetime import datetime, timedelta
@@ -47,7 +52,7 @@ class SessionManager:
         # Start auto-save task
         self.auto_save_task = asyncio.create_task(self._auto_save_loop())
 
-        print(f"✅ Session manager initialized with {len(self.sessions)} active sessions")
+        logger.info(f"✅ Session manager initialized with {len(self.sessions)} active sessions")
 
     async def get_or_create_session(self, session_id: str = None) -> Dict[str, Any]:
         """Get existing session or create new one"""
@@ -217,7 +222,7 @@ class SessionManager:
             async with aiofiles.open(session_file, 'w') as f:
                 await f.write(json.dumps(self.sessions[session_id], indent=2))
         except Exception as e:
-            print(f"⚠️ Failed to save session {session_id}: {e}")
+            logger.error(f"⚠️ Failed to save session {session_id}: {e}")
 
     async def _restore_active_sessions(self):
         """Restore active sessions from disk"""
@@ -234,10 +239,10 @@ class SessionManager:
                     if (datetime.utcnow() - last_activity) < timedelta(days=1):
                         session_id = session['session_id']
                         self.sessions[session_id] = session
-                        print(f"📂 Restored session: {session_id}")
+                        logger.info(f"📂 Restored session: {session_id}")
 
             except Exception as e:
-                print(f"⚠️ Failed to restore session from {session_file}: {e}")
+                logger.error(f"⚠️ Failed to restore session from {session_file}: {e}")
 
     async def _auto_save_loop(self):
         """Auto-save sessions periodically"""
@@ -248,7 +253,7 @@ class SessionManager:
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                print(f"⚠️ Auto-save error: {e}")
+                logger.error(f"⚠️ Auto-save error: {e}")
 
     async def cleanup_old_sessions(self, days: int = 7):
         """Clean up sessions older than specified days"""
@@ -270,7 +275,7 @@ class SessionManager:
                     session_file.unlink()
 
             if sessions_to_remove:
-                print(f"🧹 Cleaned up {len(sessions_to_remove)} old sessions")
+                logger.info(f"🧹 Cleaned up {len(sessions_to_remove)} old sessions")
 
     def get_session_stats(self, session_id: str) -> Dict[str, Any]:
         """Get statistics for a session"""

@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 import argparse
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import csv
 from pathlib import Path
 from collections import Counter, defaultdict
@@ -77,8 +82,9 @@ def main():
     for r in research:
         try:
             rec = int(float(coalesce_empty(r.get("recency_days")) or 0))
-        except Exception:
+        except Exception as e:
             rec = 0
+            logger.error(f"Error: {e}")
         if rec <= 30:
             recency_buckets["<=30d"] += 1
         elif rec <= 90:
@@ -92,8 +98,9 @@ def main():
             conf = float(coalesce_empty(r.get("confidence")) or 0.0)
             total_conf += conf
             conf_count += 1
-        except Exception:
+        except Exception as e:
             pass
+            logger.error(f"Error: {e}")
     avg_conf = (total_conf / conf_count) if conf_count else 0.0
 
     # Top subsystems by component count
@@ -150,7 +157,7 @@ def main():
         for cnt, cid, name in top_components_by_evidence:
             f.write(f"- {name} ({cid}): {cnt}\n")
 
-    print(f"✅ Wrote dashboard: {out_md}")
+    logger.info(f"✅ Wrote dashboard: {out_md}")
 
 
 if __name__ == "__main__":

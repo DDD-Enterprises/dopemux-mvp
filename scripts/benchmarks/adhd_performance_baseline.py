@@ -6,6 +6,11 @@ Establishes production performance baselines.
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import time
 import statistics
 from typing import Dict, List
@@ -28,11 +33,11 @@ class ADHDPerformanceBenchmark:
 
     async def benchmark_all(self, iterations: int = 10) -> Dict:
         """Run all benchmarks with multiple iterations."""
-        print("=" * 70)
-        print("ADHD Performance Baseline Benchmarks")
-        print(f"Iterations: {iterations} per test")
-        print("=" * 70)
-        print()
+        logger.info("=" * 70)
+        logger.info("ADHD Performance Baseline Benchmarks")
+        logger.info(f"Iterations: {iterations} per test")
+        logger.info("=" * 70)
+        logger.info()
 
         # Run benchmarks
         await self.benchmark_f_new_4_search(iterations)
@@ -40,10 +45,10 @@ class ADHDPerformanceBenchmark:
         await self.benchmark_eventbus(iterations)
 
         # Summary
-        print()
-        print("=" * 70)
-        print("Summary")
-        print("=" * 70)
+        logger.info()
+        logger.info("=" * 70)
+        logger.info("Summary")
+        logger.info("=" * 70)
 
         for feature, timings in self.results.items():
             avg_ms = statistics.mean(timings)
@@ -52,13 +57,13 @@ class ADHDPerformanceBenchmark:
 
             status = "✅" if avg_ms < target else "⚠️" if avg_ms < target * 1.5 else "❌"
 
-            print(f"{status} {feature:30} avg:{avg_ms:6.1f}ms p95:{p95_ms:6.1f}ms (target:<{target}ms)")
+            logger.info(f"{status} {feature:30} avg:{avg_ms:6.1f}ms p95:{p95_ms:6.1f}ms (target:<{target}ms)")
 
         return self.results
 
     async def benchmark_f_new_4_search(self, iterations: int):
         """Benchmark attention-aware search (Dope-Context)."""
-        print("Benchmarking F-NEW-4: Attention-Aware Search...")
+        logger.info("Benchmarking F-NEW-4: Attention-Aware Search...")
 
         timings = []
 
@@ -75,15 +80,15 @@ class ADHDPerformanceBenchmark:
                 timings.append(elapsed_ms)
 
             except Exception as e:
-                print(f"   Iteration {i+1}: Error - {e}")
+                logger.error(f"   Iteration {i+1}: Error - {e}")
 
         self.results['f_new_4_search'] = timings
         avg = statistics.mean(timings) if timings else 0
-        print(f"   Average: {avg:.1f}ms (target: <{self.targets['f_new_4_search']}ms)\n")
+        logger.info(f"   Average: {avg:.1f}ms (target: <{self.targets['f_new_4_search']}ms)\n")
 
     async def benchmark_f_new_6_session(self, iterations: int):
         """Benchmark session intelligence queries."""
-        print("Benchmarking F-NEW-6: Session Intelligence...")
+        logger.info("Benchmarking F-NEW-6: Session Intelligence...")
 
         timings = []
 
@@ -98,15 +103,15 @@ class ADHDPerformanceBenchmark:
                 timings.append(elapsed_ms)
 
             except Exception as e:
-                print(f"   Iteration {i+1}: Error - {e}")
+                logger.error(f"   Iteration {i+1}: Error - {e}")
 
         self.results['f_new_6_session'] = timings
         avg = statistics.mean(timings) if timings else 0
-        print(f"   Average: {avg:.1f}ms (target: <{self.targets['f_new_6_session']}ms)\n")
+        logger.info(f"   Average: {avg:.1f}ms (target: <{self.targets['f_new_6_session']}ms)\n")
 
     async def benchmark_eventbus(self, iterations: int):
         """Benchmark EventBus publish latency."""
-        print("Benchmarking EventBus: Event Publishing...")
+        logger.info("Benchmarking EventBus: Event Publishing...")
 
         timings = []
 
@@ -133,12 +138,12 @@ class ADHDPerformanceBenchmark:
             await client.aclose()
 
         except Exception as e:
-            print(f"   Error: {e}")
+            logger.error(f"   Error: {e}")
             timings = [0]  # Placeholder
 
         self.results['eventbus_publish'] = timings
         avg = statistics.mean(timings) if timings else 0
-        print(f"   Average: {avg:.1f}ms (target: <{self.targets['eventbus_publish']}ms)\n")
+        logger.info(f"   Average: {avg:.1f}ms (target: <{self.targets['eventbus_publish']}ms)\n")
 
 
 async def main():

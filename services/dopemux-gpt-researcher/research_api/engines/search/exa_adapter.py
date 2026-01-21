@@ -245,10 +245,11 @@ class ExaSearchAdapter(BaseSearchAdapter):
                 date = datetime.fromisoformat(date_filter.replace('Z', '+00:00'))
 
             return date.strftime('%Y-%m-%d')
-        except:
+        except Exception as e:
             # If parsing fails, return recent date
             return (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
 
+            logger.error(f"Error: {e}")
     def _map_result_types_to_categories(self, result_types: List[SearchResultType]) -> str:
         """Map result types to Exa categories"""
         if SearchResultType.DOCUMENTATION in result_types:

@@ -21,8 +21,13 @@ from genetic_agent.tests.comparison.comparison_runner import ComparisonRunner
 
 async def main():
     """Run comparison tests."""
-    print("🧪 Running Genetic Coding Agent Comparison Tests")
-    print("=" * 50)
+    logger.info("🧪 Running Genetic Coding Agent Comparison Tests")
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+    logger.info("=" * 50)
 
     # Load configuration
     config = AgentConfig()
@@ -52,8 +57,8 @@ async def main():
         }
     ]
 
-    print(f"📋 Running {len(test_cases)} comparison tests...")
-    print()
+    logger.info(f"📋 Running {len(test_cases)} comparison tests...")
+    logger.info()
 
     try:
         # Run comparisons
@@ -62,29 +67,29 @@ async def main():
         # Generate and display report
         report = runner.generate_report()
 
-        print("📊 COMPARISON RESULTS")
-        print("-" * 30)
+        logger.info("📊 COMPARISON RESULTS")
+        logger.info("-" * 30)
         summary = report["summary"]
-        print(f"Total Tests: {summary['total_tests']}")
-        print(f"Vanilla Wins: {summary['vanilla_wins']}")
-        print(f"Genetic Wins: {summary['genetic_wins']}")
-        print(f"Ties: {summary['ties']}")
-        print(".1%")
-        print(".1%")
-        print(".2f")
-        print(".2f")
+        logger.info(f"Total Tests: {summary['total_tests']}")
+        logger.info(f"Vanilla Wins: {summary['vanilla_wins']}")
+        logger.info(f"Genetic Wins: {summary['genetic_wins']}")
+        logger.info(f"Ties: {summary['ties']}")
+        logger.info(".1%")
+        logger.info(".1%")
+        logger.info(".2f")
+        logger.info(".2f")
         if summary['avg_improvement_ratio'] != 0:
-            print(".1%")
+            logger.info(".1%")
 
-        print()
-        print("🎯 RECOMMENDATIONS")
-        print("-" * 20)
+        logger.info()
+        logger.info("🎯 RECOMMENDATIONS")
+        logger.info("-" * 20)
         for rec in report["recommendations"]:
-            print(f"• {rec}")
+            logger.info(f"• {rec}")
 
-        print()
-        print("📋 DETAILED RESULTS")
-        print("-" * 20)
+        logger.info()
+        logger.info("📋 DETAILED RESULTS")
+        logger.info("-" * 20)
         for detail in report["details"]:
             status = "✅" if detail["genetic_success"] else "❌"
             print(f"{status} {detail['test_case']}: {detail['winner']} "
@@ -95,15 +100,15 @@ async def main():
         with open(report_file, 'w') as f:
             json.dump(report, f, indent=2, default=str)
 
-        print(f"\n💾 Report saved to: {report_file}")
+        logger.info(f"\n💾 Report saved to: {report_file}")
 
     except Exception as e:
-        print(f"❌ Error during comparison: {e}")
+        logger.error(f"❌ Error during comparison: {e}")
         import traceback
         traceback.print_exc()
         return 1
 
-    print("\n🎉 Comparison testing complete!")
+    logger.info("\n🎉 Comparison testing complete!")
     return 0
 
 

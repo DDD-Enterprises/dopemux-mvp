@@ -14,6 +14,11 @@ are after `if __name__`). This standalone demo shows the correct logic.
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Dict, Any
@@ -203,9 +208,9 @@ class ADHDTaskPrioritizer:
 async def demo():
     """Demonstrate ADHD-aware task prioritization."""
 
-    print("\n" + "="*70)
-    print("ADHD-AWARE TASK PRIORITIZATION DEMO")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("ADHD-AWARE TASK PRIORITIZATION DEMO")
+    logger.info("="*70)
 
     # Create test tasks
     tasks = [
@@ -254,41 +259,41 @@ async def demo():
         session_duration_minutes=15
     )
 
-    print(f"\n📊 Current User State:")
-    print(f"   Energy: {user_state.energy.value}")
-    print(f"   Attention: {user_state.attention.value}")
-    print(f"   Session: {user_state.session_duration_minutes} min")
+    logger.info(f"\n📊 Current User State:")
+    logger.info(f"   Energy: {user_state.energy.value}")
+    logger.info(f"   Attention: {user_state.attention.value}")
+    logger.info(f"   Session: {user_state.session_duration_minutes} min")
 
     # Prioritize tasks
     prioritizer = ADHDTaskPrioritizer()
     recommendations = prioritizer.prioritize_tasks(tasks, user_state, limit=3)
 
-    print(f"\n🎯 Top 3 Recommended Tasks:")
+    logger.info(f"\n🎯 Top 3 Recommended Tasks:")
     for rec in recommendations:
-        print(f"\n  {rec['priority']}. {rec['title']}")
-        print(f"     Confidence: {rec['confidence']:.2f}")
-        print(f"     Reason: {rec['reason']}")
+        logger.info(f"\n  {rec['priority']}. {rec['title']}")
+        logger.info(f"     Confidence: {rec['confidence']:.2f}")
+        logger.info(f"     Reason: {rec['reason']}")
         print(f"     Match: energy={rec['adhd_match']['energy_match']}, "
               f"complexity={rec['adhd_match']['complexity']:.1f}")
 
     # Verify low-complexity tasks are prioritized
-    print(f"\n✅ Validation:")
+    logger.info(f"\n✅ Validation:")
     top_task = recommendations[0]
     if top_task['adhd_match']['complexity'] <= 0.3:
-        print(f"   ✓ Low-complexity task prioritized (complexity: {top_task['adhd_match']['complexity']:.1f})")
+        logger.info(f"   ✓ Low-complexity task prioritized (complexity: {top_task['adhd_match']['complexity']:.1f})")
     else:
-        print(f"   ⚠️ Top task complexity: {top_task['adhd_match']['complexity']:.1f}")
+        logger.info(f"   ⚠️ Top task complexity: {top_task['adhd_match']['complexity']:.1f}")
 
     # Show all scores
-    print(f"\n📈 All Task Scores:")
+    logger.info(f"\n📈 All Task Scores:")
     all_recs = prioritizer.prioritize_tasks(tasks, user_state, limit=10)
     for rec in all_recs:
         match_str = "✓" if rec['adhd_match']['energy_match'] else "✗"
-        print(f"   [{match_str}] {rec['confidence']:.2f} - {rec['title']}")
+        logger.info(f"   [{match_str}] {rec['confidence']:.2f} - {rec['title']}")
 
-    print("\n" + "="*70)
-    print("✅ ADHD prioritization logic validated!")
-    print("="*70 + "\n")
+    logger.info("\n" + "="*70)
+    logger.info("✅ ADHD prioritization logic validated!")
+    logger.info("="*70 + "\n")
 
 
 if __name__ == "__main__":

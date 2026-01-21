@@ -11,6 +11,11 @@ import time
 class Event:
     """Event data class."""
     event_type: str
+
+import logging
+
+logger = logging.getLogger(__name__)
+
     payload: Dict[str, Any]
     timestamp: datetime
     source: str = "unknown"
@@ -52,7 +57,7 @@ class SimpleEventBus:
                     try:
                         callback(event)
                     except Exception as e:
-                        print(f"Error in callback: {e}")
+                        logger.error(f"Error in callback: {e}")
 
     def get_subscribers_count(self) -> Dict[str, int]:
         """Get subscriber counts per event type."""

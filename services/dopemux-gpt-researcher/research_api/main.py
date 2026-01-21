@@ -370,7 +370,11 @@ async def websocket_progress_endpoint(
         while True:
             try:
                 data = await websocket.receive_text()
-                message = eval(data)  # In production, use json.loads with error handling
+                try:
+                    message = json.loads(data)
+                except json.JSONDecodeError:
+                    logger.warning("Invalid JSON received on research websocket; dropping message")
+                    continue
 
                 if message.get("type") == "ping":
                     await websocket.send_json({"type": "pong"})

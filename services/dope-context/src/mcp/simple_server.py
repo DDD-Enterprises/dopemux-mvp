@@ -4,6 +4,11 @@ Simple MCP Server for Dope-Context - Basic implementation without fastmcp depend
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import json
 from typing import Any, Dict, List
 
@@ -152,5 +157,5 @@ class SimpleMCPServer:
 
 if __name__ == "__main__":
     server = SimpleMCPServer()
-    print(f"Starting Simple MCP Server on port {server.port}")
+    logger.info(f"Starting Simple MCP Server on port {server.port}")
     asyncio.run(server.run())

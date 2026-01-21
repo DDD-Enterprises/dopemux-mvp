@@ -459,6 +459,7 @@ class DeploymentOrchestrationCoordinator:
             task.error_message = str(e)
             return False
 
+            logger.error(f"Error: {e}")
         finally:
             task.completed_at = datetime.now()
 
@@ -512,6 +513,7 @@ class DeploymentOrchestrationCoordinator:
                 "timestamp": datetime.now().isoformat()
             }
 
+            logger.error(f"Error: {e}")
     async def _format_test_results_adhd_friendly(self, result: Dict[str, Any]) -> Dict[str, Any]:
         """Format test results in ADHD-friendly manner."""
         # Add visual indicators

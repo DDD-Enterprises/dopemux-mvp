@@ -130,6 +130,7 @@ class MCPEventWrapper:
             sys.stderr.write("[EVENT_WRAPPER] Continuing without event emission\n")
             sys.stderr.flush()
 
+            logger.error(f"Error: {e}")
     async def start_server(self):
         """Start the underlying MCP server process."""
         if self.server_name not in self.server_configs:
@@ -180,6 +181,7 @@ class MCPEventWrapper:
                 sys.stderr.write(f"[EVENT_WRAPPER] Error in stdin processing: {e}\n")
                 sys.stderr.flush()
 
+                logger.error(f"Error: {e}")
     async def process_server_to_stdout(self, reader):
         """Process messages from MCP server to Claude Code."""
         while True:
@@ -204,6 +206,7 @@ class MCPEventWrapper:
                 sys.stderr.write(f"[EVENT_WRAPPER] Error in stdout processing: {e}\n")
                 sys.stderr.flush()
 
+                logger.error(f"Error: {e}")
     async def process_server_stderr(self):
         """Forward server stderr to Claude Code stderr."""
         while True:
@@ -219,6 +222,7 @@ class MCPEventWrapper:
                 sys.stderr.write(f"[EVENT_WRAPPER] Error in stderr processing: {e}\n")
                 sys.stderr.flush()
 
+                logger.error(f"Error: {e}")
     async def handle_request(self, message: dict):
         """Handle request from Claude Code to MCP server."""
         if not self.mcp_producer:
@@ -245,6 +249,7 @@ class MCPEventWrapper:
                 sys.stderr.write(f"[EVENT_WRAPPER] Error emitting start event: {e}\n")
                 sys.stderr.flush()
 
+                logger.error(f"Error: {e}")
     async def handle_response(self, message: dict):
         """Handle response from MCP server to Claude Code."""
         if not self.mcp_producer:
@@ -284,6 +289,7 @@ class MCPEventWrapper:
                 sys.stderr.write(f"[EVENT_WRAPPER] Error emitting completion event: {e}\n")
                 sys.stderr.flush()
 
+                logger.error(f"Error: {e}")
     async def emit_conport_event(self, method: str, params: dict, result: any):
         """Emit ConPort-specific domain events."""
         try:
@@ -314,6 +320,7 @@ class MCPEventWrapper:
             sys.stderr.write(f"[EVENT_WRAPPER] Error emitting ConPort event: {e}\n")
             sys.stderr.flush()
 
+            logger.error(f"Error: {e}")
     async def run(self):
         """Run the event wrapper."""
         # Initialize event bus (non-blocking if Redis unavailable)

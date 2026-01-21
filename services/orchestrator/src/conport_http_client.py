@@ -907,55 +907,55 @@ def get_sync_http_client(workspace_id: str) -> ConPortHTTPClientSync:
 if __name__ == "__main__":
     """Test HTTP client (both sync and async)."""
 
-    print("Testing Sync ConPort HTTP Client:")
-    print("=" * 60)
+    logger.info("Testing Sync ConPort HTTP Client:")
+    logger.info("=" * 60)
 
     client = ConPortHTTPClientSync("/Users/hue/code/dopemux-mvp")
 
     try:
         # Test saving
-        print("\n1. Saving custom data...")
+        logger.info("\n1. Saving custom data...")
         result = client.log_custom_data(
             category="test_sync",
             key=f"test_{datetime.now().timestamp()}",
             value={"message": "Hello from sync client!", "timestamp": datetime.now().isoformat()}
         )
-        print(f"   Mode: {result['mode']}, Success: {result['success']}")
+        logger.info(f"   Mode: {result['mode']}, Success: {result['success']}")
 
         # Test querying
-        print("\n2. Querying custom data...")
+        logger.info("\n2. Querying custom data...")
         results = client.get_custom_data(category="test_sync", limit=5)
-        print(f"   Found: {len(results)} items")
+        logger.info(f"   Found: {len(results)} items")
 
-        print("\n✅ Sync HTTP client test complete")
-        print(f"   Circuit breaker failures: {client.circuit.failures}")
-        print(f"   Circuit breaker open: {client.circuit.is_open}")
+        logger.info("\n✅ Sync HTTP client test complete")
+        logger.error(f"   Circuit breaker failures: {client.circuit.failures}")
+        logger.info(f"   Circuit breaker open: {client.circuit.is_open}")
 
     finally:
         client.close()
 
-    print("\n" + "=" * 60)
-    print("Testing Async ConPort HTTP Client:")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("Testing Async ConPort HTTP Client:")
+    logger.info("=" * 60)
 
     async def test_async():
         async with ConPortHTTPClientContext("/Users/hue/code/dopemux-mvp") as client:
             # Test saving
-            print("\n1. Saving custom data...")
+            logger.info("\n1. Saving custom data...")
             result = await client.log_custom_data(
                 category="test_async",
                 key=f"test_{datetime.now().timestamp()}",
                 value={"message": "Hello from async client!", "timestamp": datetime.now().isoformat()}
             )
-            print(f"   Mode: {result['mode']}, Success: {result['success']}")
+            logger.info(f"   Mode: {result['mode']}, Success: {result['success']}")
 
             # Test querying
-            print("\n2. Querying custom data...")
+            logger.info("\n2. Querying custom data...")
             results = await client.get_custom_data(category="test_async", limit=5)
-            print(f"   Found: {len(results)} items")
+            logger.info(f"   Found: {len(results)} items")
 
-            print("\n✅ Async HTTP client test complete")
-            print(f"   Circuit breaker failures: {client.circuit.failures}")
-            print(f"   Circuit breaker open: {client.circuit.is_open}")
+            logger.info("\n✅ Async HTTP client test complete")
+            logger.error(f"   Circuit breaker failures: {client.circuit.failures}")
+            logger.info(f"   Circuit breaker open: {client.circuit.is_open}")
 
     asyncio.run(test_async())

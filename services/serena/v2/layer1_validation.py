@@ -614,6 +614,6 @@ if __name__ == "__main__":
         import sys
         workspace = sys.argv[1] if len(sys.argv) > 1 else None
         results = await run_layer1_validation(workspace)
-        print(json.dumps(results, indent=2))
+        logger.info(json.dumps(results, indent=2))
 
     asyncio.run(main())

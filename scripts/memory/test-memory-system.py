@@ -53,6 +53,7 @@ class MemorySystemTester:
             self.log_test("Database Connection", False, str(e))
             return False
 
+            logger.error(f"Error: {e}")
     def test_milvus_connection(self) -> bool:
         """Test Milvus connection."""
         try:
@@ -64,6 +65,7 @@ class MemorySystemTester:
             self.log_test("Milvus Connection", False, str(e))
             return False
 
+            logger.error(f"Error: {e}")
     def test_conport_health(self) -> bool:
         """Test ConPort health endpoint."""
         try:
@@ -73,6 +75,7 @@ class MemorySystemTester:
             self.log_test("ConPort Health", False, str(e))
             return False
 
+            logger.error(f"Error: {e}")
     async def test_mem_upsert(self) -> bool:
         """Test mem.upsert tool via direct database check."""
         try:
@@ -109,6 +112,7 @@ class MemorySystemTester:
             self.log_test("mem.upsert", False, str(e))
             return False
 
+            logger.error(f"Error: {e}")
     async def test_graph_operations(self) -> bool:
         """Test graph link and neighbor operations."""
         try:
@@ -151,6 +155,7 @@ class MemorySystemTester:
             self.log_test("Graph Operations", False, str(e))
             return False
 
+            logger.error(f"Error: {e}")
     async def test_conversation_storage(self) -> bool:
         """Test conversation thread and message storage."""
         try:
@@ -186,6 +191,7 @@ class MemorySystemTester:
             self.log_test("Conversation Storage", False, str(e))
             return False
 
+            logger.error(f"Error: {e}")
     def test_milvus_collections(self) -> bool:
         """Test that Milvus collections are properly created."""
         try:
@@ -205,6 +211,7 @@ class MemorySystemTester:
             self.log_test("Milvus Collections", False, str(e))
             return False
 
+            logger.error(f"Error: {e}")
     async def test_import_tracking(self) -> bool:
         """Test import run tracking."""
         try:
@@ -231,6 +238,7 @@ class MemorySystemTester:
             self.log_test("Import Tracking", False, str(e))
             return False
 
+            logger.error(f"Error: {e}")
     async def run_all_tests(self) -> bool:
         """Run all tests and return overall success."""
         logger.info("🧪 Starting Dopemux Memory System Tests")

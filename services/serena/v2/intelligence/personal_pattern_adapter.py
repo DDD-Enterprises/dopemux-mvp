@@ -863,9 +863,10 @@ class PersonalPatternAdapter:
 
             return True
 
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def _invalidate_personalization_cache(self, user_session_id: str, template_hash: str) -> None:
         """Invalidate personalization cache for user and template."""
         keys_to_remove = [
@@ -942,8 +943,8 @@ async def create_personal_pattern_adapter(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("🔧 Serena Personal Pattern Adapter")
-        print("Delta patch system for template personalization with immutability")
-        print("✅ Module loaded successfully")
+        logger.info("🔧 Serena Personal Pattern Adapter")
+        logger.info("Delta patch system for template personalization with immutability")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

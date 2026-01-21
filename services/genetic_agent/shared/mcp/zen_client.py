@@ -59,6 +59,7 @@ class ZenClient(AsyncClientMixin):
         except Exception as e:
             raise Exception(f"Zen MCP chat call error: {str(e)}")
 
+            logger.error(f"Error: {e}")
     async def thinkdeep(self, step: str, step_number: int, total_steps: int,
                        next_step_required: bool, findings: str, model: str = "gpt-5") -> Dict[str, Any]:
         """Use Zen MCP thinkdeep for multi-step investigation."""
@@ -78,6 +79,7 @@ class ZenClient(AsyncClientMixin):
         except Exception as e:
             raise Exception(f"Zen MCP thinkdeep call error: {str(e)}")
 
+            logger.error(f"Error: {e}")
     async def planner(self, step: str, step_number: int, total_steps: int,
                      next_step_required: bool, model: str = "gpt-5") -> Dict[str, Any]:
         """Use Zen MCP planner for interactive planning."""
@@ -96,6 +98,7 @@ class ZenClient(AsyncClientMixin):
         except Exception as e:
             raise Exception(f"Zen MCP planner call error: {str(e)}")
 
+            logger.error(f"Error: {e}")
     async def consensus(self, step: str, step_number: int, total_steps: int,
                        next_step_required: bool, findings: str, models: List[Dict]) -> Dict[str, Any]:
         """Use Zen MCP consensus for multi-model decision making."""
@@ -115,6 +118,7 @@ class ZenClient(AsyncClientMixin):
         except Exception as e:
             raise Exception(f"Zen MCP consensus call error: {str(e)}")
 
+            logger.error(f"Error: {e}")
     async def debug(self, step: str, step_number: int, total_steps: int,
                    next_step_required: bool, findings: str, model: str = "gemini-2.5-pro") -> Dict[str, Any]:
         """Use Zen MCP debug for systematic debugging."""
@@ -134,6 +138,7 @@ class ZenClient(AsyncClientMixin):
         except Exception as e:
             raise Exception(f"Zen MCP debug call error: {str(e)}")
 
+            logger.error(f"Error: {e}")
     async def codereview(self, step: str, step_number: int, total_steps: int,
                         next_step_required: bool, findings: str, model: str = "gpt-5-codex") -> Dict[str, Any]:
         """Use Zen MCP codereview for comprehensive code analysis."""

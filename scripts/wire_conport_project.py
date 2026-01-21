@@ -18,6 +18,11 @@ Workspace id:
 """
 
 import argparse
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import json
 import os
 import re
@@ -34,8 +39,9 @@ def git_branch(cwd: Path) -> Optional[str]:
         if out:
             # Sanitize to simple id
             return re.sub(r"[^a-zA-Z0-9_.-]", "-", out)
-    except Exception:
+    except Exception as e:
         pass
+        logger.error(f"Error: {e}")
     return None
 
 
@@ -58,10 +64,11 @@ def detect_workspace_id(cwd: Path) -> str:
     try:
         root = subprocess.check_output(["git", "rev-parse", "--show-toplevel"], cwd=str(cwd), text=True).strip()
         return root
-    except Exception:
+    except Exception as e:
         return str(cwd)
 
 
+        logger.error(f"Error: {e}")
 def write_project_config(project_root: Path, instance_id: Optional[str], workspace_id: str) -> Path:
     claude_dir = project_root / ".claude"
     claude_dir.mkdir(parents=True, exist_ok=True)
@@ -72,8 +79,9 @@ def write_project_config(project_root: Path, instance_id: Optional[str], workspa
     if cfg_path.exists():
         try:
             existing = json.loads(cfg_path.read_text())
-        except Exception:
+        except Exception as e:
             existing = {}
+            logger.error(f"Error: {e}")
     if not isinstance(existing, dict):
         existing = {}
     if not isinstance(existing.get("mcpServers"), dict):
@@ -128,12 +136,12 @@ def main():
     workspace_id = detect_workspace_id(project_root)
 
     cfg_path = write_project_config(project_root, instance_id, workspace_id)
-    print("✅ Project ConPort wired for Claude MCP")
-    print(f"  Config: {cfg_path}")
-    print(f"  Instance: {instance_id}")
-    print(f"  Workspace: {workspace_id}")
-    print("  Server name: conport (stdio via docker exec)")
-    print("  Container target:", "mcp-conport" + (f"_{instance_id}" if instance_id else ""))
+    logger.info("✅ Project ConPort wired for Claude MCP")
+    logger.info(f"  Config: {cfg_path}")
+    logger.info(f"  Instance: {instance_id}")
+    logger.info(f"  Workspace: {workspace_id}")
+    logger.info("  Server name: conport (stdio via docker exec)")
+    logger.info("  Container target:", "mcp-conport" + (f"_{instance_id}" if instance_id else ""))
 
 
 if __name__ == "__main__":

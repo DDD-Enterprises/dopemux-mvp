@@ -11,6 +11,11 @@ multiple clones.
 
 from __future__ import annotations
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 import argparse
 import importlib.util
 from pathlib import Path
@@ -59,7 +64,7 @@ def render_templates(workspace_dir: Path, replacements: dict) -> dict[str, Path]
     rendered: dict[str, Path] = {}
     for name, template_path in TEMPLATES.items():
         if not template_path.exists():
-            print(f"[warn] Template missing: {template_path}", file=sys.stderr)
+            logger.warning(f"[warn] Template missing: {template_path}", file=sys.stderr)
             continue
         try:
             text = template_path.read_text(encoding="utf-8")
@@ -69,7 +74,7 @@ def render_templates(workspace_dir: Path, replacements: dict) -> dict[str, Path]
             output_path.write_text(text, encoding="utf-8")
             rendered[name] = output_path
         except OSError as exc:
-            print(f"[warn] Failed to render {template_path}: {exc}", file=sys.stderr)
+            logger.error(f"[warn] Failed to render {template_path}: {exc}", file=sys.stderr)
     return rendered
 
 
@@ -87,7 +92,7 @@ def main() -> None:
     try:
         artifacts = ensure_workspace_artifacts(workspace_path, set_default=args.set_default)
     except OSError as exc:
-        print(f"[error] Unable to persist workspace artifacts: {exc}", file=sys.stderr)
+        logger.error(f"[error] Unable to persist workspace artifacts: {exc}", file=sys.stderr)
         sys.exit(1)
 
     entry = artifacts.entry
@@ -101,14 +106,14 @@ def main() -> None:
         },
     )
 
-    print("Workspace registered ✅")
-    print(f"  Root: {workspace_path}")
-    print(f"  Slug: {entry.slug}")
-    print(f"  Env : {env_path}")
-    print(f"  Meta: {meta_path}")
+    logger.info("Workspace registered ✅")
+    logger.info(f"  Root: {workspace_path}")
+    logger.info(f"  Slug: {entry.slug}")
+    logger.info(f"  Env : {env_path}")
+    logger.info(f"  Meta: {meta_path}")
     if rendered_templates:
         for name, path in rendered_templates.items():
-            print(f"  Template[{name}]: {path}")
+            logger.info(f"  Template[{name}]: {path}")
 
 
 if __name__ == "__main__":

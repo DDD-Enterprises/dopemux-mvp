@@ -6,6 +6,11 @@ for backwards compatibility with existing code.
 """
 
 from typing import Dict
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from .agent_spawner import AgentConfig, AgentType
 from .config_loader import load_agent_config, AgentConfig as LoadedAgentConfig
 
@@ -50,13 +55,13 @@ class AgentConfigFactory:
         for name, loaded_config in self.loaded_configs.items():
             # Skip MCP providers (handled separately)
             if loaded_config.agent_type == 'mcp':
-                print(f"ℹ️  {name}: MCP provider (not spawned via PTY)")
+                logger.info(f"ℹ️  {name}: MCP provider (not spawned via PTY)")
                 continue
 
             # Get AgentType enum
             agent_type = self.AGENT_TYPE_MAP.get(name)
             if not agent_type:
-                print(f"⚠️  {name}: Unknown agent type, skipping")
+                logger.info(f"⚠️  {name}: Unknown agent type, skipping")
                 continue
 
             # Build command list
@@ -172,36 +177,36 @@ def auto_configure_spawner(spawner, config_path: str = None):
     for agent_type, config in configs.items():
         spawner.register_agent(agent_type, config)
 
-    print(f"✅ Auto-configured {len(configs)} agents from config file")
+    logger.info(f"✅ Auto-configured {len(configs)} agents from config file")
 
 
 if __name__ == "__main__":
     """Test agent config factory."""
-    print("🧪 Testing Agent Config Factory")
-    print("=" * 60)
+    logger.info("🧪 Testing Agent Config Factory")
+    logger.info("=" * 60)
 
     try:
         factory = AgentConfigFactory()
         configs = factory.load()
 
-        print(f"\n✅ Loaded {len(configs)} CLI agents:")
+        logger.info(f"\n✅ Loaded {len(configs)} CLI agents:")
         for agent_type, config in configs.items():
-            print(f"\n  {agent_type.value}:")
-            print(f"    Command: {config.command}")
-            print(f"    Auto-restart: {config.auto_restart}")
+            logger.info(f"\n  {agent_type.value}:")
+            logger.info(f"    Command: {config.command}")
+            logger.info(f"    Auto-restart: {config.auto_restart}")
 
         # Show MCP providers separately
         mcp_providers = factory.get_mcp_providers()
         if mcp_providers:
-            print(f"\n✅ Found {len(mcp_providers)} MCP providers:")
+            logger.info(f"\n✅ Found {len(mcp_providers)} MCP providers:")
             for name, config in mcp_providers.items():
-                print(f"\n  {name}:")
-                print(f"    Zen Model: {config.zen_model}")
-                print(f"    Capabilities: {config.capabilities}")
+                logger.info(f"\n  {name}:")
+                logger.info(f"    Zen Model: {config.zen_model}")
+                logger.info(f"    Capabilities: {config.capabilities}")
 
-        print("\n✅ Agent config factory test passed!")
+        logger.info("\n✅ Agent config factory test passed!")
 
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        logger.error(f"\n❌ Error: {e}")
         import traceback
         traceback.print_exc()

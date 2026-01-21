@@ -36,6 +36,11 @@ Integration Points:
 """
 
 from datetime import datetime, timedelta
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from enum import Enum
 from typing import Dict, Optional, Any, Tuple, List
 from dataclasses import dataclass, field
@@ -141,8 +146,8 @@ class CognitiveLoadBalancer:
 
         # Get current load
         load = await balancer.calculate_load()
-        print(f"Cognitive Load: {load.score:.0%} ({load.status.value})")
-        print(f"Recommendation: {load.recommendation}")
+        logger.info(f"Cognitive Load: {load.score:.0%} ({load.status.value})")
+        logger.info(f"Recommendation: {load.recommendation}")
 
         # Start background monitoring
         await balancer.start_monitoring(interval_seconds=10)
@@ -359,7 +364,7 @@ class CognitiveLoadBalancer:
         # Check performance target
         duration = (datetime.now() - start_time).total_seconds()
         if duration > 0.05:  # 50ms target
-            print(f"⚠️ Load calculation slow: {duration*1000:.0f}ms (target: <50ms)")
+            logger.info(f"⚠️ Load calculation slow: {duration*1000:.0f}ms (target: <50ms)")
 
         self._last_load = load
         return load
@@ -379,9 +384,10 @@ class CognitiveLoadBalancer:
         try:
             current_task = await self.orchestrator.get_current_task()
             complexity = getattr(current_task, 'complexity', 0.5) if current_task else 0.0
-        except Exception:
+        except Exception as e:
             complexity = 0.5
 
+            logger.error(f"Error: {e}")
         self._set_cache(cache_key, complexity)
         return complexity
 
@@ -400,9 +406,10 @@ class CognitiveLoadBalancer:
                 status_filter="IN_PROGRESS"
             )
             count = len(in_progress.get("result", []))
-        except Exception:
+        except Exception as e:
             count = 0
 
+            logger.error(f"Error: {e}")
         self._set_cache(cache_key, count)
         return count
 
@@ -419,8 +426,9 @@ class CognitiveLoadBalancer:
             try:
                 stats = await self.switch_recovery.get_recovery_statistics()
                 count = stats.get("total_switches", 0)
-            except Exception:
+            except Exception as e:
                 count = 0
+                logger.error(f"Error: {e}")
         else:
             count = 0
 
@@ -457,9 +465,10 @@ class CognitiveLoadBalancer:
                     last_break_time = datetime.fromisoformat(timestamp_str)
                     minutes = (datetime.now() - last_break_time).total_seconds() / 60
                     return minutes
-        except Exception:
+        except Exception as e:
             pass
 
+            logger.error(f"Error: {e}")
         # Default: assume 30 minutes since break
         return 30.0
 
@@ -518,7 +527,7 @@ class CognitiveLoadBalancer:
             interval_seconds: How often to recalculate (default 10)
         """
         self._monitoring = True
-        print(f"🧠 Cognitive Load Balancer monitoring started (every {interval_seconds}s)")
+        logger.info(f"🧠 Cognitive Load Balancer monitoring started (every {interval_seconds}s)")
 
         while self._monitoring:
             try:
@@ -526,8 +535,8 @@ class CognitiveLoadBalancer:
 
                 # Alert on critical load
                 if load.status == LoadStatus.CRITICAL:
-                    print(f"\n🚨 CRITICAL COGNITIVE LOAD: {load.score:.0%}")
-                    print(f"   {load.recommendation}")
+                    logger.error(f"\n🚨 CRITICAL COGNITIVE LOAD: {load.score:.0%}")
+                    logger.info(f"   {load.recommendation}")
 
                 # Track optimal time
                 if load.status == LoadStatus.OPTIMAL and self.metrics:
@@ -536,13 +545,13 @@ class CognitiveLoadBalancer:
                 await asyncio.sleep(interval_seconds)
 
             except Exception as e:
-                print(f"⚠️ Load monitoring error: {e}")
+                logger.error(f"⚠️ Load monitoring error: {e}")
                 await asyncio.sleep(interval_seconds)
 
     def stop_monitoring(self):
         """Stop background monitoring."""
         self._monitoring = False
-        print("🛑 Cognitive Load Balancer monitoring stopped")
+        logger.info("🛑 Cognitive Load Balancer monitoring stopped")
 
     def get_last_load(self) -> Optional[CognitiveLoad]:
         """Get last calculated load (cached)."""
@@ -572,9 +581,9 @@ async def get_current_cognitive_load(
             conport_client=conport
         )
 
-        print(f"Cognitive Load: {load.score:.0%}")
-        print(f"Status: {load.status.value}")
-        print(f"Recommendation: {load.recommendation}")
+        logger.info(f"Cognitive Load: {load.score:.0%}")
+        logger.info(f"Status: {load.status.value}")
+        logger.info(f"Recommendation: {load.recommendation}")
     """
     balancer = CognitiveLoadBalancer(
         workspace_id=workspace_id,

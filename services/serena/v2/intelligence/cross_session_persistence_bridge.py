@@ -707,17 +707,19 @@ class CrossSessionPersistenceBridge:
             age_minutes = (datetime.now(timezone.utc) - cached_at).total_seconds() / 60
             return age_minutes < ttl_minutes
 
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def _test_postgres_connection(self) -> bool:
         """Test PostgreSQL connection health."""
         try:
             await self.database.execute_query("SELECT 1")
             return True
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def _check_template_exists_in_postgres(self, template_hash: str) -> Optional[Dict[str, Any]]:
         """Check if template exists in PostgreSQL."""
         try:
@@ -843,8 +845,8 @@ async def test_persistence_bridge(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("🌉 Serena Cross-Session Persistence Bridge")
-        print("ConPort strategic ↔ PostgreSQL tactical synchronization")
-        print("✅ Module loaded successfully")
+        logger.info("🌉 Serena Cross-Session Persistence Bridge")
+        logger.info("ConPort strategic ↔ PostgreSQL tactical synchronization")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

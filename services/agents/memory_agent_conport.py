@@ -192,9 +192,9 @@ if __name__ == "__main__":
     async def demo_with_conport():
         """Demonstrate MemoryAgent with ConPort integration."""
 
-        print("\n" + "="*60)
-        print("MemoryAgent + ConPort Integration Demo")
-        print("="*60 + "\n")
+        logger.info("\n" + "="*60)
+        logger.info("MemoryAgent + ConPort Integration Demo")
+        logger.info("="*60 + "\n")
 
         # Create agent (auto-detects workspace)
         agent = await create_memory_agent(
@@ -210,7 +210,7 @@ if __name__ == "__main__":
         )
 
         # Simulate work with state updates
-        print("Working on token generation...\n")
+        logger.info("Working on token generation...\n")
         await asyncio.sleep(35)  # Triggers first auto-save at 30s
 
         await agent.update_state(
@@ -228,20 +228,20 @@ if __name__ == "__main__":
             "Use RS256 algorithm for JWT signing (more secure than HS256)"
         )
 
-        print("Continuing implementation...\n")
+        logger.info("Continuing implementation...\n")
         await asyncio.sleep(35)  # Triggers second auto-save
 
         # End session
         summary = await agent.end_session(outcome="completed")
 
         # Show metrics
-        print("\n" + "="*60)
-        print("Final Metrics:")
-        print("="*60)
+        logger.info("\n" + "="*60)
+        logger.info("Final Metrics:")
+        logger.info("="*60)
         metrics = agent.get_metrics()
         for key, value in metrics.items():
-            print(f"  {key}: {value}")
-        print()
+            logger.info(f"  {key}: {value}")
+        logger.info()
 
     # Run demo
     asyncio.run(demo_with_conport())

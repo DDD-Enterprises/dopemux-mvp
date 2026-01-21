@@ -418,18 +418,20 @@ class InstanceManager:
             with open(self._cache_file, 'w') as f:
                 json.dump(data, f, indent=2)
 
-        except Exception:
+        except Exception as e:
             # Silent failure - cache is optional optimization
             pass
 
+            logger.error(f"Error: {e}")
     def _invalidate_cache(self) -> None:
         """Invalidate cache (force fresh detection on next call)."""
         try:
             self._cache_file.unlink(missing_ok=True)
-        except Exception:
+        except Exception as e:
             pass
 
 
+            logger.error(f"Error: {e}")
 def detect_instances_sync(workspace_root: Path) -> List[RunningInstance]:
     """
     Synchronous wrapper for detect_running_instances.

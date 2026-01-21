@@ -194,9 +194,10 @@ class FalseStartsAggregator:
                             detected_at.replace('Z', '+00:00')
                         )
                         days_idle = (datetime.now(timezone.utc) - detected_timestamp).days
-                    except Exception:
+                    except Exception as e:
                         pass
 
+                        logger.error(f"Error: {e}")
                 # Extract file list from detection signals
                 files = []
                 signals = data.get("detection_signals", {})

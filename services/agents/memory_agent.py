@@ -180,12 +180,12 @@ class MemoryAgent:
         logger.info(f"✅ Session started: {task_description} (mode: {mode}, complexity: {complexity})")
 
         if self.gentle_reorientation:
-            print(f"\n🎯 Session Started")
-            print(f"   Task: {task_description}")
-            print(f"   Mode: {mode}")
-            print(f"   Complexity: {complexity:.1f}")
-            print(f"   Auto-save: Every {self.auto_save_interval}s")
-            print(f"   You're safe - no work will be lost!\n")
+            logger.info(f"\n🎯 Session Started")
+            logger.info(f"   Task: {task_description}")
+            logger.info(f"   Mode: {mode}")
+            logger.info(f"   Complexity: {complexity:.1f}")
+            logger.info(f"   Auto-save: Every {self.auto_save_interval}s")
+            logger.info(f"   You're safe - no work will be lost!\n")
 
         return self.current_session
 
@@ -334,35 +334,35 @@ class MemoryAgent:
         now = datetime.now(timezone.utc)
         time_ago = self._human_time_delta(now - started)
 
-        print(f"\n{'='*60}")
-        print(f"💡 Welcome back! Here's where you left off:")
-        print(f"{'='*60}\n")
-        print(f"📍 Current Task: {state.current_task}")
-        print(f"⏱️  Started: {time_ago} ago")
-        print(f"✅ Time Invested: {state.time_invested_minutes} minutes")
-        print(f"🎯 Mode: {state.mode}")
-        print(f"📊 Complexity: {state.complexity:.1f}")
-        print(f"⚡ Energy Level: {state.energy_level}")
-        print(f"🧠 Attention State: {state.attention_state}")
+        logger.info(f"\n{'='*60}")
+        logger.info(f"💡 Welcome back! Here's where you left off:")
+        logger.info(f"{'='*60}\n")
+        logger.info(f"📍 Current Task: {state.current_task}")
+        logger.info(f"⏱️  Started: {time_ago} ago")
+        logger.info(f"✅ Time Invested: {state.time_invested_minutes} minutes")
+        logger.info(f"🎯 Mode: {state.mode}")
+        logger.info(f"📊 Complexity: {state.complexity:.1f}")
+        logger.info(f"⚡ Energy Level: {state.energy_level}")
+        logger.info(f"🧠 Attention State: {state.attention_state}")
 
         if state.open_files:
-            print(f"\n📂 Open Files:")
+            logger.info(f"\n📂 Open Files:")
             for file in state.open_files[:5]:  # Max 5 to avoid overwhelm
-                print(f"   - {file}")
+                logger.info(f"   - {file}")
 
         if state.recent_decisions:
-            print(f"\n💡 Recent Decisions:")
+            logger.info(f"\n💡 Recent Decisions:")
             for decision in state.recent_decisions[:3]:
-                print(f"   - {decision}")
+                logger.info(f"   - {decision}")
 
         if state.next_steps:
-            print(f"\n🎯 Next Steps:")
+            logger.info(f"\n🎯 Next Steps:")
             for i, step in enumerate(state.next_steps[:3], 1):
-                print(f"   {i}. {step}")
+                logger.info(f"   {i}. {step}")
 
-        print(f"\n{'='*60}")
-        print(f"🚀 Ready to continue? Everything is saved!")
-        print(f"{'='*60}\n")
+        logger.info(f"\n{'='*60}")
+        logger.info(f"🚀 Ready to continue? Everything is saved!")
+        logger.info(f"{'='*60}\n")
 
     def _human_time_delta(self, delta) -> str:
         """Convert timedelta to human-readable string."""
@@ -471,10 +471,10 @@ class MemoryAgent:
         }
 
         if self.gentle_reorientation:
-            print(f"\n✅ Session ended: {outcome}")
-            print(f"   Time invested: {self.current_session.time_invested_minutes} minutes")
-            print(f"   Checkpoints saved: {self.checkpoints_saved}")
-            print(f"   Everything is safely preserved!\n")
+            logger.info(f"\n✅ Session ended: {outcome}")
+            logger.info(f"   Time invested: {self.current_session.time_invested_minutes} minutes")
+            logger.info(f"   Checkpoints saved: {self.checkpoints_saved}")
+            logger.info(f"   Everything is safely preserved!\n")
 
         logger.info(
             f"✅ Session ended: {outcome} "
@@ -514,9 +514,9 @@ if __name__ == "__main__":
     async def demo():
         """Demonstrate MemoryAgent capabilities."""
 
-        print("\n" + "="*60)
-        print("MemoryAgent Demo - ADHD Context Preservation")
-        print("="*60 + "\n")
+        logger.info("\n" + "="*60)
+        logger.info("MemoryAgent Demo - ADHD Context Preservation")
+        logger.info("="*60 + "\n")
 
         # Initialize agent
         agent = MemoryAgent(
@@ -533,7 +533,7 @@ if __name__ == "__main__":
         )
 
         # Simulate some work
-        print("Working... (simulating 35 seconds of work)\n")
+        logger.info("Working... (simulating 35 seconds of work)\n")
         await asyncio.sleep(35)  # Wait for auto-save to trigger
 
         # Update session state
@@ -555,31 +555,31 @@ if __name__ == "__main__":
         )
 
         # Wait a bit more
-        print("Continuing work... (simulating 35 more seconds)\n")
+        logger.info("Continuing work... (simulating 35 more seconds)\n")
         await asyncio.sleep(35)  # Another auto-save
 
         # End session
         summary = await agent.end_session(outcome="completed")
 
         # Show metrics
-        print("\n" + "="*60)
-        print("Session Summary:")
-        print("="*60)
+        logger.info("\n" + "="*60)
+        logger.info("Session Summary:")
+        logger.info("="*60)
         for key, value in summary.items():
-            print(f"  {key}: {value}")
+            logger.info(f"  {key}: {value}")
 
-        print("\n" + "="*60)
-        print("MemoryAgent Metrics:")
-        print("="*60)
+        logger.info("\n" + "="*60)
+        logger.info("MemoryAgent Metrics:")
+        logger.info("="*60)
         metrics = agent.get_metrics()
         for key, value in metrics.items():
-            print(f"  {key}: {value}")
-        print()
+            logger.info(f"  {key}: {value}")
+        logger.info()
 
         # Simulate interruption and restoration
-        print("\n" + "="*60)
-        print("Simulating Interruption + Restoration")
-        print("="*60 + "\n")
+        logger.info("\n" + "="*60)
+        logger.info("Simulating Interruption + Restoration")
+        logger.info("="*60 + "\n")
 
         await agent.restore_session()
 

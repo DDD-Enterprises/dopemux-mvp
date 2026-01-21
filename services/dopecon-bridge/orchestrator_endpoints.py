@@ -411,7 +411,7 @@ async def get_session_status():
 
 
 @router.get("/active-sprint", response_model=SprintInfo)
-async def get_active_sprint():
+async def get_active_slogger.info():
     """
     Get active sprint information.
 

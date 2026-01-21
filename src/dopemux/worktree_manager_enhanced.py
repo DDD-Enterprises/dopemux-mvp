@@ -14,6 +14,11 @@ Improvements over existing implementation:
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime
@@ -173,9 +178,10 @@ class EnhancedWorktreeManager:
                 check=False
             )
             return bool(result.stdout.strip())
-        except:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     def _get_last_commit_time(self, worktree_path: Path) -> Optional[datetime]:
         """Get timestamp of last commit in worktree."""
         try:
@@ -189,8 +195,9 @@ class EnhancedWorktreeManager:
             if result.returncode == 0 and result.stdout.strip():
                 timestamp = int(result.stdout.strip())
                 return datetime.fromtimestamp(timestamp)
-        except:
+        except Exception as e:
             pass
+            logger.error(f"Error: {e}")
         return None
 
     def create_worktree(self, branch_name: str, base_branch: str = "main") -> bool:
@@ -298,9 +305,10 @@ class EnhancedWorktreeManager:
             )
             return bool(result.stdout.strip())
 
-        except:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     def _configure_worktree(self, worktree_path: Path):
         """Configure worktree with hooks and settings."""
         try:

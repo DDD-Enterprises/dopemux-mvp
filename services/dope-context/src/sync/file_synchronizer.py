@@ -311,7 +311,7 @@ if __name__ == "__main__":
 
     changes = sync.check_changes()
 
-    print(f"Changes: {changes.total_changes()} files")
-    print(f"  Added: {len(changes.added)}")
-    print(f"  Modified: {len(changes.modified)}")
-    print(f"  Removed: {len(changes.removed)}")
+    logger.info(f"Changes: {changes.total_changes()} files")
+    logger.info(f"  Added: {len(changes.added)}")
+    logger.info(f"  Modified: {len(changes.modified)}")
+    logger.info(f"  Removed: {len(changes.removed)}")

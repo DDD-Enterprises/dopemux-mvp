@@ -13,9 +13,10 @@ class ConPortClient(MCPClient):
             # Simple health check - in production, call actual health endpoint
             async with self.session.get(f"{self.base_url}/health") as response:
                 return response.status == 200
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def log_decision(self, summary: str, rationale: str, **kwargs) -> Dict[str, Any]:
         """Log an architectural or implementation decision."""
         data = {
