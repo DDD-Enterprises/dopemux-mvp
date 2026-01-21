@@ -7,6 +7,11 @@ JWT token generation, validation, and management using RS256.
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import jwt
 import time
 from datetime import datetime, timedelta
@@ -39,12 +44,12 @@ def load_or_generate_keys() -> Tuple[str, str]:
         with open(PUBLIC_KEY_PATH, "rb") as f:
             public_key_pem = f.read().decode()
 
-        print("✅ Loaded existing JWT keys")
+        logger.info("✅ Loaded existing JWT keys")
         return private_key_pem, public_key_pem
 
     except FileNotFoundError:
         # Generate new keys
-        print("🔑 Generating new JWT RSA keys...")
+        logger.info("🔑 Generating new JWT RSA keys...")
 
         # Ensure keys directory exists
         os.makedirs(os.path.dirname(PRIVATE_KEY_PATH), exist_ok=True)
@@ -77,7 +82,7 @@ def load_or_generate_keys() -> Tuple[str, str]:
         with open(PUBLIC_KEY_PATH, "w") as f:
             f.write(public_key_pem)
 
-        print("✅ Generated and saved new JWT keys")
+        logger.info("✅ Generated and saved new JWT keys")
         return private_key_pem, public_key_pem
 
 # Load keys on module import
@@ -157,13 +162,13 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
         return payload
 
     except jwt.ExpiredSignatureError:
-        print("⚠️ Token expired")
+        logger.info("⚠️ Token expired")
         return None
     except jwt.InvalidTokenError as e:
-        print(f"⚠️ Invalid token: {e}")
+        logger.info(f"⚠️ Invalid token: {e}")
         return None
     except Exception as e:
-        print(f"❌ Token verification error: {e}")
+        logger.error(f"❌ Token verification error: {e}")
         return None
 
 def decode_token(token: str) -> Optional[Dict[str, Any]]:
@@ -181,7 +186,7 @@ def decode_token(token: str) -> Optional[Dict[str, Any]]:
         payload = jwt.decode(token, options={"verify_signature": False})
         return payload
     except Exception as e:
-        print(f"❌ Token decode error: {e}")
+        logger.error(f"❌ Token decode error: {e}")
         return None
 
 def get_token_expiration(token: str) -> Optional[datetime]:

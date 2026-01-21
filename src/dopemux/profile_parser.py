@@ -118,6 +118,7 @@ class ProfileParser:
                 file_path=file_path
             )
 
+            logger.error(f"Error: {e}")
         return self._parse_data(data, file_path)
 
     def parse_string(self, yaml_content: str) -> ProfileCollection:
@@ -187,6 +188,7 @@ class ProfileParser:
                 errors=errors
             )
 
+            logger.error(f"Error: {e}")
         # Validate MCP servers if enabled
         if self.validate_mcps:
             invalid_mcps = collection.validate_mcp_servers(self.available_mcps)
@@ -243,6 +245,7 @@ class ProfileParser:
             except ProfileParseError as e:
                 errors.append(f"{file_path.name}: {e.message}")
 
+                logger.error(f"Error: {e}")
         if errors:
             raise ProfileParseError(
                 f"Failed to parse {len(errors)} profile file(s):\n" +
@@ -264,6 +267,7 @@ class ProfileParser:
                 errors=errors
             )
 
+            logger.error(f"Error: {e}")
     def validate_profile_dict(self, profile_data: Dict) -> Profile:
         """Validate a profile dictionary without YAML parsing.
 
@@ -287,6 +291,7 @@ class ProfileParser:
                 errors=errors
             )
 
+            logger.error(f"Error: {e}")
         # Validate MCP servers if enabled
         if self.validate_mcps:
             invalid_mcps = [

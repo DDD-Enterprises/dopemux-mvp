@@ -7,6 +7,11 @@ Database connection and session management for authentication.
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 from typing import Generator
 from sqlalchemy import create_engine
@@ -67,9 +72,9 @@ def init_database():
     """
     try:
         Base.metadata.create_all(bind=engine)
-        print("✅ Authentication database tables initialized")
+        logger.info("✅ Authentication database tables initialized")
     except Exception as e:
-        print(f"❌ Database initialization failed: {e}")
+        logger.error(f"❌ Database initialization failed: {e}")
         raise
 
 def reset_database():
@@ -82,9 +87,9 @@ def reset_database():
     try:
         Base.metadata.drop_all(bind=engine)
         Base.metadata.create_all(bind=engine)
-        print("⚠️ Authentication database reset (all data deleted)")
+        logger.info("⚠️ Authentication database reset (all data deleted)")
     except Exception as e:
-        print(f"❌ Database reset failed: {e}")
+        logger.error(f"❌ Database reset failed: {e}")
         raise
 
 def check_database_connection() -> bool:
@@ -100,7 +105,7 @@ def check_database_connection() -> bool:
         db.close()
         return True
     except Exception as e:
-        print(f"❌ Database connection check failed: {e}")
+        logger.error(f"❌ Database connection check failed: {e}")
         return False
 
 def get_database_stats() -> Dict[str, Any]:
@@ -122,12 +127,13 @@ def get_database_stats() -> Dict[str, Any]:
     except Exception as e:
         return {"error": str(e)}
 
+        logger.error(f"Error: {e}")
 # Initialize database on module import
 try:
     init_database()
 except Exception as e:
-    print(f"⚠️ Database initialization deferred: {e}")
-    print("   Run init_database() manually when database is available")
+    logger.info(f"⚠️ Database initialization deferred: {e}")
+    logger.info("   Run init_database() manually when database is available")
 
 __all__ = [
     "engine",

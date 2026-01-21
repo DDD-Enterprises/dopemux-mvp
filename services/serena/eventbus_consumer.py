@@ -288,8 +288,8 @@ if __name__ == "__main__":
         """Test the consumer"""
         c = await init_consumer()
         
-        print("\n⏳ Waiting for events... (Create a decision to test)")
-        print("   Press Ctrl+C to stop\n")
+        logger.info("\n⏳ Waiting for events... (Create a decision to test)")
+        logger.info("   Press Ctrl+C to stop\n")
         
         try:
             while True:
@@ -303,13 +303,13 @@ if __name__ == "__main__":
                 # Show recent
                 recent = c.get_recent_decisions(3)
                 if recent:
-                    print("   Recent decisions:")
+                    logger.info("   Recent decisions:")
                     for d in recent:
-                        print(f"   - #{d['id']}: {d['summary'][:60]}")
-                print()
+                        logger.info(f"   - #{d['id']}: {d['summary'][:60]}")
+                logger.info()
                 
         except KeyboardInterrupt:
-            print("\n👋 Stopping...")
+            logger.info("\n👋 Stopping...")
             await c.stop()
     
     asyncio.run(test())

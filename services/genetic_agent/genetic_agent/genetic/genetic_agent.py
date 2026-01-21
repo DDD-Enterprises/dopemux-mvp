@@ -23,6 +23,11 @@ class RepairCandidate:
     """Represents a repair candidate with metadata."""
 
     def __init__(self, code: str, explanation: str, confidence: float, source: str = "unknown"):
+
+import logging
+
+logger = logging.getLogger(__name__)
+
         self.code = code
         self.explanation = explanation
         self.confidence = confidence
@@ -99,7 +104,7 @@ Format: {{
                 reasoning = reasoning_response.get('reasoning', {})
         except Exception as e:
             # Fallback to basic context if Zen unavailable
-            print(f"Zen comprehensive reasoning failed: {e}")
+            logger.error(f"Zen comprehensive reasoning failed: {e}")
             reasoning = {
                 "root_cause": "Unknown root cause - needs analysis",
                 "recommended_strategy": "Standard hybrid LLM + GP approach",
@@ -274,7 +279,7 @@ Choose the optimal strategy based on complexity, novelty, and historical pattern
 
         except Exception as e:
             # Fallback to standard GP on error
-            print(f"Zen planning failed: {e}")
+            logger.error(f"Zen planning failed: {e}")
             return "standard_gp"
 
     async def _run_selective_gp(self, llm_repair: RepairCandidate, context: Dict[str, Any]) -> bool:
@@ -360,7 +365,7 @@ Choose the optimal strategy based on complexity, novelty, and historical pattern
 
         except Exception as e:
             # Selective GP failed, log and continue
-            print(f"Selective GP failed: {e}")
+            logger.error(f"Selective GP failed: {e}")
             return False
 
     async def _analyze_bug(self, description: str, file_path: str, line: int) -> Dict[str, Any]:
@@ -369,9 +374,10 @@ Choose the optimal strategy based on complexity, novelty, and historical pattern
         try:
             async with self.serena_client:
                 complexity = await self.serena_client.analyze_complexity(file_path, "")
-        except Exception:
+        except Exception as e:
             complexity = {"score": 0.5, "error": "Serena unavailable"}
 
+            logger.error(f"Error: {e}")
         # Enhanced pattern search with DopeContext using multiple strategies
         similar_patterns = {"results": [], "error": None}
         try:
@@ -397,6 +403,7 @@ Choose the optimal strategy based on complexity, novelty, and historical pattern
                     except Exception as e:
                         continue  # Continue with other queries if one fails
 
+                        logger.error(f"Error: {e}")
                 # Deduplicate and rank results by relevance and complexity
                 seen_codes = set()
                 unique_results = []
@@ -415,6 +422,7 @@ Choose the optimal strategy based on complexity, novelty, and historical pattern
         except Exception as e:
             similar_patterns["error"] = f"Dope-Context unavailable: {e}"
 
+            logger.error(f"Error: {e}")
         return {
             "description": description,
             "file_path": file_path,
@@ -502,7 +510,7 @@ Choose the optimal strategy based on complexity, novelty, and historical pattern
 
         except Exception as e:
             # GP failed, log and continue
-            print(f"GP optimization failed: {e}")
+            logger.error(f"GP optimization failed: {e}")
             return False
 
     def _evaluate_fitness(self, code: str, context: Dict[str, Any]) -> Tuple[float, Dict[str, float]]:
@@ -648,7 +656,7 @@ Format: {{"evaluation": "detailed analysis", "risks": ["list"], "recommendation"
 
         except Exception as e:
             # Fallback to simple validation if consensus fails
-            print(f"Zen consensus validation failed: {e}")
+            logger.error(f"Zen consensus validation failed: {e}")
             return {
                 'approved': repair.confidence >= 0.8,  # Fallback to confidence threshold
                 'evaluation': 'Consensus unavailable, using confidence fallback',
@@ -704,7 +712,7 @@ Format: {{"root_causes": ["list"], "systemic_issues": ["list"], "improvements": 
 
         except Exception as e:
             # Fallback debug analysis
-            print(f"Zen debug analysis failed: {e}")
+            logger.error(f"Zen debug analysis failed: {e}")
             return {
                 'root_causes': ['MCP service unavailable', 'Complex bug type'],
                 'systemic_issues': ['Insufficient context', 'Pattern matching limitations'],
@@ -761,7 +769,7 @@ Format: {{"approved": "boolean", "quality_score": 0.8, "issues": ["list of issue
 
         except Exception as e:
             # Fallback to simple review if codereview fails
-            print(f"Zen codereview failed: {e}")
+            logger.error(f"Zen codereview failed: {e}")
             return {
                 'approved': repair.confidence >= 0.7,  # Fallback to confidence
                 'quality_score': repair.confidence,
@@ -818,7 +826,7 @@ Format: {{"approved": "boolean", "validation_score": 0.9, "concerns": ["list"], 
 
         except Exception as e:
             # Fallback to simple validation if precommit fails
-            print(f"Zen precommit validation failed: {e}")
+            logger.error(f"Zen precommit validation failed: {e}")
             return {
                 'approved': repair.confidence >= 0.8,  # Fallback to confidence
                 'validation_score': repair.confidence,

@@ -923,8 +923,8 @@ async def simulate_learning_convergence(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("🧠 Serena Adaptive Learning Engine")
-        print("Personal navigation pattern recognition for ADHD optimization")
-        print("✅ Module loaded successfully")
+        logger.info("🧠 Serena Adaptive Learning Engine")
+        logger.info("Personal navigation pattern recognition for ADHD optimization")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

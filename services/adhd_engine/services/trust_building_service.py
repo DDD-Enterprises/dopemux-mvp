@@ -255,9 +255,10 @@ class TrustBuildingService:
             # Default: assume correct if values are equal
             return 1.0 if predicted == actual else 0.0
 
-        except Exception:
+        except Exception as e:
             return 0.0  # Error in calculation
 
+            logger.error(f"Error: {e}")
     async def _update_trust_score(self, prediction_type: str) -> None:
         """Update trust score based on recent accuracy data."""
         accuracy_records = await self._get_accuracy_records(prediction_type, limit=50)

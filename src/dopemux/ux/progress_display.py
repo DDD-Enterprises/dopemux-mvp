@@ -11,6 +11,11 @@ Integrates with ADHD workflow manager for cognitive load awareness.
 """
 
 import time
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import Optional, Dict, Any
 from rich.console import Console
 from rich.panel import Panel
@@ -101,7 +106,7 @@ class ProgressDisplay:
             padding=(1, 2)
         )
 
-        self.console.print(panel)
+        self.console.logger.info(panel)
 
     def show_error(self, operation_name: str, error: str, complexity: float = 0.5):
         """
@@ -120,7 +125,7 @@ class ProgressDisplay:
         # Show error with detail based on complexity
         if complexity > 0.7:
             # High complexity - minimal error info
-            self.console.print(f"[red]❌ {operation_name} failed[/red]")
+            self.console.logger.error(f"[red]❌ {operation_name} failed[/red]")
         else:
             # Provide helpful error details
             panel = Panel(
@@ -129,7 +134,7 @@ class ProgressDisplay:
                 border_style="red",
                 padding=(1, 2)
             )
-            self.console.print(panel)
+            self.console.logger.info(panel)
 
     def show_adhd_friendly_status(self, status_info: Dict[str, Any]):
         """
@@ -161,11 +166,11 @@ class ProgressDisplay:
             padding=(1, 2)
         )
 
-        self.console.print(panel)
+        self.console.logger.info(panel)
 
     def _show_minimal_start(self, operation_name: str):
         """Show minimal start indicator for high-complexity operations."""
-        self.console.print(f"[dim]⏳ Starting {operation_name}...[/dim]")
+        self.console.logger.info(f"[dim]⏳ Starting {operation_name}...[/dim]")
 
     def _show_spinner_start(self, operation_name: str):
         """Show spinner for simple operations."""

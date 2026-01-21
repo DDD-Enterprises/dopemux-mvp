@@ -396,13 +396,13 @@ async def get_top_patterns(
 
 
 if __name__ == "__main__":
-    print("=" * 60)
-    print("🧘 Serena HTTP API - ADHD-Optimized Metrics")
-    print("=" * 60)
-    print("🎯 Philosophy: Progressive disclosure, cognitive load management")
-    print("🔌 Port: 8003")
-    print("📚 Docs: http://localhost:8003/docs")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("🧘 Serena HTTP API - ADHD-Optimized Metrics")
+    logger.info("=" * 60)
+    logger.info("🎯 Philosophy: Progressive disclosure, cognitive load management")
+    logger.info("🔌 Port: 8003")
+    logger.info("📚 Docs: http://localhost:8003/docs")
+    logger.info("=" * 60)
     
     uvicorn.run(
         app,

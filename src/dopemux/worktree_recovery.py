@@ -76,8 +76,9 @@ class WorktreeRecoveryMenu:
         try:
             env_days = int(os.getenv("DOPEMUX_RECOVERY_MAX_DAYS", "0"))
             self.max_age_days = env_days if env_days > 0 else max_age_days
-        except Exception:
+        except Exception as e:
             self.max_age_days = max_age_days
+            logger.error(f"Error: {e}")
         self.timeout_seconds = timeout_seconds
 
     async def find_recoverable_sessions(self) -> List[RecoveryOption]:
@@ -128,20 +129,20 @@ class WorktreeRecoveryMenu:
         if not options:
             return
 
-        print("\n" + "=" * 70)
-        print("🔄 Found orphaned worktree sessions - would you like to recover one?")
-        print("=" * 70)
+        logger.info("\n" + "=" * 70)
+        logger.info("🔄 Found orphaned worktree sessions - would you like to recover one?")
+        logger.info("=" * 70)
 
         for opt in options:
-            print(opt.format_menu_line())
+            logger.info(opt.format_menu_line())
 
-        print(f"\n  0. 🏠 Stay in main worktree (default after {self.timeout_seconds}s; press Enter)")
+        logger.info(f"\n  0. 🏠 Stay in main worktree (default after {self.timeout_seconds}s; press Enter)")
 
         if has_more:
-            print("  a. 📋 Show all recoverable sessions")
+            logger.info("  a. 📋 Show all recoverable sessions")
 
-        print("\n" + "=" * 70)
-        print("💡 Tip: Choose a session to restore context and continue where you left off")
+        logger.info("\n" + "=" * 70)
+        logger.info("💡 Tip: Choose a session to restore context and continue where you left off")
 
     async def get_user_input_async(self, prompt: str, timeout: int) -> Optional[str]:
         """
@@ -164,7 +165,7 @@ class WorktreeRecoveryMenu:
             # stdin is not a real file (e.g., in pytest) - return None immediately
             return None
 
-        print(prompt, end='', flush=True)
+        logger.info(prompt, end='', flush=True)
 
         # Use selector for async-compatible input
         selector = selectors.DefaultSelector()
@@ -197,7 +198,7 @@ class WorktreeRecoveryMenu:
                 await asyncio.sleep(0.1)  # Yield to event loop
 
         except asyncio.TimeoutError:
-            print()  # Newline after timeout
+            logger.info()  # Newline after timeout
             return None
         finally:
             selector.unregister(sys.stdin)
@@ -257,11 +258,11 @@ class WorktreeRecoveryMenu:
                     logger.info(f"✅ User selected: {selected.git_branch}")
                     return selected
                 else:
-                    print(f"❌ Invalid choice: {choice_num}. Using default (main).")
+                    logger.info(f"❌ Invalid choice: {choice_num}. Using default (main).")
                     return None
 
             except ValueError:
-                print(f"❌ Invalid input: '{user_input}'. Using default (main).")
+                logger.info(f"❌ Invalid input: '{user_input}'. Using default (main).")
                 return None
 
         except asyncio.TimeoutError:
@@ -390,9 +391,9 @@ class WorktreeRecoveryMenu:
         # Find recoverable sessions
         options = await self.find_recoverable_sessions()
 
-        # Fallback to git worktree list if ConPort unavailable
-        if not options:
-            logger.warning("⚠️ ConPort unavailable - trying git worktree fallback")
+        # Fallback to git worktree list only if ConPort is unavailable
+        if not options and not self.manager.conport_available:
+            logger.info("ConPort unavailable - using git worktree fallback")
             options = await self.fallback_to_git_worktree_list()
 
         if not options:
@@ -400,7 +401,9 @@ class WorktreeRecoveryMenu:
             return None
 
         # Check if there are more sessions
-        has_more = await self.check_has_more_sessions()
+        has_more = False
+        if self.manager.conport_available:
+            has_more = await self.check_has_more_sessions()
 
         while True:  # Loop for "show all" handling
             # Display menu
@@ -416,10 +419,10 @@ class WorktreeRecoveryMenu:
                 if all_options:
                     options = all_options
                     has_more = False  # No more to show
-                    print()  # Blank line before re-display
+                    logger.info()  # Blank line before re-display
                     continue
                 else:
-                    print("⚠️ No additional sessions found.")
+                    logger.info("⚠️ No additional sessions found.")
                     has_more = False
                     continue
 

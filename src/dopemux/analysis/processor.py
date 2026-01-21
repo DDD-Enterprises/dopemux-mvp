@@ -6,6 +6,11 @@ semantic embedding and registry generation.
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -258,9 +263,10 @@ class DocumentProcessor:
         try:
             with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
-        except Exception:
+        except Exception as e:
             return []  # Skip files that can't be read
 
+            logger.error(f"Error: {e}")
         # Break content into logical sections
         atomic_units = []
 

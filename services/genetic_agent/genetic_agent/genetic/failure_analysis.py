@@ -6,6 +6,11 @@ and ConPort integration for historical learning.
 """
 
 from typing import Dict, List, Any, Optional, Tuple
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from dataclasses import dataclass
 from datetime import datetime
 import statistics
@@ -283,6 +288,7 @@ Format: {{"root_cause": "hypothesis", "strategic_recommendations": ["list"], "le
                 'fallback': 'Proceed with statistical analysis only'
             }
 
+            logger.error(f"Error: {e}")
     def _recommend_recovery_strategy(
         self,
         statistical: Dict[str, Any],
@@ -373,7 +379,7 @@ Format: {{"root_cause": "hypothesis", "strategic_recommendations": ["list"], "le
 
         except Exception as e:
             # Log but don't fail the analysis
-            print(f"Failed to update failure patterns: {e}")
+            logger.error(f"Failed to update failure patterns: {e}")
 
     async def get_historical_insights(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Retrieve historical failure pattern insights from ConPort."""
@@ -403,5 +409,5 @@ Format: {{"root_cause": "hypothesis", "strategic_recommendations": ["list"], "le
             return insights[:limit]
 
         except Exception as e:
-            print(f"Failed to retrieve historical insights: {e}")
+            logger.error(f"Failed to retrieve historical insights: {e}")
             return []

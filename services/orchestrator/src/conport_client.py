@@ -7,6 +7,11 @@ Supports both direct MCP calls (when in Claude Code) and HTTP calls (standalone)
 """
 
 from typing import Optional, Any
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from datetime import datetime
 import subprocess
 import json
@@ -45,9 +50,10 @@ class ConPortClient:
             # If we're in Claude Code, these would be available in globals()
             # For now, assume HTTP mode unless explicitly configured
             return False
-        except:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     def log_custom_data(
         self, category: str, key: str, value: dict
     ) -> dict:
@@ -223,24 +229,24 @@ if __name__ == "__main__":
     client = ConPortClient("/Users/hue/code/ui-build")
 
     # Test saving
-    print("Testing ConPort client:")
-    print("=" * 60)
+    logger.info("Testing ConPort client:")
+    logger.info("=" * 60)
 
-    print("\n1. Saving custom data...")
+    logger.info("\n1. Saving custom data...")
     result = client.log_custom_data(
         category="test",
         key="test_key_1",
         value={"message": "Hello from orchestrator!", "timestamp": datetime.now().isoformat()},
     )
-    print(f"   Result: {result}")
+    logger.info(f"   Result: {result}")
 
-    print("\n2. Querying custom data...")
+    logger.info("\n2. Querying custom data...")
     results = client.get_custom_data(category="test", limit=5)
-    print(f"   Found: {len(results)} items")
+    logger.info(f"   Found: {len(results)} items")
 
-    print("\n3. Semantic search...")
+    logger.info("\n3. Semantic search...")
     results = client.semantic_search("authentication decisions")
-    print(f"   Found: {len(results)} results")
+    logger.info(f"   Found: {len(results)} results")
 
-    print("\n✅ ConPort client test complete")
-    print("\n💡 Note: These are placeholders until real MCP integration")
+    logger.info("\n✅ ConPort client test complete")
+    logger.info("\n💡 Note: These are placeholders until real MCP integration")

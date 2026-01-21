@@ -225,41 +225,38 @@ class ClaudeCodeHooks:
         return {
             'bash_preexec': f'''
 # Dopemux Claude Code pre-exec hook
-# TODO: Implement dopemux trigger command
 dopemux_trigger_preexec() {{
-    # Disabled until dopemux trigger command is implemented
-    :
+    local cmd="$1"
+    dopemux trigger shell-command --context "{{\\"command\\": \\"$cmd\\"}}" --async --quiet >/dev/null 2>&1 &
+    disown 2>/dev/null || true
 }}
-# trap 'dopemux_trigger_preexec "$_"' DEBUG
+trap 'dopemux_trigger_preexec "$BASH_COMMAND"' DEBUG
 ''',
 
             'bash_precmd': '''
 # Dopemux Claude Code post-exec hook
-# TODO: Implement dopemux trigger command
 dopemux_trigger_precmd() {
-    # Disabled until dopemux trigger command is implemented
-    :
+    dopemux trigger command-done --async --quiet >/dev/null 2>&1 &
+    disown 2>/dev/null || true
 }
 PROMPT_COMMAND="${PROMPT_COMMAND};dopemux_trigger_precmd"
 ''',
 
             'zsh_hooks': '''
 # Dopemux Claude Code hooks for zsh
-# TODO: Implement dopemux trigger command
 autoload -U add-zsh-hook
 
 dopemux_preexec() {
-    # Disabled until dopemux trigger command is implemented
-    :
+    local cmd="$1"
+    dopemux trigger shell-command --context "{\"command\": \"$cmd\"}" --async --quiet >/dev/null 2>&1 &!
 }
 
 dopemux_precmd() {
-    # Disabled until dopemux trigger command is implemented
-    :
+    dopemux trigger command-done --async --quiet >/dev/null 2>&1 &!
 }
 
-# add-zsh-hook preexec dopemux_preexec
-# add-zsh-hook precmd dopemux_precmd
+add-zsh-hook preexec dopemux_preexec
+add-zsh-hook precmd dopemux_precmd
 '''
         }
 

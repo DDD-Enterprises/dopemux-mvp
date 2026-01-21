@@ -108,10 +108,11 @@ class WorktreeAutoConfigurator:
 
             return False
 
-        except Exception:
+        except Exception as e:
             # On error, assume update needed for safety
             return True
 
+            logger.error(f"Error: {e}")
     def configure_workspace(
         self,
         workspace: Optional[Path] = None,
@@ -200,6 +201,7 @@ class WorktreeAutoConfigurator:
         except Exception as e:
             return False, f"Configuration failed: {e}"
 
+            logger.error(f"Error: {e}")
     def _load_config(self) -> Dict:
         """Load .claude.json configuration."""
         with open(self.claude_config_path, 'r') as f:

@@ -83,9 +83,10 @@ class SQLiteBackend(StorageBackend):
         try:
             await self.conn.execute("SELECT 1")
             return True
-        except Exception:
+        except Exception as e:
             return False
     
+            logger.error(f"Error: {e}")
     async def _init_schema(self):
         """Initialize database schema from migration file"""
         # Read schema SQL

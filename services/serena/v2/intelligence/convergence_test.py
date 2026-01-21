@@ -937,8 +937,8 @@ async def run_quick_convergence_test(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("🎯 Serena Learning Convergence Validator")
-        print("1-week ADHD learning convergence testing and validation")
-        print("✅ Module loaded successfully")
+        logger.info("🎯 Serena Learning Convergence Validator")
+        logger.info("1-week ADHD learning convergence testing and validation")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

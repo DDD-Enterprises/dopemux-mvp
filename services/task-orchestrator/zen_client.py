@@ -19,6 +19,11 @@ except ImportError:
         async def plan_complex_task(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
             """Mock implementation of complex task planning."""
             return {
+
+import logging
+
+logger = logging.getLogger(__name__)
+
                 "plan": f"Mock plan for: {task_data.get('description', 'Unknown task')}",
                 "subtasks": [
                     {"id": "subtask_1", "description": "First subtask", "duration": 15},
@@ -104,7 +109,7 @@ Format: {{
                 })
 
         except Exception as e:
-            print(f"Zen task breakdown planning failed: {e}")
+            logger.error(f"Zen task breakdown planning failed: {e}")
             return {
                 'subtasks': [{
                     'name': 'Fallback task',
@@ -181,7 +186,7 @@ Format: {{
                     }
 
         except Exception as e:
-            print(f"Zen task prioritization failed: {e}")
+            logger.error(f"Zen task prioritization failed: {e}")
             return {
                 'prioritized_order': list(range(len(task_queue))),
                 'execution_batches': [list(range(len(task_queue)))],

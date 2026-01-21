@@ -68,6 +68,7 @@ class GeneticAgentCLI:
             click.echo(f"❌ Failed to initialize agents: {e}", err=True)
             return False
 
+            logger.error(f"Error: {e}")
     async def repair_bug(self, file_path: str, description: str, line_number: int = 1,
                         use_genetic: bool = False, output_format: str = "json"):
         """Repair a bug using the specified agent."""
@@ -118,6 +119,7 @@ class GeneticAgentCLI:
             if self.progress:
                 self.progress.update(4, 4, "Failed")
 
+            logger.error(f"Error: {e}")
     def _format_human_readable(self, result: dict, agent_name: str):
         """Format result for human-readable output."""
         success = result.get("success", False)
@@ -189,6 +191,7 @@ class GeneticAgentCLI:
         except Exception as e:
             click.echo(f"\n⚠️  Could not load performance stats: {e}")
 
+            logger.error(f"Error: {e}")
     async def show_dashboard(self):
         """Show monitoring dashboard with success rates and operator performance."""
         if not await self.initialize_agents():
@@ -234,6 +237,7 @@ class GeneticAgentCLI:
             click.echo(f"❌ Could not load dashboard data: {e}")
 
 
+            logger.error(f"Error: {e}")
 # Global CLI instance
 cli = GeneticAgentCLI()
 

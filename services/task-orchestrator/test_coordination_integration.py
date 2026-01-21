@@ -175,7 +175,7 @@ async def test_cross_plane_integration():
                         # Could test actual API calls here
                     else:
                         logger.warning("⚠️ ADHD Engine not available for integration test")
-        except Exception:
+        except Exception as e:
             logger.warning("⚠️ ADHD Engine not reachable for integration test")
 
         logger.info("✅ Cross-plane integration test completed successfully")

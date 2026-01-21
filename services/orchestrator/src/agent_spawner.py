@@ -12,6 +12,11 @@ Effort: 6 focus blocks (150 minutes)
 """
 
 from typing import Optional, Literal
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from dataclasses import dataclass
 from enum import Enum
 import subprocess
@@ -83,12 +88,12 @@ class AIAgent:
             True if started successfully, False otherwise
         """
         if self.status == AgentStatus.RUNNING:
-            print(f"⚠️ {self.config.agent_type.value} already running")
+            logger.info(f"⚠️ {self.config.agent_type.value} already running")
             return True
 
         try:
             self.status = AgentStatus.STARTING
-            print(f"🚀 Starting {self.config.agent_type.value}...")
+            logger.info(f"🚀 Starting {self.config.agent_type.value}...")
 
             # Start subprocess
             self.process = subprocess.Popen(
@@ -119,17 +124,17 @@ class AIAgent:
             if self.process.poll() is None:
                 # Still running
                 self.status = AgentStatus.RUNNING
-                print(f"✅ {self.config.agent_type.value} running (PID: {self.process.pid})")
+                logger.info(f"✅ {self.config.agent_type.value} running (PID: {self.process.pid})")
                 return True
             else:
                 # Crashed immediately
                 self.status = AgentStatus.CRASHED
-                print(f"❌ {self.config.agent_type.value} crashed on startup")
+                logger.info(f"❌ {self.config.agent_type.value} crashed on startup")
                 return False
 
         except Exception as e:
             self.status = AgentStatus.ERROR
-            print(f"❌ Failed to start {self.config.agent_type.value}: {e}")
+            logger.error(f"❌ Failed to start {self.config.agent_type.value}: {e}")
             return False
 
     def _read_output(self):
@@ -145,7 +150,7 @@ class AIAgent:
                 if self.config.tmux_pane:
                     self._mirror_to_tmux(line)
         except Exception as e:
-            print(f"⚠️ Output reader error for {self.config.agent_type.value}: {e}")
+            logger.error(f"⚠️ Output reader error for {self.config.agent_type.value}: {e}")
 
     def _read_errors(self):
         """Read stderr in background thread."""
@@ -155,9 +160,9 @@ class AIAgent:
         try:
             for line in self.process.stderr:
                 self.output_queue.put(("stderr", line))
-                print(f"⚠️ {self.config.agent_type.value} stderr: {line.strip()}")
+                logger.info(f"⚠️ {self.config.agent_type.value} stderr: {line.strip()}")
         except Exception as e:
-            print(f"⚠️ Error reader error for {self.config.agent_type.value}: {e}")
+            logger.error(f"⚠️ Error reader error for {self.config.agent_type.value}: {e}")
 
     def _mirror_to_tmux(self, output: str):
         """Mirror output to tmux pane for visibility."""
@@ -180,6 +185,7 @@ class AIAgent:
             # Don't fail if tmux mirror fails
             pass
 
+            logger.error(f"Error: {e}")
     def send_command(self, command: str) -> bool:
         """
         Send command to AI agent.
@@ -191,7 +197,7 @@ class AIAgent:
             True if sent successfully
         """
         if self.status != AgentStatus.RUNNING or not self.process:
-            print(f"❌ Cannot send to {self.config.agent_type.value}: not running")
+            logger.info(f"❌ Cannot send to {self.config.agent_type.value}: not running")
             return False
 
         try:
@@ -199,7 +205,7 @@ class AIAgent:
             self.process.stdin.flush()
             return True
         except Exception as e:
-            print(f"❌ Failed to send command to {self.config.agent_type.value}: {e}")
+            logger.error(f"❌ Failed to send command to {self.config.agent_type.value}: {e}")
             self.status = AgentStatus.ERROR
             return False
 
@@ -255,7 +261,7 @@ class AIAgent:
         if not self.process:
             return
 
-        print(f"🛑 Stopping {self.config.agent_type.value}...")
+        logger.info(f"🛑 Stopping {self.config.agent_type.value}...")
 
         try:
             # Try graceful shutdown
@@ -263,13 +269,13 @@ class AIAgent:
             self.process.wait(timeout=5)
         except subprocess.TimeoutExpired:
             # Force kill if not responding
-            print(f"⚠️ {self.config.agent_type.value} not responding, force killing...")
+            logger.info(f"⚠️ {self.config.agent_type.value} not responding, force killing...")
             self.process.kill()
             self.process.wait()
 
         self.status = AgentStatus.STOPPED
         self.process = None
-        print(f"✅ {self.config.agent_type.value} stopped")
+        logger.info(f"✅ {self.config.agent_type.value} stopped")
 
     def restart(self) -> bool:
         """
@@ -279,10 +285,10 @@ class AIAgent:
             True if restarted successfully
         """
         if self.restart_count >= self.config.max_restarts:
-            print(f"❌ Max restarts reached for {self.config.agent_type.value}")
+            logger.info(f"❌ Max restarts reached for {self.config.agent_type.value}")
             return False
 
-        print(f"🔄 Restarting {self.config.agent_type.value}...")
+        logger.info(f"🔄 Restarting {self.config.agent_type.value}...")
         self.stop()
         time.sleep(2)  # Brief pause
 
@@ -320,7 +326,7 @@ class AgentSpawner:
         """
         agent = AIAgent(config)
         self.agents[agent_type] = agent
-        print(f"📝 Registered {agent_type.value} agent")
+        logger.info(f"📝 Registered {agent_type.value} agent")
 
     def start_all(self) -> dict[AgentType, bool]:
         """
@@ -350,7 +356,7 @@ class AgentSpawner:
             target=self._health_check_loop, daemon=True
         )
         self.health_check_thread.start()
-        print("💓 Health monitoring started")
+        logger.info("💓 Health monitoring started")
 
     def _health_check_loop(self):
         """Background health checking with auto-restart."""
@@ -359,12 +365,12 @@ class AgentSpawner:
 
             for agent_type, agent in self.agents.items():
                 if not agent.is_healthy():
-                    print(f"⚠️ {agent_type.value} unhealthy, attempting restart...")
+                    logger.info(f"⚠️ {agent_type.value} unhealthy, attempting restart...")
 
                     if agent.config.auto_restart:
                         success = agent.restart()
                         if not success:
-                            print(f"❌ Failed to restart {agent_type.value}")
+                            logger.error(f"❌ Failed to restart {agent_type.value}")
 
     def send_to_agent(
         self, agent_type: AgentType, command: str
@@ -381,11 +387,11 @@ class AgentSpawner:
         """
         agent = self.agents.get(agent_type)
         if not agent:
-            print(f"❌ Agent not found: {agent_type.value}")
+            logger.info(f"❌ Agent not found: {agent_type.value}")
             return None
 
         if not agent.is_healthy():
-            print(f"❌ Agent not healthy: {agent_type.value}")
+            logger.info(f"❌ Agent not healthy: {agent_type.value}")
             return None
 
         # Send command
@@ -405,7 +411,7 @@ class AgentSpawner:
         for agent_type, agent in self.agents.items():
             agent.stop()
 
-        print("✅ All agents stopped")
+        logger.info("✅ All agents stopped")
 
     def get_status(self) -> dict:
         """
@@ -452,25 +458,25 @@ if __name__ == "__main__":
     )
 
     # Start all
-    print("Starting agents...")
+    logger.info("Starting agents...")
     results = spawner.start_all()
 
-    print(f"\nStartup results:")
+    logger.info(f"\nStartup results:")
     for agent_type, success in results.items():
         status = "✅" if success else "❌"
-        print(f"  {status} {agent_type.value}")
+        logger.info(f"  {status} {agent_type.value}")
 
     # Show status
-    print(f"\nAgent status:")
+    logger.info(f"\nAgent status:")
     import json
-    print(json.dumps(spawner.get_status(), indent=2))
+    logger.info(json.dumps(spawner.get_status(), indent=2))
 
     # Test sending command
     if results.get(AgentType.CLAUDE):
-        print("\nTesting command send to Claude...")
+        logger.info("\nTesting command send to Claude...")
         response = spawner.send_to_agent(AgentType.CLAUDE, "What is 2+2?")
         if response:
-            print(f"Response: {response[:3]}")  # First 3 lines
+            logger.info(f"Response: {response[:3]}")  # First 3 lines
 
     # Cleanup
     input("\nPress Enter to stop agents...")

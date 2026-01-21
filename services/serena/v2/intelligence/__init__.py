@@ -717,6 +717,7 @@ async def validate_phase2_deployment(
                 "error": str(e)
             }
 
+            logger.error(f"Error: {e}")
         # Test graph operations performance
         if validation_report["component_health"]["database"]["available"]:
             try:
@@ -736,6 +737,7 @@ async def validate_phase2_deployment(
                     "error": str(e)
                 }
 
+                logger.error(f"Error: {e}")
         # Run integration tests if requested
         if run_integration_tests:
             try:
@@ -753,6 +755,7 @@ async def validate_phase2_deployment(
                     "all_tests_passed": False
                 }
 
+                logger.error(f"Error: {e}")
         # Assess deployment readiness
         db_ready = validation_report["component_health"]["database"]["available"]
         schema_ready = validation_report["component_health"].get("schema", {}).get("installed", False)
@@ -777,6 +780,7 @@ async def validate_phase2_deployment(
     except Exception as e:
         validation_report["recommendations"].append(f"💥 Validation failed: {e}")
 
+        logger.error(f"Error: {e}")
     return validation_report
 
 
@@ -1141,6 +1145,7 @@ async def get_phase2_status() -> dict:
     except Exception as e:
         status["integration_health"] = f"❌ Status check failed: {e}"
 
+        logger.error(f"Error: {e}")
     return status
 
 

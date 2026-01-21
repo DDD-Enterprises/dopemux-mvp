@@ -12,6 +12,11 @@ DopeconBridge at PORT_BASE+16
 """
 
 from fastapi import APIRouter, HTTPException, Header, Query
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
 import sys
@@ -29,7 +34,7 @@ try:
     from queries.deep_context import DeepContextQueries
     from queries.models import DecisionCard, DecisionSummary, DecisionNeighborhood, FullDecisionContext
 except ImportError as e:
-    print(f"⚠️  Dope Decision Graph queries not available: {e}")
+    logger.info(f"⚠️  Dope Decision Graph queries not available: {e}")
     OverviewQueries = None
 
 
@@ -81,6 +86,7 @@ async def health_check():
     except Exception as e:
         return {"status": "unhealthy", "error": str(e)}
 
+        logger.error(f"Error: {e}")
     return {"status": "unavailable", "message": "KG queries not initialized"}
 
 
@@ -128,6 +134,7 @@ async def get_recent_decisions(
         raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
 
 
+        logger.error(f"Error: {e}")
 @router.get("/decisions/{decision_id}/summary")
 async def get_decision_summary(
     decision_id: int,
@@ -168,6 +175,7 @@ async def get_decision_summary(
         raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
 
 
+        logger.error(f"Error: {e}")
 @router.get("/decisions/{decision_id}/neighborhood")
 async def get_decision_neighborhood(
     decision_id: int,
@@ -218,6 +226,7 @@ async def get_decision_neighborhood(
         raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
 
 
+        logger.error(f"Error: {e}")
 @router.get("/decisions/{decision_id}/context")
 async def get_full_context(
     decision_id: int,
@@ -275,6 +284,7 @@ async def get_full_context(
         raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
 
 
+        logger.error(f"Error: {e}")
 @router.get("/decisions/search")
 async def search_decisions(
     tag: Optional[str] = None,
@@ -325,6 +335,7 @@ async def search_decisions(
         raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
 
 
+        logger.error(f"Error: {e}")
 # ============================================================================
 # Custom Data Endpoints (For Orchestrator Checkpoints)
 # ============================================================================
@@ -387,6 +398,7 @@ async def save_custom_data(
         raise HTTPException(status_code=500, detail=f"Save failed: {str(e)}")
 
 
+        logger.error(f"Error: {e}")
 @router.get("/custom_data")
 async def get_custom_data(
     workspace_id: str = Query(...),
@@ -424,6 +436,7 @@ async def get_custom_data(
         raise HTTPException(status_code=500, detail=f"Query failed: {str(e)}")
 
 
+        logger.error(f"Error: {e}")
 # ============================================================================
 # ConPort Write Endpoints (Decision, Progress, Links)
 # ============================================================================
@@ -499,6 +512,7 @@ async def create_decision(
         raise HTTPException(status_code=500, detail=f"Decision creation failed: {str(e)}")
 
 
+        logger.error(f"Error: {e}")
 @router.post("/progress")
 async def create_progress_entry(
     request: ProgressCreateRequest,
@@ -543,6 +557,7 @@ async def create_progress_entry(
         raise HTTPException(status_code=500, detail=f"Progress creation failed: {str(e)}")
 
 
+        logger.error(f"Error: {e}")
 @router.get("/progress")
 async def get_progress_entries(
     workspace_id: str = Query(...),
@@ -579,6 +594,7 @@ async def get_progress_entries(
         raise HTTPException(status_code=500, detail=f"Progress query failed: {str(e)}")
 
 
+        logger.error(f"Error: {e}")
 @router.post("/links")
 async def create_link(
     request: LinkCreateRequest,

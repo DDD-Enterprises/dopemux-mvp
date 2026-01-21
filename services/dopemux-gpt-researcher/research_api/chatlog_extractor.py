@@ -9,6 +9,11 @@ Designed for ADHD-friendly processing with clear checkpoints and progress visibi
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 import json
 import time
@@ -152,7 +157,7 @@ class ChatlogExtractor:
 
             # Check dependencies
             if not self._check_dependencies(phase):
-                console.print(f"[red]❌ Dependencies not met for phase '{phase.name}'[/red]")
+                console.logger.info(f"[red]❌ Dependencies not met for phase '{phase.name}'[/red]")
                 return {"success": False, "error": "Dependencies not met"}
 
             # Display phase information
@@ -161,11 +166,11 @@ class ChatlogExtractor:
             # User confirmation (unless auto-confirm)
             if not auto_confirm:
                 if not Confirm.ask(f"🤔 Proceed with [yellow]{phase.name}[/yellow] phase?"):
-                    console.print("[yellow]⏸️ Extraction paused by user[/yellow]")
+                    console.logger.info("[yellow]⏸️ Extraction paused by user[/yellow]")
                     return {"success": False, "paused_at": phase.name}
 
             # Execute phase
-            console.print(f"[blue]🔄 Starting {phase.name} phase...[/blue]")
+            console.logger.info(f"[blue]🔄 Starting {phase.name} phase...[/blue]")
             result = self._execute_phase(phase)
 
             # Store results
@@ -178,7 +183,7 @@ class ChatlogExtractor:
 
             # Handle failures
             if not result.success:
-                console.print(f"[red]❌ Phase '{phase.name}' failed[/red]")
+                console.logger.error(f"[red]❌ Phase '{phase.name}' failed[/red]")
                 if not auto_confirm:
                     if not Confirm.ask("Continue with remaining phases?"):
                         return {"success": False, "failed_at": phase.name}
@@ -223,7 +228,7 @@ class ChatlogExtractor:
         if phase.dependencies:
             table.add_row("Dependencies", ", ".join(phase.dependencies))
 
-        console.print(table)
+        console.logger.info(table)
 
     def _execute_phase(self, phase: ExtractionPhase) -> ExtractionResults:
         """Execute a single extraction phase."""
@@ -254,6 +259,7 @@ class ChatlogExtractor:
                 errors=[str(e)]
             )
 
+            logger.error(f"Error: {e}")
     def _phase_discovery(self) -> ExtractionResults:
         """Phase 1: Discover chatlog format and extract metadata."""
         start_time = time.time()
@@ -721,7 +727,7 @@ class ChatlogExtractor:
             for key, value in result.metadata.items():
                 table.add_row(key.replace('_', ' ').title(), str(value))
 
-        console.print(table)
+        console.logger.info(table)
 
     def _generate_final_report(self, total_time: float) -> Dict[str, Any]:
         """Generate the final extraction report."""
@@ -838,17 +844,17 @@ Examples:
         results = extractor.run_extraction(args.start_phase, args.auto_confirm)
 
         if results["success"]:
-            console.print("[bold green]🎉 Extraction completed successfully![/bold green]")
+            console.logger.info("[bold green]🎉 Extraction completed successfully![/bold green]")
             return 0
         else:
-            console.print(f"[red]❌ Extraction failed: {results.get('error', 'Unknown error')}[/red]")
+            console.logger.error(f"[red]❌ Extraction failed: {results.get('error', 'Unknown error')}[/red]")
             return 1
 
     except KeyboardInterrupt:
-        console.print("\n[yellow]⏸️ Extraction interrupted by user[/yellow]")
+        console.logger.info("\n[yellow]⏸️ Extraction interrupted by user[/yellow]")
         return 1
     except Exception as e:
-        console.print(f"[red]❌ Unexpected error: {e}[/red]")
+        console.logger.error(f"[red]❌ Unexpected error: {e}[/red]")
         return 1
 
 

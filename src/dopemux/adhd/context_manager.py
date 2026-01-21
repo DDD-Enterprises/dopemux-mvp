@@ -6,6 +6,11 @@ files, cursor positions, mental model, and decision history.
 """
 
 import hashlib
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import json
 import shlex
 import sqlite3
@@ -106,7 +111,7 @@ class ContextManager:
 
         # Create initial session
         self._current_session_id = str(uuid.uuid4())
-        console.print("[green]✓ Context manager initialized[/green]")
+        console.logger.info("[green]✓ Context manager initialized[/green]")
 
     def _validate_project_path(self, file_path: Path) -> bool:
         """
@@ -130,7 +135,7 @@ class ContextManager:
         except (ValueError, OSError):
             # ValueError: path is outside project
             # OSError: path doesn't exist or permission issues
-            console.print(f"[red]Security: Blocked access to path outside project: {file_path}[/red]")
+            console.logger.info(f"[red]Security: Blocked access to path outside project: {file_path}[/red]")
             return False
 
     def _run_git_command(self, args: List[str], timeout: int = 10) -> Optional[str]:
@@ -150,7 +155,7 @@ class ContextManager:
         }
 
         if not args or args[0] not in allowed_commands:
-            console.print(f"[red]Security: Git command not allowed: {args}[/red]")
+            console.logger.info(f"[red]Security: Git command not allowed: {args}[/red]")
             return None
 
         # Build secure command
@@ -171,14 +176,14 @@ class ContextManager:
                 return result.stdout.strip()
             else:
                 # Log error but don't expose it to prevent information leakage
-                console.print(f"[yellow]Git command failed (code {result.returncode})[/yellow]")
+                console.logger.error(f"[yellow]Git command failed (code {result.returncode})[/yellow]")
                 return None
 
         except subprocess.TimeoutExpired:
-            console.print(f"[red]Git command timed out after {timeout}s[/red]")
+            console.logger.info(f"[red]Git command timed out after {timeout}s[/red]")
             return None
         except Exception as e:
-            console.print(f"[red]Git command error: {type(e).__name__}[/red]")
+            console.logger.error(f"[red]Git command error: {type(e).__name__}[/red]")
             return None
 
     def _init_storage(self) -> None:
@@ -269,7 +274,7 @@ class ContextManager:
             return context.session_id
 
         except Exception as e:
-            console.print(f"[red]Error saving context: {e}[/red]")
+            console.logger.error(f"[red]Error saving context: {e}[/red]")
             # Emergency fallback
             emergency_session_id = self._emergency_save()
             return emergency_session_id or str(uuid.uuid4())
@@ -300,7 +305,7 @@ class ContextManager:
             return None
 
         except Exception as e:
-            console.print(f"[red]Error restoring session {session_id}: {e}[/red]")
+            console.logger.error(f"[red]Error restoring session {session_id}: {e}[/red]")
             return None
 
     def restore_latest(self) -> Optional[Dict[str, Any]]:
@@ -328,7 +333,7 @@ class ContextManager:
             return None
 
         except Exception as e:
-            console.print(f"[red]Error restoring latest session: {e}[/red]")
+            console.logger.error(f"[red]Error restoring latest session: {e}[/red]")
             return None
 
     def list_sessions(self, limit: int = 20) -> List[Dict[str, Any]]:
@@ -372,7 +377,7 @@ class ContextManager:
                     )
 
         except Exception as e:
-            console.print(f"[red]Error listing sessions: {e}[/red]")
+            console.logger.error(f"[red]Error listing sessions: {e}[/red]")
 
         return sessions
 
@@ -382,19 +387,19 @@ class ContextManager:
             context = self._capture_current_state()
             return context.to_dict()
         except Exception as e:
-            console.print(f"[red]Error getting current context: {e}[/red]")
+            console.logger.error(f"[red]Error getting current context: {e}[/red]")
             return {}
 
     def start_auto_save(self, interval: int = 30) -> None:
         """Start automatic context saving."""
         self._auto_save_enabled = True
         # In a real implementation, this would start a background thread
-        console.print(f"[blue]Auto-save enabled (every {interval}s)[/blue]")
+        console.logger.info(f"[blue]Auto-save enabled (every {interval}s)[/blue]")
 
     def stop_auto_save(self) -> None:
         """Stop automatic context saving."""
         self._auto_save_enabled = False
-        console.print("[blue]Auto-save disabled[/blue]")
+        console.logger.info("[blue]Auto-save disabled[/blue]")
 
     def cleanup_old_sessions(self, days: int = 30) -> int:
         """
@@ -427,7 +432,7 @@ class ContextManager:
                 return deleted_count
 
         except Exception as e:
-            console.print(f"[red]Error cleaning up sessions: {e}[/red]")
+            console.logger.error(f"[red]Error cleaning up sessions: {e}[/red]")
             return 0
 
     def generate_smart_description(self, context: ContextSnapshot) -> str:
@@ -754,7 +759,7 @@ class ContextManager:
                         )
 
         except Exception as e:
-            console.print(f"[yellow]Warning: Could not get open files: {e}[/yellow]")
+            console.logger.warning(f"[yellow]Warning: Could not get open files: {e}[/yellow]")
 
         return open_files[:10]  # Limit to 10 most recent
 
@@ -780,7 +785,7 @@ class ContextManager:
                 git_state["last_commit"] = last_commit
 
         except Exception as e:
-            console.print(f"[yellow]Warning: Could not get git state: {e}[/yellow]")
+            console.logger.warning(f"[yellow]Warning: Could not get git state: {e}[/yellow]")
 
         return git_state
 
@@ -898,15 +903,15 @@ class ContextManager:
 
             # Show other context info
             current_goal = context_data.get('current_goal', 'Unknown')
-            console.print(f"[blue]🎯 Current goal: {current_goal}[/blue]")
+            console.logger.info(f"[blue]🎯 Current goal: {current_goal}[/blue]")
 
             # Show any recent changes or notes
             notes = context_data.get('notes', [])
             if notes:
-                console.print(f"[blue]📝 Recent notes: {len(notes)} items[/blue]")
+                console.logger.info(f"[blue]📝 Recent notes: {len(notes)} items[/blue]")
 
         except Exception as e:
-            console.print(f"[red]❌ Failed to apply context: {e}[/red]")
+            console.logger.error(f"[red]❌ Failed to apply context: {e}[/red]")
             # Fallback to basic display
             console.print(
                 f"[blue]Context data available: {list(context_data.keys()) if context_data else 'None'}[/blue]"
@@ -927,8 +932,8 @@ class ContextManager:
             }
             with open(emergency_file, "w") as f:
                 json.dump(emergency_context, f, indent=2)
-            console.print("[yellow]Emergency context saved[/yellow]")
+            console.logger.info("[yellow]Emergency context saved[/yellow]")
             return emergency_session_id
         except Exception as e:
-            console.print(f"[red]Emergency save failed: {e}[/red]")
+            console.logger.error(f"[red]Emergency save failed: {e}[/red]")
             return None

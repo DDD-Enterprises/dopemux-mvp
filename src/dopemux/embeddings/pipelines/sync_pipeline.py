@@ -92,7 +92,7 @@ class SyncPipeline(BasePipeline):
         if self.config.enable_progress_tracking:
             full_sync = sync_config.get("full_sync", False)
             sync_mode = "full" if full_sync else "incremental"
-            print(f"🔄 Starting {sync_mode} sync pipeline...")
+            logger.info(f"🔄 Starting {sync_mode} sync pipeline...")
 
         try:
             # Define pipeline stages
@@ -131,9 +131,9 @@ class SyncPipeline(BasePipeline):
 
             if self.config.enable_progress_tracking:
                 if overall_success:
-                    print(f"✅ Sync completed: {total_processed} items processed")
+                    logger.info(f"✅ Sync completed: {total_processed} items processed")
                 else:
-                    print(f"⚠️ Sync completed with issues: {total_failed} failed")
+                    logger.error(f"⚠️ Sync completed with issues: {total_failed} failed")
 
             return final_result
 
@@ -244,7 +244,7 @@ class SyncPipeline(BasePipeline):
         target_integrations = self._get_target_integrations(sync_config)
 
         if self.config.enable_progress_tracking:
-            print(f"🔄 Syncing {len(target_integrations)} integrations...")
+            logger.info(f"🔄 Syncing {len(target_integrations)} integrations...")
 
         # Process each integration
         for integration in target_integrations:
@@ -252,7 +252,7 @@ class SyncPipeline(BasePipeline):
 
             try:
                 if self.config.enable_progress_tracking:
-                    print(f"🔗 Syncing {integration_name}...")
+                    logger.info(f"🔗 Syncing {integration_name}...")
 
                 # Sync documents from integration
                 sync_result = await self._sync_integration(integration, sync_config)
@@ -364,9 +364,10 @@ class SyncPipeline(BasePipeline):
             store_stats = self.vector_store.get_stats()
             # This is simplified - in practice would check actual document existence
             return True  # Assume new for now
-        except Exception:
+        except Exception as e:
             return True
 
+            logger.error(f"Error: {e}")
     async def _detect_sync_conflicts(self):
         """Detect and handle synchronization conflicts."""
         # Group documents by ID
@@ -403,7 +404,7 @@ class SyncPipeline(BasePipeline):
                             self.updated_documents.remove(doc)
 
         if self.sync_conflicts and self.config.enable_progress_tracking:
-            print(f"⚠️ Resolved {len(self.sync_conflicts)} sync conflicts")
+            logger.info(f"⚠️ Resolved {len(self.sync_conflicts)} sync conflicts")
 
     async def _storage_stage(self) -> Dict[str, Any]:
         """Store synced documents using document pipeline."""
@@ -416,7 +417,7 @@ class SyncPipeline(BasePipeline):
             return {"stored_count": 0, "storage_duration": 0}
 
         if self.config.enable_progress_tracking:
-            print(f"💾 Processing {len(documents_to_store)} synced documents...")
+            logger.info(f"💾 Processing {len(documents_to_store)} synced documents...")
 
         stored_count = 0
 
@@ -538,40 +539,40 @@ class SyncPipeline(BasePipeline):
         """Display ADHD-friendly sync summary."""
         summary = self.get_sync_summary()
 
-        print(f"🔄 Sync Summary: {self.pipeline_id}")
-        print("=" * 50)
+        logger.info(f"🔄 Sync Summary: {self.pipeline_id}")
+        logger.info("=" * 50)
 
         # Overall status
         if summary["overall_success"]:
-            print("✅ Overall Status: SUCCESS")
+            logger.info("✅ Overall Status: SUCCESS")
         else:
-            print("❌ Overall Status: FAILED")
+            logger.error("❌ Overall Status: FAILED")
 
-        print(f"⏱️ Duration: {summary['total_duration_seconds']:.1f}s")
-        print(f"🔗 Integrations: {len(self.sync_results)} synced")
+        logger.info(f"⏱️ Duration: {summary['total_duration_seconds']:.1f}s")
+        logger.info(f"🔗 Integrations: {len(self.sync_results)} synced")
 
         # Document summary
         total_docs = len(self.new_documents) + len(self.updated_documents)
-        print(f"📄 Documents: {total_docs} processed")
-        print(f"   • {len(self.new_documents)} new")
-        print(f"   • {len(self.updated_documents)} updated")
+        logger.info(f"📄 Documents: {total_docs} processed")
+        logger.info(f"   • {len(self.new_documents)} new")
+        logger.info(f"   • {len(self.updated_documents)} updated")
         if self.deleted_documents:
-            print(f"   • {len(self.deleted_documents)} deleted")
+            logger.info(f"   • {len(self.deleted_documents)} deleted")
 
         # Conflicts
         if self.sync_conflicts:
-            print(f"⚠️ Conflicts: {len(self.sync_conflicts)} resolved")
+            logger.info(f"⚠️ Conflicts: {len(self.sync_conflicts)} resolved")
 
         # Integration details
-        print("\n🔗 Integration Results:")
+        logger.info("\n🔗 Integration Results:")
         for name, result in self.sync_results.items():
             status_emoji = "✅" if result.get("success", False) else "❌"
             docs_synced = result.get("documents_synced", 0)
-            print(f"   {status_emoji} {name}: {docs_synced} documents")
+            logger.info(f"   {status_emoji} {name}: {docs_synced} documents")
 
         if summary["errors"]:
-            print(f"\n🚨 Errors: {len(summary['errors'])}")
+            logger.error(f"\n🚨 Errors: {len(summary['errors'])}")
             for error in summary["errors"][:3]:
-                print(f"   • {error}")
+                logger.error(f"   • {error}")
             if len(summary["errors"]) > 3:
-                print(f"   ... and {len(summary['errors']) - 3} more")
+                logger.error(f"   ... and {len(summary['errors']) - 3} more")

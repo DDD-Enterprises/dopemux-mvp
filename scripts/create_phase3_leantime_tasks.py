@@ -11,6 +11,11 @@ Creates all Phase 3 tasks from ConPort decisions 372-376 and tasks 323-332
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import aiohttp
 import json
 import os
@@ -105,19 +110,19 @@ async def create_task(session, task_data):
             result = await response.json()
 
             if "result" in result:
-                print(f"✅ Created task '{task_data['headline']}' (ID: {result['result'].get('id')})")
+                logger.info(f"✅ Created task '{task_data['headline']}' (ID: {result['result'].get('id')})")
                 return result['result'].get('id')
             else:
-                print(f"❌ Failed to create task '{task_data['headline']}': {result.get('error', 'Unknown error')}")
+                logger.error(f"❌ Failed to create task '{task_data['headline']}': {result.get('error', 'Unknown error')}")
                 return None
     except Exception as e:
-        print(f"❌ Error creating task '{task_data['headline']}': {e}")
+        logger.error(f"❌ Error creating task '{task_data['headline']}': {e}")
         return None
 
 async def main():
     """Create all Phase 3 tasks in Leantime."""
-    print(f"Creating {len(PHASE3_TASKS)} Phase 3 tasks in Leantime project ID {PROJECT_ID}")
-    print(f"Using URL: {LEANTIME_URL}")
+    logger.info(f"Creating {len(PHASE3_TASKS)} Phase 3 tasks in Leantime project ID {PROJECT_ID}")
+    logger.info(f"Using URL: {LEANTIME_URL}")
 
     async with aiohttp.ClientSession() as session:
         created_count = 0
@@ -127,8 +132,8 @@ async def main():
                 created_count += 1
             await asyncio.sleep(0.5)  # Rate limiting
 
-        print(f"\n🎉 Phase 3 setup complete! Created {created_count}/{len(PHASE3_TASKS)} tasks")
-        print("Tasks now available in Leantime 'dopemux dev' project for execution")
+        logger.info(f"\n🎉 Phase 3 setup complete! Created {created_count}/{len(PHASE3_TASKS)} tasks")
+        logger.info("Tasks now available in Leantime 'dopemux dev' project for execution")
 
 if __name__ == "__main__":
     asyncio.run(main())

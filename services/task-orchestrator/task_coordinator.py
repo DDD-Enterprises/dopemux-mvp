@@ -518,7 +518,7 @@ async def main():
     adhd_state = {"energy": "medium", "attention": "focused", "load": 0.4}
 
     result = await coordinator.coordinate_tasks(tasks, adhd_state)
-    print(f"Coordination complete: {result}")
+    logger.info(f"Coordination complete: {result}")
 
 if __name__ == "__main__":
     asyncio.run(main())

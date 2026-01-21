@@ -26,6 +26,11 @@ Usage:
 
 from __future__ import annotations
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 import argparse
 import os
 import re
@@ -212,37 +217,37 @@ def main() -> None:
     def rels(paths: List[Path]) -> List[str]:
         return [str(p.relative_to(REPO_ROOT)) for p in sorted(paths)]
 
-    print("Orphan analysis summary:\n")
-    print(f".DS_Store files: {len(rep.ds_store)}")
+    logger.info("Orphan analysis summary:\n")
+    logger.info(f".DS_Store files: {len(rep.ds_store)}")
     for s in rels(rep.ds_store):
-        print(f"  - {s}")
-    print(f"__pycache__ dirs: {len(rep.pycache)}")
+        logger.info(f"  - {s}")
+    logger.info(f"__pycache__ dirs: {len(rep.pycache)}")
     for s in rels(rep.pycache):
-        print(f"  - {s}")
-    print(f"*.pyc files: {len(rep.pyc_files)}")
+        logger.info(f"  - {s}")
+    logger.info(f"*.pyc files: {len(rep.pyc_files)}")
     for s in rels(rep.pyc_files):
-        print(f"  - {s}")
-    print(f"Coverage artifacts: {len(rep.coverage)}")
+        logger.info(f"  - {s}")
+    logger.info(f"Coverage artifacts: {len(rep.coverage)}")
     for s in rels(rep.coverage):
-        print(f"  - {s}")
-    print(f"*.egg-info dirs: {len(rep.egg_info)}")
+        logger.info(f"  - {s}")
+    logger.info(f"*.egg-info dirs: {len(rep.egg_info)}")
     for s in rels(rep.egg_info):
-        print(f"  - {s}")
-    print(f"Temp/embeddings/test .db files (root): {len(rep.temp_dbs)}")
+        logger.info(f"  - {s}")
+    logger.info(f"Temp/embeddings/test .db files (root): {len(rep.temp_dbs)}")
     for s in rels(rep.temp_dbs):
-        print(f"  - {s}")
-    print(f"Temp dirs: {len(rep.temp_dirs)}")
+        logger.info(f"  - {s}")
+    logger.info(f"Temp dirs: {len(rep.temp_dirs)}")
     for s in rels(rep.temp_dirs):
-        print(f"  - {s}")
-    print(f"Unreferenced Python modules (heuristic): {len(rep.unreferenced_modules)}")
+        logger.info(f"  - {s}")
+    logger.info(f"Unreferenced Python modules (heuristic): {len(rep.unreferenced_modules)}")
     for s in rels(rep.unreferenced_modules):
-        print(f"  - {s}")
+        logger.info(f"  - {s}")
 
     if not args.apply:
-        print("\nDry run only. Use --apply to remove safe artifacts.")
+        logger.info("\nDry run only. Use --apply to remove safe artifacts.")
         return
 
-    print("\nApplying safe deletions (no code modules):")
+    logger.info("\nApplying safe deletions (no code modules):")
     to_delete = (
         rep.ds_store
         + rep.pycache
@@ -253,16 +258,16 @@ def main() -> None:
         + rep.temp_dirs
     )
     for p in to_delete:
-        print(f"  deleting {p}")
+        logger.info(f"  deleting {p}")
         delete_path(p)
 
     if args.delete_modules and rep.unreferenced_modules:
-        print("\nDeleting unreferenced modules as requested:")
+        logger.info("\nDeleting unreferenced modules as requested:")
         for p in rep.unreferenced_modules:
-            print(f"  deleting {p}")
+            logger.info(f"  deleting {p}")
             delete_path(p)
 
-    print("\nCleanup complete.")
+    logger.info("\nCleanup complete.")
 
 
 if __name__ == "__main__":

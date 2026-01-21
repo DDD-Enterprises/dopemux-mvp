@@ -39,18 +39,18 @@ async def main():
     anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")  # Optional for context generation
 
     if not voyage_api_key:
-        print("❌ Error: VOYAGE_API_KEY environment variable not set")
-        print("Export it: export VOYAGE_API_KEY='your-key'")
+        logger.error("❌ Error: VOYAGE_API_KEY environment variable not set")
+        logger.info("Export it: export VOYAGE_API_KEY='your-key'")
         return 1
 
-    print(f"🚀 Starting code-audit workspace indexing")
-    print(f"📁 Workspace: {workspace_path}")
-    print(f"🔑 Voyage API: {'✅ Set' if voyage_api_key else '❌ Missing'}")
-    print(f"🔑 Anthropic API: {'✅ Set (context generation enabled)' if anthropic_api_key else '⚠️  Missing (basic indexing only)'}")
-    print()
+    logger.info(f"🚀 Starting code-audit workspace indexing")
+    logger.info(f"📁 Workspace: {workspace_path}")
+    logger.info(f"🔑 Voyage API: {'✅ Set' if voyage_api_key else '❌ Missing'}")
+    logger.info(f"🔑 Anthropic API: {'✅ Set (context generation enabled)' if anthropic_api_key else '⚠️  Missing (basic indexing only)'}")
+    logger.info()
 
     # Initialize components with best practices
-    print("⚙️  Initializing components...")
+    logger.info("⚙️  Initializing components...")
 
     # Embedder with proper rate limiting
     embedder = VoyageEmbedder(
@@ -60,7 +60,7 @@ async def main():
         rate_limit_rpm=2000,          # Voyage code-3 limit
         default_model="voyage-code-3" # Optimized for code
     )
-    print("  ✅ VoyageEmbedder initialized (voyage-code-3, 2000 RPM limit, 128 batch size)")
+    logger.info("  ✅ VoyageEmbedder initialized (voyage-code-3, 2000 RPM limit, 128 batch size)")
 
     # Vector store
     qdrant_url = os.getenv("QDRANT_URL", "localhost")
@@ -71,7 +71,7 @@ async def main():
         port=qdrant_port,
         workspace_path=workspace_path
     )
-    print(f"  ✅ QdrantVectorStore initialized ({qdrant_url}:{qdrant_port})")
+    logger.info(f"  ✅ QdrantVectorStore initialized ({qdrant_url}:{qdrant_port})")
 
     # Code chunker with AST awareness
     chunker = CodeChunker(
@@ -79,7 +79,7 @@ async def main():
         overlap_percent=12,           # Recommended range
         use_tree_sitter=True          # AST-aware boundaries
     )
-    print("  ✅ CodeChunker initialized (500 tokens, 12% overlap, Tree-sitter enabled)")
+    logger.info("  ✅ CodeChunker initialized (500 tokens, 12% overlap, Tree-sitter enabled)")
 
     # Context generator (if Anthropic key available)
     context_generator = None
@@ -88,9 +88,9 @@ async def main():
             api_key=anthropic_api_key,
             model="claude-3-5-haiku-20241022"  # Fast, cheap for context generation
         )
-        print("  ✅ ContextGenerator initialized (claude-3-5-haiku)")
+        logger.info("  ✅ ContextGenerator initialized (claude-3-5-haiku)")
     else:
-        print("  ⚠️  ContextGenerator skipped (no Anthropic key)")
+        logger.info("  ⚠️  ContextGenerator skipped (no Anthropic key)")
 
     # Indexing pipeline
     pipeline = IndexingPipeline(
@@ -99,8 +99,8 @@ async def main():
         chunker=chunker,
         context_generator=context_generator
     )
-    print("  ✅ IndexingPipeline initialized")
-    print()
+    logger.info("  ✅ IndexingPipeline initialized")
+    logger.info()
 
     # Indexing parameters
     include_patterns = [
@@ -124,21 +124,21 @@ async def main():
     # Start with limited batch for safety
     max_files = 100  # Index 100 files first, then expand
 
-    print(f"📝 Indexing configuration:")
-    print(f"  Include patterns: {', '.join(include_patterns)}")
-    print(f"  Exclude patterns: {', '.join(exclude_patterns)}")
-    print(f"  Max files (first batch): {max_files}")
-    print(f"  Embedding model: voyage-code-3")
-    print(f"  Rate limit: 2000 RPM")
-    print(f"  Batch size: 128 texts/request")
-    print(f"  Chunk size: 500 tokens with 12% overlap")
-    print(f"  Multi-vector: content (0.7), title (0.2), breadcrumb (0.1)")
-    print()
+    logger.info(f"📝 Indexing configuration:")
+    logger.info(f"  Include patterns: {', '.join(include_patterns)}")
+    logger.info(f"  Exclude patterns: {', '.join(exclude_patterns)}")
+    logger.info(f"  Max files (first batch): {max_files}")
+    logger.info(f"  Embedding model: voyage-code-3")
+    logger.info(f"  Rate limit: 2000 RPM")
+    logger.info(f"  Batch size: 128 texts/request")
+    logger.info(f"  Chunk size: 500 tokens with 12% overlap")
+    logger.info(f"  Multi-vector: content (0.7), title (0.2), breadcrumb (0.1)")
+    logger.info()
 
     # Index workspace
-    print("🔄 Starting indexing (this may take 5-15 minutes for 100 files)...")
-    print("   Progress will be shown as files are processed...")
-    print()
+    logger.info("🔄 Starting indexing (this may take 5-15 minutes for 100 files)...")
+    logger.info("   Progress will be shown as files are processed...")
+    logger.info()
 
     try:
         result = await pipeline.index_workspace(
@@ -150,41 +150,41 @@ async def main():
         )
 
         # Results
-        print()
-        print("=" * 60)
-        print("✅ INDEXING COMPLETE")
-        print("=" * 60)
-        print(f"Files processed: {result.get('files_indexed', 0)}")
-        print(f"Total chunks: {result.get('total_chunks', 0)}")
-        print(f"Embedding cost: ${result.get('embedding_cost', 0):.4f}")
-        print(f"Context gen cost: ${result.get('context_cost', 0):.4f}")
-        print(f"Total cost: ${result.get('total_cost', 0):.4f}")
-        print()
+        logger.info()
+        logger.info("=" * 60)
+        logger.info("✅ INDEXING COMPLETE")
+        logger.info("=" * 60)
+        logger.info(f"Files processed: {result.get('files_indexed', 0)}")
+        logger.info(f"Total chunks: {result.get('total_chunks', 0)}")
+        logger.info(f"Embedding cost: ${result.get('embedding_cost', 0):.4f}")
+        logger.info(f"Context gen cost: ${result.get('context_cost', 0):.4f}")
+        logger.info(f"Total cost: ${result.get('total_cost', 0):.4f}")
+        logger.info()
 
         # Cost summary
         cost_summary = embedder.get_cost_summary()
-        print("📊 Embedding Statistics:")
-        print(f"  Total requests: {cost_summary['total_requests']}")
-        print(f"  Total tokens: {cost_summary['total_tokens']:,}")
-        print(f"  Cache hits: {cost_summary['cache_hits']} ({cost_summary['cache_rate']:.1%})")
-        print(f"  Total cost: ${cost_summary['total_cost_usd']:.4f}")
-        print()
+        logger.info("📊 Embedding Statistics:")
+        logger.info(f"  Total requests: {cost_summary['total_requests']}")
+        logger.info(f"  Total tokens: {cost_summary['total_tokens']:,}")
+        logger.info(f"  Cache hits: {cost_summary['cache_hits']} ({cost_summary['cache_rate']:.1%})")
+        logger.info(f"  Total cost: ${cost_summary['total_cost_usd']:.4f}")
+        logger.info()
 
         # Next steps
-        print("🎯 Next steps:")
-        print("  1. Test search: mcp__dope-context__search_code('authentication')")
-        print("  2. Index more files: Increase max_files to 500 or remove limit")
-        print("  3. Index docs: Run index_docs() for markdown/PDF documentation")
-        print()
+        logger.info("🎯 Next steps:")
+        logger.info("  1. Test search: mcp__dope-context__search_code('authentication')")
+        logger.info("  2. Index more files: Increase max_files to 500 or remove limit")
+        logger.info("  3. Index docs: Run index_docs() for markdown/PDF documentation")
+        logger.info()
 
         return 0
 
     except Exception as e:
-        print()
-        print("=" * 60)
-        print("❌ INDEXING FAILED")
-        print("=" * 60)
-        print(f"Error: {e}")
+        logger.info()
+        logger.info("=" * 60)
+        logger.error("❌ INDEXING FAILED")
+        logger.info("=" * 60)
+        logger.error(f"Error: {e}")
         logger.exception("Indexing failed")
         return 1
 

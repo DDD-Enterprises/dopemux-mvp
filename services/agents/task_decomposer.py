@@ -99,7 +99,7 @@ class TaskDecomposer:
         )
 
         result = await decomposer.decompose_task(task)
-        print(f"Decomposed into {len(result.subtasks)} subtasks")
+        logger.info(f"Decomposed into {len(result.subtasks)} subtasks")
 
         for subtask in result.subtasks:
             print(f"  {subtask.description} ({subtask.estimated_minutes}min, "
@@ -794,15 +794,15 @@ if __name__ == "__main__":
     async def demo():
         """Demonstrate TaskDecomposer capabilities."""
 
-        print("\n" + "="*70)
-        print("TaskDecomposer Demo - ADHD Task Decomposition")
-        print("="*70 + "\n")
+        logger.info("\n" + "="*70)
+        logger.info("TaskDecomposer Demo - ADHD Task Decomposition")
+        logger.info("="*70 + "\n")
 
         # Initialize decomposer
         decomposer = TaskDecomposer(workspace_id="/Users/hue/code/dopemux-mvp")
 
         # Example 1: Complex task needing decomposition
-        print("Example 1: Complex Task (120min, 0.8 complexity)\n")
+        logger.info("Example 1: Complex Task (120min, 0.8 complexity)\n")
 
         task1 = TaskInput(
             id="T-001",
@@ -819,28 +819,28 @@ if __name__ == "__main__":
             log_to_conport=False
         )
 
-        print(f"Parent: {task1.description}")
-        print(f"  Duration: {task1.estimated_minutes}min")
-        print(f"  Complexity: {task1.complexity}\n")
+        logger.info(f"Parent: {task1.description}")
+        logger.info(f"  Duration: {task1.estimated_minutes}min")
+        logger.info(f"  Complexity: {task1.complexity}\n")
 
-        print(f"Decomposed into {len(result1.subtasks)} subtasks:\n")
+        logger.info(f"Decomposed into {len(result1.subtasks)} subtasks:\n")
         for subtask in result1.subtasks:
-            print(f"  {subtask.sequence_number}. {subtask.description}")
+            logger.info(f"  {subtask.sequence_number}. {subtask.description}")
             print(f"     Time: {subtask.estimated_minutes}min | "
                   f"Complexity: {subtask.complexity:.2f} | "
                   f"Energy: {subtask.energy_required}")
             if subtask.dependencies:
-                print(f"     Depends on: Part {subtask.dependencies[0] + 1}")
-            print()
+                logger.info(f"     Depends on: Part {subtask.dependencies[0] + 1}")
+            logger.info()
 
-        print("Recommendations:")
+        logger.info("Recommendations:")
         for rec in result1.recommendations:
-            print(f"  • {rec}")
-        print()
+            logger.info(f"  • {rec}")
+        logger.info()
 
         # Example 2: Simple task (no decomposition)
-        print("="*70)
-        print("\nExample 2: Simple Task (15min, 0.2 complexity)\n")
+        logger.info("="*70)
+        logger.info("\nExample 2: Simple Task (15min, 0.2 complexity)\n")
 
         task2 = TaskInput(
             id="T-002",
@@ -856,27 +856,27 @@ if __name__ == "__main__":
             log_to_conport=False
         )
 
-        print(f"Task: {task2.description}")
-        print(f"  Duration: {task2.estimated_minutes}min")
-        print(f"  Complexity: {task2.complexity}\n")
+        logger.info(f"Task: {task2.description}")
+        logger.info(f"  Duration: {task2.estimated_minutes}min")
+        logger.info(f"  Complexity: {task2.complexity}\n")
 
-        print(f"Result: {len(result2.subtasks)} subtask (no decomposition needed)")
-        print(f"  {result2.subtasks[0].description}")
-        print(f"  Reason: {result2.recommendations[0]}\n")
+        logger.info(f"Result: {len(result2.subtasks)} subtask (no decomposition needed)")
+        logger.info(f"  {result2.subtasks[0].description}")
+        logger.info(f"  Reason: {result2.recommendations[0]}\n")
 
         # Show metrics
-        print("="*70)
-        print("\nTaskDecomposer Metrics:")
-        print("="*70)
+        logger.info("="*70)
+        logger.info("\nTaskDecomposer Metrics:")
+        logger.info("="*70)
         metrics = decomposer.get_metrics()
         for key, value in metrics.items():
             if isinstance(value, dict):
-                print(f"  {key}:")
+                logger.info(f"  {key}:")
                 for k, v in value.items():
-                    print(f"    {k}: {v}")
+                    logger.info(f"    {k}: {v}")
             else:
-                print(f"  {key}: {value}")
-        print()
+                logger.info(f"  {key}: {value}")
+        logger.info()
 
     # Run demo
     asyncio.run(demo())

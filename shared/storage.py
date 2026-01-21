@@ -362,6 +362,7 @@ class PostgreSQLStorage:
             }
 
 
+            logger.error(f"Error: {e}")
 class UnifiedStorage:
     """
     Unified storage layer combining Redis cache and PostgreSQL persistence.
@@ -460,6 +461,7 @@ class UnifiedStorage:
             except Exception as e:
                 redis_health = {"status": "error", "error": str(e)}
 
+                logger.error(f"Error: {e}")
         return {
             "overall_status": "healthy" if postgres_health["status"] == "healthy" and redis_health["status"] == "healthy" else "degraded",
             "postgres": postgres_health,

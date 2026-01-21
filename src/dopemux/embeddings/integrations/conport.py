@@ -111,7 +111,7 @@ class ConPortAdapter(BaseIntegration):
             for content_type, sync_func in content_types:
                 try:
                     if self.config.enable_progress_tracking:
-                        print(f"🔄 Syncing {content_type} from ConPort...")
+                        logger.info(f"🔄 Syncing {content_type} from ConPort...")
 
                     type_docs = await sync_func(workspace_id)
                     sync_results["documents"].extend(type_docs)
@@ -129,7 +129,7 @@ class ConPortAdapter(BaseIntegration):
 
             # ADHD-friendly completion feedback
             if self.config.enable_progress_tracking:
-                print(f"✅ ConPort sync complete: {documents_synced} documents in {sync_duration:.1f}s")
+                logger.info(f"✅ ConPort sync complete: {documents_synced} documents in {sync_duration:.1f}s")
 
             return {
                 "documents_synced": documents_synced,
@@ -287,7 +287,7 @@ class ConPortAdapter(BaseIntegration):
                     logger.warning(f"⚠️ Failed to store embedding for {doc['id']}: {e}")
 
             if self.config.enable_progress_tracking:
-                print(f"💾 Stored {stored_count} embeddings to ConPort")
+                logger.info(f"💾 Stored {stored_count} embeddings to ConPort")
 
         except Exception as e:
             logger.error(f"❌ Failed to store embeddings to ConPort: {e}")

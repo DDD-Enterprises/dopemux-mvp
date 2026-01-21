@@ -462,9 +462,10 @@ class DeveloperLearningEngine:
                     commit_times.append(commit_time.hour)
                     commit_sizes.append(len(commit["files_changed"]))
                     authors.add(commit["author"])
-                except Exception:
+                except Exception as e:
                     continue
 
+                    logger.error(f"Error: {e}")
             # Calculate patterns
             patterns = {
                 "peak_hours": self._find_peak_hours(commit_times),
@@ -571,9 +572,10 @@ class DeveloperLearningEngine:
 
             return max(-1.0, min(1.0, complexity_change))
 
-        except Exception:
+        except Exception as e:
             return 0.0
 
+            logger.error(f"Error: {e}")
     async def _assess_refactoring_success(self, commit: Dict[str, Any]) -> Dict[str, Any]:
         """Assess indicators of refactoring success."""
         try:
@@ -596,9 +598,10 @@ class DeveloperLearningEngine:
                 "confidence": "medium"  # Would be higher with more analysis
             }
 
-        except Exception:
+        except Exception as e:
             return {"success_probability": 0.5, "confidence": "low"}
 
+            logger.error(f"Error: {e}")
     # Pattern Recognition and Learning
 
     async def learn_navigation_patterns(self, developer_id: str) -> Dict[str, Any]:

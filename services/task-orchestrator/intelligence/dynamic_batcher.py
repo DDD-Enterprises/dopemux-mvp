@@ -351,7 +351,7 @@ def check_rebatch(
     Example:
         decision = check_rebatch(batch, completed_task, current_state, previous_state)
         if decision.should_rebatch:
-            print(f"Re-batching recommended: {decision.reason}")
+            logger.info(f"Re-batching recommended: {decision.reason}")
             # Re-batch with decision.recommended_strategy
     """
     batcher = DynamicBatcher()

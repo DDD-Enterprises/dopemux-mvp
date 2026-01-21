@@ -95,6 +95,7 @@ async def database(db_config, performance_monitor):
         pytest.skip(f"Database not available: {e}")
 
 
+        logger.error(f"Error: {e}")
 # ============================================================================
 # TEST 1: DATABASE INITIALIZATION
 # ============================================================================

@@ -13,6 +13,11 @@ Usage:
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 import argparse
 from pathlib import Path
@@ -58,11 +63,11 @@ async def emit_workspace_switch(
 
     try:
         msg_id = await event_bus.publish("dopemux:events", event)
-        print(f"✅ Published workspace.switched: {from_workspace.split('/')[-1]} → {to_workspace.split('/')[-1]}")
-        print(f"   Message ID: {msg_id}")
+        logger.info(f"✅ Published workspace.switched: {from_workspace.split('/')[-1]} → {to_workspace.split('/')[-1]}")
+        logger.info(f"   Message ID: {msg_id}")
         return msg_id
     except Exception as e:
-        print(f"❌ Failed to publish event: {e}")
+        logger.error(f"❌ Failed to publish event: {e}")
         import traceback
         traceback.print_exc()
         return None
@@ -72,70 +77,70 @@ async def test_workspace_flow():
     """Test complete workspace tracking flow"""
 
     # Connect to Redis
-    print("🔌 Connecting to Redis Streams...")
+    logger.info("🔌 Connecting to Redis Streams...")
     event_bus = EventBus(redis_url="redis://localhost:6379")
     await event_bus.initialize()
-    print("✅ Connected to Redis")
-    print()
+    logger.info("✅ Connected to Redis")
+    logger.info()
 
-    print("=" * 60)
-    print("🧪 Testing Workspace Switch Event Flow")
-    print("=" * 60)
-    print()
+    logger.info("=" * 60)
+    logger.info("🧪 Testing Workspace Switch Event Flow")
+    logger.info("=" * 60)
+    logger.info()
 
     # Scenario: Switch TO dopemux workspace (start session)
-    print("📍 Test 1: Switch TO dopemux workspace (should start session)")
+    logger.info("📍 Test 1: Switch TO dopemux workspace (should start session)")
     await emit_workspace_switch(
         event_bus,
         from_workspace="/Users/hue/other-project",
         to_workspace="/Users/hue/code/dopemux-mvp",
         switch_type="manual"
     )
-    print()
+    logger.info()
 
     # Wait 2 seconds
-    print("⏳ Waiting 2 seconds...")
+    logger.info("⏳ Waiting 2 seconds...")
     await asyncio.sleep(2)
 
     # Scenario: Switch away briefly (interruption)
-    print("🔄 Test 2: Switch away briefly (should count as interruption)")
+    logger.info("🔄 Test 2: Switch away briefly (should count as interruption)")
     await emit_workspace_switch(
         event_bus,
         from_workspace="/Users/hue/code/dopemux-mvp",
         to_workspace="/Users/hue/browser-tab",
         switch_type="manual"
     )
-    print()
+    logger.info()
 
     # Wait 1 second
     await asyncio.sleep(1)
 
     # Scenario: Switch back to dopemux
-    print("📍 Test 3: Switch back to dopemux (new session)")
+    logger.info("📍 Test 3: Switch back to dopemux (new session)")
     await emit_workspace_switch(
         event_bus,
         from_workspace="/Users/hue/browser-tab",
         to_workspace="/Users/hue/code/dopemux-mvp",
         switch_type="manual"
     )
-    print()
+    logger.info()
 
     # Close connection
     await event_bus.close()
 
-    print("=" * 60)
-    print("✅ Test events published successfully!")
-    print("=" * 60)
-    print()
-    print("🔍 Check Activity Capture logs:")
-    print("   docker logs dopemux-activity-capture --tail 30")
-    print()
-    print("🔍 Check Activity Capture metrics:")
-    print("   curl -s http://localhost:8096/metrics | jq '.'")
-    print()
-    print("🔍 Check ADHD Engine state:")
-    print("   curl -s http://localhost:8095/health | jq '.current_state'")
-    print()
+    logger.info("=" * 60)
+    logger.info("✅ Test events published successfully!")
+    logger.info("=" * 60)
+    logger.info()
+    logger.info("🔍 Check Activity Capture logs:")
+    logger.info("   docker logs dopemux-activity-capture --tail 30")
+    logger.info()
+    logger.info("🔍 Check Activity Capture metrics:")
+    logger.info("   curl -s http://localhost:8096/metrics | jq '.'")
+    logger.info()
+    logger.info("🔍 Check ADHD Engine state:")
+    logger.info("   curl -s http://localhost:8095/health | jq '.current_state'")
+    logger.info()
 
 
 async def continuous_test_loop():
@@ -144,16 +149,16 @@ async def continuous_test_loop():
     event_bus = EventBus(redis_url="redis://localhost:6379")
     await event_bus.initialize()
 
-    print("🔄 Starting continuous test mode (Ctrl+C to stop)")
-    print("   Emitting workspace switches every 30 seconds")
-    print()
+    logger.info("🔄 Starting continuous test mode (Ctrl+C to stop)")
+    logger.info("   Emitting workspace switches every 30 seconds")
+    logger.info()
 
     iteration = 0
 
     try:
         while True:
             iteration += 1
-            print(f"--- Iteration {iteration} ---")
+            logger.info(f"--- Iteration {iteration} ---")
 
             # Switch TO dopemux
             await emit_workspace_switch(
@@ -171,12 +176,12 @@ async def continuous_test_loop():
                 to_workspace="/Users/hue/browser"
             )
 
-            print(f"   ⏳ Waiting 15 seconds until next iteration...")
-            print()
+            logger.info(f"   ⏳ Waiting 15 seconds until next iteration...")
+            logger.info()
             await asyncio.sleep(15)
 
     except KeyboardInterrupt:
-        print("\n⏹️  Stopped continuous test")
+        logger.info("\n⏹️  Stopped continuous test")
         await event_bus.close()
 
 

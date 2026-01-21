@@ -21,6 +21,11 @@ Options:
 
 from __future__ import annotations
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 import argparse
 import os
 import re
@@ -64,8 +69,9 @@ def rg_paths(pattern: str, base: Path, globs: Optional[List[str]] = None) -> Lis
             try:
                 if re.search(pattern, p.read_text(encoding="utf-8", errors="ignore")):
                     results.append(p)
-            except Exception:
+            except Exception as e:
                 continue
+                logger.error(f"Error: {e}")
         return results
 
 
@@ -75,8 +81,9 @@ def read_first_header(p: Path) -> Optional[str]:
             for line in f:
                 if line.strip().startswith("#"):
                     return line.strip().lstrip("#").strip()
-    except Exception:
+    except Exception as e:
         return None
+        logger.error(f"Error: {e}")
     return None
 
 
@@ -208,9 +215,10 @@ def build_plan(include_historical: bool, include_archive: bool) -> Tuple[List[Pl
                         # Different content – assign a new ID
                         assigned = next_available_id(all_used)
                         reason = f"id {num:04d} occupied; new id assigned"
-                except Exception:
+                except Exception as e:
                     assigned = next_available_id(all_used)
                     reason = f"id {num:04d} occupied; new id assigned"
+                    logger.error(f"Error: {e}")
         else:
             reason = "kept original id"
 
@@ -241,10 +249,11 @@ def move_file(item: PlanItem) -> None:
     try:
         # Prefer git mv when possible for history
         subprocess.run(["git", "mv", str(item.src), str(item.dst)], check=True)
-    except Exception:
+    except Exception as e:
         shutil.move(str(item.src), str(item.dst))
 
 
+        logger.error(f"Error: {e}")
 def main() -> None:
     ap = argparse.ArgumentParser(description="Normalize and consolidate ADR docs")
     ap.add_argument("--apply", action="store_true", help="Apply moves/renames")
@@ -255,31 +264,31 @@ def main() -> None:
     plan, errors = build_plan(args.include_historical, args.include_archive)
 
     if errors:
-        print("Errors:")
+        logger.error("Errors:")
         for e in errors:
-            print(f"  - {e}")
-        print()
+            logger.info(f"  - {e}")
+        logger.info()
 
-    print("Proposed ADR normalization plan:\n")
+    logger.info("Proposed ADR normalization plan:\n")
     for it in plan:
         rel_src = it.src.relative_to(REPO_ROOT)
         rel_dst = it.dst.relative_to(REPO_ROOT)
         status = "SKIP" if it.src == it.dst else "MOVE"
-        print(f"[{status}] {rel_src} -> {rel_dst} :: {it.reason}")
+        logger.info(f"[{status}] {rel_src} -> {rel_dst} :: {it.reason}")
 
     if not args.apply:
-        print("\nDry run only. Use --apply to perform moves.")
+        logger.info("\nDry run only. Use --apply to perform moves.")
         return
 
     # Apply
-    print("\nApplying moves...")
+    logger.info("\nApplying moves...")
     for it in plan:
         if it.src == it.dst:
             continue
         move_file(it)
-        print(f"  moved {it.src.relative_to(REPO_ROOT)} -> {it.dst.relative_to(REPO_ROOT)}")
+        logger.info(f"  moved {it.src.relative_to(REPO_ROOT)} -> {it.dst.relative_to(REPO_ROOT)}")
 
-    print("\nADR cleanup complete.")
+    logger.info("\nADR cleanup complete.")
 
 
 if __name__ == "__main__":

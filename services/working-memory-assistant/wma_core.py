@@ -445,9 +445,10 @@ class SnapshotEngine:
                         snapshot = await self.memory_manager.retrieve_snapshot(snapshot_id)
                         if snapshot and snapshot.session_id == session_id:
                             session_snapshots.append(snapshot)
-                    except:
+                    except Exception as e:
                         continue
 
+                        logger.error(f"Error: {e}")
                 if session_snapshots:
                     # Return most recent by timestamp
                     return max(session_snapshots, key=lambda s: s.timestamp)
@@ -692,75 +693,75 @@ class RecoveryEngine:
         # Recovery mode determines information level and pacing
         if recovery_mode == "minimal":
             # Overwhelmed state - just critical context
-            print("🔄 Quick recovery...")
-            print(f"📁 File: {snapshot.current_file['path'] if snapshot.current_file else 'None'}")
-            print("✅ Ready to continue")
+            logger.info("🔄 Quick recovery...")
+            logger.info(f"📁 File: {snapshot.current_file['path'] if snapshot.current_file else 'None'}")
+            logger.info("✅ Ready to continue")
             return
 
         elif recovery_mode == "essential":
             # Scattered attention - essential info only
-            print("🔄 Essential recovery...")
-            print(f"📁 Current file: {snapshot.current_file['path'] if snapshot.current_file else 'None'}")
-            print(f"🎯 Next: {snapshot.next_action}")
+            logger.info("🔄 Essential recovery...")
+            logger.info(f"📁 Current file: {snapshot.current_file['path'] if snapshot.current_file else 'None'}")
+            logger.info(f"🎯 Next: {snapshot.next_action}")
 
             if conport_context.get('semantic_summary'):
-                print(f"💡 ConPort: {conport_context['semantic_summary'][:50]}...")
+                logger.info(f"💡 ConPort: {conport_context['semantic_summary'][:50]}...")
 
-            print("✅ Context restored")
+            logger.info("✅ Context restored")
             return
 
         elif recovery_mode == "gentle":
             # Low energy - slow pacing, gentle reminders
-            print("🔄 Gentle recovery in progress...")
+            logger.info("🔄 Gentle recovery in progress...")
             await asyncio.sleep(0.2)  # Slower pace
 
-            print(f"📁 Current file: {snapshot.current_file['path'] if snapshot.current_file else 'None'}")
+            logger.info(f"📁 Current file: {snapshot.current_file['path'] if snapshot.current_file else 'None'}")
             await asyncio.sleep(0.2)
 
-            print(f"🎯 Next action: {snapshot.next_action}")
+            logger.info(f"🎯 Next action: {snapshot.next_action}")
             await asyncio.sleep(0.2)
 
             if conport_context.get('recent_decisions'):
-                print(f"💡 Recent decision: {conport_context['recent_decisions'][0].get('summary', '')[:50]}...")
+                logger.info(f"💡 Recent decision: {conport_context['recent_decisions'][0].get('summary', '')[:50]}...")
 
-            print("✅ Recovery complete - take your time")
+            logger.info("✅ Recovery complete - take your time")
             return
 
         elif recovery_mode == "preserve_flow":
             # Hyperfocus protection - quick restore, protect flow
-            print("⚡ Quick flow preservation...")
-            print(f"📁 {snapshot.current_file['path'] if snapshot.current_file else 'None'}")
-            print(f"🎯 {snapshot.next_action}")
-            print("🏃 Flow protected - continue!")
+            logger.info("⚡ Quick flow preservation...")
+            logger.info(f"📁 {snapshot.current_file['path'] if snapshot.current_file else 'None'}")
+            logger.info(f"🎯 {snapshot.next_action}")
+            logger.info("🏃 Flow protected - continue!")
             return
 
         else:  # "standard" mode - full progressive disclosure
             # Phase 1: Essential context (immediate)
-            print("🔄 Recovery in progress...")
-            print(f"📁 Current file: {snapshot.current_file['path'] if snapshot.current_file else 'None'}")
-            print(f"🎯 Next action: {snapshot.next_action}")
+            logger.info("🔄 Recovery in progress...")
+            logger.info(f"📁 Current file: {snapshot.current_file['path'] if snapshot.current_file else 'None'}")
+            logger.info(f"🎯 Next action: {snapshot.next_action}")
 
             await asyncio.sleep(0.1)  # Simulate rendering
 
             # Phase 2: Work context
-            print(f"\n📋 Current task: {snapshot.current_task}")
-            print(f"💭 Thought process: {snapshot.thought_process}")
+            logger.info(f"\n📋 Current task: {snapshot.current_task}")
+            logger.info(f"💭 Thought process: {snapshot.thought_process}")
 
             # Phase 2.5: ConPort context
             if conport_context.get('semantic_summary'):
-                print(f"\n🧠 ConPort Summary: {conport_context['semantic_summary']}")
+                logger.info(f"\n🧠 ConPort Summary: {conport_context['semantic_summary']}")
 
             if conport_context.get('active_progress'):
                 progress = conport_context['active_progress'][0]
-                print(f"📊 Active Progress: {progress.get('description', '')[:50]}...")
+                logger.info(f"📊 Active Progress: {progress.get('description', '')[:50]}...")
 
             await asyncio.sleep(0.1)
 
             # Phase 3: Full context
-            print(f"\n⚡ Energy level: {snapshot.energy_level:.1f}")
-            print(f"🧠 Cognitive load: {snapshot.cognitive_load:.1f}")
-            print(f"🔧 Code complexity: {snapshot.complexity_score:.1f}")
-            print("✅ Recovery complete - ready to continue!")
+            logger.info(f"\n⚡ Energy level: {snapshot.energy_level:.1f}")
+            logger.info(f"🧠 Cognitive load: {snapshot.cognitive_load:.1f}")
+            logger.info(f"🔧 Code complexity: {snapshot.complexity_score:.1f}")
+            logger.info("✅ Recovery complete - ready to continue!")
 
     def get_recovery_analytics(self) -> Dict[str, Any]:
         """Get recovery performance analytics"""
@@ -885,6 +886,7 @@ class MemoryManager:
         except Exception as e:
             raise StorageError(f"Failed to decompress snapshot {snapshot_id}: {str(e)}", storage_type="decompression")
 
+            logger.error(f"Error: {e}")
     def _compress_snapshot(self, snapshot: DevelopmentSnapshot, algorithm: str = 'lz4') -> bytes:
         """Compress snapshot using LZ4 (speed) or ZSTD (size)"""
         data = json.dumps(asdict(snapshot), cls=DateTimeEncoder)
@@ -957,9 +959,10 @@ class MemoryManager:
                     snapshot = await self.retrieve_snapshot(snapshot_id)
                     if snapshot and (current_time - snapshot.timestamp).days > max_age_days:
                         expired_keys.append(key)
-                except:
+                except Exception as e:
                     continue
 
+                    logger.error(f"Error: {e}")
             # Delete expired keys
             if expired_keys:
                 self.redis_client.delete(*expired_keys)
@@ -1196,9 +1199,10 @@ class WorkingMemoryAssistant:
                             if session_id not in snapshots_by_session:
                                 snapshots_by_session[session_id] = []
                             snapshots_by_session[session_id].append((snapshot, key))
-                    except:
+                    except Exception as e:
                         continue
 
+                        logger.error(f"Error: {e}")
                 expired_sessions = []
                 total_cleaned = 0
 
@@ -1288,41 +1292,41 @@ class WorkingMemoryAssistant:
 
 async def demonstrate_wma():
     """Demonstrate WMA functionality including predictive restoration"""
-    print("🚀 Working Memory Assistant Demonstration")
-    print("=" * 50)
+    logger.info("🚀 Working Memory Assistant Demonstration")
+    logger.info("=" * 50)
 
     # Initialize WMA
     wma = WorkingMemoryAssistant()
     await wma.initialize()
 
     # Trigger snapshot
-    print("\n📸 Triggering snapshot...")
+    logger.info("\n📸 Triggering snapshot...")
     try:
         snapshot_result = await wma.trigger_snapshot("manual")
-        print(f"✅ Snapshot captured: {snapshot_result.snapshot_id}")
-        print(f"  Capture time: {snapshot_result.capture_time_ms:.1f}ms")
-        print(f"  Compression ratio: {snapshot_result.compression_ratio:.2f}x")
+        logger.info(f"✅ Snapshot captured: {snapshot_result.snapshot_id}")
+        logger.info(f"  Capture time: {snapshot_result.capture_time_ms:.1f}ms")
+        logger.info(f"  Compression ratio: {snapshot_result.compression_ratio:.2f}x")
     except Exception as e:
-        print(f"❌ Snapshot failed: {e}")
+        logger.error(f"❌ Snapshot failed: {e}")
         import traceback
         traceback.print_exc()
         raise  # Re-raise to see full error
 
     # Demonstrate standard recovery
-    print("\n🔄 Initiating instant recovery...")
+    logger.info("\n🔄 Initiating instant recovery...")
     try:
         recovery_result = await wma.instant_recovery(snapshot_result.snapshot_id)
-        print(f"✅ Standard recovery completed: {recovery_result.recovery_time_ms:.1f}ms")
-        print(f"  Context restored: {recovery_result.context_restored_percentage:.1f}%")
-        print(f"  User ready time: {recovery_result.user_ready_time_seconds:.1f}s")
+        logger.info(f"✅ Standard recovery completed: {recovery_result.recovery_time_ms:.1f}ms")
+        logger.info(f"  Context restored: {recovery_result.context_restored_percentage:.1f}%")
+        logger.info(f"  User ready time: {recovery_result.user_ready_time_seconds:.1f}s")
     except Exception as e:
-        print(f"❌ Standard recovery failed: {e}")
+        logger.error(f"❌ Standard recovery failed: {e}")
         import traceback
         traceback.print_exc()
         return
 
     # Demonstrate predictive recovery
-    print("\n🎯 Testing predictive context restoration...")
+    logger.info("\n🎯 Testing predictive context restoration...")
     try:
         current_context = {
             'current_task': 'Implementing user authentication flow',
@@ -1332,45 +1336,45 @@ async def demonstrate_wma():
         }
 
         predictive_result = await wma.predictive_recovery(current_context, use_predictive=True)
-        print(f"✅ Predictive recovery completed: {predictive_result.recovery_time_ms:.1f}ms")
-        print(f"  Enhanced context restored: {predictive_result.context_restored_percentage:.1f}%")
+        logger.info(f"✅ Predictive recovery completed: {predictive_result.recovery_time_ms:.1f}ms")
+        logger.info(f"  Enhanced context restored: {predictive_result.context_restored_percentage:.1f}%")
 
         # Show predictive restoration status
         if wma.predictive_restoration:
             pred_stats = wma.predictive_restoration.get_performance_stats()
-            print(f"  Model trained on {pred_stats['model_stats']['total_patterns']} patterns")
-            print(f"  Vocabulary size: {pred_stats['model_stats']['vocabulary_size']}")
-            print(f"  Context types: {list(pred_stats['model_stats']['context_types'].keys())}")
+            logger.info(f"  Model trained on {pred_stats['model_stats']['total_patterns']} patterns")
+            logger.info(f"  Vocabulary size: {pred_stats['model_stats']['vocabulary_size']}")
+            logger.info(f"  Context types: {list(pred_stats['model_stats']['context_types'].keys())}")
 
     except Exception as e:
-        print(f"⚠️ Predictive recovery not available: {e}")
-        print("  Continuing with standard recovery results...")
+        logger.info(f"⚠️ Predictive recovery not available: {e}")
+        logger.info("  Continuing with standard recovery results...")
 
     # Show system status
-    print("\n📊 System Status:")
+    logger.info("\n📊 System Status:")
     status = wma.get_system_status()
-    print(f"  Snapshots captured: {status['snapshot_engine']['total_snapshots_captured']}")
-    print(f"  Memory usage: {status['memory_manager']['memory_usage_mb']:.1f}MB")
-    print(f"  Average snapshot time: {status['snapshot_engine']['average_capture_time_ms']:.1f}ms")
-    print(f"  Performance improvement: {status['recovery_engine']['performance_improvement_ratio']}x")
+    logger.info(f"  Snapshots captured: {status['snapshot_engine']['total_snapshots_captured']}")
+    logger.info(f"  Memory usage: {status['memory_manager']['memory_usage_mb']:.1f}MB")
+    logger.info(f"  Average snapshot time: {status['snapshot_engine']['average_capture_time_ms']:.1f}ms")
+    logger.info(f"  Performance improvement: {status['recovery_engine']['performance_improvement_ratio']}x")
 
     # Show predictive restoration status
     pred_status = status.get('predictive_restoration', {})
     if pred_status.get('status') == 'operational':
-        print(f"  Predictive restoration: ✅ Operational")
-        print(f"  Training time: {pred_status.get('performance', {}).get('training_time', 0):.1f}ms")
-        print(f"  Prediction time: {pred_status.get('performance', {}).get('prediction_time', 0):.1f}ms")
+        logger.info(f"  Predictive restoration: ✅ Operational")
+        logger.info(f"  Training time: {pred_status.get('performance', {}).get('training_time', 0):.1f}ms")
+        logger.info(f"  Prediction time: {pred_status.get('performance', {}).get('prediction_time', 0):.1f}ms")
     else:
-        print(f"  Predictive restoration: ❌ {pred_status.get('status', 'unavailable')}")
+        logger.info(f"  Predictive restoration: ❌ {pred_status.get('status', 'unavailable')}")
 
-    print("\n🎯 Targets achieved:")
-    print(f"  ✓ Snapshot time <200ms: {status['snapshot_engine']['average_capture_time_ms'] < 200}")
-    print(f"  ✓ Recovery time <2s: {recovery_result.recovery_time_ms < 2000}")
-    print(f"  ✓ Memory <50MB: {status['memory_manager']['memory_usage_mb'] < 50}")
-    print(f"  ✓ 20-30x improvement: {status['recovery_engine']['performance_improvement_ratio'] >= 20}")
+    logger.info("\n🎯 Targets achieved:")
+    logger.info(f"  ✓ Snapshot time <200ms: {status['snapshot_engine']['average_capture_time_ms'] < 200}")
+    logger.info(f"  ✓ Recovery time <2s: {recovery_result.recovery_time_ms < 2000}")
+    logger.info(f"  ✓ Memory <50MB: {status['memory_manager']['memory_usage_mb'] < 50}")
+    logger.info(f"  ✓ 20-30x improvement: {status['recovery_engine']['performance_improvement_ratio'] >= 20}")
 
     if pred_status.get('status') == 'operational':
-        print(f"  ✓ Predictive restoration: Available with pattern matching")
+        logger.info(f"  ✓ Predictive restoration: Available with pattern matching")
 
 if __name__ == "__main__":
     asyncio.run(demonstrate_wma())

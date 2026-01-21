@@ -947,8 +947,8 @@ async def test_threshold_coordination(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("🎯 Serena Personalized Threshold Coordinator")
-        print("Unified threshold management across all Phase 2A-2D components")
-        print("✅ Module loaded successfully")
+        logger.info("🎯 Serena Personalized Threshold Coordinator")
+        logger.info("Unified threshold management across all Phase 2A-2D components")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

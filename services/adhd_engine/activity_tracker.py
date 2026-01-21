@@ -175,9 +175,10 @@ class ActivityTracker:
             last_time = datetime.fromisoformat(timestamp_str)
             delta = datetime.now(timezone.utc) - last_time
             return int(delta.total_seconds() / 60)
-        except Exception:
+        except Exception as e:
             return 60
 
+            logger.error(f"Error: {e}")
     def _calculate_break_compliance(self, break_history: list) -> float:
         """
         Calculate break compliance rate from Redis history.

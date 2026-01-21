@@ -321,10 +321,11 @@ class SessionManager:
                 days = int(age.total_seconds() / 86400)
                 return f"{days}d ago"
 
-        except Exception:
+        except Exception as e:
             return "unknown"
 
 
+            logger.error(f"Error: {e}")
 # Singleton instance
 _session_manager_instance: Optional[SessionManager] = None
 

@@ -10,6 +10,11 @@ Architecture:
 """
 
 from dataclasses import dataclass, asdict
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from datetime import datetime
 from typing import Optional, List
 from .conport_client import get_conport_client
@@ -228,6 +233,7 @@ class ConversationManager:
             # Silent failure - local history is primary
             pass
 
+            logger.error(f"Error: {e}")
     def _restore_from_conport(self):
         """
         Restore recent conversation history from ConPort.
@@ -246,22 +252,24 @@ class ConversationManager:
                 try:
                     exchange = Exchange.from_dict(item)
                     self.local_history.append(exchange)
-                except Exception:
+                except Exception as e:
                     # Skip malformed entries
                     continue
 
+                    logger.error(f"Error: {e}")
             if self.local_history:
-                print(f"✅ Restored {len(self.local_history)} exchanges from ConPort")
+                logger.info(f"✅ Restored {len(self.local_history)} exchanges from ConPort")
 
         except Exception as e:
             # Silent failure - start with empty history
             pass
 
 
+            logger.error(f"Error: {e}")
 if __name__ == "__main__":
     """Test conversation manager."""
-    print("🧪 Testing Conversation Manager")
-    print("=" * 60)
+    logger.info("🧪 Testing Conversation Manager")
+    logger.info("=" * 60)
 
     manager = ConversationManager(
         session_id="test_session",
@@ -269,7 +277,7 @@ if __name__ == "__main__":
     )
 
     # Simulate some exchanges
-    print("\n1. Adding sample exchanges...")
+    logger.info("\n1. Adding sample exchanges...")
 
     # Mock ParseResult
     from .response_parser import ParseResult
@@ -295,25 +303,25 @@ if __name__ == "__main__":
     )
 
     # Get context
-    print("\n2. Getting recent context...")
+    logger.info("\n2. Getting recent context...")
     recent = manager.get_recent_context(n=5)
-    print(f"   Found {len(recent)} recent exchanges")
+    logger.info(f"   Found {len(recent)} recent exchanges")
 
     # Get agent-specific
-    print("\n3. Getting Claude-specific context...")
+    logger.info("\n3. Getting Claude-specific context...")
     claude_context = manager.get_agent_context('claude', n=5)
-    print(f"   Found {len(claude_context)} Claude exchanges")
+    logger.info(f"   Found {len(claude_context)} Claude exchanges")
 
     # Format for agent
-    print("\n4. Formatting context for agent...")
+    logger.info("\n4. Formatting context for agent...")
     formatted = manager.format_context_for_agent('claude', include_other_agents=True)
-    print(f"   Formatted context ({len(formatted)} chars):")
-    print(f"   {formatted[:200]}...")
+    logger.info(f"   Formatted context ({len(formatted)} chars):")
+    logger.info(f"   {formatted[:200]}...")
 
     # Stats
-    print("\n5. Getting conversation stats...")
+    logger.info("\n5. Getting conversation stats...")
     stats = manager.get_conversation_stats()
     for key, value in stats.items():
-        print(f"   {key}: {value}")
+        logger.info(f"   {key}: {value}")
 
-    print("\n✅ Conversation manager test complete!")
+    logger.info("\n✅ Conversation manager test complete!")

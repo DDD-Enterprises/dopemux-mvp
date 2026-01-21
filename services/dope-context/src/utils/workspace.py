@@ -194,14 +194,14 @@ def get_snapshot_dir(workspace_path: Optional[Path] = None) -> Path:
 # Example usage
 if __name__ == "__main__":
     workspace = get_workspace_root()
-    print(f"Workspace root: {workspace}")
+    logger.info(f"Workspace root: {workspace}")
 
     workspace_hash = workspace_to_hash(workspace)
-    print(f"Workspace hash: {workspace_hash}")
+    logger.info(f"Workspace hash: {workspace_hash}")
 
     code_coll, docs_coll = get_collection_names(workspace)
-    print(f"Code collection: {code_coll}")
-    print(f"Docs collection: {docs_coll}")
+    logger.info(f"Code collection: {code_coll}")
+    logger.info(f"Docs collection: {docs_coll}")
 
     snapshot_dir = get_snapshot_dir(workspace)
-    print(f"Snapshot dir: {snapshot_dir}")
+    logger.info(f"Snapshot dir: {snapshot_dir}")

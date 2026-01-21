@@ -7,8 +7,8 @@ import sys
 from importlib import util
 from pathlib import Path
 
-MODULE_PATH = Path(__file__).resolve().parents[1] / "src" / "dopemux" / "claude_code_router.py"
-MODULE_NAME = "dopemux.claude_code_router"
+MODULE_PATH = Path(__file__).resolve().parents[1] / "src" / "dopemux" / "dope_brainz_router.py"
+MODULE_NAME = "dopemux.dope_brainz_router"
 spec = util.spec_from_file_location(MODULE_NAME, MODULE_PATH)
 claude_router = util.module_from_spec(spec)
 assert spec.loader is not None

@@ -10,6 +10,11 @@ Effort: 4 focus blocks (100 minutes)
 """
 
 from typing import Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from datetime import datetime, timedelta
 from checkpoint_manager import CheckpointManager, Checkpoint
 from rich.console import Console
@@ -154,10 +159,10 @@ class SessionManager:
         )
 
         # Prompt for action
-        self.console.print("\n[bold]What would you like to do?[/bold]")
-        self.console.print("  [green][r][/green] Resume last session")
-        self.console.print("  [yellow][n][/yellow] Start new session")
-        self.console.print("  [cyan][d][/cyan] Show more details first")
+        self.console.logger.info("\n[bold]What would you like to do?[/bold]")
+        self.console.logger.info("  [green][r][/green] Resume last session")
+        self.console.logger.info("  [yellow][n][/yellow] Start new session")
+        self.console.logger.info("  [cyan][d][/cyan] Show more details first")
 
         choice = input("\nYour choice [r/n/d]: ").strip().lower()
 
@@ -185,15 +190,15 @@ class SessionManager:
             "Session Duration", f"{checkpoint.session_duration_seconds // 60} minutes"
         )
 
-        self.console.print(table)
+        self.console.logger.info(table)
 
         # Show recent chat history
         if checkpoint.chat_history:
-            self.console.print("\n[bold]Recent Conversation:[/bold]")
+            self.console.logger.info("\n[bold]Recent Conversation:[/bold]")
             for msg in checkpoint.chat_history[-5:]:
                 role = msg.get("role", "unknown")
                 content = msg.get("content", "")[:80]
-                self.console.print(f"  [{role}]: {content}")
+                self.console.logger.info(f"  [{role}]: {content}")
 
     def _restore_from_checkpoint(self, checkpoint: Checkpoint):
         """
@@ -202,7 +207,7 @@ class SessionManager:
         Args:
             checkpoint: Checkpoint to restore from
         """
-        self.console.print("\n[green]🔄 Restoring session...[/green]")
+        self.console.logger.info("\n[green]🔄 Restoring session...[/green]")
 
         # Restore state to checkpoint manager
         self.checkpoint_mgr.current_mode = checkpoint.mode
@@ -213,9 +218,9 @@ class SessionManager:
         self.checkpoint_mgr.cursor_positions = checkpoint.cursor_positions
         self.checkpoint_mgr.pending_tasks = checkpoint.pending_tasks
 
-        self.console.print("✅ Session state restored")
-        self.console.print(f"✅ Mode: {checkpoint.mode}")
-        self.console.print(f"✅ Energy: {checkpoint.energy_level}")
+        self.console.logger.info("✅ Session state restored")
+        self.console.logger.info(f"✅ Mode: {checkpoint.mode}")
+        self.console.logger.info(f"✅ Energy: {checkpoint.energy_level}")
 
         # Show next action
         self.console.print(
@@ -241,8 +246,8 @@ class SessionManager:
 if __name__ == "__main__":
     """Test session manager."""
 
-    print("Testing Session Manager:")
-    print("=" * 60)
+    logger.info("Testing Session Manager:")
+    logger.info("=" * 60)
 
     from checkpoint_manager import CheckpointManager
 
@@ -271,7 +276,7 @@ if __name__ == "__main__":
     )
 
     # Start session (should offer to resume)
-    print("\nAttempting to resume session...")
+    logger.info("\nAttempting to resume session...")
     # checkpoint = session_mgr.start_session()  # Interactive - commented out for test
 
-    print("\n✅ Session manager test complete")
+    logger.info("\n✅ Session manager test complete")

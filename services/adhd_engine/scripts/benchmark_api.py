@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 \"\"\"Performance benchmarking script for ADHD Engine APIs.
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 Usage:
     python scripts/benchmark_api.py --endpoint /api/v1/energy-level/{user_id} --iterations 100 --concurrency 10
 
@@ -88,11 +93,11 @@ async def benchmark_endpoint(
 
                     if response.status_code != 200:
                         errors += 1
-                        console.print(f"[red]ERROR[/red]: {response.status_code} - {response.text[:100]}")
+                        console.logger.error(f"[red]ERROR[/red]: {response.status_code} - {response.text[:100]}")
 
                 except Exception as e:
                     errors += 1
-                    console.print(f"[red]REQUEST FAILED[/red]: {str(e)}")
+                    console.logger.error(f"[red]REQUEST FAILED[/red]: {str(e)}")
 
         # Execute concurrent requests
         tasks = [make_request() for _ in range(iterations)]
@@ -136,12 +141,12 @@ def main(endpoint, iterations, concurrency, api_key, user_id):
     \"\"\"Run API benchmark.\"\"\"
     console = Console()
 
-    rprint(f"[bold cyan]🚀 Benchmarking ADHD Engine API[/bold cyan]")
-    rprint(f"Endpoint: {endpoint}")
-    rprint(f"Iterations: {iterations}")
-    rprint(f"Concurrency: {concurrency}")
-    rprint(f"User ID: {user_id}")
-    rprint("=" * 60)
+    rlogger.info(f"[bold cyan]🚀 Benchmarking ADHD Engine API[/bold cyan]")
+    rlogger.info(f"Endpoint: {endpoint}")
+    rlogger.info(f"Iterations: {iterations}")
+    rlogger.info(f"Concurrency: {concurrency}")
+    rlogger.info(f"User ID: {user_id}")
+    rlogger.info("=" * 60)
 
     start_time = time.time()
     result = asyncio.run(benchmark_endpoint(endpoint, iterations, concurrency, api_key, user_id))
@@ -162,23 +167,23 @@ def main(endpoint, iterations, concurrency, api_key, user_id):
     table.add_row("Error Rate", f"{result.error_rate:.1f}%")
     table.add_row("Total Duration", f"{end_time - start_time:.2f}s")
 
-    console.print(table)
+    console.logger.info(table)
 
     # Success indicators
     if result.avg_response_time < 0.1:
-        rprint("[bold green]✅ Performance target met (<100ms average)[/bold green]")
+        rlogger.info("[bold green]✅ Performance target met (<100ms average)[/bold green]")
     else:
-        rprint("[bold yellow]⚠️ Performance target not met[/bold yellow]")
+        rlogger.info("[bold yellow]⚠️ Performance target not met[/bold yellow]")
 
     if result.cache_hit_rate > 80:
-        rprint("[bold green]✅ Cache hit rate target met (>80%)[/bold green]")
+        rlogger.info("[bold green]✅ Cache hit rate target met (>80%)[/bold green]")
     else:
-        rprint("[bold yellow]⚠️ Cache hit rate target not met[/bold yellow]")
+        rlogger.info("[bold yellow]⚠️ Cache hit rate target not met[/bold yellow]")
 
     if result.error_rate == 0:
-        rprint("[bold green]✅ Zero errors - excellent![/bold green]")
+        rlogger.error("[bold green]✅ Zero errors - excellent![/bold green]")
     else:
-        rprint(f"[bold red]❌ Errors: {result.error_rate:.1f}%[/bold red]")
+        rlogger.error(f"[bold red]❌ Errors: {result.error_rate:.1f}%[/bold red]")
 
 if __name__ == "__main__":
     main()

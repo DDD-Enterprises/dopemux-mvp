@@ -7,6 +7,11 @@ and the tmux interface controller.
 """
 
 import json
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import subprocess
 import time
 import sys
@@ -233,13 +238,13 @@ class RealtimeStatusUpdater:
         while True:
             try:
                 status_bar = self.generate_realtime_status_bar()
-                print(status_bar, flush=True)
+                logger.info(status_bar, flush=True)
                 time.sleep(interval)
             except KeyboardInterrupt:
                 break
             except Exception as e:
                 error_bar = f"#[fg=#D0021B]MetaMCP Error: {str(e)}#[default]"
-                print(error_bar, flush=True)
+                logger.error(error_bar, flush=True)
                 time.sleep(interval)
 
 
@@ -251,7 +256,7 @@ def main():
         updater.run_continuous_update()
     else:
         # Single status output
-        print(updater.generate_realtime_status_bar())
+        logger.info(updater.generate_realtime_status_bar())
 
 
 if __name__ == '__main__':

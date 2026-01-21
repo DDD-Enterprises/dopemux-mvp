@@ -9,6 +9,11 @@ Complexity: 0.70 (Higher due to PTY handling)
 """
 
 import pty
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import os
 import select
 import subprocess
@@ -80,7 +85,7 @@ class PTYAgent:
 
         try:
             self.status = AgentStatus.STARTING
-            print(f"🚀 Starting {self.config.agent_type.value} with PTY...")
+            logger.info(f"🚀 Starting {self.config.agent_type.value} with PTY...")
 
             # Create pseudo-terminal
             self.master_fd, self.slave_fd = pty.openpty()
@@ -124,18 +129,18 @@ class PTYAgent:
                     if pid != 0:
                         # Process exited
                         self.status = AgentStatus.CRASHED
-                        print(f"❌ {self.config.agent_type.value} crashed immediately")
+                        logger.info(f"❌ {self.config.agent_type.value} crashed immediately")
                         return False
                 except OSError:
                     pass
 
                 self.status = AgentStatus.RUNNING
-                print(f"✅ {self.config.agent_type.value} running (PID: {self.pid})")
+                logger.info(f"✅ {self.config.agent_type.value} running (PID: {self.pid})")
                 return True
 
         except Exception as e:
             self.status = AgentStatus.ERROR
-            print(f"❌ Failed to start {self.config.agent_type.value}: {e}")
+            logger.error(f"❌ Failed to start {self.config.agent_type.value}: {e}")
             return False
 
     def _read_output(self):
@@ -160,7 +165,7 @@ class PTYAgent:
                 # PTY closed
                 break
             except Exception as e:
-                print(f"⚠️ Output reader error: {e}")
+                logger.error(f"⚠️ Output reader error: {e}")
                 break
 
     def send_command(self, command: str) -> bool:
@@ -181,7 +186,7 @@ class PTYAgent:
             os.write(self.master_fd, f"{command}\n".encode("utf-8"))
             return True
         except Exception as e:
-            print(f"❌ Failed to send: {e}")
+            logger.error(f"❌ Failed to send: {e}")
             return False
 
     def get_output(self, clear: bool = False) -> list[str]:
@@ -233,27 +238,29 @@ class PTYAgent:
                 # Check if still alive
                 try:
                     os.waitpid(self.pid, os.WNOHANG)
-                except:
+                except Exception as e:
                     pass
 
-            except:
+            except Exception as e:
                 pass
 
+                logger.error(f"Error: {e}")
         if self.master_fd:
             try:
                 os.close(self.master_fd)
-            except:
+            except Exception as e:
                 pass
 
+                logger.error(f"Error: {e}")
         self.status = AgentStatus.STOPPED
-        print(f"✅ {self.config.agent_type.value} stopped")
+        logger.info(f"✅ {self.config.agent_type.value} stopped")
 
 
 if __name__ == "__main__":
     """Test PTY agent."""
 
-    print("Testing PTY Agent Spawning:")
-    print("=" * 60)
+    logger.info("Testing PTY Agent Spawning:")
+    logger.info("=" * 60)
 
     # Test with Claude
     agent = PTYAgent(
@@ -265,32 +272,32 @@ if __name__ == "__main__":
     )
 
     success = agent.start()
-    print(f"\nAgent started: {success}")
-    print(f"Status: {agent.status.value}")
+    logger.info(f"\nAgent started: {success}")
+    logger.info(f"Status: {agent.status.value}")
 
     if success:
         time.sleep(2)
 
         # Check output
         output = agent.get_output()
-        print(f"\nCaptured {len(output)} lines of output")
+        logger.info(f"\nCaptured {len(output)} lines of output")
         if output:
-            print(f"First few lines:")
+            logger.info(f"First few lines:")
             for line in output[:5]:
-                print(f"  {line[:80]}")
+                logger.info(f"  {line[:80]}")
 
         # Try sending command
-        print("\nSending test command...")
+        logger.info("\nSending test command...")
         agent.send_command("What is 2+2?")
 
         time.sleep(3)
 
         # Get response
         new_output = agent.get_output(clear=True)
-        print(f"New output: {len(new_output)} lines")
+        logger.info(f"New output: {len(new_output)} lines")
 
     # Cleanup
     input("\nPress Enter to stop agent...")
     agent.stop()
 
-    print("\n✅ PTY test complete")
+    logger.info("\n✅ PTY test complete")

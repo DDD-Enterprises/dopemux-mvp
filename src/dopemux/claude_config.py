@@ -91,6 +91,7 @@ class ClaudeConfig:
                 f"Failed to read Claude config: {e}"
             )
 
+            logger.error(f"Error: {e}")
     def backup_config(self) -> Path:
         """Create a timestamped backup of the current configuration.
 
@@ -117,6 +118,7 @@ class ClaudeConfig:
                 f"Failed to create backup: {e}"
             )
 
+            logger.error(f"Error: {e}")
     def write_config(self, config: Dict[str, Any], create_backup: bool = True) -> Optional[Path]:
         """Write configuration to Claude settings.json.
 
@@ -153,9 +155,10 @@ class ClaudeConfig:
             if backup_path and backup_path.exists():
                 try:
                     shutil.copy2(backup_path, self.config_path)
-                except Exception:
+                except Exception as e:
                     pass  # Best effort
 
+                    logger.error(f"Error: {e}")
             raise ClaudeConfigError(
                 f"Failed to write config: {e}"
             )
@@ -274,6 +277,7 @@ class ClaudeConfig:
                 f"Failed to rollback from backup: {e}"
             )
 
+            logger.error(f"Error: {e}")
     def list_backups(self, limit: int = 10) -> List[Path]:
         """List available backup files.
 

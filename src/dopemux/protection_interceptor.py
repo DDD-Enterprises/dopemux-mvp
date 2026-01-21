@@ -562,8 +562,9 @@ def _sync_project_scaffolding(source: Path, destination: Path, symlink_root: Opt
             if dest_file.exists() or dest_file.is_symlink():
                 try:
                     dest_file.unlink()
-                except Exception:
+                except Exception as e:
                     pass
+                    logger.error(f"Error: {e}")
             shutil.copy2(src_file, dest_file)
         except Exception as exc:  # pragma: no cover
             logger.warning("Failed to copy %s: %s", file_name, exc)

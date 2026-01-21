@@ -545,9 +545,9 @@ class ToolOrchestrator:
 async def demo():
     """Demonstrate ToolOrchestrator"""
 
-    print("\n" + "="*70)
-    print("TOOL ORCHESTRATOR DEMO")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("TOOL ORCHESTRATOR DEMO")
+    logger.info("="*70)
 
     orchestrator = ToolOrchestrator(
         workspace_id="/Users/hue/code/dopemux-mvp"
@@ -556,9 +556,9 @@ async def demo():
     await orchestrator.initialize()
 
     # Example 1: Analysis task (medium complexity)
-    print("\n" + "="*70)
-    print("Example 1: Analysis Task (complexity 0.6)")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("Example 1: Analysis Task (complexity 0.6)")
+    logger.info("="*70)
 
     selections = await orchestrator.select_tools_for_task(
         task_type="analysis",
@@ -566,17 +566,17 @@ async def demo():
     )
 
     primary = selections["primary"]
-    print(f"\nPrimary Tool: {primary.primary_tool}")
-    print(f"Method: {primary.method}")
-    print(f"Model: {primary.model}")
-    print(f"Rationale: {primary.rationale}")
-    print(f"Estimated Cost: ${primary.estimated_cost:.4f} per 1M tokens")
-    print(f"Estimated Latency: {primary.estimated_latency}s")
+    logger.info(f"\nPrimary Tool: {primary.primary_tool}")
+    logger.info(f"Method: {primary.method}")
+    logger.info(f"Model: {primary.model}")
+    logger.info(f"Rationale: {primary.rationale}")
+    logger.info(f"Estimated Cost: ${primary.estimated_cost:.4f} per 1M tokens")
+    logger.info(f"Estimated Latency: {primary.estimated_latency}s")
 
     # Example 2: Simple debugging (low complexity)
-    print("\n" + "="*70)
-    print("Example 2: Simple Debugging (complexity 0.2)")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.debug("Example 2: Simple Debugging (complexity 0.2)")
+    logger.info("="*70)
 
     model = await orchestrator.select_model_for_zen(
         tool_method="debug",
@@ -584,13 +584,13 @@ async def demo():
         performance_priority="fast"
     )
 
-    print(f"\nSelected Model: {model}")
-    print(f"Rationale: Simple task → Fast tier model")
+    logger.info(f"\nSelected Model: {model}")
+    logger.info(f"Rationale: Simple task → Fast tier model")
 
     # Example 3: Complex code review (high complexity)
-    print("\n" + "="*70)
-    print("Example 3: Complex Code Review (complexity 0.9)")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("Example 3: Complex Code Review (complexity 0.9)")
+    logger.info("="*70)
 
     model = await orchestrator.select_model_for_zen(
         tool_method="codereview",
@@ -598,13 +598,13 @@ async def demo():
         performance_priority="quality"
     )
 
-    print(f"\nSelected Model: {model}")
-    print(f"Rationale: Complex task → Power tier model")
+    logger.info(f"\nSelected Model: {model}")
+    logger.info(f"Rationale: Complex task → Power tier model")
 
     # Example 4: Natural language task
-    print("\n" + "="*70)
-    print("Example 4: Natural Language Task Description")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("Example 4: Natural Language Task Description")
+    logger.info("="*70)
 
     selections = await orchestrator.get_tool_recommendations(
         task_description="Analyze why the authentication system is failing",
@@ -612,27 +612,27 @@ async def demo():
     )
 
     primary = selections["primary"]
-    print(f"\nTask Type Inferred: analysis")
-    print(f"Primary Tool: {primary.primary_tool}")
-    print(f"Method: {primary.method}")
-    print(f"Model: {primary.model}")
+    logger.info(f"\nTask Type Inferred: analysis")
+    logger.info(f"Primary Tool: {primary.primary_tool}")
+    logger.info(f"Method: {primary.method}")
+    logger.info(f"Model: {primary.model}")
 
     # Metrics
-    print("\n" + "="*70)
-    print("Tool Selection Metrics")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("Tool Selection Metrics")
+    logger.info("="*70)
 
     metrics = await orchestrator.get_metrics_summary()
-    print(f"\nTotal Selections: {metrics['total_selections']}")
-    print(f"Fast Tier: {metrics['fast_tier_pct']}%")
-    print(f"Mid Tier: {metrics['mid_tier_pct']}%")
-    print(f"Power Tier: {metrics['power_tier_pct']}%")
+    logger.info(f"\nTotal Selections: {metrics['total_selections']}")
+    logger.info(f"Fast Tier: {metrics['fast_tier_pct']}%")
+    logger.info(f"Mid Tier: {metrics['mid_tier_pct']}%")
+    logger.info(f"Power Tier: {metrics['power_tier_pct']}%")
 
     await orchestrator.close()
 
-    print("\n" + "="*70)
-    print("✅ Demo complete!")
-    print("="*70 + "\n")
+    logger.info("\n" + "="*70)
+    logger.info("✅ Demo complete!")
+    logger.info("="*70 + "\n")
 
 
 if __name__ == "__main__":

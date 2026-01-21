@@ -445,7 +445,7 @@ async def test_voyage_client():
         chunk_id="test_001"
     )
 
-    console.print(f"✅ Single embedding: {len(result.embedding)} dimensions")
+    console.logger.info(f"✅ Single embedding: {len(result.embedding)} dimensions")
 
     # Test batch embedding
     requests = [
@@ -461,8 +461,8 @@ async def test_voyage_client():
     results = await client.embed_batch(requests)
     cost_info = client.calculate_cost(results)
 
-    console.print(f"✅ Batch embedding: {len(results)} results")
-    console.print(f"💰 Total cost: ${cost_info['total_cost_usd']}")
+    console.logger.info(f"✅ Batch embedding: {len(results)} results")
+    console.logger.info(f"💰 Total cost: ${cost_info['total_cost_usd']}")
 
     return results
 

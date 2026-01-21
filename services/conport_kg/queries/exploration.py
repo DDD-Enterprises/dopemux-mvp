@@ -13,6 +13,11 @@ Part of CONPORT-KG-2025 Phase 5 (Decision #117)
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 from typing import List, Optional
 
@@ -27,7 +32,16 @@ try:
 except ImportError:
     sys.path.insert(0, '/Users/hue/code/dopemux-mvp/services/conport_kg')
     from age_client import AGEClient
-    exec(open('/Users/hue/code/dopemux-mvp/services/conport_kg/queries/models.py').read())
+    # Fallback: import models module safely instead of exec
+    import importlib.util
+    _models_path = '/Users/hue/code/dopemux-mvp/services/conport_kg/queries/models.py'
+    spec = importlib.util.spec_from_file_location('queries.models_fallback', _models_path)
+    models_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(models_mod)
+    DecisionCard = models_mod.DecisionCard
+    DecisionNeighborhood = models_mod.DecisionNeighborhood
+    DecisionChainNode = models_mod.DecisionChainNode
+    ImpactGraph = models_mod.ImpactGraph
 
 
 class ExplorationQueries:
@@ -42,9 +56,9 @@ class ExplorationQueries:
         """Initialize with AGEClient"""
         try:
             self.client = AGEClient()
-            print(f"✅ ExplorationQueries using AGEClient")
+            logger.info(f"✅ ExplorationQueries using AGEClient")
         except Exception as e:
-            print(f"❌ AGEClient initialization failed: {e}")
+            logger.error(f"❌ AGEClient initialization failed: {e}")
             raise
 
     def get_decision_neighborhood(
@@ -335,49 +349,49 @@ class ExplorationQueries:
 
 if __name__ == "__main__":
     # Test Tier 2 Exploration queries
-    print("=" * 60)
-    print("Tier 2: Exploration Queries (Progressive Disclosure)")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("Tier 2: Exploration Queries (Progressive Disclosure)")
+    logger.info("=" * 60)
 
     queries = ExplorationQueries()
 
     # Test with decision #85 (Serena Memory Enhancement)
     test_id = 85
 
-    print(f"\n[1] Decision Neighborhood (1-hop):")
+    logger.info(f"\n[1] Decision Neighborhood (1-hop):")
     neighborhood = queries.get_decision_neighborhood(test_id, max_hops=1)
-    print(f"   Center: #{neighborhood.center.id} - {neighborhood.center.summary[:50]}...")
-    print(f"   1-hop neighbors: {len(neighborhood.hop_1_neighbors)}")
-    print(f"   2-hop neighbors: {len(neighborhood.hop_2_neighbors)}")
-    print(f"   Expanded: {neighborhood.is_expanded}")
+    logger.info(f"   Center: #{neighborhood.center.id} - {neighborhood.center.summary[:50]}...")
+    logger.info(f"   1-hop neighbors: {len(neighborhood.hop_1_neighbors)}")
+    logger.info(f"   2-hop neighbors: {len(neighborhood.hop_2_neighbors)}")
+    logger.info(f"   Expanded: {neighborhood.is_expanded}")
     for i, n in enumerate(neighborhood.hop_1_neighbors[:3], 1):
-        print(f"      {i}. #{n.id}: {n.summary[:50]}...")
+        logger.info(f"      {i}. #{n.id}: {n.summary[:50]}...")
 
-    print(f"\n[2] Decision Neighborhood (2-hop expanded):")
+    logger.info(f"\n[2] Decision Neighborhood (2-hop expanded):")
     neighborhood_expanded = queries.get_decision_neighborhood(test_id, max_hops=2)
-    print(f"   1-hop neighbors: {len(neighborhood_expanded.hop_1_neighbors)}")
-    print(f"   2-hop neighbors: {len(neighborhood_expanded.hop_2_neighbors)}")
-    print(f"   Expanded: {neighborhood_expanded.is_expanded}")
-    print(f"   Total network: {neighborhood_expanded.total_neighbors} decisions")
+    logger.info(f"   1-hop neighbors: {len(neighborhood_expanded.hop_1_neighbors)}")
+    logger.info(f"   2-hop neighbors: {len(neighborhood_expanded.hop_2_neighbors)}")
+    logger.info(f"   Expanded: {neighborhood_expanded.is_expanded}")
+    logger.info(f"   Total network: {neighborhood_expanded.total_neighbors} decisions")
 
-    print(f"\n[3] Genealogy Chain (BUILDS_UPON upstream):")
+    logger.info(f"\n[3] Genealogy Chain (BUILDS_UPON upstream):")
     chain = queries.get_genealogy_chain(test_id, 'BUILDS_UPON', 'upstream')
-    print(f"   Chain length: {len(chain)} generations")
+    logger.info(f"   Chain length: {len(chain)} generations")
     for node in chain[:5]:
-        print(f"   Gen {node.generation}: #{node.id} - {node.summary[:50]}...")
+        logger.info(f"   Gen {node.generation}: #{node.id} - {node.summary[:50]}...")
 
-    print(f"\n[4] Find by Relationship Type (VALIDATES):")
+    logger.info(f"\n[4] Find by Relationship Type (VALIDATES):")
     validates = queries.find_by_relationship_type(test_id, 'VALIDATES', 'outgoing')
-    print(f"   Found {len(validates)} VALIDATES relationships")
+    logger.info(f"   Found {len(validates)} VALIDATES relationships")
     for d in validates[:3]:
-        print(f"      #{d.id}: {d.summary[:50]}...")
+        logger.info(f"      #{d.id}: {d.summary[:50]}...")
 
-    print(f"\n[5] Impact Graph (DEPENDS_ON):")
+    logger.info(f"\n[5] Impact Graph (DEPENDS_ON):")
     impact = queries.get_impact_graph(test_id, max_depth=2)
-    print(f"   Root: #{impact.root_decision.id}")
-    print(f"   Dependent decisions: {impact.get_impact_count()}")
-    print(f"   Critical: {impact.has_critical_dependencies()}")
+    logger.info(f"   Root: #{impact.root_decision.id}")
+    logger.info(f"   Dependent decisions: {impact.get_impact_count()}")
+    logger.error(f"   Critical: {impact.has_critical_dependencies()}")
     for i, d in enumerate(impact.dependent_decisions[:5], 1):
-        print(f"      {i}. #{d.id}: {d.summary[:50]}...")
+        logger.info(f"      {i}. #{d.id}: {d.summary[:50]}...")
 
-    print(f"\n✅ All Tier 2 exploration queries tested!")
+    logger.info(f"\n✅ All Tier 2 exploration queries tested!")

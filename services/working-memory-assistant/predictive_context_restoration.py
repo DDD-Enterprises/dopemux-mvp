@@ -237,9 +237,10 @@ class ADHDContextOptimizer:
             integration = ADHDEngineIntegration()
             adhd_context = await integration.get_adhd_context(user_id)
             return adhd_context.attention_state
-        except Exception:
+        except Exception as e:
             return 'unknown'
 
+            logger.error(f"Error: {e}")
     def optimize_suggestions(
         self,
         similar_patterns: List[Tuple[ContextPattern, float]],
@@ -669,8 +670,15 @@ class PredictiveContextRestoration:
                 cached_data = self.redis_client.get(cache_key)
                 if cached_data:
                     # Deserialize cached result
-                    import pickle
-                    return pickle.loads(cached_data)
+                    import pickle, json
+                    try:
+                        return json.loads(cached_data)
+                    except Exception:
+                        try:
+                            return pickle.loads(cached_data)
+                        except Exception:
+                            logger.warning("Cached prediction deserialization failed; entry ignored")
+                            return None
 
             # Fall back to in-memory cache
             if cache_key in self._prediction_cache:
@@ -885,13 +893,13 @@ async def test_predictive_restoration():
     # Make prediction
     result = await restoration.predict_context(test_context)
 
-    print("Prediction Results:")
-    print(f"Confidence: {result.prediction_confidence}")
-    print(f"Performance: {result.performance_metrics}")
-    print(f"Suggestions: {len(result.adhd_optimized_suggestions)}")
+    logger.info("Prediction Results:")
+    logger.info(f"Confidence: {result.prediction_confidence}")
+    logger.info(f"Performance: {result.performance_metrics}")
+    logger.info(f"Suggestions: {len(result.adhd_optimized_suggestions)}")
 
     for suggestion in result.adhd_optimized_suggestions[:3]:
-        print(f"  - {suggestion['context_type']}: {suggestion['similarity_score']:.3f}")
+        logger.info(f"  - {suggestion['context_type']}: {suggestion['similarity_score']:.3f}")
 
 if __name__ == "__main__":
     asyncio.run(test_predictive_restoration())

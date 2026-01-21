@@ -51,17 +51,17 @@ class SerenaLayer1Deployer:
 
     async def deploy(self) -> Dict[str, Any]:
         """Deploy Serena Layer 1 with ADHD optimizations."""
-        print("🚀 Serena Layer 1 Deployment")
-        print("=" * 40)
-        print(f"📂 Workspace: {self.workspace_path}")
-        print(f"📅 Deployment time: {time.strftime('%Y-%m-%d %H:%M:%S')}")
-        print()
+        logger.info("🚀 Serena Layer 1 Deployment")
+        logger.info("=" * 40)
+        logger.info(f"📂 Workspace: {self.workspace_path}")
+        logger.info(f"📅 Deployment time: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+        logger.info()
 
         deployment_start = time.time()
 
         try:
             # Step 1: Check dependencies
-            print("🔧 Step 1: Checking dependencies...")
+            logger.info("🔧 Step 1: Checking dependencies...")
             deps_result = await self._check_dependencies()
             self.deployment_status["dependencies_checked"] = deps_result["success"]
 
@@ -69,7 +69,7 @@ class SerenaLayer1Deployer:
                 return self._create_deployment_report("FAILED", "Dependency check failed", deployment_start)
 
             # Step 2: Optimize Redis
-            print("\n🗄️ Step 2: Optimizing Redis for ADHD navigation...")
+            logger.info("\n🗄️ Step 2: Optimizing Redis for ADHD navigation...")
             redis_result = await self._setup_redis()
             self.deployment_status["redis_optimized"] = redis_result["success"]
 
@@ -77,7 +77,7 @@ class SerenaLayer1Deployer:
                 return self._create_deployment_report("FAILED", "Redis setup failed", deployment_start)
 
             # Step 3: Initialize components
-            print("\n🧠 Step 3: Initializing navigation intelligence...")
+            logger.info("\n🧠 Step 3: Initializing navigation intelligence...")
             init_result = await self._initialize_components()
             self.deployment_status["components_initialized"] = init_result["success"]
 
@@ -85,12 +85,12 @@ class SerenaLayer1Deployer:
                 return self._create_deployment_report("FAILED", "Component initialization failed", deployment_start)
 
             # Step 4: Test navigation workflows
-            print("\n🧭 Step 4: Testing real navigation workflows...")
+            logger.info("\n🧭 Step 4: Testing real navigation workflows...")
             nav_result = await self._test_navigation_workflows()
             self.deployment_status["navigation_tested"] = nav_result["success"]
 
             # Step 5: Finalize deployment
-            print("\n✅ Step 5: Finalizing deployment...")
+            logger.info("\n✅ Step 5: Finalizing deployment...")
             final_result = await self._finalize_deployment()
 
             if final_result["success"]:
@@ -121,19 +121,19 @@ class SerenaLayer1Deployer:
                 try:
                     __import__(package)
                     available_deps.append(package)
-                    print(f"   ✅ {package}")
+                    logger.info(f"   ✅ {package}")
                 except ImportError:
                     missing_deps.append(package)
-                    print(f"   ❌ {package} (missing)")
+                    logger.info(f"   ❌ {package} (missing)")
 
             # Check Serena v2 modules
             try:
                 from serena.v2 import EnhancedLSPWrapper
                 available_deps.append("serena.v2")
-                print(f"   ✅ serena.v2 modules")
+                logger.info(f"   ✅ serena.v2 modules")
             except ImportError as e:
                 missing_deps.append("serena.v2")
-                print(f"   ❌ serena.v2 modules: {e}")
+                logger.info(f"   ❌ serena.v2 modules: {e}")
 
             # Check workspace structure
             workspace_indicators = [".git", ".claude", "services"]
@@ -143,7 +143,7 @@ class SerenaLayer1Deployer:
                 if (self.workspace_path / indicator).exists():
                     found_indicators.append(indicator)
 
-            print(f"   📂 Workspace indicators: {', '.join(found_indicators)}")
+            logger.info(f"   📂 Workspace indicators: {', '.join(found_indicators)}")
 
             success = len(missing_deps) == 0 and "serena.v2" in available_deps
 
@@ -168,19 +168,19 @@ class SerenaLayer1Deployer:
             health_check = await quick_redis_health_check()
 
             if not health_check["redis_available"]:
-                print(f"   ❌ Redis not available: {health_check.get('error', 'Unknown error')}")
-                print(f"   💡 ADHD-friendly fix: Start Redis with: docker run -d -p 6379:6379 redis:alpine")
+                logger.error(f"   ❌ Redis not available: {health_check.get('error', 'Unknown error')}")
+                logger.info(f"   💡 ADHD-friendly fix: Start Redis with: docker run -d -p 6379:6379 redis:alpine")
                 return {"success": False, "issue": "redis_not_available"}
 
-            print(f"   ✅ Redis available: {health_check['status']}")
-            print(f"   ⚡ Performance: {health_check['operation_time_ms']}ms (target: <2ms)")
+            logger.info(f"   ✅ Redis available: {health_check['status']}")
+            logger.info(f"   ⚡ Performance: {health_check['operation_time_ms']}ms (target: <2ms)")
 
             # Validate for ADHD requirements
             adhd_ready = health_check.get("adhd_ready", False)
             if adhd_ready:
-                print(f"   🧠 ADHD-ready: ✅ Performance suitable for navigation intelligence")
+                logger.info(f"   🧠 ADHD-ready: ✅ Performance suitable for navigation intelligence")
             else:
-                print(f"   ⚠️ Performance above ideal, but usable for ADHD navigation")
+                logger.info(f"   ⚠️ Performance above ideal, but usable for ADHD navigation")
 
             return {
                 "success": True,
@@ -206,7 +206,7 @@ class SerenaLayer1Deployer:
             components_status = {}
 
             # Initialize navigation cache
-            print("   💾 Initializing navigation cache...")
+            logger.info("   💾 Initializing navigation cache...")
             cache_config = NavigationCacheConfig(
                 redis_url="redis://localhost:6379",
                 db_index=1,  # Separate from ConPort
@@ -217,43 +217,43 @@ class SerenaLayer1Deployer:
             await nav_cache.initialize()
             cache_health = await nav_cache.health_check()
             components_status["navigation_cache"] = cache_health["status"]
-            print(f"      {cache_health['status']}")
+            logger.info(f"      {cache_health['status']}")
 
             # Initialize ADHD features
-            print("   🧠 Initializing ADHD features...")
+            logger.info("   🧠 Initializing ADHD features...")
             adhd_navigator = ADHDCodeNavigator()
             await adhd_navigator.initialize(self.workspace_path)
             adhd_health = await adhd_navigator.health_check()
             components_status["adhd_features"] = adhd_health["status"]
-            print(f"      {adhd_health['status']}")
+            logger.info(f"      {adhd_health['status']}")
 
             # Initialize focus manager
-            print("   🎯 Initializing focus manager...")
+            logger.info("   🎯 Initializing focus manager...")
             focus_manager = FocusManager()
             await focus_manager.initialize()
             focus_health = await focus_manager.health_check()
             components_status["focus_manager"] = focus_health["status"]
-            print(f"      {focus_health['status']}")
+            logger.info(f"      {focus_health['status']}")
 
             # Initialize performance monitoring
-            print("   ⏱️ Initializing performance monitoring...")
+            logger.info("   ⏱️ Initializing performance monitoring...")
             perf_monitor = PerformanceMonitor(
                 target=PerformanceTarget(target_ms=200.0, warning_ms=150.0, critical_ms=500.0)
             )
             components_status["performance_monitor"] = "🚀 Active"
-            print(f"      🚀 Active (target: <200ms)")
+            logger.info(f"      🚀 Active (target: <200ms)")
 
             # Initialize Tree-sitter (with graceful fallback)
-            print("   🌳 Initializing Tree-sitter analyzer...")
+            logger.info("   🌳 Initializing Tree-sitter analyzer...")
             tree_analyzer = TreeSitterAnalyzer()
             tree_success = await tree_analyzer.initialize()
 
             if tree_success:
                 components_status["tree_sitter"] = f"🌳 Enhanced ({len(tree_analyzer.parsers)} parsers)"
-                print(f"      🌳 Enhanced mode with {len(tree_analyzer.parsers)} language parsers")
+                logger.info(f"      🌳 Enhanced mode with {len(tree_analyzer.parsers)} language parsers")
             else:
                 components_status["tree_sitter"] = "✅ LSP-only mode (fully functional)"
-                print(f"      ✅ LSP-only mode (Tree-sitter compatibility issues - still fully functional)")
+                logger.info(f"      ✅ LSP-only mode (Tree-sitter compatibility issues - still fully functional)")
 
             # Cleanup
             await nav_cache.close()
@@ -275,7 +275,7 @@ class SerenaLayer1Deployer:
     async def _test_navigation_workflows(self) -> Dict[str, Any]:
         """Test Layer 1 with real navigation workflows."""
         try:
-            print("   🧪 Testing workspace detection...")
+            logger.info("   🧪 Testing workspace detection...")
 
             # Test workspace detection
             from serena.v2.enhanced_lsp import EnhancedLSPWrapper, LSPConfig
@@ -304,15 +304,15 @@ class SerenaLayer1Deployer:
             detected_workspace = enhanced_lsp.workspace_path
             workspace_correct = "dopemux-mvp" in str(detected_workspace)
 
-            print(f"      📂 Detected: {detected_workspace}")
-            print(f"      🎯 Dopemux project: {'✅ Correct' if workspace_correct else '⚠️ Check path'}")
+            logger.info(f"      📂 Detected: {detected_workspace}")
+            logger.info(f"      🎯 Dopemux project: {'✅ Correct' if workspace_correct else '⚠️ Check path'}")
 
             # Test project file detection
             python_files = list(self.workspace_path.rglob("*.py"))
             js_files = list(self.workspace_path.rglob("*.js"))
 
-            print(f"      📄 Python files: {len(python_files)} (navigation ready)")
-            print(f"      📄 JavaScript files: {len(js_files)} (navigation ready)")
+            logger.info(f"      📄 Python files: {len(python_files)} (navigation ready)")
+            logger.info(f"      📄 JavaScript files: {len(js_files)} (navigation ready)")
 
             navigation_ready = len(python_files) > 0 or len(js_files) > 0
 
@@ -376,7 +376,7 @@ class SerenaLayer1Deployer:
             with open(deployment_file, "w") as f:
                 json.dump(deployment_summary, f, indent=2)
 
-            print(f"\n📄 Deployment summary saved: {deployment_file}")
+            logger.info(f"\n📄 Deployment summary saved: {deployment_file}")
 
             return {"success": True, "deployment_summary": deployment_summary}
 
@@ -453,6 +453,7 @@ class SerenaLayer1Deployer:
             return {"error": str(e)}
 
 
+            logger.error(f"Error: {e}")
 # Quick deployment functions
 async def quick_deploy(workspace_path: str = None) -> Dict[str, Any]:
     """Quick deployment for immediate ADHD navigation."""
@@ -462,7 +463,7 @@ async def quick_deploy(workspace_path: str = None) -> Dict[str, Any]:
 
 async def validate_deployment() -> Dict[str, Any]:
     """Validate existing deployment."""
-    print("🔍 Validating Serena Layer 1 Deployment")
+    logger.info("🔍 Validating Serena Layer 1 Deployment")
 
     try:
         # Check if deployment file exists
@@ -472,8 +473,8 @@ async def validate_deployment() -> Dict[str, Any]:
             with open(deployment_file, "r") as f:
                 deployment_data = json.load(f)
 
-            print(f"✅ Deployment found: {deployment_data.get('serena_layer1_version', 'unknown')}")
-            print(f"📅 Deployed: {deployment_data.get('deployment_timestamp', 'unknown')}")
+            logger.info(f"✅ Deployment found: {deployment_data.get('serena_layer1_version', 'unknown')}")
+            logger.info(f"📅 Deployed: {deployment_data.get('deployment_timestamp', 'unknown')}")
 
             # Quick health check
             from serena.v2.redis_optimizer import quick_redis_health_check
@@ -485,11 +486,11 @@ async def validate_deployment() -> Dict[str, Any]:
                 "current_health": health
             }
         else:
-            print("❌ No deployment found - run deploy_serena_layer1.py")
+            logger.info("❌ No deployment found - run deploy_serena_layer1.py")
             return {"deployment_exists": False}
 
     except Exception as e:
-        print(f"❌ Validation failed: {e}")
+        logger.error(f"❌ Validation failed: {e}")
         return {"error": str(e)}
 
 
@@ -513,15 +514,15 @@ async def main():
     result = await deployer.deploy()
 
     # Print final status
-    print(f"\n🎯 DEPLOYMENT {result['deployment_status']}")
-    print(f"Duration: {result['duration_ms']:.1f}ms")
+    logger.info(f"\n🎯 DEPLOYMENT {result['deployment_status']}")
+    logger.info(f"Duration: {result['duration_ms']:.1f}ms")
 
     if result["deployment_status"] == "SUCCESS":
-        print("\n🎉 Serena Layer 1 is ready for ADHD-optimized development!")
+        logger.info("\n🎉 Serena Layer 1 is ready for ADHD-optimized development!")
     elif result["deployment_status"] == "PARTIAL":
-        print("\n👍 Core functionality ready - minor issues can be addressed later")
+        logger.info("\n👍 Core functionality ready - minor issues can be addressed later")
     else:
-        print("\n💙 Don't worry - we can fix this together. Check the recovery steps above.")
+        logger.info("\n💙 Don't worry - we can fix this together. Check the recovery steps above.")
 
 
 if __name__ == "__main__":

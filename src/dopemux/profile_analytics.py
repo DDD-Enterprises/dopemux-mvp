@@ -6,6 +6,11 @@ Provides insights and optimization suggestions for ADHD workflows.
 """
 
 from collections import Counter, defaultdict
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -107,9 +112,10 @@ class ProfileAnalytics:
                 ) as response:
                     return response.status == 200
 
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def get_stats(self, days_back: int = 30) -> ProfileStats:
         """
         Get aggregated profile usage statistics.
@@ -159,9 +165,10 @@ class ProfileAnalytics:
                     # Analyze switches
                     return self._analyze_switches(switches, days_back)
 
-        except Exception:
+        except Exception as e:
             return self._empty_stats()
 
+            logger.error(f"Error: {e}")
     def _analyze_switches(self, switches: List[ProfileSwitch], days_back: int) -> ProfileStats:
         """Analyze switch data to compute statistics."""
         if not switches:
@@ -318,7 +325,7 @@ def get_stats_sync(
 
 if __name__ == "__main__":
     # Test analytics
-    print("Testing profile analytics...")
+    logger.info("Testing profile analytics...")
 
     stats = get_stats_sync("/Users/hue/code/dopemux-mvp", days_back=30)
     display_stats(stats, days_back=30)
