@@ -13,6 +13,11 @@ class ADHDZenClient(BaseZenClient):
     """Zen MCP client specialized for ADHD Engine reasoning and planning."""
 
     def __init__(self, base_url: str, config):
+
+import logging
+
+logger = logging.getLogger(__name__)
+
         """Initialize with ADHD-specific settings."""
         super().__init__(base_url, config)
 
@@ -60,7 +65,7 @@ Format: {{
                     'accommodations': ['standard accommodations']
                 })
         except Exception as e:
-            print(f"Zen task complexity assessment failed: {e}")
+            logger.error(f"Zen task complexity assessment failed: {e}")
             return {
                 'complexity_score': 0.5,
                 'attention_span_required': 30,
@@ -126,7 +131,7 @@ Format: {{
                         'post_break_energy_boost': 0.0
                     }
         except Exception as e:
-            print(f"Zen break strategy planning failed: {e}")
+            logger.error(f"Zen break strategy planning failed: {e}")
             return {
                 'break_recommended': False,
                 'break_duration_minutes': 0,

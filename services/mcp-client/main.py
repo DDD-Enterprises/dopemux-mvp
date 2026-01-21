@@ -5,6 +5,11 @@ Connects to MCP servers over stdio transport and provides tool execution capabil
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import json
 import subprocess
 import sys
@@ -29,7 +34,7 @@ class MCPClient:
 
     async def connect_stdio(self):
         """Connect to stdio-based MCP server"""
-        print(f"🔌 Connecting to MCP server: {self.server_name} (stdio)")
+        logger.info(f"🔌 Connecting to MCP server: {self.server_name} (stdio)")
 
         # Start the subprocess
         env = os.environ.copy()
@@ -47,18 +52,18 @@ class MCPClient:
         # Initialize the server
         await self.initialize()
 
-        print(f"✅ Connected to MCP server: {self.server_name} (stdio)")
+        logger.info(f"✅ Connected to MCP server: {self.server_name} (stdio)")
 
     async def connect_http(self):
         """Connect to HTTP-based MCP server"""
-        print(f"🔌 Connecting to MCP server: {self.server_name} (http)")
+        logger.info(f"🔌 Connecting to MCP server: {self.server_name} (http)")
 
         self.http_session = aiohttp.ClientSession()
 
         # Initialize the server
         await self.initialize()
 
-        print(f"✅ Connected to MCP server: {self.server_name} (http)")
+        logger.info(f"✅ Connected to MCP server: {self.server_name} (http)")
 
     async def connect(self):
         """Connect using the appropriate transport"""
@@ -135,7 +140,7 @@ class MCPClient:
         if "error" in response:
             raise Exception(f"MCP initialization failed: {response['error']}")
 
-        print(f"Initialized MCP server {self.server_name}: {response}")
+        logger.info(f"Initialized MCP server {self.server_name}: {response}")
 
     async def list_tools(self) -> List[Dict[str, Any]]:
         """List available tools"""
@@ -195,9 +200,9 @@ class MCPClient:
                     self.process.terminate()
                     await asyncio.create_subprocess_shell(f"wait {self.process.pid}")
                 except Exception as e:
-                    print(f"Warning: Failed to terminate process: {e}")
+                    logger.error(f"Warning: Failed to terminate process: {e}")
 
-        print(f"🔌 Disconnected from MCP server: {self.server_name} ({self.transport})")
+        logger.info(f"🔌 Disconnected from MCP server: {self.server_name} ({self.transport})")
 
 
 class MCPClientManager:
@@ -223,7 +228,7 @@ class MCPClientManager:
                 tools = await client.list_tools()
                 results[server_name] = tools
             except Exception as e:
-                print(f"Failed to list tools for {server_name}: {e}")
+                logger.error(f"Failed to list tools for {server_name}: {e}")
                 results[server_name] = []
 
         return results
@@ -247,7 +252,7 @@ class MCPClientManager:
                         workspace_path, workspace_paths
                     )
             except Exception as e:
-                print(f"Failed to check tools for {server_name}: {e}")
+                logger.error(f"Failed to check tools for {server_name}: {e}")
                 continue
 
         raise Exception(f"Tool '{tool_name}' not found on any server")
@@ -311,7 +316,7 @@ def create_server_configs():
 
 
 async def main():
-    print("🚀 Starting Dopemux MCP Client (Python)")
+    logger.info("🚀 Starting Dopemux MCP Client (Python)")
 
     manager = MCPClientManager()
 
@@ -329,31 +334,31 @@ async def main():
         # Connect to all servers
         await manager.connect_all()
 
-        print(f"\n📋 Connected MCP Servers: {list(manager.clients.keys())}")
+        logger.info(f"\n📋 Connected MCP Servers: {list(manager.clients.keys())}")
 
         # List all available tools
-        print("\n🔧 Available Tools:")
+        logger.info("\n🔧 Available Tools:")
         all_tools = await manager.list_all_tools()
 
         for server_name, tools in all_tools.items():
-            print(f"\n{server_name}:")
+            logger.info(f"\n{server_name}:")
             for tool in tools:
-                print(f"  - {tool['name']}: {tool.get('description', 'No description')}")
+                logger.info(f"  - {tool['name']}: {tool.get('description', 'No description')}")
 
         # Test task-master-ai batch_tasks tool if available
         if 'task-master-ai' in manager.clients:
-            print("\n🛠️  Testing task-master-ai batch_tasks tool...")
+            logger.info("\n🛠️  Testing task-master-ai batch_tasks tool...")
             try:
                 result = await manager.call_tool_by_name(
                     'batch_tasks',
                     {'tasks': ['task1', 'task2', 'task3', 'task4', 'task5']}
                 )
-                print("Result:", json.dumps(result, indent=2))
+                logger.info("Result:", json.dumps(result, indent=2))
             except Exception as e:
-                print(f"Task not available or failed: {e}")
+                logger.error(f"Task not available or failed: {e}")
 
     except Exception as e:
-        print(f"❌ MCP Client error: {e}")
+        logger.error(f"❌ MCP Client error: {e}")
         sys.exit(1)
     finally:
         await manager.disconnect_all()

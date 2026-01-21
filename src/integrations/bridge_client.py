@@ -175,6 +175,7 @@ class DopeconBridgeClient:
             }
 
 
+            logger.error(f"Error: {e}")
 # Example usage
 async def main():
     """Test bridge client"""
@@ -187,7 +188,7 @@ async def main():
         key="test_key",
         value={"message": "test"}
     )
-    print(f"Save: {'✅' if success else '❌'}")
+    logger.info(f"Save: {'✅' if success else '❌'}")
 
     # Test get
     data = await client.get_custom_data(
@@ -195,11 +196,11 @@ async def main():
         category="test_category",
         key="test_key"
     )
-    print(f"Get: {data}")
+    logger.info(f"Get: {data}")
 
     # Health
     health = await client.health_check()
-    print(f"Health: {health}")
+    logger.info(f"Health: {health}")
 
 
 if __name__ == "__main__":

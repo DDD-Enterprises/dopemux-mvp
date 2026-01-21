@@ -11,6 +11,11 @@ Part of CONPORT-KG-2025 Two-Phase Migration (Decision #112)
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncpg
 import sys
 from typing import List, Tuple
@@ -127,42 +132,42 @@ async def main():
     # Configuration
     DB_URL = "postgresql://dopemux:dopemux_dev_password@localhost:5432/dopemux_memory"
 
-    print("=" * 60)
-    print("ConPort Migration Validation")
-    print("=" * 60)
-    print()
+    logger.info("=" * 60)
+    logger.info("ConPort Migration Validation")
+    logger.info("=" * 60)
+    logger.info()
 
     validator = MigrationValidator(DB_URL)
 
     try:
         all_passed, checks = await validator.validate_all()
 
-        print("Validation Results:")
-        print("-" * 60)
+        logger.info("Validation Results:")
+        logger.info("-" * 60)
 
         for check in checks:
             status = "✓ PASS" if check['passed'] else "✗ FAIL"
-            print(f"{status} | {check['name']:<25} | {check['details']}")
+            logger.info(f"{status} | {check['name']:<25} | {check['details']}")
 
-        print("-" * 60)
+        logger.info("-" * 60)
 
         if all_passed:
-            print("\n✓ SUCCESS: All validation checks passed")
-            print("\nNext steps:")
-            print("  1. Review migrated data")
-            print("  2. Run switchover.py when ready")
+            logger.info("\n✓ SUCCESS: All validation checks passed")
+            logger.info("\nNext steps:")
+            logger.info("  1. Review migrated data")
+            logger.info("  2. Run switchover.py when ready")
             return 0
         else:
-            print("\n✗ FAILURE: Some validation checks failed")
-            print("\nRecommended actions:")
-            print("  1. Review error details above")
-            print("  2. Check transformation logic")
-            print("  3. Re-run reingest.py after fixes")
+            logger.error("\n✗ FAILURE: Some validation checks failed")
+            logger.info("\nRecommended actions:")
+            logger.error("  1. Review error details above")
+            logger.info("  2. Check transformation logic")
+            logger.info("  3. Re-run reingest.py after fixes")
             return 1
 
     except Exception as e:
-        print(f"\n✗ ERROR: Validation failed")
-        print(f"  {str(e)}")
+        logger.error(f"\n✗ ERROR: Validation failed")
+        logger.info(f"  {str(e)}")
         return 1
 
 

@@ -6,6 +6,11 @@ Filters MCP servers based on profile selection.
 """
 
 import json
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import Dict, Any, Optional, List
 from pathlib import Path
 import shutil
@@ -163,7 +168,7 @@ class ConfigGenerator:
         # Backup existing config
         if backup and output_path.exists():
             backup_path = self._create_backup(output_path)
-            print(f"📦 Backed up existing config to: {backup_path}")
+            logger.info(f"📦 Backed up existing config to: {backup_path}")
 
         # Write new config
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -312,7 +317,7 @@ if __name__ == "__main__":
 
     from dopemux.profile_parser import load_all_profiles
 
-    print("Testing Config Generator...\n")
+    logger.info("Testing Config Generator...\n")
 
     try:
         # Load profiles
@@ -321,12 +326,12 @@ if __name__ == "__main__":
 
         # Test each profile
         for profile in profiles.profiles:
-            print(f"=== Profile: {profile.name} ===")
+            logger.info(f"=== Profile: {profile.name} ===")
 
             # Validate MCPs
             valid, missing = generator.validate_profile_mcps(profile)
             if not valid:
-                print(f"❌ Missing MCPs: {', '.join(missing)}")
+                logger.info(f"❌ Missing MCPs: {', '.join(missing)}")
                 continue
 
             # Generate config
@@ -334,24 +339,24 @@ if __name__ == "__main__":
             mcp_count = len(config.get("mcpServers", {}))
             tool_count = generator.get_mcp_tool_count(config)
 
-            print(f"✅ Valid config generated")
-            print(f"   MCPs: {mcp_count}")
-            print(f"   Est. tools: {tool_count}")
-            print(f"   MCP list: {', '.join(config['mcpServers'].keys())}")
-            print()
+            logger.info(f"✅ Valid config generated")
+            logger.info(f"   MCPs: {mcp_count}")
+            logger.info(f"   Est. tools: {tool_count}")
+            logger.info(f"   MCP list: {', '.join(config['mcpServers'].keys())}")
+            logger.info()
 
         # Compare minimal vs developer
         minimal = profiles.get_profile("minimal")
         developer = profiles.get_profile("developer")
 
         if minimal and developer:
-            print("=== Comparison: minimal vs developer ===")
+            logger.info("=== Comparison: minimal vs developer ===")
             comparison = generator.compare_configs(minimal, developer)
-            print(f"Minimal: {comparison['profile_a']['tools']} tools")
-            print(f"Developer: {comparison['profile_b']['tools']} tools")
-            print(f"Difference: {comparison['difference']['tools']} tools ({comparison['difference']['reduction_pct']:.0f}% reduction)")
+            logger.info(f"Minimal: {comparison['profile_a']['tools']} tools")
+            logger.info(f"Developer: {comparison['profile_b']['tools']} tools")
+            logger.info(f"Difference: {comparison['difference']['tools']} tools ({comparison['difference']['reduction_pct']:.0f}% reduction)")
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        logger.error(f"❌ Error: {e}")
         import traceback
         traceback.print_exc()

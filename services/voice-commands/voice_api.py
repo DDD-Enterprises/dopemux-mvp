@@ -82,6 +82,7 @@ async def decompose_task(request: VoiceCommandRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Voice decomposition failed: {str(e)}")
 
+        logger.error(f"Error: {e}")
 @app.get("/health")
 async def health():
     """Health check endpoint"""

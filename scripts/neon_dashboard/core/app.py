@@ -51,10 +51,15 @@ class NeonDashboardApp(App):
     """Textual runtime orchestrating the left/right monitors."""
 
     CSS = """
-    #dope-body {
+    Screen, #dope-body {
         height: 100%;
+        background: $panel;
     }
     """
+
+    # Local logger for dashboard events
+    import logging
+    logger = logging.getLogger("neon_dashboard")
 
     BINDINGS = [
         Binding("m", "toggle_mode", "Toggle mode"),
@@ -102,13 +107,8 @@ class NeonDashboardApp(App):
 
         await self._apply_state(self.state_store.state)
 
-        self._tasks.extend(
-            [
-                asyncio.create_task(self._implementation_loop()),
-                asyncio.create_task(self._pm_loop()),
-                asyncio.create_task(self._state_poll_loop()),
-            ]
-        )
+        # Single refresh loop consolidating all updates to avoid duplicate pane rendering
+        self._tasks.append(asyncio.create_task(self._refresh_loop()))
 
     async def on_unmount(self) -> None:
         for task in self._tasks:
@@ -130,38 +130,36 @@ class NeonDashboardApp(App):
 
     async def action_quick_commit(self) -> None:
         # Placeholder for future automation
-        self.console.print("[dim]Quick commit triggered (stub).[/dim]")
+        self.console.logger.info("[dim]Quick commit triggered (stub).[/dim]")
 
     async def action_show_help(self) -> None:
         self.console.print(
             "[bold]Dope Layout Hotkeys[/bold]: M toggle | P plan | C commit | D dismiss | arrows navigate (PM)"
         )
 
-    async def _implementation_loop(self) -> None:
+    async def _refresh_loop(self) -> None:
+        impl_interval = 5
+        pm_interval = 10
+        state_interval = 0.75
+        last_impl = last_pm = last_state = 0.0
         while True:
-            data = await self.impl_collector.get("impl")
-            if data is None:
-                data = {}
-            self.impl_data = data
+            now = asyncio.get_event_loop().time()
+            if now - last_impl >= impl_interval:
+                data = await self.impl_collector.get("impl") or {}
+                self.impl_data = data
+                last_impl = now
+            if now - last_pm >= pm_interval:
+                data = await self.pm_collector.get("pm") or {"epics": [], "sprint": {}}
+                self.pm_data = data
+                last_pm = now
+            if now - last_state >= state_interval:
+                updated = await self.state_store.poll_external_updates()
+                if updated:
+                    await self._apply_state(updated)
+                last_state = now
             await self._apply_current_data()
             self._evaluate_transients()
-            await asyncio.sleep(5)
-
-    async def _pm_loop(self) -> None:
-        while True:
-            data = await self.pm_collector.get("pm")
-            if data is None:
-                data = {"epics": [], "sprint": {}}
-            self.pm_data = data
-            await self._apply_current_data()
-            await asyncio.sleep(10)
-
-    async def _state_poll_loop(self) -> None:
-        while True:
-            updated = await self.state_store.poll_external_updates()
-            if updated:
-                await self._apply_state(updated)
-            await asyncio.sleep(0.75)
+            await asyncio.sleep(0.25)
 
     async def _apply_state(self, state: DashboardState) -> None:
         await self._ensure_widget_for_state(state)

@@ -468,7 +468,7 @@ def main() -> None:
     try:
         asyncio.run(run_dashboard())
     except KeyboardInterrupt:
-        print("\n👋 Dashboard closed")
+        logger.info("\n👋 Dashboard closed")
 
 
 if __name__ == "__main__":

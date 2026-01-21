@@ -17,6 +17,11 @@ Designed for ADHD-friendly processing with clear checkpoints and progress visibi
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 import json
 import time
@@ -109,9 +114,9 @@ class EnhancedChatlogExtractor:
         if enable_vector_embedding and voyage_api_key:
             try:
                 self.voyage_client = VoyageClient(api_key=voyage_api_key)
-                console.print("✅ Voyage AI client initialized")
+                console.logger.info("✅ Voyage AI client initialized")
             except Exception as e:
-                console.print(f"⚠️ Voyage AI unavailable: {e}")
+                console.logger.info(f"⚠️ Voyage AI unavailable: {e}")
 
         # Define enhanced extraction phases
         self.phases = [
@@ -244,7 +249,7 @@ class EnhancedChatlogExtractor:
 
             # Check dependencies
             if not self._check_dependencies(phase):
-                console.print(f"❌ Cannot run {phase.name}: dependencies not met")
+                console.logger.info(f"❌ Cannot run {phase.name}: dependencies not met")
                 break
 
             # Display phase information
@@ -253,7 +258,7 @@ class EnhancedChatlogExtractor:
             # Get user confirmation
             if phase.requires_confirmation and not auto_confirm:
                 if not Confirm.ask(f"Ready to start {phase.name}?", default=True):
-                    console.print("⏸️ Extraction paused. You can resume later.")
+                    console.logger.info("⏸️ Extraction paused. You can resume later.")
                     break
 
             # Execute phase
@@ -269,10 +274,10 @@ class EnhancedChatlogExtractor:
                 }
                 self.completed_phases.append(phase.name)
 
-                console.print(f"✅ {phase.name} completed in {processing_time:.1f}s")
+                console.logger.info(f"✅ {phase.name} completed in {processing_time:.1f}s")
 
             except Exception as e:
-                console.print(f"❌ {phase.name} failed: {e}")
+                console.logger.error(f"❌ {phase.name} failed: {e}")
                 break
 
         # Generate final report
@@ -399,7 +404,7 @@ class EnhancedChatlogExtractor:
         """Phase 2: Generate vector embeddings using Voyage AI."""
 
         if not self.voyage_client:
-            console.print("⚠️ Skipping vector embedding - Voyage AI not available")
+            console.logger.info("⚠️ Skipping vector embedding - Voyage AI not available")
             return {"status": "skipped", "reason": "Voyage AI not available"}
 
         # Prepare embedding requests
@@ -417,7 +422,7 @@ class EnhancedChatlogExtractor:
             )
             embedding_requests.append(request)
 
-        console.print(f"🚀 Embedding {len(embedding_requests)} chunks...")
+        console.logger.info(f"🚀 Embedding {len(embedding_requests)} chunks...")
 
         # Generate embeddings
         self.embeddings = await self.voyage_client.embed_batch(
@@ -465,7 +470,7 @@ class EnhancedChatlogExtractor:
     async def _phase_classification(self) -> Dict[str, Any]:
         """Phase 3: Multi-label classification of content."""
 
-        console.print("🏷️ Classifying conversation content...")
+        console.logger.info("🏷️ Classifying conversation content...")
 
         # Simple rule-based classification (could be enhanced with ML models)
         self.classifications = []
@@ -561,7 +566,7 @@ class EnhancedChatlogExtractor:
     async def _phase_entity_extraction(self) -> Dict[str, Any]:
         """Phase 4: Extract entities, patterns, and relationships."""
 
-        console.print("🔍 Extracting entities and patterns...")
+        console.logger.info("🔍 Extracting entities and patterns...")
 
         self.entities = []
         extracted_patterns = []
@@ -657,7 +662,7 @@ class EnhancedChatlogExtractor:
     async def _phase_knowledge_graph(self) -> Dict[str, Any]:
         """Phase 5: Build knowledge graph with relationships."""
 
-        console.print("🕸️ Building knowledge graph...")
+        console.logger.info("🕸️ Building knowledge graph...")
 
         # Build simple knowledge graph structure
         nodes = []
@@ -760,7 +765,7 @@ class EnhancedChatlogExtractor:
     async def _phase_document_synthesis(self) -> Dict[str, Any]:
         """Phase 6: Generate formal documentation."""
 
-        console.print("📝 Synthesizing formal documents...")
+        console.logger.info("📝 Synthesizing formal documents...")
 
         generated_docs = []
 
@@ -1022,7 +1027,7 @@ async def main():
         ))
 
     except Exception as e:
-        console.print(f"❌ Extraction failed: {e}")
+        console.logger.error(f"❌ Extraction failed: {e}")
         return 1
 
     return 0

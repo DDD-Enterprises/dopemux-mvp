@@ -149,6 +149,7 @@ async def get_dashboard():
     except Exception as e:
         dashboard["error"] = f"Could not load dashboard data: {e}"
 
+        logger.error(f"Error: {e}")
     return dashboard
 
 
@@ -169,6 +170,7 @@ async def get_operator_performance():
         return {"error": f"Could not retrieve operator performance: {e}"}
 
 
+        logger.error(f"Error: {e}")
 @app.post("/reset/{agent_type}")
 async def reset_agent(agent_type: str):
     """Reset an agent (for testing/admin purposes)."""

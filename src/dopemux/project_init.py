@@ -11,6 +11,11 @@ Implements 'dopemux init' wizard that:
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import tempfile
 from pathlib import Path
 from typing import Optional, List
@@ -112,10 +117,10 @@ class ProjectInitializer:
 
         # Check if already initialized
         if self.dopemux_dir.is_dir() and not force:
-            console.print(f"\n[yellow]⚠️  Project already initialized (.dopemux/ exists)[/yellow]")
+            console.logger.info(f"\n[yellow]⚠️  Project already initialized (.dopemux/ exists)[/yellow]")
 
             if not Confirm.ask("Reinitialize?", default=False):
-                console.print("[dim]Cancelled. Use --force to skip confirmation.[/dim]")
+                console.logger.info("[dim]Cancelled. Use --force to skip confirmation.[/dim]")
                 return False
 
         profiles = self.profile_manager.list_profiles()
@@ -126,7 +131,7 @@ class ProjectInitializer:
             detected = self.detect_project_type()
 
             if detected:
-                console.print(f"\n🔍 [bold]Detected project type:[/bold] {detected}")
+                console.logger.info(f"\n🔍 [bold]Detected project type:[/bold] {detected}")
 
                 if interactive:
                     if Confirm.ask(f"Use profile '{detected}'?", default=True):
@@ -136,7 +141,7 @@ class ProjectInitializer:
                 else:
                     profile_name = detected
             else:
-                console.print("\n[dim]Could not auto-detect project type[/dim]")
+                console.logger.info("\n[dim]Could not auto-detect project type[/dim]")
                 if interactive:
                     profile_name = self._prompt_profile_selection(profiles)
                 else:
@@ -151,31 +156,31 @@ class ProjectInitializer:
         # Verify profile exists
         profile = self.profile_manager.get_profile(profile_name)
         if not profile:
-            console.print(f"\n[red]❌ Profile not found: {profile_name}[/red]")
-            console.print("[dim]Run: dopemux profile list[/dim]")
+            console.logger.info(f"\n[red]❌ Profile not found: {profile_name}[/red]")
+            console.logger.info("[dim]Run: dopemux profile list[/dim]")
             return False
 
         # Step 2: Create .dopemux/ structure
-        console.print(f"\n📁 Creating .dopemux/ directory...")
+        console.logger.info(f"\n📁 Creating .dopemux/ directory...")
         self.dopemux_dir.mkdir(exist_ok=True)
         (self.dopemux_dir / "databases").mkdir(exist_ok=True)
 
         # Step 3: Set active profile
         self.profile_manager.set_active_profile(self.workspace, profile_name)
-        console.print(f"   Active profile: {profile_name}")
+        console.logger.info(f"   Active profile: {profile_name}")
 
         # Step 4: Create config.yaml (optional project overrides)
         config_file = self.dopemux_dir / "config.yaml"
         if not Path.exists(config_file):
             config_file.write_text("# Project-specific configuration overrides\n# Merged with profile settings\n")
-            console.print(f"   Created: .dopemux/config.yaml")
+            console.logger.info(f"   Created: .dopemux/config.yaml")
 
         # Step 5: Summary
-        console.print(f"\n✅ [bold green]Initialization complete![/bold green]")
-        console.print(f"\n[bold]Next steps:[/bold]")
-        console.print(f"  1. Review profile: [cyan]dopemux profile show[/cyan]")
-        console.print(f"  2. Start dopemux: [cyan]dopemux start[/cyan]")
-        console.print(f"  3. (Optional) Edit: [dim].dopemux/config.yaml[/dim]")
+        console.logger.info(f"\n✅ [bold green]Initialization complete![/bold green]")
+        console.logger.info(f"\n[bold]Next steps:[/bold]")
+        console.logger.info(f"  1. Review profile: [cyan]dopemux profile show[/cyan]")
+        console.logger.info(f"  2. Start dopemux: [cyan]dopemux start[/cyan]")
+        console.logger.info(f"  3. (Optional) Edit: [dim].dopemux/config.yaml[/dim]")
 
         return True
 
@@ -184,12 +189,12 @@ class ProjectInitializer:
         profiles = profiles or self.profile_manager.list_profiles()
 
         if not profiles:
-            console.print("[yellow]No profiles available. Using 'adhd-default'[/yellow]")
+            console.logger.info("[yellow]No profiles available. Using 'adhd-default'[/yellow]")
             return "adhd-default"
 
-        console.print("\n[bold]Available profiles:[/bold]")
+        console.logger.info("\n[bold]Available profiles:[/bold]")
         for i, p in enumerate(profiles, 1):
-            console.print(f"  {i}. [cyan]{p.name}[/cyan] - {p.description}")
+            console.logger.info(f"  {i}. [cyan]{p.name}[/cyan] - {p.description}")
 
         choice = Prompt.ask(
             "\nSelect profile",
@@ -205,10 +210,11 @@ class ProjectInitializer:
         try:
             stream = click.get_text_stream("stdin")
             return bool(stream and stream.isatty())
-        except Exception:
+        except Exception as e:
             return False
 
 
+            logger.error(f"Error: {e}")
 def init_project(workspace: Path, profile: Optional[str], force: bool) -> bool:
     """Run project initialization (called from CLI)."""
     initializer = ProjectInitializer(workspace)

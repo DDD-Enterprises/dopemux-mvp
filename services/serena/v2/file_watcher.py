@@ -281,10 +281,10 @@ class FileWatcherManager:
 
 if __name__ == "__main__":
     # Quick test
-    print("Serena v2 Intelligent File Watcher")
-    print("=" * 60)
-    print("Task 2.2-2.6: FileSystemEventHandler + Lifecycle complete")
-    print(f"Monitored extensions: .py, .js, .ts, .tsx, .jsx")
-    print(f"Debounce interval: 2.0 seconds")
-    print(f"Ignored patterns: node_modules, __pycache__, .venv, etc.")
-    print("=" * 60)
+    logger.info("Serena v2 Intelligent File Watcher")
+    logger.info("=" * 60)
+    logger.info("Task 2.2-2.6: FileSystemEventHandler + Lifecycle complete")
+    logger.info(f"Monitored extensions: .py, .js, .ts, .tsx, .jsx")
+    logger.info(f"Debounce interval: 2.0 seconds")
+    logger.info(f"Ignored patterns: node_modules, __pycache__, .venv, etc.")
+    logger.info("=" * 60)

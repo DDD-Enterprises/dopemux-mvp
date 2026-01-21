@@ -6,6 +6,11 @@ with ADHD-optimized settings and templates.
 """
 
 import shutil
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from pathlib import Path
 from typing import Any, Dict
 
@@ -610,7 +615,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
         config_file = project_path / ".dopemux" / "config.yaml"
 
         if not config_file.exists():
-            console.print("[red]No Dopemux configuration found in project[/red]")
+            console.logger.info("[red]No Dopemux configuration found in project[/red]")
             return
 
         import yaml
@@ -634,7 +639,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
         with open(config_file, "w") as f:
             yaml.dump(config, f, default_flow_style=False, indent=2)
 
-        console.print(f"[green]✓ Updated project configuration[/green]")
+        console.logger.info(f"[green]✓ Updated project configuration[/green]")
 
     def get_project_status(self, project_path: Path) -> Dict[str, Any]:
         """Get project configuration status."""

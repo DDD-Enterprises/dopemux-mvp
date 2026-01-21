@@ -82,18 +82,20 @@ class SlackNotifier:
             async with aiohttp.ClientSession() as session:
                 async with session.get(f"{self.activity_capture_url}/metrics") as response:
                     return await response.json() if response.status == 200 else {}
-        except:
+        except Exception as e:
             return {}
 
+            logger.error(f"Error: {e}")
     async def _get_adhd_state(self) -> Dict:
         """Get ADHD Engine state"""
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(f"{self.adhd_engine_url}/health") as response:
                     return await response.json() if response.status == 200 else {}
-        except:
+        except Exception as e:
             return {}
 
+            logger.error(f"Error: {e}")
     def _format_daily_summary(self, metrics: Dict, adhd_state: Dict) -> str:
         """Format Slack message"""
         sessions = metrics.get("sessions_tracked", 0)

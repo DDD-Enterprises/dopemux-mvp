@@ -600,9 +600,10 @@ class ConPortKnowledgeGraphBridge:
                 days_ago = (datetime.now(timezone.utc) - decision_date).days
                 recency_factor = max(0.2, 1.0 - (days_ago / 30.0))  # 30-day decay
                 strength_factors.append(recency_factor * 0.3)
-            except Exception:
+            except Exception as e:
                 strength_factors.append(0.3)  # Default recency
 
+                logger.error(f"Error: {e}")
         return min(1.0, statistics.mean(strength_factors)) if strength_factors else 0.0
 
     # ADHD Optimization
@@ -735,9 +736,10 @@ class ConPortKnowledgeGraphBridge:
                     return ContextRelevance.BACKGROUND
                 else:
                     return ContextRelevance.HISTORICAL
-            except Exception:
+            except Exception as e:
                 pass
 
+                logger.error(f"Error: {e}")
         return ContextRelevance.BACKGROUND
 
     def _assess_cognitive_value(self, conport_item: Dict[str, Any]) -> float:
@@ -940,8 +942,8 @@ async def test_conport_integration(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("🌉 Serena ConPort Knowledge Graph Bridge")
-        print("Code intelligence + decision context integration")
-        print("✅ Module loaded successfully")
+        logger.info("🌉 Serena ConPort Knowledge Graph Bridge")
+        logger.info("Code intelligence + decision context integration")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

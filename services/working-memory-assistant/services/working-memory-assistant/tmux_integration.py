@@ -5,6 +5,11 @@ This module handles tmux session state capture and restoration, enabling seamles
 """
 
 import subprocess
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import json
 from typing import Dict, Any, List
 from dataclasses import dataclass
@@ -81,7 +86,7 @@ def capture_tmux_state() -> Dict[str, Any]:
         }
 
     except subprocess.CalledProcessError as e:
-        print(f"Tmux capture failed: {e}")
+        logger.error(f"Tmux capture failed: {e}")
         return None
 
 def restore_tmux_state(state: Dict[str, Any]) -> bool:
@@ -116,7 +121,7 @@ def restore_tmux_state(state: Dict[str, Any]) -> bool:
         return True
 
     except subprocess.CalledProcessError as e:
-        print(f"Tmux restore failed: {e}")
+        logger.error(f"Tmux restore failed: {e}")
         return False
 
 def get_tmux_sessions() -> List[str]:
@@ -137,24 +142,24 @@ def create_new_tmux_session(name: str, path: str = None) -> bool:
         subprocess.run(cmd, check=True)
         return True
     except subprocess.CalledProcessError as e:
-        print(f"Failed to create tmux session: {e}")
+        logger.error(f"Failed to create tmux session: {e}")
         return False
 
 if __name__ == "__main__":
     # Test tmux integration
-    print("Testing Tmux Integration...")
+    logger.info("Testing Tmux Integration...")
 
     # Capture current state
     state = capture_tmux_state()
     if state:
-        print(f"Captured tmux state for session: {state['session_name']}")
-        print(f"Active window: {state['active_window']}")
-        print(f"Active pane: {state['active_pane']}")
-        print(f"Number of panes: {len(state['panes'])}")
+        logger.info(f"Captured tmux state for session: {state['session_name']}")
+        logger.info(f"Active window: {state['active_window']}")
+        logger.info(f"Active pane: {state['active_pane']}")
+        logger.info(f"Number of panes: {len(state['panes'])}")
 
         # Save to JSON for snapshot
         with open('tmux_state.json', 'w') as f:
             json.dump(state, f, indent=2)
-        print("Tmux state saved to tmux_state.json")
+        logger.info("Tmux state saved to tmux_state.json")
     else:
-        print("No tmux session found or capture failed")
+        logger.error("No tmux session found or capture failed")

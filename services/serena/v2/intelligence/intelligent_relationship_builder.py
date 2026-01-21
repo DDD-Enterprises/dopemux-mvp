@@ -1155,8 +1155,8 @@ async def test_relationship_suggestions(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("🔗 Serena Intelligent Relationship Builder")
-        print("ADHD-optimized code relationships with personalized intelligence")
-        print("✅ Module loaded successfully")
+        logger.info("🔗 Serena Intelligent Relationship Builder")
+        logger.info("ADHD-optimized code relationships with personalized intelligence")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

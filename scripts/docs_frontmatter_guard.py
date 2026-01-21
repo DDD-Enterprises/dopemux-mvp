@@ -11,6 +11,11 @@ Usage:
 """
 import sys, re, os, datetime, yaml, io
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 TODAY = datetime.date.today()
 DEFAULT_OWNER = "@hu3mann"
 REQUIRED = ["id","title","type","owner","last_review","next_review"]
@@ -31,15 +36,16 @@ def parse_frontmatter(text):
             try:
                 data = yaml.safe_load(fm) or {}
                 return data, body, False
-            except Exception:
+            except Exception as e:
                 # Try to repair common issues: unquoted @handles
                 repaired_fm = re.sub(r"(^|\n)(\s*owner\s*:\s*)(@[^\n]+)", r"\1\2" + '"' + r"\3" + '"', fm)
                 try:
                     data = yaml.safe_load(repaired_fm) or {}
                     return data, body, True
-                except Exception:
+                except Exception as e:
                     # Give up: treat as missing frontmatter but strip the broken block
                     return None, body, False
+                    logger.error(f"Error: {e}")
     return None, text, False
 
 def build_frontmatter(data):
@@ -113,12 +119,12 @@ def main():
                 if ensure_fm(path, fix=fix):
                     changed_files.append(path)
     if changed_files:
-        print(f"Updated {len(changed_files)} files:")
+        logger.info(f"Updated {len(changed_files)} files:")
         for p in changed_files:
-            print(" -", p)
+            logger.info(" -", p)
         raise SystemExit(1 if not fix else 0)
     else:
-        print("All docs have front-matter.")
+        logger.info("All docs have front-matter.")
         raise SystemExit(0)
 
 if __name__ == '__main__':

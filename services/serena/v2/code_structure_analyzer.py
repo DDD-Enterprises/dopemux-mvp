@@ -434,9 +434,10 @@ class CodeStructureAnalyzer:
                 "line_number": node.start_point[0],
                 "import_statement": node.type
             }
-        except Exception:
+        except Exception as e:
             return None
 
+            logger.error(f"Error: {e}")
     def _parse_ts_import(self, node: 'Node', file_path: str) -> Optional[Dict[str, Any]]:
         """Parse TypeScript/JavaScript import statement."""
         try:
@@ -448,9 +449,10 @@ class CodeStructureAnalyzer:
                 "line_number": node.start_point[0],
                 "import_statement": node.type
             }
-        except Exception:
+        except Exception as e:
             return None
 
+            logger.error(f"Error: {e}")
     def _parse_rust_import(self, node: 'Node', file_path: str) -> Optional[Dict[str, Any]]:
         """Parse Rust use declaration."""
         try:
@@ -462,9 +464,10 @@ class CodeStructureAnalyzer:
                 "line_number": node.start_point[0],
                 "import_statement": node.type
             }
-        except Exception:
+        except Exception as e:
             return None
 
+            logger.error(f"Error: {e}")
     # Dependency Analysis
 
     async def build_import_graph(self, file_paths: List[str]) -> Dict[str, Any]:
@@ -549,9 +552,10 @@ class CodeStructureAnalyzer:
 
             return str(resolved_path) if resolved_path else import_name
 
-        except Exception:
+        except Exception as e:
             return import_name
 
+            logger.error(f"Error: {e}")
     def _build_graph_structure(self, relationships: List[ImportRelationship]) -> Dict[str, Any]:
         """Build graph structure from import relationships."""
         try:
@@ -677,9 +681,10 @@ class CodeStructureAnalyzer:
 
             return recommendations
 
-        except Exception:
+        except Exception as e:
             return []
 
+            logger.error(f"Error: {e}")
     # Utility Methods
 
     def _detect_language(self, file_path: str) -> Optional[LanguageSupport]:
@@ -715,9 +720,10 @@ class CodeStructureAnalyzer:
                 lines.append(code_lines[end_line][:end_col])
                 return '\n'.join(lines)
 
-        except Exception:
+        except Exception as e:
             return ""
 
+            logger.error(f"Error: {e}")
     def _count_nodes(self, node: 'Node') -> int:
         """Count total nodes in AST."""
         count = 1
@@ -767,9 +773,10 @@ class CodeStructureAnalyzer:
 
             return complexity
 
-        except Exception:
+        except Exception as e:
             return 0.5
 
+            logger.error(f"Error: {e}")
     def _estimate_cyclomatic_complexity(self, node: 'Node') -> int:
         """Estimate cyclomatic complexity."""
         try:
@@ -784,9 +791,10 @@ class CodeStructureAnalyzer:
             decision_count = self._count_nodes_by_type(node, decision_nodes)
             return decision_count + 1  # +1 for linear path
 
-        except Exception:
+        except Exception as e:
             return 1
 
+            logger.error(f"Error: {e}")
     def _extract_docstring(self, node: 'Node', code_lines: List[str]) -> Optional[str]:
         """Extract docstring from function/class node."""
         try:
@@ -798,9 +806,10 @@ class CodeStructureAnalyzer:
                             return self._get_node_text(grandchild, code_lines)
             return None
 
-        except Exception:
+        except Exception as e:
             return None
 
+            logger.error(f"Error: {e}")
     def _assess_graph_complexity(self, node_count: int, edge_count: int) -> str:
         """Assess complexity of dependency graph for ADHD users."""
         density = edge_count / max(node_count, 1)

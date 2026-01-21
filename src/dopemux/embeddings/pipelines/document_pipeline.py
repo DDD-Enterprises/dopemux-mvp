@@ -86,7 +86,7 @@ class DocumentPipeline(BasePipeline):
         self.documents_to_process = documents.copy()
 
         if self.config.enable_progress_tracking:
-            print(f"🚀 Starting document pipeline: {len(documents)} documents")
+            logger.info(f"🚀 Starting document pipeline: {len(documents)} documents")
 
         try:
             # Define pipeline stages
@@ -124,9 +124,9 @@ class DocumentPipeline(BasePipeline):
 
             if self.config.enable_progress_tracking:
                 if overall_success:
-                    print(f"✅ Pipeline completed successfully: {total_processed} documents processed")
+                    logger.info(f"✅ Pipeline completed successfully: {total_processed} documents processed")
                 else:
-                    print(f"⚠️ Pipeline completed with issues: {total_processed} processed, {total_failed} failed")
+                    logger.error(f"⚠️ Pipeline completed with issues: {total_processed} processed, {total_failed} failed")
 
             return final_result
 
@@ -221,7 +221,7 @@ class DocumentPipeline(BasePipeline):
         failed_count = 0
 
         if self.config.enable_progress_tracking:
-            print(f"🔄 Generating embeddings for {len(self.documents_to_process)} documents...")
+            logger.info(f"🔄 Generating embeddings for {len(self.documents_to_process)} documents...")
 
         # Process documents in batches
         batch_size = self.config.batch_size
@@ -255,7 +255,7 @@ class DocumentPipeline(BasePipeline):
 
                 if self.config.enable_progress_tracking:
                     progress = (i + len(batch)) / len(self.documents_to_process)
-                    print(f"📊 Progress: {progress:.1%} ({processed_count} processed)")
+                    logger.info(f"📊 Progress: {progress:.1%} ({processed_count} processed)")
 
             except Exception as e:
                 logger.error(f"❌ Batch processing failed: {e}")
@@ -288,7 +288,7 @@ class DocumentPipeline(BasePipeline):
             return {"stored_count": 0, "storage_duration": 0}
 
         if self.config.enable_progress_tracking:
-            print(f"💾 Storing {len(self.processed_documents)} documents...")
+            logger.info(f"💾 Storing {len(self.processed_documents)} documents...")
 
         try:
             # Add documents to vector store
@@ -316,7 +316,7 @@ class DocumentPipeline(BasePipeline):
             return {"enhanced_count": 0, "enhancement_duration": 0}
 
         if self.config.enable_progress_tracking:
-            print(f"✨ Applying quality enhancements...")
+            logger.info(f"✨ Applying quality enhancements...")
 
         try:
             # Apply consensus validation to top documents
@@ -361,7 +361,7 @@ class DocumentPipeline(BasePipeline):
         sync_results = {}
 
         if self.config.enable_progress_tracking:
-            print(f"🔄 Syncing with {len(self.integrations)} integrations...")
+            logger.info(f"🔄 Syncing with {len(self.integrations)} integrations...")
 
         # Sync with integrations
         for integration in self.integrations:

@@ -624,6 +624,7 @@ class TwoPlaneOrchestrator:
                         health_status["bridge_status"] = f"unhealthy ({response.status})"
             except Exception as e:
                 health_status["bridge_status"] = f"unreachable ({str(e)})"
+                logger.error(f"Error: {e}")
         else:
             health_status["bridge_status"] = "not_configured"
 
@@ -688,9 +689,9 @@ class TwoPlaneOrchestrator:
 async def demo():
     """Demonstrate TwoPlaneOrchestrator."""
 
-    print("\n" + "="*70)
-    print("TWO-PLANE ORCHESTRATOR DEMO")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("TWO-PLANE ORCHESTRATOR DEMO")
+    logger.info("="*70)
 
     # Create orchestrator
     orchestrator = TwoPlaneOrchestrator(
@@ -701,17 +702,17 @@ async def demo():
 
     await orchestrator.initialize()
 
-    print("\n📋 Authority Matrix Loaded:")
+    logger.info("\n📋 Authority Matrix Loaded:")
     for data_type, rule in orchestrator.authority_matrix.items():
-        print(f"\n  {data_type}:")
-        print(f"    Authority: {rule.authority_plane.value}")
-        print(f"    Read: {[p.value for p in rule.read_allowed_from]}")
-        print(f"    Write: {[p.value for p in rule.write_allowed_from]}")
+        logger.info(f"\n  {data_type}:")
+        logger.info(f"    Authority: {rule.authority_plane.value}")
+        logger.info(f"    Read: {[p.value for p in rule.read_allowed_from]}")
+        logger.info(f"    Write: {[p.value for p in rule.write_allowed_from]}")
 
     # Example 1: Cognitive → PM (query tasks)
-    print("\n" + "="*70)
-    print("Example 1: Cognitive → PM (Get Tasks)")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("Example 1: Cognitive → PM (Get Tasks)")
+    logger.info("="*70)
 
     response = await orchestrator.cognitive_to_pm(
         operation="get_tasks",
@@ -719,12 +720,12 @@ async def demo():
         requester="MemoryAgent"
     )
 
-    print(f"\nResponse: {response}")
+    logger.info(f"\nResponse: {response}")
 
     # Example 2: PM → Cognitive (query complexity)
-    print("\n" + "="*70)
-    print("Example 2: PM → Cognitive (Get Code Complexity)")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("Example 2: PM → Cognitive (Get Code Complexity)")
+    logger.info("="*70)
 
     response = await orchestrator.pm_to_cognitive(
         operation="get_complexity",
@@ -732,12 +733,12 @@ async def demo():
         requester="Leantime"
     )
 
-    print(f"\nResponse: {response}")
+    logger.info(f"\nResponse: {response}")
 
     # Example 3: Authority violation (PM tries to write decision)
-    print("\n" + "="*70)
-    print("Example 3: Authority Violation (PM → Write Decision)")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("Example 3: Authority Violation (PM → Write Decision)")
+    logger.info("="*70)
 
     try:
         response = await orchestrator.pm_to_cognitive(
@@ -745,35 +746,35 @@ async def demo():
             data={"decision_id": "123", "status": "approved"},
             requester="Leantime"
         )
-        print(f"\nResponse: {response}")
+        logger.info(f"\nResponse: {response}")
     except ValueError as e:
-        print(f"\n🚫 Blocked (strict mode): {e}")
+        logger.info(f"\n🚫 Blocked (strict mode): {e}")
 
     # Compliance report
-    print("\n" + "="*70)
-    print("Authority Compliance Report")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("Authority Compliance Report")
+    logger.info("="*70)
 
     report = await orchestrator.get_authority_compliance_report()
 
-    print(f"\nTotal Requests: {report['total_requests']}")
-    print(f"Successful Routes: {report['successful_routes']}")
-    print(f"Failed Routes: {report['failed_routes']}")
-    print(f"Authority Violations: {report['authority_violations']}")
-    print(f"Compliance Rate: {report['compliance_rate']:.1f}%")
-    print(f"Strict Mode: {report['strict_mode']}")
+    logger.info(f"\nTotal Requests: {report['total_requests']}")
+    logger.info(f"Successful Routes: {report['successful_routes']}")
+    logger.error(f"Failed Routes: {report['failed_routes']}")
+    logger.info(f"Authority Violations: {report['authority_violations']}")
+    logger.info(f"Compliance Rate: {report['compliance_rate']:.1f}%")
+    logger.info(f"Strict Mode: {report['strict_mode']}")
 
     if report['violation_patterns']:
-        print(f"\nViolation Patterns:")
+        logger.info(f"\nViolation Patterns:")
         for pattern, count in report['violation_patterns'].items():
-            print(f"  - {pattern}: {count}x")
+            logger.info(f"  - {pattern}: {count}x")
 
     # Cleanup
     await orchestrator.close()
 
-    print("\n" + "="*70)
-    print("✅ Demo complete!")
-    print("="*70 + "\n")
+    logger.info("\n" + "="*70)
+    logger.info("✅ Demo complete!")
+    logger.info("="*70 + "\n")
 
 
 if __name__ == "__main__":

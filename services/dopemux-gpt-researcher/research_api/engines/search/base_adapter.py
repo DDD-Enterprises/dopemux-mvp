@@ -97,9 +97,10 @@ class SearchResult:
             try:
                 from urllib.parse import urlparse
                 self.source_domain = urlparse(self.url).netloc
-            except:
+            except Exception as e:
                 self.source_domain = "unknown"
 
+                logger.error(f"Error: {e}")
         # Estimate reading time based on content length
         if not self.reading_time_minutes and self.content:
             words = len(self.content.split())
@@ -471,9 +472,10 @@ class BaseSearchAdapter(ABC):
         try:
             results, metadata = await self.search("test query", max_results=1)
             return True
-        except:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def get_rate_limit_info(self) -> Dict[str, Any]:
         """Get current rate limit information"""
         return {

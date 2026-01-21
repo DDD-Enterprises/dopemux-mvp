@@ -396,7 +396,7 @@ async def main():
 
     api_key = os.getenv("ANTHROPIC_API_KEY")
     if not api_key:
-        print("Set ANTHROPIC_API_KEY environment variable")
+        logger.info("Set ANTHROPIC_API_KEY environment variable")
         return
 
     generator = ClaudeContextGenerator(api_key=api_key)
@@ -428,16 +428,16 @@ def calculate_user_score(user_id: int, activity_data: dict) -> float:
         print(
             f"Generated context ({response.tokens_used} tokens, ${response.cost_usd:.6f}):"
         )
-        print(response.context)
-        print()
+        logger.info(response.context)
+        logger.info()
 
         # Show contextualized content
-        print("Contextualized content:")
-        print(f"{response.context}\n\n{chunks[0].content}")
+        logger.info("Contextualized content:")
+        logger.info(f"{response.context}\n\n{chunks[0].content}")
 
     # Cost summary
     summary = generator.get_cost_summary()
-    print(f"\nCost summary: {summary}")
+    logger.info(f"\nCost summary: {summary}")
 
 
 if __name__ == "__main__":

@@ -432,6 +432,7 @@ class PlaneCoordinator:
             health.issues.append(f"Health check failed: {e}")
 
 
+            logger.error(f"Error: {e}")
 # ============================================================================
 # Intelligent Conflict Resolution
 # ============================================================================
@@ -457,9 +458,10 @@ class PlaneCoordinator:
             # Use ConPort adapter to check health
             # This would need to be implemented in the adapter
             return "healthy"
-        except Exception:
+        except Exception as e:
             return "unhealthy"
 
+            logger.error(f"Error: {e}")
     async def _check_adhd_engine_health(self) -> str:
         """Check ADHD Engine health."""
         try:
@@ -468,9 +470,10 @@ class PlaneCoordinator:
             async with aiohttp.ClientSession() as session:
                 async with session.get("http://localhost:8080/health") as response:
                     return "healthy" if response.status == 200 else "unhealthy"
-        except Exception:
+        except Exception as e:
             return "unhealthy"
 
+            logger.error(f"Error: {e}")
     # ============================================================================
     # Intelligent Conflict Resolution
     # ============================================================================
@@ -802,7 +805,7 @@ if __name__ == "__main__":
 
         # Register event handler
         def handle_task_events(event: CoordinationEvent):
-            print(f"📡 Event: {event.event_type.value} for {event.entity_id}")
+            logger.info(f"📡 Event: {event.event_type.value} for {event.entity_id}")
 
         coordinator.register_event_handler(
             CoordinationEventType.TASK_CREATED,
@@ -823,11 +826,11 @@ if __name__ == "__main__":
             PlaneType.COGNITIVE,
             task_data
         )
-        print(f"Task coordination result: {result}")
+        logger.info(f"Task coordination result: {result}")
 
         # Check coordination health
         metrics = coordinator.get_coordination_metrics()
-        print(f"Coordination metrics: {json.dumps(metrics, indent=2, default=str)}")
+        logger.info(f"Coordination metrics: {json.dumps(metrics, indent=2, default=str)}")
 
         # Shutdown
         await coordinator.shutdown()

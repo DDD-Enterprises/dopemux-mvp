@@ -83,6 +83,7 @@ async def _route_to_pm(request: CrossPlaneRouteRequest) -> CrossPlaneRouteRespon
             correlation_id=correlation_id
         )
 
+        logger.error(f"Error: {e}")
 async def _route_to_cognitive(request: CrossPlaneRouteRequest) -> CrossPlaneRouteResponse:
     """Route request to Cognitive plane (mock responses for testing)"""
     correlation_id = str(uuid.uuid4())
@@ -133,6 +134,7 @@ async def _route_to_cognitive(request: CrossPlaneRouteRequest) -> CrossPlaneRout
             correlation_id=correlation_id
         )
 
+        logger.error(f"Error: {e}")
 # ============================================================================
 # Endpoints
 # ============================================================================

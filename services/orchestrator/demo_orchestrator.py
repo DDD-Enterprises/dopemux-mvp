@@ -15,6 +15,11 @@ Run: python3 demo_orchestrator.py
 """
 
 import time
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 from pathlib import Path
 
@@ -36,8 +41,8 @@ console = Console()
 
 def demo_step_1():
     """Demo: Tmux Layout Manager"""
-    console.print("\n[bold cyan]STEP 1: Creating Adaptive Tmux Layout[/bold cyan]")
-    console.print("Energy-aware interface: 2 panes (low) → 4 panes (high)\n")
+    console.logger.info("\n[bold cyan]STEP 1: Creating Adaptive Tmux Layout[/bold cyan]")
+    console.logger.info("Energy-aware interface: 2 panes (low) → 4 panes (high)\n")
 
     tmux = TmuxLayoutManager(session_name="dopemux-demo")
 
@@ -46,19 +51,19 @@ def demo_step_1():
         session = tmux.create_session(energy_level=energy)
         pane_count = len(tmux.panes)
 
-        console.print(f"  {energy.upper()} energy: [green]{pane_count} panes[/green]")
+        console.logger.info(f"  {energy.upper()} energy: [green]{pane_count} panes[/green]")
         time.sleep(0.5)
 
-    console.print(f"\n  ✅ Tmux session: [cyan]{session.name}[/cyan]")
-    console.print(f"  📊 Current layout: [cyan]{tmux.current_layout}[/cyan]")
+    console.logger.info(f"\n  ✅ Tmux session: [cyan]{session.name}[/cyan]")
+    console.logger.info(f"  📊 Current layout: [cyan]{tmux.current_layout}[/cyan]")
 
     return tmux
 
 
 def demo_step_2():
     """Demo: Command Parser with 100% Accuracy"""
-    console.print("\n[bold cyan]STEP 2: Command Parser (100% Accuracy!)[/bold cyan]")
-    console.print("Intelligent routing based on intent + complexity\n")
+    console.logger.info("\n[bold cyan]STEP 2: Command Parser (100% Accuracy!)[/bold cyan]")
+    console.logger.info("Intelligent routing based on intent + complexity\n")
 
     parser = CommandParser()
 
@@ -90,16 +95,16 @@ def demo_step_2():
             f"{result.complexity_score:.2f}",
         )
 
-    console.print(table)
-    console.print("\n  ✅ 100% accuracy on all test cases!")
+    console.logger.info(table)
+    console.logger.info("\n  ✅ 100% accuracy on all test cases!")
 
     return parser
 
 
 def demo_step_3():
     """Demo: Multi-AI Spawning with PTY"""
-    console.print("\n[bold cyan]STEP 3: Spawning Multiple AI CLIs[/bold cyan]")
-    console.print("PTY provides real terminals - solves TTY errors\n")
+    console.logger.info("\n[bold cyan]STEP 3: Spawning Multiple AI CLIs[/bold cyan]")
+    console.logger.error("PTY provides real terminals - solves TTY errors\n")
 
     with Progress(
         SpinnerColumn(),
@@ -134,11 +139,11 @@ def demo_step_3():
         )
         time.sleep(0.5)
 
-    console.print("\n  ✅ 2/3 AIs spawned successfully (Claude + Gemini)")
-    console.print("  💡 Both have real terminals via PTY")
+    console.logger.info("\n  ✅ 2/3 AIs spawned successfully (Claude + Gemini)")
+    console.logger.info("  💡 Both have real terminals via PTY")
 
     # Wait for initialization
-    console.print("\n  ⏳ Waiting for initialization...")
+    console.logger.info("\n  ⏳ Waiting for initialization...")
     time.sleep(3)
 
     return {"claude": claude, "gemini": gemini}
@@ -146,8 +151,8 @@ def demo_step_3():
 
 def demo_step_4(agents):
     """Demo: Message Bus and Event Coordination"""
-    console.print("\n[bold cyan]STEP 4: Thread-Safe Message Bus[/bold cyan]")
-    console.print("Hardened v2: async callbacks, metrics, backpressure\n")
+    console.logger.info("\n[bold cyan]STEP 4: Thread-Safe Message Bus[/bold cyan]")
+    console.logger.info("Hardened v2: async callbacks, metrics, backpressure\n")
 
     bus = create_message_bus("in_memory", max_events=10000)
 
@@ -183,17 +188,17 @@ def demo_step_4(agents):
 
     # Show metrics
     metrics = bus.get_metrics()
-    console.print(f"\n  📊 Events published: [green]{metrics.total_events_published}[/green]")
-    console.print(f"  📊 Buffer utilization: [yellow]{metrics.buffer_utilization_percent:.1f}%[/yellow]")
-    console.print(f"  📊 Avg callback time: [cyan]{metrics.avg_callback_time_ms:.1f}ms[/cyan]")
+    console.logger.info(f"\n  📊 Events published: [green]{metrics.total_events_published}[/green]")
+    console.logger.info(f"  📊 Buffer utilization: [yellow]{metrics.buffer_utilization_percent:.1f}%[/yellow]")
+    console.logger.info(f"  📊 Avg callback time: [cyan]{metrics.avg_callback_time_ms:.1f}ms[/cyan]")
 
     return bus
 
 
 def demo_step_5():
     """Demo: Auto-Save Checkpoint System"""
-    console.print("\n[bold cyan]STEP 5: Auto-Save Every 30 Seconds[/bold cyan]")
-    console.print("ADHD protection: prevents 23-minute context recovery penalty\n")
+    console.logger.info("\n[bold cyan]STEP 5: Auto-Save Every 30 Seconds[/bold cyan]")
+    console.logger.info("ADHD protection: prevents 23-minute context recovery penalty\n")
 
     checkpoint_mgr = CheckpointManager(
         workspace_id="/Users/hue/code/ui-build",
@@ -209,19 +214,19 @@ def demo_step_5():
         message={"role": "user", "content": "Implement OAuth2 flow"},
     )
 
-    console.print("  💾 Starting auto-save (every 5s for demo)...")
+    console.logger.info("  💾 Starting auto-save (every 5s for demo)...")
     checkpoint_mgr.start_auto_save()
 
-    console.print("  ⏳ Simulating work for 15 seconds...")
+    console.logger.info("  ⏳ Simulating work for 15 seconds...")
 
     for i in range(3):
         time.sleep(5)
-        console.print(f"  💾 Checkpoint #{checkpoint_mgr.checkpoint_count}")
+        console.logger.info(f"  💾 Checkpoint #{checkpoint_mgr.checkpoint_count}")
 
     checkpoint_mgr.stop_auto_save()
 
-    console.print(f"\n  ✅ Saved {checkpoint_mgr.checkpoint_count} checkpoints")
-    console.print("  💡 In production: saves every 30 seconds automatically")
+    console.logger.info(f"\n  ✅ Saved {checkpoint_mgr.checkpoint_count} checkpoints")
+    console.logger.info("  💡 In production: saves every 30 seconds automatically")
 
     return checkpoint_mgr
 
@@ -261,38 +266,38 @@ def main():
         checkpoint_mgr = demo_step_5()
 
         # Final summary
-        console.print("\n" + "=" * 60)
-        console.print("\n[bold green]✅ DEMO COMPLETE![/bold green]\n")
+        console.logger.info("\n" + "=" * 60)
+        console.logger.info("\n[bold green]✅ DEMO COMPLETE![/bold green]\n")
 
-        console.print("[bold]What We Demonstrated:[/bold]")
-        console.print("  ✅ Adaptive tmux layouts (2-4 panes)")
-        console.print("  ✅ 100% command routing accuracy")
-        console.print("  ✅ Multiple AI CLIs spawned (Claude + Gemini)")
-        console.print("  ✅ Thread-safe message bus with metrics")
-        console.print("  ✅ Auto-save checkpoints every 30s")
-        console.print("\n[bold]Production Ready:[/bold]")
-        console.print("  • 3,829 lines of code")
-        console.print("  • 120,000 words of research")
-        console.print("  • 87% confidence (Zen validated)")
-        console.print("  • 27+ AI models available (Grok FREE!)")
+        console.logger.info("[bold]What We Demonstrated:[/bold]")
+        console.logger.info("  ✅ Adaptive tmux layouts (2-4 panes)")
+        console.logger.info("  ✅ 100% command routing accuracy")
+        console.logger.info("  ✅ Multiple AI CLIs spawned (Claude + Gemini)")
+        console.logger.info("  ✅ Thread-safe message bus with metrics")
+        console.logger.info("  ✅ Auto-save checkpoints every 30s")
+        console.logger.info("\n[bold]Production Ready:[/bold]")
+        console.logger.info("  • 3,829 lines of code")
+        console.logger.info("  • 120,000 words of research")
+        console.logger.info("  • 87% confidence (Zen validated)")
+        console.logger.info("  • 27+ AI models available (Grok FREE!)")
 
-        console.print(f"\n[bold cyan]📺 View the tmux session:[/bold cyan]")
-        console.print(f"   tmux attach -t {tmux.session_name}")
+        console.logger.info(f"\n[bold cyan]📺 View the tmux session:[/bold cyan]")
+        console.logger.info(f"   tmux attach -t {tmux.session_name}")
 
-        console.print("\n[dim]Cleaning up agents...[/dim]")
+        console.logger.info("\n[dim]Cleaning up agents...[/dim]")
         for name, agent in agents.items():
             if agent.status.value == "running":
                 agent.stop()
 
         bus.shutdown()
 
-        console.print("\n[bold green]🎉 Thank you![/bold green]\n")
+        console.logger.info("\n[bold green]🎉 Thank you![/bold green]\n")
 
     except KeyboardInterrupt:
-        console.print("\n\n[yellow]Demo interrupted[/yellow]")
+        console.logger.info("\n\n[yellow]Demo interrupted[/yellow]")
         return 1
     except Exception as e:
-        console.print(f"\n[red]Error: {e}[/red]")
+        console.logger.error(f"\n[red]Error: {e}[/red]")
         import traceback
         traceback.print_exc()
         return 1

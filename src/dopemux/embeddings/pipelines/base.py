@@ -136,7 +136,7 @@ class BasePipeline(ABC):
         self.current_stage = stage
 
         if self.config.enable_progress_tracking:
-            print(f"🔄 Executing stage: {stage.value}")
+            logger.info(f"🔄 Executing stage: {stage.value}")
 
         try:
             # Execute stage function
@@ -153,7 +153,7 @@ class BasePipeline(ABC):
             self.results.append(stage_result)
 
             if self.config.enable_progress_tracking:
-                print(f"✅ Stage {stage.value} completed in {stage_result.duration_seconds:.1f}s")
+                logger.info(f"✅ Stage {stage.value} completed in {stage_result.duration_seconds:.1f}s")
 
             return stage_result
 
@@ -179,9 +179,9 @@ class BasePipeline(ABC):
             logger.error(f"❌ Stage {stage.value} failed: {e}")
 
             if self.config.gentle_error_messages:
-                print(f"💙 Stage {stage.value} had some trouble - that's okay, continuing...")
+                logger.info(f"💙 Stage {stage.value} had some trouble - that's okay, continuing...")
             else:
-                print(f"❌ Stage {stage.value} failed: {e}")
+                logger.error(f"❌ Stage {stage.value} failed: {e}")
 
             return stage_result
 
@@ -267,22 +267,22 @@ class BasePipeline(ABC):
         """Display ADHD-friendly pipeline summary."""
         summary = self.get_pipeline_summary()
 
-        print(f"🏗️ Pipeline Summary: {self.pipeline_id}")
-        print("=" * 50)
-        print(f"⏱️ Duration: {summary['total_duration_seconds']:.1f}s")
-        print(f"📊 Stages: {summary['successful_stages']}/{summary['stages_executed']} successful")
-        print(f"📦 Items: {summary['total_processed_items']} processed, {summary['total_failed_items']} failed")
+        logger.info(f"🏗️ Pipeline Summary: {self.pipeline_id}")
+        logger.info("=" * 50)
+        logger.info(f"⏱️ Duration: {summary['total_duration_seconds']:.1f}s")
+        logger.info(f"📊 Stages: {summary['successful_stages']}/{summary['stages_executed']} successful")
+        logger.error(f"📦 Items: {summary['total_processed_items']} processed, {summary['total_failed_items']} failed")
 
         if summary['overall_success']:
-            print("✅ Overall Status: SUCCESS")
+            logger.info("✅ Overall Status: SUCCESS")
         else:
-            print("❌ Overall Status: FAILED")
+            logger.error("❌ Overall Status: FAILED")
             if summary['errors']:
-                print("🚨 Errors:")
+                logger.error("🚨 Errors:")
                 for error in summary['errors'][:3]:  # Show max 3 errors
-                    print(f"   • {error}")
+                    logger.error(f"   • {error}")
                 if len(summary['errors']) > 3:
-                    print(f"   ... and {len(summary['errors']) - 3} more")
+                    logger.error(f"   ... and {len(summary['errors']) - 3} more")
 
     async def retry_failed_stages(self, max_retries: int = 3) -> List[PipelineResult]:
         """
@@ -302,7 +302,7 @@ class BasePipeline(ABC):
             return retry_results
 
         if self.config.enable_progress_tracking:
-            print(f"🔄 Retrying {len(failed_results)} failed stages...")
+            logger.error(f"🔄 Retrying {len(failed_results)} failed stages...")
 
         for failed_result in failed_results:
             stage = failed_result.stage
@@ -314,14 +314,14 @@ class BasePipeline(ABC):
 
             for attempt in range(max_retries):
                 if self.config.enable_progress_tracking:
-                    print(f"🔄 Retry {attempt + 1}/{max_retries} for stage {stage.value}")
+                    logger.info(f"🔄 Retry {attempt + 1}/{max_retries} for stage {stage.value}")
 
                 retry_result = await self.execute_stage(stage, handler)
                 retry_results.append(retry_result)
 
                 if retry_result.success:
                     if self.config.enable_progress_tracking:
-                        print(f"✅ Stage {stage.value} succeeded on retry {attempt + 1}")
+                        logger.info(f"✅ Stage {stage.value} succeeded on retry {attempt + 1}")
                     break
             else:
                 logger.error(f"❌ Stage {stage.value} failed after {max_retries} retries")

@@ -6,6 +6,11 @@ intelligent operator selection based on historical success patterns.
 """
 
 from typing import Dict, List, Any, Optional, Tuple
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from dataclasses import dataclass
 from datetime import datetime
 import statistics
@@ -438,7 +443,7 @@ class HistoricalLearningSystem:
 
         except Exception as e:
             # Log but don't fail the learning process
-            print(f"Failed to persist learning event: {e}")
+            logger.error(f"Failed to persist learning event: {e}")
 
     async def load_historical_data(self) -> None:
         """Load historical learning data from ConPort."""
@@ -480,7 +485,7 @@ class HistoricalLearningSystem:
                 self.learning_events = self.learning_events[-self.max_events_memory:]
 
         except Exception as e:
-            print(f"Failed to load historical data: {e}")
+            logger.error(f"Failed to load historical data: {e}")
 
     async def export_learning_model(self) -> Dict[str, Any]:
         """Export the current learning model for analysis or backup."""

@@ -440,37 +440,37 @@ class ZenMCPClient:
 if __name__ == "__main__":
     """Test Zen client wrapper."""
 
-    print("Testing Zen MCP Client:")
-    print("=" * 60)
+    logger.info("Testing Zen MCP Client:")
+    logger.info("=" * 60)
 
     zen = ZenMCPClient()
 
     # Test thinkdeep
-    print("\n1. Testing thinkdeep (research mode):")
+    logger.info("\n1. Testing thinkdeep (research mode):")
     response = zen.thinkdeep(
         step="Research OAuth2 PKCE flow best practices", model="gemini"
     )
-    print(f"   Model: {response.model_used}")
-    print(f"   Confidence: {response.confidence}")
-    print(f"   Content: {response.content[:80]}...")
+    logger.info(f"   Model: {response.model_used}")
+    logger.info(f"   Confidence: {response.confidence}")
+    logger.info(f"   Content: {response.content[:80]}...")
 
     # Test planner
-    print("\n2. Testing planner (planning mode):")
+    logger.info("\n2. Testing planner (planning mode):")
     response = zen.planner(step="Design authentication architecture", model="sonnet")
-    print(f"   Model: {response.model_used}")
-    print(f"   Content: {response.content[:80]}...")
+    logger.info(f"   Model: {response.model_used}")
+    logger.info(f"   Content: {response.content[:80]}...")
 
     # Test consensus
-    print("\n3. Testing consensus (multi-model):")
+    logger.info("\n3. Testing consensus (multi-model):")
     response = zen.consensus(step="Should we use JWT or sessions?")
-    print(f"   Models: {response.model_used}")
-    print(f"   Confidence: {response.confidence}")
+    logger.info(f"   Models: {response.model_used}")
+    logger.info(f"   Confidence: {response.confidence}")
 
     # Test chat
-    print("\n4. Testing chat (implementation mode):")
+    logger.info("\n4. Testing chat (implementation mode):")
     response = zen.chat(prompt="Implement JWT token generation", model="grok-code")
-    print(f"   Model: {response.model_used}")
-    print(f"   Content: {response.content[:80]}...")
+    logger.info(f"   Model: {response.model_used}")
+    logger.info(f"   Content: {response.content[:80]}...")
 
-    print("\n✅ Zen client test complete")
-    print(f"\nAvailable models: {len(zen.available_models)}")
+    logger.info("\n✅ Zen client test complete")
+    logger.info(f"\nAvailable models: {len(zen.available_models)}")

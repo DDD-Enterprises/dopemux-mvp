@@ -13,6 +13,11 @@ Usage:
 """
 from __future__ import annotations
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 import argparse
 import os
 import re
@@ -50,8 +55,9 @@ def slug_to_title(slug: str) -> str:
 def section_from_path(p: Path) -> str:
     try:
         rel = p.relative_to(DOCS)
-    except Exception:
+    except Exception as e:
         return "Docs"
+        logger.error(f"Error: {e}")
     parts = list(rel.parts)
     if not parts:
         return "Docs"
@@ -130,7 +136,7 @@ def main():
         rel = p.relative_to(DOCS)
         lines.append(f"| `{rel}` | {cur} | {prop} |")
     OUT.write_text("\n".join(lines), encoding="utf-8")
-    print(f"Wrote proposal with {len(items)} items to {OUT}")
+    logger.info(f"Wrote proposal with {len(items)} items to {OUT}")
 
 
 if __name__ == "__main__":

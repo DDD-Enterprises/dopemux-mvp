@@ -149,6 +149,6 @@ if __name__ == "__main__":
     async def main():
         tracker = ContextSwitchTracker()
         report = await tracker.generate_report()
-        print(report)
+        logger.info(report)
 
     asyncio.run(main())

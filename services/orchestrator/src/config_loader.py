@@ -11,6 +11,11 @@ Features:
 """
 
 import yaml
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import os
 import shutil
 import re
@@ -96,11 +101,11 @@ class ConfigLoader:
         if config_file:
             with open(config_file) as f:
                 self.config = yaml.safe_load(f)
-            print(f"✅ Loaded config from: {config_file}")
+            logger.info(f"✅ Loaded config from: {config_file}")
         else:
             # Use built-in defaults
             self.config = self._get_default_config()
-            print("ℹ️  Using built-in defaults (no config file found)")
+            logger.info("ℹ️  Using built-in defaults (no config file found)")
 
         # Resolve environment variables
         self.config = self._resolve_env_vars(self.config)
@@ -183,7 +188,7 @@ class ConfigLoader:
                 errors.append(f"   💡 Try: which {agent_config['command']}")
                 errors.append(f"   💡 Or install: pip install {agent_config['command']}-cli")
             else:
-                print(f"✅ {agent_name}: Found at {cli_path}")
+                logger.info(f"✅ {agent_name}: Found at {cli_path}")
 
             # Check required environment variables
             for env_key, env_value in agent_config.get('env', {}).items():
@@ -193,15 +198,15 @@ class ConfigLoader:
                     warnings.append(f"⚠️  {agent_name}: {env_key} not set (may be optional)")
 
         if errors:
-            print("\n🚨 Configuration Errors:\n")
-            print("\n".join(errors))
-            print("\n💡 Fix the errors above and try again\n")
+            logger.error("\n🚨 Configuration Errors:\n")
+            logger.error("\n".join(errors))
+            logger.error("\n💡 Fix the errors above and try again\n")
             raise ConfigError(f"{len(errors)} configuration error(s)")
 
         if warnings:
-            print("\n⚠️  Configuration Warnings:\n")
-            print("\n".join(warnings))
-            print()
+            logger.warning("\n⚠️  Configuration Warnings:\n")
+            logger.warning("\n".join(warnings))
+            logger.info()
 
     def _find_cli_path(self, command: str) -> Optional[str]:
         """
@@ -305,7 +310,7 @@ class ConfigLoader:
         Returns:
             Updated agent configurations
         """
-        print("🔄 Reloading configuration...")
+        logger.info("🔄 Reloading configuration...")
         return self.load()
 
 
@@ -323,7 +328,7 @@ def load_agent_config(config_path: Optional[str] = None) -> Dict[str, AgentConfi
     Example:
         >>> agents = load_agent_config()
         >>> claude_config = agents['claude']
-        >>> print(claude_config.command)
+        >>> logger.info(claude_config.command)
         '/usr/local/bin/claude'
     """
     loader = ConfigLoader(config_path)
@@ -332,29 +337,29 @@ def load_agent_config(config_path: Optional[str] = None) -> Dict[str, AgentConfi
 
 if __name__ == "__main__":
     """Test configuration loader."""
-    print("🧪 Testing Configuration Loader")
-    print("=" * 60)
+    logger.info("🧪 Testing Configuration Loader")
+    logger.info("=" * 60)
 
     try:
         agents = load_agent_config()
 
-        print(f"\n✅ Loaded {len(agents)} agents:")
+        logger.info(f"\n✅ Loaded {len(agents)} agents:")
         for name, config in agents.items():
-            print(f"\n  {name}:")
-            print(f"    Type: {config.agent_type}")
+            logger.info(f"\n  {name}:")
+            logger.info(f"    Type: {config.agent_type}")
             if config.agent_type == 'cli':
-                print(f"    Command: {config.command}")
-                print(f"    Args: {config.args}")
-                print(f"    Model: {config.default_model}")
+                logger.info(f"    Command: {config.command}")
+                logger.info(f"    Args: {config.args}")
+                logger.info(f"    Model: {config.default_model}")
             else:
-                print(f"    Zen Model: {config.zen_model}")
-                print(f"    Capabilities: {config.capabilities}")
+                logger.info(f"    Zen Model: {config.zen_model}")
+                logger.info(f"    Capabilities: {config.capabilities}")
 
-        print("\n✅ Configuration loader test passed!")
+        logger.info("\n✅ Configuration loader test passed!")
 
     except ConfigError as e:
-        print(f"\n❌ Configuration error: {e}")
+        logger.error(f"\n❌ Configuration error: {e}")
     except Exception as e:
-        print(f"\n❌ Unexpected error: {e}")
+        logger.error(f"\n❌ Unexpected error: {e}")
         import traceback
         traceback.print_exc()

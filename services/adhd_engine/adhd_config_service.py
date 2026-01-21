@@ -28,7 +28,10 @@ from typing import Dict, Any, Optional
 import redis.asyncio as redis
 from redis.exceptions import RedisError
 
-from .inmemory_redis import InMemoryRedis
+try:
+    from .inmemory_redis import InMemoryRedis
+except ImportError:
+    from inmemory_redis import InMemoryRedis
 
 logger = logging.getLogger(__name__)
 

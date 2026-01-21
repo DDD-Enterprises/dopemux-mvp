@@ -98,10 +98,11 @@ class TaskAbandonmentPattern(BasePattern):
                             "last_update": last_update["timestamp"]
                         })
 
-                except Exception:
+                except Exception as e:
                     # Skip malformed timestamps
                     continue
 
+                    logger.error(f"Error: {e}")
         if len(abandoned_tasks) >= self.threshold:
             # Pattern detected!
             self.record_detection()

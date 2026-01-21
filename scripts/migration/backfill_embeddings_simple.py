@@ -5,6 +5,11 @@ No complex imports - just Qdrant + Voyage APIs directly.
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncpg
 import httpx
 import json
@@ -25,22 +30,22 @@ async def main():
     VOYAGE_API_KEY = os.getenv("VOYAGE_API_KEY")
 
     if not VOYAGE_API_KEY:
-        print("❌ VOYAGE_API_KEY not set!")
+        logger.info("❌ VOYAGE_API_KEY not set!")
         sys.exit(1)
 
-    print("🚀 DDG Embedding Backfill (Simplified)")
-    print("=" * 60)
-    print(f"DDG DB:  {DDG_DB}")
-    print(f"Qdrant:  {QDRANT_URL}:{QDRANT_PORT}")
-    print()
+    logger.info("🚀 DDG Embedding Backfill (Simplified)")
+    logger.info("=" * 60)
+    logger.info(f"DDG DB:  {DDG_DB}")
+    logger.info(f"Qdrant:  {QDRANT_URL}:{QDRANT_PORT}")
+    logger.info()
 
     # Connect to PostgreSQL
-    print("🔌 Connecting to PostgreSQL...")
+    logger.info("🔌 Connecting to PostgreSQL...")
     conn = await asyncpg.connect(DDG_DB)
-    print("   ✅ Connected")
+    logger.info("   ✅ Connected")
 
     # Initialize Qdrant
-    print("🔌 Initializing Qdrant...")
+    logger.info("🔌 Initializing Qdrant...")
     qdrant = QdrantClient(url=QDRANT_URL, port=QDRANT_PORT)
 
     # Create collection if not exists
@@ -49,15 +54,15 @@ async def main():
             collection_name="ddg_global_decisions",
             vectors_config=VectorParams(size=1024, distance=Distance.COSINE)
         )
-        print("   ✅ Created collection: ddg_global_decisions")
+        logger.info("   ✅ Created collection: ddg_global_decisions")
     except Exception as e:
         if "already exists" in str(e).lower():
-            print("   ✅ Collection exists: ddg_global_decisions")
+            logger.info("   ✅ Collection exists: ddg_global_decisions")
         else:
-            print(f"   ⚠️  Collection error: {e}")
+            logger.error(f"   ⚠️  Collection error: {e}")
 
     # Fetch decisions
-    print("\n📋 Fetching decisions...")
+    logger.info("\n📋 Fetching decisions...")
     rows = await conn.fetch("""
         SELECT id, workspace_id, instance_id, summary, tags, source, created_at
         FROM ddg_decisions
@@ -65,14 +70,14 @@ async def main():
     """)
 
     decisions = [dict(row) for row in rows]
-    print(f"   ✅ Found {len(decisions)} decisions")
+    logger.info(f"   ✅ Found {len(decisions)} decisions")
 
     # HTTP client for Voyage API
     http_client = httpx.AsyncClient(timeout=60.0)
 
     # Backfill
-    print(f"\n🎨 Creating embeddings...")
-    print(f"   Model: voyage-3-large (1024 dimensions)")
+    logger.info(f"\n🎨 Creating embeddings...")
+    logger.info(f"   Model: voyage-3-large (1024 dimensions)")
 
     created = 0
     failed = 0
@@ -97,9 +102,10 @@ async def main():
                 if search_result[0]:  # Has points
                     skipped += 1
                     continue
-            except:
+            except Exception as e:
                 pass  # Collection might not exist yet
 
+                logger.error(f"Error: {e}")
             # Generate Voyage embedding
             response = await http_client.post(
                 "https://api.voyageai.com/v1/embeddings",
@@ -114,7 +120,7 @@ async def main():
             )
 
             if response.status_code != 200:
-                print(f"   ⚠️  Voyage API error {response.status_code}: {decision_id}")
+                logger.error(f"   ⚠️  Voyage API error {response.status_code}: {decision_id}")
                 failed += 1
                 continue
 
@@ -145,21 +151,21 @@ async def main():
 
             # Progress
             if i % 50 == 0:
-                print(f"   Progress: {i}/{len(decisions)} ({created} created, {skipped} skipped, {failed} failed)")
+                logger.info(f"   Progress: {i}/{len(decisions)} ({created} created, {skipped} skipped, {failed} failed)")
                 await asyncio.sleep(0.2)  # Rate limit
 
         except Exception as e:
-            print(f"   ⚠️  Failed {decision_id}: {e}")
+            logger.error(f"   ⚠️  Failed {decision_id}: {e}")
             failed += 1
 
     # Final stats
-    print("\n" + "=" * 60)
-    print("✅ EMBEDDING BACKFILL COMPLETE")
-    print("=" * 60)
-    print(f"Total decisions:    {len(decisions)}")
-    print(f"Embeddings created: {created}")
-    print(f"Skipped (existing): {skipped}")
-    print(f"Failed:             {failed}")
+    logger.info("\n" + "=" * 60)
+    logger.info("✅ EMBEDDING BACKFILL COMPLETE")
+    logger.info("=" * 60)
+    logger.info(f"Total decisions:    {len(decisions)}")
+    logger.info(f"Embeddings created: {created}")
+    logger.info(f"Skipped (existing): {skipped}")
+    logger.error(f"Failed:             {failed}")
 
     # Cleanup
     await conn.close()
@@ -167,15 +173,15 @@ async def main():
 
     # Test search
     if created > 0:
-        print("\n🔍 Testing Qdrant search...")
+        logger.info("\n🔍 Testing Qdrant search...")
         test_results = qdrant.search(
             collection_name="ddg_global_decisions",
             query_vector=[0.1] * 1024,  # Dummy query
             limit=3
         )
-        print(f"   ✅ Search works! Found {len(test_results)} results")
+        logger.info(f"   ✅ Search works! Found {len(test_results)} results")
 
-    print(f"\n🎉 Success! {created} embeddings created in Qdrant")
+    logger.info(f"\n🎉 Success! {created} embeddings created in Qdrant")
 
 
 if __name__ == "__main__":

@@ -5,6 +5,11 @@ Plays subtle audio cues for different events
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import subprocess
 from enum import Enum
 from pathlib import Path
@@ -39,9 +44,10 @@ def play_sound(sound: AlertSound, volume: float = 0.5):
             check=False,
             capture_output=True
         )
-    except Exception:
+    except Exception as e:
         pass  # Silently fail if can't play sound
 
+        logger.error(f"Error: {e}")
 # Convenience functions
 def alert_success():
     """Tests passed, build successful"""
@@ -75,8 +81,8 @@ if __name__ == "__main__":
     import sys
     
     if len(sys.argv) < 2:
-        print("Usage: sound_alerts.py <event>")
-        print("Events: success, error, warning, info, untracked, context_switch, task_complete")
+        logger.info("Usage: sound_alerts.py <event>")
+        logger.error("Events: success, error, warning, info, untracked, context_switch, task_complete")
         sys.exit(1)
     
     event = sys.argv[1].lower()
@@ -93,7 +99,7 @@ if __name__ == "__main__":
     
     if event in alerts:
         alerts[event]()
-        print(f"✅ Played {event} alert")
+        logger.info(f"✅ Played {event} alert")
     else:
-        print(f"❌ Unknown event: {event}")
+        logger.info(f"❌ Unknown event: {event}")
         sys.exit(1)

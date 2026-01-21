@@ -8,6 +8,11 @@ Tests ADHD features: complexity filtering, progressive disclosure, workspace fil
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import psycopg2
 import sys
 import time
@@ -30,7 +35,7 @@ class AGEBenchmarker:
         cursor.execute("LOAD 'age';")
         cursor.execute("SET search_path = ag_catalog, conport_knowledge, public;")
         cursor.close()
-        print(f"✓ Connected to AGE database")
+        logger.info(f"✓ Connected to AGE database")
 
     def disconnect(self):
         """Close database connection"""
@@ -54,7 +59,7 @@ class AGEBenchmarker:
                 cursor.execute(query)
                 cursor.fetchall()  # Consume results
             except Exception as e:
-                print(f"  ✗ Query failed on iteration {i}: {e}")
+                logger.error(f"  ✗ Query failed on iteration {i}: {e}")
                 cursor.close()
                 return None
 
@@ -81,15 +86,15 @@ class AGEBenchmarker:
         self.connect()
 
         try:
-            print("\n" + "=" * 60)
-            print("AGE Performance Benchmarks")
-            print("=" * 60)
+            logger.info("\n" + "=" * 60)
+            logger.info("AGE Performance Benchmarks")
+            logger.info("=" * 60)
 
             benchmarks = []
 
             # Benchmark 1: 3-hop genealogy query
-            print("\n[1] 3-Hop Genealogy Query (Core Test)")
-            print("-" * 60)
+            logger.info("\n[1] 3-Hop Genealogy Query (Core Test)")
+            logger.info("-" * 60)
 
             query = f"""
                 SELECT * FROM cypher('conport_knowledge', $$
@@ -107,8 +112,8 @@ class AGEBenchmarker:
                 self.print_benchmark_result(result, target_p95=150)
 
             # Benchmark 2: ADHD complexity filtering
-            print("\n[2] ADHD Complexity Filtering")
-            print("-" * 60)
+            logger.info("\n[2] ADHD Complexity Filtering")
+            logger.info("-" * 60)
 
             query = f"""
                 SELECT * FROM cypher('conport_knowledge', $$
@@ -128,8 +133,8 @@ class AGEBenchmarker:
                 self.print_benchmark_result(result, target_p95=100)
 
             # Benchmark 3: Workspace filtering
-            print("\n[3] Workspace Filtering")
-            print("-" * 60)
+            logger.info("\n[3] Workspace Filtering")
+            logger.info("-" * 60)
 
             query = f"""
                 SELECT * FROM cypher('conport_knowledge', $$
@@ -146,8 +151,8 @@ class AGEBenchmarker:
                 self.print_benchmark_result(result, target_p95=50)
 
             # Benchmark 4: Relationship type filtering
-            print("\n[4] Relationship Type Query")
-            print("-" * 60)
+            logger.info("\n[4] Relationship Type Query")
+            logger.info("-" * 60)
 
             query = f"""
                 SELECT * FROM cypher('conport_knowledge', $$
@@ -165,9 +170,9 @@ class AGEBenchmarker:
                 self.print_benchmark_result(result, target_p95=100)
 
             # Summary
-            print("\n" + "=" * 60)
-            print("BENCHMARK SUMMARY")
-            print("=" * 60)
+            logger.info("\n" + "=" * 60)
+            logger.info("BENCHMARK SUMMARY")
+            logger.info("=" * 60)
 
             all_pass = True
             for name, result in benchmarks:
@@ -176,7 +181,7 @@ class AGEBenchmarker:
                 status = "✓ PASS" if passed else "✗ FAIL"
                 all_pass = all_pass and passed
 
-                print(f"{status} | {name:<25} | P95: {result['p95']:.2f}ms (target: <{target}ms)")
+                logger.info(f"{status} | {name:<25} | P95: {result['p95']:.2f}ms (target: <{target}ms)")
 
             return all_pass
 
@@ -186,18 +191,18 @@ class AGEBenchmarker:
     def print_benchmark_result(self, result: Dict, target_p95: float):
         """Print formatted benchmark results"""
 
-        print(f"  Iterations: {result['iterations']}")
-        print(f"  Min:        {result['min']:.2f}ms")
-        print(f"  Avg:        {result['avg']:.2f}ms")
-        print(f"  Median:     {result['median']:.2f}ms")
-        print(f"  P95:        {result['p95']:.2f}ms  (target: <{target_p95}ms)")
-        print(f"  P99:        {result['p99']:.2f}ms")
-        print(f"  Max:        {result['max']:.2f}ms")
+        logger.info(f"  Iterations: {result['iterations']}")
+        logger.info(f"  Min:        {result['min']:.2f}ms")
+        logger.info(f"  Avg:        {result['avg']:.2f}ms")
+        logger.info(f"  Median:     {result['median']:.2f}ms")
+        logger.info(f"  P95:        {result['p95']:.2f}ms  (target: <{target_p95}ms)")
+        logger.info(f"  P99:        {result['p99']:.2f}ms")
+        logger.info(f"  Max:        {result['max']:.2f}ms")
 
         if result['p95'] < target_p95:
-            print(f"  Status:     ✓ PASS (within target)")
+            logger.info(f"  Status:     ✓ PASS (within target)")
         else:
-            print(f"  Status:     ✗ FAIL ({result['p95'] - target_p95:.2f}ms over target)")
+            logger.error(f"  Status:     ✗ FAIL ({result['p95'] - target_p95:.2f}ms over target)")
 
 
 async def main():
@@ -207,12 +212,12 @@ async def main():
     AGE_URL = "postgresql://dopemux_age:dopemux_age_password@localhost:5455/dopemux_knowledge_graph"
     WORKSPACE_ID = "/Users/hue/code/dopemux-mvp"
 
-    print("=" * 60)
-    print("AGE Performance Benchmarking")
-    print("=" * 60)
-    print(f"Workspace: {WORKSPACE_ID}")
-    print(f"Target: <150ms p95 for 3-hop queries")
-    print()
+    logger.info("=" * 60)
+    logger.info("AGE Performance Benchmarking")
+    logger.info("=" * 60)
+    logger.info(f"Workspace: {WORKSPACE_ID}")
+    logger.info(f"Target: <150ms p95 for 3-hop queries")
+    logger.info()
 
     benchmarker = AGEBenchmarker(AGE_URL)
 
@@ -220,23 +225,23 @@ async def main():
         all_pass = benchmarker.run_benchmarks(WORKSPACE_ID)
 
         if all_pass:
-            print("\n✓ SUCCESS: All performance targets achieved")
-            print("\nMigration complete! System ready for:")
-            print("  - ADHD progressive disclosure queries")
-            print("  - Decision genealogy visualization")
-            print("  - Two-Plane Architecture integration")
+            logger.info("\n✓ SUCCESS: All performance targets achieved")
+            logger.info("\nMigration complete! System ready for:")
+            logger.info("  - ADHD progressive disclosure queries")
+            logger.info("  - Decision genealogy visualization")
+            logger.info("  - Two-Plane Architecture integration")
             return 0
         else:
-            print("\n⚠️  WARNING: Some performance targets missed")
-            print("\nRecommended actions:")
-            print("  1. Review query plans with EXPLAIN ANALYZE")
-            print("  2. Verify all indexes created correctly")
-            print("  3. Consider materialized views for slow queries")
+            logger.warning("\n⚠️  WARNING: Some performance targets missed")
+            logger.info("\nRecommended actions:")
+            logger.info("  1. Review query plans with EXPLAIN ANALYZE")
+            logger.info("  2. Verify all indexes created correctly")
+            logger.info("  3. Consider materialized views for slow queries")
             return 1
 
     except Exception as e:
-        print(f"\n✗ ERROR: Benchmarking failed")
-        print(f"  {str(e)}")
+        logger.error(f"\n✗ ERROR: Benchmarking failed")
+        logger.info(f"  {str(e)}")
         return 1
 
 

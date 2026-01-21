@@ -275,4 +275,4 @@ if __name__ == "__main__":
     # Save snapshot
     indexer.save_chunk_snapshot(snapshot)
 
-    print(f"Snapshot saved: {len(snapshot.files)} files")
+    logger.info(f"Snapshot saved: {len(snapshot.files)} files")

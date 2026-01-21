@@ -7,6 +7,11 @@ Secure password hashing and verification using bcrypt.
 """
 
 import bcrypt
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import secrets
 import string
 from typing import Dict, Any, Optional
@@ -74,7 +79,7 @@ class PasswordManager:
             return bcrypt.checkpw(password, hashed_password)
 
         except Exception as e:
-            print(f"❌ Password verification error: {e}")
+            logger.error(f"❌ Password verification error: {e}")
             return False
 
     @staticmethod
@@ -227,7 +232,7 @@ class PasswordResetManager:
             return bcrypt.checkpw(token, hashed_token)
 
         except Exception as e:
-            print(f"❌ Reset token verification error: {e}")
+            logger.error(f"❌ Reset token verification error: {e}")
             return False
 
 # Pydantic models for API validation

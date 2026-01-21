@@ -205,10 +205,11 @@ def workspace_to_identifier(workspace: Path) -> str:
         except ValueError:
             # Not relative to home, use absolute
             identifier = str(workspace.resolve()).replace("/", "_").replace("\\", "_").lstrip("_")
-    except Exception:
+    except Exception as e:
         # Fallback: use absolute path
         identifier = str(workspace.resolve()).replace("/", "_").replace("\\", "_").lstrip("_")
     
+        logger.error(f"Error: {e}")
     # Make URL/database safe: replace spaces and special chars
     identifier = identifier.replace(" ", "_")
     identifier = identifier.replace("-", "_")

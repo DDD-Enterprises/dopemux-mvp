@@ -12,6 +12,7 @@ Features:
 """
 
 import os
+import subprocess
 import json
 import re
 from pathlib import Path
@@ -70,9 +71,10 @@ class SessionManager:
             return True
         except ImportError:
             return False
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     def _store_session_in_conport(self, session_data: Dict[str, Any]) -> bool:
         """
         Store session data in ConPort.
@@ -95,7 +97,7 @@ class SessionManager:
             )
             return result.get('success', False)
         except Exception as e:
-            self.console.print(f"[yellow]Warning: Failed to store session in ConPort: {e}[/yellow]")
+            self.console.logger.error(f"[yellow]Warning: Failed to store session in ConPort: {e}[/yellow]")
             return False
 
     def _retrieve_sessions_from_conport(self) -> List[Dict[str, Any]]:
@@ -114,7 +116,7 @@ class SessionManager:
                 return list(result.get('data', {}).values())
             return []
         except Exception as e:
-            self.console.print(f"[yellow]Warning: Failed to retrieve sessions from ConPort: {e}[/yellow]")
+            self.console.logger.error(f"[yellow]Warning: Failed to retrieve sessions from ConPort: {e}[/yellow]")
             return []
 
     def find_sessions(self, keywords: Optional[str] = None,
@@ -312,8 +314,8 @@ class SessionManager:
             sessions: List of session dictionaries
         """
         if not sessions:
-            self.console.print("No sessions found matching your criteria.")
-            self.console.print("Use '/save' to create your first session!")
+            self.console.logger.info("No sessions found matching your criteria.")
+            self.console.logger.info("Use '/save' to create your first session!")
             return
 
         # Group sessions by time
@@ -321,7 +323,7 @@ class SessionManager:
 
         # Display grouped sessions
         for group_name, group_sessions in grouped.items():
-            self.console.print(f"[bold cyan]Recent Sessions - {group_name}[/bold cyan]")
+            self.console.logger.info(f"[bold cyan]Recent Sessions - {group_name}[/bold cyan]")
 
             table = Table(box=box.ROUNDED)
             table.add_column("Agent", style="cyan", no_wrap=True)
@@ -344,8 +346,8 @@ class SessionManager:
                     session['message'][:50] + "..." if len(session['message']) > 50 else session['message']
                 )
 
-            self.console.print(table)
-            self.console.print()
+            self.console.logger.info(table)
+            self.console.logger.info()
 
     def _group_sessions_by_time(self, sessions: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
         """
@@ -426,12 +428,12 @@ class SessionManager:
             elif session['agent'] == 'codex':
                 return self._resume_codex_session(session)
             else:
-                self.console.print(f"[red]Unsupported agent: {session['agent']}[/red]")
+                self.console.logger.info(f"[red]Unsupported agent: {session['agent']}[/red]")
                 return False
 
         except Exception as e:
             logger.error(f"Error resuming session {session['id']}: {e}")
-            self.console.print(f"[red]Failed to resume session: {e}[/red]")
+            self.console.logger.error(f"[red]Failed to resume session: {e}[/red]")
             return False
 
     def _resume_dopemux_session(self, session: Dict[str, Any]) -> bool:
@@ -447,7 +449,7 @@ class SessionManager:
         try:
             # Use context manager to restore
             self.context_manager.restore_session(session['id'])
-            self.console.print(f"[green]Resumed Dopemux session: {session['id']}[/green]")
+            self.console.logger.info(f"[green]Resumed Dopemux session: {session['id']}[/green]")
             return True
         except Exception as e:
             logger.error(f"Failed to resume Dopemux session: {e}")
@@ -477,7 +479,7 @@ class SessionManager:
                 "--no-recovery"
             ])
 
-            self.console.print(f"[green]Resumed Claude session: {session['id']}[/green]")
+            self.console.logger.info(f"[green]Resumed Claude session: {session['id']}[/green]")
             return True
         except Exception as e:
             logger.error(f"Failed to resume Claude session: {e}")
@@ -506,7 +508,7 @@ class SessionManager:
                 "resume", session['id']
             ])
 
-            self.console.print(f"[green]Resumed Codex session: {session['id']}[/green]")
+            self.console.logger.info(f"[green]Resumed Codex session: {session['id']}[/green]")
             return True
         except Exception as e:
             logger.error(f"Failed to resume Codex session: {e}")

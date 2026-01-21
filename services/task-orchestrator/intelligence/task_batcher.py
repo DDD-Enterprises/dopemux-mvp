@@ -626,7 +626,7 @@ def create_task_batches(
             mode="similarity_first"
         )
         for batch in batches:
-            print(f"Batch {batch.batch_id}: {len(batch.tasks)} tasks, "
+            logger.info(f"Batch {batch.batch_id}: {len(batch.tasks)} tasks, "
                   f"cohesion: {batch.cohesion_score:.2f}")
     """
     batcher = TaskBatcher()

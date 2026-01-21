@@ -19,6 +19,11 @@ Note: This is a setup/bootstrap script. Use autonomous-indexing-daemon.py for pe
 """
 
 import argparse
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncio
 import os
 import sys
@@ -43,8 +48,8 @@ async def enable_autonomous_indexing_for_workspace(workspace_path: Path) -> None
     """Enable autonomous indexing for a specific workspace."""
     workspace_path = workspace_path.resolve()
 
-    print("=" * 70)
-    print(f"📂 Workspace: {workspace_path}")
+    logger.info("=" * 70)
+    logger.info(f"📂 Workspace: {workspace_path}")
 
     code_config = AutonomousConfig(
         enabled=True,
@@ -67,17 +72,17 @@ async def enable_autonomous_indexing_for_workspace(workspace_path: Path) -> None
     code_collection = f"dopemux_code_{workspace_hash}"
     docs_collection = f"dopemux_docs_{workspace_hash}"
 
-    print(f"📊 Collections:")
-    print(f"   Code: {code_collection}")
-    print(f"   Docs: {docs_collection}")
-    print()
+    logger.info(f"📊 Collections:")
+    logger.info(f"   Code: {code_collection}")
+    logger.info(f"   Docs: {docs_collection}")
+    logger.info()
 
     try:
         # ========================================
         # CODE AUTONOMOUS INDEXING
         # ========================================
 
-        print("🔧 Step 1/2: Enabling autonomous CODE indexing...")
+        logger.info("🔧 Step 1/2: Enabling autonomous CODE indexing...")
 
         code_vector_search = MultiVectorSearch(
             collection_name=code_collection,
@@ -115,11 +120,11 @@ async def enable_autonomous_indexing_for_workspace(workspace_path: Path) -> None
 
         async def code_index_callback(file_path: Path, changed_files=None):
             try:
-                print(f"📝 Reindexing: {file_path}")
+                logger.info(f"📝 Reindexing: {file_path}")
                 await code_pipeline.index_file(file_path)
                 return True
             except Exception as exc:  # pragma: no cover - best effort logging
-                print(f"❌ Reindex failed: {exc}")
+                logger.error(f"❌ Reindex failed: {exc}")
                 return False
 
         code_controller = AutonomousController(
@@ -129,18 +134,18 @@ async def enable_autonomous_indexing_for_workspace(workspace_path: Path) -> None
         )
         await code_controller.start()
 
-        print("✅ Autonomous CODE indexing enabled!")
-        print(f"   Monitoring: {workspace_path}")
-        print(f"   Patterns: {code_config.include_patterns}")
-        print(f"   Debounce: {code_config.debounce_seconds}s")
-        print(f"   Periodic sync: {code_config.periodic_interval}s")
-        print()
+        logger.info("✅ Autonomous CODE indexing enabled!")
+        logger.info(f"   Monitoring: {workspace_path}")
+        logger.info(f"   Patterns: {code_config.include_patterns}")
+        logger.info(f"   Debounce: {code_config.debounce_seconds}s")
+        logger.info(f"   Periodic sync: {code_config.periodic_interval}s")
+        logger.info()
 
         # ========================================
         # DOCS AUTONOMOUS INDEXING
         # ========================================
 
-        print("🔧 Step 2/2: Enabling autonomous DOCS indexing...")
+        logger.info("🔧 Step 2/2: Enabling autonomous DOCS indexing...")
 
         docs_vector_search = DocsVectorSearch(
             collection_name=docs_collection,
@@ -157,11 +162,11 @@ async def enable_autonomous_indexing_for_workspace(workspace_path: Path) -> None
 
         async def docs_index_callback(file_path: Path, changed_files=None):
             try:
-                print(f"📄 Reindexing doc: {file_path}")
+                logger.info(f"📄 Reindexing doc: {file_path}")
                 await docs_chunker.chunk_and_index(file_path, docs_vector_search, docs_embedder)
                 return True
             except Exception as exc:  # pragma: no cover - best effort logging
-                print(f"❌ Doc reindex failed: {exc}")
+                logger.error(f"❌ Doc reindex failed: {exc}")
                 return False
 
         docs_controller = AutonomousController(
@@ -172,21 +177,21 @@ async def enable_autonomous_indexing_for_workspace(workspace_path: Path) -> None
         )
         await docs_controller.start()
 
-        print("✅ Autonomous DOCS indexing enabled!")
-        print(f"   Monitoring: {workspace_path}")
-        print(f"   Patterns: {docs_config.include_patterns}")
-        print(f"   Debounce: {docs_config.debounce_seconds}s")
-        print(f"   Periodic sync: {docs_config.periodic_interval}s")
-        print()
+        logger.info("✅ Autonomous DOCS indexing enabled!")
+        logger.info(f"   Monitoring: {workspace_path}")
+        logger.info(f"   Patterns: {docs_config.include_patterns}")
+        logger.info(f"   Debounce: {docs_config.debounce_seconds}s")
+        logger.info(f"   Periodic sync: {docs_config.periodic_interval}s")
+        logger.info()
 
-        print("🎉 AUTONOMOUS INDEXING ENABLED!")
-        print("   • Files auto-reindex 5s after save")
-        print("   • Periodic sync every 10 minutes")
-        print("   • Zero mental overhead - search always current")
-        print()
+        logger.info("🎉 AUTONOMOUS INDEXING ENABLED!")
+        logger.info("   • Files auto-reindex 5s after save")
+        logger.info("   • Periodic sync every 10 minutes")
+        logger.info("   • Zero mental overhead - search always current")
+        logger.info()
 
     except Exception as exc:  # pragma: no cover - best effort logging
-        print(f"❌ Failed to enable autonomous indexing: {exc}")
+        logger.error(f"❌ Failed to enable autonomous indexing: {exc}")
 
 
 def _parse_workspace_args() -> List[Path]:

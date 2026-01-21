@@ -459,7 +459,7 @@ class MetaMCPServer:
                     response = await self.handle_mcp_request(request)
 
                     # Write response to stdout
-                    print(json.dumps(response))
+                    logger.info(json.dumps(response))
                     sys.stdout.flush()
 
                 except json.JSONDecodeError as e:
@@ -472,7 +472,7 @@ class MetaMCPServer:
                             "message": "Parse error"
                         }
                     }
-                    print(json.dumps(error_response))
+                    logger.error(json.dumps(error_response))
                     sys.stdout.flush()
 
         except KeyboardInterrupt:

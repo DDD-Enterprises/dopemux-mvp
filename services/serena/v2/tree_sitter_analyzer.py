@@ -456,9 +456,10 @@ class TreeSitterAnalyzer:
             node_text = content[node.start_byte:node.end_byte]
             return node_text.split('\n')[0][:50].strip()
 
-        except Exception:
+        except Exception as e:
             return None
 
+            logger.error(f"Error: {e}")
     def _calculate_node_complexity(self, node: Node, element_type: str, depth: int) -> float:
         """Calculate complexity score for a structural element."""
         base_complexity = 0.1

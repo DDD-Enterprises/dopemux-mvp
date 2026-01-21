@@ -387,7 +387,16 @@ class DopeBrainzRouterManager:
         )
 
 
+# Backward compatibility aliases
+ClaudeCodeRouterError = DopeBrainzRouterError
+ClaudeCodeRouterInfo = DopeBrainzRouterInfo
+ClaudeCodeRouterManager = DopeBrainzRouterManager
+
+
 __all__ = [
+    "DopeBrainzRouterError",
+    "DopeBrainzRouterInfo",
+    "DopeBrainzRouterManager",
     "ClaudeCodeRouterError",
     "ClaudeCodeRouterInfo",
     "ClaudeCodeRouterManager",

@@ -12,6 +12,11 @@ Phase 4 Refactor: Uses AGEClient with connection pooling (Decision #117)
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 import subprocess
 from typing import List, Union
@@ -29,7 +34,14 @@ except ImportError:
     sys.path.insert(0, '/Users/hue/code/dopemux-mvp/services/conport_kg')
     from age_client import AGEClient
     # Import models inline for testing
-    exec(open('/Users/hue/code/dopemux-mvp/services/conport_kg/queries/models.py').read())
+    # Safe fallback import instead of exec
+    import importlib.util
+    _models_path = '/Users/hue/code/dopemux-mvp/services/conport_kg/queries/models.py'
+    spec = importlib.util.spec_from_file_location('queries.models_fallback', _models_path)
+    models_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(models_mod)
+    DecisionCard = models_mod.DecisionCard
+    DecisionSummary = models_mod.DecisionSummary
 
 
 # Feature flag for rollback safety
@@ -91,14 +103,14 @@ class OverviewQueries:
         if self.use_direct:
             try:
                 self.client = AGEClient()
-                print(f"✅ OverviewQueries using AGEClient (direct connection)")
+                logger.info(f"✅ OverviewQueries using AGEClient (direct connection)")
             except Exception as e:
-                print(f"⚠️  AGEClient failed, falling back to docker exec: {e}")
+                logger.error(f"⚠️  AGEClient failed, falling back to docker exec: {e}")
                 self.client = None
                 self.use_direct = False
         else:
             self.client = None
-            print(f"ℹ️  OverviewQueries using docker exec (feature flag disabled)")
+            logger.info(f"ℹ️  OverviewQueries using docker exec (feature flag disabled)")
 
     def _execute_cypher_direct(self, cypher: str) -> List[dict]:
         """Execute via AGEClient (fast path)"""
@@ -318,37 +330,37 @@ class OverviewQueries:
 
 if __name__ == "__main__":
     # Test Tier 1 queries with AGEClient
-    print("=" * 60)
-    print("Tier 1: Overview Queries (ADHD Top-3 Pattern)")
-    print("Using: AGEClient with connection pooling" if USE_DIRECT_CONNECTION else "Using: Docker exec fallback")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("Tier 1: Overview Queries (ADHD Top-3 Pattern)")
+    logger.info("Using: AGEClient with connection pooling" if USE_DIRECT_CONNECTION else "Using: Docker exec fallback")
+    logger.info("=" * 60)
 
     queries = OverviewQueries()
 
-    print("\n[1] Recent Decisions (Top 3):")
+    logger.info("\n[1] Recent Decisions (Top 3):")
     recent = queries.get_recent_decisions(3)
     for i, d in enumerate(recent, 1):
-        print(f"  {i}. #{d.id}: {d.summary[:60]}...")
-        print(f"     Type: {type(d).__name__}")
+        logger.info(f"  {i}. #{d.id}: {d.summary[:60]}...")
+        logger.info(f"     Type: {type(d).__name__}")
 
-    print("\n[2] Root Decisions (Foundational):")
+    logger.info("\n[2] Root Decisions (Foundational):")
     roots = queries.get_root_decisions(3)
     for i, d in enumerate(roots, 1):
-        print(f"  {i}. #{d.id}: {d.summary[:60]}...")
-        print(f"     Type: {type(d).__name__}")
+        logger.info(f"  {i}. #{d.id}: {d.summary[:60]}...")
+        logger.info(f"     Type: {type(d).__name__}")
 
-    print("\n[3] Decision Summary (with context count):")
+    logger.info("\n[3] Decision Summary (with context count):")
     summary = queries.get_decision_summary(85)
-    print(f"  ID: {summary.id}")
-    print(f"  Summary: {summary.summary[:60]}...")
-    print(f"  Related decisions: {summary.related_count}")
-    print(f"  Cognitive load: {summary.get_cognitive_load()}")
-    print(f"  Type: {type(summary).__name__}")
+    logger.info(f"  ID: {summary.id}")
+    logger.info(f"  Summary: {summary.summary[:60]}...")
+    logger.info(f"  Related decisions: {summary.related_count}")
+    logger.info(f"  Cognitive load: {summary.get_cognitive_load()}")
+    logger.info(f"  Type: {type(summary).__name__}")
 
-    print("\n[4] Search by tag:")
+    logger.info("\n[4] Search by tag:")
     tag_results = queries.search_by_tag("adhd-optimization", 3)
-    print(f"  Found {len(tag_results)} decisions with tag 'adhd-optimization'")
+    logger.info(f"  Found {len(tag_results)} decisions with tag 'adhd-optimization'")
     for i, d in enumerate(tag_results, 1):
-        print(f"  {i}. #{d.id}: {d.summary[:60]}...")
+        logger.info(f"  {i}. #{d.id}: {d.summary[:60]}...")
 
-    print(f"\n✅ All queries returning typed models ({type(recent[0]).__name__ if recent else 'N/A'})")
+    logger.info(f"\n✅ All queries returning typed models ({type(recent[0]).__name__ if recent else 'N/A'})")

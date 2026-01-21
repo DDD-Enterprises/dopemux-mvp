@@ -585,7 +585,7 @@ class MonitoringDashboard:
                             "response_time": response_time,
                             "details": data
                         }
-                    except:
+                    except Exception as e:
                         # Non-JSON response but 200 status
                         return {
                             "status": HealthLevel.HEALTHY,
@@ -593,6 +593,7 @@ class MonitoringDashboard:
                             "response_time": response_time,
                             "details": {"response": "non-json"}
                         }
+                        logger.error(f"Error: {e}")
                 elif response.status == 302 and auth_required:
                     # Redirect to login is expected for auth-required services
                     return {
@@ -633,6 +634,7 @@ class MonitoringDashboard:
                 "details": {"error": str(e)}
             }
 
+            logger.error(f"Error: {e}")
     async def _check_http_health_direct(self, service_config: Dict[str, Any], start_time: datetime) -> Dict[str, Any]:
         """Direct HTTP health check without circuit breaker protection (fallback method)."""
         url = service_config["url"]
@@ -655,7 +657,7 @@ class MonitoringDashboard:
                             "response_time": response_time,
                             "details": data
                         }
-                    except:
+                    except Exception as e:
                         # Non-JSON response but 200 status
                         return {
                             "status": HealthLevel.HEALTHY,
@@ -663,6 +665,7 @@ class MonitoringDashboard:
                             "response_time": response_time,
                             "details": {"response": "non-json"}
                         }
+                        logger.error(f"Error: {e}")
                 elif response.status == 302 and auth_required:
                     # Redirect to login is expected for auth-required services
                     return {
@@ -703,6 +706,7 @@ class MonitoringDashboard:
                 "details": {"error": str(e)}
             }
 
+            logger.error(f"Error: {e}")
     async def _check_fallback_health(self, service_config: Dict[str, Any], start_time: datetime) -> Dict[str, Any]:
         """Check health using fallback methods when HTTP fails."""
         fallback_check = service_config.get("fallback_check")
@@ -740,6 +744,7 @@ class MonitoringDashboard:
                     "details": {"check_type": "process_check", "error": str(e)}
                 }
 
+                logger.error(f"Error: {e}")
         elif fallback_check == "docker_check":
             # Check if Docker container is running (for Leantime)
             try:
@@ -772,6 +777,7 @@ class MonitoringDashboard:
                     "details": {"check_type": "docker_check", "error": str(e)}
                 }
 
+                logger.error(f"Error: {e}")
         elif fallback_check == "mcp_ping":
             # Basic MCP connectivity check (simplified)
             try:
@@ -808,6 +814,7 @@ class MonitoringDashboard:
                     "details": {"check_type": "mcp_ping", "error": str(e)}
                 }
 
+                logger.error(f"Error: {e}")
         # No fallback available or fallback failed
         return {
             "status": HealthLevel.UNKNOWN,

@@ -93,9 +93,10 @@ class DocumentProcessor:
                     return DocumentType.TEXT
                 elif "officedocument" in mime_type and "wordprocessing" in mime_type:
                     return DocumentType.DOCX
-            except Exception:
+            except Exception as e:
                 pass
 
+                logger.error(f"Error: {e}")
         return DocumentType.UNKNOWN
 
     def extract_text(
@@ -121,6 +122,7 @@ class DocumentProcessor:
         except Exception as e:
             raise ValueError(f"Failed to extract text from {file_path}: {str(e)}")
 
+            logger.error(f"Error: {e}")
     def _extract_pdf_text(self, file_path: str) -> str:
         """Extract text from PDF file."""
         with open(file_path, "rb") as file:

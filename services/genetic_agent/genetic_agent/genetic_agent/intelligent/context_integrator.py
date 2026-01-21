@@ -120,6 +120,7 @@ class ContextIntegrator:
                 source_type="static"
             ))
 
+            logger.error(f"Error: {e}")
         return sources
 
     async def _gather_dynamic_context(self, issue_context: Dict[str, Any]) -> List[ContextSource]:
@@ -180,6 +181,7 @@ class ContextIntegrator:
                 source_type="semantic"
             ))
 
+            logger.error(f"Error: {e}")
         return sources
 
     def _score_sources(self, sources: List[ContextSource], issue_context: Dict[str, Any]) -> List[ContextSource]:

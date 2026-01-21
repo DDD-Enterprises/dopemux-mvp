@@ -937,8 +937,8 @@ async def validate_30_percent_target(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("📊 Serena Performance Validation System")
-        print("30% navigation time reduction validation with statistical confidence")
-        print("✅ Module loaded successfully")
+        logger.info("📊 Serena Performance Validation System")
+        logger.info("30% navigation time reduction validation with statistical confidence")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

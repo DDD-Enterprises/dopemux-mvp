@@ -13,6 +13,11 @@ Decision #118 (automation architecture)
 """
 
 from dataclasses import dataclass
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import Optional, Dict, Any
 from datetime import datetime, timedelta
 
@@ -240,9 +245,9 @@ class ADHDQuerySelector:
 
 # Standalone test
 if __name__ == "__main__":
-    print("=" * 70)
-    print("ADHD Query Selector Test")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("ADHD Query Selector Test")
+    logger.info("=" * 70)
 
     selector = ADHDQuerySelector()
 
@@ -255,14 +260,14 @@ if __name__ == "__main__":
         ("focused", "browse", 2, "User override → Tier 2 (override wins)"),
     ]
 
-    print("\n[Test 1] Tier Selection Logic:")
+    logger.info("\n[Test 1] Tier Selection Logic:")
     for attention, intent, override, description in scenarios:
         tier = selector.select_tier(attention, intent, override)
-        print(f"   {description}")
-        print(f"      → Selected Tier {tier}\n")
+        logger.info(f"   {description}")
+        logger.info(f"      → Selected Tier {tier}\n")
 
     # Test interrupt prevention
-    print("\n[Test 2] Interrupt Prevention:")
+    logger.info("\n[Test 2] Interrupt Prevention:")
 
     suggestions = [
         QuerySuggestion(85, "Related decision", priority="normal"),
@@ -276,13 +281,13 @@ if __name__ == "__main__":
     ]
 
     for i, state in enumerate(user_states, 1):
-        print(f"\n   User State {i}: flow={state['in_flow']}, load={state['cognitive_load']}, idle={state['idle']}")
+        logger.info(f"\n   User State {i}: flow={state['in_flow']}, load={state['cognitive_load']}, idle={state['idle']}")
         for sug in suggestions:
             should_show = selector.should_display_suggestion(sug, state)
-            print(f"      {sug.priority:10s} suggestion: {'✅ Display' if should_show else '❌ Queue'}")
+            logger.info(f"      {sug.priority:10s} suggestion: {'✅ Display' if should_show else '❌ Queue'}")
 
     # Test adaptive defaults
-    print("\n[Test 3] Adaptive Progressive Disclosure:")
+    logger.info("\n[Test 3] Adaptive Progressive Disclosure:")
     histories = [
         ({'expanded_to_2hop': 85, 'stayed_1hop': 15}, "User expands 85% of time"),
         ({'expanded_to_2hop': 30, 'stayed_1hop': 70}, "User stays at 1-hop 70% of time"),
@@ -290,7 +295,7 @@ if __name__ == "__main__":
 
     for history, description in histories:
         default_hops = selector.adapt_progressive_disclosure_default(history, 85)
-        print(f"   {description}")
-        print(f"      → Default to {default_hops}-hop\n")
+        logger.info(f"   {description}")
+        logger.info(f"      → Default to {default_hops}-hop\n")
 
-    print("✅ All ADHD Query Selector tests passed!")
+    logger.info("✅ All ADHD Query Selector tests passed!")

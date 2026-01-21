@@ -7,6 +7,11 @@ that address the issues found in the multi-instance Docker removal analysis.
 """
 
 import click
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from pathlib import Path
 from rich.console import Console
 
@@ -66,9 +71,9 @@ def register_enhanced_worktree_commands(cli_group):
             dopemux worktree create fix/bug-123 --base develop
         """
         if create_worktree_safe(branch_name, base):
-            console.print(f"[green]✅ Successfully created worktree for '{branch_name}'[/green]")
+            console.logger.info(f"[green]✅ Successfully created worktree for '{branch_name}'[/green]")
         else:
-            console.print(f"[red]❌ Failed to create worktree[/red]")
+            console.logger.error(f"[red]❌ Failed to create worktree[/red]")
             ctx.exit(1)
 
     @worktree.command("list")
@@ -105,7 +110,7 @@ def register_enhanced_worktree_commands(cli_group):
             dopemux worktree switch feature/auth
         """
         if not switch_worktree_safe(branch_name):
-            console.print(f"[red]❌ Failed to switch to worktree[/red]")
+            console.logger.error(f"[red]❌ Failed to switch to worktree[/red]")
             ctx.exit(1)
 
     @worktree.command("cleanup")
@@ -128,7 +133,7 @@ def register_enhanced_worktree_commands(cli_group):
         """
         cleaned = cleanup_worktrees_safe(dry_run)
         if cleaned > 0 and not dry_run:
-            console.print(f"[green]✅ Cleanup complete[/green]")
+            console.logger.info(f"[green]✅ Cleanup complete[/green]")
 
     @worktree.command("archive")
     @click.argument("branch_name")
@@ -144,9 +149,9 @@ def register_enhanced_worktree_commands(cli_group):
             dopemux worktree archive feature/completed-feature
         """
         if archive_worktree_safe(branch_name):
-            console.print(f"[green]✅ Successfully archived worktree[/green]")
+            console.logger.info(f"[green]✅ Successfully archived worktree[/green]")
         else:
-            console.print(f"[red]❌ Failed to archive worktree[/red]")
+            console.logger.error(f"[red]❌ Failed to archive worktree[/red]")
             ctx.exit(1)
 
     @worktree.command("check")
@@ -166,13 +171,13 @@ def register_enhanced_worktree_commands(cli_group):
         is_available, existing_path = manager.check_branch_availability(branch_name)
 
         if is_available:
-            console.print(f"[green]✅ Branch '{branch_name}' is available for worktree creation[/green]")
+            console.logger.info(f"[green]✅ Branch '{branch_name}' is available for worktree creation[/green]")
         else:
             console.print(
                 f"[yellow]⚠️  Branch '{branch_name}' is already checked out at:[/yellow]\n"
                 f"    {existing_path}"
             )
-            console.print("\n[dim]Tip: Use 'dopemux worktree switch' to go to that worktree[/dim]")
+            console.logger.info("\n[dim]Tip: Use 'dopemux worktree switch' to go to that worktree[/dim]")
             ctx.exit(1)
 
     return worktree
@@ -239,7 +244,7 @@ def install_worktree_hooks(workspace_path: Path = None):
     hooks_dir = workspace_path / ".git" / "hooks"
 
     if not hooks_dir.exists():
-        console.print(f"[red]❌ Not a git repository: {workspace_path}[/red]")
+        console.logger.info(f"[red]❌ Not a git repository: {workspace_path}[/red]")
         return False
 
     try:
@@ -247,16 +252,16 @@ def install_worktree_hooks(workspace_path: Path = None):
         pre_checkout_path = hooks_dir / "pre-checkout"
         pre_checkout_path.write_text(PRE_CHECKOUT_HOOK)
         pre_checkout_path.chmod(0o755)
-        console.print(f"[green]✅ Installed pre-checkout hook[/green]")
+        console.logger.info(f"[green]✅ Installed pre-checkout hook[/green]")
 
         # Install pre-commit hook
         pre_commit_path = hooks_dir / "pre-commit"
         if not pre_commit_path.exists():
             pre_commit_path.write_text(PRE_COMMIT_HOOK)
             pre_commit_path.chmod(0o755)
-            console.print(f"[green]✅ Installed pre-commit hook[/green]")
+            console.logger.info(f"[green]✅ Installed pre-commit hook[/green]")
         else:
-            console.print(f"[yellow]⚠️  Pre-commit hook already exists, skipping[/yellow]")
+            console.logger.info(f"[yellow]⚠️  Pre-commit hook already exists, skipping[/yellow]")
 
         console.print(
             "\n[cyan]🛡️  Worktree protection hooks installed:[/cyan]\n"
@@ -266,5 +271,5 @@ def install_worktree_hooks(workspace_path: Path = None):
         return True
 
     except Exception as e:
-        console.print(f"[red]❌ Failed to install hooks: {e}[/red]")
+        console.logger.error(f"[red]❌ Failed to install hooks: {e}[/red]")
         return False

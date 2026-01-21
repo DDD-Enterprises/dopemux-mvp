@@ -35,6 +35,11 @@ Usage:
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import time
 from typing import Optional, Dict, Any
 from prometheus_client import (
@@ -228,6 +233,7 @@ class DopemuxMonitoring:
             except ValueError as e:
                 monitoring.record_error("validation_error", "/api/endpoint")
                 raise
+                logger.error(f"Error: {e}")
         """
         self.errors_total.labels(
             error_type=error_type,
@@ -285,7 +291,7 @@ class DopemuxMonitoring:
         Example:
             # For debugging or manual export
             metrics_text = monitoring.get_metrics()
-            print(metrics_text)
+            logger.info(metrics_text)
         """
         return generate_latest(self.registry).decode('utf-8')
     
@@ -330,6 +336,7 @@ class DopemuxMonitoring:
                 self.record_error(type(e).__name__, endpoint)
                 raise
                 
+                logger.error(f"Error: {e}")
             finally:
                 # Always decrement in-progress
                 self.decrement_in_progress()

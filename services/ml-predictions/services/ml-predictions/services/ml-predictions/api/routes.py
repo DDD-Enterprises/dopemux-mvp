@@ -166,6 +166,7 @@ async def health_check() -> HealthResponse:
     except Exception as e:
         cache_status = f"error: {str(e)}"
 
+        logger.error(f"Error: {e}")
     return HealthResponse(
         status="healthy" if _predictor is not None else "degraded",
         timestamp=datetime.utcnow(),

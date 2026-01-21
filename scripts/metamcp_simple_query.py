@@ -7,6 +7,11 @@ like tmux status bars, without the full MCP protocol overhead.
 """
 
 import json
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 import time
 from datetime import datetime
@@ -107,8 +112,8 @@ class MetaMCPQuery:
 def main():
     """Main CLI interface."""
     if len(sys.argv) < 2:
-        print("Usage: metamcp_simple_query.py <command>")
-        print("Commands: get_status, get_role_info, get_health")
+        logger.info("Usage: metamcp_simple_query.py <command>")
+        logger.info("Commands: get_status, get_role_info, get_health")
         sys.exit(1)
 
     query = MetaMCPQuery()
@@ -122,17 +127,17 @@ def main():
         elif command == 'get_health':
             result = query.get_health()
         else:
-            print(f"Unknown command: {command}")
+            logger.info(f"Unknown command: {command}")
             sys.exit(1)
 
-        print(json.dumps(result, indent=2))
+        logger.info(json.dumps(result, indent=2))
 
     except Exception as e:
         error_response = {
             'error': str(e),
             'timestamp': datetime.now().isoformat()
         }
-        print(json.dumps(error_response))
+        logger.error(json.dumps(error_response))
         sys.exit(1)
 
 

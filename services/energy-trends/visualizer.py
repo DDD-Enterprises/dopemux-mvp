@@ -150,6 +150,6 @@ if __name__ == "__main__":
     async def main():
         viz = EnergyTrendVisualizer()
         report = await viz.generate_daily_trend()
-        print(report)
+        logger.info(report)
 
     asyncio.run(main())

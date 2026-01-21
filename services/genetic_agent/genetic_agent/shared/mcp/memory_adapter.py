@@ -12,6 +12,11 @@ class MemoryAdapter:
     """Adapter for logging genetic agent attempts and learning to ConPort."""
 
     def __init__(self, conport_client: ConPortClient, workspace_id: str):
+
+import logging
+
+logger = logging.getLogger(__name__)
+
         self.conport_client = conport_client
         self.workspace_id = workspace_id
         self.session_start_time = datetime.now()
@@ -36,9 +41,9 @@ class MemoryAdapter:
                     workspace_id=self.workspace_id,
                     **progress_data
                 )
-                print(f"Logged GP attempt {attempt_number} to ConPort: {result.get('id', 'unknown')}")
+                logger.info(f"Logged GP attempt {attempt_number} to ConPort: {result.get('id', 'unknown')}")
         except Exception as e:
-            print(f"Failed to log GP attempt to ConPort: {e}")
+            logger.error(f"Failed to log GP attempt to ConPort: {e}")
 
         # Log operator success patterns for learning
         if success:
@@ -69,9 +74,9 @@ class MemoryAdapter:
                     workspace_id=self.workspace_id,
                     **failure_data
                 )
-                print(f"Logged failure signals to ConPort: {result.get('key', 'unknown')}")
+                logger.error(f"Logged failure signals to ConPort: {result.get('key', 'unknown')}")
         except Exception as e:
-            print(f"Failed to log failure signals to ConPort: {e}")
+            logger.error(f"Failed to log failure signals to ConPort: {e}")
 
     async def _log_operator_success(self, operator: str, fitness_score: float,
                                    context: Dict[str, Any]) -> None:
@@ -95,9 +100,9 @@ class MemoryAdapter:
                     workspace_id=self.workspace_id,
                     **success_data
                 )
-                print(f"Logged operator success to ConPort: {result.get('key', 'unknown')}")
+                logger.info(f"Logged operator success to ConPort: {result.get('key', 'unknown')}")
         except Exception as e:
-            print(f"Failed to log operator success to ConPort: {e}")
+            logger.error(f"Failed to log operator success to ConPort: {e}")
 
     async def get_operator_history(self, operator: str, days_back: int = 30) -> List[Dict[str, Any]]:
         """Retrieve historical performance of a specific operator."""
@@ -115,7 +120,7 @@ class MemoryAdapter:
                 # Filter by time if needed
                 return [item["value"] for item in results.get("results", [])]
         except Exception as e:
-            print(f"Failed to retrieve operator history: {e}")
+            logger.error(f"Failed to retrieve operator history: {e}")
             return []
 
     async def get_operator_success_patterns(self, limit: int = 10) -> Dict[str, Dict[str, Any]]:
@@ -166,7 +171,7 @@ class MemoryAdapter:
                 return {op["operator"]: op for op in sorted_ops[:limit]}
 
         except Exception as e:
-            print(f"Failed to retrieve operator success patterns: {e}")
+            logger.error(f"Failed to retrieve operator success patterns: {e}")
             return {}
 
     async def recommend_operator(self, context_complexity: float, recent_failures: List[str] = None) -> str:
@@ -199,7 +204,7 @@ class MemoryAdapter:
             return best_op[0]
 
         except Exception as e:
-            print(f"Failed to recommend operator: {e}")
+            logger.error(f"Failed to recommend operator: {e}")
             return "ast_safe_mutation"
 
     async def get_failure_patterns(self, limit: int = 20) -> List[Dict[str, Any]]:
@@ -221,7 +226,7 @@ class MemoryAdapter:
                 )
                 return sorted_patterns[:limit]
         except Exception as e:
-            print(f"Failed to retrieve failure patterns: {e}")
+            logger.error(f"Failed to retrieve failure patterns: {e}")
             return []
 
     async def log_session_summary(self, total_attempts: int, successful_repairs: int,
@@ -250,6 +255,6 @@ class MemoryAdapter:
                     workspace_id=self.workspace_id,
                     **summary_data
                 )
-                print(f"Logged session summary to ConPort: {result.get('key', 'unknown')}")
+                logger.info(f"Logged session summary to ConPort: {result.get('key', 'unknown')}")
         except Exception as e:
-            print(f"Failed to log session summary to ConPort: {e}")
+            logger.error(f"Failed to log session summary to ConPort: {e}")

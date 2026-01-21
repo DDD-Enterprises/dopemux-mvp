@@ -6,6 +6,11 @@ Provides user-facing commands for managing configuration profiles.
 """
 
 import click
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
@@ -25,10 +30,11 @@ def detect_workspace() -> Path:
             capture_output=True, text=True, check=True
         )
         return Path(result.stdout.strip())
-    except:
+    except Exception as e:
         return Path.cwd()
 
 
+        logger.error(f"Error: {e}")
 @click.command("list")
 def list_profiles():
     """📋 List all available profiles"""
@@ -36,7 +42,7 @@ def list_profiles():
     profiles = manager.list_profiles()
 
     if not profiles:
-        console.print("\n[yellow]No profiles found[/yellow]")
+        console.logger.info("\n[yellow]No profiles found[/yellow]")
         return
 
     table = Table(title=f"\n📋 Profiles ({len(profiles)})", show_header=True, box=box.ROUNDED)
@@ -50,7 +56,7 @@ def list_profiles():
         name = f"[bold]{p.name} ✅[/bold]" if p.name == active else p.name
         table.add_row(name, p.description[:60])
 
-    console.print(table)
+    console.logger.info(table)
 
 
 @click.command("use")
@@ -62,11 +68,11 @@ def use_profile(profile_name: str):
     
     profile = manager.get_profile(profile_name)
     if not profile:
-        console.print(f"\n[red]❌ Profile not found: {profile_name}[/red]")
+        console.logger.info(f"\n[red]❌ Profile not found: {profile_name}[/red]")
         return
 
     manager.set_active_profile(workspace, profile_name)
-    console.print(f"\n✅ Active profile: [cyan]{profile_name}[/cyan]")
+    console.logger.info(f"\n✅ Active profile: [cyan]{profile_name}[/cyan]")
 
 
 @click.command("show")
@@ -78,7 +84,7 @@ def show_profile(verbose: bool):
     active_name = manager.get_active_profile(workspace)
 
     if not active_name:
-        console.print(f"\n[yellow]No active profile[/yellow]")
+        console.logger.info(f"\n[yellow]No active profile[/yellow]")
         return
 
     profile = manager.get_profile(active_name)
@@ -92,12 +98,12 @@ def show_profile(verbose: bool):
         f"  Required: {', '.join(profile.mcp_servers.get('required', []))}",
     ]
 
-    console.print(Panel("\n".join(content), border_style="cyan"))
+    console.logger.info(Panel("\n".join(content), border_style="cyan"))
 
     if verbose:
         merged = manager.load_merged_config(workspace, active_name)
         import yaml
-        console.print(f"\n[dim]{yaml.dump(merged, default_flow_style=False)}[/dim]")
+        console.logger.info(f"\n[dim]{yaml.dump(merged, default_flow_style=False)}[/dim]")
 
 
 @click.command("create")
@@ -111,7 +117,7 @@ def create_profile(name: str, description: str, based_on: str):
     try:
         desc = description or f"Custom: {name}"
         profile = manager.create_profile(name, desc, based_on)
-        console.print(f"\n✅ Profile created: [cyan]{name}[/cyan]")
-        console.print(f"[dim]Edit: ~/.dopemux/profiles/{name}.yaml[/dim]")
+        console.logger.info(f"\n✅ Profile created: [cyan]{name}[/cyan]")
+        console.logger.info(f"[dim]Edit: ~/.dopemux/profiles/{name}.yaml[/dim]")
     except ValueError as e:
-        console.print(f"\n[red]❌ {e}[/red]")
+        console.logger.info(f"\n[red]❌ {e}[/red]")

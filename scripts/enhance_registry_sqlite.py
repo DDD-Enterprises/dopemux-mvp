@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 import argparse
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sqlite3
 from pathlib import Path
 
@@ -69,10 +74,10 @@ def main():
         try:
             cur.execute(sql)
         except Exception as e:
-            print(f"Warning: could not apply SQL: {e}\nSQL: {sql[:120]}...")
+            logger.warning(f"Warning: could not apply SQL: {e}\nSQL: {sql[:120]}...")
     conn.commit()
     conn.close()
-    print(f"✅ Enhanced SQLite with views and indexes: {db_path}")
+    logger.info(f"✅ Enhanced SQLite with views and indexes: {db_path}")
 
 
 if __name__ == "__main__":

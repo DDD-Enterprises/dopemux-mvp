@@ -7,6 +7,11 @@ User management, authentication, and authorization services.
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import hashlib
 import secrets
 from datetime import datetime, timedelta
@@ -71,7 +76,7 @@ class UserService:
                 {"email": user.email, "username": user.username}
             )
 
-            print(f"✅ User created: {user.username} ({user.email})")
+            logger.info(f"✅ User created: {user.username} ({user.email})")
             return user
 
         except PasswordValidationError as e:
@@ -98,7 +103,7 @@ class UserService:
                 )
         except Exception as e:
             db.rollback()
-            print(f"❌ User creation error: {e}")
+            logger.error(f"❌ User creation error: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="User creation failed"
@@ -144,7 +149,7 @@ class UserService:
                 return None
 
         except Exception as e:
-            print(f"❌ Authentication error: {e}")
+            logger.error(f"❌ Authentication error: {e}")
             return None
 
     @staticmethod
@@ -268,14 +273,14 @@ class WorkspaceService:
                 {"user_id": user_id, "role": role}
             )
 
-            print(f"✅ User {user_id} added to workspace {workspace_id} as {role}")
+            logger.info(f"✅ User {user_id} added to workspace {workspace_id} as {role}")
             return workspace_user
 
         except HTTPException:
             raise
         except Exception as e:
             db.rollback()
-            print(f"❌ Add user to workspace error: {e}")
+            logger.error(f"❌ Add user to workspace error: {e}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to add user to workspace"
@@ -313,7 +318,7 @@ class WorkspaceService:
             return permissions.get(required_permission, False)
 
         except Exception as e:
-            print(f"❌ Permission check error: {e}")
+            logger.error(f"❌ Permission check error: {e}")
             return False
 
 class TokenService:
@@ -398,7 +403,7 @@ class TokenService:
             return TokenService.create_token_pair(db, user)
 
         except Exception as e:
-            print(f"❌ Token refresh error: {e}")
+            logger.error(f"❌ Token refresh error: {e}")
             return None
 
     @staticmethod
@@ -430,7 +435,7 @@ class TokenService:
             return False
 
         except Exception as e:
-            print(f"❌ Token revocation error: {e}")
+            logger.error(f"❌ Token revocation error: {e}")
             return False
 
 class AuditService:
@@ -476,7 +481,7 @@ class AuditService:
 
         except Exception as e:
             # Don't fail the main operation due to audit logging failure
-            print(f"⚠️ Audit logging failed: {e}")
+            logger.error(f"⚠️ Audit logging failed: {e}")
 
 # Export services
 __all__ = [

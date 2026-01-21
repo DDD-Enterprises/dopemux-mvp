@@ -11,6 +11,11 @@ Atomic switchover from old to new schema:
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncpg
 import sys
 from pathlib import Path
@@ -28,7 +33,7 @@ class SchemaS witchover:
     async def connect(self):
         """Establish database connection"""
         self.conn = await asyncpg.connect(self.db_url)
-        print(f"✓ Connected to ConPort PostgreSQL")
+        logger.info(f"✓ Connected to ConPort PostgreSQL")
 
     async def disconnect(self):
         """Close database connection"""
@@ -38,39 +43,39 @@ class SchemaS witchover:
     async def execute_switchover(self):
         """Execute atomic table rename"""
 
-        print("\n⚠️  CRITICAL: This will switchover to new schema")
-        print("Ensure ConPort MCP server is STOPPED before proceeding")
-        print()
+        logger.error("\n⚠️  CRITICAL: This will switchover to new schema")
+        logger.info("Ensure ConPort MCP server is STOPPED before proceeding")
+        logger.info()
 
         response = input("Type 'SWITCHOVER' to confirm: ")
 
         if response != "SWITCHOVER":
-            print("Aborted - no changes made")
+            logger.info("Aborted - no changes made")
             return False
 
         await self.connect()
 
         try:
-            print("\nExecuting atomic switchover...")
+            logger.info("\nExecuting atomic switchover...")
 
             async with self.conn.transaction():
                 # Archive old tables
-                print("  1. Archiving old tables...")
+                logger.info("  1. Archiving old tables...")
                 await self.conn.execute("ALTER TABLE decisions RENAME TO decisions_old")
                 await self.conn.execute("ALTER TABLE entity_relationships RENAME TO entity_relationships_old")
 
                 # Promote v2 tables
-                print("  2. Promoting v2 tables...")
+                logger.info("  2. Promoting v2 tables...")
                 await self.conn.execute("ALTER TABLE decisions_v2 RENAME TO decisions")
                 await self.conn.execute("ALTER TABLE entity_relationships_v2 RENAME TO entity_relationships")
 
-                print("  3. Transaction committed")
+                logger.info("  3. Transaction committed")
 
-            print("\n✓ Switchover complete - new schema active")
+            logger.info("\n✓ Switchover complete - new schema active")
 
             # Verify
             count = await self.conn.fetchval("SELECT COUNT(*) FROM decisions")
-            print(f"\nVerification: {count} decisions in new schema")
+            logger.info(f"\nVerification: {count} decisions in new schema")
 
             return True
 
@@ -84,13 +89,13 @@ async def main():
     # Configuration
     DB_URL = "postgresql://dopemux:dopemux_dev_password@localhost:5432/dopemux_memory"
 
-    print("=" * 60)
-    print("ConPort Schema Switchover")
-    print("=" * 60)
-    print()
+    logger.info("=" * 60)
+    logger.info("ConPort Schema Switchover")
+    logger.info("=" * 60)
+    logger.info()
 
     # Step 1: Validate first
-    print("Step 1: Running validation checks...")
+    logger.info("Step 1: Running validation checks...")
     validator = MigrationValidator(DB_URL)
 
     try:
@@ -98,57 +103,57 @@ async def main():
 
         for check in checks:
             status = "✓" if check['passed'] else "✗"
-            print(f"  {status} {check['name']}: {check['details']}")
+            logger.info(f"  {status} {check['name']}: {check['details']}")
 
         if not all_passed:
-            print("\n✗ ERROR: Validation failed - cannot switchover")
-            print("Fix validation errors first")
+            logger.error("\n✗ ERROR: Validation failed - cannot switchover")
+            logger.error("Fix validation errors first")
             return 1
 
-        print("\n✓ Validation passed")
+        logger.info("\n✓ Validation passed")
 
     except Exception as e:
-        print(f"\n✗ ERROR: Validation failed: {e}")
+        logger.error(f"\n✗ ERROR: Validation failed: {e}")
         return 1
 
     # Step 2: Execute switchover
-    print("\nStep 2: Execute switchover...")
+    logger.info("\nStep 2: Execute switchover...")
     switcher = SchemaSwitchover(DB_URL)
 
     try:
         success = await switcher.execute_switchover()
 
         if success:
-            print("\n" + "=" * 60)
-            print("✓ SWITCHOVER COMPLETE")
-            print("=" * 60)
-            print("\nMANUAL STEPS REQUIRED:")
-            print("  1. Restart ConPort MCP server:")
-            print("     docker restart conport-mcp-server")
-            print()
-            print("  2. Test MCP server:")
-            print("     claude mcp status conport")
-            print()
-            print("  3. Verify data access:")
-            print("     (Use ConPort via Claude to query decisions)")
-            print()
-            print("Old tables preserved as:")
-            print("  - decisions_old")
-            print("  - entity_relationships_old")
-            print()
-            print("After AGE migration validated, clean up with:")
-            print("  DROP TABLE decisions_old CASCADE;")
-            print("  DROP TABLE entity_relationships_old CASCADE;")
-            print("  ALTER TABLE decisions DROP COLUMN old_uuid;")
+            logger.info("\n" + "=" * 60)
+            logger.info("✓ SWITCHOVER COMPLETE")
+            logger.info("=" * 60)
+            logger.info("\nMANUAL STEPS REQUIRED:")
+            logger.info("  1. Restart ConPort MCP server:")
+            logger.info("     docker restart conport-mcp-server")
+            logger.info()
+            logger.info("  2. Test MCP server:")
+            logger.info("     claude mcp status conport")
+            logger.info()
+            logger.info("  3. Verify data access:")
+            logger.info("     (Use ConPort via Claude to query decisions)")
+            logger.info()
+            logger.info("Old tables preserved as:")
+            logger.info("  - decisions_old")
+            logger.info("  - entity_relationships_old")
+            logger.info()
+            logger.info("After AGE migration validated, clean up with:")
+            logger.info("  DROP TABLE decisions_old CASCADE;")
+            logger.info("  DROP TABLE entity_relationships_old CASCADE;")
+            logger.info("  ALTER TABLE decisions DROP COLUMN old_uuid;")
 
             return 0
         else:
             return 1
 
     except Exception as e:
-        print(f"\n✗ ERROR: Switchover failed")
-        print(f"  {str(e)}")
-        print("\nRun rollback.py if needed")
+        logger.error(f"\n✗ ERROR: Switchover failed")
+        logger.info(f"  {str(e)}")
+        logger.info("\nRun rollback.py if needed")
         return 1
 
 

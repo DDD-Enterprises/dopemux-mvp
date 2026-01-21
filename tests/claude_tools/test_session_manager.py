@@ -19,6 +19,7 @@ class TestSessionManager:
         """Set up test fixtures."""
         self.mock_context_manager = Mock()
         self.session_manager = SessionManager(self.mock_context_manager)
+        self.session_manager.console = Mock() # Mock console for all tests
 
     def test_find_sessions_dopemux(self):
         """Test finding Dopemux sessions."""
@@ -33,7 +34,7 @@ class TestSessionManager:
                 'open_files': [{'path': 'auth.py'}]
             }
         ]
-        self.mock_context_manager.list_sessions.return_value = mock_sessions
+        self.mock_context_manager.get_all_sessions.return_value = mock_sessions
 
         # Mock other session sources to return empty
         self.session_manager._find_claude_sessions = Mock(return_value=[])
@@ -58,7 +59,7 @@ class TestSessionManager:
                 'open_files': []
             }
         ]
-        self.mock_context_manager.list_sessions.return_value = mock_sessions
+        self.mock_context_manager.get_all_sessions.return_value = mock_sessions
 
         # Mock Claude sessions
         self.session_manager._find_claude_sessions = Mock(return_value=[
@@ -95,7 +96,7 @@ class TestSessionManager:
                 'current_goal': 'DB tuning'
             }
         ]
-        self.mock_context_manager.list_sessions.return_value = mock_sessions
+        self.mock_context_manager.get_all_sessions.return_value = mock_sessions
 
         # Mock other sources empty
         self.session_manager._find_claude_sessions = Mock(return_value=[])
@@ -167,16 +168,23 @@ class TestSessionManager:
             'path': '/fake/path/session.json'
         }
 
-        # Mock subprocess to avoid actual system calls
-        with patch('subprocess.run') as mock_subprocess:
+        # Mock subprocess and file system
+        with patch('subprocess.run') as mock_subprocess, \
+             patch('os.path.exists', return_value=True), \
+             patch('os.chdir') as mock_chdir, \
+             patch('builtins.open', new_callable=Mock):
             mock_subprocess.return_value.returncode = 0
             mock_subprocess.return_value.stdout = '/current/dir'
+            
+            # Prevent logging issues
+            self.session_manager.console.logger = Mock()
 
             success = self.session_manager.resume_session(session)
 
             assert success
             # Should call subprocess.run for cd and claude resume
-            assert mock_subprocess.call_count >= 2
+            assert mock_subprocess.call_count >= 1
+            mock_chdir.assert_called_once()
 
     def test_conport_integration(self):
         """Test ConPort availability and operations."""

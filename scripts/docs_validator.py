@@ -13,6 +13,11 @@ Usage:
 """
 
 import sys
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import os
 import re
 import yaml
@@ -116,6 +121,7 @@ class DocumentValidator:
             self.add_error(file_path, f"Cannot read file: {e}")
             return False
 
+            logger.error(f"Error: {e}")
         # Validate frontmatter
         frontmatter, body = self._parse_frontmatter(content)
         if not frontmatter:
@@ -323,20 +329,20 @@ class DocumentValidator:
     def print_results(self):
         """Print validation results."""
         if self.errors:
-            print(f"\n❌ {len(self.errors)} error(s) found:")
+            logger.error(f"\n❌ {len(self.errors)} error(s) found:")
             for error in self.errors:
                 location = f"{error.file_path}:{error.line}" if error.line else error.file_path
                 fixable = " [FIXABLE]" if error.fixable else ""
-                print(f"  {location}: {error.message}{fixable}")
+                logger.error(f"  {location}: {error.message}{fixable}")
 
         if self.warnings:
-            print(f"\n⚠️  {len(self.warnings)} warning(s):")
+            logger.warning(f"\n⚠️  {len(self.warnings)} warning(s):")
             for warning in self.warnings:
                 location = f"{warning.file_path}:{warning.line}" if warning.line else warning.file_path
-                print(f"  {location}: {warning.message}")
+                logger.warning(f"  {location}: {warning.message}")
 
         if not self.errors and not self.warnings:
-            print("✅ All documentation follows the knowledge graph schema!")
+            logger.info("✅ All documentation follows the knowledge graph schema!")
 
     def has_errors(self) -> bool:
         """Check if any validation errors were found."""
@@ -355,11 +361,11 @@ def main():
     if args.check_orphans:
         orphans = validator.check_orphaned_docs()
         if orphans:
-            print(f"🔍 Found {len(orphans)} orphaned documents:")
+            logger.info(f"🔍 Found {len(orphans)} orphaned documents:")
             for orphan in orphans:
-                print(f"  {orphan}")
+                logger.info(f"  {orphan}")
         else:
-            print("✅ No orphaned documents found")
+            logger.info("✅ No orphaned documents found")
         return
 
     if args.files:

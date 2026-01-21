@@ -67,8 +67,10 @@ async def _get_adhd_config():
             _adhd_feature_flags = ADHDFeatureFlags(_adhd_config.redis_client)
 
             logger.info("✅ Serena v2 connected to ADHD Engine")
-        except Exception as e:
+        except (ImportError, RuntimeError, ConnectionError) as e:
             logger.warning(f"⚠️ ADHD Engine unavailable: {e}")
+        except Exception:
+            logger.exception("Unexpected ADHD Engine initialization error")
 
     return _adhd_config, _adhd_feature_flags
 
@@ -88,8 +90,10 @@ async def get_dynamic_max_results(user_id: str = "default", requested: int = 10)
     if adhd_config and feature_flags:
         try:
             return await adhd_config.get_max_results(user_id)
-        except Exception as e:
+        except (asyncio.TimeoutError, RuntimeError, ConnectionError) as e:
             logger.debug(f"ADHD Engine query failed: {e}")
+        except Exception:
+            logger.exception("Unexpected ADHD Engine query error")
 
     # Fallback to requested value
     return requested
@@ -152,8 +156,9 @@ class SimpleLSPClient:
         except FileNotFoundError:
             raise RuntimeError("pylsp not found - install with: pip install python-lsp-server[all]")
         except Exception as e:
-            raise RuntimeError(f"Failed to start LSP client: {e}")
+            raise RuntimeError(f"Failed to start LSP client: {e}") from e
 
+            logger.error(f"Error: {e}")
     async def goto_definition(self, file_uri: str, line: int, column: int) -> List[Dict]:
         """
         Request definition location for symbol at position
@@ -328,8 +333,10 @@ class SimpleLSPClient:
                         buffer = header + b"\r\n\r\n" + rest
                         break
 
-        except Exception as e:
-            logger.error(f"LSP response reader error: {e}")
+        except (json.JSONDecodeError, UnicodeDecodeError) as e:
+            logger.error(f"LSP response reader parse error: {e}")
+        except Exception:
+            logger.exception("Unexpected LSP response reader error")
 
     async def shutdown(self):
         """Gracefully shutdown LSP server"""
@@ -338,9 +345,12 @@ class SimpleLSPClient:
                 await self._send_request("shutdown", {}, timeout=2.0)
                 await self._send_notification("exit", {})
                 await asyncio.wait_for(self.process.wait(), timeout=2.0)
-            except:
+            except (asyncio.TimeoutError, RuntimeError) as e:
                 self.process.kill()
-
+                logger.warning(f"Graceful shutdown failed, process killed: {e}")
+            except Exception:
+                self.process.kill()
+                logger.exception("Unexpected error during LSP shutdown")
             if self._reader_task:
                 self._reader_task.cancel()
 
@@ -505,8 +515,10 @@ class SerenaV2MCPServer:
             self.lazy_components["conport"] = True
             logger.info("ConPort database client connected")
 
-        except Exception as e:
+        except (ImportError, ConnectionError, OSError) as e:
             logger.warning(f"ConPort client initialization failed: {e}")
+        except Exception:
+            logger.exception("Unexpected ConPort client initialization error")
             self.initialization_errors["conport"] = str(e)
             self.conport_client = None
 
@@ -602,10 +614,15 @@ class SerenaV2MCPServer:
             logger.info(f"✓ Lazy-loaded: {component_name}")
             return True
 
-        except Exception as e:
+        except (ImportError, ConnectionError, OSError, RuntimeError) as e:
             error_msg = f"{type(e).__name__}: {str(e)}"
             self.initialization_errors[component_name] = error_msg
             logger.warning(f"⚠ {component_name} unavailable: {error_msg}")
+            return False
+        except Exception:
+            error_msg = "Unexpected initialization error"
+            self.initialization_errors[component_name] = error_msg
+            logger.exception(f"⚠ {component_name} unexpected error")
             return False
 
     async def _init_database(self):
@@ -1426,10 +1443,13 @@ class SerenaV2MCPServer:
 
                 return [TextContent(type="text", text=result)]
 
-            except Exception as e:
+            except (ValueError, FileNotFoundError, RuntimeError) as e:
                 error_msg = f"❌ Error in {name}: {str(e)}"
-                logger.error(error_msg, exc_info=True)
+                logger.error(error_msg)
                 return [TextContent(type="text", text=error_msg)]
+            except Exception:
+                logger.exception(f"❌ Unexpected error in tool {name}")
+                return [TextContent(type="text", text=f"❌ Unexpected error in {name}")]
 
     async def get_workspace_status_tool(self) -> str:
         """
@@ -1574,9 +1594,12 @@ class SerenaV2MCPServer:
                                 symbol.get("name")
                             )
                             symbol["complexity"] = complexity.get("score", 0.0)
-                        except:
+                        except (FileNotFoundError, RuntimeError) as e:
                             symbol["complexity"] = None
-
+                            logger.debug(f"Complexity analysis skipped: {e}")
+                        except Exception:
+                            symbol["complexity"] = None
+                            logger.exception("Unexpected complexity analysis error")
                 result = {
                     "query": query,
                     "symbol_type_filter": symbol_type,
@@ -1595,8 +1618,10 @@ class SerenaV2MCPServer:
 
                 return json.dumps(result, indent=2)
 
-            except Exception as e:
+            except (asyncio.TimeoutError, RuntimeError) as e:
                 logger.warning(f"LSP symbol search failed: {e}, falling back to basic search")
+            except Exception:
+                logger.exception("Unexpected LSP symbol search error; falling back")
                 # Fall through to fallback mode
 
         # Fallback: Simple file-based search using glob
@@ -1628,9 +1653,12 @@ class SerenaV2MCPServer:
 
                         if len(matches) >= max_results:
                             break
-            except:
+            except (UnicodeDecodeError, OSError) as e:
+                logger.debug(f"Skipping file (decode/fs error): {py_file} - {e}")
                 continue
-
+            except Exception:
+                logger.exception(f"Unexpected symbol scan error in {py_file}")
+                continue
             if len(matches) >= max_results:
                 break
 
@@ -1751,8 +1779,10 @@ class SerenaV2MCPServer:
                     logger.info(f"goto_definition: {file_path}:{line}:{column} → {def_line} ({elapsed_ms:.1f}ms)")
                     return json.dumps(result, indent=2)
 
-            except Exception as e:
+            except (asyncio.TimeoutError, RuntimeError) as e:
                 logger.warning(f"LSP goto_definition failed: {e}, using fallback")
+            except Exception:
+                logger.exception("Unexpected LSP goto_definition error; falling back")
                 # Fall through to fallback
 
         # Fallback: Grep-based definition search
@@ -1813,9 +1843,10 @@ class SerenaV2MCPServer:
 
                             return json.dumps(result, indent=2)
 
-                except:
+                except Exception as e:
                     continue
 
+                    logger.error(f"Error: {e}")
             # No definition found
             return json.dumps({
                 "error": "No definition found",
@@ -1827,6 +1858,7 @@ class SerenaV2MCPServer:
         except Exception as e:
             return json.dumps({"error": str(e)}, indent=2)
 
+            logger.error(f"Error: {e}")
     async def get_context_tool(
         self,
         file_path: str,
@@ -1915,8 +1947,10 @@ class SerenaV2MCPServer:
                         None  # Analyze whole file
                     )
                     complexity_score = analysis.get("score", 0.0)
-                except Exception as e:
+                except (RuntimeError, FileNotFoundError) as e:
                     logger.debug(f"Complexity analysis failed: {e}")
+                except Exception:
+                    logger.exception("Unexpected complexity analysis error")
 
         elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
@@ -2069,8 +2103,10 @@ class SerenaV2MCPServer:
                 logger.info(f"find_references: {file_path}:{line}:{column} → {len(references)} refs ({elapsed_ms:.1f}ms)")
                 return json.dumps(result, indent=2)
 
-            except Exception as e:
+            except (asyncio.TimeoutError, RuntimeError) as e:
                 logger.warning(f"LSP find_references failed: {e}, using fallback")
+            except Exception:
+                logger.exception("Unexpected LSP find_references error; falling back")
                 # Fall through to fallback
 
         # Fallback: Grep-based reference search
@@ -2115,9 +2151,10 @@ class SerenaV2MCPServer:
 
                             if len(references) >= max_results:
                                 break
-                except:
+                except Exception as e:
                     continue
 
+                    logger.error(f"Error: {e}")
                 if len(references) >= max_results:
                     break
 
@@ -2142,6 +2179,7 @@ class SerenaV2MCPServer:
         except Exception as e:
             return json.dumps({"error": str(e)}, indent=2)
 
+            logger.error(f"Error: {e}")
     async def _extract_reference_context(self, file_path: Path, line: int) -> str:
         """
         Extract 3-line context for reference (1 before, ref line, 1 after)
@@ -2172,6 +2210,7 @@ class SerenaV2MCPServer:
         except Exception as e:
             return f"(context unavailable: {e})"
 
+            logger.error(f"Error: {e}")
     async def analyze_complexity_tool(
         self,
         file_path: str,
@@ -2275,8 +2314,10 @@ class SerenaV2MCPServer:
                 logger.info(f"analyze_complexity: {file_path} → {complexity_score:.2f} ({elapsed_ms:.1f}ms)")
                 return json.dumps(result, indent=2)
 
-            except Exception as e:
+            except (RuntimeError, FileNotFoundError) as e:
                 logger.warning(f"Tree-sitter analysis failed: {e}, using fallback")
+            except Exception:
+                logger.exception("Unexpected tree-sitter analysis error; using fallback")
                 # Fall through to fallback
 
         # Fallback: Basic line/character counting
@@ -2339,6 +2380,7 @@ class SerenaV2MCPServer:
         except Exception as e:
             return json.dumps({"error": str(e)}, indent=2)
 
+            logger.error(f"Error: {e}")
     async def filter_by_focus_tool(
         self,
         attention_state: str,
@@ -2453,9 +2495,10 @@ class SerenaV2MCPServer:
                     })
                 if len(suggestions) >= 3:
                     break
-        except:
+        except Exception as e:
             pass
 
+            logger.error(f"Error: {e}")
         # Limit to top 3
         suggestions = suggestions[:3]
 
@@ -2653,9 +2696,10 @@ class SerenaV2MCPServer:
 
                     if len(relationships) >= 10:
                         break
-            except:
+            except Exception as e:
                 continue
 
+                logger.error(f"Error: {e}")
             if len(relationships) >= 10:
                 break
 
@@ -2938,12 +2982,15 @@ class SerenaV2MCPServer:
                 "message": "untracked_work_detector.py requires git_detector.py and conport_matcher.py",
                 "details": str(e)
             }, indent=2)
-        except Exception as e:
-            logger.error(f"detect_untracked_work failed: {e}", exc_info=True)
-            return json.dumps({
-                "error": str(e),
-                "fallback": "Use git status and ConPort manually"
-            }, indent=2)
+        except ImportError as e:
+            logger.error(f"detect_untracked_work missing dependency: {e}")
+            return json.dumps({"error": str(e), "fallback": "Install missing modules"}, indent=2)
+        except (OSError, RuntimeError) as e:
+            logger.error(f"detect_untracked_work failed: {e}")
+            return json.dumps({"error": str(e), "fallback": "Use git status manually"}, indent=2)
+        except Exception:
+            logger.exception("detect_untracked_work unexpected error")
+            return json.dumps({"error": "unexpected error", "fallback": "manual investigation"}, indent=2)
 
     async def detect_untracked_work_enhanced_tool(
         self,
@@ -3122,12 +3169,15 @@ class SerenaV2MCPServer:
                 "details": str(e),
                 "fallback": "Use detect_untracked_work_tool instead"
             }, indent=2)
-        except Exception as e:
-            logger.error(f"detect_untracked_work_enhanced failed: {e}", exc_info=True)
-            return json.dumps({
-                "error": str(e),
-                "fallback": "Use base detect_untracked_work_tool or git status manually"
-            }, indent=2)
+        except ImportError as e:
+            logger.error(f"detect_untracked_work_enhanced missing dependency: {e}")
+            return json.dumps({"error": str(e), "fallback": "Install enhancement modules"}, indent=2)
+        except (OSError, RuntimeError) as e:
+            logger.error(f"detect_untracked_work_enhanced failed: {e}")
+            return json.dumps({"error": str(e), "fallback": "Use base detect_untracked_work_tool"}, indent=2)
+        except Exception:
+            logger.exception("detect_untracked_work_enhanced unexpected error")
+            return json.dumps({"error": "unexpected error", "fallback": "manual investigation"}, indent=2)
 
     async def initialize_session_tool(
         self,
@@ -3195,12 +3245,15 @@ class SerenaV2MCPServer:
             logger.info(f"initialize_session: {session_state.session_id} ({elapsed_ms:.1f}ms)")
             return json.dumps(result, indent=2)
 
-        except Exception as e:
-            logger.error(f"initialize_session failed: {e}", exc_info=True)
-            return json.dumps({
-                "error": str(e),
-                "fallback": "Session not initialized - continue without multi-session support"
-            }, indent=2)
+        except (ValueError, FileNotFoundError) as e:
+            logger.error(f"initialize_session validation failed: {e}")
+            return json.dumps({"error": str(e), "fallback": "Check parameters"}, indent=2)
+        except (OSError, RuntimeError) as e:
+            logger.error(f"initialize_session failed: {e}")
+            return json.dumps({"error": str(e), "fallback": "Continue without multi-session support"}, indent=2)
+        except Exception:
+            logger.exception("initialize_session unexpected error")
+            return json.dumps({"error": "unexpected error"}, indent=2)
 
     async def get_multi_session_dashboard_tool(self) -> str:
         """
@@ -3254,12 +3307,12 @@ class SerenaV2MCPServer:
             logger.info(f"get_multi_session_dashboard: {stats.get('active_sessions', 0)} sessions ({elapsed_ms:.1f}ms)")
             return json.dumps(result, indent=2)
 
-        except Exception as e:
-            logger.error(f"get_multi_session_dashboard failed: {e}", exc_info=True)
-            return json.dumps({
-                "error": str(e),
-                "fallback": "Dashboard unavailable - check session manager"
-            }, indent=2)
+        except (OSError, RuntimeError) as e:
+            logger.error(f"get_multi_session_dashboard failed: {e}")
+            return json.dumps({"error": str(e), "fallback": "Check session manager"}, indent=2)
+        except Exception:
+            logger.exception("get_multi_session_dashboard unexpected error")
+            return json.dumps({"error": "unexpected error", "fallback": "Retry later"}, indent=2)
 
     async def get_session_info_tool(self) -> str:
         """
@@ -3306,11 +3359,12 @@ class SerenaV2MCPServer:
             logger.info(f"get_session_info: {session_info is not None} ({elapsed_ms:.1f}ms)")
             return json.dumps(result, indent=2)
 
-        except Exception as e:
-            logger.error(f"get_session_info failed: {e}", exc_info=True)
-            return json.dumps({
-                "error": str(e)
-            }, indent=2)
+        except (OSError, RuntimeError) as e:
+            logger.error(f"get_session_info failed: {e}")
+            return json.dumps({"error": str(e)}, indent=2)
+        except Exception:
+            logger.exception("get_session_info unexpected error")
+            return json.dumps({"error": "unexpected error"}, indent=2)
 
     async def suggest_branch_organization_tool(
         self,
@@ -4419,6 +4473,7 @@ class SerenaV2MCPServer:
         except Exception as e:
             return f"(context unavailable: {e})"
 
+            logger.error(f"Error: {e}")
     def _estimate_tokens(self, text: str) -> int:
         """Conservative token estimation: 1 token ≈ 4 chars."""
         return len(text) // 4
@@ -4675,9 +4730,10 @@ class SerenaV2MCPServer:
                         complexity = await self.tree_sitter.analyze_complexity(file_path, function_name)
                         result["serena_complexity"] = complexity.get("score", 0.0)
                         result["adhd_category"] = complexity.get("category", "unknown")
-                    except:
+                    except Exception as e:
                         result["serena_complexity"] = None
 
+                        logger.error(f"Error: {e}")
             elapsed_ms = (datetime.now() - start_time).total_seconds() * 1000
 
             output = {

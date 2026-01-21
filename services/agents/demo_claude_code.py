@@ -8,6 +8,11 @@ Usage: Ask Claude Code to execute this demo
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from datetime import datetime, timezone
 
 
@@ -19,14 +24,14 @@ async def demo_with_real_conport():
     across Claude Code sessions.
     """
 
-    print("\n" + "="*70)
-    print("MemoryAgent + Real ConPort MCP Demo")
-    print("="*70 + "\n")
+    logger.info("\n" + "="*70)
+    logger.info("MemoryAgent + Real ConPort MCP Demo")
+    logger.info("="*70 + "\n")
 
     workspace = "/Users/hue/code/dopemux-mvp"
 
     # Start session by saving initial state to ConPort
-    print("Starting session with ConPort MCP...\n")
+    logger.info("Starting session with ConPort MCP...\n")
 
     initial_state = {
         "current_task": "Demo: MemoryAgent with real ConPort",
@@ -47,20 +52,20 @@ async def demo_with_real_conport():
     }
 
     # THIS WILL ACTUALLY SAVE TO CONPORT
-    print("Saving initial session state to ConPort...")
+    logger.info("Saving initial session state to ConPort...")
     await save_to_conport(workspace, initial_state)
 
-    print("Session started!\n")
-    print(f"Task: {initial_state['current_task']}")
-    print(f"Mode: {initial_state['mode']}")
-    print(f"Complexity: {initial_state['complexity']}")
-    print("\nAuto-save active - all work is safe!\n")
+    logger.info("Session started!\n")
+    logger.info(f"Task: {initial_state['current_task']}")
+    logger.info(f"Mode: {initial_state['mode']}")
+    logger.info(f"Complexity: {initial_state['complexity']}")
+    logger.info("\nAuto-save active - all work is safe!\n")
 
     # Simulate some work
     await asyncio.sleep(2)
 
     # Update state (like MemoryAgent does automatically)
-    print("Updating session state (simulating work progress)...\n")
+    logger.info("Updating session state (simulating work progress)...\n")
 
     updated_state = {
         **initial_state,
@@ -78,63 +83,63 @@ async def demo_with_real_conport():
 
     await save_to_conport(workspace, updated_state)
 
-    print("Session state updated in ConPort!\n")
+    logger.info("Session state updated in ConPort!\n")
 
     # Now restore (like after an interruption)
     await asyncio.sleep(2)
 
-    print("="*70)
-    print("SIMULATING INTERRUPTION + RESTORATION")
-    print("="*70 + "\n")
+    logger.info("="*70)
+    logger.info("SIMULATING INTERRUPTION + RESTORATION")
+    logger.info("="*70 + "\n")
 
-    print("Restoring session from ConPort...\n")
+    logger.info("Restoring session from ConPort...\n")
 
     restored = await restore_from_conport(workspace)
 
     if restored and "memory_agent_session" in restored:
         session = restored["memory_agent_session"]
 
-        print("="*70)
-        print("GENTLE RE-ORIENTATION")
-        print("="*70 + "\n")
+        logger.info("="*70)
+        logger.info("GENTLE RE-ORIENTATION")
+        logger.info("="*70 + "\n")
 
-        print(f"Welcome back! Here's where you left off:\n")
-        print(f"  Task: {session.get('current_task')}")
-        print(f"  Focus: {session.get('current_focus')}")
-        print(f"  Time Invested: {session.get('time_invested_minutes')} minutes")
-        print(f"  Attention: {session.get('attention_state')}")
+        logger.info(f"Welcome back! Here's where you left off:\n")
+        logger.info(f"  Task: {session.get('current_task')}")
+        logger.info(f"  Focus: {session.get('current_focus')}")
+        logger.info(f"  Time Invested: {session.get('time_invested_minutes')} minutes")
+        logger.info(f"  Attention: {session.get('attention_state')}")
 
         if session.get('open_files'):
-            print(f"\n  Open Files:")
+            logger.info(f"\n  Open Files:")
             for f in session['open_files']:
-                print(f"    - {f}")
+                logger.info(f"    - {f}")
 
         if session.get('next_steps'):
-            print(f"\n  Next Steps:")
+            logger.info(f"\n  Next Steps:")
             for i, step in enumerate(session['next_steps'], 1):
-                print(f"    {i}. {step}")
+                logger.info(f"    {i}. {step}")
 
         if session.get('recent_decisions'):
-            print(f"\n  Recent Decisions:")
+            logger.info(f"\n  Recent Decisions:")
             for decision in session['recent_decisions']:
-                print(f"    - {decision}")
+                logger.info(f"    - {decision}")
 
-        print("\n" + "="*70)
-        print("VALIDATION SUCCESSFUL!")
-        print("="*70 + "\n")
+        logger.info("\n" + "="*70)
+        logger.info("VALIDATION SUCCESSFUL!")
+        logger.info("="*70 + "\n")
 
-        print("Results:")
-        print("  - Context preserved: 100%")
-        print("  - Recovery time: <2 seconds")
-        print("  - All work safe: YES")
-        print("  - Anxiety reduced: Significantly\n")
+        logger.info("Results:")
+        logger.info("  - Context preserved: 100%")
+        logger.info("  - Recovery time: <2 seconds")
+        logger.info("  - All work safe: YES")
+        logger.info("  - Anxiety reduced: Significantly\n")
 
     else:
-        print("No saved session found (this is first run)\n")
+        logger.info("No saved session found (this is first run)\n")
 
     # Clean up
-    print("Demo complete. Session state is saved in ConPort.")
-    print("You can query it with: mcp__conport__get_active_context\n")
+    logger.info("Demo complete. Session state is saved in ConPort.")
+    logger.info("You can query it with: mcp__conport__get_active_context\n")
 
 
 async def save_to_conport(workspace: str, state: dict):
@@ -146,10 +151,10 @@ async def save_to_conport(workspace: str, state: dict):
     # )
 
     # For standalone testing:
-    print(f"[Would save to ConPort: {workspace}]")
-    print(f"  Task: {state.get('current_task')}")
-    print(f"  Focus: {state.get('current_focus')}")
-    print()
+    logger.info(f"[Would save to ConPort: {workspace}]")
+    logger.info(f"  Task: {state.get('current_task')}")
+    logger.info(f"  Focus: {state.get('current_focus')}")
+    logger.info()
 
 
 async def restore_from_conport(workspace: str) -> dict:
@@ -161,12 +166,12 @@ async def restore_from_conport(workspace: str) -> dict:
     # return context
 
     # For standalone testing:
-    print(f"[Would restore from ConPort: {workspace}]\n")
+    logger.info(f"[Would restore from ConPort: {workspace}]\n")
     return {}
 
 
 if __name__ == "__main__":
-    print("\nNOTE: This demo shows the pattern.")
-    print("In Claude Code, uncomment the mcp__ function calls for real integration.\n")
+    logger.info("\nNOTE: This demo shows the pattern.")
+    logger.info("In Claude Code, uncomment the mcp__ function calls for real integration.\n")
 
     asyncio.run(demo_with_real_conport())

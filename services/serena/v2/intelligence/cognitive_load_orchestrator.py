@@ -909,8 +909,8 @@ async def test_cognitive_orchestration(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("🎼 Serena Cognitive Load Orchestrator")
-        print("Unified ADHD-optimized cognitive load management across all phases")
-        print("✅ Module loaded successfully")
+        logger.info("🎼 Serena Cognitive Load Orchestrator")
+        logger.info("Unified ADHD-optimized cognitive load management across all phases")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

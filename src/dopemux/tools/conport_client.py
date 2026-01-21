@@ -39,6 +39,7 @@ class ConPortClient:
         except Exception as e:
             return {"status": "error", "error": str(e)}
 
+            logger.error(f"Error: {e}")
     async def get_active_context(self, workspace_id: str) -> Dict[str, Any]:
         """
         Get active context for workspace - critical for ADHD developers
@@ -279,11 +280,11 @@ if __name__ == "__main__":
 
         # Test health
         health = await client.health_check()
-        print(f"Health: {health}")
+        logger.info(f"Health: {health}")
 
         # Test context
         context = await client.get_active_context("/Users/hue/code/dopemux-mvp")
-        print(f"Context: {context}")
+        logger.info(f"Context: {context}")
 
         # Test decision logging
         decision = await client.log_decision(
@@ -292,7 +293,7 @@ if __name__ == "__main__":
             "Provides immediate reliability while maintaining future MCP compatibility",
             ["Direct integration", "MCP-only approach", "Separate service"]
         )
-        print(f"Decision: {decision}")
+        logger.info(f"Decision: {decision}")
 
         # Test semantic search
         search_results = await client.semantic_search(
@@ -300,7 +301,7 @@ if __name__ == "__main__":
             query="ADHD optimization",
             top_k=3
         )
-        print(f"Semantic search: {search_results}")
+        logger.info(f"Semantic search: {search_results}")
 
         await client.close()
 

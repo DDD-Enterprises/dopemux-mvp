@@ -169,8 +169,9 @@ class RedisConnectionPool:
                 auth_part = self.redis_url.split("://")[1].split("@")[0]
                 if ":" in auth_part:
                     return auth_part.split(":")[1]
-        except:
+        except Exception as e:
             pass
+            logger.error(f"Error: {e}")
         return ""
 
     async def health_check(self) -> Dict[str, Any]:
@@ -195,6 +196,7 @@ class RedisConnectionPool:
             }
 
 
+            logger.error(f"Error: {e}")
 # Global instance for easy access
 _pool_instance: Optional[RedisConnectionPool] = None
 

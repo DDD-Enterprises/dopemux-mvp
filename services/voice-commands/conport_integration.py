@@ -146,7 +146,7 @@ async def test_integration():
             decomposition=test_decomposition
         )
 
-        print(f"Integration test result: {result}")
+        logger.info(f"Integration test result: {result}")
 
 if __name__ == "__main__":
     asyncio.run(test_integration())

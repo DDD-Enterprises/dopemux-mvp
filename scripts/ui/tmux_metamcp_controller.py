@@ -7,6 +7,11 @@ This makes the ADHD-optimized interface truly interactive, not just visual.
 """
 
 import json
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import subprocess
 import sys
 import time
@@ -287,11 +292,12 @@ class TmuxMetaMCPController:
             return {'success': False, 'error': str(e)}
 
 
+            logger.error(f"Error: {e}")
 def main():
     """Main CLI interface for tmux integration."""
     if len(sys.argv) < 2:
-        print("Usage: tmux_metamcp_controller.py <command> [args...]")
-        print("Commands: switch_role, status, break_reminder, role_menu, quick_switch")
+        logger.info("Usage: tmux_metamcp_controller.py <command> [args...]")
+        logger.info("Commands: switch_role, status, break_reminder, role_menu, quick_switch")
         sys.exit(1)
 
     controller = TmuxMetaMCPController()
@@ -303,22 +309,22 @@ def main():
     if result.get('success'):
         # For successful commands, show user-friendly output
         if command == 'switch_role' or (command == 'quick_switch' and result.get('success')):
-            print(f"🔄 Switched to {result['new_role']} role")
-            print(f"📝 {result['description']}")
-            print(f"💡 {result['message']}")
-            print(f"🛠️  Available tools: {', '.join(result['tools_available'])}")
+            logger.info(f"🔄 Switched to {result['new_role']} role")
+            logger.info(f"📝 {result['description']}")
+            logger.info(f"💡 {result['message']}")
+            logger.info(f"🛠️  Available tools: {', '.join(result['tools_available'])}")
         elif command == 'status':
-            print(f"🎯 Current role: {result['role']}")
-            print(f"📊 Token usage: {result['token_usage']:,}/{result['token_budget']:,}")
-            print(f"⏱️  Session time: {result['session_duration']} minutes")
-            print(f"🛠️  Tools: {result['tools_count']} available")
+            logger.info(f"🎯 Current role: {result['role']}")
+            logger.info(f"📊 Token usage: {result['token_usage']:,}/{result['token_budget']:,}")
+            logger.info(f"⏱️  Session time: {result['session_duration']} minutes")
+            logger.info(f"🛠️  Tools: {result['tools_count']} available")
         elif command == 'break_reminder':
-            print(f"🧠 {result['message']}")
+            logger.info(f"🧠 {result['message']}")
             for suggestion in result['break_suggestions']:
-                print(f"   • {suggestion}")
+                logger.info(f"   • {suggestion}")
     else:
         error_msg = result.get('error', 'Unknown error occurred')
-        print(f"❌ Error: {error_msg}")
+        logger.error(f"❌ Error: {error_msg}")
         sys.exit(1)
 
 

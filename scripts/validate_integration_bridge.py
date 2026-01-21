@@ -10,6 +10,11 @@ Usage:
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 from pathlib import Path
 
@@ -25,7 +30,7 @@ try:
     )
     CLIENT_AVAILABLE = True
 except ImportError as e:
-    print(f"❌ Failed to import DopeconBridge client: {e}")
+    logger.error(f"❌ Failed to import DopeconBridge client: {e}")
     CLIENT_AVAILABLE = False
 
 # Color codes for terminal output
@@ -37,17 +42,17 @@ RESET = "\033[0m"
 
 def print_section(title):
     """Print section header"""
-    print(f"\n{'='*60}")
-    print(f"{title}")
-    print(f"{'='*60}\n")
+    logger.info(f"\n{'='*60}")
+    logger.info(f"{title}")
+    logger.info(f"{'='*60}\n")
 
 
 def print_test(name, passed, details=""):
     """Print test result"""
     status = f"{GREEN}✅ PASS{RESET}" if passed else f"{RED}❌ FAIL{RESET}"
-    print(f"{status} {name}")
+    logger.info(f"{status} {name}")
     if details:
-        print(f"    {details}")
+        logger.info(f"    {details}")
 
 
 async def test_client_import():
@@ -76,6 +81,7 @@ async def test_config_from_env():
         return False
 
 
+        logger.error(f"Error: {e}")
 async def test_client_creation():
     """Test 3: Client can be created"""
     try:
@@ -93,6 +99,7 @@ async def test_client_creation():
         return False
 
 
+        logger.error(f"Error: {e}")
 async def test_bridge_connection():
     """Test 4: Can connect to DopeconBridge"""
     try:
@@ -122,6 +129,7 @@ async def test_bridge_connection():
         return False
 
 
+        logger.error(f"Error: {e}")
 async def test_service_adapters():
     """Test 5: Service adapters can be imported"""
     results = {}
@@ -169,6 +177,7 @@ async def test_service_adapters():
             )
             results[service] = False
     
+            logger.error(f"Error: {e}")
     return all(results.values())
 
 
@@ -218,8 +227,8 @@ async def main():
     """Run all validation tests"""
     print_section("DopeconBridge Migration Validation")
     
-    print("This script validates that the DopeconBridge migration")
-    print("is properly configured and ready for use.\n")
+    logger.info("This script validates that the DopeconBridge migration")
+    logger.info("is properly configured and ready for use.\n")
     
     results = {}
     
@@ -228,8 +237,8 @@ async def main():
     results["client_import"] = await test_client_import()
     
     if not results["client_import"]:
-        print(f"\n{RED}❌ Cannot proceed - client import failed{RESET}")
-        print("Make sure you're running from the repo root and shared modules exist.")
+        logger.error(f"\n{RED}❌ Cannot proceed - client import failed{RESET}")
+        logger.info("Make sure you're running from the repo root and shared modules exist.")
         return
     
     # Test 2: Configuration
@@ -245,9 +254,9 @@ async def main():
     results["bridge_connection"] = await test_bridge_connection()
     
     if not results["bridge_connection"]:
-        print(f"\n{YELLOW}⚠️  DopeconBridge is not running{RESET}")
-        print("To start it: cd services/mcp-dopecon-bridge && python3 main.py")
-        print("Or use Docker: docker-compose up mcp-dopecon-bridge")
+        logger.info(f"\n{YELLOW}⚠️  DopeconBridge is not running{RESET}")
+        logger.info("To start it: cd services/mcp-dopecon-bridge && python3 main.py")
+        logger.info("Or use Docker: docker-compose up mcp-dopecon-bridge")
     
     # Test 5: Service Adapters
     print_section("Test 5: Service Adapters")
@@ -263,27 +272,27 @@ async def main():
     passed = sum(1 for v in results.values() if v)
     total = len(results)
     
-    print(f"Tests Passed: {passed}/{total}\n")
+    logger.info(f"Tests Passed: {passed}/{total}\n")
     
     for test_name, result in results.items():
         status = f"{GREEN}✅{RESET}" if result else f"{RED}❌{RESET}"
-        print(f"{status} {test_name.replace('_', ' ').title()}")
+        logger.info(f"{status} {test_name.replace('_', ' ').title()}")
     
-    print("\n" + "="*60)
+    logger.info("\n" + "="*60)
     
     if all(results.values()):
-        print(f"{GREEN}✅ All validation tests passed!{RESET}")
-        print("DopeconBridge migration is ready to use.")
+        logger.info(f"{GREEN}✅ All validation tests passed!{RESET}")
+        logger.info("DopeconBridge migration is ready to use.")
         return 0
     elif results["client_import"] and results["config"] and results["adapters"]:
-        print(f"{YELLOW}⚠️  Validation passed with warnings{RESET}")
-        print("Core components are ready, but DopeconBridge may not be running.")
-        print("This is OK for development - services will fail gracefully.")
+        logger.warning(f"{YELLOW}⚠️  Validation passed with warnings{RESET}")
+        logger.info("Core components are ready, but DopeconBridge may not be running.")
+        logger.error("This is OK for development - services will fail gracefully.")
         return 0
     else:
-        print(f"{RED}❌ Validation failed{RESET}")
-        print("Some critical components are missing or misconfigured.")
-        print("Review the failed tests above and fix issues before proceeding.")
+        logger.error(f"{RED}❌ Validation failed{RESET}")
+        logger.error("Some critical components are missing or misconfigured.")
+        logger.error("Review the failed tests above and fix issues before proceeding.")
         return 1
 
 

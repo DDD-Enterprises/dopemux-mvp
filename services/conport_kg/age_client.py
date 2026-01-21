@@ -10,6 +10,11 @@ Eliminates 50-100ms docker exec overhead, enabling performance targets:
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import psycopg2
 from psycopg2 import pool
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
@@ -78,12 +83,12 @@ class AGEClient:
             finally:
                 self.pool.putconn(conn)
 
-            print(f"✅ AGE Client initialized: {host}:{port}/{database} (graph: {graph_name})")
-            print(f"   Connection pool: {min_connections}-{max_connections} connections")
+            logger.info(f"✅ AGE Client initialized: {host}:{port}/{database} (graph: {graph_name})")
+            logger.info(f"   Connection pool: {min_connections}-{max_connections} connections")
 
         except Exception as e:
-            print(f"❌ AGE Client initialization failed: {e}")
-            print(f"   Falling back to docker exec method")
+            logger.error(f"❌ AGE Client initialization failed: {e}")
+            logger.info(f"   Falling back to docker exec method")
             self.pool = None
             raise
 
@@ -151,8 +156,8 @@ class AGEClient:
             return results
 
         except Exception as e:
-            print(f"❌ Query execution failed: {e}")
-            print(f"   Query: {cypher_query[:100]}...")
+            logger.error(f"❌ Query execution failed: {e}")
+            logger.info(f"   Query: {cypher_query[:100]}...")
             raise
 
         finally:
@@ -199,21 +204,21 @@ class AGEClient:
         """Close all connections in the pool"""
         if self.pool:
             self.pool.closeall()
-            print("✅ AGE Client connection pool closed")
+            logger.info("✅ AGE Client connection pool closed")
 
 
 if __name__ == "__main__":
     # Test AGE Client
-    print("=" * 60)
-    print("Testing AGE Client with Connection Pooling")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("Testing AGE Client with Connection Pooling")
+    logger.info("=" * 60)
 
     try:
         # Initialize client
         client = AGEClient()
 
         # Test query: Count decisions
-        print("\n[Test 1] Count all decisions:")
+        logger.info("\n[Test 1] Count all decisions:")
         cypher = """
             SELECT * FROM cypher('conport_knowledge', $$
                 MATCH (d:Decision)
@@ -221,10 +226,10 @@ if __name__ == "__main__":
             $$) as (total agtype);
         """
         results = client.execute_cypher(cypher)
-        print(f"   Total decisions: {results[0]['total']}")
+        logger.info(f"   Total decisions: {results[0]['total']}")
 
         # Test query: Get recent decisions
-        print("\n[Test 2] Get 3 recent decisions:")
+        logger.info("\n[Test 2] Get 3 recent decisions:")
         cypher = """
             SELECT * FROM cypher('conport_knowledge', $$
                 MATCH (d:Decision)
@@ -235,10 +240,10 @@ if __name__ == "__main__":
         """
         results = client.execute_cypher(cypher)
         for i, decision in enumerate(results, 1):
-            print(f"   {i}. #{decision['id']}: {decision['summary'][:60]}...")
+            logger.info(f"   {i}. #{decision['id']}: {decision['summary'][:60]}...")
 
         # Test query: Get relationships
-        print("\n[Test 3] Sample relationships:")
+        logger.info("\n[Test 3] Sample relationships:")
         cypher = """
             SELECT * FROM cypher('conport_knowledge', $$
                 MATCH (d1:Decision)-[r]->(d2:Decision)
@@ -248,14 +253,14 @@ if __name__ == "__main__":
         """
         results = client.execute_cypher(cypher)
         for rel in results:
-            print(f"   Decision #{rel['source']} --{rel['rel_type']}--> Decision #{rel['target']}")
+            logger.info(f"   Decision #{rel['source']} --{rel['rel_type']}--> Decision #{rel['target']}")
 
         # Close client
         client.close()
 
-        print("\n✅ All tests passed!")
+        logger.info("\n✅ All tests passed!")
 
     except Exception as e:
-        print(f"\n❌ Test failed: {e}")
+        logger.error(f"\n❌ Test failed: {e}")
         import traceback
         traceback.print_exc()

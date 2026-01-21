@@ -39,24 +39,24 @@ async def main():
     anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
 
     if not voyage_api_key:
-        print("❌ Error: VOYAGE_API_KEY not set")
-        print("   Run: export VOYAGE_API_KEY='your-key'")
+        logger.error("❌ Error: VOYAGE_API_KEY not set")
+        logger.info("   Run: export VOYAGE_API_KEY='your-key'")
         return 1
 
-    print("=" * 70)
-    print("🚀 CODE-AUDIT WORKSPACE INDEXING")
-    print("=" * 70)
-    print(f"📁 Workspace: {workspace_path}")
-    print(f"🔑 Voyage API: ✅ Configured")
-    print(f"🔑 Anthropic API: {'✅ Configured' if anthropic_api_key else '⚠️  Optional (skipping context generation)'}")
-    print()
+    logger.info("=" * 70)
+    logger.info("🚀 CODE-AUDIT WORKSPACE INDEXING")
+    logger.info("=" * 70)
+    logger.info(f"📁 Workspace: {workspace_path}")
+    logger.info(f"🔑 Voyage API: ✅ Configured")
+    logger.info(f"🔑 Anthropic API: {'✅ Configured' if anthropic_api_key else '⚠️  Optional (skipping context generation)'}")
+    logger.info()
 
     # Initialize components
-    print("⚙️  Initializing pipeline components...")
+    logger.info("⚙️  Initializing pipeline components...")
 
     # 1. Code chunker (AST-aware with Tree-sitter)
     chunker = CodeChunker()
-    print("   ✅ CodeChunker (500 tokens, 12% overlap, Tree-sitter)")
+    logger.info("   ✅ CodeChunker (500 tokens, 12% overlap, Tree-sitter)")
 
     # 2. Context generator (optional - requires Anthropic key)
     context_generator = None
@@ -66,9 +66,9 @@ async def main():
             model="claude-3-5-haiku-20241022",  # Fast & cheap
             cache_ttl_hours=24
         )
-        print("   ✅ ClaudeContextGenerator (claude-3-5-haiku)")
+        logger.info("   ✅ ClaudeContextGenerator (claude-3-5-haiku)")
     else:
-        print("   ⏭️  ClaudeContextGenerator skipped (no Anthropic key)")
+        logger.info("   ⏭️  ClaudeContextGenerator skipped (no Anthropic key)")
 
     # 3. Voyage embedder (multi-vector with rate limiting)
     embedder = VoyageEmbedder(
@@ -78,7 +78,7 @@ async def main():
         rate_limit_rpm=2000,       # voyage-code-3 limit
         default_model="voyage-code-3"
     )
-    print("   ✅ VoyageEmbedder (voyage-code-3, 2000 RPM, 128 batch)")
+    logger.info("   ✅ VoyageEmbedder (voyage-code-3, 2000 RPM, 128 batch)")
 
     # 4. Vector search (Qdrant multi-vector)
     # Use hash-based collection name (matches MCP workspace detection)
@@ -94,7 +94,7 @@ async def main():
         url=qdrant_url,
         port=qdrant_port
     )
-    print(f"   ✅ MultiVectorSearch (Qdrant @ {qdrant_url}:{qdrant_port}, collection: {collection_name})")
+    logger.info(f"   ✅ MultiVectorSearch (Qdrant @ {qdrant_url}:{qdrant_port}, collection: {collection_name})")
 
     # 5. Indexing configuration
     config = IndexingConfig(
@@ -109,8 +109,8 @@ async def main():
         skip_context_generation=(context_generator is None),
         workspace_id="code-audit"
     )
-    print(f"   ✅ IndexingConfig (indexing ALL files - no limit)")
-    print()
+    logger.info(f"   ✅ IndexingConfig (indexing ALL files - no limit)")
+    logger.info()
 
     # Create pipeline
     pipeline = IndexingPipeline(
@@ -121,13 +121,13 @@ async def main():
         config=config
     )
 
-    print("📋 Indexing Configuration:")
-    print(f"   Include: {', '.join(config.include_patterns)}")
-    print(f"   Exclude: {', '.join(config.exclude_patterns[:3])}... ({len(config.exclude_patterns)} total)")
-    print(f"   Max files: {'ALL (no limit)' if config.max_files is None else config.max_files}")
-    print(f"   Multi-vector: content (0.7), title (0.2), breadcrumb (0.1)")
-    print(f"   Context generation: {'✅ Enabled' if context_generator else '❌ Disabled'}")
-    print()
+    logger.info("📋 Indexing Configuration:")
+    logger.info(f"   Include: {', '.join(config.include_patterns)}")
+    logger.info(f"   Exclude: {', '.join(config.exclude_patterns[:3])}... ({len(config.exclude_patterns)} total)")
+    logger.info(f"   Max files: {'ALL (no limit)' if config.max_files is None else config.max_files}")
+    logger.info(f"   Multi-vector: content (0.7), title (0.2), breadcrumb (0.1)")
+    logger.info(f"   Context generation: {'✅ Enabled' if context_generator else '❌ Disabled'}")
+    logger.info()
 
     # Progress callback
     def show_progress(progress: IndexingProgress):
@@ -145,9 +145,9 @@ async def main():
         )
 
     # Index workspace
-    print("🔄 Indexing FULL workspace (this will take 10-20 minutes for all 331 files)...")
-    print("   Progress will update every file...")
-    print()
+    logger.info("🔄 Indexing FULL workspace (this will take 10-20 minutes for all 331 files)...")
+    logger.info("   Progress will update every file...")
+    logger.info()
 
     try:
         final_progress = await pipeline.index_workspace(
@@ -155,50 +155,50 @@ async def main():
         )
 
         # Clear progress line
-        print(" " * 100, end="\r")
+        logger.info(" " * 100, end="\r")
 
         # Final results
-        print()
-        print("=" * 70)
-        print("✅ INDEXING COMPLETE!")
-        print("=" * 70)
-        print(f"Files processed: {final_progress.processed_files}/{final_progress.total_files}")
-        print(f"Chunks indexed: {final_progress.indexed_chunks}/{final_progress.total_chunks}")
-        print(f"Errors: {final_progress.errors}")
-        print(f"Time elapsed: {final_progress.elapsed_seconds():.1f}s")
-        print()
+        logger.info()
+        logger.info("=" * 70)
+        logger.info("✅ INDEXING COMPLETE!")
+        logger.info("=" * 70)
+        logger.info(f"Files processed: {final_progress.processed_files}/{final_progress.total_files}")
+        logger.info(f"Chunks indexed: {final_progress.indexed_chunks}/{final_progress.total_chunks}")
+        logger.error(f"Errors: {final_progress.errors}")
+        logger.info(f"Time elapsed: {final_progress.elapsed_seconds():.1f}s")
+        logger.info()
 
         # Cost breakdown
         cost_summary = pipeline.get_cost_summary()
-        print("💰 Cost Breakdown:")
-        print(f"   Context generation: ${cost_summary['context_generation']['cost_usd']:.4f}")
-        print(f"   Embeddings: ${cost_summary['embeddings']['cost_usd']:.4f}")
-        print(f"   Total: ${cost_summary['total_cost_usd']:.4f}")
-        print()
+        logger.info("💰 Cost Breakdown:")
+        logger.info(f"   Context generation: ${cost_summary['context_generation']['cost_usd']:.4f}")
+        logger.info(f"   Embeddings: ${cost_summary['embeddings']['cost_usd']:.4f}")
+        logger.info(f"   Total: ${cost_summary['total_cost_usd']:.4f}")
+        logger.info()
 
         # Embedding stats
         emb_stats = cost_summary['embeddings']['summary']
-        print("📊 Embedding Statistics:")
-        print(f"   Requests: {emb_stats['total_requests']}")
-        print(f"   Tokens: {emb_stats['total_tokens']:,}")
-        print(f"   Cache hits: {emb_stats['cache_hits']} ({emb_stats['cache_rate']:.1%})")
-        print()
+        logger.info("📊 Embedding Statistics:")
+        logger.info(f"   Requests: {emb_stats['total_requests']}")
+        logger.info(f"   Tokens: {emb_stats['total_tokens']:,}")
+        logger.info(f"   Cache hits: {emb_stats['cache_hits']} ({emb_stats['cache_rate']:.1%})")
+        logger.info()
 
         # Next steps
-        print("🎯 Next Steps:")
-        print("   1. Test search: mcp__dope-context__search_code('authentication')")
-        print("   2. Index more: Edit script to increase max_files or remove limit")
-        print("   3. Index docs: Use docs_pipeline.py for Markdown/PDF files")
-        print()
+        logger.info("🎯 Next Steps:")
+        logger.info("   1. Test search: mcp__dope-context__search_code('authentication')")
+        logger.info("   2. Index more: Edit script to increase max_files or remove limit")
+        logger.info("   3. Index docs: Use docs_pipeline.py for Markdown/PDF files")
+        logger.info()
 
         return 0
 
     except Exception as e:
-        print()
-        print("=" * 70)
-        print("❌ INDEXING FAILED")
-        print("=" * 70)
-        print(f"Error: {e}")
+        logger.info()
+        logger.info("=" * 70)
+        logger.error("❌ INDEXING FAILED")
+        logger.info("=" * 70)
+        logger.error(f"Error: {e}")
         logger.exception("Indexing failed with exception:")
         return 1
 

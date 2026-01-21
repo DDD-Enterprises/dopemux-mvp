@@ -5,6 +5,11 @@ Integrates with Serena MCP for code navigation context capture and restoration.
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import httpx
 import json
 from typing import Dict, List, Optional, Any
@@ -57,7 +62,7 @@ class SerenaClient:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            print(f\"Serena context capture failed: {e}\")
+            logger.error(f\"Serena context capture failed: {e}\")
             # Return basic fallback context
             return {
                 \"file_path\": file_path,
@@ -73,7 +78,7 @@ class SerenaClient:
             response.raise_for_status()
             return response.json().get(\"symbols\", [])
         except Exception as e:
-            print(f\"Serena symbols retrieval failed: {e}\")
+            logger.error(f\"Serena symbols retrieval failed: {e}\")
             return []
 
     async def get_navigation_history(self, user_id: str, limit: int = 10) -> List[Dict[str, Any]]:
@@ -84,7 +89,7 @@ class SerenaClient:
             response.raise_for_status()
             return response.json().get(\"history\", [])
         except Exception as e:
-            print(f\"Serena navigation history failed: {e}\")
+            logger.error(f\"Serena navigation history failed: {e}\")
             return []
 
     async def analyze_code_complexity(self, file_path: str, code_snippet: str = None) -> Optional[Dict[str, Any]]:
@@ -98,7 +103,7 @@ class SerenaClient:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            print(f\"Serena complexity analysis failed: {e}\")
+            logger.error(f\"Serena complexity analysis failed: {e}\")
             return None
 
     async def find_similar_code(self, query: str, file_path: str = None, limit: int = 5) -> List[Dict[str, Any]]:
@@ -113,7 +118,7 @@ class SerenaClient:
             response.raise_for_status()
             return response.json().get(\"results\", [])
         except Exception as e:
-            print(f\"Serena similar code search failed: {e}\")
+            logger.error(f\"Serena similar code search failed: {e}\")
             return []
 
     async def get_project_structure(self, project_root: str) -> Optional[Dict[str, Any]]:
@@ -124,7 +129,7 @@ class SerenaClient:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            print(f\"Serena project structure failed: {e}\")
+            logger.error(f\"Serena project structure failed: {e}\")
             return None
 
 # Global client instance
@@ -199,10 +204,10 @@ async def enhance_snapshot_with_serena(snapshot: Dict[str, Any], user_id: str) -
             snapshot['metadata'] = {}
         snapshot['metadata']['serena_context'] = serena_context
 
-        print(f"Enhanced snapshot with Serena context: {len(serena_context)} items captured")
+        logger.info(f"Enhanced snapshot with Serena context: {len(serena_context)} items captured")
 
     except Exception as e:
-        print(f"Serena snapshot enhancement failed: {e}")
+        logger.error(f"Serena snapshot enhancement failed: {e}")
         # Continue without Serena enhancement
 
     return snapshot
@@ -246,6 +251,6 @@ async def restore_serena_context(serena_context: Dict[str, Any]) -> Dict[str, An
         restoration_info['available'] = True
 
     except Exception as e:
-        print(f"Serena context restoration failed: {e}")
+        logger.error(f"Serena context restoration failed: {e}")
 
     return restoration_info

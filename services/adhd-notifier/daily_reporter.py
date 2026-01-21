@@ -186,7 +186,7 @@ async def generate_and_print_report():
     """Generate and print daily report"""
     reporter = DailyReporter()
     report = await reporter.generate_daily_report()
-    print(report)
+    logger.info(report)
 
 
 if __name__ == "__main__":

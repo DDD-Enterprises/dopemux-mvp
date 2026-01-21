@@ -8,6 +8,11 @@ Transaction-safe with savepoints for error recovery.
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncpg
 import json
 import sys
@@ -28,7 +33,7 @@ class ConPortReingester:
     async def connect(self):
         """Establish database connection"""
         self.conn = await asyncpg.connect(self.db_url)
-        print(f"✓ Connected to ConPort PostgreSQL")
+        logger.info(f"✓ Connected to ConPort PostgreSQL")
 
     async def disconnect(self):
         """Close database connection"""
@@ -42,7 +47,7 @@ class ConPortReingester:
         CRITICAL: Inserts in created_at order so SERIAL IDs match temporal sequence
         """
 
-        print(f"\nRe-ingesting {len(decisions)} decisions...")
+        logger.info(f"\nRe-ingesting {len(decisions)} decisions...")
 
         insert_query = """
             INSERT INTO decisions_v2 (
@@ -87,7 +92,7 @@ class ConPortReingester:
                 successful += 1
 
                 if successful % 10 == 0:
-                    print(f"  Progress: {successful}/{len(decisions)}")
+                    logger.info(f"  Progress: {successful}/{len(decisions)}")
 
             except Exception as e:
                 await self.conn.execute("ROLLBACK TO SAVEPOINT decision_insert")
@@ -96,21 +101,21 @@ class ConPortReingester:
                     'summary': old_decision['summary'][:50],
                     'error': str(e)
                 })
-                print(f"  ✗ Failed decision {old_decision['id']}: {e}")
+                logger.error(f"  ✗ Failed decision {old_decision['id']}: {e}")
 
-        print(f"\n✓ Decisions: {successful} successful, {len(failed)} failed")
+        logger.error(f"\n✓ Decisions: {successful} successful, {len(failed)} failed")
 
         if failed:
-            print("\nFailed decisions:")
+            logger.error("\nFailed decisions:")
             for f in failed:
-                print(f"  - {f['id']}: {f['summary']}... ({f['error']})")
+                logger.error(f"  - {f['id']}: {f['summary']}... ({f['error']})")
 
         return successful, failed
 
     async def reingest_relationships(self, relationships: List[Dict]):
         """Re-ingest relationships into entity_relationships_v2"""
 
-        print(f"\nRe-ingesting {len(relationships)} relationships...")
+        logger.info(f"\nRe-ingesting {len(relationships)} relationships...")
 
         insert_query = """
             INSERT INTO entity_relationships_v2 (
@@ -156,9 +161,9 @@ class ConPortReingester:
                     'type': old_rel['relationship_type'],
                     'error': str(e)
                 })
-                print(f"  ✗ Failed relationship {old_rel['source_id']}→{old_rel['target_id']}: {e}")
+                logger.error(f"  ✗ Failed relationship {old_rel['source_id']}→{old_rel['target_id']}: {e}")
 
-        print(f"\n✓ Relationships: {successful} successful, {len(failed)} failed")
+        logger.error(f"\n✓ Relationships: {successful} successful, {len(failed)} failed")
 
         return successful, failed
 
@@ -169,10 +174,10 @@ class ConPortReingester:
         with open(export_file, 'r') as f:
             export_data = json.load(f)
 
-        print(f"Loaded backup from: {export_file}")
-        print(f"  Timestamp: {export_data['metadata']['timestamp']}")
-        print(f"  Decisions: {export_data['metadata']['decision_count']}")
-        print(f"  Relationships: {export_data['metadata']['relationship_count']}")
+        logger.info(f"Loaded backup from: {export_file}")
+        logger.info(f"  Timestamp: {export_data['metadata']['timestamp']}")
+        logger.info(f"  Decisions: {export_data['metadata']['decision_count']}")
+        logger.info(f"  Relationships: {export_data['metadata']['relationship_count']}")
 
         await self.connect()
 
@@ -195,13 +200,13 @@ class ConPortReingester:
                 if rel_failed:
                     raise ValueError(f"{len(rel_failed)} relationships failed - aborting")
 
-                print(f"\n✓ Transaction complete - all data re-ingested")
+                logger.info(f"\n✓ Transaction complete - all data re-ingested")
 
                 # Statistics
                 stats = self.transformer.get_statistics()
-                print(f"\nTransformation statistics:")
-                print(f"  UUID mappings: {stats['uuid_mappings']}")
-                print(f"  Relationship type mappings: {len(stats['relationship_type_mappings'])}")
+                logger.info(f"\nTransformation statistics:")
+                logger.info(f"  UUID mappings: {stats['uuid_mappings']}")
+                logger.info(f"  Relationship type mappings: {len(stats['relationship_type_mappings'])}")
 
                 return {
                     'decisions_success': dec_success,
@@ -221,32 +226,32 @@ async def main():
     EXPORT_FILE = Path("conport_backup_dopemux-mvp.json")
 
     if not EXPORT_FILE.exists():
-        print(f"✗ ERROR: Export file not found: {EXPORT_FILE}")
-        print("  Run export_conport.py first")
+        logger.error(f"✗ ERROR: Export file not found: {EXPORT_FILE}")
+        logger.info("  Run export_conport.py first")
         return 1
 
-    print("=" * 60)
-    print("ConPort Data Re-ingestion (Schema Upgrade)")
-    print("=" * 60)
-    print(f"Export file: {EXPORT_FILE}")
-    print()
+    logger.info("=" * 60)
+    logger.info("ConPort Data Re-ingestion (Schema Upgrade)")
+    logger.info("=" * 60)
+    logger.info(f"Export file: {EXPORT_FILE}")
+    logger.info()
 
     reingester = ConPortReingester(DB_URL)
 
     try:
         result = await reingester.reingest_all(EXPORT_FILE)
 
-        print("\n✓ SUCCESS: Data re-ingested successfully")
-        print("\nNext steps:")
-        print("  1. Run validate.py to verify data integrity")
-        print("  2. If validation passes, run switchover.py")
+        logger.info("\n✓ SUCCESS: Data re-ingested successfully")
+        logger.info("\nNext steps:")
+        logger.info("  1. Run validate.py to verify data integrity")
+        logger.info("  2. If validation passes, run switchover.py")
 
         return 0
 
     except Exception as e:
-        print(f"\n✗ ERROR: Re-ingestion failed")
-        print(f"  {str(e)}")
-        print("\nTransaction rolled back - no changes applied")
+        logger.error(f"\n✗ ERROR: Re-ingestion failed")
+        logger.info(f"  {str(e)}")
+        logger.info("\nTransaction rolled back - no changes applied")
         return 1
 
 

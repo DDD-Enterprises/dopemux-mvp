@@ -372,9 +372,10 @@ class ClaudeContextIntegration:
 
             return relevant_symbols[:3]  # Top 3 most relevant
 
-        except Exception:
+        except Exception as e:
             return []
 
+            logger.error(f"Error: {e}")
     def _get_symbol_type_name(self, kind: int) -> str:
         """Convert LSP symbol kind to readable name."""
         kind_names = {
@@ -437,9 +438,10 @@ class ClaudeContextIntegration:
             indicator_count = sum(1 for indicator in complexity_indicators if indicator in content.lower())
             return min(indicator_count / 10.0, 1.0)  # Normalize to 0-1
 
-        except Exception:
+        except Exception as e:
             return 0.5
 
+            logger.error(f"Error: {e}")
     def _generate_adhd_summary(self, content: str, file_path: str) -> str:
         """Generate ADHD-friendly summary of content."""
         try:
@@ -461,9 +463,10 @@ class ClaudeContextIntegration:
             else:
                 return f"📍 Content in {file_name}"
 
-        except Exception:
+        except Exception as e:
             return f"📍 Code content"
 
+            logger.error(f"Error: {e}")
     def _generate_adhd_guidance(self, cognitive_load: float, requires_focus: bool) -> str:
         """Generate ADHD-friendly guidance for result."""
         if requires_focus:
@@ -567,9 +570,10 @@ class ClaudeContextIntegration:
             else:
                 return "different_area"
 
-        except Exception:
+        except Exception as e:
             return "unknown"
 
+            logger.error(f"Error: {e}")
     # Public API Methods
 
     async def search_similar_functions(
@@ -872,9 +876,10 @@ class ClaudeContextIntegration:
 
                 return ' '.join(lines)[:200]  # First 200 chars
 
-        except Exception:
+        except Exception as e:
             return Path(file_path).stem  # Fallback to filename
 
+            logger.error(f"Error: {e}")
     # Health and Monitoring
 
     async def get_integration_health(self) -> Dict[str, Any]:

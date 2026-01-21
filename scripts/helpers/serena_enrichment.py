@@ -14,6 +14,11 @@ Usage:
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import json
 import math
 from typing import Dict, List, Optional
@@ -91,9 +96,9 @@ async def enrich_search_with_impact(
 
         for r in enriched:
             if r.get('relationships'):
-                print(f"{r['function_name']}: {r['relationships']['impact_message']}")
+                logger.info(f"{r['function_name']}: {r['relationships']['impact_message']}")
     """
-    print(f"Enriching top {min(max_enrich, len(search_results))} results with Serena impact analysis...")
+    logger.info(f"Enriching top {min(max_enrich, len(search_results))} results with Serena impact analysis...")
 
     enriched = []
 
@@ -137,6 +142,7 @@ async def enrich_search_with_impact(
         except Exception as e:
             result['relationships'] = None
 
+            logger.error(f"Error: {e}")
         enriched.append(result)
 
     return enriched
@@ -182,8 +188,8 @@ async def get_unified_complexity(
             symbol="authenticate",
             user_id="alice"
         )
-        print(f"Complexity: {complexity['unified_score']:.2f}")
-        print(f"Interpretation: {complexity['interpretation']}")
+        logger.info(f"Complexity: {complexity['unified_score']:.2f}")
+        logger.info(f"Interpretation: {complexity['interpretation']}")
     """
     # Weights (configurable)
     AST_WEIGHT = 0.4
@@ -245,7 +251,7 @@ async def get_session_dashboard(user_id: str = "default") -> str:
     Example:
         # In Claude Code:
         dashboard = await get_session_dashboard(user_id="alice")
-        print(dashboard)
+        logger.info(dashboard)
     """
     # This helper demonstrates the format
     # Actual implementation is in services/session_intelligence/coordinator.py
@@ -277,7 +283,7 @@ USAGE:
 
   coordinator = await get_session_intelligence()
   dashboard = await coordinator.get_unified_dashboard(user_id)
-  print(dashboard)
+  logger.info(dashboard)
 """
 
 
@@ -303,11 +309,11 @@ for r in results[:3]:
         column=0
     )
     callers = refs['found']
-    print(f"{r['function_name']}: {get_impact_message(callers)}")
+    logger.info(f"{r['function_name']}: {get_impact_message(callers)}")
 
 # F-NEW-3: Unified Complexity
 complexity = await get_unified_complexity("auth.py", "login")
-print(f"Complexity: {complexity['unified_score']} - {complexity['interpretation']}")
+logger.info(f"Complexity: {complexity['unified_score']} - {complexity['interpretation']}")
 
 # F-NEW-6: Session Dashboard (OPERATIONAL!)
 import sys
@@ -316,7 +322,7 @@ from coordinator import get_session_intelligence
 
 coordinator = await get_session_intelligence()
 dashboard = await coordinator.get_unified_dashboard()
-print(dashboard)
+logger.info(dashboard)
 
 HELPER FUNCTIONS:
 - calculate_impact_score(callers) → 0.0-1.0

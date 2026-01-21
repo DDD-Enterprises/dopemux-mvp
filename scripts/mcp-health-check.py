@@ -5,6 +5,11 @@ Verifies all Dopemux MCP servers are running and accessible.
 """
 
 import subprocess
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import socket
 import sys
 import time
@@ -34,6 +39,7 @@ def check_docker_container(name: str) -> Tuple[bool, str]:
     except Exception as e:
         return False, f"Error: {e}"
 
+        logger.error(f"Error: {e}")
 def check_port(port: int, timeout: float = 2.0) -> bool:
     """Check if port is listening."""
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -42,9 +48,10 @@ def check_port(port: int, timeout: float = 2.0) -> bool:
         result = sock.connect_ex(('localhost', port))
         sock.close()
         return result == 0
-    except:
+    except Exception as e:
         return False
 
+        logger.error(f"Error: {e}")
 def check_sse_endpoint(port: int, path: str = '/sse') -> Tuple[bool, str]:
     """Check SSE endpoint responds."""
     try:
@@ -61,6 +68,7 @@ def check_sse_endpoint(port: int, path: str = '/sse') -> Tuple[bool, str]:
     except Exception as e:
         return False, str(e)
 
+        logger.error(f"Error: {e}")
 def check_http_endpoint(port: int, path: str = '/health') -> Tuple[bool, str]:
     """Check HTTP endpoint responds."""
     try:
@@ -75,6 +83,7 @@ def check_http_endpoint(port: int, path: str = '/health') -> Tuple[bool, str]:
     except Exception as e:
         return False, str(e)
 
+        logger.error(f"Error: {e}")
 MCP_SERVICES = {
     'Serena v2 (Code Intelligence)': {
         'type': 'sse',
@@ -152,9 +161,9 @@ INFRASTRUCTURE = {
 
 def print_header(text: str):
     """Print section header."""
-    print(f"\n{BLUE}{'=' * 60}{RESET}")
-    print(f"{BLUE}{text:^60}{RESET}")
-    print(f"{BLUE}{'=' * 60}{RESET}\n")
+    logger.info(f"\n{BLUE}{'=' * 60}{RESET}")
+    logger.info(f"{BLUE}{text:^60}{RESET}")
+    logger.info(f"{BLUE}{'=' * 60}{RESET}\n")
 
 def print_status(name: str, status: bool, details: str = ""):
     """Print service status line."""
@@ -165,7 +174,7 @@ def print_status(name: str, status: bool, details: str = ""):
     name_width = 35
     name_display = name[:name_width].ljust(name_width)
 
-    print(f"{icon} {color}{name_display}{RESET} {details}")
+    logger.info(f"{icon} {color}{name_display}{RESET} {details}")
 
 def main():
     print_header("Dopemux MCP Services Health Check")
@@ -173,7 +182,7 @@ def main():
     all_healthy = True
 
     # Check MCP Services
-    print(f"{YELLOW}MCP Services:{RESET}\n")
+    logger.info(f"{YELLOW}MCP Services:{RESET}\n")
 
     for name, config in MCP_SERVICES.items():
         container_ok, container_status = check_docker_container(config['container'])
@@ -215,7 +224,7 @@ def main():
             all_healthy = False
 
     # Check Infrastructure
-    print(f"\n{YELLOW}Infrastructure Services:{RESET}\n")
+    logger.info(f"\n{YELLOW}Infrastructure Services:{RESET}\n")
 
     for name, config in INFRASTRUCTURE.items():
         container_ok, container_status = check_docker_container(config['container'])
@@ -237,20 +246,20 @@ def main():
     print_header("Summary")
 
     if all_healthy:
-        print(f"{GREEN}✅ All services are healthy and operational{RESET}\n")
+        logger.info(f"{GREEN}✅ All services are healthy and operational{RESET}\n")
         return 0
     else:
-        print(f"{RED}❌ Some services are unhealthy or not running{RESET}\n")
-        print(f"{YELLOW}💡 Troubleshooting tips:{RESET}")
-        print(f"   1. Start all services: docker-compose up -d")
-        print(f"   2. Check logs: docker logs <container-name>")
-        print(f"   3. Restart Claude Code to reconnect MCP servers")
-        print()
+        logger.info(f"{RED}❌ Some services are unhealthy or not running{RESET}\n")
+        logger.info(f"{YELLOW}💡 Troubleshooting tips:{RESET}")
+        logger.info(f"   1. Start all services: docker-compose up -d")
+        logger.info(f"   2. Check logs: docker logs <container-name>")
+        logger.info(f"   3. Restart Claude Code to reconnect MCP servers")
+        logger.info()
         return 1
 
 if __name__ == '__main__':
     try:
         sys.exit(main())
     except KeyboardInterrupt:
-        print(f"\n{YELLOW}Health check interrupted{RESET}")
+        logger.info(f"\n{YELLOW}Health check interrupted{RESET}")
         sys.exit(130)
