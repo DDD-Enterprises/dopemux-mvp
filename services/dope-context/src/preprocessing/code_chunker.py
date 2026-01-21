@@ -461,16 +461,16 @@ def calculate_total(items: List[Item]) -> float:
 
     chunks = chunker.chunk_code_string(python_code, language="python")
 
-    print(f"Extracted {len(chunks)} chunks:\n")
+    logger.info(f"Extracted {len(chunks)} chunks:\n")
     for i, chunk in enumerate(chunks, 1):
-        print(f"Chunk {i}:")
-        print(f"  Type: {chunk.chunk_type}")
-        print(f"  Symbol: {chunk.symbol_name}")
-        print(f"  Parent: {chunk.parent_symbol}")
-        print(f"  Lines: {chunk.start_line}-{chunk.end_line}")
-        print(f"  Complexity: {chunk.complexity}")
-        print(f"  Tokens: ~{chunk.tokens_estimate}")
-        print()
+        logger.info(f"Chunk {i}:")
+        logger.info(f"  Type: {chunk.chunk_type}")
+        logger.info(f"  Symbol: {chunk.symbol_name}")
+        logger.info(f"  Parent: {chunk.parent_symbol}")
+        logger.info(f"  Lines: {chunk.start_line}-{chunk.end_line}")
+        logger.info(f"  Complexity: {chunk.complexity}")
+        logger.info(f"  Tokens: ~{chunk.tokens_estimate}")
+        logger.info()
 
 
 if __name__ == "__main__":

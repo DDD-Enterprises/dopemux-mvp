@@ -214,7 +214,8 @@ class VoiceCommandsBridgeAdapter:
                     },
                     source="voice-commands",
                 )
-            except:
+            except Exception as e:
                 pass  # Don't fail on event publishing failure
             
+                logger.error(f"Error: {e}")
             return {"success": False, "error": str(e)}

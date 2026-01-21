@@ -7,6 +7,11 @@ ADHD-optimized type-safe models with progressive disclosure support.
 """
 
 from dataclasses import dataclass, field
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
@@ -84,7 +89,7 @@ class DecisionNeighborhood:
 
         # ADHD: Warn if exceeding recommended limits
         if len(self.hop_1_neighbors) > 10:
-            print(f"⚠️  ADHD Warning: {len(self.hop_1_neighbors)} hop-1 neighbors (recommended: ≤10)")
+            logger.warning(f"⚠️  ADHD Warning: {len(self.hop_1_neighbors)} hop-1 neighbors (recommended: ≤10)")
 
     def expand_to_2_hop(self):
         """User action: expand to show 2-hop neighbors"""
@@ -226,12 +231,12 @@ ChainList = List[DecisionChainNode]
 
 if __name__ == "__main__":
     # Test data models
-    print("=" * 60)
-    print("CONPORT-KG-2025 Data Models Test")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("CONPORT-KG-2025 Data Models Test")
+    logger.info("=" * 60)
 
     # Test DecisionCard (Tier 1)
-    print("\n[1] DecisionCard (Tier 1 - Top-3 Pattern):")
+    logger.info("\n[1] DecisionCard (Tier 1 - Top-3 Pattern):")
     card = DecisionCard(
         id=117,
         summary="Phase 2 Query API Implementation Strategy",
@@ -239,12 +244,12 @@ if __name__ == "__main__":
         related_count=2,
         tags=["db-001", "phase-2", "api"]
     )
-    print(f"   #{card.id}: {card.summary}")
-    print(f"   Tags: {', '.join(card.tags)}")
-    print(f"   Related: {card.related_count}")
+    logger.info(f"   #{card.id}: {card.summary}")
+    logger.info(f"   Tags: {', '.join(card.tags)}")
+    logger.info(f"   Related: {card.related_count}")
 
     # Test DecisionSummary (Tier 2)
-    print("\n[2] DecisionSummary (Tier 2 - Focused View):")
+    logger.info("\n[2] DecisionSummary (Tier 2 - Focused View):")
     summary = DecisionSummary(
         id=117,
         summary="Phase 2 Query API Implementation Strategy",
@@ -253,11 +258,11 @@ if __name__ == "__main__":
         implementation="7-phase sequential approach",
         relationship_types=["BUILDS_UPON", "IMPLEMENTS"]
     )
-    print(f"   Cognitive Load: {summary.get_cognitive_load()}")
-    print(f"   Relationship Types: {', '.join(summary.relationship_types)}")
+    logger.info(f"   Cognitive Load: {summary.get_cognitive_load()}")
+    logger.info(f"   Relationship Types: {', '.join(summary.relationship_types)}")
 
     # Test DecisionNeighborhood (Tier 2 - Progressive Disclosure)
-    print("\n[3] DecisionNeighborhood (Tier 2 - Progressive):")
+    logger.info("\n[3] DecisionNeighborhood (Tier 2 - Progressive):")
     neighborhood = DecisionNeighborhood(
         center=card,
         hop_1_neighbors=[
@@ -266,14 +271,14 @@ if __name__ == "__main__":
         ],
         hop_2_neighbors=[]
     )
-    print(f"   Center: #{neighborhood.center.id}")
-    print(f"   1-hop neighbors: {len(neighborhood.hop_1_neighbors)}")
-    print(f"   Expanded: {neighborhood.is_expanded}")
+    logger.info(f"   Center: #{neighborhood.center.id}")
+    logger.info(f"   1-hop neighbors: {len(neighborhood.hop_1_neighbors)}")
+    logger.info(f"   Expanded: {neighborhood.is_expanded}")
     neighborhood.expand_to_2_hop()
-    print(f"   After expansion: {neighborhood.is_expanded}")
+    logger.info(f"   After expansion: {neighborhood.is_expanded}")
 
     # Test Relationship
-    print("\n[4] Relationship (Edge Metadata):")
+    logger.info("\n[4] Relationship (Edge Metadata):")
     rel = Relationship(
         source_id=117,
         target_id=114,
@@ -281,10 +286,10 @@ if __name__ == "__main__":
         description="Implementation builds on architecture",
         direction="outgoing"
     )
-    print(f"   {rel.to_display_string()}")
+    logger.info(f"   {rel.to_display_string()}")
 
     # Test DecisionAnalytics (Tier 3)
-    print("\n[5] DecisionAnalytics (Tier 3 - Metrics):")
+    logger.info("\n[5] DecisionAnalytics (Tier 3 - Metrics):")
     analytics = DecisionAnalytics(
         decision_id=85,
         degree_centrality=8,
@@ -292,9 +297,9 @@ if __name__ == "__main__":
         relationship_distribution={"BUILDS_UPON": 4, "VALIDATES": 2, "FULFILLS": 2},
         is_foundational=True
     )
-    print(f"   Decision #{analytics.decision_id}")
-    print(f"   Importance: {analytics.get_importance_level()}")
-    print(f"   Hub Score: {analytics.hub_score:.2f}")
-    print(f"   Influence: {analytics.influence_score} downstream")
+    logger.info(f"   Decision #{analytics.decision_id}")
+    logger.info(f"   Importance: {analytics.get_importance_level()}")
+    logger.info(f"   Hub Score: {analytics.hub_score:.2f}")
+    logger.info(f"   Influence: {analytics.influence_score} downstream")
 
-    print("\n✅ All data models validated!")
+    logger.info("\n✅ All data models validated!")

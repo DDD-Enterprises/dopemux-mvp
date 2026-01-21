@@ -101,10 +101,11 @@ def create_session(
 
     try:
         _run_tmux(["set-option", "-t", session, "exit-empty", "off"], capture_output=True)
-    except Exception:
+    except Exception as e:
         pass
 
 
+        logger.error(f"Error: {e}")
 def list_windows(session: Optional[str] = None) -> List[str]:
     """Return the list of tmux window names."""
 

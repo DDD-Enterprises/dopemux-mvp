@@ -6,6 +6,11 @@ and encouraging feedback designed for neurodivergent users.
 """
 
 import time
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timedelta

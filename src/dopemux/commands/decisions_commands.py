@@ -12,6 +12,11 @@ full ConPort enhancement roadmap (Phase 1-5).
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -42,9 +47,9 @@ async def get_conport_connection():
         conn = await asyncpg.connect(database_url)
         return conn
     except Exception as e:
-        console.print(f"[red]❌ Failed to connect to ConPort database: {e}[/red]")
-        console.print("[dim]Make sure mcp-conport container is running (docker ps | grep conport)[/dim]")
-        console.print(f"[dim]Database: localhost:5455/dopemux_knowledge_graph[/dim]")
+        console.logger.error(f"[red]❌ Failed to connect to ConPort database: {e}[/red]")
+        console.logger.info("[dim]Make sure mcp-conport container is running (docker ps | grep conport)[/dim]")
+        console.logger.info(f"[dim]Database: localhost:5455/dopemux_knowledge_graph[/dim]")
         return None
 
 
@@ -66,10 +71,11 @@ def get_workspace_id() -> str:
         full_path = result.stdout.strip()
         # Return basename to match ConPort format
         return Path(full_path).name
-    except Exception:
+    except Exception as e:
         return Path(os.getcwd()).name
 
 
+        logger.error(f"Error: {e}")
 # ============================================================================
 # QUICK WIN 1: Decision Review Command (~2 hours)
 # ============================================================================
@@ -114,7 +120,7 @@ async def get_decisions_needing_review(
         rows = await conn.fetch(query, workspace_id, days_threshold)
         return rows
     except Exception as e:
-        console.print(f"[yellow]⚠️  Query error (this is expected if ConPort hasn't been enhanced yet): {e}[/yellow]")
+        console.logger.error(f"[yellow]⚠️  Query error (this is expected if ConPort hasn't been enhanced yet): {e}[/yellow]")
         return []
 
 
@@ -154,8 +160,8 @@ def review_decisions(overdue: bool, interactive: bool, workspace: Optional[str])
             decisions = await get_decisions_needing_review(conn, workspace_id, overdue)
 
             if not decisions:
-                console.print("\n[green]✅ No decisions need review! All caught up.[/green]")
-                console.print("[dim]Tip: Decisions are flagged for review after 30 days.[/dim]")
+                console.logger.info("\n[green]✅ No decisions need review! All caught up.[/green]")
+                console.logger.info("[dim]Tip: Decisions are flagged for review after 30 days.[/dim]")
                 return
 
             # Display table
@@ -189,18 +195,18 @@ def review_decisions(overdue: bool, interactive: bool, workspace: Optional[str])
                     tags
                 )
 
-            console.print(table)
+            console.logger.info(table)
 
             # Recommendations
-            console.print("\n[bold]💡 Review Recommendations:[/bold]")
-            console.print("  • Check if implementation is complete")
-            console.print("  • Update outcome status (successful/failed/mixed)")
-            console.print("  • Add lessons learned")
-            console.print("  • Schedule follow-up if needed")
+            console.logger.info("\n[bold]💡 Review Recommendations:[/bold]")
+            console.logger.info("  • Check if implementation is complete")
+            console.logger.error("  • Update outcome status (successful/failed/mixed)")
+            console.logger.info("  • Add lessons learned")
+            console.logger.info("  • Schedule follow-up if needed")
 
             if interactive:
-                console.print("\n[dim]Interactive mode coming in Phase 1 implementation...[/dim]")
-                console.print("[dim]For now, use ConPort MCP tools directly via Claude Code[/dim]")
+                console.logger.info("\n[dim]Interactive mode coming in Phase 1 implementation...[/dim]")
+                console.logger.info("[dim]For now, use ConPort MCP tools directly via Claude Code[/dim]")
 
         finally:
             await conn.close()
@@ -285,19 +291,19 @@ def decision_stats(since: int, workspace: Optional[str]):
             stats = await get_decision_statistics(conn, workspace_id, since)
 
             if stats["total"] == 0:
-                console.print(f"\n[yellow]No decisions found in the last {since} days.[/yellow]")
-                console.print("[dim]Start logging decisions with ConPort MCP![/dim]")
+                console.logger.info(f"\n[yellow]No decisions found in the last {since} days.[/yellow]")
+                console.logger.info("[dim]Start logging decisions with ConPort MCP![/dim]")
                 return
 
             # Summary stats
-            console.print(f"\n[bold]📊 Summary (Last {since} Days)[/bold]")
-            console.print(f"  Total Decisions: [cyan]{stats['total']}[/cyan]")
-            console.print(f"  Recent (7d):     [green]{stats['recent_7d']}[/green]")
-            console.print(f"  Daily Average:   [dim]{stats['total'] / since:.1f}[/dim]")
+            console.logger.info(f"\n[bold]📊 Summary (Last {since} Days)[/bold]")
+            console.logger.info(f"  Total Decisions: [cyan]{stats['total']}[/cyan]")
+            console.logger.info(f"  Recent (7d):     [green]{stats['recent_7d']}[/green]")
+            console.logger.info(f"  Daily Average:   [dim]{stats['total'] / since:.1f}[/dim]")
 
             # Tag distribution
             if stats["tag_counts"]:
-                console.print(f"\n[bold]🏷️  Top Tags[/bold]")
+                console.logger.info(f"\n[bold]🏷️  Top Tags[/bold]")
 
                 table = Table(show_header=True, box=None)
                 table.add_column("Tag", style="cyan")
@@ -311,10 +317,10 @@ def decision_stats(since: int, workspace: Optional[str]):
                     bar = "█" * bar_width
                     table.add_row(tag, str(count), bar)
 
-                console.print(table)
+                console.logger.info(table)
 
             # Enhanced ADHD Insights - analyze decision patterns for ADHD optimization
-            console.print(f"\n[bold]🧠 ADHD Decision Insights[/bold]")
+            console.logger.info(f"\n[bold]🧠 ADHD Decision Insights[/bold]")
 
             # Success Rate & Quality Analysis
             successful_decisions = sum(1 for d in decisions if d.get('outcome_status') == 'successful')
@@ -324,25 +330,25 @@ def decision_stats(since: int, workspace: Optional[str]):
 
             if total_with_outcome > 0:
                 success_rate = (successful_decisions / total_with_outcome) * 100
-                console.print(f"  ✅ Success Rate: {success_rate:.1f}% ({successful_decisions}/{total_with_outcome} completed)")
+                console.logger.info(f"  ✅ Success Rate: {success_rate:.1f}% ({successful_decisions}/{total_with_outcome} completed)")
 
                 if failed_decisions > 0:
-                    console.print(f"  ⚠️  Failure Rate: {(failed_decisions/total_with_outcome)*100:.1f}% - Consider reviewing decision process")
+                    console.logger.error(f"  ⚠️  Failure Rate: {(failed_decisions/total_with_outcome)*100:.1f}% - Consider reviewing decision process")
                 if mixed_decisions > 0:
-                    console.print(f"  ⚖️  Mixed Outcomes: {(mixed_decisions/total_with_outcome)*100:.1f}% - Partial wins need follow-up")
+                    console.logger.info(f"  ⚖️  Mixed Outcomes: {(mixed_decisions/total_with_outcome)*100:.1f}% - Partial wins need follow-up")
             else:
-                console.print(f"  ⏳ No outcomes tracked yet - start logging decision results!")
+                console.logger.info(f"  ⏳ No outcomes tracked yet - start logging decision results!")
 
             # Decision Velocity & ADHD Task Chunking
             recent_decisions = [d for d in decisions if d['created_at'] > since_date]
             if recent_decisions:
                 daily_rate = len(recent_decisions) / since
-                console.print(f"  📈 Decision Velocity: {daily_rate:.1f} decisions/day")
+                console.logger.info(f"  📈 Decision Velocity: {daily_rate:.1f} decisions/day")
 
                 if daily_rate > 3:
-                    console.print(f"  ⚡ High velocity! Consider ADHD-friendly breaks every 25 minutes")
+                    console.logger.info(f"  ⚡ High velocity! Consider ADHD-friendly breaks every 25 minutes")
                 elif daily_rate < 0.5:
-                    console.print(f"  🐌 Low velocity - may indicate decision paralysis or overload")
+                    console.logger.info(f"  🐌 Low velocity - may indicate decision paralysis or overload")
 
             # Confidence Level Analysis (ADHD decision quality)
             confidence_levels = {}
@@ -356,13 +362,13 @@ def decision_stats(since: int, workspace: Optional[str]):
                 total_conf = sum(confidence_levels.values())
 
                 if total_conf > 0:
-                    console.print(f"  🎯 Confidence Distribution:")
-                    console.print(f"     High: {high_conf/total_conf*100:.0f}% | Low: {low_conf/total_conf*100:.0f}%")
+                    console.logger.info(f"  🎯 Confidence Distribution:")
+                    console.logger.info(f"     High: {high_conf/total_conf*100:.0f}% | Low: {low_conf/total_conf*100:.0f}%")
 
                     if low_conf > high_conf:
-                        console.print(f"     ⚠️  Many low-confidence decisions - may indicate rushed choices")
+                        console.logger.info(f"     ⚠️  Many low-confidence decisions - may indicate rushed choices")
                     if high_conf > low_conf * 2:
-                        console.print(f"     ✅ Strong confidence pattern - good decision hygiene!")
+                        console.logger.info(f"     ✅ Strong confidence pattern - good decision hygiene!")
 
             # Decision Type Analysis (ADHD executive function support)
             decision_types = {}
@@ -374,23 +380,23 @@ def decision_stats(since: int, workspace: Optional[str]):
                 most_common = max(decision_types.items(), key=lambda x: x[1])
                 diversity = len(decision_types)
 
-                console.print(f"  🏗️  Decision Portfolio: {diversity} types, most common: {most_common[0]} ({most_common[1]}x)")
+                console.logger.info(f"  🏗️  Decision Portfolio: {diversity} types, most common: {most_common[0]} ({most_common[1]}x)")
 
                 if diversity < 3:
-                    console.print(f"     ⚠️  Low decision diversity - consider broadening decision scope")
+                    console.logger.info(f"     ⚠️  Low decision diversity - consider broadening decision scope")
                 elif diversity > 5:
-                    console.print(f"     🎭 Complex portfolio - may benefit from decision categorization")
+                    console.logger.info(f"     🎭 Complex portfolio - may benefit from decision categorization")
 
             # Time Pressure Analysis (ADHD temporal awareness)
             urgent_decisions = [d for d in decisions if (datetime.now() - d['created_at']).days < 1]
             if urgent_decisions:
                 urgent_rate = len(urgent_decisions) / len(decisions) * 100
-                console.print(f"  ⏰ Time Pressure: {urgent_rate:.0f}% decisions made same-day")
+                console.logger.info(f"  ⏰ Time Pressure: {urgent_rate:.0f}% decisions made same-day")
 
                 if urgent_rate > 50:
-                    console.print(f"     🚨 High urgency pattern - consider implementing decision buffers")
+                    console.logger.info(f"     🚨 High urgency pattern - consider implementing decision buffers")
                 elif urgent_rate < 10:
-                    console.print(f"     🧘 Low urgency - good for thoughtful decision-making")
+                    console.logger.info(f"     🧘 Low urgency - good for thoughtful decision-making")
 
             # Tag Pattern Analysis (ADHD categorization support)
             all_tags = []
@@ -403,15 +409,15 @@ def decision_stats(since: int, workspace: Optional[str]):
                 unique_tags = len(tag_counts)
                 most_used = tag_counts.most_common(1)[0] if tag_counts else ("none", 0)
 
-                console.print(f"  🏷️  Tagging: {unique_tags} unique tags, most used: '{most_used[0]}' ({most_used[1]}x)")
+                console.logger.info(f"  🏷️  Tagging: {unique_tags} unique tags, most used: '{most_used[0]}' ({most_used[1]}x)")
 
                 if unique_tags < 5:
-                    console.print(f"     💭 Consider more granular tagging for better organization")
+                    console.logger.info(f"     💭 Consider more granular tagging for better organization")
                 elif unique_tags > 15:
-                    console.print(f"     🗂️  Rich tagging system - excellent for decision retrieval!")
+                    console.logger.info(f"     🗂️  Rich tagging system - excellent for decision retrieval!")
 
             # ADHD-Specific Recommendations
-            console.print(f"\n[bold]💡 ADHD Optimization Recommendations:[/bold]")
+            console.logger.info(f"\n[bold]💡 ADHD Optimization Recommendations:[/bold]")
 
             recommendations = []
 
@@ -439,9 +445,9 @@ def decision_stats(since: int, workspace: Optional[str]):
                 recommendations.append("✅ Decision patterns look healthy - keep up the good work!")
 
             for rec in recommendations[:3]:  # Limit to 3 for ADHD focus
-                console.print(f"  • {rec}")
+                console.logger.info(f"  • {rec}")
 
-            console.print(f"\n[dim]🧠 Enhanced ADHD insights available in Phase 3 (ML-powered patterns)[/dim]")
+            console.logger.info(f"\n[dim]🧠 Enhanced ADHD insights available in Phase 3 (ML-powered patterns)[/dim]")
 
         finally:
             await conn.close()
@@ -506,13 +512,13 @@ def log_energy(level: str, context: Optional[str], workspace: Optional[str]):
         try:
             await log_energy_level(conn, workspace_id, level.lower(), context)
 
-            console.print(f"\n{emoji} [bold]Energy logged:[/bold] [cyan]{level.upper()}[/cyan]")
+            console.logger.info(f"\n{emoji} [bold]Energy logged:[/bold] [cyan]{level.upper()}[/cyan]")
             if context:
-                console.print(f"   Context: [dim]{context}[/dim]")
-            console.print(f"   Time: [dim]{datetime.now().strftime('%I:%M %p')}[/dim]")
+                console.logger.info(f"   Context: [dim]{context}[/dim]")
+            console.logger.info(f"   Time: [dim]{datetime.now().strftime('%I:%M %p')}[/dim]")
 
-            console.print("\n[dim]💡 Tip: Log energy regularly to discover your peak productivity times[/dim]")
-            console.print("[dim]   Phase 4 will add energy correlation with decision quality[/dim]")
+            console.logger.info("\n[dim]💡 Tip: Log energy regularly to discover your peak productivity times[/dim]")
+            console.logger.info("[dim]   Phase 4 will add energy correlation with decision quality[/dim]")
 
         finally:
             await conn.close()
@@ -554,11 +560,11 @@ def energy_status(days: int, workspace: Optional[str]):
             """, workspace_id, days)
 
             if not rows:
-                console.print(f"\n[yellow]No energy logs found in the last {days} days.[/yellow]")
-                console.print("[dim]Start logging with: dopemux energy [low|medium|high][/dim]")
+                console.logger.info(f"\n[yellow]No energy logs found in the last {days} days.[/yellow]")
+                console.logger.info("[dim]Start logging with: dopemux energy [low|medium|high][/dim]")
                 return
 
-            console.print(f"\n[bold]⚡ Energy History (Last {days} Days)[/bold]\n")
+            console.logger.info(f"\n[bold]⚡ Energy History (Last {days} Days)[/bold]\n")
 
             for row in rows:
                 import json
@@ -578,9 +584,9 @@ def energy_status(days: int, workspace: Optional[str]):
                 color = color_map.get(energy, "white")
 
                 time_str = timestamp.strftime("%m/%d %I:%M%p")
-                console.print(f"{emoji} [{color}]{energy.upper():6}[/{color}]  {time_str}  {ctx}")
+                console.logger.info(f"{emoji} [{color}]{energy.upper():6}[/{color}]  {time_str}  {ctx}")
 
-            console.print(f"\n[dim]Logged {len(rows)} energy entries[/dim]")
+            console.logger.info(f"\n[dim]Logged {len(rows)} energy entries[/dim]")
 
         finally:
             await conn.close()
@@ -619,7 +625,7 @@ async def get_decision_by_id(
         row = await conn.fetchrow(query, workspace_id, decision_id)
         return dict(row) if row else None
     except Exception as e:
-        console.print(f"[red]❌ Query error: {e}[/red]")
+        console.logger.error(f"[red]❌ Query error: {e}[/red]")
         return None
 
 
@@ -650,8 +656,8 @@ def show_decision(decision_id: str, workspace: Optional[str]):
             decision = await get_decision_by_id(conn, workspace_id, decision_id)
 
             if not decision:
-                console.print(f"\n[yellow]❌ Decision not found: {decision_id}[/yellow]")
-                console.print("[dim]Tip: Use partial ID (first 5 chars) or full UUID[/dim]")
+                console.logger.info(f"\n[yellow]❌ Decision not found: {decision_id}[/yellow]")
+                console.logger.info("[dim]Tip: Use partial ID (first 5 chars) or full UUID[/dim]")
                 return
 
             # Display decision in rich panel
@@ -681,11 +687,11 @@ def show_decision(decision_id: str, workspace: Optional[str]):
             ))
 
             # Future enhancements placeholder
-            console.print("\n[dim]📊 Coming in Phase 1:[/dim]")
-            console.print("[dim]  • Alternatives considered[/dim]")
-            console.print("[dim]  • Success criteria[/dim]")
-            console.print("[dim]  • Outcome status[/dim]")
-            console.print("[dim]  • Related decisions (genealogy)[/dim]")
+            console.logger.info("\n[dim]📊 Coming in Phase 1:[/dim]")
+            console.logger.info("[dim]  • Alternatives considered[/dim]")
+            console.logger.info("[dim]  • Success criteria[/dim]")
+            console.logger.info("[dim]  • Outcome status[/dim]")
+            console.logger.info("[dim]  • Related decisions (genealogy)[/dim]")
 
         finally:
             await conn.close()
@@ -755,9 +761,9 @@ def list_decisions(limit: int, type: Optional[str], tag: Optional[str], workspac
             rows = await conn.fetch(query, *params)
 
             if not rows:
-                console.print(f"\n[yellow]No decisions found.[/yellow]")
+                console.logger.info(f"\n[yellow]No decisions found.[/yellow]")
                 if type or tag:
-                    console.print("[dim]Try removing filters[/dim]")
+                    console.logger.info("[dim]Try removing filters[/dim]")
                 return
 
             # Display table
@@ -782,9 +788,9 @@ def list_decisions(limit: int, type: Optional[str], tag: Optional[str], workspac
 
                 table.add_row(decision_id, age_str, dec_type, summary)
 
-            console.print(table)
+            console.logger.info(table)
 
-            console.print(f"\n[dim]Tip: Use 'dopemux decisions show <ID>' for full details[/dim]")
+            console.logger.info(f"\n[dim]Tip: Use 'dopemux decisions show <ID>' for full details[/dim]")
 
         finally:
             await conn.close()
@@ -835,9 +841,9 @@ def energy_analytics(days: int, workspace: Optional[str]):
             """, workspace_id, days)
 
             if len(rows) < 3:
-                console.print(f"\n[yellow]Need at least 3 energy logs for pattern analysis.[/yellow]")
-                console.print(f"[dim]Found: {len(rows)} entries[/dim]")
-                console.print(f"[dim]Log more with: dopemux decisions energy log [low|medium|high][/dim]")
+                console.logger.info(f"\n[yellow]Need at least 3 energy logs for pattern analysis.[/yellow]")
+                console.logger.info(f"[dim]Found: {len(rows)} entries[/dim]")
+                console.logger.info(f"[dim]Log more with: dopemux decisions energy log [low|medium|high][/dim]")
                 return
 
             import json
@@ -880,35 +886,35 @@ def energy_analytics(days: int, workspace: Optional[str]):
             ))
 
             # Distribution
-            console.print("\n[bold]📊 Energy Distribution:[/bold]")
-            console.print(f"  🔥 High:   {high_count:2d} ({high_count/total*100:.0f}%) {'█' * int(high_count/total*20)}")
-            console.print(f"  ⚡ Medium: {medium_count:2d} ({medium_count/total*100:.0f}%) {'█' * int(medium_count/total*20)}")
-            console.print(f"  🔋 Low:    {low_count:2d} ({low_count/total*100:.0f}%) {'█' * int(low_count/total*20)}")
+            console.logger.info("\n[bold]📊 Energy Distribution:[/bold]")
+            console.logger.info(f"  🔥 High:   {high_count:2d} ({high_count/total*100:.0f}%) {'█' * int(high_count/total*20)}")
+            console.logger.info(f"  ⚡ Medium: {medium_count:2d} ({medium_count/total*100:.0f}%) {'█' * int(medium_count/total*20)}")
+            console.logger.info(f"  🔋 Low:    {low_count:2d} ({low_count/total*100:.0f}%) {'█' * int(low_count/total*20)}")
 
             # Time patterns
             if high_hours:
-                console.print("\n[bold]🌟 Peak Energy Times:[/bold]")
+                console.logger.info("\n[bold]🌟 Peak Energy Times:[/bold]")
                 for hour, count in high_hours[:3]:
                     time_str = f"{hour:02d}:00" if hour < 12 else f"{hour:02d}:00"
                     period = "AM" if hour < 12 else "PM"
                     display_hour = hour if hour <= 12 else hour - 12
-                    console.print(f"  • {display_hour:2d}:00 {period} - {count} high energy entries")
+                    console.logger.info(f"  • {display_hour:2d}:00 {period} - {count} high energy entries")
 
             # ADHD recommendations
-            console.print("\n[bold]💡 ADHD Recommendations:[/bold]")
+            console.logger.info("\n[bold]💡 ADHD Recommendations:[/bold]")
 
             if high_count > 0:
-                console.print(f"  ✅ Schedule complex decisions during high-energy times")
+                console.logger.info(f"  ✅ Schedule complex decisions during high-energy times")
             else:
-                console.print(f"  ⚠️  No high-energy entries - may need more data or energy management")
+                console.logger.info(f"  ⚠️  No high-energy entries - may need more data or energy management")
 
             if low_count > medium_count + high_count:
-                console.print(f"  ⚠️  Lots of low-energy entries - consider breaks, sleep, exercise")
+                console.logger.info(f"  ⚠️  Lots of low-energy entries - consider breaks, sleep, exercise")
 
-            console.print("\n[dim]📈 Phase 4 will add:[/dim]")
-            console.print("[dim]  • Decision quality correlation with energy[/dim]")
-            console.print("[dim]  • Predictive energy modeling[/dim]")
-            console.print("[dim]  • Optimal scheduling recommendations[/dim]")
+            console.logger.info("\n[dim]📈 Phase 4 will add:[/dim]")
+            console.logger.info("[dim]  • Decision quality correlation with energy[/dim]")
+            console.logger.info("[dim]  • Predictive energy modeling[/dim]")
+            console.logger.info("[dim]  • Optimal scheduling recommendations[/dim]")
 
         finally:
             await conn.close()
@@ -968,18 +974,18 @@ def semantic_search_cmd(query: str, top_k: int, type: Optional[str], tag: Option
             )
 
             if "error" in result:
-                console.print(f"\n[red]❌ Search failed: {result['error']}[/red]")
-                console.print("[dim]Make sure ConPort server is running (check http://localhost:3004)[/dim]")
+                console.logger.error(f"\n[red]❌ Search failed: {result['error']}[/red]")
+                console.logger.info("[dim]Make sure ConPort server is running (check http://localhost:3004)[/dim]")
                 return
 
             results = result.get("result", [])
             if not results:
-                console.print(f"\n[yellow]No results found for: {query}[/yellow]")
-                console.print("[dim]Try a different query or check your filters[/dim]")
+                console.logger.info(f"\n[yellow]No results found for: {query}[/yellow]")
+                console.logger.info("[dim]Try a different query or check your filters[/dim]")
                 return
 
             # Display results
-            console.print(f"\n[bold]🎯 Found {len(results)} semantic matches:[/bold]\n")
+            console.logger.info(f"\n[bold]🎯 Found {len(results)} semantic matches:[/bold]\n")
 
             for i, item in enumerate(results, 1):
                 # Extract item details
@@ -1002,21 +1008,21 @@ def semantic_search_cmd(query: str, top_k: int, type: Optional[str], tag: Option
                 }
                 icon, color = type_config.get(item_type, type_config["unknown"])
 
-                console.print(f"[bold {color}]{i}. {icon} {item_type.upper()}[/bold {color}] (ID: {item_id})")
-                console.print(f"   [dim]Similarity: {score:.3f}[/dim]")
-                console.print(f"   [white]{content}[/white]")
-                console.print()
+                console.logger.info(f"[bold {color}]{i}. {icon} {item_type.upper()}[/bold {color}] (ID: {item_id})")
+                console.logger.info(f"   [dim]Similarity: {score:.3f}[/dim]")
+                console.logger.info(f"   [white]{content}[/white]")
+                console.logger.info()
 
             # ADHD-friendly tips
-            console.print("[bold]💡 Semantic Search Tips:[/bold]")
-            console.print("  • Uses meaning, not keywords - try natural language")
-            console.print("  • Results are ranked by relevance to your intent")
-            console.print("  • Filter with --type or --tag for focused results")
-            console.print("  • Great for discovering connections you didn't know existed")
+            console.logger.info("[bold]💡 Semantic Search Tips:[/bold]")
+            console.logger.info("  • Uses meaning, not keywords - try natural language")
+            console.logger.info("  • Results are ranked by relevance to your intent")
+            console.logger.info("  • Filter with --type or --tag for focused results")
+            console.logger.info("  • Great for discovering connections you didn't know existed")
 
         except Exception as e:
-            console.print(f"\n[red]❌ Search error: {e}[/red]")
-            console.print("[dim]Check ConPort server connectivity[/dim]")
+            console.logger.error(f"\n[red]❌ Search error: {e}[/red]")
+            console.logger.info("[dim]Check ConPort server connectivity[/dim]")
 
     asyncio.run(_search())
 
@@ -1123,7 +1129,7 @@ async def get_decision_relationships(
         }
     except Exception as e:
         # Graceful fallback if relationships table doesn't exist yet
-        console.print(f"[yellow]⚠️  Relationships query failed (tables may be in different schema): {e}[/yellow]")
+        console.logger.error(f"[yellow]⚠️  Relationships query failed (tables may be in different schema): {e}[/yellow]")
         return {
             "target": target_decision,
             "ancestors": [],
@@ -1209,7 +1215,7 @@ def graph_decision(decision_id: str, depth: int, workspace: Optional[str]):
             graph_data = await get_decision_relationships(conn, workspace_id, decision_id, depth)
 
             if not graph_data:
-                console.print(f"\n[yellow]❌ Decision not found: {decision_id}[/yellow]")
+                console.logger.info(f"\n[yellow]❌ Decision not found: {decision_id}[/yellow]")
                 return
 
             # Render tree
@@ -1226,10 +1232,10 @@ def graph_decision(decision_id: str, depth: int, workspace: Optional[str]):
             desc_count = len(graph_data["descendants"])
 
             if anc_count > 0 or desc_count > 0:
-                console.print(f"\n[bold]📊 Graph Stats:[/bold]")
-                console.print(f"  Ancestors: {anc_count}")
-                console.print(f"  Descendants: {desc_count}")
-                console.print(f"  Total related: {anc_count + desc_count}")
+                console.logger.info(f"\n[bold]📊 Graph Stats:[/bold]")
+                console.logger.info(f"  Ancestors: {anc_count}")
+                console.logger.info(f"  Descendants: {desc_count}")
+                console.logger.info(f"  Total related: {anc_count + desc_count}")
 
         finally:
             await conn.close()
@@ -1291,7 +1297,7 @@ def update_outcome(decision_id: str, outcome: str, notes: Optional[str], workspa
             decision = await get_decision_by_id(conn, workspace_id, decision_id)
 
             if not decision:
-                console.print(f"\n[yellow]❌ Decision not found: {decision_id}[/yellow]")
+                console.logger.info(f"\n[yellow]❌ Decision not found: {decision_id}[/yellow]")
                 return
 
             # Update outcome
@@ -1306,11 +1312,11 @@ def update_outcome(decision_id: str, outcome: str, notes: Optional[str], workspa
             }
             emoji = emoji_map.get(outcome, "📝")
 
-            console.print(f"\n{emoji} [bold]Outcome updated:[/bold] {outcome.upper()}")
-            console.print(f"   Decision: [cyan]{decision['summary'][:60]}[/cyan]")
+            console.logger.info(f"\n{emoji} [bold]Outcome updated:[/bold] {outcome.upper()}")
+            console.logger.info(f"   Decision: [cyan]{decision['summary'][:60]}[/cyan]")
             if notes:
-                console.print(f"   Notes: [dim]{notes}[/dim]")
-            console.print(f"   [dim]Updated: {datetime.now().strftime('%Y-%m-%d %I:%M%p')}[/dim]")
+                console.logger.info(f"   Notes: [dim]{notes}[/dim]")
+            console.logger.info(f"   [dim]Updated: {datetime.now().strftime('%Y-%m-%d %I:%M%p')}[/dim]")
 
         finally:
             await conn.close()
@@ -1358,7 +1364,7 @@ def enhanced_stats(since: int, workspace: Optional[str]):
             )
 
             if total == 0:
-                console.print(f"\n[yellow]No decisions found in the last {since} days.[/yellow]")
+                console.logger.info(f"\n[yellow]No decisions found in the last {since} days.[/yellow]")
                 return
 
             # Confidence distribution
@@ -1403,7 +1409,7 @@ def enhanced_stats(since: int, workspace: Optional[str]):
 
             # Confidence distribution
             if confidence_dist:
-                console.print("\n[bold]🎯 Confidence Distribution:[/bold]")
+                console.logger.info("\n[bold]🎯 Confidence Distribution:[/bold]")
                 for row in confidence_dist:
                     level = row['confidence_level'] or 'unset'
                     count = row['count']
@@ -1411,11 +1417,11 @@ def enhanced_stats(since: int, workspace: Optional[str]):
                     bar = "█" * int(pct / 5)
 
                     emoji = {"high": "🔥", "medium": "⚡", "low": "🔋"}.get(level, "❓")
-                    console.print(f"  {emoji} {level:8} {count:3d} ({pct:4.0f}%) {bar}")
+                    console.logger.info(f"  {emoji} {level:8} {count:3d} ({pct:4.0f}%) {bar}")
 
             # Outcome distribution
             if any(row['outcome_status'] for row in outcome_dist):
-                console.print("\n[bold]📊 Outcome Status:[/bold]")
+                console.logger.info("\n[bold]📊 Outcome Status:[/bold]")
                 for row in outcome_dist:
                     status = row['outcome_status'] or 'pending'
                     count = row['count']
@@ -1430,19 +1436,19 @@ def enhanced_stats(since: int, workspace: Optional[str]):
                         "pending": "⏳"
                     }
                     emoji = emoji_map.get(status, "❓")
-                    console.print(f"  {emoji} {status:10} {count:3d} ({pct:4.0f}%) {bar}")
+                    console.logger.info(f"  {emoji} {status:10} {count:3d} ({pct:4.0f}%) {bar}")
 
             # Type distribution
-            console.print("\n[bold]🏷️  Decision Types:[/bold]")
+            console.logger.info("\n[bold]🏷️  Decision Types:[/bold]")
             for row in type_dist:
                 dec_type = row['decision_type']
                 count = row['count']
                 pct = count / total * 100
                 bar = "█" * int(pct / 5)
-                console.print(f"  • {dec_type:15} {count:3d} ({pct:4.0f}%) {bar}")
+                console.logger.info(f"  • {dec_type:15} {count:3d} ({pct:4.0f}%) {bar}")
 
             # ADHD insights
-            console.print("\n[bold]🧠 ADHD Insights:[/bold]")
+            console.logger.info("\n[bold]🧠 ADHD Insights:[/bold]")
 
             # Calculate review needs
             review_count = await conn.fetchval("""
@@ -1454,16 +1460,16 @@ def enhanced_stats(since: int, workspace: Optional[str]):
             """, workspace_id)
 
             if review_count > 0:
-                console.print(f"  ⚠️  {review_count} decisions need review (>30 days old)")
+                console.logger.info(f"  ⚠️  {review_count} decisions need review (>30 days old)")
             else:
-                console.print(f"  ✅ All decisions reviewed or recent")
+                console.logger.info(f"  ✅ All decisions reviewed or recent")
 
             # Confidence insights
             low_conf = sum(row['count'] for row in confidence_dist if row['confidence_level'] == 'low')
             if low_conf > 0:
-                console.print(f"  ⚠️  {low_conf} low-confidence decisions may need revisiting")
+                console.logger.info(f"  ⚠️  {low_conf} low-confidence decisions may need revisiting")
 
-            console.print(f"\n[dim]Full ADHD insights coming in Phase 3 (pattern learning)[/dim]")
+            console.logger.info(f"\n[dim]Full ADHD insights coming in Phase 3 (pattern learning)[/dim]")
 
         finally:
             await conn.close()
@@ -1567,7 +1573,7 @@ def query_decisions(filter_expression: str, limit: int, workspace: Optional[str]
             rows = await conn.fetch(query, *params)
 
             if not rows:
-                console.print(f"\n[yellow]No decisions match: {filter_expression}[/yellow]")
+                console.logger.info(f"\n[yellow]No decisions match: {filter_expression}[/yellow]")
                 return
 
             # Display results
@@ -1587,8 +1593,8 @@ def query_decisions(filter_expression: str, limit: int, workspace: Optional[str]
 
                 table.add_row(decision_id, f"{age_days}d", dec_type, conf, summary)
 
-            console.print(table)
-            console.print(f"\n[dim]Tip: Use 'dopemux decisions show <ID>' for details[/dim]")
+            console.logger.info(table)
+            console.logger.info(f"\n[dim]Tip: Use 'dopemux decisions show <ID>' for details[/dim]")
 
         finally:
             await conn.close()
@@ -1756,8 +1762,8 @@ def pattern_tags(min_support: int, workspace: Optional[str], save: bool):
             clusters = await detect_tag_clusters(conn, workspace_id, min_support)
 
             if not clusters:
-                console.print(f"\n[yellow]No tag patterns found with min_support={min_support}.[/yellow]")
-                console.print("[dim]Try lowering --min-support or add more tagged decisions[/dim]")
+                console.logger.info(f"\n[yellow]No tag patterns found with min_support={min_support}.[/yellow]")
+                console.logger.info("[dim]Try lowering --min-support or add more tagged decisions[/dim]")
                 return
 
             # Display patterns
@@ -1767,7 +1773,7 @@ def pattern_tags(min_support: int, workspace: Optional[str], save: bool):
                 border_style="cyan"
             ))
 
-            console.print(f"\n[bold]📊 Detected {len(clusters)} Tag Clusters:[/bold]\n")
+            console.logger.info(f"\n[bold]📊 Detected {len(clusters)} Tag Clusters:[/bold]\n")
 
             for i, cluster in enumerate(clusters, 1):
                 tags = " + ".join(cluster['tags'])
@@ -1783,22 +1789,22 @@ def pattern_tags(min_support: int, workspace: Optional[str], save: bool):
                 else:
                     indicator = "💡 Weak"
 
-                console.print(f"[bold cyan]{i}. {tags}[/bold cyan] {indicator}")
-                console.print(f"   Occurrences: {count}")
-                console.print(f"   Confidence: {conf:.0%} (when you use '{cluster['tags'][0]}', {conf:.0%} chance you also use '{cluster['tags'][1]}')")
-                console.print(f"   Lift: {lift:.2f}x (tags appear together {lift:.1f}x more than random)")
+                console.logger.info(f"[bold cyan]{i}. {tags}[/bold cyan] {indicator}")
+                console.logger.info(f"   Occurrences: {count}")
+                console.logger.info(f"   Confidence: {conf:.0%} (when you use '{cluster['tags'][0]}', {conf:.0%} chance you also use '{cluster['tags'][1]}')")
+                console.logger.info(f"   Lift: {lift:.2f}x (tags appear together {lift:.1f}x more than random)")
 
                 if cluster['success_rate'] is not None:
                     sr = cluster['success_rate']
-                    console.print(f"   Success rate: {sr:.0%} ({cluster['decisions_with_outcome']}/{cluster['sample_size']} decisions completed)")
+                    console.logger.info(f"   Success rate: {sr:.0%} ({cluster['decisions_with_outcome']}/{cluster['sample_size']} decisions completed)")
                 else:
-                    console.print(f"   Success rate: N/A (no outcomes tracked yet)")
+                    console.logger.info(f"   Success rate: N/A (no outcomes tracked yet)")
 
-                console.print()
+                console.logger.info()
 
             # Save patterns if requested
             if save:
-                console.print("[bold]💾 Saving patterns to database...[/bold]")
+                console.logger.info("[bold]💾 Saving patterns to database...[/bold]")
                 saved = 0
 
                 for cluster in clusters:
@@ -1817,18 +1823,18 @@ def pattern_tags(min_support: int, workspace: Optional[str], save: bool):
                     await store_pattern(conn, workspace_id, 'tag_cluster', pattern_sig, stats)
                     saved += 1
 
-                console.print(f"✅ Saved {saved} patterns to decision_patterns table")
+                console.logger.info(f"✅ Saved {saved} patterns to decision_patterns table")
 
             # Recommendations
-            console.print("[bold]💡 Recommendations:[/bold]")
+            console.logger.info("[bold]💡 Recommendations:[/bold]")
 
             if clusters:
                 top_cluster = clusters[0]
-                console.print(f"  • Most common pattern: '{' + '.join(top_cluster['tags'])}' ({top_cluster['occurrence_count']} occurrences)")
-                console.print(f"  • When tagging decisions, consider these frequent combinations")
+                console.logger.info(f"  • Most common pattern: '{' + '.join(top_cluster['tags'])}' ({top_cluster['occurrence_count']} occurrences)")
+                console.logger.info(f"  • When tagging decisions, consider these frequent combinations")
 
                 # Suggest tags for next decision
-                console.print(f"\n[dim]Next time you tag a decision with '{clusters[0]['tags'][0]}', the system can suggest '{clusters[0]['tags'][1]}'[/dim]")
+                console.logger.info(f"\n[dim]Next time you tag a decision with '{clusters[0]['tags'][0]}', the system can suggest '{clusters[0]['tags'][1]}'[/dim]")
 
         finally:
             await conn.close()

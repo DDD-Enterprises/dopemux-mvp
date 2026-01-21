@@ -243,7 +243,7 @@ async def main():
 
     api_key = os.getenv("VOYAGE_API_KEY")
     if not api_key:
-        print("Set VOYAGE_API_KEY environment variable")
+        logger.info("Set VOYAGE_API_KEY environment variable")
         return
 
     reranker = VoyageReranker(api_key=api_key)
@@ -278,19 +278,19 @@ async def main():
         results=search_results,
     )
 
-    print(f"Reranked {response.total_results} results:")
-    print(f"Top {len(response.top_results)} displayed:")
+    logger.info(f"Reranked {response.total_results} results:")
+    logger.info(f"Top {len(response.top_results)} displayed:")
     for r in response.top_results:
         print(
             f"  {r.search_result.file_path}:{r.search_result.function_name} "
             f"(score: {r.relevance_score:.4f}, rank: {r.original_rank}→{r.new_rank})"
         )
 
-    print(f"\n{len(response.cached_results)} cached for 'show more'")
+    logger.info(f"\n{len(response.cached_results)} cached for 'show more'")
 
     # Cost summary
     summary = reranker.get_cost_summary()
-    print(f"\nCost summary: {summary}")
+    logger.info(f"\nCost summary: {summary}")
 
 
 if __name__ == "__main__":

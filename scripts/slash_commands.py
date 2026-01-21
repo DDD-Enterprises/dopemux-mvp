@@ -7,6 +7,11 @@ that can be called directly from Claude Code sessions.
 """
 
 import sys
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import os
 import json
 import subprocess
@@ -38,13 +43,14 @@ def setup_dopemux_imports():
             sys.path.remove(src_str)
         raise ImportError(f"Could not import Dopemux modules: {e}")
 
+        logger.error(f"Error: {e}")
 try:
     HealthChecker, HealthStatus, ContextManager = setup_dopemux_imports()
     # Import instance management
     from dopemux.instance_manager import InstanceManager, detect_instances_sync
 except ImportError as e:
-    print(f"Error: {e}")
-    print("Make sure you're running this from the Dopemux project root")
+    logger.error(f"Error: {e}")
+    logger.info("Make sure you're running this from the Dopemux project root")
     sys.exit(1)
 
 # Import our session formatter
@@ -124,6 +130,7 @@ class SlashCommandProcessor:
                 "command": command
             }
 
+            logger.error(f"Error: {e}")
     def _handle_health_command(self, args: list) -> Dict[str, Any]:
         """Handle comprehensive health check command."""
         detailed = "--detailed" in args or "-d" in args
@@ -288,6 +295,7 @@ class SlashCommandProcessor:
                 "command": "save"
             }
 
+            logger.error(f"Error: {e}")
     def _handle_restore_session(self, args: List[str]) -> Dict[str, Any]:
         """Handle session restore command with preview."""
         try:
@@ -342,6 +350,7 @@ class SlashCommandProcessor:
                 "command": "restore"
             }
 
+            logger.error(f"Error: {e}")
     def _handle_list_sessions(self, args: List[str]) -> Dict[str, Any]:
         """Handle session listing with visual gallery."""
         try:
@@ -402,6 +411,7 @@ class SlashCommandProcessor:
                 "command": "sessions"
             }
 
+            logger.error(f"Error: {e}")
     def _handle_session_details(self, args: List[str]) -> Dict[str, Any]:
         """Handle detailed session view."""
         try:
@@ -445,6 +455,7 @@ class SlashCommandProcessor:
                 "command": "session-details"
             }
 
+            logger.error(f"Error: {e}")
     # Instance Management Handlers
 
     def _handle_instance_command(self, args: List[str]) -> Dict[str, Any]:
@@ -489,9 +500,10 @@ class SlashCommandProcessor:
                     check=True
                 )
                 git_branch = result.stdout.strip()
-            except:
+            except Exception as e:
                 git_branch = 'unknown'
 
+                logger.error(f"Error: {e}")
             current_dir = os.getcwd()
             is_worktree = 'worktrees' in current_dir
 
@@ -527,6 +539,7 @@ class SlashCommandProcessor:
                 "command": "instance-current"
             }
 
+            logger.error(f"Error: {e}")
     def _handle_instance_new(self, args: List[str]) -> Dict[str, Any]:
         """Create and switch to a new instance."""
         try:
@@ -552,6 +565,7 @@ class SlashCommandProcessor:
                     "command": "instance-new"
                 }
 
+                logger.error(f"Error: {e}")
             # Create worktree
             worktree_path = self.instance_manager.create_worktree(instance_id, branch_name)
 
@@ -601,6 +615,7 @@ Environment variables updated. Current directory changed to worktree.
                 "command": "instance-new"
             }
 
+            logger.error(f"Error: {e}")
     def _handle_instance_switch(self, args: List[str]) -> Dict[str, Any]:
         """Switch to an existing instance."""
         try:
@@ -651,9 +666,10 @@ Environment variables updated. Current directory changed to worktree.
                     check=True
                 )
                 git_branch = result.stdout.strip()
-            except:
+            except Exception as e:
                 git_branch = 'unknown'
 
+                logger.error(f"Error: {e}")
             formatted = f"""🔄 **Switched to Instance {target_instance_id}**
 
 **Port Base**: {port_base}
@@ -685,6 +701,7 @@ Environment variables updated. Current directory changed.
                 "command": "instance-switch"
             }
 
+            logger.error(f"Error: {e}")
     def _handle_instance_list(self, args: List[str]) -> Dict[str, Any]:
         """List all instances (running + available worktrees)."""
         try:
@@ -748,6 +765,7 @@ Environment variables updated. Current directory changed.
                 "command": "instance-list"
             }
 
+            logger.error(f"Error: {e}")
     def _handle_instance_prune(self, args: List[str]) -> Dict[str, Any]:
         """Auto-prune dead/orphaned instances."""
         try:
@@ -811,6 +829,7 @@ Environment variables updated. Current directory changed.
                 "command": "instance-prune"
             }
 
+            logger.error(f"Error: {e}")
     def _generate_health_summary(self, health_data: Dict[str, Any]) -> str:
         """Generate a human-readable health summary."""
         healthy_count = sum(1 for h in health_data.values() if h["status"] == "healthy")
@@ -903,7 +922,7 @@ def main():
     result = processor.process_command(args.command, all_args)
 
     if args.format == "json":
-        print(json.dumps(result, indent=2))
+        logger.info(json.dumps(result, indent=2))
     else:
         # For session commands, use the Rich formatted output directly
         session_commands = ["save", "restore", "sessions", "session-details"]
@@ -913,12 +932,12 @@ def main():
 
             # Check if it's a Rich object
             if hasattr(result["formatted_output"], '__rich_console__') or hasattr(result["formatted_output"], '__rich__'):
-                console.print(result["formatted_output"])
+                console.logger.info(result["formatted_output"])
             else:
                 # Fallback to regular formatting
-                print(format_for_claude_code(result))
+                logger.info(format_for_claude_code(result))
         else:
-            print(format_for_claude_code(result))
+            logger.info(format_for_claude_code(result))
 
 
 if __name__ == "__main__":

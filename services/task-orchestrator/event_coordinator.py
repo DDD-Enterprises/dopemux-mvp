@@ -362,9 +362,10 @@ class EventCoordinator:
             count = await self.redis_client.get(key)
             return int(count) if count else 0
 
-        except Exception:
+        except Exception as e:
             return 0
 
+            logger.error(f"Error: {e}")
     # Default Event Processors
 
     async def _process_task_created(self, event: CoordinationEvent) -> None:
@@ -441,7 +442,7 @@ class EventCoordinator:
             await self._setup_sprint_progress_automation(sprint_id)
 
             # 4. Update Claude.md context automatically
-            await self._update_claude_context_for_sprint(sprint_id, sprint_context)
+            await self._update_claude_context_for_slogger.info(sprint_id, sprint_context)
 
             self.metrics["automation_triggers"] += 1
 

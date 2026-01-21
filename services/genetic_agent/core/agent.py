@@ -47,6 +47,7 @@ class BaseAgent(ABC):
                 "state": self.status.state.value
             }
 
+            logger.error(f"Error: {e}")
     @abstractmethod
     async def _execute_repair(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """Execute the actual repair logic. Must be implemented by subclasses."""

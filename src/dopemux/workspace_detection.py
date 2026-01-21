@@ -196,7 +196,7 @@ def export_workspace_env(workspace_path: Optional[Path] = None) -> dict[str, str
 
     Example:
         >>> env_vars = export_workspace_env()
-        >>> print(env_vars)
+        >>> logger.info(env_vars)
         {
             'DOPEMUX_WORKSPACE_ROOT': '/Users/hue/code/dopemux-mvp',
             'DOPEMUX_WORKSPACE_ID': '/Users/hue/code/dopemux-mvp'
@@ -205,7 +205,7 @@ def export_workspace_env(workspace_path: Optional[Path] = None) -> dict[str, str
     Shell usage:
         ```bash
         # In MCP wrapper script:
-        eval "$(python3 -c 'from dopemux.workspace_detection import export_workspace_env; import json; print(\"\\n\".join(f\"export {k}={v}\" for k,v in export_workspace_env().items()))')"
+        eval "$(python3 -c 'from dopemux.workspace_detection import export_workspace_env; import json; logger.info(\"\\n\".join(f\"export {k}={v}\" for k,v in export_workspace_env().items()))')"
         ```
     """
     if workspace_path is None:
@@ -232,7 +232,7 @@ def validate_workspace(workspace_path: Path) -> tuple[bool, Optional[str]]:
     Example:
         >>> valid, error = validate_workspace(Path('/Users/hue/code/dopemux-mvp'))
         >>> if not valid:
-        ...     print(f"Invalid workspace: {error}")
+        ...     logger.error(f"Invalid workspace: {error}")
     """
     if not workspace_path.exists():
         return False, f"Path does not exist: {workspace_path}"
@@ -281,7 +281,7 @@ def get_workspace_info(workspace_path: Optional[Path] = None) -> dict[str, any]:
 
     Example:
         >>> info = get_workspace_info()
-        >>> print(json.dumps(info, indent=2))
+        >>> logger.info(json.dumps(info, indent=2))
         {
           "workspace_root": "/Users/hue/code/dopemux-mvp",
           "is_git_repo": true,
@@ -349,13 +349,13 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--info":
         # Print workspace info
         info = get_workspace_info()
-        print(json.dumps(info, indent=2))
+        logger.info(json.dumps(info, indent=2))
     elif len(sys.argv) > 1 and sys.argv[1] == "--env":
         # Print environment variables (for sourcing in shell)
         env_vars = export_workspace_env()
         for key, value in env_vars.items():
-            print(f"export {key}={value}")
+            logger.info(f"export {key}={value}")
     else:
         # Print workspace root
         workspace = get_workspace_root()
-        print(workspace)
+        logger.info(workspace)

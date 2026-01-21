@@ -144,6 +144,7 @@ class ContextSwitchFrequencyPattern(BasePattern):
                 # Skip malformed timestamps
                 pass
 
+                logger.error(f"Error: {e}")
         return insights
 
     def _detect_overload_patterns(

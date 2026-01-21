@@ -9,9 +9,13 @@ from .base_collector import BaseCollector
 from ..config.settings import PMModeSettings
 
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 class PMCollector(BaseCollector):
     """Pulls sprint + task data from Leantime and ConPort."""
-
     def __init__(self, settings: PMModeSettings):
         super().__init__(cache_ttl=15.0, timeout=3.0)
         self.settings = settings

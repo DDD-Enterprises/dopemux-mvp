@@ -166,7 +166,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def on_state_changed(state: AttentionState, user_id: str):
-        print(f"State changed: {state.value} for user {user_id}")
+        logger.info(f"State changed: {state.value} for user {user_id}")
 
     async def main():
         client = ADHDEngineClient()

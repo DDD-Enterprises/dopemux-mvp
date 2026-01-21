@@ -12,6 +12,11 @@ Uses 100 iterations to measure p50, p95, p99 latencies.
 """
 
 import time
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import statistics
 import sys
 import os
@@ -42,7 +47,7 @@ class PerformanceBenchmark:
         Tier 1: Overview Queries
         Target: p95 < 50ms
         """
-        print(f"\nBenchmarking Tier 1 (Overview) - {self.iterations} iterations...")
+        logger.info(f"\nBenchmarking Tier 1 (Overview) - {self.iterations} iterations...")
 
         queries = OverviewQueries()
         times = []
@@ -54,7 +59,7 @@ class PerformanceBenchmark:
             times.append(elapsed)
 
             if i == 0:
-                print(f"   First query: {elapsed:.2f}ms (includes connection setup)")
+                logger.info(f"   First query: {elapsed:.2f}ms (includes connection setup)")
 
         return self._calculate_stats("Tier 1 (Overview)", times, 50.0)
 
@@ -63,7 +68,7 @@ class PerformanceBenchmark:
         Tier 2: Exploration Queries
         Target: p95 < 150ms
         """
-        print(f"\nBenchmarking Tier 2 (Exploration) - {self.iterations} iterations...")
+        logger.info(f"\nBenchmarking Tier 2 (Exploration) - {self.iterations} iterations...")
 
         queries = ExplorationQueries()
         times = []
@@ -75,7 +80,7 @@ class PerformanceBenchmark:
             times.append(elapsed)
 
             if i == 0:
-                print(f"   First query: {elapsed:.2f}ms (2-hop neighborhood)")
+                logger.info(f"   First query: {elapsed:.2f}ms (2-hop neighborhood)")
 
         return self._calculate_stats("Tier 2 (Exploration)", times, 150.0)
 
@@ -84,7 +89,7 @@ class PerformanceBenchmark:
         Tier 3: Deep Context Queries
         Target: p95 < 500ms
         """
-        print(f"\nBenchmarking Tier 3 (Deep Context) - {self.iterations} iterations...")
+        logger.info(f"\nBenchmarking Tier 3 (Deep Context) - {self.iterations} iterations...")
 
         queries = DeepContextQueries()
         times = []
@@ -96,7 +101,7 @@ class PerformanceBenchmark:
             times.append(elapsed)
 
             if i == 0:
-                print(f"   First query: {elapsed:.2f}ms (full 3-hop context)")
+                logger.info(f"   First query: {elapsed:.2f}ms (full 3-hop context)")
 
         return self._calculate_stats("Tier 3 (Deep Context)", times, 500.0)
 
@@ -121,23 +126,23 @@ class PerformanceBenchmark:
             'iterations': len(times)
         }
 
-        print(f"\n   Results for {tier_name}:")
-        print(f"      p50: {result['p50_ms']:.2f}ms")
-        print(f"      p95: {result['p95_ms']:.2f}ms (target: <{target}ms)")
-        print(f"      p99: {result['p99_ms']:.2f}ms")
-        print(f"      Range: {result['min_ms']:.2f}ms - {result['max_ms']:.2f}ms")
-        print(f"      {'✅ PASS' if passes else '❌ FAIL'}")
+        logger.info(f"\n   Results for {tier_name}:")
+        logger.info(f"      p50: {result['p50_ms']:.2f}ms")
+        logger.info(f"      p95: {result['p95_ms']:.2f}ms (target: <{target}ms)")
+        logger.info(f"      p99: {result['p99_ms']:.2f}ms")
+        logger.info(f"      Range: {result['min_ms']:.2f}ms - {result['max_ms']:.2f}ms")
+        logger.error(f"      {'✅ PASS' if passes else '❌ FAIL'}")
 
         return result
 
     def run_all_benchmarks(self) -> Dict:
         """Run complete benchmark suite"""
 
-        print("=" * 70)
-        print("CONPORT-KG-2025 Performance Benchmark Suite")
-        print(f"Iterations: {self.iterations} per tier")
-        print(f"Test decision: #{self.test_id}")
-        print("=" * 70)
+        logger.info("=" * 70)
+        logger.info("CONPORT-KG-2025 Performance Benchmark Suite")
+        logger.info(f"Iterations: {self.iterations} per tier")
+        logger.info(f"Test decision: #{self.test_id}")
+        logger.info("=" * 70)
 
         results = {
             'tier1': self.benchmark_tier1(),
@@ -146,27 +151,27 @@ class PerformanceBenchmark:
         }
 
         # Summary
-        print("\n" + "=" * 70)
-        print("BENCHMARK SUMMARY")
-        print("=" * 70)
+        logger.info("\n" + "=" * 70)
+        logger.info("BENCHMARK SUMMARY")
+        logger.info("=" * 70)
 
         all_pass = all(r['passes'] for r in results.values())
 
         for tier_key, stats in results.items():
             status = "✅ PASS" if stats['passes'] else "❌ FAIL"
-            print(f"{stats['tier']:25s} p95: {stats['p95_ms']:6.2f}ms  {status}")
+            logger.info(f"{stats['tier']:25s} p95: {stats['p95_ms']:6.2f}ms  {status}")
 
-        print("\n" + "=" * 70)
+        logger.info("\n" + "=" * 70)
         if all_pass:
-            print("✅ ALL TIERS PASSED - Performance targets met!")
-            print("   No Redis caching needed.")
+            logger.info("✅ ALL TIERS PASSED - Performance targets met!")
+            logger.info("   No Redis caching needed.")
         else:
-            print("⚠️  SOME TIERS FAILED - Optimization needed")
+            logger.error("⚠️  SOME TIERS FAILED - Optimization needed")
             failed_tiers = [s['tier'] for s in results.values() if not s['passes']]
-            print(f"   Failed: {', '.join(failed_tiers)}")
-            print("   Recommendation: Add Redis caching for failed tiers")
+            logger.error(f"   Failed: {', '.join(failed_tiers)}")
+            logger.error("   Recommendation: Add Redis caching for failed tiers")
 
-        print("=" * 70)
+        logger.info("=" * 70)
 
         return results
 

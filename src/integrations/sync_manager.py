@@ -21,7 +21,7 @@ from core.monitoring import MetricsCollector
 from utils.adhd_optimizations import ADHDTaskOptimizer
 
 from .leantime_bridge import (
-    LeantimeMCPClient,
+    LeantimeBridge,
     LeantimeProject,
     LeantimeTask,
     TaskPriority,
@@ -140,11 +140,11 @@ class LeantimeTaskMasterSyncManager:
         self.last_sync: Optional[datetime] = None
 
         # Clients (will be injected)
-        self.leantime_client: Optional[LeantimeMCPClient] = None
+        self.leantime_client: Optional[LeantimeBridge] = None
         self.taskmaster_client: Optional[TaskMasterMCPClient] = None
 
     async def initialize(
-        self, leantime_client: LeantimeMCPClient, taskmaster_client: TaskMasterMCPClient
+        self, leantime_client: LeantimeBridge, taskmaster_client: TaskMasterMCPClient
     ) -> bool:
         """
         Initialize sync manager with MCP clients.

@@ -342,9 +342,10 @@ def _discover_workspaces_from_snapshots() -> List[Path]:
             try:
                 data = json.loads(file_path.read_text())
                 workspace_str = data.get("workspace_path")
-            except Exception:
+            except Exception as e:
                 continue
 
+                logger.error(f"Error: {e}")
             if workspace_str:
                 workspace_path = Path(workspace_str)
                 break
@@ -782,7 +783,13 @@ async def _search_code_impl(
         if bm25_cache_path.exists():
             try:
                 with open(bm25_cache_path, 'rb') as f:
-                    cached = pickle.load(f)
+                    raw = f.read()
+                import json, pickle
+                try:
+                    cached = json.loads(raw.decode('utf-8')) if raw.strip().startswith(b'{') else pickle.loads(raw)
+                except Exception:
+                    cached = pickle.loads(raw)
+                    logger.warning("Legacy pickle BM25 cache loaded; consider JSON migration")
                 bm25_index.bm25 = cached['bm25']
                 bm25_index.documents = cached['documents']
                 bm25_index.doc_ids = cached['doc_ids']
@@ -1169,6 +1176,7 @@ async def _clear_index_impl(
         except Exception as exc:
             errors.append({"index": label, "error": str(exc)})
 
+            logger.error(f"Error: {e}")
     if target_normalized in {"code", "both"}:
         await _delete_collection(code_collection, "code")
         bm25_cache_path = _snapshot_dir_for_hash(workspace_hash) / "bm25_index.pkl"

@@ -393,9 +393,10 @@ class SerenaIndexingPipeline:
 
             return max(0.0, score)
 
-        except Exception:
+        except Exception as e:
             return 1.0  # Default priority
 
+            logger.error(f"Error: {e}")
     async def _parallel_file_processing(
         self,
         files: List[str],
@@ -715,9 +716,10 @@ class SerenaIndexingPipeline:
             else:
                 return f"{eta_seconds / 3600:.1f} hours"
 
-        except Exception:
+        except Exception as e:
             return "Unknown"
 
+            logger.error(f"Error: {e}")
     async def _wait_for_resume(self) -> None:
         """Wait for indexing to be resumed."""
         while self.paused:
@@ -902,9 +904,10 @@ class FileChangeHandler(events.FileSystemEventHandler):
             self.last_events[file_path] = now
             return True
 
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     def _queue_change_event(self, file_path: str, change_type: str) -> None:
         """Queue file change event for processing."""
         try:

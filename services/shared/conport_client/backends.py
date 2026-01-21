@@ -72,9 +72,10 @@ def get_backend_adapter(config) -> ConPortBackend:
         adapter = PostgreSQLAGEAdapter(config)
         # TODO: Test connection
         return adapter
-    except Exception:
+    except Exception as e:
         pass
 
+        logger.error(f"Error: {e}")
     # Fallback to file-based (always works)
     from .adapters.file_adapter import FileAdapter
     return FileAdapter(config)

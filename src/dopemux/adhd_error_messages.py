@@ -16,6 +16,11 @@ Target: < 3 seconds to understand the issue and know what to do
 
 from typing import Dict, List, Optional
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
@@ -86,7 +91,7 @@ class ADHDErrorMessage:
             padding=(1, 2)
         )
 
-        console.print(panel)
+        console.logger.info(panel)
 
 
 # Common Error Messages Library
@@ -204,7 +209,7 @@ def show_error(error_key: str, **kwargs):
         **kwargs: Additional context to interpolate into message
     """
     if error_key not in WORKTREE_ERRORS:
-        console.print(f"[red]Unknown error: {error_key}[/red]")
+        console.logger.error(f"[red]Unknown error: {error_key}[/red]")
         return
 
     error = WORKTREE_ERRORS[error_key]

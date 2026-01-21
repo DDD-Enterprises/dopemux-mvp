@@ -20,6 +20,11 @@ Features:
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import json
 import sys
 import time
@@ -62,7 +67,7 @@ class CLIContext:
                 self.enhanced_agent = EnhancedIterativeAgent(self.config)
             except Exception as e:
                 if self.debug:
-                    console.print(f"[red]Failed to initialize enhanced agent: {e}[/red]")
+                    console.logger.error(f"[red]Failed to initialize enhanced agent: {e}[/red]")
                 self.enhanced_agent = None
 
         if self.genetic_agent is None:
@@ -70,7 +75,7 @@ class CLIContext:
                 self.genetic_agent = GeneticAgent(self.config)
             except Exception as e:
                 if self.debug:
-                    console.print(f"[red]Failed to initialize genetic agent: {e}[/red]")
+                    console.logger.error(f"[red]Failed to initialize genetic agent: {e}[/red]")
                 self.genetic_agent = None
 
         if self.vanilla_agent is None:
@@ -78,7 +83,7 @@ class CLIContext:
                 self.vanilla_agent = VanillaAgent(self.config)
             except Exception as e:
                 if self.debug:
-                    console.print(f"[red]Failed to initialize vanilla agent: {e}[/red]")
+                    console.logger.error(f"[red]Failed to initialize vanilla agent: {e}[/red]")
                 self.vanilla_agent = None
 
 # Global CLI context
@@ -112,10 +117,10 @@ def cli(cli_ctx, verbose, debug):
 
     # Show welcome message
     if not verbose and not debug:
-        console.print()
-        console.print("[bold blue]🤖 Enhanced Iterative Agent CLI[/bold blue]")
-        console.print("[dim]Intelligent code repair with AI assistance[/dim]")
-        console.print()
+        console.logger.info()
+        console.logger.info("[bold blue]🤖 Enhanced Iterative Agent CLI[/bold blue]")
+        console.logger.info("[dim]Intelligent code repair with AI assistance[/dim]")
+        console.logger.info()
 
 @cli.command()
 @click.argument('bug_description')
@@ -156,7 +161,7 @@ def repair(bug_description, file_path, line, agent, strategy, verbose, debug):
             # Select agent
             selected_agent = _select_agent(agent)
             if not selected_agent:
-                console.print("[red]❌ No suitable agent available[/red]")
+                console.logger.info("[red]❌ No suitable agent available[/red]")
                 return
 
             # Prepare repair task
@@ -187,7 +192,7 @@ def repair(bug_description, file_path, line, agent, strategy, verbose, debug):
 
             except Exception as e:
                 progress.update(repair_task, completed=0)
-                console.print(f"[red]❌ Repair failed: {e}[/red]")
+                console.logger.error(f"[red]❌ Repair failed: {e}[/red]")
                 if debug:
                     import traceback
                     traceback.print_exc()
@@ -212,7 +217,7 @@ def analyze(bug_description, file_path, line, verbose, debug):
         ctx.ensure_agents_initialized()
 
         if not ctx.enhanced_agent:
-            console.print("[red]❌ Enhanced agent required for analysis[/red]")
+            console.logger.info("[red]❌ Enhanced agent required for analysis[/red]")
             return
 
         task_data = {
@@ -234,7 +239,7 @@ def analyze(bug_description, file_path, line, verbose, debug):
                 _display_analysis_results(analysis, strategy)
 
             except Exception as e:
-                console.print(f"[red]❌ Analysis failed: {e}[/red]")
+                console.logger.error(f"[red]❌ Analysis failed: {e}[/red]")
                 if debug:
                     import traceback
                     traceback.print_exc()
@@ -260,8 +265,8 @@ def monitor(agent, watch, interval, verbose, debug):
         ctx.ensure_agents_initialized()
 
         if watch:
-            console.print("[green]📊 Starting continuous monitoring (Ctrl+C to stop)[/green]")
-            console.print()
+            console.logger.info("[green]📊 Starting continuous monitoring (Ctrl+C to stop)[/green]")
+            console.logger.info()
 
         try:
             while True:
@@ -273,7 +278,7 @@ def monitor(agent, watch, interval, verbose, debug):
                 await asyncio.sleep(interval)
 
         except KeyboardInterrupt:
-            console.print("\n[yellow]⏹️  Monitoring stopped[/yellow]")
+            console.logger.info("\n[yellow]⏹️  Monitoring stopped[/yellow]")
 
     asyncio.run(run_monitoring())
 
@@ -298,8 +303,8 @@ def optimize(target, agent, verbose, debug):
     async def run_optimization():
         ctx.ensure_agents_initialized()
 
-        console.print(f"[blue]🎯 Optimizing {agent} agent for {target}[/blue]")
-        console.print()
+        console.logger.info(f"[blue]🎯 Optimizing {agent} agent for {target}[/blue]")
+        console.logger.info()
 
         # Placeholder optimization logic
         with console.status(f"[bold green]Analyzing {target} metrics...") as status:
@@ -326,9 +331,9 @@ def optimize(target, agent, verbose, debug):
             table.add_row("Caching", "Cache analysis results", "Medium")
             table.add_row("Batching", "Batch MCP service calls", "Medium")
 
-        console.print(table)
+        console.logger.info(table)
 
-        console.print(f"\n[green]✅ Optimization analysis complete for {agent} agent[/green]")
+        console.logger.info(f"\n[green]✅ Optimization analysis complete for {agent} agent[/green]")
 
     asyncio.run(run_optimization())
 
@@ -364,9 +369,9 @@ def status(verbose, debug):
             config_table.add_row("Confidence Threshold", str(ctx.config.confidence_threshold))
             config_table.add_row("Workspace ID", str(ctx.config.workspace_id)[:50] + "...")
 
-        console.print(table)
-        console.print()
-        console.print(config_table)
+        console.logger.info(table)
+        console.logger.info()
+        console.logger.info(config_table)
 
     asyncio.run(show_status())
 
@@ -395,7 +400,7 @@ def _display_repair_results(result: Dict[str, Any], agent_used: str):
     success = result.get('success', False)
 
     if success:
-        console.print("\n[green]✅ Repair Successful![/green]")
+        console.logger.info("\n[green]✅ Repair Successful![/green]")
 
         # Show key metrics
         table = Table(title="📊 Repair Results")
@@ -407,31 +412,31 @@ def _display_repair_results(result: Dict[str, Any], agent_used: str):
         table.add_row("Method", result.get('method', 'unknown'))
         table.add_row("Agent Used", agent_used)
 
-        console.print(table)
+        console.logger.info(table)
 
         # Show the repair
         if 'repair' in result and result['repair']:
-            console.print("\n[blue]🔧 Generated Repair:[/blue]")
-            console.print(Panel(result['repair'], title="Code", border_style="blue"))
+            console.logger.info("\n[blue]🔧 Generated Repair:[/blue]")
+            console.logger.info(Panel(result['repair'], title="Code", border_style="blue"))
 
         if 'explanation' in result:
-            console.print(f"\n[yellow]💡 Explanation:[/yellow] {result['explanation']}")
+            console.logger.info(f"\n[yellow]💡 Explanation:[/yellow] {result['explanation']}")
 
     else:
-        console.print("\n[red]❌ Repair Failed[/red]")
-        console.print(f"Reason: {result.get('explanation', 'Unknown error')}")
+        console.logger.error("\n[red]❌ Repair Failed[/red]")
+        console.logger.error(f"Reason: {result.get('explanation', 'Unknown error')}")
 
         # Show failure analysis if available
         if 'failure_analysis' in result:
             analysis = result['failure_analysis']
-            console.print(f"\n[yellow]🔍 Failure Analysis:[/yellow]")
-            console.print(f"Primary Mode: {analysis.get('primary_mode', 'unknown')}")
+            console.logger.error(f"\n[yellow]🔍 Failure Analysis:[/yellow]")
+            console.logger.info(f"Primary Mode: {analysis.get('primary_mode', 'unknown')}")
             if analysis.get('recommendations'):
-                console.print(f"Recommendations: {analysis['recommendations']}")
+                console.logger.info(f"Recommendations: {analysis['recommendations']}")
 
 def _display_analysis_results(analysis: Dict[str, Any], strategy):
     """Display bug analysis results."""
-    console.print("\n[blue]🔍 Bug Analysis Complete[/blue]")
+    console.logger.info("\n[blue]🔍 Bug Analysis Complete[/blue]")
 
     # Analysis summary
     table = Table(title="📊 Analysis Summary")
@@ -445,7 +450,7 @@ def _display_analysis_results(analysis: Dict[str, Any], strategy):
     table.add_row("Similar Patterns", str(len(patterns.get('results', []))))
     table.add_row("Recommended Strategy", str(strategy.value))
 
-    console.print(table)
+    console.logger.info(table)
 
     # Strategy explanation
     strategy_explanations = {
@@ -454,12 +459,12 @@ def _display_analysis_results(analysis: Dict[str, Any], strategy):
         'full_gp': "High complexity - full genetic programming optimization needed"
     }
 
-    console.print(f"\n[yellow]🎯 Strategy Recommendation:[/yellow]")
-    console.print(f"{strategy_explanations.get(strategy.value, 'Custom strategy required')}")
+    console.logger.info(f"\n[yellow]🎯 Strategy Recommendation:[/yellow]")
+    console.logger.info(f"{strategy_explanations.get(strategy.value, 'Custom strategy required')}")
 
 def _display_monitoring_status(agent_filter: str):
     """Display current monitoring status."""
-    console.print("\n[green]📊 System Monitoring Status[/green]")
+    console.logger.info("\n[green]📊 System Monitoring Status[/green]")
 
     agents_to_check = []
     if agent_filter == 'all':
@@ -493,7 +498,7 @@ def _display_monitoring_status(agent_filter: str):
 
         table.add_column(name, status, last_activity)
 
-    console.print(table)
+    console.logger.info(table)
 
     # Show system metrics
     if ctx.verbose:
@@ -507,8 +512,8 @@ def _display_monitoring_status(agent_filter: str):
         metrics_table.add_row("Memory Usage", "~150MB")
         metrics_table.add_row("Response Time", "< 2s avg")
 
-        console.print()
-        console.print(metrics_table)
+        console.logger.info()
+        console.logger.info(metrics_table)
 
 if __name__ == '__main__':
     cli()

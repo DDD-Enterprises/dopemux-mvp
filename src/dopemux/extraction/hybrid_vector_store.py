@@ -431,8 +431,14 @@ class BM25Index:
 
     def load(self, path: str) -> None:
         """Load BM25 index with incremental update state."""
+        import json
         with open(path, 'rb') as f:
-            data = pickle.load(f)
+            raw = f.read()
+        try:
+            data = json.loads(raw.decode('utf-8')) if raw.strip().startswith(b'{') else pickle.loads(raw)
+        except Exception:
+            data = pickle.loads(raw)
+            logger.warning("Legacy pickle hybrid index loaded; migrate to JSON when saving next")
 
         # Load main collections
         self.documents = data["documents"]
@@ -669,7 +675,7 @@ class HybridVectorStore:
             return
 
         if self.config.enable_progress_tracking:
-            print(f"📚 Adding {len(documents)} documents to hybrid index...")
+            logger.info(f"📚 Adding {len(documents)} documents to hybrid index...")
 
         start_time = time.time()
         doc_contents = []
@@ -703,7 +709,7 @@ class HybridVectorStore:
             except Exception as e:
                 logger.error(f"❌ Embedding generation failed: {e}")
                 if self.config.gentle_error_messages:
-                    print("💙 Having trouble with embeddings, but don't worry - BM25 search will still work!")
+                    logger.info("💙 Having trouble with embeddings, but don't worry - BM25 search will still work!")
                 raise
 
         # Add to BM25 index
@@ -716,7 +722,7 @@ class HybridVectorStore:
 
         if self.config.enable_progress_tracking:
             speed = len(documents) / processing_time
-            print(f"✅ Added {len(documents)} documents in {processing_time:.1f}s ({speed:.1f} docs/sec)")
+            logger.info(f"✅ Added {len(documents)} documents in {processing_time:.1f}s ({speed:.1f} docs/sec)")
 
     async def search(self, query: str, k: int = 10,
                     enable_reranking: bool = True) -> List[SearchResult]:
@@ -767,7 +773,7 @@ class HybridVectorStore:
             except Exception as e:
                 logger.warning(f"⚠️ Vector search failed: {e}")
                 if self.config.gentle_error_messages:
-                    print("💙 Vector search had trouble - using lexical search only")
+                    logger.info("💙 Vector search had trouble - using lexical search only")
 
         # 3. Hybrid fusion
         fused_results = self.hybrid_ranker.fuse_scores(bm25_results, vector_results, query)
@@ -827,7 +833,7 @@ class HybridVectorStore:
             except Exception as e:
                 logger.warning(f"⚠️ Reranking failed: {e}")
                 if self.config.gentle_error_messages:
-                    print("💙 Reranking had trouble - using hybrid scores only")
+                    logger.info("💙 Reranking had trouble - using hybrid scores only")
                 # Fallback to non-reranked results
                 enable_reranking = False
 
@@ -862,8 +868,8 @@ class HybridVectorStore:
         self.search_performance["last_search_time"] = search_time
 
         if self.config.enable_progress_tracking and self.config.visual_progress_indicators:
-            print(f"🔍 Search completed in {search_time*1000:.0f}ms - found {len(final_results)} results")
-            print(f"   • BM25: {bm25_time*1000:.0f}ms | Vector: {vector_time*1000:.0f}ms | Rerank: {rerank_time*1000:.0f}ms")
+            logger.info(f"🔍 Search completed in {search_time*1000:.0f}ms - found {len(final_results)} results")
+            logger.info(f"   • BM25: {bm25_time*1000:.0f}ms | Vector: {vector_time*1000:.0f}ms | Rerank: {rerank_time*1000:.0f}ms")
 
         return final_results
 

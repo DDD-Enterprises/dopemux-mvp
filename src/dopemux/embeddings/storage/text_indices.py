@@ -211,8 +211,15 @@ class BM25Index(BaseTextIndex):
             EmbeddingIndexError: When loading fails
         """
         try:
+            import json, base64
             with open(path, 'rb') as f:
-                data = pickle.load(f)
+                raw = f.read()
+            # Use JSON if possible else fallback with warning
+            try:
+                data = json.loads(raw.decode('utf-8')) if raw.strip().startswith(b'{') else pickle.loads(raw)
+            except Exception:
+                data = pickle.loads(raw)
+                logger.warning("Legacy pickle index loaded; consider re-saving in JSON format")
 
             self.documents = data["documents"]
             self.doc_ids = data["doc_ids"]

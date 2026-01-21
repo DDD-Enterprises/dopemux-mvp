@@ -5,6 +5,11 @@ Phase 2: ADHD-Optimized API with session management and real-time progress
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime
@@ -175,7 +180,7 @@ app_state = AppState()
 async def lifespan(app: FastAPI):
     """Application lifecycle manager"""
     # Startup
-    print("🚀 Starting GPT-Researcher API (Phase 2)")
+    logger.info("🚀 Starting GPT-Researcher API (Phase 2)")
 
     # Initialize orchestrator
     api_keys = {
@@ -200,13 +205,13 @@ async def lifespan(app: FastAPI):
     app_state.session_manager = SessionManager()
     await app_state.session_manager.initialize()
 
-    print("✅ API initialized successfully")
-    print(f"📡 Listening on port {os.getenv('API_PORT', 8000)}")
+    logger.info("✅ API initialized successfully")
+    logger.info(f"📡 Listening on port {os.getenv('API_PORT', 8000)}")
 
     yield
 
     # Shutdown
-    print("🛑 Shutting down GPT-Researcher API")
+    logger.info("🛑 Shutting down GPT-Researcher API")
 
     # Close all WebSocket connections
     for ws in app_state.active_websockets.values():
@@ -216,7 +221,7 @@ async def lifespan(app: FastAPI):
     if app_state.session_manager:
         await app_state.session_manager.save_all_sessions()
 
-    print("👋 API shutdown complete")
+    logger.info("👋 API shutdown complete")
 
 
 # ========================
@@ -365,6 +370,7 @@ async def create_research_task(
         raise HTTPException(status_code=500, detail=f"Failed to create research task: {str(e)}")
 
 
+        logger.error(f"Error: {e}")
 @app.get("/api/v1/research/{task_id}")
 async def get_research_status(task_id: str):
     """Get research task status and results"""
@@ -560,6 +566,7 @@ async def websocket_endpoint(websocket: WebSocket, task_id: str, api_key: str = 
         await websocket.close()
 
 
+        logger.error(f"Error: {e}")
 # ========================
 # Helper Functions
 # ========================
@@ -611,6 +618,7 @@ async def execute_research_task(task_id: str, session_id: str):
             })
 
 
+        logger.error(f"Error: {e}")
 # ========================
 # Main Entry Point
 # ========================

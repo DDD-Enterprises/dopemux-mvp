@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from rich.panel import Panel
 from rich.table import Table
@@ -21,6 +21,7 @@ class ADHDMonitorPayload:
     untracked_files: int
     untracked_age: int
     untracked_confidence: float
+    files: List[str]
 
 
 class ADHDMonitorPane(Static):
@@ -29,6 +30,8 @@ class ADHDMonitorPane(Static):
     DEFAULT_CSS = """
     ADHDMonitorPane {
         padding: 1 1;
+        height: 100%;
+        overflow-y: auto;
     }
     """
 
@@ -58,10 +61,19 @@ class ADHDMonitorPane(Static):
             Text(f"{payload.untracked_confidence:.2f}", style="yellow"),
         )
 
+        files_table = Table.grid(expand=True)
+        files_table.add_column(justify="left")
+        if payload.files:
+            for f in payload.files[:20]:
+                files_table.add_row(Text(f, style="dim"))
+        else:
+            files_table.add_row(Text("No untracked files", style="dim"))
+
         layout = Table.grid(expand=True, padding=(0, 1))
         layout.add_column(ratio=1)
         layout.add_column(ratio=1)
-        layout.add_row(metrics, Panel(untracked, title="Untracked", border_style="yellow"))
+        layout.add_row(metrics, Panel(untracked, title="Untracked Work", border_style="yellow"))
+        layout.add_row(Panel(files_table, title="Untracked Files", border_style="cyan"), Text(""))
 
         return Panel(
             layout,
@@ -82,6 +94,7 @@ class ADHDMonitorPane(Static):
             untracked_files=int(serena.get("file_count") or 0),
             untracked_age=int(serena.get("age_days") or 0),
             untracked_confidence=float(serena.get("confidence") or 0.0),
+            files=list(serena.get("files") or []),
         )
         self._last_payload = payload
         self.update(self.compose_renderable(payload))

@@ -13,6 +13,11 @@ Usage:
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import re
 from pathlib import Path
 from typing import List, Tuple
@@ -97,25 +102,25 @@ def replace_in_file(file_path: Path, replacements: List[Tuple[str, str]]) -> int
 
 def rename_files_and_dirs():
     """Rename files and directories"""
-    print("🔄 Renaming files and directories...")
+    logger.info("🔄 Renaming files and directories...")
     
     for old_path, new_path in FILE_RENAMINGS:
         old_full = REPO_ROOT / old_path
         new_full = REPO_ROOT / new_path
         
         if old_full.exists():
-            print(f"   {old_path} → {new_path}")
+            logger.info(f"   {old_path} → {new_path}")
             if old_full.is_dir():
                 os.rename(old_full, new_full)
             else:
                 old_full.rename(new_full)
         else:
-            print(f"   ⚠️  {old_path} not found (skipping)")
+            logger.info(f"   ⚠️  {old_path} not found (skipping)")
 
 
 def update_file_contents():
     """Update all file contents"""
-    print("\n🔄 Updating file contents...")
+    logger.info("\n🔄 Updating file contents...")
     
     # Find all relevant files
     extensions = ['.py', '.md', '.yaml', '.yml', '.json', '.sh', '.txt', '.example']
@@ -131,7 +136,7 @@ def update_file_contents():
             if replacements > 0:
                 files_updated += 1
                 total_replacements += replacements
-                print(f"   ✓ {file_path.relative_to(REPO_ROOT)} ({replacements} changes)")
+                logger.info(f"   ✓ {file_path.relative_to(REPO_ROOT)} ({replacements} changes)")
     
     return files_updated, total_replacements
 
@@ -208,7 +213,7 @@ grep -r "DopeconBridge" services/ --include="*.py" || echo "✓ All code updated
 grep -r "DOPECON_BRIDGE" . --include="*.py" --include="*.md" || echo "✓ All env vars updated"
 
 # Verify new client can be imported
-python3 -c "from services.shared.dopecon_bridge_client import DopeconBridgeClient; print('✓ Client imports successfully')"
+python3 -c "from services.shared.dopecon_bridge_client import DopeconBridgeClient; logger.info('✓ Client imports successfully')"
 
 # Run tests
 python3 -m pytest tests/shared/test_dopecon_bridge_client.py -v
@@ -239,23 +244,23 @@ All references to "DopeconBridge" have been updated to "DopeconBridge".
     with open(report_path, 'w') as f:
         f.write(report.strip())
     
-    print(f"\n📄 Summary report created: {report_path}")
+    logger.info(f"\n📄 Summary report created: {report_path}")
 
 
 def main():
     """Main renaming function"""
-    print("=" * 60)
-    print("DopeconBridge Renaming Script")
-    print("=" * 60)
-    print()
-    print("This script will rename all references from 'DopeconBridge'")
-    print("to 'DopeconBridge' across code, docs, and configuration.")
-    print()
+    logger.info("=" * 60)
+    logger.info("DopeconBridge Renaming Script")
+    logger.info("=" * 60)
+    logger.info()
+    logger.info("This script will rename all references from 'DopeconBridge'")
+    logger.info("to 'DopeconBridge' across code, docs, and configuration.")
+    logger.info()
     
     # Confirm
     response = input("Continue? [y/N]: ").strip().lower()
     if response != 'y':
-        print("Aborted.")
+        logger.info("Aborted.")
         return
     
     # Rename files and directories
@@ -267,18 +272,18 @@ def main():
     # Create summary
     create_summary_report(files_updated, total_replacements)
     
-    print()
-    print("=" * 60)
-    print("✅ Renaming Complete!")
-    print("=" * 60)
-    print(f"   Files updated: {files_updated}")
-    print(f"   Total replacements: {total_replacements}")
-    print()
-    print("Next steps:")
-    print("1. Run tests: python3 -m pytest tests/shared/")
-    print("2. Update Docker Compose files manually")
-    print("3. Review git diff for changes")
-    print()
+    logger.info()
+    logger.info("=" * 60)
+    logger.info("✅ Renaming Complete!")
+    logger.info("=" * 60)
+    logger.info(f"   Files updated: {files_updated}")
+    logger.info(f"   Total replacements: {total_replacements}")
+    logger.info()
+    logger.info("Next steps:")
+    logger.info("1. Run tests: python3 -m pytest tests/shared/")
+    logger.info("2. Update Docker Compose files manually")
+    logger.info("3. Review git diff for changes")
+    logger.info()
 
 
 if __name__ == "__main__":

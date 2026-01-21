@@ -15,6 +15,11 @@ Supports profile selection, creation, and switching for multi-project workflows.
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import shutil
 import yaml
 from pathlib import Path
@@ -104,7 +109,7 @@ class ProfileManager:
                 profile = DopemuxProfile.from_yaml(profile_file)
                 profiles.append(profile)
             except Exception as e:
-                print(f"Warning: Failed to load profile {profile_file}: {e}")
+                logger.error(f"Warning: Failed to load profile {profile_file}: {e}")
 
         return sorted(profiles, key=lambda p: p.name)
 
@@ -293,7 +298,7 @@ class ProfileManager:
         repo_profiles = Path(__file__).parent.parent.parent / "config" / "profiles"
 
         if not Path.exists(repo_profiles):
-            print(f"Warning: Default profiles not found at {repo_profiles}")
+            logger.warning(f"Warning: Default profiles not found at {repo_profiles}")
             return
 
         # Copy to user's ~/.dopemux/profiles/
@@ -302,6 +307,6 @@ class ProfileManager:
 
             if not Path.exists(dest):
                 shutil.copy(profile_file, dest)
-                print(f"✅ Installed profile: {profile_file.stem}")
+                logger.info(f"✅ Installed profile: {profile_file.stem}")
             else:
-                print(f"⏭️  Profile already exists: {profile_file.stem}")
+                logger.info(f"⏭️  Profile already exists: {profile_file.stem}")

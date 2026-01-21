@@ -331,10 +331,10 @@ def score_batch_quality(
     Example:
         quality = score_batch_quality(batch, current_adhd_state)
         if quality.meets_targets:
-            print("✅ High-quality batch ready for execution")
+            logger.info("✅ High-quality batch ready for execution")
         else:
             for rec in quality.recommendations:
-                print(f"  - {rec}")
+                logger.info(f"  - {rec}")
     """
     scorer = BatchQualityScorer()
     return scorer.score_batch(batch, adhd_state)

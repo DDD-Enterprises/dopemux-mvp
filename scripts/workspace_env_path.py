@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 """Print the per-workspace env file path, creating it if necessary."""
 
 from __future__ import annotations
@@ -56,10 +61,10 @@ def main() -> None:
     try:
         artifacts = ensure_workspace_artifacts(workspace_path, set_default=args.set_default)
     except OSError as exc:
-        print(f"[error] Unable to persist workspace artifacts: {exc}", file=sys.stderr)
+        logger.error(f"[error] Unable to persist workspace artifacts: {exc}", file=sys.stderr)
         sys.exit(1)
 
-    print(artifacts.env_path)
+    logger.info(artifacts.env_path)
 
 
 if __name__ == "__main__":

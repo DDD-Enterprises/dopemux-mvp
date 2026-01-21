@@ -80,9 +80,10 @@ class WorktreeTemplateManager:
 
             return main_repo
 
-        except Exception:
+        except Exception as e:
             return None
 
+            logger.error(f"Error: {e}")
     def get_template_files(self, main_repo: Optional[Path] = None) -> List[Path]:
         """
         Get list of files to copy from main repo as templates.
@@ -197,9 +198,10 @@ class WorktreeTemplateManager:
             # Exit code 0 means file is ignored
             return result.returncode == 0
 
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     def copy_templates_to_worktree(
         self,
         worktree: Path,

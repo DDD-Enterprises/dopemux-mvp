@@ -11,6 +11,11 @@ Features:
 """
 
 import time
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import Iterator, Optional, Callable
 from rich.live import Live
 from rich.text import Text
@@ -138,7 +143,7 @@ class StreamingDisplay:
             title=f"❌ {self.agent_name}",
             border_style="red"
         )
-        console.print(error_panel)
+        console.logger.error(error_panel)
 
     def show_success(self, content: str, metadata: Optional[dict] = None):
         """
@@ -158,7 +163,7 @@ class StreamingDisplay:
         # Show metadata if available
         if metadata:
             meta_text = "  ".join(f"{k}: {v}" for k, v in metadata.items())
-            console.print(f"[dim]{meta_text}[/dim]\n")
+            console.logger.info(f"[dim]{meta_text}[/dim]\n")
 
     def show_partial_success(self, content: str, error_message: str):
         """
@@ -204,11 +209,11 @@ if __name__ == "__main__":
     """Test streaming display."""
     import sys
 
-    print("🧪 Testing Streaming Display")
-    print("=" * 60)
+    logger.info("🧪 Testing Streaming Display")
+    logger.info("=" * 60)
 
     # Test 1: Streaming lines
-    print("\n1. Testing line-by-line streaming...")
+    logger.info("\n1. Testing line-by-line streaming...")
 
     def sample_line_generator():
         """Simulate AI responding line by line."""
@@ -229,10 +234,10 @@ if __name__ == "__main__":
     display = StreamingDisplay('claude')
     response = display.stream_response(sample_line_generator())
 
-    print(f"\n✅ Streamed {len(response.split(chr(10)))} lines")
+    logger.info(f"\n✅ Streamed {len(response.split(chr(10)))} lines")
 
     # Test 2: Progress spinner
-    print("\n2. Testing progress spinner...")
+    logger.info("\n2. Testing progress spinner...")
 
     def slow_task():
         time.sleep(2)
@@ -241,15 +246,15 @@ if __name__ == "__main__":
     display2 = StreamingDisplay('gemini')
     result = display2.show_with_progress("Researching OAuth2 patterns", slow_task)
 
-    print(f"✅ Got result: {result[:50]}...")
+    logger.info(f"✅ Got result: {result[:50]}...")
 
     # Test 3: Error display
-    print("\n3. Testing error display...")
+    logger.error("\n3. Testing error display...")
     display3 = StreamingDisplay('codex')
     display3.show_error("timeout", "No response within 30 seconds")
 
     # Test 4: Success with metadata
-    print("\n4. Testing success display with metadata...")
+    logger.info("\n4. Testing success display with metadata...")
     display4 = StreamingDisplay('claude')
     display4.show_success(
         "Authentication implementation complete!",
@@ -257,11 +262,11 @@ if __name__ == "__main__":
     )
 
     # Test 5: Partial success
-    print("\n5. Testing partial success...")
+    logger.info("\n5. Testing partial success...")
     display5 = StreamingDisplay('gemini')
     display5.show_partial_success(
         "Here's what I found, but...",
         "Rate limit may have truncated response"
     )
 
-    print("\n✅ Streaming display test complete!")
+    logger.info("\n✅ Streaming display test complete!")

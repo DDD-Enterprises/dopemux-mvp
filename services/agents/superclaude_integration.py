@@ -469,9 +469,9 @@ class SuperClaudeIntegration:
 
 async def demo_sc_implement():
     """Demo: /sc:implement integration"""
-    print("\n" + "="*70)
-    print("/sc:implement Integration Demo")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("/sc:implement Integration Demo")
+    logger.info("="*70)
 
     integration = SuperClaudeIntegration(
         workspace_id="/Users/hue/code/dopemux-mvp"
@@ -486,26 +486,26 @@ async def demo_sc_implement():
         duration_minutes=25
     )
 
-    print("\n✅ Session Started:")
-    print(f"  Ready: {session['readiness']['ready']}")
+    logger.info("\n✅ Session Started:")
+    logger.info(f"  Ready: {session['readiness']['ready']}")
     if session['tools_selected']:
         tools_info = session['tools_selected'].get('primary', {})
         if hasattr(tools_info, 'primary_tool'):
-            print(f"  Tools: {tools_info.primary_tool} + {tools_info.model}")
+            logger.info(f"  Tools: {tools_info.primary_tool} + {tools_info.model}")
         else:
-            print(f"  Tools: {tools_info}")
+            logger.info(f"  Tools: {tools_info}")
     else:
-        print(f"  Tools: (selection unavailable)")
-    print(f"  Break at: {session['break_reminder_at']} min")
+        logger.info(f"  Tools: (selection unavailable)")
+    logger.info(f"  Break at: {session['break_reminder_at']} min")
 
     await integration.close()
 
 
 async def demo_sc_brainstorm():
     """Demo: /sc:brainstorm (TaskDecomposer)"""
-    print("\n" + "="*70)
-    print("/sc:brainstorm Integration Demo (TaskDecomposer)")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("/sc:brainstorm Integration Demo (TaskDecomposer)")
+    logger.info("="*70)
 
     integration = SuperClaudeIntegration(
         workspace_id="/Users/hue/code/dopemux-mvp"
@@ -529,22 +529,22 @@ Implement JWT-based authentication with login, logout, and token refresh.
 
     result = await integration.decompose_prd(prd, max_tasks=10)
 
-    print(f"\n✅ PRD Decomposed:")
-    print(f"  Tasks: {len(result['tasks'])}")
-    print(f"  ADHD Optimized: {result['adhd_optimized']}")
+    logger.info(f"\n✅ PRD Decomposed:")
+    logger.info(f"  Tasks: {len(result['tasks'])}")
+    logger.info(f"  ADHD Optimized: {result['adhd_optimized']}")
 
     for i, task in enumerate(result['tasks'][:3], 1):
-        print(f"\n  {i}. {task.title}")
-        print(f"     Complexity: {task.complexity}, Energy: {task.energy_required}")
+        logger.info(f"\n  {i}. {task.title}")
+        logger.info(f"     Complexity: {task.complexity}, Energy: {task.energy_required}")
 
     await integration.close()
 
 
 async def demo_sc_troubleshoot():
     """Demo: /sc:troubleshoot (Bug workflow)"""
-    print("\n" + "="*70)
-    print("/sc:troubleshoot Integration Demo (WorkflowCoordinator)")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("/sc:troubleshoot Integration Demo (WorkflowCoordinator)")
+    logger.info("="*70)
 
     integration = SuperClaudeIntegration(
         workspace_id="/Users/hue/code/dopemux-mvp"
@@ -557,29 +557,29 @@ async def demo_sc_troubleshoot():
         bug_description="Login fails with 401 error"
     )
 
-    print(f"\n✅ Bug Workflow Started:")
-    print(f"  Workflow ID: {workflow['workflow_id']}")
-    print(f"  Steps: {workflow['total_steps']}")
-    print(f"  Estimated: {workflow['estimated_minutes']} min")
+    logger.info(f"\n✅ Bug Workflow Started:")
+    logger.info(f"  Workflow ID: {workflow['workflow_id']}")
+    logger.info(f"  Steps: {workflow['total_steps']}")
+    logger.info(f"  Estimated: {workflow['estimated_minutes']} min")
 
     await integration.close()
 
 
 async def main():
     """Run all integration demos"""
-    print("\n" + "="*70)
-    print("SUPERCLAUDE INTEGRATION DEMOS - Weeks 15-16")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("SUPERCLAUDE INTEGRATION DEMOS - Weeks 15-16")
+    logger.info("="*70)
 
     await demo_sc_implement()
     await demo_sc_brainstorm()
     await demo_sc_troubleshoot()
 
-    print("\n" + "="*70)
-    print("✅ All integration demos complete!")
-    print("="*70)
-    print("\nSuperClaude commands can now use all 7 Dopemux agents!")
-    print("="*70 + "\n")
+    logger.info("\n" + "="*70)
+    logger.info("✅ All integration demos complete!")
+    logger.info("="*70)
+    logger.info("\nSuperClaude commands can now use all 7 Dopemux agents!")
+    logger.info("="*70 + "\n")
 
 
 if __name__ == "__main__":

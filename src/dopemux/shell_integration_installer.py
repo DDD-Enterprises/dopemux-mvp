@@ -15,6 +15,11 @@ Design: Make it easy to say yes, safe to try
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import shutil
 import subprocess
 from datetime import datetime
@@ -117,21 +122,21 @@ class ShellIntegrationInstaller:
 
         # Prompt for confirmation
         if not auto_confirm:
-            console.print("\n[bold cyan]🐚 Shell Integration Setup[/bold cyan]\n")
-            console.print(f"Shell: [bold]{self.shell_name}[/bold]")
-            console.print(f"Config: [bold]{self.shell_config}[/bold]\n")
+            console.logger.info("\n[bold cyan]🐚 Shell Integration Setup[/bold cyan]\n")
+            console.logger.info(f"Shell: [bold]{self.shell_name}[/bold]")
+            console.logger.info(f"Config: [bold]{self.shell_config}[/bold]\n")
 
-            console.print("[yellow]This will add the following commands to your shell:[/yellow]")
-            console.print("  • [bold]dwt[/bold] <branch>  - Switch to worktree with fuzzy matching")
-            console.print("  • [bold]dwtls[/bold]         - List all worktrees")
-            console.print("  • [bold]dwtcur[/bold]        - Show current worktree\n")
+            console.logger.info("[yellow]This will add the following commands to your shell:[/yellow]")
+            console.logger.info("  • [bold]dwt[/bold] <branch>  - Switch to worktree with fuzzy matching")
+            console.logger.info("  • [bold]dwtls[/bold]         - List all worktrees")
+            console.logger.info("  • [bold]dwtcur[/bold]        - Show current worktree\n")
 
             if not Confirm.ask("Install shell integration?", default=True):
                 return False, "Installation cancelled by user"
 
         # Create backup
         backup_path = self._create_backup()
-        console.print(f"[dim]📋 Backup created: {backup_path}[/dim]")
+        console.logger.info(f"[dim]📋 Backup created: {backup_path}[/dim]")
 
         # Read integration script
         try:
@@ -140,6 +145,7 @@ class ShellIntegrationInstaller:
         except Exception as e:
             return False, f"Failed to read integration script: {e}"
 
+            logger.error(f"Error: {e}")
         # Append to shell config
         try:
             with open(self.shell_config, 'a') as f:
@@ -149,14 +155,15 @@ class ShellIntegrationInstaller:
                 f.write(integration_code)
                 f.write("\n")
 
-            console.print(f"[green]✅ Shell integration installed to {self.shell_config}[/green]")
-            console.print(f"[yellow]⚠️  Run this to activate: source {self.shell_config}[/yellow]")
+            console.logger.info(f"[green]✅ Shell integration installed to {self.shell_config}[/green]")
+            console.logger.info(f"[yellow]⚠️  Run this to activate: source {self.shell_config}[/yellow]")
 
             return True, "Installation successful"
 
         except Exception as e:
             return False, f"Failed to write to shell config: {e}"
 
+            logger.error(f"Error: {e}")
     def _create_backup(self) -> Path:
         """Create timestamped backup of shell config."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -175,16 +182,16 @@ class ShellIntegrationInstaller:
             return True
 
         if not self.is_supported():
-            console.print(f"[yellow]⚠️  Shell integration not supported for {self.shell_name or 'your shell'}[/yellow]")
+            console.logger.info(f"[yellow]⚠️  Shell integration not supported for {self.shell_name or 'your shell'}[/yellow]")
             return False
 
         success, message = self.install(auto_confirm=False)
 
         if success:
-            console.print(f"\n[bold green]🎉 {message}[/bold green]")
+            console.logger.info(f"\n[bold green]🎉 {message}[/bold green]")
             return True
         else:
-            console.print(f"\n[bold red]❌ {message}[/bold red]")
+            console.logger.info(f"\n[bold red]❌ {message}[/bold red]")
             return False
 
 

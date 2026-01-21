@@ -5,6 +5,11 @@ Quick assessment of potential bottlenecks.
 """
 
 import time
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 from pathlib import Path
 
@@ -32,24 +37,24 @@ doc_chunks = 4413  # From our indexing
 checks.append(("Doc chunks indexed", doc_chunks, 5000, "chunks"))
 
 # Results
-print("=" * 70)
-print("PERFORMANCE PROFILE")
-print("=" * 70)
-print()
+logger.info("=" * 70)
+logger.info("PERFORMANCE PROFILE")
+logger.info("=" * 70)
+logger.info()
 
 for name, value, threshold, unit in checks:
     status = "✅" if value < threshold else "⚠️"
-    print(f"{status} {name}: {value:.2f} {unit} (threshold: {threshold} {unit})")
+    logger.info(f"{status} {name}: {value:.2f} {unit} (threshold: {threshold} {unit})")
 
-print()
-print("=" * 70)
-print("SUMMARY")
-print("=" * 70)
-print("✅ All performance metrics within acceptable ranges")
-print("✅ No obvious bottlenecks detected")
-print("✅ Services ready for production load")
-print()
-print("Recommendations:")
-print("- Semantic search: < 3s (✅ Currently ~2s)")
-print("- API response: < 500ms (✅ FastAPI async)")
-print("- Import time: < 100ms (✅ Currently ~{:.0f}ms)".format(import_time * 1000))
+logger.info()
+logger.info("=" * 70)
+logger.info("SUMMARY")
+logger.info("=" * 70)
+logger.info("✅ All performance metrics within acceptable ranges")
+logger.info("✅ No obvious bottlenecks detected")
+logger.info("✅ Services ready for production load")
+logger.info()
+logger.info("Recommendations:")
+logger.info("- Semantic search: < 3s (✅ Currently ~2s)")
+logger.info("- API response: < 500ms (✅ FastAPI async)")
+logger.info("- Import time: < 100ms (✅ Currently ~{:.0f}ms)".format(import_time * 1000))

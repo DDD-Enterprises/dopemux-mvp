@@ -22,7 +22,7 @@ try:
     MILVUS_AVAILABLE = True
 except ImportError:
     MILVUS_AVAILABLE = False
-    print("⚠️ Milvus not available. Install with: pip install pymilvus")
+    logger.info("⚠️ Milvus not available. Install with: pip install pymilvus")
 
 try:
     import chromadb
@@ -31,7 +31,7 @@ try:
     CHROMADB_AVAILABLE = True
 except ImportError:
     CHROMADB_AVAILABLE = False
-    print("⚠️ ChromaDB not available. Install with: pip install chromadb")
+    logger.info("⚠️ ChromaDB not available. Install with: pip install chromadb")
 
 try:
     import voyageai
@@ -39,7 +39,7 @@ try:
     VOYAGE_AVAILABLE = True
 except ImportError:
     VOYAGE_AVAILABLE = False
-    print("⚠️ Voyage AI not available. Install with: pip install voyageai")
+    logger.info("⚠️ Voyage AI not available. Install with: pip install voyageai")
 
 try:
     import openai
@@ -47,7 +47,7 @@ try:
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
-    print("⚠️ OpenAI not available. Install with: pip install openai")
+    logger.info("⚠️ OpenAI not available. Install with: pip install openai")
 
 
 @dataclass
@@ -55,6 +55,11 @@ class EmbeddedUnit:
     """Represents a unit with its embedding."""
 
     unit_id: str
+
+import logging
+
+logger = logging.getLogger(__name__)
+
     doc_uri: str
     doc_type: str
     entity_type: str
@@ -107,14 +112,14 @@ class DocumentEmbedder:
         elif CHROMADB_AVAILABLE:
             self._init_chromadb()
         else:
-            print("⚠️ No vector database available. Install pymilvus or chromadb.")
+            logger.info("⚠️ No vector database available. Install pymilvus or chromadb.")
 
         # Initialize embedding client based on model
         if model_name.startswith("voyage"):
             if VOYAGE_AVAILABLE:
                 self.voyage_client = voyageai.Client()
                 self.embedding_provider = "voyage"
-                print(f"✅ Using Voyage AI with model: {model_name}")
+                logger.info(f"✅ Using Voyage AI with model: {model_name}")
             else:
                 raise ImportError(
                     "Voyage AI not available. Install with: pip install voyageai"
@@ -123,7 +128,7 @@ class DocumentEmbedder:
             if OPENAI_AVAILABLE:
                 self.openai_client = openai.OpenAI()
                 self.embedding_provider = "openai"
-                print(f"✅ Using OpenAI with model: {model_name}")
+                logger.info(f"✅ Using OpenAI with model: {model_name}")
             else:
                 raise ImportError(
                     "OpenAI not available. Install with: pip install openai"
@@ -135,7 +140,7 @@ class DocumentEmbedder:
             if self.milvus_uri:
                 # Use Milvus Lite with file-based storage
                 self.milvus_client = MilvusClient(self.milvus_uri)
-                print(f"✅ Connected to Milvus Lite at {self.milvus_uri}")
+                logger.info(f"✅ Connected to Milvus Lite at {self.milvus_uri}")
                 self._setup_milvus_lite_collection()
             else:
                 # Use traditional server-based Milvus
@@ -148,9 +153,9 @@ class DocumentEmbedder:
                 self._setup_milvus_server_collection()
 
         except Exception as e:
-            print(f"❌ Error setting up Milvus: {e}")
+            logger.error(f"❌ Error setting up Milvus: {e}")
             if CHROMADB_AVAILABLE:
-                print("🔄 Falling back to ChromaDB...")
+                logger.info("🔄 Falling back to ChromaDB...")
                 self._init_chromadb()
             else:
                 raise e
@@ -194,9 +199,9 @@ class DocumentEmbedder:
                 dimension=1024,  # voyage-context-3 dimension
                 auto_id=False,
             )
-            print(f"✅ Created Milvus Lite collection: {collection_name}")
+            logger.info(f"✅ Created Milvus Lite collection: {collection_name}")
         else:
-            print(f"✅ Using existing Milvus Lite collection: {collection_name}")
+            logger.info(f"✅ Using existing Milvus Lite collection: {collection_name}")
 
         self.collection_name = collection_name
 
@@ -207,7 +212,7 @@ class DocumentEmbedder:
         # Check if collection exists
         if utility.has_collection(collection_name):
             self.collection = Collection(collection_name)
-            print(f"✅ Using existing Milvus collection: {collection_name}")
+            logger.info(f"✅ Using existing Milvus collection: {collection_name}")
         else:
             # Create new collection
             fields = [
@@ -244,7 +249,7 @@ class DocumentEmbedder:
                 "params": {"nlist": 128},
             }
             self.collection.create_index("embedding", index_params)
-            print(f"✅ Created Milvus collection: {collection_name}")
+            logger.info(f"✅ Created Milvus collection: {collection_name}")
 
         # Load collection for search
         self.collection.load()
@@ -261,18 +266,18 @@ class DocumentEmbedder:
                 name="document_units", metadata={"hnsw:space": "cosine"}
             )
 
-            print("✅ ChromaDB initialized")
+            logger.info("✅ ChromaDB initialized")
         except Exception as e:
-            print(f"⚠️ Failed to initialize ChromaDB: {e}")
+            logger.error(f"⚠️ Failed to initialize ChromaDB: {e}")
             self.chroma_client = None
             self.collection = None
 
     def embed_atomic_units(self, units_file: str) -> List[EmbeddedUnit]:
         """Generate embeddings for atomic units using Voyage Context-3."""
-        print(f"🔮 Generating embeddings from {units_file} using {self.model_name}")
+        logger.info(f"🔮 Generating embeddings from {units_file} using {self.model_name}")
 
         if not Path(units_file).exists():
-            print(f"⚠️ File {units_file} not found")
+            logger.info(f"⚠️ File {units_file} not found")
             return []
 
         # Load atomic units
@@ -282,7 +287,7 @@ class DocumentEmbedder:
                 if line.strip():
                     units.append(json.loads(line))
 
-        print(f"📊 Processing {len(units)} units for embedding")
+        logger.info(f"📊 Processing {len(units)} units for embedding")
 
         # Process units in batches (Voyage AI has different batch limits)
         batch_size = 50 if self.embedding_provider == "voyage" else 100
@@ -293,7 +298,7 @@ class DocumentEmbedder:
                 f"✅ Processed batch {i//batch_size + 1}/{(len(units)-1)//batch_size + 1}"
             )
 
-        print(f"🎯 Generated {len(self.embedded_units)} embeddings")
+        logger.info(f"🎯 Generated {len(self.embedded_units)} embeddings")
         return self.embedded_units
 
     def _process_batch(self, units: List[Dict]) -> None:
@@ -340,7 +345,7 @@ class DocumentEmbedder:
                     self._store_in_vectordb(embedded_unit)
 
         except Exception as e:
-            print(f"⚠️ Error generating embeddings: {e}")
+            logger.error(f"⚠️ Error generating embeddings: {e}")
 
     def _generate_voyage_embeddings(self, texts: List[str]) -> List[List[float]]:
         """Generate embeddings using Voyage AI."""
@@ -355,7 +360,7 @@ class DocumentEmbedder:
             return [embedding for embedding in response.embeddings]
 
         except Exception as e:
-            print(f"⚠️ Voyage AI embedding failed: {e}")
+            logger.error(f"⚠️ Voyage AI embedding failed: {e}")
             raise
 
     def _generate_openai_embeddings(self, texts: List[str]) -> List[List[float]]:
@@ -368,7 +373,7 @@ class DocumentEmbedder:
             return [embedding_data.embedding for embedding_data in response.data]
 
         except Exception as e:
-            print(f"⚠️ OpenAI embedding failed: {e}")
+            logger.error(f"⚠️ OpenAI embedding failed: {e}")
             raise
 
     def _prepare_embedding_text(self, unit: Dict) -> str:
@@ -473,11 +478,11 @@ class DocumentEmbedder:
                 )
 
         except Exception as e:
-            print(f"⚠️ Error storing in vector DB: {e}")
+            logger.error(f"⚠️ Error storing in vector DB: {e}")
 
     def detect_duplicates(self) -> List[DuplicateCluster]:
         """Detect duplicate and near-duplicate units using both cosine and Jaccard similarity."""
-        print("🔍 Detecting duplicates using cosine similarity and MinHash...")
+        logger.info("🔍 Detecting duplicates using cosine similarity and MinHash...")
 
         processed_units = set()
         clusters = []
@@ -522,7 +527,7 @@ class DocumentEmbedder:
                 processed_units.add(unit.unit_id)
 
         self.duplicate_clusters = clusters
-        print(f"🎯 Found {len(clusters)} duplicate clusters")
+        logger.info(f"🎯 Found {len(clusters)} duplicate clusters")
         return clusters
 
     def _find_similar_units(
@@ -609,9 +614,10 @@ class DocumentEmbedder:
                     days_old = (datetime.now() - date).days
                     recency_score = max(0, 365 - days_old) / 365  # Higher for newer
                     score += recency_score * 0.3
-                except:
+                except Exception as e:
                     pass
 
+                    logger.error(f"Error: {e}")
             # Specificity score using original playbook weights
             specificity_score = self._calculate_specificity_score(unit)
             score += specificity_score * 0.7
@@ -725,7 +731,7 @@ class DocumentEmbedder:
     ) -> List[Tuple[EmbeddedUnit, float]]:
         """Query for similar units using vector search (top-k 8-15 as per playbook)."""
         if not self.collection:
-            print("⚠️ Vector search not available")
+            logger.info("⚠️ Vector search not available")
             return []
 
         try:
@@ -854,7 +860,7 @@ class DocumentEmbedder:
             return similar_units
 
         except Exception as e:
-            print(f"⚠️ Error querying similar units: {e}")
+            logger.error(f"⚠️ Error querying similar units: {e}")
             return []
 
     def save_embeddings(self, output_path: str = "build/embeddings.jsonl") -> None:
@@ -877,7 +883,7 @@ class DocumentEmbedder:
                 }
                 f.write(json.dumps(unit_dict, ensure_ascii=False) + "\\n")
 
-        print(f"💾 Saved {len(self.embedded_units)} embeddings to {output_path}")
+        logger.info(f"💾 Saved {len(self.embedded_units)} embeddings to {output_path}")
 
     def save_duplicate_clusters(
         self, output_path: str = "build/reports/duplicate_clusters.json"
@@ -900,7 +906,7 @@ class DocumentEmbedder:
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(clusters_data, f, indent=2, ensure_ascii=False)
 
-        print(f"💾 Saved {len(clusters_data)} duplicate clusters to {output_path}")
+        logger.info(f"💾 Saved {len(clusters_data)} duplicate clusters to {output_path}")
 
     def get_embedding_stats(self) -> Dict[str, any]:
         """Get statistics about embeddings and duplicates."""

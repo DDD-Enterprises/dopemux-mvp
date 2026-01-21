@@ -13,6 +13,11 @@ Decision #118 (to be logged)
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import os
 import sys
 from typing import Dict, List, Optional, Any
@@ -31,14 +36,14 @@ try:
     from queries.deep_context import DeepContextQueries
     from queries.models import DecisionCard
 except ImportError:
-    print("⚠️  Query modules not yet available")
+    logger.info("⚠️  Query modules not yet available")
 
 try:
     from src.integrations.bridge_client import DopeconBridgeClient
     BRIDGE_AVAILABLE = True
 except ImportError:
     BRIDGE_AVAILABLE = False
-    print("⚠️  DopeconBridge client not available (will skip event publishing)")
+    logger.info("⚠️  DopeconBridge client not available (will skip event publishing)")
 
 
 @dataclass
@@ -84,8 +89,8 @@ class KGOrchestrator:
         self.bridge = DopeconBridgeClient() if BRIDGE_AVAILABLE else None
 
         status = "with DopeconBridge" if self.bridge else "without DopeconBridge (events disabled)"
-        print(f"✅ KG Orchestrator initialized {status}")
-        print("   Event handlers: decision.logged, task.started, file.opened")
+        logger.info(f"✅ KG Orchestrator initialized {status}")
+        logger.info("   Event handlers: decision.logged, task.started, file.opened")
 
     async def on_decision_logged(self, event: KGEvent):
         """
@@ -102,7 +107,7 @@ class KGOrchestrator:
         decision_id = event.payload.get('decision_id')
         summary = event.payload.get('summary', '')
 
-        print(f"\n[KG Orchestrator] decision.logged: #{decision_id}")
+        logger.info(f"\n[KG Orchestrator] decision.logged: #{decision_id}")
 
         # Background: Find similar decisions
         try:
@@ -122,11 +127,11 @@ class KGOrchestrator:
                     ex=3600  # 1 hour TTL
                 )
 
-                print(f"   → Found {len(similar)} similar decisions")
-                print(f"   → Stored top 5 suggestions in Redis")
+                logger.info(f"   → Found {len(similar)} similar decisions")
+                logger.info(f"   → Stored top 5 suggestions in Redis")
 
         except Exception as e:
-            print(f"   ⚠️  Similarity analysis failed: {e}")
+            logger.error(f"   ⚠️  Similarity analysis failed: {e}")
 
         # Background: Check for IMPLEMENTS relationships
         try:
@@ -137,8 +142,8 @@ class KGOrchestrator:
             )
 
             if impl_decisions and self.bridge:
-                print(f"   → Found {len(impl_decisions)} IMPLEMENTS relationships")
-                print(f"   → Publishing decision.requires_implementation event to DopeconBridge")
+                logger.info(f"   → Found {len(impl_decisions)} IMPLEMENTS relationships")
+                logger.info(f"   → Publishing decision.requires_implementation event to DopeconBridge")
 
                 # Publish event to DopeconBridge
                 await self.bridge.save_custom_data(
@@ -153,10 +158,10 @@ class KGOrchestrator:
                         "priority": event.priority
                     }
                 )
-                print(f"   ✅ Event published to DopeconBridge")
+                logger.info(f"   ✅ Event published to DopeconBridge")
 
         except Exception as e:
-            print(f"   ⚠️  IMPLEMENTS check failed: {e}")
+            logger.error(f"   ⚠️  IMPLEMENTS check failed: {e}")
 
     async def on_task_started(self, event: KGEvent):
         """
@@ -176,7 +181,7 @@ class KGOrchestrator:
         if not decision_refs:
             return  # No decisions linked to task
 
-        print(f"\n[KG Orchestrator] task.started: Task {task_id}")
+        logger.info(f"\n[KG Orchestrator] task.started: Task {task_id}")
 
         # PERFORMANCE FIX - N+1 Query Problem (Issue from audit 2025-10-16)
         # Fixed: Now uses batch loading instead of one-by-one queries
@@ -188,10 +193,10 @@ class KGOrchestrator:
             # Try batch loading first for better performance
             batch_contexts = await self.exploration_queries.get_multiple_neighborhoods(decision_refs)
             contexts = batch_contexts
-            print(f"[KG Orchestrator] Batch loaded {len(contexts)} decision contexts")
+            logger.info(f"[KG Orchestrator] Batch loaded {len(contexts)} decision contexts")
         except (AttributeError, NotImplementedError):
             # Fallback to individual loading if batch method not available
-            print(f"[KG Orchestrator] Batch loading not available, falling back to individual queries")
+            logger.info(f"[KG Orchestrator] Batch loading not available, falling back to individual queries")
             for decision_id in decision_refs:
                 try:
                 context = self.exploration.get_decision_neighborhood(
@@ -201,11 +206,11 @@ class KGOrchestrator:
                 )
                 contexts.append(context)
 
-                print(f"   → Loaded context for decision #{decision_id}")
-                print(f"      1-hop: {len(context.hop_1_neighbors)}, 2-hop: {len(context.hop_2_neighbors)}")
+                logger.info(f"   → Loaded context for decision #{decision_id}")
+                logger.info(f"      1-hop: {len(context.hop_1_neighbors)}, 2-hop: {len(context.hop_2_neighbors)}")
 
             except Exception as e:
-                print(f"   ⚠️  Context loading failed for #{decision_id}: {e}")
+                logger.error(f"   ⚠️  Context loading failed for #{decision_id}: {e}")
 
         if self.redis and contexts:
             # Cache for Serena to use
@@ -214,7 +219,7 @@ class KGOrchestrator:
                 contexts,
                 ex=3600
             )
-            print(f"   → Cached {len(contexts)} decision contexts")
+            logger.info(f"   → Cached {len(contexts)} decision contexts")
 
     async def on_file_opened(self, event: KGEvent):
         """
@@ -234,8 +239,8 @@ class KGOrchestrator:
         if not module_name:
             return  # Can't extract module
 
-        print(f"\n[KG Orchestrator] file.opened: {file_path}")
-        print(f"   Module: {module_name}")
+        logger.info(f"\n[KG Orchestrator] file.opened: {file_path}")
+        logger.info(f"   Module: {module_name}")
 
         # Background: Search for related decisions
         try:
@@ -246,13 +251,13 @@ class KGOrchestrator:
                 # Fallback: Full-text search
                 related = self.deep_context.search_full_text(module_name, limit=5)[:3]
 
-            print(f"   → Found {len(related)} related decisions")
+            logger.info(f"   → Found {len(related)} related decisions")
 
             # TODO: Update Serena sidebar
             # await serena.update_sidebar('Related Decisions', related, collapsed=True)
 
         except Exception as e:
-            print(f"   ⚠️  Related decision search failed: {e}")
+            logger.error(f"   ⚠️  Related decision search failed: {e}")
 
     async def on_sprint_planning(self, event: KGEvent):
         """
@@ -269,13 +274,13 @@ class KGOrchestrator:
 
         sprint_id = event.payload.get('sprint_id')
 
-        print(f"\n[KG Orchestrator] sprint.planning: {sprint_id}")
+        logger.info(f"\n[KG Orchestrator] sprint.planning: {sprint_id}")
 
         # Background: Load sprint decisions
         try:
             sprint_decisions = self.overview.search_by_tag(sprint_id, limit=20)
 
-            print(f"   → Found {len(sprint_decisions)} decisions for sprint")
+            logger.info(f"   → Found {len(sprint_decisions)} decisions for sprint")
 
             # Build genealogy for each
             genealogies = {}
@@ -286,16 +291,16 @@ class KGOrchestrator:
                         max_hops=1
                     )
                     genealogies[decision.id] = neighborhood
-                except:
+                except Exception as e:
                     pass
 
-            print(f"   → Built genealogy for {len(genealogies)} decisions")
+            logger.info(f"   → Built genealogy for {len(genealogies)} decisions")
 
             # TODO: Cache for Leantime
             # await redis.set(f'sprint:{sprint_id}:context', genealogies, ex=7200)
 
         except Exception as e:
-            print(f"   ⚠️  Sprint context loading failed: {e}")
+            logger.error(f"   ⚠️  Sprint context loading failed: {e}")
 
     def _extract_module_name(self, file_path: str) -> Optional[str]:
         """Extract module name from file path"""
@@ -313,16 +318,16 @@ class KGOrchestrator:
 
 # Standalone test
 if __name__ == "__main__":
-    print("=" * 70)
-    print("KG Orchestrator Test - Event Automation")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("KG Orchestrator Test - Event Automation")
+    logger.info("=" * 70)
 
     orchestrator = KGOrchestrator()
 
     # Simulate events
-    print("\n" + "=" * 70)
-    print("SIMULATION: Testing Event Handlers")
-    print("=" * 70)
+    logger.info("\n" + "=" * 70)
+    logger.info("SIMULATION: Testing Event Handlers")
+    logger.info("=" * 70)
 
     # Test 1: New decision logged
     event1 = KGEvent(
@@ -348,4 +353,4 @@ if __name__ == "__main__":
     )
     asyncio.run(orchestrator.on_file_opened(event3))
 
-    print("\n✅ All event handlers tested!")
+    logger.info("\n✅ All event handlers tested!")

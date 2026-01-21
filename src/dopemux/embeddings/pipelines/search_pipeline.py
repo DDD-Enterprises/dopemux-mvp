@@ -92,7 +92,7 @@ class SearchPipeline(BasePipeline):
         self.search_params = search_params
 
         if self.config.enable_progress_tracking:
-            print(f"🔍 Starting search pipeline: '{query}'")
+            logger.info(f"🔍 Starting search pipeline: '{query}'")
 
         try:
             # Define pipeline stages
@@ -128,9 +128,9 @@ class SearchPipeline(BasePipeline):
 
             if self.config.enable_progress_tracking:
                 if overall_success:
-                    print(f"✅ Search completed: {total_processed} results found")
+                    logger.info(f"✅ Search completed: {total_processed} results found")
                 else:
-                    print(f"⚠️ Search completed with issues")
+                    logger.info(f"⚠️ Search completed with issues")
 
             return final_result
 
@@ -228,7 +228,7 @@ class SearchPipeline(BasePipeline):
         enable_reranking = self.search_params.get("enable_reranking", True)
 
         if self.config.enable_progress_tracking:
-            print(f"🔍 Executing hybrid search for '{self.query}' (k={k})...")
+            logger.info(f"🔍 Executing hybrid search for '{self.query}' (k={k})...")
 
         try:
             # Execute hybrid search
@@ -244,7 +244,7 @@ class SearchPipeline(BasePipeline):
             self.metrics.searches_performed += 1
 
             if self.config.enable_progress_tracking:
-                print(f"📊 Found {len(self.raw_results)} results in {search_duration:.2f}s")
+                logger.info(f"📊 Found {len(self.raw_results)} results in {search_duration:.2f}s")
 
             return {
                 "results_count": len(self.raw_results),
@@ -275,7 +275,7 @@ class SearchPipeline(BasePipeline):
         # Apply consensus validation enhancement
         if self.enhancer and self.search_params.get("enable_enhancement", True):
             if self.config.enable_progress_tracking:
-                print(f"✨ Applying consensus validation...")
+                logger.info(f"✨ Applying consensus validation...")
 
             try:
                 self.enhanced_results = await self.enhancer.enhance_results(
@@ -296,7 +296,7 @@ class SearchPipeline(BasePipeline):
                 integration_name = integration.__class__.__name__
 
                 if self.config.enable_progress_tracking:
-                    print(f"🔗 Enhancing with {integration_name}...")
+                    logger.info(f"🔗 Enhancing with {integration_name}...")
 
                 self.enhanced_results = await integration.enhance_search_results(
                     self.enhanced_results,
@@ -445,11 +445,11 @@ class SearchPipeline(BasePipeline):
             max_results: Maximum number of results to display
         """
         if not self.enhanced_results:
-            print("🔍 No results found")
+            logger.info("🔍 No results found")
             return
 
-        print(f"🔍 Search Results for: '{self.query}'")
-        print("=" * 50)
+        logger.info(f"🔍 Search Results for: '{self.query}'")
+        logger.info("=" * 50)
 
         for i, result in enumerate(self.enhanced_results[:max_results]):
             rank = i + 1
@@ -460,19 +460,19 @@ class SearchPipeline(BasePipeline):
             # Relevance emoji
             relevance_emoji = {"high": "🟢", "medium": "🟡", "low": "🔴"}.get(relevance, "⚪")
 
-            print(f"{rank}. {relevance_emoji} Score: {score:.3f} | Read: {reading_time}")
-            print(f"   📄 {result.doc_id}")
+            logger.info(f"{rank}. {relevance_emoji} Score: {score:.3f} | Read: {reading_time}")
+            logger.info(f"   📄 {result.doc_id}")
 
             # Show content preview (first 100 chars)
             content_preview = result.content[:100]
             if len(result.content) > 100:
                 content_preview += "..."
-            print(f"   💬 {content_preview}")
-            print()
+            logger.info(f"   💬 {content_preview}")
+            logger.info()
 
         if len(self.enhanced_results) > max_results:
-            print(f"   ... and {len(self.enhanced_results) - max_results} more results")
+            logger.info(f"   ... and {len(self.enhanced_results) - max_results} more results")
 
         # Show search summary
         total_time = (datetime.now() - self.start_time).total_seconds() if self.start_time else 0
-        print(f"⏱️ Search completed in {total_time:.2f}s | {len(self.enhanced_results)} total results")
+        logger.info(f"⏱️ Search completed in {total_time:.2f}s | {len(self.enhanced_results)} total results")

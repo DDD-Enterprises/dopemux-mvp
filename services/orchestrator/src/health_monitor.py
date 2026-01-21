@@ -15,6 +15,11 @@ Performance:
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import time
 import threading
 from typing import Optional, Callable, Dict
@@ -137,7 +142,7 @@ class HealthMonitor:
             return len(output) > 0
 
         except Exception as e:
-            print(f"⚠️  Heartbeat failed: {e}")
+            logger.error(f"⚠️  Heartbeat failed: {e}")
             return False
 
     def _get_agent_id(self, agent) -> str:
@@ -166,7 +171,7 @@ class HealthMonitor:
             ... )
         """
         if self.monitoring_thread and self.monitoring_thread.is_alive():
-            print("⚠️  Background monitoring already running")
+            logger.info("⚠️  Background monitoring already running")
             return
 
         self.running = True
@@ -180,14 +185,14 @@ class HealthMonitor:
                         status = self.check_health(agent)
 
                         if status != HealthStatus.HEALTHY:
-                            print(f"⚠️  Health check: {agent.config.agent_type.value} is {status.value}")
+                            logger.info(f"⚠️  Health check: {agent.config.agent_type.value} is {status.value}")
 
                             # Trigger callback if provided
                             if self.on_unhealthy_callback:
                                 try:
                                     self.on_unhealthy_callback(agent, status)
                                 except Exception as e:
-                                    print(f"❌ Unhealthy callback error: {e}")
+                                    logger.error(f"❌ Unhealthy callback error: {e}")
 
                 # Sleep until next check
                 time.sleep(self.heartbeat_interval)
@@ -199,14 +204,14 @@ class HealthMonitor:
         )
         self.monitoring_thread.start()
 
-        print(f"✅ Background health monitoring started (every {self.heartbeat_interval}s)")
+        logger.info(f"✅ Background health monitoring started (every {self.heartbeat_interval}s)")
 
     def stop_background_monitoring(self):
         """Stop background monitoring thread."""
         if self.monitoring_thread:
             self.running = False
             self.monitoring_thread.join(timeout=5)
-            print("✅ Background monitoring stopped")
+            logger.info("✅ Background monitoring stopped")
 
     def get_health_report(self, agents: list) -> Dict:
         """
@@ -220,7 +225,7 @@ class HealthMonitor:
 
         Example:
             >>> report = monitor.get_health_report(spawner.agents.values())
-            >>> print(f"Healthy: {report['healthy_count']}/{report['total']}")
+            >>> logger.info(f"Healthy: {report['healthy_count']}/{report['total']}")
         """
         report = {
             'total': len(agents),
@@ -257,13 +262,13 @@ class HealthMonitor:
 
 if __name__ == "__main__":
     """Test health monitor."""
-    print("🧪 Testing Health Monitor")
-    print("=" * 60)
+    logger.info("🧪 Testing Health Monitor")
+    logger.info("=" * 60)
 
     monitor = HealthMonitor(heartbeat_interval=60)
 
     # Test 1: Process alive check
-    print("\n1. Testing process alive check...")
+    logger.info("\n1. Testing process alive check...")
 
     # Mock agent with current process PID
     class MockAgent:
@@ -275,28 +280,28 @@ if __name__ == "__main__":
 
     current_process = MockAgent(os.getpid())
     alive = monitor._is_process_alive(current_process)
-    print(f"   Current process alive: {alive}")
+    logger.info(f"   Current process alive: {alive}")
     assert alive, "Current process should be alive"
 
     # Test non-existent process
     fake_process = MockAgent(999999)
     alive = monitor._is_process_alive(fake_process)
-    print(f"   Fake process alive: {alive}")
+    logger.info(f"   Fake process alive: {alive}")
     assert not alive, "Fake process should be dead"
 
     # Test 2: Health status
-    print("\n2. Testing health status check...")
+    logger.info("\n2. Testing health status check...")
     status = monitor.check_health(current_process)
-    print(f"   Health status: {status.value}")
+    logger.info(f"   Health status: {status.value}")
 
     # Test 3: Health report
-    print("\n3. Testing health report...")
+    logger.info("\n3. Testing health report...")
     agents = [current_process]
     report = monitor.get_health_report(agents)
 
-    print(f"   Total agents: {report['total']}")
-    print(f"   Healthy: {report['healthy']}")
-    print(f"   Dead: {report['dead']}")
-    print(f"   Timestamp: {report['timestamp']}")
+    logger.info(f"   Total agents: {report['total']}")
+    logger.info(f"   Healthy: {report['healthy']}")
+    logger.info(f"   Dead: {report['dead']}")
+    logger.info(f"   Timestamp: {report['timestamp']}")
 
-    print("\n✅ Health monitor test complete!")
+    logger.info("\n✅ Health monitor test complete!")
