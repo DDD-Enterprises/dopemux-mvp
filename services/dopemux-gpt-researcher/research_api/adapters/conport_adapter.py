@@ -46,10 +46,11 @@ try:
                 pass
 
             return True
-        except Exception:
+        except Exception as e:
             # Fail silently - research continues without interruption
             return False
 
+            logger.error(f"Error: {e}")
     async def log_progress(**kwargs):
         return _discrete_conport_call('log_progress', **kwargs)
     async def update_progress(**kwargs):

@@ -631,9 +631,10 @@ class SessionLifecycleManager:
                             age_minutes = (now - updated_dt).total_seconds() / 60
                             if age_minutes > oldest_age:
                                 oldest_age = age_minutes
-                        except Exception:
+                        except Exception as e:
                             pass
 
+                            logger.error(f"Error: {e}")
             needs_cleanup = oldest_age > (24 * 60)  # > 24 hours
 
             return {

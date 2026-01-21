@@ -16,6 +16,11 @@ Performance:
 """
 
 import time
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import os
 from typing import Optional, Callable, List
 from enum import Enum
@@ -121,7 +126,7 @@ class ErrorRecoveryManager:
             ...     error_info={'last_output': output}
             ... )
             >>> if recovery.success:
-            ...     print("Agent recovered!")
+            ...     logger.info("Agent recovered!")
         """
         start_time = time.time()
 
@@ -185,8 +190,8 @@ class ErrorRecoveryManager:
         # Calculate backoff
         backoff = min(10 * (2 ** agent.restart_count), 60)
 
-        print(f"🔄 Restarting {agent.config.agent_type.value} in {backoff}s...")
-        print(f"   Attempt {agent.restart_count + 1}/{agent.config.max_restarts}")
+        logger.info(f"🔄 Restarting {agent.config.agent_type.value} in {backoff}s...")
+        logger.info(f"   Attempt {agent.restart_count + 1}/{agent.config.max_restarts}")
 
         time.sleep(backoff)
 
@@ -195,7 +200,7 @@ class ErrorRecoveryManager:
         success = agent.start()
 
         if success:
-            print(f"✅ {agent.config.agent_type.value} restarted successfully")
+            logger.info(f"✅ {agent.config.agent_type.value} restarted successfully")
             # Reset counter on successful restart
             agent.restart_count = 0
 
@@ -219,23 +224,25 @@ class ErrorRecoveryManager:
 
         For timeout scenarios where process is alive but not responding.
         """
-        print(f"⚠️  {agent.config.agent_type.value} appears hung, forcing restart...")
+        logger.info(f"⚠️  {agent.config.agent_type.value} appears hung, forcing restart...")
 
         # Try to stop gracefully first
         try:
             agent.stop()
             time.sleep(1)
-        except:
+        except Exception as e:
             pass
 
+            logger.error(f"Error: {e}")
         # Force kill if still alive
         if agent.pid:
             try:
                 os.kill(agent.pid, 9)  # SIGKILL
-                print(f"   Killed process {agent.pid}")
-            except:
+                logger.info(f"   Killed process {agent.pid}")
+            except Exception as e:
                 pass
 
+                logger.error(f"Error: {e}")
         # Wait a moment for cleanup
         time.sleep(2)
 
@@ -273,8 +280,8 @@ class ErrorRecoveryManager:
 
             if healthy_fallbacks:
                 fallback = healthy_fallbacks[0]
-                print(f"⚠️  {agent.config.agent_type.value} unavailable")
-                print(f"✅ Fallback to {fallback.config.agent_type.value} recommended")
+                logger.info(f"⚠️  {agent.config.agent_type.value} unavailable")
+                logger.info(f"✅ Fallback to {fallback.config.agent_type.value} recommended")
 
                 return RecoveryResult(
                     success=True,
@@ -322,22 +329,22 @@ class ErrorRecoveryManager:
 
         for attempt in range(max_attempts):
             try:
-                print(f"🔄 {operation_name}: Attempt {attempt + 1}/{max_attempts}...")
+                logger.info(f"🔄 {operation_name}: Attempt {attempt + 1}/{max_attempts}...")
                 result = operation()
-                print(f"✅ {operation_name} succeeded on attempt {attempt + 1}")
+                logger.info(f"✅ {operation_name} succeeded on attempt {attempt + 1}")
                 return result
 
             except Exception as e:
                 last_exception = e
-                print(f"❌ {operation_name} failed: {e}")
+                logger.error(f"❌ {operation_name} failed: {e}")
 
                 if attempt < max_attempts - 1:
                     # Exponential backoff
                     wait = 2 ** attempt
-                    print(f"⏳ Waiting {wait}s before retry...")
+                    logger.info(f"⏳ Waiting {wait}s before retry...")
                     time.sleep(wait)
                 else:
-                    print(f"❌ {operation_name} failed after {max_attempts} attempts")
+                    logger.error(f"❌ {operation_name} failed after {max_attempts} attempts")
 
         # All attempts failed
         raise last_exception
@@ -357,24 +364,24 @@ class ErrorRecoveryManager:
 
         if severity == Severity.CRITICAL:
             # Modal/blocking notification (not used currently)
-            print(f"\n{'=' * 60}")
-            print(f"🚨 CRITICAL ERROR: {agent_name}")
-            print(f"   Error: {error_type.value}")
-            print(f"   Action: {action.value}")
-            print(f"{'=' * 60}\n")
+            logger.info(f"\n{'=' * 60}")
+            logger.error(f"🚨 CRITICAL ERROR: {agent_name}")
+            logger.error(f"   Error: {error_type.value}")
+            logger.info(f"   Action: {action.value}")
+            logger.info(f"{'=' * 60}\n")
 
         elif severity == Severity.HIGH:
             # Immediate console notification
-            print(f"❌ {agent_name}: {error_type.value}")
-            print(f"🔧 Recovering via: {action.value}")
+            logger.error(f"❌ {agent_name}: {error_type.value}")
+            logger.info(f"🔧 Recovering via: {action.value}")
 
         elif severity == Severity.MEDIUM:
             # Standard notification
-            print(f"⚠️  {agent_name}: {error_type.value} → {action.value}")
+            logger.error(f"⚠️  {agent_name}: {error_type.value} → {action.value}")
 
         else:  # LOW
             # Minimal notification
-            print(f"ℹ️  {agent_name}: {error_type.value}")
+            logger.error(f"ℹ️  {agent_name}: {error_type.value}")
 
     def _log_recovery(
         self,
@@ -413,11 +420,12 @@ class ErrorRecoveryManager:
                     result.action_taken.value
                 ]
             )
-            print(f"📝 Recovery logged to ConPort")
+            logger.info(f"📝 Recovery logged to ConPort")
         except Exception as e:
             # Silent failure - logging shouldn't break recovery
             pass
 
+            logger.error(f"Error: {e}")
         # Add to local history
         self.recovery_history.append({
             'timestamp': datetime.now().isoformat(),
@@ -544,12 +552,12 @@ def retry_with_backoff(
     for attempt in range(max_attempts):
         try:
             if attempt > 0:
-                print(f"🔄 {operation_name}: Retry {attempt + 1}/{max_attempts}...")
+                logger.info(f"🔄 {operation_name}: Retry {attempt + 1}/{max_attempts}...")
 
             result = operation()
 
             if attempt > 0:
-                print(f"✅ {operation_name} recovered on attempt {attempt + 1}")
+                logger.info(f"✅ {operation_name} recovered on attempt {attempt + 1}")
 
             return result
 
@@ -559,10 +567,10 @@ def retry_with_backoff(
             if attempt < max_attempts - 1:
                 # Exponential backoff: 1s, 2s, 4s
                 wait = 2 ** attempt
-                print(f"⏳ Waiting {wait}s before retry...")
+                logger.info(f"⏳ Waiting {wait}s before retry...")
                 time.sleep(wait)
             else:
-                print(f"❌ {operation_name} failed after {max_attempts} attempts")
+                logger.error(f"❌ {operation_name} failed after {max_attempts} attempts")
 
     # All attempts failed
     raise last_exception
@@ -570,18 +578,18 @@ def retry_with_backoff(
 
 if __name__ == "__main__":
     """Test error recovery manager."""
-    print("🧪 Testing Error Recovery Manager")
-    print("=" * 60)
+    logger.error("🧪 Testing Error Recovery Manager")
+    logger.info("=" * 60)
 
     manager = ErrorRecoveryManager("/Users/hue/code/ui-build")
 
     # Test 1: Error classification
-    print("\n1. Testing error classification...")
-    print(f"   TIMEOUT retryable: {is_retryable(ErrorType.TIMEOUT)}")
-    print(f"   CRASH retryable: {is_retryable(ErrorType.CRASH)}")
+    logger.error("\n1. Testing error classification...")
+    logger.error(f"   TIMEOUT retryable: {is_retryable(ErrorType.TIMEOUT)}")
+    logger.error(f"   CRASH retryable: {is_retryable(ErrorType.CRASH)}")
 
     # Test 2: Retry with backoff simulation
-    print("\n2. Testing retry with backoff...")
+    logger.info("\n2. Testing retry with backoff...")
 
     attempt_count = [0]
 
@@ -598,14 +606,14 @@ if __name__ == "__main__":
             max_attempts=3,
             operation_name="flaky test"
         )
-        print(f"   ✅ Result: {result}")
+        logger.info(f"   ✅ Result: {result}")
     except Exception as e:
-        print(f"   ❌ Failed: {e}")
+        logger.error(f"   ❌ Failed: {e}")
 
     # Test 3: Recovery stats
-    print("\n3. Testing recovery statistics...")
+    logger.info("\n3. Testing recovery statistics...")
     stats = manager.get_recovery_stats()
-    print(f"   Total recoveries: {stats['total_recoveries']}")
-    print(f"   Success rate: {stats['success_rate']:.0%}")
+    logger.info(f"   Total recoveries: {stats['total_recoveries']}")
+    logger.info(f"   Success rate: {stats['success_rate']:.0%}")
 
-    print("\n✅ Error recovery manager test complete!")
+    logger.error("\n✅ Error recovery manager test complete!")

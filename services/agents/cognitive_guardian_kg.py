@@ -35,7 +35,7 @@ try:
     CONPORT_KG_AVAILABLE = True
 except ImportError as e:
     CONPORT_KG_AVAILABLE = False
-    print(f"⚠️  ConPort-KG not available: {e}")
+    logger.info(f"⚠️  ConPort-KG not available: {e}")
     # Define stub classes for graceful degradation
     class AGEClient:
         pass
@@ -142,7 +142,7 @@ class CognitiveGuardianKG:
         Example:
             >>> kg = CognitiveGuardianKG("/workspace")
             >>> rels = await kg.get_task_relationships("task-123")
-            >>> print(rels['dependencies'])
+            >>> logger.info(rels['dependencies'])
             ['task-setup-api', 'task-design-schema']
         """
         # Graceful degradation if KG disabled
@@ -233,7 +233,7 @@ class CognitiveGuardianKG:
             >>> kg = CognitiveGuardianKG("/workspace")
             >>> results = await kg.search_tasks_semantic("API integration")
             >>> for task in results:
-            ...     print(f"{task['title']} (relevance: {task['relevance']:.2f})")
+            ...     logger.info(f"{task['title']} (relevance: {task['relevance']:.2f})")
         """
         # Graceful degradation
         if not self.enable_kg or not self.age_client:
@@ -355,23 +355,23 @@ if __name__ == "__main__":
     # Quick validation (synchronous wrapper for testing)
     async def test_basic():
         """Basic validation test."""
-        print("Testing CognitiveGuardianKG initialization...")
+        logger.info("Testing CognitiveGuardianKG initialization...")
         
         # Test 1: Basic initialization
         kg = CognitiveGuardianKG(workspace_id="/test", enable_kg=False)
-        print(f"✅ Initialized in basic mode: {kg.workspace_id}")
+        logger.info(f"✅ Initialized in basic mode: {kg.workspace_id}")
         
         # Test 2: Graceful degradation
         rels = await kg.get_task_relationships("task-123")
         assert rels == {"dependencies": [], "blockers": [], "related": []}
-        print("✅ Graceful degradation works")
+        logger.info("✅ Graceful degradation works")
         
         # Test 3: Semantic search fallback
         results = await kg.search_tasks_semantic("test query")
         assert results == []
-        print("✅ Semantic search fallback works")
+        logger.info("✅ Semantic search fallback works")
         
-        print("\n✅ All basic tests passed!")
+        logger.info("\n✅ All basic tests passed!")
     
     # Run test
     asyncio.run(test_basic())

@@ -7,6 +7,11 @@ Effort: 4 focus blocks (100 minutes)
 """
 
 from typing import Literal, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import libtmux
 from pathlib import Path
 import yaml
@@ -64,15 +69,15 @@ class TmuxLayoutManager:
         # Try to get existing session
         try:
             self.session = self.server.sessions.get(session_name=self.session_name)
-            print(f"✅ Found existing session: {self.session_name}")
-        except Exception:
+            logger.info(f"✅ Found existing session: {self.session_name}")
+        except Exception as e:
             # Create new session
             start_dir = str(start_directory) if start_directory else None
             self.session = self.server.new_session(
                 session_name=self.session_name,
                 start_directory=start_dir,
             )
-            print(f"✨ Created new session: {self.session_name}")
+            logger.info(f"✨ Created new session: {self.session_name}")
 
         # Apply layout for energy level
         self.apply_layout(energy_level)
@@ -112,7 +117,7 @@ class TmuxLayoutManager:
             self.panes = self._create_high_energy_layout(window)
             self.current_layout = "high_4_pane"
 
-        print(f"🎨 Applied {energy_level} energy layout ({len(self.panes)} panes)")
+        logger.info(f"🎨 Applied {energy_level} energy layout ({len(self.panes)} panes)")
         return self.panes
 
     def _create_low_energy_layout(self, window: libtmux.Window) -> dict[str, libtmux.Pane]:
@@ -231,7 +236,7 @@ class TmuxLayoutManager:
         if not self.session:
             raise RuntimeError("No active session")
 
-        print(f"🔄 Switching from {self.current_layout} to {new_energy} energy layout...")
+        logger.info(f"🔄 Switching from {self.current_layout} to {new_energy} energy layout...")
 
         # Save current pane states before switching
         pane_states = self._capture_pane_states()
@@ -242,7 +247,7 @@ class TmuxLayoutManager:
         # Restore what we can
         self._restore_pane_states(pane_states)
 
-        print(f"✅ Layout switched to {new_energy} energy")
+        logger.info(f"✅ Layout switched to {new_energy} energy")
 
     def _capture_pane_states(self) -> dict:
         """Capture current state of all panes before layout change."""
@@ -254,7 +259,7 @@ class TmuxLayoutManager:
                     "id": pane.id,
                 }
             except Exception as e:
-                print(f"⚠️ Could not capture {name}: {e}")
+                logger.info(f"⚠️ Could not capture {name}: {e}")
         return states
 
     def _restore_pane_states(self, states: dict) -> None:
@@ -294,7 +299,7 @@ class TmuxLayoutManager:
         """Destroy the tmux session."""
         if self.session:
             self.session.kill()
-            print(f"🗑️ Destroyed session: {self.session_name}")
+            logger.info(f"🗑️ Destroyed session: {self.session_name}")
             self.session = None
             self.panes = {}
 
@@ -306,15 +311,15 @@ if __name__ == "__main__":
     energy = sys.argv[1] if len(sys.argv) > 1 else "medium"
 
     if energy not in ["low", "medium", "high"]:
-        print(f"Usage: python tmux_manager.py [low|medium|high]")
+        logger.info(f"Usage: python tmux_manager.py [low|medium|high]")
         sys.exit(1)
 
     manager = TmuxLayoutManager()
     session = manager.create_session(energy_level=energy)
 
-    print(f"\n✅ Session created: {session.name}")
-    print(f"📊 Panes: {len(manager.panes)}")
+    logger.info(f"\n✅ Session created: {session.name}")
+    logger.info(f"📊 Panes: {len(manager.panes)}")
     for name, pane in manager.panes.items():
-        print(f"  - {name}: {pane.id}")
+        logger.info(f"  - {name}: {pane.id}")
 
-    print(f"\n💡 Attach with: tmux attach -t {session.name}")
+    logger.info(f"\n💡 Attach with: tmux attach -t {session.name}")

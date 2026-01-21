@@ -25,7 +25,14 @@ import aiohttp
 try:
     from qdrant_client import QdrantClient
     from qdrant_client.http.models import Distance, VectorParams, PointStruct
+except ImportError as e:
+    logger.warning(f"Qdrant unavailable: {e}")
+    QdrantClient = None
+    Distance = None
+    VectorParams = None
+    PointStruct = None
 except Exception:
+    logger.exception("Unexpected Qdrant initialization error")
     QdrantClient = None
     Distance = None
     VectorParams = None
@@ -455,9 +462,10 @@ class MCPClientManager:
                 service_url = self._get_service_url(service)
                 async with self.session.get(f"{service_url}/health") as response:
                     health_status[service] = response.status == 200
-            except Exception:
+            except Exception as e:
                 health_status[service] = False
 
+                logger.error(f"Error: {e}")
         return health_status
 
     async def close(self):
@@ -1582,9 +1590,10 @@ class EmbeddingManager:
         # Try Qdrant (optional)
         try:
             await self._upsert_qdrant_point(decision_id, vec, workspace_id)
-        except Exception:
+        except Exception as e:
             pass
 
+            logger.error(f"Error: {e}")
     def _qdrant(self):
         url = os.getenv("QDRANT_URL") or os.getenv("QDRANT_HOST")
         if not url or QdrantClient is None:
@@ -1595,9 +1604,10 @@ class EmbeddingManager:
             host, _, port = url.partition(":")
             port = int(port or "6333")
             return QdrantClient(host=host, port=port)
-        except Exception:
+        except Exception as e:
             return None
 
+            logger.error(f"Error: {e}")
     async def _upsert_qdrant_point(self, decision_id: str, vector: list, workspace_id: Optional[str]):
         client = self._qdrant()
         if not client:
@@ -1605,10 +1615,11 @@ class EmbeddingManager:
         collection = os.getenv("QDRANT_COLLECTION", "ddg_decisions")
         try:
             client.get_collection(collection)
-        except Exception:
+        except Exception as e:
             if VectorParams is None:
                 return
             client.recreate_collection(collection_name=collection, vectors_config=VectorParams(size=len(vector), distance=Distance.COSINE))
+            logger.error(f"Error: {e}")
         payload = {"decision_id": decision_id}
         if workspace_id:
             payload["workspace_id"] = workspace_id
@@ -1627,9 +1638,10 @@ class EmbeddingManager:
                 flt = {"must": [{"key": "workspace_id", "match": {"value": workspace_id}}]}
             res = client.search(collection_name=collection, query_vector=vector, limit=k, query_filter=flt)
             return [(p.id, float(p.score)) for p in res]
-        except Exception:
+        except Exception as e:
             return []
 
+            logger.error(f"Error: {e}")
 # Include Task-Orchestrator query endpoints (Component 5)
 try:
     from orchestrator_endpoints import router as orchestrator_router
@@ -2064,9 +2076,10 @@ async def ddg_link_similar(workspace_id: Optional[str] = None, min_overlap: int 
                                 f"MATCH (a:Decision {{id: '{a.id}'}}), (b:Decision {{id: '{b.id}'}}) MERGE (a)-[:SIMILAR_TO]->(b) MERGE (b)-[:SIMILAR_TO]->(a)"
                             )
                             linked += 1
-                        except Exception:
+                        except Exception as e:
                             pass
 
+                            logger.error(f"Error: {e}")
         return {"linked": linked, "considered": n}
     except Exception as e:
         logger.error(f"❌ ddg_link_similar failed: {e}")
@@ -2142,8 +2155,9 @@ async def ddg_related_decisions(decision_id: str, k: int = 10):
                         if 0 <= idx < len(cand_ids):
                             items.append({"id": cand_ids[idx], "score": rr.get("score", 0.0)})
                     return {"decision_id": decision_id, "count": len(items), "items": items}
-        except Exception:
+        except Exception as e:
             pass
+            logger.error(f"Error: {e}")
         # Fallback: cosine in Postgres mirror
         session_ctx = await db_manager.get_session()
         async with session_ctx as session:

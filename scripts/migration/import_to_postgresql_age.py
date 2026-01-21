@@ -10,6 +10,11 @@ Handles:
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncpg
 import json
 from pathlib import Path
@@ -44,9 +49,9 @@ class ConPortMigration:
 
     async def connect(self):
         """Connect to PostgreSQL"""
-        print("🔌 Connecting to PostgreSQL AGE...")
+        logger.info("🔌 Connecting to PostgreSQL AGE...")
         self.conn = await asyncpg.connect(self.db_url)
-        print("   ✅ Connected")
+        logger.info("   ✅ Connected")
 
     async def close(self):
         """Close connection"""
@@ -55,7 +60,7 @@ class ConPortMigration:
 
     async def verify_schema(self) -> bool:
         """Verify required tables exist"""
-        print("\n🔍 Verifying schema...")
+        logger.info("\n🔍 Verifying schema...")
 
         tables = ['decisions', 'progress_entries', 'custom_data',
                   'entity_relationships', 'workspaces', 'workspace_contexts']
@@ -70,16 +75,16 @@ class ConPortMigration:
             """, table)
 
             if exists:
-                print(f"   ✅ {table}")
+                logger.info(f"   ✅ {table}")
             else:
-                print(f"   ❌ {table} - MISSING!")
+                logger.info(f"   ❌ {table} - MISSING!")
                 return False
 
         return True
 
     async def import_decisions(self, decisions: List[Dict[str, Any]]) -> int:
         """Import decisions with ID mapping"""
-        print(f"\n📋 Importing {len(decisions)} decisions...")
+        logger.info(f"\n📋 Importing {len(decisions)} decisions...")
 
         imported = 0
         for decision in decisions:
@@ -93,9 +98,10 @@ class ConPortMigration:
                 if isinstance(tags, str):
                     try:
                         tags = json.loads(tags)
-                    except:
+                    except Exception as e:
                         tags = []
 
+                        logger.error(f"Error: {e}")
                 # Parse timestamps
                 created_at_str = decision.get('timestamp') or decision.get('created_at')
                 created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
@@ -124,17 +130,17 @@ class ConPortMigration:
 
                 imported += 1
                 if imported % 50 == 0:
-                    print(f"   Progress: {imported}/{len(decisions)}")
+                    logger.info(f"   Progress: {imported}/{len(decisions)}")
 
             except Exception as e:
-                print(f"   ⚠️  Failed to import decision {old_id}: {e}")
+                logger.error(f"   ⚠️  Failed to import decision {old_id}: {e}")
 
-        print(f"   ✅ Imported {imported}/{len(decisions)} decisions")
+        logger.info(f"   ✅ Imported {imported}/{len(decisions)} decisions")
         return imported
 
     async def import_progress_entries(self, entries: List[Dict[str, Any]]) -> int:
         """Import progress entries"""
-        print(f"\n📊 Importing {len(entries)} progress entries...")
+        logger.info(f"\n📊 Importing {len(entries)} progress entries...")
 
         imported = 0
         for entry in entries:
@@ -146,9 +152,10 @@ class ConPortMigration:
                 if isinstance(tags, str):
                     try:
                         tags = json.loads(tags)
-                    except:
+                    except Exception as e:
                         tags = []
 
+                        logger.error(f"Error: {e}")
                 # Handle parent_id mapping
                 parent_id = None
                 if entry.get('parent_id'):
@@ -189,14 +196,14 @@ class ConPortMigration:
                 imported += 1
 
             except Exception as e:
-                print(f"   ⚠️  Failed to import progress entry: {e}")
+                logger.error(f"   ⚠️  Failed to import progress entry: {e}")
 
-        print(f"   ✅ Imported {imported}/{len(entries)} progress entries")
+        logger.info(f"   ✅ Imported {imported}/{len(entries)} progress entries")
         return imported
 
     async def import_custom_data(self, data_entries: List[Dict[str, Any]]) -> int:
         """Import custom data"""
-        print(f"\n💾 Importing {len(data_entries)} custom data entries...")
+        logger.info(f"\n💾 Importing {len(data_entries)} custom data entries...")
 
         imported = 0
         for entry in data_entries:
@@ -205,9 +212,10 @@ class ConPortMigration:
                 if isinstance(value, str):
                     try:
                         value = json.loads(value)
-                    except:
+                    except Exception as e:
                         pass
 
+                        logger.error(f"Error: {e}")
                 # Parse timestamps
                 created_at_str = entry.get('created_at')
                 created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
@@ -233,14 +241,14 @@ class ConPortMigration:
                 imported += 1
 
             except Exception as e:
-                print(f"   ⚠️  Failed to import custom data: {e}")
+                logger.error(f"   ⚠️  Failed to import custom data: {e}")
 
-        print(f"   ✅ Imported {imported}/{len(data_entries)} custom data entries")
+        logger.info(f"   ✅ Imported {imported}/{len(data_entries)} custom data entries")
         return imported
 
     async def import_relationships(self, links: List[Dict[str, Any]]) -> int:
         """Import entity relationships"""
-        print(f"\n🔗 Importing {len(links)} relationships...")
+        logger.info(f"\n🔗 Importing {len(links)} relationships...")
 
         imported = 0
         for link in links:
@@ -276,14 +284,14 @@ class ConPortMigration:
                 imported += 1
 
             except Exception as e:
-                print(f"   ⚠️  Failed to import relationship: {e}")
+                logger.error(f"   ⚠️  Failed to import relationship: {e}")
 
-        print(f"   ✅ Imported {imported}/{len(links)} relationships")
+        logger.info(f"   ✅ Imported {imported}/{len(links)} relationships")
         return imported
 
     async def import_system_patterns(self, patterns: List[Dict[str, Any]]) -> int:
         """Import system patterns"""
-        print(f"\n🧩 Importing {len(patterns)} system patterns...")
+        logger.info(f"\n🧩 Importing {len(patterns)} system patterns...")
 
         # Check if table exists first
         table_exists = await self.conn.fetchval("""
@@ -295,7 +303,7 @@ class ConPortMigration:
         """)
 
         if not table_exists:
-            print("   ⚠️  system_patterns table doesn't exist - skipping")
+            logger.info("   ⚠️  system_patterns table doesn't exist - skipping")
             return 0
 
         imported = 0
@@ -307,9 +315,10 @@ class ConPortMigration:
                 if isinstance(tags, str):
                     try:
                         tags = json.loads(tags)
-                    except:
+                    except Exception as e:
                         tags = []
 
+                        logger.error(f"Error: {e}")
                 # Parse timestamps
                 created_at_str = pattern.get('created_at')
                 created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
@@ -334,9 +343,9 @@ class ConPortMigration:
                 imported += 1
 
             except Exception as e:
-                print(f"   ⚠️  Failed to import system pattern: {e}")
+                logger.error(f"   ⚠️  Failed to import system pattern: {e}")
 
-        print(f"   ✅ Imported {imported}/{len(patterns)} system patterns")
+        logger.info(f"   ✅ Imported {imported}/{len(patterns)} system patterns")
         return imported
 
     async def import_contexts(self, active_context: Optional[Dict], product_context: Optional[Dict]) -> int:
@@ -344,15 +353,16 @@ class ConPortMigration:
         imported = 0
 
         if active_context:
-            print("\n🎯 Importing active context...")
+            logger.info("\n🎯 Importing active context...")
             try:
                 content = active_context.get('content', {})
                 if isinstance(content, str):
                     try:
                         content = json.loads(content)
-                    except:
+                    except Exception as e:
                         pass
 
+                        logger.error(f"Error: {e}")
                 # Parse timestamps
                 created_at_str = active_context.get('created_at')
                 created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
@@ -373,20 +383,21 @@ class ConPortMigration:
                     updated_at
                 )
                 imported += 1
-                print("   ✅ Imported active context")
+                logger.info("   ✅ Imported active context")
             except Exception as e:
-                print(f"   ⚠️  Failed to import active context: {e}")
+                logger.error(f"   ⚠️  Failed to import active context: {e}")
 
         if product_context:
-            print("\n📦 Importing product context...")
+            logger.info("\n📦 Importing product context...")
             try:
                 content = product_context.get('content', {})
                 if isinstance(content, str):
                     try:
                         content = json.loads(content)
-                    except:
+                    except Exception as e:
                         pass
 
+                        logger.error(f"Error: {e}")
                 # Parse timestamps
                 created_at_str = product_context.get('created_at')
                 created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
@@ -407,9 +418,9 @@ class ConPortMigration:
                     updated_at
                 )
                 imported += 1
-                print("   ✅ Imported product context")
+                logger.info("   ✅ Imported product context")
             except Exception as e:
-                print(f"   ⚠️  Failed to import product context: {e}")
+                logger.error(f"   ⚠️  Failed to import product context: {e}")
 
         return imported
 
@@ -421,22 +432,22 @@ async def run_import(json_path: Path, db_url: str) -> Dict[str, int]:
     Returns:
         Import statistics
     """
-    print(f"📂 Reading export from: {json_path}")
-    print("=" * 60)
+    logger.info(f"📂 Reading export from: {json_path}")
+    logger.info("=" * 60)
 
     if not json_path.exists():
-        print(f"❌ Export file not found: {json_path}")
+        logger.info(f"❌ Export file not found: {json_path}")
         sys.exit(1)
 
     with open(json_path, 'r') as f:
         data = json.load(f)
 
-    print(f"📊 Export contains:")
-    print(f"   - {len(data.get('decisions', []))} decisions")
-    print(f"   - {len(data.get('progress_entries', []))} progress entries")
-    print(f"   - {len(data.get('custom_data', []))} custom data entries")
-    print(f"   - {len(data.get('context_links', []))} relationships")
-    print(f"   - {len(data.get('system_patterns', []))} system patterns")
+    logger.info(f"📊 Export contains:")
+    logger.info(f"   - {len(data.get('decisions', []))} decisions")
+    logger.info(f"   - {len(data.get('progress_entries', []))} progress entries")
+    logger.info(f"   - {len(data.get('custom_data', []))} custom data entries")
+    logger.info(f"   - {len(data.get('context_links', []))} relationships")
+    logger.info(f"   - {len(data.get('system_patterns', []))} system patterns")
 
     # Initialize migrator
     migrator = ConPortMigration(db_url)
@@ -444,8 +455,8 @@ async def run_import(json_path: Path, db_url: str) -> Dict[str, int]:
 
     # Verify schema
     if not await migrator.verify_schema():
-        print("\n❌ Schema verification failed!")
-        print("   Run schema migrations first")
+        logger.error("\n❌ Schema verification failed!")
+        logger.info("   Run schema migrations first")
         await migrator.close()
         sys.exit(1)
 
@@ -465,18 +476,18 @@ async def run_import(json_path: Path, db_url: str) -> Dict[str, int]:
         )
 
         # Summary
-        print("\n" + "=" * 60)
-        print("✅ IMPORT COMPLETE")
-        print("=" * 60)
+        logger.info("\n" + "=" * 60)
+        logger.info("✅ IMPORT COMPLETE")
+        logger.info("=" * 60)
         total = sum(stats.values())
         for key, value in stats.items():
-            print(f"{key:20s}: {value}")
-        print(f"{'TOTAL':20s}: {total}")
+            logger.info(f"{key:20s}: {value}")
+        logger.info(f"{'TOTAL':20s}: {total}")
 
         return stats
 
     except Exception as e:
-        print(f"\n❌ Import failed: {e}")
+        logger.error(f"\n❌ Import failed: {e}")
         raise
     finally:
         await migrator.close()
@@ -507,12 +518,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.dry_run:
-        print("🔍 DRY RUN MODE - Validation only")
+        logger.info("🔍 DRY RUN MODE - Validation only")
 
     try:
         stats = asyncio.run(run_import(args.json_path, args.db_url))
-        print(f"\n🎉 Migration successful!")
-        print(f"📊 Total items imported: {sum(stats.values())}")
+        logger.info(f"\n🎉 Migration successful!")
+        logger.info(f"📊 Total items imported: {sum(stats.values())}")
     except Exception as e:
-        print(f"\n❌ Migration failed: {e}")
+        logger.error(f"\n❌ Migration failed: {e}")
         sys.exit(1)

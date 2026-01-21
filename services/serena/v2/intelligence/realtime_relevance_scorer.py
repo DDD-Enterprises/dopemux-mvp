@@ -1016,8 +1016,8 @@ async def test_realtime_scoring(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("📊 Serena Real-time Relationship Relevance Scorer")
-        print("Dynamic ADHD-optimized relevance scoring with adaptive updates")
-        print("✅ Module loaded successfully")
+        logger.info("📊 Serena Real-time Relationship Relevance Scorer")
+        logger.info("Dynamic ADHD-optimized relevance scoring with adaptive updates")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

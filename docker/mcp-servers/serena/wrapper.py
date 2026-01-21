@@ -24,14 +24,16 @@ class SerenaServer:
         logger.info(f"🔧 Starting Serena MCP Server with Streamable HTTP on port {self.port}")
 
         # Build command for mcp-proxy with Serena server
+        # Build command for mcp-proxy with Serena server
+        # Uses pre-installed packages from Dockerfile
         cmd = [
-            'uvx', 'mcp-proxy',
+            'mcp-proxy',
             '--transport', 'streamablehttp',
             '--port', str(self.port),
             '--host', '0.0.0.0',
             '--allow-origin', '*',
             '--',
-            'uvx', '--from', 'git+https://github.com/oraios/serena', 'serena', 'start-mcp-server'
+            'serena', 'start-mcp-server'
         ]
 
         logger.info(f"Running command: {' '.join(cmd)}")

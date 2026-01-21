@@ -699,7 +699,7 @@ def optimize_task_sequence(
             strategy="momentum_building"
         )
         for task in sequence.tasks:
-            print(f"- {task.title}")
+            logger.info(f"- {task.title}")
     """
     optimizer = SequenceOptimizer()
     strategy_enum = SequencingStrategy(strategy)

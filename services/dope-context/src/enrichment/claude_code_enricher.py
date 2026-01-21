@@ -21,7 +21,7 @@ enriched = await enrich_with_code_graph(results)
 
 # 3. Display enriched results
 for result in enriched:
-    print(f"{result['function_name']}: {result['relationships']['impact_message']}")
+    logger.info(f"{result['function_name']}: {result['relationships']['impact_message']}")
 ```
 
 ADHD Benefits:
@@ -207,5 +207,5 @@ for result in results[:5]:  # Top 5 only (ADHD limit)
 
 # 3. Display enriched results
 for result in results:
-    print(f"{result['function_name']}: {result.get('relationships', {}).get('impact_message', 'Unknown')}")
+    logger.info(f"{result['function_name']}: {result.get('relationships', {}).get('impact_message', 'Unknown')}")
 """

@@ -508,9 +508,9 @@ class WorkflowCoordinator:
 async def demo():
     """Demonstrate WorkflowCoordinator"""
 
-    print("\n" + "="*70)
-    print("WORKFLOW COORDINATOR DEMO")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("WORKFLOW COORDINATOR DEMO")
+    logger.info("="*70)
 
     coordinator = WorkflowCoordinator(
         workspace_id="/Users/hue/code/dopemux-mvp"
@@ -519,40 +519,40 @@ async def demo():
     await coordinator.initialize()
 
     # Example 1: Feature Implementation Workflow
-    print("\n" + "="*70)
-    print("Example 1: Feature Implementation Workflow")
-    print("="*70)
+    logger.info("\n" + "="*70)
+    logger.info("Example 1: Feature Implementation Workflow")
+    logger.info("="*70)
 
     template = coordinator.get_workflow_template(WorkflowType.FEATURE_IMPLEMENTATION)
 
-    print(f"\nWorkflow: {template.name}")
-    print(f"Description: {template.description}")
-    print(f"Total Steps: {len(template.steps)}")
-    print(f"Estimated Time: {template.total_estimated_minutes} min")
-    print(f"Recommended Breaks: {template.recommended_breaks}")
+    logger.info(f"\nWorkflow: {template.name}")
+    logger.info(f"Description: {template.description}")
+    logger.info(f"Total Steps: {len(template.steps)}")
+    logger.info(f"Estimated Time: {template.total_estimated_minutes} min")
+    logger.info(f"Recommended Breaks: {template.recommended_breaks}")
 
-    print(f"\nSteps:")
+    logger.info(f"\nSteps:")
     for idx, step in enumerate(template.steps, 1):
-        print(f"\n{idx}. {step.name} ({step.step_type.value})")
-        print(f"   Description: {step.description}")
-        print(f"   Persona: {step.persona or 'N/A'}")
-        print(f"   Agent: {step.agent or 'N/A'}")
-        print(f"   Estimated: {step.estimated_minutes} min")
+        logger.info(f"\n{idx}. {step.name} ({step.step_type.value})")
+        logger.info(f"   Description: {step.description}")
+        logger.info(f"   Persona: {step.persona or 'N/A'}")
+        logger.info(f"   Agent: {step.agent or 'N/A'}")
+        logger.info(f"   Estimated: {step.estimated_minutes} min")
         if step.dependencies:
-            print(f"   Dependencies: {', '.join(step.dependencies)}")
+            logger.info(f"   Dependencies: {', '.join(step.dependencies)}")
 
     # Start workflow
-    print(f"\n{'='*70}")
-    print("Starting Workflow Execution")
-    print(f"{'='*70}")
+    logger.info(f"\n{'='*70}")
+    logger.info("Starting Workflow Execution")
+    logger.info(f"{'='*70}")
 
     execution = await coordinator.start_workflow(
         workflow_type=WorkflowType.FEATURE_IMPLEMENTATION,
         description="Add JWT authentication"
     )
 
-    print(f"\nWorkflow ID: {execution.workflow_id}")
-    print(f"Started At: {execution.started_at.isoformat()}")
+    logger.info(f"\nWorkflow ID: {execution.workflow_id}")
+    logger.info(f"Started At: {execution.started_at.isoformat()}")
 
     # Simulate executing steps
     for step in template.steps[:2]:  # Execute first 2 steps for demo
@@ -561,35 +561,35 @@ async def demo():
             step=step,
             result_data={"step": step.name, "status": "completed"}
         )
-        print(f"\n✅ Completed: {result['step_name']}")
+        logger.info(f"\n✅ Completed: {result['step_name']}")
 
     # Check status
     status = await coordinator.get_workflow_status(execution.workflow_id)
 
-    print(f"\n{'='*70}")
-    print("Workflow Status")
-    print(f"{'='*70}")
+    logger.info(f"\n{'='*70}")
+    logger.info("Workflow Status")
+    logger.info(f"{'='*70}")
 
-    print(f"\nProgress: {status['completed_steps']}/{status['total_steps']} steps")
-    print(f"Progress: {status['progress_pct']}%")
-    print(f"Checkpoints: {status['checkpoints_created']}")
+    logger.info(f"\nProgress: {status['completed_steps']}/{status['total_steps']} steps")
+    logger.info(f"Progress: {status['progress_pct']}%")
+    logger.info(f"Checkpoints: {status['checkpoints_created']}")
 
     # Metrics
-    print(f"\n{'='*70}")
-    print("Coordination Metrics")
-    print(f"{'='*70}")
+    logger.info(f"\n{'='*70}")
+    logger.info("Coordination Metrics")
+    logger.info(f"{'='*70}")
 
     metrics = await coordinator.get_metrics_summary()
-    print(f"\nWorkflows Started: {metrics['workflows_started']}")
-    print(f"Active Workflows: {metrics['active_workflows']}")
-    print(f"Steps Executed: {metrics['steps_executed']}")
-    print(f"Checkpoints Created: {metrics['checkpoints_created']}")
+    logger.info(f"\nWorkflows Started: {metrics['workflows_started']}")
+    logger.info(f"Active Workflows: {metrics['active_workflows']}")
+    logger.info(f"Steps Executed: {metrics['steps_executed']}")
+    logger.info(f"Checkpoints Created: {metrics['checkpoints_created']}")
 
     await coordinator.close()
 
-    print("\n" + "="*70)
-    print("✅ Demo complete!")
-    print("="*70 + "\n")
+    logger.info("\n" + "="*70)
+    logger.info("✅ Demo complete!")
+    logger.info("="*70 + "\n")
 
 
 if __name__ == "__main__":

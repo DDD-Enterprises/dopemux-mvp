@@ -604,9 +604,9 @@ if __name__ == "__main__":
             progress_callback=show_progress,
         )
 
-        print(f"\nIndexing complete!")
-        print(f"Summary: {final_progress.summary()}")
-        print(f"Costs: {pipeline.get_cost_summary()}")
+        logger.info(f"\nIndexing complete!")
+        logger.info(f"Summary: {final_progress.summary()}")
+        logger.info(f"Costs: {pipeline.get_cost_summary()}")
 
     # Run the example
     asyncio.run(main())

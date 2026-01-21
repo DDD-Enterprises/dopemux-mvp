@@ -15,7 +15,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from dopemux.config.manager import DopeBrainzAutoResponderConfig, ConfigManager
+from dopemux.config.manager import ClaudeAutoResponderConfig, ConfigManager
 
 logger = logging.getLogger(__name__)
 
@@ -52,9 +52,9 @@ class AutoResponderMetrics:
         return self.responses_sent / uptime if uptime > 0 else 0
 
 
-class DopeBrainzAutoResponderManager:
+class ClaudeAutoResponderManager:
     """
-    Manages DopeBrainzAutoResponder integration with ADHD-optimized features.
+    Manages ClaudeAutoResponder integration with ADHD-optimized features.
 
     Features:
     - Automatic startup/shutdown with Dopemux sessions

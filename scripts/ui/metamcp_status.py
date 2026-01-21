@@ -7,6 +7,11 @@ Displays role, token usage, session info, and health status in tmux status bar.
 """
 
 import json
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import subprocess
 import sys
 import time
@@ -249,12 +254,12 @@ class MetaMCPStatusBar:
         while True:
             try:
                 status_bar = self.generate_status_bar()
-                print(status_bar, flush=True)
+                logger.info(status_bar, flush=True)
                 time.sleep(interval)
             except KeyboardInterrupt:
                 break
             except Exception as e:
-                print(f"#[fg=#D0021B]Error: {str(e)}#[default]", flush=True)
+                logger.error(f"#[fg=#D0021B]Error: {str(e)}#[default]", flush=True)
                 time.sleep(interval)
 
 
@@ -267,7 +272,7 @@ def main():
         status_bar.run_continuous()
     else:
         # Single output for tmux
-        print(status_bar.generate_status_bar())
+        logger.info(status_bar.generate_status_bar())
 
 
 if __name__ == '__main__':

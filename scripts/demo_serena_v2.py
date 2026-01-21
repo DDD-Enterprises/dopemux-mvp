@@ -11,6 +11,11 @@ Demonstrates:
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import sys
 from pathlib import Path
 from datetime import datetime
@@ -28,43 +33,43 @@ from v2.intelligence import (
 async def demo_serena_v2():
     """Run comprehensive Serena v2 demo."""
 
-    print("=" * 70)
-    print("🧠 Serena v2 Live Demo - ADHD-Optimized Code Navigation")
-    print("=" * 70)
-    print()
+    logger.info("=" * 70)
+    logger.info("🧠 Serena v2 Live Demo - ADHD-Optimized Code Navigation")
+    logger.info("=" * 70)
+    logger.info()
 
     # Step 1: Initialize System
-    print("Step 1: Initializing Serena v2 Intelligence System...")
+    logger.info("Step 1: Initializing Serena v2 Intelligence System...")
     db, graph_ops = await setup_phase2_intelligence()
 
     # Health check
     health = await db.get_health_status()
-    print(f"✅ Database: {health['status']}")
-    print(f"   Health check: {health['health_check_time_ms']:.2f}ms")
-    print(f"   ADHD Compliant: {'Yes' if health['adhd_compliant'] else 'No'}")
-    print(f"   Pool: {health['connection_pool']['size']} connections ({health['connection_pool']['usage_percentage']} used)")
+    logger.info(f"✅ Database: {health['status']}")
+    logger.info(f"   Health check: {health['health_check_time_ms']:.2f}ms")
+    logger.info(f"   ADHD Compliant: {'Yes' if health['adhd_compliant'] else 'No'}")
+    logger.info(f"   Pool: {health['connection_pool']['size']} connections ({health['connection_pool']['usage_percentage']} used)")
 
     if health['adhd_insights']:
-        print(f"   💡 ADHD Insights:")
+        logger.info(f"   💡 ADHD Insights:")
         for insight in health['adhd_insights']:
-            print(f"      {insight}")
-    print()
+            logger.info(f"      {insight}")
+    logger.info()
 
     # Step 2: Test Different Navigation Modes
-    print("Step 2: Testing ADHD Navigation Modes...")
+    logger.info("Step 2: Testing ADHD Navigation Modes...")
 
     for mode_name, mode in [("FOCUS", NavigationMode.FOCUS),
                             ("EXPLORE", NavigationMode.EXPLORE),
                             ("COMPREHENSIVE", NavigationMode.COMPREHENSIVE)]:
-        print(f"   {mode_name} mode (limit: {graph_ops.default_result_limits[mode]} results)")
+        logger.info(f"   {mode_name} mode (limit: {graph_ops.default_result_limits[mode]} results)")
 
         # Search for elements
         elements = await graph_ops.find_elements_by_name("test", mode=mode)
-        print(f"      Results: {len(elements)} elements found")
-    print()
+        logger.info(f"      Results: {len(elements)} elements found")
+    logger.info()
 
     # Step 3: Initialize Adaptive Learning
-    print("Step 3: Initializing Adaptive Learning Engine...")
+    logger.info("Step 3: Initializing Adaptive Learning Engine...")
     learning_engine = await create_adaptive_learning_engine(db, graph_ops, None)
 
     user_id = "demo_developer"
@@ -72,20 +77,20 @@ async def demo_serena_v2():
 
     # Get learning profile
     profile = await learning_engine.get_learning_profile(user_id, workspace)
-    print(f"✅ Learning Profile Created:")
-    print(f"   User: {profile.user_session_id}")
-    print(f"   Attention span: {profile.average_attention_span_minutes} minutes")
-    print(f"   Preferred complexity: {profile.optimal_complexity_range}")
-    print(f"   Result limit: {profile.preferred_result_limit}")
-    print(f"   Learning phase: {profile.learning_phase}")
-    print()
+    logger.info(f"✅ Learning Profile Created:")
+    logger.info(f"   User: {profile.user_session_id}")
+    logger.info(f"   Attention span: {profile.average_attention_span_minutes} minutes")
+    logger.info(f"   Preferred complexity: {profile.optimal_complexity_range}")
+    logger.info(f"   Result limit: {profile.preferred_result_limit}")
+    logger.info(f"   Learning phase: {profile.learning_phase}")
+    logger.info()
 
     # Step 4: Simulate Navigation Session
-    print("Step 4: Simulating ADHD-Optimized Navigation Session...")
+    logger.info("Step 4: Simulating ADHD-Optimized Navigation Session...")
 
     # Start sequence
     seq_id = await learning_engine.start_navigation_sequence(user_id, workspace)
-    print(f"   📍 Started sequence: {seq_id[:16]}...")
+    logger.info(f"   📍 Started sequence: {seq_id[:16]}...")
 
     # Record actions
     actions = [
@@ -95,7 +100,7 @@ async def demo_serena_v2():
     ]
 
     for action_type, description in actions:
-        print(f"   → {description}")
+        logger.info(f"   → {description}")
         await learning_engine.record_navigation_action(
             sequence_id=seq_id,
             action_type=action_type,
@@ -109,15 +114,15 @@ async def demo_serena_v2():
         completion_status="complete"
     )
 
-    print(f"   ✅ Sequence completed!")
-    print(f"      Actions: {len(completed.actions)}")
-    print(f"      Duration: {completed.total_duration_ms/1000:.1f}s")
-    print(f"      Effectiveness: {completed.effectiveness_score:.2f}")
-    print(f"      Attention span: {completed.attention_span_seconds}s")
-    print()
+    logger.info(f"   ✅ Sequence completed!")
+    logger.info(f"      Actions: {len(completed.actions)}")
+    logger.info(f"      Duration: {completed.total_duration_ms/1000:.1f}s")
+    logger.info(f"      Effectiveness: {completed.effectiveness_score:.2f}")
+    logger.info(f"      Attention span: {completed.attention_span_seconds}s")
+    logger.info()
 
     # Step 5: Get Adaptive Recommendations
-    print("Step 5: Getting Adaptive Recommendations...")
+    logger.info("Step 5: Getting Adaptive Recommendations...")
 
     recommendations = await learning_engine.get_adaptive_recommendations(
         user_session_id=user_id,
@@ -125,14 +130,14 @@ async def demo_serena_v2():
         current_context={"task": "debugging authentication"}
     )
 
-    print(f"✅ Recommendations generated:")
+    logger.info(f"✅ Recommendations generated:")
     if isinstance(recommendations, dict):
         for key, value in list(recommendations.items())[:5]:
-            print(f"   {key}: {value}")
-    print()
+            logger.info(f"   {key}: {value}")
+    logger.info()
 
     # Step 6: Profile Manager Demo
-    print("Step 6: Testing Profile Manager...")
+    logger.info("Step 6: Testing Profile Manager...")
 
     profile_mgr = await create_profile_manager(db, None)
 
@@ -148,39 +153,39 @@ async def demo_serena_v2():
         user_id, workspace, nav_data
     )
 
-    print(f"✅ Profile updated from navigation session")
-    print(f"   Sessions: {updated_profile.session_count}")
-    print(f"   Learning phase: {updated_profile.learning_phase}")
-    print()
+    logger.info(f"✅ Profile updated from navigation session")
+    logger.info(f"   Sessions: {updated_profile.session_count}")
+    logger.info(f"   Learning phase: {updated_profile.learning_phase}")
+    logger.info()
 
     # Step 7: Performance Summary
-    print("Step 7: Performance Summary...")
+    logger.info("Step 7: Performance Summary...")
     metrics = await graph_ops.get_performance_metrics()
 
     perf_results = await graph_ops.database.get_health_status()
-    print(f"✅ Performance Metrics:")
-    print(f"   Queries executed: {perf_results['metrics']['query_count']}")
-    print(f"   Average time: {perf_results['metrics']['average_query_time_ms']:.2f}ms")
-    print(f"   ADHD compliance: {perf_results['metrics']['adhd_compliance_rate']:.1%}")
-    print(f"   Cache hit rate: {perf_results['metrics']['cache_hit_rate']:.1%}")
-    print()
+    logger.info(f"✅ Performance Metrics:")
+    logger.info(f"   Queries executed: {perf_results['metrics']['query_count']}")
+    logger.info(f"   Average time: {perf_results['metrics']['average_query_time_ms']:.2f}ms")
+    logger.info(f"   ADHD compliance: {perf_results['metrics']['adhd_compliance_rate']:.1%}")
+    logger.info(f"   Cache hit rate: {perf_results['metrics']['cache_hit_rate']:.1%}")
+    logger.info()
 
     # Cleanup
     await db.close()
 
-    print("=" * 70)
-    print("🎉 Serena v2 Demo Complete!")
-    print("=" * 70)
-    print()
-    print("✅ System Status: FULLY OPERATIONAL")
-    print("✅ ADHD Features: ALL WORKING")
-    print("✅ Performance: 40-257x FASTER than targets")
-    print()
-    print("📚 Next Steps:")
-    print("   1. See SERENA_V2_DEPLOYMENT_GUIDE.md for detailed usage")
-    print("   2. Integrate with your development workflow")
-    print("   3. Monitor performance and collect feedback")
-    print()
+    logger.info("=" * 70)
+    logger.info("🎉 Serena v2 Demo Complete!")
+    logger.info("=" * 70)
+    logger.info()
+    logger.info("✅ System Status: FULLY OPERATIONAL")
+    logger.info("✅ ADHD Features: ALL WORKING")
+    logger.info("✅ Performance: 40-257x FASTER than targets")
+    logger.info()
+    logger.info("📚 Next Steps:")
+    logger.info("   1. See SERENA_V2_DEPLOYMENT_GUIDE.md for detailed usage")
+    logger.info("   2. Integrate with your development workflow")
+    logger.info("   3. Monitor performance and collect feedback")
+    logger.info()
 
 
 if __name__ == "__main__":

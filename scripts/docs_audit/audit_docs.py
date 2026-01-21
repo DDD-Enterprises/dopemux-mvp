@@ -22,6 +22,11 @@ Notes:
 """
 from __future__ import annotations
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 import argparse
 import csv
 import datetime as dt
@@ -55,8 +60,9 @@ def _is_text_doc(path: Path) -> bool:
     if ext == "":
         try:
             return path.stat().st_size < 512_000  # < 500 KB
-        except Exception:
+        except Exception as e:
             return False
+            logger.error(f"Error: {e}")
     return False
 
 
@@ -71,16 +77,18 @@ def _git_first_commit_date(path: Path) -> Optional[str]:
         line = out.strip().splitlines()[-1] if out.strip() else ""
         if line:
             return line.strip()
-    except Exception:
+    except Exception as e:
         pass
+        logger.error(f"Error: {e}")
     # Fall back to last modified time
     try:
         ts = dt.datetime.fromtimestamp(path.stat().st_mtime)
         return ts.strftime("%Y-%m-%d")
-    except Exception:
+    except Exception as e:
         return None
 
 
+        logger.error(f"Error: {e}")
 def _slugify(s: str) -> str:
     s = s.strip().lower()
     s = re.sub(r"[^a-z0-9]+", "-", s)
@@ -91,10 +99,11 @@ def _slugify(s: str) -> str:
 def _read_text(path: Path) -> str:
     try:
         return path.read_text(encoding="utf-8", errors="replace")
-    except Exception:
+    except Exception as e:
         return ""
 
 
+        logger.error(f"Error: {e}")
 def _split_frontmatter_and_body(text: str) -> Tuple[Optional[str], str]:
     """Return (frontmatter_text_or_None, body_text)."""
     lines = text.splitlines()
@@ -189,8 +198,9 @@ def scan_roots(roots: List[Path], repo_root: Path) -> List[DocItem]:
                 continue
             try:
                 text = _read_text(path)
-            except Exception:
+            except Exception as e:
                 text = ""
+                logger.error(f"Error: {e}")
             fm_text, body = _split_frontmatter_and_body(text)
             has_fm = fm_text is not None
             fm_title, fm_date = _parse_frontmatter_fields(fm_text)
@@ -204,9 +214,10 @@ def scan_roots(roots: List[Path], repo_root: Path) -> List[DocItem]:
             # Normalize to repo-relative path
             try:
                 relp = str(path.resolve().relative_to(repo_root.resolve()))
-            except Exception:
+            except Exception as e:
                 # Fallback: best-effort string
                 relp = str(path)
+                logger.error(f"Error: {e}")
             items.append(DocItem(
                 path=str(path),
                 relpath=relp,
@@ -384,6 +395,7 @@ def apply_renames(repo_root: Path, plan_csv: Path) -> List[Tuple[str,str,str]]:
                     results.append((old_rel, new_rel, "missing"))
             except Exception as e:
                 results.append((old_rel, new_rel, f"error: {e}"))
+                logger.error(f"Error: {e}")
     return results
 
 
@@ -419,7 +431,7 @@ def cmd_scan(args):
             "similarity": f"{s:.4f}",
         })
     write_csv(out_dir / "duplicates_pairs.csv", rows)
-    print(f"Scanned {len(items)} docs. Inventory and duplicates written to {out_dir}")
+    logger.info(f"Scanned {len(items)} docs. Inventory and duplicates written to {out_dir}")
 
 
 def cmd_report(args):
@@ -435,7 +447,7 @@ def cmd_report(args):
     report_md = make_report(items, groups, [])
     out = out_dir / "report.md"
     out.write_text(report_md, encoding="utf-8")
-    print(f"Report written to {out}")
+    logger.info(f"Report written to {out}")
 
 
 def cmd_plan_rename(args):
@@ -445,7 +457,7 @@ def cmd_plan_rename(args):
     rows = plan_renames(items, template=args.template)
     csv_path = out_dir / "rename_plan.csv"
     write_csv(csv_path, rows)
-    print(f"Rename plan written to {csv_path} (dry-run; review before applying)")
+    logger.info(f"Rename plan written to {csv_path} (dry-run; review before applying)")
 
 
 def cmd_apply_rename(args):
@@ -455,7 +467,7 @@ def cmd_apply_rename(args):
     out = plan_csv.parent / "rename_results.csv"
     rows = [{"old": a, "new": b, "status": s} for a, b, s in results]
     write_csv(out, rows)
-    print(f"Apply-rename finished. Results at {out}")
+    logger.info(f"Apply-rename finished. Results at {out}")
 
 
 def cmd_enforce_frontmatter(args):
@@ -477,7 +489,7 @@ def cmd_enforce_frontmatter(args):
                 "applied": str(bool(args.apply)),
             })
     write_csv(out_dir / ("frontmatter_applied.csv" if args.apply else "frontmatter_dryrun.csv"), changed_rows)
-    print(("Applied" if args.apply else "Dry-run for") + f" frontmatter on {len(changed_rows)} files. See {out_dir}.")
+    logger.info(("Applied" if args.apply else "Dry-run for") + f" frontmatter on {len(changed_rows)} files. See {out_dir}.")
 
 
 def cmd_triage_template(args):
@@ -504,7 +516,7 @@ def cmd_triage_template(args):
         })
     out_csv = out_dir / "triage_template.csv"
     write_csv(out_csv, rows)
-    print(f"Triage template written to {out_csv}. Fill 'pile' column and save.")
+    logger.info(f"Triage template written to {out_csv}. Fill 'pile' column and save.")
 
 
 def main():

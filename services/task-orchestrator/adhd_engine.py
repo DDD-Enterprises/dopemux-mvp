@@ -307,9 +307,10 @@ class ADHDAccommodationEngine:
 
             return total_load
 
-        except Exception:
+        except Exception as e:
             return 0.5  # Default moderate load
 
+            logger.error(f"Error: {e}")
     def _assess_energy_match(
         self,
         current_energy: EnergyLevel,
@@ -343,9 +344,10 @@ class ADHDAccommodationEngine:
 
             return min(energy_match, 1.0)
 
-        except Exception:
+        except Exception as e:
             return 0.5
 
+            logger.error(f"Error: {e}")
     def _assess_attention_compatibility(
         self,
         attention_state: AttentionState,
@@ -402,9 +404,10 @@ class ADHDAccommodationEngine:
 
             return adjusted_compatibility
 
-        except Exception:
+        except Exception as e:
             return 0.5
 
+            logger.error(f"Error: {e}")
     async def _generate_task_recommendations(
         self,
         profile: ADHDProfile,
@@ -857,9 +860,10 @@ class ADHDAccommodationEngine:
                 "break_compliance": 0.8,
                 "minutes_since_break": 20
             }
-        except Exception:
+        except Exception as e:
             return {}
 
+            logger.error(f"Error: {e}")
     async def _get_attention_indicators(self, user_id: str) -> Dict[str, Any]:
         """Get attention state indicators for user."""
         try:
@@ -871,9 +875,10 @@ class ADHDAccommodationEngine:
                 "average_focus_duration": 22,
                 "distraction_events": 3
             }
-        except Exception:
+        except Exception as e:
             return {}
 
+            logger.error(f"Error: {e}")
     # Health and Performance
 
     async def get_accommodation_health(self) -> Dict[str, Any]:

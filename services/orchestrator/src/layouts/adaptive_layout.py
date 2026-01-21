@@ -6,6 +6,11 @@ Detects ADHD energy state and adjusts interface complexity accordingly.
 """
 
 from typing import Literal, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from dataclasses import dataclass
 from enum import Enum
 
@@ -181,25 +186,25 @@ if __name__ == "__main__":
     detector = EnergyDetector()
 
     # Test scenarios
-    print("Testing energy detection:")
-    print("\n1. Low energy (slow typing, 60min since break)")
+    logger.info("Testing energy detection:")
+    logger.info("\n1. Low energy (slow typing, 60min since break)")
     energy = detector.detect_energy(
         typing_speed=30,  # Assuming baseline is 60
         pane_switches_per_min=2,
         minutes_since_break=60,
     )
-    print(f"   Detected: {energy.value}")
+    logger.info(f"   Detected: {energy.value}")
     layout = detector.get_layout_config(energy)
-    print(f"   Layout: {layout.name} ({layout.pane_count} panes)")
-    print(f"   Note: {layout.adhd_note}")
+    logger.info(f"   Layout: {layout.name} ({layout.pane_count} panes)")
+    logger.info(f"   Note: {layout.adhd_note}")
 
-    print("\n2. High energy (fast typing, recent break)")
+    logger.info("\n2. High energy (fast typing, recent break)")
     energy = detector.detect_energy(
         typing_speed=90,  # Assuming baseline is 60
         pane_switches_per_min=4,
         minutes_since_break=5,
     )
-    print(f"   Detected: {energy.value}")
+    logger.info(f"   Detected: {energy.value}")
     layout = detector.get_layout_config(energy)
-    print(f"   Layout: {layout.name} ({layout.pane_count} panes)")
-    print(f"   Note: {layout.adhd_note}")
+    logger.info(f"   Layout: {layout.name} ({layout.pane_count} panes)")
+    logger.info(f"   Note: {layout.adhd_note}")

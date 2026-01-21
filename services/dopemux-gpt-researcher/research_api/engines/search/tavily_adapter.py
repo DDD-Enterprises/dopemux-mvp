@@ -415,9 +415,10 @@ class TavilySearchAdapter(BaseSearchAdapter):
         if isinstance(base_score, str):
             try:
                 base_score = float(base_score)
-            except:
+            except Exception as e:
                 base_score = 0.5
 
+                logger.error(f"Error: {e}")
         # Adjust based on position
         position_factor = 1.0 - (index * 0.03)  # Slight penalty for lower positions
 

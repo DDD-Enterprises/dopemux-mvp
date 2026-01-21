@@ -158,6 +158,7 @@ class MigrationManager:
                 error_message=str(e)
             )
 
+            logger.error(f"Error: {e}")
     async def _execute_sql(self, sql: str):
         """Execute SQL with proper error handling"""
         # Implementation would use the database connection

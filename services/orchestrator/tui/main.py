@@ -516,6 +516,7 @@ class DopemuxOrchestratorTUI(App):
             pane.set_status("error")
             await self.state_manager.on_command_complete(ai, -1, str(e))
 
+            logger.error(f"Error: {e}")
     async def execute_command_parallel(self, command: str) -> None:
         """Execute command on all AIs in parallel."""
         tasks = [

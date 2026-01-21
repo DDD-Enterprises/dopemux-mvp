@@ -6,6 +6,11 @@ Implements weighted scoring algorithm from design spec.
 """
 
 from typing import Optional, List, Dict, Tuple
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
@@ -361,6 +366,7 @@ class ProfileDetector:
             # ADHD Engine not available, leave as None
             pass
 
+            logger.error(f"Error: {e}")
         return context
 
     def get_all_scores(self, context: Optional[DetectionContext] = None) -> Dict[str, ProfileMatch]:
@@ -490,18 +496,18 @@ def format_match_summary(match: ProfileMatch) -> str:
 
 if __name__ == "__main__":
     # Quick test
-    print("Testing profile detector...")
+    logger.info("Testing profile detector...")
 
     try:
         detector = ProfileDetector(Path("profiles"))
 
         # Test with auto-gathered context
-        print("\n--- Auto-Detection (current context) ---")
+        logger.info("\n--- Auto-Detection (current context) ---")
         match = detector.detect()
-        print(format_match_summary(match))
+        logger.info(format_match_summary(match))
 
         # Test with custom context
-        print("\n--- Custom Context (feature branch + src/ dir) ---")
+        logger.info("\n--- Custom Context (feature branch + src/ dir) ---")
         custom_context = DetectionContext(
             current_dir=Path.cwd() / "src",
             git_branch="feature/auth",
@@ -510,9 +516,9 @@ if __name__ == "__main__":
             attention_mode="focused"
         )
         match_custom = detector.detect(custom_context)
-        print(format_match_summary(match_custom))
+        logger.info(format_match_summary(match_custom))
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        logger.error(f"❌ Error: {e}")
         import traceback
         traceback.print_exc()

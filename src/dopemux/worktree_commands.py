@@ -14,6 +14,11 @@ safety, conflict detection, and ADHD optimizations.
 """
 
 from pathlib import Path
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import Optional, List, Tuple
 import subprocess
 import sys
@@ -104,13 +109,14 @@ def get_repo_root(fallback_cwd: bool = True) -> Optional[str]:
 
         return None
 
-    except Exception:
+    except Exception as e:
         # Exception - fallback to cwd if requested
         if fallback_cwd:
             return str(Path.cwd().resolve())
         return None
 
 
+        logger.error(f"Error: {e}")
 def get_current_worktree(use_cache: bool = True, quiet: bool = False) -> Optional[str]:
     """
     Get the current worktree path with intelligent caching.
@@ -147,7 +153,7 @@ def get_current_worktree(use_cache: bool = True, quiet: bool = False) -> Optiona
         # Print outside lock to avoid holding lock during I/O
         if cached_path:
             if not quiet:
-                console.print(f"[dim]📍 Current worktree (cached): {cached_path}[/dim]")
+                console.logger.info(f"[dim]📍 Current worktree (cached): {cached_path}[/dim]")
             return cached_path
 
     # Detect worktree using git
@@ -168,21 +174,21 @@ def get_current_worktree(use_cache: bool = True, quiet: bool = False) -> Optiona
                 _WORKTREE_CACHE["timestamp"] = time.time()
 
             if not quiet:
-                console.print(f"[green]📍 Current worktree: {worktree_path}[/green]")
+                console.logger.info(f"[green]📍 Current worktree: {worktree_path}[/green]")
 
             return worktree_path
         else:
             if not quiet:
-                console.print("[yellow]⚠️  Not in a git repository[/yellow]")
+                console.logger.info("[yellow]⚠️  Not in a git repository[/yellow]")
             return None
 
     except subprocess.TimeoutExpired:
         if not quiet:
-            console.print("[red]❌ Git command timed out[/red]")
+            console.logger.info("[red]❌ Git command timed out[/red]")
         return None
     except Exception as e:
         if not quiet:
-            console.print(f"[red]❌ Error detecting worktree: {e}[/red]")
+            console.logger.error(f"[red]❌ Error detecting worktree: {e}[/red]")
         return None
 
 
@@ -248,7 +254,7 @@ def get_worktrees(workspace_path: Path) -> List[Tuple[str, str, str]]:
         return worktrees
 
     except Exception as e:
-        console.print(f"[red]Failed to list worktrees: {e}[/red]")
+        console.logger.error(f"[red]Failed to list worktrees: {e}[/red]")
         return []
 
 
@@ -276,10 +282,11 @@ def get_worktree_status(worktree_path: str) -> str:
 
         return "clean" if not result.stdout.strip() else "dirty"
 
-    except Exception:
+    except Exception as e:
         return "unknown"
 
 
+        logger.error(f"Error: {e}")
 def list_worktrees(workspace_path: Optional[Path] = None) -> None:
     """
     List all git worktrees with ADHD-friendly display.

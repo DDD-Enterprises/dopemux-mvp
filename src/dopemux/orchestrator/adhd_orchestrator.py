@@ -7,6 +7,11 @@ workflow management across all Dopemux operations.
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import Dict, Any, Optional
 from datetime import datetime
 
@@ -100,6 +105,7 @@ class ADHDOrchestrator:
 
             raise e
 
+            logger.error(f"Error: {e}")
     async def prompt_user_action(self, actions: list, context: str = "") -> Optional[str]:
         """
         Prompt user for action selection with ADHD optimizations.
@@ -117,7 +123,7 @@ class ADHDOrchestrator:
             selected_break = self.interactive_prompts.ask_break_suggestion(break_suggestion)
             if selected_break:
                 self.workflow_manager.take_break()
-                console.print(f"[yellow]Taking break: {selected_break}[/yellow]")
+                console.logger.info(f"[yellow]Taking break: {selected_break}[/yellow]")
                 # Wait for break duration
                 await asyncio.sleep(self.workflow_manager.break_duration_minutes * 60)
 
@@ -154,7 +160,7 @@ class ADHDOrchestrator:
 
             if selected_activity:
                 self.workflow_manager.take_break()
-                console.print(f"[yellow]Taking break: {selected_activity}[/yellow]")
+                console.logger.info(f"[yellow]Taking break: {selected_activity}[/yellow]")
                 await asyncio.sleep(self.workflow_manager.break_duration_minutes * 60)
                 return True
 

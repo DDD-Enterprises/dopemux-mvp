@@ -1,4 +1,9 @@
 from typing import Callable, Optional
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from dataclasses import dataclass
 from enum import Enum
 import asyncio
@@ -37,7 +42,7 @@ class SimpleEventBus:
         """Initialize the EventBus with Redis."""
         self.redis_client = redis.from_url(self.redis_url, db=self.db)
         await self.redis_client.ping()
-        print("EventBus initialized with Redis")
+        logger.info("EventBus initialized with Redis")
 
     async def publish(self, event: Event) -> bool:
         """Publish an event to Redis Stream."""
@@ -56,10 +61,10 @@ class SimpleEventBus:
 
         try:
             await self.redis_client.xadd("genetic_events", {"event": event_json})
-            print(f"Published {event.type.value} event")
+            logger.info(f"Published {event.type.value} event")
             return True
         except Exception as e:
-            print(f"Failed to publish event: {e}")
+            logger.error(f"Failed to publish event: {e}")
             return False
 
     async def subscribe(self, event_type: EventType, callback: Callable, filter_fn: Optional[Callable] = None):
@@ -116,5 +121,5 @@ class SimpleEventBus:
                         await self.redis_client.xack(stream_name, consumer_group, message_id)
 
             except Exception as e:
-                print(f"Error consuming events: {e}")
+                logger.error(f"Error consuming events: {e}")
                 await asyncio.sleep(5)

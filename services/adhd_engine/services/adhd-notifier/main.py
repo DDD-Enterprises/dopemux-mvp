@@ -69,7 +69,7 @@ class ADHDNotifier:
 
         if method == "terminal":
             # Terminal notification (works in tmux/screen)
-            print(f"\n🔔 ADHD Notification: {message}\n")
+            logger.info(f"\n🔔 ADHD Notification: {message}\n")
 
         elif method == "voice":
             # Voice notification (macOS say command)

@@ -14,6 +14,11 @@ Performance: ~30ms processing (<100ms target)
 """
 
 import json
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -117,7 +122,7 @@ class ResponseParser:
             >>> parser = ResponseParser()
             >>> result = parser.parse(output_lines, provider='claude')
             >>> if result.success:
-            ...     print(result.content)
+            ...     logger.info(result.content)
         """
         start_time = datetime.now()
 
@@ -450,9 +455,9 @@ def parse_response(
         >>> output = agent.get_output()
         >>> result = parse_response(output, provider='claude')
         >>> if result.success:
-        ...     print(result.content)
+        ...     logger.info(result.content)
         ... else:
-        ...     print(f"Error: {result.error_message}")
+        ...     logger.error(f"Error: {result.error_message}")
     """
     parser = ResponseParser()
     return parser.parse(output, provider, timeout_occurred, process_alive)
@@ -460,13 +465,13 @@ def parse_response(
 
 if __name__ == "__main__":
     """Test response parser with sample data."""
-    print("🧪 Testing Response Parser")
-    print("=" * 60)
+    logger.info("🧪 Testing Response Parser")
+    logger.info("=" * 60)
 
     parser = ResponseParser()
 
     # Test 1: Claude sample
-    print("\n1. Testing Claude parsing...")
+    logger.info("\n1. Testing Claude parsing...")
     claude_output = [
         "\x1b[2J\x1b[H",  # ANSI clear
         "Claude Code v1.2.0",
@@ -480,43 +485,43 @@ if __name__ == "__main__":
     ]
 
     result = parser.parse(claude_output, provider='claude')
-    print(f"   Success: {result.success}")
-    print(f"   Content: {result.content}")
-    print(f"   Metadata: {result.metadata}")
+    logger.info(f"   Success: {result.success}")
+    logger.info(f"   Content: {result.content}")
+    logger.info(f"   Metadata: {result.metadata}")
 
     # Test 2: Gemini JSON sample
-    print("\n2. Testing Gemini JSON parsing...")
+    logger.info("\n2. Testing Gemini JSON parsing...")
     gemini_json = [
         '{"candidates": [{"content": {"parts": [{"text": "Hello from Gemini!"}]}, "finishReason": "STOP"}]}'
     ]
 
     result = parser.parse(gemini_json, provider='gemini')
-    print(f"   Success: {result.success}")
-    print(f"   Content: {result.content}")
+    logger.info(f"   Success: {result.success}")
+    logger.info(f"   Content: {result.content}")
 
     # Test 3: Empty response
-    print("\n3. Testing empty response...")
+    logger.info("\n3. Testing empty response...")
     result = parser.parse([], provider='claude')
-    print(f"   Success: {result.success}")
-    print(f"   Error: {result.error_type.value if result.error_type else None}")
-    print(f"   Message: {result.error_message}")
+    logger.info(f"   Success: {result.success}")
+    logger.error(f"   Error: {result.error_type.value if result.error_type else None}")
+    logger.error(f"   Message: {result.error_message}")
 
     # Test 4: Timeout
-    print("\n4. Testing timeout scenario...")
+    logger.info("\n4. Testing timeout scenario...")
     result = parser.parse([], provider='claude', timeout_occurred=True)
-    print(f"   Success: {result.success}")
-    print(f"   Error: {result.error_type.value}")
+    logger.info(f"   Success: {result.success}")
+    logger.error(f"   Error: {result.error_type.value}")
 
     # Test 5: Process crash
-    print("\n5. Testing crash scenario...")
+    logger.info("\n5. Testing crash scenario...")
     result = parser.parse(["partial output"], provider='claude', process_alive=False)
-    print(f"   Success: {result.success}")
-    print(f"   Error: {result.error_type.value}")
+    logger.info(f"   Success: {result.success}")
+    logger.error(f"   Error: {result.error_type.value}")
 
     # Show stats
-    print("\n📊 Parser Statistics:")
+    logger.info("\n📊 Parser Statistics:")
     stats = parser.get_stats()
     for key, value in stats.items():
-        print(f"   {key}: {value}")
+        logger.info(f"   {key}: {value}")
 
-    print("\n✅ Response parser test complete!")
+    logger.info("\n✅ Response parser test complete!")

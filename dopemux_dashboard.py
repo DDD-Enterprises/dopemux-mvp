@@ -40,7 +40,7 @@ except ImportError:
 try:
     from textual.app import App, ComposeResult
     from textual.containers import Container, Horizontal, Vertical
-    from textual.widgets import Header, Footer, Static, DataTable
+    from textual.widgets import Header, Footer, Static, DataTable, ListView, ListItem, Label
     from textual.reactive import reactive
     from textual.screen import Screen
     from rich.table import Table
@@ -1426,7 +1426,7 @@ Run: docker start dopemux-prometheus
             # Show service selection menu
             self.push_screen(ServiceSelectionModal())
         
-        def action_show_pattern_detail(self) -> None:
+        async def action_show_pattern_detail(self) -> None:
             """Show detailed view of a behavioral pattern"""
             # Get the top pattern from Serena
             try:

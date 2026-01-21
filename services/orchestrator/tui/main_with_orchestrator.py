@@ -430,6 +430,7 @@ class DopemuxOrchestratorTUI(App):
             pane.add_output(f"❌ Unexpected error: {e}")
             pane.set_status("error")
 
+            logger.error(f"Error: {e}")
     async def execute_command_parallel_enhanced(self, command: str) -> None:
         """Execute command on all available AIs with enhanced orchestration."""
         # Show progress on all panes

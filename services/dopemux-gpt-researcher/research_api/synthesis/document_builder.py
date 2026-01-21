@@ -92,9 +92,10 @@ class DocumentBuilder:
             try:
                 dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
                 return dt.strftime("%Y-%m-%d")
-            except:
+            except Exception as e:
                 return datetime.now().strftime("%Y-%m-%d")
 
+                logger.error(f"Error: {e}")
         def sort_by_confidence(fields: List[Dict]) -> List[Dict]:
             """Sort fields by confidence score descending."""
             return sorted(fields, key=lambda x: x.get('confidence', 0), reverse=True)

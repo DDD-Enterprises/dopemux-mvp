@@ -357,11 +357,11 @@ guardian = CognitiveGuardian(workspace_id=workspace)
 
 if complexity > 0.7 and duration_min >= 25:
     # Recommend break
-    print("⏰ Great work! Time for 5-min break (high complexity)")
+    logger.info("⏰ Great work! Time for 5-min break (high complexity)")
 
 if duration_min >= 90:
     # Mandatory break
-    print("🛑 Mandatory break: 90 minutes reached")
+    logger.info("🛑 Mandatory break: 90 minutes reached")
     await guardian.enforce_break()
 ```
 
@@ -374,7 +374,7 @@ complexity = await mcp__serena_v2__analyze_complexity(
 )
 
 if complexity["score"] > 0.7:
-    print(f"⚠️ High complexity ({{complexity['score']:.2f}}) - Schedule 45-60 min focused time")
+    logger.info(f"⚠️ High complexity ({{complexity['score']:.2f}}) - Schedule 45-60 min focused time")
 ```"""
 
     def _generate_agent_coordination(self, persona_name: str, complexity_range: str) -> str:
@@ -421,9 +421,9 @@ workflow = await workflow_coord.start_workflow(workflow_type, description)
 
     async def enhance_all_personas(self):
         """Generate enhanced versions of all 16 personas"""
-        print("\n" + "="*70)
-        print("PERSONA ENHANCEMENT GENERATOR - Weeks 13-14")
-        print("="*70)
+        logger.info("\n" + "="*70)
+        logger.info("PERSONA ENHANCEMENT GENERATOR - Weeks 13-14")
+        logger.info("="*70)
 
         enhanced_count = 0
         skipped_count = 0
@@ -433,11 +433,11 @@ workflow = await workflow_coord.start_workflow(workflow_type, description)
             status = persona["status"]
 
             if status == "COMPLETE":
-                print(f"\n✅ {name}: Already enhanced (python-expert-dopemux.md)")
+                logger.info(f"\n✅ {name}: Already enhanced (python-expert-dopemux.md)")
                 skipped_count += 1
                 continue
 
-            print(f"\n🔄 Enhancing: {name}...")
+            logger.info(f"\n🔄 Enhancing: {name}...")
 
             # Generate enhanced document
             enhanced_doc = self.generate_persona_enhancement(persona)
@@ -447,14 +447,14 @@ workflow = await workflow_coord.start_workflow(workflow_type, description)
             output_file.write_text(enhanced_doc)
 
             enhanced_count += 1
-            print(f"   ✅ Created: {output_file}")
+            logger.info(f"   ✅ Created: {output_file}")
 
-        print("\n" + "="*70)
-        print(f"Enhancement Complete")
-        print("="*70)
-        print(f"\nEnhanced: {enhanced_count}")
-        print(f"Skipped: {skipped_count} (already enhanced)")
-        print(f"Total: {len(PERSONAS)} personas")
+        logger.info("\n" + "="*70)
+        logger.info(f"Enhancement Complete")
+        logger.info("="*70)
+        logger.info(f"\nEnhanced: {enhanced_count}")
+        logger.info(f"Skipped: {skipped_count} (already enhanced)")
+        logger.info(f"Total: {len(PERSONAS)} personas")
 
         return {
             "enhanced": enhanced_count,
@@ -470,13 +470,13 @@ async def main():
 
     results = await enhancer.enhance_all_personas()
 
-    print(f"\n{'='*70}")
-    print("✅ All personas enhanced!")
-    print(f"{'='*70}\n")
+    logger.info(f"\n{'='*70}")
+    logger.info("✅ All personas enhanced!")
+    logger.info(f"{'='*70}\n")
 
-    print(f"Files created: {results['enhanced']}")
-    print(f"Output directory: .claude/personas/")
-    print(f"\nNext: Integrate with SuperClaude /sc: commands")
+    logger.info(f"Files created: {results['enhanced']}")
+    logger.info(f"Output directory: .claude/personas/")
+    logger.info(f"\nNext: Integrate with SuperClaude /sc: commands")
 
 
 if __name__ == "__main__":

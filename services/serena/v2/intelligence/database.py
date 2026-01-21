@@ -504,17 +504,18 @@ async def test_database_performance() -> Dict[str, Any]:
         return {"error": str(e), "adhd_compliant": False}
 
 
+        logger.error(f"Error: {e}")
 if __name__ == "__main__":
     # Quick performance test when run directly
     async def main():
-        print("🗄️ Serena Intelligence Database Performance Test")
+        logger.info("🗄️ Serena Intelligence Database Performance Test")
         results = await test_database_performance()
 
         if "error" in results:
-            print(f"❌ Test failed: {results['error']}")
+            logger.error(f"❌ Test failed: {results['error']}")
         else:
-            print(f"Performance: {results['performance_rating']}")
-            print(f"Average: {results['average_query_time_ms']}ms")
-            print(f"ADHD Compliant: {'✅ Yes' if results['adhd_compliant'] else '⚠️ No'}")
+            logger.info(f"Performance: {results['performance_rating']}")
+            logger.info(f"Average: {results['average_query_time_ms']}ms")
+            logger.info(f"ADHD Compliant: {'✅ Yes' if results['adhd_compliant'] else '⚠️ No'}")
 
     asyncio.run(main())

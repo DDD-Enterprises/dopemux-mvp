@@ -7,6 +7,11 @@ and system patterns.
 """
 
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 
@@ -64,7 +69,7 @@ class ConPortIntegration:
 
         except Exception as e:
             # Fallback to empty context if ConPort unavailable
-            print(f"ConPort unavailable, using fallback: {e}")
+            logger.info(f"ConPort unavailable, using fallback: {e}")
             return ConPortContext(
                 recent_decisions=[],
                 active_progress=[],
@@ -136,11 +141,11 @@ async def test_conport_integration():
     integration = ConPortIntegration(workspace_id)
 
     context = await integration.get_recent_context()
-    print("ConPort Context:")
-    print(f"Recent decisions: {len(context.recent_decisions)}")
-    print(f"Active progress: {len(context.active_progress)}")
-    print(f"Relevant patterns: {len(context.relevant_patterns)}")
-    print(f"Semantic summary: {context.semantic_context}")
+    logger.info("ConPort Context:")
+    logger.info(f"Recent decisions: {len(context.recent_decisions)}")
+    logger.info(f"Active progress: {len(context.active_progress)}")
+    logger.info(f"Relevant patterns: {len(context.relevant_patterns)}")
+    logger.info(f"Semantic summary: {context.semantic_context}")
 
 if __name__ == "__main__":
     asyncio.run(test_conport_integration())

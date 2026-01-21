@@ -10,6 +10,11 @@ Coordinates the complete document processing pipeline:
 """
 
 import sys
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncio
 from pathlib import Path
 from typing import Dict, List, Any, Optional
@@ -26,7 +31,7 @@ try:
     from registries import RegistryBuilder
     from embedder import DocumentEmbedder
 except ImportError as e:
-    print(f"⚠️ Could not import doc_processor modules: {e}")
+    logger.info(f"⚠️ Could not import doc_processor modules: {e}")
     AtomicUnit = None
     AtomicUnitsNormalizer = None
     RegistryBuilder = None
@@ -142,7 +147,7 @@ class UnifiedDocumentPipeline:
                 from ..analysis.extractor import MultiAngleExtractor
                 self.unified_extractor.multi_angle_extractor = MultiAngleExtractor(self.config.output_directory)
             except ImportError:
-                print("⚠️ MultiAngleExtractor not available - multi-angle extraction disabled")
+                logger.info("⚠️ MultiAngleExtractor not available - multi-angle extraction disabled")
                 self.config.enable_multi_angle = False
 
         # Initialize doc_processor components if available
@@ -193,50 +198,50 @@ class UnifiedDocumentPipeline:
         self.start_time = time.time()
 
         try:
-            print("🚀 Starting unified document processing pipeline...")
+            logger.info("🚀 Starting unified document processing pipeline...")
 
             # Step 1: Multi-layer extraction
-            print("📄 Step 1: Multi-layer document extraction...")
+            logger.info("📄 Step 1: Multi-layer document extraction...")
             extraction_summary = self._run_extraction()
 
             # Step 2: Convert to atomic units
-            print("⚛️  Step 2: Converting to atomic units...")
+            logger.info("⚛️  Step 2: Converting to atomic units...")
             atomic_units_count = self._convert_to_atomic_units()
 
             # Step 3: Generate TSV registries
             registry_files = {}
             registry_counts = {}
             if self.config.generate_tsv_registries and self.registry_builder:
-                print("📊 Step 3: Building TSV registries...")
+                logger.info("📊 Step 3: Building TSV registries...")
                 registry_files, registry_counts = self._build_registries()
             else:
-                print("⏭️  Step 3: Skipping TSV registries (disabled or unavailable)")
+                logger.info("⏭️  Step 3: Skipping TSV registries (disabled or unavailable)")
 
             # Step 4: Generate embeddings
             embedding_summary = {}
             vector_count = 0
             if self.config.generate_embeddings:
-                print("🔍 Step 4: Generating advanced embeddings...")
+                logger.info("🔍 Step 4: Generating advanced embeddings...")
                 import asyncio
                 embedding_summary, vector_count = await self._generate_embeddings()
             else:
-                print("⏭️  Step 4: Skipping embeddings (disabled)")
+                logger.info("⏭️  Step 4: Skipping embeddings (disabled)")
 
             # Step 5: Generate document synthesis
             synthesis_files = []
             if self.config.enable_synthesis:
-                print("📝 Step 5: Generating document synthesis...")
+                logger.info("📝 Step 5: Generating document synthesis...")
                 synthesis_files = self._generate_synthesis(extraction_summary)
             else:
-                print("⏭️  Step 5: Skipping synthesis (disabled)")
+                logger.info("⏭️  Step 5: Skipping synthesis (disabled)")
 
             # Step 6: Export in multiple formats
-            print("📤 Step 6: Exporting results...")
+            logger.info("📤 Step 6: Exporting results...")
             output_files = self._export_results(extraction_summary)
             output_files.extend(synthesis_files)
 
             processing_time = time.time() - self.start_time
-            print(f"✅ Pipeline complete! ({processing_time:.2f}s)")
+            logger.info(f"✅ Pipeline complete! ({processing_time:.2f}s)")
 
             return PipelineResult(
                 config=self.config,
@@ -256,7 +261,7 @@ class UnifiedDocumentPipeline:
 
         except Exception as e:
             processing_time = time.time() - self.start_time if self.start_time else 0
-            print(f"❌ Pipeline failed: {e}")
+            logger.error(f"❌ Pipeline failed: {e}")
 
             return PipelineResult(
                 config=self.config,
@@ -290,13 +295,13 @@ class UnifiedDocumentPipeline:
 
         extraction_summary['summary']['total_entities'] = total_entities
 
-        print(f"✅ Extracted {total_entities} entities from {len(self.extraction_results)} documents")
+        logger.info(f"✅ Extracted {total_entities} entities from {len(self.extraction_results)} documents")
         return extraction_summary
 
     def _convert_to_atomic_units(self) -> int:
         """Convert extraction results to atomic units format."""
         if not self.normalizer or not AtomicUnit:
-            print("⚠️ Atomic unit conversion unavailable - skipping")
+            logger.info("⚠️ Atomic unit conversion unavailable - skipping")
             return 0
 
         self.atomic_units = []
@@ -332,7 +337,7 @@ class UnifiedDocumentPipeline:
                             self.atomic_units.append(unit)
                             unit_id_counter += 1
 
-        print(f"✅ Created {len(self.atomic_units)} atomic units")
+        logger.info(f"✅ Created {len(self.atomic_units)} atomic units")
         return len(self.atomic_units)
 
     def _meets_confidence_threshold(self, entity: Dict[str, Any]) -> bool:
@@ -365,7 +370,7 @@ class UnifiedDocumentPipeline:
                 tags=[entity_type, result.document_type.lower()]
             )
         except Exception as e:
-            print(f"⚠️ Error creating atomic unit: {e}")
+            logger.error(f"⚠️ Error creating atomic unit: {e}")
             return None
 
     def _build_registries(self) -> tuple[Dict[str, str], Dict[str, int]]:
@@ -391,17 +396,17 @@ class UnifiedDocumentPipeline:
                 if Path(path).exists():
                     existing_files[name] = path
 
-            print(f"✅ Generated {len(existing_files)} TSV registries")
+            logger.info(f"✅ Generated {len(existing_files)} TSV registries")
             return existing_files, registry_counts
 
         except Exception as e:
-            print(f"⚠️ Registry building failed: {e}")
+            logger.error(f"⚠️ Registry building failed: {e}")
             return {}, {}
 
     async def _generate_embeddings(self) -> tuple[Dict[str, Any], int]:
         """Generate advanced vector embeddings with hybrid search capability."""
         if not self.atomic_units:
-            print("⚠️ No atomic units available for embedding")
+            logger.info("⚠️ No atomic units available for embedding")
             return {}, 0
 
         try:
@@ -409,7 +414,7 @@ class UnifiedDocumentPipeline:
             self.embedding_health_metrics.processing_start_time = datetime.now()
             self.embedding_health_metrics.documents_processed = len(self.atomic_units)
 
-            print(f"🔍 Initializing advanced embedding system for {len(self.atomic_units)} units...")
+            logger.info(f"🔍 Initializing advanced embedding system for {len(self.atomic_units)} units...")
 
             # Initialize hybrid vector store
             self.hybrid_vector_store = HybridVectorStore(
@@ -421,7 +426,7 @@ class UnifiedDocumentPipeline:
             if self.config.enable_consensus_validation:
                 consensus_config = create_consensus_config()
                 self.consensus_validator = ConsensusValidator(consensus_config)
-                print("🤝 Consensus validation enabled")
+                logger.info("🤝 Consensus validation enabled")
 
             # Convert atomic units to document format for embedding
             documents = []
@@ -438,7 +443,7 @@ class UnifiedDocumentPipeline:
                     }
                 })
 
-            print(f"📝 Converted {len(documents)} atomic units to embedding format")
+            logger.info(f"📝 Converted {len(documents)} atomic units to embedding format")
 
             # Add documents to hybrid vector store
             await self.hybrid_vector_store.add_documents(documents)
@@ -450,7 +455,7 @@ class UnifiedDocumentPipeline:
             # Run consensus validation on sample documents if enabled
             consensus_summary = {}
             if self.consensus_validator and len(documents) > 0:
-                print("🤝 Running consensus validation on sample documents...")
+                logger.info("🤝 Running consensus validation on sample documents...")
                 # Validate first 5 documents as sample
                 sample_docs = documents[:5]
                 for doc in sample_docs:
@@ -461,7 +466,7 @@ class UnifiedDocumentPipeline:
                     )
 
                 consensus_summary = self.consensus_validator.get_consensus_summary()
-                print(f"✅ Consensus validation complete: {consensus_summary.get('avg_consensus_score', 0):.3f} avg score")
+                logger.info(f"✅ Consensus validation complete: {consensus_summary.get('avg_consensus_score', 0):.3f} avg score")
 
             # Create comprehensive embedding summary
             embedding_summary = {
@@ -486,15 +491,15 @@ class UnifiedDocumentPipeline:
             if self.advanced_embedding_config.visual_progress_indicators:
                 self.embedding_health_metrics.display_progress(gentle_mode=True)
 
-            print(f"✅ Advanced embedding generation complete! {len(documents)} documents indexed")
-            print(f"   📊 Model: {self.advanced_embedding_config.embedding_model} ({self.advanced_embedding_config.embedding_dimension}D)")
-            print(f"   🔍 Hybrid search: BM25({self.advanced_embedding_config.bm25_weight}) + Vector({self.advanced_embedding_config.vector_weight})")
-            print(f"   💾 Index size: {self.embedding_health_metrics.vector_index_size_mb:.1f}MB")
+            logger.info(f"✅ Advanced embedding generation complete! {len(documents)} documents indexed")
+            logger.info(f"   📊 Model: {self.advanced_embedding_config.embedding_model} ({self.advanced_embedding_config.embedding_dimension}D)")
+            logger.info(f"   🔍 Hybrid search: BM25({self.advanced_embedding_config.bm25_weight}) + Vector({self.advanced_embedding_config.vector_weight})")
+            logger.info(f"   💾 Index size: {self.embedding_health_metrics.vector_index_size_mb:.1f}MB")
 
             return embedding_summary, len(documents)
 
         except Exception as e:
-            print(f"❌ Advanced embedding generation failed: {e}")
+            logger.error(f"❌ Advanced embedding generation failed: {e}")
             self.embedding_health_metrics.documents_failed += 1
             return {'error': str(e), 'status': 'failed'}, 0
 
@@ -532,21 +537,21 @@ class UnifiedDocumentPipeline:
                     exec_file = base_output_dir / f"executive_summary.{self.config.synthesis_format}"
                     exec_file.write_text(synthesis_result.executive_summary, encoding='utf-8')
                     synthesis_files.append(str(exec_file))
-                    print(f"  ✅ Executive summary: {exec_file}")
+                    logger.info(f"  ✅ Executive summary: {exec_file}")
 
                 # ADHD-optimized summary
                 if synthesis_result.adhd_summary:
                     adhd_file = base_output_dir / f"adhd_summary.{self.config.synthesis_format}"
                     adhd_file.write_text(synthesis_result.adhd_summary, encoding='utf-8')
                     synthesis_files.append(str(adhd_file))
-                    print(f"  ✅ ADHD summary: {adhd_file}")
+                    logger.info(f"  ✅ ADHD summary: {adhd_file}")
 
                 # Technical report
                 if synthesis_result.technical_report:
                     tech_file = base_output_dir / f"technical_report.{self.config.synthesis_format}"
                     tech_file.write_text(synthesis_result.technical_report, encoding='utf-8')
                     synthesis_files.append(str(tech_file))
-                    print(f"  ✅ Technical report: {tech_file}")
+                    logger.info(f"  ✅ Technical report: {tech_file}")
 
                 # Topic clusters (JSON format)
                 if synthesis_result.topic_clusters:
@@ -554,7 +559,7 @@ class UnifiedDocumentPipeline:
                     with clusters_file.open('w', encoding='utf-8') as f:
                         json.dump(synthesis_result.topic_clusters, f, indent=2, ensure_ascii=False, default=str)
                     synthesis_files.append(str(clusters_file))
-                    print(f"  ✅ Topic clusters: {clusters_file}")
+                    logger.info(f"  ✅ Topic clusters: {clusters_file}")
 
                 # Knowledge graph (JSON format)
                 if synthesis_result.knowledge_graph:
@@ -562,7 +567,7 @@ class UnifiedDocumentPipeline:
                     with graph_file.open('w', encoding='utf-8') as f:
                         json.dump(synthesis_result.knowledge_graph, f, indent=2, ensure_ascii=False, default=str)
                     synthesis_files.append(str(graph_file))
-                    print(f"  ✅ Knowledge graph: {graph_file}")
+                    logger.info(f"  ✅ Knowledge graph: {graph_file}")
 
                 # Synthesis metadata
                 metadata_file = base_output_dir / "synthesis_metadata.json"
@@ -582,12 +587,12 @@ class UnifiedDocumentPipeline:
                     json.dump(metadata, f, indent=2, ensure_ascii=False)
                 synthesis_files.append(str(metadata_file))
 
-                print(f"✅ Generated {len(synthesis_files)} synthesis files ({synthesis_result.processing_time:.2f}s)")
+                logger.info(f"✅ Generated {len(synthesis_files)} synthesis files ({synthesis_result.processing_time:.2f}s)")
             else:
-                print(f"⚠️ Synthesis generation failed: {synthesis_result.error_message}")
+                logger.error(f"⚠️ Synthesis generation failed: {synthesis_result.error_message}")
 
         except Exception as e:
-            print(f"⚠️ Synthesis generation failed: {e}")
+            logger.error(f"⚠️ Synthesis generation failed: {e}")
 
         return synthesis_files
 

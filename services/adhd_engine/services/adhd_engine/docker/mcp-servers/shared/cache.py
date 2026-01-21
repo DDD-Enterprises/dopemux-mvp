@@ -16,9 +16,10 @@ class RedisCache:
         try:
             value = await self.redis.get(key)
             return value
-        except Exception:
+        except Exception as e:
             return None
     
+            logger.error(f"Error: {e}")
     async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
         """Set value in cache with optional TTL."""
         try:
@@ -26,9 +27,10 @@ class RedisCache:
                 return await self.redis.setex(key, ttl, str(value))
             else:
                 return await self.redis.set(key, str(value))
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
 def get_cache() -> RedisCache:
     """Get cache instance."""
     from redis_pool import get_redis_client

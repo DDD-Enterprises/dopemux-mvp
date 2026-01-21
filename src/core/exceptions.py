@@ -27,3 +27,7 @@ class ADHDOptimizationError(DopemuxError):
 
 class AIServiceError(DopemuxError):
     """Exception raised when AI service operations fail."""
+
+
+class SyncError(DopemuxError):
+    """Exception raised when synchronization operations fail."""

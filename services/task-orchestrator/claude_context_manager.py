@@ -695,9 +695,10 @@ class ClaudeContextManager:
             time_since_update = (datetime.now(timezone.utc) - self.last_update).total_seconds()
             return time_since_update > self.update_frequency
 
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     async def _write_claude_md(self, content: str) -> None:
         """Write updated content to Claude.md."""
         try:

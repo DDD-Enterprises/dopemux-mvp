@@ -147,6 +147,7 @@ class SerenaLayer1IntegrationTest:
                 error_message=str(e)
             )
 
+            logger.error(f"Error: {e}")
     async def _test_layer1_performance_monitor(self) -> IntegrationTestResult:
         """Test Layer 1 performance monitoring functionality."""
         start_time = time.time()
@@ -184,6 +185,7 @@ class SerenaLayer1IntegrationTest:
                 error_message=str(e)
             )
 
+            logger.error(f"Error: {e}")
     async def _test_layer1_adhd_features(self) -> IntegrationTestResult:
         """Test Layer 1 ADHD features functionality."""
         start_time = time.time()
@@ -241,6 +243,7 @@ class SerenaLayer1IntegrationTest:
                 error_message=str(e)
             )
 
+            logger.error(f"Error: {e}")
     async def _test_phase2_database_connection(self) -> IntegrationTestResult:
         """Test Phase 2 database connection and basic performance."""
         start_time = time.time()
@@ -272,6 +275,7 @@ class SerenaLayer1IntegrationTest:
                 error_message=str(e)
             )
 
+            logger.error(f"Error: {e}")
     async def _test_phase2_schema_installation(self) -> IntegrationTestResult:
         """Test Phase 2 schema installation without affecting Layer 1."""
         start_time = time.time()
@@ -339,6 +343,7 @@ class SerenaLayer1IntegrationTest:
                 error_message=str(e)
             )
 
+            logger.error(f"Error: {e}")
     async def _test_phase2_performance_compliance(self) -> IntegrationTestResult:
         """Test Phase 2 performance compliance with ADHD targets."""
         start_time = time.time()
@@ -376,6 +381,7 @@ class SerenaLayer1IntegrationTest:
                 error_message=str(e)
             )
 
+            logger.error(f"Error: {e}")
     async def _test_graph_operations_integration(self) -> IntegrationTestResult:
         """Test graph operations integration with Layer 1 components."""
         start_time = time.time()
@@ -415,6 +421,7 @@ class SerenaLayer1IntegrationTest:
                 error_message=str(e)
             )
 
+            logger.error(f"Error: {e}")
     async def _test_adhd_optimization_integration(self) -> IntegrationTestResult:
         """Test ADHD optimization integration between Layer 1 and Phase 2."""
         start_time = time.time()
@@ -479,6 +486,7 @@ class SerenaLayer1IntegrationTest:
                 error_message=str(e)
             )
 
+            logger.error(f"Error: {e}")
     async def _test_hybrid_performance(self) -> IntegrationTestResult:
         """Test hybrid Redis + PostgreSQL performance."""
         start_time = time.time()
@@ -527,6 +535,7 @@ class SerenaLayer1IntegrationTest:
                 error_message=str(e)
             )
 
+            logger.error(f"Error: {e}")
     async def _test_migration_safety(self) -> IntegrationTestResult:
         """Test migration safety and rollback capabilities."""
         start_time = time.time()
@@ -583,6 +592,7 @@ class SerenaLayer1IntegrationTest:
                 error_message=str(e)
             )
 
+            logger.error(f"Error: {e}")
     async def _generate_test_report(self, total_duration_ms: float) -> Dict[str, Any]:
         """Generate comprehensive test report."""
         successful_tests = [r for r in self.test_results if r.success]
@@ -676,21 +686,21 @@ async def run_integration_test_suite() -> Dict[str, Any]:
 if __name__ == "__main__":
     # Run integration tests when executed directly
     async def main():
-        print("🧪 Serena v2 Phase 2 Integration Test Suite")
-        print("Testing Layer 1 + Phase 2 compatibility...")
+        logger.info("🧪 Serena v2 Phase 2 Integration Test Suite")
+        logger.info("Testing Layer 1 + Phase 2 compatibility...")
 
         results = await run_integration_test_suite()
 
-        print(f"\n📊 Test Results:")
-        print(f"Tests Run: {results['test_summary']['total_tests']}")
-        print(f"Success Rate: {results['test_summary']['success_rate']:.1%}")
-        print(f"Performance Compliant: {results['compliance_status']['performance_compliant']}")
-        print(f"ADHD Optimized: {results['compliance_status']['adhd_optimized']}")
-        print(f"Layer 1 Preserved: {results['compliance_status']['layer1_preserved']}")
+        logger.info(f"\n📊 Test Results:")
+        logger.info(f"Tests Run: {results['test_summary']['total_tests']}")
+        logger.info(f"Success Rate: {results['test_summary']['success_rate']:.1%}")
+        logger.info(f"Performance Compliant: {results['compliance_status']['performance_compliant']}")
+        logger.info(f"ADHD Optimized: {results['compliance_status']['adhd_optimized']}")
+        logger.info(f"Layer 1 Preserved: {results['compliance_status']['layer1_preserved']}")
 
         if results['compliance_status']['all_tests_passed']:
-            print("🎉 INTEGRATION SUCCESS - Ready for deployment!")
+            logger.info("🎉 INTEGRATION SUCCESS - Ready for deployment!")
         else:
-            print("⚠️ Integration issues detected - review required")
+            logger.info("⚠️ Integration issues detected - review required")
 
     asyncio.run(main())

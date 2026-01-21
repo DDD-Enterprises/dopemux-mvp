@@ -13,8 +13,6 @@ from .types import (
     ThemeEvent,
     SessionEvent,
 )
-from .bus import EventBus, EventHandler
-
 __all__ = [
     "Event",
     "WorktreeEvent",
@@ -22,6 +20,4 @@ __all__ = [
     "ADHDEvent",
     "ThemeEvent",
     "SessionEvent",
-    "EventBus",
-    "EventHandler",
 ]

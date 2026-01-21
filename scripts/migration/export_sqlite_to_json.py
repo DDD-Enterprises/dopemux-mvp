@@ -13,6 +13,11 @@ Exports all tables:
 """
 
 import sqlite3
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import json
 from pathlib import Path
 from datetime import datetime
@@ -31,12 +36,12 @@ def export_sqlite_to_json(sqlite_path: Path, output_path: Path) -> Dict[str, Any
     Returns:
         Export statistics
     """
-    print(f"📂 Exporting from: {sqlite_path}")
-    print(f"📝 Output to: {output_path}")
-    print("=" * 60)
+    logger.info(f"📂 Exporting from: {sqlite_path}")
+    logger.info(f"📝 Output to: {output_path}")
+    logger.info("=" * 60)
 
     if not sqlite_path.exists():
-        print(f"❌ SQLite database not found: {sqlite_path}")
+        logger.info(f"❌ SQLite database not found: {sqlite_path}")
         sys.exit(1)
 
     conn = sqlite3.connect(str(sqlite_path))
@@ -56,7 +61,7 @@ def export_sqlite_to_json(sqlite_path: Path, output_path: Path) -> Dict[str, Any
     }
 
     # Export decisions
-    print("\n📋 Exporting decisions...")
+    logger.info("\n📋 Exporting decisions...")
     cursor.execute("SELECT * FROM decisions ORDER BY id")
     for row in cursor.fetchall():
         decision = dict(row)
@@ -64,26 +69,28 @@ def export_sqlite_to_json(sqlite_path: Path, output_path: Path) -> Dict[str, Any
         if decision.get('tags') and isinstance(decision['tags'], str):
             try:
                 decision['tags'] = json.loads(decision['tags'])
-            except:
+            except Exception as e:
                 decision['tags'] = []
+                logger.error(f"Error: {e}")
         export_data["decisions"].append(decision)
-    print(f"   ✅ Exported {len(export_data['decisions'])} decisions")
+    logger.info(f"   ✅ Exported {len(export_data['decisions'])} decisions")
 
     # Export progress entries
-    print("\n📊 Exporting progress entries...")
+    logger.info("\n📊 Exporting progress entries...")
     cursor.execute("SELECT * FROM progress_entries ORDER BY id")
     for row in cursor.fetchall():
         entry = dict(row)
         if entry.get('tags') and isinstance(entry['tags'], str):
             try:
                 entry['tags'] = json.loads(entry['tags'])
-            except:
+            except Exception as e:
                 entry['tags'] = []
+                logger.error(f"Error: {e}")
         export_data["progress_entries"].append(entry)
-    print(f"   ✅ Exported {len(export_data['progress_entries'])} progress entries")
+    logger.info(f"   ✅ Exported {len(export_data['progress_entries'])} progress entries")
 
     # Export custom data
-    print("\n💾 Exporting custom data...")
+    logger.info("\n💾 Exporting custom data...")
     cursor.execute("SELECT * FROM custom_data ORDER BY category, key")
     for row in cursor.fetchall():
         data = dict(row)
@@ -91,34 +98,36 @@ def export_sqlite_to_json(sqlite_path: Path, output_path: Path) -> Dict[str, Any
         if data.get('value') and isinstance(data['value'], str):
             try:
                 data['value'] = json.loads(data['value'])
-            except:
+            except Exception as e:
                 pass  # Keep as string if not valid JSON
+                logger.error(f"Error: {e}")
         export_data["custom_data"].append(data)
-    print(f"   ✅ Exported {len(export_data['custom_data'])} custom data entries")
+    logger.info(f"   ✅ Exported {len(export_data['custom_data'])} custom data entries")
 
     # Export relationships (context_links)
-    print("\n🔗 Exporting relationships...")
+    logger.info("\n🔗 Exporting relationships...")
     cursor.execute("SELECT * FROM context_links ORDER BY id")
     for row in cursor.fetchall():
         link = dict(row)
         export_data["context_links"].append(link)
-    print(f"   ✅ Exported {len(export_data['context_links'])} relationships")
+    logger.info(f"   ✅ Exported {len(export_data['context_links'])} relationships")
 
     # Export system patterns
-    print("\n🧩 Exporting system patterns...")
+    logger.info("\n🧩 Exporting system patterns...")
     cursor.execute("SELECT * FROM system_patterns ORDER BY id")
     for row in cursor.fetchall():
         pattern = dict(row)
         if pattern.get('tags') and isinstance(pattern['tags'], str):
             try:
                 pattern['tags'] = json.loads(pattern['tags'])
-            except:
+            except Exception as e:
                 pattern['tags'] = []
+                logger.error(f"Error: {e}")
         export_data["system_patterns"].append(pattern)
-    print(f"   ✅ Exported {len(export_data['system_patterns'])} system patterns")
+    logger.info(f"   ✅ Exported {len(export_data['system_patterns'])} system patterns")
 
     # Export active context
-    print("\n🎯 Exporting active context...")
+    logger.info("\n🎯 Exporting active context...")
     cursor.execute("SELECT * FROM active_context ORDER BY id DESC LIMIT 1")
     row = cursor.fetchone()
     if row:
@@ -126,13 +135,14 @@ def export_sqlite_to_json(sqlite_path: Path, output_path: Path) -> Dict[str, Any
         if context.get('content') and isinstance(context['content'], str):
             try:
                 context['content'] = json.loads(context['content'])
-            except:
+            except Exception as e:
                 pass
+                logger.error(f"Error: {e}")
         export_data["active_context"] = context
-        print(f"   ✅ Exported active context (version {context.get('id', 'unknown')})")
+        logger.info(f"   ✅ Exported active context (version {context.get('id', 'unknown')})")
 
     # Export product context
-    print("\n📦 Exporting product context...")
+    logger.info("\n📦 Exporting product context...")
     cursor.execute("SELECT * FROM product_context ORDER BY id DESC LIMIT 1")
     row = cursor.fetchone()
     if row:
@@ -140,25 +150,26 @@ def export_sqlite_to_json(sqlite_path: Path, output_path: Path) -> Dict[str, Any
         if context.get('content') and isinstance(context['content'], str):
             try:
                 context['content'] = json.loads(context['content'])
-            except:
+            except Exception as e:
                 pass
+                logger.error(f"Error: {e}")
         export_data["product_context"] = context
-        print(f"   ✅ Exported product context (version {context.get('id', 'unknown')})")
+        logger.info(f"   ✅ Exported product context (version {context.get('id', 'unknown')})")
 
     conn.close()
 
     # Write JSON file
-    print(f"\n💾 Writing JSON to {output_path}...")
+    logger.info(f"\n💾 Writing JSON to {output_path}...")
     with open(output_path, 'w') as f:
         json.dump(export_data, f, indent=2, default=str)
 
     file_size = output_path.stat().st_size / 1024  # KB
-    print(f"   ✅ Wrote {file_size:.1f} KB")
+    logger.info(f"   ✅ Wrote {file_size:.1f} KB")
 
     # Summary
-    print("\n" + "=" * 60)
-    print("✅ EXPORT COMPLETE")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("✅ EXPORT COMPLETE")
+    logger.info("=" * 60)
     stats = {
         "decisions": len(export_data["decisions"]),
         "progress_entries": len(export_data["progress_entries"]),
@@ -171,7 +182,7 @@ def export_sqlite_to_json(sqlite_path: Path, output_path: Path) -> Dict[str, Any
     }
 
     for key, value in stats.items():
-        print(f"{key:20s}: {value}")
+        logger.info(f"{key:20s}: {value}")
 
     return stats
 
@@ -201,5 +212,5 @@ if __name__ == "__main__":
     # Run export
     stats = export_sqlite_to_json(args.sqlite_path, args.output)
 
-    print(f"\n🎉 Export successful! Output: {args.output}")
-    print(f"📊 Total items: {sum(v for k, v in stats.items() if k != 'output_size_kb')}")
+    logger.info(f"\n🎉 Export successful! Output: {args.output}")
+    logger.info(f"📊 Total items: {sum(v for k, v in stats.items() if k != 'output_size_kb')}")

@@ -813,6 +813,7 @@ async def main():
                         {"success": False, "error": str(e)}, status=400
                     )
 
+                    logger.error(f"Error: {e}")
             async def memory_upsert(request):
                 """HTTP endpoint for mem.upsert tool."""
                 try:
@@ -841,6 +842,7 @@ async def main():
                         {"success": False, "error": str(e)}, status=400
                     )
 
+                    logger.error(f"Error: {e}")
             async def graph_link(request):
                 """HTTP endpoint for graph.link tool."""
                 try:
@@ -865,6 +867,7 @@ async def main():
                         {"success": False, "error": str(e)}, status=400
                     )
 
+                    logger.error(f"Error: {e}")
             async def graph_neighbors(request):
                 """HTTP endpoint for graph.neighbors tool."""
                 try:
@@ -883,6 +886,7 @@ async def main():
                         {"success": False, "error": str(e)}, status=400
                     )
 
+                    logger.error(f"Error: {e}")
             # Add HTTP endpoints
             search_route = app.router.add_post("/api/mem/search", memory_search)
             cors.add(search_route)
@@ -918,9 +922,10 @@ async def main():
                     while True:
                         await asyncio.sleep(60)
                         await response.write(b'data: {"type": "heartbeat"}\n\n')
-                except:
+                except Exception as e:
                     pass
 
+                    logger.error(f"Error: {e}")
                 return response
 
             sse_route = app.router.add_get("/sse", sse_handler)

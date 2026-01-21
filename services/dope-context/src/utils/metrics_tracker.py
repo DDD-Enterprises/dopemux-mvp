@@ -4,6 +4,11 @@ Tracks search calls to measure LLM search behavior before/after enhancements.
 """
 
 import json
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import os
 from datetime import datetime
 from pathlib import Path
@@ -145,7 +150,7 @@ class MetricsTracker:
         self._save_metrics(metrics)
 
         # Also log to console for immediate visibility
-        print(f"[METRICS] {tool_name} | scenario={scenario} | explicit={is_explicit} | query={query[:50]}...")
+        logger.info(f"[METRICS] {tool_name} | scenario={scenario} | explicit={is_explicit} | query={query[:50]}...")
 
     def get_summary(self, since_timestamp: Optional[str] = None) -> Dict:
         """
@@ -221,7 +226,7 @@ class MetricsTracker:
         metrics = self._load_metrics()
 
         if not metrics:
-            print("[METRICS] No metrics to export")
+            logger.info("[METRICS] No metrics to export")
             return
 
         with open(output_file, 'w', newline='') as f:
@@ -230,12 +235,12 @@ class MetricsTracker:
                 writer.writeheader()
                 writer.writerows(metrics)
 
-        print(f"[METRICS] Exported {len(metrics)} metrics to {output_file}")
+        logger.info(f"[METRICS] Exported {len(metrics)} metrics to {output_file}")
 
     def clear_metrics(self):
         """Clear all metrics (for fresh baseline)."""
         self._save_metrics([])
-        print(f"[METRICS] Cleared all metrics from {self.metrics_file}")
+        logger.info(f"[METRICS] Cleared all metrics from {self.metrics_file}")
 
     def _load_metrics(self) -> List[Dict]:
         """Load metrics from file."""

@@ -442,6 +442,7 @@ class SerenaSchemaManager:
                         validation_results["errors"].append(f"Error checking table {table}: {e}")
                         validation_results["valid"] = False
 
+                        logger.error(f"Error: {e}")
                 # Check performance with sample queries
                 test_queries = [
                     "SELECT 1",
@@ -467,6 +468,7 @@ class SerenaSchemaManager:
             validation_results["errors"].append(f"Validation failed: {e}")
             validation_results["valid"] = False
 
+            logger.error(f"Error: {e}")
         return validation_results
 
     async def _update_schema_version(self, version: str) -> None:
@@ -616,23 +618,23 @@ async def migrate_from_layer1(
 if __name__ == "__main__":
     # Test schema management when run directly
     async def main():
-        print("🏗️ Serena Phase 2A Schema Manager Test")
+        logger.info("🏗️ Serena Phase 2A Schema Manager Test")
 
         try:
             schema_manager, result = await setup_phase2_schema()
 
             if result.success:
-                print(f"✅ Schema setup successful in {result.duration_ms:.0f}ms")
-                print(f"🧠 ADHD Compliant: {'Yes' if result.adhd_compliance else 'No'}")
+                logger.info(f"✅ Schema setup successful in {result.duration_ms:.0f}ms")
+                logger.info(f"🧠 ADHD Compliant: {'Yes' if result.adhd_compliance else 'No'}")
 
                 # Show status
                 status = await schema_manager.get_migration_status()
-                print(f"📦 Version: {status['current_version']}")
-                print(f"🗄️ Tables: {status['schema_health']['table_count']}")
+                logger.info(f"📦 Version: {status['current_version']}")
+                logger.info(f"🗄️ Tables: {status['schema_health']['table_count']}")
             else:
-                print(f"❌ Schema setup failed: {result.error_message}")
+                logger.error(f"❌ Schema setup failed: {result.error_message}")
 
         except Exception as e:
-            print(f"💥 Test failed: {e}")
+            logger.error(f"💥 Test failed: {e}")
 
     asyncio.run(main())

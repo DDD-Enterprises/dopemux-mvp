@@ -130,6 +130,7 @@ class DiscoveryPhase(BasePhase):
         except Exception as e:
             return [f"Git check failed: {e}"]
 
+            logger.error(f"Error: {e}")
     async def _check_docker_changes(self) -> List[str]:
         """Check for Docker image changes."""
         changes = []
@@ -152,6 +153,7 @@ class DiscoveryPhase(BasePhase):
             except Exception as e:
                 changes.append(f"Could not analyze {compose_file}: {e}")
 
+                logger.error(f"Error: {e}")
         return changes if changes else ["No Docker changes detected"]
 
     async def _check_dependency_changes(self) -> List[str]:

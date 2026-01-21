@@ -83,7 +83,7 @@ class CognitiveGuardian:
         # Check for break reminders
         reminder = await guardian.check_break_needed()
         if reminder and reminder.is_mandatory:
-            print(reminder.message)
+            logger.info(reminder.message)
             await guardian.enforce_break()
     """
 
@@ -146,9 +146,10 @@ class CognitiveGuardian:
         try:
             import sys
             return 'mcp' in sys.modules or hasattr(sys, '_mcp_tools')
-        except Exception:
+        except Exception as e:
             return False
     
+            logger.error(f"Error: {e}")
     async def _load_user_preferences(self):
         """Load ADHD preferences from ConPort."""
         if not self._in_claude_code:
@@ -186,10 +187,10 @@ class CognitiveGuardian:
         self.monitoring_task = asyncio.create_task(self._monitoring_loop())
 
         logger.info("✅ CognitiveGuardian monitoring started")
-        print(f"\n🧠 CognitiveGuardian Active")
-        print(f"   Break reminders: Every {self.break_interval} minutes")
-        print(f"   Mandatory break: At {self.mandatory_break} minutes")
-        print(f"   Your wellbeing is protected!\n")
+        logger.info(f"\n🧠 CognitiveGuardian Active")
+        logger.info(f"   Break reminders: Every {self.break_interval} minutes")
+        logger.info(f"   Mandatory break: At {self.mandatory_break} minutes")
+        logger.info(f"   Your wellbeing is protected!\n")
 
     async def _monitoring_loop(self):
         """Background loop for break monitoring."""
@@ -267,9 +268,9 @@ class CognitiveGuardian:
 
     def _show_break_reminder(self, reminder: BreakReminder):
         """Display ADHD-friendly break reminder."""
-        print(f"\n{'='*60}")
-        print(reminder.message)
-        print(f"{'='*60}\n")
+        logger.info(f"\n{'='*60}")
+        logger.info(reminder.message)
+        logger.info(f"{'='*60}\n")
 
     async def take_break(self, duration_minutes: int = 5):
         """
@@ -285,10 +286,10 @@ class CognitiveGuardian:
 
         logger.info(f"✅ Break taken ({duration_minutes} min) - breaks: {self.breaks_taken}")
 
-        print(f"\n✅ Break recorded!")
-        print(f"   Duration: {duration_minutes} minutes")
-        print(f"   Total breaks: {self.breaks_taken}")
-        print(f"   Ready to continue when you are!\n")
+        logger.info(f"\n✅ Break recorded!")
+        logger.info(f"   Duration: {duration_minutes} minutes")
+        logger.info(f"   Total breaks: {self.breaks_taken}")
+        logger.info(f"   Ready to continue when you are!\n")
     
     async def _save_user_state(self, user_state: UserState):
         """
@@ -471,13 +472,13 @@ class CognitiveGuardian:
             top_tasks = matched_tasks[:max_suggestions]
 
             # Display suggestions
-            print(f"\n🎯 Task Suggestions (Energy: {target_energy})")
-            print(f"   Attention: {user_state.attention.value}")
-            print(f"   Found {len(matched_tasks)} matches, showing top {len(top_tasks)}\n")
+            logger.info(f"\n🎯 Task Suggestions (Energy: {target_energy})")
+            logger.info(f"   Attention: {user_state.attention.value}")
+            logger.info(f"   Found {len(matched_tasks)} matches, showing top {len(top_tasks)}\n")
 
             for i, task in enumerate(top_tasks, 1):
-                print(f"   {i}. {task['title']} (complexity: {task['complexity']:.1f})")
-            print()
+                logger.info(f"   {i}. {task['title']} (complexity: {task['complexity']:.1f})")
+            logger.info()
 
             return top_tasks
 
@@ -517,8 +518,8 @@ class CognitiveGuardian:
         max_suggestions: int
     ) -> List[Dict[str, Any]]:
         """Simulation mode for when ConPort unavailable."""
-        print(f"\n🎯 Task Suggestions (Energy: {target_energy}) [SIMULATION]")
-        print(f"   ConPort unavailable, showing examples\n")
+        logger.info(f"\n🎯 Task Suggestions (Energy: {target_energy}) [SIMULATION]")
+        logger.info(f"   ConPort unavailable, showing examples\n")
 
     def _simulate_task_suggestions(
         self,
@@ -526,24 +527,24 @@ class CognitiveGuardian:
         max_suggestions: int
     ) -> List[Dict[str, Any]]:
         """Simulation mode for when ConPort unavailable."""
-        print(f"\n🎯 Task Suggestions (Energy: {target_energy}) [SIMULATION]")
-        print(f"   ConPort unavailable, showing examples\n")
+        logger.info(f"\n🎯 Task Suggestions (Energy: {target_energy}) [SIMULATION]")
+        logger.info(f"   ConPort unavailable, showing examples\n")
 
         if target_energy == "high":
-            print("   Suggested (complex tasks):")
-            print("   1. Design microservices architecture (complexity: 0.8)")
-            print("   2. Refactor authentication system (complexity: 0.7)")
-            print("   3. Implement real-time WebSocket sync (complexity: 0.9)\n")
+            logger.info("   Suggested (complex tasks):")
+            logger.info("   1. Design microservices architecture (complexity: 0.8)")
+            logger.info("   2. Refactor authentication system (complexity: 0.7)")
+            logger.info("   3. Implement real-time WebSocket sync (complexity: 0.9)\n")
         elif target_energy == "medium":
-            print("   Suggested (moderate tasks):")
-            print("   1. Add input validation to API (complexity: 0.5)")
-            print("   2. Write integration tests (complexity: 0.4)")
-            print("   3. Update documentation (complexity: 0.3)\n")
+            logger.info("   Suggested (moderate tasks):")
+            logger.info("   1. Add input validation to API (complexity: 0.5)")
+            logger.info("   2. Write integration tests (complexity: 0.4)")
+            logger.info("   3. Update documentation (complexity: 0.3)\n")
         else:  # low
-            print("   Suggested (simple tasks):")
-            print("   1. Fix typos in comments (complexity: 0.1)")
-            print("   2. Update README formatting (complexity: 0.2)")
-            print("   3. Run and review test suite (complexity: 0.2)\n")
+            logger.info("   Suggested (simple tasks):")
+            logger.info("   1. Fix typos in comments (complexity: 0.1)")
+            logger.info("   2. Update README formatting (complexity: 0.2)")
+            logger.info("   3. Run and review test suite (complexity: 0.2)\n")
 
         return []  # No real tasks in simulation
 
@@ -682,9 +683,9 @@ if __name__ == "__main__":
     async def demo():
         """Demonstrate CognitiveGuardian capabilities."""
 
-        print("\n" + "="*70)
-        print("CognitiveGuardian Demo - ADHD Support Agent")
-        print("="*70 + "\n")
+        logger.info("\n" + "="*70)
+        logger.info("CognitiveGuardian Demo - ADHD Support Agent")
+        logger.info("="*70 + "\n")
 
         # Initialize guardian
         guardian = CognitiveGuardian(
@@ -697,33 +698,33 @@ if __name__ == "__main__":
         await guardian.start_monitoring()
 
         # Simulate morning work (high energy)
-        print("Scenario 1: Morning work session (9 AM - high energy)\n")
+        logger.info("Scenario 1: Morning work session (9 AM - high energy)\n")
 
         user_state = await guardian.get_user_state()
-        print(f"Current state:")
-        print(f"  Energy: {user_state.energy.value}")
-        print(f"  Attention: {user_state.attention.value}")
-        print(f"  Time: {user_state.time_of_day_hour}:00\n")
+        logger.info(f"Current state:")
+        logger.info(f"  Energy: {user_state.energy.value}")
+        logger.info(f"  Attention: {user_state.attention.value}")
+        logger.info(f"  Time: {user_state.time_of_day_hour}:00\n")
 
         # Get task suggestions
         await guardian.suggest_tasks(energy="high")
 
         # Check readiness for complex task
-        print("Checking readiness for complex task (0.8 complexity)...\n")
+        logger.info("Checking readiness for complex task (0.8 complexity)...\n")
         readiness = await guardian.check_task_readiness(
             task_complexity=0.8,
             task_energy_required="high"
         )
 
-        print(f"Ready: {readiness['ready']}")
-        print(f"Reason: {readiness['reason']}")
+        logger.info(f"Ready: {readiness['ready']}")
+        logger.info(f"Reason: {readiness['reason']}")
         if readiness['ready']:
-            print(f"Confidence: {readiness['confidence']:.0%}\n")
+            logger.info(f"Confidence: {readiness['confidence']:.0%}\n")
 
         # Simulate work (trigger break reminder)
-        print("="*70)
-        print("Scenario 2: Simulating 27 minutes of work...")
-        print("="*70 + "\n")
+        logger.info("="*70)
+        logger.info("Scenario 2: Simulating 27 minutes of work...")
+        logger.info("="*70 + "\n")
 
         # Fast-forward time for demo
         guardian.session_start = datetime.now(timezone.utc) - timedelta(minutes=27)
@@ -733,13 +734,13 @@ if __name__ == "__main__":
             guardian._show_break_reminder(reminder)
 
             if not reminder.is_mandatory:
-                print("Taking 5-minute break...\n")
+                logger.info("Taking 5-minute break...\n")
                 await guardian.take_break(duration_minutes=5)
 
         # Simulate evening (low energy)
-        print("="*70)
-        print("Scenario 3: Evening work (8 PM - low energy)")
-        print("="*70 + "\n")
+        logger.info("="*70)
+        logger.info("Scenario 3: Evening work (8 PM - low energy)")
+        logger.info("="*70 + "\n")
 
         # Set time to evening
         import unittest.mock as mock
@@ -747,20 +748,20 @@ if __name__ == "__main__":
             mock_dt.now.return_value.hour = 20
             user_state = await guardian.get_user_state()
 
-        print(f"Current state:")
-        print(f"  Energy: low (time: 20:00)")
-        print(f"  Attention: {user_state.attention.value}\n")
+        logger.info(f"Current state:")
+        logger.info(f"  Energy: low (time: 20:00)")
+        logger.info(f"  Attention: {user_state.attention.value}\n")
 
         # Check readiness for complex task (should fail)
-        print("Checking readiness for complex task (0.8 complexity)...\n")
+        logger.info("Checking readiness for complex task (0.8 complexity)...\n")
         readiness = await guardian.check_task_readiness(
             task_complexity=0.8,
             task_energy_required="high"
         )
 
-        print(f"Ready: {readiness['ready']}")
-        print(f"Reason: {readiness['reason']}")
-        print(f"Suggestion: {readiness['suggestion']}\n")
+        logger.info(f"Ready: {readiness['ready']}")
+        logger.info(f"Reason: {readiness['reason']}")
+        logger.info(f"Suggestion: {readiness['suggestion']}\n")
 
         # Get appropriate suggestions
         await guardian.suggest_tasks(energy="low")
@@ -769,13 +770,13 @@ if __name__ == "__main__":
         await guardian.stop_monitoring()
 
         # Show metrics
-        print("="*70)
-        print("CognitiveGuardian Metrics:")
-        print("="*70)
+        logger.info("="*70)
+        logger.info("CognitiveGuardian Metrics:")
+        logger.info("="*70)
         metrics = guardian.get_metrics()
         for key, value in metrics.items():
-            print(f"  {key}: {value}")
-        print()
+            logger.info(f"  {key}: {value}")
+        logger.info()
 
     # Run demo
     asyncio.run(demo())

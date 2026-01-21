@@ -590,9 +590,10 @@ class FocusManager:
                 ]
                 return related[:2]  # Limit for ADHD
             return []
-        except Exception:
+        except Exception as e:
             return []
 
+            logger.error(f"Error: {e}")
     def _get_mode_benefits(self, mode: FocusMode) -> List[str]:
         """Get ADHD benefits for focus mode."""
         benefits = {

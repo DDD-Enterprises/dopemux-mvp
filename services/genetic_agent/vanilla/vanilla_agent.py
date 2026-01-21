@@ -17,6 +17,11 @@ class RepairAttempt:
     """Represents a single repair attempt with metadata."""
 
     def __init__(self, code: str, explanation: str, confidence: float):
+
+import logging
+
+logger = logging.getLogger(__name__)
+
         self.code = code
         self.explanation = explanation
         self.confidence = confidence
@@ -84,7 +89,7 @@ class VanillaAgent(BaseAgent):
             research_results = await self._call_gptr_mcp(research_query)
             research_insights = research_results.get('insights', [])
         except Exception as e:
-            print(f"GPT-Researcher unavailable: {e}")
+            logger.info(f"GPT-Researcher unavailable: {e}")
             research_insights = []
 
         # Use Zen for idea generation with research context
@@ -112,13 +117,14 @@ Return JSON array with ideas, each with:
         try:
             zen_response = await self._call_zen_mcp(ideation_prompt)
             ideas = json.loads(zen_response.strip())
-        except:
+        except Exception as e:
             ideas = [
                 {"title": "Fallback Idea 1", "description": "Basic implementation", "feasibility": 8, "complexity": "low", "research_link": None},
                 {"title": "Fallback Idea 2", "description": "Alternative approach", "feasibility": 6, "complexity": "medium", "research_link": None},
                 {"title": "Fallback Idea 3", "description": "Advanced solution", "feasibility": 4, "complexity": "high", "research_link": None}
             ]
 
+            logger.error(f"Error: {e}")
         self.status.update_state(AgentState.VALIDATING)
         return {
             "success": True,
@@ -160,7 +166,7 @@ Return structured JSON with design details
         try:
             zen_response = await self._call_zen_mcp(design_prompt)
             design = json.loads(zen_response.strip())
-        except:
+        except Exception as e:
             design = {
                 "overview": "Basic architecture for the feature",
                 "components": ["Component 1", "Component 2"],
@@ -169,6 +175,7 @@ Return structured JSON with design details
                 "risks": "Low risk implementation"
             }
 
+            logger.error(f"Error: {e}")
         self.status.update_state(AgentState.VALIDATING)
         return {
             "success": True,
@@ -204,7 +211,7 @@ Return JSON with:
         try:
             zen_response = await self._call_zen_mcp(integration_prompt)
             integration = json.loads(zen_response.strip())
-        except:
+        except Exception as e:
             integration = {
                 "merge_plan": "Standard merge to main branch",
                 "conflicts": [],
@@ -212,6 +219,7 @@ Return JSON with:
                 "test_plan": "Run full test suite after merge"
             }
 
+            logger.error(f"Error: {e}")
         self.status.update_state(AgentState.VALIDATING)
         return {
             "success": True,
@@ -247,13 +255,14 @@ Return JSON with:
         try:
             zen_response = await self._call_zen_mcp(testing_prompt)
             testing = json.loads(zen_response.strip())
-        except:
+        except Exception as e:
             testing = {
                 "test_suite": "# Test suite for {context['description']}\ndef test_basic(): assert True",
                 "coverage_target": 0.8,
                 "test_strategy": "Basic validation tests"
             }
 
+            logger.error(f"Error: {e}")
         self.status.update_state(AgentState.VALIDATING)
         return {
             "success": True,
@@ -310,15 +319,17 @@ Return JSON with:
         try:
             async with self.serena_client:
                 complexity = await self.serena_client.analyze_complexity(file_path, "")
-        except Exception:
+        except Exception as e:
             complexity = {"score": 0.5, "error": "Serena unavailable"}
 
+            logger.error(f"Error: {e}")
         try:
             async with self.dope_client:
                 similar_repairs = await self.dope_client.search_code(f"fix {description}")
-        except Exception:
+        except Exception as e:
             similar_repairs = {"results": [], "error": "Dope-Context unavailable"}
 
+            logger.error(f"Error: {e}")
         return {
             "description": description,
             "file_path": file_path,
@@ -375,7 +386,7 @@ Respond with JSON: {{"analysis": "brief analysis", "suggestions": ["suggestion1"
                 }
 
         except Exception as e:
-            print(f"Optimization step failed: {e}")
+            logger.error(f"Optimization step failed: {e}")
             context["optimization"] = {
                 "iteration": iteration,
                 "previous_analysis": "Optimization unavailable",
@@ -405,7 +416,7 @@ Respond with JSON: {{"analysis": "brief analysis", "suggestions": ["suggestion1"
                     value=log_entry
                 )
         except Exception as e:
-            print(f"Failed to log optimization step: {e}")
+            logger.error(f"Failed to log optimization step: {e}")
 
     async def _generate_repair_attempt(self, context: Dict[str, Any], iteration: int) -> RepairAttempt:
         """Generate a repair attempt using Zen MCP for real LLM calls with optimization."""
@@ -443,14 +454,14 @@ Do not include any other text, markdown formatting, or explanations outside the 
                 confidence = float(llm_response.get("confidence", 0.5))
             except (json.JSONDecodeError, ValueError) as e:
                 # Fallback if JSON parsing fails
-                print(f"LLM response parsing failed: {e}, response: {zen_response}")
+                logger.error(f"LLM response parsing failed: {e}, response: {zen_response}")
                 code = f"# LLM-generated fix for: {context['description']}\n# Error parsing response\npass"
                 explanation = f"LLM response parsing failed, using fallback"
                 confidence = 0.3
 
         except Exception as e:
             # Fallback to template if MCP call fails
-            print(f"Zen MCP call failed: {e}")
+            logger.error(f"Zen MCP call failed: {e}")
             code = f"# Zen MCP fix for: {context['description']}\n# MCP error: {str(e)}\npass"
             explanation = f"Zen MCP call failed, using fallback template"
             confidence = 0.2

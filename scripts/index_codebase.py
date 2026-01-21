@@ -5,6 +5,11 @@ Index codebase and documentation for semantic search.
 This script indexes both code files and documentation using the dope-context system.
 """
 import asyncio
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import os
 import sys
 from pathlib import Path
@@ -23,7 +28,7 @@ async def index_code_and_docs():
     """Index both code and documentation."""
     workspace = Path("/Users/hue/code/dopemux-mvp")
 
-    print(f"📁 Indexing workspace: {workspace}\n")
+    logger.info(f"📁 Indexing workspace: {workspace}\n")
 
     # 1. Create embedder
     embedder = VoyageEmbedder(
@@ -32,9 +37,9 @@ async def index_code_and_docs():
     )
 
     # === CODE INDEXING ===
-    print("=" * 60)
-    print("CODE INDEXING")
-    print("=" * 60 + "\n")
+    logger.info("=" * 60)
+    logger.info("CODE INDEXING")
+    logger.info("=" * 60 + "\n")
 
     # Create vector search for code
     code_search = MultiVectorSearch(
@@ -43,7 +48,7 @@ async def index_code_and_docs():
         port=6333,
     )
     await code_search.create_collection()
-    print("✅ Code collection created\n")
+    logger.info("✅ Code collection created\n")
 
     # Create chunker with proper config
     chunking_config = ChunkingConfig(
@@ -79,23 +84,23 @@ async def index_code_and_docs():
     )
 
     # Index code files
-    print("🔄 Indexing code files...\n")
+    logger.info("🔄 Indexing code files...\n")
 
     def code_progress_callback(progress):
         if progress.processed_files > 0:
             pct = progress.percentage_complete()
-            print(f"  Progress: {progress.processed_files}/{progress.total_files} files | {progress.indexed_chunks} chunks | {pct:.1f}% complete")
+            logger.info(f"  Progress: {progress.processed_files}/{progress.total_files} files | {progress.indexed_chunks} chunks | {pct:.1f}% complete")
 
     code_result = await code_pipeline.index_workspace(progress_callback=code_progress_callback)
-    print(f"\n✅ Code indexing complete!")
-    print(f"   Files: {code_result.processed_files}")
-    print(f"   Chunks: {code_result.indexed_chunks}")
-    print(f"   Time: {code_result.elapsed_seconds():.1f}s")
+    logger.info(f"\n✅ Code indexing complete!")
+    logger.info(f"   Files: {code_result.processed_files}")
+    logger.info(f"   Chunks: {code_result.indexed_chunks}")
+    logger.info(f"   Time: {code_result.elapsed_seconds():.1f}s")
 
     # === DOCS INDEXING ===
-    print("\n" + "=" * 60)
-    print("DOCUMENTATION INDEXING")
-    print("=" * 60 + "\n")
+    logger.info("\n" + "=" * 60)
+    logger.info("DOCUMENTATION INDEXING")
+    logger.info("=" * 60 + "\n")
 
     # Create vector search for docs
     docs_search = MultiVectorSearch(
@@ -104,7 +109,7 @@ async def index_code_and_docs():
         port=6333,
     )
     await docs_search.create_collection()
-    print("✅ Docs collection created\n")
+    logger.info("✅ Docs collection created\n")
 
     # Configure docs indexing
     docs_config = IndexingConfig(
@@ -127,27 +132,27 @@ async def index_code_and_docs():
     )
 
     # Index docs files
-    print("🔄 Indexing documentation files...\n")
+    logger.info("🔄 Indexing documentation files...\n")
 
     def docs_progress_callback(progress):
         if progress.processed_files > 0:
             pct = progress.percentage_complete()
-            print(f"  Progress: {progress.processed_files}/{progress.total_files} files | {progress.indexed_chunks} chunks | {pct:.1f}% complete")
+            logger.info(f"  Progress: {progress.processed_files}/{progress.total_files} files | {progress.indexed_chunks} chunks | {pct:.1f}% complete")
 
     docs_result = await docs_pipeline.index_workspace(progress_callback=docs_progress_callback)
-    print(f"\n✅ Documentation indexing complete!")
-    print(f"   Files: {docs_result.processed_files}")
-    print(f"   Chunks: {docs_result.indexed_chunks}")
-    print(f"   Time: {docs_result.elapsed_seconds():.1f}s")
+    logger.info(f"\n✅ Documentation indexing complete!")
+    logger.info(f"   Files: {docs_result.processed_files}")
+    logger.info(f"   Chunks: {docs_result.indexed_chunks}")
+    logger.info(f"   Time: {docs_result.elapsed_seconds():.1f}s")
 
     # === SUMMARY ===
-    print("\n" + "=" * 60)
-    print("INDEXING SUMMARY")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("INDEXING SUMMARY")
+    logger.info("=" * 60)
     cost = embedder.get_cost_summary()
-    print(f"\n💰 Total Cost: ${cost['total_cost_usd']:.4f}")
-    print(f"📊 Total Tokens: {cost['total_tokens']:,}")
-    print("\n✨ Both code and documentation are now searchable!")
+    logger.info(f"\n💰 Total Cost: ${cost['total_cost_usd']:.4f}")
+    logger.info(f"📊 Total Tokens: {cost['total_tokens']:,}")
+    logger.info("\n✨ Both code and documentation are now searchable!")
 
 
 if __name__ == "__main__":

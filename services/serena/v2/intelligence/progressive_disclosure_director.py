@@ -1013,8 +1013,8 @@ async def test_progressive_disclosure(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("📖 Serena Progressive Disclosure Director")
-        print("Coordinated complexity revelation across all system components")
-        print("✅ Module loaded successfully")
+        logger.info("📖 Serena Progressive Disclosure Director")
+        logger.info("Coordinated complexity revelation across all system components")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

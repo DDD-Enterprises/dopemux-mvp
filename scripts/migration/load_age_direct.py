@@ -8,6 +8,11 @@ Minimal transformations needed - schemas already compatible!
 """
 
 import json
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import psycopg2
 import sys
 from pathlib import Path
@@ -34,7 +39,7 @@ class DirectAGELoader:
         cursor.execute("LOAD 'age';")
         cursor.execute("SET search_path = ag_catalog, conport_knowledge, public;")
         cursor.close()
-        print(f"✓ Connected to AGE database")
+        logger.info(f"✓ Connected to AGE database")
 
     def disconnect(self):
         """Close connection"""
@@ -79,6 +84,7 @@ class DirectAGELoader:
             cursor.close()
             raise e
 
+            logger.error(f"Error: {e}")
     def load_relationship(self, relationship: Dict):
         """Load single relationship to AGE"""
 
@@ -114,22 +120,23 @@ class DirectAGELoader:
             cursor.close()
             raise e
 
+            logger.error(f"Error: {e}")
     def load_all(self, export_file: Path):
         """Load all data from export"""
 
         with open(export_file, 'r') as f:
             export_data = json.load(f)
 
-        print(f"Loaded export from: {export_file}")
-        print(f"  Decisions: {export_data['metadata']['decision_count']}")
-        print(f"  Relationships: {export_data['metadata']['relationship_count']}")
-        print()
+        logger.info(f"Loaded export from: {export_file}")
+        logger.info(f"  Decisions: {export_data['metadata']['decision_count']}")
+        logger.info(f"  Relationships: {export_data['metadata']['relationship_count']}")
+        logger.info()
 
         self.connect()
 
         try:
             # Load decisions
-            print(f"Loading {len(export_data['decisions'])} decisions to AGE...")
+            logger.info(f"Loading {len(export_data['decisions'])} decisions to AGE...")
 
             successful_decisions = 0
             failed_decisions = []
@@ -140,7 +147,7 @@ class DirectAGELoader:
                     successful_decisions += 1
 
                     if successful_decisions % 20 == 0:
-                        print(f"  Progress: {successful_decisions}/{len(export_data['decisions'])}")
+                        logger.info(f"  Progress: {successful_decisions}/{len(export_data['decisions'])}")
 
                 except Exception as e:
                     failed_decisions.append({
@@ -148,16 +155,16 @@ class DirectAGELoader:
                         'summary': decision['summary'][:50],
                         'error': str(e)
                     })
-                    print(f"  ✗ Failed decision {decision['id']}: {e}")
+                    logger.error(f"  ✗ Failed decision {decision['id']}: {e}")
 
-            print(f"\n✓ Loaded {successful_decisions} decisions to AGE")
+            logger.info(f"\n✓ Loaded {successful_decisions} decisions to AGE")
 
             if failed_decisions:
-                print(f"✗ {len(failed_decisions)} failures - aborting")
+                logger.error(f"✗ {len(failed_decisions)} failures - aborting")
                 return False
 
             # Load relationships
-            print(f"\nLoading {len(export_data['relationships'])} relationships to AGE...")
+            logger.info(f"\nLoading {len(export_data['relationships'])} relationships to AGE...")
 
             successful_rels = 0
             failed_rels = []
@@ -168,7 +175,7 @@ class DirectAGELoader:
                     successful_rels += 1
 
                     if successful_rels % 5 == 0:
-                        print(f"  Progress: {successful_rels}/{len(export_data['relationships'])}")
+                        logger.info(f"  Progress: {successful_rels}/{len(export_data['relationships'])}")
 
                 except Exception as e:
                     failed_rels.append({
@@ -177,14 +184,14 @@ class DirectAGELoader:
                         'type': relationship['relationship_type'],
                         'error': str(e)
                     })
-                    print(f"  ✗ Failed: {relationship['source_item_id']}→{relationship['target_item_id']}: {e}")
+                    logger.error(f"  ✗ Failed: {relationship['source_item_id']}→{relationship['target_item_id']}: {e}")
 
-            print(f"\n✓ Loaded {successful_rels} relationships to AGE")
+            logger.info(f"\n✓ Loaded {successful_rels} relationships to AGE")
 
             if failed_rels:
-                print(f"⚠️  {len(failed_rels)} relationship failures")
+                logger.error(f"⚠️  {len(failed_rels)} relationship failures")
                 for f in failed_rels[:5]:
-                    print(f"  - {f['source']}→{f['target']} ({f['type']}): {f['error']}")
+                    logger.info(f"  - {f['source']}→{f['target']} ({f['type']}): {f['error']}")
 
             return len(failed_decisions) == 0
 
@@ -199,14 +206,14 @@ def main():
     EXPORT_FILE = Path("conport_sqlite_export.json")
 
     if not EXPORT_FILE.exists():
-        print(f"✗ ERROR: Export file not found: {EXPORT_FILE}")
-        print("  Run export_sqlite.py first")
+        logger.error(f"✗ ERROR: Export file not found: {EXPORT_FILE}")
+        logger.info("  Run export_sqlite.py first")
         return 1
 
-    print("=" * 60)
-    print("Direct SQLite→AGE Migration")
-    print("=" * 60)
-    print()
+    logger.info("=" * 60)
+    logger.info("Direct SQLite→AGE Migration")
+    logger.info("=" * 60)
+    logger.info()
 
     loader = DirectAGELoader(AGE_URL)
 
@@ -214,19 +221,19 @@ def main():
         success = loader.load_all(EXPORT_FILE)
 
         if success:
-            print("\n✓ SUCCESS: Data loaded to AGE")
-            print("\nNext steps:")
-            print("  1. Run 003_create_age_indexes.sql")
-            print("  2. Run compute_hop_distance.py")
-            print("  3. Run benchmark_age.py")
+            logger.info("\n✓ SUCCESS: Data loaded to AGE")
+            logger.info("\nNext steps:")
+            logger.info("  1. Run 003_create_age_indexes.sql")
+            logger.info("  2. Run compute_hop_distance.py")
+            logger.info("  3. Run benchmark_age.py")
             return 0
         else:
-            print("\n✗ FAILURE: Some data failed to load")
+            logger.error("\n✗ FAILURE: Some data failed to load")
             return 1
 
     except Exception as e:
-        print(f"\n✗ ERROR: Migration failed")
-        print(f"  {str(e)}")
+        logger.error(f"\n✗ ERROR: Migration failed")
+        logger.info(f"  {str(e)}")
         return 1
 
 

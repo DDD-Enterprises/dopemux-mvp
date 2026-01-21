@@ -5,6 +5,11 @@ Provides 20-30x faster interrupt recovery for ADHD developers through intelligen
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import json
 import time
 import hashlib
@@ -33,7 +38,7 @@ try:
     from .adhd_engine_client import ADHDEngineClient, get_adhd_engine_client, close_adhd_engine_client
     ADHD_INTEGRATION_AVAILABLE = True
 except ImportError:
-    print("ADHD Engine integration not available - running in degraded mode")
+    logger.info("ADHD Engine integration not available - running in degraded mode")
     ADHD_INTEGRATION_AVAILABLE = False
 
 # Configuration
@@ -115,10 +120,11 @@ def decrypt_sensitive_data(encrypted_data: str) -> str:
         return encrypted_data
     try:
         return cipher_suite.decrypt(encrypted_data.encode()).decode()
-    except Exception:
+    except Exception as e:
         # Return as-is if decryption fails (backward compatibility)
         return encrypted_data
 
+        logger.error(f"Error: {e}")
 # Pydantic Models
 class ContextSnapshot(BaseModel):
     """Working memory context snapshot"""
@@ -287,16 +293,18 @@ class DatabaseManager:
                         try:
                             decrypted = decrypt_sensitive_data(json.dumps(snapshot_data['active_focus']))
                             snapshot_data['active_focus'] = json.loads(decrypted)
-                        except:
+                        except Exception as e:
                             pass  # Keep encrypted if decryption fails
 
+                            logger.error(f"Error: {e}")
                     if snapshot_data and 'current_task' in snapshot_data:
                         try:
                             decrypted = decrypt_sensitive_data(json.dumps(snapshot_data['current_task']))
                             snapshot_data['current_task'] = json.loads(decrypted)
-                        except:
+                        except Exception as e:
                             pass  # Keep encrypted if decryption fails
 
+                            logger.error(f"Error: {e}")
                     # Update last accessed
                     update_query = "UPDATE wma_contexts SET last_accessed = NOW() WHERE id = %s"
                     cursor.execute(update_query, (snapshot_id,))
@@ -507,10 +515,10 @@ class WMAService:
                 )
                 snapshot.priority = max(0.0, min(1.0, adjusted_priority))
 
-                print(f"ADHD-aware priority adjustment: {base_priority:.2f} → {snapshot.priority:.2f}")
+                logger.info(f"ADHD-aware priority adjustment: {base_priority:.2f} → {snapshot.priority:.2f}")
 
         except Exception as e:
-            print(f"ADHD enhancement failed: {e}")
+            logger.error(f"ADHD enhancement failed: {e}")
             # Continue without ADHD enhancement
 
     async def _adapt_recovery_stage_to_adhd(self, user_id: str, requested_stage: str) -> str:
@@ -546,7 +554,7 @@ class WMAService:
             return requested_stage
 
         except Exception as e:
-            print(f"ADHD recovery adaptation failed: {e}")
+            logger.error(f"ADHD recovery adaptation failed: {e}")
             return requested_stage
 
     async def _get_adhd_recovery_recommendations(self, user_id: str) -> Optional[Dict[str, Any]]:
@@ -565,7 +573,7 @@ class WMAService:
             return None
 
         except Exception as e:
-            print(f"ADHD recovery recommendations failed: {e}")
+            logger.error(f"ADHD recovery recommendations failed: {e}")
             return None
 
     async def create_snapshot(self, snapshot: ContextSnapshot, enhance_with_adhd: bool = True) -> str:
@@ -600,7 +608,7 @@ class WMAService:
 
         # Log performance
         duration = int((time.time() - start_time) * 1000)
-        print(f"Snapshot created: {snapshot_id} in {duration}ms")
+        logger.info(f"Snapshot created: {snapshot_id} in {duration}ms")
 
         return snapshot_id
 
@@ -616,7 +624,7 @@ class WMAService:
         if adapt_to_adhd and ADHD_INTEGRATION_AVAILABLE:
             adapted_stage = await self._adapt_recovery_stage_to_adhd(user_id, request.recovery_stage)
             if adapted_stage != request.recovery_stage:
-                print(f"ADHD adaptation: {request.recovery_stage} → {adapted_stage}")
+                logger.info(f"ADHD adaptation: {request.recovery_stage} → {adapted_stage}")
 
         # Try cache first
         if request.snapshot_id:
@@ -722,7 +730,7 @@ async def lifespan(app: FastAPI):
     # Make service available to routes
     app.state.wma_service = wma_service
 
-    print("Working Memory Assistant service started")
+    logger.info("Working Memory Assistant service started")
     yield
 
     # Cleanup
@@ -733,7 +741,7 @@ async def lifespan(app: FastAPI):
     if ADHD_INTEGRATION_AVAILABLE:
         await close_adhd_engine_client()
 
-    print("Working Memory Assistant service stopped")
+    logger.info("Working Memory Assistant service stopped")
 
 app = FastAPI(
     title="Working Memory Assistant + ADHD Integration",
@@ -880,6 +888,7 @@ async def health_check():
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Service unhealthy: {str(e)}")
 
+        logger.error(f"Error: {e}")
 @app.get("/stats/{user_id}")
 async def get_user_stats(user_id: str):
     """Get user statistics"""

@@ -75,10 +75,11 @@ def check_cli_health(binary: str, timeout: float = 3.0) -> bool:
             timeout=timeout,
         )
         return True
-    except Exception:
+    except Exception as e:
         return False
 
 
+        logger.error(f"Error: {e}")
 def env_for_happy(config: MobileConfig) -> dict[str, str]:
     """Build environment variables for Happy CLI."""
 
@@ -302,9 +303,10 @@ def notify_mobile_event(config_manager: ConfigManager, message: str) -> bool:
 
     try:
         mobile_cfg = config_manager.get_mobile_config()
-    except Exception:
+    except Exception as e:
         return False
 
+        logger.error(f"Error: {e}")
     if not mobile_cfg.enabled:
         return False
 
@@ -330,6 +332,7 @@ def get_mobile_status(config_manager: ConfigManager) -> MobileStatus:
         sessions = []
         tmux_error = str(exc)
 
+        logger.error(f"Error: {e}")
     return MobileStatus(
         enabled=mobile_cfg.enabled,
         happy_ok=happy_ok,
@@ -372,11 +375,12 @@ def update_tmux_mobile_indicator(config_manager: ConfigManager) -> None:
         indicator = format_mobile_indicator(status)
         set_global_option("@dopemux_mobile_indicator", indicator)
         _persist_mobile_status(config_manager, status)
-    except Exception:
+    except Exception as e:
         # tmux might not be available; ignore silently
         pass
 
 
+        logger.error(f"Error: {e}")
 def _persist_mobile_status(config_manager: ConfigManager, status: MobileStatus) -> None:
     """Write mobile status snapshot to cache for other UIs."""
 
@@ -403,5 +407,5 @@ def _persist_mobile_status(config_manager: ConfigManager, status: MobileStatus) 
         }
         snapshot_path = cache_dir / "mobile_status.json"
         snapshot_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    except Exception:
+    except Exception as e:
         pass

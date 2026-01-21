@@ -12,6 +12,11 @@ Transforms old ConPort schema to new AGE-compatible schema:
 """
 
 import json
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from datetime import datetime
 from typing import Dict, List, Optional
 
@@ -168,14 +173,14 @@ class DecisionTransformer:
 
 if __name__ == "__main__":
     # Example usage
-    print("DecisionTransformer - ConPort Schema Upgrade")
-    print("=" * 60)
-    print("\nMapping rules:")
-    print("  UUID → INTEGER: Sequential by created_at")
-    print("  confidence_level → status:")
+    logger.info("DecisionTransformer - ConPort Schema Upgrade")
+    logger.info("=" * 60)
+    logger.info("\nMapping rules:")
+    logger.info("  UUID → INTEGER: Sequential by created_at")
+    logger.info("  confidence_level → status:")
     for old, new in DecisionTransformer().status_map.items():
-        print(f"    {old} → {new}")
-    print("  Relationship types (4 → 8):")
+        logger.info(f"    {old} → {new}")
+    logger.info("  Relationship types (4 → 8):")
     for old, new in DecisionTransformer().relationship_type_map.items():
-        print(f"    {old} → {new}")
-    print("\nUse in conjunction with export_conport.py and reingest.py")
+        logger.info(f"    {old} → {new}")
+    logger.info("\nUse in conjunction with export_conport.py and reingest.py")

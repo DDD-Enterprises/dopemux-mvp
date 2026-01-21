@@ -891,8 +891,8 @@ async def simulate_profile_learning(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("👤 Serena Personal Learning Profile Manager")
-        print("ADHD-optimized profile management with real-time learning")
-        print("✅ Module loaded successfully")
+        logger.info("👤 Serena Personal Learning Profile Manager")
+        logger.info("ADHD-optimized profile management with real-time learning")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

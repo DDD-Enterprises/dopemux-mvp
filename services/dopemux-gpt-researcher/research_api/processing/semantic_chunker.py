@@ -581,11 +581,11 @@ def test_semantic_chunker():
     chunker = SemanticChunker()
     chunks = chunker.chunk_from_text(conversation_text)
 
-    console.print(f"\n🧩 Generated {len(chunks)} chunks:")
+    console.logger.info(f"\n🧩 Generated {len(chunks)} chunks:")
     for i, chunk in enumerate(chunks):
-        console.print(f"\n**Chunk {i+1}** ({chunk.chunk_type}, {chunk.estimated_tokens} tokens):")
-        console.print(f"Participants: {', '.join(chunk.participants)}")
-        console.print(f"Content preview: {chunk.text_content[:100]}...")
+        console.logger.info(f"\n**Chunk {i+1}** ({chunk.chunk_type}, {chunk.estimated_tokens} tokens):")
+        console.logger.info(f"Participants: {', '.join(chunk.participants)}")
+        console.logger.info(f"Content preview: {chunk.text_content[:100]}...")
 
     return chunks
 

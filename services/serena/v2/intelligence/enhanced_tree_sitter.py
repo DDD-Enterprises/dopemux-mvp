@@ -964,8 +964,8 @@ async def create_enhanced_tree_sitter_integration(
 if __name__ == "__main__":
     # Quick test when run directly
     async def main():
-        print("🌳 Serena Enhanced Tree-sitter Integration")
-        print("Structural analysis with personalized ADHD intelligence")
-        print("✅ Module loaded successfully")
+        logger.info("🌳 Serena Enhanced Tree-sitter Integration")
+        logger.info("Structural analysis with personalized ADHD intelligence")
+        logger.info("✅ Module loaded successfully")
 
     asyncio.run(main())

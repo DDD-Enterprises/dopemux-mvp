@@ -154,6 +154,7 @@ class InteractiveDebugger:
         except Exception as e:
             raise DebuggingError(f"Failed to start debug session: {e}")
 
+            logger.error(f"Error: {e}")
     def _prepare_debug_command(self, command: str, debugger: DebuggerType) -> str:
         """Prepare command for debugging."""
         if debugger == DebuggerType.PDB:
@@ -224,6 +225,7 @@ class InteractiveDebugger:
         except Exception as e:
             raise DebuggingError(f"Failed to set breakpoint: {e}")
 
+            logger.error(f"Error: {e}")
     def continue_execution(self, session: DebugSession) -> DebugState:
         """
         Continue execution from current breakpoint.
@@ -249,6 +251,7 @@ class InteractiveDebugger:
         except Exception as e:
             raise DebuggingError(f"Failed to continue execution: {e}")
 
+            logger.error(f"Error: {e}")
     def step_execution(self, session: DebugSession, step_type: str = 'step') -> DebugState:
         """
         Step through execution (step into, step over).
@@ -289,6 +292,7 @@ class InteractiveDebugger:
         except Exception as e:
             raise DebuggingError(f"Failed to step execution: {e}")
 
+            logger.error(f"Error: {e}")
     def inspect_variable(self, session: DebugSession, variable_name: str) -> str:
         """
         Inspect a variable's value.
@@ -317,6 +321,7 @@ class InteractiveDebugger:
         except Exception as e:
             raise DebuggingError(f"Failed to inspect variable {variable_name}: {e}")
 
+            logger.error(f"Error: {e}")
     def get_stack_trace(self, session: DebugSession) -> List[str]:
         """
         Get current stack trace.
@@ -343,6 +348,7 @@ class InteractiveDebugger:
         except Exception as e:
             raise DebuggingError(f"Failed to get stack trace: {e}")
 
+            logger.error(f"Error: {e}")
     def get_local_variables(self, session: DebugSession) -> Dict[str, Any]:
         """
         Get local variables at current frame.
@@ -369,6 +375,7 @@ class InteractiveDebugger:
         except Exception as e:
             raise DebuggingError(f"Failed to get local variables: {e}")
 
+            logger.error(f"Error: {e}")
     def quit_debugging(self, session: DebugSession) -> None:
         """
         Quit the debugging session.
@@ -388,9 +395,10 @@ class InteractiveDebugger:
             # Force kill pane if quit fails
             try:
                 self.tmux_cli.kill(session.pane_id)
-            except Exception:
+            except Exception as e:
                 pass  # Pane might already be dead
 
+                logger.error(f"Error: {e}")
     def analyze_error(self, error_output: str) -> Dict[str, Any]:
         """
         Analyze error output to provide debugging insights.

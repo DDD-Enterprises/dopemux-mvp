@@ -5,6 +5,11 @@ Integrates with ADHD Engine for real-time energy monitoring and cognitive load a
 """
 
 import os
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 import asyncio
 import httpx
 from typing import Dict, List, Optional, Any
@@ -39,7 +44,7 @@ class ADHDEngineClient:
             data = response.json()
             return data
         except Exception as e:
-            print(f"ADHD Engine energy level query failed: {e}")
+            logger.error(f"ADHD Engine energy level query failed: {e}")
             return None
 
     async def get_attention_state(self, user_id: str) -> Optional[Dict[str, Any]]:
@@ -50,7 +55,7 @@ class ADHDEngineClient:
             data = response.json()
             return data
         except Exception as e:
-            print(f"ADHD Engine attention state query failed: {e}")
+            logger.error(f"ADHD Engine attention state query failed: {e}")
             return None
 
     async def get_cognitive_load(self, user_id: str) -> Optional[Dict[str, Any]]:
@@ -61,7 +66,7 @@ class ADHDEngineClient:
             data = response.json()
             return data
         except Exception as e:
-            print(f"ADHD Engine cognitive load query failed: {e}")
+            logger.error(f"ADHD Engine cognitive load query failed: {e}")
             return None
 
     async def get_break_recommendation(self, user_id: str, work_duration_minutes: int = 25) -> Optional[Dict[str, Any]]:
@@ -75,7 +80,7 @@ class ADHDEngineClient:
             data = response.json()
             return data
         except Exception as e:
-            print(f"ADHD Engine break recommendation query failed: {e}")
+            logger.error(f"ADHD Engine break recommendation query failed: {e}")
             return None
 
     async def assess_task_complexity(self, task_description: str, user_id: str) -> Optional[Dict[str, Any]]:
@@ -89,7 +94,7 @@ class ADHDEngineClient:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            print(f"ADHD Engine task assessment failed: {e}")
+            logger.error(f"ADHD Engine task assessment failed: {e}")
             return None
 
     async def get_adhd_context(self, user_id: str) -> Dict[str, Any]:
@@ -146,11 +151,11 @@ class ADHDEngineClient:
 
             # ADHD Engine might have an endpoint for this, or we could use existing ones
             # For now, we'll use a placeholder - this would need ADHD Engine enhancement
-            print(f"Would send context correlation to ADHD Engine: {user_id}:{wma_snapshot_id}")
+            logger.info(f"Would send context correlation to ADHD Engine: {user_id}:{wma_snapshot_id}")
             return True
 
         except Exception as e:
-            print(f"ADHD Engine context correlation failed: {e}")
+            logger.error(f"ADHD Engine context correlation failed: {e}")
             return False
 
     async def adapt_recovery_to_adhd_state(self, user_id: str, base_recovery_stage: str) -> str:

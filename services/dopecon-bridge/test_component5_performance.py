@@ -85,10 +85,11 @@ async def warmup(session: aiohttp.ClientSession, url: str):
         try:
             async with session.get(url) as resp:
                 await resp.json()
-        except:
+        except Exception as e:
             pass
 
 
+            logger.error(f"Error: {e}")
 async def test_dopecon_bridge_endpoints():
     """Test DopeconBridge → Orchestrator latency."""
     print("\n" + "="*70)

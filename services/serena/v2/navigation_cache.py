@@ -83,9 +83,12 @@ class NavigationCache:
             self._initialized = True
             logger.info(f"🚀 Navigation cache initialized: {self.config.redis_url}")
 
-        except Exception as e:
+        except (ConnectionError, OSError, TimeoutError) as e:
             logger.error(f"Failed to initialize navigation cache: {e}")
             raise RuntimeError(f"Navigation cache initialization failed: {e}")
+        except Exception:
+            logger.exception("Unexpected navigation cache init error")
+            raise RuntimeError("Navigation cache initialization failed: unexpected error")
 
     def _generate_cache_key(self, category: str, file_path: str, extra: str = "") -> str:
         """Generate consistent cache keys for navigation data."""
@@ -120,8 +123,11 @@ class NavigationCache:
 
             return None
 
-        except Exception as e:
+        except (json.JSONDecodeError, ConnectionError, OSError) as e:
             logger.error(f"Failed to get navigation result: {e}")
+            return None
+        except Exception:
+            logger.exception("Unexpected navigation cache get error")
             return None
 
     async def cache_navigation_result(
@@ -150,8 +156,11 @@ class NavigationCache:
             logger.debug(f"💾 Cached navigation result: {cache_key[:50]}... (TTL: {cache_ttl}s)")
             return True
 
-        except Exception as e:
+        except (ConnectionError, OSError) as e:
             logger.error(f"Failed to cache navigation result: {e}")
+            return False
+        except Exception:
+            logger.exception("Unexpected navigation cache set error")
             return False
 
     # Symbol and Definition Specific Caching
@@ -397,9 +406,10 @@ class NavigationCache:
                 try:
                     file_stat = Path(file_path).stat()
                     file_mtime = file_stat.st_mtime
-                except Exception:
+                except Exception as e:
                     file_mtime = 0
 
+                    logger.error(f"Error: {e}")
             # Serialize analysis result
             cache_data = {
                 "analysis": {
@@ -467,7 +477,7 @@ class NavigationCache:
                     logger.debug(f"🌳 Tree-sitter cache invalidated for {Path(file_path).name} (file modified)")
                     return None
 
-            except Exception:
+            except Exception as e:
                 # If we can't check file mtime, assume cache is stale
                 await self.client.delete(cache_key)
                 return None
@@ -493,9 +503,10 @@ class NavigationCache:
                 try:
                     file_stat = Path(file_path).stat()
                     file_mtime = file_stat.st_mtime
-                except Exception:
+                except Exception as e:
                     file_mtime = 0
 
+                    logger.error(f"Error: {e}")
             cache_data = {
                 "enhanced_symbols": enhanced_symbols,
                 "file_mtime": file_mtime,
@@ -538,7 +549,7 @@ class NavigationCache:
                     logger.debug(f"🔄 Enhanced symbols cache invalidated for {Path(file_path).name}")
                     return None
 
-            except Exception:
+            except Exception as e:
                 await self.client.delete(cache_key)
                 return None
 
@@ -569,9 +580,10 @@ class NavigationCache:
                     # Get file mtime
                     try:
                         file_mtime = Path(file_path).stat().st_mtime
-                    except Exception:
+                    except Exception as e:
                         file_mtime = 0
 
+                        logger.error(f"Error: {e}")
                     # Prepare cache data (same as individual method)
                     cache_data = {
                         "analysis": {

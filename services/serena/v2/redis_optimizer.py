@@ -436,9 +436,10 @@ async def validate_redis_for_adhd_navigation(redis_url: str = "redis://localhost
                 else:
                     validation_results["issues"].append(f"Non-optimal {config_key}: {current_value}")
 
-            except Exception:
+            except Exception as e:
                 validation_results["issues"].append(f"Could not check {config_key} configuration")
 
+                logger.error(f"Error: {e}")
         validation_results["adhd_compliant"] = compliant_configs >= (total_configs * 0.7)
 
         # Generate recommendations
@@ -496,15 +497,16 @@ async def quick_redis_health_check() -> Dict[str, Any]:
         }
 
 
+        logger.error(f"Error: {e}")
 if __name__ == "__main__":
     # Quick validation when run directly
     async def main():
-        print("🗄️ Redis ADHD Navigation Validation")
+        logger.info("🗄️ Redis ADHD Navigation Validation")
         health = await quick_redis_health_check()
-        print(f"Status: {health['status']}")
+        logger.info(f"Status: {health['status']}")
 
         if health["redis_available"]:
-            print(f"Performance: {health['operation_time_ms']}ms")
-            print(f"ADHD Ready: {'✅ Yes' if health['adhd_ready'] else '⚠️ Needs optimization'}")
+            logger.info(f"Performance: {health['operation_time_ms']}ms")
+            logger.info(f"ADHD Ready: {'✅ Yes' if health['adhd_ready'] else '⚠️ Needs optimization'}")
 
     asyncio.run(main())

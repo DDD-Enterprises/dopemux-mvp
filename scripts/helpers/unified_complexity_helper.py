@@ -13,11 +13,16 @@ Usage in Claude Code session:
         user_id="alice"
     )
 
-    print(f"Complexity: {complexity['unified_score']:.2f}")
-    print(f"Impact: {complexity['interpretation']}")
+    logger.info(f"Complexity: {complexity['unified_score']:.2f}")
+    logger.info(f"Impact: {complexity['interpretation']}")
 """
 
 import math
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from typing import Dict, Optional
 
 

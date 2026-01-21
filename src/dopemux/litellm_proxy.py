@@ -224,8 +224,9 @@ def sync_litellm_database(instance_dir: Path, db_url: str) -> tuple[str, bool]:
             error_text = ""
             try:
                 error_text = log_path.read_text(encoding="utf-8")[-2000:]
-            except Exception:
+            except Exception as e:
                 pass
+                logger.error(f"Error: {e}")
             lowered = error_text.lower()
             if ("can't reach database server" in lowered) or ("p1001" in lowered):
                 return (
@@ -335,6 +336,7 @@ class LiteLLMProxyManager:
             except OSError as exc:  # pragma: no cover - defensive
                 raise LiteLLMProxyError(f"Failed to launch LiteLLM proxy: {exc}") from exc
 
+                logger.error(f"Error: {e}")
             if process.poll() is not None:
                 log_excerpt = self._read_tail(log_path)
                 reason = self._should_disable_db_due_to_launch(log_excerpt)
@@ -509,9 +511,10 @@ class LiteLLMProxyManager:
             req = urllib.request.Request(url, method='GET')
             with urllib.request.urlopen(req, timeout=2.0) as response:
                 return response.status == 200
-        except Exception:
+        except Exception as e:
             return False
 
+            logger.error(f"Error: {e}")
     def _launch_proxy_process(
         self,
         env: Dict[str, str],
@@ -580,9 +583,10 @@ class LiteLLMProxyManager:
         try:
             text = path.read_text(encoding="utf-8")
             return text[-length:]
-        except Exception:
+        except Exception as e:
             return ""
 
+            logger.error(f"Error: {e}")
     @staticmethod
     def _should_disable_db_due_to_launch(log_excerpt: str) -> Optional[str]:
         lowered = log_excerpt.lower()
