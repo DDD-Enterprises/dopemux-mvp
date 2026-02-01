@@ -129,7 +129,7 @@ touch dopemux/ui/keybindings.py
 
 ### Before You Start
 - [ ] Read [DASHBOARD_DAY10_DEEP_RESEARCH.md](./DASHBOARD_DAY10_DEEP_RESEARCH.md) (understand WHY)
-- [ ] Review existing code: `sparkline_generator.py`, `prometheus_client.py`
+- [ ] Note: SparklineGenerator and PrometheusClient are planned but not yet implemented
 - [ ] Verify Prometheus is running: `curl http://localhost:9090`
 - [ ] Create feature branch: `git checkout -b feature/day10-sparklines-keyboard`
 
@@ -242,8 +242,6 @@ dopemux-mvp/
 │   └── ui/
 │       └── keybindings.py           ← NEW (Task 3)
 ├── dopemux_dashboard.py             ← MODIFY (Tasks 2 & 3)
-├── sparkline_generator.py           ← EXISTS (use it!)
-├── prometheus_client.py             ← EXISTS (use it!)
 ├── tests/
 │   ├── test_prometheus_sparkline.py ← NEW (Task 4)
 │   └── test_keyboard_nav.py         ← NEW (Task 4)
@@ -282,8 +280,8 @@ dopemux-mvp/
 - [Progress Tracker](./tmux-dashboard-implementation-tracker.md) - Overall status
 
 ### Code References
-- [SparklineGenerator](../../sparkline_generator.py) - Already exists!
-- [PrometheusClient](../../prometheus_client.py) - Already exists!
+- SparklineGenerator - Removed (was placeholder)
+- PrometheusClient - Removed (was placeholder)
 - [Dashboard](../../dopemux_dashboard.py) - Main app
 
 ### External
