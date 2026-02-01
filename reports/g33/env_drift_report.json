@@ -10,26 +10,26 @@
         "services/conport/src/conport/core/config.py"
       ],
       "env_support": {
-        "LOG_LEVEL": false,
         "BASE_URL": false,
-        "PORT": false,
-        "HOST": false
+        "LOG_LEVEL": true,
+        "PORT": true,
+        "HOST": true
       },
       "scanned_files": {
         "entry_point": {
           "/Users/hue/code/dopemux-mvp/services/conport/app.py": {
-            "LOG_LEVEL": false,
             "BASE_URL": false,
-            "PORT": false,
-            "HOST": false,
+            "LOG_LEVEL": true,
+            "PORT": true,
+            "HOST": true,
             "has_risky_environ": false,
             "has_sys_path_insert": false
           }
         },
         "config_files": {
           "/Users/hue/code/dopemux-mvp/services/conport/src/conport/core/config.py": {
-            "LOG_LEVEL": false,
             "BASE_URL": false,
+            "LOG_LEVEL": false,
             "PORT": false,
             "HOST": false,
             "has_risky_environ": false,
@@ -37,17 +37,9 @@
           }
         }
       },
-      "missing_required": [
-        "LOG_LEVEL",
-        "PORT",
-        "HOST"
-      ],
-      "violations": [
-        "Missing required var: LOG_LEVEL",
-        "Missing required var: PORT",
-        "Missing required var: HOST"
-      ],
-      "status": "violations",
+      "missing_required": [],
+      "violations": [],
+      "status": "compliant",
       "exceptions": []
     },
     {
@@ -56,33 +48,27 @@
       "entry_point": "services/dopecon-bridge/main.py",
       "config_files": [],
       "env_support": {
-        "LOG_LEVEL": false,
         "BASE_URL": false,
+        "LOG_LEVEL": true,
         "PORT": true,
-        "HOST": false
+        "HOST": true
       },
       "scanned_files": {
         "entry_point": {
           "/Users/hue/code/dopemux-mvp/services/dopecon-bridge/main.py": {
-            "LOG_LEVEL": false,
             "BASE_URL": false,
+            "LOG_LEVEL": true,
             "PORT": true,
-            "HOST": false,
+            "HOST": true,
             "has_risky_environ": false,
             "has_sys_path_insert": false
           }
         },
         "config_files": {}
       },
-      "missing_required": [
-        "LOG_LEVEL",
-        "HOST"
-      ],
-      "violations": [
-        "Missing required var: LOG_LEVEL",
-        "Missing required var: HOST"
-      ],
-      "status": "violations",
+      "missing_required": [],
+      "violations": [],
+      "status": "compliant",
       "exceptions": []
     },
     {
@@ -91,42 +77,33 @@
       "entry_point": "services/task-orchestrator/server.py",
       "config_files": [],
       "env_support": {
-        "LOG_LEVEL": false,
         "BASE_URL": false,
-        "PORT": false,
-        "HOST": false
+        "LOG_LEVEL": true,
+        "PORT": true,
+        "HOST": true
       },
       "scanned_files": {
         "entry_point": {
           "/Users/hue/code/dopemux-mvp/services/task-orchestrator/server.py": {
-            "LOG_LEVEL": false,
             "BASE_URL": false,
-            "PORT": false,
-            "HOST": false,
+            "LOG_LEVEL": true,
+            "PORT": true,
+            "HOST": true,
             "has_risky_environ": false,
-            "has_sys_path_insert": true
+            "has_sys_path_insert": false
           }
         },
         "config_files": {}
       },
-      "missing_required": [
-        "LOG_LEVEL",
-        "PORT",
-        "HOST"
-      ],
-      "violations": [
-        "Missing required var: LOG_LEVEL",
-        "Missing required var: PORT",
-        "Missing required var: HOST",
-        "Uses sys.path.insert (violates isolation)"
-      ],
-      "status": "violations",
+      "missing_required": [],
+      "violations": [],
+      "status": "compliant",
       "exceptions": []
     }
   ],
   "summary": {
-    "compliant": 0,
-    "violations": 3,
+    "compliant": 3,
+    "violations": 0,
     "errors": 0
   }
 }
