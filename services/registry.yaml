@@ -29,6 +29,17 @@ services:
     enabled_in_smoke: true
     category: infrastructure
     description: "PostgreSQL database with AGE extension for knowledge graph"
+    env_contract_exceptions:
+      - variable: PORT
+        reason: "PostgreSQL uses native POSTGRES_PORT configuration"
+      - variable: LOG_LEVEL
+        reason: "PostgreSQL logging configured via postgresql.conf"
+      - variable: ENVIRONMENT
+        reason: "Infrastructure service, not application code"
+      - variable: SERVICE_NAME
+        reason: "PostgreSQL is a third-party database system"
+      - variable: HEALTH_CHECK_PATH
+        reason: "Uses pg_isready command instead of HTTP endpoint"
 
   - name: redis
     port: 6379
@@ -40,6 +51,17 @@ services:
     enabled_in_smoke: true
     category: infrastructure
     description: "Redis for caching and event streaming"
+    env_contract_exceptions:
+      - variable: PORT
+        reason: "Redis uses native REDIS_PORT configuration"
+      - variable: LOG_LEVEL
+        reason: "Redis logging configured via redis.conf"
+      - variable: ENVIRONMENT
+        reason: "Infrastructure service, not application code"
+      - variable: SERVICE_NAME
+        reason: "Redis is a third-party cache system"
+      - variable: HEALTH_CHECK_PATH
+        reason: "Uses redis-cli ping instead of HTTP endpoint"
 
   - name: qdrant
     port: 6333
@@ -52,6 +74,17 @@ services:
     enabled_in_smoke: true
     category: infrastructure
     description: "Qdrant vector database for semantic search"
+    env_contract_exceptions:
+      - variable: PORT
+        reason: "Qdrant uses native QDRANT_PORT configuration"
+      - variable: LOG_LEVEL
+        reason: "Qdrant logging configured via config.yaml"
+      - variable: ENVIRONMENT
+        reason: "Infrastructure service, not application code"
+      - variable: SERVICE_NAME
+        reason: "Qdrant is a third-party vector database"
+      - variable: HEALTH_CHECK_PATH
+        reason: "Qdrant provides native HTTP health endpoint at /"
 
   # MCP Services
   - name: conport
@@ -65,6 +98,9 @@ services:
     enabled_in_smoke: true
     category: mcp
     description: "ConPort - Knowledge graph and context management MCP server"
+    env_contract_exceptions:
+      - variable: MCP_SERVER_PORT
+        reason: "ConPort uses PORT directly; MCP_SERVER_PORT is redundant"
 
   # Coordination Layer
   - name: dopecon-bridge
@@ -91,6 +127,9 @@ services:
     enabled_in_smoke: true
     category: cognitive
     description: "Task Orchestrator - ADHD-aware task coordination service"
+    env_contract_exceptions:
+      - variable: DATABASE_URL
+        reason: "Task Orchestrator is a wrapper service, delegates DB access to ConPort"
 
   - name: adhd-engine
     port: 8095

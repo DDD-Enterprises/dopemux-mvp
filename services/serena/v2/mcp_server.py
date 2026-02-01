@@ -835,7 +835,7 @@ class SerenaV2MCPServer:
                 ),
                 Tool(
                     name="analyze_complexity",
-                    description="Analyze code complexity for ADHD-safe reading assessment (Tier 2 ADHD tool). Uses Tree-sitter for accurate complexity scoring. Returns 0.0-1.0 score with breakdown and safe reading time estimate.",
+                    description="Analyze code complexity for ADHD-safe reading assessment (Tier 2 ADHD tool). Uses Tree-sitter for accurate complexity scoring. Returns 0.0-1.0 score with breakdown and safe reading time estimate. Multi-workspace: aggregates complexity metrics across workspaces.",
                     inputSchema={
                         "type": "object",
                         "properties": {
@@ -846,6 +846,15 @@ class SerenaV2MCPServer:
                             "symbol_name": {
                                 "type": "string",
                                 "description": "Optional: specific symbol to analyze (null = whole file)"
+                            },
+                            "workspace_path": {
+                                "type": "string",
+                                "description": "Optional single workspace path"
+                            },
+                            "workspace_paths": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "Optional multiple workspace paths for aggregated analysis"
                             }
                         },
                         "required": ["file_path"]
@@ -908,14 +917,58 @@ class SerenaV2MCPServer:
                     }
                 ),
                 Tool(
+                    name="find_similar_code",
+                    description="Find code semantically similar to natural language query (F-NEW-2). Integrates with Dope-Context for semantic search with AST-aware chunking and neural reranking. Multi-workspace: unified semantic search across workspaces.",
+                    inputSchema={
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "Natural language query (e.g., 'authentication middleware patterns')"
+                            },
+                            "top_k": {
+                                "type": "integer",
+                                "description": "Number of results (default: 10, ADHD-adjusted)",
+                                "default": 10,
+                                "minimum": 1,
+                                "maximum": 50
+                            },
+                            "user_id": {
+                                "type": "string",
+                                "description": "User identifier for ADHD state lookup (default: 'default')",
+                                "default": "default"
+                            },
+                            "workspace_path": {
+                                "type": "string",
+                                "description": "Optional single workspace path"
+                            },
+                            "workspace_paths": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "Optional multiple workspace paths for cross-workspace search"
+                            }
+                        },
+                        "required": ["query"]
+                    }
+                ),
+                Tool(
                     name="find_test_file",
-                    description="Smart test navigation for TDD workflow (F-NEW-18). Auto-finds test file for implementation or vice versa. Suggests creating test if missing.",
+                    description="Smart test navigation for TDD workflow (F-NEW-18). Auto-finds test file for implementation or vice versa. Suggests creating test if missing. Multi-workspace: searches across workspaces.",
                     inputSchema={
                         "type": "object",
                         "properties": {
                             "file_path": {
                                 "type": "string",
                                 "description": "Current file path (implementation or test)"
+                            },
+                            "workspace_path": {
+                                "type": "string",
+                                "description": "Optional single workspace path for scoped search"
+                            },
+                            "workspace_paths": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "Optional multiple workspace paths for multi-workspace search"
                             }
                         },
                         "required": ["file_path"]
@@ -923,7 +976,7 @@ class SerenaV2MCPServer:
                 ),
                 Tool(
                     name="get_unified_complexity",
-                    description="F-NEW-3: Unified Complexity Intelligence (HIGH priority synergy). Combines AST (dope-context), LSP (serena), usage patterns, and ADHD adjustments for accurate cognitive load assessment. Returns 0.0-1.0 score with breakdown and human-readable interpretation.",
+                    description="F-NEW-3: Unified Complexity Intelligence (HIGH priority synergy). Combines AST (dope-context), LSP (serena), usage patterns, and ADHD adjustments for accurate cognitive load assessment. Returns 0.0-1.0 score with breakdown and human-readable interpretation. Multi-workspace: aggregates complexity across workspaces.",
                     inputSchema={
                         "type": "object",
                         "properties": {
@@ -939,6 +992,15 @@ class SerenaV2MCPServer:
                                 "type": "string",
                                 "description": "User identifier for ADHD adjustments (default: 'default')",
                                 "default": "default"
+                            },
+                            "workspace_path": {
+                                "type": "string",
+                                "description": "Optional single workspace path"
+                            },
+                            "workspace_paths": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "Optional multiple workspace paths for aggregated complexity"
                             }
                         },
                         "required": ["file_path"]
@@ -946,7 +1008,7 @@ class SerenaV2MCPServer:
                 ),
                 Tool(
                     name="get_reading_order",
-                    description="Optimal reading order for understanding code (Tier 2 ADHD tool). Orders files/symbols by complexity progression (simple to complex). Progressive disclosure for learning.",
+                    description="Optimal reading order for understanding code (Tier 2 ADHD tool). Orders files/symbols by complexity progression (simple to complex). Progressive disclosure for learning. Multi-workspace: unified reading order across workspaces.",
                     inputSchema={
                         "type": "object",
                         "properties": {
@@ -959,6 +1021,15 @@ class SerenaV2MCPServer:
                                 "type": "array",
                                 "description": "Optional: symbol names to order",
                                 "items": {"type": "string"}
+                            },
+                            "workspace_path": {
+                                "type": "string",
+                                "description": "Optional single workspace path"
+                            },
+                            "workspace_paths": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "Optional multiple workspace paths for cross-workspace reading order"
                             }
                         },
                         "required": ["files"]
@@ -993,7 +1064,7 @@ class SerenaV2MCPServer:
                 ),
                 Tool(
                     name="get_navigation_patterns",
-                    description="Analyze navigation patterns from history (Tier 3 advanced tool). Phase 2D: Returns placeholder. Phase 3: Full pattern learning.",
+                    description="Analyze navigation patterns from history (Tier 3 advanced tool). Phase 2D: Returns placeholder. Phase 3: Full pattern learning. Multi-workspace: patterns across workspaces.",
                     inputSchema={
                         "type": "object",
                         "properties": {
@@ -1001,6 +1072,15 @@ class SerenaV2MCPServer:
                                 "type": "integer",
                                 "description": "Days of history (default: 7)",
                                 "default": 7
+                            },
+                            "workspace_path": {
+                                "type": "string",
+                                "description": "Optional single workspace path"
+                            },
+                            "workspace_paths": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "Optional multiple workspace paths for pattern analysis"
                             }
                         },
                         "required": []
@@ -4675,7 +4755,7 @@ class SerenaV2MCPServer:
         - Multi-workspace: Semantic search across workspaces
 
         Args:
-            query: Natural language query (e.g., "authentication middleware patterns")
+            query: Natural language query (e.g., 'authentication middleware patterns')
             top_k: Number of results (default: 10, ADHD-adjusted)
             user_id: User identifier for ADHD state lookup
             workspace_path: Optional single workspace path
