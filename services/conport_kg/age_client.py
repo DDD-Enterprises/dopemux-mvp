@@ -51,6 +51,9 @@ class AGEClient:
         self.port = port
         self.database = database
         self.user = user
+        
+        # Cache for tracking initialized graphs (workspace support)
+        self._initialized_graphs = set()
 
         # Get password from environment or use provided
         self.password = password or os.getenv('AGE_PASSWORD', 'dopemux_age_dev_password')
@@ -92,6 +95,65 @@ class AGEClient:
             self.pool = None
             raise
 
+    def ensure_workspace_graph(self, graph_name: str) -> bool:
+        """
+        Ensure graph exists for workspace, create if needed
+        
+        Args:
+            graph_name: Name of the graph to ensure exists
+            
+        Returns:
+            True if graph existed or was created, False on error
+        """
+        # Check cache first to avoid repeated DB queries
+        if graph_name in self._initialized_graphs:
+            return True
+            
+        if self.pool is None:
+            logger.warning(f"⚠️  Pool not initialized, cannot ensure graph: {graph_name}")
+            return False
+            
+        conn = self.pool.getconn()
+        try:
+            cursor = conn.cursor()
+            
+            # Load AGE extension
+            cursor.execute("LOAD 'age';")
+            
+            # Check if graph exists in ag_graph catalog
+            cursor.execute("""
+                SELECT graphname FROM ag_catalog.ag_graph 
+                WHERE graphname = %s
+            """, (graph_name,))
+            
+            exists = cursor.fetchone() is not None
+            
+            if not exists:
+                logger.info(f"📊 Creating new workspace graph: {graph_name}")
+                
+                # Create graph using AGE function
+                # Must use specific AGE syntax for graph creation
+                cursor.execute(f"SELECT create_graph('{graph_name}');")
+                conn.commit()
+                
+                logger.info(f"✅ Workspace graph created: {graph_name}")
+            else:
+                logger.debug(f"Graph already exists: {graph_name}")
+            
+            # Add to cache
+            self._initialized_graphs.add(graph_name)
+            
+            cursor.close()
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to ensure graph {graph_name}: {e}")
+            conn.rollback()
+            return False
+            
+        finally:
+            self.pool.putconn(conn)
+
     def execute_cypher(
         self, 
         cypher_query: str, 
@@ -121,6 +183,9 @@ class AGEClient:
             
             workspace = Path(workspace_path)
             graph_name_to_use = get_workspace_graph_name(workspace)
+            
+            # Ensure workspace graph exists (auto-create if needed)
+            self.ensure_workspace_graph(graph_name_to_use)
             
             # Add workspace params
             if params:
