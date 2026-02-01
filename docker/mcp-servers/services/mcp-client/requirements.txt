@@ -1,4 +1,4 @@
 mcp>=1.0.0
-aiohttp>=3.9.0
+aiohttp>=3.12.14  # Security: CVE-2025-53643, CVE-2024-52304, directory traversal, DoS fixes
 asyncio
 subprocess
