@@ -64,7 +64,7 @@ exclude_loopback = true
 max_concurrency = 8
 
 # Accept certain status codes that are acceptable
-accept = [200, 201, 204, 307, 401, 429]
+accept = [200, 201, 204, 307, 401, 429, 502]
 
 # Include unsupported links (don't treat as errors)
 include_verbatim = true
