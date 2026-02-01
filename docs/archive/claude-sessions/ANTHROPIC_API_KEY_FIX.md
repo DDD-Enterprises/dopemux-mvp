@@ -1,3 +1,11 @@
+---
+id: ANTHROPIC_API_KEY_FIX
+title: Anthropic_Api_Key_Fix
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # API Key and Model Priority Fixes
 
 **Date**: 2025-10-15
