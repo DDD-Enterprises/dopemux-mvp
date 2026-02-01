@@ -23,6 +23,9 @@ from collections import defaultdict
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8000"))
 LOG_LEVEL = os.getenv("LOG_LEVEL", "info").upper()
+ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
+SERVICE_NAME = os.getenv("SERVICE_NAME", "task-orchestrator")
+HEALTH_CHECK_PATH = os.getenv("HEALTH_CHECK_PATH", "/health")
 
 # Configure logging with env var support
 logging.basicConfig(
