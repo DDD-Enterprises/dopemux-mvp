@@ -68,14 +68,20 @@ PROHIBITED_PATTERNS = [
 
 # Allowed paths for documentation
 ALLOWED_PATHS = [
+    'docs/01-tutorials/',
+    'docs/02-how-to/',
+    'docs/03-reference/',
+    'docs/04-explanation/',
+    'docs/05-audit-reports/',
+    'docs/06-research/',
     'docs/90-adr/',
     'docs/91-rfc/',
     'docs/92-runbooks/',
     'docs/94-architecture/',
-    'docs/01-tutorials/',
-    'docs/02-how-to/',
-    'docs/03-reference/',
-    'docs/04-explanation/'
+    'docs/archive/',          # Historical documents
+    'docs/systems/',          # System-specific documentation
+    'docs/deployment/',       # Deployment guides  
+    'docs/implementation-plans/',  # Implementation planning
 ]
 
 @dataclass

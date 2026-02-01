@@ -1164,7 +1164,7 @@ class EnhancedTaskOrchestrator:
         except Exception as e:
             logger.error(f"Sprint automation check failed: {e}")
 
-    async def _auto_setup_slogger.info(self, sprint_data: Dict[str, Any]) -> None:
+    async def _auto_setup_sprint_optimizations(self, sprint_data: Dict[str, Any]) -> None:
         """Automatically setup sprint with ADHD optimizations."""
         try:
             sprint_id = sprint_data.get("id", "unknown")
@@ -1686,7 +1686,7 @@ if __name__ == "__main__":
             "tasks_completed": self.metrics.get("tasks_orchestrated", 0)
         }
 
-    async def get_active_slogger.info(self) -> Dict[str, Any]:
+    async def get_active_sprint_info(self) -> Dict[str, Any]:
         """Get active sprint info (Component 5)."""
         # Query ConPort for sprint context
         return {
