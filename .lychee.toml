@@ -3,15 +3,31 @@ exclude_path = ["docs/94-architecture/c4/"]
 
 # Exclude localhost URLs (documentation examples, dev servers)
 exclude = [
+  # Localhost and dev servers
   "http://localhost:.*",
   "https://localhost:.*",
   "http://0\\.0\\.0\\.0:.*",
   "https://0\\.0\\.0\\.0:.*",
+  # Internal service hosts
   "http://.*:6333.*",  # Qdrant
+  "http://.*-mcp:.*",  # MCP services (e.g., conport-mcp:5000)
+  "http://leantime:.*",  # Leantime internal
   "https://docs\\.dopemux\\.dev.*",  # Internal docs site (not yet deployed)
+  # Placeholder/example URLs
+  "https://yourdomain\\.com.*",
+  "https://.*\\.yourdomain\\.com.*",
+  "https://your-.*\\.com.*",  # your-happy-server.com, your-happy-webapp.com, etc.
+  "https://my-relay\\.com.*",
+  "http://b\\.com.*",
+  "http://test2\\.com.*",
+  "http://host:port",  # Malformed placeholder
+  # GitHub placeholder links
   ".*github\\.com/DDD-Enterprises/dopemux-mvp/issues/new.*",  # Issue creation links
   ".*github\\.com/DDD-Enterprises/dopemux-mvp/discussions/new.*",  # Discussion creation links
   ".*github\\.com/your-repo/.*",  # Placeholder repo links
+  # External sites requiring authentication
+  "https://api\\.openai\\.com/.*",  # Requires API key
+  "https://platform\\.openai\\.com/.*",
   # External documentation that may be unavailable or relocated
   "https://docs\\.leantime\\.io/.*",
   "https://textual\\.textualize\\.io/guide/async/.*",
@@ -19,7 +35,6 @@ exclude = [
   "https://github\\.com/prometheus/client_python/tree/master/.*",
   "https://hogonext\\.com/.*",
   # External sites with paywalls or access restrictions
-  "https://platform\\.openai\\.com/.*",
   "https://devops\\.com/.*",
   "https://medium\\.com/.*",
   "https://.*\\.medium\\.com/.*",
@@ -42,7 +57,7 @@ exclude_loopback = true
 max_concurrency = 8
 
 # Accept certain status codes that are acceptable
-accept = [200, 201, 204, 429]
+accept = [200, 201, 204, 307, 401, 429]
 
 # Include unsupported links (don't treat as errors)
 include_verbatim = true
