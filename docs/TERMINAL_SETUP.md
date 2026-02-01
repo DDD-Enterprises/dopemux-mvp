@@ -1,3 +1,11 @@
+---
+id: terminal-setup
+title: ADHD-Optimized Terminal Setup
+type: how-to
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # ADHD-Optimized Terminal Setup
 
 Dopemux includes a comprehensive terminal environment installer that sets up modern, fast, and ADHD-friendly tools.

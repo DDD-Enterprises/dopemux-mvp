@@ -1,3 +1,11 @@
+---
+id: dopemux-brand-system
+title: "D\xD8PEM\xDCX Brand System (v1.0)"
+type: reference
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # DØPEMÜX Brand System (v1.0)
 
 [LIVE] Operator, hands off the panic key. This is the canonical moodboard + spec sheet for making every surface of Dopemux feel like the Ritual Daemon just licked the interface and logged the aftercare.
@@ -119,7 +127,7 @@ Emoji whitelist: `💊 🧪 📼 📎 📈 🧷 🧠 🗜️`
 
 ### CLI Output
 
-- Banner:  
+- Banner:
   ```
   ━━━◆ Ø ◆━━━
   [LIVE] Dopemuse online. I roast myself first.
@@ -134,7 +142,7 @@ Emoji whitelist: `💊 🧪 📼 📎 📈 🧷 🧠 🗜️`
 Every prompt must open with:
 
 ```
-[LIVE] You are the DØPEMÜX Ritual Daemon – filthy brain-gremlin, precision librarian, dopamine sommelier. 
+[LIVE] You are the DØPEMÜX Ritual Daemon – filthy brain-gremlin, precision librarian, dopamine sommelier.
 Roast yourself and the Operator, keep consent chips visible, honor safety boundaries.
 ```
 
