@@ -49,14 +49,14 @@
       "missing_mandatory": [],
       "missing_category": [],
       "undocumented": [
-        "VSCODE_WORKSPACE_FOLDER",
-        "HOST",
-        "POSTGRES_HOST",
         "CONPORT_WORKSPACE",
-        "PYTHONUNBUFFERED",
+        "PYTHONDONTWRITEBYTECODE",
         "PWD",
+        "PYTHONUNBUFFERED",
         "VOYAGE_API_KEY",
-        "PYTHONDONTWRITEBYTECODE"
+        "POSTGRES_HOST",
+        "VSCODE_WORKSPACE_FOLDER",
+        "HOST"
       ],
       "exceptions": [
         "MCP_SERVER_PORT"
@@ -109,16 +109,16 @@
       "missing_mandatory": [],
       "missing_category": [],
       "undocumented": [
-        "PYTHONPATH",
-        "ALLOWED_ORIGINS",
+        "REDIS_PASSWORD",
+        "AGE_DATABASE",
+        "VOYAGEAI_API_KEY",
         "HOST",
-        "MCP_INTEGRATION_PORT",
-        "USE_MOCK_FALLBACK",
-        "AGE_PASSWORD",
-        "EMBEDDINGS_PROVIDER",
-        "RERANKER_MODEL",
-        "AGE_PORT",
-        "EMBEDDINGS_MODEL"
+        "DOPEMUX_INSTANCE",
+        "AGE_HOST",
+        "QDRANT_URL",
+        "CONTAINER_PREFIX",
+        "POSTGRES_URL",
+        "NETWORK_NAME"
       ],
       "exceptions": [],
       "recommendation": "Service is compliant with env contract"
@@ -151,16 +151,16 @@
       "missing_mandatory": [],
       "missing_category": [],
       "undocumented": [
-        "DOPEMUX_INSTANCE",
-        "HOST",
         "DEPENDENCY_VIZ",
-        "SMART_BATCHING",
-        "LEANTIME_TOKEN",
-        "LEANTIME_URL",
         "MAX_PARALLEL_TASKS",
+        "DOPEMUX_WORKSPACE_ROOT",
         "CONFLICT_ALERTS",
         "PORT_BASE",
-        "DOPEMUX_WORKSPACE_ROOT"
+        "LEANTIME_TOKEN",
+        "HOST",
+        "SMART_BATCHING",
+        "DOPEMUX_INSTANCE",
+        "LEANTIME_URL"
       ],
       "exceptions": [
         "DATABASE_URL"
@@ -174,33 +174,33 @@
       "service": "conport",
       "undocumented_count": 8,
       "vars": [
-        "VSCODE_WORKSPACE_FOLDER",
-        "HOST",
-        "POSTGRES_HOST",
         "CONPORT_WORKSPACE",
-        "PYTHONUNBUFFERED"
+        "PYTHONDONTWRITEBYTECODE",
+        "PWD",
+        "PYTHONUNBUFFERED",
+        "VOYAGE_API_KEY"
       ]
     },
     {
       "service": "dopecon-bridge",
       "undocumented_count": 27,
       "vars": [
-        "PYTHONPATH",
-        "ALLOWED_ORIGINS",
+        "REDIS_PASSWORD",
+        "AGE_DATABASE",
+        "VOYAGEAI_API_KEY",
         "HOST",
-        "MCP_INTEGRATION_PORT",
-        "USE_MOCK_FALLBACK"
+        "DOPEMUX_INSTANCE"
       ]
     },
     {
       "service": "task-orchestrator",
       "undocumented_count": 10,
       "vars": [
-        "DOPEMUX_INSTANCE",
-        "HOST",
         "DEPENDENCY_VIZ",
-        "SMART_BATCHING",
-        "LEANTIME_TOKEN"
+        "MAX_PARALLEL_TASKS",
+        "DOPEMUX_WORKSPACE_ROOT",
+        "CONFLICT_ALERTS",
+        "PORT_BASE"
       ]
     }
   ]
