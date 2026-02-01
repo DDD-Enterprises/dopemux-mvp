@@ -1,0 +1,165 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.11.13, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/hue/code/dopemux-mvp
+configfile: pytest.ini
+plugins: mock-3.15.1, langsmith-0.4.30, anyio-4.11.0, hypothesis-6.138.1, cov-6.2.1, asyncio-1.3.0, libtmux-0.46.2, locust-2.42.2
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 6 items
+
+tests/arch/test_service_env_contract.py sss.../Users/hue/.pyenv/versions/3.11.13/lib/python3.11/site-packages/coverage/control.py:943: CoverageWarning: No data was collected. (no-data-collected)
+  self._warn("No data was collected.", slug="no-data-collected")
+/Users/hue/.pyenv/versions/3.11.13/lib/python3.11/site-packages/coverage/report_core.py:112: CoverageWarning: Couldn't parse Python file '/Users/hue/code/dopemux-mvp/src/dopemux/analysis/embedder.py' (couldnt-parse)
+  coverage._warn(msg, slug="couldnt-parse")
+
+ERROR: Coverage failure: total of 0.00 is less than fail-under=80.00
+
+
+================================ tests coverage ================================
+______________ coverage: platform darwin, python 3.11.13-final-0 _______________
+
+Name                                                    Stmts   Miss   Cover   Missing
+--------------------------------------------------------------------------------------
+src/dopemux/__init__.py                                     6      6   0.00%   8-18
+src/dopemux/__main__.py                                     1      1   0.00%   3
+src/dopemux/__version__.py                                  1      1   0.00%   3
+src/dopemux/adhd/__init__.py                                4      4   0.00%   8-16
+src/dopemux/adhd/attention_monitor.py                     205    205   0.00%   8-458
+src/dopemux/adhd/context_manager.py                       436    436   0.00%   8-939
+src/dopemux/adhd/task_decomposer.py                       133    133   0.00%   10-273
+src/dopemux/adhd/workflow_manager.py                      118    118   0.00%   19-352
+src/dopemux/adhd_error_messages.py                         37     37   0.00%   17-230
+src/dopemux/analysis/__init__.py                            4      4   0.00%   8-12
+src/dopemux/analysis/extractor.py                         142    142   0.00%   8-444
+src/dopemux/analysis/processor.py                         165    165   0.00%   8-424
+src/dopemux/auto_configurator.py                          124    124   0.00%   18-285
+src/dopemux/auto_detection_service.py                     120    120   0.00%   8-278
+src/dopemux/claude/__init__.py                              3      3   0.00%   8-11
+src/dopemux/claude/configurator.py                        107    107   0.00%   8-671
+src/dopemux/claude/launcher.py                            231    231   0.00%   8-536
+src/dopemux/claude_config.py                              108    108   0.00%   10-332
+src/dopemux/claude_tools/__init__.py                        2      2   0.00%   14-15
+src/dopemux/claude_tools/agent_communication.py           127    127   0.00%   10-437
+src/dopemux/claude_tools/cli.py                           425    425   0.00%   14-623
+src/dopemux/claude_tools/command_interceptor.py           108    108   0.00%   10-285
+src/dopemux/claude_tools/debugging_support.py             227    227   0.00%   10-505
+src/dopemux/claude_tools/env_safe.py                       86     86   0.00%   11-214
+src/dopemux/claude_tools/integration.py                   114    114   0.00%   11-284
+src/dopemux/claude_tools/safety_hooks.py                  113    113   0.00%   16-272
+src/dopemux/claude_tools/session_manager.py               207    207   0.00%   14-515
+src/dopemux/claude_tools/tmux_cli.py                      130    130   0.00%   13-315
+src/dopemux/claude_tools/vault.py                          84     84   0.00%   9-193
+src/dopemux/cli.py                                       3355   3355   0.00%   9-6468
+src/dopemux/cli_worktree_enhanced.py                       83     83   0.00%   9-275
+src/dopemux/commands/__init__.py                            0      0 100.00%
+src/dopemux/commands/decisions_commands.py                780    780   0.00%   14-1842
+src/dopemux/config/__init__.py                              2      2   0.00%   8-10
+src/dopemux/config/base.py                                 18     18   0.00%   7-37
+src/dopemux/config/manager.py                             297    297   0.00%   8-778
+src/dopemux/config_generator.py                            88     88   0.00%   8-310
+src/dopemux/dev_commands.py                                75     75   0.00%   4-114
+src/dopemux/dev_mode.py                                    60     60   0.00%   9-155
+src/dopemux/dope_brainz_router.py                         217    217   0.00%   3-396
+src/dopemux/embeddings/__init__.py                          9      9   0.00%   24-78
+src/dopemux/embeddings/core/__init__.py                     6      6   0.00%   9-58
+src/dopemux/embeddings/core/config.py                      68     68   0.00%   8-129
+src/dopemux/embeddings/core/interfaces.py                  20     20   0.00%   8-273
+src/dopemux/embeddings/core/metrics.py                     84     84   0.00%   8-172
+src/dopemux/embeddings/core/presets.py                     13     13   0.00%   8-173
+src/dopemux/embeddings/core/types.py                       90     90   0.00%   8-210
+src/dopemux/embeddings/enhancers/__init__.py                3      3   0.00%   8-17
+src/dopemux/embeddings/enhancers/base.py                    4      4   0.00%   8-14
+src/dopemux/embeddings/enhancers/consensus.py             237    237   0.00%   12-534
+src/dopemux/embeddings/error_handling.py                    2      2   0.00%   10-36
+src/dopemux/embeddings/integrations/__init__.py             4      4   0.00%   8-12
+src/dopemux/embeddings/integrations/base.py                 6      6   0.00%   8-23
+src/dopemux/embeddings/integrations/conport.py            150    150   0.00%   9-422
+src/dopemux/embeddings/integrations/serena.py             259    259   0.00%   9-607
+src/dopemux/embeddings/pipelines/__init__.py                5      5   0.00%   8-13
+src/dopemux/embeddings/pipelines/base.py                  143    143   0.00%   8-338
+src/dopemux/embeddings/pipelines/document_pipeline.py     211    211   0.00%   9-468
+src/dopemux/embeddings/pipelines/search_pipeline.py       201    201   0.00%   9-478
+src/dopemux/embeddings/pipelines/sync_pipeline.py         264    264   0.00%   9-578
+src/dopemux/embeddings/providers/__init__.py                2      2   0.00%   8-10
+src/dopemux/embeddings/providers/voyage.py                136    136   0.00%   8-367
+src/dopemux/embeddings/storage/__init__.py                  6      6   0.00%   9-39
+src/dopemux/embeddings/storage/base.py                      8      8   0.00%   8-219
+src/dopemux/embeddings/storage/hybrid_store.py            204    204   0.00%   8-451
+src/dopemux/embeddings/storage/ranking.py                 130    130   0.00%   8-370
+src/dopemux/embeddings/storage/text_indices.py            146    146   0.00%   8-366
+src/dopemux/embeddings/storage/vector_indices.py          180    180   0.00%   8-474
+src/dopemux/error_handling.py                             237    237   0.00%   16-468
+src/dopemux/event_bus.py                                  100    100   0.00%   6-146
+src/dopemux/events/__init__.py                              2      2   0.00%   8-16
+src/dopemux/events/types.py                                69     69   0.00%   8-115
+src/dopemux/extraction/__init__.py                          3      3   0.00%   8-11
+src/dopemux/extraction/advanced_embeddings.py             205    205   0.00%   10-441
+src/dopemux/extraction/cleanup.py                         278    278   0.00%   8-612
+src/dopemux/extraction/consensus_validator.py             229    229   0.00%   12-498
+src/dopemux/extraction/hybrid_vector_store.py             445    445   0.00%   14-926
+src/dopemux/extraction/pipeline_orchestrator.py           341    341   0.00%   12-698
+src/dopemux/extraction/synthesizer.py                     274    274   0.00%   8-548
+src/dopemux/extraction/unified_extractor.py               148    148   0.00%   8-428
+src/dopemux/global_config.py                               89     89   0.00%   14-160
+src/dopemux/health.py                                     305    305   0.00%   9-632
+src/dopemux/instance_manager.py                           180    180   0.00%   8-516
+src/dopemux/instance_state.py                             203    203   0.00%   8-489
+src/dopemux/litellm_proxy.py                              301    301   0.00%   3-604
+src/dopemux/main_worktree_detector.py                      59     59   0.00%   10-189
+src/dopemux/mcp/__init__.py                                 8      8   0.00%   22-31
+src/dopemux/mcp/broker.py                                 402    402   0.00%   23-933
+src/dopemux/mcp/hooks.py                                  243    243   0.00%   18-616
+src/dopemux/mcp/observability.py                          258    258   0.00%   24-775
+src/dopemux/mcp/parallel_executor.py                       67     67   0.00%   15-245
+src/dopemux/mcp/roles.py                                  240    240   0.00%   23-553
+src/dopemux/mcp/server_manager.py                         429    429   0.00%   24-847
+src/dopemux/mcp/session_manager.py                        355    355   0.00%   25-900
+src/dopemux/mcp/token_manager.py                          295    295   0.00%   25-765
+src/dopemux/mobile/__init__.py                              2      2   0.00%   3-5
+src/dopemux/mobile/cli.py                                 189    189   0.00%   3-286
+src/dopemux/mobile/hooks.py                                21     21   0.00%   3-45
+src/dopemux/mobile/runtime.py                             224    224   0.00%   3-411
+src/dopemux/mobile/tmux_utils.py                          184    184   0.00%   3-421
+src/dopemux/port_config.py                                 18     18   0.00%   8-72
+src/dopemux/profile_analytics.py                          135    135   0.00%   8-323
+src/dopemux/profile_analyzer.py                           170    170   0.00%   8-369
+src/dopemux/profile_commands.py                            75     75   0.00%   8-123
+src/dopemux/profile_detector.py                           237    237   0.00%   8-494
+src/dopemux/profile_manager.py                            123    123   0.00%   17-312
+src/dopemux/profile_models.py                              93     93   0.00%   10-331
+src/dopemux/profile_parser.py                             112    112   0.00%   10-353
+src/dopemux/profile_wizard.py                              85     85   0.00%   8-225
+src/dopemux/project_init.py                               105    105   0.00%   13-221
+src/dopemux/protection_interceptor.py                     293    293   0.00%   19-611
+src/dopemux/roles/__init__.py                               2      2   0.00%   3-12
+src/dopemux/roles/catalog.py                               92     92   0.00%   10-324
+src/dopemux/safe_subprocess.py                             61     61   0.00%   10-117
+src/dopemux/shell_integration_installer.py                 99     99   0.00%   17-206
+src/dopemux/tmux/__init__.py                                3      3   0.00%   3-6
+src/dopemux/tmux/cli.py                                  1106   1106   0.00%   3-2401
+src/dopemux/tmux/controller.py                            293    293   0.00%   3-668
+src/dopemux/uncommitted_detector.py                       111    111   0.00%   8-286
+src/dopemux/update/__init__.py                              5      5   0.00%   8-13
+src/dopemux/update/health.py                              176    176   0.00%   8-379
+src/dopemux/update/manager.py                             193    193   0.00%   8-358
+src/dopemux/update/phases.py                              379    379   0.00%   8-714
+src/dopemux/update/progress.py                            127    127   0.00%   8-276
+src/dopemux/update/rollback.py                            280    280   0.00%   8-523
+src/dopemux/workspace_detection.py                        108    108   0.00%   22-341
+src/dopemux/workspace_env.py                               33     33   0.00%   3-71
+src/dopemux/workspace_utils.py                              5      5   0.00%   9-25
+src/dopemux/worktree_commands.py                          112    112   0.00%   16-365
+src/dopemux/worktree_diagnostics.py                       153    153   0.00%   18-286
+src/dopemux/worktree_manager_enhanced.py                  332    332   0.00%   16-707
+src/dopemux/worktree_name_inferrer.py                     153    153   0.00%   10-401
+src/dopemux/worktree_recovery.py                          207    207   0.00%   11-462
+src/dopemux/worktree_templates.py                          93     93   0.00%   17-292
+--------------------------------------------------------------------------------------
+TOTAL                                                   23088  23088   0.00%
+Coverage HTML written to dir htmlcov
+Coverage XML written to file coverage.xml
+FAIL Required test coverage of 80% not reached. Total coverage: 0.00%
+=========================== short test summary info ============================
+SKIPPED [1] tests/arch/test_service_env_contract.py:164: Service directory not found: /Users/hue/code/dopemux-mvp/services/postgres
+SKIPPED [1] tests/arch/test_service_env_contract.py:164: Service directory not found: /Users/hue/code/dopemux-mvp/services/redis
+SKIPPED [1] tests/arch/test_service_env_contract.py:164: Service directory not found: /Users/hue/code/dopemux-mvp/services/qdrant
+========================= 3 passed, 3 skipped in 4.59s =========================
