@@ -1,53 +1,659 @@
 {
+  "total_services": 48,
+  "smoke_enabled": 3,
   "services": [
     {
-      "name": "postgres",
-      "compose_service_name": "postgres",
-      "port": 5432,
-      "container_port": 5432,
-      "health_path": null,
-      "category": "infrastructure"
+      "name": "activity-capture",
+      "path": "services/activity-capture",
+      "has_main": true,
+      "has_dockerfile": true,
+      "has_requirements": true,
+      "env_vars_used": [
+        "ADHD_ENGINE_URL",
+        "ADHD_USER_ID",
+        "AGGREGATION_WINDOW_SECONDS",
+        "CONSUMER_GROUP",
+        "CONSUMER_NAME",
+        "REDIS_URL",
+        "STREAM_NAME"
+      ],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "entry_point": "main.py",
+      "requirements_file": "requirements.txt"
     },
     {
-      "name": "redis",
-      "compose_service_name": "redis",
-      "port": 6379,
-      "container_port": 6379,
-      "health_path": null,
-      "category": "infrastructure"
+      "name": "adhd-dashboard",
+      "path": "services/adhd-dashboard",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
     },
     {
-      "name": "qdrant",
-      "compose_service_name": "qdrant",
-      "port": 6333,
-      "container_port": 6333,
-      "health_path": "/",
-      "category": "infrastructure"
+      "name": "adhd-engine",
+      "path": "services/adhd-engine",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": true,
+      "port": 8095,
+      "category": "cognitive"
+    },
+    {
+      "name": "adhd-notifier",
+      "path": "services/adhd-notifier",
+      "has_main": true,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [
+        "ADHD_ENGINE_URL",
+        "USER_ID"
+      ],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "entry_point": "main.py"
+    },
+    {
+      "name": "adhd_engine",
+      "path": "services/adhd_engine",
+      "has_main": true,
+      "has_dockerfile": true,
+      "has_requirements": true,
+      "env_vars_used": [
+        "INSTANCE_ID",
+        "SERVICE_VERSION",
+        "WORKSPACE_ID"
+      ],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "entry_point": "main.py",
+      "dockerfile_env_vars": [
+        "PYTHONPATH",
+        "API_PORT"
+      ],
+      "requirements_file": "requirements.txt"
+    },
+    {
+      "name": "agents",
+      "path": "services/agents",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "break-suggester",
+      "path": "services/break-suggester",
+      "has_main": false,
+      "has_dockerfile": true,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "claude-brain",
+      "path": "services/claude-brain",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "claude_brain",
+      "path": "services/claude_brain",
+      "has_main": true,
+      "has_dockerfile": true,
+      "has_requirements": true,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "entry_point": "main.py",
+      "requirements_file": "requirements.txt"
+    },
+    {
+      "name": "complexity_coordinator",
+      "path": "services/complexity_coordinator",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
     },
     {
       "name": "conport",
-      "compose_service_name": "conport",
+      "path": "services/conport",
+      "has_main": true,
+      "has_dockerfile": true,
+      "has_requirements": true,
+      "env_vars_used": [
+        "HOST",
+        "LOG_LEVEL",
+        "PORT",
+        "POSTGRES_DB",
+        "POSTGRES_HOST",
+        "POSTGRES_PASSWORD",
+        "POSTGRES_PORT",
+        "POSTGRES_USER"
+      ],
+      "in_smoke_stack": true,
+      "port_defined": true,
+      "entry_point": "app.py",
+      "dockerfile_env_vars": [
+        "PYTHONUNBUFFERED",
+        "PYTHONDONTWRITEBYTECODE"
+      ],
+      "requirements_file": "requirements.txt",
       "port": 3004,
-      "container_port": 3004,
-      "health_path": "/health",
       "category": "mcp"
     },
     {
+      "name": "conport-bridge",
+      "path": "services/conport-bridge",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "conport-kg",
+      "path": "services/conport-kg",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "conport_kg",
+      "path": "services/conport_kg",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": true,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "requirements_file": "pyproject.toml"
+    },
+    {
+      "name": "conport_kg_ui",
+      "path": "services/conport_kg_ui",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": true,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "requirements_file": "package.json"
+    },
+    {
+      "name": "context-switch-tracker",
+      "path": "services/context-switch-tracker",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "context7",
+      "path": "services/context7",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "dddpg",
+      "path": "services/dddpg",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": true,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "requirements_file": "requirements.txt"
+    },
+    {
+      "name": "dope-context",
+      "path": "services/dope-context",
+      "has_main": false,
+      "has_dockerfile": true,
+      "has_requirements": true,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "dockerfile_env_vars": [
+        "MCP_SERVER_PORT",
+        "PYTHONUNBUFFERED",
+        "PYTHONPATH"
+      ],
+      "requirements_file": "requirements.txt"
+    },
+    {
       "name": "dopecon-bridge",
-      "compose_service_name": "dopecon-bridge",
+      "path": "services/dopecon-bridge",
+      "has_main": true,
+      "has_dockerfile": true,
+      "has_requirements": true,
+      "env_vars_used": [
+        "AGE_DATABASE",
+        "AGE_HOST",
+        "AGE_PASSWORD",
+        "AGE_PORT",
+        "AGE_USER",
+        "ALLOWED_ORIGINS",
+        "CONPORT_URL",
+        "CONTAINER_PREFIX",
+        "DOPEMUX_INSTANCE",
+        "EMBEDDINGS_MODEL",
+        "EMBEDDINGS_PROVIDER",
+        "HOST",
+        "LITELLM_BASE",
+        "LOG_LEVEL",
+        "NETWORK_NAME",
+        "OPENAI_API_KEY",
+        "PORT_BASE",
+        "POSTGRES_URL",
+        "QDRANT_COLLECTION",
+        "QDRANT_HOST",
+        "QDRANT_URL",
+        "REDIS_PASSWORD",
+        "REDIS_URL",
+        "RERANKER_MODEL",
+        "SECRET_KEY",
+        "VOYAGEAI_API_KEY"
+      ],
+      "in_smoke_stack": true,
+      "port_defined": true,
+      "entry_point": "main.py",
+      "dockerfile_env_vars": [
+        "PYTHONPATH",
+        "MCP_INTEGRATION_PORT",
+        "PYTHONUNBUFFERED"
+      ],
+      "requirements_file": "requirements.txt",
       "port": 3016,
-      "container_port": 3016,
-      "health_path": "/health",
       "category": "coordination"
     },
     {
+      "name": "dopemux-gpt-researcher",
+      "path": "services/dopemux-gpt-researcher",
+      "has_main": false,
+      "has_dockerfile": true,
+      "has_requirements": true,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "dockerfile_env_vars": [
+        "PYTHONPATH"
+      ],
+      "requirements_file": "requirements.txt"
+    },
+    {
+      "name": "energy-trends",
+      "path": "services/energy-trends",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "genetic-agent",
+      "path": "services/genetic-agent",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "genetic_agent",
+      "path": "services/genetic_agent",
+      "has_main": true,
+      "has_dockerfile": true,
+      "has_requirements": true,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "entry_point": "main.py",
+      "requirements_file": "requirements.txt"
+    },
+    {
+      "name": "intelligence",
+      "path": "services/intelligence",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "interruption-shield",
+      "path": "services/interruption-shield",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": true,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "requirements_file": "requirements.txt"
+    },
+    {
+      "name": "litellm",
+      "path": "services/litellm",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "mcp-client",
+      "path": "services/mcp-client",
+      "has_main": true,
+      "has_dockerfile": true,
+      "has_requirements": true,
+      "env_vars_used": [
+        "DISPLAY",
+        "EXA_API_KEY",
+        "GEMINI_API_KEY",
+        "OPENAI_API_KEY",
+        "OPENROUTER_API_KEY",
+        "XAI_API_KEY"
+      ],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "entry_point": "main.py",
+      "requirements_file": "requirements.txt"
+    },
+    {
+      "name": "mcp-conport",
+      "path": "services/mcp-conport",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "mcp-integration-bridge",
+      "path": "services/mcp-integration-bridge",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "ml-predictions",
+      "path": "services/ml-predictions",
+      "has_main": true,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "entry_point": "main.py"
+    },
+    {
+      "name": "ml-risk-assessment",
+      "path": "services/ml-risk-assessment",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "monitoring",
+      "path": "services/monitoring",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "monitoring-dashboard",
+      "path": "services/monitoring-dashboard",
+      "has_main": true,
+      "has_dockerfile": true,
+      "has_requirements": true,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "entry_point": "server.py",
+      "requirements_file": "requirements.txt"
+    },
+    {
+      "name": "orchestrator",
+      "path": "services/orchestrator",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": true,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "requirements_file": "pyproject.toml"
+    },
+    {
+      "name": "roast-engine",
+      "path": "services/roast-engine",
+      "has_main": true,
+      "has_dockerfile": false,
+      "has_requirements": true,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "entry_point": "server.py",
+      "requirements_file": "requirements.txt"
+    },
+    {
+      "name": "serena",
+      "path": "services/serena",
+      "has_main": true,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [
+        "CONTEXT_DEPTH",
+        "DOPEMUX_INSTANCE",
+        "GENTLE_GUIDANCE",
+        "INTELLIGENT_SUGGESTIONS",
+        "MAX_SEARCH_RESULTS",
+        "NAVIGATION_BREADCRUMBS",
+        "PROGRESSIVE_DISCLOSURE",
+        "REDIS_URL",
+        "SERENA_COMMAND",
+        "USE_PIP_INSTALL",
+        "USE_UVX",
+        "WORKSPACE_ID"
+      ],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "entry_point": "server.py"
+    },
+    {
+      "name": "session-intelligence",
+      "path": "services/session-intelligence",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "session_intelligence",
+      "path": "services/session_intelligence",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "slack-integration",
+      "path": "services/slack-integration",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
       "name": "task-orchestrator",
-      "compose_service_name": "task-orchestrator",
+      "path": "services/task-orchestrator",
+      "has_main": true,
+      "has_dockerfile": true,
+      "has_requirements": true,
+      "env_vars_used": [
+        "CONFLICT_ALERTS",
+        "DEPENDENCY_VIZ",
+        "DOPEMUX_INSTANCE",
+        "HOST",
+        "LOG_LEVEL",
+        "MAX_PARALLEL_TASKS",
+        "PORT",
+        "REDIS_URL",
+        "SMART_BATCHING",
+        "WORKSPACE_ID"
+      ],
+      "in_smoke_stack": true,
+      "port_defined": true,
+      "entry_point": "server.py",
+      "requirements_file": "requirements.txt",
       "port": 8000,
-      "container_port": 8000,
-      "health_path": "/health",
       "category": "cognitive"
+    },
+    {
+      "name": "task-router",
+      "path": "services/task-router",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "taskmaster",
+      "path": "services/taskmaster",
+      "has_main": true,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [
+        "ANTHROPIC_API_KEY",
+        "CELEBRATION_ENABLED",
+        "DOPEMUX_INSTANCE",
+        "FOCUS_DURATION",
+        "OPENAI_API_KEY",
+        "PROGRESS_VIZ",
+        "REDIS_URL",
+        "TASK_CHUNK_SIZE",
+        "USE_UVX",
+        "WORKSPACE_ID"
+      ],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "entry_point": "server.py"
+    },
+    {
+      "name": "taskmaster-mcp-client",
+      "path": "services/taskmaster-mcp-client",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
+    },
+    {
+      "name": "voice-commands",
+      "path": "services/voice-commands",
+      "has_main": false,
+      "has_dockerfile": true,
+      "has_requirements": true,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "requirements_file": "requirements.txt"
+    },
+    {
+      "name": "working-memory-assistant",
+      "path": "services/working-memory-assistant",
+      "has_main": true,
+      "has_dockerfile": true,
+      "has_requirements": true,
+      "env_vars_used": [
+        "POSTGRES_DB",
+        "POSTGRES_HOST",
+        "POSTGRES_PASSWORD",
+        "POSTGRES_PORT",
+        "POSTGRES_USER",
+        "REDIS_HOST",
+        "REDIS_PORT",
+        "WMA_ENCRYPTION_KEY",
+        "WMA_PORT",
+        "WMA_SECRET_KEY"
+      ],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "entry_point": "main.py",
+      "dockerfile_env_vars": [
+        "PYTHONUNBUFFERED",
+        "PYTHONDONTWRITEBYTECODE",
+        "WMA_PORT"
+      ],
+      "requirements_file": "requirements.txt"
+    },
+    {
+      "name": "workspace-watcher",
+      "path": "services/workspace-watcher",
+      "has_main": true,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false,
+      "entry_point": "main.py"
+    },
+    {
+      "name": "zen",
+      "path": "services/zen",
+      "has_main": false,
+      "has_dockerfile": false,
+      "has_requirements": false,
+      "env_vars_used": [],
+      "in_smoke_stack": false,
+      "port_defined": false
     }
-  ],
-  "count": 6
+  ]
 }
