@@ -1,0 +1,31 @@
+
+============================================================
+🔍 Environment Drift Scan Report (G33)
+============================================================
+
+📊 Summary:
+  Total Services:    6
+  Compliant:         3 ✅
+  Violations:        0 ❌
+  Errors:            3 ⚠️
+  Compliance Rate:   50.0%
+
+⚠️  Warnings:
+
+  • conport: 8 undocumented vars
+  • dopecon-bridge: 27 undocumented vars
+  • task-orchestrator: 10 undocumented vars
+
+✅ Compliant Services:
+
+  • conport (mcp) - 17 env vars
+  • dopecon-bridge (coordination) - 36 env vars
+  • task-orchestrator (cognitive) - 18 env vars
+
+============================================================
+📋 Full report: reports/g33/env_drift_report.json
+📖 Migration guide: docs/engineering/service_env_contract.md
+============================================================
+
+✅ JSON report saved to: reports/g33/env_drift_report.json
+

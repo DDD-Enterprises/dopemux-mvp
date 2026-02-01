@@ -107,6 +107,12 @@ def guess_type(path):
     if '/02-how-to/' in p: return 'how-to'
     if '/03-reference/' in p: return 'reference'
     if '/04-explanation/' in p: return 'explanation'
+    if '/05-audit-reports/' in p: return 'audit-report'
+    if '/06-research/' in p: return 'research'
+    if '/archive/' in p: return 'historical'
+    if '/systems/' in p: return 'system-doc'
+    if '/deployment/' in p: return 'deployment'
+    if '/implementation-plans/' in p: return 'planning'
     return 'explanation'
 
 def main():

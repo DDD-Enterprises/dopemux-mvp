@@ -3,6 +3,9 @@
 from typing import Dict, Any, List, Optional
 import sys
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Try to import the genetic_agent ZenClient, fall back to mock if not available
 try:
@@ -19,11 +22,6 @@ except ImportError:
         async def plan_complex_task(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
             """Mock implementation of complex task planning."""
             return {
-
-import logging
-
-logger = logging.getLogger(__name__)
-
                 "plan": f"Mock plan for: {task_data.get('description', 'Unknown task')}",
                 "subtasks": [
                     {"id": "subtask_1", "description": "First subtask", "duration": 15},
