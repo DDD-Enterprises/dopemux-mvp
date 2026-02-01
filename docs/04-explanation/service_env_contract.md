@@ -97,7 +97,7 @@ logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO))
 **Purpose**: External URL for the service (used by bridge/client services)
 **Type**: String (URL)
 **Default**: `http://localhost:<port>` (if service is a client/bridge), otherwise not required
-**Example**: `BASE_URL=http://dopecon-bridge:3016`
+**Example**: `BASE_URL=http://localhost:3016` (or `http://dopecon-bridge:3016` in Docker network)
 
 **When required**: Only for services that act as HTTP clients to other services (e.g., dopecon-bridge calling conport).
 
