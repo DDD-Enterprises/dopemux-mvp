@@ -381,10 +381,10 @@ dopemux mobile start
 
 ## 📚 Related Documentation
 
-- **[Dopemux README](../README.md)** - Main project overview
-- **[Happy Coder Usage Guide](happy-coder-usage-guide.md)** - Mobile client details
-- **[ADHD Engine Guide](../04-explanation/adhd-engine-technical-deep-dive.md)** - Cognitive optimization features
-- **[Troubleshooting Playbook](troubleshooting-playbook.md)** - Common issues and solutions
+- **[Dopemux README](../../README.md)** - Main project overview
+- **[How-To Guides](overview.md)** - Additional setup guides
+- **[ADHD Intelligence System](../systems/adhd-intelligence/overview.md)** - Cognitive optimization features
+- **[Troubleshooting Guide](../troubleshooting-playbook.md)** - Common issues and solutions
 
 ---
 
