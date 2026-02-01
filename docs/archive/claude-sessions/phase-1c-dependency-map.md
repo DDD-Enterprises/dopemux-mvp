@@ -1,3 +1,11 @@
+---
+id: phase-1c-dependency-map
+title: Phase 1C Dependency Map
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # Phase 1C: Dependency & Config Mapping
 **Date**: 2025-10-16
 **Duration**: 30 minutes

@@ -1,3 +1,11 @@
+---
+id: WEEK-7-INTEGRATION-BRIDGE-COMPLETION-PLAN
+title: Week 7 Integration Bridge Completion Plan
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # Week 7: DopeconBridge Completion Plan
 **Effort**: 12 hours total (4-6h bridge + 6-8h migration)
 **Priority**: HIGH (eliminates architecture violations)

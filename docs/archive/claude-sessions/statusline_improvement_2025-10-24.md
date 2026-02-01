@@ -1,3 +1,11 @@
+---
+id: statusline_improvement_2025-10-24
+title: Statusline_Improvement_2025 10 24
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # Statusline Investigation - Claude Code JSON Fields
 
 **Date**: 2025-10-24

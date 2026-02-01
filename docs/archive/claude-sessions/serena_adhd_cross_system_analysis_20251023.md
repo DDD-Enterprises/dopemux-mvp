@@ -1,3 +1,11 @@
+---
+id: serena_adhd_cross_system_analysis_20251023
+title: Serena_Adhd_Cross_System_Analysis_20251023
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # Comprehensive Dopemux MCP Ecosystem Analysis
 
 **Date**: 2025-10-23

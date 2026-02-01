@@ -1,3 +1,11 @@
+---
+id: adhd-intelligence-complete-2025-10-24
+title: Adhd Intelligence Complete 2025 10 24
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # ADHD Intelligence Stack - Complete Implementation
 
 **Date**: 2025-10-24

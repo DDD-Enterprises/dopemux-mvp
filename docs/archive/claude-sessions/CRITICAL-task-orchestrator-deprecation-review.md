@@ -1,3 +1,11 @@
+---
+id: CRITICAL-task-orchestrator-deprecation-review
+title: Critical Task Orchestrator Deprecation Review
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # CRITICAL: Task-Orchestrator Deprecation Decision Review
 **Date**: 2025-10-16
 **Analyst**: Claude Code (Sonnet 4.5)
