@@ -198,9 +198,9 @@ class TestEnvContractDocumentation:
     
     def test_contract_document_exists(self):
         """Test that the env contract document exists"""
-        contract_path = PROJECT_ROOT / "docs" / "engineering" / "service_env_contract.md"
+        contract_path = PROJECT_ROOT / "docs" / "04-explanation" / "service_env_contract.md"
         assert contract_path.exists(), (
-            "Environment contract document not found at docs/engineering/service_env_contract.md"
+            "Environment contract document not found at docs/04-explanation/service_env_contract.md"
         )
     
     def test_drift_scanner_exists(self):

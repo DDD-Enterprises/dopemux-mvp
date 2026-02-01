@@ -63,13 +63,17 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 # Import EventBus for Redis Streams coordination
 from event_bus import EventBus, Event, EventType
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure logging with env var support (G33)
+LOG_LEVEL = os.getenv("LOG_LEVEL", "info").upper()
+logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO))
 logger = logging.getLogger(__name__)
 
 # ============================================================================
 # MULTI-INSTANCE CONFIGURATION
 # ============================================================================
+
+# Environment variable contract (G33)
+HOST = os.getenv("HOST", "0.0.0.0")
 
 # Instance configuration - automatically detected from environment
 INSTANCE_NAME = os.getenv("DOPEMUX_INSTANCE", "default")
@@ -2900,7 +2904,7 @@ async def route_to_taskmaster(request: CrossPlaneRouteRequest):
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
-        host="0.0.0.0",
+        host=HOST,
         port=MCP_INTEGRATION_PORT,
         reload=False  # Disable reload in production
     )
