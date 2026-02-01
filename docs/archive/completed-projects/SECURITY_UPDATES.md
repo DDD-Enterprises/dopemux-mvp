@@ -6,7 +6,18 @@ owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
 ---
-# Security Updates - November 2025
+
+# ⚠️ ARCHIVED - See Current Security Updates
+
+**This document is archived.** For the most current security updates, see:
+
+👉 **[/SECURITY_UPDATES.md](/SECURITY_UPDATES.md)** (root of repository)
+
+This file documents the November 2025 security updates. The comprehensive February 2026 update is in the root-level SECURITY_UPDATES.md file.
+
+---
+
+# Security Updates - November 2025 (ARCHIVED)
 
 ## Overview
 Addressed critical and high-priority security vulnerabilities identified by safety scan and GitHub Dependabot.
