@@ -74,6 +74,9 @@ logger = logging.getLogger(__name__)
 
 # Environment variable contract (G33)
 HOST = os.getenv("HOST", "0.0.0.0")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
+SERVICE_NAME = os.getenv("SERVICE_NAME", "dopecon-bridge")
+HEALTH_CHECK_PATH = os.getenv("HEALTH_CHECK_PATH", "/health")
 
 # Instance configuration - automatically detected from environment
 INSTANCE_NAME = os.getenv("DOPEMUX_INSTANCE", "default")
@@ -81,8 +84,9 @@ PORT_BASE = int(os.getenv("PORT_BASE", "3000"))
 CONTAINER_PREFIX = os.getenv("CONTAINER_PREFIX", f"mcp-{INSTANCE_NAME}")
 NETWORK_NAME = os.getenv("NETWORK_NAME", f"mcp-network-{INSTANCE_NAME}")
 
-# Integration bridge port (PORT_BASE + 16)
-MCP_INTEGRATION_PORT = PORT_BASE + 16
+# Integration bridge port (PORT_BASE + 16, or direct PORT override)
+PORT = int(os.getenv("PORT", str(PORT_BASE + 16)))
+MCP_INTEGRATION_PORT = PORT
 
 # Service discovery - instance-aware container names
 TASK_MASTER_URL = f"http://{CONTAINER_PREFIX}-task-master-ai:3005"
