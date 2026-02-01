@@ -1,0 +1,105 @@
+# Dopemux Service Registry
+# Single source of truth for ports, health endpoints, and service configuration
+# 
+# Schema:
+#   name: string - canonical service name
+#   port: integer - external host port
+#   container_port: integer (optional) - internal container port (defaults to port)
+#   health_path: string - health check endpoint path
+#   health_method: string (optional) - HTTP method for health check (default: GET)
+#   health_timeout_ms: integer (optional) - timeout in milliseconds (default: 5000)
+#   health_expected_status: integer (optional) - expected HTTP status (default: 200)
+#   compose_service_name: string (optional) - docker-compose service name (defaults to name)
+#   enabled_in_smoke: boolean - whether service is included in smoke stack
+#   category: string - service category (infrastructure, mcp, coordination, cognitive)
+#   description: string - brief service description
+
+version: "1.0"
+last_updated: "2026-02-01"
+
+services:
+  # Infrastructure Services
+  - name: postgres
+    port: 5432
+    container_port: 5432
+    health_path: null  # Uses pg_isready command
+    health_method: null
+    health_timeout_ms: 5000
+    compose_service_name: postgres
+    enabled_in_smoke: true
+    category: infrastructure
+    description: "PostgreSQL database with AGE extension for knowledge graph"
+
+  - name: redis
+    port: 6379
+    container_port: 6379
+    health_path: null  # Uses redis-cli ping
+    health_method: null
+    health_timeout_ms: 3000
+    compose_service_name: redis
+    enabled_in_smoke: true
+    category: infrastructure
+    description: "Redis for caching and event streaming"
+
+  - name: qdrant
+    port: 6333
+    container_port: 6333
+    health_path: /  # Qdrant root endpoint
+    health_method: GET
+    health_timeout_ms: 5000
+    health_expected_status: 200
+    compose_service_name: qdrant
+    enabled_in_smoke: true
+    category: infrastructure
+    description: "Qdrant vector database for semantic search"
+
+  # MCP Services
+  - name: conport
+    port: 3004
+    container_port: 3004
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 10000
+    health_expected_status: 200
+    compose_service_name: conport
+    enabled_in_smoke: true
+    category: mcp
+    description: "ConPort - Knowledge graph and context management MCP server"
+
+  # Coordination Layer
+  - name: dopecon-bridge
+    port: 3016
+    container_port: 3016
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 5000
+    health_expected_status: 200
+    compose_service_name: dopecon-bridge
+    enabled_in_smoke: true
+    category: coordination
+    description: "DopeconBridge - Central coordination and event routing layer"
+
+  # Cognitive Services
+  - name: task-orchestrator
+    port: 8000
+    container_port: 8000
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 10000
+    health_expected_status: 200
+    compose_service_name: task-orchestrator
+    enabled_in_smoke: true
+    category: cognitive
+    description: "Task Orchestrator - ADHD-aware task coordination service"
+
+  - name: adhd-engine
+    port: 8095
+    container_port: 8095
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 10000
+    health_expected_status: 200
+    compose_service_name: adhd-engine
+    enabled_in_smoke: false  # Optional for minimal smoke stack
+    category: cognitive
+    description: "ADHD Engine (Serena) - Real-time ADHD accommodation service"
