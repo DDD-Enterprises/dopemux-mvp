@@ -1,3 +1,11 @@
+---
+id: cli-branding
+title: "D\xD8PEM\xDCX CLI Branding Guide"
+type: reference
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # DØPEMÜX CLI Branding Guide
 
 This document explains how the Ritual Daemon voice surfaces inside `dopemux` CLI commands. Treat it as a quick reference for maintainers who will be adding new `console.print` statements, help text, or tmux hooks.

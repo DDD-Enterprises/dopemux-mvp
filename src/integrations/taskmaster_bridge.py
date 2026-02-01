@@ -222,7 +222,10 @@ class TaskMasterMCPClient:
                 },
             }
 
-            response = await self._send_mcp_request(init_request)
+            response = await self._send_mcp_request(
+                init_request,
+                allow_disconnected=True,
+            )
 
             if response.get("result"):
                 self._connected = True
@@ -243,12 +246,17 @@ class TaskMasterMCPClient:
         """Gracefully disconnect from Task-Master MCP server."""
         if self._process:
             try:
-                # Send shutdown notification
+                # Send shutdown notification (no response expected)
                 shutdown_request = {
                     "jsonrpc": "2.0",
                     "method": "notifications/shutdown",
                 }
-                await self._send_mcp_request(shutdown_request)
+                try:
+                    request_json = json.dumps(shutdown_request) + "\n"
+                    self._process.stdin.write(request_json)
+                    self._process.stdin.flush()
+                except Exception:
+                    pass  # Ignore errors during shutdown notification
 
                 # Terminate process
                 self._process.terminate()
@@ -269,7 +277,11 @@ class TaskMasterMCPClient:
         self._request_id += 1
         return self._request_id
 
-    async def _send_mcp_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
+    async def _send_mcp_request(
+        self,
+        request: Dict[str, Any],
+        allow_disconnected: bool = False,
+    ) -> Dict[str, Any]:
         """
         Send MCP request to Task-Master server.
 
@@ -279,7 +291,9 @@ class TaskMasterMCPClient:
         Returns:
             MCP response
         """
-        if not self._process or not self._connected:
+        if not self._process:
+            raise DopemuxIntegrationError("Not connected to Task-Master")
+        if not self._connected and not allow_disconnected:
             raise DopemuxIntegrationError("Not connected to Task-Master")
 
         try:
