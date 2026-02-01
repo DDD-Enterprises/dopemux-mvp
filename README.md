@@ -385,7 +385,7 @@ Your statusline should now show:
 
 **No service** should access ConPort DB or Redis directly - all via DopeconBridge.
 
-[📖 DopeconBridge Documentation](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md)
+[📖 DopeconBridge Documentation](docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_SESSION_SUMMARY.md)
 
 ### ConPort Knowledge Graph
 
@@ -1011,6 +1011,6 @@ dopemux workspace reset
 ```
 
 For more details, see:
-- [Multi-Workspace Implementation Guide](MULTI_WORKSPACE_IMPLEMENTATION_GUIDE.md)
+- [Multi-Workspace Implementation Guide](docs/systems/multi-workspace/README.md)
 - [Workspace API Reference](docs/api/workspace.md)
 - [Troubleshooting Guide](docs/troubleshooting/workspaces.md)

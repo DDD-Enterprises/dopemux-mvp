@@ -264,8 +264,11 @@ dopemux-mvp/
 │   ├── StateManager                  # NEW: ~80 lines
 │   └── DashboardApp (update)         # MODIFY: +100 lines
 │
-├── sparkline_generator.py            # EXISTS ✅ (reuse)
-├── prometheus_client.py              # EXISTS ✅ (reuse)
+├── src/dopemux/                      # Planned components
+│   ├── integrations/
+│   │   └── prometheus_sparkline.py   # Planned
+│   └── utils/
+│       └── sparkline_generator.py    # Planned
 │
 ├── docs/implementation-plans/
 │   ├── DASHBOARD_DAY10_MASTER_INDEX.md              # This file!

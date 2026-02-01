@@ -18,7 +18,7 @@ next_review: '2026-02-08'
 ## 📖 QUICK NAVIGATION
 
 ### Start Here (5 minutes)
-👉 **[DASHBOARD_DAY9_SUMMARY.md](../../DASHBOARD_DAY9_SUMMARY.md)**
+👉 **[DASHBOARD_DAY9_SUMMARY.md](../archive/session-notes/2025-historical/DASHBOARD_DAY9_SUMMARY.md)**
 - 5-minute overview
 - What we're building
 - Why it matters
@@ -91,15 +91,15 @@ next_review: '2026-02-08'
 ## ✅ WHAT ALREADY EXISTS (No Work Needed!)
 
 ### Core Components (Leverage These!)
-1. **SparklineGenerator** ✅
-   - File: `sparkline_generator.py` (302 lines)
+1. **SparklineGenerator** (Planned)
+   - Would be at: `src/dopemux/utils/sparkline_generator.py`
    - Unicode rendering, coloring, trend detection
-   - No changes needed!
+   - Not yet implemented
 
-2. **PrometheusClient** ✅
-   - File: `prometheus_client.py`
+2. **PrometheusClient** (Planned)
+   - Would be at: `src/dopemux/integrations/prometheus_client.py`
    - Query execution, caching, error handling
-   - No changes needed!
+   - Not yet implemented
 
 3. **MetricsManager** ✅ (Day 8)
    - File: `dopemux_dashboard.py`
@@ -185,7 +185,7 @@ Polish:     ░░░░░░░░░░░░░░░░░░░░   0% �
 ### Before You Start (10 minutes)
 ```bash
 # 1. Read summary
-cat DASHBOARD_DAY9_SUMMARY.md
+cat docs/archive/session-notes/2025-historical/DASHBOARD_DAY9_SUMMARY.md
 
 # 2. Check services
 curl http://localhost:9090        # Prometheus
@@ -333,9 +333,9 @@ curl 'http://localhost:9090/api/v1/query?query=adhd_cognitive_load'
 ```
 dopemux-mvp/
 ├── dopemux_dashboard.py              # Main dashboard (EDIT THIS!)
-├── sparkline_generator.py            # Sparkline generator (USE THIS!)
-├── prometheus_client.py              # Prometheus client (USE THIS!)
-├── DASHBOARD_DAY9_SUMMARY.md         # Quick summary (START HERE!)
+├── docs/archive/session-notes/
+│   └── 2025-historical/
+│       └── DASHBOARD_DAY9_SUMMARY.md # Quick summary (START HERE!)
 │
 ├── docs/implementation-plans/
 │   ├── DASHBOARD_DAY9_INDEX.md       # This file!
@@ -412,7 +412,7 @@ git push origin feature/day9-sparklines-keyboard
 
 ### Read First (5 minutes)
 1. This index (you're here!)
-2. [DASHBOARD_DAY9_SUMMARY.md](../../DASHBOARD_DAY9_SUMMARY.md)
+2. [DASHBOARD_DAY9_SUMMARY.md](../archive/session-notes/2025-historical/DASHBOARD_DAY9_SUMMARY.md)
 
 ### Code With (During implementation)
 3. [DASHBOARD_DAY9_READY.md](./DASHBOARD_DAY9_READY.md)
