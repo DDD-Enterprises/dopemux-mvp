@@ -9,7 +9,7 @@ pydantic==2.5.0
 pydantic-settings==2.1.0
 
 # HTTP client for ConPort integration
-aiohttp==3.9.1
+aiohttp>=3.12.14  # Security: CVE-2025-53643, CVE-2024-52304, directory traversal, DoS fixes
 
 # Environment variable management
 python-dotenv==1.0.0
