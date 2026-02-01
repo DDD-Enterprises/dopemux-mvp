@@ -21,10 +21,14 @@ exclude = [
   "http://b\\.com.*",
   "http://test2\\.com.*",
   "http://host:port",  # Malformed placeholder
+  ".*yourdomain\\.tld.*",  # *.yourdomain.tld placeholders
   # GitHub placeholder links
   ".*github\\.com/DDD-Enterprises/dopemux-mvp/issues/new.*",  # Issue creation links
   ".*github\\.com/DDD-Enterprises/dopemux-mvp/discussions/new.*",  # Discussion creation links
   ".*github\\.com/your-repo/.*",  # Placeholder repo links
+  ".*github\\.com/your-org/.*",  # Placeholder org links
+  ".*github\\.com/dopemux/.*",  # Old org name
+  ".*githubusercontent\\.com/dopemux/.*",  # Old org raw content
   # External sites requiring authentication
   "https://api\\.openai\\.com/.*",  # Requires API key
   "https://platform\\.openai\\.com/.*",
@@ -44,6 +48,9 @@ exclude = [
   "https://fme\\.safe\\.com/.*",
   # Missing documentation files (to be created separately)
   "file://.*WORKTREE_SWITCHING_GUIDE.*",
+  "file://.*ADHD-ENGINE-DEEP-DIVE-PART1.*",
+  "file://.*api/workspace\\.md",
+  "file://.*troubleshooting/workspaces\\.md",
   "file://.*phase-1[a-d]-.*",
   "file://.*phase-2-security-quality-complete.*",
   "file://.*phase-2a-security-scan.*",

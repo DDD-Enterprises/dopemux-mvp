@@ -154,7 +154,7 @@ REDIS_URL="redis://localhost:6379"
 # Leantime Integration
 LEANTIME_URL="http://localhost:8080"
 # Default: http://localhost:8080
-# Format: `http://host:port` (placeholder)
+# Format: http://HOST:PORT
 
 # AI Features
 OPENAI_API_KEY="sk-..."
