@@ -10,7 +10,14 @@ exclude = [
   "http://.*:6333.*",  # Qdrant
   "https://docs\\.dopemux\\.dev.*",  # Internal docs site (not yet deployed)
   ".*github\\.com/DDD-Enterprises/dopemux-mvp/issues/new.*",  # Issue creation links
-  ".*github\\.com/DDD-Enterprises/dopemux-mvp/discussions/new.*"  # Discussion creation links
+  ".*github\\.com/DDD-Enterprises/dopemux-mvp/discussions/new.*",  # Discussion creation links
+  ".*github\\.com/your-repo/.*",  # Placeholder repo links
+  # External documentation that may be unavailable or relocated
+  "https://docs\\.leantime\\.io/.*",
+  "https://textual\\.textualize\\.io/guide/async/.*",
+  "https://www\\.ably\\.io/blog/.*",
+  "https://github\\.com/prometheus/client_python/tree/master/.*",
+  "https://hogonext\\.com/.*"
 ]
 
 # Accept 404s for localhost (fallback if regex doesn't catch all)
