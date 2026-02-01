@@ -348,7 +348,7 @@ git push origin feature/improve-thinkdeep
 
 **For New Users**:
 ```bash
-git clone https://github.com/dopemux/dopemux-mvp.git
+git clone https://github.com/DDD-Enterprises/dopemux-mvp.git
 cd dopemux-mvp
 ./scripts/setup.sh
 # Edit .env with API keys
