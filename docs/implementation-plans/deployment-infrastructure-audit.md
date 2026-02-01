@@ -305,30 +305,30 @@ make pm-logs          # Tail Leantime logs
 ```makefile
 # Task-Orchestrator specific targets (to be added)
 orchestrator-lint:
-	flake8 services/task-orchestrator/
-	black --check services/task-orchestrator/
-	isort --check services/task-orchestrator/
+  flake8 services/task-orchestrator/
+  black --check services/task-orchestrator/
+  isort --check services/task-orchestrator/
 
 orchestrator-format:
-	black services/task-orchestrator/
-	isort services/task-orchestrator/
+  black services/task-orchestrator/
+  isort services/task-orchestrator/
 
 orchestrator-test:
-	pytest services/task-orchestrator/tests/ -v
+  pytest services/task-orchestrator/tests/ -v
 
 orchestrator-type-check:
-	mypy services/task-orchestrator/
+  mypy services/task-orchestrator/
 
 orchestrator-build:
-	# Build task-orchestrator Docker image
-	docker build -t dopemux-task-orchestrator -f services/task-orchestrator/Dockerfile .
+  # Build task-orchestrator Docker image
+  docker build -t dopemux-task-orchestrator -f services/task-orchestrator/Dockerfile .
 
 orchestrator-up:
-	# Start task-orchestrator service
-	docker-compose -f docker/task-orchestrator/docker-compose.yml up -d
+  # Start task-orchestrator service
+  docker-compose -f docker/task-orchestrator/docker-compose.yml up -d
 
 orchestrator-logs:
-	docker logs -f dopemux-task-orchestrator
+  docker logs -f dopemux-task-orchestrator
 ```
 
 ## Deployment Patterns (from Existing Services)
