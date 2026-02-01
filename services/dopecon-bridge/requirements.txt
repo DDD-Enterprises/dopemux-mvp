@@ -53,7 +53,7 @@ msgpack>=1.0.7
 
 # Authentication and security
 pyjwt>=2.8.0
-cryptography>=41.0.0
+cryptography>=46.0.0  # Security: CVE-2024-12797, CVE-2023-6129, CVE-2024-26130 fixes
 passlib[bcrypt]>=1.7.4
 
 # Task queue (optional)

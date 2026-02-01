@@ -14,7 +14,7 @@ pydantic==2.5.0
 redis==5.0.1
 
 # HTTP Client
-aiohttp==3.9.1
+aiohttp>=3.12.14  # Security: CVE-2025-53643, CVE-2024-52304, CVE-2024-27306, directory traversal, DoS fixes
 
 # Utilities
 python-dotenv==1.0.0
