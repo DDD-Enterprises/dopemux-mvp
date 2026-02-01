@@ -19,17 +19,18 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime
 from collections import defaultdict
 
-# Configure logging first
+# Environment variable contract (G33)
+HOST = os.getenv("HOST", "0.0.0.0")
+PORT = int(os.getenv("PORT", "8000"))
+LOG_LEVEL = os.getenv("LOG_LEVEL", "info").upper()
+
+# Configure logging with env var support
 logging.basicConfig(
-    level=logging.INFO,
+    level=getattr(logging, LOG_LEVEL, logging.INFO),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     stream=sys.stderr
 )
 logger = logging.getLogger("task-orchestrator-wrapper")
-
-# Add dopemux to path for event bus integration
-project_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(project_root))
 
 # Enable event bus integration
 EVENTS_ENABLED = True
