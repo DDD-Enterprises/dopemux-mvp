@@ -1,3 +1,11 @@
+---
+id: dope-context-ultrathink-summary-2025-10-16
+title: Dope Context Ultrathink Summary 2025 10 16
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # Dope-Context Ultrathink Analysis & Fixes
 
 **Date**: 2025-10-16

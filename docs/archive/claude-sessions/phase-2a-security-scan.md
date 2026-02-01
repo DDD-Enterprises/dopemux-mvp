@@ -1,3 +1,11 @@
+---
+id: phase-2a-security-scan
+title: Phase 2A Security Scan
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # Phase 2A: Semantic Vulnerability Detection
 **Date**: 2025-10-16
 **Duration**: 2 hours (adapted methodology)

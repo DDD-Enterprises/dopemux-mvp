@@ -1,3 +1,11 @@
+---
+id: adhd-engine-analysis-2025-10-16
+title: Adhd Engine Analysis 2025 10 16
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # ADHD Engine Analysis Report
 **Date**: 2025-10-16
 **Analyst**: Claude Code (Sonnet 4.5)

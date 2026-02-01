@@ -1,3 +1,11 @@
+---
+id: dopemux-orchestrator-roadmap
+title: Dopemux Orchestrator Roadmap
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # Dopemux Multi-AI Orchestrator - Implementation Roadmap
 
 **Architecture Decision**: Hybrid (tmux TUI primary + optional web dashboard)

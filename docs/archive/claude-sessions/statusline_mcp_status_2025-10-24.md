@@ -1,3 +1,11 @@
+---
+id: statusline_mcp_status_2025-10-24
+title: Statusline_Mcp_Status_2025 10 24
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # Statusline MCP Server Status Indicators
 
 **Date**: 2025-10-24

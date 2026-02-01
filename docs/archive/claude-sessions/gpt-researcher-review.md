@@ -1,3 +1,11 @@
+---
+id: gpt-researcher-review
+title: Gpt Researcher Review
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # GPT-Researcher Service Review
 **Date**: 2025-10-16
 **Service**: dopemux-gpt-researcher

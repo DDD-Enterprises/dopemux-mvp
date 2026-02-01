@@ -1,3 +1,11 @@
+---
+id: SERENA_V2_ENHANCEMENT_SESSION_20251024
+title: Serena_V2_Enhancement_Session_20251024
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # Serena v2 Enhancement Session - October 24, 2025
 
 **The "There's More Features?" Session**

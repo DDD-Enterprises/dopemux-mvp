@@ -1,3 +1,11 @@
+---
+id: session-summary-2025-10-24-adhd-stack
+title: Session Summary 2025 10 24 Adhd Stack
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # Epic Session Summary - Complete ADHD Intelligence Stack
 
 **Date**: 2025-10-24

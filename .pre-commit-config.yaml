@@ -15,6 +15,7 @@ repos:
         entry: python scripts/docs_validator.py
         language: system
         files: ^docs/.*\.md$
+        exclude: ^docs/archive/
         pass_filenames: true
 
       # Prohibited file pattern check
@@ -25,15 +26,22 @@ repos:
           - |
             set -e
             prohibited_found=false
-            for pattern in "README*.md" "NOTES*.md" "TODO*.md" "TEMP*.md" "*temp*.md" "*scratch*.md"; do
+            # Allow README.md in docs/systems/ (documentation hubs), but prohibit elsewhere
+            for pattern in "NOTES*.md" "TODO*.md" "TEMP*.md" "*temp*.md" "*scratch*.md"; do
               if find docs/ -name "$pattern" 2>/dev/null | grep -q .; then
                 echo "❌ Found prohibited file pattern: $pattern"
                 find docs/ -name "$pattern" | sed 's/^/  /'
                 prohibited_found=true
               fi
             done
+            # Check for README.md outside of docs/systems/
+            if find docs/ -name "README*.md" -not -path "docs/systems/*" -not -path "docs/archive/*" 2>/dev/null | grep -q .; then
+              echo "❌ Found prohibited file pattern: README*.md (outside docs/systems/ and docs/archive/)"
+              find docs/ -name "README*.md" -not -path "docs/systems/*" -not -path "docs/archive/*" | sed 's/^/  /'
+              prohibited_found=true
+            fi
             if [ "$prohibited_found" = true ]; then
-              echo "Use structured workflow: RFC→ADR→arc42"
+              echo "Use structured workflow: RFC→ADR→arc42 (or README.md in docs/systems/ for hubs)"
               exit 1
             fi
             echo "✅ No prohibited patterns found"

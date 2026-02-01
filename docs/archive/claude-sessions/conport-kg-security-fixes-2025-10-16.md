@@ -1,3 +1,11 @@
+---
+id: conport-kg-security-fixes-2025-10-16
+title: Conport Kg Security Fixes 2025 10 16
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # ConPort KG Security Fixes - COMPLETE
 **Date**: 2025-10-16
 **Duration**: 2 hours

@@ -1,3 +1,11 @@
+---
+id: EPIC_SESSION_FINALE
+title: Epic_Session_Finale
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # EPIC SESSION FINALE - ADHD Intelligence Stack Complete
 
 **Date**: 2025-10-24/25
