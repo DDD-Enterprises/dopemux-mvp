@@ -1,0 +1,53 @@
+{
+  "services": [
+    {
+      "name": "postgres",
+      "compose_service_name": "postgres",
+      "port": 5432,
+      "container_port": 5432,
+      "health_path": null,
+      "category": "infrastructure"
+    },
+    {
+      "name": "redis",
+      "compose_service_name": "redis",
+      "port": 6379,
+      "container_port": 6379,
+      "health_path": null,
+      "category": "infrastructure"
+    },
+    {
+      "name": "qdrant",
+      "compose_service_name": "qdrant",
+      "port": 6333,
+      "container_port": 6333,
+      "health_path": "/",
+      "category": "infrastructure"
+    },
+    {
+      "name": "conport",
+      "compose_service_name": "conport",
+      "port": 3004,
+      "container_port": 3004,
+      "health_path": "/health",
+      "category": "mcp"
+    },
+    {
+      "name": "dopecon-bridge",
+      "compose_service_name": "dopecon-bridge",
+      "port": 3016,
+      "container_port": 3016,
+      "health_path": "/health",
+      "category": "coordination"
+    },
+    {
+      "name": "task-orchestrator",
+      "compose_service_name": "task-orchestrator",
+      "port": 8000,
+      "container_port": 8000,
+      "health_path": "/health",
+      "category": "cognitive"
+    }
+  ],
+  "count": 6
+}
