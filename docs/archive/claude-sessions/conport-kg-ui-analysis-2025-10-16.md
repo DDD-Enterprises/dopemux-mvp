@@ -1,3 +1,11 @@
+---
+id: conport-kg-ui-analysis-2025-10-16
+title: Conport Kg Ui Analysis 2025 10 16
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-01'
+next_review: '2026-05-02'
+---
 # ConPort KG UI Analysis Report
 **Date**: 2025-10-16
 **Analyst**: Claude Code (Sonnet 4.5)
@@ -72,7 +80,7 @@ const response = await fetch(`${this.baseUrl}/decisions/search?text=${text}&limi
 **Problem**:
 - Tag with `&` → Breaks query string: `?tag=adhd&optimization` becomes two params
 - Text with `?` → Breaks URL: `?text=what? why?` confuses parser
-- Special chars not escaped: `#`, `=`, ` ` (space), etc.
+- Special chars not escaped: `#`, `=`, `` (space), etc.
 
 **Fix (30 minutes)**:
 ```typescript
