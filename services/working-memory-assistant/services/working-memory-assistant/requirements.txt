@@ -2,7 +2,7 @@ fastapi==0.104.1
 uvicorn[standard]==0.24.0
 psycopg2-binary==2.9.9
 redis==5.0.1
-cryptography==41.0.7
+cryptography>=46.0.0  # Security: CVE-2024-12797, CVE-2023-6129, CVE-2024-26130 fixes
 python-multipart==0.0.6
 pydantic==2.5.0
 httpx==0.25.2
