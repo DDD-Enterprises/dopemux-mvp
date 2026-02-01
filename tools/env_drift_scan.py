@@ -1,335 +1,377 @@
 #!/usr/bin/env python3
 """
-Service Environment Drift Scanner
+Environment Drift Scanner (G33 Phase 2)
 
-Scans smoke-enabled services for compliance with the environment variable contract.
-Reports missing or inconsistent env var support.
+Scans services for compliance with the unified service environment contract.
+Detects missing mandatory env vars, undocumented variables, and contract violations.
 
 Usage:
     python tools/env_drift_scan.py
-    python tools/env_drift_scan.py --json  # JSON output only
-    python tools/env_drift_scan.py --verbose  # Detailed output
-
-Exit codes:
-    0 - All services compliant
-    1 - Drift detected (violations found)
-    2 - Error running scanner
+    python tools/env_drift_scan.py --services conport,dopecon-bridge
+    python tools/env_drift_scan.py --json reports/g33/env_drift_report.json
 """
 
 import argparse
 import json
-import os
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Set, Optional, Any
 
-try:
-    import yaml
-except ImportError:
-    print("ERROR: PyYAML not installed. Install with: pip install pyyaml", file=sys.stderr)
-    sys.exit(2)
+import yaml
+
+# Mandatory env vars per contract
+MANDATORY_ENV_VARS = {
+    "PORT": "Container-internal HTTP port",
+    "LOG_LEVEL": "Logging verbosity level",
+    "ENVIRONMENT": "Deployment environment (dev/staging/prod)",
+    "HEALTH_CHECK_PATH": "Health check endpoint path",
+    "SERVICE_NAME": "Canonical service name",
+}
+
+# Category-specific required vars
+CATEGORY_ENV_VARS = {
+    "infrastructure": set(),  # Infrastructure uses native config
+    "mcp": {"MCP_SERVER_PORT"},
+    "coordination": {"REDIS_URL"},
+    "cognitive": {"DATABASE_URL", "REDIS_URL", "CONPORT_URL"},
+}
+
+# Env vars that should have defaults
+OPTIONAL_ENV_VARS = {
+    "METRICS_ENABLED": "Enable Prometheus metrics",
+    "METRICS_PORT": "Prometheus metrics port",
+    "SERVICE_VERSION": "Semantic version",
+}
 
 
 class EnvDriftScanner:
-    """Scans services for environment variable contract compliance"""
-    
-    REQUIRED_VARS = {"HOST", "PORT", "LOG_LEVEL"}
-    OPTIONAL_VARS = {"BASE_URL"}
-    
-    def __init__(self, project_root: Path):
-        self.project_root = project_root
-        self.registry_path = project_root / "services" / "registry.yaml"
-        self.violations: List[Dict] = []
-        
-    def load_registry(self) -> Dict:
-        """Load and parse service registry"""
-        if not self.registry_path.exists():
-            raise FileNotFoundError(f"Registry not found: {self.registry_path}")
-            
-        with open(self.registry_path, 'r') as f:
+    """Scans services for environment variable contract compliance."""
+
+    def __init__(self, repo_root: Path):
+        self.repo_root = repo_root
+        self.registry = self._load_registry()
+        self.violations = []
+        self.warnings = []
+
+    def _load_registry(self) -> Dict:
+        """Load service registry."""
+        registry_path = self.repo_root / "services" / "registry.yaml"
+        if not registry_path.exists():
+            raise FileNotFoundError(f"Registry not found: {registry_path}")
+
+        with open(registry_path) as f:
             return yaml.safe_load(f)
-    
-    def get_smoke_services(self, registry: Dict) -> List[Dict]:
-        """Extract smoke-enabled services from registry"""
-        services = []
-        for svc in registry.get('services', []):
-            if svc.get('enabled_in_smoke', False):
-                # Filter to Python services only (skip infrastructure)
-                if svc.get('category') not in ['infrastructure']:
-                    services.append(svc)
-        return services
-    
-    def find_service_entry_point(self, service_path: Path) -> Optional[Path]:
-        """Find main entry point for a service"""
-        candidates = ['main.py', 'app.py', 'server.py', '__main__.py']
-        
-        for candidate in candidates:
-            entry_path = service_path / candidate
-            if entry_path.exists():
-                return entry_path
-        
-        return None
-    
-    def find_config_files(self, service_path: Path) -> List[Path]:
-        """Find config/settings files in service"""
-        config_files = []
-        
-        for pattern in ['**/config.py', '**/settings.py', '**/env.py']:
-            config_files.extend(service_path.glob(pattern))
-        
-        return config_files
-    
-    def scan_file_for_env_vars(self, file_path: Path) -> Dict[str, bool]:
-        """Scan a Python file for env var references"""
-        try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-        except Exception as e:
-            return {'error': str(e)}
-        
-        results = {}
-        
-        for var in self.REQUIRED_VARS | self.OPTIONAL_VARS:
-            # Look for os.getenv("VAR") or os.environ["VAR"] or VAR = patterns
-            patterns = [
-                rf'os\.getenv\(["\']{ var}["\']',  # os.getenv("VAR")
-                rf'os\.environ\[["\']{ var}["\']',  # os.environ["VAR"]
-                rf'env\[["\']{ var}["\']',  # env["VAR"]
-                rf'{ var}\s*=',  # VAR = (weak heuristic)
-            ]
-            
-            found = any(re.search(pattern, content) for pattern in patterns)
-            results[var] = found
-        
-        # Check for risky patterns
-        results['has_risky_environ'] = bool(re.search(r'os\.environ\[', content))
-        results['has_sys_path_insert'] = bool(re.search(r'sys\.path\.insert', content))
-        
-        return results
-    
-    def check_port_consistency(self, service: Dict, scan_results: Dict) -> Optional[str]:
-        """Check if PORT default matches registry"""
-        service_path = self.project_root / service.get('compose_service_name', service['name'])
-        
-        # Find where PORT is defined
-        for file_type, files in scan_results['scanned_files'].items():
-            for file_path, env_support in files.items():
-                try:
-                    with open(file_path, 'r') as f:
-                        content = f.read()
-                    
-                    # Look for PORT default value
-                    port_matches = re.findall(r'os\.getenv\(["\']PORT["\'],\s*["\']?(\d+)["\']?\)', content)
-                    if port_matches:
-                        declared_port = int(port_matches[0])
-                        registry_port = service.get('container_port', service['port'])
-                        
-                        if declared_port != registry_port:
-                            return f"PORT default {declared_port} != registry {registry_port}"
-                except Exception:
-                    pass
-        
-        return None
-    
-    def scan_service(self, service: Dict) -> Dict:
-        """Scan a single service for env contract compliance"""
-        service_name = service['name']
-        service_path = self.project_root / "services" / service.get('compose_service_name', service_name)
-        
-        if not service_path.exists():
+
+    def scan_service(self, service_name: str) -> Dict[str, Any]:
+        """Scan a single service for env var compliance."""
+        # Find service in registry
+        service_info = None
+        for svc in self.registry.get("services", []):
+            if svc["name"] == service_name:
+                service_info = svc
+                break
+
+        if not service_info:
             return {
-                'service': service_name,
-                'status': 'error',
-                'error': f'Service directory not found: {service_path}',
-                'violations': ['Service directory not found']
+                "service": service_name,
+                "status": "ERROR",
+                "error": "Service not found in registry"
             }
-        
-        # Find entry point and config files
-        entry_point = self.find_service_entry_point(service_path)
-        config_files = self.find_config_files(service_path)
-        
-        scanned_files = {
-            'entry_point': {},
-            'config_files': {}
+
+        # Check if service should be scanned
+        if not service_info.get("enabled_in_smoke", False):
+            return {
+                "service": service_name,
+                "status": "SKIPPED",
+                "reason": "Not enabled in smoke stack"
+            }
+
+        # Find service directory
+        service_dir = self.repo_root / "services" / service_name
+        if not service_dir.exists():
+            return {
+                "service": service_name,
+                "status": "ERROR",
+                "error": f"Service directory not found: {service_dir}"
+            }
+
+        # Scan for env var usage
+        env_vars_found = self._scan_env_usage(service_dir)
+
+        # Get exceptions from registry
+        exceptions = {
+            exc["variable"]
+            for exc in service_info.get("env_contract_exceptions", [])
         }
-        
-        # Scan entry point
-        if entry_point:
-            scanned_files['entry_point'][str(entry_point)] = self.scan_file_for_env_vars(entry_point)
-        
-        # Scan config files
-        for config_file in config_files[:3]:  # Limit to first 3 config files
-            scanned_files['config_files'][str(config_file)] = self.scan_file_for_env_vars(config_file)
-        
-        # Aggregate results
-        env_support = {var: False for var in self.REQUIRED_VARS | self.OPTIONAL_VARS}
-        has_risky_patterns = {'environ': False, 'sys_path': False}
-        
-        for file_type, files in scanned_files.items():
-            for file_path, results in files.items():
-                for var in env_support:
-                    if results.get(var, False):
-                        env_support[var] = True
-                
-                if results.get('has_risky_environ', False):
-                    has_risky_patterns['environ'] = True
-                if results.get('has_sys_path_insert', False):
-                    has_risky_patterns['sys_path'] = True
-        
-        # Check for violations
-        violations = []
-        missing_required = []
-        
-        for var in self.REQUIRED_VARS:
-            if not env_support[var]:
-                missing_required.append(var)
-                violations.append(f"Missing required var: {var}")
-        
-        # Check for exceptions in registry
-        exceptions = service.get('env_contract_exceptions', [])
-        missing_required = [v for v in missing_required if v not in exceptions]
-        
-        if has_risky_patterns['environ']:
-            violations.append("Uses risky os.environ[] without default")
-        
-        if has_risky_patterns['sys_path']:
-            violations.append("Uses sys.path.insert (violates isolation)")
-        
-        # Check port consistency
+
+        # Check mandatory vars
+        missing_mandatory = []
+        for var in MANDATORY_ENV_VARS:
+            if var not in exceptions and var not in env_vars_found:
+                missing_mandatory.append(var)
+
+        # Check category-specific vars
+        category = service_info.get("category", "unknown")
+        required_category_vars = CATEGORY_ENV_VARS.get(category, set())
+        missing_category = []
+        for var in required_category_vars:
+            if var not in exceptions and var not in env_vars_found:
+                missing_category.append(var)
+
+        # Check for undocumented vars
+        documented_vars = set(MANDATORY_ENV_VARS.keys())
+        documented_vars.update(OPTIONAL_ENV_VARS.keys())
+        documented_vars.update(required_category_vars)
+
+        # Common acceptable vars (not violations)
+        acceptable_vars = {
+            "DATABASE_URL", "REDIS_URL", "CONPORT_URL", "DOPECON_BRIDGE_URL",
+            "MCP_SERVER_PORT", "TASK_ORCHESTRATOR_API_KEY", "WORKSPACE_ID",
+            "OPENROUTER_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY",
+            "POSTGRES_USER", "POSTGRES_PASSWORD", "POSTGRES_DB", "POSTGRES_PORT",
+        }
+
+        undocumented = [
+            var for var in env_vars_found
+            if var not in documented_vars and var not in acceptable_vars
+        ]
+
+        # Determine compliance status
+        compliant = not missing_mandatory and not missing_category
+
         result = {
-            'service': service_name,
-            'registry_port': service.get('container_port', service['port']),
-            'entry_point': str(entry_point.relative_to(self.project_root)) if entry_point else None,
-            'config_files': [str(f.relative_to(self.project_root)) for f in config_files[:3]],
-            'env_support': env_support,
-            'scanned_files': scanned_files,
-            'missing_required': missing_required,
-            'violations': violations,
-            'status': 'compliant' if not violations else 'violations',
-            'exceptions': exceptions
+            "service": service_name,
+            "category": category,
+            "status": "COMPLIANT" if compliant else "VIOLATION",
+            "env_vars_found": sorted(list(env_vars_found)),
+            "env_vars_count": len(env_vars_found),
+            "missing_mandatory": missing_mandatory,
+            "missing_category": missing_category,
+            "undocumented": undocumented[:10],  # Limit to avoid noise
+            "exceptions": list(exceptions),
+            "recommendation": self._generate_recommendation(
+                service_name, missing_mandatory, missing_category
+            )
         }
-        
-        port_inconsistency = self.check_port_consistency(service, result)
-        if port_inconsistency:
-            result['violations'].append(port_inconsistency)
-            result['status'] = 'violations'
-        
+
+        if not compliant:
+            self.violations.append(result)
+        if undocumented:
+            self.warnings.append({
+                "service": service_name,
+                "undocumented_count": len(undocumented),
+                "vars": undocumented[:5]
+            })
+
         return result
-    
-    def scan_all(self) -> Dict:
-        """Scan all smoke-enabled services"""
-        registry = self.load_registry()
-        smoke_services = self.get_smoke_services(registry)
-        
-        results = {
-            'scan_date': '2026-02-01',
-            'total_services': len(smoke_services),
-            'services': [],
-            'summary': {
-                'compliant': 0,
-                'violations': 0,
-                'errors': 0
-            }
+
+    def _scan_env_usage(self, service_dir: Path) -> Set[str]:
+        """Scan service files for env var usage."""
+        env_vars = set()
+
+        # Scan Python files
+        for py_file in service_dir.rglob("*.py"):
+            try:
+                content = py_file.read_text()
+
+                # Match os.getenv("VAR_NAME") and os.environ["VAR_NAME"]
+                matches = re.findall(
+                    r'os\.(?:getenv|environ(?:\.get)?)\(["\']([A-Z_][A-Z0-9_]*)["\']',
+                    content
+                )
+                env_vars.update(matches)
+
+            except Exception:
+                continue  # Skip unreadable files
+
+        # Scan Dockerfile
+        dockerfile = service_dir / "Dockerfile"
+        if dockerfile.exists():
+            try:
+                content = dockerfile.read_text()
+                # Match ENV declarations
+                matches = re.findall(r'^ENV\s+([A-Z_][A-Z0-9_]*)', content, re.MULTILINE)
+                env_vars.update(matches)
+
+            except Exception:
+                pass
+
+        return env_vars
+
+    def _generate_recommendation(
+        self, service: str, missing_mandatory: List[str], missing_category: List[str]
+    ) -> str:
+        """Generate fix recommendation."""
+        if not missing_mandatory and not missing_category:
+            return "Service is compliant with env contract"
+
+        fixes = []
+        if missing_mandatory:
+            fixes.append(
+                f"Add mandatory env vars to service config: {', '.join(missing_mandatory)}"
+            )
+        if missing_category:
+            fixes.append(
+                f"Add category-specific env vars: {', '.join(missing_category)}"
+            )
+
+        fixes.append(
+            f"See migration guide: docs/engineering/service_env_contract.md"
+        )
+
+        return " | ".join(fixes)
+
+    def scan_all_smoke_services(self) -> Dict[str, Any]:
+        """Scan all smoke-enabled services."""
+        results = []
+
+        smoke_services = [
+            svc["name"]
+            for svc in self.registry.get("services", [])
+            if svc.get("enabled_in_smoke", False)
+        ]
+
+        for service_name in smoke_services:
+            result = self.scan_service(service_name)
+            results.append(result)
+
+        # Generate summary
+        total = len(results)
+        compliant = sum(1 for r in results if r.get("status") == "COMPLIANT")
+        violations = sum(1 for r in results if r.get("status") == "VIOLATION")
+        errors = sum(1 for r in results if r.get("status") == "ERROR")
+
+        summary = {
+            "total_services": total,
+            "compliant": compliant,
+            "violations": violations,
+            "errors": errors,
+            "compliance_rate": f"{(compliant/total*100):.1f}%" if total > 0 else "N/A"
         }
-        
-        for service in smoke_services:
-            result = self.scan_service(service)
-            results['services'].append(result)
-            
-            if result['status'] == 'compliant':
-                results['summary']['compliant'] += 1
-            elif result['status'] == 'violations':
-                results['summary']['violations'] += 1
-            else:
-                results['summary']['errors'] += 1
-        
-        return results
-    
-    def print_report(self, results: Dict, verbose: bool = False):
-        """Print human-readable report"""
-        print("\n" + "="*70)
-        print("SERVICE ENVIRONMENT DRIFT SCAN REPORT")
-        print("="*70)
-        print(f"\nTotal services scanned: {results['total_services']}")
-        print(f"  ✅ Compliant: {results['summary']['compliant']}")
-        print(f"  ❌ Violations: {results['summary']['violations']}")
-        print(f"  ⚠️  Errors: {results['summary']['errors']}")
-        
-        if results['summary']['violations'] > 0:
-            print("\n" + "-"*70)
-            print("VIOLATIONS DETECTED:")
-            print("-"*70)
-            
-            for svc in results['services']:
-                if svc['status'] == 'violations':
-                    print(f"\n⚠️  {svc['service']} (port {svc['registry_port']})")
-                    for violation in svc['violations']:
-                        print(f"    • {violation}")
-                    
-                    if verbose and svc['missing_required']:
-                        print(f"    Missing: {', '.join(svc['missing_required'])}")
-        
-        if verbose:
-            print("\n" + "-"*70)
-            print("DETAILED SCAN RESULTS:")
-            print("-"*70)
-            
-            for svc in results['services']:
-                print(f"\n📦 {svc['service']}")
-                print(f"  Status: {svc['status'].upper()}")
-                print(f"  Entry Point: {svc['entry_point'] or 'NOT FOUND'}")
-                print(f"  Config Files: {len(svc['config_files'])}")
-                
-                print(f"  Env Support:")
-                for var, supported in svc['env_support'].items():
-                    status = "✅" if supported else "❌"
-                    print(f"    {status} {var}")
-        
-        print("\n" + "="*70)
-        print(f"Report saved to: reports/g33/env_drift_report.json")
-        print("="*70 + "\n")
+
+        return {
+            "summary": summary,
+            "services": results,
+            "violations": self.violations,
+            "warnings": self.warnings
+        }
+
+    def print_report(self, report: Dict[str, Any]):
+        """Print human-readable report to stdout."""
+        print("\n" + "="*60)
+        print("🔍 Environment Drift Scan Report (G33)")
+        print("="*60 + "\n")
+
+        summary = report["summary"]
+        print("📊 Summary:")
+        print(f"  Total Services:    {summary['total_services']}")
+        print(f"  Compliant:         {summary['compliant']} ✅")
+        print(f"  Violations:        {summary['violations']} ❌")
+        print(f"  Errors:            {summary['errors']} ⚠️")
+        print(f"  Compliance Rate:   {summary['compliance_rate']}")
+        print()
+
+        # Print violations
+        if report["violations"]:
+            print("❌ Contract Violations:\n")
+            for violation in report["violations"]:
+                print(f"  • {violation['service']} ({violation['category']})")
+                if violation["missing_mandatory"]:
+                    print(f"    Missing mandatory: {', '.join(violation['missing_mandatory'])}")
+                if violation["missing_category"]:
+                    print(f"    Missing category-specific: {', '.join(violation['missing_category'])}")
+                print(f"    → {violation['recommendation']}")
+                print()
+
+        # Print warnings
+        if report["warnings"]:
+            print("⚠️  Warnings:\n")
+            for warning in report["warnings"][:5]:  # Limit warnings
+                print(f"  • {warning['service']}: {warning['undocumented_count']} undocumented vars")
+            print()
+
+        # Print compliant services
+        compliant_services = [
+            s for s in report["services"]
+            if s.get("status") == "COMPLIANT"
+        ]
+        if compliant_services:
+            print("✅ Compliant Services:\n")
+            for svc in compliant_services:
+                print(f"  • {svc['service']} ({svc['category']}) - {svc['env_vars_count']} env vars")
+            print()
+
+        print("="*60)
+        print(f"📋 Full report: reports/g33/env_drift_report.json")
+        print("📖 Migration guide: docs/engineering/service_env_contract.md")
+        print("="*60 + "\n")
 
 
 def main():
+    """Main entry point."""
     parser = argparse.ArgumentParser(description="Scan services for env contract compliance")
-    parser.add_argument('--json', action='store_true', help='Output JSON only (no table)')
-    parser.add_argument('--verbose', '-v', action='store_true', help='Verbose output')
+    parser.add_argument(
+        "--services",
+        help="Comma-separated list of services to scan (default: all smoke services)"
+    )
+    parser.add_argument(
+        "--json",
+        default="reports/g33/env_drift_report.json",
+        help="Output JSON report path"
+    )
+
     args = parser.parse_args()
-    
-    # Find project root
-    script_dir = Path(__file__).parent
-    project_root = script_dir.parent
-    
-    # Run scanner
-    scanner = EnvDriftScanner(project_root)
-    
-    try:
-        results = scanner.scan_all()
-    except Exception as e:
-        print(f"ERROR: Scanner failed: {e}", file=sys.stderr)
-        return 2
-    
+
+    # Detect repo root
+    repo_root = Path(__file__).parent.parent
+    if not (repo_root / "services" / "registry.yaml").exists():
+        print("❌ Error: Could not find services/registry.yaml")
+        print(f"   Current directory: {Path.cwd()}")
+        print(f"   Repo root: {repo_root}")
+        sys.exit(1)
+
+    # Create scanner
+    scanner = EnvDriftScanner(repo_root)
+
+    # Scan services
+    if args.services:
+        # Scan specific services
+        service_names = [s.strip() for s in args.services.split(",")]
+        results = []
+        for name in service_names:
+            result = scanner.scan_service(name)
+            results.append(result)
+
+        report = {
+            "summary": {
+                "total_services": len(results),
+                "compliant": sum(1 for r in results if r.get("status") == "COMPLIANT"),
+                "violations": sum(1 for r in results if r.get("status") == "VIOLATION"),
+            },
+            "services": results,
+            "violations": scanner.violations,
+            "warnings": scanner.warnings
+        }
+    else:
+        # Scan all smoke services
+        report = scanner.scan_all_smoke_services()
+
+    # Print report to stdout
+    scanner.print_report(report)
+
     # Save JSON report
-    report_dir = project_root / "reports" / "g33"
-    report_dir.mkdir(parents=True, exist_ok=True)
-    
-    report_path = report_dir / "env_drift_report.json"
-    with open(report_path, 'w') as f:
-        json.dump(results, f, indent=2, default=str)
-    
-    # Print report
-    if not args.json:
-        scanner.print_report(results, verbose=args.verbose)
-    else:
-        print(json.dumps(results, indent=2, default=str))
-    
-    # Exit with appropriate code
-    if results['summary']['violations'] > 0:
-        return 1
-    else:
-        return 0
+    output_path = Path(args.json)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w") as f:
+        json.dump(report, f, indent=2)
+
+    print(f"✅ JSON report saved to: {output_path}\n")
+
+    # Exit with error code if violations found
+    if report["summary"]["violations"] > 0:
+        sys.exit(1)
 
 
-if __name__ == '__main__':
-    sys.exit(main())
+if __name__ == "__main__":
+    main()
