@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 import sys
 import subprocess
-from typing import List, Union
+from typing import List, Union, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -112,9 +112,9 @@ class OverviewQueries:
             self.client = None
             logger.info(f"ℹ️  OverviewQueries using docker exec (feature flag disabled)")
 
-    def _execute_cypher_direct(self, cypher: str) -> List[dict]:
+    def _execute_cypher_direct(self, cypher: str, workspace_path: Optional[str] = None) -> List[dict]:
         """Execute via AGEClient (fast path)"""
-        return self.client.execute_cypher(cypher)
+        return self.client.execute_cypher(cypher, workspace_path=workspace_path)
 
     def _execute_cypher_fallback(self, cypher: str) -> List[dict]:
         """Execute via docker exec (fallback path)"""
@@ -142,18 +142,22 @@ class OverviewQueries:
 
         return parsed_results
 
-    def _execute_cypher(self, cypher: str) -> List[dict]:
+    def _execute_cypher(self, cypher: str, workspace_path: Optional[str] = None) -> List[dict]:
         """Execute Cypher query via best available method"""
         if self.use_direct and self.client:
-            return self._execute_cypher_direct(cypher)
+            return self._execute_cypher_direct(cypher, workspace_path=workspace_path)
         else:
             return self._execute_cypher_fallback(cypher)
 
-    def get_recent_decisions(self, limit: int = 3) -> List[DecisionCard]:
+    def get_recent_decisions(self, limit: int = 3, workspace_path: Optional[str] = None) -> List[DecisionCard]:
         """
         Get most recent decisions (Top-3 pattern)
 
         ADHD Optimization: Limits to 3 for quick scanning
+
+        Args:
+            limit: Maximum number of decisions to return
+            workspace_path: Optional workspace path for scoped queries
 
         Returns: List[DecisionCard] with typed data
         """
@@ -169,7 +173,7 @@ class OverviewQueries:
             $$) as (id agtype, summary agtype, timestamp agtype);
         """
 
-        results = self._execute_cypher(cypher)
+        results = self._execute_cypher(cypher, workspace_path=workspace_path)
 
         decisions = []
         for row in results:
@@ -192,11 +196,15 @@ class OverviewQueries:
 
         return decisions
 
-    def get_decision_summary(self, decision_id: int) -> DecisionSummary:
+    def get_decision_summary(self, decision_id: int, workspace_path: Optional[str] = None) -> DecisionSummary:
         """
         Get single decision with 1-hop context count
 
         Shows decision + count of related (doesn't load full related decisions)
+
+        Args:
+            decision_id: ID of decision to retrieve
+            workspace_path: Optional workspace path for scoped queries
 
         Returns: DecisionSummary with typed data
         """
@@ -210,7 +218,7 @@ class OverviewQueries:
             $$) as (id agtype, summary agtype, rationale agtype, rel_count agtype, rel_types agtype);
         """
 
-        results = self._execute_cypher(cypher)
+        results = self._execute_cypher(cypher, workspace_path=workspace_path)
 
         if results and len(results) > 0:
             row = results[0]
@@ -238,12 +246,16 @@ class OverviewQueries:
 
         return DecisionSummary(id=decision_id, summary="Not found", timestamp="")
 
-    def get_root_decisions(self, limit: int = 3) -> List[DecisionCard]:
+    def get_root_decisions(self, limit: int = 3, workspace_path: Optional[str] = None) -> List[DecisionCard]:
         """
         Get root decisions (no incoming edges)
 
         These are foundational decisions that others build upon.
         Good starting point for genealogy exploration.
+
+        Args:
+            limit: Maximum number of decisions to return
+            workspace_path: Optional workspace path for scoped queries
 
         Returns: List[DecisionCard] with typed data
         """
@@ -262,7 +274,7 @@ class OverviewQueries:
             $$) as (id agtype, summary agtype, timestamp agtype);
         """
 
-        results = self._execute_cypher(cypher)
+        results = self._execute_cypher(cypher, workspace_path=workspace_path)
 
         decisions = []
         for row in results:
@@ -283,12 +295,17 @@ class OverviewQueries:
 
         return decisions
 
-    def search_by_tag(self, tag: str, limit: int = 3) -> List[DecisionCard]:
+    def search_by_tag(self, tag: str, limit: int = 3, workspace_path: Optional[str] = None) -> List[DecisionCard]:
         """
         Search decisions by tag (Top-3 pattern)
 
         ADHD Optimization: Limits to 3 for quick scanning
         Tags are stored as JSONB array in AGE
+
+        Args:
+            tag: Tag to search for
+            limit: Maximum number of decisions to return
+            workspace_path: Optional workspace path for scoped queries
 
         Returns: List[DecisionCard] with typed data
         """
@@ -306,7 +323,7 @@ class OverviewQueries:
             $$) as (id agtype, summary agtype, timestamp agtype);
         """
 
-        results = self._execute_cypher(cypher)
+        results = self._execute_cypher(cypher, workspace_path=workspace_path)
 
         decisions = []
         for row in results:

@@ -65,7 +65,8 @@ class ExplorationQueries:
         self,
         decision_id: int,
         max_hops: int = 1,
-        limit_per_hop: int = 10
+        limit_per_hop: int = 10,
+        workspace_path: Optional[str] = None
     ) -> DecisionNeighborhood:
         """
         Get decision neighborhood with progressive disclosure
@@ -79,6 +80,7 @@ class ExplorationQueries:
             decision_id: Center decision ID
             max_hops: 1 for initial view, 2 for expanded (ADHD progressive)
             limit_per_hop: Max neighbors per hop level (default 10)
+            workspace_path: Optional workspace path for scoped queries
 
         Returns:
             DecisionNeighborhood with hop-separated neighbors
@@ -108,7 +110,7 @@ class ExplorationQueries:
                     hop_dist agtype);
         """
 
-        results = self.client.execute_cypher(cypher)
+        results = self.client.execute_cypher(cypher, workspace_path=workspace_path)
 
         if not results:
             # Return empty neighborhood
@@ -157,7 +159,8 @@ class ExplorationQueries:
         decision_id: int,
         relationship_type: str = 'BUILDS_UPON',
         direction: str = 'upstream',
-        max_depth: int = 5
+        max_depth: int = 5,
+        workspace_path: Optional[str] = None
     ) -> List[DecisionChainNode]:
         """
         Trace decision lineage with generation numbers
@@ -172,6 +175,7 @@ class ExplorationQueries:
             relationship_type: Type of relationship to follow (BUILDS_UPON, DEPENDS_ON, etc.)
             direction: 'upstream' (ancestors), 'downstream' (descendants), 'both'
             max_depth: Maximum generations to traverse
+            workspace_path: Optional workspace path for scoped queries
 
         Returns:
             List[DecisionChainNode] ordered by generation
@@ -201,7 +205,7 @@ class ExplorationQueries:
             $$) as (id agtype, summary agtype, timestamp agtype);
         """
 
-        results = self.client.execute_cypher(cypher)
+        results = self.client.execute_cypher(cypher, workspace_path=workspace_path)
 
         # Build simple chain (1-hop only for now, multi-hop needs recursive approach)
         chain = []
@@ -220,7 +224,8 @@ class ExplorationQueries:
         self,
         decision_id: int,
         relationship_type: str,
-        direction: str = 'outgoing'
+        direction: str = 'outgoing',
+        workspace_path: Optional[str] = None
     ) -> List[DecisionCard]:
         """
         Find decisions connected by specific relationship type
@@ -234,6 +239,7 @@ class ExplorationQueries:
             decision_id: Source decision
             relationship_type: BUILDS_UPON, VALIDATES, DEPENDS_ON, etc.
             direction: 'outgoing' (d→target), 'incoming' (target→d), 'both'
+            workspace_path: Optional workspace path for scoped queries
 
         Returns:
             List[DecisionCard] of related decisions
@@ -262,7 +268,7 @@ class ExplorationQueries:
             $$) as (id agtype, summary agtype, timestamp agtype);
         """
 
-        results = self.client.execute_cypher(cypher)
+        results = self.client.execute_cypher(cypher, workspace_path=workspace_path)
 
         decisions = []
         for row in results:
@@ -277,7 +283,8 @@ class ExplorationQueries:
     def get_impact_graph(
         self,
         decision_id: int,
-        max_depth: int = 2
+        max_depth: int = 2,
+        workspace_path: Optional[str] = None
     ) -> ImpactGraph:
         """
         Build dependency impact tree
@@ -293,6 +300,7 @@ class ExplorationQueries:
         Args:
             decision_id: Root decision to analyze
             max_depth: How deep to traverse dependencies
+            workspace_path: Optional workspace path for scoped queries
 
         Returns:
             ImpactGraph with dependency tree structure
@@ -312,7 +320,7 @@ class ExplorationQueries:
                     dep_ids agtype, dep_summaries agtype);
         """
 
-        results = self.client.execute_cypher(cypher)
+        results = self.client.execute_cypher(cypher, workspace_path=workspace_path)
 
         if not results:
             root = DecisionCard(id=decision_id, summary="Not found", timestamp="")
