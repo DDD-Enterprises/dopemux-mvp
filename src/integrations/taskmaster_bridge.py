@@ -246,15 +246,17 @@ class TaskMasterMCPClient:
         """Gracefully disconnect from Task-Master MCP server."""
         if self._process:
             try:
-                # Send shutdown notification
+                # Send shutdown notification (no response expected)
                 shutdown_request = {
                     "jsonrpc": "2.0",
                     "method": "notifications/shutdown",
                 }
-                await self._send_mcp_request(
-                    shutdown_request,
-                    allow_disconnected=True,
-                )
+                try:
+                    request_json = json.dumps(shutdown_request) + "\n"
+                    self._process.stdin.write(request_json)
+                    self._process.stdin.flush()
+                except Exception:
+                    pass  # Ignore errors during shutdown notification
 
                 # Terminate process
                 self._process.terminate()
