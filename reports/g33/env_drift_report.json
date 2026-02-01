@@ -10,28 +10,28 @@
         "services/conport/src/conport/core/config.py"
       ],
       "env_support": {
-        "BASE_URL": false,
-        "LOG_LEVEL": true,
+        "HOST": true,
         "PORT": true,
-        "HOST": true
+        "LOG_LEVEL": true,
+        "BASE_URL": false
       },
       "scanned_files": {
         "entry_point": {
           "/Users/hue/code/dopemux-mvp/services/conport/app.py": {
-            "BASE_URL": false,
-            "LOG_LEVEL": true,
-            "PORT": true,
             "HOST": true,
+            "PORT": true,
+            "LOG_LEVEL": true,
+            "BASE_URL": false,
             "has_risky_environ": false,
             "has_sys_path_insert": false
           }
         },
         "config_files": {
           "/Users/hue/code/dopemux-mvp/services/conport/src/conport/core/config.py": {
-            "BASE_URL": false,
-            "LOG_LEVEL": false,
-            "PORT": false,
             "HOST": false,
+            "PORT": false,
+            "LOG_LEVEL": false,
+            "BASE_URL": false,
             "has_risky_environ": false,
             "has_sys_path_insert": false
           }
@@ -48,18 +48,18 @@
       "entry_point": "services/dopecon-bridge/main.py",
       "config_files": [],
       "env_support": {
-        "BASE_URL": false,
-        "LOG_LEVEL": true,
+        "HOST": true,
         "PORT": true,
-        "HOST": true
+        "LOG_LEVEL": true,
+        "BASE_URL": false
       },
       "scanned_files": {
         "entry_point": {
           "/Users/hue/code/dopemux-mvp/services/dopecon-bridge/main.py": {
-            "BASE_URL": false,
-            "LOG_LEVEL": true,
-            "PORT": true,
             "HOST": true,
+            "PORT": true,
+            "LOG_LEVEL": true,
+            "BASE_URL": false,
             "has_risky_environ": false,
             "has_sys_path_insert": false
           }
@@ -77,18 +77,18 @@
       "entry_point": "services/task-orchestrator/server.py",
       "config_files": [],
       "env_support": {
-        "BASE_URL": false,
-        "LOG_LEVEL": true,
+        "HOST": true,
         "PORT": true,
-        "HOST": true
+        "LOG_LEVEL": true,
+        "BASE_URL": false
       },
       "scanned_files": {
         "entry_point": {
           "/Users/hue/code/dopemux-mvp/services/task-orchestrator/server.py": {
-            "BASE_URL": false,
-            "LOG_LEVEL": true,
-            "PORT": true,
             "HOST": true,
+            "PORT": true,
+            "LOG_LEVEL": true,
+            "BASE_URL": false,
             "has_risky_environ": false,
             "has_sys_path_insert": false
           }
