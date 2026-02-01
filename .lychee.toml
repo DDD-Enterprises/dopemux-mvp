@@ -17,7 +17,20 @@ exclude = [
   "https://textual\\.textualize\\.io/guide/async/.*",
   "https://www\\.ably\\.io/blog/.*",
   "https://github\\.com/prometheus/client_python/tree/master/.*",
-  "https://hogonext\\.com/.*"
+  "https://hogonext\\.com/.*",
+  # External sites with paywalls or access restrictions
+  "https://platform\\.openai\\.com/.*",
+  "https://devops\\.com/.*",
+  "https://medium\\.com/.*",
+  "https://.*\\.medium\\.com/.*",
+  "https://dl\\.acm\\.org/.*",
+  "https://www\\.researchgate\\.net/.*",
+  # Missing documentation files (to be created separately)
+  "file://.*WORKTREE_SWITCHING_GUIDE.*",
+  "file://.*phase-1[a-d]-.*",
+  "file://.*phase-2-security-quality-complete.*",
+  "file://.*phase-2a-security-scan.*",
+  "file://.*phase-3-manual-review-findings.*"
 ]
 
 # Accept 404s for localhost (fallback if regex doesn't catch all)

@@ -33,7 +33,7 @@ git --version       # Any recent version
 
 ```bash
 # 1. Clone dopemux
-git clone https://github.com/dopemux/dopemux-mvp.git
+git clone https://github.com/DDD-Enterprises/dopemux-mvp.git
 cd dopemux-mvp
 
 # 2. Run setup script (creates ~/.dopemux/, installs deps, starts Docker)
@@ -69,7 +69,7 @@ dopemux start             # Launch dopemux!
 ### **Step 1: Clone Repository**
 
 ```bash
-git clone https://github.com/dopemux/dopemux-mvp.git
+git clone https://github.com/DDD-Enterprises/dopemux-mvp.git
 cd dopemux-mvp
 ```
 
@@ -300,8 +300,8 @@ dopemux decisions patterns tags            # See auto-detected patterns
 
 ## 🆘 Getting Help
 
-- **Issues**: https://github.com/dopemux/dopemux-mvp/issues
-- **Discussions**: https://github.com/dopemux/dopemux-mvp/discussions
+- **Issues**: https://github.com/DDD-Enterprises/dopemux-mvp/issues
+- **Discussions**: https://github.com/DDD-Enterprises/dopemux-mvp/discussions
 - **Documentation**: https://docs.dopemux.dev
 
 ---
