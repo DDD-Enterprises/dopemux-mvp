@@ -1,0 +1,134 @@
+version: "1.0"
+last_updated: "2026-02-01"
+description: "Machine-readable index of dopemux-mvp documentation for AI/tool consumption"
+
+# Entry Points - Key documents for getting started
+entry_points:
+  quickstart: "QUICK_START.md"
+  install: "INSTALL.md"
+  readme: "README.md"
+  changelog: "CHANGELOG.md"
+  master_index: "docs/00-MASTER-INDEX.md"
+
+# Systems Documentation - Component-specific doc hubs
+systems:
+  conport:
+    overview: "docs/systems/conport/CONPORT_EXECUTIVE_SUMMARY.md"
+    technical: "docs/systems/conport/CONPORT_SYSTEMS_ANALYSIS.md"
+    integration: "docs/systems/conport/CONPORT_INTEGRATION_QUICKSTART.md"
+    comparison: "docs/systems/conport/CONPORT_COMPARISON_MATRIX.md"
+    readme: "docs/systems/conport/CONPORT_README.md"
+    
+  dashboard:
+    overview: "docs/systems/dashboard/TMUX_DASHBOARD_README.md"
+    design: "docs/systems/dashboard/TMUX_DASHBOARD_DESIGN.md"
+    metrics: "docs/systems/dashboard/TMUX_METRICS_INVENTORY.md"
+    implementation: "docs/systems/dashboard/DASHBOARD_IMPLEMENTATION_TRACKER.md"
+    enhancements: "docs/systems/dashboard/DASHBOARD_ENHANCEMENTS.md"
+    
+  dopecon-bridge:
+    readme: "docs/systems/dopecon-bridge/README.md"
+    
+  multi-workspace:
+    readme: "docs/systems/multi-workspace/README.md"
+    
+  production:
+    readme: "docs/systems/production/README.md"
+
+# Services - Service-specific documentation
+services:
+  task-orchestrator:
+    readme: "services/task-orchestrator/README.md"
+    docs_dir: "services/task-orchestrator/docs/"
+    
+  dopecon-bridge:
+    readme: "services/dopecon-bridge/README.md"
+    docs_dir: "services/dopecon-bridge/docs/"
+    
+  adhd-engine:
+    readme: "services/adhd_engine/README.md"
+    docs_dir: "services/adhd_engine/docs/"
+    
+  orchestrator:
+    readme: "services/orchestrator/README.md"
+    docs_dir: "services/orchestrator/docs/"
+    claudedocs_dir: "services/orchestrator/claudedocs/"
+    
+  conport-kg-ui:
+    readme: "services/conport_kg_ui/README.md"
+    claudedocs_dir: "services/conport_kg_ui/claudedocs/"
+
+# Architecture & Design Documents
+architecture:
+  overview: "docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md"
+  system_bible: "docs/94-architecture/system-bible.md"
+  multi_instance: "docs/94-architecture/multi-instance-implementation.md"
+  adr_index: "docs/90-adr/"
+  rfc_index: "docs/91-rfc/"
+
+# How-To Guides
+how_to:
+  directory: "docs/02-how-to/"
+  deployment: "docs/deployment/DEPLOYMENT-INSTRUCTIONS.md"
+  leantime_setup: "docs/02-how-to/integrations/LEANTIME_SETUP_INSTRUCTIONS.md"
+  metamcp_setup: "docs/02-how-to/metamcp-setup.md"
+  role_switching: "docs/02-how-to/role-switching-quickstart.md"
+  multi_instance: "docs/02-how-to/multi-instance-workflow.md"
+  orchestrator_dashboard: "docs/02-how-to/orchestrator-dashboard.md"
+
+# Tutorials
+tutorials:
+  directory: "docs/01-tutorials/"
+  start_here: "docs/01-tutorials/START-HERE.md"
+
+# Reference Documentation
+reference:
+  directory: "docs/03-reference/"
+  profile_schema: "docs/PROFILE-YAML-SCHEMA.md"
+  features_index: "docs/FEATURES_INDEX.md"
+  metamcp_tools: "docs/03-reference/metamcp-tool-mapping.md"
+
+# Explanation & Deep Dives
+explanation:
+  directory: "docs/04-explanation/"
+  serena_v2: "docs/04-explanation/serena-v2-technical-deep-dive.md"
+  conport: "docs/04-explanation/conport-technical-deep-dive.md"
+
+# Archive - Historical documents
+archive:
+  completed_projects: "docs/archive/completed-projects/"
+  session_notes: "docs/archive/session-notes/"
+  deprecated: "docs/archive/deprecated/"
+  overview: "docs/archive/overview.md"
+
+# AI Tooling Configuration
+ai_tooling:
+  claude_config: ".claude/claude.md"
+  mcp_servers: ".claude.json"
+  llm_instructions: ".claude/llm.md"
+  context: ".claude/context.md"
+  agent_architecture: ".claude/AGENT_ARCHITECTURE.md"
+
+# Service Registry
+service_registry: "services/registry.yaml"
+
+# Docker & Deployment
+docker:
+  compose_master: "docker-compose.master.yml"
+  compose_smoke: "docker-compose.smoke.yml"
+  compose_staging: "docker-compose.staging.yml"
+  compose_prod: "docker-compose.prod.yml"
+
+# Configuration
+config:
+  profiles: "config/profiles/"
+  mcp: "config/mcp/"
+  routing: "config/routing/"
+
+# Scripts & Tools
+scripts:
+  directory: "scripts/"
+  docs_validation: "scripts/docs_validator.py"
+  docs_frontmatter: "scripts/docs_frontmatter_guard.py"
+  docs_normalize: "scripts/docs_normalize.py"
+  docs_audit: "scripts/docs_audit/"

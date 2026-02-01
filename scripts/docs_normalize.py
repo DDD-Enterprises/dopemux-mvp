@@ -45,11 +45,18 @@ SECTION_DIRS = {
     "02-how-to": DOCS / "02-how-to",
     "03-reference": DOCS / "03-reference",
     "04-explanation": DOCS / "04-explanation",
+    "05-audit-reports": DOCS / "05-audit-reports",
+    "06-research": DOCS / "06-research",
     # preserved specialized sections
     "90-adr": DOCS / "90-adr",
     "91-rfc": DOCS / "91-rfc",
     "92-runbooks": DOCS / "92-runbooks",
     "94-architecture": DOCS / "94-architecture",
+    # new sections from restructure
+    "archive": DOCS / "archive",
+    "systems": DOCS / "systems",
+    "deployment": DOCS / "deployment",
+    "implementation-plans": DOCS / "implementation-plans",
 }
 
 COMPONENTS_DIR = SECTION_DIRS["03-reference"] / "components"

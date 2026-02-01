@@ -71,8 +71,8 @@ services:
   # MCP: ConPort knowledge graph server
   conport:
     build:
-      context: ./services/conport
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/conport/Dockerfile
     container_name: smoke-conport
     restart: unless-stopped
     environment:
@@ -97,8 +97,8 @@ services:
   # Coordination: DopeconBridge event routing
   dopecon-bridge:
     build:
-      context: ./services/dopecon-bridge
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/dopecon-bridge/Dockerfile
     container_name: smoke-dopecon-bridge
     restart: unless-stopped
     environment:
@@ -122,8 +122,8 @@ services:
   # Cognitive: Task Orchestrator
   task-orchestrator:
     build:
-      context: ./services/task-orchestrator
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/task-orchestrator/Dockerfile
     container_name: smoke-task-orchestrator
     restart: unless-stopped
     environment:
