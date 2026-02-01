@@ -4,7 +4,13 @@ exclude_path = ["docs/94-architecture/c4/"]
 # Exclude localhost URLs (documentation examples, dev servers)
 exclude = [
   "http://localhost:.*",
-  "https://localhost:.*"
+  "https://localhost:.*",
+  "http://0\\.0\\.0\\.0:.*",
+  "https://0\\.0\\.0\\.0:.*",
+  "http://.*:6333.*",  # Qdrant
+  "https://docs\\.dopemux\\.dev.*",  # Internal docs site (not yet deployed)
+  ".*github\\.com/DDD-Enterprises/dopemux-mvp/issues/new.*",  # Issue creation links
+  ".*github\\.com/DDD-Enterprises/dopemux-mvp/discussions/new.*"  # Discussion creation links
 ]
 
 # Accept 404s for localhost (fallback if regex doesn't catch all)

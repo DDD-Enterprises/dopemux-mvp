@@ -284,18 +284,17 @@ dopemux decisions patterns tags            # See auto-detected patterns
 ```
 
 **Advanced Usage**:
-- See `docs/MULTI_PROJECT.md` for multi-project workflows
-- See `docs/PROFILES.md` for profile customization
-- See `docs/CONTRIBUTING_ZEN.md` for Zen MCP development
+- See workspace documentation in `docs/03-reference/` for multi-project workflows
+- See CLI documentation for profile customization
+- See MCP integration guides in `docs/02-how-to/`
 
 ---
 
 ## 📚 Additional Resources
 
-- **User Guide**: [MULTI_PROJECT.md](MULTI_PROJECT.md)
-- **Profile Reference**: [PROFILES.md](PROFILES.md)
-- **Architecture**: [docs/94-architecture/](94-architecture/)
-- **Troubleshooting**: [docs/troubleshooting/](troubleshooting/)
+- **Architecture**: [../04-explanation/architecture/](../04-explanation/architecture/)
+- **Reference Docs**: [../03-reference/overview.md](../03-reference/overview.md)
+- **How-To Guides**: [../02-how-to/overview.md](../02-how-to/overview.md)
 
 ---
 
