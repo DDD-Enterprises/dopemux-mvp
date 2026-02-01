@@ -222,7 +222,10 @@ class TaskMasterMCPClient:
                 },
             }
 
-            response = await self._send_mcp_request(init_request)
+            response = await self._send_mcp_request(
+                init_request,
+                allow_disconnected=True,
+            )
 
             if response.get("result"):
                 self._connected = True
@@ -248,7 +251,10 @@ class TaskMasterMCPClient:
                     "jsonrpc": "2.0",
                     "method": "notifications/shutdown",
                 }
-                await self._send_mcp_request(shutdown_request)
+                await self._send_mcp_request(
+                    shutdown_request,
+                    allow_disconnected=True,
+                )
 
                 # Terminate process
                 self._process.terminate()
@@ -269,7 +275,11 @@ class TaskMasterMCPClient:
         self._request_id += 1
         return self._request_id
 
-    async def _send_mcp_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
+    async def _send_mcp_request(
+        self,
+        request: Dict[str, Any],
+        allow_disconnected: bool = False,
+    ) -> Dict[str, Any]:
         """
         Send MCP request to Task-Master server.
 
@@ -279,7 +289,9 @@ class TaskMasterMCPClient:
         Returns:
             MCP response
         """
-        if not self._process or not self._connected:
+        if not self._process:
+            raise DopemuxIntegrationError("Not connected to Task-Master")
+        if not self._connected and not allow_disconnected:
             raise DopemuxIntegrationError("Not connected to Task-Master")
 
         try:
