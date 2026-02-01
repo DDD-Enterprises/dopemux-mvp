@@ -11,6 +11,7 @@ exclude = [
   # Internal service hosts
   "http://.*:6333.*",  # Qdrant
   "http://.*-mcp:.*",  # MCP services (e.g., conport-mcp:5000)
+  "http://.*-bridge:.*",  # Bridge services (e.g., dopecon-bridge:3016)
   "http://leantime:.*",  # Leantime internal
   "https://docs\\.dopemux\\.dev.*",  # Internal docs site (not yet deployed)
   # Placeholder/example URLs
@@ -46,6 +47,7 @@ exclude = [
   "https://www\\.researchgate\\.net/.*",
   # Timeout-prone sites
   "https://fme\\.safe\\.com/.*",
+  "https://fastercapital\\.com/.*",  # Known to have 522 errors
   # Missing documentation files (to be created separately)
   "file://.*WORKTREE_SWITCHING_GUIDE.*",
   "file://.*ADHD-ENGINE-DEEP-DIVE-PART1.*",
