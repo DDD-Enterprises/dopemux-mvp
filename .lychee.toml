@@ -25,6 +25,8 @@ exclude = [
   "https://.*\\.medium\\.com/.*",
   "https://dl\\.acm\\.org/.*",
   "https://www\\.researchgate\\.net/.*",
+  # Timeout-prone sites
+  "https://fme\\.safe\\.com/.*",
   # Missing documentation files (to be created separately)
   "file://.*WORKTREE_SWITCHING_GUIDE.*",
   "file://.*phase-1[a-d]-.*",
@@ -41,3 +43,10 @@ max_concurrency = 8
 
 # Accept certain status codes that are acceptable
 accept = [200, 201, 204, 429]
+
+# Include unsupported links (don't treat as errors)
+include_verbatim = true
+
+# Timeout settings
+timeout = 30
+max_retries = 2
