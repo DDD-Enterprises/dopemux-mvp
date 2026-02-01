@@ -106,8 +106,11 @@ class KGOrchestrator:
 
         decision_id = event.payload.get('decision_id')
         summary = event.payload.get('summary', '')
+        workspace_path = event.payload.get('workspace_path') or event.workspace_path
 
         logger.info(f"\n[KG Orchestrator] decision.logged: #{decision_id}")
+        if workspace_path:
+            logger.info(f"   Workspace: {workspace_path}")
 
         # Background: Find similar decisions
         try:
@@ -138,7 +141,8 @@ class KGOrchestrator:
             impl_decisions = self.exploration.find_by_relationship_type(
                 decision_id,
                 'IMPLEMENTS',
-                'outgoing'
+                'outgoing',
+                workspace_path=workspace_path
             )
 
             if impl_decisions and self.bridge:
@@ -177,11 +181,14 @@ class KGOrchestrator:
 
         task_id = event.payload.get('task_id')
         decision_refs = event.payload.get('decision_refs', [])
+        workspace_path = event.payload.get('workspace_path') or event.workspace_path
 
         if not decision_refs:
             return  # No decisions linked to task
 
         logger.info(f"\n[KG Orchestrator] task.started: Task {task_id}")
+        if workspace_path:
+            logger.info(f"   Workspace: {workspace_path}")
 
         # PERFORMANCE FIX - N+1 Query Problem (Issue from audit 2025-10-16)
         # Fixed: Now uses batch loading instead of one-by-one queries
@@ -199,18 +206,19 @@ class KGOrchestrator:
             logger.info(f"[KG Orchestrator] Batch loading not available, falling back to individual queries")
             for decision_id in decision_refs:
                 try:
-                context = self.exploration.get_decision_neighborhood(
-                    decision_id,
-                    max_hops=2,
-                    limit_per_hop=5  # Smaller for caching
-                )
-                contexts.append(context)
+                    context = self.exploration.get_decision_neighborhood(
+                        decision_id,
+                        max_hops=2,
+                        limit_per_hop=5,  # Smaller for caching
+                        workspace_path=workspace_path
+                    )
+                    contexts.append(context)
 
-                logger.info(f"   → Loaded context for decision #{decision_id}")
-                logger.info(f"      1-hop: {len(context.hop_1_neighbors)}, 2-hop: {len(context.hop_2_neighbors)}")
+                    logger.info(f"   → Loaded context for decision #{decision_id}")
+                    logger.info(f"      1-hop: {len(context.hop_1_neighbors)}, 2-hop: {len(context.hop_2_neighbors)}")
 
-            except Exception as e:
-                logger.error(f"   ⚠️  Context loading failed for #{decision_id}: {e}")
+                except Exception as e:
+                    logger.error(f"   ⚠️  Context loading failed for #{decision_id}: {e}")
 
         if self.redis and contexts:
             # Cache for Serena to use
@@ -234,6 +242,7 @@ class KGOrchestrator:
         """
 
         file_path = event.payload.get('file_path', '')
+        workspace_path = event.payload.get('workspace_path') or event.workspace_path
         module_name = self._extract_module_name(file_path)
 
         if not module_name:
@@ -241,11 +250,17 @@ class KGOrchestrator:
 
         logger.info(f"\n[KG Orchestrator] file.opened: {file_path}")
         logger.info(f"   Module: {module_name}")
+        if workspace_path:
+            logger.info(f"   Workspace: {workspace_path}")
 
         # Background: Search for related decisions
         try:
             # Use Top-3 for sidebar (ADHD)
-            related = self.overview.search_by_tag(module_name, limit=3)
+            related = self.overview.search_by_tag(
+                module_name,
+                limit=3,
+                workspace_path=workspace_path
+            )
 
             if not related:
                 # Fallback: Full-text search
@@ -273,12 +288,19 @@ class KGOrchestrator:
         """
 
         sprint_id = event.payload.get('sprint_id')
+        workspace_path = event.payload.get('workspace_path') or event.workspace_path
 
         logger.info(f"\n[KG Orchestrator] sprint.planning: {sprint_id}")
+        if workspace_path:
+            logger.info(f"   Workspace: {workspace_path}")
 
         # Background: Load sprint decisions
         try:
-            sprint_decisions = self.overview.search_by_tag(sprint_id, limit=20)
+            sprint_decisions = self.overview.search_by_tag(
+                sprint_id,
+                limit=20,
+                workspace_path=workspace_path
+            )
 
             logger.info(f"   → Found {len(sprint_decisions)} decisions for sprint")
 
@@ -288,7 +310,8 @@ class KGOrchestrator:
                 try:
                     neighborhood = self.exploration.get_decision_neighborhood(
                         decision.id,
-                        max_hops=1
+                        max_hops=1,
+                        workspace_path=workspace_path
                     )
                     genealogies[decision.id] = neighborhood
                 except Exception as e:
