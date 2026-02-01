@@ -1,0 +1,149 @@
+# Dopemux Smoke Stack - Minimal test environment
+# Ports and configuration driven by .env.smoke (generated from services/registry.yaml)
+# 
+# Usage:
+#   1. Generate .env.smoke: python tools/generate_smoke_env.py
+#   2. Build and start: docker compose -f docker-compose.smoke.yml up -d --build
+#   3. Validate: python tools/ports_health_audit.py --mode runtime --services conport,dopecon-bridge,task-orchestrator
+#   4. Stop: docker compose -f docker-compose.smoke.yml down
+
+version: '3.8'
+
+networks:
+  dopemux-smoke-network:
+    driver: bridge
+
+volumes:
+  smoke_pg_data:
+  smoke_redis_data:
+  smoke_qdrant_data:
+
+services:
+  # Infrastructure: PostgreSQL with AGE extension
+  postgres:
+    image: postgres:16-alpine
+    container_name: smoke-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=dopemux_age
+      - POSTGRES_PASSWORD=dopemux_age_dev_password
+      - POSTGRES_DB=dopemux_knowledge_graph
+    volumes:
+      - smoke_pg_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    networks:
+      - dopemux-smoke-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph"]
+      timeout: 5s
+      retries: 10
+      interval: 10s
+
+  # Infrastructure: Redis
+  redis:
+    image: redis:7-alpine
+    container_name: smoke-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - dopemux-smoke-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Infrastructure: Qdrant vector database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: smoke-qdrant
+    restart: unless-stopped
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"
+      - "6334:6334"
+    volumes:
+      - smoke_qdrant_data:/qdrant/storage
+    networks:
+      - dopemux-smoke-network
+
+  # MCP: ConPort knowledge graph server
+  conport:
+    build:
+      context: ./services/conport
+      dockerfile: Dockerfile
+    container_name: smoke-conport
+    restart: unless-stopped
+    environment:
+      - MCP_SERVER_PORT=${CONPORT_CONTAINER_PORT:-3004}
+      - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@postgres:5432/dopemux_knowledge_graph
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "${CONPORT_PORT:-3004}:${CONPORT_CONTAINER_PORT:-3004}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dopemux-smoke-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:${CONPORT_CONTAINER_PORT:-3004}/health || exit 1"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+
+  # Coordination: DopeconBridge event routing
+  dopecon-bridge:
+    build:
+      context: ./services/dopecon-bridge
+      dockerfile: Dockerfile
+    container_name: smoke-dopecon-bridge
+    restart: unless-stopped
+    environment:
+      - DOPECON_BRIDGE_PORT=${DOPECON_BRIDGE_CONTAINER_PORT:-3016}
+      - CONPORT_URL=http://conport:${CONPORT_CONTAINER_PORT:-3004}
+      - REDIS_URL=redis://redis:6379
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    ports:
+      - "${DOPECON_BRIDGE_PORT:-3016}:${DOPECON_BRIDGE_CONTAINER_PORT:-3016}"
+    depends_on:
+      - conport
+      - redis
+    networks:
+      - dopemux-smoke-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:${DOPECON_BRIDGE_CONTAINER_PORT:-3016}/health || exit 1"]
+      timeout: 5s
+      retries: 3
+      interval: 30s
+
+  # Cognitive: Task Orchestrator
+  task-orchestrator:
+    build:
+      context: ./services/task-orchestrator
+      dockerfile: Dockerfile
+    container_name: smoke-task-orchestrator
+    restart: unless-stopped
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - WORKSPACE_ID=/workspace
+      - CONPORT_URL=http://conport:${CONPORT_CONTAINER_PORT:-3004}
+      - DOPECON_BRIDGE_URL=http://dopecon-bridge:${DOPECON_BRIDGE_CONTAINER_PORT:-3016}
+      - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
+      - TASK_ORCHESTRATOR_API_KEY=dev-smoke-test-key
+      - PORT=${TASK_ORCHESTRATOR_CONTAINER_PORT:-8000}
+    ports:
+      - "${TASK_ORCHESTRATOR_PORT:-8000}:${TASK_ORCHESTRATOR_CONTAINER_PORT:-8000}"
+    depends_on:
+      - redis
+      - conport
+      - dopecon-bridge
+    networks:
+      - dopemux-smoke-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${TASK_ORCHESTRATOR_CONTAINER_PORT:-8000}/health"]
+      timeout: 10s
+      retries: 3
+      interval: 30s
