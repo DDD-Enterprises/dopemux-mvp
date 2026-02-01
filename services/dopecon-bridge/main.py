@@ -1749,7 +1749,7 @@ async def refresh_token(current_token: str = Depends(security)):
         raise HTTPException(status_code=401, detail='Invalid token')
 
 @app.post("/panes/send-cmd")
-async def send_cmd(current_user: dict = Depends(get_current_user), cmd: str, request: Request):
+async def send_cmd(cmd: str, request: Request, current_user: dict = Depends(get_current_user)):
     # Placeholder for tmux send-cmd logic - integrate with existing tmux orchestration
     # For MVP, return success
     update_context_delta(request, 'command_sent', {
