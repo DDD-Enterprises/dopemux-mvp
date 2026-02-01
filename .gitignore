@@ -262,3 +262,4 @@ services/conport_kg/auth/keys/*.pem
 .env* 
 =*
 .vercel
+.env.smoke
