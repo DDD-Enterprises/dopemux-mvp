@@ -23,7 +23,7 @@ volumes:
 services:
   # Infrastructure: PostgreSQL with AGE extension
   postgres:
-    image: postgres:16-alpine
+    image: apache/age:release_PG16_1.6.0
     container_name: smoke-postgres
     restart: unless-stopped
     environment:
@@ -32,6 +32,7 @@ services:
       - POSTGRES_DB=dopemux_knowledge_graph
     volumes:
       - smoke_pg_data:/var/lib/postgresql/data
+      - ./docker/postgres/01-init-age.sql:/docker-entrypoint-initdb.d/01-init-age.sql
     ports:
       - "${POSTGRES_PORT:-5440}:5432"
     networks:
@@ -50,7 +51,10 @@ services:
     ports:
       - "${REDIS_PORT:-6381}:6379"
     networks:
-      - dopemux-smoke-network
+      dopemux-smoke-network:
+        aliases:
+          - redis
+          - smoke-redis
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
