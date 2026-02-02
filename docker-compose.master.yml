@@ -162,11 +162,11 @@ services:
       start_period: 30s
 
   # Zen - Multi-Model Reasoning
-  zen:
+  pal:
     build:
-      context: ./docker/mcp-servers/zen
+      context: ./docker/mcp-servers/pal
       dockerfile: Dockerfile
-    container_name: mcp-zen
+    container_name: mcp-pal
     restart: unless-stopped
     networks:
       - mcp-network
@@ -377,7 +377,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - GENETIC_AGENT_ZEN_URL=http://zen:3003
+      - GENETIC_AGENT_PAL_URL=http://pal:3003
       - GENETIC_AGENT_CONPORT_URL=http://conport:3004
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:3016
       - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
@@ -385,7 +385,7 @@ services:
       - GENETIC_AGENT_DOPE_CONTEXT_URL=http://dope-context:3006
       - GENETIC_AGENT_WORKSPACE_ID=/workspace
     depends_on:
-      - zen
+      - pal
       - conport
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/health"]

@@ -32,12 +32,12 @@ services:
       - "mcp.priority=highest"
       - "mcp.description=Documentation and API references"
 
-  # Zen - Multi-model orchestration and complex decision making
-  zen:
+  # PAL - Multi-model orchestration and complex decision making
+  pal:
     build:
-      context: ./zen
+      context: ./pal
       dockerfile: Dockerfile
-    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-zen"
+    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-pal"
     restart: unless-stopped
     networks:
       - mcp-network
@@ -48,7 +48,7 @@ services:
       - XAI_API_KEY=${XAI_API_KEY}
       - DISABLED_TOOLS=analyze,refactor,testgen,secaudit,docgen,tracer
       - DEFAULT_MODEL=auto
-      - ZEN_DEFAULT_PROVIDER=openrouter  # Prefer OpenRouter for routing
+      - PAL_DEFAULT_PROVIDER=openrouter  # Prefer OpenRouter for routing
       - MCP_SERVER_PORT=3003
       - MCP_TRANSPORT=http
     working_dir: /app
