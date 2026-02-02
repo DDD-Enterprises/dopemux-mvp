@@ -1,3 +1,11 @@
+---
+id: architecture
+title: Architecture
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Dope-Context: Multi-Project Semantic Search Architecture
 
 ## Executive Summary

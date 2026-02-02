@@ -1,7 +1,15 @@
+---
+id: week4-build-roadmap
+title: Week4 Build Roadmap
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # DDDPG Week 4 Build Roadmap - Complete Implementation Guide
-**Service**: DDDPG (Decision-Driven Development Planning Graph)  
-**Date**: 2025-10-29  
-**Status**: Ready to Build  
+**Service**: DDDPG (Decision-Driven Development Planning Graph)
+**Date**: 2025-10-29
+**Status**: Ready to Build
 **Estimated Total Time**: 3-4 days (with deep thinking at every step)
 
 ---
@@ -25,8 +33,8 @@ Transform DDDPG from a solid foundation into a fully-featured, production-ready 
 
 ## 📅 Day 1: COMPLETE ✅
 
-**Date**: 2025-10-29 (completed)  
-**Duration**: 1 hour (vs 3.5 hours planned)  
+**Date**: 2025-10-29 (completed)
+**Duration**: 1 hour (vs 3.5 hours planned)
 **Efficiency**: 3.5x faster!
 
 ### Deliverables
@@ -47,8 +55,8 @@ Transform DDDPG from a solid foundation into a fully-featured, production-ready 
 
 ## 📅 Day 2: PENDING (Build Today!)
 
-**Focus**: Task Relationship Mapping + ADHD Suggestions  
-**Estimated Time**: 95 minutes  
+**Focus**: Task Relationship Mapping + ADHD Suggestions
+**Estimated Time**: 95 minutes
 **Dependencies**: Day 1 complete ✅
 
 ### Phase 1: Decision-Task Linking (15 min)
@@ -69,7 +77,7 @@ async def link_decision_to_task(
     if not self.enable_kg:
         logger.warning("KG disabled, cannot link decision to task")
         return False
-    
+
     try:
         query = """
         SELECT * FROM cypher('workspace', $$
@@ -91,7 +99,7 @@ async def get_task_decisions(self, task_id: str) -> List[str]:
     """Get all decision IDs linked to a task."""
     if not self.enable_kg:
         return []
-    
+
     try:
         query = """
         SELECT * FROM cypher('workspace', $$
@@ -114,7 +122,7 @@ async def unlink_decision_from_task(
     """Remove decision-task link."""
     if not self.enable_kg:
         return False
-    
+
     try:
         query = """
         SELECT * FROM cypher('workspace', $$
@@ -141,7 +149,7 @@ async def test_link_decision_to_task():
     mock_client = Mock()
     mock_client.execute_query = AsyncMock(return_value=[])
     kg = DDDPGKG("/test", age_client=mock_client, enable_kg=True)
-    
+
     result = await kg.link_decision_to_task("dec-1", "task-1")
     assert result == True
     mock_client.execute_query.assert_called_once()
@@ -154,7 +162,7 @@ async def test_get_task_decisions():
         {'decision_id': 'dec-2'}
     ])
     kg = DDDPGKG("/test", age_client=mock_client, enable_kg=True)
-    
+
     decisions = await kg.get_task_decisions("task-1")
     assert decisions == ['dec-1', 'dec-2']
 
@@ -163,7 +171,7 @@ async def test_unlink_decision_from_task():
     mock_client = Mock()
     mock_client.execute_query = AsyncMock(return_value=[{'deleted': 1}])
     kg = DDDPGKG("/test", age_client=mock_client, enable_kg=True)
-    
+
     result = await kg.unlink_decision_from_task("dec-1", "task-1")
     assert result == True
 ```
@@ -223,26 +231,26 @@ class WorkCluster:
 class RelationshipMapper:
     """
     Build composite relationship views from Knowledge Graph data.
-    
+
     Works with DDDPGKG to query raw graph data and assemble
     meaningful relationship structures for ADHD-optimized display.
-    
+
     Features:
     - Dependency chain building (multi-level traversal)
     - Work cluster creation (theme-based grouping)
     - Task context assembly (comprehensive views)
     - Graceful degradation (works without KG)
     """
-    
+
     def __init__(self, kg):
         """
         Initialize relationship mapper.
-        
+
         Args:
             kg: DDDPGKG instance for graph queries
         """
         self.kg = kg
-    
+
     async def build_dependency_chain(
         self,
         task_id: str,
@@ -250,14 +258,14 @@ class RelationshipMapper:
     ) -> DependencyChain:
         """
         Build full dependency chain for a task.
-        
+
         Traverses DEPENDS_ON relationships in both directions
         to build upstream (dependencies) and downstream (dependents).
-        
+
         Args:
             task_id: Task identifier
             max_depth: Maximum traversal depth (default: 3)
-        
+
         Returns:
             DependencyChain with upstream, downstream, parallel tasks
         """
@@ -274,7 +282,7 @@ class RelationshipMapper:
                 upstream_query, upstream_params
             )
             upstream = self.kg._parse_id_list(upstream_results, 'task_id')
-            
+
             # Get downstream dependents (tasks that depend on this)
             downstream_query = f"""
             SELECT * FROM cypher('workspace', $$
@@ -286,7 +294,7 @@ class RelationshipMapper:
                 downstream_query, upstream_params
             )
             downstream = self.kg._parse_id_list(downstream_results, 'task_id')
-            
+
             # Get parallel tasks (siblings with same upstream dependencies)
             parallel = []
             if upstream:
@@ -302,20 +310,20 @@ class RelationshipMapper:
                     parallel_query, upstream_params
                 )
                 parallel = self.kg._parse_id_list(parallel_results, 'task_id')
-            
+
             return DependencyChain(
                 upstream=upstream,
                 downstream=downstream,
                 parallel=parallel,
                 depth=max_depth
             )
-        
+
         except Exception as e:
             logger.error(f"Failed to build dependency chain: {e}")
             return DependencyChain(
                 upstream=[], downstream=[], parallel=[], depth=0
             )
-    
+
     async def build_work_cluster(
         self,
         theme: str,
@@ -323,21 +331,21 @@ class RelationshipMapper:
     ) -> WorkCluster:
         """
         Build cluster of related work by theme.
-        
+
         Groups tasks and decisions that share a common theme
         (keyword, tag, or semantic similarity).
-        
+
         Args:
             theme: Theme keyword or tag
             limit: Maximum items to return (default: 20)
-        
+
         Returns:
             WorkCluster with tasks, decisions, patterns
         """
         try:
             # Search tasks by theme
             tasks = await self.kg.search_tasks_semantic(theme, limit=limit)
-            
+
             # Get decisions for those tasks
             decisions = []
             for task in tasks:
@@ -346,7 +354,7 @@ class RelationshipMapper:
                     task_decisions = await self.kg.get_task_decisions(task_id)
                     for dec_id in task_decisions:
                         decisions.append({'id': dec_id, 'task_id': task_id})
-            
+
             # Identify patterns (common tags, types, etc)
             patterns = []
             if tasks:
@@ -356,58 +364,58 @@ class RelationshipMapper:
                     tags = task.get('tags', [])
                     if isinstance(tags, list):
                         all_tags.extend(tags)
-                
+
                 # Find most common tags
                 if all_tags:
                     from collections import Counter
                     tag_counts = Counter(all_tags)
                     patterns = [tag for tag, count in tag_counts.most_common(5)]
-            
+
             return WorkCluster(
                 tasks=tasks,
                 decisions=decisions,
                 patterns=patterns,
                 size=len(tasks) + len(decisions)
             )
-        
+
         except Exception as e:
             logger.error(f"Failed to build work cluster: {e}")
             return WorkCluster(tasks=[], decisions=[], patterns=[], size=0)
-    
+
     async def build_task_context(
         self,
         task_id: str
     ) -> Dict[str, Any]:
         """
         Build complete task context for ADHD-friendly display.
-        
+
         Assembles all relationship information for a single task:
         - Dependencies (upstream/downstream)
         - Related tasks (semantic similarity)
         - Decisions (linked decisions)
         - Clusters (work themes)
-        
+
         Args:
             task_id: Task identifier
-        
+
         Returns:
             Dict with dependencies, related, decisions, clusters
         """
         try:
             # Build dependency chain
             dependencies = await self.build_dependency_chain(task_id)
-            
+
             # Get relationships from KG
             relationships = await self.kg.get_task_relationships(task_id)
-            
+
             # Get linked decisions
             decisions = await self.kg.get_task_decisions(task_id)
-            
+
             # Extract task description for cluster search
             # (In real implementation, would fetch from storage)
             # For now, use task_id as theme
             cluster = await self.build_work_cluster(task_id, limit=5)
-            
+
             return {
                 'task_id': task_id,
                 'dependencies': {
@@ -422,7 +430,7 @@ class RelationshipMapper:
                     'patterns': cluster.patterns
                 }
             }
-        
+
         except Exception as e:
             logger.error(f"Failed to build task context: {e}")
             return {
@@ -459,10 +467,10 @@ async def test_build_dependency_chain():
         ['task-c'],
         ['task-d']
     ])
-    
+
     mapper = RelationshipMapper(mock_kg)
     chain = await mapper.build_dependency_chain('task-1')
-    
+
     assert isinstance(chain, DependencyChain)
     assert chain.upstream == ['task-a', 'task-b']
     assert chain.downstream == ['task-c']
@@ -478,10 +486,10 @@ async def test_build_work_cluster():
         {'id': 'task-2', 'tags': ['api', 'frontend']}
     ])
     mock_kg.get_task_decisions = AsyncMock(return_value=['dec-1', 'dec-2'])
-    
+
     mapper = RelationshipMapper(mock_kg)
     cluster = await mapper.build_work_cluster('api')
-    
+
     assert isinstance(cluster, WorkCluster)
     assert len(cluster.tasks) == 2
     assert 'api' in cluster.patterns
@@ -497,10 +505,10 @@ async def test_build_task_context():
     mock_kg.get_task_relationships = AsyncMock(return_value={})
     mock_kg.get_task_decisions = AsyncMock(return_value=['dec-1'])
     mock_kg.search_tasks_semantic = AsyncMock(return_value=[])
-    
+
     mapper = RelationshipMapper(mock_kg)
     context = await mapper.build_task_context('task-1')
-    
+
     assert context['task_id'] == 'task-1'
     assert 'dependencies' in context
     assert 'decisions' in context
@@ -552,7 +560,7 @@ if kg:
 # New methods
 async def get_task_with_context(task_id, workspace_id):
     """Get task with full KG context"""
-    
+
 async def suggest_next_tasks(workspace_id, context):
     """ADHD-optimized suggestions"""
 ```
@@ -567,17 +575,17 @@ async def suggest_next_tasks(workspace_id, context):
 
 ### Day 2 Summary
 
-**Total Time**: ~95 minutes  
-**Files Created**: 2 (relationship_mapper.py, suggestion_engine.py)  
-**Files Modified**: 2 (kg_integration.py, queries/service.py)  
-**Tests Added**: ~20 new tests  
+**Total Time**: ~95 minutes
+**Files Created**: 2 (relationship_mapper.py, suggestion_engine.py)
+**Files Modified**: 2 (kg_integration.py, queries/service.py)
+**Tests Added**: ~20 new tests
 **Features**: Decision linking, relationship mapping, ADHD suggestions
 
 ---
 
 ## 📅 Days 3-4: Semantic Search Enhancement
 
-**Focus**: Embeddings + Vector Similarity  
+**Focus**: Embeddings + Vector Similarity
 **Estimated Time**: 3-4 hours
 
 ### Goals
@@ -606,7 +614,7 @@ async def suggest_next_tasks(workspace_id, context):
 
 ## 📅 Day 5: Integration & Polish
 
-**Focus**: Production Readiness  
+**Focus**: Production Readiness
 **Estimated Time**: 2-3 hours
 
 ### Tasks
@@ -661,14 +669,14 @@ async def suggest_next_tasks(workspace_id, context):
 
 ## 🚀 Ready to Build!
 
-**Start with**: Phase 1 - Decision-Task Linking (15 min)  
-**Then**: Follow phases 2-4 sequentially  
+**Start with**: Phase 1 - Decision-Task Linking (15 min)
+**Then**: Follow phases 2-4 sequentially
 **Complete**: Day 2 in ~95 minutes
 
 **Remember**: Deep thinking at every step! 🧠
 
 ---
 
-**Last Updated**: 2025-10-29  
-**Status**: Ready to build Day 2  
+**Last Updated**: 2025-10-29
+**Status**: Ready to build Day 2
 **Next**: Implement Phase 1

@@ -1,3 +1,11 @@
+---
+id: week3-research
+title: Week3 Research
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Week 3: CognitiveGuardian Production Implementation - Research & Plan
 
 **Date**: 2025-10-29
@@ -129,25 +137,25 @@ def _calculate_readiness_confidence(
     self, user_state: UserState, task_complexity: float
 ) -> float:
     confidence = 0.5
-    
+
     # Energy match bonus
     if user_state.energy == EnergyLevel.HIGH and task_complexity > 0.6:
         confidence += 0.2  # High energy for complex work ✅
     elif user_state.energy == EnergyLevel.LOW and task_complexity < 0.3:
         confidence += 0.2  # Low energy for simple work ✅
-    
+
     # Attention match bonus
     if user_state.attention == AttentionState.FOCUSED:
         confidence += 0.2
     elif user_state.attention == AttentionState.HYPERFOCUS and task_complexity > 0.7:
         confidence += 0.3  # Perfect for complex work ✅
-    
+
     # Overwork penalty
     if user_state.session_duration_minutes > 60:
         confidence -= 0.2
     if user_state.session_duration_minutes > 90:
         confidence -= 0.3
-    
+
     return max(0.0, min(1.0, confidence))
 ```
 

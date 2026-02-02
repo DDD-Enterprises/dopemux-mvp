@@ -1,8 +1,16 @@
+---
+id: week4-research
+title: Week4 Research
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Week 4: Advanced ADHD Features - Research & Planning
 
-**Date**: 2025-10-29  
-**Status**: 🔬 Research Phase Complete  
-**Duration**: 60 minutes research + thinking  
+**Date**: 2025-10-29
+**Status**: 🔬 Research Phase Complete
+**Duration**: 60 minutes research + thinking
 **Focus**: Biometric integration, ML energy prediction, KG integration
 
 ---
@@ -137,7 +145,7 @@ Week 4 will build **Advanced ADHD Features** on top of the production-ready Week
   - Orchestrator integration
   - API layer
   - Authentication & middleware
-  
+
 **Status**: Solid foundation, ready for enhancement
 
 ---
@@ -221,7 +229,7 @@ Week 4 will build **Advanced ADHD Features** on top of the production-ready Week
 
 ### Key Deliverables
 
-1. **Task Relationship Graph** 
+1. **Task Relationship Graph**
    - Map dependencies, blockers, related tasks
    - Visualize task context
    - Prevent "forgetting prerequisite" issues
@@ -413,16 +421,16 @@ CognitiveGuardian
 ## Risks & Mitigation
 
 ### Risk 1: ConPort-KG API Changes
-**Likelihood**: Low (stable codebase)  
-**Impact**: Medium (integration breaks)  
-**Mitigation**: 
+**Likelihood**: Low (stable codebase)
+**Impact**: Medium (integration breaks)
+**Mitigation**:
 - Use abstraction layer (our wrapper)
 - Graceful degradation (fallback to ConPort MCP)
 - Version pinning
 
 ### Risk 2: Graph Query Performance
-**Likelihood**: Medium (complex queries)  
-**Impact**: Medium (slow user experience)  
+**Likelihood**: Medium (complex queries)
+**Impact**: Medium (slow user experience)
 **Mitigation**:
 - Query optimization (indexes)
 - Caching (frequent queries)
@@ -430,16 +438,16 @@ CognitiveGuardian
 - Progressive loading (show partial results)
 
 ### Risk 3: Semantic Search Accuracy
-**Likelihood**: Medium (embedding quality)  
-**Impact**: Low (fuzzy search supplement)  
+**Likelihood**: Medium (embedding quality)
+**Impact**: Low (fuzzy search supplement)
 **Mitigation**:
 - Multiple search strategies (semantic + keyword fallback)
 - User feedback loop (improve embeddings)
 - Hybrid ranking (combine semantic + relevance)
 
 ### Risk 4: ML Model Complexity (if pursuing Option B later)
-**Likelihood**: N/A (deferred)  
-**Impact**: High (if attempted)  
+**Likelihood**: N/A (deferred)
+**Impact**: High (if attempted)
 **Mitigation**:
 - Focus on Option C for Week 4
 - Options A/B reserved for Weeks 15-16
@@ -528,7 +536,7 @@ CognitiveGuardian
 - Pattern mining (learn what works)
 - Agent knowledge sharing (cross-session)
 
-**Time Estimate**: 5 days × 3.5 hours = 17.5 hours  
+**Time Estimate**: 5 days × 3.5 hours = 17.5 hours
 (But likely faster based on Week 3 efficiency)
 
 **Functionality Progress**: 60% → 75% (+15%)
@@ -547,10 +555,10 @@ CognitiveGuardian
 
 ---
 
-**Created**: 2025-10-29  
-**Research Time**: 60 minutes  
-**Sources**: 12 industry publications (2024)  
-**Confidence**: 95% (existing infrastructure + validated patterns)  
+**Created**: 2025-10-29
+**Research Time**: 60 minutes
+**Sources**: 12 industry publications (2024)
+**Confidence**: 95% (existing infrastructure + validated patterns)
 **Recommendation**: Proceed with Option C (ConPort-KG)
 
 🎯 **Week 4: ADHD-Optimized Knowledge Graph Integration** 🎯

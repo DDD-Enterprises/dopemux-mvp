@@ -1,3 +1,11 @@
+---
+id: week6-complete
+title: Week6 Complete
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Week 6 Complete: TwoPlaneOrchestrator
 
 **Date**: 2025-10-24

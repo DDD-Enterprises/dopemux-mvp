@@ -1,3 +1,11 @@
+---
+id: epic-session-weeks-6-10-summary
+title: Epic Session Weeks 6 10 Summary
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # EPIC SESSION SUMMARY: Weeks 6-10 Complete
 
 **Date**: 2025-10-24

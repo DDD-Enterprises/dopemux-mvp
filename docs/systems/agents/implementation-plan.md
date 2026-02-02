@@ -1,3 +1,11 @@
+---
+id: implementation-plan
+title: Implementation Plan
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # 16-Week Agent Implementation Plan
 
 Complete week-by-week breakdown for implementing 7 infrastructure agents.

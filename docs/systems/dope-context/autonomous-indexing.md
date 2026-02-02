@@ -1,3 +1,11 @@
+---
+id: autonomous-indexing
+title: Autonomous Indexing
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Autonomous Indexing - Zero-Touch Operation
 
 **Status**: ✅ Implemented and Tested

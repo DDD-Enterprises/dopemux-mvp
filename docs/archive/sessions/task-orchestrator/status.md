@@ -1,3 +1,11 @@
+---
+id: status
+title: Status
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Task-Orchestrator Status - UN-DEPRECATED
 **Date**: 2025-10-16
 **Status**: ✅ **ACTIVE SERVICE** (deprecation reversed)

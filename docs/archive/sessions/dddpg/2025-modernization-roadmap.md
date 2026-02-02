@@ -1,7 +1,15 @@
+---
+id: 2025-modernization-roadmap
+title: 2025 Modernization Roadmap
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # DDDPG Service: 2025 Complete Modernization & Implementation Roadmap
-**Created**: 2025-10-29  
-**Service**: DDDPG (Decision-Driven Development Planning Graph)  
-**Status**: Deep Analysis Complete ✅ | Ready to Build 🚀  
+**Created**: 2025-10-29
+**Service**: DDDPG (Decision-Driven Development Planning Graph)
+**Status**: Deep Analysis Complete ✅ | Ready to Build 🚀
 **Timeline**: Week 4 Day 2 → Week 5 (Next 2-3 weeks)
 
 ---
@@ -11,7 +19,7 @@
 ### What is DDDPG?
 **DDDPG** is a next-generation, ADHD-optimized decision tracking and planning system that combines:
 - **Knowledge Graph Intelligence**: PostgreSQL AGE for relationship mapping
-- **Multi-Instance Architecture**: Git worktree-aware workspace isolation  
+- **Multi-Instance Architecture**: Git worktree-aware workspace isolation
 - **ADHD Optimization**: Top-3 pattern, progressive disclosure, cognitive load awareness
 - **Agent Integration**: Flexible metadata system for multi-agent coordination
 
@@ -61,14 +69,14 @@ class Decision(BaseModel):
     workspace_id: str      # Main workspace root
     instance_id: str       # "A", "B", "feature-auth"
     visibility: DecisionVisibility  # PRIVATE/SHARED/GLOBAL
-    
+
     # ADHD optimization
     cognitive_load: int    # 1-5 complexity rating
     session_context: str   # Preserve focus state
-    
+
     # Agent integration
     agent_metadata: Dict[str, Any]  # Flexible extensions
-    
+
     # Graph relationships
     related_decisions: List[int]
 ```
@@ -166,7 +174,7 @@ async def link_decision_to_task(
 
 async def get_task_decisions(self, task_id: str) -> List[str]:
     """Get all decision IDs for a task"""
-    
+
 async def unlink_decision_from_task(
     self,
     decision_id: str,
@@ -186,17 +194,17 @@ async def unlink_decision_from_task(
 class RelationshipMapper:
     """
     Build composite relationship views from KG primitives.
-    
+
     Coordinates parallel queries and synthesizes results.
     """
-    
+
     def __init__(self, kg: DDDPGKG):
         self.kg = kg
-    
+
     async def build_task_context(self, task_id: str) -> Dict:
         """
         Complete task context in one call.
-        
+
         Returns:
             {
                 'task_id': str,
@@ -217,7 +225,7 @@ class RelationshipMapper:
             self.kg.get_task_decisions(task_id),
             self._identify_clusters([task_id])
         )
-        
+
         return {
             'task_id': task_id,
             'dependencies': deps,
@@ -225,7 +233,7 @@ class RelationshipMapper:
             'decisions': decisions,
             'clusters': clusters
         }
-    
+
     async def build_work_cluster(
         self,
         theme: str,
@@ -245,14 +253,14 @@ class RelationshipMapper:
 class SuggestionEngine:
     """
     Context-aware task suggestions using KG relationships.
-    
+
     Features:
     - Energy/time/focus matching
     - Dependency satisfaction checking
     - In-memory caching (5 min TTL)
     - Pattern-based ranking
     """
-    
+
     def __init__(
         self,
         kg: DDDPGKG,
@@ -263,7 +271,7 @@ class SuggestionEngine:
         self.mapper = mapper
         self._cache: Dict[str, tuple[datetime, Dict]] = {}
         self._cache_ttl = timedelta(minutes=cache_ttl_minutes)
-    
+
     async def get_enhanced_suggestions(
         self,
         workspace_id: str,
@@ -275,13 +283,13 @@ class SuggestionEngine:
     ) -> Dict[str, List[Dict]]:
         """
         Get ADHD-optimized task suggestions.
-        
+
         Context Scoring:
         - Energy match: 0-0.4
         - Time match: 0-0.3
         - Focus match: 0-0.2
         - Pattern match: 0-0.1 (future)
-        
+
         Returns:
             {
                 'next_best': [tasks],       # Top recommendations
@@ -296,14 +304,14 @@ class SuggestionEngine:
             cached_at, result = self._cache[cache_key]
             if datetime.now() - cached_at < self._cache_ttl:
                 return result
-        
+
         # Compute suggestions
         result = await self._compute_suggestions(...)
-        
+
         # Cache result
         self._cache[cache_key] = (datetime.now(), result)
         return result
-    
+
     def _score_task(self, task: Dict, context: Dict) -> float:
         """Score task by context match (0.0-1.0)"""
         score = 0.0
@@ -334,7 +342,7 @@ class QueryService:
     ):
         self.storage = storage
         self.kg = kg
-        
+
         # Initialize KG-dependent services
         if kg:
             self.mapper = RelationshipMapper(kg)
@@ -342,19 +350,19 @@ class QueryService:
         else:
             self.mapper = None
             self.suggestions = None
-    
+
     @classmethod
     def with_kg(cls, storage, workspace_id, age_client=None):
         """Factory: Create QueryService with KG integration"""
         kg = DDDPGKG(workspace_id, age_client=age_client)
         return cls(storage, kg=kg)
-    
+
     async def get_task_with_context(self, task_id: str) -> Dict:
         """Get task with full relationship context"""
         if not self.mapper:
             return await self.storage.get_task(task_id)  # Fallback
         return await self.mapper.build_task_context(task_id)
-    
+
     async def suggest_next_tasks(
         self,
         workspace_id: str,
@@ -365,7 +373,7 @@ class QueryService:
             # Fallback: recent tasks
             recent = await self.storage.list_recent_tasks(limit=5)
             return {'next_best': recent, 'quick_wins': [], ...}
-        
+
         return await self.suggestions.get_enhanced_suggestions(
             workspace_id, **context
         )
@@ -415,7 +423,7 @@ async def search_tasks_semantic_vector(
 class DDDPGEventPublisher:
     """
     Publish DDDPG events to EventBus for agent coordination.
-    
+
     Events:
     - decision.created
     - decision.updated
@@ -424,10 +432,10 @@ class DDDPGEventPublisher:
     - session.started
     - session.ended
     """
-    
+
     def __init__(self, redis_client):
         self.redis = redis_client
-    
+
     async def publish_decision_created(self, decision: Decision):
         """Publish decision.created event"""
         await self.redis.xadd(
@@ -469,41 +477,41 @@ SQLite Cache: Per-instance fast reads
 class HybridStorageBackend:
     """
     Hybrid storage: Postgres source of truth + SQLite cache
-    
+
     Writes: Go to Postgres, publish event
     Reads: Check SQLite cache first, fallback to Postgres
     Sync: EventBus keeps caches in sync
     """
-    
+
     def __init__(self, postgres, sqlite, event_publisher):
         self.postgres = postgres
         self.cache = sqlite
         self.events = event_publisher
-    
+
     async def create_decision(self, decision: Decision) -> int:
         # Write to Postgres
         decision_id = await self.postgres.create(decision)
-        
+
         # Publish event
         await self.events.publish_decision_created(decision)
-        
+
         # Update cache
         await self.cache.create(decision)
-        
+
         return decision_id
-    
+
     async def get_decision(self, decision_id: int) -> Decision:
         # Try cache first
         cached = await self.cache.get(decision_id)
         if cached:
             return cached
-        
+
         # Fallback to Postgres
         decision = await self.postgres.get(decision_id)
-        
+
         # Populate cache
         await self.cache.create(decision)
-        
+
         return decision
 ```
 
@@ -528,7 +536,7 @@ async def get_decision_context(file_path: str, line: int) -> str:
     decisions = await dddpg.search_decisions(
         code_references__contains=f"{file_path}:{line}"
     )
-    
+
     # Format for hover display
     return format_hover_context(decisions[:3])  # Top-3!
 ```
@@ -539,13 +547,13 @@ async def get_decision_context(file_path: str, line: int) -> str:
 async def on_task_completed(event):
     """Auto-link decisions to completed tasks"""
     task_id = event['task_id']
-    
+
     # Find related decisions
     decisions = await dddpg.search_decisions(
         tags__contains='task',
         summary__contains=task_id
     )
-    
+
     # Link to KG
     for decision in decisions:
         await dddpg.link_decision_to_task(decision.id, task_id)
@@ -561,16 +569,16 @@ async def validate_decision(decision: Decision) -> float:
         decision.id,
         relationship_type=RelationshipType.CONTRADICTS
     )
-    
+
     if related:
         return 0.0  # No consensus if contradictions exist
-    
+
     # Check for support
     support = await dddpg.get_related_decisions(
         decision.id,
         relationship_type=RelationshipType.SUPPORTS
     )
-    
+
     return len(support) / 10.0  # Scale to 0-1
 ```
 
@@ -665,17 +673,17 @@ async def validate_decision(decision: Decision) -> float:
 
 ## 🚀 Let's Build!
 
-**Status**: Ready to implement Week 4 Day 2  
-**Confidence**: Very High (based on Day 1 success)  
-**Expected Time**: ~95 minutes (but likely faster at 3.5x pace!)  
-**Documentation**: Complete ✅  
-**Tests**: Plan ready ✅  
+**Status**: Ready to implement Week 4 Day 2
+**Confidence**: Very High (based on Day 1 success)
+**Expected Time**: ~95 minutes (but likely faster at 3.5x pace!)
+**Documentation**: Complete ✅
+**Tests**: Plan ready ✅
 **Architecture**: Validated ✅
 
 **Next Action**: Start Phase 1 - Decision-Task Linking
 
 ---
 
-**Last Updated**: 2025-10-29  
-**Author**: Deep Research & Planning Session  
+**Last Updated**: 2025-10-29
+**Author**: Deep Research & Planning Session
 **Version**: 1.0 - Complete Modernization Roadmap

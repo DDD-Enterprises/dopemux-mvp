@@ -1,3 +1,11 @@
+---
+id: autonomous-docs-indexing
+title: Autonomous Docs Indexing
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Autonomous Docs Indexing Implementation
 
 ## Overview

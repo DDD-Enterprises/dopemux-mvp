@@ -1,3 +1,11 @@
+---
+id: performance-tuning
+title: Performance Tuning
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Dope-Context Performance Tuning Guide
 
 Optimization strategies for search latency, indexing throughput, and cost efficiency.
