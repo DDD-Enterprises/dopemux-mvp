@@ -20,17 +20,18 @@ import logging
 from prometheus_client import make_asgi_app
 
 try:
-    from .engine import ADHDAccommodationEngine
-    from .api import routes
-    from .config import settings
-    from .middleware.rate_limit import RateLimitMiddleware
-    from ..error_handling import with_error_handling
+    from core.engine import ADHDAccommodationEngine
+    from api import routes
+    from core.config import settings
+    from middleware.rate_limit import RateLimitMiddleware
+    from core.error_handling import with_error_handling
 except ImportError:  # pragma: no cover - fallback when run as script
-    from engine import ADHDAccommodationEngine  # type: ignore
-    from api import routes  # type: ignore
-    from config import settings  # type: ignore
-    from middleware.rate_limit import RateLimitMiddleware  # type: ignore
-    from ..error_handling import with_error_handling
+    # Inside Docker or when running as python -m, core is a top-level package if configured correctly
+    from core.engine import ADHDAccommodationEngine
+    from api import routes
+    from core.config import settings
+    from middleware.rate_limit import RateLimitMiddleware
+    from core.error_handling import with_error_handling
 
 # Import shared Redis pool and cache for performance optimization
 import sys
@@ -44,8 +45,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from shared.monitoring.base import DopemuxMonitoring
 
 # Import error handling for circuit breaker protection
+# Import error handling for circuit breaker protection
 try:
-    from ..error_handling import (
+    from core.error_handling import (
         GlobalErrorHandler,
         CircuitBreaker,
         CircuitBreakerConfig,

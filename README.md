@@ -683,13 +683,74 @@ uvicorn main:app --port 8095 --reload
 
 Dopemux is designed by and for developers with ADHD. Contributions welcome!
 
-**Areas of focus:**
+### 🚀 Quick Start for Contributors
 
-- ADHD accommodation patterns
-- Statusline improvements
-- Energy/attention tracking
-- Break management strategies
-- Context preservation techniques
+**Ready to contribute? Get set up in 5-10 minutes:**
+
+```bash
+# 1. Fork and clone
+git clone https://github.com/YOUR_USER/dopemux-mvp.git ~/code/dopemux-mvp
+cd ~/code/dopemux-mvp
+
+# 2. Install in editable mode
+pip install -e ".[dev]"
+
+# 3. Verify dev mode
+dopemux dev status
+# Should show: "✅ ACTIVE"
+
+# 4. Make changes and test immediately!
+```
+
+**📖 Comprehensive Documentation:**
+
+- **[Development Setup Guide](docs/02-how-to/DEVELOPMENT_SETUP.md)** - 5-minute quick start for all scenarios
+- **[Developing Zen MCP](docs/02-how-to/DEVELOPING_ZEN.md)** - Contribute to Zen MCP tools
+- **[Developing Dopemux Core](docs/02-how-to/DEVELOPING_DOPEMUX_CORE.md)** - Work on CLI, profiles, commands
+- **[Troubleshooting Guide](docs/02-how-to/development-troubleshooting.md)** - Common issues and solutions
+
+### 🎯 Development Features
+
+**Automatic Dev Mode Detection:**
+- ✅ Editable install for instant code changes
+- ✅ Test database isolation (never corrupt production data)
+- ✅ DEBUG logging for visibility
+- ✅ Service skipping for faster iteration
+
+**Check your dev mode status:**
+```bash
+dopemux dev status    # Shows detected paths, settings
+dopemux dev paths     # Lists component dev locations
+```
+
+### 🌟 Areas of Focus
+
+We're especially interested in contributions to:
+
+- **ADHD Accommodations** - New patterns and strategies
+- **Statusline** - Enhanced visualizations and indicators
+- **Energy/Attention Tracking** - Improved state detection
+- **Break Management** - Smarter break recommendations
+- **Context Preservation** - Better session continuity
+- **Documentation** - Clear, ADHD-friendly guides
+- **Testing** - Coverage and quality improvements
+
+### 📋 Contribution Workflow
+
+1. **Fork** the repository on GitHub
+2. **Clone** to `~/code/dopemux-mvp` (auto-enables dev mode)
+3. **Create branch**: `git checkout -b feature/your-feature`
+4. **Make changes** - they take effect immediately!
+5. **Test**: `pytest tests/ -v`
+6. **Commit**: Use conventional commits (`feat:`, `fix:`, `docs:`)
+7. **Push** and create **Pull Request**
+
+### 💡 Getting Help
+
+- **First-time contributors**: Start with [Development Setup](docs/02-how-to/DEVELOPMENT_SETUP.md)
+- **Questions**: Open a GitHub Issue with `question` label
+- **Bugs**: Check [Troubleshooting](docs/02-how-to/development-troubleshooting.md) first
+- **Ideas**: Open a GitHub Discussion
 
 ---
 

@@ -12,10 +12,12 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-RUN cd /app/src/mcp && pip install -e .
 
-# Copy the entire dope-context service
+# Copy the entire dope-context service first
 COPY . .
+
+# Then install MCP package as editable
+RUN cd /app/src/mcp && pip install -e .
 
 # Set environment variables
 ENV MCP_SERVER_PORT=3010

@@ -1,0 +1,38 @@
+#!/bin/bash
+# ADHD Engine Git Pre-Push Hook
+# Captures context before push for interruption recovery
+#
+# Installation:
+#   cp this file to .git/hooks/pre-push
+#   chmod +x .git/hooks/pre-push
+#
+# Useful for saving mental model before context switch.
+
+ADHD_ENGINE_URL="${ADHD_ENGINE_URL:-http://localhost:3333}"
+
+# Get branch and commit info
+BRANCH=$(git branch --show-current)
+COMMIT_HASH=$(git rev-parse --short HEAD)
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Build JSON payload
+JSON_PAYLOAD=$(cat <<EOF
+{
+    "reason": "pre_push",
+    "prompt_hint": "Push branch: ${BRANCH} at ${COMMIT_HASH}",
+    "files": []
+}
+EOF
+)
+
+# Save context before push (non-blocking)
+curl -s -X POST \
+    -H "Content-Type: application/json" \
+    --connect-timeout 1 \
+    --max-time 2 \
+    -d "${JSON_PAYLOAD}" \
+    "${ADHD_ENGINE_URL}/api/v1/save-context" \
+    >/dev/null 2>&1 &
+
+# Always exit 0 to not block git
+exit 0
