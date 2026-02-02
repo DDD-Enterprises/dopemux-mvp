@@ -17,8 +17,8 @@ mcp_servers:
     port: 8003
     supports_workspace: false  # Search service (global)
 
-  zen:
-    command: ["docker", "exec", "-i", "mcp-zen", "python", "-m", "zen_mcp_server"]
+  pal:
+    command: ["docker", "exec", "-i", "mcp-pal", "python", "-m", "pal_mcp_server"]
     port: 8004
     supports_workspace: true   # Multi-workspace aware
     workspace_param: "workspace_path"  # Parameter name for workspace

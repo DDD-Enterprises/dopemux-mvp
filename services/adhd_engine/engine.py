@@ -35,7 +35,7 @@ from .config import settings
 from .activity_tracker import ActivityTracker
 from .conport_mcp_client import ConPortMCPClient
 from .bridge_integration import ConPortBridgeAdapter
-from .zen_client import ADHDZenClient
+from .pal_client import ADHDPALClient
 
 # ConPort-KG Integration (optional)
 try:
@@ -78,7 +78,7 @@ class ADHDAccommodationEngine:
         self.redis_pool = None  # Shared Redis connection pool
 
         # MCP clients
-        self.zen_client = ADHDZenClient(settings.zen_url, settings)
+        self.pal_client = ADHDPALClient(settings.zen_url, settings)
 
         # ADHD state tracking
         self.user_profiles: Dict[str, ADHDProfile] = {}
@@ -509,8 +509,8 @@ Format: {{
   "confidence": 0.8
 }}"""
 
-            async with self.zen_client:
-                response = await self.zen_client.thinkdeep(
+            async with self.pal_client:
+                response = await self.pal_client.thinkdeep(
                     step=zen_prompt,
                     step_number=1,
                     total_steps=1,
