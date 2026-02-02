@@ -94,7 +94,7 @@ update_conport() {
 update_serena() {
     echo -e "${GREEN}🔄 Updating Serena MCP...${NC}"
 
-    cd "${PROJECT_ROOT}/services/serena/v2" || exit 1
+    cd "${PROJECT_ROOT}/services/serena" || exit 1
 
     # Rebuild Docker container
     echo "🏗️  Rebuilding Docker container..."

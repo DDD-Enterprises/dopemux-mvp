@@ -14,7 +14,7 @@ Features:
 - Cognitive load management
 
 Usage:
-    from serena.v2.intelligence import (
+    from serena.intelligence import (
         SerenaIntelligenceDatabase,
         SerenaGraphOperations,
         SerenaSchemaManager,
