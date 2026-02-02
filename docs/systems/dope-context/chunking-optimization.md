@@ -1,3 +1,11 @@
+---
+id: chunking-optimization
+title: Chunking Optimization
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Chunking and Embedding Optimization Analysis
 
 ## Current State

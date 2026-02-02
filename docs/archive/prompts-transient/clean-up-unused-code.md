@@ -1,4 +1,11 @@
-
+---
+id: clean-up-unused-code
+title: Clean Up Unused Code
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 DesktopCommander Logo
 DesktopCommander
 Prompts
@@ -200,14 +207,14 @@ To begin, please provide:
 
 1. **Project Root Path**: Full absolute path to your project directory
 
-2. **Project Context**: 
+2. **Project Context**:
    - What type of application/system is this? (web app, API, library, etc.)
    - What's the main technology stack? (JavaScript/TypeScript, Python, Java, etc.)
    - What's your goal with this cleanup?
    - Any areas you're particularly concerned about?
    - Your familiarity level with the codebase
 
-3. **Analysis Scope**: 
+3. **Analysis Scope**:
    - **Full analysis** (entire codebase) or **targeted analysis** (specific directories/files)
    - **Conservative** (only obvious unused code) or **aggressive** (potential dead code)
    - **Focus areas**: unused imports, dead functions, unreachable code, unused variables

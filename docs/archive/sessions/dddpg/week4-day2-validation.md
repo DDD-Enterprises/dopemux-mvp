@@ -1,8 +1,16 @@
+---
+id: week4-day2-validation
+title: Week4 Day2 Validation
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Week 4 Day 2: Deep Validation & Architecture Review
 ## Critical Analysis Before Implementation
 
-**Date**: 2025-10-29 10:07 UTC  
-**Status**: Validation in progress  
+**Date**: 2025-10-29 10:07 UTC
+**Status**: Validation in progress
 **Goal**: Ensure Day 2 design is optimal before coding
 
 ---
@@ -15,15 +23,15 @@
 ```python
 class DDDPGKG:
     """KG query layer - DONE ✅"""
-    
+
     # Task relationships
     - get_task_relationships()      # Dependencies + blockers
     - get_related_tasks()            # Semantic similarity
     - get_dependency_chain()         # Full traversal
-    
+
     # Search
     - search_tasks()                 # Keyword search
-    
+
     # Helpers
     - _execute_query()               # Safe parameterized queries
     - _format_task_result()          # Consistent output
@@ -33,19 +41,19 @@ class DDDPGKG:
 ```python
 class QueryService:
     """ADHD-optimized queries - EXISTS"""
-    
+
     def __init__(self, storage: StorageBackend):
         self.storage = storage  # No KG yet!
-    
+
     # Tier 1: Overview (Top-3)
     - overview()
     - overview_by_type()
     - overview_by_tags()
-    
+
     # Tier 2: Exploration
     - explore_related()
     - explore_timeline()
-    
+
     # Tier 3: Deep
     - deep_context()
     - full_graph()
@@ -82,7 +90,7 @@ class Decision(BaseModel):
 class RelationshipMapper:
     def __init__(self, kg: DDDPGKG):
         self.kg = kg
-    
+
     async def build_dependency_chain(...)
     async def build_work_cluster(...)
 ```
@@ -107,14 +115,14 @@ class RelationshipMapper:
 ```python
 class RelationshipMapper:
     """Composite relationship views"""
-    
+
     async def build_task_context(self, task_id: str) -> Dict:
         """Aggregate all relationships in one call"""
         # Uses DDDPGKG primitives:
         deps = await self.kg.get_dependency_chain(task_id)
         related = await self.kg.get_related_tasks(task_id, limit=10)
         decisions = await self.kg.get_task_decisions(task_id)  # NEW
-        
+
         return {
             'dependencies': deps,
             'related': related,
@@ -166,7 +174,7 @@ async def link_decision_to_task(
 class SuggestionEngine:
     def __init__(self, kg: DDDPGKG, mapper: RelationshipMapper):
         ...
-    
+
     async def get_enhanced_suggestions(
         energy_level: str,
         available_time_mins: int,
@@ -236,7 +244,7 @@ CREATE (t:Task {
     description: $description,
     status: $status,
     created_at: $created_at,
-    
+
     // ADHD metadata (NEW)
     energy_required: $energy,      # low/medium/high
     estimated_minutes: $minutes,   # integer
@@ -312,7 +320,7 @@ class SuggestionEngine:
         self.mapper = mapper
         self._cache = {}
         self._cache_ttl = timedelta(minutes=5)
-    
+
     async def get_enhanced_suggestions(
         self,
         workspace_id: str,
@@ -324,10 +332,10 @@ class SuggestionEngine:
             cached_at, result = self._cache[cache_key]
             if datetime.now() - cached_at < self._cache_ttl:
                 return result
-        
+
         # Compute
         result = await self._compute_suggestions(workspace_id, context)
-        
+
         # Cache
         self._cache[cache_key] = (datetime.now(), result)
         return result
@@ -379,13 +387,13 @@ CREATE (t:Task {
     status: $status,
     created_at: $created_at,
     updated_at: $updated_at,
-    
+
     // ADHD metadata
     energy_required: $energy,      // "low" | "medium" | "high"
     estimated_minutes: $minutes,   // integer
     focus_type: $focus,            // "deep" | "shallow" | "creative"
     complexity: $complexity,       // "simple" | "medium" | "complex"
-    
+
     // Patterns
     success_pattern: $pattern,     // Optional past success indicator
     break_friendly: $break_ok      // boolean - can pause mid-task?

@@ -1,3 +1,11 @@
+---
+id: enhanced-pipeline
+title: Enhanced Pipeline
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Enhanced Chatlog Extraction Pipeline
 
 A comprehensive 6-phase pipeline that transforms conversational data into formal documentation through vector embeddings, semantic analysis, and knowledge synthesis.

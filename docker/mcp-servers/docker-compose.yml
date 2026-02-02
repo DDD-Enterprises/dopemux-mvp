@@ -80,19 +80,19 @@ services:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-master-dopemux-local-20251101}
-      # Prisma / DB connection for LiteLLM spend/logging + admin APIs
-      # Use existing postgres container (external)
-      - DATABASE_URL=${LITELLM_DATABASE_URL:-postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm}
+      - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm
       - LITELLM_LOG=INFO
       - LITELLM_DROP_PARAMS=true
+    depends_on:
+      - redis-primary
     ports:
       - "4000:4000"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f -H \"Authorization: Bearer $$LITELLM_MASTER_KEY\" http://localhost:4000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:4000/health || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
-      start_period: 45s
+      start_period: 60s
     volumes:
       - ../../litellm.config.yaml:/app/config.yaml:ro
       - mcp_litellm_data:/app/data
@@ -384,7 +384,7 @@ services:
     ports:
       - "3008:3008"
     healthcheck:
-      test: ["CMD", "pgrep", "-f", "python.*server.py"]  # Process check for reliability
+      test: ["CMD-SHELL", "curl -f http://localhost:3008/health || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s

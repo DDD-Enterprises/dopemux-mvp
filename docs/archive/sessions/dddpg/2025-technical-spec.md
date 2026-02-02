@@ -1,6 +1,14 @@
+---
+id: 2025-technical-spec
+title: 2025 Technical Spec
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # DDDPG Technical Specification 2025
-**Version**: 2.0  
-**Date**: 2025-10-29  
+**Version**: 2.0
+**Date**: 2025-10-29
 **Status**: Production Ready Foundation + Day 2 Spec
 
 ---
@@ -117,34 +125,34 @@
 class Decision(BaseModel):
     # Identity
     id: Optional[int] = None
-    
+
     # Content
     summary: str = Field(..., max_length=200)
     rationale: Optional[str] = Field(None, max_length=1000)
     implementation_details: Optional[str] = None
     code_references: List[str] = Field(default_factory=list)
-    
+
     # Classification
     status: DecisionStatus  # DRAFT/ACTIVE/SUPERSEDED/ARCHIVED
     decision_type: Optional[DecisionType]
     tags: List[str] = Field(default_factory=list)
-    
+
     # Multi-instance (CRITICAL!)
     workspace_id: str
     instance_id: str = "A"
     visibility: DecisionVisibility  # PRIVATE/SHARED/GLOBAL
-    
+
     # ADHD
     cognitive_load: int = Field(3, ge=1, le=5)
     estimated_effort_minutes: Optional[int] = None
     session_context: Optional[str] = None
-    
+
     # Graph
     related_decisions: List[int] = Field(default_factory=list)
-    
+
     # Agent integration
     agent_metadata: Dict[str, Any] = Field(default_factory=dict)
-    
+
     # Timestamps
     created_at: datetime
     updated_at: datetime
@@ -177,13 +185,13 @@ class WorkSession(BaseModel):
     instance_id: str
     started_at: datetime
     ended_at: Optional[datetime] = None
-    
+
     # ADHD tracking
     initial_energy_level: str  # low/medium/high
     initial_focus_state: str   # scattered/normal/deep
     interruptions_count: int = 0
     decisions_made: List[int] = Field(default_factory=list)
-    
+
     # Context preservation
     context_snapshot: Optional[str] = None
     active_task_id: Optional[str] = None
@@ -204,9 +212,9 @@ async def overview(
 ) -> DecisionGraph:
     """
     Get overview of most important decisions.
-    
+
     ADHD Pattern: Top-3 - never overwhelm
-    
+
     Returns: Most recent ACTIVE decisions
     """
 ```
@@ -221,7 +229,7 @@ async def exploration(
 ) -> DecisionGraph:
     """
     Progressive disclosure - explore decision graph.
-    
+
     Depth levels:
     - 1: Direct relationships only
     - 2: + Second-degree relationships
@@ -240,7 +248,7 @@ async def search(
 ) -> List[Decision]:
     """
     Search decisions.
-    
+
     search_type:
     - fts: SQLite FTS5 full-text search
     - semantic: Vector similarity (requires embeddings)
@@ -255,7 +263,7 @@ async def get_task_with_context(
 ) -> Dict[str, Any]:
     """
     Get task with full relationship context.
-    
+
     Returns:
         {
             'task_id': str,
@@ -268,7 +276,7 @@ async def get_task_with_context(
             'decisions': [decision_ids],
             'clusters': [cluster_info]
         }
-    
+
     Fallback: Basic task data if KG unavailable
     """
 ```
@@ -281,7 +289,7 @@ async def suggest_next_tasks(
 ) -> Dict[str, List[Dict]]:
     """
     Get ADHD-optimized task suggestions.
-    
+
     Args:
         context: {
             'energy_level': 'low' | 'medium' | 'high',
@@ -289,7 +297,7 @@ async def suggest_next_tasks(
             'focus_state': 'scattered' | 'normal' | 'deep',
             'current_task': Optional[str]
         }
-    
+
     Returns:
         {
             'next_best': [tasks],       # Top recommendations
@@ -297,7 +305,7 @@ async def suggest_next_tasks(
             'related_decisions': [ids], # Relevant context
             'patterns': [info]          # Success patterns
         }
-    
+
     Fallback: Recent tasks if KG unavailable
     """
 ```
@@ -314,7 +322,7 @@ async def suggest_next_tasks(
 ```python
 async def overview(limit: int = 3):
     """Default limit is always 3"""
-    
+
 async def suggest_next_tasks(limit: int = 5):
     """Even suggestions limited to 5 max"""
 ```
@@ -542,13 +550,13 @@ CREATE INDEX ON :Task(status);
 async def on_task_completed(event: Dict):
     """Auto-link decisions to completed tasks"""
     task_id = event['task_id']
-    
+
     # Find related decisions
     decisions = await dddpg.search_decisions(
         tags__contains='task',
         summary__contains=task_id
     )
-    
+
     # Link to KG
     for decision in decisions:
         await dddpg.link_decision_to_task(decision.id, task_id)
@@ -572,7 +580,7 @@ async def on_task_completed(event: Dict):
 class TestDDDPGKG:
     def test_link_decision_to_task(self):
         """Test decision-task linking"""
-    
+
     def test_graceful_degradation(self):
         """Test fallback without KG"""
 
@@ -580,7 +588,7 @@ class TestDDDPGKG:
 class TestQueryServiceIntegration:
     def test_suggest_next_tasks_with_kg(self):
         """End-to-end suggestion flow"""
-    
+
     def test_suggest_next_tasks_without_kg(self):
         """Fallback to recent tasks"""
 
@@ -588,7 +596,7 @@ class TestQueryServiceIntegration:
 class TestPerformance:
     def test_suggestion_cache_hit(self):
         """Cache hit < 50ms"""
-    
+
     def test_suggestion_cache_miss(self):
         """Cache miss < 500ms"""
 ```
@@ -680,10 +688,10 @@ services:
 ```python
 async def migrate_conport_to_dddpg():
     """Migrate ConPort decisions to DDDPG format"""
-    
+
     # 1. Export from ConPort SQLite
     conport_decisions = await conport_db.export_all()
-    
+
     # 2. Transform to DDDPG format
     dddpg_decisions = []
     for old_decision in conport_decisions:
@@ -696,16 +704,16 @@ async def migrate_conport_to_dddpg():
             created_at=old_decision['timestamp']
         )
         dddpg_decisions.append(new_decision)
-    
+
     # 3. Import to DDDPG
     for decision in dddpg_decisions:
         await dddpg_storage.create(decision)
-    
+
     print(f"Migrated {len(dddpg_decisions)} decisions")
 ```
 
 ---
 
-**Last Updated**: 2025-10-29  
-**Version**: 2.0  
+**Last Updated**: 2025-10-29
+**Version**: 2.0
 **Status**: Production Foundation + Day 2 Spec Ready

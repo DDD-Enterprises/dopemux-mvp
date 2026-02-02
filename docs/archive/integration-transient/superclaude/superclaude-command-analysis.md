@@ -1,3 +1,11 @@
+---
+id: superclaude-command-analysis
+title: Superclaude Command Analysis
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # SuperClaude Command Analysis & Dopemux Integration
 
 ## SuperClaude Command Architecture Deep Dive

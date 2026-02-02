@@ -1,6 +1,14 @@
+---
+id: decomposition-wiring
+title: Decomposition Wiring
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Task Decomposition Wiring - P0 Complete
 
-**Status**: ✅ Wired and tested (2026-02-02)  
+**Status**: ✅ Wired and tested (2026-02-02)
 **Test Results**: 4/4 tests passing
 
 ## Summary
@@ -246,6 +254,6 @@ REDIS_URL=redis://localhost:6379
 
 ---
 
-**Author**: GitHub Copilot CLI  
-**Date**: 2026-02-02  
+**Author**: GitHub Copilot CLI
+**Date**: 2026-02-02
 **Session**: ADHD Features P0 - Task Decomposition Wiring

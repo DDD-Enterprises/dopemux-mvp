@@ -142,3 +142,18 @@ services:
     enabled_in_smoke: false  # Optional for minimal smoke stack
     category: cognitive
     description: "ADHD Engine (Serena) - Real-time ADHD accommodation service"
+
+  - name: dope-memory
+    port: 3020
+    container_port: 3020
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 5000
+    health_expected_status: 200
+    compose_service_name: dope-memory
+    enabled_in_smoke: true
+    category: mcp
+    description: "Dope-Memory - Temporal chronicle and working-context manager"
+    spec_version: "v1"
+    spec_path: "docs/spec/dope-memory/v1/"
+

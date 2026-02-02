@@ -1,7 +1,12 @@
 ---
 trigger: always_on
+id: mem4sprint
+title: Mem4Sprint
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
 ---
-
 mem4sprint_strategy:
   notes:
     - "Prefix every response with [CONPORT_ACTIVE] or [CONPORT_INACTIVE]."

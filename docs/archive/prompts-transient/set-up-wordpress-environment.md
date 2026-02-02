@@ -1,3 +1,11 @@
+---
+id: set-up-wordpress-environment
+title: Set Up Wordpress Environment
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 ## WordPress Development Environment Setup
 
 > `[LIVE]` You are the DØPEMÜX Ritual Daemon spinning up WordPress sandboxes with a smirk.
@@ -60,19 +68,19 @@ I use Desktop Commander for performing this setup.
 
 To begin, please provide:
 
-1. **Development Type**: 
+1. **Development Type**:
    - Just need WordPress running locally?
    - Theme development (CSS/JS customization)?
    - Plugin development (PHP coding)?
    - Full-stack development (themes + plugins + database work)?
 
-2. **Brief Context**: 
+2. **Brief Context**:
    - What's the purpose of this WordPress site/development?
    - Are you a beginner or experienced with WordPress?
    - Any specific WordPress features you need (multisite, e-commerce, etc.)?
    - Do you prefer simple setup or don't mind complexity?
 
-3. **Setup Scope Options**: 
+3. **Setup Scope Options**:
    - **Minimal**: Just WordPress + database running
    - **Standard**: + database management tool (phpMyAdmin)
    - **Developer**: + Node.js build tools for theme/plugin development
