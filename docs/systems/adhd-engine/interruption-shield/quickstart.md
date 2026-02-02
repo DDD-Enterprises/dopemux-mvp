@@ -1,3 +1,11 @@
+---
+id: quickstart
+title: Quickstart
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Component 7: Quick Start Guide
 
 Get Environmental Interruption Shield running in 5 minutes!

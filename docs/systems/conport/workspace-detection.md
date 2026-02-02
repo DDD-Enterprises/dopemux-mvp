@@ -1,3 +1,11 @@
+---
+id: workspace-detection
+title: Workspace Detection
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Universal Workspace Detection (ConPort MCP)
 
 This document describes the universal workspace auto-detection system integrated in version 0.3.0 (`WorkspaceDetector` and `resolve_workspace_id`). It removes the need to hardcode `--workspace_id` for most MCP client launches, especially when IDE variables like `${workspaceFolder}` fail to expand.
@@ -29,7 +37,7 @@ This document describes the universal workspace auto-detection system integrated
 
 ## Detection Strategies (Priority Order)
 
-1. **Strong Indicators**  
+1. **Strong Indicators**
    Presence (in current or ancestor directory, up to max depth) of any high-confidence files:
    - `package.json`
    - `.git`
@@ -39,18 +47,18 @@ This document describes the universal workspace auto-detection system integrated
    - `pom.xml`
    If found, the directory is validated (light structural/content checks).
 
-2. **Multiple General Indicators**  
+2. **Multiple General Indicators**
    If two or more of a broader set exist (e.g., `README.md`, `LICENSE`, `requirements.txt`, `CMakeLists.txt`, `Makefile`, `setup.py`, `.gitignore`) the directory is treated as a workspace.
 
-3. **Existing ConPort Workspace**  
+3. **Existing ConPort Workspace**
    A `context_portal/` directory (database or prior usage) signals a valid root.
 
-4. **MCP / Environment Context**  
+4. **MCP / Environment Context**
    Environment variables (if directories):
    - `VSCODE_WORKSPACE_FOLDER`
    - `CONPORT_WORKSPACE`
 
-5. **Fallback**  
+5. **Fallback**
    Start directory (with a warning) if nothing else matches.
 
 ---
@@ -109,7 +117,7 @@ Returns a diagnostic payload:
 - `start_path`
 - `detected_workspace`
 - `context_portal_path`
-- `detection_method`  
+- `detection_method`
   (`strong_indicators` | `multiple_indicators` | `existing_context_portal` | `fallback`)
 - `indicators_found`
 - `environment_variables` subset

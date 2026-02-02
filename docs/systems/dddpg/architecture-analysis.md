@@ -1,7 +1,15 @@
+---
+id: architecture-analysis
+title: Architecture Analysis
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # 🧠 DDDPG Deep Architecture Analysis
 
-**Date**: 2025-10-29  
-**Status**: Pre-Storage Planning  
+**Date**: 2025-10-29
+**Status**: Pre-Storage Planning
 **Goal**: Ensure we don't miss critical data models or storage requirements
 
 ---
@@ -20,7 +28,7 @@
 
 **Problem**: ADHD users have multiple concurrent work sessions
 - Feature work in worktree A
-- Hotfix in worktree B  
+- Hotfix in worktree B
 - Experimentation in worktree C
 
 **Missing Models**:
@@ -32,12 +40,12 @@ class WorkSession(BaseModel):
     instance_id: str  # DOPEMUX_INSTANCE_ID
     started_at: datetime
     last_activity: datetime
-    
+
     # ADHD metadata
     focus_level: int  # 1-5
     break_needed: bool
     context_preserved: bool
-    
+
     # Active state
     current_file: Optional[str]
     current_decisions: List[int]  # Decision IDs
@@ -59,10 +67,10 @@ class WorkspaceInstance(BaseModel):
     workspace_root: str  # Absolute path
     is_main_repo: bool
     git_branch: Optional[str]
-    
+
     # Linked to main
     main_repo_path: Optional[str]  # If worktree
-    
+
     # Instance state
     active: bool
     created_at: datetime
@@ -186,7 +194,7 @@ CREATE INDEX idx_decisions_instance ON decisions(workspace_id, instance_id);
 
 **Pros**:
 - Simple query: `WHERE instance_id = 'feature-auth'`
-- Easy sharing: `WHERE instance_id IN ('A', 'feature-auth')`  
+- Easy sharing: `WHERE instance_id IN ('A', 'feature-auth')`
 - Single source of truth
 - Graph queries work across instances
 
@@ -291,7 +299,7 @@ CREATE TABLE decisions_cache (
     tags TEXT,  -- JSON array
     visibility TEXT,  -- "private", "shared", "global"
     created_at TEXT,
-    
+
     -- Cache metadata
     cached_at TEXT,
     source TEXT  -- "postgres", "local"
@@ -364,7 +372,7 @@ class Decision(BaseModel):
 class TaskDecision(Decision):
     """Decision that represents a task"""
     decision_type: DecisionType = DecisionType.IMPLEMENTATION
-    
+
     # Task-specific fields (in agent_metadata or separate?)
     task_status: TaskStatus  # TODO, IN_PROGRESS, DONE
     task_priority: int  # 1-5
@@ -435,7 +443,7 @@ class Decision(BaseModel):
     workspace_id: str = Field(..., description="Workspace root path")
     instance_id: str = Field(default="A", description="Dopemux instance")
     visibility: str = Field(default="shared", description="private|shared|global")
-    
+
     # ADD:
     agent_metadata: Dict[str, Any] = Field(default_factory=dict)
     code_references: List[str] = Field(default_factory=list)  # File paths
@@ -539,7 +547,7 @@ INSERT INTO decisions (
     tags,          -- ← Parse JSON array
     created_at     -- ← timestamp field
 )
-SELECT 
+SELECT
     '/dopemux-mvp',
     'A',
     'shared',
@@ -558,7 +566,7 @@ FROM old_decisions;
 
 1. ✅ **Add to Decision model**:
    ```python
-   workspace_id: str = Field(...) 
+   workspace_id: str = Field(...)
    instance_id: str = Field(default="A")
    visibility: str = Field(default="shared")
    agent_metadata: Dict[str, Any] = {}

@@ -1,3 +1,11 @@
+---
+id: adhd_metadata_mapping
+title: Adhd_Metadata_Mapping
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # ADHD Metadata Mapping Specification
 
 ## Overview

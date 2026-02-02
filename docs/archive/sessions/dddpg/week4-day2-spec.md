@@ -1,8 +1,16 @@
+---
+id: week4-day2-spec
+title: Week4 Day2 Spec
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Week 4 Day 2: Technical Specification
 ## Task Relationship Mapping with DDDPG Integration
 
-**Date**: 2025-10-29  
-**Status**: Ready to implement  
+**Date**: 2025-10-29
+**Status**: Ready to implement
 **Based on**: WEEK4_DAY2_DEEP_RESEARCH.md
 
 ---
@@ -117,10 +125,10 @@ class RelationshipMapper:
     Builds relationship graphs from KG data.
     Works with DDDPGKG for raw queries.
     """
-    
+
     def __init__(self, kg: DDDPGKG):
         self.kg = kg
-    
+
     async def build_dependency_chain(
         self,
         task_id: str,
@@ -128,7 +136,7 @@ class RelationshipMapper:
     ) -> Dict[str, List[str]]:
         """
         Build full dependency chain.
-        
+
         Returns:
             {
                 'upstream': [...],    # Dependencies
@@ -140,7 +148,7 @@ class RelationshipMapper:
         # Upstream: tasks this depends on
         # Downstream: tasks that depend on this
         # Parallel: tasks with same upstream
-    
+
     async def build_work_cluster(
         self,
         theme: str,
@@ -148,7 +156,7 @@ class RelationshipMapper:
     ) -> Dict[str, Any]:
         """
         Build cluster of related work.
-        
+
         Returns:
             {
                 'tasks': [...],
@@ -168,11 +176,11 @@ class SuggestionEngine:
     ADHD-optimized task suggestions.
     Uses KG relationships + context scoring.
     """
-    
+
     def __init__(self, kg: DDDPGKG, mapper: RelationshipMapper):
         self.kg = kg
         self.mapper = mapper
-    
+
     async def get_enhanced_suggestions(
         self,
         current_task: Optional[str] = None,
@@ -183,14 +191,14 @@ class SuggestionEngine:
     ) -> Dict[str, List[Dict]]:
         """
         Context-aware task suggestions.
-        
+
         Scoring:
         - Dependency satisfaction (blockers resolved)
         - Energy level match
         - Time availability
         - Focus state compatibility
         - Pattern similarity
-        
+
         Returns:
             {
                 'next_best': [...],       # Top recommendations
@@ -203,7 +211,7 @@ class SuggestionEngine:
         # 2. Score by context
         # 3. Rank and filter
         # 4. Return structured results
-    
+
     def _score_task(
         self,
         task: Dict,
@@ -211,19 +219,19 @@ class SuggestionEngine:
     ) -> float:
         """Score task by context match (0-1)."""
         score = 0.0
-        
+
         # Energy match (0-0.4)
         score += self._energy_score(task, context)
-        
+
         # Time match (0-0.3)
         score += self._time_score(task, context)
-        
+
         # Focus match (0-0.2)
         score += self._focus_score(task, context)
-        
+
         # Pattern match (0-0.1)
         score += self._pattern_score(task, context)
-        
+
         return min(score, 1.0)
 ```
 
@@ -233,7 +241,7 @@ class SuggestionEngine:
 ```python
 class QueryService:
     # ... existing methods ...
-    
+
     def __init__(
         self,
         storage: StorageBackend,
@@ -241,13 +249,13 @@ class QueryService:
     ):
         self.storage = storage
         self.kg = kg
-        
+
         if kg:
             self.mapper = RelationshipMapper(kg)
             self.suggestions = SuggestionEngine(kg, self.mapper)
-    
+
     # NEW: KG-powered queries
-    
+
     async def get_task_with_context(
         self,
         task_id: str,
@@ -259,18 +267,18 @@ class QueryService:
         """
         if not self.kg:
             return await self.storage.get_task(task_id)
-        
+
         # Get task + relationships + decisions
         task = await self.storage.get_task(task_id)
         relationships = await self.kg.get_task_relationships(task_id)
         decisions = await self.kg.get_task_decisions(task_id)
-        
+
         return {
             **task,
             'relationships': relationships,
             'decisions': decisions
         }
-    
+
     async def suggest_next_tasks(
         self,
         workspace_id: str,
@@ -288,7 +296,7 @@ class QueryService:
                 'related_decisions': [],
                 'patterns': []
             }
-        
+
         return await self.suggestions.get_enhanced_suggestions(**context)
 ```
 
@@ -360,7 +368,7 @@ def _energy_score(task, context):
     levels = ['low', 'medium', 'high']
     task_level = task.get('energy_required', 'medium')
     context_level = context['energy_level']
-    
+
     diff = abs(levels.index(task_level) - levels.index(context_level))
     return 0.4 * (1 - diff / 2)
 
@@ -368,7 +376,7 @@ def _time_score(task, context):
     """Time availability match (0-0.3)"""
     task_time = task.get('estimated_minutes', 30)
     available = context['available_time_mins']
-    
+
     if task_time > available:
         return 0.0
     return 0.3 * (1 - task_time / available)
@@ -414,8 +422,8 @@ def _time_score(task, context):
 
 ## 🚀 Ready to Build
 
-**Total Estimate**: 1.5 hours  
-**Phases**: 4 (15 + 25 + 30 + 20 min)  
+**Total Estimate**: 1.5 hours
+**Phases**: 4 (15 + 25 + 30 + 20 min)
 **Confidence**: Very High
 
 **Next**: Implement Phase 1 (Decision Context)

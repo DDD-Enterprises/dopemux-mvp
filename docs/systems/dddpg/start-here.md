@@ -1,7 +1,15 @@
+---
+id: start-here
+title: Start Here
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # DDDPG - START HERE 🚀
 
-**Service**: DDDPG (Decision-Driven Development Planning Graph)  
-**Status**: READY TO BUILD  
+**Service**: DDDPG (Decision-Driven Development Planning Graph)
+**Status**: READY TO BUILD
 **Last Updated**: 2025-10-29
 
 ---
@@ -44,12 +52,12 @@ ADHD-optimized decision tracking with knowledge graph intelligence.
 
 ## 📊 Current Status
 
-**Codebase**: 1,834 lines Python ✅  
-**Tests**: 19/19 passing (0.14s) ✅  
-**Coverage**: 100% (KG layer) ✅  
+**Codebase**: 1,834 lines Python ✅
+**Tests**: 19/19 passing (0.14s) ✅
+**Coverage**: 100% (KG layer) ✅
 **Docs**: 22 documents (~7,000 lines) ✅
 
-**Quality**: EXCELLENT  
+**Quality**: EXCELLENT
 **Readiness**: BUILD NOW
 
 ---

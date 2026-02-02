@@ -1,3 +1,11 @@
+---
+id: conport-tracking-guide
+title: Conport Tracking Guide
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Component 7: ConPort Tracking Guide
 
 **Purpose**: Query and track Phase 1 implementation progress using ConPort knowledge graph

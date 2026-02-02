@@ -1,8 +1,16 @@
+---
+id: week4-spec
+title: Week4 Spec
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Week 4: Technical Specification
 
-**Date**: 2025-10-29  
-**Status**: 📐 Specification Phase  
-**Focus**: ADHD-Optimized ConPort-KG Integration  
+**Date**: 2025-10-29
+**Status**: 📐 Specification Phase
+**Focus**: ADHD-Optimized ConPort-KG Integration
 **Complexity**: 0.6 (Medium)
 
 ---
@@ -78,8 +86,8 @@ CognitiveGuardian (services/agents/)
 
 ### Component 1: CognitiveGuardianKG
 
-**File**: `services/agents/cognitive_guardian_kg.py`  
-**Lines**: ~250  
+**File**: `services/agents/cognitive_guardian_kg.py`
+**Lines**: ~250
 **Purpose**: Wrapper around ConPort-KG for ADHD-optimized graph queries
 
 **Class Structure**:
@@ -87,14 +95,14 @@ CognitiveGuardian (services/agents/)
 class CognitiveGuardianKG:
     """
     ADHD-optimized Knowledge Graph integration for CognitiveGuardian.
-    
+
     Provides:
     - Task relationship mapping
     - Semantic search
     - Decision context retrieval
     - Pattern mining
     """
-    
+
     def __init__(
         self,
         workspace_id: str,
@@ -102,14 +110,14 @@ class CognitiveGuardianKG:
         adhd_adapter: Optional[ADHDQueryAdapter] = None
     ):
         """Initialize KG integration with optional AGE client."""
-        
+
     async def get_task_relationships(
         self,
         task_id: str
     ) -> Dict[str, List[str]]:
         """
         Get task relationships (dependencies, blockers, related).
-        
+
         Returns:
             {
                 "dependencies": ["task-123", "task-456"],
@@ -117,7 +125,7 @@ class CognitiveGuardianKG:
                 "related": ["task-321", "task-654"]
             }
         """
-        
+
     async def search_tasks_semantic(
         self,
         query: str,
@@ -125,22 +133,22 @@ class CognitiveGuardianKG:
     ) -> List[Dict[str, Any]]:
         """
         Semantic search for tasks (natural language).
-        
+
         Args:
             query: Natural language query ("tasks about API")
             limit: Max results (default 5 for ADHD)
-            
+
         Returns:
             List of matching tasks with relevance scores
         """
-        
+
     async def get_decision_context(
         self,
         task_id: str
     ) -> Dict[str, Any]:
         """
         Retrieve decision context for a task.
-        
+
         Returns:
             {
                 "decisions": [...],
@@ -148,7 +156,7 @@ class CognitiveGuardianKG:
                 "outcomes": [...]
             }
         """
-        
+
     async def mine_adhd_patterns(
         self,
         user_id: str,
@@ -156,7 +164,7 @@ class CognitiveGuardianKG:
     ) -> Dict[str, Any]:
         """
         Mine successful ADHD work patterns.
-        
+
         Returns:
             {
                 "successful_energy_task_combos": [...],
@@ -184,8 +192,8 @@ class CognitiveGuardianKG:
 
 ### Component 2: Enhanced CognitiveGuardian
 
-**File**: `services/agents/cognitive_guardian.py` (updates)  
-**Lines Added**: ~120  
+**File**: `services/agents/cognitive_guardian.py` (updates)
+**Lines Added**: ~120
 **Purpose**: Integrate KG queries into task suggestions and state tracking
 
 **New Methods**:
@@ -197,20 +205,20 @@ async def suggest_tasks_with_context(
 ) -> List[Dict[str, Any]]:
     """
     Enhanced task suggestions with KG context.
-    
+
     Adds:
     - Dependency checking (prerequisite tasks first)
     - Related task grouping
     - Decision context (why this task exists)
     """
-    
+
 async def check_task_dependencies(
     self,
     task_id: str
 ) -> Dict[str, bool]:
     """
     Check if task dependencies are met.
-    
+
     Returns:
         {
             "ready": True/False,
@@ -218,7 +226,7 @@ async def check_task_dependencies(
             "suggestion": "Complete prerequisite X first"
         }
     """
-    
+
 async def save_task_outcome(
     self,
     task_id: str,
@@ -228,7 +236,7 @@ async def save_task_outcome(
 ) -> None:
     """
     Save task outcome to KG for pattern mining.
-    
+
     Stores:
     - Task completion status
     - Energy level at completion
@@ -246,8 +254,8 @@ async def save_task_outcome(
 
 ### Component 3: Enhanced Task-Orchestrator
 
-**File**: `services/task-orchestrator/enhanced_orchestrator.py` (updates)  
-**Lines Added**: ~100  
+**File**: `services/task-orchestrator/enhanced_orchestrator.py` (updates)
+**Lines Added**: ~100
 **Purpose**: Use KG for smarter task routing
 
 **New Methods**:
@@ -258,22 +266,22 @@ async def _check_dependencies_before_routing(
 ) -> bool:
     """
     Check KG for task dependencies before routing.
-    
+
     Returns:
         True if ready, False if blocked
     """
-    
+
 async def _find_related_tasks(
     self,
     task: OrchestrationTask
 ) -> List[str]:
     """
     Find related tasks in KG for context.
-    
+
     Returns:
         List of related task IDs
     """
-    
+
 async def _semantic_task_match(
     self,
     task: OrchestrationTask,
@@ -281,7 +289,7 @@ async def _semantic_task_match(
 ) -> float:
     """
     Calculate semantic match score using KG.
-    
+
     Returns:
         Confidence score 0.0-1.0
     """
@@ -296,8 +304,8 @@ async def _semantic_task_match(
 
 ### Component 4: ADHD Pattern Analyzer
 
-**File**: `services/agents/adhd_pattern_analyzer.py`  
-**Lines**: ~230  
+**File**: `services/agents/adhd_pattern_analyzer.py`
+**Lines**: ~230
 **Purpose**: Mine KG for successful ADHD work patterns
 
 **Class Structure**:
@@ -305,17 +313,17 @@ async def _semantic_task_match(
 class ADHDPatternAnalyzer:
     """
     Analyze historical data to identify successful ADHD patterns.
-    
+
     Mines:
     - Energy-task type correlations
     - Optimal break timing (personalized)
     - Task complexity preferences
     - Time-of-day effectiveness
     """
-    
+
     def __init__(self, kg_client: CognitiveGuardianKG):
         """Initialize with KG client."""
-        
+
     async def analyze_energy_patterns(
         self,
         user_id: str,
@@ -323,7 +331,7 @@ class ADHDPatternAnalyzer:
     ) -> Dict[str, Any]:
         """
         Identify which energy levels work best for which tasks.
-        
+
         Returns:
             {
                 "high_energy": ["complex_coding", "architecture"],
@@ -331,14 +339,14 @@ class ADHDPatternAnalyzer:
                 "low_energy": ["code_review", "meeting_notes"]
             }
         """
-        
+
     async def analyze_break_patterns(
         self,
         user_id: str
     ) -> Dict[str, int]:
         """
         Learn optimal break timing for this user.
-        
+
         Returns:
             {
                 "gentle_reminder": 28,  # minutes (not 25!)
@@ -346,14 +354,14 @@ class ADHDPatternAnalyzer:
                 "hyperfocus_warning": 65
             }
         """
-        
+
     async def get_personalized_recommendations(
         self,
         user_state: UserState
     ) -> List[str]:
         """
         Get AI-generated recommendations based on patterns.
-        
+
         Returns:
             [
                 "You're most productive at 9am-11am for complex tasks",
@@ -882,11 +890,11 @@ numpy==1.24.3
 
 ---
 
-**Created**: 2025-10-29  
-**Specification Time**: 60 minutes  
-**Components**: 4 new, 2 enhanced  
-**Total Code**: ~700 lines  
-**Tests**: 18  
+**Created**: 2025-10-29
+**Specification Time**: 60 minutes
+**Components**: 4 new, 2 enhanced
+**Total Code**: ~700 lines
+**Tests**: 18
 **Confidence**: 95%
 
 🎯 **Week 4: Technical Specification Complete** 🎯

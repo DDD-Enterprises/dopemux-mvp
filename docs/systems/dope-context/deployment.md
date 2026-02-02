@@ -1,3 +1,11 @@
+---
+id: deployment
+title: Deployment
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Dope-Context Deployment Guide
 
 Production deployment instructions for Docker, Docker Compose, and Claude Code integration.

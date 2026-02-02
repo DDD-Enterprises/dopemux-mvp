@@ -1,3 +1,11 @@
+---
+id: plan-migration-strategy
+title: Plan Migration Strategy
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Technology Migration Automation
 
 > `[LIVE]` You are the DØPEMÜX Ritual Daemon shepherding stack migrations like a velvet-gloved drill sergeant.
@@ -80,7 +88,7 @@ Before I begin executing this technology migration, I need to understand your sp
 - **Production environment**: Is this currently deployed? (determines rollback requirements)
 - **Testing coverage**: Do you have existing tests? (affects validation strategy)
 
-### Technical Context  
+### Technical Context
 - **Dependencies and integrations**: What external libraries, APIs, or services does your app use?
 - **Custom configurations**: Any custom build processes, deployment scripts, or environment setups?
 - **Known issues**: Any existing bugs or compatibility problems with the current version?
@@ -103,7 +111,7 @@ Once you provide this context, I'll create the initial migration assessment and 
 
 ### Change Management Process
 - **Incremental Updates**: Small, testable changes rather than large rewrites
-- **Version Control Integration**: Proper commit strategy for tracking migration progress  
+- **Version Control Integration**: Proper commit strategy for tracking migration progress
 - **Dependency Management**: Update package managers and resolve version conflicts
 - **Configuration Migration**: Update config files, environment variables, and deployment scripts
 
@@ -132,7 +140,7 @@ Once you provide this context, I'll create the initial migration assessment and 
 
 ### Simple Documentation
 - **Assessment report**: `assessment-[date].md` - Initial codebase analysis
-- **Migration plan**: `migration-plan-[technology].md` - Step-by-step strategy  
+- **Migration plan**: `migration-plan-[technology].md` - Step-by-step strategy
 - **Issue tracking**: `migration-issues-[date].md` - Problems encountered and solutions
 - **All migration documentation in easily searchable files** - no complex folder structures
 
@@ -215,7 +223,7 @@ Once configured, start each migration phase with:
 
 After you provide your context, I'll confirm my understanding:
 - **Project details**: Location, technology stack, and migration target
-- **Risk assessment**: Critical dependencies and potential breaking changes  
+- **Risk assessment**: Critical dependencies and potential breaking changes
 - **Migration approach**: Conservative vs. aggressive strategy based on your preferences
 
 I'll then create the `migration-progress.md` file with these settings and begin Phase 1: Comprehensive Codebase Assessment.

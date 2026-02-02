@@ -1,3 +1,11 @@
+---
+id: parallel-deployment-strategy
+title: Parallel Deployment Strategy
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # GPT-Researcher Parallel Deployment Strategy
 
 ## Executive Summary

@@ -1,9 +1,17 @@
+---
+id: week4-day2-final-roadmap
+title: Week4 Day2 Final Roadmap
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Week 4 Day 2: Final Implementation Roadmap
 ## Task Relationship Mapping - Validated & Ready
 
-**Date**: 2025-10-29 10:07 UTC  
-**Validation**: Complete ✅  
-**Architecture**: Reviewed and refined  
+**Date**: 2025-10-29 10:07 UTC
+**Validation**: Complete ✅
+**Architecture**: Reviewed and refined
 **Status**: Ready to build
 
 ---
@@ -145,29 +153,29 @@ DELETE r
 class RelationshipMapper:
     """
     Aggregates multiple DDDPGKG queries into composite views.
-    
+
     Responsibilities:
     - Coordinate parallel queries
     - Synthesize results
     - Identify patterns/clusters
     """
-    
+
     def __init__(self, kg: DDDPGKG):
         self.kg = kg
-    
+
     async def build_task_context(
         self,
         task_id: str
     ) -> Dict[str, Any]:
         """
         Get complete task context in one call.
-        
+
         Aggregates:
         - Dependencies (upstream/downstream)
         - Related tasks (semantic)
         - Decisions (rationale)
         - Clusters (themes)
-        
+
         Returns:
             {
                 'task_id': str,
@@ -181,7 +189,7 @@ class RelationshipMapper:
                 'clusters': [cluster_info]
             }
         """
-    
+
     async def build_work_cluster(
         self,
         theme: str,
@@ -189,12 +197,12 @@ class RelationshipMapper:
     ) -> Dict[str, Any]:
         """
         Build cluster of related work by theme.
-        
+
         Uses:
         - Semantic search (DDDPGKG)
         - Relationship traversal
         - Decision linking
-        
+
         Returns:
             {
                 'theme': str,
@@ -203,7 +211,7 @@ class RelationshipMapper:
                 'patterns': [pattern_info]
             }
         """
-    
+
     def _identify_clusters(
         self,
         tasks: List[Dict]
@@ -240,19 +248,19 @@ from typing import Dict, List, Optional, Any
 class SuggestionEngine:
     """
     ADHD-optimized task suggestions using KG relationships.
-    
+
     Features:
     - Context-aware scoring (energy, time, focus)
     - Dependency satisfaction checking
     - Pattern-based ranking
     - In-memory caching (5 min TTL)
-    
+
     Architecture:
     - Uses RelationshipMapper for data
     - Caches by workspace+context
     - Graceful degradation
     """
-    
+
     def __init__(
         self,
         kg: DDDPGKG,
@@ -263,7 +271,7 @@ class SuggestionEngine:
         self.mapper = mapper
         self._cache: Dict[str, tuple[datetime, Dict]] = {}
         self._cache_ttl = timedelta(minutes=cache_ttl_minutes)
-    
+
     async def get_enhanced_suggestions(
         self,
         workspace_id: str,
@@ -275,12 +283,12 @@ class SuggestionEngine:
     ) -> Dict[str, List[Dict]]:
         """
         Get context-aware task suggestions.
-        
+
         Context Parameters:
         - energy_level: "low" | "medium" | "high"
         - available_time_mins: integer (minutes)
         - focus_state: "scattered" | "normal" | "deep"
-        
+
         Returns:
             {
                 'next_best': [tasks],       # Top recommendations
@@ -295,7 +303,7 @@ class SuggestionEngine:
             cached_at, result = self._cache[cache_key]
             if datetime.now() - cached_at < self._cache_ttl:
                 return result
-        
+
         # Compute suggestions
         result = await self._compute_suggestions(
             workspace_id,
@@ -305,12 +313,12 @@ class SuggestionEngine:
             focus_state,
             limit
         )
-        
+
         # Update cache
         self._cache[cache_key] = (datetime.now(), result)
-        
+
         return result
-    
+
     async def _compute_suggestions(
         self,
         workspace_id: str,
@@ -323,10 +331,10 @@ class SuggestionEngine:
         """Core suggestion computation logic."""
         # 1. Get candidate tasks
         candidates = await self._get_candidate_tasks(workspace_id)
-        
+
         # 2. Filter by dependency satisfaction
         viable = [t for t in candidates if await self._dependencies_satisfied(t)]
-        
+
         # 3. Score by context
         context = {
             'energy_level': energy_level,
@@ -335,21 +343,21 @@ class SuggestionEngine:
         }
         scored = [(self._score_task(t, context), t) for t in viable]
         scored.sort(reverse=True, key=lambda x: x[0])
-        
+
         # 4. Separate quick wins
         quick_wins = [t for score, t in scored if t.get('estimated_minutes', 30) < 15]
-        
+
         # 5. Get related decisions
         top_task_ids = [t['id'] for _, t in scored[:limit]]
         decisions = await self._get_related_decisions(top_task_ids)
-        
+
         return {
             'next_best': [t for _, t in scored[:limit]],
             'quick_wins': quick_wins[:3],
             'related_decisions': decisions,
             'patterns': []  # TODO: Pattern mining
         }
-    
+
     def _score_task(
         self,
         task: Dict,
@@ -357,7 +365,7 @@ class SuggestionEngine:
     ) -> float:
         """
         Score task by context match (0.0-1.0).
-        
+
         Scoring:
         - Energy match: 0-0.4
         - Time match: 0-0.3
@@ -365,39 +373,39 @@ class SuggestionEngine:
         - Pattern match: 0-0.1
         """
         score = 0.0
-        
+
         # Energy match
         score += self._energy_score(task, context)
-        
+
         # Time match
         score += self._time_score(task, context)
-        
+
         # Focus match
         score += self._focus_score(task, context)
-        
+
         # Pattern match (TODO)
         # score += self._pattern_score(task, context)
-        
+
         return min(score, 1.0)
-    
+
     def _energy_score(self, task: Dict, context: Dict) -> float:
         """Energy level match (0-0.4)."""
         levels = {'low': 0, 'medium': 1, 'high': 2}
         task_energy = task.get('energy_required', 'medium')
         context_energy = context['energy_level']
-        
+
         diff = abs(levels[task_energy] - levels[context_energy])
         return 0.4 * (1 - diff / 2)
-    
+
     def _time_score(self, task: Dict, context: Dict) -> float:
         """Time availability match (0-0.3)."""
         task_time = task.get('estimated_minutes', 30)
         available = context['available_time_mins']
-        
+
         if task_time > available:
             return 0.0
         return 0.3 * (1 - task_time / available)
-    
+
     def _focus_score(self, task: Dict, context: Dict) -> float:
         """Focus state match (0-0.2)."""
         # Simple mapping for now
@@ -412,30 +420,30 @@ class SuggestionEngine:
             ('deep', 'creative'): 0.15,
             ('deep', 'deep'): 0.2
         }
-        
+
         task_focus = task.get('focus_type', 'creative')
         context_focus = context['focus_state']
-        
+
         return focus_match.get((context_focus, task_focus), 0.1)
-    
+
     async def _get_candidate_tasks(self, workspace_id: str) -> List[Dict]:
         """Get all candidate tasks for suggestions."""
         # Use KG search (semantic + keyword)
         return await self.kg.search_tasks("status:todo OR status:in_progress", limit=50)
-    
+
     async def _dependencies_satisfied(self, task: Dict) -> bool:
         """Check if task dependencies are satisfied."""
         task_id = task.get('id')
         if not task_id:
             return True
-        
+
         rels = await self.kg.get_task_relationships(task_id)
         deps = rels.get('dependencies', [])
-        
+
         # TODO: Check if dependencies are complete
         # For now, assume satisfied if no dependencies
         return len(deps) == 0
-    
+
     async def _get_related_decisions(self, task_ids: List[str]) -> List[str]:
         """Get decisions related to tasks."""
         decisions = []
@@ -443,7 +451,7 @@ class SuggestionEngine:
             task_decisions = await self.kg.get_task_decisions(task_id)
             decisions.extend(task_decisions)
         return list(set(decisions))  # Deduplicate
-    
+
     def clear_cache(self):
         """Clear suggestion cache."""
         self._cache.clear()
@@ -485,7 +493,7 @@ class QueryService:
     ):
         self.storage = storage
         self.kg = kg
-        
+
         # Initialize KG-dependent services
         if kg:
             self.mapper = RelationshipMapper(kg)
@@ -493,7 +501,7 @@ class QueryService:
         else:
             self.mapper = None
             self.suggestions = None
-    
+
     @classmethod
     def with_kg(
         cls,
@@ -504,9 +512,9 @@ class QueryService:
         """Factory: Create QueryService with KG integration."""
         kg = DDDPGKG(workspace_id, age_client=age_client)
         return cls(storage, kg=kg)
-    
+
     # NEW: KG-powered queries
-    
+
     async def get_task_with_context(
         self,
         task_id: str,
@@ -514,16 +522,16 @@ class QueryService:
     ) -> Dict[str, Any]:
         """
         Get task with full relationship context.
-        
+
         Falls back to basic query if KG unavailable.
         """
         if not self.mapper:
             # Fallback: basic task data
             return await self.storage.get_task(task_id)
-        
+
         # KG-enhanced context
         return await self.mapper.build_task_context(task_id)
-    
+
     async def suggest_next_tasks(
         self,
         workspace_id: str,
@@ -531,9 +539,9 @@ class QueryService:
     ) -> Dict[str, List[Dict]]:
         """
         Get ADHD-optimized task suggestions.
-        
+
         Falls back to recency if KG unavailable.
-        
+
         Args:
             context: {
                 'energy_level': 'low|medium|high',
@@ -551,7 +559,7 @@ class QueryService:
                 'related_decisions': [],
                 'patterns': []
             }
-        
+
         return await self.suggestions.get_enhanced_suggestions(
             workspace_id=workspace_id,
             **context
@@ -626,9 +634,9 @@ class QueryService:
 
 ## 🚀 Ready to Build!
 
-**Validation**: Complete ✅  
-**Architecture**: Refined and optimal  
-**Plan**: Detailed and actionable  
+**Validation**: Complete ✅
+**Architecture**: Refined and optimal
+**Plan**: Detailed and actionable
 **Confidence**: Very High
 
 **Next Step**: Implement Phase 1 (Decision-Task Linking)

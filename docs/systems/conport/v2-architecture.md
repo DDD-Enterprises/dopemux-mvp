@@ -1,3 +1,11 @@
+---
+id: v2-architecture
+title: V2 Architecture
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # ConPort v2 Architecture Documentation
 
 ## 🚀 Overview

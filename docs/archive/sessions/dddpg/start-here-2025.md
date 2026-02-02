@@ -1,6 +1,14 @@
+---
+id: start-here-2025
+title: Start Here 2025
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # DDDPG: START HERE (2025 Edition)
-**Service**: DDDPG (Decision-Driven Development Planning Graph)  
-**Status**: Week 4 Day 2 - Ready to Build  
+**Service**: DDDPG (Decision-Driven Development Planning Graph)
+**Status**: Week 4 Day 2 - Ready to Build
 **Last Updated**: 2025-10-29
 
 ---
@@ -352,23 +360,23 @@ open 2025_MODERNIZATION_ROADMAP.md
 ## 📞 Questions?
 
 ### Technical Questions
-**Q**: Where do I start coding?  
+**Q**: Where do I start coding?
 **A**: `WEEK4_DAY2_IMPLEMENTATION_PLAN.md` → Phase 1 → Edit `kg_integration.py`
 
-**Q**: What if I don't have AGE installed?  
+**Q**: What if I don't have AGE installed?
 **A**: DDDPG works without KG (graceful degradation). Tests use mocks.
 
-**Q**: How do I run tests?  
+**Q**: How do I run tests?
 **A**: `cd services/dddpg && pytest test_kg_integration.py -v`
 
 ### Architecture Questions
-**Q**: Why hybrid storage (Postgres + SQLite)?  
+**Q**: Why hybrid storage (Postgres + SQLite)?
 **A**: See `2025_COMPREHENSIVE_ANALYSIS_AND_PLAN.md` → "Key Technical Decisions"
 
-**Q**: Why ADHD-first design?  
+**Q**: Why ADHD-first design?
 **A**: See `2025_COMPREHENSIVE_ANALYSIS_AND_PLAN.md` → "ADHD-Optimized Design Patterns"
 
-**Q**: What's the long-term vision?  
+**Q**: What's the long-term vision?
 **A**: Intelligent knowledge substrate for entire dopemux ecosystem
 
 ---
@@ -385,7 +393,7 @@ open 2025_MODERNIZATION_ROADMAP.md
 
 ---
 
-**Last Updated**: 2025-10-29  
-**Session Type**: Deep Research & Planning  
-**Status**: Analysis Complete → Implementation Ready  
+**Last Updated**: 2025-10-29
+**Session Type**: Deep Research & Planning
+**Status**: Analysis Complete → Implementation Ready
 **Let's ship it!** 🚀

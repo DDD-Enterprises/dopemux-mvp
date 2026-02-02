@@ -1,3 +1,11 @@
+---
+id: week2-integration
+title: Week2 Integration
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Week 2: MCP Integration Complete
 
 **Status**: Task-Orchestrator dispatch methods wired with real MCP calls

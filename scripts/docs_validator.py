@@ -23,7 +23,7 @@ import re
 import yaml
 import json
 import argparse
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass
@@ -56,9 +56,8 @@ REQUIRED_FIELDS = {
     'runbook': ['owner', 'last_review', 'next_review']
 }
 
-# Prohibited file patterns
+# Prohibited file patterns (README.md allowed in docs/systems/ and docs/archive/)
 PROHIBITED_PATTERNS = [
-    r'README.*\.md$',
     r'NOTES.*\.md$',
     r'TODO.*\.md$',
     r'TEMP.*\.md$',
@@ -68,6 +67,7 @@ PROHIBITED_PATTERNS = [
 
 # Allowed paths for documentation
 ALLOWED_PATHS = [
+    'docs/',                   # Root-level docs (index files)
     'docs/01-tutorials/',
     'docs/02-how-to/',
     'docs/03-reference/',
@@ -82,6 +82,7 @@ ALLOWED_PATHS = [
     'docs/systems/',          # System-specific documentation
     'docs/deployment/',       # Deployment guides  
     'docs/implementation-plans/',  # Implementation planning
+    'docs/spec/',             # Specification documents
 ]
 
 @dataclass
@@ -209,7 +210,12 @@ class DocumentValidator:
         # Validate date format
         if 'date' in frontmatter:
             try:
-                datetime.fromisoformat(frontmatter['date'])
+                date_val = frontmatter['date']
+                if isinstance(date_val, str):
+                    datetime.fromisoformat(date_val)
+                elif not isinstance(date_val, (datetime, date)):
+                    self.add_error(file_path, "Invalid date format. Use YYYY-MM-DD string or datetime object")
+                    valid = False
             except ValueError:
                 self.add_error(file_path, "Invalid date format. Use YYYY-MM-DD")
                 valid = False

@@ -1,3 +1,11 @@
+---
+id: week7-complete
+title: Week7 Complete
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Week 7 Complete: DopemuxEnforcer
 
 **Date**: 2025-10-24

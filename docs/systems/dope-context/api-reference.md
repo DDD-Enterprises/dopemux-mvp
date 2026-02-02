@@ -1,3 +1,11 @@
+---
+id: api-reference
+title: Api Reference
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Dope-Context API Reference
 
 Complete documentation for all 9 MCP tools.

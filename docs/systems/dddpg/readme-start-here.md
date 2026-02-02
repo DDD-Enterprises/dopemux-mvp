@@ -1,8 +1,16 @@
+---
+id: readme-start-here
+title: Readme Start Here
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # DDDPG Service - START HERE 🚀
 
-**DDDPG**: Decision-Driven Development Planning Graph  
-**Purpose**: ADHD-optimized decision tracking with knowledge graph intelligence  
-**Status**: Week 4 Day 2 - Fully Analyzed & Ready to Build  
+**DDDPG**: Decision-Driven Development Planning Graph
+**Purpose**: ADHD-optimized decision tracking with knowledge graph intelligence
+**Status**: Week 4 Day 2 - Fully Analyzed & Ready to Build
 **Analysis Date**: 2025-10-29
 
 ---
@@ -126,23 +134,23 @@ User/Agent → QueryService → RelationshipMapper → DDDPGKG → AGE (Postgres
 ## 🎯 What We're Building (Week 4 Day 2)
 
 ### Feature 1: Decision-Task Linking
-**Why**: Connect DDDPG decisions to knowledge graph tasks  
-**Code**: 3 new methods in `DDDPGKG`  
+**Why**: Connect DDDPG decisions to knowledge graph tasks
+**Code**: 3 new methods in `DDDPGKG`
 **Time**: 15 min
 
 ### Feature 2: Relationship Mapping
-**Why**: Build composite views of task relationships  
-**Code**: New `RelationshipMapper` class  
+**Why**: Build composite views of task relationships
+**Code**: New `RelationshipMapper` class
 **Time**: 25 min
 
 ### Feature 3: ADHD-Optimized Suggestions
-**Why**: Context-aware task recommendations (energy, time, focus)  
-**Code**: New `SuggestionEngine` class  
+**Why**: Context-aware task recommendations (energy, time, focus)
+**Code**: New `SuggestionEngine` class
 **Time**: 35 min
 
 ### Feature 4: QueryService Integration
-**Why**: Wire everything together with graceful fallbacks  
-**Code**: Extend `QueryService` with KG support  
+**Why**: Wire everything together with graceful fallbacks
+**Code**: Extend `QueryService` with KG support
 **Time**: 20 min
 
 ---
@@ -315,12 +323,12 @@ pytest -v --tb=short
 2. ⏭️ Open `WEEK4_DAY2_IMPLEMENTATION_PLAN.md`
 3. 🔨 Start Phase 1: Decision-Task Linking
 
-**Estimated Time**: 95 minutes  
-**Confidence**: Very High  
+**Estimated Time**: 95 minutes
+**Confidence**: Very High
 **Let's go!** 🎯
 
 ---
 
-**Last Updated**: 2025-10-29  
-**Version**: Week 4 Day 2 Ready  
+**Last Updated**: 2025-10-29
+**Version**: Week 4 Day 2 Ready
 **Status**: 🟢 Ready to build

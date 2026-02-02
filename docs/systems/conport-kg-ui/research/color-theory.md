@@ -1,3 +1,11 @@
+---
+id: color-theory
+title: Color Theory
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Color Theory and Accessibility Research for Developer Tools
 **Research Date**: 2025-10-15
 **Project**: Dopemux ADHD-Optimized Development Platform

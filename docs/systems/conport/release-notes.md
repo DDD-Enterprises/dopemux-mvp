@@ -1,3 +1,11 @@
+---
+id: release-notes
+title: Release Notes
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Context Portal MCP Release Notes
 
 <br>

@@ -1,3 +1,11 @@
+---
+id: phase1-sprint-plan
+title: Phase1 Sprint Plan
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Phase 1 Sprint Plan - macOS + Slack MVP
 
 **Duration**: 4 weeks

@@ -1,7 +1,15 @@
+---
+id: storage-design
+title: Storage Design
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # 🏗️ DDDPG Storage Layer - Design Document
 
-**Date**: 2025-10-29  
-**Status**: Design Phase  
+**Date**: 2025-10-29
+**Status**: Design Phase
 **Goal**: Production-ready hybrid storage (Postgres AGE + SQLite cache)
 
 ---
@@ -112,25 +120,25 @@ SELECT create_elabel('dddpg', 'suggests');
 
 ```sql
 -- Property indexes for fast lookups
-CREATE INDEX decision_workspace_idx ON ag_catalog.decision 
+CREATE INDEX decision_workspace_idx ON ag_catalog.decision
   USING btree ((properties->>'workspace_id'));
 
-CREATE INDEX decision_instance_idx ON ag_catalog.decision 
+CREATE INDEX decision_instance_idx ON ag_catalog.decision
   USING btree ((properties->>'instance_id'));
 
-CREATE INDEX decision_visibility_idx ON ag_catalog.decision 
+CREATE INDEX decision_visibility_idx ON ag_catalog.decision
   USING btree ((properties->>'visibility'));
 
-CREATE INDEX decision_status_idx ON ag_catalog.decision 
+CREATE INDEX decision_status_idx ON ag_catalog.decision
   USING btree ((properties->>'status'));
 
 -- Composite index for multi-instance queries
-CREATE INDEX decision_workspace_instance_idx ON ag_catalog.decision 
+CREATE INDEX decision_workspace_instance_idx ON ag_catalog.decision
   USING btree ((properties->>'workspace_id'), (properties->>'instance_id'));
 
 -- Full-text search on summary + rationale
-CREATE INDEX decision_fts_idx ON ag_catalog.decision 
-  USING gin (to_tsvector('english', 
+CREATE INDEX decision_fts_idx ON ag_catalog.decision
+  USING gin (to_tsvector('english',
     properties->>'summary' || ' ' || COALESCE(properties->>'rationale', '')));
 ```
 
@@ -140,7 +148,7 @@ CREATE INDEX decision_fts_idx ON ag_catalog.decision
 -- Find all decisions for an instance
 SELECT * FROM cypher('dddpg', $$
   MATCH (d:decision)
-  WHERE d.workspace_id = '/dopemux-mvp' 
+  WHERE d.workspace_id = '/dopemux-mvp'
     AND d.instance_id = 'A'
     AND d.visibility IN ['shared', 'global']
   RETURN d
@@ -178,7 +186,7 @@ $$) AS (decision agtype);
 
 **Location**: `~/.dddpg/cache/{workspace_id}/{instance_id}/decisions.db`
 
-**Example**: 
+**Example**:
 - Main: `~/.dddpg/cache/dopemux-mvp/A/decisions.db`
 - Worktree: `~/.dddpg/cache/dopemux-mvp/feature-auth/decisions.db`
 
@@ -191,26 +199,26 @@ CREATE TABLE decisions (
     summary TEXT NOT NULL,
     rationale TEXT,
     implementation_details TEXT,
-    
+
     -- Multi-instance
     workspace_id TEXT NOT NULL,
     instance_id TEXT NOT NULL,
     visibility TEXT NOT NULL,  -- private, shared, global
-    
+
     -- Classification
     status TEXT NOT NULL DEFAULT 'active',
     decision_type TEXT,
     tags TEXT,  -- JSON array
-    
+
     -- Metadata
     cognitive_load INTEGER,
     agent_metadata TEXT,  -- JSON
     code_references TEXT,  -- JSON array
-    
+
     -- Timestamps
     created_at TEXT NOT NULL,
     updated_at TEXT,
-    
+
     -- Cache metadata
     cached_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     cache_ttl INTEGER DEFAULT 3600  -- 1 hour TTL
@@ -218,8 +226,8 @@ CREATE TABLE decisions (
 
 -- FTS5 for fast local search
 CREATE VIRTUAL TABLE decisions_fts USING fts5(
-    summary, 
-    rationale, 
+    summary,
+    rationale,
     implementation_details,
     tags,
     content=decisions,
@@ -253,7 +261,7 @@ CREATE INDEX idx_created ON decisions(created_at DESC);
 
 ```sql
 -- Delete expired entries
-DELETE FROM decisions 
+DELETE FROM decisions
 WHERE (unixepoch('now') - unixepoch(cached_at)) > cache_ttl;
 
 -- Update cache entry
@@ -273,28 +281,28 @@ from core.models import Decision, DecisionRelationship, DecisionGraph
 
 class StorageBackend(ABC):
     """Abstract storage interface"""
-    
+
     @abstractmethod
     async def connect(self) -> None:
         """Connect to storage backend"""
         pass
-    
+
     @abstractmethod
     async def disconnect(self) -> None:
         """Disconnect from storage"""
         pass
-    
+
     # Decisions
     @abstractmethod
     async def create_decision(self, decision: Decision) -> Decision:
         """Create a new decision, returns with ID"""
         pass
-    
+
     @abstractmethod
     async def get_decision(self, decision_id: int) -> Optional[Decision]:
         """Get decision by ID"""
         pass
-    
+
     @abstractmethod
     async def list_decisions(
         self,
@@ -306,28 +314,28 @@ class StorageBackend(ABC):
     ) -> List[Decision]:
         """List decisions for instance"""
         pass
-    
+
     @abstractmethod
     async def update_decision(self, decision: Decision) -> Decision:
         """Update existing decision"""
         pass
-    
+
     @abstractmethod
     async def delete_decision(self, decision_id: int) -> bool:
         """Delete decision (soft delete - set status=archived)"""
         pass
-    
+
     # Relationships
     @abstractmethod
     async def create_relationship(self, rel: DecisionRelationship) -> DecisionRelationship:
         """Create relationship between decisions"""
         pass
-    
+
     @abstractmethod
     async def get_relationships(self, decision_id: int) -> List[DecisionRelationship]:
         """Get all relationships for a decision"""
         pass
-    
+
     # Graph queries
     @abstractmethod
     async def query_graph(
@@ -338,7 +346,7 @@ class StorageBackend(ABC):
     ) -> DecisionGraph:
         """Traverse graph from starting decision"""
         pass
-    
+
     # Search
     @abstractmethod
     async def search_decisions(
@@ -363,17 +371,17 @@ class StorageBackend(ABC):
 ```python
 class PostgresAGEBackend(StorageBackend):
     """PostgreSQL AGE graph storage"""
-    
+
     def __init__(self, connection_string: str):
         self.conn_string = connection_string
         self.pool = None
-    
+
     async def connect(self):
         """Create connection pool"""
         self.pool = await asyncpg.create_pool(self.conn_string)
         # Initialize AGE extension
         await self._init_graph()
-    
+
     async def create_decision(self, decision: Decision) -> Decision:
         """
         1. Generate properties dict from Decision model
@@ -404,17 +412,17 @@ class PostgresAGEBackend(StorageBackend):
 ```python
 class SQLiteCacheBackend(StorageBackend):
     """SQLite local cache - read-optimized"""
-    
+
     def __init__(self, cache_dir: str, workspace_id: str, instance_id: str):
         self.cache_path = Path(cache_dir) / workspace_id / instance_id / "decisions.db"
         self.conn = None
-    
+
     async def connect(self):
         """Create/open cache database"""
         self.cache_path.parent.mkdir(parents=True, exist_ok=True)
         self.conn = await aiosqlite.connect(self.cache_path)
         await self._init_schema()
-    
+
     async def list_decisions(self, workspace_id, instance_id, ...) -> List[Decision]:
         """
         Fast read from local cache
@@ -442,7 +450,7 @@ class HybridStorage(StorageBackend):
     Hybrid storage: Postgres (source of truth) + SQLite (cache)
     Coordinates writes, optimizes reads
     """
-    
+
     def __init__(
         self,
         postgres: PostgresAGEBackend,
@@ -452,7 +460,7 @@ class HybridStorage(StorageBackend):
         self.postgres = postgres
         self.sqlite = sqlite
         self.eventbus = eventbus
-    
+
     async def create_decision(self, decision: Decision) -> Decision:
         """
         Write path:
@@ -462,16 +470,16 @@ class HybridStorage(StorageBackend):
         """
         # 1. Postgres
         decision = await self.postgres.create_decision(decision)
-        
+
         # 2. Local cache
         await self.sqlite.create_decision(decision)
-        
+
         # 3. EventBus
         if self.eventbus:
             await self.eventbus.publish("decision.created", decision.dict())
-        
+
         return decision
-    
+
     async def get_decision(self, decision_id: int) -> Optional[Decision]:
         """
         Read path (optimized):
@@ -483,13 +491,13 @@ class HybridStorage(StorageBackend):
         decision = await self.sqlite.get_decision(decision_id)
         if decision:
             return decision
-        
+
         # Cache miss - query Postgres
         decision = await self.postgres.get_decision(decision_id)
         if decision:
             # Cache for next time
             await self.sqlite.create_decision(decision)
-        
+
         return decision
 ```
 
@@ -504,15 +512,15 @@ class HybridStorage(StorageBackend):
 ```python
 class EventBusPublisher:
     """Publish storage events to Redis Streams"""
-    
+
     def __init__(self, redis_url: str, stream: str = "dddpg:events"):
         self.redis_url = redis_url
         self.stream = stream
         self.redis = None
-    
+
     async def connect(self):
         self.redis = await redis.from_url(self.redis_url)
-    
+
     async def publish(self, event_type: str, data: dict):
         """
         Publish event to Redis Stream
@@ -524,7 +532,7 @@ class EventBusPublisher:
             "source": "dddpg",
             "data": json.dumps(data)
         }
-        
+
         await self.redis.xadd(self.stream, event)
 ```
 
@@ -536,7 +544,7 @@ class CacheSyncConsumer:
     Listens to EventBus and updates local SQLite cache
     Used by other instances to stay in sync
     """
-    
+
     async def start(self):
         """
         Subscribe to dddpg:events stream
@@ -551,25 +559,25 @@ class CacheSyncConsumer:
                 count=10,
                 block=1000
             )
-            
+
             for stream, events in messages:
                 for event_id, event_data in events:
                     await self._handle_event(event_data)
-    
+
     async def _handle_event(self, event_data):
         """Update cache based on event type"""
         event_type = event_data['event_type']
-        
+
         if event_type == "decision.created":
             # Add to cache
             decision = Decision(**json.loads(event_data['data']))
             await self.cache.create_decision(decision)
-        
+
         elif event_type == "decision.updated":
             # Update cache
             decision = Decision(**json.loads(event_data['data']))
             await self.cache.update_decision(decision)
-        
+
         elif event_type == "decision.deleted":
             # Remove from cache
             decision_id = json.loads(event_data['data'])['id']
@@ -609,13 +617,13 @@ async def test_create_decision_postgres():
     """Test creating decision in Postgres"""
     backend = PostgresAGEBackend(TEST_DB_URL)
     await backend.connect()
-    
+
     decision = Decision(
         summary="Test decision",
         workspace_id="/test",
         instance_id="A"
     )
-    
+
     result = await backend.create_decision(decision)
     assert result.id is not None
     assert result.summary == "Test decision"
@@ -623,13 +631,13 @@ async def test_create_decision_postgres():
 async def test_cache_hit():
     """Test SQLite cache hit"""
     hybrid = HybridStorage(postgres, sqlite)
-    
+
     # First read (cache miss)
     d1 = await hybrid.get_decision(1)  # Queries Postgres
-    
+
     # Second read (cache hit)
     d2 = await hybrid.get_decision(1)  # Queries SQLite (< 1ms)
-    
+
     assert d1 == d2
 
 async def test_multi_instance_isolation():
@@ -642,7 +650,7 @@ async def test_multi_instance_isolation():
         visibility=DecisionVisibility.PRIVATE
     )
     await storage_A.create_decision(d_private)
-    
+
     # Instance B should NOT see it
     decisions_B = await storage_B.list_decisions("/test", "B")
     assert d_private.id not in [d.id for d in decisions_B]
@@ -675,12 +683,12 @@ async def migrate_from_conport_mcp(old_db_path: str):
     """
     # Connect to old database
     old_conn = await aiosqlite.connect(old_db_path)
-    
+
     # Read all decisions
     cursor = await old_conn.execute(
         "SELECT id, summary, rationale, implementation_details, tags, timestamp FROM decisions"
     )
-    
+
     # Convert to DDDPG format
     for row in await cursor.fetchall():
         decision = Decision(
@@ -693,7 +701,7 @@ async def migrate_from_conport_mcp(old_db_path: str):
             visibility=DecisionVisibility.SHARED,
             created_at=datetime.fromisoformat(row[5])
         )
-        
+
         # Write to DDDPG
         await storage.create_decision(decision)
 ```

@@ -1,3 +1,11 @@
+---
+id: week5-complete
+title: Week5 Complete
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Week 5 Complete: ADHD Routing + Prioritization
 
 **Date**: 2025-10-24
