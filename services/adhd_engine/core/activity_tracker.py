@@ -16,8 +16,8 @@ import time
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone
 
-from config import settings
-from bridge_integration import ConPortBridgeAdapter
+from ..config import settings
+from ..bridge_integration import ConPortBridgeAdapter
 
 logger = logging.getLogger(__name__)
 
