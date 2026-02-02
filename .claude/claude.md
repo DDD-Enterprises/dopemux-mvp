@@ -22,8 +22,8 @@ Use when designing features, making architectural decisions.
 | Server | Purpose | When to Use |
 |--------|---------|-------------|
 | **conport** | Log design decisions | All architectural choices with rationale |
-| **zen planner** | Design planning agent | Feature design, architecture planning |
-| **zen consensus** | Multi-perspective analysis | Complex decisions, trade-off analysis |
+| **pal planner** | Design planning agent | Feature design, architecture planning |
+| **pal consensus** | Multi-perspective analysis | Complex decisions, trade-off analysis |
 | **gpt-researcher** | Research patterns | External design patterns, prior art |
 | **leantime-bridge** | Project visibility | Epic/story creation for dashboards |
 
@@ -33,7 +33,7 @@ Use when breaking down work into tasks.
 | Server | Purpose | When to Use |
 |--------|---------|-------------|
 | **task-orchestrator** | Task decomposition | FIRST - break down all work into tasks |
-| **zen planner** | Plan validation | Validate task breakdown |
+| **pal planner** | Plan validation | Validate task breakdown |
 | **leantime-bridge** | Task tracking | Create tickets for team visibility |
 | **conport** | Log decisions | Record planning decisions |
 
@@ -45,7 +45,7 @@ Use when writing code.
 | **pal apilookup** | Docs lookup | Get library documentation |
 | **serena-v2** | Code navigation | Find symbols, goto definition, references |
 | **dope-context** | Find examples | Semantic code search in codebase |
-| **zen deepthink** | Complex problems | Hard implementation challenges |
+| **pal thinkdeep** | Complex problems | Hard implementation challenges |
 | **conport** | Track progress | Log progress on tasks |
 
 ### 🔍 REVIEW Phase
@@ -53,9 +53,9 @@ Use when reviewing code, auditing, checking quality.
 
 | Server | Purpose | When to Use |
 |--------|---------|-------------|
-| **zen codereviewer** | Code review | Before commit - review changes |
+| **pal codereviewer** | Code review | Before commit - review changes |
 | **serena-v2** | Complexity check | Analyze cognitive complexity |
-| **zen secaudit** | Security audit | Security-sensitive changes |
+| **pal secaudit** | Security audit | Security-sensitive changes |
 | **conport** | Log findings | Record review decisions |
 
 ### ✅ COMMIT Phase
@@ -64,7 +64,7 @@ Use before committing code.
 | Server | Purpose | When to Use |
 |--------|---------|-------------|
 | **precommit hooks** | Run pre-commit | `pre-commit run --all-files` |
-| **zen codereviewer** | Final check | Last review before commit |
+| **pal codereviewer** | Final check | Last review before commit |
 | **conport** | Close tasks | Update task status to DONE |
 
 ---
@@ -84,22 +84,30 @@ Use before committing code.
 | Trigger | Action |
 |---------|--------|
 | New feature request | → task-orchestrator breakdown → leantime tickets → conport decision |
-| Complex algorithm | → zen deepthink → implement |
-| Code review needed | → zen codereviewer → address findings |
-| Security sensitive | → zen secaudit before commit |
-| Architecture choice | → zen consensus → conport log_decision |
+| Complex algorithm | → pal thinkdeep → implement |
+| Code review needed | → pal codereviewer → address findings |
+| Security sensitive | → pal secaudit before commit |
+| Architecture choice | → pal consensus → conport log_decision |
 
 ---
 
 ## MCP Server Quick Reference
 
-### zen (Multi-Tool Analysis)
+### pal (Multi-Tool Analysis)
 ```
-mcp__zen__planner        # Design and planning
-mcp__zen__deepthink      # Deep problem solving
-mcp__zen__codereviewer   # Code review
-mcp__zen__secaudit       # Security audit
-mcp__zen__consensus      # Multi-perspective analysis
+mcp__pal__apilookup       # Get library/API documentation
+mcp__pal__planner         # Design and planning
+mcp__pal__thinkdeep       # Deep problem solving
+mcp__pal__codereviewer    # Code review
+mcp__pal__secaudit        # Security audit
+mcp__pal__consensus       # Multi-perspective analysis
+mcp__pal__debug           # Debugging assistance
+mcp__pal__docgen          # Generate documentation
+mcp__pal__testgen         # Generate tests
+mcp__pal__analyze         # File analysis
+mcp__pal__refactor        # Code refactoring
+mcp__pal__precommit       # Pre-commit validation
+mcp__pal__clink           # CLI bridge
 ```
 
 ### conport (Memory & Decisions)
@@ -125,12 +133,6 @@ mcp__serena-v2__goto_definition      # Navigate to definition
 mcp__serena-v2__analyze_complexity   # Cognitive complexity score
 ```
 
-### pal (Documentation & IDE)
-```
-mcp__pal__apilookup                  # Get library/API documentation
-mcp__pal__ide_integration            # IDE context and actions
-```
-
 ### leantime-bridge (Project Management)
 ```
 mcp__leantime-bridge__create_ticket
@@ -145,10 +147,10 @@ mcp__leantime-bridge__get_project_state
 ### Feature Implementation Flow
 ```
 1. Research:   pal apilookup → get library docs
-2. Design:     zen planner → conport log_decision
+2. Design:     pal planner → conport log_decision
 3. Planning:   task-orchestrator → breakdown → leantime tickets
 4. Implement:  serena-v2 + dope-context → code
-5. Review:     zen codereviewer → address findings
+5. Review:     pal codereviewer → address findings
 6. Commit:     pre-commit run → git commit
 7. Close:      conport update_progress → status DONE
 ```
@@ -159,14 +161,14 @@ mcp__leantime-bridge__get_project_state
 2. Navigate:   serena-v2 → locate issue
 3. Plan:       task-orchestrator → simple breakdown
 4. Fix:        implement fix
-5. Review:     zen codereviewer
+5. Review:     pal codereviewer
 6. Commit:     pre-commit → git commit
 ```
 
 ### Architecture Decision Flow
 ```
 1. Research:   gpt-researcher → gather options
-2. Analyze:    zen consensus → evaluate trade-offs
+2. Analyze:    pal consensus → evaluate trade-offs
 3. Decide:     conport log_decision → with rationale
 4. Document:   create ADR in docs/90-adr/
 ```
@@ -180,14 +182,14 @@ mcp__leantime-bridge__get_project_state
 - Log all decisions to ConPort with rationale
 - Use `pal apilookup` FIRST for library docs
 - Run `pre-commit` before every commit
-- Use `zen codereviewer` before merging
+- Use `pal codereviewer` before merging
 
 ### ❌ DON'T
 - Skip task breakdown (leads to scope creep)
 - Make decisions without logging to ConPort
 - Commit without running pre-commit
 - Implement without checking docs first
-- Review your own code without `zen codereviewer`
+- Review your own code without `pal codereviewer`
 
 ---
 

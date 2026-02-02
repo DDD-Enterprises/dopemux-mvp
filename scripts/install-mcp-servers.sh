@@ -51,7 +51,7 @@ MCP_SERVERS[context7]="context7-mcp"
 MCP_SERVERS[claude-context]="@zilliz/claude-context-mcp@latest"
 MCP_SERVERS[morphllm-fast-apply]="morphllm-fast-apply-mcp"
 MCP_SERVERS[exa]="exa-mcp"
-MCP_SERVERS[zen]="zen-mcp"
+MCP_SERVERS[pal]="pal-mcp"
 MCP_SERVERS[leantime]="leantime-mcp"
 
 # Install each server
