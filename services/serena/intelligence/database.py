@@ -27,8 +27,8 @@ except ImportError:
 # Use absolute imports for pytest compatibility
 try:
     # Try absolute import first (pytest, production)
-    from services.serena.v2.performance_monitor import PerformanceMonitor, PerformanceTarget
-    from services.serena.v2.adhd_features import CodeComplexityAnalyzer
+    from performance_monitor import PerformanceMonitor, PerformanceTarget
+    from adhd_features import CodeComplexityAnalyzer
 except ImportError:
     # Fallback to relative import (direct execution)
     from ..performance_monitor import PerformanceMonitor, PerformanceTarget

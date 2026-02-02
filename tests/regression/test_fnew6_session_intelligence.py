@@ -221,7 +221,7 @@ async def test_dashboard_formatting():
             workspace="/Users/hue/code/dopemux-mvp",
             worktree="/Users/hue/code/dopemux-mvp",
             branch="main",
-            current_focus="services/serena/v2/mcp_server.py",
+            current_focus="services/serena/mcp_server.py",
             session_duration_minutes=35
         )
 

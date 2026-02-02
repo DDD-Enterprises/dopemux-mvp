@@ -23,17 +23,17 @@ from datetime import datetime, timezone
 # Import existing Serena intelligence components
 # Use absolute imports to support both module and direct execution
 try:
-    from services.serena.v2.intelligence.database import SerenaIntelligenceDatabase, create_intelligence_database
-    from services.serena.v2.intelligence import setup_complete_cognitive_load_management_system
-    from services.serena.v2.file_watcher import FileWatcherManager
+    from services.serena.intelligence.database import SerenaIntelligenceDatabase, create_intelligence_database
+    from services.serena.intelligence import setup_complete_cognitive_load_management_system
+    from services.serena.file_watcher import FileWatcherManager
 except ImportError:
     # Fallback for when run directly
     import sys
     from pathlib import Path
     sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
-    from services.serena.v2.intelligence.database import SerenaIntelligenceDatabase, create_intelligence_database
-    from services.serena.v2.intelligence import setup_complete_cognitive_load_management_system
-    from services.serena.v2.file_watcher import FileWatcherManager
+    from services.serena.intelligence.database import SerenaIntelligenceDatabase, create_intelligence_database
+    from services.serena.intelligence import setup_complete_cognitive_load_management_system
+    from services.serena.file_watcher import FileWatcherManager
 
 # Configure logging
 logging.basicConfig(

@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from services.serena.v2.http_server import app
+from services.serena.http_server import app
 
 client = TestClient(app)
 
