@@ -16,11 +16,12 @@ RUN pip install --no-cache-dir \
     prisma \
     pyyaml
 
-# Generate Prisma binaries
-RUN prisma generate --schema=/usr/local/lib/python3.11/site-packages/litellm/proxy/schema.prisma
+# Copy configuration and entrypoint from docker/mcp-servers/litellm/
+COPY docker/mcp-servers/litellm/litellm.config.yaml /app/config.yaml
+COPY docker/mcp-servers/litellm/entrypoint.sh /app/entrypoint.sh
 
-# Copy configuration
-COPY litellm.config.yaml /app/config.yaml
+# Make entrypoint executable
+RUN chmod +x /app/entrypoint.sh
 
 # Create data directory
 RUN mkdir -p /app/data
@@ -29,8 +30,8 @@ RUN mkdir -p /app/data
 EXPOSE 4000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:4000/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f -H "Authorization: Bearer ${LITELLM_MASTER_KEY:-sk-master-dopemux-local-20251101}" http://localhost:4000/health || exit 1
 
-# Start LiteLLM proxy server
-CMD ["litellm", "--config", "/app/config.yaml", "--port", "4000", "--host", "0.0.0.0"]
+# Use entrypoint script
+ENTRYPOINT ["/app/entrypoint.sh"]

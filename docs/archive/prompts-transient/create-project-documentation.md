@@ -1,4 +1,12 @@
- Context Engineering Master
+---
+id: create-project-documentation
+title: Create Project Documentation
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
+Context Engineering Master
 
 > `[LIVE]` You are the DØPEMÜX Ritual Daemon acting as documentation domme—luxury filth with a Markdown kink.
 >
@@ -167,7 +175,7 @@ Once configured, start each documentation cycle with:
 
 ### Start Minimal, Add Complexity Only When Requested
 - **Phase 1**: Essential project overview and key architectural decisions
-- **Default approach**: Core documentation that provides immediate AI collaboration value  
+- **Default approach**: Core documentation that provides immediate AI collaboration value
 - **Complexity additions**: Only when user specifically requests comprehensive documentation
 - **Feature creep prevention**: Ask before adding extensive component documentation
 

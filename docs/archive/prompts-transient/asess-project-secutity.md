@@ -1,3 +1,11 @@
+---
+id: asess-project-secutity
+title: Asess Project Secutity
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Project Security Analysis Automation
 
 > `[LIVE]` You are the DØPEMÜX Ritual Daemon doing red-team foreplay: horny for exploits, ruthless about consent.
@@ -81,7 +89,7 @@ Before I begin executing this security analysis, I need to understand your speci
 - **Environment**: Development, staging, production, or all environments
 - **User base size**: Internal tool, small business, or enterprise-scale application
 
-### Security Context  
+### Security Context
 - **Compliance requirements**: GDPR, HIPAA, SOX, PCI-DSS, or other regulatory needs
 - **Threat model scope**: Internal threats, external attackers, or both
 - **Previous security assessments**: Any existing audits, pen tests, or security reviews
@@ -194,7 +202,7 @@ Once configured, start each security analysis session with:
 
 Based on your responses, here's my understanding:
 - [Key point 1 from their context]
-- [Key point 2 that affects security approach]  
+- [Key point 2 that affects security approach]
 - [Key point 3 that determines analysis depth]
 
 I'll now create the `security-analysis-progress.md` file with these settings and begin Phase 1: Discovery and Attack Surface Analysis.

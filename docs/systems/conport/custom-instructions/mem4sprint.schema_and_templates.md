@@ -1,7 +1,12 @@
 ---
 trigger: always_on
+id: mem4sprint.schema_and_templates
+title: Mem4Sprint.Schema_And_Templates
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
 ---
-
 # --- mem4sprint Meta Schema and Starters (v1.0.0) ---
 
 mem4sprint_meta:

@@ -1,3 +1,11 @@
+---
+id: week3-roadmap
+title: Week3 Roadmap
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Week 3 Implementation Roadmap: Day-by-Day Execution Plan
 
 **Sprint**: Week 3 (CognitiveGuardian Production Integration)
@@ -231,10 +239,10 @@ async def test_conport_state_persistence():
     """Test user state saved to ConPort."""
     guardian = CognitiveGuardian("/test")
     await guardian.start_monitoring()
-    
+
     state = await guardian.get_user_state()
     # Verify _save_user_state() called (check logs or mock)
-    
+
     await guardian.stop_monitoring()
 
 async def test_preference_defaults():
@@ -268,13 +276,13 @@ python test_cognitive_guardian.py
    git add services/agents/cognitive_guardian.py
    git add services/agents/test_cognitive_guardian.py
    git commit -m "Week 3 Day 1: ConPort integration foundation
-   
+
    - Add Claude Code context detection
    - Implement user preference loading from ConPort
    - Add user state persistence
    - Add metrics persistence
    - Tests: 6/6 passing
-   
+
    Impact: CognitiveGuardian now persists state to ConPort"
    ```
 3. Document progress:
@@ -305,11 +313,11 @@ python test_cognitive_guardian.py
 ```python
 async def suggest_tasks(...) -> List[Dict[str, Any]]:
     # ... get user state ...
-    
+
     # NEW: Real ConPort queries
     if not self._in_claude_code:
         return self._simulate_task_suggestions(...)
-    
+
     try:
         from mcp_tools import mcp__conport__get_progress
         all_tasks = await mcp__conport__get_progress(
@@ -353,16 +361,16 @@ matched_tasks = []
 for task in all_tasks:
     task_energy = task.get("energy_required", "medium")
     task_complexity = task.get("complexity", 0.5)
-    
+
     # Energy match
     if task_energy != target_energy:
         continue
-    
+
     # Attention match
     if user_state.attention == AttentionState.SCATTERED:
         if task_complexity > 0.5:
             continue  # Skip complex when scattered
-    
+
     matched_tasks.append({...})
 ```
 
@@ -404,17 +412,17 @@ def _calculate_task_match_score(
 ) -> float:
     """Calculate how well task matches user's current state."""
     score = 0.5  # Base
-    
+
     # Energy match bonus
     if task_energy == user_state.energy.value:
         score += 0.3
-    
+
     # Complexity match bonus
     if user_state.attention == AttentionState.HYPERFOCUS:
         if task_complexity > 0.7:
             score += 0.2  # Perfect for complex work
     # ...
-    
+
     return min(1.0, score)
 ```
 
@@ -469,12 +477,12 @@ def _simulate_task_suggestions(
 ) -> List[Dict[str, Any]]:
     """Simulation mode for when ConPort unavailable."""
     print(f"\n🎯 Task Suggestions (Energy: {target_energy}) [SIMULATION]")
-    
+
     if target_energy == "high":
         print("   Suggested (complex tasks):")
         print("   1. Design microservices architecture (0.8)")
         # ...
-    
+
     return []  # No real tasks in simulation
 ```
 
@@ -484,7 +492,7 @@ async def suggest_tasks(...):
     # ...
     if not self._in_claude_code:
         return self._simulate_task_suggestions(target_energy, max_suggestions)
-    
+
     try:
         # Real ConPort logic
         # ...
@@ -545,13 +553,13 @@ python test_cognitive_guardian.py
    git add services/agents/cognitive_guardian.py
    git add services/agents/test_cognitive_guardian.py
    git commit -m "Week 3 Day 2: Task suggestions from ConPort
-   
+
    - Wire ConPort get_progress queries
    - Add energy + attention-based filtering
    - Implement task match scoring
    - Extract simulation fallback
    - Tests: 8/8 passing
-   
+
    Impact: Real task suggestions (not simulation)"
    ```
 3. Update `WEEK3_PROGRESS.md`
@@ -624,24 +632,24 @@ assert orchestrator.cognitive_guardian is not None
 ```python
 async def _assign_optimal_agent(self, task: Dict[str, Any]) -> str:
     complexity = task.get("complexity", 0.5)
-    
+
     # NEW: Check user readiness
     if self.cognitive_guardian:
         user_state = await self.cognitive_guardian.get_user_state()
         task_energy = task.get("energy_required", "medium")
-        
+
         readiness = await self.cognitive_guardian.check_task_readiness(
             task_complexity=complexity,
             task_energy_required=task_energy
         )
-        
+
         if not readiness["ready"]:
             logger.warning(f"User not ready: {readiness['reason']}")
-            
+
             # Mandatory break check
             if user_state.session_duration_minutes >= 90:
                 return "break_required"  # Special signal
-    
+
     # EXISTING ROUTING LOGIC
     # ...
 ```
@@ -733,7 +741,7 @@ async def _dispatch_to_agent(self, task: Dict[str, Any], agent: str):
         print("   Take a 10-minute break, then return.")
         print("="*70 + "\n")
         return
-    
+
     # EXISTING DISPATCH LOGIC
     if agent == "conport":
         await self._dispatch_to_conport(task)
@@ -804,13 +812,13 @@ python test_week3_integration.py
    git add services/task-orchestrator/enhanced_orchestrator.py
    git add services/task-orchestrator/test_week3_integration.py
    git commit -m "Week 3 Day 3: Task-Orchestrator integration
-   
+
    - Add CognitiveGuardian parameter to orchestrator
    - User readiness check before routing
    - Fix routing optimization (complexity before keywords)
    - Handle break-required state in dispatch
    - Integration tests: 4/4 passing
-   
+
    Impact: Energy-aware task routing operational"
    ```
 3. Update `WEEK3_PROGRESS.md`
@@ -885,26 +893,26 @@ def __init__(self, ...):
 async def get_user_state(self) -> UserState:
     """Get current user state (with caching)."""
     now = datetime.now(timezone.utc)
-    
+
     # Return cached state if fresh
     if self._state_cache and self._state_cache_time:
         age = (now - self._state_cache_time).total_seconds()
         if age < self._state_cache_ttl:
             logger.debug(f"Returning cached state (age: {age:.1f}s)")
             return self._state_cache
-    
+
     # Calculate fresh state
     # ... existing logic ...
-    
+
     user_state = UserState(...)
-    
+
     # Cache state
     self._state_cache = user_state
     self._state_cache_time = now
-    
+
     # Persist to ConPort (async, non-blocking)
     asyncio.create_task(self._save_user_state(user_state))
-    
+
     return user_state
 ```
 
@@ -1072,13 +1080,13 @@ logger.debug(
    git add services/task-orchestrator/enhanced_orchestrator.py
    git add COGNITIVE_GUARDIAN_PRODUCTION_GUIDE.md
    git commit -m "Week 3 Day 4: Production patterns & validation
-   
+
    - Add error handling (timeouts, retries)
    - Implement state caching (60s TTL)
    - Enhanced logging for debugging
    - Production deployment guide
    - Manual testing: 7/7 scenarios passing
-   
+
    Impact: Production-ready, optimized, documented"
    ```
 3. Update progress
@@ -1242,18 +1250,18 @@ python test_memory_agent.py
    git add services/agents/*.md
    git add COGNITIVE_GUARDIAN_PRODUCTION_GUIDE.md
    git commit -m "Week 3 Day 5: Summary & documentation
-   
+
    - Week 3 complete summary
    - Updated integration guide
    - Production deployment guide
    - Retrospective & lessons learned
-   
+
    Week 3 Status: COMPLETE ✅
    - Tests: 16/16 passing (100%)
    - Functionality: 60% (+25% from Week 2)
    - ADHD optimization: 50% active
    - Production-ready: Yes
-   
+
    Next: Week 4 (Energy learning, advanced features)"
    ```
 3. Push to remote (if applicable)

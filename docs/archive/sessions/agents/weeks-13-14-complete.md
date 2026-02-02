@@ -1,3 +1,11 @@
+---
+id: weeks-13-14-complete
+title: Weeks 13 14 Complete
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Weeks 13-14 Complete: All 16 Personas Dopemux-Enhanced
 
 **Date**: 2025-10-24

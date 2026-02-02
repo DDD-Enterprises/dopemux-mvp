@@ -1,8 +1,16 @@
+---
+id: week4-day2-implementation-plan
+title: Week4 Day2 Implementation Plan
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Week 4 Day 2: Implementation Plan
 ## Task Relationship Mapping - Ready to Build!
 
-**Date**: 2025-10-29  
-**Status**: ✅ Validated, Analyzed, Ready  
+**Date**: 2025-10-29
+**Status**: ✅ Validated, Analyzed, Ready
 **Confidence**: Very High
 
 ---
@@ -44,19 +52,19 @@ async def link_decision_to_task(
 ) -> bool:
     """
     Link a DDDPG Decision to a KG Task.
-    
+
     Args:
         decision_id: Decision identifier
         task_id: Task identifier in KG
         relationship_type: Edge label (default: DECIDES)
-    
+
     Returns:
         True if linked successfully
     """
     if not self.enable_kg:
         logger.warning("KG disabled, cannot link decision to task")
         return False
-    
+
     try:
         query = """
         SELECT * FROM cypher('workspace', $$
@@ -83,16 +91,16 @@ async def get_task_decisions(
 ) -> List[str]:
     """
     Get all decision IDs linked to a task.
-    
+
     Args:
         task_id: Task identifier
-    
+
     Returns:
         List of decision IDs (empty if none or KG disabled)
     """
     if not self.enable_kg:
         return []
-    
+
     try:
         query = """
         SELECT * FROM cypher('workspace', $$
@@ -114,17 +122,17 @@ async def unlink_decision_from_task(
 ) -> bool:
     """
     Remove Decision→Task link (cleanup).
-    
+
     Args:
         decision_id: Decision identifier
         task_id: Task identifier
-    
+
     Returns:
         True if unlinked successfully
     """
     if not self.enable_kg:
         return False
-    
+
     try:
         query = """
         SELECT * FROM cypher('workspace', $$
@@ -207,23 +215,23 @@ logger = logging.getLogger(__name__)
 class RelationshipMapper:
     """
     Aggregates multiple DDDPGKG queries into composite views.
-    
+
     Responsibilities:
     - Coordinate parallel queries
     - Synthesize relationship data
     - Identify task clusters
     - Build rich context views
     """
-    
+
     def __init__(self, kg: DDDPGKG):
         """
         Initialize with KG integration.
-        
+
         Args:
             kg: DDDPGKG instance for queries
         """
         self.kg = kg
-    
+
     async def build_task_context(
         self,
         task_id: str,
@@ -231,17 +239,17 @@ class RelationshipMapper:
     ) -> Dict[str, Any]:
         """
         Build complete task context in one call.
-        
+
         Aggregates:
         - Dependencies (upstream/downstream)
         - Related tasks (semantic)
         - Decisions (rationale)
         - Clusters (themes)
-        
+
         Args:
             task_id: Task identifier
             max_depth: Maximum relationship depth (default 2)
-        
+
         Returns:
             {
                 'task_id': str,
@@ -263,13 +271,13 @@ class RelationshipMapper:
                 'decisions': [],
                 'has_blockers': False
             }
-        
+
         try:
             # Parallel query execution
             deps_task = self.kg.get_task_relationships(task_id)
             related_task = self.kg.get_related_tasks(task_id, limit=5)
             decisions_task = self.kg.get_task_decisions(task_id)
-            
+
             # Wait for all queries
             deps, related, decisions = await asyncio.gather(
                 deps_task,
@@ -277,7 +285,7 @@ class RelationshipMapper:
                 decisions_task,
                 return_exceptions=True
             )
-            
+
             # Handle exceptions
             if isinstance(deps, Exception):
                 logger.error(f"Failed to get dependencies: {deps}")
@@ -288,7 +296,7 @@ class RelationshipMapper:
             if isinstance(decisions, Exception):
                 logger.error(f"Failed to get decisions: {decisions}")
                 decisions = []
-            
+
             # Build context
             return {
                 'task_id': task_id,
@@ -301,7 +309,7 @@ class RelationshipMapper:
                 'decisions': decisions,
                 'has_blockers': len(deps.get('blockers', [])) > 0
             }
-        
+
         except Exception as e:
             logger.error(f"Failed to build task context: {e}")
             return {
@@ -311,7 +319,7 @@ class RelationshipMapper:
                 'decisions': [],
                 'has_blockers': False
             }
-    
+
     async def build_work_cluster(
         self,
         theme: str,
@@ -319,16 +327,16 @@ class RelationshipMapper:
     ) -> Dict[str, Any]:
         """
         Build cluster of related work by theme.
-        
+
         Uses:
         - Semantic search (DDDPGKG)
         - Relationship traversal
         - Decision linking
-        
+
         Args:
             theme: Search theme/keyword
             limit: Maximum tasks to return
-        
+
         Returns:
             {
                 'theme': str,
@@ -344,32 +352,32 @@ class RelationshipMapper:
                 'decisions': [],
                 'total_tasks': 0
             }
-        
+
         try:
             # Search for tasks by theme
             tasks = await self.kg.search_tasks(theme, limit=limit)
-            
+
             # Get decisions for each task (parallel)
             task_ids = [t.get('id') for t in tasks if t.get('id')]
             decision_tasks = [self.kg.get_task_decisions(tid) for tid in task_ids]
             decision_lists = await asyncio.gather(*decision_tasks, return_exceptions=True)
-            
+
             # Flatten decision lists
             all_decisions = []
             for dlist in decision_lists:
                 if not isinstance(dlist, Exception):
                     all_decisions.extend(dlist)
-            
+
             # Deduplicate decisions
             unique_decisions = list(set(all_decisions))
-            
+
             return {
                 'theme': theme,
                 'tasks': tasks,
                 'decisions': unique_decisions,
                 'total_tasks': len(tasks)
             }
-        
+
         except Exception as e:
             logger.error(f"Failed to build work cluster: {e}")
             return {
@@ -403,10 +411,10 @@ async def test_build_task_context():
         {'id': 'task_4', 'title': 'Related task'}
     ])
     mock_kg.get_task_decisions = AsyncMock(return_value=['decision_1', 'decision_2'])
-    
+
     mapper = RelationshipMapper(mock_kg)
     context = await mapper.build_task_context('task_0')
-    
+
     assert context['task_id'] == 'task_0'
     assert 'dependencies' in context
     assert 'related' in context
@@ -424,10 +432,10 @@ async def test_build_work_cluster():
         {'id': 'task_2', 'title': 'Auth API'}
     ])
     mock_kg.get_task_decisions = AsyncMock(return_value=['decision_1'])
-    
+
     mapper = RelationshipMapper(mock_kg)
     cluster = await mapper.build_work_cluster('auth', limit=10)
-    
+
     assert cluster['theme'] == 'auth'
     assert len(cluster['tasks']) == 2
     assert cluster['total_tasks'] == 2
@@ -438,10 +446,10 @@ async def test_graceful_degradation_no_kg():
     """Test graceful degradation when KG disabled"""
     mock_kg = Mock(spec=DDDPGKG)
     mock_kg.enable_kg = False
-    
+
     mapper = RelationshipMapper(mock_kg)
     context = await mapper.build_task_context('task_0')
-    
+
     assert context['dependencies'] == {'upstream': [], 'downstream': [], 'parallel': []}
     assert context['related'] == []
     assert context['decisions'] == []
@@ -523,11 +531,11 @@ class SuggestionEngine:
 
 ## 🚦 Progress Tracking
 
-**Start Time**: ___:___ UTC  
-**Phase 1 Complete**: ___:___ UTC (+15 min)  
-**Phase 2 Complete**: ___:___ UTC (+25 min)  
-**Phase 3 Complete**: ___:___ UTC (+35 min)  
-**Phase 4 Complete**: ___:___ UTC (+20 min)  
+**Start Time**: ___:___ UTC
+**Phase 1 Complete**: ___:___ UTC (+15 min)
+**Phase 2 Complete**: ___:___ UTC (+25 min)
+**Phase 3 Complete**: ___:___ UTC (+35 min)
+**Phase 4 Complete**: ___:___ UTC (+20 min)
 **Total Time**: ___ minutes
 
 **Blockers**: (note any issues)
@@ -564,13 +572,13 @@ class SuggestionEngine:
 
 ## 🎯 Let's Build!
 
-**Status**: Ready to implement  
-**Confidence**: Very High  
+**Status**: Ready to implement
+**Confidence**: Very High
 **Est. Time**: 95 minutes
 
 **Next step**: Start Phase 1 - Decision-Task Linking
 
 ---
 
-**Last Updated**: 2025-10-29  
+**Last Updated**: 2025-10-29
 **Author**: Implementation Planning Session

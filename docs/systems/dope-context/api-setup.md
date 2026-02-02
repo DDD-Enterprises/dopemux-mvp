@@ -1,3 +1,11 @@
+---
+id: api-setup
+title: Api Setup
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # API Configuration Guide - dope-context
 
 ## Required API Keys
@@ -6,10 +14,10 @@ The dope-context service requires two API keys for full functionality:
 
 ### 1. Anthropic API Key
 
-**Purpose**: Context generation using Claude Haiku  
-**Cost**: $0.25/M input tokens, $1.25/M output tokens  
-**Get Key**: <https://console.anthropic.com/settings/keys>  
-**Add Credits**: <https://console.anthropic.com/settings/billing>  
+**Purpose**: Context generation using Claude Haiku
+**Cost**: $0.25/M input tokens, $1.25/M output tokens
+**Get Key**: <https://console.anthropic.com/settings/keys>
+**Add Credits**: <https://console.anthropic.com/settings/billing>
 
 **Configuration**:
 
@@ -20,8 +28,8 @@ ANTHROPIC_API_KEY=sk-ant-api03-xxxxx
 
 ### 2. Voyage AI API Key
 
-**Purpose**: Code embeddings (voyage-code-3) and reranking  
-**Get Key**: <https://dash.voyageai.com/api-keys>  
+**Purpose**: Code embeddings (voyage-code-3) and reranking
+**Get Key**: <https://dash.voyageai.com/api-keys>
 
 **Configuration**:
 
@@ -33,9 +41,9 @@ VOYAGEAI_API_KEY=pa-xxxxx  # Both vars for compatibility
 
 ## Current Status
 
-✅ API keys configured in `.env`  
-⚠️  Anthropic account needs credits added  
-✅ Voyage key ready  
+✅ API keys configured in `.env`
+⚠️  Anthropic account needs credits added
+✅ Voyage key ready
 
 ## Testing Without Credits
 

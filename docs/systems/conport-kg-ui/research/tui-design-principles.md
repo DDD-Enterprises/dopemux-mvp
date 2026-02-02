@@ -1,3 +1,11 @@
+---
+id: tui-design-principles
+title: Tui Design Principles
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Research: What Makes Terminal UIs Beloved by Developers
 
 **Research Date**: 2025-10-15
@@ -1145,4 +1153,3 @@ This is **uncharted territory** - a true innovation gap.
 **Actionable Principles**: 25
 **Innovation Opportunities**: 7
 **Recommended for**: Dopemux multi-pane ADHD-optimized tmux dashboard
-

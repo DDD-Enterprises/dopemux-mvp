@@ -1,3 +1,11 @@
+---
+id: response-parser
+title: Response Parser
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Response Parser System - Priority 3 Complete
 
 **Status**: ✅ All tests passing (10/10)

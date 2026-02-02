@@ -1,3 +1,11 @@
+---
+id: known-issues
+title: Known Issues
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Known Issues - Orchestrator Phase 2
 
 **Status**: Non-blocking issues documented for future improvement
