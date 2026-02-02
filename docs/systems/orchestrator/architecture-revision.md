@@ -1,3 +1,11 @@
+---
+id: architecture-revision
+title: Architecture Revision
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Architecture Revision: Use Zen MCP for Multi-Model Access
 **Date**: 2025-10-15
 **Finding**: CLI spawning has TTY limitations

@@ -1,3 +1,11 @@
+---
+id: api-documentation
+title: Api Documentation
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # GPT-Researcher Phase 2 API Documentation
 
 ## 🚀 Implementation Status (Updated 2025-09-27)

@@ -1,3 +1,11 @@
+---
+id: error-recovery
+title: Error Recovery
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Error Recovery & Robustness System - Priority 4 Complete
 
 **Status**: ✅ All tests passing (10/10)

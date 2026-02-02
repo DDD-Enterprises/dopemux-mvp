@@ -1,3 +1,11 @@
+---
+id: week5-adhd-routing
+title: Week5 Adhd Routing
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Week 5: ADHD Routing Activation - COMPLETE
 
 **Date**: 2025-10-24

@@ -1,3 +1,11 @@
+---
+id: weeks-9-10-complete
+title: Weeks 9 10 Complete
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Weeks 9-10 Complete: ALL 7 AGENTS OPERATIONAL!
 
 **Date**: 2025-10-24

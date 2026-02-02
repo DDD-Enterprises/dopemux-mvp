@@ -1,6 +1,14 @@
+---
+id: quick-reference
+title: Quick Reference
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # DDDPG - Quick Reference Card
 
-**Last Updated**: 2025-10-29  
+**Last Updated**: 2025-10-29
 **Status**: ✅ Ready to Build Week 4 Day 2
 
 ---
@@ -50,23 +58,23 @@ test_relationship_mapper.py    ← NEW today
 ## 🎯 Week 4 Day 2 Phases
 
 ### Phase 1: Decision-Task Linking (15 min)
-**File**: `kg_integration.py`  
-**Add**: 3 methods (link, get, unlink)  
+**File**: `kg_integration.py`
+**Add**: 3 methods (link, get, unlink)
 **Tests**: 4 tests
 
 ### Phase 2: Relationship Mapper (25 min)
-**File**: `relationship_mapper.py` (NEW)  
-**Add**: RelationshipMapper class  
+**File**: `relationship_mapper.py` (NEW)
+**Add**: RelationshipMapper class
 **Tests**: 3 tests
 
 ### Phase 3: Suggestion Engine (35 min)
-**File**: `suggestion_engine.py` (NEW)  
-**Add**: SuggestionEngine class  
+**File**: `suggestion_engine.py` (NEW)
+**Add**: SuggestionEngine class
 **Tests**: 5 tests
 
 ### Phase 4: QueryService Integration (20 min)
-**File**: `queries/service.py`  
-**Add**: KG integration methods  
+**File**: `queries/service.py`
+**Add**: KG integration methods
 **Tests**: 4 integration tests
 
 ---
@@ -94,9 +102,9 @@ test_relationship_mapper.py    ← NEW today
 
 ## 📊 Key Metrics
 
-**Code**: ~1,400 lines production, ~300 lines tests  
-**Tests**: 100% coverage (KG layer), 19/19 passing  
-**Speed**: Day 1 completed in 1 hour (vs 3.5 planned = 3.5x!)  
+**Code**: ~1,400 lines production, ~300 lines tests
+**Tests**: 100% coverage (KG layer), 19/19 passing
+**Speed**: Day 1 completed in 1 hour (vs 3.5 planned = 3.5x!)
 **Day 2 Est**: 95 minutes (~1.5 hours)
 
 ---
@@ -210,9 +218,9 @@ class Decision(BaseModel):
 
 ## 🚀 Next Action
 
-**Open**: `services/dddpg/WEEK4_DAY2_IMPLEMENTATION_PLAN.md`  
-**Start**: Phase 1 - Decision-Task Linking  
-**Time**: 95 minutes total  
+**Open**: `services/dddpg/WEEK4_DAY2_IMPLEMENTATION_PLAN.md`
+**Start**: Phase 1 - Decision-Task Linking
+**Time**: 95 minutes total
 **Confidence**: 🟢 Very High
 
 **Let's build!** 🎯

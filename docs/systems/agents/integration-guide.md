@@ -1,3 +1,11 @@
+---
+id: integration-guide
+title: Integration Guide
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # MemoryAgent Integration Guide
 
 How to use MemoryAgent with ConPort MCP in Claude Code workflows.

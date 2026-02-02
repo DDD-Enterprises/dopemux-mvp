@@ -1,4 +1,11 @@
-
+---
+id: build_feature_from_project_knowledge
+title: Build_Feature_From_Project_Knowledge
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 DesktopCommander Logo
 DesktopCommander
 Prompts

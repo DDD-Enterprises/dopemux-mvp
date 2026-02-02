@@ -1,8 +1,16 @@
+---
+id: week4-roadmap
+title: Week4 Roadmap
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Week 4: Implementation Roadmap
 
-**Date**: 2025-10-29  
-**Status**: 🗺️ Roadmap Phase  
-**Duration**: 5 days (estimated 17.5 hours, likely faster)  
+**Date**: 2025-10-29
+**Status**: 🗺️ Roadmap Phase
+**Duration**: 5 days (estimated 17.5 hours, likely faster)
 **Goal**: ADHD-Optimized ConPort-KG Integration
 
 ---
@@ -26,8 +34,8 @@
 
 ### Day 1 (Monday): KG Query Layer Foundation
 
-**Energy Required**: Medium-High  
-**Complexity**: 0.6  
+**Energy Required**: Medium-High
+**Complexity**: 0.6
 **Time Estimate**: 3.5 hours (likely 1 hour based on Week 3 efficiency)
 
 ---
@@ -76,7 +84,7 @@ logger = logging.getLogger(__name__)
 
 class CognitiveGuardianKG:
     """ADHD-optimized Knowledge Graph integration."""
-    
+
     def __init__(
         self,
         workspace_id: str,
@@ -86,9 +94,9 @@ class CognitiveGuardianKG:
         self.workspace_id = workspace_id
         self.age_client = age_client or self._create_age_client()
         self.adhd_adapter = adhd_adapter or ADHDQueryAdapter()
-        
+
         logger.info(f"CognitiveGuardianKG initialized for {workspace_id}")
-    
+
     def _create_age_client(self) -> AGEClient:
         """Create default AGE client with connection pooling."""
         return AGEClient(
@@ -132,10 +140,10 @@ async def get_task_relationships(
 ) -> Dict[str, List[str]]:
     """
     Get task relationships from knowledge graph.
-    
+
     Args:
         task_id: Task to query
-        
+
     Returns:
         {
             "dependencies": ["task-123"],
@@ -150,24 +158,24 @@ async def get_task_relationships(
         OPTIONAL MATCH (t)-[:DEPENDS_ON]->(dep:Task)
         OPTIONAL MATCH (t)-[:BLOCKS]->(block:Task)
         OPTIONAL MATCH (t)-[:RELATED_TO]->(rel:Task)
-        RETURN 
+        RETURN
             collect(DISTINCT dep.id) as dependencies,
             collect(DISTINCT block.id) as blockers,
             collect(DISTINCT rel.id) as related
         """
-        
+
         result = await self.age_client.execute_query(query)
-        
+
         if not result:
             return {"dependencies": [], "blockers": [], "related": []}
-        
+
         row = result[0]
         return {
             "dependencies": [d for d in row['dependencies'] if d],
             "blockers": [b for b in row['blockers'] if b],
             "related": [r for r in row['related'] if r]
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to get task relationships: {e}")
         return {"dependencies": [], "blockers": [], "related": []}
@@ -211,41 +219,41 @@ async def search_tasks_semantic(
 ) -> List[Dict[str, Any]]:
     """
     Semantic search for tasks (natural language).
-    
+
     Day 1: Basic keyword matching
     Day 3: Enhanced with embeddings
-    
+
     Args:
         query: Natural language query
         limit: Max results (default 5 for ADHD)
-        
+
     Returns:
         List of matching tasks with relevance scores
     """
     try:
         # Day 1: Simple keyword matching
         # Day 3: Will add embedding-based semantic search
-        
+
         keywords = query.lower().split()
-        
+
         # Build Cypher query for keyword matching
         conditions = " OR ".join([f"toLower(t.title) CONTAINS '{kw}'" for kw in keywords])
-        
+
         cypher_query = f"""
         MATCH (t:Task)
         WHERE {conditions}
         RETURN t.id, t.title, t.complexity, t.energy_required
         LIMIT {limit}
         """
-        
+
         results = await self.age_client.execute_query(cypher_query)
-        
+
         # Calculate basic relevance (keyword matches)
         tasks = []
         for row in results:
             relevance = sum(1 for kw in keywords if kw in row['t.title'].lower())
             relevance = relevance / len(keywords)  # Normalize
-            
+
             tasks.append({
                 "task_id": row['t.id'],
                 "title": row['t.title'],
@@ -253,12 +261,12 @@ async def search_tasks_semantic(
                 "complexity": row.get('t.complexity', 0.5),
                 "energy_required": row.get('t.energy_required', 'medium')
             })
-        
+
         # Sort by relevance
         tasks.sort(key=lambda t: t['relevance'], reverse=True)
-        
+
         return tasks
-        
+
     except Exception as e:
         logger.error(f"Semantic search failed: {e}")
         return []
@@ -335,7 +343,7 @@ async def test_graceful_degradation():
     kg = CognitiveGuardianKG("/test")
     # Force connection error
     kg.age_client.pool = None
-    
+
     rels = await kg.get_task_relationships("task-123")
     assert rels == {"dependencies": [], "blockers": [], "related": []}
 
@@ -368,12 +376,12 @@ python test_cognitive_guardian_kg.py
    ```bash
    git add cognitive_guardian_kg.py test_cognitive_guardian_kg.py
    git commit -m "Week 4 Day 1: KG query layer foundation
-   
+
    - CognitiveGuardianKG class created
    - Task relationship queries implemented
    - Basic semantic search (keyword matching)
    - Unit tests: 4/4 passing
-   
+
    Output: ~150 lines
    Status: Day 1 complete"
    ```
@@ -390,8 +398,8 @@ python test_cognitive_guardian_kg.py
 
 ### Day 2 (Tuesday): Task Relationship Mapping
 
-**Energy Required**: Medium  
-**Complexity**: 0.5  
+**Energy Required**: Medium
+**Complexity**: 0.5
 **Time Estimate**: 3.5 hours (likely 45 min)
 
 ---
@@ -408,7 +416,7 @@ async def get_decision_context(
 ) -> Dict[str, Any]:
     """
     Retrieve decision context for a task.
-    
+
     Returns:
         {
             "decisions": [...],
@@ -421,7 +429,7 @@ async def get_decision_context(
         MATCH (t:Task {{id: '{task_id}'}})
         OPTIONAL MATCH (t)-[:HAS_CONTEXT]->(d:Decision)
         OPTIONAL MATCH (t)-[:PRODUCED]->(o:TaskOutcome)
-        RETURN 
+        RETURN
             collect({{
                 id: d.id,
                 summary: d.summary,
@@ -433,18 +441,18 @@ async def get_decision_context(
                 energy: o.energy_level
             }}) as outcomes
         """
-        
+
         result = await self.age_client.execute_query(query)
-        
+
         if not result:
             return {"decisions": [], "outcomes": []}
-        
+
         row = result[0]
         return {
             "decisions": [d for d in row['decisions'] if d['id']],
             "outcomes": [o for o in row['outcomes'] if o.get('success') is not None]
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to get decision context: {e}")
         return {"decisions": [], "outcomes": []}
@@ -466,14 +474,14 @@ async def _build_task_graph(
 ) -> Dict[str, Dict[str, List[str]]]:
     """
     Build relationship graph for multiple tasks.
-    
+
     Internal helper for batch operations.
     """
     graph = {}
-    
+
     for task_id in task_ids:
         graph[task_id] = await self.get_task_relationships(task_id)
-    
+
     return graph
 ```
 
@@ -492,7 +500,7 @@ from cognitive_guardian_kg import CognitiveGuardianKG
 class CognitiveGuardian:
     def __init__(self, ...):
         # ... existing code ...
-        
+
         # NEW: Week 4 KG integration
         self.kg_client = None
         if self._in_claude_code:
@@ -517,10 +525,10 @@ async def suggest_tasks_with_context(
     max_suggestions: int = 3
 ) -> List[Dict[str, Any]]:
     """Enhanced task suggestions with KG context."""
-    
+
     # Get basic suggestions (Week 3 logic)
     tasks = await self.suggest_tasks(energy, max_suggestions)
-    
+
     # Enhance with KG (if available)
     if self.kg_client:
         for task in tasks:
@@ -529,11 +537,11 @@ async def suggest_tasks_with_context(
                 # Add relationships
                 rels = await self.kg_client.get_task_relationships(task_id)
                 task["relationships"] = rels
-                
+
                 # Add context
                 context = await self.kg_client.get_decision_context(task_id)
                 task["context"] = context
-    
+
     return tasks
 ```
 
@@ -560,8 +568,8 @@ Output: ~120 lines"
 
 ### Day 3 (Wednesday): Semantic Search Enhancement
 
-**Energy Required**: Medium-High  
-**Complexity**: 0.6  
+**Energy Required**: Medium-High
+**Complexity**: 0.6
 **Time Estimate**: 3.5 hours (likely 1 hour)
 
 ---
@@ -577,10 +585,10 @@ from sentence_transformers import SentenceTransformer
 class CognitiveGuardianKG:
     def __init__(self, ...):
         # ... existing code ...
-        
+
         # Semantic search model (lightweight)
         self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-    
+
     def _generate_embedding(self, text: str) -> List[float]:
         """Generate semantic embedding for text."""
         return self.embedding_model.encode(text).tolist()
@@ -600,19 +608,19 @@ async def search_tasks_semantic(
     limit: int = 5
 ) -> List[Dict[str, Any]]:
     """Enhanced semantic search with embeddings."""
-    
+
     # Generate query embedding
     query_embedding = self._generate_embedding(query)
-    
+
     # Query tasks with embeddings
     # (Simplified - real implementation would use pgvector)
     cypher_query = """
     MATCH (t:Task)
     RETURN t.id, t.title, t.embedding, t.complexity, t.energy_required
     """
-    
+
     results = await self.age_client.execute_query(cypher_query)
-    
+
     # Calculate cosine similarity
     tasks = []
     for row in results:
@@ -621,7 +629,7 @@ async def search_tasks_semantic(
                 query_embedding,
                 row['t.embedding']
             )
-            
+
             tasks.append({
                 "task_id": row['t.id'],
                 "title": row['t.title'],
@@ -629,10 +637,10 @@ async def search_tasks_semantic(
                 "complexity": row.get('t.complexity', 0.5),
                 "energy_required": row.get('t.energy_required', 'medium')
             })
-    
+
     # Sort by relevance
     tasks.sort(key=lambda t: t['relevance'], reverse=True)
-    
+
     return tasks[:limit]
 ```
 
@@ -651,19 +659,19 @@ async def _semantic_task_match(
     agent: AgentType
 ) -> float:
     """Calculate semantic match score using KG."""
-    
+
     if not self.cognitive_guardian or not self.cognitive_guardian.kg_client:
         return 0.5  # Default confidence
-    
+
     # Search for similar tasks handled by this agent
     query = f"{task.title} {task.description}"
     similar_tasks = await self.cognitive_guardian.kg_client.search_tasks_semantic(query)
-    
+
     # Calculate confidence based on similarity
     if similar_tasks:
         # High similarity = high confidence
         return similar_tasks[0]['relevance']
-    
+
     return 0.5
 ```
 
@@ -690,8 +698,8 @@ Output: ~100 lines"
 
 ### Day 4 (Thursday): Decision Context & Pattern Stub
 
-**Energy Required**: Medium  
-**Complexity**: 0.5  
+**Energy Required**: Medium
+**Complexity**: 0.5
 **Time Estimate**: 3.5 hours (likely 1 hour)
 
 ---
@@ -709,7 +717,7 @@ async def save_task_outcome(
     duration_minutes: int
 ) -> None:
     """Save task outcome to KG for pattern mining."""
-    
+
     try:
         query = f"""
         MATCH (t:Task {{id: '{task_id}'}})
@@ -723,10 +731,10 @@ async def save_task_outcome(
         }})
         CREATE (t)-[:PRODUCED]->(o)
         """
-        
+
         await self.age_client.execute_query(query)
         logger.info(f"Task outcome saved: {task_id}")
-        
+
     except Exception as e:
         logger.error(f"Failed to save task outcome: {e}")
 ```
@@ -740,17 +748,17 @@ async def save_task_outcome(
 ```python
 class ADHDPatternAnalyzer:
     """Analyze historical data for ADHD patterns."""
-    
+
     def __init__(self, kg_client: CognitiveGuardianKG):
         self.kg = kg_client
-    
+
     async def analyze_energy_patterns(
         self,
         user_id: str,
         days: int = 30
     ) -> Dict[str, List[str]]:
         """Identify energy-task correlations."""
-        
+
         # Query successful task outcomes
         query = f"""
         MATCH (o:TaskOutcome)
@@ -758,16 +766,16 @@ class ADHDPatternAnalyzer:
           AND o.timestamp > '{(datetime.now() - timedelta(days=days)).isoformat()}'
         RETURN o.energy_level, collect(DISTINCT o.task_type)
         """
-        
+
         # Group by energy level
         patterns = {
             "high_energy": [],
             "medium_energy": [],
             "low_energy": []
         }
-        
+
         # ... analysis logic ...
-        
+
         return patterns
 ```
 
@@ -793,8 +801,8 @@ Output: ~130 lines"
 
 ### Day 5 (Friday): Pattern Mining & Documentation
 
-**Energy Required**: Medium-Low  
-**Complexity**: 0.4  
+**Energy Required**: Medium-Low
+**Complexity**: 0.4
 **Time Estimate**: 3.5 hours (likely 1.5 hours)
 
 ---
@@ -915,9 +923,9 @@ Status: Production-ready"
 
 ---
 
-**Created**: 2025-10-29  
-**Roadmap Time**: 60 minutes  
-**Total Week 4 Plan**: Research + Spec + Roadmap = 180 minutes  
+**Created**: 2025-10-29
+**Roadmap Time**: 60 minutes
+**Total Week 4 Plan**: Research + Spec + Roadmap = 180 minutes
 **Status**: Ready to build!
 
 🎯 **Week 4: Implementation Roadmap Complete** 🎯
