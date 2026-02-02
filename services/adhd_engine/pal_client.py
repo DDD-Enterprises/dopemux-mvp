@@ -3,6 +3,9 @@
 from typing import Dict, Any, List, Optional
 import sys
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Add the genetic_agent path to import the shared MCP client
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'genetic_agent', 'genetic_agent'))
@@ -13,16 +16,11 @@ class ADHDPALClient(BasePALClient):
     """PAL MCP client specialized for ADHD Engine reasoning and planning."""
 
     def __init__(self, base_url: str, config):
-
-import logging
-
-logger = logging.getLogger(__name__)
-
         """Initialize with ADHD-specific settings."""
         super().__init__(base_url, config)
 
     async def assess_task_complexity(self, task_description: str, user_context: Dict[str, Any]) -> Dict[str, Any]:
-        """Use Zen thinkdeep to assess task complexity for ADHD accommodations."""
+        """Use PAL thinkdeep to assess task complexity for ADHD accommodations."""
         prompt = f"""Assess the cognitive complexity of this task for ADHD accommodation planning:
 
 Task: {task_description}
