@@ -16,6 +16,7 @@ import aiohttp
 from typing import Optional
 
 from notify import Notifier
+from mobile_push import MobilePushNotifier, PushConfig, NotificationPriority
 
 logger = logging.getLogger(__name__)
 
@@ -50,8 +51,21 @@ class ADHDMonitor:
         self.check_interval = check_interval
         self.enable_notifications = enable_notifications
 
-        # Notifier
+        # Notifiers
         self.notifier = Notifier()
+        
+        # Mobile Push Configuration (Phase 10.7)
+        import os
+        push_provider = os.getenv("PUSH_PROVIDER", "ntfy")
+        push_config = PushConfig(
+            provider=push_provider,
+            ntfy_topic=os.getenv("NTFY_TOPIC", "adhd-alerts-hue"),
+            ntfy_server=os.getenv("NTFY_SERVER", "https://ntfy.sh"),
+            pushover_api_key=os.getenv("PUSHOVER_API_KEY"),
+            pushover_user_key=os.getenv("PUSHOVER_USER_KEY"),
+            enabled=os.getenv("ENABLE_MOBILE_PUSH", "true").lower() == "true"
+        )
+        self.mobile_push = MobilePushNotifier(push_config)
 
         # State tracking
         self.last_break_notification: Optional[float] = None
@@ -219,6 +233,13 @@ class ADHDMonitor:
 
             # Also speak the reminder (more effective for ADHD)
             self.notifier.speak_break_reminder(duration_minutes, urgency)
+            
+            # Send mobile push (Phase 10.7)
+            async with self.mobile_push as pusher:
+                await pusher.send_break_reminder(
+                    message=f"You've been focused for {duration_minutes} minutes. Time for a break!",
+                    priority=NotificationPriority.HIGH if urgency == "urgent" else NotificationPriority.NORMAL
+                )
 
     async def _check_hyperfocus(self, duration_minutes: int):
         """
@@ -248,6 +269,12 @@ class ADHDMonitor:
 
             # Also speak the alert (critical for hyperfocus interruption)
             self.notifier.speak_hyperfocus_alert(duration_minutes)
+            
+            # Send mobile push (Phase 10.7)
+            async with self.mobile_push as pusher:
+                await pusher.send_hyperfocus_alert(
+                    message=f"HYPERFOCUS DETECTED: {duration_minutes} minutes! Take a break now."
+                )
 
     def stop(self):
         """Stop monitoring"""

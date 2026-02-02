@@ -127,7 +127,7 @@ class SimpleMCPServer:
             "last_indexed": "2025-11-10T18:00:00Z"
         }
 
-    async def run(self):
+    def run(self):
         """Run the simple MCP server."""
         import uvicorn
         from fastapi import FastAPI
@@ -158,4 +158,4 @@ class SimpleMCPServer:
 if __name__ == "__main__":
     server = SimpleMCPServer()
     logger.info(f"Starting Simple MCP Server on port {server.port}")
-    asyncio.run(server.run())
+    server.run()  # Direct call, not async

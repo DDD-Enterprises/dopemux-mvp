@@ -1,5 +1,6 @@
 FROM python:3.11-slim
 
+# Set workdir to root app for structure
 WORKDIR /app
 
 # Install system dependencies (gcc for builds, curl for health checks)
@@ -9,16 +10,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first (Docker layer caching)
-COPY requirements.txt .
+COPY services/adhd_engine/requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY . .
-
-# Copy shared monitoring module
-COPY ../../shared/monitoring /app/shared/monitoring
+COPY services/adhd_engine ./services/adhd_engine
+COPY shared ./services/shared
+# Make sure services is a proper package
+RUN touch services/__init__.py
 
 # Create non-root user for security
 RUN useradd -m -u 1000 adhd && chown -R adhd:adhd /app
@@ -31,7 +32,8 @@ EXPOSE 8095
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8095/health || exit 1
 
-# Set Python path and run main.py directly
-ENV PYTHONPATH=/app
+# Set paths: engine dir for execution, root for shared resolution
+ENV PYTHONPATH=/app/services/adhd_engine:/app:/app/services
+WORKDIR /app/services/adhd_engine
 ENV API_PORT=8095
 CMD ["python", "main.py"]
