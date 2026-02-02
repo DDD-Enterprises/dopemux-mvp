@@ -1,3 +1,11 @@
+---
+id: conport-schema-f5
+title: Conport Schema F5
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # F5: Pattern Learning - ConPort Schema
 
 **Purpose**: Document ConPort storage schema for pattern learning system

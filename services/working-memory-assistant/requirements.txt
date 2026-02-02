@@ -15,5 +15,6 @@ aiofiles==23.2.1
 lz4==4.3.3
 zstandard==0.22.0
 aiohttp==3.9.1
+asyncpg==0.29.0
 cryptography==42.0.0
 numpy==1.24.3
