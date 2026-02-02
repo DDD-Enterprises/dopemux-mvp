@@ -120,24 +120,6 @@ services:
   # MCP SERVERS (Core Intelligence)
   # ========================================
 
-  # DopeconBridge - Central coordination layer (formerly Integration Bridge)
-  dopecon-bridge:
-    image: dopemux/dopecon-bridge:latest
-    container_name: ${CONTAINER_PREFIX:-mcp-default}-dopecon-bridge
-    ports:
-      - "${PORT_BASE:-3000}16:3016"
-    environment:
-      - DOPECON_BRIDGE_PORT=3016
-      - CONPORT_URL=http://conport:3004
-      - REDIS_URL=redis://redis:6379
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
-    networks:
-      - ${NETWORK_NAME:-mcp-network-default}
-    depends_on:
-      - conport
-      - redis
-    restart: unless-stopped
-
   # ConPort - Knowledge Graph & Context Management
   conport:
     build:
