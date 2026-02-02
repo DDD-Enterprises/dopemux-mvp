@@ -1,3 +1,11 @@
+---
+id: token-limit-fix
+title: Token Limit Fix
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Serena-v2 Token Limit Fix - Complete Solution
 
 **Date**: 2025-10-20

@@ -1,3 +1,11 @@
+---
+id: f6-completion
+title: F6 Completion
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # F6: Abandonment Tracking - Implementation Complete
 
 **Feature**: F6 - Abandonment Tracking (Phase 2 Analytics)
