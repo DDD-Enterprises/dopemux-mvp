@@ -9,10 +9,10 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 import pytest_asyncio
 
-from ..activity_tracker import ActivityTracker
-from ..engine import ADHDAccommodationEngine
-from ..inmemory_redis import InMemoryRedis
-from ..models import ADHDProfile, EnergyLevel, AttentionState
+from ..core.activity_tracker import ActivityTracker
+from ..core.engine import ADHDAccommodationEngine
+from ..core.inmemory_redis import InMemoryRedis
+from ..core.models import ADHDProfile, EnergyLevel, AttentionState
 
 
 @pytest.fixture(scope="session")
