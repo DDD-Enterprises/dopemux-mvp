@@ -12,7 +12,7 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-context7"
     restart: unless-stopped
     networks:
-      - mcp-network
+      - dopemux-network
     environment:
       - CONTEXT7_API_KEY=${CONTEXT7_API_KEY}
       - CONTEXT7_ENDPOINT=${CONTEXT7_ENDPOINT}
@@ -40,7 +40,7 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-pal"
     restart: unless-stopped
     networks:
-      - mcp-network
+      - dopemux-network
     environment:
       - OPENAI_API_KEY=""  # Disabled - no direct OpenAI calls
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
@@ -70,9 +70,7 @@ services:
       dockerfile: docker/mcp-servers/litellm/Dockerfile
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-litellm"
     restart: unless-stopped
-    networks:
-      - mcp-network
-      - dopemux-unified-network
+    network_mode: host  # Use host networking to access postgres on localhost:5432
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=sk-master-dopemux-local-20251101
@@ -80,15 +78,12 @@ services:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-master-dopemux-local-20251101}
-      - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/litellm
+      - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@localhost:5432/litellm
       - LITELLM_LOG=INFO
       - LITELLM_DROP_PARAMS=true
-    depends_on:
-      - redis-primary
-    ports:
-      - "4000:4000"
+    # Note: network_mode: host means no port mapping needed (uses host's port 4000)
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:4000/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f -H 'Authorization: Bearer sk-master-dopemux-local-20251101' http://localhost:4000/health || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -99,7 +94,7 @@ services:
     labels:
       - "mcp.role=critical_path"
       - "mcp.priority=high"
-      - "mcp.description=Unified LLM proxy with intelligent routing"
+      - "mcp.description=Unified LLM proxy with intelligent routing and cost tracking"
 
   # Sequential Thinking - Multi-step reasoning and architectural analysis
   mas-sequential-thinking:
@@ -109,7 +104,7 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-mas-sequential-thinking"
     restart: unless-stopped
     networks:
-      - mcp-network
+      - dopemux-network
     env_file:
       - ./mcp-server-mas-sequential-thinking/.env
     environment:
@@ -141,7 +136,7 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-task-master-ai"
     restart: unless-stopped
     networks:
-      - mcp-network
+      - dopemux-network
     env_file:
       - ./task-master-ai/.env
     environment:
@@ -174,7 +169,7 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-client"
     restart: unless-stopped
     networks:
-      - mcp-network
+      - dopemux-network
     environment:
       - OPENAI_API_KEY=sk-master-dopemux-local-20251101
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
@@ -199,7 +194,7 @@ services:
     # Now always-on MCP server
     restart: unless-stopped
     networks:
-      - mcp-network
+      - dopemux-network
     env_file:
       - ./task-orchestrator/.env
     environment:
@@ -234,9 +229,9 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-leantime-bridge"
     restart: unless-stopped
     networks:
-      - mcp-network
+      - dopemux-network
       - leantime-net
-      - dopemux-unified-network
+      - dopemux-network
     env_file:
       - ./leantime-bridge/.env
     environment:
@@ -272,8 +267,8 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-plane-coordinator"
     restart: unless-stopped
     networks:
-      - mcp-network
-      - dopemux-unified-network
+      - dopemux-network
+      - dopemux-network
     environment:
       - COORDINATION_API_PORT=8090
       - WORKSPACE_ID=/workspace
@@ -308,7 +303,7 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-serena${DOPEMUX_INSTANCE_ID:+_}${DOPEMUX_INSTANCE_ID}"
     restart: unless-stopped
     networks:
-      - mcp-network
+      - dopemux-network
     environment:
       - MCP_SERVER_PORT=${SERENA_PORT:-3006}  # Dynamic port from instance env
       - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID}  # CRITICAL: Instance workspace isolation
@@ -338,7 +333,7 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-gpt-researcher"
     restart: unless-stopped
     networks:
-      - mcp-network
+      - dopemux-network
     environment:
       - WORKSPACE_PATH=${DOPEMUX_WORKSPACE_ID:-/workspaces/dopemux-mvp}  # Auto-detect from host
       - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID:-/workspaces/dopemux-mvp}  # Backward compatibility
@@ -377,7 +372,7 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-exa"
     restart: unless-stopped
     networks:
-      - mcp-network
+      - dopemux-network
     environment:
       - EXA_API_KEY=${EXA_API_KEY}
       - MCP_SERVER_PORT=3008
@@ -403,7 +398,7 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-dope-context"
     restart: unless-stopped
     networks:
-      - mcp-network
+      - dopemux-network
     environment:
       - MCP_SERVER_PORT=3010
       - QDRANT_URL=mcp-qdrant
@@ -446,7 +441,7 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-gptr-mcp"
     restart: unless-stopped
     networks:
-      - mcp-network
+      - dopemux-network
     environment:
       - OPENAI_API_BASE=http://mcp-litellm:4000
       - OPENAI_API_VERSION=v1
@@ -486,7 +481,7 @@ services:
   #   container_name: mcp-gptr-stdio
   #   restart: unless-stopped
   #   networks:
-  #     - mcp-network
+  #     - dopemux-network
   #   environment:
   #     - OPENAI_API_KEY=sk-master-dopemux-local-20251101
   #     - TAVILY_API_KEY=${TAVILY_API_KEY}
@@ -513,7 +508,7 @@ services:
   #   container_name: mcp-morphllm-fast-apply
   #   restart: unless-stopped
   #   networks:
-  #     - mcp-network
+  #     - dopemux-network
   #   environment:
   #     - MCP_SERVER_PORT=3011
   #   ports:
@@ -537,7 +532,7 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-desktop-commander"
     restart: unless-stopped
     networks:
-      - mcp-network
+      - dopemux-network
     environment:
       - MCP_SERVER_PORT=3012
       - DISPLAY=${DISPLAY:-:0}
@@ -567,8 +562,8 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-activity-capture"
     restart: unless-stopped
     networks:
-      - mcp-network
-      - dopemux-unified-network
+      - dopemux-network
+      - dopemux-network
       - dopemux-network
     environment:
       - REDIS_URL=redis://dopemux-redis-events:6379
@@ -599,7 +594,7 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-redis-primary"
     restart: unless-stopped
     networks:
-      - mcp-network
+      - dopemux-network
     command: redis-server --appendonly yes
     volumes:
       - mcp_redis_primary_data:/data
@@ -619,7 +614,7 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-qdrant"
     restart: unless-stopped
     networks:
-      - mcp-network
+      - dopemux-network
     ports:
       - "6333:6333"
       - "6334:6334"
@@ -638,12 +633,6 @@ services:
 
 # === NETWORKS ===
 networks:
-  mcp-network:
-    external: true
-    name: mcp-network
-  dopemux-unified-network:
-    external: true
-    name: dopemux-unified-network
   dopemux-network:
     external: true
     name: dopemux-network

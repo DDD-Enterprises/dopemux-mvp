@@ -38,6 +38,9 @@ COPY chronicle/ ./chronicle/
 COPY promotion/ ./promotion/
 COPY mcp/ ./mcp/
 COPY dope_memory_main.py .
+COPY eventbus_consumer.py .
+COPY postgres_mirror_sync.py .
+
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash dopememory \
