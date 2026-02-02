@@ -1,0 +1,113 @@
+# Dopemux Dangerous Mode Profile
+# Complete removal of approval gates and safety restrictions
+# ⚠️ WARNING: Use only in isolated development environments!
+
+version: "1.0"
+metadata:
+  description: "Unrestricted access profile - all safety mechanisms disabled"
+  created: "2025-01-10"
+  environment: "development"
+  risk_level: "maximum"
+
+# Override all broker settings for unrestricted access
+broker:
+  name: "dopemux-dangerous-broker"
+  dangerous_mode: true
+  skip_all_validations: true
+
+  # Eliminate timeouts and restrictions
+  tool_timeout_seconds: 300
+  role_switch_timeout_seconds: 1
+  max_concurrent_tools: 50
+
+# Complete role override - single "god mode" role
+profiles:
+  dangerous:
+    description: "Unrestricted access to all tools and operations"
+    default_tools: "all"  # All available tools
+    token_budget: 999999
+    escalation_triggers: {}  # No escalations needed - everything available
+
+    # ADHD settings optimized for flow state
+    cognitive_complexity: "low"  # Don't overwhelm with choices
+    context_switching_cost: "low"
+    focus_mode_recommended: true
+
+    # No restrictions on session duration
+    typical_session_duration: 14400  # 4 hours
+    break_reminder_interval: 3600    # 1 hour (longer for deep work)
+
+# Disable all safety rules
+rules:
+  budgets:
+    default_tokens: 999999
+    hard_cap: 999999
+    warning_threshold: 999999
+    emergency_reserve: 0  # No reserve needed - unlimited
+
+  # Remove all query optimization limits
+  trims: {}  # No trimming - full responses
+
+  # Disable security completely
+  security:
+    approval_required: []  # Nothing requires approval
+    audit_logging: false
+    rate_limits: {}  # No rate limiting
+
+  # ADHD optimizations without restrictions
+  adhd_optimizations:
+    progressive_disclosure:
+      enabled: false  # Show everything at once
+      max_simultaneous_tools: 999
+      status_bar_signals: 20
+
+    context_preservation:
+      auto_checkpoint_interval: 900  # 15 minutes
+      max_context_age: 604800  # 1 week
+      preserve_across_roles: true
+
+    notifications:
+      budget_warnings:
+        enabled: false  # No budget warnings
+      tool_suggestions:
+        enabled: true
+        proactive: true  # Be maximally helpful
+        max_suggestions: 10
+
+    break_reminders:
+      enabled: false  # Let user decide when to break
+
+# Emergency access - always available
+emergency:
+  break_glass:
+    enabled: true
+    approval_timeout: 1  # Instant approval
+    max_duration: 999999  # Unlimited
+    audit_required: false
+    available_tools: "all"
+
+  # Single fallback profile
+  fallback_profiles:
+    dangerous_fallback:
+      description: "Fallback with full access maintained"
+      tools: "all"
+      token_budget: 999999
+
+# Minimal monitoring (don't slow things down)
+monitoring:
+  metrics:
+    enabled: false  # No metrics collection overhead
+
+  alerts:
+    budget_exceeded:
+      enabled: false
+    tool_mount_failures:
+      enabled: false
+    performance_degradation:
+      enabled: false
+
+# Maximum compatibility and performance
+compatibility:
+  min_version: "0.1.0"
+  deprecation_warnings: false
+  migration_support: true

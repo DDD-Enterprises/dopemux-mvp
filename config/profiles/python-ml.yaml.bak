@@ -1,0 +1,78 @@
+# Python ML/AI Development Profile
+# Optimized for machine learning, data science, and AI projects
+
+name: python-ml
+description: Python ML/AI development with Jupyter support and ADHD optimizations
+
+# MCP Servers Configuration
+mcp_servers:
+  # Always enabled (core dopemux functionality)
+  required:
+    - zen              # Multi-model reasoning (thinkdeep, planner, consensus)
+    - conport          # Shared knowledge graph (cross-project learning)
+    - context7         # Official documentation lookup
+
+  # Enabled for this profile
+  enabled:
+    - serena-lsp       # Python LSP with ADHD features
+    - dope-context     # Semantic code search
+    - litellm          # Unified LLM proxy
+
+  # Disabled (not needed for ML work)
+  disabled:
+    - leantime         # Project management (overkill for solo ML)
+    - task-master      # Task decomposition (use ConPort decisions instead)
+    - desktop-commander # Desktop automation (rarely needed)
+
+# ADHD Configuration
+adhd_config:
+  session_duration_minutes: 25        # Pomodoro timer
+  max_context_switches_per_session: 5
+  energy_tracking_enabled: true
+  break_reminders_enabled: true
+  hyperfocus_protection_minutes: 90   # Warn at 90 min, suggest break
+
+  # Progressive disclosure
+  max_results_per_query: 10
+  max_decision_options: 3
+
+  # Auto-save
+  auto_save_interval_seconds: 30
+
+# Database Configuration
+database_config:
+  # Shared ConPort for cross-project pattern learning
+  conport:
+    mode: shared
+    path: "~/.dopemux/databases/conport-shared.db"
+
+  # Project-local databases (privacy & isolation)
+  serena:
+    mode: local
+    path: ".dopemux/databases/serena-{hash}.db"
+
+  context:
+    mode: local
+    path: ".dopemux/databases/context-{hash}.db"
+
+# Development Tools
+tools:
+  jupyter_support: true
+  ipython_integration: true
+  matplotlib_backend: inline
+
+# Recommended VSCode extensions (for .vscode/extensions.json generation)
+recommended_extensions:
+  - ms-python.python
+  - ms-python.vscode-pylance
+  - ms-toolsai.jupyter
+  - github.copilot  # Optional AI pair programming
+
+# Project type markers (auto-detection hints)
+markers:
+  required_files:
+    - requirements.txt OR pyproject.toml OR setup.py
+  optional_files:
+    - notebooks/ OR *.ipynb
+    - data/ OR datasets/
+    - models/ OR checkpoints/

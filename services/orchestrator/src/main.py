@@ -54,51 +54,51 @@ class DopemuxOrchestrator:
         self.console = Console()
 
         # Initialize components
-        self.console.logger.info("[cyan]Initializing Dopemux Orchestrator...[/cyan]")
+        self.console.print("[cyan]Initializing Dopemux Orchestrator...[/cyan]")
 
         # Step 1: Tmux Layout Manager
         self.tmux = TmuxLayoutManager()
-        self.console.logger.info("  ✅ Tmux layout manager")
+        self.console.print("  ✅ Tmux layout manager")
 
         # Step 2: Command Parser
         self.parser = CommandParser()
-        self.console.logger.info("  ✅ Command parser (100% accuracy)")
+        self.console.print("  ✅ Command parser (100% accuracy)")
 
         # Step 3: Agent Spawner
         self.spawner = AgentSpawner()
-        self.console.logger.info("  ✅ Agent spawner")
+        self.console.print("  ✅ Agent spawner")
 
         # Step 4: Message Bus
         self.message_bus = create_message_bus("in_memory", max_events=10000)
-        self.console.logger.info("  ✅ Message bus (thread-safe, async)")
+        self.console.print("  ✅ Message bus (thread-safe, async)")
 
         # Step 5: Checkpoint Manager
         self.checkpoint_mgr = CheckpointManager(
             workspace_id=workspace_id, session_id=self.session_id
         )
-        self.console.logger.info("  ✅ Checkpoint manager (30s auto-save)")
+        self.console.print("  ✅ Checkpoint manager (30s auto-save)")
 
         # Step 6: Command Router
         self.context_protocol = ContextSharingProtocol(workspace_id, self.session_id)
         self.router = CommandRouter(
             self.parser, self.spawner, self.message_bus, self.context_protocol
         )
-        self.console.logger.info("  ✅ Command router")
+        self.console.print("  ✅ Command router")
 
         # Step 7: Session Manager
         self.session_mgr = SessionManager(
             workspace_id, self.session_id, self.checkpoint_mgr
         )
-        self.console.logger.info("  ✅ Session manager\n")
+        self.console.print("  ✅ Session manager\n")
 
         # Create tmux session
-        self.console.logger.info(f"Creating tmux session ({energy_level} energy)...")
+        self.console.print(f"Creating tmux session ({energy_level} energy)...")
         self.tmux.create_session(energy_level=energy_level)
 
         # Start auto-save
         self.checkpoint_mgr.start_auto_save()
 
-        self.console.logger.info("[bold green]✅ Dopemux ready![/bold green]\n")
+        self.console.print("[bold green]✅ Dopemux ready![/bold green]\n")
 
     def run(self):
         """
@@ -113,7 +113,7 @@ class DopemuxOrchestrator:
         self.console.print(
             "[bold]Dopemux Multi-AI Orchestrator[/bold] - Phase 1 MVP\n"
         )
-        self.console.logger.info("[dim]Type /help for commands, /quit to exit[/dim]\n")
+        self.console.print("[dim]Type /help for commands, /quit to exit[/dim]\n")
 
         try:
             while True:
@@ -134,7 +134,7 @@ class DopemuxOrchestrator:
                     continue
 
                 # Route command
-                self.console.logger.info("[dim]Routing command...[/dim]")
+                self.console.print("[dim]Routing command...[/dim]")
                 result = self.router.route_command(user_input)
 
                 # Display result
@@ -146,7 +146,7 @@ class DopemuxOrchestrator:
                 )
 
         except KeyboardInterrupt:
-            self.console.logger.info("\n\n[yellow]Interrupted by user[/yellow]")
+            self.console.print("\n\n[yellow]Interrupted by user[/yellow]")
 
         finally:
             self._shutdown()
@@ -188,38 +188,38 @@ class DopemuxOrchestrator:
         status = self.spawner.get_status()
         metrics = self.message_bus.get_metrics()
 
-        self.console.logger.info("\n[bold]System Status:[/bold]")
-        self.console.logger.info(f"  Session: {self.session_id}")
-        self.console.logger.info(f"  Checkpoints: {self.checkpoint_mgr.checkpoint_count}")
-        self.console.logger.info(f"  Events: {metrics.total_events_published} published")
-        self.console.logger.info(f"  Buffer: {metrics.buffer_utilization_percent:.1f}% full")
+        self.console.print("\n[bold]System Status:[/bold]")
+        self.console.print(f"  Session: {self.session_id}")
+        self.console.print(f"  Checkpoints: {self.checkpoint_mgr.checkpoint_count}")
+        self.console.print(f"  Events: {metrics.total_events_published} published")
+        self.console.print(f"  Buffer: {metrics.buffer_utilization_percent:.1f}% full")
 
-        self.console.logger.info("\n[bold]Agents:[/bold]")
+        self.console.print("\n[bold]Agents:[/bold]")
         for agent_name, agent_status in status.items():
             icon = "✅" if agent_status["status"] == "running" else "❌"
-            self.console.logger.info(f"  {icon} {agent_name}: {agent_status['status']}")
+            self.console.print(f"  {icon} {agent_name}: {agent_status['status']}")
 
     def _display_result(self, result: dict):
         """Display command execution result."""
         self.console.print(
             f"\n[dim]Agents: {', '.join(result.get('agents', []))}[/dim]"
         )
-        self.console.logger.info(f"[dim]Strategy: {result.get('strategy', 'unknown')}[/dim]")
-        self.console.logger.info(f"[dim]Estimated: {result.get('estimated_duration', 0)} min[/dim]\n")
+        self.console.print(f"[dim]Strategy: {result.get('strategy', 'unknown')}[/dim]")
+        self.console.print(f"[dim]Estimated: {result.get('estimated_duration', 0)} min[/dim]\n")
 
         # Show responses
         responses = result.get("responses", {})
         for agent, response in responses.items():
-            self.console.logger.info(f"[bold green]{agent}:[/bold green]")
+            self.console.print(f"[bold green]{agent}:[/bold green]")
             if response:
                 for line in response[:10]:  # First 10 lines
-                    self.console.logger.info(f"  {line.strip()}")
+                    self.console.print(f"  {line.strip()}")
                 if len(response) > 10:
-                    self.console.logger.info(f"  [dim]... {len(response) - 10} more lines[/dim]")
+                    self.console.print(f"  [dim]... {len(response) - 10} more lines[/dim]")
 
     def _shutdown(self):
         """Graceful shutdown."""
-        self.console.logger.info("\n[cyan]Shutting down Dopemux...[/cyan]")
+        self.console.print("\n[cyan]Shutting down Dopemux...[/cyan]")
 
         # Stop auto-save
         self.checkpoint_mgr.stop_auto_save()
@@ -233,7 +233,7 @@ class DopemuxOrchestrator:
         # Shutdown message bus
         self.message_bus.shutdown()
 
-        self.console.logger.info("[bold green]✅ Goodbye![/bold green]\n")
+        self.console.print("[bold green]✅ Goodbye![/bold green]\n")
 
 
 def main():

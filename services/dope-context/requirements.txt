@@ -1,51 +1,47 @@
-# Claude-Context v2 Dependencies
+# Dope-Context MCP Server Dependencies
+
+# Core Web Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart
 
 # Vector Database
 qdrant-client>=1.15.0
+asyncpg>=0.29.0
 
-# Embeddings & Reranking
+# Embeddings & AI
 voyageai>=0.2.3
+anthropic>=0.18.0
+openai>=1.10.0
 
-# Context Generation
-anthropic>=0.39.0
-
-# BM25 Sparse Search
-rank-bm25>=0.2.2
-
-# Document Processing (from DocRAG)
-PyPDF2>=3.0.0
-python-docx>=1.1.0
-beautifulsoup4>=4.12.0
-markdown>=3.5.0
-python-magic>=0.4.27
-
-# MCP Server - Alternative implementation
-# Temporarily use basic MCP server instead of fastmcp
-git+https://github.com/anthropic/fastmcp.git@main
-starlette>=0.27.0
-uvicorn>=0.23.0
-
-# Async & Utilities
-aiohttp>=3.12.14  # Security: CVE-2025-53643, CVE-2024-52304, directory traversal, DoS fixes
-aiofiles>=23.0.0
-pyyaml>=6.0.0
-
-# Code Processing (Tree-sitter with compatible versions)
-# Note: tree-sitter 0.25.2 + language packages 0.23.0 = Working combination
-# Context7 documented pattern: Language(tspython.language()) works with 0.25.2+
+# Code Parsing
 tree-sitter>=0.25.2
-tree-sitter-python==0.25.0
-tree-sitter-javascript==0.25.0
-tree-sitter-typescript==0.23.2
-watchdog>=3.0.0  # File system monitoring for autonomous indexing
-# OpenAI for context generation (alternative to Anthropic)
-openai>=1.0.0
+tree-sitter-python==0.23.0
+tree-sitter-javascript==0.23.0
+tree-sitter-typescript==0.23.0
+tree-sitter-go==0.23.0
+tree-sitter-rust==0.23.0
 
-# Text Processing
-tiktoken>=0.5.0
-chardet>=5.0.0
+# Document Processing
+pymupdf>=1.23.0  # PDF processing
+python-docx>=1.1.0  # DOCX processing
+beautifulsoup4>=4.12.0  # HTML processing
+lxml>=5.1.0
 
-# Testing
+# Utilities
+aiofiles>=23.2.0
+pydantic>=2.5.0
+python-dotenv>=1.0.0
+redis>=5.0.0
+aioredis>=2.0.1
+
+# HTTP Client
+httpx>=0.26.0
+aiohttp>=3.9.0
+
+# Logging & Monitoring
+structlog>=24.1.0
+
+# Development (optional, but helpful)
 pytest>=7.4.0
-pytest-asyncio>=0.21.0
-pytest-cov>=4.1.0
+pytest-asyncio>=0.23.0

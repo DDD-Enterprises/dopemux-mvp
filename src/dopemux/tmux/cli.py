@@ -453,7 +453,7 @@ def list_panes(ctx: click.Context, session: Optional[str]) -> None:
             "✅" if pane.active else "",
         )
 
-    console.logger.info(table)
+    console.log(table)
 
 
 @tmux.command("open")
@@ -604,7 +604,7 @@ def list_sessions(ctx: click.Context, attach: bool, session_name: Optional[str])
     for name in sessions:
         table.add_row(name, "⭐" if name == default_session else "")
 
-    console.logger.info(table)
+    console.log(table)
 
     if not attach:
         return
@@ -636,7 +636,7 @@ def preview_theme(ctx: click.Context, preset: Optional[str], apply: bool) -> Non
 
     if not preset:
         current = (tmux_cfg.theme or "muted").lower()
-        console.logger.info("\n[bold cyan]🎨 Dopemux tmux theme presets[/bold cyan]")
+        console.log("\n[bold cyan]🎨 Dopemux tmux theme presets[/bold cyan]")
         table = Table(show_header=True, header_style="bold magenta")
         table.add_column("Preset")
         table.add_column("Status")
@@ -653,7 +653,7 @@ def preview_theme(ctx: click.Context, preset: Optional[str], apply: bool) -> Non
                 status,
                 f"accent {accent} · info {info} · alert {alert}",
             )
-        console.logger.info(table)
+        console.log(table)
         console.print(
             "\nUse `dopemux tmux theme <preset> --apply` inside tmux to switch, "
             "or set `tmux.theme = \"<preset>\"` in dopemux.toml for a permanent change.\n"
@@ -661,11 +661,11 @@ def preview_theme(ctx: click.Context, preset: Optional[str], apply: bool) -> Non
         return
 
     theme = THEME_PRESETS[preset]
-    console.logger.info(f"[cyan]Previewing theme:[/cyan] [bold]{preset}[/bold]")
-    console.logger.info(f"Status palette: {theme['status_palette']}")
+    console.log(f"[cyan]Previewing theme:[/cyan] [bold]{preset}[/bold]")
+    console.log(f"Status palette: {theme['status_palette']}")
 
     if not apply:
-        console.logger.info("\n[yellow]Tip:[/yellow] Run again with --apply from inside tmux to apply live.")
+        console.log("\n[yellow]Tip:[/yellow] Run again with --apply from inside tmux to apply live.")
         return
 
     session_env = os.environ.get("DOPEMUX_TMUX_SESSION")
@@ -683,14 +683,14 @@ def preview_theme(ctx: click.Context, preset: Optional[str], apply: bool) -> Non
 
             logger.error(f"Error: {e}")
     if not session_name:
-        console.logger.info("[red]❌ No active tmux session detected. Use --apply from inside tmux.[/red]")
+        console.log("[red]❌ No active tmux session detected. Use --apply from inside tmux.[/red]")
         return
 
     try:
         _apply_theme_to_session(controller, session_name, theme)
-        console.logger.info(f"[green]✅ Applied '{preset}' theme to session {session_name}.[/green]")
+        console.log(f"[green]✅ Applied '{preset}' theme to session {session_name}.[/green]")
     except Exception as exc:  # pragma: no cover - tmux errors are environment-specific
-        console.logger.info(f"[red]❌ Unable to apply theme: {exc}[/red]")
+        console.log(f"[red]❌ Unable to apply theme: {exc}[/red]")
     target = session_name or (default_session if default_session in sessions else sessions[0])
     if target not in sessions:
         click.echo(f"❌ Session '{target}' not found; skipping attach.")
@@ -2029,7 +2029,7 @@ def start_tmux(
                     console.print("[red]❌ Ports 4000-4002 are all in use.[/red]")
                     console.print("[yellow]   Free up a port or stop an existing LiteLLM instance.[/yellow]")
                     raise click.ClickException("No available ports for LiteLLM proxy.")
-            console.logger.info(f"[yellow]⚠️  Port 4000 is in use, using port {litellm_port} instead[/yellow]")
+            console.log(f"[yellow]⚠️  Port 4000 is in use, using port {litellm_port} instead[/yellow]")
 
         litellm_master_key = ""
         regenerated_master_key = False
@@ -2096,21 +2096,21 @@ def start_tmux(
         try:
             db_status_msg, db_enabled = sync_litellm_database(instance_dir, db_url)
         except LiteLLMProxyError as exc:
-            console.logger.error(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
-            console.logger.info("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.[/yellow]")
-            console.logger.info("\n[cyan]Troubleshooting:[/cyan]")
-            console.logger.info("  1. Check if PostgreSQL is running: lsof -i :5432 (or your port)")
-            console.logger.info("  2. Verify database credentials in .env.routing")
-            console.logger.info("  3. Ensure the 'litellm' database exists")
-            console.logger.info("  4. Test connection: psql <your_database_url>")
+            console.log(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
+            console.log("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.[/yellow]")
+            console.log("\n[cyan]Troubleshooting:[/cyan]")
+            console.log("  1. Check if PostgreSQL is running: lsof -i :5432 (or your port)")
+            console.log("  2. Verify database credentials in .env.routing")
+            console.log("  3. Ensure the 'litellm' database exists")
+            console.log("  4. Test connection: psql <your_database_url>")
             raise click.ClickException(str(exc))
 
         if not db_enabled:
-            console.logger.info(f"[red]❌ {db_status_msg}[/red]")
-            console.logger.info("[yellow]   LiteLLM metrics must be available. Resolve the database issue and retry.")
+            console.log(f"[red]❌ {db_status_msg}[/red]")
+            console.log("[yellow]   LiteLLM metrics must be available. Resolve the database issue and retry.")
             raise click.ClickException("LiteLLM metrics database not ready.")
 
-        console.logger.info(f"[dim]{db_status_msg}[/dim]")
+        console.log(f"[dim]{db_status_msg}[/dim]")
         general_settings["database_url"] = db_url
 
         config_path = instance_dir / "litellm.config.yaml"
@@ -2124,17 +2124,17 @@ def start_tmux(
 
             logger.error(f"Error: {e}")
         if litellm_running:
-            console.logger.info("[green]✓ LiteLLM already running[/green]")
+            console.log("[green]✓ LiteLLM already running[/green]")
         else:
-            console.logger.info("[blue]🔄 Starting LiteLLM proxy...[/blue]")
+            console.log("[blue]🔄 Starting LiteLLM proxy...[/blue]")
             kill_result = subprocess.run(
                 ["pkill", "-f", "litellm"],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
             if kill_result.returncode not in (0, 1):
-                console.logger.info("[red]❌ Unable to manage existing LiteLLM processes automatically (permission denied).")
-                console.logger.info(f"[yellow]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
+                console.log("[red]❌ Unable to manage existing LiteLLM processes automatically (permission denied).")
+                console.log(f"[yellow]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
                 raise click.ClickException("LiteLLM proxy still running.")
 
             time.sleep(1)
@@ -2147,7 +2147,7 @@ def start_tmux(
                     start_new_session=True,
                 )
 
-            console.logger.info("[dim]⏳ Waiting for LiteLLM...[/dim]")
+            console.log("[dim]⏳ Waiting for LiteLLM...[/dim]")
             ready = False
             for _ in range(15):
                 try:
@@ -2169,15 +2169,15 @@ def start_tmux(
                 time.sleep(1)
 
             if not ready:
-                console.logger.info("[red]❌ LiteLLM proxy did not become healthy.[/red]")
-                console.logger.info(f"[yellow]   Check logs: tail -f {litellm_log}[/yellow]")
-                console.logger.info("\n[cyan]Common issues:[/cyan]")
-                console.logger.error("  • Database connection failed (check PostgreSQL is running)")
-                console.logger.info(f"  • Port {litellm_port} became busy during startup")
-                console.logger.error("  • Configuration error in litellm.config.yaml")
+                console.log("[red]❌ LiteLLM proxy did not become healthy.[/red]")
+                console.log(f"[yellow]   Check logs: tail -f {litellm_log}[/yellow]")
+                console.log("\n[cyan]Common issues:[/cyan]")
+                console.log("  • Database connection failed (check PostgreSQL is running)")
+                console.log(f"  • Port {litellm_port} became busy during startup")
+                console.log("  • Configuration error in litellm.config.yaml")
                 raise click.ClickException("LiteLLM proxy failed to start.")
 
-            console.logger.info(f"[green]✅ LiteLLM ready on port {litellm_port}[/green]")
+            console.log(f"[green]✅ LiteLLM ready on port {litellm_port}[/green]")
 
         os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
         os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
@@ -2194,9 +2194,9 @@ def start_tmux(
                 db_url_path.write_text(db_url, encoding="utf-8")
             except Exception as e:
                 pass
-        console.logger.info("[dim]ℹ️ LiteLLM metrics database synchronised[/dim]")
-        console.logger.info("[dim]✓ Environment configured for LiteLLM routing[/dim]")
-        console.logger.info("")
+        console.log("[dim]ℹ️ LiteLLM metrics database synchronised[/dim]")
+        console.log("[dim]✓ Environment configured for LiteLLM routing[/dim]")
+        console.log("")
 
     # Determine layout and window name before creating session
     layout_choice = layout or getattr(tmux_cfg, "default_layout", None) or "medium"

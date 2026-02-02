@@ -1,0 +1,60 @@
+# Web Development Profile
+# Optimized for frontend, backend, and full-stack web projects
+
+name: web-dev
+description: Modern web development (React, Next.js, Node.js, TypeScript)
+
+mcp_servers:
+  required:
+    - zen
+    - conport
+    - context7
+
+  enabled:
+    - serena-lsp       # TypeScript/JavaScript LSP
+    - dope-context
+    - litellm
+    - desktop-commander  # Browser automation testing
+
+  disabled:
+    - leantime
+    - task-master
+
+adhd_config:
+  session_duration_minutes: 25
+  max_context_switches_per_session: 7  # Higher for web dev (CSS/JS/HTML switching)
+  energy_tracking_enabled: true
+  break_reminders_enabled: true
+  hyperfocus_protection_minutes: 90
+  max_results_per_query: 10
+  max_decision_options: 3
+  auto_save_interval_seconds: 30
+
+database_config:
+  conport:
+    mode: shared
+    path: "~/.dopemux/databases/conport-shared.db"
+  serena:
+    mode: local
+    path: ".dopemux/databases/serena-{hash}.db"
+  context:
+    mode: local
+    path: ".dopemux/databases/context-{hash}.db"
+
+tools:
+  browser_automation: true
+  hot_reload_support: true
+
+recommended_extensions:
+  - dbaeumer.vscode-eslint
+  - esbenp.prettier-vscode
+  - bradlc.vscode-tailwindcss
+  - ms-vscode.vscode-typescript-next
+
+markers:
+  required_files:
+    - package.json
+  optional_files:
+    - tsconfig.json
+    - next.config.js OR vite.config.ts
+    - tailwind.config.js

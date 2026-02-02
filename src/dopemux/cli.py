@@ -417,7 +417,7 @@ def _start_minimal_session(
 
         logger.error(f"Error: {e}")
     if not background:
-        console.logger.info("[green]✨ Claude Code is running (minimal mode)\n[/green]")
+        console.print("[green]✨ Claude Code is running (minimal mode)\n[/green]")
 
 
 @click.group()
@@ -497,11 +497,11 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, te
         pass
 
     if directory and not workspace_exists and not dopemux_exists:
-        console.logger.info(f"[red]Directory does not exist: {workspace}[/red]")
+        console.print(f"[red]Directory does not exist: {workspace}[/red]")
         sys.exit(1)
 
     if not force and not workspace_exists and dopemux_exists:
-        console.logger.info(f"[yellow]⚠️  Project already initialized (.dopemux/ exists)[/yellow]")
+        console.print(f"[yellow]⚠️  Project already initialized (.dopemux/ exists)[/yellow]")
         sys.exit(1)
 
     try:
@@ -513,7 +513,7 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, te
     success = init_project(workspace, profile, force)
 
     if not success:
-        console.logger.info("[yellow]Initialization cancelled.[/yellow]")
+        console.print("[yellow]Initialization cancelled.[/yellow]")
         sys.exit(1)
 
     click.echo("Project Initialized")
@@ -683,7 +683,7 @@ def start(
     # Handle --alt-routing flag (automatic LiteLLM setup)
     if use_alt_routing:
         use_litellm = True
-        console.logger.info("[cyan]🚀 Alternative routing enabled - starting LiteLLM automatically...[/cyan]")
+        console.print("[cyan]🚀 Alternative routing enabled - starting LiteLLM automatically...[/cyan]")
 
         from pathlib import Path as EnvPath
         from dotenv import load_dotenv
@@ -691,9 +691,9 @@ def start(
         routing_env = EnvPath.cwd() / ".env.routing"
         if routing_env.exists():
             load_dotenv(routing_env)
-            console.logger.info("[dim]✓ Loaded .env.routing[/dim]")
+            console.print("[dim]✓ Loaded .env.routing[/dim]")
         else:
-            console.logger.info("[yellow]⚠️  .env.routing not found - using defaults[/yellow]")
+            console.print("[yellow]⚠️  .env.routing not found - using defaults[/yellow]")
 
         instance_dir = Path.cwd() / ".dopemux" / "litellm" / "A"
         instance_dir.mkdir(parents=True, exist_ok=True)
@@ -718,10 +718,10 @@ def start(
             except Exception:
                 logger.error("Unexpected DB URL load error", exc_info=True)
         if not db_url:
-            console.logger.info("[red]❌ LiteLLM metrics database is required for alternative routing.[/red]")
-            console.logger.info("[yellow]   Set DOPEMUX_LITELLM_DB_URL in .env.routing and ensure the database is reachable.[/yellow]")
-            console.logger.info("\n[cyan]Example:[/cyan]")
-            console.logger.info("  DOPEMUX_LITELLM_DB_URL=postgresql://user:password@localhost:5432/litellm")
+            console.print("[red]❌ LiteLLM metrics database is required for alternative routing.[/red]")
+            console.print("[yellow]   Set DOPEMUX_LITELLM_DB_URL in .env.routing and ensure the database is reachable.[/yellow]")
+            console.print("\n[cyan]Example:[/cyan]")
+            console.print("  DOPEMUX_LITELLM_DB_URL=postgresql://user:password@localhost:5432/litellm")
             raise click.ClickException("LiteLLM metrics database not configured.")
 
         stored_master_key: Optional[str] = None
@@ -763,10 +763,10 @@ def start(
                 # Port 4001 is also taken, try 4002
                 litellm_port = 4002
                 if not is_port_available(litellm_port):
-                    console.logger.info("[red]❌ Ports 4000-4002 are all in use.[/red]")
-                    console.logger.info("[yellow]   Free up a port or stop an existing LiteLLM instance.[/yellow]")
+                    console.print("[red]❌ Ports 4000-4002 are all in use.[/red]")
+                    console.print("[yellow]   Free up a port or stop an existing LiteLLM instance.[/yellow]")
                     raise click.ClickException("No available ports for LiteLLM proxy.")
-            console.logger.info(f"[yellow]⚠️  Port 4000 is in use, using port {litellm_port} instead[/yellow]")
+            console.print(f"[yellow]⚠️  Port 4000 is in use, using port {litellm_port} instead[/yellow]")
 
         litellm_master_key = ""
         regenerated_master_key = False
@@ -796,7 +796,7 @@ def start(
             base_candidate = env_master_key_raw or stored_master_key
             litellm_master_key, regenerated_master_key = ensure_master_key(base_candidate)
             if regenerated_master_key:
-                console.logger.info("[yellow]⚠️  Generated LiteLLM master key with sk- prefix for proxy auth[/yellow]")
+                console.print("[yellow]⚠️  Generated LiteLLM master key with sk- prefix for proxy auth[/yellow]")
         else:
             regenerated_master_key = False
 
@@ -835,21 +835,21 @@ def start(
         try:
             db_status_msg, db_enabled = sync_litellm_database(instance_dir, db_url)
         except LiteLLMProxyError as exc:
-            console.logger.error(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
-            console.logger.info("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.[/yellow]")
-            console.logger.info("\n[cyan]Troubleshooting:[/cyan]")
-            console.logger.info("  1. Check if PostgreSQL is running: lsof -i :5432 (or your port)")
-            console.logger.info("  2. Verify database credentials in .env.routing")
-            console.logger.info("  3. Ensure the 'litellm' database exists")
-            console.logger.info("  4. Test connection: psql <your_database_url>")
+            console.print(f"[red]❌ LiteLLM database setup failed: {exc}[/red]")
+            console.print("[yellow]   Fix the database connection (is Postgres running? credentials valid?) and retry.[/yellow]")
+            console.print("\n[cyan]Troubleshooting:[/cyan]")
+            console.print("  1. Check if PostgreSQL is running: lsof -i :5432 (or your port)")
+            console.print("  2. Verify database credentials in .env.routing")
+            console.print("  3. Ensure the 'litellm' database exists")
+            console.print("  4. Test connection: psql <your_database_url>")
             raise click.ClickException(str(exc))
 
         if not db_enabled:
-            console.logger.info(f"[red]❌ {db_status_msg}[/red]")
-            console.logger.info("[yellow]   LiteLLM metrics must be available. Resolve the database issue and retry.")
+            console.print(f"[red]❌ {db_status_msg}[/red]")
+            console.print("[yellow]   LiteLLM metrics must be available. Resolve the database issue and retry.")
             raise click.ClickException("LiteLLM metrics database not ready.")
 
-        console.logger.info(f"[dim]{db_status_msg}[/dim]")
+        console.print(f"[dim]{db_status_msg}[/dim]")
         general_settings["database_url"] = db_url
 
         config_path = instance_dir / "litellm.config.yaml"
@@ -863,19 +863,17 @@ def start(
 
             logger.error(f"Error: {e}")
         if litellm_running:
-            console.logger.info(f"[green]✓ LiteLLM proxy already running on port {litellm_port}[/green]")
+            console.print(f"[green]✓ LiteLLM proxy already running on port {litellm_port}[/green]")
         else:
-            import subprocess
-
-            console.logger.info("[blue]🔄 Starting LiteLLM proxy...[/blue]")
+            console.print("[blue]🔄 Starting LiteLLM proxy...[/blue]")
             kill_result = subprocess.run(
                 ["pkill", "-f", "litellm"],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
             if kill_result.returncode not in (0, 1):
-                console.logger.info("[red]❌ Unable to manage existing LiteLLM processes automatically (permission denied).")
-                console.logger.info(f"[yellow]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
+                console.print("[red]❌ Unable to manage existing LiteLLM processes automatically (permission denied).")
+                console.print(f"[yellow]   Stop the existing LiteLLM proxy on port {litellm_port} manually and rerun the command.")
                 raise click.ClickException("LiteLLM proxy still running.")
 
             time.sleep(1)
@@ -888,7 +886,7 @@ def start(
                     start_new_session=True,
                 )
 
-            console.logger.info("[dim]⏳ Waiting for LiteLLM to start...[/dim]")
+            console.print("[dim]⏳ Waiting for LiteLLM to start...[/dim]")
             ready = False
             for _ in range(20):
                 try:
@@ -910,15 +908,15 @@ def start(
                 time.sleep(1)
 
             if not ready:
-                console.logger.info("[red]❌ LiteLLM proxy did not become healthy.[/red]")
-                console.logger.info(f"[yellow]   Check logs: tail -f {litellm_log}[/yellow]")
-                console.logger.info("\n[cyan]Common issues:[/cyan]")
-                console.logger.error("  • Database connection failed (check PostgreSQL is running)")
-                console.logger.info(f"  • Port {litellm_port} became busy during startup")
-                console.logger.error("  • Configuration error in litellm.config.yaml")
+                console.print("[red]❌ LiteLLM proxy did not become healthy.[/red]")
+                console.print(f"[yellow]   Check logs: tail -f {litellm_log}[/yellow]")
+                console.print("\n[cyan]Common issues:[/cyan]")
+                console.print("  • Database connection failed (check PostgreSQL is running)")
+                console.print(f"  • Port {litellm_port} became busy during startup")
+                console.print("  • Configuration error in litellm.config.yaml")
                 raise click.ClickException("LiteLLM proxy failed to start.")
 
-            console.logger.info(f"[green]✅ LiteLLM proxy ready on port {litellm_port}[/green]")
+            console.print(f"[green]✅ LiteLLM proxy ready on port {litellm_port}[/green]")
 
         os.environ["DOPEMUX_CLAUDE_VIA_LITELLM"] = "true"
         os.environ["DOPEMUX_DEFAULT_LITELLM"] = "1"
@@ -941,12 +939,12 @@ def start(
                     if config and "model_list" in config:
                         models_list = [m["model_name"] for m in config["model_list"] if "model_name" in m]
             except Exception as e:
-                console.logger.info(f"[yellow]⚠️  Could not parse litellm.config.yaml: {e}[/yellow]")
+                console.print(f"[yellow]⚠️  Could not parse litellm.config.yaml: {e}[/yellow]")
         
         if models_list:
             os.environ["CLAUDE_CODE_ROUTER_MODELS"] = ",".join(models_list)
         else:
-            console.logger.info("[yellow]⚠️  No models found in litellm.config.yaml[/yellow]")
+            console.print("[yellow]⚠️  No models found in litellm.config.yaml[/yellow]")
 
         os.environ["DOPEMUX_LITELLM_DB_URL"] = db_url
         os.environ.setdefault("LITELLM_DATABASE_URL", db_url)
@@ -959,9 +957,9 @@ def start(
                 logger.error(f"Persist DB URL failed: {e}")
             except Exception:
                 logger.error("Unexpected DB URL persist error", exc_info=True)
-        console.logger.info("[dim]ℹ️ LiteLLM metrics database synchronised[/dim]")
-        console.logger.info("[dim]✓ Claude Code configured to use LiteLLM proxy[/dim]")
-        console.logger.info("")
+        console.print("[dim]ℹ️ LiteLLM metrics database synchronised[/dim]")
+        console.print("[dim]✓ Claude Code configured to use LiteLLM proxy[/dim]")
+        console.print("")
     # Default to LiteLLM + Router if configured (Option A)
     if not use_litellm and not use_claude_router:
         if os.getenv("DOPEMUX_DEFAULT_LITELLM", "0") == "1":
@@ -1010,7 +1008,14 @@ def start(
         pending_profile_name = None
 
     if dry_run:
-        console.logger.info("[cyan]Dry run: no tmux or Claude Code processes will be started.[/cyan]")
+        console.print("[cyan]Dry run: no tmux or Claude Code processes will be started.[/cyan]")
+        
+        # Show startup hint banner (random rotating tip)
+        from .startup_hints import create_hint_banner
+        console.print()
+        console.print(create_hint_banner())
+        console.print()
+        
         if role_activation:
             spec = role_activation.spec
             console.print(
@@ -1061,7 +1066,7 @@ def start(
                         f"[yellow]⚠ Profile '{pending_profile_name}' is not defined."
                     )
 
-        console.logger.info("[green]Dry run complete. No changes were made.[/green]")
+        console.print("[green]Dry run complete. No changes were made.[/green]")
         ctx.exit(0)
 
     if role_activation and role_activation.missing_required:
@@ -1142,11 +1147,11 @@ def start(
                 )
 
             if selected_worktree:
-                console.logger.info(f"\n[blue]🔄 Recovering worktree session: {selected_worktree}[/blue]")
+                console.print(f"\n[blue]🔄 Recovering worktree session: {selected_worktree}[/blue]")
                 os.chdir(selected_worktree)
                 project_path = Path(selected_worktree)
-                console.logger.info(f"[green]✅ Switched to worktree: {project_path.name}[/green]")
-                console.logger.info(f"[dim]   Path: {project_path}[/dim]\n")
+                console.print(f"[green]✅ Switched to worktree: {project_path.name}[/green]")
+                console.print(f"[dim]   Path: {project_path}[/dim]\n")
         except Exception as e:
             console.print(f"[yellow]⚠️ Recovery menu unavailable: {e}[/yellow]")
 
@@ -1162,8 +1167,8 @@ def start(
             if new_worktree:
                 os.chdir(new_worktree)
                 project_path = Path.cwd()
-                console.logger.info(f"[green]🔀 Switched to worktree: {project_path.name}[/green]")
-                console.logger.info(f"[dim]   Path: {project_path}[/dim]")
+                console.print(f"[green]🔀 Switched to worktree: {project_path.name}[/green]")
+                console.print(f"[dim]   Path: {project_path}[/dim]")
 
             if should_exit and not new_worktree:
                 sys.exit(0)
@@ -1180,7 +1185,7 @@ def start(
         running_instances = detect_instances_sync(project_path)
 
         if running_instances:
-            console.logger.info(f"\n[yellow]⚠️  Found {len(running_instances)} running instance(s):[/yellow]")
+            console.print(f"\n[yellow]⚠️  Found {len(running_instances)} running instance(s):[/yellow]")
 
             table = Table(title="Running Instances")
             table.add_column("Instance", style="cyan")
@@ -1196,7 +1201,7 @@ def start(
                     str(inst.worktree_path) if inst.worktree_path else "N/A"
                 )
 
-            console.logger.info(table)
+            console.print(table)
 
             try:
                 instance_id, port_base = instance_manager.get_next_available_instance(running_instances)
@@ -1213,10 +1218,10 @@ def start(
                         show_default=True
                     )
 
-                    console.logger.info(f"[blue]📁 Creating worktree for {branch_name}...[/blue]")
+                    console.print(f"[blue]📁 Creating worktree for {branch_name}...[/blue]")
                     worktree_path = instance_manager.create_worktree(instance_id, branch_name)
 
-                    console.logger.info(f"[green]✅ Worktree created at {worktree_path}[/green]")
+                    console.print(f"[green]✅ Worktree created at {worktree_path}[/green]")
 
                     instance_env_vars = instance_manager.get_instance_env_vars(
                         instance_id,
@@ -1227,15 +1232,15 @@ def start(
                     console.print(
                         f"\n[green]🎯 Starting instance {instance_id} on port {port_base}[/green]"
                     )
-                    console.logger.info(f"[dim]   Environment: DOPEMUX_INSTANCE_ID={instance_id}[/dim]")
-                    console.logger.info(f"[dim]   Workspace: {project_path}[/dim]")
-                    console.logger.info(f"[dim]   Worktree: {worktree_path}[/dim]")
+                    console.print(f"[dim]   Environment: DOPEMUX_INSTANCE_ID={instance_id}[/dim]")
+                    console.print(f"[dim]   Workspace: {project_path}[/dim]")
+                    console.print(f"[dim]   Worktree: {worktree_path}[/dim]")
 
                 else:
-                    console.logger.info("[yellow]Cancelled. Continuing with single instance.[/yellow]")
+                    console.print("[yellow]Cancelled. Continuing with single instance.[/yellow]")
 
             except RuntimeError as e:
-                console.logger.info(f"[red]❌ {str(e)}[/red]")
+                console.print(f"[red]❌ {str(e)}[/red]")
                 sys.exit(1)
 
         if instance_id is None:
@@ -1249,7 +1254,7 @@ def start(
                 worktree_path
             )
 
-            console.logger.info("[blue]🆕 Starting first instance (A) on port 3000[/blue]")
+            console.print("[blue]🆕 Starting first instance (A) on port 3000[/blue]")
     else:
         instance_id = 'A'
         port_base = 3000
@@ -1278,9 +1283,9 @@ def start(
                     port_base,
                     worktree_path
                 )
-                console.logger.info(f"[dim]⚙️  Forced instance id: {instance_id} (port {port_base})[/dim]")
+                console.print(f"[dim]⚙️  Forced instance id: {instance_id} (port {port_base})[/dim]")
             else:
-                console.logger.info(f"[dim]⚠️  DOPEMUX_FORCE_INSTANCE_ID={force_id} already in use; ignoring[/dim]")
+                console.print(f"[dim]⚠️  DOPEMUX_FORCE_INSTANCE_ID={force_id} already in use; ignoring[/dim]")
     except Exception as e:
         pass
 
@@ -1298,7 +1303,7 @@ def start(
         os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_URL"] = "http://localhost:4000/v1/chat/completions"
         os.environ["CLAUDE_CODE_ROUTER_UPSTREAM_KEY_VAR"] = "DOPEMUX_LITELLM_MASTER_KEY"
         
-        console.logger.info("[green]✅ Forced Claude Code to use LiteLLM proxy[/green]")
+        console.print("[green]✅ Forced Claude Code to use LiteLLM proxy[/green]")
 
     # Inject instance environment variables
     if instance_env_vars:
@@ -1308,7 +1313,7 @@ def start(
         for key, value in instance_env_vars.items():
             os.environ[key] = value
 
-        console.logger.info("[dim]✅ Instance environment variables configured[/dim]")
+        console.print("[dim]✅ Instance environment variables configured[/dim]")
         _persist_instance_env_exports(project_path, instance_id or "A", instance_env_vars)
 
     active_profile_applied = False
@@ -1350,8 +1355,8 @@ def start(
     if litellm_enabled and not use_alt_routing:
         # Require OpenRouter since LiteLLM proxy is configured to route through it
         if not os.environ.get("OPENROUTER_API_KEY"):
-            console.logger.info("[red]❌ OPENROUTER_API_KEY is not set.[/red]")
-            console.logger.info("[dim]Set OPENROUTER_API_KEY before using --litellm[/dim]")
+            console.print("[red]❌ OPENROUTER_API_KEY is not set.[/red]")
+            console.print("[dim]Set OPENROUTER_API_KEY before using --litellm[/dim]")
             sys.exit(1)
 
         try:
@@ -1385,12 +1390,12 @@ def start(
             if litellm_proxy_info.db_status:
                 prisma_log = litellm_proxy_info.log_path.parent / "prisma.log"
                 color = "dim" if litellm_proxy_info.db_enabled else "yellow"
-                console.logger.info(f"[{color}]   {litellm_proxy_info.db_status}[/{color}]")
+                console.print(f"[{color}]   {litellm_proxy_info.db_status}[/{color}]")
                 if prisma_log.exists():
-                    console.logger.info(f"[dim]   Prisma log: {prisma_log}[/dim]")
+                    console.print(f"[dim]   Prisma log: {prisma_log}[/dim]")
 
         except LiteLLMProxyError as exc:
-            console.logger.error(f"[red]❌ LiteLLM proxy failed: {exc}[/red]")
+            console.print(f"[red]❌ LiteLLM proxy failed: {exc}[/red]")
             sys.exit(1)
 
     router_info = None
@@ -1470,7 +1475,7 @@ def start(
                 router_overrides=router_overrides if router_overrides else None,
             )
         except DopeBrainzRouterError as exc:
-            console.logger.error(f"[red]❌ DopeBrainz Router failed: {exc}[/red]")
+            console.print(f"[red]❌ DopeBrainz Router failed: {exc}[/red]")
             sys.exit(1)
 
         router_env = router_manager.build_client_env(router_info)
@@ -1490,8 +1495,8 @@ def start(
             console.print(
                 f"[green]✅ Claude Code Router ready at {router_info.base_url}[/green]"
             )
-            console.logger.info(f"[dim]   Config: {router_info.config_path}[/dim]")
-            console.logger.info(f"[dim]   Logs: {router_info.log_path}[/dim]")
+            console.print(f"[dim]   Config: {router_info.config_path}[/dim]")
+            console.print(f"[dim]   Logs: {router_info.log_path}[/dim]")
 
     with Progress(
         SpinnerColumn(),
@@ -1520,7 +1525,13 @@ def start(
             )
         else:
             progress.update(task, description="Starting fresh session")
-            console.logger.info("[blue]🆕 Starting new session[/blue]")
+            console.print("[blue]🆕 Starting new session[/blue]")
+            
+        # Show startup hint banner (random rotating tip)
+        from .startup_hints import create_hint_banner
+        console.print()
+        console.print(create_hint_banner())
+        console.print()
 
         # Check if dangerous mode has expired
         _check_dangerous_mode_expiry()
@@ -1547,14 +1558,14 @@ def start(
                 progress.update(task, description="✅ MCP auto-configuration complete")
             else:
                 progress.update(task, description="⚠️ MCP auto-configuration skipped")
-                console.logger.info(f"[dim]{message}[/dim]")
+                console.print(f"[dim]{message}[/dim]")
 
         # Start MCP servers by default (ADHD-optimized experience)
         if not no_mcp:
             # CRITICAL FIX: Pass instance_env_vars so MCP servers get workspace isolation
             _start_mcp_servers_with_progress(project_path, instance_env=instance_env_vars)
         else:
-            console.logger.info("[yellow]⚠️  Skipping MCP servers (reduced ADHD experience)[/yellow]")
+            console.print("[yellow]⚠️  Skipping MCP servers (reduced ADHD experience)[/yellow]")
 
         # Launch Claude Code
         progress.update(task, description="Launching Claude Code...")
@@ -1610,18 +1621,18 @@ def start(
             workspace_id=str(project_path.resolve()),
             conport_port=3004  # Always save via instance A's ConPort
         )
-        console.logger.info("[dim]✅ Instance state saved for crash recovery[/dim]")
+        console.print("[dim]✅ Instance state saved for crash recovery[/dim]")
 
     if not background:
         console.print(
             "[green]✨ Claude Code is running with ADHD optimizations[/green]"
         )
-        console.logger.info("Press Ctrl+C to stop monitoring and save context")
+        console.print("Press Ctrl+C to stop monitoring and save context")
 
         try:
             claude_process.wait()
         except KeyboardInterrupt:
-            console.logger.info("\n[yellow]⏸️ Saving context and stopping...[/yellow]")
+            console.print("\n[yellow]⏸️ Saving context and stopping...[/yellow]")
 
             # Mark instance as stopped in ConPort
             if instance_id:
@@ -1634,7 +1645,7 @@ def start(
                     state.status = 'stopped'
                     state.last_active = datetime.now(timezone.utc)
                     save_instance_state_sync(state, workspace_id, conport_port=3004)
-                    console.logger.info("[dim]✅ Instance marked as stopped[/dim]")
+                    console.print("[dim]✅ Instance marked as stopped[/dim]")
 
             ctx.invoke(save)
             attention_monitor.stop_monitoring()
@@ -1654,7 +1665,7 @@ def save(ctx, message: Optional[str], force: bool):
     project_path = Path.cwd()
 
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.print("[red]No Dopemux project found in current directory[/red]")
         sys.exit(1)
 
     with Progress(
@@ -1669,9 +1680,9 @@ def save(ctx, message: Optional[str], force: bool):
 
         progress.update(task, description="Context saved!", completed=True)
 
-    console.logger.info(f"[green]✅ Context saved (session: {session_id[:8]})[/green]")
+    console.print(f"[green]✅ Context saved (session: {session_id[:8]})[/green]")
     if message:
-        console.logger.info(f"[dim]Note: {message}[/dim]")
+        console.print(f"[dim]Note: {message}[/dim]")
 
 
 @cli.command()
@@ -1689,7 +1700,7 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
     project_path = Path.cwd()
 
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.print("[red]No Dopemux project found in current directory[/red]")
         sys.exit(1)
 
     context_manager = ContextManager(project_path)
@@ -1697,7 +1708,7 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
     if list_sessions:
         sessions = context_manager.list_sessions()
         if not sessions:
-            console.logger.info("[yellow]No saved sessions found[/yellow]")
+            console.print("[yellow]No saved sessions found[/yellow]")
             return
 
         table = Table(title="Available Sessions")
@@ -1714,9 +1725,9 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
                 str(len(s.get("open_files", []))),
             )
 
-        console.logger.info(table)
+        console.print(table)
         for s in sessions:
-            console.logger.info(f"- {s['id']} :: {s.get('current_goal', 'No goal set')}")
+            console.print(f"- {s['id']} :: {s.get('current_goal', 'No goal set')}")
         return
 
     with Progress(
@@ -1744,7 +1755,7 @@ def restore(ctx, session: Optional[str], list_sessions: bool):
             f"[yellow]📁 Files: {len(context.get('open_files', []))} files restored[/yellow]"
         )
     else:
-        console.logger.info("[red]❌ No context found to restore[/red]")
+        console.print("[red]❌ No context found to restore[/red]")
 
 
 @cli.group()
@@ -1782,7 +1793,7 @@ def instances_list(ctx):
 
     # Show running instances
     if running_instances:
-        console.logger.info(f"\n[green]✅ Found {len(running_instances)} running instance(s)[/green]\n")
+        console.print(f"\n[green]✅ Found {len(running_instances)} running instance(s)[/green]\n")
 
         table = Table(title="Running Instances")
         table.add_column("Instance", style="cyan", no_wrap=True)
@@ -1801,14 +1812,14 @@ def instances_list(ctx):
                 status
             )
 
-        console.logger.info(table)
+        console.print(table)
     else:
-        console.logger.info("[yellow]No running instances found[/yellow]")
+        console.print("[yellow]No running instances found[/yellow]")
 
     # Show orphaned instances (automatic crash detection)
     if orphaned_instances:
-        console.logger.info(f"\n[red]⚠️  Found {len(orphaned_instances)} orphaned instance(s)[/red]")
-        console.logger.info("[dim]Orphaned instances have crashed but their worktrees still exist[/dim]\n")
+        console.print(f"\n[red]⚠️  Found {len(orphaned_instances)} orphaned instance(s)[/red]")
+        console.print("[dim]Orphaned instances have crashed but their worktrees still exist[/dim]\n")
 
         orphan_table = Table(title="Orphaned Instances (Crashed)")
         orphan_table.add_column("Instance", style="red", no_wrap=True)
@@ -1841,12 +1852,12 @@ def instances_list(ctx):
                 f"dopemux instances resume {orphan['instance_id']}"
             )
 
-        console.logger.info(orphan_table)
-        console.logger.info("\n[dim]💡 Tip: Use 'dopemux instances resume <id>' to restart an orphaned instance[/dim]")
-        console.logger.info("[dim]     Or use 'dopemux instances cleanup <id>' to remove the worktree[/dim]")
+        console.print(orphan_table)
+        console.print("\n[dim]💡 Tip: Use 'dopemux instances resume <id>' to restart an orphaned instance[/dim]")
+        console.print("[dim]     Or use 'dopemux instances cleanup <id>' to remove the worktree[/dim]")
 
     # Show git worktrees
-    console.logger.info("\n[bold]Git Worktrees:[/bold]")
+    console.print("\n[bold]Git Worktrees:[/bold]")
     worktrees = instance_manager.list_worktrees()
 
     if worktrees:
@@ -1858,9 +1869,9 @@ def instances_list(ctx):
         for wt_id, wt_path, wt_branch in worktrees:
             worktree_table.add_row(wt_id, str(wt_path), wt_branch)
 
-        console.logger.info(worktree_table)
+        console.print(worktree_table)
     else:
-        console.logger.info("[dim]No worktrees found[/dim]")
+        console.print("[dim]No worktrees found[/dim]")
 
 
 @instances.command("resume")
@@ -1893,40 +1904,40 @@ def instances_resume(ctx, instance_id: str, restore_context: bool):
     state = load_instance_state_sync(instance_id, workspace_id, conport_port=3004)
 
     if not state:
-        console.logger.info(f"[red]❌ No saved state found for instance {instance_id}[/red]")
-        console.logger.info("[dim]Tip: Use 'dopemux instances list' to see available instances[/dim]")
+        console.print(f"[red]❌ No saved state found for instance {instance_id}[/red]")
+        console.print("[dim]Tip: Use 'dopemux instances list' to see available instances[/dim]")
         sys.exit(1)
 
     if state.status != 'orphaned':
-        console.logger.info(f"[yellow]⚠️  Instance {instance_id} is not orphaned (status: {state.status})[/yellow]")
+        console.print(f"[yellow]⚠️  Instance {instance_id} is not orphaned (status: {state.status})[/yellow]")
         if state.status == 'active':
-            console.logger.info(f"[dim]Instance is already running on port {state.port_base}[/dim]")
+            console.print(f"[dim]Instance is already running on port {state.port_base}[/dim]")
         sys.exit(1)
 
     # Check if worktree still exists
     worktree_path = Path(state.worktree_path)
     if not worktree_path.exists():
-        console.logger.info(f"[red]❌ Worktree not found at {worktree_path}[/red]")
-        console.logger.info("[dim]The worktree may have been deleted. Use 'dopemux instances cleanup' to remove state[/dim]")
+        console.print(f"[red]❌ Worktree not found at {worktree_path}[/red]")
+        console.print("[dim]The worktree may have been deleted. Use 'dopemux instances cleanup' to remove state[/dim]")
         sys.exit(1)
 
-    console.logger.info(f"\n[cyan]🔄 Resuming instance {instance_id}...[/cyan]")
-    console.logger.info(f"   Branch: {state.git_branch}")
-    console.logger.info(f"   Worktree: {worktree_path}")
-    console.logger.info(f"   Port base: {state.port_base}")
+    console.print(f"\n[cyan]🔄 Resuming instance {instance_id}...[/cyan]")
+    console.print(f"   Branch: {state.git_branch}")
+    console.print(f"   Worktree: {worktree_path}")
+    console.print(f"   Port base: {state.port_base}")
 
     if state.last_focus_context:
-        console.logger.info(f"   Last focus: [dim]{state.last_focus_context}[/dim]")
+        console.print(f"   Last focus: [dim]{state.last_focus_context}[/dim]")
 
     # Show context restoration info
     if restore_context and state.last_working_directory:
-        console.logger.info(f"\n[green]✨ Context restoration enabled:[/green]")
-        console.logger.info(f"   Working directory: {state.last_working_directory}")
+        console.print(f"\n[green]✨ Context restoration enabled:[/green]")
+        console.print(f"   Working directory: {state.last_working_directory}")
         if state.last_focus_context:
-            console.logger.info(f"   Focus context: {state.last_focus_context}")
+            console.print(f"   Focus context: {state.last_focus_context}")
 
     # Start instance
-    console.logger.info(f"\n[yellow]💡 Starting instance {instance_id} on port {state.port_base}...[/yellow]")
+    console.print(f"\n[yellow]💡 Starting instance {instance_id} on port {state.port_base}...[/yellow]")
 
     # Set environment variables for this process
     env = os.environ.copy()
@@ -1945,21 +1956,21 @@ def instances_resume(ctx, instance_id: str, restore_context: bool):
     if restore_context and state.last_working_directory:
         try:
             os.chdir(state.last_working_directory)
-            console.logger.info(f"[green]✅ Changed to working directory: {state.last_working_directory}[/green]")
+            console.print(f"[green]✅ Changed to working directory: {state.last_working_directory}[/green]")
         except Exception as e:
-            console.logger.info(f"[yellow]⚠️  Could not change to working directory: {e}[/yellow]")
-            console.logger.info("[dim]Staying in current directory[/dim]")
+            console.print(f"[yellow]⚠️  Could not change to working directory: {e}[/yellow]")
+            console.print("[dim]Staying in current directory[/dim]")
 
-    console.logger.info(f"\n[green]✅ Instance {instance_id} resumed successfully![/green]")
-    console.logger.info(f"[dim]Services are starting on port {state.port_base}...[/dim]")
+    console.print(f"\n[green]✅ Instance {instance_id} resumed successfully![/green]")
+    console.print(f"[dim]Services are starting on port {state.port_base}...[/dim]")
 
     if restore_context:
-        console.logger.info("\n[cyan]📍 Context Restored:[/cyan]")
-        console.logger.info(f"   You were working on: {state.last_focus_context or 'N/A'}")
-        console.logger.info(f"   In directory: {os.getcwd()}")
+        console.print("\n[cyan]📍 Context Restored:[/cyan]")
+        console.print(f"   You were working on: {state.last_focus_context or 'N/A'}")
+        console.print(f"   In directory: {os.getcwd()}")
 
-    console.logger.info(f"\n[dim]💡 Tip: Instance will be marked as 'active' when dopemux start completes[/dim]")
-    console.logger.info(f"[dim]     Run: cd {worktree_path} && dopemux start[/dim]")
+    console.print(f"\n[dim]💡 Tip: Instance will be marked as 'active' when dopemux start completes[/dim]")
+    console.print(f"[dim]     Run: cd {worktree_path} && dopemux start[/dim]")
 
     # Mark as active (optimistic - actual start command will confirm)
     from .instance_state import save_instance_state_sync
@@ -1989,8 +2000,8 @@ def instances_cleanup(ctx, instance_id: Optional[str], all: bool, force: bool):
     instance_manager = InstanceManager(project_path)
 
     if not instance_id and not all:
-        console.logger.info("[red]❌ Specify instance ID or use --all flag[/red]")
-        console.logger.info("[dim]Usage: dopemux instances cleanup <ID> or --all[/dim]")
+        console.print("[red]❌ Specify instance ID or use --all flag[/red]")
+        console.print("[dim]Usage: dopemux instances cleanup <ID> or --all[/dim]")
         sys.exit(1)
 
     if all:
@@ -2006,15 +2017,15 @@ def instances_cleanup(ctx, instance_id: Optional[str], all: bool, force: bool):
         ]
 
         if not stopped_instances:
-            console.logger.info("[green]✅ No stopped instances to clean up[/green]")
+            console.print("[green]✅ No stopped instances to clean up[/green]")
             return
 
-        console.logger.info(f"\n[yellow]⚠️  Found {len(stopped_instances)} stopped instance(s) to clean:[/yellow]")
+        console.print(f"\n[yellow]⚠️  Found {len(stopped_instances)} stopped instance(s) to clean:[/yellow]")
         for wt_id, wt_path in stopped_instances:
-            console.logger.info(f"  • Instance {wt_id}: {wt_path}")
+            console.print(f"  • Instance {wt_id}: {wt_path}")
 
         if not force and not click.confirm("\nProceed with cleanup?"):
-            console.logger.info("[yellow]Cleanup cancelled[/yellow]")
+            console.print("[yellow]Cleanup cancelled[/yellow]")
             return
 
         # Clean up each stopped instance
@@ -2023,50 +2034,50 @@ def instances_cleanup(ctx, instance_id: Optional[str], all: bool, force: bool):
 
         for wt_id, _ in stopped_instances:
             if instance_manager.cleanup_worktree(wt_id):
-                console.logger.info(f"[green]✅ Removed worktree for instance {wt_id}[/green]")
+                console.print(f"[green]✅ Removed worktree for instance {wt_id}[/green]")
 
                 # Also remove instance state from ConPort
                 if cleanup_instance_state_sync(wt_id, workspace_id, conport_port=3004):
-                    console.logger.info(f"[dim]✅ Removed instance state for {wt_id}[/dim]")
+                    console.print(f"[dim]✅ Removed instance state for {wt_id}[/dim]")
             else:
-                console.logger.error(f"[red]❌ Failed to remove worktree for instance {wt_id}[/red]")
+                console.print(f"[red]❌ Failed to remove worktree for instance {wt_id}[/red]")
 
     else:
         # Clean up specific instance
         if instance_id == 'A':
-            console.logger.info("[red]❌ Cannot clean up main worktree (instance A)[/red]")
+            console.print("[red]❌ Cannot clean up main worktree (instance A)[/red]")
             sys.exit(1)
 
         # Check if instance is running
         running_instances = detect_instances_sync(project_path)
         if any(inst.instance_id == instance_id for inst in running_instances):
-            console.logger.info(f"[red]❌ Instance {instance_id} is still running[/red]")
-            console.logger.info("[dim]Stop the instance before cleaning up its worktree[/dim]")
+            console.print(f"[red]❌ Instance {instance_id} is still running[/red]")
+            console.print("[dim]Stop the instance before cleaning up its worktree[/dim]")
             sys.exit(1)
 
         worktree_path = instance_manager._get_worktree_path(instance_id)
         if not worktree_path or not worktree_path.exists():
-            console.logger.info(f"[yellow]⚠️  No worktree found for instance {instance_id}[/yellow]")
+            console.print(f"[yellow]⚠️  No worktree found for instance {instance_id}[/yellow]")
             return
 
-        console.logger.info(f"\n[yellow]⚠️  Removing worktree for instance {instance_id}[/yellow]")
-        console.logger.info(f"[dim]Path: {worktree_path}[/dim]")
+        console.print(f"\n[yellow]⚠️  Removing worktree for instance {instance_id}[/yellow]")
+        console.print(f"[dim]Path: {worktree_path}[/dim]")
 
         if not force and not click.confirm("Proceed?"):
-            console.logger.info("[yellow]Cleanup cancelled[/yellow]")
+            console.print("[yellow]Cleanup cancelled[/yellow]")
             return
 
         if instance_manager.cleanup_worktree(instance_id):
-            console.logger.info(f"[green]✅ Removed worktree for instance {instance_id}[/green]")
+            console.print(f"[green]✅ Removed worktree for instance {instance_id}[/green]")
 
             # Also remove instance state from ConPort
             from .instance_state import cleanup_instance_state_sync
             workspace_id = str(project_path.resolve())
 
             if cleanup_instance_state_sync(instance_id, workspace_id, conport_port=3004):
-                console.logger.info(f"[dim]✅ Removed instance state from ConPort[/dim]")
+                console.print(f"[dim]✅ Removed instance state from ConPort[/dim]")
         else:
-            console.logger.error(f"[red]❌ Failed to remove worktree for instance {instance_id}[/red]")
+            console.print(f"[red]❌ Failed to remove worktree for instance {instance_id}[/red]")
 
 
 @cli.command()
@@ -2085,7 +2096,7 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
     project_path = Path.cwd()
 
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.print("[red]No Dopemux project found in current directory[/red]")
         sys.exit(1)
 
     # Show all by default if no specific flags
@@ -2112,7 +2123,7 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
         table.add_row("Focus Score", f"{metrics.get('focus_score', 0):.1%}", "🎯")
         table.add_row("Context Switches", str(metrics.get("context_switches", 0)), "🔄")
 
-        console.logger.info(table)
+        console.print(table)
 
     if context:
         context_manager = ContextManager(project_path)
@@ -2127,7 +2138,7 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
         table.add_row("Last Save", current_context.get("last_save", "Never"))
         table.add_row("Git Branch", current_context.get("git_branch", "unknown"))
 
-        console.logger.info(table)
+        console.print(table)
 
     if tasks:
         decomposer = TaskDecomposer(project_path)
@@ -2147,9 +2158,9 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
                     task["name"], status_emoji, f"{task.get('progress', 0):.0%}"
                 )
 
-            console.logger.info(table)
+            console.print(table)
         else:
-            console.logger.info("[yellow]No active tasks found[/yellow]")
+            console.print("[yellow]No active tasks found[/yellow]")
 
     if mobile:
         from .mobile.runtime import check_cli_health, list_mobile_panes
@@ -2182,7 +2193,7 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
         else:
             mobile_table.add_row("Active Sessions", str(len(panes)))
 
-        console.logger.info(mobile_table)
+        console.print(mobile_table)
 
         if not tmux_error and panes:
             sessions_table = Table(title="📱 Active Happy Sessions")
@@ -2197,7 +2208,7 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
                     pane.path or "",
                 )
 
-            console.logger.info(sessions_table)
+            console.print(sessions_table)
 
 
 @cli.command("run-tests")
@@ -2221,9 +2232,9 @@ def run_tests(ctx, command: Sequence[str], cwd: Optional[str], label: str):
         cmd_display = " ".join(args)
 
         if result.returncode == 0:
-            console.logger.info(f"[green]✅ Tests passed ({cmd_display})[/green]")
+            console.print(f"[green]✅ Tests passed ({cmd_display})[/green]")
         else:
-            console.logger.error(f"[red]❌ Tests failed ({cmd_display})[/red]")
+            console.print(f"[red]❌ Tests failed ({cmd_display})[/red]")
             sys.exit(result.returncode)
 
     cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
@@ -2252,9 +2263,9 @@ def run_build(ctx, command: Sequence[str], cwd: Optional[str], label: str):
         cmd_display = " ".join(args)
 
         if result.returncode == 0:
-            console.logger.info(f"[green]✅ Build succeeded ({cmd_display})[/green]")
+            console.print(f"[green]✅ Build succeeded ({cmd_display})[/green]")
         else:
-            console.logger.error(f"[red]❌ Build failed ({cmd_display})[/red]")
+            console.print(f"[red]❌ Build failed ({cmd_display})[/red]")
             sys.exit(result.returncode)
 
     cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
@@ -2283,25 +2294,25 @@ def task(
 
     See: docs/90-adr/ADR-XXXX-path-c-migration.md
     """
-    console.logger.info("[yellow]" + "="*60 + "[/yellow]")
-    console.logger.info("[red]⚠️  DEPRECATED COMMAND[/red]")
-    console.logger.info("[yellow]" + "="*60 + "[/yellow]")
-    console.logger.info()
-    console.logger.info("The 'dopemux task' command has been replaced by SuperClaude /dx: commands:")
-    console.logger.info()
-    console.logger.info("  [cyan]/dx:implement[/cyan] - Start ADHD-optimized implementation session")
-    console.logger.info("  [cyan]/dx:session start[/cyan] - Begin work session")
-    console.logger.info("  [cyan]/dx:load[/cyan] - Load tasks from ConPort")
-    console.logger.info("  [cyan]/dx:stats[/cyan] - View ADHD metrics and progress")
-    console.logger.info()
-    console.logger.info("Migration completed: October 2025")
-    console.logger.info("See: [blue]docs/90-adr/ADR-XXXX-path-c-migration.md[/blue]")
-    console.logger.info()
-    console.logger.info("[yellow]" + "="*60 + "[/yellow]")
+    console.print("[yellow]" + "="*60 + "[/yellow]")
+    console.print("[red]⚠️  DEPRECATED COMMAND[/red]")
+    console.print("[yellow]" + "="*60 + "[/yellow]")
+    console.print()
+    console.print("The 'dopemux task' command has been replaced by SuperClaude /dx: commands:")
+    console.print()
+    console.print("  [cyan]/dx:implement[/cyan] - Start ADHD-optimized implementation session")
+    console.print("  [cyan]/dx:session start[/cyan] - Begin work session")
+    console.print("  [cyan]/dx:load[/cyan] - Load tasks from ConPort")
+    console.print("  [cyan]/dx:stats[/cyan] - View ADHD metrics and progress")
+    console.print()
+    console.print("Migration completed: October 2025")
+    console.print("See: [blue]docs/90-adr/ADR-XXXX-path-c-migration.md[/blue]")
+    console.print()
+    console.print("[yellow]" + "="*60 + "[/yellow]")
 
     project_path = Path.cwd()
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.print("[red]No Dopemux project found in current directory[/red]")
         sys.exit(1)
 
     decomposer = TaskDecomposer(project_path)
@@ -2309,7 +2320,7 @@ def task(
     if list_tasks:
         tasks = decomposer.list_tasks()
         if not tasks:
-            console.logger.info("[yellow]No tasks found[/yellow]")
+            console.print("[yellow]No tasks found[/yellow]")
             return
 
         table = Table(title="Current Tasks")
@@ -2335,13 +2346,13 @@ def task(
                 status,
             )
 
-        console.logger.info(table)
+        console.print(table)
         return
 
     # Check if description is provided for adding new task
     if not description:
-        console.logger.info("[red]Description required when not listing tasks[/red]")
-        console.logger.info("Use 'dopemux task --list' to list current tasks")
+        console.print("[red]Description required when not listing tasks[/red]")
+        console.print("Use 'dopemux task --list' to list current tasks")
         sys.exit(1)
 
     # Add new task
@@ -2349,10 +2360,10 @@ def task(
         description=description, duration=duration, priority=priority
     )
 
-    console.logger.info(f"[green]✅ Task added: {description}[/green]")
-    console.logger.info(f"[blue]🆔 ID: {task_id}[/blue]")
-    console.logger.info(f"[yellow]⏱️ Duration: {duration} minutes[/yellow]")
-    console.logger.info(f"[cyan]🎯 Priority: {priority}[/cyan]")
+    console.print(f"[green]✅ Task added: {description}[/green]")
+    console.print(f"[blue]🆔 ID: {task_id}[/blue]")
+    console.print(f"[yellow]⏱️ Duration: {duration} minutes[/yellow]")
+    console.print(f"[cyan]🎯 Priority: {priority}[/cyan]")
 
 
 @cli.group()
@@ -2391,7 +2402,7 @@ def autoresponder_start(ctx, terminal_scope, delay, timeout, whitelist, debug):
     project_path = Path.cwd()
 
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.print("[red]No Dopemux project found in current directory[/red]")
         sys.exit(1)
 
     # Update configuration if options provided
@@ -2427,21 +2438,21 @@ def autoresponder_start(ctx, terminal_scope, delay, timeout, whitelist, debug):
             progress.update(
                 task, description="Auto responder started! 🤖", completed=True
             )
-            console.logger.info("[green]✅ Claude Auto Responder is now active[/green]")
+            console.print("[green]✅ Claude Auto Responder is now active[/green]")
             console.print(
                 "[blue]🎯 Monitoring for Claude Code confirmation prompts[/blue]"
             )
 
             config = config_manager.get_claude_autoresponder_config()
-            console.logger.info(f"[yellow]📡 Scope: {config.terminal_scope}[/yellow]")
+            console.print(f"[yellow]📡 Scope: {config.terminal_scope}[/yellow]")
             if config.response_delay > 0:
-                console.logger.info(f"[cyan]⏱️ Delay: {config.response_delay}s[/cyan]")
+                console.print(f"[cyan]⏱️ Delay: {config.response_delay}s[/cyan]")
             console.print(
                 f"[dim]💤 Auto-stop after {config.timeout_minutes} minutes of inactivity[/dim]"
             )
         else:
             progress.update(task, description="Failed to start", completed=True)
-            console.logger.error("[red]❌ Failed to start auto responder[/red]")
+            console.print("[red]❌ Failed to start auto responder[/red]")
             console.print(
                 "[yellow]💡 Try running 'dopemux autoresponder setup' first[/yellow]"
             )
@@ -2460,7 +2471,7 @@ def autoresponder_stop(ctx):
     project_path = Path.cwd()
 
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.print("[red]No Dopemux project found in current directory[/red]")
         sys.exit(1)
 
     from integrations.claude_autoresponder import create_autoresponder_manager
@@ -2468,7 +2479,7 @@ def autoresponder_stop(ctx):
     autoresponder_manager = create_autoresponder_manager(config_manager, project_path)
 
     if not autoresponder_manager.is_running():
-        console.logger.info("[yellow]Auto responder is not running[/yellow]")
+        console.print("[yellow]Auto responder is not running[/yellow]")
         return
 
     with Progress(
@@ -2485,19 +2496,19 @@ def autoresponder_stop(ctx):
 
         if success:
             progress.update(task, description="Auto responder stopped", completed=True)
-            console.logger.info("[green]✅ Claude Auto Responder stopped[/green]")
+            console.print("[green]✅ Claude Auto Responder stopped[/green]")
 
             # Show session stats
-            console.logger.info(f"[blue]📊 Session Statistics:[/blue]")
-            console.logger.info(f"  ⏱️ Uptime: {status['uptime_minutes']:.1f} minutes")
-            console.logger.info(f"  ✅ Responses sent: {status['responses_sent']}")
+            console.print(f"[blue]📊 Session Statistics:[/blue]")
+            console.print(f"  ⏱️ Uptime: {status['uptime_minutes']:.1f} minutes")
+            console.print(f"  ✅ Responses sent: {status['responses_sent']}")
             if status["responses_sent"] > 0:
                 console.print(
                     f"  📈 Rate: {status['responses_per_minute']:.1f} responses/min"
                 )
         else:
             progress.update(task, description="Error stopping", completed=True)
-            console.logger.error("[red]❌ Error stopping auto responder[/red]")
+            console.print("[red]❌ Error stopping auto responder[/red]")
 
 
 @autoresponder.command("status")
@@ -2512,7 +2523,7 @@ def autoresponder_status(ctx):
     project_path = Path.cwd()
 
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.print("[red]No Dopemux project found in current directory[/red]")
         sys.exit(1)
 
     from integrations.claude_autoresponder import create_autoresponder_manager
@@ -2540,7 +2551,7 @@ def autoresponder_status(ctx):
         if status["last_response"]:
             table.add_row("Last Response", status["last_response"])
 
-    console.logger.info(table)
+    console.print(table)
 
     # Configuration table
     config_table = Table(title="⚙️ Configuration")
@@ -2557,7 +2568,7 @@ def autoresponder_status(ctx):
     )
     config_table.add_row("Debug Mode", "Yes" if config["debug_mode"] else "No")
 
-    console.logger.info(config_table)
+    console.print(config_table)
 
 
 @autoresponder.command("setup")
@@ -2572,7 +2583,7 @@ def autoresponder_setup(ctx):
     project_path = Path.cwd()
 
     if not (project_path / ".dopemux").exists():
-        console.logger.info("[red]No Dopemux project found in current directory[/red]")
+        console.print("[red]No Dopemux project found in current directory[/red]")
         sys.exit(1)
 
     from integrations.claude_autoresponder import create_autoresponder_manager
@@ -2590,12 +2601,12 @@ def autoresponder_setup(ctx):
 
         if success:
             progress.update(task, description="Setup complete! 🎉", completed=True)
-            console.logger.info("[green]✅ ClaudeAutoResponder setup complete[/green]")
-            console.logger.info("[blue]🚀 Run 'dopemux autoresponder start' to begin[/blue]")
+            console.print("[green]✅ ClaudeAutoResponder setup complete[/green]")
+            console.print("[blue]🚀 Run 'dopemux autoresponder start' to begin[/blue]")
         else:
             progress.update(task, description="Setup failed", completed=True)
-            console.logger.error("[red]❌ Setup failed[/red]")
-            console.logger.info("[yellow]Check logs for details[/yellow]")
+            console.print("[red]❌ Setup failed[/red]")
+            console.print("[yellow]Check logs for details[/yellow]")
             sys.exit(1)
 
 
@@ -2686,13 +2697,13 @@ def _run_extract_docs(
     try:
         from document_classifier import DocumentClassifier, extract_from_directory
     except ImportError as e:
-        console.logger.info(f"[red]❌ Could not import extraction modules: {e}[/red]")
-        console.logger.info("[yellow]💡 Make sure you're in the dopemux-mvp directory[/yellow]")
+        console.print(f"[red]❌ Could not import extraction modules: {e}[/red]")
+        console.print("[yellow]💡 Make sure you're in the dopemux-mvp directory[/yellow]")
         sys.exit(1)
 
     source_path = Path(directory).resolve()
     if not source_path.exists():
-        console.logger.info(f"[red]❌ Directory does not exist: {source_path}[/red]")
+        console.print(f"[red]❌ Directory does not exist: {source_path}[/red]")
         sys.exit(1)
 
     if not extensions:
@@ -2770,7 +2781,7 @@ def _run_extract_docs(
 
         except Exception as e:
             progress.update(task, description="Error occurred", completed=True)
-            console.logger.error(f"[red]❌ Extraction failed: {e}[/red]")
+            console.print(f"[red]❌ Extraction failed: {e}[/red]")
             if ctx.obj.get("verbose"):
                 import traceback
                 traceback.print_exc()
@@ -2784,7 +2795,7 @@ def _run_extract_docs(
 
             output_text = yaml.dump(output_data, default_flow_style=False, allow_unicode=True)
         except ImportError:
-            console.logger.info("[yellow]⚠️ PyYAML not available, falling back to JSON[/yellow]")
+            console.print("[yellow]⚠️ PyYAML not available, falling back to JSON[/yellow]")
             output_text = json.dumps(output_data, indent=2, ensure_ascii=False)
     elif format == "csv":
         output_buffer = StringIO()
@@ -2825,9 +2836,9 @@ def _run_extract_docs(
     if output:
         output_path = Path(output)
         output_path.write_text(output_text, encoding='utf-8')
-        console.logger.info(f"[green]✅ Results written to {output_path}[/green]")
+        console.print(f"[green]✅ Results written to {output_path}[/green]")
     else:
-        console.logger.info(output_text)
+        console.print(output_text)
 
     console.print(
         Panel(
@@ -2976,15 +2987,15 @@ def _run_extract_pipeline(
     try:
         from .extraction import UnifiedDocumentPipeline, PipelineConfig
     except ImportError as e:
-        console.logger.info(f"[red]❌ Could not import pipeline modules: {e}[/red]")
-        console.logger.info("[yellow]💡 Make sure the extraction package is properly installed[/yellow]")
+        console.print(f"[red]❌ Could not import pipeline modules: {e}[/red]")
+        console.print("[yellow]💡 Make sure the extraction package is properly installed[/yellow]")
         sys.exit(1)
 
     source_path = Path(directory).resolve()
     output_path = Path(output).resolve()
 
     if not source_path.exists():
-        console.logger.info(f"[red]❌ Source directory does not exist: {source_path}[/red]")
+        console.print(f"[red]❌ Source directory does not exist: {source_path}[/red]")
         sys.exit(1)
 
     file_extensions = None
@@ -3016,9 +3027,9 @@ def _run_extract_pipeline(
         synthesis_format=synthesis_format,
     )
 
-    console.logger.info(f"[blue]🚀 Starting unified document pipeline...[/blue]")
-    console.logger.info(f"[blue]📁 Source: {source_path}[/blue]")
-    console.logger.info(f"[blue]📤 Output: {output_path}[/blue]")
+    console.print(f"[blue]🚀 Starting unified document pipeline...[/blue]")
+    console.print(f"[blue]📁 Source: {source_path}[/blue]")
+    console.print(f"[blue]📤 Output: {output_path}[/blue]")
 
     with Progress(
         SpinnerColumn(),
@@ -3055,29 +3066,29 @@ def _run_extract_pipeline(
                 )
 
                 if result.output_files:
-                    console.logger.info("\n[green]📤 Generated files:[/green]")
+                    console.print("\n[green]📤 Generated files:[/green]")
                     for file_path in result.output_files:
-                        console.logger.info(f"  • {file_path}")
+                        console.print(f"  • {file_path}")
 
                 if result.registry_files:
-                    console.logger.info("\n[green]📊 TSV registries:[/green]")
+                    console.print("\n[green]📊 TSV registries:[/green]")
                     for name, path in result.registry_files.items():
                         count = result.registry_counts.get(name, 0) if result.registry_counts else 0
-                        console.logger.info(f"  • {name}: {path} ({count} entries)")
+                        console.print(f"  • {name}: {path} ({count} entries)")
 
                 if result.embedding_summary:
-                    console.logger.info("\n[green]🔍 Embeddings:[/green]")
-                    console.logger.info(f"  • Model: {result.embedding_summary.get('model', 'N/A')}")
-                    console.logger.info(f"  • Vectors: {result.vector_count}")
+                    console.print("\n[green]🔍 Embeddings:[/green]")
+                    console.print(f"  • Model: {result.embedding_summary.get('model', 'N/A')}")
+                    console.print(f"  • Vectors: {result.vector_count}")
 
             else:
                 progress.update(task, description="Pipeline failed ❌", completed=True)
-                console.logger.error(f"[red]❌ Pipeline failed: {result.error_message}[/red]")
+                console.print(f"[red]❌ Pipeline failed: {result.error_message}[/red]")
                 sys.exit(1)
 
         except Exception as e:
             progress.update(task, description="Error occurred", completed=True)
-            console.logger.error(f"[red]❌ Pipeline execution failed: {e}[/red]")
+            console.print(f"[red]❌ Pipeline execution failed: {e}[/red]")
             if ctx.obj.get("verbose"):
                 import traceback
                 traceback.print_exc()
@@ -3163,14 +3174,14 @@ def _run_extract_cleanup(
     try:
         from .extraction.cleanup import PipelineCleanup, CleanupConfig
     except ImportError as e:
-        console.logger.info(f"[red]❌ Could not import cleanup modules: {e}[/red]")
-        console.logger.info("[yellow]💡 Make sure the extraction package is properly installed[/yellow]")
+        console.print(f"[red]❌ Could not import cleanup modules: {e}[/red]")
+        console.print("[yellow]💡 Make sure the extraction package is properly installed[/yellow]")
         sys.exit(1)
 
     target_path = Path(directory).resolve()
 
     if not target_path.exists():
-        console.logger.info(f"[red]❌ Target directory does not exist: {target_path}[/red]")
+        console.print(f"[red]❌ Target directory does not exist: {target_path}[/red]")
         sys.exit(1)
 
     # Configure cleanup
@@ -3188,12 +3199,12 @@ def _run_extract_cleanup(
         backup_before_delete=False  # For safety in dry-run mode
     )
 
-    console.logger.info(f"[blue]🧹 {'Previewing' if dry_run else 'Executing'} pipeline cleanup...[/blue]")
-    console.logger.info(f"[blue]📁 Target: {target_path}[/blue]")
-    console.logger.info(f"[blue]🎯 Cleanup types: {', '.join(cleanup_types_list)}[/blue]")
+    console.print(f"[blue]🧹 {'Previewing' if dry_run else 'Executing'} pipeline cleanup...[/blue]")
+    console.print(f"[blue]📁 Target: {target_path}[/blue]")
+    console.print(f"[blue]🎯 Cleanup types: {', '.join(cleanup_types_list)}[/blue]")
 
     if dry_run:
-        console.logger.info("[yellow]⚠️  DRY RUN: No files will actually be removed[/yellow]")
+        console.print("[yellow]⚠️  DRY RUN: No files will actually be removed[/yellow]")
 
     with Progress(
         SpinnerColumn(),
@@ -3259,22 +3270,22 @@ def _run_extract_cleanup(
 
                     # Show detailed file lists
                     if result.removed_files:
-                        console.logger.info(f"\n[green]{'📋 Files to be removed:' if dry_run else '🗑️  Files removed:'}[/green]")
+                        console.print(f"\n[green]{'📋 Files to be removed:' if dry_run else '🗑️  Files removed:'}[/green]")
                         for file_path in result.removed_files[:20]:  # Show first 20
                             file_size = file_path.stat().st_size if file_path.exists() else 0
                             size_str = f"({file_size / 1024:.1f} KB)" if file_size > 0 else ""
-                            console.logger.info(f"  • {file_path.relative_to(target_path)} {size_str}")
+                            console.print(f"  • {file_path.relative_to(target_path)} {size_str}")
 
                         if len(result.removed_files) > 20:
-                            console.logger.info(f"  ... and {len(result.removed_files) - 20} more files")
+                            console.print(f"  ... and {len(result.removed_files) - 20} more files")
 
                     # Show errors if any
                     if result.errors:
-                        console.logger.error(f"\n[red]⚠️  Errors encountered:[/red]")
+                        console.print(f"\n[red]⚠️  Errors encountered:[/red]")
                         for error in result.errors[:5]:  # Show first 5 errors
-                            console.logger.error(f"  • {error}")
+                            console.print(f"  • {error}")
                         if len(result.errors) > 5:
-                            console.logger.error(f"  ... and {len(result.errors) - 5} more errors")
+                            console.print(f"  ... and {len(result.errors) - 5} more errors")
 
                 elif report_format == "table":
                     # Create a summary table
@@ -3295,7 +3306,7 @@ def _run_extract_cleanup(
                         size_mb = category_size / (1024 * 1024)
                         table.add_row(category, str(count), f"{size_mb:.2f} MB")
 
-                    console.logger.info(table)
+                    console.print(table)
 
                 elif report_format == "json":
                     # JSON summary
@@ -3314,7 +3325,7 @@ def _run_extract_cleanup(
                         "errors": result.errors,
                         "timestamp": datetime.now().isoformat()
                     }
-                    console.logger.info(json.dumps(json_result, indent=2))
+                    console.print(json.dumps(json_result, indent=2))
 
                 # Save report to file if requested
                 if report_file:
@@ -3340,16 +3351,16 @@ def _run_extract_cleanup(
                     with open(report_path, 'w') as f:
                         json.dump(report_data, f, indent=2)
 
-                    console.logger.info(f"\n[green]📄 Report saved to: {report_path}[/green]")
+                    console.print(f"\n[green]📄 Report saved to: {report_path}[/green]")
 
             else:
                 progress.update(task, description="Cleanup failed ❌", completed=True)
-                console.logger.error(f"[red]❌ Cleanup failed: {result.error_message}[/red]")
+                console.print(f"[red]❌ Cleanup failed: {result.error_message}[/red]")
                 sys.exit(1)
 
         except Exception as e:
             progress.update(task, description="Error occurred", completed=True)
-            console.logger.error(f"[red]❌ Cleanup execution failed: {e}[/red]")
+            console.print(f"[red]❌ Cleanup execution failed: {e}[/red]")
             if ctx.obj.get("verbose"):
                 import traceback
                 traceback.print_exc()
@@ -3391,7 +3402,7 @@ def analyze(
     # Prepare configuration
     source_path = Path(directory).resolve()
     if not source_path.exists():
-        console.logger.info(f"[red]❌ Directory does not exist: {source_path}[/red]")
+        console.print(f"[red]❌ Directory does not exist: {source_path}[/red]")
         sys.exit(1)
 
     # Set output directory
@@ -3429,8 +3440,8 @@ def analyze(
     )
 
     # Initialize and run processor
-    console.logger.info(f"[blue]🧠 Starting ADHD-optimized analysis of {source_path}[/blue]")
-    console.logger.info(f"[dim]Output: {output_path}[/dim]")
+    console.print(f"[blue]🧠 Starting ADHD-optimized analysis of {source_path}[/blue]")
+    console.print(f"[dim]Output: {output_path}[/dim]")
 
     try:
         processor = DocumentProcessor(config)
@@ -3457,11 +3468,11 @@ def analyze(
                 )
             )
         else:
-            console.logger.error("[red]❌ Analysis failed[/red]")
+            console.print("[red]❌ Analysis failed[/red]")
             sys.exit(1)
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Analysis error: {e}[/red]")
+        console.print(f"[red]❌ Analysis error: {e}[/red]")
         if ctx.obj.get("verbose"):
             import traceback
 
@@ -3486,11 +3497,11 @@ def mcp_up_cmd(all_services: bool, services: str):
         else:
             svc_list = " ".join(s.strip() for s in services.split(",") if s.strip())
             cmd += f"docker-compose up -d --build {svc_list}"
-        console.logger.info(f"[blue]🔌 {cmd}[/blue]")
+        console.print(f"[blue]🔌 {cmd}[/blue]")
         subprocess.run(["bash","-lc", cmd], check=True)
-        console.logger.info("[green]✅ MCP servers started[/green]")
+        console.print("[green]✅ MCP servers started[/green]")
     except CalledProcessError:
-        console.logger.error("[red]❌ Failed to start MCP servers[/red]")
+        console.print("[red]❌ Failed to start MCP servers[/red]")
         sys.exit(1)
 
 
@@ -3499,9 +3510,9 @@ def mcp_down_cmd():
     """Stop all MCP servers."""
     try:
         subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose down"], check=True)
-        console.logger.info("[green]✅ MCP servers stopped[/green]")
+        console.print("[green]✅ MCP servers stopped[/green]")
     except CalledProcessError:
-        console.logger.error("[red]❌ Failed to stop MCP servers[/red]")
+        console.print("[red]❌ Failed to stop MCP servers[/red]")
         sys.exit(1)
 
 
@@ -3523,7 +3534,7 @@ def mcp_logs_cmd(service: str):
             cmd = f"cd docker/mcp-servers && docker-compose logs -f {service}"
         else:
             cmd = "cd docker/mcp-servers && docker-compose logs -f"
-        console.logger.info(f"[blue]📄 {cmd}[/blue]")
+        console.print(f"[blue]📄 {cmd}[/blue]")
         subprocess.run(["bash","-lc", cmd], check=False)
     except CalledProcessError:
         sys.exit(1)
@@ -3556,20 +3567,20 @@ def mcp_start_all_cmd(verify: bool):
         script_path = Path(__file__).parent.parent.parent / "scripts" / "start-all.sh"
 
         if not script_path.exists():
-            console.logger.info(f"[red]❌ start-all.sh not found at {script_path}[/red]")
-            console.logger.info("[yellow]Falling back to manual startup...[/yellow]")
+            console.print(f"[red]❌ start-all.sh not found at {script_path}[/red]")
+            console.print("[yellow]Falling back to manual startup...[/yellow]")
 
             # Fallback: manual startup
-            console.logger.info("[blue]Starting MCP servers...[/blue]")
+            console.print("[blue]Starting MCP servers...[/blue]")
             subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose up -d"], check=True)
 
-            console.logger.info("[blue]Starting Integration Bridge...[/blue]")
+            console.print("[blue]Starting Integration Bridge...[/blue]")
             subprocess.run(["bash","-lc","cd docker/conport-kg && docker-compose up -d --no-deps integration-bridge"], check=True)
 
-            console.logger.info("[blue]Starting Task Orchestrator...[/blue]")
+            console.print("[blue]Starting Task Orchestrator...[/blue]")
             subprocess.run(["bash","-lc","cd docker/mcp-servers && docker-compose --profile manual up -d task-orchestrator"], check=True)
 
-            console.logger.info("[green]✅ All services started[/green]")
+            console.print("[green]✅ All services started[/green]")
         else:
             # Use the script
             cmd = ["bash", str(script_path)]
@@ -3579,8 +3590,8 @@ def mcp_start_all_cmd(verify: bool):
             subprocess.run(cmd, check=True)
 
     except CalledProcessError:
-        console.logger.error("[red]❌ Failed to start all services[/red]")
-        console.logger.info("[yellow]💡 Try: docker ps to see running containers[/yellow]")
+        console.print("[red]❌ Failed to start all services[/red]")
+        console.print("[yellow]💡 Try: docker ps to see running containers[/yellow]")
         sys.exit(1)
 
 
@@ -3638,7 +3649,7 @@ def health(
 
     # Handle cleanup flag first
     if cleanup:
-        console.logger.info("[blue]🧹 Cleaning up orphaned MCP processes...[/blue]")
+        console.print("[blue]🧹 Cleaning up orphaned MCP processes...[/blue]")
 
         try:
             # Find orphaned MCP processes
@@ -3743,7 +3754,7 @@ def health(
             # Check specific service
             checker_method = getattr(health_checker, f"_check_{service}", None)
             if not checker_method:
-                console.logger.info(f"[red]❌ Unknown service: {service}[/red]")
+                console.print(f"[red]❌ Unknown service: {service}[/red]")
                 console.print(
                     f"[yellow]Available services: {', '.join(health_checker.checks.keys())}[/yellow]"
                 )
@@ -3762,7 +3773,7 @@ def health(
 
     # Fix unhealthy services if requested
     if fix:
-        console.logger.info("\n[blue]🔧 Attempting to fix unhealthy services...[/blue]")
+        console.print("\n[blue]🔧 Attempting to fix unhealthy services...[/blue]")
 
         with Progress(
             SpinnerColumn(),
@@ -3781,10 +3792,10 @@ def health(
             console.print(
                 f"[green]✅ Restarted services: {', '.join(restarted)}[/green]"
             )
-            console.logger.info("[blue]💡 Run 'dopemux health' again to verify fixes[/blue]")
+            console.print("[blue]💡 Run 'dopemux health' again to verify fixes[/blue]")
         else:
-            console.logger.info("[yellow]⚠️ No services could be automatically fixed[/yellow]")
-            console.logger.info("[dim]Manual intervention may be required[/dim]")
+            console.print("[yellow]⚠️ No services could be automatically fixed[/yellow]")
+            console.print("[dim]Manual intervention may be required[/dim]")
 
     # Exit with appropriate code for scripting
     critical_count = sum(1 for h in results.values() if h.status.value[0] == "critical")
@@ -3845,17 +3856,17 @@ def autoresponder_config(
         )
         table.add_row("Debug Mode", "Yes" if current_config.debug_mode else "No")
 
-        console.logger.info(table)
+        console.print(table)
         return
 
     # Apply updates
     try:
         config_manager.update_claude_autoresponder(**updates)
-        console.logger.info("[green]✅ Configuration updated[/green]")
+        console.print("[green]✅ Configuration updated[/green]")
 
         # Show what changed
         for key, value in updates.items():
-            console.logger.info(f"[blue]  {key}: {value}[/blue]")
+            console.print(f"[blue]  {key}: {value}[/blue]")
 
         # Restart if running
         project_path = Path.cwd()
@@ -3872,7 +3883,7 @@ def autoresponder_config(
                 autoresponder_manager.restart()
 
     except ValueError as e:
-        console.logger.error(f"[red]❌ Configuration error: {e}[/red]")
+        console.print(f"[red]❌ Configuration error: {e}[/red]")
         sys.exit(1)
 
 
@@ -3917,7 +3928,7 @@ def _configure_openrouter_litellm():
     os.environ["CLAUDE_CODE_LLM_BASE_URL"] = "http://localhost:4000"
     os.environ["CLAUDE_CODE_LLM_API_KEY"] = os.getenv("DOPEMUX_LITELLM_MASTER_KEY", "")
     
-    console.logger.info("[green]✅ OpenRouter via LiteLLM configuration applied[/green]")
+    console.print("[green]✅ OpenRouter via LiteLLM configuration applied[/green]")
 
 
 def _configure_openrouter_litellm():
@@ -3941,7 +3952,7 @@ def _configure_openrouter_litellm():
     os.environ["ZEN_DEFAULT_MODEL"] = "litellm/openrouter-openai-gpt-5"
     os.environ["ZEN_FALLBACK_MODELS"] = "litellm/openrouter-xai-grok-code-fast,litellm/openrouter-google-gemini-2-flash"
     
-    console.logger.info("[green]✅ OpenRouter via LiteLLM configuration applied[/green]")
+    console.print("[green]✅ OpenRouter via LiteLLM configuration applied[/green]")
 
 
 def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[dict] = None):
@@ -3961,7 +3972,7 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
     - Health check waiting ensures everything is ready
     """
     if os.getenv("DOPEMUX_SKIP_MCP_START", "0").lower() in {"1", "true", "yes"}:
-        console.logger.info("[yellow]⏭️ Skipping MCP server startup (DOPEMUX_SKIP_MCP_START)[/yellow]")
+        console.print("[yellow]⏭️ Skipping MCP server startup (DOPEMUX_SKIP_MCP_START)[/yellow]")
         return
 
     import requests
@@ -3981,8 +3992,8 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
         ("LiteLLM", "http://localhost:4000/health/readiness"),
     ]
 
-    console.logger.info("\n[bold blue]🔌 Starting MCP Servers[/bold blue]")
-    console.logger.info("[dim]This may take 30-60 seconds for first-time setup...[/dim]\n")
+    console.print("\n[bold blue]🔌 Starting MCP Servers[/bold blue]")
+    console.print("[dim]This may take 30-60 seconds for first-time setup...[/dim]\n")
 
     # Start docker-compose with real-time output
     status_text = Text()
@@ -4029,14 +4040,14 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
             process.wait()
 
             if process.returncode != 0:
-                console.logger.error("\n[red]❌ MCP server startup failed[/red]")
-                console.logger.info("[dim]Last 10 lines of output:[/dim]")
+                console.print("\n[red]❌ MCP server startup failed[/red]")
+                console.print("[dim]Last 10 lines of output:[/dim]")
                 for line in output_lines[-10:]:
-                    console.logger.info(f"[dim]{line}[/dim]")
+                    console.print(f"[dim]{line}[/dim]")
                 raise CalledProcessError(process.returncode, process.args)
 
         # Wait for health checks
-        console.logger.info("\n[bold blue]🏥 Waiting for services to become healthy...[/bold blue]")
+        console.print("\n[bold blue]🏥 Waiting for services to become healthy...[/bold blue]")
 
         max_wait = 45  # seconds
         start_time = time.time()
@@ -4077,23 +4088,23 @@ def _start_mcp_servers_with_progress(project_path: Path, instance_env: Optional[
                 time.sleep(2)
 
         if all_healthy:
-            console.logger.info("\n[bold green]✅ All MCP servers are healthy and ready![/bold green]\n")
+            console.print("\n[bold green]✅ All MCP servers are healthy and ready![/bold green]\n")
         else:
             # Show which services failed
-            console.logger.info("\n[yellow]⚠️  Some services are not healthy (continuing anyway):[/yellow]")
+            console.print("\n[yellow]⚠️  Some services are not healthy (continuing anyway):[/yellow]")
             for name, is_healthy in health_status.items():
                 if not is_healthy:
-                    console.logger.info(f"  [red]❌ {name}[/red]")
+                    console.print(f"  [red]❌ {name}[/red]")
                 else:
-                    console.logger.info(f"  [green]✅ {name}[/green]")
-            console.logger.info("[dim]Tip: Check docker logs with: docker-compose -f docker/mcp-servers/docker-compose.yml logs[/dim]\n")
+                    console.print(f"  [green]✅ {name}[/green]")
+            console.print("[dim]Tip: Check docker logs with: docker-compose -f docker/mcp-servers/docker-compose.yml logs[/dim]\n")
 
     except CalledProcessError as e:
-        console.logger.error("[yellow]⚠️  Failed to start MCP servers (continuing with reduced functionality)[/yellow]")
-        console.logger.info("[dim]   Tip: Run 'dopemux start --no-mcp' to skip this step[/dim]")
+        console.print("[yellow]⚠️  Failed to start MCP servers (continuing with reduced functionality)[/yellow]")
+        console.print("[dim]   Tip: Run 'dopemux start --no-mcp' to skip this step[/dim]")
     except Exception as e:
-        console.logger.error(f"[yellow]⚠️  Error during MCP startup: {e}[/yellow]")
-        console.logger.info("[dim]   Continuing with reduced functionality...[/dim]")
+        console.print(f"[yellow]⚠️  Error during MCP startup: {e}[/yellow]")
+        console.print("[dim]   Continuing with reduced functionality...[/dim]")
 
 
 def _activate_dangerous_mode():
@@ -4115,9 +4126,9 @@ def _activate_dangerous_mode():
         expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
 
         if time.time() < expires_timestamp:
-            console.logger.info("[yellow]⚠️  Dangerous mode already active[/yellow]")
+            console.print("[yellow]⚠️  Dangerous mode already active[/yellow]")
             remaining_minutes = int((expires_timestamp - time.time()) / 60)
-            console.logger.info(f"[dim]Expires in {remaining_minutes} minutes[/dim]")
+            console.print(f"[dim]Expires in {remaining_minutes} minutes[/dim]")
             return
         else:
             # Expired, clear old settings
@@ -4139,11 +4150,11 @@ def _activate_dangerous_mode():
 
     # Require explicit confirmation
     if not click.confirm("\nDo you understand the risks and want to proceed?", default=False):
-        console.logger.info("[green]Dangerous mode cancelled. Staying in safe mode.[/green]")
+        console.print("[green]Dangerous mode cancelled. Staying in safe mode.[/green]")
         return
 
     if not click.confirm("Are you in an isolated, trusted environment?", default=False):
-        console.logger.info("[green]Dangerous mode cancelled for security.[/green]")
+        console.print("[green]Dangerous mode cancelled for security.[/green]")
         return
 
     # Set time-limited dangerous mode (1 hour)
@@ -4166,7 +4177,7 @@ def _activate_dangerous_mode():
 
     # Log for audit trail (but not sensitive info)
     expiry_str = datetime.fromtimestamp(expiry_time).strftime("%H:%M:%S")
-    console.logger.info(f"[red bold]⚠️  DANGEROUS MODE ACTIVE until {expiry_str}[/red bold]")
+    console.print(f"[red bold]⚠️  DANGEROUS MODE ACTIVE until {expiry_str}[/red bold]")
 
 
 def _deactivate_dangerous_mode():
@@ -4187,7 +4198,7 @@ def _deactivate_dangerous_mode():
     for var in dangerous_vars:
         os.environ.pop(var, None)
 
-    console.logger.info("[green]✅ Dangerous mode deactivated[/green]")
+    console.print("[green]✅ Dangerous mode deactivated[/green]")
 
 
 def _check_dangerous_mode_expiry():
@@ -4197,7 +4208,7 @@ def _check_dangerous_mode_expiry():
         expires_timestamp = float(expires_str) if expires_str.isdigit() else 0
 
         if time.time() >= expires_timestamp:
-            console.logger.info("[yellow]⏰ Dangerous mode expired, returning to safe mode[/yellow]")
+            console.print("[yellow]⏰ Dangerous mode expired, returning to safe mode[/yellow]")
             _deactivate_dangerous_mode()
             return True
     return False
@@ -4249,27 +4260,27 @@ def _run_volume_backup(dest: Optional[str], pattern: Optional[str], no_pull: boo
     try:
         result = subprocess.run(["docker", "volume", "ls", "--format", "{{.Name}}"], capture_output=True, text=True, check=True)
     except Exception as e:
-        console.logger.info(f"[red]❌ Docker not available: {e}[/red]")
+        console.print(f"[red]❌ Docker not available: {e}[/red]")
         sys.exit(1)
 
     volumes = [v.strip() for v in result.stdout.splitlines() if v.strip() and vol_pattern.search(v.strip())]
     if not volumes:
-        console.logger.info("[yellow]No matching volumes found[/yellow]")
+        console.print("[yellow]No matching volumes found[/yellow]")
         return
 
-    console.logger.info(f"[blue]== Backing up {len(volumes)} volumes to {dest_path} ==[/blue]")
+    console.print(f"[blue]== Backing up {len(volumes)} volumes to {dest_path} ==[/blue]")
 
     if not no_pull:
         try:
             subprocess.run(["docker", "image", "inspect", "alpine:latest"], capture_output=True, text=True, check=True)
         except subprocess.CalledProcessError:
-            console.logger.info("[dim]Pulling alpine:latest ...[/dim]")
+            console.print("[dim]Pulling alpine:latest ...[/dim]")
             subprocess.run(["docker", "pull", "alpine:latest"], check=False)
 
     ok = 0
     fail = 0
     for vol in volumes:
-        console.logger.info(f"Backing up [cyan]{vol}[/cyan] ...")
+        console.print(f"Backing up [cyan]{vol}[/cyan] ...")
         cmd = [
             "docker", "run", "--rm",
             "-v", f"{vol}:/data:ro",
@@ -4279,10 +4290,10 @@ def _run_volume_backup(dest: Optional[str], pattern: Optional[str], no_pull: boo
         ]
         try:
             subprocess.run(cmd, check=True)
-            console.logger.info(f"[green]✓ {vol}[/green] → {dest_path / (vol + '.tgz')}")
+            console.print(f"[green]✓ {vol}[/green] → {dest_path / (vol + '.tgz')}")
             ok += 1
         except subprocess.CalledProcessError:
-            console.logger.error(f"[red]✗ Failed to back up {vol}[/red]")
+            console.print(f"[red]✗ Failed to back up {vol}[/red]")
             fail += 1
 
     try:
@@ -4294,11 +4305,11 @@ def _run_volume_backup(dest: Optional[str], pattern: Optional[str], no_pull: boo
                     for chunk in iter(lambda: tf.read(1024 * 1024), b""):
                         h.update(chunk)
                 f.write(f"{h.hexdigest()}  {tgz.name}\n")
-        console.logger.info(f"[green]Manifest written:[/green] {sums_path}")
+        console.print(f"[green]Manifest written:[/green] {sums_path}")
     except Exception as e:
-        console.logger.info(f"[yellow]⚠️  Could not write checksum manifest: {e}[/yellow]")
+        console.print(f"[yellow]⚠️  Could not write checksum manifest: {e}[/yellow]")
 
-    console.logger.error(f"\n[bold]Summary[/bold]: Backed up {ok} volumes, {fail} failed")
+    console.print(f"\n[bold]Summary[/bold]: Backed up {ok} volumes, {fail} failed")
 
 
 def _print_or_apply_cron(frequency: str, apply: bool) -> None:
@@ -4313,28 +4324,28 @@ def _print_or_apply_cron(frequency: str, apply: bool) -> None:
     )
 
     if not apply:
-        console.logger.info("\n[bold]Cron suggestion[/bold] (add via 'crontab -e'):\n")
-        console.logger.info(cron_entry)
-        console.logger.info("\n[dim]Tip: Adjust path and time as needed.[/dim]")
+        console.print("\n[bold]Cron suggestion[/bold] (add via 'crontab -e'):\n")
+        console.print(cron_entry)
+        console.print("\n[dim]Tip: Adjust path and time as needed.[/dim]")
         return
 
     try:
         current = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
         content = current.stdout if current.returncode == 0 else ""
         if "# dopemux-backup" in content:
-            console.logger.info("[yellow]⚠️  A dopemux-backup entry already exists in your crontab[/yellow]")
+            console.print("[yellow]⚠️  A dopemux-backup entry already exists in your crontab[/yellow]")
             return
         new_content = content + ("\n" if content and not content.endswith("\n") else "") + cron_entry
         p = subprocess.run(["crontab", "-"], input=new_content, text=True)
         if p.returncode == 0:
-            console.logger.info("[green]✅ Installed dopemux backup cron job[/green]")
+            console.print("[green]✅ Installed dopemux backup cron job[/green]")
         else:
-            console.logger.info("[yellow]⚠️  Could not install cron job. Printing entry instead:[/yellow]")
-            console.logger.info(cron_entry)
+            console.print("[yellow]⚠️  Could not install cron job. Printing entry instead:[/yellow]")
+            console.print(cron_entry)
     except Exception as e:
-        console.logger.error(f"[yellow]⚠️  Failed to install cron job: {e}[/yellow]")
-        console.logger.info("\nAdd this entry manually via 'crontab -e':\n")
-        console.logger.info(cron_entry)
+        console.print(f"[yellow]⚠️  Failed to install cron job: {e}[/yellow]")
+        console.print("\nAdd this entry manually via 'crontab -e':\n")
+        console.print(cron_entry)
 
 
 @cli.command("extract-chatlog")
@@ -4405,13 +4416,13 @@ def _run_extract_chatlog(
     try:
         from extraction_pipeline import ExtractionPipeline, PipelineConfig
     except ImportError as e:
-        console.logger.info(f"[red]❌ Could not import extraction pipeline: {e}[/red]")
-        console.logger.info("[yellow]💡 Make sure you're in the dopemux-mvp directory[/yellow]")
+        console.print(f"[red]❌ Could not import extraction pipeline: {e}[/red]")
+        console.print("[yellow]💡 Make sure you're in the dopemux-mvp directory[/yellow]")
         sys.exit(1)
 
     source_path = Path(directory).resolve()
     if not source_path.exists():
-        console.logger.info(f"[red]❌ Directory does not exist: {source_path}[/red]")
+        console.print(f"[red]❌ Directory does not exist: {source_path}[/red]")
         sys.exit(1)
 
     if output:
@@ -4440,10 +4451,10 @@ def _run_extract_chatlog(
         workspace_id=workspace_id,
     )
 
-    console.logger.info("[blue]🚀 Starting Basic Chatlog Extraction Pipeline[/blue]")
-    console.logger.info(f"[blue]📁 Source: {source_path}[/blue]")
-    console.logger.info(f"[blue]📤 Output: {output_path}[/blue]")
-    console.logger.info(f"[blue]🎯 Extractors: Decision, Feature, Research[/blue]")
+    console.print("[blue]🚀 Starting Basic Chatlog Extraction Pipeline[/blue]")
+    console.print(f"[blue]📁 Source: {source_path}[/blue]")
+    console.print(f"[blue]📤 Output: {output_path}[/blue]")
+    console.print(f"[blue]🎯 Extractors: Decision, Feature, Research[/blue]")
 
     with Progress(
         SpinnerColumn(),
@@ -4460,7 +4471,7 @@ def _run_extract_chatlog(
 
             if not files:
                 progress.update(task, description="No files found to process", completed=True)
-                console.logger.info("[yellow]⚠️ No unprocessed chatlog files found[/yellow]")
+                console.print("[yellow]⚠️ No unprocessed chatlog files found[/yellow]")
                 return
 
             progress.update(task, description=f"Processing {len(files)} files...")
@@ -4488,21 +4499,21 @@ def _run_extract_chatlog(
                     )
                 )
 
-                console.logger.info(f"\n[green]📁 Results saved to: {output_path}[/green]")
-                console.logger.info(f"[green]📦 Processed files archived to: {result['archive_directory']}[/green]")
+                console.print(f"\n[green]📁 Results saved to: {output_path}[/green]")
+                console.print(f"[green]📦 Processed files archived to: {result['archive_directory']}[/green]")
 
             else:
                 progress.update(task, description="Extraction failed ❌", completed=True)
-                console.logger.error(f"[red]❌ Extraction failed[/red]")
+                console.print(f"[red]❌ Extraction failed[/red]")
                 if result.get('errors'):
-                    console.logger.error(f"[red]Errors: {len(result['errors'])}[/red]")
+                    console.print(f"[red]Errors: {len(result['errors'])}[/red]")
                     for error in result['errors'][:3]:
-                        console.logger.error(f"[red]  • {error}[/red]")
+                        console.print(f"[red]  • {error}[/red]")
                 sys.exit(1)
 
         except Exception as e:
             progress.update(task, description="Error occurred", completed=True)
-            console.logger.error(f"[red]❌ Extraction pipeline failed: {e}[/red]")
+            console.print(f"[red]❌ Extraction pipeline failed: {e}[/red]")
             if ctx.obj.get("verbose"):
                 import traceback
                 traceback.print_exc()
@@ -4590,13 +4601,13 @@ def _run_extract_pro(
     try:
         from extraction_pipeline import ExtractionPipeline, PipelineConfig
     except ImportError as e:
-        console.logger.info(f"[red]❌ Could not import extraction pipeline: {e}[/red]")
-        console.logger.info("[yellow]💡 Make sure you're in the dopemux-mvp directory[/yellow]")
+        console.print(f"[red]❌ Could not import extraction pipeline: {e}[/red]")
+        console.print("[yellow]💡 Make sure you're in the dopemux-mvp directory[/yellow]")
         sys.exit(1)
 
     source_path = Path(directory).resolve()
     if not source_path.exists():
-        console.logger.info(f"[red]❌ Directory does not exist: {source_path}[/red]")
+        console.print(f"[red]❌ Directory does not exist: {source_path}[/red]")
         sys.exit(1)
 
     # Set output directory
@@ -4631,10 +4642,10 @@ def _run_extract_pro(
         workspace_id=workspace_id
     )
 
-    console.logger.info("[blue]🔬 Starting Pro Chatlog Extraction Pipeline[/blue]")
-    console.logger.info(f"[blue]📁 Source: {source_path}[/blue]")
-    console.logger.info(f"[blue]📤 Output: {output_path}[/blue]")
-    console.logger.info(f"[blue]🎯 Extractors: All 7 (Decision, Feature, Research, Constraint, Stakeholder, Risk, Security)[/blue]")
+    console.print("[blue]🔬 Starting Pro Chatlog Extraction Pipeline[/blue]")
+    console.print(f"[blue]📁 Source: {source_path}[/blue]")
+    console.print(f"[blue]📤 Output: {output_path}[/blue]")
+    console.print(f"[blue]🎯 Extractors: All 7 (Decision, Feature, Research, Constraint, Stakeholder, Risk, Security)[/blue]")
 
     with Progress(
         SpinnerColumn(),
@@ -4652,7 +4663,7 @@ def _run_extract_pro(
 
             if not files:
                 progress.update(task, description="No files found to process", completed=True)
-                console.logger.info("[yellow]⚠️ No unprocessed chatlog files found[/yellow]")
+                console.print("[yellow]⚠️ No unprocessed chatlog files found[/yellow]")
                 return
 
             progress.update(task, description=f"Processing {len(files)} files with ALL extractors...")
@@ -4682,23 +4693,23 @@ def _run_extract_pro(
                     )
                 )
 
-                console.logger.info(f"\n[green]📁 Results saved to: {output_path}[/green]")
-                console.logger.info(f"[green]📦 Processed files archived to: {result['archive_directory']}[/green]")
-                console.logger.info(f"[green]📊 Knowledge graph: {output_path}/knowledge_graph.json[/green]")
-                console.logger.info(f"[green]📋 Comprehensive report: {output_path}/reports/[/green]")
+                console.print(f"\n[green]📁 Results saved to: {output_path}[/green]")
+                console.print(f"[green]📦 Processed files archived to: {result['archive_directory']}[/green]")
+                console.print(f"[green]📊 Knowledge graph: {output_path}/knowledge_graph.json[/green]")
+                console.print(f"[green]📋 Comprehensive report: {output_path}/reports/[/green]")
 
             else:
                 progress.update(task, description="Pro extraction failed ❌", completed=True)
-                console.logger.error(f"[red]❌ Pro extraction failed[/red]")
+                console.print(f"[red]❌ Pro extraction failed[/red]")
                 if result.get('errors'):
-                    console.logger.error(f"[red]Errors: {len(result['errors'])}[/red]")
+                    console.print(f"[red]Errors: {len(result['errors'])}[/red]")
                     for error in result['errors'][:3]:  # Show first 3 errors
-                        console.logger.error(f"[red]  • {error}[/red]")
+                        console.print(f"[red]  • {error}[/red]")
                 sys.exit(1)
 
         except Exception as e:
             progress.update(task, description="Error occurred", completed=True)
-            console.logger.error(f"[red]❌ Pro extraction pipeline failed: {e}[/red]")
+            console.print(f"[red]❌ Pro extraction pipeline failed: {e}[/red]")
             if ctx.obj.get("verbose"):
                 import traceback
                 traceback.print_exc()
@@ -4769,7 +4780,7 @@ def run(ctx, check: bool, minimal: bool, skip_backups: bool, skip_docker: bool, 
         manager = UpdateManager(config=config, project_root=Path.cwd())
 
         if check:
-            console.logger.info("[cyan]🔍 Checking for available updates...[/cyan]")
+            console.print("[cyan]🔍 Checking for available updates...[/cyan]")
             # Run dry run
             plan = asyncio.run(manager.dry_run())
 
@@ -4778,22 +4789,22 @@ def run(ctx, check: bool, minimal: bool, skip_backups: bool, skip_docker: bool, 
 
         else:
             # Run actual update
-            console.logger.info("[cyan]🚀 Starting dopemux update...[/cyan]")
+            console.print("[cyan]🚀 Starting dopemux update...[/cyan]")
             result = asyncio.run(manager.run_update())
 
             # Show result
             if result.value == "success":
-                console.logger.info("[green]✅ Update completed successfully![/green]")
+                console.print("[green]✅ Update completed successfully![/green]")
             elif result.value == "rolled_back":
-                console.logger.error("[yellow]🔄 Update failed but rollback successful[/yellow]")
+                console.print("[yellow]🔄 Update failed but rollback successful[/yellow]")
             elif result.value == "interrupted":
-                console.logger.info("[yellow]⏸️ Update interrupted - resume with 'dopemux update resume'[/yellow]")
+                console.print("[yellow]⏸️ Update interrupted - resume with 'dopemux update resume'[/yellow]")
             else:
-                console.logger.error("[red]❌ Update failed[/red]")
+                console.print("[red]❌ Update failed[/red]")
                 sys.exit(1)
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Update command failed: {e}[/red]")
+        console.print(f"[red]❌ Update command failed: {e}[/red]")
         if ctx.obj and ctx.obj.get('verbose'):
             import traceback
             traceback.print_exc()
@@ -4817,17 +4828,17 @@ def resume(ctx):
         config = UpdateConfig(checkpoint_saves=True)
         manager = UpdateManager(config=config, project_root=Path.cwd())
 
-        console.logger.info("[cyan]🔄 Resuming interrupted update...[/cyan]")
+        console.print("[cyan]🔄 Resuming interrupted update...[/cyan]")
         result = asyncio.run(manager.run_update())
 
         if result.value == "success":
-            console.logger.info("[green]✅ Update resumed and completed successfully![/green]")
+            console.print("[green]✅ Update resumed and completed successfully![/green]")
         else:
-            console.logger.error(f"[red]❌ Update resume failed: {result.value}[/red]")
+            console.print(f"[red]❌ Update resume failed: {result.value}[/red]")
             sys.exit(1)
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Resume command failed: {e}[/red]")
+        console.print(f"[red]❌ Resume command failed: {e}[/red]")
         if ctx.obj and ctx.obj.get('verbose'):
             import traceback
             traceback.print_exc()
@@ -4863,10 +4874,10 @@ def rollback(ctx, backup_name: Optional[str], list_backups: bool):
             backups = manager.list_available_backups()
 
             if not backups:
-                console.logger.info("[yellow]No backups available[/yellow]")
+                console.print("[yellow]No backups available[/yellow]")
                 return
 
-            console.logger.info("\n[bold]Available Backups:[/bold]")
+            console.print("\n[bold]Available Backups:[/bold]")
             table = Table(show_header=True, header_style="bold magenta")
             table.add_column("Name", style="cyan")
             table.add_column("Created", style="dim")
@@ -4881,21 +4892,21 @@ def rollback(ctx, backup_name: Optional[str], list_backups: bool):
 
                 table.add_row(backup_path.name, created, version, size)
 
-            console.logger.info(table)
+            console.print(table)
             return
 
         # Perform rollback
-        console.logger.info("[yellow]🔄 Initiating system rollback...[/yellow]")
+        console.print("[yellow]🔄 Initiating system rollback...[/yellow]")
         success = asyncio.run(manager.manual_rollback(backup_name))
 
         if success:
-            console.logger.info("[green]✅ Rollback completed successfully![/green]")
+            console.print("[green]✅ Rollback completed successfully![/green]")
         else:
-            console.logger.error("[red]❌ Rollback failed[/red]")
+            console.print("[red]❌ Rollback failed[/red]")
             sys.exit(1)
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Rollback command failed: {e}[/red]")
+        console.print(f"[red]❌ Rollback command failed: {e}[/red]")
         if ctx.obj and ctx.obj.get('verbose'):
             import traceback
             traceback.print_exc()
@@ -4919,37 +4930,37 @@ def status(ctx):
         manager = UpdateManager(project_root=Path.cwd())
         health_checker = HealthChecker(project_root=Path.cwd())
 
-        console.logger.info("[cyan]📊 Dopemux System Status[/cyan]\n")
+        console.print("[cyan]📊 Dopemux System Status[/cyan]\n")
 
         # Version information
         version_info = manager.check_for_updates()
-        console.logger.info(f"[bold]Current Version:[/bold] {version_info.current}")
-        console.logger.info(f"[bold]Latest Version:[/bold] {version_info.target}")
+        console.print(f"[bold]Current Version:[/bold] {version_info.current}")
+        console.print(f"[bold]Latest Version:[/bold] {version_info.target}")
 
         if version_info.current != version_info.target:
-            console.logger.info(f"[yellow]📦 Update available: {version_info.current} → {version_info.target}[/yellow]")
+            console.print(f"[yellow]📦 Update available: {version_info.current} → {version_info.target}[/yellow]")
         else:
-            console.logger.info("[green]✅ System is up to date[/green]")
+            console.print("[green]✅ System is up to date[/green]")
 
         # Health status
-        console.logger.info("\n[bold]System Health:[/bold]")
+        console.print("\n[bold]System Health:[/bold]")
         health_results = asyncio.run(health_checker.check_all_services())
 
         healthy_count = sum(health_results.values())
         total_count = len(health_results)
 
         if healthy_count == total_count:
-            console.logger.info(f"[green]✅ All services healthy ({healthy_count}/{total_count})[/green]")
+            console.print(f"[green]✅ All services healthy ({healthy_count}/{total_count})[/green]")
         else:
-            console.logger.info(f"[yellow]⚠️ {total_count - healthy_count} services need attention ({healthy_count}/{total_count})[/yellow]")
+            console.print(f"[yellow]⚠️ {total_count - healthy_count} services need attention ({healthy_count}/{total_count})[/yellow]")
 
             # Show unhealthy services
             unhealthy = [service for service, healthy in health_results.items() if not healthy]
             for service in unhealthy:
-                console.logger.info(f"  [red]❌ {service}[/red]")
+                console.print(f"  [red]❌ {service}[/red]")
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Status command failed: {e}[/red]")
+        console.print(f"[red]❌ Status command failed: {e}[/red]")
         if ctx.obj and ctx.obj.get('verbose'):
             import traceback
             traceback.print_exc()
@@ -4960,10 +4971,10 @@ def _show_update_plan(plan):
     """Show update plan in user-friendly format."""
     version_info = plan['version_info']
 
-    console.logger.info(f"\n[bold]📋 Update Plan: v{version_info['current']} → v{version_info['target']}[/bold]")
+    console.print(f"\n[bold]📋 Update Plan: v{version_info['current']} → v{version_info['target']}[/bold]")
 
     if version_info['current'] == version_info['target']:
-        console.logger.info("[green]✅ Already up to date![/green]")
+        console.print("[green]✅ Already up to date![/green]")
         return
 
     # Show what will be updated
@@ -4980,16 +4991,16 @@ def _show_update_plan(plan):
     if version_info.get('requires_migration'):
         table.add_row("Database", "🔄 Migrate", "Apply schema changes")
 
-    console.logger.info(table)
+    console.print(table)
 
     # Show estimates
-    console.logger.info(f"\n[dim]⏱️ Estimated time: {plan.get('estimated_time', '15-20 minutes')}[/dim]")
-    console.logger.info(f"[dim]💾 Backup size: {plan.get('backup_size', '~250 MB')}[/dim]")
+    console.print(f"\n[dim]⏱️ Estimated time: {plan.get('estimated_time', '15-20 minutes')}[/dim]")
+    console.print(f"[dim]💾 Backup size: {plan.get('backup_size', '~250 MB')}[/dim]")
 
     # Show phases
     phases = plan.get('phases', [])
     if phases:
-        console.logger.info(f"\n[bold]Phases:[/bold] {' → '.join(phases)}")
+        console.print(f"\n[bold]Phases:[/bold] {' → '.join(phases)}")
 
 
 # =============================================================================
@@ -5021,12 +5032,12 @@ def profile_list_cmd(ctx, profile_dir: Optional[str]):
         profile_set = parser.parse_directory(profiles_directory, pattern="*.yaml")
 
         if not profile_set.profiles:
-            console.logger.info("[yellow]⚠️  No valid profiles found[/yellow]")
-            console.logger.info(f"\n[dim]Profile directory: {profiles_directory}[/dim]")
-            console.logger.info("\n[cyan]💡 Get started:[/cyan]")
-            console.logger.info(f"   • Create personalized profile: [white]dopemux profile init[/white]")
-            console.logger.info(f"   • See examples: [white]dopemux profile --help[/white]")
-            console.logger.info(f"   • Read guide: [white]docs/guides/PROFILE_USER_GUIDE.md[/white]")
+            console.print("[yellow]⚠️  No valid profiles found[/yellow]")
+            console.print(f"\n[dim]Profile directory: {profiles_directory}[/dim]")
+            console.print("\n[cyan]💡 Get started:[/cyan]")
+            console.print(f"   • Create personalized profile: [white]dopemux profile init[/white]")
+            console.print(f"   • See examples: [white]dopemux profile --help[/white]")
+            console.print(f"   • Read guide: [white]docs/guides/PROFILE_USER_GUIDE.md[/white]")
             sys.exit(1)
 
         # Display profiles in a rich table
@@ -5045,21 +5056,21 @@ def profile_list_cmd(ctx, profile_dir: Optional[str]):
                 p.description
             )
 
-        console.logger.info(table)
-        console.logger.info(f"\n[dim]Profile directory: {profiles_directory}[/dim]")
-        console.logger.info(f"[dim]Total profiles: {len(profile_set.profiles)}[/dim]")
+        console.print(table)
+        console.print(f"\n[dim]Profile directory: {profiles_directory}[/dim]")
+        console.print(f"[dim]Total profiles: {len(profile_set.profiles)}[/dim]")
 
         # Add helpful tips
-        console.logger.info(f"\n[cyan]💡 Quick Tips:[/cyan]")
-        console.logger.info(f"   • View details: [white]dopemux profile show <name>[/white]")
-        console.logger.info(f"   • Apply profile: [white]dopemux profile apply <name>[/white]")
-        console.logger.info(f"   • Create custom: [white]dopemux profile init[/white]")
+        console.print(f"\n[cyan]💡 Quick Tips:[/cyan]")
+        console.print(f"   • View details: [white]dopemux profile show <name>[/white]")
+        console.print(f"   • Apply profile: [white]dopemux profile apply <name>[/white]")
+        console.print(f"   • Create custom: [white]dopemux profile init[/white]")
 
     except FileNotFoundError as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/red]")
         sys.exit(1)
     except Exception as e:
-        console.logger.error(f"[red]Unexpected error: {e}[/red]")
+        console.print(f"[red]Unexpected error: {e}[/red]")
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
@@ -5087,10 +5098,10 @@ def profile_init_cmd(ctx, profile_name: Optional[str], output_dir: Optional[str]
             sys.exit(1)
 
     except KeyboardInterrupt:
-        console.logger.info("\n[yellow]❌ Profile creation cancelled[/yellow]")
+        console.print("\n[yellow]❌ Profile creation cancelled[/yellow]")
         sys.exit(1)
     except Exception as e:
-        console.logger.error(f"[red]Unexpected error: {e}[/red]")
+        console.print(f"[red]Unexpected error: {e}[/red]")
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
@@ -5121,15 +5132,15 @@ def profile_auto_enable_cmd(ctx, check_interval: Optional[int], threshold: Optio
         service.config.enabled = True
         service.config.save(config_file)
 
-        console.logger.info("[green]✅ Auto-detection enabled[/green]")
-        console.logger.info(f"   Check interval: {service.config.check_interval_seconds}s ({service.config.check_interval_seconds // 60} min)")
-        console.logger.info(f"   Confidence threshold: {service.config.confidence_threshold:.0%}")
-        console.logger.info(f"   Quiet hours: {service.config.quiet_hours_start}-{service.config.quiet_hours_end}")
-        console.logger.info(f"\n[dim]💡 Service will suggest profile switches when confidence >{service.config.confidence_threshold:.0%}[/dim]")
-        console.logger.info(f"[dim]💡 Edit settings: {config_file}[/dim]")
+        console.print("[green]✅ Auto-detection enabled[/green]")
+        console.print(f"   Check interval: {service.config.check_interval_seconds}s ({service.config.check_interval_seconds // 60} min)")
+        console.print(f"   Confidence threshold: {service.config.confidence_threshold:.0%}")
+        console.print(f"   Quiet hours: {service.config.quiet_hours_start}-{service.config.quiet_hours_end}")
+        console.print(f"\n[dim]💡 Service will suggest profile switches when confidence >{service.config.confidence_threshold:.0%}[/dim]")
+        console.print(f"[dim]💡 Edit settings: {config_file}[/dim]")
 
     except Exception as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/red]")
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
@@ -5143,7 +5154,7 @@ def profile_auto_disable_cmd(ctx):
         config_file = Path.cwd() / ".dopemux" / "profile-settings.yaml"
 
         if not config_file.exists():
-            console.logger.info("[yellow]Auto-detection not configured[/yellow]")
+            console.print("[yellow]Auto-detection not configured[/yellow]")
             return
 
         from .auto_detection_service import AutoDetectionConfig
@@ -5152,10 +5163,10 @@ def profile_auto_disable_cmd(ctx):
         config.enabled = False
         config.save(config_file)
 
-        console.logger.info("[green]✅ Auto-detection disabled[/green]")
+        console.print("[green]✅ Auto-detection disabled[/green]")
 
     except Exception as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/red]")
         sys.exit(1)
 
 
@@ -5167,8 +5178,8 @@ def profile_auto_status_cmd(ctx):
         config_file = Path.cwd() / ".dopemux" / "profile-settings.yaml"
 
         if not config_file.exists():
-            console.logger.info("[yellow]Auto-detection not configured[/yellow]")
-            console.logger.info(f"\n[dim]Run 'dopemux profile auto-enable' to set up[/dim]")
+            console.print("[yellow]Auto-detection not configured[/yellow]")
+            console.print(f"\n[dim]Run 'dopemux profile auto-enable' to set up[/dim]")
             return
 
         from .auto_detection_service import AutoDetectionConfig
@@ -5176,22 +5187,22 @@ def profile_auto_status_cmd(ctx):
         config = AutoDetectionConfig(config_file)
 
         status = "[green]Enabled[/green]" if config.enabled else "[red]Disabled[/red]"
-        console.logger.info(f"\n[bold]Auto-Detection Status:[/bold] {status}")
-        console.logger.info(f"\n[cyan]Settings:[/cyan]")
-        console.logger.info(f"   Check interval: {config.check_interval_seconds}s ({config.check_interval_seconds // 60} min)")
-        console.logger.info(f"   Confidence threshold: {config.confidence_threshold:.0%}")
-        console.logger.info(f"   Debounce period: {config.debounce_minutes} min")
-        console.logger.info(f"   Quiet hours: {config.quiet_hours_start}-{config.quiet_hours_end}")
+        console.print(f"\n[bold]Auto-Detection Status:[/bold] {status}")
+        console.print(f"\n[cyan]Settings:[/cyan]")
+        console.print(f"   Check interval: {config.check_interval_seconds}s ({config.check_interval_seconds // 60} min)")
+        console.print(f"   Confidence threshold: {config.confidence_threshold:.0%}")
+        console.print(f"   Debounce period: {config.debounce_minutes} min")
+        console.print(f"   Quiet hours: {config.quiet_hours_start}-{config.quiet_hours_end}")
 
         if config.never_suggest:
-            console.logger.info(f"\n[yellow]Never Suggest:[/yellow]")
+            console.print(f"\n[yellow]Never Suggest:[/yellow]")
             for profile in sorted(config.never_suggest):
-                console.logger.info(f"   • {profile}")
+                console.print(f"   • {profile}")
 
-        console.logger.info(f"\n[dim]Config file: {config_file}[/dim]")
+        console.print(f"\n[dim]Config file: {config_file}[/dim]")
 
     except Exception as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/red]")
         sys.exit(1)
 
 
@@ -5206,7 +5217,7 @@ def profile_stats_cmd(ctx, days: int):
         workspace_id = str(Path.cwd())
 
         # Get stats from ConPort
-        console.logger.info(f"[cyan]📊 Analyzing profile usage (last {days} days)...[/cyan]\n")
+        console.print(f"[cyan]📊 Analyzing profile usage (last {days} days)...[/cyan]\n")
         stats = get_stats_sync(workspace_id, days_back=days)
 
         # Display with visual dashboard
@@ -5214,24 +5225,24 @@ def profile_stats_cmd(ctx, days: int):
 
         # Optimization suggestions (if enough data)
         if stats.total_switches >= 10:
-            console.logger.info(f"\n[bold]💡 Optimization Suggestions:[/bold]")
+            console.print(f"\n[bold]💡 Optimization Suggestions:[/bold]")
 
             # Suggest based on patterns
             if stats.switch_accuracy < 70:
-                console.logger.info(f"   • [yellow]Low accuracy ({stats.switch_accuracy:.0f}%)[/yellow]: Consider refining auto-detection rules")
+                console.print(f"   • [yellow]Low accuracy ({stats.switch_accuracy:.0f}%)[/yellow]: Consider refining auto-detection rules")
 
             if stats.auto_switches == 0 and stats.total_switches > 20:
-                console.logger.info(f"   • [cyan]All manual switches[/cyan]: Try 'dopemux profile auto-enable' for suggestions")
+                console.print(f"   • [cyan]All manual switches[/cyan]: Try 'dopemux profile auto-enable' for suggestions")
 
             if stats.suggestion_declined > stats.suggestion_accepted * 2:
-                console.logger.info(f"   • [yellow]Many declined suggestions[/yellow]: Lower confidence threshold or adjust profile rules")
+                console.print(f"   • [yellow]Many declined suggestions[/yellow]: Lower confidence threshold or adjust profile rules")
 
             # Suggest creating a new profile for common patterns
             if stats.most_used_profile and stats.usage_by_profile.get(stats.most_used_profile, 0) > stats.total_switches * 0.7:
-                console.logger.info(f"   • [green]Stable workflow detected[/green]: Your '{stats.most_used_profile}' profile is well-matched!")
+                console.print(f"   • [green]Stable workflow detected[/green]: Your '{stats.most_used_profile}' profile is well-matched!")
 
     except Exception as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/red]")
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
@@ -5256,74 +5267,74 @@ def profile_show_cmd(ctx, profile_name: str, profile_dir: Optional[str], raw: bo
                 break
 
         if not profile_path:
-            console.logger.info(f"[red]Profile '{profile_name}' not found[/red]")
-            console.logger.info(f"\nAvailable profiles in {parser.profile_dir}:")
+            console.print(f"[red]Profile '{profile_name}' not found[/red]")
+            console.print(f"\nAvailable profiles in {parser.profile_dir}:")
             for path in profile_paths:
-                console.logger.info(f"  • {path.stem}")
+                console.print(f"  • {path.stem}")
             sys.exit(1)
 
         # Show raw YAML if requested
         if raw:
-            console.logger.info(f"\n[cyan]Profile: {profile_name}[/cyan]")
-            console.logger.info(f"[dim]Path: {profile_path}[/dim]\n")
+            console.print(f"\n[cyan]Profile: {profile_name}[/cyan]")
+            console.print(f"[dim]Path: {profile_path}[/dim]\n")
             with open(profile_path, 'r') as f:
-                console.logger.info(f.read())
+                console.print(f.read())
             return
 
         # Load and validate profile
         p = parser.load_profile(profile_path)
 
         # Display formatted profile info
-        console.logger.info(f"\n[bold cyan]Profile: {p.display_name}[/bold cyan]")
-        console.logger.info(f"[dim]Name: {p.name}[/dim]")
-        console.logger.info(f"[dim]File: {profile_path}[/dim]\n")
+        console.print(f"\n[bold cyan]Profile: {p.display_name}[/bold cyan]")
+        console.print(f"[dim]Name: {p.name}[/dim]")
+        console.print(f"[dim]File: {profile_path}[/dim]\n")
 
-        console.logger.info(f"[bold]Description:[/bold] {p.description}\n")
+        console.print(f"[bold]Description:[/bold] {p.description}\n")
 
         # MCP Servers
-        console.logger.info("[bold]MCP Servers:[/bold]")
+        console.print("[bold]MCP Servers:[/bold]")
         for mcp in p.mcps:
-            console.logger.info(f"  • {mcp}")
+            console.print(f"  • {mcp}")
 
         # ADHD Config (if present)
         if p.adhd_config:
-            console.logger.info("\n[bold]ADHD Configuration:[/bold]")
-            console.logger.info(f"  Energy preference: {p.adhd_config.energy_preference}")
-            console.logger.info(f"  Attention mode: {p.adhd_config.attention_mode}")
-            console.logger.info(f"  Session duration: {p.adhd_config.session_duration} minutes")
+            console.print("\n[bold]ADHD Configuration:[/bold]")
+            console.print(f"  Energy preference: {p.adhd_config.energy_preference}")
+            console.print(f"  Attention mode: {p.adhd_config.attention_mode}")
+            console.print(f"  Session duration: {p.adhd_config.session_duration} minutes")
 
         # Auto-detection rules (if present)
         if p.auto_detection:
-            console.logger.info("\n[bold]Auto-Detection Rules:[/bold]")
+            console.print("\n[bold]Auto-Detection Rules:[/bold]")
             if p.auto_detection.git_branches:
-                console.logger.info("  Git branches:")
+                console.print("  Git branches:")
                 for branch in p.auto_detection.git_branches:
-                    console.logger.info(f"    • {branch}")
+                    console.print(f"    • {branch}")
             if p.auto_detection.directories:
-                console.logger.info("  Directories:")
+                console.print("  Directories:")
                 for dir in p.auto_detection.directories:
-                    console.logger.info(f"    • {dir}")
+                    console.print(f"    • {dir}")
             if p.auto_detection.file_patterns:
-                console.logger.info("  File patterns:")
+                console.print("  File patterns:")
                 for pattern in p.auto_detection.file_patterns:
-                    console.logger.info(f"    • {pattern}")
+                    console.print(f"    • {pattern}")
             if p.auto_detection.time_windows:
-                console.logger.info("  Time windows:")
+                console.print("  Time windows:")
                 for window in p.auto_detection.time_windows:
-                    console.logger.info(f"    • {window}")
+                    console.print(f"    • {window}")
 
-        console.logger.info(f"\n[green]✓ Profile is valid[/green]")
+        console.print(f"\n[green]✓ Profile is valid[/green]")
 
     except ProfileValidationError as e:
-        console.logger.error(f"[red]Validation Error:[/red] {e.reason}")
+        console.print(f"[red]Validation Error:[/red] {e.reason}")
         if e.fix_suggestion:
-            console.logger.info(f"[yellow]Suggestion:[/yellow] {e.fix_suggestion}")
+            console.print(f"[yellow]Suggestion:[/yellow] {e.fix_suggestion}")
         sys.exit(1)
     except FileNotFoundError as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/red]")
         sys.exit(1)
     except Exception as e:
-        console.logger.error(f"[red]Unexpected error: {e}[/red]")
+        console.print(f"[red]Unexpected error: {e}[/red]")
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
@@ -5341,7 +5352,7 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
 
         if all:
             # Validate all profiles
-            console.logger.info("[cyan]Validating all profiles...[/cyan]\n")
+            console.print("[cyan]Validating all profiles...[/cyan]\n")
             profile_set = parser.load_all_profiles(fail_fast=False)
 
             # Show results
@@ -5359,12 +5370,12 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
                     error_msg = f"{error.reason}"
                 table.add_row(path.stem, "[red]✗ Invalid[/red]", error_msg)
 
-            console.logger.info(table)
+            console.print(table)
 
             # Summary
             total = len(profile_set.profiles) + len(profile_set.errors)
             valid = len(profile_set.profiles)
-            console.logger.info(f"\n[bold]Summary:[/bold] {valid}/{total} profiles valid")
+            console.print(f"\n[bold]Summary:[/bold] {valid}/{total} profiles valid")
 
             if profile_set.errors:
                 sys.exit(1)
@@ -5372,9 +5383,9 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
         else:
             # Validate single profile
             if not profile_name:
-                console.logger.error("[red]Error: Provide a profile name or use --all[/red]")
-                console.logger.info("Usage: dopemux profile validate <profile_name>")
-                console.logger.info("   or: dopemux profile validate --all")
+                console.print("[red]Error: Provide a profile name or use --all[/red]")
+                console.print("Usage: dopemux profile validate <profile_name>")
+                console.print("   or: dopemux profile validate --all")
                 sys.exit(1)
 
             profile_paths = parser.discover_profiles()
@@ -5385,34 +5396,34 @@ def profile_validate_cmd(ctx, profile_name: Optional[str], profile_dir: Optional
                     break
 
             if not profile_path:
-                console.logger.info(f"[red]Profile '{profile_name}' not found[/red]")
+                console.print(f"[red]Profile '{profile_name}' not found[/red]")
                 sys.exit(1)
 
-            console.logger.info(f"[cyan]Validating profile: {profile_name}[/cyan]\n")
+            console.print(f"[cyan]Validating profile: {profile_name}[/cyan]\n")
 
             # Load and validate
             p = parser.load_profile(profile_path)
 
-            console.logger.info(f"[green]✓ YAML syntax is valid[/green]")
-            console.logger.info(f"[green]✓ Profile schema is valid[/green]")
-            console.logger.info(f"[green]✓ All {len(p.mcps)} MCP servers are configured[/green]")
+            console.print(f"[green]✓ YAML syntax is valid[/green]")
+            console.print(f"[green]✓ Profile schema is valid[/green]")
+            console.print(f"[green]✓ All {len(p.mcps)} MCP servers are configured[/green]")
             if p.adhd_config:
-                console.logger.info(f"[green]✓ ADHD configuration is valid[/green]")
+                console.print(f"[green]✓ ADHD configuration is valid[/green]")
             if p.auto_detection:
-                console.logger.info(f"[green]✓ Auto-detection rules are valid[/green]")
+                console.print(f"[green]✓ Auto-detection rules are valid[/green]")
 
-            console.logger.info(f"\n[bold green]Profile '{profile_name}' is valid ✓[/bold green]")
+            console.print(f"\n[bold green]Profile '{profile_name}' is valid ✓[/bold green]")
 
     except ProfileValidationError as e:
-        console.logger.error(f"[red]✗ Validation failed:[/red] {e.reason}")
+        console.print(f"[red]✗ Validation failed:[/red] {e.reason}")
         if e.fix_suggestion:
-            console.logger.info(f"[yellow]💡 Suggestion:[/yellow] {e.fix_suggestion}")
+            console.print(f"[yellow]💡 Suggestion:[/yellow] {e.fix_suggestion}")
         sys.exit(1)
     except FileNotFoundError as e:
-        console.logger.error(f"[red]Error: {e}[/red]")
+        console.print(f"[red]Error: {e}[/red]")
         sys.exit(1)
     except Exception as e:
-        console.logger.error(f"[red]Unexpected error: {e}[/red]")
+        console.print(f"[red]Unexpected error: {e}[/red]")
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
@@ -5632,8 +5643,8 @@ def doctor_cmd(ctx, worktree: bool, verbose: bool):
         sys.exit(0 if success else 1)
     else:
         # General Dopemux health check
-        console.logger.info("\n[bold cyan]🏥 Dopemux System Diagnostics[/bold cyan]\n")
-        console.logger.info("[yellow]Use --worktree flag for worktree-specific checks[/yellow]\n")
+        console.print("\n[bold cyan]🏥 Dopemux System Diagnostics[/bold cyan]\n")
+        console.print("[yellow]Use --worktree flag for worktree-specific checks[/yellow]\n")
 
         # Basic checks
         checks = []
@@ -5692,15 +5703,15 @@ def doctor_cmd(ctx, worktree: bool, verbose: bool):
             if result:
                 passed += 1
 
-        console.logger.info(table)
+        console.print(table)
 
         # Summary
-        console.logger.info(f"\n[bold]Result:[/bold] {passed}/{len(checks)} checks passed")
+        console.print(f"\n[bold]Result:[/bold] {passed}/{len(checks)} checks passed")
 
         if passed == len(checks):
-            console.logger.info("[green]🎉 System healthy![/green]")
+            console.print("[green]🎉 System healthy![/green]")
         else:
-            console.logger.error("[yellow]⚠️  Some checks failed. See above for details.[/yellow]")
+            console.print("[yellow]⚠️  Some checks failed. See above for details.[/yellow]")
 
         sys.exit(0 if passed == len(checks) else 1)
 
@@ -5931,35 +5942,35 @@ def repair(ctx, bug_description, file_path, line, verbose, dry_run):
             }
 
             if dry_run:
-                console.logger.info("[yellow]🔍 Dry run mode - analyzing bug without repair[/yellow]")
+                console.print("[yellow]🔍 Dry run mode - analyzing bug without repair[/yellow]")
                 analysis = await agent._analyze_bug(bug_description, file_path or "", line or 0)
-                console.logger.info("Analysis Results:")
-                console.logger.info(f"  Description: {analysis.get('description', 'N/A')}")
-                console.logger.info(f"  Complexity: {analysis.get('complexity', {}).get('score', 'N/A')}")
-                console.logger.info(f"  Similar patterns: {len(analysis.get('similar_patterns', {}).get('results', []))}")
+                console.print("Analysis Results:")
+                console.print(f"  Description: {analysis.get('description', 'N/A')}")
+                console.print(f"  Complexity: {analysis.get('complexity', {}).get('score', 'N/A')}")
+                console.print(f"  Similar patterns: {len(analysis.get('similar_patterns', {}).get('results', []))}")
                 return
 
             result = await agent.process_task(task)
 
             if result.get('success'):
-                console.logger.info("[green]✅ Repair successful![/green]")
-                console.logger.info(f"Confidence: {result.get('confidence', 0):.2f}")
-                console.logger.info(f"Iterations: {result.get('iterations', 0)}")
+                console.print("[green]✅ Repair successful![/green]")
+                console.print(f"Confidence: {result.get('confidence', 0):.2f}")
+                console.print(f"Iterations: {result.get('iterations', 0)}")
                 if result.get('repair'):
-                    console.logger.info("\n[blue]Generated Repair:[/blue]")
-                    console.logger.info(result['repair'])
+                    console.print("\n[blue]Generated Repair:[/blue]")
+                    console.print(result['repair'])
                 if result.get('explanation'):
-                    console.logger.info(f"\n[yellow]Explanation:[/yellow] {result['explanation']}")
+                    console.print(f"\n[yellow]Explanation:[/yellow] {result['explanation']}")
             else:
-                console.logger.error("[red]❌ Repair failed[/red]")
-                console.logger.error(f"Reason: {result.get('explanation', 'Unknown error')}")
+                console.print("[red]❌ Repair failed[/red]")
+                console.print(f"Reason: {result.get('explanation', 'Unknown error')}")
                 if verbose:
                     console.logger.debug(f"Debug: Iterations attempted: {result.get('iterations', 0)}")
 
         asyncio.run(run_repair())
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Code repair failed: {e}[/red]")
+        console.print(f"[red]❌ Code repair failed: {e}[/red]")
         if verbose:
             import traceback
             traceback.print_exc()
@@ -5994,21 +6005,21 @@ def analyze(ctx, bug_description, file_path, line, verbose):
 
             analysis = await agent._analyze_bug(bug_description, file_path or "", line or 0)
 
-            console.logger.info("[blue]🔍 Bug Analysis Complete[/blue]")
-            console.logger.info(f"Description: {analysis.get('description', 'N/A')}")
-            console.logger.info(f"Complexity Score: {analysis.get('complexity', {}).get('score', 'N/A')}")
-            console.logger.info(f"Similar Patterns Found: {len(analysis.get('similar_patterns', {}).get('results', []))}")
+            console.print("[blue]🔍 Bug Analysis Complete[/blue]")
+            console.print(f"Description: {analysis.get('description', 'N/A')}")
+            console.print(f"Complexity Score: {analysis.get('complexity', {}).get('score', 'N/A')}")
+            console.print(f"Similar Patterns Found: {len(analysis.get('similar_patterns', {}).get('results', []))}")
 
             if verbose:
                 if analysis.get('complexity', {}).get('details'):
-                    console.logger.info("Complexity Details:")
+                    console.print("Complexity Details:")
                     for key, value in analysis['complexity']['details'].items():
-                        console.logger.info(f"  {key}: {value}")
+                        console.print(f"  {key}: {value}")
 
         asyncio.run(run_analysis())
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Analysis failed: {e}[/red]")
+        console.print(f"[red]❌ Analysis failed: {e}[/red]")
         if verbose:
             import traceback
             traceback.print_exc()
@@ -6034,17 +6045,17 @@ def status(ctx, verbose):
         async def show_status():
             config = AgentConfig()
 
-            console.logger.info("[blue]🧠 Vanilla Code Agent Status[/blue]")
-            console.logger.info(f"Container Zen URL: {config.zen_url}")
-            console.logger.info(f"Container ConPort URL: {config.conport_url}")
-            console.logger.info(f"Container Serena URL: {config.serena_url}")
-            console.logger.info(f"Container Dope-Context URL: {config.dope_context_url}")
-            console.logger.info(f"Max Iterations: {config.max_iterations}")
-            console.logger.info(f"Confidence Threshold: {config.confidence_threshold}")
-            console.logger.info(f"Workspace: {config.workspace_id}")
+            console.print("[blue]🧠 Vanilla Code Agent Status[/blue]")
+            console.print(f"Container Zen URL: {config.zen_url}")
+            console.print(f"Container ConPort URL: {config.conport_url}")
+            console.print(f"Container Serena URL: {config.serena_url}")
+            console.print(f"Container Dope-Context URL: {config.dope_context_url}")
+            console.print(f"Max Iterations: {config.max_iterations}")
+            console.print(f"Confidence Threshold: {config.confidence_threshold}")
+            console.print(f"Workspace: {config.workspace_id}")
 
             # Test MCP connectivity from host (localhost URLs)
-            console.logger.info("\n[yellow]Host MCP Service Status (localhost):[/yellow]")
+            console.print("\n[yellow]Host MCP Service Status (localhost):[/yellow]")
             host_urls = {
                 "Zen": "http://localhost:3003",
                 "ConPort": "http://localhost:3004",
@@ -6070,16 +6081,16 @@ def status(ctx, verbose):
 
                         logger.error(f"Error: {e}")
                     status_icon = "✅" if reachable else "❌"
-                    console.logger.info(f"  {status_icon} {service}")
+                    console.print(f"  {status_icon} {service}")
                     if not reachable:
-                        console.logger.error(f"    Error: {error_msg}")
+                        console.print(f"    Error: {error_msg}")
 
-            console.logger.info("\n[dim]Note: Container uses Docker network names, host uses localhost[/dim]")
+            console.print("\n[dim]Note: Container uses Docker network names, host uses localhost[/dim]")
 
         asyncio.run(show_status())
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Status check failed: {e}[/red]")
+        console.print(f"[red]❌ Status check failed: {e}[/red]")
         if verbose:
             import traceback
             traceback.print_exc()
@@ -6136,11 +6147,11 @@ def launch(ctx, preset: str, attach: bool):
     import subprocess
     import time
     
-    console.logger.info(f"[cyan]🚀 Launching Dopemux with '{preset}' preset...[/cyan]\n")
+    console.print(f"[cyan]🚀 Launching Dopemux with '{preset}' preset...[/cyan]\n")
     
     if preset == "minimal":
         # Just start Claude Code, no tmux
-        console.logger.info("[dim]Starting Claude Code without tmux...[/dim]")
+        console.print("[dim]Starting Claude Code without tmux...[/dim]")
         ctx.invoke(cli.commands['start'])
         return
     
@@ -6156,7 +6167,7 @@ def launch(ctx, preset: str, attach: bool):
     layout, theme = layout_map[preset]
     
     # Start tmux with layout
-    console.logger.info(f"[blue]📐 Creating {layout} layout...[/blue]")
+    console.print(f"[blue]📐 Creating {layout} layout...[/blue]")
     
     tmux_start_args = [
         "dopemux", "tmux", "start",
@@ -6172,12 +6183,12 @@ def launch(ctx, preset: str, attach: bool):
     
     # Apply theme if specified
     if theme:
-        console.logger.info(f"\n[magenta]🎨 Applying {theme} theme...[/magenta]")
+        console.print(f"\n[magenta]🎨 Applying {theme} theme...[/magenta]")
         time.sleep(1)  # Give tmux time to initialize
         subprocess.run(["dopemux", "tmux", "theme", theme, "--apply"], check=True)
-        console.logger.info(f"[green]✨ {preset} preset ready![/green]")
+        console.print(f"[green]✨ {preset} preset ready![/green]")
     else:
-        console.logger.info(f"[green]✨ {preset} preset ready![/green]")
+        console.print(f"[green]✨ {preset} preset ready![/green]")
 
 
 @cli.command("dope")
@@ -6343,7 +6354,7 @@ dopemux tmux theme neon
 ```
 """
     
-    console.logger.info(Markdown(help_text))
+    console.print(Markdown(help_text))
 
 
 def main():
@@ -6351,11 +6362,11 @@ def main():
     try:
         cli()
     except KeyboardInterrupt:
-        console.logger.info("\n[yellow]⏸️ Interrupted by user[/yellow]")
+        console.print("\n[yellow]⏸️ Interrupted by user[/yellow]")
         sys.exit(1)
     except Exception as e:
         error_text = Text("❌ Error: ", style="red") + Text(str(e))
-        console.logger.error(error_text)
+        console.print(error_text)
         if "--debug" in sys.argv:
             raise
         sys.exit(1)
@@ -6384,85 +6395,85 @@ def hooks_cmd(setup, teardown, status, enable, disable, shell_scripts, install_s
 
         if setup:
             claude_hooks.start_monitoring(workspace)
-            console.logger.info("[green]✅ Claude Code hooks started[/green]")
-            console.logger.info(f"   Monitoring paths: {[str(p) for p in claude_hooks.watched_paths]}")
+            console.print("[green]✅ Claude Code hooks started[/green]")
+            console.print(f"   Monitoring paths: {[str(p) for p in claude_hooks.watched_paths]}")
 
         elif teardown:
             claude_hooks.stop_monitoring()
-            console.logger.info("[green]✅ Claude Code hooks stopped[/green]")
+            console.print("[green]✅ Claude Code hooks stopped[/green]")
 
         elif status:
             hook_status = claude_hooks.get_status()
-            console.logger.info("[bold]Claude Code Hook Status:[/bold]")
-            console.logger.info(f"   Monitoring active: {hook_status['monitoring_active']}")
-            console.logger.info(f"   Quiet mode: {hook_status['quiet_mode']}")
-            console.logger.info(f"   Watched paths: {hook_status['watched_paths']}")
-            console.logger.info("\n[bold]Hook Types:[/bold]")
+            console.print("[bold]Claude Code Hook Status:[/bold]")
+            console.print(f"   Monitoring active: {hook_status['monitoring_active']}")
+            console.print(f"   Quiet mode: {hook_status['quiet_mode']}")
+            console.print(f"   Watched paths: {hook_status['watched_paths']}")
+            console.print("\n[bold]Hook Types:[/bold]")
             for hook_type, enabled in hook_status['active_hooks'].items():
                 status_icon = "[green]✓[/green]" if enabled else "[red]✗[/red]"
-                console.logger.info(f"   {status_icon} {hook_type}")
+                console.print(f"   {status_icon} {hook_type}")
 
         elif enable:
             claude_hooks.enable_hook(enable)
-            console.logger.info(f"[green]✅ Hook enabled: {enable}[/green]")
+            console.print(f"[green]✅ Hook enabled: {enable}[/green]")
 
         elif disable:
             claude_hooks.disable_hook(disable)
-            console.logger.info(f"[green]✅ Hook disabled: {disable}[/green]")
+            console.print(f"[green]✅ Hook disabled: {disable}[/green]")
 
         elif shell_scripts:
             scripts = get_shell_hook_scripts()
-            console.logger.info("[bold]Shell Hook Scripts:[/bold]")
-            console.logger.info("\n[dim]Add these to your ~/.bashrc or ~/.zshrc:[/dim]\n")
+            console.print("[bold]Shell Hook Scripts:[/bold]")
+            console.print("\n[dim]Add these to your ~/.bashrc or ~/.zshrc:[/dim]\n")
 
-            console.logger.info("[bold cyan]For Bash:[/bold cyan]")
-            console.logger.info(scripts['bash_preexec'])
-            console.logger.info(scripts['bash_precmd'])
+            console.print("[bold cyan]For Bash:[/bold cyan]")
+            console.print(scripts['bash_preexec'])
+            console.print(scripts['bash_precmd'])
 
-            console.logger.info("\n[bold cyan]For Zsh:[/bold cyan]")
-            console.logger.info(scripts['zsh_hooks'])
+            console.print("\n[bold cyan]For Zsh:[/bold cyan]")
+            console.print(scripts['zsh_hooks'])
 
         elif install_shell_hooks:
             from .hooks.shell_hook_installer import install_shell_hooks as installer
             success, message = installer(force=force)
             if success:
-                console.logger.info(f"[green]{message}[/green]")
+                console.print(f"[green]{message}[/green]")
             else:
-                console.logger.info(f"[red]{message}[/red]")
+                console.print(f"[red]{message}[/red]")
                 sys.exit(1)
 
         elif uninstall_shell_hooks:
             from .hooks.shell_hook_installer import uninstall_shell_hooks as uninstaller
             success, message = uninstaller()
             if success:
-                console.logger.info(f"[green]{message}[/green]")
+                console.print(f"[green]{message}[/green]")
             else:
-                console.logger.info(f"[red]{message}[/red]")
+                console.print(f"[red]{message}[/red]")
                 sys.exit(1)
 
         else:
             # Default: show help
-            console.logger.info("[bold]Dopemux Hook System[/bold]")
-            console.logger.info("Manage external hooks for Claude Code integration.\n")
-            console.logger.info("[bold]Commands:[/bold]")
-            console.logger.info("   --setup               Start monitoring Claude Code activity")
-            console.logger.info("   --teardown            Stop monitoring")
-            console.logger.info("   --status              Show current hook status")
-            console.logger.info("   --enable HOOK         Enable specific hook type")
-            console.logger.info("   --disable HOOK        Disable specific hook type")
-            console.logger.info("   --shell-scripts       Generate shell hook scripts")
-            console.logger.info("   --install-shell-hooks Install shell hooks in shell config")
-            console.logger.info("   --uninstall-shell-hooks Remove shell hooks from shell config")
-            console.logger.info("   --workspace PATH      Set workspace to monitor")
-            console.logger.info("   --force               Force operations (e.g., reinstall)\n")
-            console.logger.info("[bold]Hook Types:[/bold]")
-            console.logger.info("   session-start    Monitor Claude Code process start")
-            console.logger.info("   file-change      Monitor file modifications")
-            console.logger.info("   shell-command    Monitor shell commands")
-            console.logger.info("   git-commit       Monitor git operations (disabled by default)")
+            console.print("[bold]Dopemux Hook System[/bold]")
+            console.print("Manage external hooks for Claude Code integration.\n")
+            console.print("[bold]Commands:[/bold]")
+            console.print("   --setup               Start monitoring Claude Code activity")
+            console.print("   --teardown            Stop monitoring")
+            console.print("   --status              Show current hook status")
+            console.print("   --enable HOOK         Enable specific hook type")
+            console.print("   --disable HOOK        Disable specific hook type")
+            console.print("   --shell-scripts       Generate shell hook scripts")
+            console.print("   --install-shell-hooks Install shell hooks in shell config")
+            console.print("   --uninstall-shell-hooks Remove shell hooks from shell config")
+            console.print("   --workspace PATH      Set workspace to monitor")
+            console.print("   --force               Force operations (e.g., reinstall)\n")
+            console.print("[bold]Hook Types:[/bold]")
+            console.print("   session-start    Monitor Claude Code process start")
+            console.print("   file-change      Monitor file modifications")
+            console.print("   shell-command    Monitor shell commands")
+            console.print("   git-commit       Monitor git operations (disabled by default)")
 
     except Exception as e:
-        console.logger.error(f"[red]❌ Hook command failed: {e}[/red]")
+        console.print(f"[red]❌ Hook command failed: {e}[/red]")
         if ctx.obj.get("verbose"):
             raise
         sys.exit(1)
