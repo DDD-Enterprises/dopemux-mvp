@@ -1603,7 +1603,7 @@ async def main():
 
 
 def run():
-    """Console script entry point for zen-mcp-server."""
+    """Console script entry point for pal-mcp-server."""
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
