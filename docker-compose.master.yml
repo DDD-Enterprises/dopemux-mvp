@@ -31,6 +31,7 @@ volumes:
   mcp_cache:
   dope-decision-graph-qdrant-data:
 
+
 services:
   # ========================================
   # INFRASTRUCTURE SERVICES
@@ -53,7 +54,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph || exit 1"]
+      test: [ "CMD-SHELL", "pg_isready -U dopemux_age -d dopemux_knowledge_graph || exit 1" ]
       timeout: 5s
       retries: 10
       interval: 10s
@@ -70,7 +71,7 @@ services:
     ports:
       - "6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 3s
       retries: 3
@@ -83,7 +84,7 @@ services:
     networks:
       - mcp-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 3s
       retries: 3
@@ -98,7 +99,7 @@ services:
     ports:
       - "8081:8081"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8081 || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8081 || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -129,15 +130,26 @@ services:
     restart: unless-stopped
     networks:
       - mcp-network
+      - dopemux-unified-network
     environment:
       - MCP_SERVER_PORT=3004
+      - DOPECON_BRIDGE_URL=http://dope-decision-graph-bridge:3016
+      - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
+      - AGE_HOST=dopemux-postgres-age
+      - AGE_PORT=5432
+      - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
+      - REDIS_URL=redis://dopemux-redis-primary:6379
+      - QDRANT_URL=http://mcp-qdrant:6333
     ports:
       - "3004:3004"
     depends_on:
       - dopemux-postgres-age
       - dopemux-redis-primary
+      - mcp-qdrant
+      - dopecon-bridge
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3004/health || exit 0"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:3004/health || exit 0" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -160,7 +172,7 @@ services:
     ports:
       - "3003:3003"
     healthcheck:
-      test: ["CMD-SHELL", "exit 0"]
+      test: [ "CMD-SHELL", "exit 0" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -182,7 +194,7 @@ services:
     volumes:
       - mcp_context7_cache:/app/cache
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3002/health || exit 0"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:3002/health || exit 0" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -209,10 +221,41 @@ services:
     depends_on:
       - dopemux-postgres-age
     healthcheck:
-      test: ["CMD-SHELL", "curl -f -H 'Authorization: Bearer REDACTED_LITELLM_KEY' http://localhost:4000/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -f -H 'Authorization: Bearer REDACTED_LITELLM_KEY' http://localhost:4000/health || exit 1" ]
       timeout: 10s
       retries: 3
       interval: 30s
+
+  # Dope-Context - Semantic Code & Docs Search
+  dope-context:
+    build:
+      context: ./services/dope-context
+      dockerfile: Dockerfile
+    container_name: mcp-dope-context
+    restart: unless-stopped
+    networks:
+      - mcp-network
+      - dopemux-unified-network
+    environment:
+      - MCP_SERVER_PORT=3010
+      - VOYAGE_API_KEY=${VOYAGE_API_KEY}
+      - VOYAGEAI_API_KEY=${VOYAGE_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - QDRANT_URL=http://mcp-qdrant:6333
+    ports:
+      - "3010:3010"
+    volumes:
+      - ./services/dope-context/data:/app/data
+      - ./services/dope-context/logs:/app/logs
+    depends_on:
+      - mcp-qdrant
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:3010/health || exit 0" ]
+      timeout: 10s
+      retries: 3
+      interval: 30s
+      start_period: 45s
 
   # ========================================
   # APPLICATION SERVICES (Event System)
@@ -221,7 +264,7 @@ services:
   # DopeconBridge - Event Processing & Pattern Detection
   dopecon-bridge:
     build:
-      context: ./services/mcp-dopecon-bridge
+      context: ./services/dopecon-bridge
       dockerfile: Dockerfile
     container_name: dope-decision-graph-bridge
     restart: unless-stopped
@@ -232,6 +275,7 @@ services:
       - "3016:3016"
     environment:
       - PORT_BASE=3000
+      - POSTGRES_URL=postgresql+asyncpg://dopemux_age:dopemux_age_dev_password@dopemux-postgres-age:5432/dopemux_knowledge_graph
       - AGE_HOST=dopemux-postgres-age
       - AGE_PORT=5432
       - AGE_PASSWORD=${AGE_PASSWORD:-dopemux_age_dev_password}
@@ -242,7 +286,7 @@ services:
       - dopemux-redis-events
       - mcp-qdrant
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3016/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:3016/health || exit 1" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -282,7 +326,7 @@ services:
         max_attempts: 3
         window: 120s
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -303,8 +347,8 @@ services:
   # ADHD Engine - Real-time ADHD Accommodation Service
   adhd-engine:
     build:
-      context: ./services/adhd_engine/services/adhd_engine
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/adhd_engine/Dockerfile
     restart: unless-stopped
     networks:
       - mcp-network
@@ -340,7 +384,7 @@ services:
       - "dopemux.component=adhd-accommodation"
       - "dopemux.description=Real-time ADHD task assessment, energy monitoring, and accommodation recommendations"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8095/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8095/health || exit 1" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -370,7 +414,7 @@ services:
       - pal
       - conport
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/health"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8000/health" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -404,7 +448,7 @@ services:
       - conport
       - adhd-engine
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8090/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8090/health || exit 1" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -413,7 +457,6 @@ services:
       - "dopemux.service=application"
       - "dopemux.component=plane-coordination"
       - "dopemux.description=Two-plane architecture coordination between PM and Cognitive planes"
-
   # Note: Additional MCP servers (Serena, Exa, Desktop Commander, etc.)
   # can be added here following the same pattern. For brevity, only core
   # services are shown. See docker/mcp-servers/docker-compose.yml for

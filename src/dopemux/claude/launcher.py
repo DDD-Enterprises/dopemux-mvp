@@ -103,13 +103,13 @@ class ClaudeLauncher:
                     )
                     if result.returncode == 0 and "claude" in result.stdout.lower():
                         self.claude_path = path
-                        console.logger.info(f"[green]✓ Found Claude Code at {path}[/green]")
+                        console.log(f"[green]✓ Found Claude Code at {path}[/green]")
                         return
                 except (subprocess.TimeoutExpired, subprocess.SubprocessError):
                     continue
 
         # Not found
-        console.logger.info("[yellow]⚠️ Claude Code not found in standard locations[/yellow]")
+        console.log("[yellow]⚠️ Claude Code not found in standard locations[/yellow]")
 
     def is_available(self) -> bool:
         """Check if Claude Code is available."""
@@ -349,7 +349,7 @@ Alternative: Set CLAUDE_PATH environment variable
         # This allows MCP servers to use the key while Claude Code uses OAuth
 
         if not via_litellm:
-            console.logger.info("[dim]ℹ️  Claude Pro Max: Authenticate through the app[/dim]")
+            console.log("[dim]ℹ️  Claude Pro Max: Authenticate through the app[/dim]")
 
         # Add other API keys for MCP server fallback
         # These are needed by MCP servers for fallback when Claude Pro Max hits rate limits
@@ -472,7 +472,7 @@ Alternative: Set CLAUDE_PATH environment variable
             ]
 
             for package in node_packages:
-                console.logger.info(f"[blue]Installing {package}...[/blue]")
+                console.log(f"[blue]Installing {package}...[/blue]")
                 result = subprocess.run(
                     ["npm", "install", "-g", package], capture_output=True, text=True
                 )
@@ -485,7 +485,7 @@ Alternative: Set CLAUDE_PATH environment variable
             python_packages = ["context-portal-mcp"]  # Removed task-master-ai (crashes)
 
             for package in python_packages:
-                console.logger.info(f"[blue]Installing {package}...[/blue]")
+                console.log(f"[blue]Installing {package}...[/blue]")
                 result = subprocess.run(
                     ["pip", "install", package], capture_output=True, text=True
                 )
@@ -497,7 +497,7 @@ Alternative: Set CLAUDE_PATH environment variable
             return True
 
         except Exception as e:
-            console.logger.error(f"[red]Error installing dependencies: {e}[/red]")
+            console.log(f"[red]Error installing dependencies: {e}[/red]")
             return False
 
     def _cleanup(self) -> None:

@@ -101,7 +101,7 @@ class AttentionMonitor:
         self._monitor_thread = threading.Thread(target=self._monitor_loop, daemon=True)
         self._monitor_thread.start()
 
-        console.logger.info("[green]🧠 Attention monitoring started[/green]")
+        logger.info("🧠 Attention monitoring started")
 
     def stop_monitoring(self) -> None:
         """Stop attention monitoring."""
@@ -111,7 +111,7 @@ class AttentionMonitor:
 
         # Save final metrics
         self._save_session_metrics()
-        console.logger.info("[blue]Attention monitoring stopped[/blue]")
+        logger.info("Attention monitoring stopped")
 
     def get_current_metrics(self) -> Dict[str, Any]:
         """Get current attention metrics."""
@@ -199,7 +199,7 @@ class AttentionMonitor:
                 self._collect_metrics()
                 time.sleep(self.sample_interval)
             except Exception as e:
-                console.logger.error(f"[red]Attention monitoring error: {e}[/red]")
+                logger.error(f"Attention monitoring error: {e}")
                 time.sleep(self.sample_interval)
 
     def _collect_metrics(self) -> None:
@@ -244,7 +244,7 @@ class AttentionMonitor:
             try:
                 callback(metrics)
             except Exception as e:
-                console.logger.error(f"[yellow]Callback error: {e}[/yellow]")
+                logger.error(f"Callback error: {e}")
 
     def _calculate_keystroke_rate(self) -> float:
         """Calculate current keystroke rate (keys per minute)."""
@@ -349,7 +349,7 @@ class AttentionMonitor:
                 self._log_focus_session(focus_duration)
                 self._focus_session_start = None
 
-            console.logger.info(f"[blue]Attention state: {new_state}[/blue]")
+            logger.info(f"Attention state: {new_state}")
         else:
             # Same state, increment duration
             self._state_duration += self.sample_interval

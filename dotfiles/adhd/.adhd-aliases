@@ -1,0 +1,133 @@
+# ADHD Engine Shell Aliases
+# Source this file in your .zshrc or .bashrc:
+#   source ~/.adhd-aliases
+# Or copy to: /Users/hue/code/dopemux-mvp/dotfiles/adhd/.adhd-aliases
+
+# ───────────────────────────────────────────────────────────────
+# ADHD CLI Shortcuts
+# ───────────────────────────────────────────────────────────────
+
+# Main CLI (assuming it's in PATH or aliased)
+alias adhd='python3 /Users/hue/code/dopemux-mvp/services/adhd_engine/cli/adhd.py'
+
+# Quick status check
+alias astat='adhd status'
+alias as='adhd status'
+
+# Break management
+alias abreak='adhd break'
+alias ab='adhd break --start'
+
+# Focus session
+alias afocus='adhd focus'
+alias af='adhd focus'
+
+# Run all detectors
+alias acheck='adhd check'
+alias ac='adhd check'
+
+# Voice feedback
+alias asay='adhd voice'
+
+# Context management
+alias asave='adhd context save'
+alias arestore='adhd context restore'
+
+# ───────────────────────────────────────────────────────────────
+# Smart "Dopemux x ADHD" Workflows
+# ───────────────────────────────────────────────────────────────
+
+# Smart Commit: Context Save -> Precommit Check -> Commit -> Log
+gcm() {
+    echo "🧠 Saving mental context..."
+    adhd context save
+    
+    echo "🔍 Running pre-commit validation..."
+    # If pal-mcp-server is running in docker
+    if docker ps | grep -q pal-mcp-server; then
+        # Trigger precommit check (conceptual - assumes API or CLI availability)
+        # For now, we'll simulate the check or run a local script if available
+        if [ -f "./scripts/precommit.sh" ]; then
+            ./scripts/precommit.sh || return 1
+        fi
+    fi
+    
+    echo "📝 Committing..."
+    git commit "$@" && \
+    adhd check --quick && \
+    echo "✅ Progress logged!"
+}
+
+# Smart Push: Context Save -> Push -> Celebrate
+gph() {
+    echo "🧠 Saving mental context..."
+    adhd context save
+    
+    echo "🚀 Pushing code..."
+    git push "$@" && \
+    echo "🎉 Great job! Code shipped." && \
+    adhd voice --say "Code pushed successfully. Great job."
+}
+
+# Focus Session: Documentation
+doc() {
+    local target="${1:-general}"
+    adhd focus --task "Writing documentation for $target"
+    echo "📚 Starting DocGen workflow..."
+    dopemux docgen "$@"
+    adhd break --suggest
+}
+
+# Focus Session: Code Review
+rev() {
+    adhd focus --task "Code review session"
+    echo "👀 Starting CodeReview workflow..."
+    dopemux codereview "$@"
+    adhd break --suggest
+}
+
+# Standup Prep
+standup() {
+    echo "☀️ Preparing standup update..."
+    # If session formatter exists
+    if [ -f "$DOPEMUX_ROOT/scripts/session_formatter.py" ]; then
+        python3 "$DOPEMUX_ROOT/scripts/session_formatter.py" --days 1
+    else
+        adhd status
+    fi
+}
+
+# ───────────────────────────────────────────────────────────────
+# Quick Actions
+# ───────────────────────────────────────────────────────────────
+
+# Start a focus session with task description
+focus() {
+    local task="${*:-Current task}"
+    adhd focus --task "$task"
+}
+
+# Guided Break (Interactive)
+break() {
+    adhd break --interactive
+}
+
+# Check all systems
+dopemux-check() {
+    echo "🔍 Checking ADHD Engine..."
+    curl -s http://localhost:3333/health | jq .
+    echo ""
+    adhd check
+}
+
+# ───────────────────────────────────────────────────────────────
+# Environment
+# ───────────────────────────────────────────────────────────────
+
+export ADHD_ENGINE_URL="${ADHD_ENGINE_URL:-http://localhost:3333}"
+export ADHD_TMUX_EMOJI="${ADHD_TMUX_EMOJI:-true}"
+
+# Enable if you want verbose logging
+# export ADHD_DEBUG=1
+
+echo "🧠 ADHD aliases loaded. Type 'as' for status."

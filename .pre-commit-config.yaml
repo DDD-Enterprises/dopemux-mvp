@@ -20,13 +20,13 @@ repos:
 
       # Prohibited file pattern check
       - id: docs-prohibited-patterns
-        name: Block prohibited documentation patterns (README, NOTES, TODO, etc.)
+        name: Block prohibited documentation patterns (NOTES, TODO, TEMP, etc.)
         entry: bash -c
         args:
           - |
             set -e
             prohibited_found=false
-            # Allow README.md in docs/systems/ (documentation hubs), but prohibit elsewhere
+            # Prohibit temp/scratch files (but allow README.md - it's useful for GitHub navigation)
             for pattern in "NOTES*.md" "TODO*.md" "TEMP*.md" "*temp*.md" "*scratch*.md"; do
               if find docs/ -name "$pattern" 2>/dev/null | grep -q .; then
                 echo "❌ Found prohibited file pattern: $pattern"
@@ -34,14 +34,10 @@ repos:
                 prohibited_found=true
               fi
             done
-            # Check for README.md outside of docs/systems/
-            if find docs/ -name "README*.md" -not -path "docs/systems/*" -not -path "docs/archive/*" 2>/dev/null | grep -q .; then
-              echo "❌ Found prohibited file pattern: README*.md (outside docs/systems/ and docs/archive/)"
-              find docs/ -name "README*.md" -not -path "docs/systems/*" -not -path "docs/archive/*" | sed 's/^/  /'
-              prohibited_found=true
-            fi
+            # README.md is now ALLOWED throughout docs/ for GitHub navigation
+            # Only check for other prohibited patterns
             if [ "$prohibited_found" = true ]; then
-              echo "Use structured workflow: RFC→ADR→arc42 (or README.md in docs/systems/ for hubs)"
+              echo "Use structured workflow: RFC→ADR→arc42 for documentation"
               exit 1
             fi
             echo "✅ No prohibited patterns found"
@@ -80,6 +76,12 @@ repos:
         language: system
         files: ^docs/.*\.md$
         pass_filenames: true
+
+      # Markdown file location enforcement (DISABLED - too restrictive for current state)
+      # Re-enable after cleaning up existing .md files
+      # - id: markdown-location-guard
+      #   name: Enforce markdown files in docs/ or approved locations only
+      #   ...
 
   # Existing linting tools
   - repo: https://github.com/igorshubovych/markdownlint-cli
