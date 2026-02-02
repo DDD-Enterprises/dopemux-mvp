@@ -19,16 +19,16 @@ MCP_SERVER=$1
 PROJECT_ROOT="/Users/hue/code/dopemux-mvp"
 DOCKER_COMPOSE_DIR="${PROJECT_ROOT}/docker/mcp-servers"
 
-# Function to update Zen MCP
-update_zen() {
-    echo -e "${GREEN}🔄 Updating Zen MCP...${NC}"
+# Function to update PAL MCP
+update_pal() {
+    echo -e "${GREEN}🔄 Updating PAL MCP...${NC}"
 
-    cd "${PROJECT_ROOT}/docker/mcp-servers/zen/zen-mcp-server" || exit 1
+    cd "${PROJECT_ROOT}/docker/mcp-servers/zen/pal-mcp-server" || exit 1
 
     # Clone latest from upstream
     echo "📥 Fetching latest version from GitHub..."
     rm -rf /tmp/zen-mcp-temp
-    git clone --depth 1 https://github.com/BeehiveInnovations/zen-mcp-server.git /tmp/zen-mcp-temp
+    git clone --depth 1 https://github.com/BeehiveInnovations/pal-mcp-server.git /tmp/zen-mcp-temp
 
     # Backup current config if it exists
     if [ -f ".env" ]; then
@@ -68,7 +68,7 @@ update_zen() {
     echo "✅ Verifying update..."
     NEW_VERSION=$(docker exec mcp-zen python -c "from config import __version__; print(__version__)" 2>/dev/null || echo "Unknown")
 
-    echo -e "${GREEN}✅ Zen MCP updated successfully!${NC}"
+    echo -e "${GREEN}✅ PAL MCP updated successfully!${NC}"
     echo "   New version: ${NEW_VERSION}"
     echo ""
     echo -e "${YELLOW}⚠️  Important: Restart Claude Code to use the new version${NC}"
@@ -122,7 +122,7 @@ fi
 
 case "$MCP_SERVER" in
     zen)
-        update_zen
+        update_pal
         ;;
     conport)
         update_conport
@@ -133,7 +133,7 @@ case "$MCP_SERVER" in
     --all)
         echo -e "${GREEN}📦 Updating all MCP servers...${NC}"
         echo ""
-        update_zen
+        update_pal
         echo ""
         update_conport
         echo ""
