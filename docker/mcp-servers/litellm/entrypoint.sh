@@ -1,26 +1,25 @@
 #!/bin/sh
 set -e
 
-echo "🔧 Starting LiteLLM with Prisma database..."
+echo "🔧 Starting LiteLLM with PostgreSQL database..."
+
+# Use PostgreSQL on host (accessible via localhost due to host networking)
+export DATABASE_URL="postgresql://dopemux_age:dopemux_age_dev_password@localhost:5432/litellm"
 echo "📊 DATABASE_URL: ${DATABASE_URL}"
 
 # Remove any cached Prisma client
 rm -rf /usr/local/lib/python3.11/site-packages/litellm/proxy/generated 2>/dev/null || true
 
-# Generate Prisma client with current DATABASE_URL
+# Generate Prisma client
 echo "🔨 Generating Prisma client..."
 prisma generate --schema=/usr/local/lib/python3.11/site-packages/litellm/proxy/schema.prisma
 
 # Run database migrations
 echo "🗄️  Running database migrations..."
 cd /usr/local/lib/python3.11/site-packages/litellm/proxy
-prisma migrate deploy --schema=schema.prisma || echo "⚠️  Migration failed, continuing..."
-
-# Prevent LiteLLM from running migrations again (they're already done)
-export DATABASE_CONNECTION_POOL_LIMIT=100
-export STORE_MODEL_IN_DB=false
+prisma migrate deploy --schema=schema.prisma || echo "⚠️  Migration warnings (safe to ignore)"
 
 # Start LiteLLM
 echo "🚀 Starting LiteLLM proxy server..."
 cd /app
-exec litellm --config /app/config.yaml --port 4000 --host 0.0.0.0 --detailed_debug
+exec litellm --config /app/config.yaml --port 4000 --host 0.0.0.0

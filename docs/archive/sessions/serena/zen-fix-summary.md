@@ -1,3 +1,11 @@
+---
+id: zen-fix-summary
+title: Zen Fix Summary
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Serena & Zen MCP Fixes - Complete
 
 **Date**: 2025-10-20

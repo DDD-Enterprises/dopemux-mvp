@@ -11,10 +11,15 @@ Per registry.yaml:
 - Category: mcp
 """
 
+import asyncio
+import base64
+import hashlib
+import json
 import logging
 import os
 import sys
 from contextlib import asynccontextmanager
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
@@ -34,7 +39,6 @@ from chronicle.store import ChronicleStore
 from promotion.redactor import Redactor
 from promotion.promotion import PromotionEngine
 
-
 # Logging setup
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 logger = logging.getLogger(__name__)
@@ -44,6 +48,354 @@ PORT = int(os.getenv("PORT", os.getenv("DOPE_MEMORY_PORT", "3020")))
 DATA_DIR = Path(os.getenv("DOPE_MEMORY_DATA_DIR", str(Path.home() / ".dope-memory")))
 DEFAULT_WORKSPACE_ID = os.getenv("DOPE_MEMORY_WORKSPACE_ID", "default")
 DEFAULT_INSTANCE_ID = os.getenv("DOPE_MEMORY_INSTANCE_ID", "A")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MCP Server (Inline to avoid import issues)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+@dataclass
+class ToolResponse:
+    """Standard tool response wrapper."""
+
+    success: bool
+    data: dict[str, Any]
+    error: Optional[str] = None
+
+
+class DopeMemoryMCPServer:
+    """MCP server for Dope-Memory tools.
+
+    All tools enforce ADHD Top-3 boundary with pagination support.
+    """
+
+    def __init__(
+        self,
+        data_dir: Path,
+        workspace_id: str,
+        instance_id: str = "A",
+    ):
+        self.data_dir = data_dir
+        self.data_dir.mkdir(parents=True, exist_ok=True)
+        self.default_workspace_id = workspace_id
+        self.default_instance_id = instance_id
+        self.redactor = Redactor()
+        self.promotion_engine = PromotionEngine()
+        self._stores: dict[str, ChronicleStore] = {}
+
+    def _get_store(self, workspace_id: str) -> ChronicleStore:
+        """Get or create a ChronicleStore for a workspace."""
+        if workspace_id not in self._stores:
+            db_path = self.data_dir / workspace_id / "chronicle.db"
+            db_path.parent.mkdir(parents=True, exist_ok=True)
+            store = ChronicleStore(db_path)
+            store.initialize_schema()
+            self._stores[workspace_id] = store
+        return self._stores[workspace_id]
+
+    def _encode_cursor(
+        self, importance_score: int, ts_utc: str, entry_id: str, scope_hash: str
+    ) -> str:
+        """Encode a pagination cursor."""
+        data = {"i": importance_score, "t": ts_utc, "id": entry_id, "h": scope_hash}
+        return base64.urlsafe_b64encode(json.dumps(data).encode()).decode()
+
+    def _decode_cursor(
+        self, cursor: str, expected_scope_hash: str
+    ) -> Optional[tuple[int, str, str]]:
+        """Decode and validate a pagination cursor."""
+        try:
+            data = json.loads(base64.urlsafe_b64decode(cursor.encode()))
+            if data.get("h") != expected_scope_hash:
+                return None
+            return (data["i"], data["t"], data["id"])
+        except Exception:
+            return None
+
+    def _compute_scope_hash(self, **filters: Any) -> str:
+        """Compute hash of search scope for cursor validation."""
+        normalized = json.dumps(filters, sort_keys=True)
+        return hashlib.sha256(normalized.encode()).hexdigest()[:8]
+
+    def memory_search(
+        self,
+        query: str,
+        workspace_id: str,
+        instance_id: str,
+        session_id: Optional[str] = None,
+        filters: Optional[dict[str, Any]] = None,
+        top_k: int = 3,
+        cursor: Optional[str] = None,
+    ) -> ToolResponse:
+        """Search work log entries."""
+        try:
+            top_k = min(max(1, top_k), 10)
+            store = self._get_store(workspace_id)
+            
+            f = filters or {}
+            search_filters = {
+                "query": query.strip().lower(),
+                "session_id": session_id,
+                "category": f.get("category"),
+                "entry_type": f.get("entry_type"),
+                "workflow_phase": f.get("workflow_phase"),
+                "tags_any": f.get("tags_any"),
+                "time_range": f.get("time_range", "all"),
+            }
+
+            scope_hash = self._compute_scope_hash(
+                workspace_id=workspace_id, instance_id=instance_id, **search_filters
+            )
+            decoded_cursor = None
+            if cursor:
+                decoded_cursor = self._decode_cursor(cursor, scope_hash)
+
+            rows = store.search_work_log(
+                workspace_id=workspace_id,
+                instance_id=instance_id,
+                query=query.strip().lower() if query.strip() else None,
+                session_id=session_id,
+                category=f.get("category"),
+                entry_type=f.get("entry_type"),
+                workflow_phase=f.get("workflow_phase"),
+                tags_any=f.get("tags_any"),
+                time_range=f.get("time_range"),
+                limit=top_k + 1,
+                cursor=decoded_cursor,
+            )
+
+            has_more = len(rows) > top_k
+            items = rows[:top_k]
+
+            next_token = None
+            if has_more and items:
+                last = items[-1]
+                next_token = self._encode_cursor(
+                    last["importance_score"], last["ts_utc"], last["id"], scope_hash
+                )
+
+            response_items = []
+            for row in items:
+                response_items.append({
+                    "id": row["id"],
+                    "ts_utc": row["ts_utc"],
+                    "summary": row["summary"],
+                    "category": row["category"],
+                    "entry_type": row["entry_type"],
+                    "workflow_phase": row.get("workflow_phase"),
+                    "outcome": row["outcome"],
+                    "importance_score": row["importance_score"],
+                    "tags": json.loads(row.get("tags_json", "[]")),
+                })
+
+            return ToolResponse(
+                success=True,
+                data={
+                    "items": response_items,
+                    "more_count": max(0, len(rows) - top_k - 1) if has_more else 0,
+                    "next_token": next_token,
+                },
+            )
+        except Exception as e:
+            logger.error(f"memory_search error: {e}")
+            return ToolResponse(success=False, data={}, error=str(e))
+
+    def memory_store(
+        self,
+        workspace_id: str,
+        instance_id: str,
+        category: str,
+        entry_type: str,
+        summary: str,
+        session_id: Optional[str] = None,
+        details: Optional[dict[str, Any]] = None,
+        reasoning: Optional[str] = None,
+        outcome: str = "in_progress",
+        importance_score: int = 6,
+        tags: Optional[list[str]] = None,
+        links: Optional[dict[str, Any]] = None,
+    ) -> ToolResponse:
+        """Store a manual work log entry."""
+        try:
+            store = self._get_store(workspace_id)
+
+            redacted_details = None
+            if details:
+                redacted_details = self.redactor.redact_payload(details)
+
+            linked_files = None
+            if links and links.get("files"):
+                linked_files = self.redactor.redact_linked_files(links["files"])
+
+            entry_id = store.insert_work_log_entry(
+                workspace_id=workspace_id,
+                instance_id=instance_id,
+                category=category,
+                entry_type=entry_type,
+                summary=summary[:500],
+                session_id=session_id,
+                details=redacted_details,
+                reasoning=reasoning[:2000] if reasoning else None,
+                outcome=outcome,
+                importance_score=max(1, min(10, importance_score)),
+                tags=tags,
+                linked_decisions=links.get("decisions") if links else None,
+                linked_files=linked_files,
+                linked_commits=links.get("commits") if links else None,
+                linked_chat_range=links.get("chat_range") if links else None,
+            )
+
+            return ToolResponse(success=True, data={"entry_id": entry_id, "created": True})
+        except Exception as e:
+            logger.error(f"memory_store error: {e}")
+            return ToolResponse(success=False, data={}, error=str(e))
+
+    def memory_recap(
+        self,
+        workspace_id: str,
+        instance_id: str,
+        scope: str = "session",
+        session_id: Optional[str] = None,
+        top_k: int = 3,
+    ) -> ToolResponse:
+        """Get a recap of recent work."""
+        try:
+            top_k = min(max(1, top_k), 10)
+            store = self._get_store(workspace_id)
+
+            time_range = {"session": None, "today": "today", "last_2_hours": "today"}.get(
+                scope, "today"
+            )
+
+            entries = store.search_work_log(
+                workspace_id=workspace_id,
+                instance_id=instance_id,
+                session_id=session_id if scope == "session" else None,
+                time_range=time_range,
+                limit=20,
+            )
+
+            if not entries:
+                return ToolResponse(
+                    success=True,
+                    data={"trajectory": "No recent activity", "cards": [], "more_count": 0},
+                )
+
+            cards = []
+            used_ids = set()
+
+            # Card 1: Decision or top activity
+            decision = next(
+                (e for e in entries if e["entry_type"] == "decision" and e["id"] not in used_ids),
+                None,
+            )
+            if decision:
+                cards.append({"title": "Decision", "summary": decision["summary"], "entry_ids": [decision["id"]]})
+                used_ids.add(decision["id"])
+            elif entries:
+                cards.append({"title": "Activity", "summary": entries[0]["summary"], "entry_ids": [entries[0]["id"]]})
+                used_ids.add(entries[0]["id"])
+
+            # Card 2: Blocker/Error
+            blocker = next(
+                (e for e in entries if e["entry_type"] in ("blocker", "error") and e["id"] not in used_ids),
+                None,
+            )
+            if blocker and len(cards) < top_k:
+                cards.append({
+                    "title": "Blocker" if blocker["entry_type"] == "blocker" else "Error",
+                    "summary": blocker["summary"],
+                    "entry_ids": [blocker["id"]],
+                })
+                used_ids.add(blocker["id"])
+
+            # Card 3: Next suggestion
+            if len(cards) < top_k:
+                if blocker:
+                    cards.append({"title": "Next", "summary": f"Resolve: {blocker['summary'][:80]}", "entry_ids": [blocker["id"]]})
+                elif entries:
+                    cards.append({"title": "Next", "summary": f"Continue: {entries[0]['summary'][:80]}", "entry_ids": [entries[0]["id"]]})
+
+            trajectory = f"Working on {', '.join(sorted(set(e['category'] for e in entries[:5])))} activities" if entries else "No recent activity"
+
+            return ToolResponse(
+                success=True,
+                data={"trajectory": trajectory, "cards": cards[:top_k], "more_count": max(0, len(entries) - top_k)},
+            )
+        except Exception as e:
+            logger.error(f"memory_recap error: {e}")
+            return ToolResponse(success=False, data={}, error=str(e))
+
+    def memory_mark_issue(
+        self,
+        workspace_id: str,
+        instance_id: str,
+        issue_entry_id: str,
+        description: str,
+        confidence: float = 0.7,
+        evidence_window_min: int = 30,
+        tags: Optional[list[str]] = None,
+    ) -> ToolResponse:
+        """Mark an entry as an issue source."""
+        try:
+            store = self._get_store(workspace_id)
+            entry = store.get_entry_by_id(workspace_id, instance_id, issue_entry_id)
+            if not entry:
+                return ToolResponse(success=False, data={"issue_marked": False}, error="Entry not found")
+            return ToolResponse(success=True, data={"issue_marked": True})
+        except Exception as e:
+            logger.error(f"memory_mark_issue error: {e}")
+            return ToolResponse(success=False, data={}, error=str(e))
+
+    def memory_link_resolution(
+        self,
+        workspace_id: str,
+        instance_id: str,
+        issue_entry_id: str,
+        resolution_entry_id: str,
+        confidence: float = 0.8,
+        evidence_window_min: int = 30,
+    ) -> ToolResponse:
+        """Link an issue entry to its resolution."""
+        try:
+            store = self._get_store(workspace_id)
+            issue = store.get_entry_by_id(workspace_id, instance_id, issue_entry_id)
+            resolution = store.get_entry_by_id(workspace_id, instance_id, resolution_entry_id)
+            if not issue or not resolution:
+                return ToolResponse(success=False, data={"linked": False}, error="Entry not found")
+
+            store.insert_issue_link(
+                workspace_id=workspace_id,
+                instance_id=instance_id,
+                issue_entry_id=issue_entry_id,
+                resolution_entry_id=resolution_entry_id,
+                confidence=confidence,
+                evidence_window_min=evidence_window_min,
+            )
+            return ToolResponse(success=True, data={"linked": True})
+        except Exception as e:
+            logger.error(f"memory_link_resolution error: {e}")
+            return ToolResponse(success=False, data={}, error=str(e))
+
+    def memory_replay_session(
+        self,
+        workspace_id: str,
+        instance_id: str,
+        session_id: str,
+        top_k: int = 3,
+        cursor: Optional[str] = None,
+    ) -> ToolResponse:
+        """Replay session entries chronologically."""
+        return self.memory_search(
+            query="",
+            workspace_id=workspace_id,
+            instance_id=instance_id,
+            session_id=session_id,
+            top_k=top_k,
+            cursor=cursor,
+        )
+
 
 # Global MCP server instance
 mcp_server: Optional[DopeMemoryMCPServer] = None
@@ -130,17 +482,59 @@ class MemoryReplaySessionRequest(BaseModel):
     cursor: Optional[str] = None
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# Application Lifecycle
-# ═══════════════════════════════════════════════════════════════════════════════
+# EventBus consumer (optional, started if REDIS_URL is set)
+ENABLE_EVENTBUS = os.getenv("ENABLE_EVENTBUS", "false").lower() == "true"
+REDIS_URL = os.getenv("REDIS_URL", "")
+
+# Retention job configuration
+ENABLE_RETENTION_JOB = os.getenv("ENABLE_RETENTION_JOB", "true").lower() == "true"
+RETENTION_INTERVAL_SEC = int(os.getenv("RETENTION_INTERVAL_SEC", "3600"))  # Default: 1 hour
+
+# Postgres mirror sync configuration
+ENABLE_MIRROR_SYNC = os.getenv("ENABLE_MIRROR_SYNC", "false").lower() == "true"
+POSTGRES_URL = os.getenv("POSTGRES_URL", os.getenv("DATABASE_URL", ""))
+
+# Global EventBus consumer and tasks
+eventbus_consumer = None
+eventbus_task = None
+retention_task = None
+mirror_sync = None
+mirror_sync_task = None
+
+
+async def run_retention_job(mcp_server: DopeMemoryMCPServer, interval_sec: int = 3600):
+    """Background task that periodically cleans up expired raw events."""
+    logger.info(f"🧹 Retention job started (interval: {interval_sec}s)")
+    while True:
+        try:
+            await asyncio.sleep(interval_sec)
+            # Run cleanup for all known workspaces
+            total_deleted = 0
+            for workspace_id, store in mcp_server._stores.items():
+                try:
+                    deleted = store.cleanup_expired_raw_events()
+                    if deleted > 0:
+                        logger.info(f"🗑️  Cleaned up {deleted} expired raw events from {workspace_id}")
+                        total_deleted += deleted
+                except Exception as e:
+                    logger.warning(f"⚠️  Retention job error for {workspace_id}: {e}")
+
+            if total_deleted > 0:
+                logger.info(f"🧹 Retention job: deleted {total_deleted} total expired events")
+        except asyncio.CancelledError:
+            logger.info("🧹 Retention job stopping")
+            break
+        except Exception as e:
+            logger.error(f"❌ Retention job error: {e}")
+            # Continue running despite errors
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
-    global mcp_server
+    global mcp_server, eventbus_consumer, eventbus_task, retention_task
+    global mirror_sync, mirror_sync_task
 
-    # Initialize MCP server
     logger.info(f"Initializing Dope-Memory MCP server with data_dir={DATA_DIR}")
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -150,10 +544,83 @@ async def lifespan(app: FastAPI):
         instance_id=DEFAULT_INSTANCE_ID,
     )
 
+    # Start EventBus consumer if enabled
+    if ENABLE_EVENTBUS and REDIS_URL:
+        try:
+            from eventbus_consumer import EventBusConsumer
+
+            logger.info(f"Starting EventBus consumer for real-time ingestion")
+            eventbus_consumer = EventBusConsumer(
+                redis_url=REDIS_URL,
+                data_dir=DATA_DIR,
+            )
+            await eventbus_consumer.initialize()
+            eventbus_task = asyncio.create_task(eventbus_consumer.start())
+            logger.info("✅ EventBus consumer started")
+        except Exception as e:
+            logger.warning(f"⚠️  Failed to start EventBus consumer: {e}")
+            eventbus_consumer = None
+            eventbus_task = None
+
+    # Start retention job if enabled
+    if ENABLE_RETENTION_JOB:
+        retention_task = asyncio.create_task(
+            run_retention_job(mcp_server, RETENTION_INTERVAL_SEC)
+        )
+        logger.info("✅ Retention job started")
+
+    # Start Postgres mirror sync if enabled
+    if ENABLE_MIRROR_SYNC and POSTGRES_URL:
+        try:
+            from postgres_mirror_sync import PostgresMirrorSync
+
+            logger.info(f"Starting Postgres mirror sync")
+            mirror_sync = PostgresMirrorSync(
+                postgres_url=POSTGRES_URL,
+                data_dir=DATA_DIR,
+            )
+            await mirror_sync.initialize()
+            mirror_sync_task = asyncio.create_task(mirror_sync.start())
+            logger.info("✅ Postgres mirror sync started")
+        except Exception as e:
+            logger.warning(f"⚠️  Failed to start Postgres mirror sync: {e}")
+            mirror_sync = None
+            mirror_sync_task = None
+
     logger.info(f"Dope-Memory HTTP server started on port {PORT}")
     yield
 
     # Cleanup
+    if mirror_sync_task:
+        logger.info("Stopping Postgres mirror sync...")
+        await mirror_sync.stop()
+        mirror_sync_task.cancel()
+        try:
+            await mirror_sync_task
+        except asyncio.CancelledError:
+            pass
+        logger.info("Postgres mirror sync stopped")
+
+    if retention_task:
+        logger.info("Stopping retention job...")
+        retention_task.cancel()
+        try:
+            await retention_task
+        except asyncio.CancelledError:
+            pass
+        logger.info("Retention job stopped")
+
+    if eventbus_consumer:
+        logger.info("Stopping EventBus consumer...")
+        await eventbus_consumer.stop()
+        if eventbus_task:
+            eventbus_task.cancel()
+            try:
+                await eventbus_task
+            except asyncio.CancelledError:
+                pass
+        logger.info("EventBus consumer stopped")
+
     logger.info("Dope-Memory HTTP server stopping")
 
 
@@ -168,7 +635,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -220,22 +686,17 @@ async def root():
 
 @app.post("/tools/memory_search")
 async def memory_search(request: MemorySearchRequest):
-    """Search work log entries.
-
-    Returns Top-3 (default) with pagination support.
-    """
+    """Search work log entries. Returns Top-3 (default) with pagination support."""
     if not mcp_server:
         raise HTTPException(status_code=503, detail="MCP server not initialized")
 
-    filters = {
+    filters = {k: v for k, v in {
         "category": request.category,
         "entry_type": request.entry_type,
         "workflow_phase": request.workflow_phase,
         "tags_any": request.tags_any,
         "time_range": request.time_range,
-    }
-    # Remove None values
-    filters = {k: v for k, v in filters.items() if v is not None}
+    }.items() if v is not None}
 
     result = mcp_server.memory_search(
         query=request.query,
@@ -249,7 +710,6 @@ async def memory_search(request: MemorySearchRequest):
 
     if not result.success:
         raise HTTPException(status_code=400, detail=result.error)
-
     return result.data
 
 
@@ -276,7 +736,6 @@ async def memory_store(request: MemoryStoreRequest):
 
     if not result.success:
         raise HTTPException(status_code=400, detail=result.error)
-
     return result.data
 
 
@@ -296,7 +755,6 @@ async def memory_recap(request: MemoryRecapRequest):
 
     if not result.success:
         raise HTTPException(status_code=400, detail=result.error)
-
     return result.data
 
 
@@ -318,7 +776,6 @@ async def memory_mark_issue(request: MemoryMarkIssueRequest):
 
     if not result.success:
         raise HTTPException(status_code=400, detail=result.error)
-
     return result.data
 
 
@@ -339,7 +796,6 @@ async def memory_link_resolution(request: MemoryLinkResolutionRequest):
 
     if not result.success:
         raise HTTPException(status_code=400, detail=result.error)
-
     return result.data
 
 
@@ -359,7 +815,6 @@ async def memory_replay_session(request: MemoryReplaySessionRequest):
 
     if not result.success:
         raise HTTPException(status_code=400, detail=result.error)
-
     return result.data
 
 
