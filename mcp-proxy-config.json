@@ -121,12 +121,12 @@
       "type": "stdio",
       "disabled": true
     },
-    "zen": {
+    "pal": {
       "command": "uvx",
       "args": [
         "--from",
-        "git+https://github.com/BeehiveInnovations/zen-mcp-server.git",
-        "zen-mcp-server"
+        "git+https://github.com/BeehiveInnovations/pal-mcp-server.git",
+        "pal-mcp-server"
       ],
       "env": {
         "OPENAI_API_KEY": "${OPENAI_API_KEY}",
