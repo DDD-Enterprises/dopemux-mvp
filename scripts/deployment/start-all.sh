@@ -1,0 +1,239 @@
+#!/bin/bash
+#
+# Start All Dopemux Services - Complete Stack
+#
+# This script starts ALL Dopemux services including:
+# - 12 MCP servers (ConPort, Zen, Serena, Context7, etc.)
+# - DopeconBridge (event processing, pattern detection)
+# - Task Orchestrator (ADHD task coordination)
+# - All infrastructure (PostgreSQL, Redis, Qdrant)
+#
+# Usage:
+#   ./scripts/start-all.sh           # Start everything
+#   ./scripts/start-all.sh --verify  # Start + verify health
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+VERIFY=false
+
+# Parse arguments
+if [[ "$1" == "--verify" ]] || [[ "$1" == "-v" ]]; then
+    VERIFY=true
+fi
+
+cd "$PROJECT_ROOT"
+
+echo "🚀 Starting Complete Dopemux Stack..."
+echo "=========================================="
+echo ""
+
+# Step 1: Start MCP servers (includes infrastructure)
+echo "📡 Step 1/3: Starting MCP servers..."
+cd docker/mcp-servers
+docker-compose up -d
+echo "✅ MCP servers started"
+echo ""
+
+# Step 2: Start ConPort-KG services (DopeconBridge)
+echo "🔗 Step 2/3: Starting DopeconBridge..."
+cd "$PROJECT_ROOT/docker/conport-kg"
+docker-compose up -d dopecon-bridge
+echo "✅ DopeconBridge started (port 3016)"
+echo ""
+
+# Step 3: Start Task Orchestrator (manual profile)
+echo "🤖 Step 3/4: Starting Task Orchestrator..."
+cd "$PROJECT_ROOT/docker/mcp-servers"
+docker-compose --profile manual up -d task-orchestrator
+echo "✅ Task Orchestrator started (port 3014)"
+echo ""
+
+# Step 4: Start ADHD Engine (background process - Docker version has dependency issues)
+echo "🧠 Step 4/5: Starting ADHD Engine..."
+cd "$PROJECT_ROOT/services/adhd_engine"
+
+# Kill any existing instances
+pkill -9 -f "adhd_engine/main.py" 2>/dev/null || true
+sleep 1
+
+# Start ADHD Engine on port 8095
+API_PORT=8095 REDIS_URL=redis://localhost:6379 nohup python main.py > /tmp/adhd_engine.log 2>&1 &
+ADHD_PID=$!
+
+# Wait for startup
+sleep 3
+
+# Verify it started
+if lsof -i :8095 2>/dev/null | grep -q LISTEN; then
+    echo "✅ ADHD Engine started (port 8095, PID: $ADHD_PID)"
+
+    # Initialize ADHD user profile (ensures statusline works)
+    echo ""
+    "$PROJECT_ROOT/scripts/init-adhd-profile.sh"
+else
+    echo "⚠️  ADHD Engine failed to start - check /tmp/adhd_engine.log"
+fi
+echo ""
+
+# Step 5: Start Workspace Watcher (automatic workspace switch detection)
+echo "👁️  Step 5/6: Starting Workspace Watcher..."
+cd "$PROJECT_ROOT/services/workspace-watcher"
+
+# Kill any existing instances
+pkill -9 -f "workspace-watcher/main.py" 2>/dev/null || true
+sleep 1
+
+# Start Workspace Watcher (5s poll interval)
+nohup python main.py --interval 5 > /tmp/workspace_watcher.log 2>&1 &
+WATCHER_PID=$!
+
+# Wait briefly for startup
+sleep 2
+
+# Verify it started
+if ps -p $WATCHER_PID >/dev/null 2>&1; then
+    echo "✅ Workspace Watcher started (PID: $WATCHER_PID, polling every 5s)"
+else
+    echo "⚠️  Workspace Watcher failed to start - check /tmp/workspace_watcher.log"
+fi
+echo ""
+
+# Step 6: Start F-NEW-8 Break Suggester (intelligent break detection)
+echo "🎯 Step 6/7: Starting Break Suggester (F-NEW-8)..."
+cd "$PROJECT_ROOT/services/break-suggester"
+
+# Kill any existing instances
+pkill -9 -f "break-suggester" 2>/dev/null || true
+sleep 1
+
+# Start Break Suggester
+nohup python start_service.py hue > /tmp/break_suggester.log 2>&1 &
+SUGGESTER_PID=$!
+
+# Wait briefly
+sleep 2
+
+if ps -p $SUGGESTER_PID >/dev/null 2>&1; then
+    echo "✅ Break Suggester started (PID: $SUGGESTER_PID)"
+else
+    echo "⚠️  Break Suggester failed - check /tmp/break_suggester.log"
+fi
+echo ""
+
+# Step 7: Start ADHD Notifier (break reminders + hyperfocus alerts + F-NEW-8 integration)
+echo "🔔 Step 7/7: Starting ADHD Notifier..."
+cd "$PROJECT_ROOT/services/adhd-notifier"
+
+# Kill any existing instances
+pkill -9 -f "adhd-notifier/main.py" 2>/dev/null || true
+sleep 1
+
+# Start ADHD Notifier (60s check interval)
+nohup python main.py --interval 60 > /tmp/adhd_notifier.log 2>&1 &
+NOTIFIER_PID=$!
+
+# Wait briefly for startup
+sleep 2
+
+# Verify it started
+if ps -p $NOTIFIER_PID >/dev/null 2>&1; then
+    echo "✅ ADHD Notifier started (PID: $NOTIFIER_PID, checking every 60s)"
+else
+    echo "⚠️  ADHD Notifier failed to start - check /tmp/adhd_notifier.log"
+fi
+echo ""
+
+echo "=========================================="
+echo "🎉 All Dopemux services started!"
+echo ""
+
+echo "🌐 Optional: Start ADHD Dashboard (Web UI)"
+echo "   cd services/adhd-dashboard && python backend.py"
+echo "   Then visit: http://localhost:8097"
+echo ""
+
+# Show running services
+echo "📊 Running Services:"
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | \
+  grep -E "(NAMES|dopecon-bridge|task-orchestrator|mcp-|dopemux-|redis|postgres|qdrant)" | \
+  head -20
+
+echo ""
+
+# Verification if requested
+if [ "$VERIFY" = true ]; then
+    echo "🔍 Verifying service health..."
+    echo ""
+
+    # Check DopeconBridge
+    echo -n "  DopeconBridge (3016): "
+    if curl -sf http://localhost:3016/health > /dev/null 2>&1; then
+        echo "✅ Healthy"
+    else
+        echo "❌ Not responding"
+    fi
+
+    # Check Task Orchestrator
+    echo -n "  Task Orchestrator (3014): "
+    if docker ps | grep -q "mcp-task-orchestrator.*healthy"; then
+        echo "✅ Healthy"
+    else
+        echo "⚠️  Check logs: docker logs mcp-task-orchestrator"
+    fi
+
+    # Check Redis Events
+    echo -n "  Redis Events (6379): "
+    if docker ps | grep -q "dopemux-redis-events.*healthy"; then
+        echo "✅ Healthy"
+    else
+        echo "❌ Not running"
+    fi
+
+    # Check PostgreSQL
+    echo -n "  PostgreSQL AGE (5455): "
+    if docker ps | grep -q "dope-decision-graph-postgres.*healthy"; then
+        echo "✅ Healthy"
+    else
+        echo "❌ Not running"
+    fi
+
+    # Check ADHD Engine
+    echo -n "  ADHD Engine (8095): "
+    if curl -sf http://localhost:8095/health > /dev/null 2>&1; then
+        echo "✅ Healthy"
+    else
+        echo "❌ Not responding - check /tmp/adhd_engine.log"
+    fi
+
+    # Check Activity Capture
+    echo -n "  Activity Capture (8096): "
+    if curl -sf http://localhost:8096/health > /dev/null 2>&1; then
+        echo "✅ Healthy"
+    else
+        echo "❌ Not responding - check: docker logs dopemux-activity-capture"
+    fi
+
+    echo ""
+fi
+
+echo "🔗 Service URLs:"
+echo "  DopeconBridge: http://localhost:3016/health"
+echo "  Task Orchestrator:  http://localhost:3014/health (stdio MCP)"
+echo "  Activity Capture:   http://localhost:8096/health"
+echo "  ADHD Engine:        http://localhost:8095/health"
+echo "  ADHD Dashboard:     http://localhost:8097 (optional, start manually)"
+echo "  ConPort MCP:        http://localhost:3004"
+echo "  Zen MCP:            http://localhost:3003"
+echo "  Redis UI:           http://localhost:8081"
+echo ""
+
+echo "📚 Next Steps:"
+echo "  1. Run E2E test:    python tests/integration/test_phase3_e2e.py"
+echo "  2. Check logs:      docker logs dope-decision-graph-bridge"
+echo "  3. Check metrics:   curl http://localhost:3016/metrics"
+echo "  4. Stop all:        ./scripts/stop-all.sh"
+echo ""
+
+echo "✨ Event system is now LIVE! Agents will emit events automatically."

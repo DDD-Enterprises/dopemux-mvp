@@ -350,7 +350,7 @@ Note on authentication modes:
 - Project‑level ConPort is auto‑wired into `.claude/claude_config.json` on `dopemux start` and on `scripts/stack_up_all.sh`.
 - A git `post-checkout` hook is installed to wire new worktrees automatically.
 - ConPort uses stdio via `docker exec` targeting the instance container `mcp-conport[_<instance>]`.
-- Global MCP servers (Zen, MAS, Context7, Exa, Serena, Leantime Bridge, Task Orchestrator, GPT Researcher) are wired into Claude Desktop globally.
+- Global MCP servers (PAL, MAS, Context7, Exa, Serena, Leantime Bridge, Task Orchestrator, GPT Researcher) are wired into Claude Desktop globally.
 
 Read more: `docs/WORKTREES_AND_DECISION_GRAPH.md`.
 
@@ -451,7 +451,7 @@ Your statusline should now show:
 
 **Specialized AI reasoning and tooling:**
 
-- **Zen MCP** - Multi-model reasoning (thinkdeep, planner, consensus, debug, codereview)
+- **PAL MCP** - Multi-model reasoning (thinkdeep, planner, consensus, debug, codereview)
 - **Context7** - Official library documentation (React, Vue, Next.js, etc.)
 - **GPT-Researcher** - Deep multi-source web research
 - **Exa** - Neural semantic search

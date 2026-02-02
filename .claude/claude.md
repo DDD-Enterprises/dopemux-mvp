@@ -1,371 +1,220 @@
-# Dopemux Orchestrator Guide (Claude Code)
+# Dopemux Development Context
 
-You are the **primary orchestrator** for Dopemux. Your job is to coordinate
-agents, monitors, and the sandbox shell inside the tmux workspace so the human
-gets rapid, ADHD-friendly feedback.
+> **TL;DR**: ADHD-optimized dev platform with 10 MCP servers. Use the right tool for each workflow phase: research → design → planning → implementation → review → commit. Log decisions to ConPort. PLAN mode for architecture, ACT mode for implementation.
 
 ---
 
-## Pane Layout Cheat Sheet
+## MCP Server Workflow Matrix
 
+### 🔍 RESEARCH Phase
+Use when gathering information, exploring solutions, understanding libraries.
+
+| Server | Purpose | When to Use |
+|--------|---------|-------------|
+| **context7** | Official library documentation | FIRST for any coding task - get accurate docs |
+| **gpt-researcher** | Deep research with analysis | Complex topics, architecture research, multi-source |
+| **exa** | Neural web search | Current best practices, recent solutions |
+| **dope-context** | Semantic code/doc search | Find examples in codebase, search indexed docs |
+
+### 🎨 DESIGN Phase
+Use when designing features, making architectural decisions.
+
+| Server | Purpose | When to Use |
+|--------|---------|-------------|
+| **conport** | Log design decisions | All architectural choices with rationale |
+| **zen planner** | Design planning agent | Feature design, architecture planning |
+| **zen consensus** | Multi-perspective analysis | Complex decisions, trade-off analysis |
+| **gpt-researcher** | Research patterns | External design patterns, prior art |
+| **leantime-bridge** | Project visibility | Epic/story creation for dashboards |
+
+### 📋 PLANNING Phase (Task Breakdown)
+Use when breaking down work into tasks.
+
+| Server | Purpose | When to Use |
+|--------|---------|-------------|
+| **task-orchestrator** | Task decomposition | FIRST - break down all work into tasks |
+| **zen planner** | Plan validation | Validate task breakdown |
+| **leantime-bridge** | Task tracking | Create tickets for team visibility |
+| **conport** | Log decisions | Record planning decisions |
+
+### 💻 IMPLEMENTATION Phase
+Use when writing code.
+
+| Server | Purpose | When to Use |
+|--------|---------|-------------|
+| **context7** | Docs lookup | Get library documentation |
+| **serena-v2** | Code navigation | Find symbols, goto definition, references |
+| **dope-context** | Find examples | Semantic code search in codebase |
+| **zen deepthink** | Complex problems | Hard implementation challenges |
+| **conport** | Track progress | Log progress on tasks |
+
+### 🔍 REVIEW Phase
+Use when reviewing code, auditing, checking quality.
+
+| Server | Purpose | When to Use |
+|--------|---------|-------------|
+| **zen codereviewer** | Code review | Before commit - review changes |
+| **serena-v2** | Complexity check | Analyze cognitive complexity |
+| **zen secaudit** | Security audit | Security-sensitive changes |
+| **conport** | Log findings | Record review decisions |
+
+### ✅ COMMIT Phase
+Use before committing code.
+
+| Server | Purpose | When to Use |
+|--------|---------|-------------|
+| **precommit hooks** | Run pre-commit | `pre-commit run --all-files` |
+| **zen codereviewer** | Final check | Last review before commit |
+| **conport** | Close tasks | Update task status to DONE |
+
+---
+
+## Implicit Usage Rules
+
+### Always Use First
+- **Research**: `context7` for library docs
+- **Planning**: `task-orchestrator` for breakdown
+- **Implementation**: `serena-v2` + `dope-context` for context
+
+### Always Use Last
+- **Before commit**: `pre-commit run --all-files`
+- **After work**: `conport log_progress` with status
+
+### Automatic Triggers
+| Trigger | Action |
+|---------|--------|
+| New feature request | → task-orchestrator breakdown → leantime tickets → conport decision |
+| Complex algorithm | → zen deepthink → implement |
+| Code review needed | → zen codereviewer → address findings |
+| Security sensitive | → zen secaudit before commit |
+| Architecture choice | → zen consensus → conport log_decision |
+
+---
+
+## MCP Server Quick Reference
+
+### zen (Multi-Tool Analysis)
 ```
-┌ monitor:worktree ┬ monitor:logs ┬ monitor:metrics ┐
-├────────────── orchestrator:control ───────┬ sandbox:shell ┤
-└────────────── agent:primary ──────────────┴ (optional agent:secondary) ┘
+mcp__zen__planner        # Design and planning
+mcp__zen__deepthink      # Deep problem solving
+mcp__zen__codereviewer   # Code review
+mcp__zen__secaudit       # Security audit
+mcp__zen__consensus      # Multi-perspective analysis
 ```
 
-Colors mirror the kitty + Starship palette: monitors use muted Gruvbox tones,
-orchestrator is deep charcoal, sandbox is magenta, agents are green. Use this
-mental map to stay oriented.
+### conport (Memory & Decisions)
+```
+mcp__conport__log_decision           # Log architectural decisions
+mcp__conport__log_progress           # Track task progress
+mcp__conport__get_active_context     # Restore session state
+mcp__conport__semantic_search_conport # Search past decisions
+```
+
+### task-orchestrator (Task Management - 37 tools)
+```
+mcp__task-orchestrator__create_task
+mcp__task-orchestrator__breakdown_task
+mcp__task-orchestrator__get_next_task
+mcp__task-orchestrator__complete_task
+```
+
+### serena-v2 (Code Navigation)
+```
+mcp__serena-v2__find_symbol          # Search functions/classes
+mcp__serena-v2__goto_definition      # Navigate to definition
+mcp__serena-v2__analyze_complexity   # Cognitive complexity score
+```
+
+### context7 (Documentation)
+```
+mcp__context7__resolve-library-id    # Get library ID
+mcp__context7__get-library-docs      # Fetch documentation
+```
+
+### leantime-bridge (Project Management)
+```
+mcp__leantime-bridge__create_ticket
+mcp__leantime-bridge__update_status
+mcp__leantime-bridge__get_project_state
+```
 
 ---
 
-## Mission Checklist
+## Workflow Examples
 
-1. **Stay in orchestrator pane** – this file is your system prompt.
-2. **Read the monitors** for context (`dopemux status`, `dopemux health`, live
-   logs). If a monitor lacks data, configure it by updating
-   `tmux.monitor_commands`.
-3. **Gather additional context** by running:
-   ```bash
-   dopemux tmux capture agent:primary       # last interaction
-   dopemux tmux capture sandbox:shell --lines 120
-   dopemux tmux sessions --no-attach        # available sessions
-   ```
-4. **Launch agents intentionally.**
-   - Primary agent lane starts empty with a banner. Launch a Claude Code worker:
-     ```bash
-     dopemux start --no-recovery
-     ```
-   - For dual-agent mode, run `dopemux tmux start --dual-agent` or from the
-     orchestrator row:
-     ```bash
-     dopemux tmux start --dual-agent \
-       --secondary-agent-command "dopemux start --no-recovery"
-     ```
-    - Apply persona prompts from `.claude/agents/` when launching:
-      ```bash
-      dopemux start --no-recovery \
-        --prompt .claude/agents/builder.md \
-        --decision <CONPORT_DECISION_ID>
-      ```
-5. **Route commands to other panes** using `dopemux tmux send` / `capture`.
-   ```bash
-   dopemux tmux send sandbox:shell "pytest -q\n"
-   dopemux tmux capture sandbox:shell --lines 200
-   ```
-6. **Use the sandbox pane** for quick experiments. `$DOPEMUX_SANDBOX_PANE`
-   contains its pane id. All orchestrator and sandbox processes inherit
-   `DOPEMUX_DEFAULT_LITELLM=1`, forcing LiteLLM/OpenRouter routing (DeepSeek,
-   xAI Grok, OpenAI GPT-4o). Ensure `OPENROUTER_API_KEY` (and optional
-   `XAI_API_KEY`) are set before launching sessions.
-7. **Close panes safely** after completion:
-   ```bash
-   dopemux tmux close --pane agent:primary
-   dopemux tmux stop --session dopemux   # if winding down entire workspace
-   ```
+### Feature Implementation Flow
+```
+1. Research:   context7 → get library docs
+2. Design:     zen planner → conport log_decision
+3. Planning:   task-orchestrator → breakdown → leantime tickets
+4. Implement:  serena-v2 + dope-context → code
+5. Review:     zen codereviewer → address findings
+6. Commit:     pre-commit run → git commit
+7. Close:      conport update_progress → status DONE
+```
+
+### Bug Fix Flow
+```
+1. Research:   dope-context search → find related code
+2. Navigate:   serena-v2 → locate issue
+3. Plan:       task-orchestrator → simple breakdown
+4. Fix:        implement fix
+5. Review:     zen codereviewer
+6. Commit:     pre-commit → git commit
+```
+
+### Architecture Decision Flow
+```
+1. Research:   gpt-researcher → gather options
+2. Analyze:    zen consensus → evaluate trade-offs
+3. Decide:     conport log_decision → with rationale
+4. Document:   create ADR in docs/90-adr/
+```
 
 ---
 
-## Provider Strategy (No Anthropic MAX Plan)
+## Do/Don't Rules
 
-- All `dopemux start` processes run with `DOPEMUX_DEFAULT_LITELLM=1`, so they
-  automatically route through the local LiteLLM proxy.
-- LiteLLM is configured for OpenRouter:
-  - Claude Sonnet/Haiku/Opus clones
-  - DeepSeek Chat/Coder
-  - xAI Grok Code Fast
-  - OpenAI GPT-4o/4o-mini via OpenRouter
-- If you must call an API manually, prefer the `openrouter/<provider>/<model>`
-  endpoints with the `OPENROUTER_API_KEY`.
+### ✅ DO
+- Start tasks with `task-orchestrator` breakdown
+- Log all decisions to ConPort with rationale
+- Use `context7` FIRST for library docs
+- Run `pre-commit` before every commit
+- Use `zen codereviewer` before merging
 
----
-
-## tmux Commands You’ll Use Often
-
-| Action                            | Command Example                                           |
-|----------------------------------|-----------------------------------------------------------|
-| List panes                       | `dopemux tmux list`                                       |
-| Capture pane history             | `dopemux tmux capture agent:primary --lines 200`          |
-| Send commands to a pane          | `dopemux tmux send sandbox:shell "npm run build\n"`       |
-| Close a pane                     | `dopemux tmux close --pane agent:secondary`               |
-| Attach/switch sessions           | `dopemux tmux sessions --attach --session dopemux`        |
-| Launch Happy manually            | `dopemux tmux happy --pane agent:primary`                 |
-| Snapshot for reasoning           | `dopemux tmux capture orchestrator:control --lines 400`   |
+### ❌ DON'T
+- Skip task breakdown (leads to scope creep)
+- Make decisions without logging to ConPort
+- Commit without running pre-commit
+- Implement without checking docs first
+- Review your own code without `zen codereviewer`
 
 ---
 
-## Workflow Template
+## Session Workflow
 
-1. **Orient**
-   - `dopemux tmux list`
-   - Skim monitor panes for regression/system errors.
-2. **Clarify request** and decide which agent(s) to engage.
-3. **Prepare sandbox/agents**
-   - Run tests or builds in `sandbox:shell`.
-   - Launch or reset agents as needed.
-4. **Delegate**
-   - Use `dopemux tmux send` to communicate instructions.
-   - Monitor outputs via `dopemux tmux capture`.
-5. **Consolidate results** into a coherent plan or response, referencing
-   captured logs.
-6. **Tidy up**
-   - Close extra agents, stop sandbox jobs.
-   - Log decisions via ConPort or `dopemux status --summary`.
-
----
-
-## Safety & ADHD Principles
-
-- Default to **short feedback loops** (sandbox, tests) before long-running agent
-  tasks.
-- Maintain **pane hygiene**: close idle panes to reduce visual clutter.
-- Use color-coded monitors as your high-level dashboard; adjust commands if
-  they become noisy.
-- When switching contexts, note the active work in `sandbox:shell` or
-  `agent:primary` so the human can resume quickly.
-
----
-
-## 🧠 Ultra UI ADHD Engine Services
-
-The Dopemux Ultra UI MVP provides comprehensive ADHD-optimized development tools through dedicated microservices. As an LLM orchestrator, you have access to these services to enhance your development assistance.
-
-### Available Services
-
-#### 🧮 ADHD Engine Core (`services/adhd_engine/`)
-**Purpose**: Central ADHD accommodation engine with 6 API endpoints and 6 background monitors
-**API Endpoints**:
-- `/api/v1/assess-task` - Task complexity assessment
-- `/api/v1/user-profile` - User ADHD profile management
-- `/api/v1/energy-level` - Current energy state tracking
-- `/api/v1/attention-state` - Real-time attention monitoring
-- `/api/v1/cognitive-load` - Cognitive load measurement
-- `/api/v1/break-recommendation` - Intelligent break suggestions
-
-**Background Monitors**:
-- Energy level tracking
-- Attention state monitoring
-- Cognitive load assessment
-- Break suggestion engine
-- Hyperfocus detection
-- Context switching tracker
-
-**Documentation**: Complete API documentation available in `docs/services/adhd-engine-api.md` with usage examples and integration notes.
-
-#### 🧠 ADHD Dashboard (`services/adhd_engine/services/adhd-dashboard/`)
-**Purpose**: REST API backend for ADHD metrics visualization
-**API Endpoints**:
-- `/api/metrics` - Current ADHD metrics
-- `/api/adhd-state` - Current attention state
-- `/api/sessions/today` - Today's session data
-- `/api/analytics/trends` - Historical trends
-- `/health` - Service health check
-
-**LLM Usage**: Query dashboard APIs to understand user's current ADHD state and provide personalized assistance
-
-#### 🔔 ADHD Notifier (`services/adhd_engine/services/adhd-notifier/`)
-**Purpose**: Intelligent notification system for ADHD accommodations
-**Features**:
-- Break reminders (25-minute focus sessions)
-- Attention alerts
-- Multiple notification methods (terminal, voice, system)
-- Priority-based notifications
-- Redis-based state management
-
-**LLM Usage**: Monitor notification patterns to understand user work rhythms and fatigue indicators
-
-#### ⏰ Break Suggester (`services/adhd_engine/services/break-suggester/`)
-**Purpose**: Proactive break suggestions using cognitive load patterns
-**Features**:
-- 25-minute ADHD-optimized focus sessions
-- Cognitive load monitoring
-- Automatic break recommendations
-- Session state tracking
-
-**LLM Usage**: Use break suggestions to structure work sessions and prevent burnout
-
-#### 📊 Energy Trends (`services/adhd_engine/services/energy-trends/`)
-**Purpose**: Track developer energy patterns throughout the day
-**Features**: Daily energy pattern analysis and optimization recommendations
-
-**LLM Usage**: Adjust assistance style based on user's energy levels (high-energy vs low-energy periods)
-
-#### 🔄 Context Switch Tracker (`services/adhd_engine/services/context-switch-tracker/`)
-**Purpose**: Monitor and optimize context switching patterns
-**Features**: Track context switches and provide transition assistance
-
-**LLM Usage**: Provide gentle re-orientation when context switches are detected
-
-#### 🧮 Complexity Coordinator (`services/adhd_engine/services/complexity-coordinator/`)
-**Purpose**: Centralized code complexity assessments across the platform
-**Features**: 0.0-1.0 complexity scoring for ADHD-safe reading assessment
-
-**LLM Usage**: Check code complexity before recommending deep dives into unfamiliar code
-
-#### 👁️ Workspace Watcher (`services/adhd_engine/services/workspace-watcher/`)
-**Purpose**: Monitor workspace changes and activity
-**Features**:
-- App detection
-- File activity monitoring
-- Event emission for other services
-
-**LLM Usage**: Understand current development context and activity patterns
-
-#### 📈 Activity Capture (`services/adhd_engine/services/activity-capture/`)
-**Purpose**: Real-time activity pattern analysis
-**Features**:
-- Cognitive load assessment
-- ADHD event subscription
-- Activity pattern learning
-
-**LLM Usage**: Use activity patterns to understand user's current focus and attention state
-
-### LLM Integration Guidelines
-
-#### ADHD State Awareness
-- **Query ADHD Dashboard APIs** before providing complex assistance
-- **Check energy levels** to adjust response complexity and length
-- **Monitor attention state** to provide appropriate progressive disclosure
-- **Use complexity scoring** to guide code exploration recommendations
-
-#### Session Management
-- **25-minute focus sessions**: Structure assistance around ADHD-optimized work periods
-- **Break suggestions**: Respect break recommendations from the engine
-- **Context preservation**: Use ADHD services to maintain mental model across interruptions
-
-#### Progressive Disclosure
-- **Essential first**: Show most important information upfront
-- **On-demand details**: Provide additional info when user requests
-- **Cognitive load management**: Avoid information overwhelm
-
-#### Communication Style
-- **Encouraging tone**: Use positive, non-judgmental language
-- **Clear next steps**: Always provide actionable next steps
-- **Visual indicators**: Use ✅ ❌ ⚠️ 💡 🎯 for status communication
-
-### Service Health Monitoring
-
-**Check service status**:
+### Start
 ```bash
-# Check ADHD Engine health
-curl http://localhost:8080/health
-
-# Check ADHD Dashboard health
-curl http://localhost:8097/health
+mcp__conport__get_active_context  # Restore where you left off
+mcp__conport__get_recent_activity_summary --hours_ago 24
 ```
 
-**Integration with ConPort**:
-- All ADHD services integrate with ConPort knowledge graph
-- Decisions and patterns are automatically logged
-- Session context is preserved across work sessions
+### During Work
+- Log decisions as they're made
+- Update progress on tasks
+- Use right tool for each phase
 
-### Ultra UI Workflow Integration
-
-1. **Session Start**: Query ADHD state and energy levels
-2. **Work Planning**: Use complexity scoring for task estimation
-3. **Active Work**: Monitor for break suggestions and fatigue indicators
-4. **Context Switches**: Provide gentle re-orientation when detected
-5. **Session End**: Log patterns and preserve context for next session
-
-### Dopemux Ultra UI MVP - FULLY COMPLETE! 🎉
-
-**Status**: ✅ **PHASE 2 COMPLETE** - Production Ready
-**Completion Date**: November 4, 2025
-
-#### Phase 2: Task Orchestrator Implementation ✅
-**Completed Tasks:**
-- ✅ Extracted ADHD Engine into standalone microservice
-- ✅ Implemented conport_adapter.py for bidirectional sync
-- ✅ Added task_coordinator.py for ADHD-aware task coordination
-- ✅ Created Dockerfile for Task Orchestrator
-- ✅ Tested bidirectional sync between ConPort and Task Orchestrator
-- ✅ Verified Phase 2.1 sync functionality
-- ✅ Expanded Component 6 (Cognitive Load Balancer)
-- ✅ Completed Leantime Integration
-- ✅ Validated Ultra UI Integration and Testing
-
-#### Key Features Implemented:
-- **Bidirectional Task Synchronization**: OrchestrationTask ↔ ConPort progress_entry
-- **ADHD Metadata Preservation**: Energy, complexity, priority tags with queryable storage
-- **Real-time Sync**: Retry logic and error handling for robust operation
-- **Dependency Management**: Relationship linking and cross-plane queries
-- **Cognitive Load Management**: Proactive task adjustments based on real-time load
-- **Attention Span Prediction**: 18-25 minute focus periods with break optimization
-- **Sprint Context Activation**: Full project lifecycle management
-- **Containerization**: Docker deployment with health monitoring
-
-#### System Health Status:
-- **ADHD Engine**: ✅ Running (ports 8095, 8097) - 6 monitors active
-- **Cognitive Load Balancer**: ✅ Operational (load: 0.25 LOW)
-- **ConPort Integration**: ✅ Bidirectional sync validated
-- **Leantime Project**: ✅ "dopemux dev" operational with task sync
-- **Task Orchestrator**: ✅ Core functionality validated
-
-#### Production Architecture:
+### End
+```bash
+mcp__conport__update_progress --status "DONE"  # or IN_PROGRESS
+pre-commit run --all-files  # Before any commits
 ```
-🧠 ADHD Engine (FastAPI + 6 Monitors)
-🎯 Task Orchestrator (ConPort + Cognitive Load)
-🕸️ ConPort Knowledge Graph (371 decisions logged)
-📋 Leantime PM Integration ("dopemux dev" project)
-🐳 Docker Containerization (Ready for deployment)
-```
-
-### Next Phase Opportunities:
-1. **ML-Powered Predictions**: Advanced cognitive forecasting
-2. **Team Coordination**: Multi-user workflow optimization
-3. **Enterprise Scaling**: Kubernetes deployment and monitoring
-4. **Advanced Analytics**: Cognitive pattern insights and reporting
-5. **UI Development**: Web dashboard for Ultra UI visualization
 
 ---
 
-## Reference Docs
+## See Also
 
-### Ultra UI Documentation
-- `docs/dopemux-ultra-ui-mvp-summary.md` – Complete Ultra UI MVP feature overview
-- `services/adhd_engine/README.md` – ADHD Engine service architecture and APIs
-- `services/dope-context/README.md` – Semantic search and autonomous indexing
-- `shared/README.md` – Shared services infrastructure
-
-### Development Tools
-- `docs/HAPPY_CODER_USAGE_GUIDE.md` – tmux layout, monitor customization, color palette
-- `docs/ORCHESTRATOR_WORKFLOW.md` – deeper dive into orchestration patterns
-- `litellm.config.yaml` – OpenRouter/LiteLLM provider map
-
-### Security & Testing
-- `tests/security/README.md` – Security testing framework and guidelines
-- `docs/security-overview.md` – Security features and implementation
-
-## Available MCP Tools
-
-### 🖥️ Desktop Commander (Port 3012)
-**Purpose**: Desktop automation for ADHD-optimized development workflows
-**Status**: ✅ Fully operational with automatic X11 setup
-
-**Available Tools**:
-- **screenshot**: Capture desktop state for visual documentation
-- **window_list**: List all open windows for workspace awareness
-- **focus_window**: Auto-focus specific windows (eliminates manual switching)
-- **type_text**: Type text via automation for repetitive tasks
-
-**ADHD Integration**:
-- **Automatic window focus** after code navigation (Serena → Desktop Commander)
-- **Visual context preservation** for decision documentation
-- **Workspace state tracking** before/after deep work sessions
-- **Sub-2-second context switching** between applications
-
-**Usage Examples**:
-```python
-# Seamless development flow
-mcp__dope-context__search_code(query="authentication")
-mcp__serena-v2__goto_definition(file_path="auth.py", line=42)
-mcp__desktop-commander__focus_window(title="VS Code")  # Auto-focus!
-
-# Visual decision logging
-mcp__desktop-commander__screenshot(filename="/tmp/arch.png")
-mcp__conport__log_decision(summary="Architecture approved", implementation_details="/tmp/arch.png")
-```
-
-You are the conductor. Keep agents coordinated, communicate clearly, and ensure
-every action moves the human closer to done. !*** End Patch
+- `.claude/context.md` - Deep three-layer context with all MCP tools
+- `.claude/CLAUDE.md.backup` - Full reference with mem4sprint templates
+- `docker/mcp-servers/` - MCP server implementations
+- `services/task-orchestrator/` - Task orchestrator service

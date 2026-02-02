@@ -1,10 +1,10 @@
 {
   "mcpServers": {
-    "zen": {
+    "pal": {
       "type": "stdio",
-      "command": "/Users/hue/code/dopemux-mvp/docker/mcp-servers/zen/zen-mcp-server/.venv/bin/python",
+      "command": "/Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server/.venv/bin/python",
       "args": [
-        "/Users/hue/code/dopemux-mvp/docker/mcp-servers/zen/zen-mcp-server/server.py"
+        "/Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server/server.py"
       ],
       "env": {
         "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
@@ -13,7 +13,7 @@
         "XAI_API_KEY": "${XAI_API_KEY:-}",
         "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
         "DEFAULT_MODEL": "auto",
-        "ZEN_DEFAULT_PROVIDER": "openrouter"
+        "PAL_DEFAULT_PROVIDER": "openrouter"
       }
     },
     "conport": {

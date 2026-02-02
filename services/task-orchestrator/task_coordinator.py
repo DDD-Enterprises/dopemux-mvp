@@ -35,7 +35,7 @@ from enhanced_orchestrator import OrchestrationTask, TaskStatus
 from adapters.conport_adapter import ConPortEventAdapter
 from intelligence.cognitive_load_balancer import CognitiveLoadBalancer
 from intelligence.context_switch_recovery import ContextSwitchRecovery
-from zen_client import TaskOrchestratorZenClient
+from pal_client import TaskOrchestratorPALClient
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class TaskCoordinator:
         self.conport_adapter = ConPortEventAdapter(workspace_id)
         self.cognitive_guardian = CognitiveLoadBalancer(workspace_id=workspace_id, conport_client=self.conport_adapter)
         self.context_recovery = ContextSwitchRecovery(workspace_id, self.conport_adapter)
-        self.zen_client = TaskOrchestratorZenClient("http://localhost:3003", {})
+        self.pal_client = TaskOrchestratorPALClient("http://localhost:3003", {})
 
         # State tracking
         self.coordination_state = CoordinationState(
@@ -156,7 +156,7 @@ class TaskCoordinator:
                     'peak_hours': adhd_state.get('peak_hours', 'morning')
                 }
 
-                zen_prioritization = await self.zen_client.prioritize_task_queue(task_data, zen_context)
+                zen_prioritization = await self.pal_client.prioritize_task_queue(task_data, zen_context)
 
                 # Apply Zen prioritization to tasks
                 prioritized_indices = zen_prioritization.get('prioritized_order', list(range(len(tasks))))
@@ -187,7 +187,7 @@ class TaskCoordinator:
                 'estimated_minutes': getattr(task, 'estimated_duration', 30)
             }
 
-            zen_breakdown = await self.zen_client.plan_task_breakdown(task_data, adhd_context)
+            zen_breakdown = await self.pal_client.plan_task_breakdown(task_data, adhd_context)
 
             # Convert Zen breakdown to OrchestrationTask subtasks
             subtasks = []
