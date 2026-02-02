@@ -26,6 +26,8 @@ try:
     from qdrant_client import QdrantClient
     from qdrant_client.http.models import Distance, VectorParams, PointStruct
 except ImportError as e:
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
     logger.warning(f"Qdrant unavailable: {e}")
     QdrantClient = None
     Distance = None
@@ -1347,12 +1349,22 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-users_db = {'admin': {
-    'username': 'admin',
-    'hashed_password': get_password_hash('password'),
-}}
+# Lazy initialization to avoid bcrypt self-test issues at module load
+_users_db_initialized = False
+users_db = {}
+
+def _initialize_users_db():
+    """Initialize users database with hashed passwords (lazy)."""
+    global _users_db_initialized, users_db
+    if not _users_db_initialized:
+        users_db = {'admin': {
+            'username': 'admin',
+            'hashed_password': get_password_hash('password'),
+        }}
+        _users_db_initialized = True
 
 def authenticate_user(username: str, password: str):
+    _initialize_users_db()  # Ensure users_db is initialized
     user = users_db.get(username)
     if not user or not verify_password(password, user['hashed_password']):
         return False

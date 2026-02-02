@@ -87,20 +87,20 @@ services:
         reason: "Qdrant provides native HTTP health endpoint at /"
 
   # MCP Services
-  - name: conport
+  - name: dope-query
     port: 3004
     container_port: 3004
     health_path: /health
     health_method: GET
     health_timeout_ms: 10000
     health_expected_status: 200
-    compose_service_name: conport
+    compose_service_name: dope-query
     enabled_in_smoke: true
     category: mcp
-    description: "ConPort - Knowledge graph and context management MCP server"
+    description: "DopeQuery (formerly ConPort) - Knowledge graph and context management MCP server"
     env_contract_exceptions:
       - variable: MCP_SERVER_PORT
-        reason: "ConPort uses PORT directly; MCP_SERVER_PORT is redundant"
+        reason: "DopeQuery uses PORT directly; MCP_SERVER_PORT is redundant"
 
   # Coordination Layer
   - name: dopecon-bridge

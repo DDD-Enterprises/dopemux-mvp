@@ -120,7 +120,7 @@
     "task-orchestrator": {
       "command": "python",
       "args": [
-        "services/task-orchestrator/server.py"
+        "services/task-orchestrator/app/main.py"
       ],
       "env": {},
       "type": "stdio"

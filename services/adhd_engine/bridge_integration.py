@@ -170,4 +170,4 @@ class ConPortBridgeAdapter:
             return datetime.fromisoformat(value)
         except ValueError:
             return None
-*** End of File
+

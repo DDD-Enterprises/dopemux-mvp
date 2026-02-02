@@ -86,7 +86,7 @@ class InteractivePrompts:
                 return result
 
         except KeyboardInterrupt:
-            console.logger.info("[yellow]Selection cancelled[/yellow]")
+            console.log("[yellow]Selection cancelled[/yellow]")
             return None
 
     def ask_confirmation(self, message: str, default: bool = True, complexity: float = 0.5) -> bool:
@@ -118,7 +118,7 @@ class InteractivePrompts:
             ).ask()
 
             if result == "show details":
-                console.logger.info(f"[dim]{message} - This action will proceed with the recommended settings.[/dim]")
+                console.log(f"[dim]{message} - This action will proceed with the recommended settings.[/dim]")
                 return self.ask_confirmation(message, default, complexity)
 
             return result == "yes"
@@ -156,7 +156,7 @@ class InteractivePrompts:
             return None if result == "__skip__" else result
 
         except KeyboardInterrupt:
-            console.logger.info("[yellow]Break skipped[/yellow]")
+            console.log("[yellow]Break skipped[/yellow]")
             return None
 
     def ask_progressive_details(self, basic_info: Dict[str, Any], full_info: Dict[str, Any], user_level: str = "intermediate") -> Dict[str, Any]:
@@ -172,9 +172,9 @@ class InteractivePrompts:
             Information appropriate for user level
         """
         # Show basic info first
-        console.logger.info("[bold]Operation Summary:[/bold]")
+        console.log("[bold]Operation Summary:[/bold]")
         for key, value in basic_info.items():
-            console.logger.info(f"  {key}: {value}")
+            console.log(f"  {key}: {value}")
 
         # Offer to show more based on user level
         if user_level in ["intermediate", "expert"]:
@@ -185,10 +185,10 @@ class InteractivePrompts:
                 ).ask()
 
                 if show_more:
-                    console.logger.info("\n[bold]Detailed Information:[/bold]")
+                    console.log("\n[bold]Detailed Information:[/bold]")
                     for key, value in full_info.items():
                         if key not in basic_info:
-                            console.logger.info(f"  {key}: {value}")
+                            console.log(f"  {key}: {value}")
                     return full_info
             except KeyboardInterrupt:
                 pass
@@ -208,7 +208,7 @@ class InteractivePrompts:
             Selected option name or None
         """
         if not options:
-            console.logger.info(f"[yellow]No {title.lower()} available[/yellow]")
+            console.log(f"[yellow]No {title.lower()} available[/yellow]")
             return None
 
         # Create choices
@@ -227,7 +227,7 @@ class InteractivePrompts:
 
         try:
             if context:
-                console.logger.info(f"[dim]{context}[/dim]")
+                console.log(f"[dim]{context}[/dim]")
 
             result = questionary.select(
                 title,
@@ -243,7 +243,7 @@ class InteractivePrompts:
                 return result
 
         except KeyboardInterrupt:
-            console.logger.info("[yellow]Menu cancelled[/yellow]")
+            console.log("[yellow]Menu cancelled[/yellow]")
             return None
 
 

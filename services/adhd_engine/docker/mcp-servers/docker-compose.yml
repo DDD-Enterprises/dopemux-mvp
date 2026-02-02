@@ -14,7 +14,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -45,7 +45,7 @@ services:
       redis-primary:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8095/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8095/health || exit 1" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -80,7 +80,7 @@ services:
       adhd-engine:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8096/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8096/health || exit 1" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -111,7 +111,7 @@ services:
         condition: service_healthy
     # Health check for background service
     healthcheck:
-      test: ["CMD", "python", "-c", "import psutil; exit(0 if any('start_service.py' in cmd for cmd in [p.cmdline() for p in psutil.process_iter() if p.cmdline()]) else 1)"]
+      test: [ "CMD", "python", "-c", "import psutil; exit(0 if any('start_service.py' in cmd for cmd in [p.cmdline() for p in psutil.process_iter() if p.cmdline()]) else 1)" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -145,7 +145,7 @@ services:
       redis-primary:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import psutil; exit(0 if any('main.py' in cmd for cmd in [p.cmdline() for p in psutil.process_iter() if p.cmdline()]) else 1)"]
+      test: [ "CMD", "python", "-c", "import psutil; exit(0 if any('main.py' in cmd for cmd in [p.cmdline() for p in psutil.process_iter() if p.cmdline()]) else 1)" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -177,7 +177,7 @@ services:
       adhd-engine:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8097/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8097/health || exit 1" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -208,7 +208,7 @@ services:
       adhd-engine:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import psutil; exit(0 if any('main.py' in cmd for cmd in [p.cmdline() for p in psutil.process_iter() if p.cmdline()]) else 1)"]
+      test: [ "CMD", "python", "-c", "import psutil; exit(0 if any('main.py' in cmd for cmd in [p.cmdline() for p in psutil.process_iter() if p.cmdline()]) else 1)" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -239,7 +239,7 @@ services:
       adhd-engine:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import psutil; exit(0 if any('main.py' in cmd for cmd in [p.cmdline() for p in psutil.process_iter() if p.cmdline()]) else 1)"]
+      test: [ "CMD", "python", "-c", "import psutil; exit(0 if any('main.py' in cmd for cmd in [p.cmdline() for p in psutil.process_iter() if p.cmdline()]) else 1)" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -253,7 +253,7 @@ services:
 
   context-switch-tracker:
     build:
-      context: ../../services/context-switch-tracker
+      context: ../../domains/context-switch-tracker
       dockerfile: Dockerfile
     container_name: dopemux-context-switch-tracker
     restart: unless-stopped
@@ -270,7 +270,7 @@ services:
       adhd-engine:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import psutil; exit(0 if any('main.py' in cmd for cmd in [p.cmdline() for p in psutil.process_iter() if p.cmdline()]) else 1)"]
+      test: [ "CMD", "python", "-c", "import psutil; exit(0 if any('main.py' in cmd for cmd in [p.cmdline() for p in psutil.process_iter() if p.cmdline()]) else 1)" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -301,7 +301,7 @@ services:
       adhd-engine:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import psutil; exit(0 if any('main.py' in cmd for cmd in [p.cmdline() for p in psutil.process_iter() if p.cmdline()]) else 1)"]
+      test: [ "CMD", "python", "-c", "import psutil; exit(0 if any('main.py' in cmd for cmd in [p.cmdline() for p in psutil.process_iter() if p.cmdline()]) else 1)" ]
       timeout: 10s
       retries: 3
       interval: 30s

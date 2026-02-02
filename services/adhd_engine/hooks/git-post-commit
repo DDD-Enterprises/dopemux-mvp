@@ -1,0 +1,45 @@
+#!/bin/bash
+# ADHD Engine Git Post-Commit Hook
+# Emits GIT_COMMIT event to EventBus via ADHD Engine API
+#
+# Installation:
+#   cp this file to .git/hooks/post-commit
+#   chmod +x .git/hooks/post-commit
+#
+# This hook runs after every successful git commit.
+
+ADHD_ENGINE_URL="${ADHD_ENGINE_URL:-http://localhost:3333}"
+
+# Get commit info
+COMMIT_HASH=$(git rev-parse --short HEAD)
+COMMIT_MSG=$(git log -1 --pretty=%s)
+AUTHOR=$(git log -1 --pretty=%an)
+FILES_CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | wc -l | tr -d ' ')
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Build JSON payload
+JSON_PAYLOAD=$(cat <<EOF
+{
+    "event_type": "git_commit",
+    "data": {
+        "commit_hash": "${COMMIT_HASH}",
+        "commit_message": "${COMMIT_MSG}",
+        "author": "${AUTHOR}",
+        "files_changed": ${FILES_CHANGED},
+        "timestamp": "${TIMESTAMP}"
+    }
+}
+EOF
+)
+
+# Send to ADHD Engine (non-blocking, ignore errors)
+curl -s -X POST \
+    -H "Content-Type: application/json" \
+    --connect-timeout 1 \
+    --max-time 2 \
+    -d "${JSON_PAYLOAD}" \
+    "${ADHD_ENGINE_URL}/api/v1/log-git-event" \
+    >/dev/null 2>&1 &
+
+# Always exit 0 to not block git
+exit 0
