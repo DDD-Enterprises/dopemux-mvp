@@ -31,14 +31,14 @@ from .models import (
     ADHDProfile,
     AccommodationRecommendation
 )
-from config import settings
-from core.activity_tracker import ActivityTracker
-from conport_mcp_client import ConPortMCPClient
-from bridge_integration import ConPortBridgeAdapter
-from pal_client import ADHDPALClient
+from ..config import settings
+from .activity_tracker import ActivityTracker
+from ..conport_mcp_client import ConPortMCPClient
+from ..bridge_integration import ConPortBridgeAdapter
+from ..pal_client import ADHDPALClient
 
 # Domain Imports - Attention
-from domains.attention.attention_calibrator import AttentionCalibrator
+from ..domains.attention.attention_calibrator import AttentionCalibrator
 from domains.attention.hyperfocus_guard import HyperfocusGuard
 from domains.attention.procrastination_detector import ProcrastinationDetector
 from domains.attention.overwhelm_detector import OverwhelmDetector
