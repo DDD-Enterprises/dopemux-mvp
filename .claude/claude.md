@@ -11,7 +11,7 @@ Use when gathering information, exploring solutions, understanding libraries.
 
 | Server | Purpose | When to Use |
 |--------|---------|-------------|
-| **context7** | Official library documentation | FIRST for any coding task - get accurate docs |
+| **pal apilookup** | Official library documentation | FIRST for any coding task - get accurate docs |
 | **gpt-researcher** | Deep research with analysis | Complex topics, architecture research, multi-source |
 | **exa** | Neural web search | Current best practices, recent solutions |
 | **dope-context** | Semantic code/doc search | Find examples in codebase, search indexed docs |
@@ -42,7 +42,7 @@ Use when writing code.
 
 | Server | Purpose | When to Use |
 |--------|---------|-------------|
-| **context7** | Docs lookup | Get library documentation |
+| **pal apilookup** | Docs lookup | Get library documentation |
 | **serena-v2** | Code navigation | Find symbols, goto definition, references |
 | **dope-context** | Find examples | Semantic code search in codebase |
 | **zen deepthink** | Complex problems | Hard implementation challenges |
@@ -72,7 +72,7 @@ Use before committing code.
 ## Implicit Usage Rules
 
 ### Always Use First
-- **Research**: `context7` for library docs
+- **Research**: `pal apilookup` for library docs
 - **Planning**: `task-orchestrator` for breakdown
 - **Implementation**: `serena-v2` + `dope-context` for context
 
@@ -125,10 +125,10 @@ mcp__serena-v2__goto_definition      # Navigate to definition
 mcp__serena-v2__analyze_complexity   # Cognitive complexity score
 ```
 
-### context7 (Documentation)
+### pal (Documentation & IDE)
 ```
-mcp__context7__resolve-library-id    # Get library ID
-mcp__context7__get-library-docs      # Fetch documentation
+mcp__pal__apilookup                  # Get library/API documentation
+mcp__pal__ide_integration            # IDE context and actions
 ```
 
 ### leantime-bridge (Project Management)
@@ -144,7 +144,7 @@ mcp__leantime-bridge__get_project_state
 
 ### Feature Implementation Flow
 ```
-1. Research:   context7 → get library docs
+1. Research:   pal apilookup → get library docs
 2. Design:     zen planner → conport log_decision
 3. Planning:   task-orchestrator → breakdown → leantime tickets
 4. Implement:  serena-v2 + dope-context → code
@@ -178,7 +178,7 @@ mcp__leantime-bridge__get_project_state
 ### ✅ DO
 - Start tasks with `task-orchestrator` breakdown
 - Log all decisions to ConPort with rationale
-- Use `context7` FIRST for library docs
+- Use `pal apilookup` FIRST for library docs
 - Run `pre-commit` before every commit
 - Use `zen codereviewer` before merging
 
