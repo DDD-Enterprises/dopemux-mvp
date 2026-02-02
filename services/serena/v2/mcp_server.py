@@ -4775,7 +4775,7 @@ class SerenaV2MCPServer:
             return json.dumps(result, indent=2)
         
         # Single workspace mode (backward compatible)
-        """
+        # Start search
         start_time = datetime.now()
 
         # Get dynamic top_k from ADHD Engine
