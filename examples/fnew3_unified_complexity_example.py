@@ -37,7 +37,7 @@ async def demonstrate_unified_complexity():
     print("="*80)
 
     # Example file to analyze
-    file_path = "services/serena/v2/mcp_server.py"
+    file_path = "services/serena/mcp_server.py"
     symbol = "SerenaV2MCPServer"
 
     print(f"\nAnalyzing: {file_path}:{symbol}")

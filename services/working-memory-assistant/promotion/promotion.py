@@ -10,7 +10,7 @@ from typing import Any, Optional
 
 from .redactor import Redactor
 
-# Phase 1 promotable event types
+# Phase 1 promotable event types (canonical dotted form)
 PROMOTABLE_EVENT_TYPES = frozenset(
     [
         "decision.logged",
@@ -33,6 +33,26 @@ IMPORTANCE_SCORES = {
     "workflow.phase_changed": 5,
     "manual.memory_store": 6,  # default, can be overridden by payload
 }
+
+
+def normalize_event_type(event_type: str) -> str:
+    """Normalize event type to canonical dotted form.
+
+    Handles:
+    - Underscore to dot conversion (decision_logged -> decision.logged)
+    - Whitespace trimming
+    - Lowercase normalization
+    """
+    if not event_type:
+        return "unknown"
+    t = event_type.strip().lower()
+    if not t:  # Empty after stripping whitespace
+        return "unknown"
+    # If already dotted, return as-is
+    if "." in t:
+        return t
+    # Convert underscores to dots
+    return t.replace("_", ".")
 
 
 @dataclass
@@ -65,8 +85,12 @@ class PromotionEngine:
         self.redactor = Redactor()
 
     def is_promotable(self, event_type: str) -> bool:
-        """Check if an event type is eligible for promotion."""
-        return event_type in PROMOTABLE_EVENT_TYPES
+        """Check if an event type is eligible for promotion.
+
+        Normalizes event type before checking (handles underscore/dot variants).
+        """
+        normalized = normalize_event_type(event_type)
+        return normalized in PROMOTABLE_EVENT_TYPES
 
     def promote(
         self, event_type: str, data: dict[str, Any]
@@ -74,21 +98,23 @@ class PromotionEngine:
         """Promote an event to a work log entry.
 
         Args:
-            event_type: The event type (e.g., "decision.logged")
+            event_type: The event type (e.g., "decision.logged" or "decision_logged")
             data: The event data payload (already redacted at ingest)
 
         Returns:
             PromotedEntry if promotable, None otherwise
         """
-        if not self.is_promotable(event_type):
+        normalized = normalize_event_type(event_type)
+        if normalized not in PROMOTABLE_EVENT_TYPES:
             return None
 
-        # Dispatch to specific handler
-        handler = getattr(self, f"_promote_{event_type.replace('.', '_')}", None)
+        # Dispatch to specific handler (use normalized dotted form)
+        handler = getattr(self, f"_promote_{normalized.replace('.', '_')}", None)
         if handler:
             return handler(data)
 
         return None
+
 
     def _extract_tags(self, data: dict[str, Any]) -> list[str]:
         """Extract and normalize tags from event data.

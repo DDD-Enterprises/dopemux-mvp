@@ -176,7 +176,7 @@ async def test_scenario_2_understand_serena_architecture():
 
     try:
         # Test: Explore Serena v2 modules we just created
-        serena_v2_path = Path("services/serena/v2")
+        serena_v2_path = Path("services/serena")
 
         if not serena_v2_path.exists():
             print("❌ Serena v2 path not found")
@@ -281,7 +281,7 @@ async def test_scenario_3_adhd_workflow_simulation():
         # 3. Activate focus mode
         focus_result = await focus_mgr.set_focus_mode(
             recommended_mode,
-            target_file="services/serena/v2/enhanced_lsp.py",
+            target_file="services/serena/enhanced_lsp.py",
             duration_minutes=25
         )
 
@@ -322,7 +322,7 @@ async def test_scenario_3_adhd_workflow_simulation():
             # Track context switch
             switch_result = await focus_mgr.track_context_switch(
                 from_file="previous_file.py",
-                to_file=f"services/serena/v2/{file_name}",
+                to_file=f"services/serena/{file_name}",
                 reason="development_task"
             )
 
@@ -487,7 +487,7 @@ async def demonstrate_layer1_capabilities():
 
         # 2. File Complexity Analysis (simulated)
         print("\n🌡️ Testing complexity analysis...")
-        test_files = ["services/serena/v2/enhanced_lsp.py", "services/serena/v2/tree_sitter_analyzer.py"]
+        test_files = ["services/serena/enhanced_lsp.py", "services/serena/tree_sitter_analyzer.py"]
 
         for test_file in test_files:
             if Path(test_file).exists():

@@ -57,7 +57,7 @@ fi
 
 # 2. serena
 echo -n "2. serena:               "
-mcp_integration=$(check_integration "services/serena/v2/mcp_server.py" "workspace_path.*Optional")
+mcp_integration=$(check_integration "services/serena/mcp_server.py" "workspace_path.*Optional")
 wrapper_tests=$(count_tests "services/serena/tests/test_multi_workspace.py")
 if [ "$mcp_integration" = "$(echo -e ${GREEN}✓${NC})" ]; then
     echo -e "${GREEN}✅ COMPLETE${NC} (${wrapper_tests} tests)"
@@ -169,7 +169,7 @@ if [ "$DAY" = "1" ]; then
     echo "    - Run: pytest services/activity-capture/tests/"
     echo ""
     echo "[ ] 3. Start serena MCP integration (4h)"
-    echo "    - Modify 10 MCP tools in services/serena/v2/mcp_server.py"
+    echo "    - Modify 10 MCP tools in services/serena/mcp_server.py"
     echo "    - Add workspace_path params"
     echo "    - Test with: pytest services/serena/tests/"
     echo ""

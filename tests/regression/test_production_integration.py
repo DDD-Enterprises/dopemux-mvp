@@ -36,7 +36,7 @@ async def test_fnew5_with_real_serena():
             print("✅ Serena MCP server loaded")
 
             # Test find_references call
-            test_file = "services/serena/v2/mcp_server.py"
+            test_file = "services/serena/mcp_server.py"
             test_line = 100  # Arbitrary line
 
             print(f"\n📊 Testing find_references: {test_file}:{test_line}")
