@@ -29,7 +29,7 @@ from unittest.mock import Mock, AsyncMock, patch
 from pathlib import Path
 
 # Import database module using project root
-from services.serena.v2.intelligence.database import (
+from intelligence.database import (
     SeranaIntelligenceDatabase,
     DatabaseConfig,
     QueryPerformanceLevel,
@@ -37,8 +37,8 @@ from services.serena.v2.intelligence.database import (
     create_intelligence_database,
     ASYNCPG_AVAILABLE
 )
-from services.serena.v2.performance_monitor import PerformanceMonitor
-from services.serena.v2.adhd_features import CodeComplexityAnalyzer
+from performance_monitor import PerformanceMonitor
+from adhd_features import CodeComplexityAnalyzer
 
 
 
@@ -78,7 +78,7 @@ async def database(db_config, performance_monitor):
     if not ASYNCPG_AVAILABLE:
         pytest.skip("asyncpg not available - install with: pip install asyncpg")
 
-    from serena.v2.intelligence.database import SerenaIntelligenceDatabase
+    from serena.intelligence.database import SerenaIntelligenceDatabase
 
     db = SeranaIntelligenceDatabase(db_config, performance_monitor)
 
@@ -103,7 +103,7 @@ async def database(db_config, performance_monitor):
 @pytest.mark.asyncio
 async def test_database_initialization(db_config, performance_monitor):
     """Test 1: Verify database initializes with connection pool."""
-    from serena.v2.intelligence.database import SeranaIntelligenceDatabase
+    from serena.intelligence.database import SeranaIntelligenceDatabase
 
     db = SeranaIntelligenceDatabase(db_config, performance_monitor)
 
@@ -447,7 +447,7 @@ async def test_metrics_tracking(database):
 @pytest.mark.asyncio
 async def test_connection_error_handling():
     """Test 12: Validate graceful error handling."""
-    from serena.v2.intelligence.database import SeranaIntelligenceDatabase, DatabaseConfig
+    from serena.intelligence.database import SeranaIntelligenceDatabase, DatabaseConfig
 
     # Bad config
     bad_config = DatabaseConfig(

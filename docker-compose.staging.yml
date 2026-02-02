@@ -87,7 +87,7 @@ services:
   serena-mcp:
     container_name: staging-serena-mcp
     build:
-      context: ./services/serena/v2
+      context: ./services/serena
       dockerfile: Dockerfile
     environment:
       MCP_SERVER_PORT: 3001
@@ -217,7 +217,7 @@ services:
   serena-mcp-2:
     container_name: staging-serena-mcp-2
     build:
-      context: ./services/serena/v2
+      context: ./services/serena
       dockerfile: Dockerfile
     environment:
       MCP_SERVER_PORT: 3002

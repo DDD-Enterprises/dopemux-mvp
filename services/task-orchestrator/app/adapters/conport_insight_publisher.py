@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from enhanced_orchestrator import AgentType
+from services.enhanced_orchestrator import AgentType
 
 logger = logging.getLogger(__name__)
 
