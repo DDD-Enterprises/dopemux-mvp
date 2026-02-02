@@ -103,7 +103,7 @@ repos:
               if [[ "$file" =~ /\.claude/ ]]; then continue; fi
               
               # Allow .conport/ and conport_export/ (local state)
-              if [[ "$file" =~ ^\./(\. conport/|conport_export/) ]]; then continue; fi
+              if [[ "$file" =~ ^\./(\\.conport/|conport_export/) ]]; then continue; fi
               
               # Allow .github/ (GitHub templates)
               if [[ "$file" =~ ^\./(\.github/) ]]; then continue; fi
@@ -123,12 +123,27 @@ repos:
               fi
               
               # Allow service-level docs subdirectories (services/*/docs/, services/*/research/, etc.)
-              if [[ "$file" =~ ^\./(services|docker)/[^/]+/(docs|research|intelligence|archive)/ ]]; then
+              if [[ "$file" =~ ^\./(services|docker)/[^/]+/(docs|research|intelligence|archive|migrations)/ ]]; then
                 continue
               fi
               
               # Allow specific operational files in service roots (guides, summaries, handoffs)
               if [[ "$file" =~ ^\./(services|docker)/[^/]+/[A-Z_]+\.md$ ]]; then
+                continue
+              fi
+              
+              # Allow docker/mcp-servers root-level docs
+              if [[ "$file" =~ ^\./(docker/mcp-servers/)[A-Z_-]+\.md$ ]]; then
+                continue
+              fi
+              
+              # Allow scripts/ documentation
+              if [[ "$file" =~ ^\./(scripts/)[A-Z_]+\.md$ ]]; then
+                continue
+              fi
+              
+              # Allow test resources
+              if [[ "$file" =~ ^\./(tests/resources/) ]]; then
                 continue
               fi
               
