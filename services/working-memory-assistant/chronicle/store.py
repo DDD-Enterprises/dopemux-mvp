@@ -68,17 +68,31 @@ class ChronicleStore:
         source: str,
         payload: dict[str, Any],
         *,
+        event_id: Optional[str] = None,
+        ts_utc: Optional[str] = None,
         session_id: Optional[str] = None,
         redaction_level: str = "strict",
         ttl_days: int = 7,
     ) -> str:
         """Insert a raw activity event.
 
+        Args:
+            workspace_id: Workspace identifier
+            instance_id: Instance identifier
+            event_type: Type of event
+            source: Source service/component
+            payload: Event payload (already redacted)
+            event_id: Optional event ID (auto-generated if not provided)
+            ts_utc: Optional timestamp (uses current time if not provided)
+            session_id: Optional session identifier
+            redaction_level: Level of redaction applied
+            ttl_days: Days before automatic cleanup
+
         Returns:
-            The generated event ID
+            The event ID (generated or provided)
         """
-        event_id = str(uuid.uuid4())
-        now_utc = datetime.now(timezone.utc).isoformat()
+        final_event_id = event_id or str(uuid.uuid4())
+        now_utc = ts_utc or datetime.now(timezone.utc).isoformat()
 
         conn = self.connect()
         conn.execute(
@@ -90,7 +104,7 @@ class ChronicleStore:
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                event_id,
+                final_event_id,
                 workspace_id,
                 instance_id,
                 session_id,
@@ -100,11 +114,12 @@ class ChronicleStore:
                 json.dumps(payload),
                 redaction_level,
                 ttl_days,
-                now_utc,
+                datetime.now(timezone.utc).isoformat(),  # Always use current time for created_at
             ),
         )
         conn.commit()
-        return event_id
+        return final_event_id
+
 
     def cleanup_expired_raw_events(self) -> int:
         """Delete raw events past their TTL.

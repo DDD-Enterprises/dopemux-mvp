@@ -17,6 +17,7 @@ volumes:
   smoke_pg_data:
   smoke_redis_data:
   smoke_qdrant_data:
+  dope_memory_data:
 
 
 services:
@@ -156,5 +157,35 @@ services:
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:${TASK_ORCHESTRATOR_CONTAINER_PORT:-8000}/health" ]
       timeout: 10s
+      retries: 3
+      interval: 30s
+
+  # MCP: Dope-Memory temporal chronicle service
+  dope-memory:
+    build:
+      context: services/working-memory-assistant
+      dockerfile: Dockerfile.dope-memory
+    container_name: smoke-dope-memory
+    restart: unless-stopped
+    environment:
+      - PORT=${DOPE_MEMORY_CONTAINER_PORT:-3020}
+      - DOPE_MEMORY_PORT=${DOPE_MEMORY_CONTAINER_PORT:-3020}
+      - DOPE_MEMORY_WORKSPACE_ID=dopemux
+      - DOPE_MEMORY_INSTANCE_ID=smoke
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - ENVIRONMENT=smoke
+      - ENABLE_EVENTBUS=true
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "${DOPE_MEMORY_PORT:-3020}:${DOPE_MEMORY_CONTAINER_PORT:-3020}"
+    depends_on:
+      - redis
+    networks:
+      - dopemux-smoke-network
+    volumes:
+      - dope_memory_data:/home/dopememory/.dope-memory
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:${DOPE_MEMORY_CONTAINER_PORT:-3020}/health || exit 1" ]
+      timeout: 5s
       retries: 3
       interval: 30s
