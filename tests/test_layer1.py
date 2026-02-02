@@ -145,9 +145,9 @@ async def test_tree_sitter_analysis():
 
         # Test files to analyze
         test_files = [
-            "services/serena/v2/enhanced_lsp.py",
-            "services/serena/v2/tree_sitter_analyzer.py",
-            "services/serena/v2/performance_monitor.py"
+            "services/serena/enhanced_lsp.py",
+            "services/serena/tree_sitter_analyzer.py",
+            "services/serena/performance_monitor.py"
         ]
 
         analysis_results = {}

@@ -65,7 +65,7 @@ async def test_unified_complexity_calculation():
         coordinator = await get_complexity_coordinator()
 
         # Test file path
-        test_file = "services/serena/v2/mcp_server.py"
+        test_file = "services/serena/mcp_server.py"
         test_symbol = "find_symbol_tool"
 
         print(f"📊 Analyzing: {test_file}:{test_symbol}")
