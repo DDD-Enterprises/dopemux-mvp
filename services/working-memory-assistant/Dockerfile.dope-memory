@@ -1,0 +1,60 @@
+# Dope-Memory Service - Docker Configuration
+# Temporal chronicle and working-context manager for Dopemux
+#
+# Port: 3020 (per registry.yaml)
+# Health: /health
+#
+FROM python:3.11-slim
+
+# Labels
+LABEL maintainer="dopemux"
+LABEL service="dope-memory"
+LABEL version="1.0.0"
+
+# Environment
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PORT=3020
+ENV DOPE_MEMORY_PORT=3020
+ENV LOG_LEVEL=INFO
+ENV ENVIRONMENT=production
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Copy requirements (reuse existing but we only need a subset)
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY chronicle/ ./chronicle/
+COPY promotion/ ./promotion/
+COPY mcp/ ./mcp/
+COPY dope_memory_main.py .
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash dopememory \
+    && mkdir -p /home/dopememory/.dope-memory \
+    && chown -R dopememory:dopememory /app /home/dopememory/.dope-memory
+
+USER dopememory
+
+# Data volume for SQLite databases
+VOLUME ["/home/dopememory/.dope-memory"]
+
+# Health check per registry contract
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/health || exit 1
+
+# Expose port
+EXPOSE ${PORT}
+
+# Start the application
+CMD ["python", "dope_memory_main.py"]
