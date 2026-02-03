@@ -1,3 +1,11 @@
+---
+id: README-genetic
+title: Readme Genetic
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Genetic Agent: Advanced AI Code Repair with Genetic Programming
 
 The Genetic Agent is the advanced version of the AI code repair system, using hybrid LLM + Genetic Programming (GP) for complex bugs and optimization challenges. It builds on the vanilla agent by adding evolutionary algorithms for exploring multiple solution variants and selecting the best fit.
