@@ -1,3 +1,11 @@
+---
+id: DEPRECATED
+title: Deprecated
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # ⚠️ DEPRECATED MODULE
 
 **This ADHD module has been replaced as part of Path C Migration.**

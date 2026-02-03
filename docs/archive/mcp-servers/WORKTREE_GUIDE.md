@@ -1,3 +1,11 @@
+---
+id: WORKTREE_GUIDE
+title: Worktree_Guide
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Git Worktree Multi-Instance Support - User Guide
 
 **Feature**: Isolated task tracking across git worktrees for ADHD-optimized parallel workflows

@@ -1,3 +1,11 @@
+---
+id: USER_GUIDE
+title: User_Guide
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Dopemux Orchestrator TUI - User Guide
 
 **ADHD-Optimized Multi-AI Coordination Interface**
