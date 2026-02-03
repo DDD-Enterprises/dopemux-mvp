@@ -304,11 +304,36 @@ async def handle_health(request: Request) -> Response:
 async def handle_info(request: Request) -> Response:
     """Service discovery endpoint - auto-config support (ADR-208)"""
     import json
+    
+    # Check Leantime health
+    leantime_status = "unknown"
+    leantime_version = None
+    try:
+        async with LeantimeClient(LEANTIME_API_URL, LEANTIME_API_TOKEN) as client:
+            # Try a lightweight API call to verify connectivity
+            result = await client.call_api("leantime.getProjects", {"state": "0"})
+            leantime_status = "healthy"
+    except Exception as e:
+        logger.warning(f"Leantime health check failed: {e}")
+        leantime_status = f"unhealthy: {str(e)[:100]}"
+    
     info = {
         "name": "leantime-bridge",
         "version": "1.0.0",
+        "leantime": {
+            "url": LEANTIME_API_URL,
+            "status": leantime_status,
+            "version": leantime_version,
+            "rate_limit_seconds": LEAN_TIME_RATE_LIMIT_SECONDS
+        },
         "mcp": {
             "protocol": "sse",
+            "endpoints": {
+                "sse": f"http://localhost:{MCP_SERVER_PORT}/sse",
+                "messages": f"http://localhost:{MCP_SERVER_PORT}/messages/",
+                "health": f"http://localhost:{MCP_SERVER_PORT}/health",
+                "info": f"http://localhost:{MCP_SERVER_PORT}/info"
+            },
             "connection": {
                 "type": "sse",
                 "url": f"http://localhost:{MCP_SERVER_PORT}/sse"
@@ -318,16 +343,17 @@ async def handle_info(request: Request) -> Response:
             }
         },
         "health": "/health",
-        "description": "Leantime project management integration bridge",
+        "description": "Leantime project management integration bridge (HTTP/SSE transport)",
         "metadata": {
             "role": "workflow",
             "priority": "high",
             "integration": "leantime",
             "transport": "http-sse",
-            "rate_limit_seconds": LEAN_TIME_RATE_LIMIT_SECONDS
+            "plane": "pm_plane",
+            "tools_count": 8
         }
     }
-    return Response(json.dumps(info), media_type="application/json")
+    return Response(json.dumps(info, indent=2), media_type="application/json")
 
 # Create Starlette application
 starlette_app = Starlette(

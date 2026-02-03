@@ -11,6 +11,7 @@ import asyncio
 import logging
 
 logger = logging.getLogger(__name__)
+from ..config import ConfigManager
 
 from typing import Dict, Any, Optional
 from datetime import datetime
@@ -18,6 +19,13 @@ from datetime import datetime
 from ..adhd.workflow_manager import ADHDWorkflowManager
 from ..ux.progress_display import ProgressDisplay
 from ..ux.interactive_prompts import InteractivePrompts
+from ..tmux.controller import TmuxController
+from ..tmux.layouts import EnergyLayoutManager
+from ..adhd.attention_monitor import AttentionMonitor, AttentionState, AttentionMetrics
+from pathlib import Path
+from rich.console import Console
+
+console = Console()
 
 class ADHDOrchestrator:
     """
@@ -31,10 +39,93 @@ class ADHDOrchestrator:
         self.workflow_manager = ADHDWorkflowManager()
         self.progress_display = ProgressDisplay()
         self.interactive_prompts = InteractivePrompts()
+        
+        # Tmux integration
+        self.tmux_controller = TmuxController()
+        self.layout_manager = EnergyLayoutManager(self.tmux_controller)
+        self.attention_monitor: Optional[AttentionMonitor] = None
 
         # Session state
         self.active_session = None
         self.current_operation = None
+
+    def enable_attention_monitoring(self, project_path: Path) -> None:
+        """
+        Enable Attention Monitor and wire it to dynamic layout switching.
+        
+        Args:
+            project_path: Path to the project root for storing metrics.
+        """
+        if self.attention_monitor:
+            logger.warning("Attention monitoring already enabled")
+            return
+
+        config_manager = ConfigManager()
+        attention_config = config_manager.load_config().attention
+
+        self.attention_monitor = AttentionMonitor(project_path, config=attention_config)
+        self.attention_monitor.add_callback(self._on_attention_update)
+        self.attention_monitor.start_monitoring()
+        logger.info("Enabled dynamic attention monitoring")
+
+    def _on_attention_update(self, metrics: AttentionMetrics) -> None:
+        """
+        Callback for attention state updates.
+        Triggers layout changes based on state transitions.
+        """
+        state_to_energy = {
+            AttentionState.SCATTERED: "low",
+            AttentionState.DISTRACTED: "low",
+            AttentionState.NORMAL: "medium",
+            AttentionState.FOCUSED: "high",
+            AttentionState.HYPERFOCUS: "high"
+        }
+        
+        energy_level = state_to_energy.get(metrics.attention_state, "medium")
+        
+        # Only switch if we have an active session tracked
+        # For now, we apply to 'active_session' if set, or just log
+        # In a real scenario, we might want to target the currently focused session in tmux
+        try:
+             # We need to know which session to apply to.
+             # If we have self.active_session (ADHD session), we might assume it maps to a tmux session?
+             # Or we ask controller for active session.
+             current_session = self.tmux_controller.get_active_session_name()
+             if current_session:
+                 self.apply_energy_layout(current_session, energy_level)
+                 self._publish_attention_state(current_session, metrics.attention_state)
+        except Exception as e:
+             logger.warning(f"Failed to auto-apply energy layout: {e}")
+
+    def _publish_attention_state(self, session: str, state: AttentionState) -> None:
+        """Publish attention state to tmux options for status bar integration."""
+        icons = {
+            AttentionState.SCATTERED: "🌫️",
+            AttentionState.DISTRACTED: "🐿️",
+            AttentionState.NORMAL: "👤",
+            AttentionState.FOCUSED: "🧠",
+            AttentionState.HYPERFOCUS: "🔥"
+        }
+        icon = icons.get(state, "❓")
+        
+        try:
+            self.tmux_controller.set_session_option(session, "@adhd_state", state)
+            self.tmux_controller.set_session_option(session, "@adhd_icon", icon)
+            # Optional: Refresh client to update status bar immediately
+            # self.tmux_controller.server.cmd("refresh-client", "-S") # access to server? No.
+        except Exception:
+            pass
+
+
+    def apply_energy_layout(self, session_name: str, energy_level: str) -> None:
+        """
+        Apply an energy-appropriate layout to the specified session.
+        
+        Args:
+            session_name: The tmux session name.
+            energy_level: 'low', 'medium', or 'high'.
+        """
+        self.layout_manager.apply_layout(session_name, energy_level)
 
     async def execute_with_adhd_optimization(self, operation: callable, **kwargs) -> Any:
         """
@@ -105,7 +196,7 @@ class ADHDOrchestrator:
 
             raise e
 
-            logger.error(f"Error: {e}")
+
     async def prompt_user_action(self, actions: list, context: str = "") -> Optional[str]:
         """
         Prompt user for action selection with ADHD optimizations.
@@ -161,7 +252,15 @@ class ADHDOrchestrator:
             if selected_activity:
                 self.workflow_manager.take_break()
                 console.log(f"[yellow]Taking break: {selected_activity}[/yellow]")
-                await asyncio.sleep(self.workflow_manager.break_duration_minutes * 60)
+                
+                # Enter visual break mode
+                self.enter_break_mode(self.workflow_manager.break_duration_minutes)
+                
+                try:
+                    await asyncio.sleep(self.workflow_manager.break_duration_minutes * 60)
+                finally:
+                    self.exit_break_mode()
+                
                 return True
 
         return False
@@ -183,6 +282,34 @@ class ADHDOrchestrator:
         """Start a new ADHD-optimized session."""
         self.active_session = self.workflow_manager.start_session(task_description)
         return self.active_session
+
+    def enter_break_mode(self, duration_minutes: int) -> None:
+        """
+        Enter a visual break mode in tmux.
+        Displays a full-screen popup to encourage stepping away.
+        """
+        try:
+             # We use a simple shell command to display the break message
+             # 'read' keeps it open until timeout or user interaction, but we want it to persist?
+             # actually sleep is better.
+             seconds = int(duration_minutes * 60)
+             cmd = f"echo '🌿 BREAK TIME 🌿\n\nTake a breath.\nStep away from the screen.\n\nResuming in {duration_minutes} minutes...'; sleep {seconds}"
+             self.tmux_controller.display_popup(cmd, width="100%", height="100%")
+        except Exception as e:
+             logger.warning(f"Failed to enter break mode: {e}")
+
+    def exit_break_mode(self) -> None:
+        """Exit break mode (close popup)."""
+        # There isn't a direct 'close-popup' command in controller yet.
+        # But usually popups close on exit. 
+        # If we need to force close, we can use send keys 'C-c' if we knew the pane id of popup.
+        # Check controller... `display_popup` doesn't return ID.
+        # However, `display-popup` normally blocks inputs to underlying panes.
+        # If the command finishes (sleep ends), it closes automatically!
+        # So explicit exit might not be needed if the sleep matches.
+        # But if we want to cancel early?
+        # Typically user cancels with ESC key.
+        pass
 
     def end_session(self) -> Dict[str, Any]:
         """End the current session."""

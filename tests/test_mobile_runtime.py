@@ -8,7 +8,7 @@ from dopemux.mobile.runtime import (
     resolve_targets,
     update_tmux_mobile_indicator,
 )
-from dopemux.mobile.tmux_utils import TmuxPane
+from dopemux.tmux.utils import TmuxPane
 
 
 def _pane(

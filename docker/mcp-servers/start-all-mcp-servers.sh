@@ -2,6 +2,9 @@
 
 set -e
 
+# P2: Unified project name for all Dopemux compose stacks
+export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-dopemux}"
+
 # Usage: ./start-all-mcp-servers.sh [--workspace /path/to/workspace]
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -68,6 +71,16 @@ fi
 echo "🚀 Starting all Dopemux MCP servers..."
 echo "=========================================="
 
+# P0: Validate docker-compose.yml before proceeding
+echo "🔍 Validating docker-compose.yml..."
+if ! docker compose config >/dev/null 2>&1; then
+  echo "❌ docker-compose.yml invalid; refusing to start MCP servers"
+  echo "   Run 'docker compose config' to see validation errors"
+  exit 1
+fi
+echo "✅ docker-compose.yml is valid"
+echo ""
+
 # Validate environment
 echo "📋 Checking server configurations..."
 for server_dir in */; do
@@ -123,6 +136,21 @@ ensure_volume() {
 ensure_volume mcp_logs
 ensure_volume mcp_cache
 
+# P1: Start Leantime if enabled
+if [ "${ENABLE_LEANTIME:-0}" = "1" ]; then
+  echo ""
+  echo "🏗️  Starting Leantime stack (ENABLE_LEANTIME=1)..."
+  if [ -f ../leantime/docker-compose.yml ]; then
+    (cd ../leantime && docker compose up -d --build)
+    echo "✅ Leantime stack started"
+  else
+    echo "⚠️  Leantime compose file not found at ../leantime/docker-compose.yml"
+  fi
+else
+  echo ""
+  echo "ℹ️  Skipping Leantime startup (set ENABLE_LEANTIME=1 to enable)"
+fi
+
 check_leantime_health() {
   local url="${LEANTIME_HEALTH_URL:-http://localhost:8080/index.php}"
   local expect="${LEANTIME_HEALTH_EXPECT:-Dopemux plugin register.php loaded successfully}"
@@ -164,7 +192,8 @@ safe_up() {
       echo "✅ Started ${cname} using cached image"
     else
       echo "🧱 Cached image not found; building ${cname}"
-      docker-compose up -d --build "${service}" || true
+      # P0: Don't swallow failures for critical services
+      docker-compose up -d --build "${service}"
     fi
   fi
 }
@@ -277,9 +306,15 @@ safe_up desktop-commander mcp-desktop-commander
 echo ""
 echo "⏳ Final startup wait..."
 sleep 5
-if ! check_leantime_health; then
-  echo "Leantime did not pass health checks. Set LEANTIME_HEALTH_URL/LEANTIME_HEALTH_EXPECT to override." >&2
-  exit 1
+
+# Only check Leantime health if explicitly enabled
+if [ "${ENABLE_LEANTIME:-0}" = "1" ]; then
+  if ! check_leantime_health; then
+    echo "⚠️  Leantime did not pass health checks. Set LEANTIME_HEALTH_URL/LEANTIME_HEALTH_EXPECT to override." >&2
+    echo "   Continuing with MCP servers anyway..."
+  fi
+else
+  echo "ℹ️  Skipping Leantime health check (ENABLE_LEANTIME=0)"
 fi
 
 echo ""

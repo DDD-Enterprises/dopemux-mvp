@@ -149,12 +149,4 @@ class EnergyLayoutManager:
         )
         
         # Force tiled layout
-        # We need a primitive for select-layout in controller backend?
-        # Checked `tmux_utils.py` -> `set_layout` exists.
-        # Core Controller `backend` doesn't expose it clearly in BaseBackend but CliBackend uses tmux_utils.
-        
-        # Workaround: Import tmux_utils directly or extend backend. 
-        # For now, let's assume we can add `set_layout` to backend or use the utils through a backchannel.
-        # Actually `dopemux/mobile/tmux_utils.py` has `set_layout`.
-        from dopemux.mobile import tmux_utils
-        tmux_utils.set_layout(main_pane.window, "tiled")
+        self.controller.set_layout(main_pane.window, "tiled")

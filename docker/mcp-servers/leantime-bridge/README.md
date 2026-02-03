@@ -53,3 +53,29 @@ curl -X POST http://localhost:3013/tasks \
   -H "Content-Type: application/json" \
   -d '{"title": "Test task", "project_id": 1}'
 ```
+
+## Service Discovery
+
+### /info Endpoint
+
+The leantime-bridge now provides a `/info` endpoint for service discovery and auto-configuration:
+
+```bash
+curl http://localhost:3015/info | jq
+```
+
+**Features**:
+- Real-time Leantime health status
+- MCP connection configuration (SSE endpoints)
+- Service metadata and capabilities
+- Auto-configuration support for MCP clients
+
+**Documentation**: See [INFO_ENDPOINT.md](./INFO_ENDPOINT.md)
+
+**Testing**:
+```bash
+python test_info_endpoint.py
+```
+
+This implements ADR-208 service discovery pattern, allowing Dopemux services to auto-detect Leantime Bridge configuration without hardcoded URLs.
+

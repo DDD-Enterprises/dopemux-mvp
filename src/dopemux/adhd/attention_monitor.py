@@ -17,7 +17,9 @@ from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
+if TYPE_CHECKING:
+    from ..config.manager import AttentionConfig
 
 from rich.console import Console
 
@@ -59,7 +61,7 @@ class AttentionMonitor:
     - Privacy-respecting metrics (no actual keystrokes logged)
     """
 
-    def __init__(self, project_path: Path):
+    def __init__(self, project_path: Path, config: Optional['AttentionConfig'] = None):
         """Initialize attention monitor."""
         self.project_path = project_path
         self.data_dir = project_path / ".dopemux" / "attention"
@@ -85,11 +87,19 @@ class AttentionMonitor:
         self._focus_session_start: Optional[datetime] = None
 
         # Configuration
-        self.sample_interval = 5  # seconds
-        self.keystroke_threshold = 2.0  # keys per second for active typing
-        self.context_switch_threshold = 3  # switches per minute for scattered
-        self.focus_threshold = 0.7  # focus score threshold
-        self.hyperfocus_duration = 45  # minutes for hyperfocus detection
+        if config:
+            self.sample_interval = config.sample_interval
+            self.keystroke_threshold = config.keystroke_threshold
+            self.context_switch_threshold = config.context_switch_threshold
+            # Check if config has focus_threshold (it might not, default 0.7)
+            self.focus_threshold = getattr(config, 'focus_threshold', 0.7)
+            self.hyperfocus_duration = getattr(config, 'hyperfocus_duration', 45)
+        else:
+            self.sample_interval = 5  # seconds
+            self.keystroke_threshold = 2.0  # keys per second for active typing
+            self.context_switch_threshold = 3  # switches per minute for scattered
+            self.focus_threshold = 0.7  # focus score threshold
+            self.hyperfocus_duration = 45  # minutes for hyperfocus detection
 
     def start_monitoring(self) -> None:
         """Start attention monitoring in background thread."""
