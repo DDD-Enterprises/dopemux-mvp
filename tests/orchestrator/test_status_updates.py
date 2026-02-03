@@ -9,9 +9,17 @@ from dopemux.orchestrator.adhd_orchestrator import ADHDOrchestrator, AttentionSt
 class TestADHDOrchestratorStatusUpdates:
     @pytest.fixture
     def orchestrator(self):
-        with patch('dopemux.orchestrator.adhd_orchestrator.AttentionMonitor'):
+        with patch('dopemux.orchestrator.adhd_orchestrator.AttentionMonitor'), \
+             patch('dopemux.orchestrator.adhd_orchestrator.TmuxController') as MockController, \
+             patch('dopemux.orchestrator.adhd_orchestrator.ConfigManager'):
+            
+            # Mock the controller instance
+            mock_controller_instance = MagicMock()
+            MockController.return_value = mock_controller_instance
+            
             orch = ADHDOrchestrator()
-            orch.tmux_controller = MagicMock()
+            # Ensure the instance uses our mock (should be automatic via patch, but safeguard)
+            orch.tmux_controller = mock_controller_instance
             return orch
 
     def test_publish_attention_state(self, orchestrator):

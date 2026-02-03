@@ -22,7 +22,8 @@ from .runtime import (
     resolve_targets,
     update_tmux_mobile_indicator,
 )
-from ..tmux.utils import TmuxError
+from ..tmux.common import TmuxError
+from ..tmux.controller import TmuxController
 
 
 def _get_config_manager(ctx: click.Context) -> ConfigManager:
@@ -32,6 +33,12 @@ def _get_config_manager(ctx: click.Context) -> ConfigManager:
     return ConfigManager()
 
 
+def _get_controller(ctx: click.Context) -> TmuxController:
+    """Get or create TmuxController from context."""
+    cfg_manager = _get_config_manager(ctx)
+    return TmuxController(config_manager=cfg_manager)
+
+
 def _dependency_warnings(mobile_cfg: MobileConfig) -> None:
     if not mobile_cfg.enabled:
         click.echo("⚠️  Mobile mode disabled in config; running in manual mode.")
@@ -39,8 +46,10 @@ def _dependency_warnings(mobile_cfg: MobileConfig) -> None:
 
 def _pane_shell_complete(ctx: click.Context, param: click.Parameter, incomplete: str):
     try:
-        panes = list_claude_panes()
-    except TmuxError:
+        # Create a temp controller for completion
+        controller = TmuxController()
+        panes = list_claude_panes(controller)
+    except Exception:
         return []
 
     completions = []
@@ -96,6 +105,7 @@ def start(
 
     cfg_manager = _get_config_manager(ctx)
     mobile_cfg = cfg_manager.get_mobile_config()
+    controller = _get_controller(ctx)
     _dependency_warnings(mobile_cfg)
 
     if not check_cli_health("happy"):
@@ -106,7 +116,7 @@ def start(
     if not claude_ok:
         click.echo("⚠️  Claude CLI not responding. Happy can still launch but pairing may fail. Run 'claude --version' to troubleshoot.")
 
-    targets = resolve_targets(launch_all, pane, mobile_cfg, mapping_strategy=mapping)
+    targets = resolve_targets(launch_all, pane, mobile_cfg, mapping_strategy=mapping, controller=controller)
     if not targets:
         click.echo("No Claude panes found. Start Dopemux dev session first.")
         sys.exit(1)
@@ -135,7 +145,7 @@ def start(
 
     env = env_for_happy(mobile_cfg)
     try:
-        outcome = launch_happy_sessions(targets, env, mobile_cfg, labels=resolved_labels)
+        outcome = launch_happy_sessions(targets, env, mobile_cfg, labels=resolved_labels, controller=controller)
     except TmuxError as exc:
         click.echo(f"❌ tmux error: {exc}")
         sys.exit(1)
@@ -150,7 +160,7 @@ def start(
     if not outcome.started and not outcome.skipped_existing:
         click.echo("Happy sessions already running for requested panes.")
 
-    update_tmux_mobile_indicator(cfg_manager)
+    update_tmux_mobile_indicator(cfg_manager, controller)
 
 
 @mobile.command()
@@ -162,11 +172,12 @@ def detach(ctx: click.Context, pane: Sequence[str], detach_all: bool):
 
     cfg_manager = _get_config_manager(ctx)
     mobile_cfg = cfg_manager.get_mobile_config()
+    controller = _get_controller(ctx)
     _dependency_warnings(mobile_cfg)
 
     labels = list(pane) if pane else (None if detach_all else None)
     try:
-        detached = detach_mobile_sessions(labels)
+        detached = detach_mobile_sessions(labels, controller=controller)
     except TmuxError as exc:
         click.echo(f"❌ tmux error: {exc}")
         sys.exit(1)
@@ -178,7 +189,7 @@ def detach(ctx: click.Context, pane: Sequence[str], detach_all: bool):
         for label in detached:
             click.echo(f"👋 Detached Happy session: {label}")
 
-    update_tmux_mobile_indicator(cfg_manager)
+    update_tmux_mobile_indicator(cfg_manager, controller)
 
 
 @mobile.command()
@@ -223,9 +234,11 @@ def status(ctx: click.Context, as_json: bool, watch: bool, interval: float):
 
     cfg_manager = _get_config_manager(ctx)
 
+    controller = _get_controller(ctx)
+
     def collect():
-        status = get_mobile_status(cfg_manager)
-        update_tmux_mobile_indicator(cfg_manager)
+        status = get_mobile_status(cfg_manager, controller)
+        update_tmux_mobile_indicator(cfg_manager, controller)
         return status
 
     def render_text(status) -> None:

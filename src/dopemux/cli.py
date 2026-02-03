@@ -2164,7 +2164,7 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
 
     if mobile:
         from .mobile.runtime import check_cli_health, list_mobile_panes
-        from .tmux.utils import TmuxError
+        from .tmux.common import TmuxError
 
         cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
         mobile_cfg = cfg_manager.get_mobile_config()
