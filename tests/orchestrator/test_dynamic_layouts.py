@@ -10,9 +10,16 @@ from datetime import datetime
 class TestADHDOrchestratorDynamicLayouts:
     @pytest.fixture
     def orchestrator(self):
-        with patch('dopemux.orchestrator.adhd_orchestrator.AttentionMonitor') as MockMonitor:
+        with patch('dopemux.orchestrator.adhd_orchestrator.AttentionMonitor') as MockMonitor, \
+             patch('dopemux.orchestrator.adhd_orchestrator.TmuxController') as MockController, \
+             patch('dopemux.orchestrator.adhd_orchestrator.ConfigManager'):
+            
+            # Mock instance
+            mock_controller = MagicMock()
+            MockController.return_value = mock_controller
+            
             orch = ADHDOrchestrator()
-            orch.tmux_controller = MagicMock()
+            orch.tmux_controller = mock_controller
             orch.apply_energy_layout = MagicMock()
             return orch
 

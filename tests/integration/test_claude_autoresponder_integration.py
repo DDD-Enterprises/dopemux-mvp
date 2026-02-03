@@ -406,7 +406,7 @@ class TestErrorHandling:
 
         # Test invalid delay
         with pytest.raises(ValueError):
-            manager.update_config(response_delay=15.0)  # Too high
+            manager.update_config(response_delay=15.0)  # Too high (max is 10.0)
 
         # Test invalid scope
         with pytest.raises(ValueError):

@@ -321,13 +321,17 @@ class ADHDOrchestrator:
 
 
 # Global instance for easy access
-adhd_orchestrator = ADHDOrchestrator()
+# Global instance removed to prevent import side effects
+# adhd_orchestrator = ADHDOrchestrator()
 
 
 # Convenience functions for orchestrator integration
 async def execute_adhd_optimized(operation, **kwargs):
     """Convenience function for ADHD-optimized operation execution."""
-    return await adhd_orchestrator.execute_with_adhd_optimization(operation, **kwargs)
+    # Ensure fresh instance or Singleton pattern properly implemented if needed
+    # For now, create new instance to avoid global state issues
+    orchestrator = ADHDOrchestrator()
+    return await orchestrator.execute_with_adhd_optimization(operation, **kwargs)
 
 
 async def prompt_adhd_action(actions: list, context: str = "") -> Optional[str]:
