@@ -14,7 +14,7 @@ from ..config.manager import (
     TmuxControllerConfig,
     TmuxPresetConfig,
 )
-from ..mobile import tmux_utils
+from . import utils as tmux_utils
 
 try:  # pragma: no cover - optional dependency
     import libtmux  # type: ignore
@@ -61,6 +61,39 @@ class BaseTmuxBackend:
     ) -> str:
         raise NotImplementedError
 
+    def switch_client(self, target: str) -> None:
+        raise NotImplementedError
+
+    def attach_session(self, target: str) -> None:
+        raise NotImplementedError
+
+    def new_window(
+        self,
+        *,
+        session: str,
+        window_name: str,
+        command: str,
+        start_directory: Optional[str],
+        attach: bool,
+        environment: Dict[str, str],
+    ) -> str:
+        raise NotImplementedError
+
+    def kill_window(self, session: str, window_name: str) -> None:
+        raise NotImplementedError
+
+    def session_exists(self, session: str) -> bool:
+        raise NotImplementedError
+
+    def create_session(self, session: str, start_directory: Optional[str] = None, window_name: Optional[str] = None) -> None:
+        raise NotImplementedError
+
+    def rename_window(self, session: str, window_id: str, new_name: str) -> None:
+        raise NotImplementedError
+
+    def select_window(self, session: str, window_target: str) -> None:
+        raise NotImplementedError
+
     def rename_pane(self, pane_id: str, title: str) -> None:
         raise NotImplementedError
 
@@ -82,7 +115,31 @@ class BaseTmuxBackend:
     def kill_pane(self, pane_id: str) -> None:
         raise NotImplementedError
 
+    def set_pane_style(self, pane_id: str, style: str) -> None:
+        raise NotImplementedError
+
+    def set_pane_border_style(self, pane_id: str, style: str) -> None:
+        raise NotImplementedError
+
+    def set_pane_title(self, pane_id: str, title: str) -> None:
+        raise NotImplementedError
+
+    def set_layout(self, window: str, layout: str) -> None:
+        raise NotImplementedError
+
+    def display_popup(self, command: str, width: str = "80%", height: str = "80%") -> None:
+        raise NotImplementedError
+
+    def set_environment(self, session: str, key: str, value: str) -> None:
+        raise NotImplementedError
+
+    def enable_pane_titles(self, session: str) -> None:
+        raise NotImplementedError
+
     def kill_session(self, session: str) -> None:
+        raise NotImplementedError
+
+    def set_session_option(self, session: str, option: str, value: str) -> None:
         raise NotImplementedError
 
 
@@ -128,6 +185,36 @@ class CliTmuxBackend(BaseTmuxBackend):
             percent=percent,
         )
 
+    def switch_client(self, target: str) -> None:
+        tmux_utils.switch_client(target)
+
+    def attach_session(self, target: str) -> None:
+        tmux_utils.attach_session(target)
+
+        return tmux_utils.new_window(
+            session=session,
+            window_name=window_name,
+            command=command,
+            attach=attach,
+            start_directory=start_directory,
+            environment=environment,
+        )
+
+    def kill_window(self, session: str, window_name: str) -> None:
+        tmux_utils.kill_window(session, window_name)
+
+    def session_exists(self, session: str) -> bool:
+        return tmux_utils.session_exists(session)
+
+    def create_session(self, session: str, start_directory: Optional[str] = None, window_name: Optional[str] = None) -> None:
+        tmux_utils.create_session(session, start_directory=start_directory, window_name=window_name)
+
+    def rename_window(self, session: str, window_id: str, new_name: str) -> None:
+        tmux_utils.rename_window(session, window_id, new_name)
+
+    def select_window(self, session: str, window_target: str) -> None:
+        tmux_utils.select_window(session, window_target)
+
     def rename_pane(self, pane_id: str, title: str) -> None:
         tmux_utils.set_pane_title(pane_id, title)
 
@@ -152,8 +239,32 @@ class CliTmuxBackend(BaseTmuxBackend):
     def kill_pane(self, pane_id: str) -> None:
         tmux_utils.kill_pane(pane_id)
 
+    def set_pane_style(self, pane_id: str, style: str) -> None:
+        tmux_utils.set_pane_style(pane_id, style)
+
+    def set_pane_border_style(self, pane_id: str, style: str) -> None:
+        tmux_utils.set_pane_border_style(pane_id, style)
+
+    def set_pane_title(self, pane_id: str, title: str) -> None:
+        tmux_utils.set_pane_title(pane_id, title)
+
+    def set_layout(self, window: str, layout: str) -> None:
+        tmux_utils.set_layout(window, layout)
+
+    def display_popup(self, command: str, width: str = "80%", height: str = "80%") -> None:
+        tmux_utils.display_popup(command, width=width, height=height)
+
+    def set_environment(self, session: str, key: str, value: str) -> None:
+        tmux_utils.set_environment(session, key, value)
+
+    def enable_pane_titles(self, session: str) -> None:
+        tmux_utils.enable_pane_titles(session)
+
     def kill_session(self, session: str) -> None:
         tmux_utils.kill_session(session)
+
+    def set_session_option(self, session: str, option: str, value: str) -> None:
+        tmux_utils.set_session_option(session, option, value)
 
 
 class LibTmuxBackend(BaseTmuxBackend):  # pragma: no cover - depends on libtmux
@@ -198,6 +309,119 @@ class LibTmuxBackend(BaseTmuxBackend):  # pragma: no cover - depends on libtmux
             percent=percent,
         )
         return new_pane.id
+
+    def switch_client(self, target: str) -> None:
+        # libtmux doesn't easily support switch-client as it's a client operation
+        # But we can shell out or try to access underlying cmd
+        if not self.server.has_session(target):
+            raise ValueError(f"Session not found: {target}")
+        self.server.cmd("switch-client", "-t", target)
+
+    def attach_session(self, target: str) -> None:
+        # attach-session is also tricky via libtmux server object
+        if not self.server.has_session(target):
+             raise ValueError(f"Session not found: {target}")
+        self.server.cmd("attach-session", "-t", target)
+
+    def new_window(
+        self,
+        *,
+        session: str,
+        window_name: str,
+        command: str,
+        start_directory: Optional[str],
+        attach: bool,
+        environment: Dict[str, str],
+    ) -> str:
+        s = self.server.find_where({"session_name": session})
+        if not s:
+            raise ValueError(f"Session not found: {session}")
+        w = s.new_window(
+            window_name=window_name,
+            start_directory=start_directory,
+            attach=attach,
+            window_shell=command,
+            environment=environment,
+        )
+        return w.panes[0].id
+
+    def kill_window(self, session: str, window_name: str) -> None:
+        s = self.server.find_where({"session_name": session})
+        if not s:
+            raise ValueError(f"Session not found: {session}")
+        w = s.find_where({"window_name": window_name})
+        if not w:
+            # Try as window ID
+             w = s.find_where({"window_id": window_name})
+        if w:
+            w.kill_window()
+
+    def session_exists(self, session: str) -> bool:
+        return self.server.has_session(session)
+
+    def create_session(self, session: str, start_directory: Optional[str] = None, window_name: Optional[str] = None) -> None:
+        if self.session_exists(session):
+            raise ValueError(f"Session already exists: {session}")
+        self.server.new_session(
+            session_name=session,
+            start_directory=start_directory,
+            window_name=window_name
+        )
+
+    def rename_window(self, session: str, window_id: str, new_name: str) -> None:
+        s = self.server.find_where({"session_name": session})
+        if not s:
+            raise ValueError(f"Session not found: {session}")
+        w = s.find_where({"window_id": window_id}) or s.find_where({"window_name": window_id})
+        if not w:
+             # Try index
+             try:
+                 w = s.windows[int(window_id)]
+             except (ValueError, IndexError):
+                 pass
+        if not w:
+            raise ValueError(f"Window not found: {window_id}")
+        w.rename_window(new_name)
+
+    def select_window(self, session: str, window_target: str) -> None:
+        s = self.server.find_where({"session_name": session})
+        if not s:
+             raise ValueError(f"Session not found: {session}")
+        w = s.find_where({"window_id": window_target}) or s.find_where({"window_name": window_target})
+        if not w:
+             try:
+                 w = s.windows[int(window_target)]
+             except (ValueError, IndexError):
+                 pass
+        if not w:
+             raise ValueError(f"Window not found: {window_target}")
+        w.select_window()
+
+    def set_pane_style(self, pane_id: str, style: str) -> None:
+        self.server.cmd("select-pane", "-t", pane_id, "-P", f"style={style}")
+
+    def set_pane_border_style(self, pane_id: str, style: str) -> None:
+        # Not directly supported by simple select-pane -P in some versions but valid in newer tmux
+        # Using server cmd to be safe
+        self.server.cmd("select-pane", "-t", pane_id, "-P", f"border-style={style}")
+
+    def set_pane_title(self, pane_id: str, title: str) -> None:
+        # Same as rename_pane basically
+        self.rename_pane(pane_id, title)
+
+    def set_layout(self, window: str, layout: str) -> None:
+        # Window can be session:window
+        self.server.cmd("select-layout", "-t", window, layout)
+
+    def display_popup(self, command: str, width: str = "80%", height: str = "80%") -> None:
+         self.server.cmd("display-popup", "-w", width, "-h", height, "-E", command)
+
+    def set_environment(self, session: str, key: str, value: str) -> None:
+         self.server.cmd("set-environment", "-t", session, key, value)
+
+    def enable_pane_titles(self, session: str) -> None:
+        self.server.cmd("set-option", "-t", session, "pane-border-status", "top")
+        self.server.cmd("set-option", "-t", session, "pane-border-format", "#{pane_title}")
 
     def rename_pane(self, pane_id: str, title: str) -> None:
         pane = self._get_pane(pane_id)
@@ -248,6 +472,14 @@ class LibTmuxBackend(BaseTmuxBackend):  # pragma: no cover - depends on libtmux
         if tmux_session is None:
             raise ValueError(f"Session not found: {session}")
         tmux_session.kill()
+
+    def set_session_option(self, session: str, option: str, value: str) -> None:
+        if libtmux is None:
+            raise RuntimeError("libtmux not available")
+        s = self.server.sessions.get(session_name=session)
+        if s is None:
+             raise ValueError(f"Session not found: {session}")
+        s.set_option(option, value)
 
     def _get_pane(self, pane_id: str):
         for session in self.server.sessions:
@@ -444,6 +676,89 @@ class TmuxController:
 
     def close_session(self, session: str) -> None:
         self.backend.kill_session(session)
+
+    def set_session_option(self, session: str, option: str, value: str) -> None:
+        """Set a tmux session option."""
+        self.backend.set_session_option(session, option, value)
+
+    def new_window(
+        self,
+        *,
+        session: str,
+        window_name: str,
+        command: str = "",
+        start_directory: Optional[str] = None,
+        attach: bool = True,
+        environment: Optional[Dict[str, str]] = None,
+    ) -> str:
+        return self.backend.new_window(
+            session=session,
+            window_name=window_name,
+            command=command,
+            start_directory=start_directory,
+            attach=attach,
+            environment=environment or {},
+        )
+
+    def rename_window(self, session: str, window_id: str, new_name: str) -> None:
+        self.backend.rename_window(session, window_id, new_name)
+
+    def select_window(self, session: str, window_target: str) -> None:
+        self.backend.select_window(session, window_target)
+
+    def get_active_session_name(self) -> Optional[str]:
+        """Return the name of the currently active session."""
+        try:
+             # Find active pane
+             panes = self.list_panes()
+             active = next((p for p in panes if p.active), None)
+             if active:
+                 return active.session
+             # Fallback if no pane is active (should be rare)
+             return None
+        except Exception:
+             return None
+
+    # ------------------------------------------------------------------ #
+    # Session Management                                                 #
+    # ------------------------------------------------------------------ #
+
+    def session_exists(self, session: str) -> bool:
+        return self.backend.session_exists(session)
+
+    def create_session(self, session: str, start_directory: Optional[str] = None, window_name: Optional[str] = None) -> None:
+        self.backend.create_session(session, start_directory=start_directory, window_name=window_name)
+
+    def kill_window(self, session: str, window_name: str) -> None:
+        self.backend.kill_window(session, window_name)
+
+    def switch_client(self, target: str) -> None:
+        self.backend.switch_client(target)
+
+    def attach_session(self, target: str) -> None:
+        self.backend.attach_session(target)
+
+    def set_pane_style(self, pane_id: str, style: str) -> None:
+        self.backend.set_pane_style(pane_id, style)
+
+    def set_pane_border_style(self, pane_id: str, style: str) -> None:
+        self.backend.set_pane_border_style(pane_id, style)
+
+    def set_pane_title(self, pane_id: str, title: str) -> None:
+        self.backend.set_pane_title(pane_id, title)
+
+    def set_layout(self, window: str, layout: str) -> None:
+        self.backend.set_layout(window, layout)
+
+    def display_popup(self, command: str, width: str = "80%", height: str = "80%") -> None:
+        """Display a popup with the given command."""
+        self.backend.display_popup(command, width=width, height=height)
+
+    def set_environment(self, session: str, key: str, value: str) -> None:
+        self.backend.set_environment(session, key, value)
+
+    def enable_pane_titles(self, session: str) -> None:
+        self.backend.enable_pane_titles(session)
 
     # ------------------------------------------------------------------ #
     # Internal helpers                                                   #

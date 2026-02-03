@@ -12,6 +12,10 @@ from unittest.mock import patch
 import pytest
 
 # Provide a lightweight aiohttp stub when the library is unavailable.
+from dopemux.adhd.attention_monitor import AttentionMonitor
+from dopemux.adhd.context_manager import ContextManager
+from dopemux.adhd.task_decomposer import TaskDecomposer
+from dopemux.config.manager import ConfigManager
 try:  # pragma: no cover - exercised indirectly during import
     import aiohttp  # type: ignore  # noqa: F401
 except ImportError:  # pragma: no cover - fallback
