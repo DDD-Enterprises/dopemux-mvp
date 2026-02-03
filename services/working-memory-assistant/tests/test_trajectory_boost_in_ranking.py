@@ -18,6 +18,9 @@ from trajectory.manager import TrajectoryManager
 from dope_memory_main import DopeMemoryMCPServer
 
 
+pytestmark = pytest.mark.phase2  # Mark all tests in this module as phase2
+
+
 @pytest.fixture
 def temp_db():
     """Create temporary database for testing."""
