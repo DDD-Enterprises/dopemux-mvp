@@ -309,6 +309,7 @@ services:
       - WORKSPACE_ID=${DOPEMUX_WORKSPACE_ID}  # CRITICAL: Instance workspace isolation
     ports:
       - "${SERENA_PORT:-3006}:${SERENA_PORT:-3006}"  # Multi-instance port mapping
+      - "4006:4006"  # Info server for service discovery
     healthcheck:
       test: ["CMD", "sh", "-c", "exit 0"]
       timeout: 10s
