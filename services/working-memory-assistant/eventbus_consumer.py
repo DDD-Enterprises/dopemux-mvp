@@ -65,6 +65,14 @@ HIGH_SIGNAL_EVENTS = {
     "workflow.phase_changed",
 }
 
+# Heartbeat events: reset idle timer but don't trigger reflections
+# These represent activity but not work worth capturing
+HEARTBEAT_EVENTS = {
+    "message.sent",
+    "file.opened",
+    "git.commit.created",
+}
+
 
 class SessionTracker:
     """Track session state for idle detection and reflection boundaries.
@@ -90,8 +98,15 @@ class SessionTracker:
         """Generate session key."""
         return (workspace_id, instance_id, session_id or "")
     
-    def update_activity(self, workspace_id: str, instance_id: str, session_id: str) -> None:
-        """Update last_activity_at for high-signal event."""
+    def update_activity(self, workspace_id: str, instance_id: str, session_id: str, is_heartbeat: bool = False) -> None:
+        """Update last_activity_at for high-signal event or heartbeat.
+        
+        Args:
+            workspace_id: Workspace identifier
+            instance_id: Instance identifier
+            session_id: Session identifier
+            is_heartbeat: If True, only resets idle timer (no reflection trigger)
+        """
         key = self._session_key(workspace_id, instance_id, session_id)
         now = self._clock()
         
@@ -104,9 +119,11 @@ class SessionTracker:
                 "last_pulse_at": None,
                 "last_reflection_window_end": None,
                 "ended_at": None,
+                "is_heartbeat_only": is_heartbeat,  # Track if last activity was heartbeat
             }
         else:
             self._sessions[key]["last_activity_at"] = now
+            self._sessions[key]["is_heartbeat_only"] = is_heartbeat
     
     def mark_pulse(self, workspace_id: str, instance_id: str, session_id: str) -> None:
         """Mark pulse emission time."""
@@ -357,7 +374,10 @@ class EventBusConsumer:
         
         # Phase 2: Track high-signal activity
         if event_type in HIGH_SIGNAL_EVENTS:
-            self.session_tracker.update_activity(workspace_id, instance_id, session_id or "")
+            self.session_tracker.update_activity(workspace_id, instance_id, session_id or "", is_heartbeat=False)
+        elif event_type in HEARTBEAT_EVENTS:
+            # Heartbeat: reset idle timer but don't trigger reflection
+            self.session_tracker.update_activity(workspace_id, instance_id, session_id or "", is_heartbeat=True)
         
         # Phase 2: Signal A - Explicit session end
         if event_type == "session.ended":
