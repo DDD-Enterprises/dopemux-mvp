@@ -17,7 +17,10 @@ from unittest.mock import patch
 import pytest
 
 # Import SessionTracker from eventbus_consumer
-from eventbus_consumer import SessionTracker, HIGH_SIGNAL_EVENTS
+from eventbus_consumer import SessionTracker, HIGH_SIGNAL_EVENTS, HEARTBEAT_EVENTS
+
+
+pytestmark = pytest.mark.phase2  # Mark all tests in this module as phase2
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -261,7 +264,7 @@ def test_explicit_session_ended_is_authoritative(test_context):
     
     # Even with new activity, session remains ended
     current_time = base_time + timedelta(minutes=5)
-    tracker.update_activity(workspace_id, instance_id, session_id)
+    tracker.update_activity(workspace_id, instance_id, session_id, is_heartbeat=False)
     assert tracker.is_idle(workspace_id, instance_id, session_id)
 
 
@@ -350,3 +353,54 @@ def test_env_var_override_reflection_window(test_context, monkeypatch):
     # After 16 minutes and past idle threshold, should allow
     current_time = base_time + timedelta(minutes=16, seconds=15*60)  # 16 min + idle threshold
     assert tracker.should_generate_reflection(workspace_id, instance_id, session_id)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Test 10: Heartbeat Prevents Idle False Positive
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+def test_heartbeat_prevents_idle_false_positive(test_context):
+    """Test that heartbeat events reset idle timer without triggering reflection."""
+    workspace_id, instance_id, session_id = test_context
+    
+    # Mock clock
+    base_time = datetime.now(timezone.utc)
+    current_time = base_time
+    
+    def mock_clock():
+        return current_time
+    
+    tracker = SessionTracker(clock=mock_clock)
+    
+    # Initial high-signal activity
+    tracker.update_activity(workspace_id, instance_id, session_id, is_heartbeat=False)
+    
+    # Advance time to just before idle threshold
+    idle_threshold_seconds = int(os.getenv("DOPE_MEMORY_IDLE_MINUTES", "20")) * 60
+    current_time = base_time + timedelta(seconds=idle_threshold_seconds - 60)
+    
+    # Not idle yet
+    assert not tracker.is_idle(workspace_id, instance_id, session_id)
+    
+    # Send heartbeat event (e.g., message.sent)
+    current_time = base_time + timedelta(seconds=idle_threshold_seconds - 30)
+    tracker.update_activity(workspace_id, instance_id, session_id, is_heartbeat=True)
+    
+    # Advance past original idle threshold (but not past heartbeat's threshold)
+    current_time = base_time + timedelta(seconds=idle_threshold_seconds + 120)
+    
+    # Should NOT be idle because heartbeat reset the timer
+    assert not tracker.is_idle(workspace_id, instance_id, session_id)
+    
+    # Should NOT generate reflection (heartbeat doesn't trigger reflection)
+    assert not tracker.should_generate_reflection(workspace_id, instance_id, session_id)
+    
+    # Verify that is_heartbeat_only flag was set
+    key = tracker._session_key(workspace_id, instance_id, session_id)
+    assert tracker._sessions[key]["is_heartbeat_only"] is True
+    
+    # Now send a high-signal event
+    tracker.update_activity(workspace_id, instance_id, session_id, is_heartbeat=False)
+    
+    # is_heartbeat_only should now be False
+    assert tracker._sessions[key]["is_heartbeat_only"] is False
