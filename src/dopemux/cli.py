@@ -6478,5 +6478,29 @@ def hooks_cmd(setup, teardown, status, enable, disable, shell_scripts, install_s
             raise
         sys.exit(1)
 
+
+@cli.command()
+@click.pass_context
+def dashboard(ctx):
+    """
+    📊 Launch the Dopemux TUI Dashboard.
+
+    Provides real-time visualization of ADHD state, productivity metrics,
+    and system health.
+    """
+    try:
+        from .ui.dashboard import DopemuxDashboard
+        app = DopemuxDashboard()
+        app.run()
+    except ImportError as e:
+        console.print(f"[red]❌ Failed to load dashboard: {e}[/red]")
+        console.print("[yellow]   Ensure textual and rich are installed.[/yellow]")
+        sys.exit(1)
+    except Exception as e:
+        console.print(f"[red]❌ Dashboard crashed: {e}[/red]")
+        if ctx.obj.get("verbose"):
+            raise
+        sys.exit(1)
+
 if __name__ == "__main__":
     main()

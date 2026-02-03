@@ -1,3 +1,11 @@
+---
+id: multi-workspace-guide
+title: Multi Workspace Guide
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Serena Multi-Workspace Guide
 
 **ADHD-optimized code intelligence across multiple workspaces**

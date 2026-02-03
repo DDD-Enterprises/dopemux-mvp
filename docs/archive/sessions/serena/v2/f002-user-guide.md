@@ -1,3 +1,11 @@
+---
+id: f002-user-guide
+title: F002 User Guide
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # F002 Multi-Session Support - User Guide
 
 **ADHD-Optimized Parallel Development Without Context Loss**

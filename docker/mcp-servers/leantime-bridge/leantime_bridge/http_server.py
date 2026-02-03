@@ -301,11 +301,40 @@ async def handle_health(request: Request) -> Response:
     """Health check endpoint"""
     return Response("OK", status_code=200)
 
+async def handle_info(request: Request) -> Response:
+    """Service discovery endpoint - auto-config support (ADR-208)"""
+    import json
+    info = {
+        "name": "leantime-bridge",
+        "version": "1.0.0",
+        "mcp": {
+            "protocol": "sse",
+            "connection": {
+                "type": "sse",
+                "url": f"http://localhost:{MCP_SERVER_PORT}/sse"
+            },
+            "env": {
+                "LEANTIME_API_TOKEN": "${LEANTIME_API_TOKEN:-}"
+            }
+        },
+        "health": "/health",
+        "description": "Leantime project management integration bridge",
+        "metadata": {
+            "role": "workflow",
+            "priority": "high",
+            "integration": "leantime",
+            "transport": "http-sse",
+            "rate_limit_seconds": LEAN_TIME_RATE_LIMIT_SECONDS
+        }
+    }
+    return Response(json.dumps(info), media_type="application/json")
+
 # Create Starlette application
 starlette_app = Starlette(
     routes=[
         Route("/sse", endpoint=handle_sse, methods=["GET"]),
         Route("/health", endpoint=handle_health, methods=["GET"]),
+        Route("/info", endpoint=handle_info, methods=["GET"]),
         Mount("/messages/", app=sse.handle_post_message),
     ]
 )

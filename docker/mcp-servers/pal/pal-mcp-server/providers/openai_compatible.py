@@ -303,8 +303,13 @@ class OpenAICompatibleProvider(ModelProvider):
                     if self.DEFAULT_HEADERS:
                         client_kwargs["default_headers"] = self.DEFAULT_HEADERS.copy()
 
+                    # COST CONTROL: Disable automatic retries to prevent request multiplication
+                    # OpenAI SDK 2.x has automatic retries enabled by default (2 retries)
+                    # We disable this to prevent cost spikes from retry loops
+                    client_kwargs["max_retries"] = 0
+
                     logging.debug(
-                        "OpenAI client initialized with custom httpx client and timeout: %s",
+                        "OpenAI client initialized with custom httpx client and timeout: %s (max_retries=0 for cost control)",
                         timeout_config,
                     )
 
@@ -318,7 +323,7 @@ class OpenAICompatibleProvider(ModelProvider):
                         e,
                     )
                     try:
-                        minimal_kwargs = {"api_key": self.api_key}
+                        minimal_kwargs = {"api_key": self.api_key, "max_retries": 0}
                         if self.base_url:
                             minimal_kwargs["base_url"] = self.base_url
                         self._client = OpenAI(**minimal_kwargs)

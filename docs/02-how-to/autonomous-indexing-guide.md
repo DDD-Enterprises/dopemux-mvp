@@ -1,3 +1,11 @@
+---
+id: autonomous-indexing-guide
+title: Autonomous Indexing Guide
+type: how-to
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Autonomous Indexing Setup Guide
 
 **Goal**: Never think about indexing again - all file changes auto-update the search index!

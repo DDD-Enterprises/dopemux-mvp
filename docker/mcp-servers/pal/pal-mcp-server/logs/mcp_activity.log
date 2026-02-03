@@ -1,0 +1,31 @@
+2026-02-02 16:20:24,854 - MCP_CLIENT_INFO: Claude (raw=claude-code v2.0.36)
+2026-02-02 16:23:14,797 - MCP_CLIENT_INFO: Claude (raw=claude-code v2.1.29)
+2026-02-02 16:30:02,336 - TOOL_CALL: debug with 10 arguments
+2026-02-02 16:30:02,344 - TOOL_COMPLETED: debug
+2026-02-02 16:32:41,352 - TOOL_CALL: debug with 11 arguments
+2026-02-02 16:32:41,352 - CONVERSATION_RESUME: debug resuming thread 433a43e4-a016-4ef9-a40d-4519c039c07a
+2026-02-02 16:32:41,358 - CONVERSATION_CONTINUATION: Thread 433a43e4-a016-4ef9-a40d-4519c039c07a turn 1 - 1 previous turns loaded
+2026-02-02 16:32:41,358 - CONVERSATION_CONTINUATION: Thread 433a43e4-a016-4ef9-a40d-4519c039c07a turn 1 - 1 previous turns loaded
+2026-02-02 16:32:41,359 - TOOL_COMPLETED: debug
+2026-02-02 16:32:41,359 - TOOL_COMPLETED: debug
+2026-02-02 16:33:50,121 - TOOL_CALL: debug with 12 arguments
+2026-02-02 16:33:50,121 - TOOL_CALL: debug with 12 arguments
+2026-02-02 16:33:50,121 - CONVERSATION_RESUME: debug resuming thread 433a43e4-a016-4ef9-a40d-4519c039c07a
+2026-02-02 16:33:50,121 - CONVERSATION_RESUME: debug resuming thread 433a43e4-a016-4ef9-a40d-4519c039c07a
+2026-02-02 16:33:50,124 - CONVERSATION_CONTINUATION: Thread 433a43e4-a016-4ef9-a40d-4519c039c07a turn 2 - 2 previous turns loaded
+2026-02-02 16:33:50,124 - CONVERSATION_CONTINUATION: Thread 433a43e4-a016-4ef9-a40d-4519c039c07a turn 2 - 2 previous turns loaded
+2026-02-02 16:33:50,126 - TOOL_COMPLETED: debug
+2026-02-02 16:33:50,126 - TOOL_COMPLETED: debug
+2026-02-02 16:34:27,186 - TOOL_CALL: thinkdeep with 13 arguments
+2026-02-02 16:34:27,186 - TOOL_CALL: thinkdeep with 13 arguments
+2026-02-02 16:34:27,187 - TOOL_COMPLETED: thinkdeep
+2026-02-02 16:34:27,187 - TOOL_COMPLETED: thinkdeep
+2026-02-02 16:38:46,255 - TOOL_CALL: thinkdeep with 15 arguments
+2026-02-02 16:38:46,255 - TOOL_CALL: thinkdeep with 15 arguments
+2026-02-02 16:38:46,255 - CONVERSATION_RESUME: thinkdeep resuming thread 269660bb-2779-46ea-a867-879ddd86a8ed
+2026-02-02 16:38:46,255 - CONVERSATION_RESUME: thinkdeep resuming thread 269660bb-2779-46ea-a867-879ddd86a8ed
+2026-02-02 16:38:46,262 - CONVERSATION_CONTINUATION: Thread 269660bb-2779-46ea-a867-879ddd86a8ed turn 1 - 1 previous turns loaded
+2026-02-02 16:38:46,262 - CONVERSATION_CONTINUATION: Thread 269660bb-2779-46ea-a867-879ddd86a8ed turn 1 - 1 previous turns loaded
+2026-02-02 16:39:22,996 - TOOL_COMPLETED: thinkdeep
+2026-02-02 16:39:22,996 - TOOL_COMPLETED: thinkdeep
+2026-02-02 16:51:54,413 - MCP_CLIENT_INFO: Claude (raw=claude-code v2.1.29)
