@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies for enhanced server with database persistence
-RUN pip install uv aiohttp asyncpg redis mcp prometheus-client
+RUN pip install uv aiohttp asyncpg redis mcp prometheus-client fastapi uvicorn
 
 # Copy shared monitoring module
 RUN mkdir -p /app/shared/monitoring
@@ -24,13 +24,15 @@ COPY instance_detector.py .
 COPY integration_bridge_client.py .
 COPY conport_mcp_stdio.py .
 COPY schema.sql .
+COPY info_server.py .
+COPY start_with_info.sh .
 
-# Expose port
-EXPOSE 3004
+# Expose ports (MCP server + info server)
+EXPOSE 3004 4004
 
 # Health check - test the enhanced HTTP server
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:3004/health || exit 1
 
-# Run the enhanced HTTP server with real persistence
-CMD ["python", "enhanced_server.py"]
+# Run both MCP server and info server
+CMD ["bash", "start_with_info.sh"]
