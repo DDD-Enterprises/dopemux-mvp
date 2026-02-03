@@ -1,3 +1,11 @@
+---
+id: mcp-config-fix-summary
+title: Mcp Config Fix Summary
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # MCP Configuration Fix - Summary
 
 **Date**: 2025-02-02

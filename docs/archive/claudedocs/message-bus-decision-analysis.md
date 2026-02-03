@@ -1,3 +1,11 @@
+---
+id: message-bus-decision-analysis
+title: Message Bus Decision Analysis
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Message Bus Technology Decision Analysis
 
 **Date**: 2025-10-16

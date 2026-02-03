@@ -1,3 +1,11 @@
+---
+id: CONNECTION_GUIDE
+title: Connection_Guide
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Desktop-Commander MCP - Connection Guide
 
 **Date**: 2025-10-20
