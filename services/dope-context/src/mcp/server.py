@@ -88,6 +88,37 @@ async def health_check(_: Request) -> JSONResponse:
     return JSONResponse({"status": "ok"})
 
 
+@mcp.custom_route("/info", methods=["GET"])
+async def service_info(_: Request) -> JSONResponse:
+    """Service discovery endpoint - auto-config support (ADR-208)"""
+    port = int(os.getenv("MCP_SERVER_PORT", 3010))
+    return JSONResponse({
+        "name": "dope-context",
+        "version": "1.0.0",
+        "mcp": {
+            "protocol": "sse",
+            "connection": {
+                "type": "sse",
+                "url": f"http://localhost:{port}/mcp"
+            },
+            "env": {
+                "VOYAGE_API_KEY": "${VOYAGEAI_API_KEY:-}",
+                "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
+                "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY:-}"
+            }
+        },
+        "health": "/health",
+        "description": "Semantic code search and autonomous indexing",
+        "metadata": {
+            "role": "workflow",
+            "priority": "high",
+            "adhd_integration": True,
+            "autonomous_indexing": True,
+            "conport_integration": CONPORT_INTEGRATION_AVAILABLE
+        }
+    })
+
+
 # ============================================================================
 # ADHD Engine Integration - Dynamic result limits based on user cognitive state
 # ============================================================================

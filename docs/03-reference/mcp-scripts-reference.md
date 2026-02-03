@@ -1,3 +1,11 @@
+---
+id: mcp-scripts-reference
+title: Mcp Scripts Reference
+type: reference
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # MCP Management Scripts
 
 Quick reference for Dopemux MCP service management.

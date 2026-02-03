@@ -257,6 +257,36 @@ async def health_check():
     }
 
 
+@app.get("/info")
+async def service_info():
+    """Service discovery endpoint - auto-config support (ADR-208)"""
+    port = int(os.getenv("MCP_SERVER_PORT", 8000))
+    return {
+        "name": "task-orchestrator",
+        "version": "1.0.0",
+        "mcp": {
+            "protocol": "sse",
+            "connection": {
+                "type": "sse",
+                "url": f"http://localhost:{port}/sse"
+            },
+            "env": {
+                "WORKSPACE_ID": "${WORKSPACE_ID:-}"
+            }
+        },
+        "health": "/health",
+        "description": "Advanced task orchestration and dependency management with 37 tools",
+        "metadata": {
+            "role": "workflow",
+            "priority": "high",
+            "tools_count": 37,
+            "kotlin_backend": True,
+            "two_plane_coordination": True,
+            "adhd_aware": True
+        }
+    }
+
+
 @app.get("/metrics")
 async def metrics():
     """Prometheus metrics endpoint."""

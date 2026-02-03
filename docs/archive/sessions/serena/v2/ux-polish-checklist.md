@@ -1,3 +1,11 @@
+---
+id: ux-polish-checklist
+title: Ux Polish Checklist
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # F001 Enhanced - UX Polish Checklist
 
 **Review Date**: 2025-10-18
