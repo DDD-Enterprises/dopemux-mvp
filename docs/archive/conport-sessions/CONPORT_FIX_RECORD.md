@@ -1,3 +1,11 @@
+---
+id: CONPORT_FIX_RECORD
+title: Conport_Fix_Record
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # ConPort MCP Server Fix Record
 
 **Date**: September 26, 2025
