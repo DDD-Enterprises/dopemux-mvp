@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Iterable, List, Optional, Sequence, Tuple
 
 from ..config.manager import ConfigManager, MobileConfig
-from .tmux_utils import (
+from ..tmux.utils import (
     TmuxError,
     TmuxPane,
     build_env_command,
@@ -79,7 +79,7 @@ def check_cli_health(binary: str, timeout: float = 3.0) -> bool:
         return False
 
 
-        logger.error(f"Error: {e}")
+
 def env_for_happy(config: MobileConfig) -> dict[str, str]:
     """Build environment variables for Happy CLI."""
 
@@ -306,7 +306,7 @@ def notify_mobile_event(config_manager: ConfigManager, message: str) -> bool:
     except Exception as e:
         return False
 
-        logger.error(f"Error: {e}")
+
     if not mobile_cfg.enabled:
         return False
 
@@ -332,7 +332,7 @@ def get_mobile_status(config_manager: ConfigManager) -> MobileStatus:
         sessions = []
         tmux_error = str(exc)
 
-        logger.error(f"Error: {e}")
+
     return MobileStatus(
         enabled=mobile_cfg.enabled,
         happy_ok=happy_ok,
@@ -380,7 +380,7 @@ def update_tmux_mobile_indicator(config_manager: ConfigManager) -> None:
         pass
 
 
-        logger.error(f"Error: {e}")
+
 def _persist_mobile_status(config_manager: ConfigManager, status: MobileStatus) -> None:
     """Write mobile status snapshot to cache for other UIs."""
 

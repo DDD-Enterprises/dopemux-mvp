@@ -14,7 +14,11 @@ class TmuxError(RuntimeError):
 
 @dataclass
 class TmuxPane:
-    """Simplified view of a tmux pane."""
+    """Simplified view of a tmux pane.
+
+    .. warning::
+        This module is deprecated. Use `dopemux.tmux.controller.TmuxController` instead.
+    """
 
     pane_id: str
     title: str

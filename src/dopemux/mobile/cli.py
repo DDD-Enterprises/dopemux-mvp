@@ -22,7 +22,7 @@ from .runtime import (
     resolve_targets,
     update_tmux_mobile_indicator,
 )
-from .tmux_utils import TmuxError
+from ..tmux.utils import TmuxError
 
 
 def _get_config_manager(ctx: click.Context) -> ConfigManager:
@@ -140,7 +140,7 @@ def start(
         click.echo(f"❌ tmux error: {exc}")
         sys.exit(1)
 
-        logger.error(f"Error: {e}")
+
     if outcome.started:
         for label in outcome.started:
             click.echo(f"✅ Happy session ready: {label}")
@@ -171,7 +171,7 @@ def detach(ctx: click.Context, pane: Sequence[str], detach_all: bool):
         click.echo(f"❌ tmux error: {exc}")
         sys.exit(1)
 
-        logger.error(f"Error: {e}")
+
     if not detached:
         click.echo("No Happy sessions found to detach.")
     else:
