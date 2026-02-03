@@ -231,7 +231,6 @@ services:
     networks:
       - dopemux-network
       - leantime-net
-      - dopemux-network
     env_file:
       - ./leantime-bridge/.env
     environment:
@@ -267,7 +266,6 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-plane-coordinator"
     restart: unless-stopped
     networks:
-      - dopemux-network
       - dopemux-network
     environment:
       - COORDINATION_API_PORT=8090
@@ -563,8 +561,6 @@ services:
     container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-activity-capture"
     restart: unless-stopped
     networks:
-      - dopemux-network
-      - dopemux-network
       - dopemux-network
     environment:
       - REDIS_URL=redis://dopemux-redis-events:6379

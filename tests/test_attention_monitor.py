@@ -10,6 +10,7 @@ from unittest.mock import patch
 from dopemux.adhd.attention_monitor import (
     AttentionMetrics,
     AttentionState,
+    AttentionMonitor,
 )
 
 

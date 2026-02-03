@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 from dopemux.cli import cli
 from dopemux.mobile.cli import mobile
-from dopemux.mobile.tmux_utils import TmuxPane
+from dopemux.tmux.utils import TmuxPane
 from dopemux.mobile.runtime import MobileStatus
 from dopemux.config.manager import MobileConfig
 

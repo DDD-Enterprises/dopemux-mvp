@@ -1,4 +1,4 @@
-# Dopemux Multi-AI Orchestrator
+# Dopemux Multi-AI Session Manager
 
 ADHD-optimized terminal interface for orchestrating multiple AI CLI instances with tmux-based coordination.
 
@@ -17,10 +17,10 @@ ADHD-optimized terminal interface for orchestrating multiple AI CLI instances wi
 pip install -e .
 
 # Launch orchestrator
-dopemux-orchestrator start
+dopemux-session-manager start
 
 # Or with specific energy level
-dopemux-orchestrator start --energy high
+dopemux-session-manager start --energy high
 ```
 
 ## Architecture
@@ -58,7 +58,7 @@ ruff check src/ tests/ --fix
 See `/Users/hue/code/ui-build/docs/` for:
 - `DOPEMUX-ORCHESTRATOR-FINAL-SPEC.md` - Complete specification
 - `DOPEMUX-MULTI-AI-ORCHESTRATOR-DESIGN.md` - Visual mockups
-- `dopemux-orchestrator-roadmap.md` - Implementation plan
+- `dopemux-session-manager-roadmap.md` - Implementation plan
 
 ## License
 
