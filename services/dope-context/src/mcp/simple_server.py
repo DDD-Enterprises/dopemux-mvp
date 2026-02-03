@@ -151,6 +151,35 @@ class SimpleMCPServer:
         async def health():
             return {"status": "healthy", "service": "dope-context-mcp-simple"}
 
+        @app.get("/info")
+        async def info():
+            """Service discovery endpoint - auto-config support (ADR-208)"""
+            return {
+                "name": "dope-context",
+                "version": "1.0.0",
+                "mcp": {
+                    "protocol": "sse",
+                    "connection": {
+                        "type": "sse",
+                        "url": f"http://localhost:{self.port}/mcp"
+                    },
+                    "env": {
+                        "VOYAGE_API_KEY": "${VOYAGEAI_API_KEY:-}",
+                        "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
+                        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY:-}"
+                    }
+                },
+                "health": "/health",
+                "description": "Semantic code search and autonomous indexing",
+                "metadata": {
+                    "role": "workflow",
+                    "priority": "high",
+                    "adhd_integration": True,
+                    "autonomous_indexing": True,
+                    "simple_server": True
+                }
+            }
+
         self.running = True
         uvicorn.run(app, host="0.0.0.0", port=self.port)
         self.running = False

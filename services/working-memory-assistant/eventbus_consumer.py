@@ -24,6 +24,8 @@ import redis.asyncio as redis
 from chronicle.store import ChronicleStore
 from promotion.redactor import Redactor
 from promotion.promotion import PromotionEngine
+from reflection.reflection import ReflectionGenerator
+from trajectory.manager import TrajectoryManager
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +36,142 @@ INPUT_STREAM = os.getenv("DOPE_MEMORY_INPUT_STREAM", "activity.events.v1")
 OUTPUT_STREAM = os.getenv("DOPE_MEMORY_OUTPUT_STREAM", "memory.derived.v1")
 CONSUMER_GROUP = os.getenv("DOPE_MEMORY_CONSUMER_GROUP", "dope-memory-ingestor")
 DATA_DIR = Path(os.getenv("DOPE_MEMORY_DATA_DIR", str(Path.home() / ".dope-memory")))
+
+# Phase 2 Configuration
+PULSE_INTERVAL_SECONDS = int(os.getenv("PULSE_INTERVAL_SECONDS", "2700"))  # 45 minutes default (+/- jitter)
+IDLE_MINUTES = int(os.getenv("IDLE_MINUTES", "20"))
+REFLECTION_MIN_WINDOW_MINUTES = int(os.getenv("REFLECTION_MIN_WINDOW_MINUTES", "30"))
+REFLECTION_MAX_WINDOW_HOURS = int(os.getenv("REFLECTION_MAX_WINDOW_HOURS", "2"))
+ENABLE_DOPECONTEXT_INDEX = os.getenv("ENABLE_DOPECONTEXT_INDEX", "false").lower() == "true"
+DOPECONTEXT_URL = os.getenv("DOPECONTEXT_URL", "http://localhost:3010")
+
+# High-signal events that reset last_activity_at
+HIGH_SIGNAL_EVENTS = {
+    "decision.logged",
+    "task.completed",
+    "task.failed",
+    "task.blocked",
+    "error.encountered",
+    "manual.memory_store",
+    "workflow.phase_changed",
+}
+
+
+class SessionTracker:
+    """Track session state for idle detection and reflection boundaries.
+    
+    Per (workspace_id, instance_id, session_id):
+    - last_activity_at: Last high-signal event
+    - last_pulse_at: Last pulse emission
+    - last_reflection_window_end: Last reflection generated
+    - ended_at: Explicit session end timestamp
+    """
+    
+    def __init__(self):
+        self._sessions: dict[tuple[str, str, str], dict[str, Any]] = {}
+    
+    def _session_key(self, workspace_id: str, instance_id: str, session_id: str) -> tuple[str, str, str]:
+        """Generate session key."""
+        return (workspace_id, instance_id, session_id or "")
+    
+    def update_activity(self, workspace_id: str, instance_id: str, session_id: str) -> None:
+        """Update last_activity_at for high-signal event."""
+        key = self._session_key(workspace_id, instance_id, session_id)
+        now = datetime.now(timezone.utc)
+        
+        if key not in self._sessions:
+            self._sessions[key] = {
+                "workspace_id": workspace_id,
+                "instance_id": instance_id,
+                "session_id": session_id,
+                "last_activity_at": now,
+                "last_pulse_at": None,
+                "last_reflection_window_end": None,
+                "ended_at": None,
+            }
+        else:
+            self._sessions[key]["last_activity_at"] = now
+    
+    def mark_pulse(self, workspace_id: str, instance_id: str, session_id: str) -> None:
+        """Mark pulse emission time."""
+        key = self._session_key(workspace_id, instance_id, session_id)
+        if key in self._sessions:
+            self._sessions[key]["last_pulse_at"] = datetime.now(timezone.utc)
+    
+    def mark_reflection(self, workspace_id: str, instance_id: str, session_id: str) -> None:
+        """Mark reflection generation time."""
+        key = self._session_key(workspace_id, instance_id, session_id)
+        if key in self._sessions:
+            self._sessions[key]["last_reflection_window_end"] = datetime.now(timezone.utc)
+    
+    def mark_ended(self, workspace_id: str, instance_id: str, session_id: str) -> None:
+        """Mark explicit session end."""
+        key = self._session_key(workspace_id, instance_id, session_id)
+        if key in self._sessions:
+            self._sessions[key]["ended_at"] = datetime.now(timezone.utc)
+    
+    def is_idle(self, workspace_id: str, instance_id: str, session_id: str) -> bool:
+        """Check if session is idle (> IDLE_MINUTES since last activity)."""
+        key = self._session_key(workspace_id, instance_id, session_id)
+        if key not in self._sessions:
+            return False
+        
+        session = self._sessions[key]
+        if session["ended_at"]:
+            return True  # Already ended
+        
+        last_activity = session["last_activity_at"]
+        now = datetime.now(timezone.utc)
+        idle_seconds = (now - last_activity).total_seconds()
+        
+        return idle_seconds >= (IDLE_MINUTES * 60)
+    
+    def should_generate_reflection(self, workspace_id: str, instance_id: str, session_id: str) -> bool:
+        """Check if reflection should be generated.
+        
+        Triggers:
+        - Explicit session end
+        - Idle threshold exceeded
+        - Periodic boundary (REFLECTION_MAX_WINDOW_HOURS)
+        - Minimum window duration met (REFLECTION_MIN_WINDOW_MINUTES)
+        """
+        key = self._session_key(workspace_id, instance_id, session_id)
+        if key not in self._sessions:
+            return False
+        
+        session = self._sessions[key]
+        now = datetime.now(timezone.utc)
+        
+        # Signal A: Explicit end
+        if session["ended_at"]:
+            return True
+        
+        # Check minimum window duration
+        last_reflection = session["last_reflection_window_end"]
+        if last_reflection:
+            since_last_reflection = (now - last_reflection).total_seconds() / 60
+            if since_last_reflection < REFLECTION_MIN_WINDOW_MINUTES:
+                return False  # Too soon
+        
+        # Signal B: Idle end
+        if self.is_idle(workspace_id, instance_id, session_id):
+            return True
+        
+        # Periodic boundary (max window)
+        if last_reflection:
+            hours_since = (now - last_reflection).total_seconds() / 3600
+            if hours_since >= REFLECTION_MAX_WINDOW_HOURS:
+                return True
+        
+        return False
+    
+    def get_active_sessions(self) -> list[tuple[str, str, str]]:
+        """Get all active (non-ended) session keys."""
+        active = []
+        for key, session in self._sessions.items():
+            if not session["ended_at"]:
+                active.append(key)
+        return active
 
 
 class EventBusConsumer:
@@ -68,6 +206,14 @@ class EventBusConsumer:
         self.promotion_engine = PromotionEngine()
         self._stores: dict[str, ChronicleStore] = {}
         self._running = False
+        
+        # Phase 2: Session tracking
+        self.session_tracker = SessionTracker()
+        self._pulse_task: Optional[asyncio.Task] = None
+        self._session_monitor_task: Optional[asyncio.Task] = None
+        
+        # Phase 2: Trajectory managers per workspace
+        self._trajectory_managers: dict[str, TrajectoryManager] = {}
 
     async def initialize(self) -> None:
         """Initialize Redis connection and create consumer group."""
@@ -121,6 +267,12 @@ class EventBusConsumer:
             f"📥 Starting Dope-Memory EventBus consumer: "
             f"{self.input_stream} -> {self.consumer_group}/{self.consumer_name}"
         )
+        
+        # Start background pulse emission task
+        self._pulse_task = asyncio.create_task(self._pulse_emission_loop())
+        
+        # Start session monitoring task (idle detection)
+        self._session_monitor_task = asyncio.create_task(self._session_monitor_loop())
 
         while self._running:
             try:
@@ -155,6 +307,16 @@ class EventBusConsumer:
     async def stop(self) -> None:
         """Stop consuming events."""
         self._running = False
+        
+        # Cancel background tasks
+        for task in [self._pulse_task, self._session_monitor_task]:
+            if task:
+                task.cancel()
+                try:
+                    await task
+                except asyncio.CancelledError:
+                    pass
+        
         if self.redis_client:
             await self.redis_client.close()
         logger.info("📭 Dope-Memory EventBus consumer stopped")
@@ -173,8 +335,24 @@ class EventBusConsumer:
         event_type = event.get("type", "unknown")
         source = event.get("source", "unknown")
         data = event.get("data", {})
+        session_id = event.get("session_id")
 
         logger.debug(f"📨 Processing event: {event_type} from {source}")
+        
+        # Phase 2: Track high-signal activity
+        if event_type in HIGH_SIGNAL_EVENTS:
+            self.session_tracker.update_activity(workspace_id, instance_id, session_id or "")
+        
+        # Phase 2: Signal A - Explicit session end
+        if event_type == "session.ended":
+            self.session_tracker.mark_ended(workspace_id, instance_id, session_id or "")
+            await self._handle_session_end(workspace_id, instance_id, session_id)
+            return
+        
+        # Phase 2: Signal C - Workflow completion trigger (reflection boundary)
+        if event_type in ("task.completed", "task.failed", "workflow.deployment_started"):
+            if self.session_tracker.should_generate_reflection(workspace_id, instance_id, session_id or ""):
+                await self._generate_reflection_boundary(workspace_id, instance_id, session_id)
 
         store = self._get_store(workspace_id)
 
@@ -216,6 +394,16 @@ class EventBusConsumer:
             )
 
             logger.info(f"✅ Promoted {event_type} -> {entry.category}/{entry.entry_type} ({entry_id})")
+            
+            # Phase 2: Update trajectory state
+            await self._update_trajectory(workspace_id, instance_id, {
+                "id": entry_id,
+                "category": entry.category,
+                "entry_type": entry.entry_type,
+                "summary": entry.summary,
+                "session_id": event.get("session_id"),
+                "tags": entry.tags or [],
+            })
 
             # Step 4: Publish derived event
             await self._publish_derived_event(
@@ -230,6 +418,16 @@ class EventBusConsumer:
                 workspace_id=workspace_id,
                 instance_id=instance_id,
             )
+            
+            # Phase 2: Index in DopeContext (best-effort)
+            if ENABLE_DOPECONTEXT_INDEX:
+                await self._index_in_dopecontext(
+                    entry_id=entry_id,
+                    workspace_id=workspace_id,
+                    category=entry.category,
+                    summary=entry.summary,
+                    details=entry.details,
+                )
         else:
             logger.debug(f"⏭️  Event {event_type} not promoted (raw-only)")
 
@@ -281,6 +479,242 @@ class EventBusConsumer:
             logger.debug(f"📤 Published {event_type} to {self.output_stream} ({msg_id.decode()})")
         except Exception as e:
             logger.warning(f"⚠️  Failed to publish derived event: {e}")
+
+    # ═════════════════════════════════════════════════════════════════
+    # Phase 2: Pulse Emission
+    # ═════════════════════════════════════════════════════════════════
+
+    async def _pulse_emission_loop(self) -> None:
+        """Background task to emit memory.pulse events periodically."""
+        import random
+        
+        # Add jitter to avoid synchronization storms
+        jitter = random.randint(-300, 300)  # +/- 5 minutes
+        interval = PULSE_INTERVAL_SECONDS + jitter
+        
+        logger.info(f"🫀 Pulse emission loop started (interval: {interval}s)")
+        
+        while self._running:
+            try:
+                await asyncio.sleep(interval)
+                
+                # Emit pulse for each active session
+                for session_key in self.session_tracker.get_active_sessions():
+                    workspace_id, instance_id, session_id = session_key
+                    await self._emit_pulse(workspace_id, instance_id, session_id)
+                    
+            except asyncio.CancelledError:
+                logger.info("🫀 Pulse emission loop cancelled")
+                break
+            except Exception as e:
+                logger.error(f"❌ Pulse emission error: {e}")
+                await asyncio.sleep(60)  # Back off on error
+
+    async def _session_monitor_loop(self) -> None:
+        """Background task to check for idle sessions (Signal B)."""
+        logger.info(f"👁️ Session monitor started (idle threshold: {IDLE_MINUTES}min)")
+        
+        while self._running:
+            try:
+                await asyncio.sleep(60)  # Check every minute
+                
+                # Check each active session for idle
+                for session_key in self.session_tracker.get_active_sessions():
+                    workspace_id, instance_id, session_id = session_key
+                    
+                    # Signal B: Idle detection
+                    if self.session_tracker.is_idle(workspace_id, instance_id, session_id):
+                        if self.session_tracker.should_generate_reflection(workspace_id, instance_id, session_id):
+                            await self._handle_idle_end(workspace_id, instance_id, session_id)
+                    
+            except asyncio.CancelledError:
+                logger.info("👁️ Session monitor cancelled")
+                break
+            except Exception as e:
+                logger.error(f"❌ Session monitor error: {e}")
+                await asyncio.sleep(60)
+
+    async def _emit_pulse(
+        self, workspace_id: str, instance_id: str, session_id: str
+    ) -> None:
+        """Emit memory.pulse for a session."""
+        try:
+            store = self._get_store(workspace_id)
+            
+            # Get trajectory state
+            trajectory_state = store.get_trajectory_state(workspace_id, instance_id)
+            if not trajectory_state:
+                return  # No activity yet
+            
+            # Get recent reflections for constraints
+            reflections = store.get_reflection_cards(workspace_id, instance_id, limit=1)
+            
+            constraints = []
+            suggested_next = []
+            
+            if reflections:
+                latest = reflections[0]
+                constraints = latest["top_decisions"] + latest["top_blockers"]
+                suggested_next = latest["next_suggested"]
+            
+            trajectory = trajectory_state.get("current_stream", "idle")
+            
+            # Emit pulse event
+            await self._publish_derived_event(
+                event_type="memory.pulse",
+                data={
+                    "trajectory": trajectory,
+                    "constraints": constraints[:5],  # Top 5
+                    "suggested_next": suggested_next,
+                    "source_entry_ids": [],
+                },
+                workspace_id=workspace_id,
+                instance_id=instance_id,
+            )
+            
+            self.session_tracker.mark_pulse(workspace_id, instance_id, session_id)
+            logger.debug(f"🫀 Emitted memory.pulse for {workspace_id}/{instance_id}")
+            
+        except Exception as e:
+            logger.warning(f"⚠️  Pulse emission failed: {e}")
+
+    async def _handle_session_end(
+        self, workspace_id: str, instance_id: str, session_id: Optional[str]
+    ) -> None:
+        """Handle explicit session end (Signal A): generate reflection + force pulse."""
+        try:
+            await self._generate_reflection_boundary(workspace_id, instance_id, session_id)
+            await self._emit_pulse(workspace_id, instance_id, session_id or "")
+            logger.info(f"✨ Handled explicit session end for {workspace_id}/{instance_id}")
+        except Exception as e:
+            logger.error(f"❌ Session end handler failed: {e}")
+
+    async def _handle_idle_end(
+        self, workspace_id: str, instance_id: str, session_id: str
+    ) -> None:
+        """Handle idle session end (Signal B): generate reflection + mark ended."""
+        try:
+            await self._generate_reflection_boundary(workspace_id, instance_id, session_id)
+            self.session_tracker.mark_ended(workspace_id, instance_id, session_id)
+            logger.info(f"😴 Handled idle session end for {workspace_id}/{instance_id}")
+        except Exception as e:
+            logger.error(f"❌ Idle end handler failed: {e}")
+
+    async def _generate_reflection_boundary(
+        self, workspace_id: str, instance_id: str, session_id: Optional[str]
+    ) -> None:
+        """Generate reflection card (idempotent)."""
+        try:
+            store = self._get_store(workspace_id)
+            
+            # Generate reflection card
+            gen = ReflectionGenerator(store)
+            card = gen.generate_reflection(
+                workspace_id=workspace_id,
+                instance_id=instance_id,
+                session_id=session_id,
+            )
+            
+            if card["reflection_id"]:
+                # Check idempotency: hash-based key
+                # For now, simple check: don't generate if one exists in last 5 minutes
+                existing = store.get_reflection_cards(workspace_id, instance_id, session_id=session_id, limit=1)
+                if existing:
+                    last_ts = datetime.fromisoformat(existing[0]["ts_utc"])
+                    now = datetime.now(timezone.utc)
+                    if (now - last_ts).total_seconds() < 300:  # 5 minutes
+                        logger.debug(f"⏭️  Skipping duplicate reflection (too recent)")
+                        return
+                
+                # Persist reflection
+                store.insert_reflection_card(card)
+                
+                # Emit reflection.created event
+                await self._publish_derived_event(
+                    event_type="reflection.created",
+                    data={
+                        "reflection_id": card["reflection_id"],
+                        "window_start": card["window_start"],
+                        "window_end": card["window_end"],
+                        "trajectory": card["trajectory_summary"],
+                    },
+                    workspace_id=workspace_id,
+                    instance_id=instance_id,
+                )
+                
+                # Mark in tracker
+                self.session_tracker.mark_reflection(workspace_id, instance_id, session_id or "")
+                
+                logger.info(f"✨ Generated reflection card: {card['reflection_id']}")
+            
+        except Exception as e:
+            logger.error(f"❌ Reflection generation failed: {e}")
+
+    # ═════════════════════════════════════════════════════════════════
+    # Phase 2: Trajectory Management
+    # ═════════════════════════════════════════════════════════════════
+
+    def _get_trajectory_manager(self, workspace_id: str) -> TrajectoryManager:
+        """Get or create TrajectoryManager for workspace."""
+        if workspace_id not in self._trajectory_managers:
+            store = self._get_store(workspace_id)
+            self._trajectory_managers[workspace_id] = TrajectoryManager(store)
+        return self._trajectory_managers[workspace_id]
+
+    async def _update_trajectory(
+        self, workspace_id: str, instance_id: str, entry: dict[str, Any]
+    ) -> None:
+        """Update trajectory state with new entry."""
+        try:
+            mgr = self._get_trajectory_manager(workspace_id)
+            mgr.update_trajectory(workspace_id, instance_id, entry)
+        except Exception as e:
+            logger.warning(f"⚠️  Failed to update trajectory: {e}")
+
+    # ═════════════════════════════════════════════════════════════════
+    # Phase 2: DopeContext Indexing (Best-Effort)
+    # ═════════════════════════════════════════════════════════════════
+
+    async def _index_in_dopecontext(
+        self,
+        entry_id: str,
+        workspace_id: str,
+        category: str,
+        summary: str,
+        details: Optional[dict[str, Any]],
+    ) -> None:
+        """Index work log entry in DopeContext (non-blocking, best-effort)."""
+        if not ENABLE_DOPECONTEXT_INDEX:
+            return
+        
+        try:
+            import aiohttp
+            
+            payload = {
+                "collection": "worklog_index",
+                "document": {
+                    "id": entry_id,
+                    "workspace_id": workspace_id,
+                    "category": category,
+                    "summary": summary,
+                    "details": details or {},
+                    "indexed_at": datetime.now(timezone.utc).isoformat(),
+                },
+            }
+            
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    f"{DOPECONTEXT_URL}/index",
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=5),
+                ) as resp:
+                    if resp.status == 200:
+                        logger.debug(f"✅ Indexed {entry_id} in DopeContext")
+                    else:
+                        logger.warning(f"⚠️  DopeContext indexing failed: {resp.status}")
+        except Exception as e:
+            # Best-effort: log and continue
+            logger.debug(f"⚠️  DopeContext indexing error (non-blocking): {e}")
 
 
 async def run_consumer() -> None:

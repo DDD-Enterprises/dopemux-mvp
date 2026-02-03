@@ -1,3 +1,11 @@
+---
+id: f001-usage-examples
+title: F001 Usage Examples
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # F001 Enhanced - Usage Examples
 
 Quick reference for common scenarios with F001 Enhanced.

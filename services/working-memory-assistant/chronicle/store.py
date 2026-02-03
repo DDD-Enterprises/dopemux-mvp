@@ -402,3 +402,231 @@ class ChronicleStore:
         )
         conn.commit()
         return link_id
+
+    # ─────────────────────────────────────────────────────────────────
+    # Phase 2: Reflection Cards
+    # ─────────────────────────────────────────────────────────────────
+
+    def insert_reflection_card(self, card: dict[str, Any]) -> str:
+        """Insert a reflection card.
+
+        Args:
+            card: Reflection card dict with all required fields
+
+        Returns:
+            The reflection_id
+        """
+        conn = self.connect()
+        conn.execute(
+            """
+            INSERT INTO reflection_cards (
+                id, workspace_id, instance_id, session_id,
+                ts_utc, window_start_utc, window_end_utc,
+                trajectory, top_decisions_json, top_blockers_json,
+                progress_json, next_suggested_json,
+                promotion_candidates_json, created_at_utc
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                card["reflection_id"],
+                card["workspace_id"],
+                card["instance_id"],
+                card.get("session_id"),
+                datetime.now(timezone.utc).isoformat(),
+                card["window_start"],
+                card["window_end"],
+                card["trajectory_summary"],
+                json.dumps(card["top_decisions"]),
+                json.dumps(card["top_blockers"]),
+                json.dumps(card["progress_summary"]),
+                json.dumps(card["suggested_next"]),
+                json.dumps(card.get("promotion_candidates", [])),
+                datetime.now(timezone.utc).isoformat(),
+            ),
+        )
+        conn.commit()
+        return card["reflection_id"]
+
+    def get_reflection_cards(
+        self,
+        workspace_id: str,
+        instance_id: str,
+        session_id: Optional[str] = None,
+        limit: int = 3,
+    ) -> list[dict[str, Any]]:
+        """Get recent reflection cards.
+
+        Args:
+            workspace_id: Workspace filter
+            instance_id: Instance filter
+            session_id: Optional session filter
+            limit: Max results (default 3)
+
+        Returns:
+            List of reflection card dicts
+        """
+        conn = self.connect()
+
+        if session_id:
+            rows = conn.execute(
+                """
+                SELECT id, ts_utc, trajectory, top_decisions_json,
+                       top_blockers_json, progress_json, next_suggested_json
+                FROM reflection_cards
+                WHERE workspace_id = ? AND instance_id = ? AND session_id = ?
+                ORDER BY ts_utc DESC
+                LIMIT ?
+                """,
+                (workspace_id, instance_id, session_id, limit),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """
+                SELECT id, ts_utc, trajectory, top_decisions_json,
+                       top_blockers_json, progress_json, next_suggested_json
+                FROM reflection_cards
+                WHERE workspace_id = ? AND instance_id = ?
+                ORDER BY ts_utc DESC
+                LIMIT ?
+                """,
+                (workspace_id, instance_id, limit),
+            ).fetchall()
+
+        results = []
+        for row in rows:
+            results.append({
+                "id": row["id"],
+                "ts_utc": row["ts_utc"],
+                "trajectory": row["trajectory"],
+                "top_decisions": json.loads(row["top_decisions_json"]),
+                "top_blockers": json.loads(row["top_blockers_json"]),
+                "progress": json.loads(row["progress_json"]),
+                "next_suggested": json.loads(row["next_suggested_json"]),
+            })
+
+        return results
+
+    # ─────────────────────────────────────────────────────────────────
+    # Phase 2: Trajectory State
+    # ─────────────────────────────────────────────────────────────────
+
+    def upsert_trajectory_state(
+        self, workspace_id: str, instance_id: str, state: dict[str, Any]
+    ) -> None:
+        """Insert or update trajectory state.
+
+        Args:
+            workspace_id: Workspace identifier
+            instance_id: Instance identifier
+            state: Trajectory state dict
+        """
+        conn = self.connect()
+        conn.execute(
+            """
+            INSERT INTO trajectory_state (
+                workspace_id, instance_id, session_id,
+                updated_at_utc, current_stream, current_goal_json, last_steps_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(workspace_id, instance_id) DO UPDATE SET
+                session_id = excluded.session_id,
+                updated_at_utc = excluded.updated_at_utc,
+                current_stream = excluded.current_stream,
+                current_goal_json = excluded.current_goal_json,
+                last_steps_json = excluded.last_steps_json
+            """,
+            (
+                workspace_id,
+                instance_id,
+                state.get("session_id"),
+                state["updated_at_utc"],
+                state.get("current_stream", ""),
+                json.dumps(state.get("current_goal", {})),
+                json.dumps(state.get("last_steps", [])),
+            ),
+        )
+        conn.commit()
+
+    def get_trajectory_state(
+        self, workspace_id: str, instance_id: str
+    ) -> Optional[dict[str, Any]]:
+        """Get current trajectory state.
+
+        Args:
+            workspace_id: Workspace identifier
+            instance_id: Instance identifier
+
+        Returns:
+            Trajectory state dict or None
+        """
+        conn = self.connect()
+        row = conn.execute(
+            """
+            SELECT session_id, updated_at_utc, current_stream,
+                   current_goal_json, last_steps_json
+            FROM trajectory_state
+            WHERE workspace_id = ? AND instance_id = ?
+            """,
+            (workspace_id, instance_id),
+        ).fetchone()
+
+        if not row:
+            return None
+
+        return {
+            "workspace_id": workspace_id,
+            "instance_id": instance_id,
+            "session_id": row["session_id"],
+            "updated_at_utc": row["updated_at_utc"],
+            "current_stream": row["current_stream"],
+            "current_goal": json.loads(row["current_goal_json"]),
+            "last_steps": json.loads(row["last_steps_json"]),
+        }
+
+    # ─────────────────────────────────────────────────────────────────
+    # Phase 2: Helper Queries
+    # ─────────────────────────────────────────────────────────────────
+
+    def get_work_log_window(
+        self,
+        workspace_id: str,
+        instance_id: str,
+        session_id: Optional[str],
+        window_start: str,
+        window_end: str,
+    ) -> list[dict[str, Any]]:
+        """Get work log entries in a time window.
+
+        Args:
+            workspace_id: Workspace filter
+            instance_id: Instance filter
+            session_id: Optional session filter
+            window_start: ISO timestamp
+            window_end: ISO timestamp
+
+        Returns:
+            List of work log entry dicts
+        """
+        conn = self.connect()
+
+        if session_id:
+            rows = conn.execute(
+                """
+                SELECT * FROM work_log_entries
+                WHERE workspace_id = ? AND instance_id = ? AND session_id = ?
+                  AND ts_utc >= ? AND ts_utc <= ?
+                ORDER BY importance_score DESC, ts_utc DESC, id ASC
+                """,
+                (workspace_id, instance_id, session_id, window_start, window_end),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """
+                SELECT * FROM work_log_entries
+                WHERE workspace_id = ? AND instance_id = ?
+                  AND ts_utc >= ? AND ts_utc <= ?
+                ORDER BY importance_score DESC, ts_utc DESC, id ASC
+                """,
+                (workspace_id, instance_id, window_start, window_end),
+            ).fetchall()
+
+        return [dict(row) for row in rows]

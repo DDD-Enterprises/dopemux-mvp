@@ -1,3 +1,11 @@
+---
+id: f001-enhanced-user-guide
+title: F001 Enhanced User Guide
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # F001 Enhanced - User Guide
 
 **ADHD-Optimized Untracked Work Detection with 4 Critical Enhancements**
