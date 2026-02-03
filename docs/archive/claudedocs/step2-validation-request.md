@@ -1,3 +1,11 @@
+---
+id: step2-validation-request
+title: Step2 Validation Request
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Step 2 Validation Request for Zen/thinkdeep
 
 ## Command Parser Design Analysis Needed

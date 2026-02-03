@@ -410,3 +410,24 @@
 2026-02-02 18:31:16,011 - __main__ - INFO - MCP Client Connected: Claude
 2026-02-02 18:31:16,011 - mcp_activity - INFO - MCP_CLIENT_INFO: Claude (raw=claude-code v2.1.29)
 2026-02-02 18:31:16,013 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest
+2026-02-02 20:21:17,521 - root - INFO - Logging to: /Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server/logs/mcp_server.log
+2026-02-02 20:21:17,521 - root - INFO - Process PID: 99282
+2026-02-02 20:21:17,521 - __main__ - INFO - ZEN_MCP_FORCE_ENV_OVERRIDE enabled - .env file values will override system environment variables
+2026-02-02 20:21:17,524 - __main__ - INFO - Active tools: ['apilookup', 'challenge', 'chat', 'clink', 'codereview', 'consensus', 'debug', 'listmodels', 'planner', 'precommit', 'thinkdeep', 'version']
+2026-02-02 20:21:17,526 - __main__ - INFO - OpenRouter API key found - Multiple models available via OpenRouter
+2026-02-02 20:21:17,526 - __main__ - INFO - Registered providers: openrouter
+2026-02-02 20:21:17,526 - __main__ - INFO - Available providers: OpenRouter
+2026-02-02 20:21:17,526 - __main__ - INFO - No model restrictions configured - all models allowed
+2026-02-02 20:21:17,526 - root - INFO - Model allow-list not configured for OpenRouter - all models permitted. To restrict access, set OPENROUTER_ALLOWED_MODELS with comma-separated model names.
+2026-02-02 20:21:17,526 - root - INFO - Using extended timeouts for custom endpoint: https://openrouter.ai/api/v1
+2026-02-02 20:21:17,527 - root - INFO - OpenRouter loaded 21 models with 64 aliases
+2026-02-02 20:21:17,527 - __main__ - INFO - Zen MCP Server starting up...
+2026-02-02 20:21:17,527 - __main__ - INFO - Log level: INFO
+2026-02-02 20:21:17,527 - __main__ - INFO - Model mode: AUTO (CLI will select the best model for each task)
+2026-02-02 20:21:17,527 - __main__ - INFO - Default thinking mode (ThinkDeep): high
+2026-02-02 20:21:17,527 - __main__ - INFO - Available tools: ['chat', 'clink', 'thinkdeep', 'planner', 'consensus', 'codereview', 'precommit', 'debug', 'challenge', 'apilookup', 'listmodels', 'version']
+2026-02-02 20:21:17,527 - __main__ - INFO - Server ready - waiting for tool requests...
+2026-02-02 20:21:17,536 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-02-02 20:21:17,536 - __main__ - INFO - MCP Client Connected: Claude
+2026-02-02 20:21:17,536 - mcp_activity - INFO - MCP_CLIENT_INFO: Claude (raw=claude-code v2.1.29)
+2026-02-02 20:21:17,538 - mcp.server.lowlevel.server - INFO - Processing request of type ListPromptsRequest

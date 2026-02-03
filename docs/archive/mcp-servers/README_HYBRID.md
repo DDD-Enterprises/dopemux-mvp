@@ -1,3 +1,11 @@
+---
+id: README_HYBRID
+title: Readme_Hybrid
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Desktop Commander MCP v2.0 - Hybrid OS Support
 
 **Cross-platform desktop automation for Claude Code with ADHD-optimized workflows**
