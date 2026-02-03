@@ -38,12 +38,21 @@ CONSUMER_GROUP = os.getenv("DOPE_MEMORY_CONSUMER_GROUP", "dope-memory-ingestor")
 DATA_DIR = Path(os.getenv("DOPE_MEMORY_DATA_DIR", str(Path.home() / ".dope-memory")))
 
 # Phase 2 Configuration
-PULSE_INTERVAL_SECONDS = int(os.getenv("PULSE_INTERVAL_SECONDS", "2700"))  # 45 minutes default (+/- jitter)
-IDLE_MINUTES = int(os.getenv("IDLE_MINUTES", "20"))
-REFLECTION_MIN_WINDOW_MINUTES = int(os.getenv("REFLECTION_MIN_WINDOW_MINUTES", "30"))
-REFLECTION_MAX_WINDOW_HOURS = int(os.getenv("REFLECTION_MAX_WINDOW_HOURS", "2"))
+# All timing parameters are configurable via environment variables
+DOPE_MEMORY_IDLE_MINUTES = int(os.getenv("DOPE_MEMORY_IDLE_MINUTES", "20"))
+DOPE_MEMORY_PULSE_INTERVAL_SECONDS = int(os.getenv("DOPE_MEMORY_PULSE_INTERVAL_SECONDS", "2700"))  # 45 minutes default
+DOPE_MEMORY_PULSE_JITTER_SECONDS = int(os.getenv("DOPE_MEMORY_PULSE_JITTER_SECONDS", "300"))  # 5 minutes jitter
+DOPE_MEMORY_REFLECTION_MIN_WINDOW_MINUTES = int(os.getenv("DOPE_MEMORY_REFLECTION_MIN_WINDOW_MINUTES", "30"))
+DOPE_MEMORY_REFLECTION_MAX_WINDOW_HOURS = int(os.getenv("DOPE_MEMORY_REFLECTION_MAX_WINDOW_HOURS", "2"))
+DOPE_MEMORY_REFLECTION_COOLDOWN_SECONDS = int(os.getenv("DOPE_MEMORY_REFLECTION_COOLDOWN_SECONDS", "300"))  # Not used currently, but available
 ENABLE_DOPECONTEXT_INDEX = os.getenv("ENABLE_DOPECONTEXT_INDEX", "false").lower() == "true"
 DOPECONTEXT_URL = os.getenv("DOPECONTEXT_URL", "http://localhost:3010")
+
+# Legacy env vars for backward compatibility (deprecated)
+IDLE_MINUTES = DOPE_MEMORY_IDLE_MINUTES
+PULSE_INTERVAL_SECONDS = DOPE_MEMORY_PULSE_INTERVAL_SECONDS
+REFLECTION_MIN_WINDOW_MINUTES = DOPE_MEMORY_REFLECTION_MIN_WINDOW_MINUTES
+REFLECTION_MAX_WINDOW_HOURS = DOPE_MEMORY_REFLECTION_MAX_WINDOW_HOURS
 
 # High-signal events that reset last_activity_at
 HIGH_SIGNAL_EVENTS = {
@@ -67,8 +76,15 @@ class SessionTracker:
     - ended_at: Explicit session end timestamp
     """
     
-    def __init__(self):
+    def __init__(self, clock=None):
+        """Initialize SessionTracker.
+        
+        Args:
+            clock: Optional callable that returns current datetime (for testing).
+                   Defaults to lambda: datetime.now(timezone.utc)
+        """
         self._sessions: dict[tuple[str, str, str], dict[str, Any]] = {}
+        self._clock = clock or (lambda: datetime.now(timezone.utc))
     
     def _session_key(self, workspace_id: str, instance_id: str, session_id: str) -> tuple[str, str, str]:
         """Generate session key."""
@@ -77,7 +93,7 @@ class SessionTracker:
     def update_activity(self, workspace_id: str, instance_id: str, session_id: str) -> None:
         """Update last_activity_at for high-signal event."""
         key = self._session_key(workspace_id, instance_id, session_id)
-        now = datetime.now(timezone.utc)
+        now = self._clock()
         
         if key not in self._sessions:
             self._sessions[key] = {
@@ -96,19 +112,19 @@ class SessionTracker:
         """Mark pulse emission time."""
         key = self._session_key(workspace_id, instance_id, session_id)
         if key in self._sessions:
-            self._sessions[key]["last_pulse_at"] = datetime.now(timezone.utc)
+            self._sessions[key]["last_pulse_at"] = self._clock()
     
     def mark_reflection(self, workspace_id: str, instance_id: str, session_id: str) -> None:
         """Mark reflection generation time."""
         key = self._session_key(workspace_id, instance_id, session_id)
         if key in self._sessions:
-            self._sessions[key]["last_reflection_window_end"] = datetime.now(timezone.utc)
+            self._sessions[key]["last_reflection_window_end"] = self._clock()
     
     def mark_ended(self, workspace_id: str, instance_id: str, session_id: str) -> None:
         """Mark explicit session end."""
         key = self._session_key(workspace_id, instance_id, session_id)
         if key in self._sessions:
-            self._sessions[key]["ended_at"] = datetime.now(timezone.utc)
+            self._sessions[key]["ended_at"] = self._clock()
     
     def is_idle(self, workspace_id: str, instance_id: str, session_id: str) -> bool:
         """Check if session is idle (> IDLE_MINUTES since last activity)."""
@@ -121,7 +137,7 @@ class SessionTracker:
             return True  # Already ended
         
         last_activity = session["last_activity_at"]
-        now = datetime.now(timezone.utc)
+        now = self._clock()
         idle_seconds = (now - last_activity).total_seconds()
         
         return idle_seconds >= (IDLE_MINUTES * 60)
@@ -140,7 +156,7 @@ class SessionTracker:
             return False
         
         session = self._sessions[key]
-        now = datetime.now(timezone.utc)
+        now = self._clock()
         
         # Signal A: Explicit end
         if session["ended_at"]:
@@ -489,8 +505,8 @@ class EventBusConsumer:
         import random
         
         # Add jitter to avoid synchronization storms
-        jitter = random.randint(-300, 300)  # +/- 5 minutes
-        interval = PULSE_INTERVAL_SECONDS + jitter
+        jitter = random.randint(-DOPE_MEMORY_PULSE_JITTER_SECONDS, DOPE_MEMORY_PULSE_JITTER_SECONDS)
+        interval = DOPE_MEMORY_PULSE_INTERVAL_SECONDS + jitter
         
         logger.info(f"🫀 Pulse emission loop started (interval: {interval}s)")
         
@@ -512,7 +528,7 @@ class EventBusConsumer:
 
     async def _session_monitor_loop(self) -> None:
         """Background task to check for idle sessions (Signal B)."""
-        logger.info(f"👁️ Session monitor started (idle threshold: {IDLE_MINUTES}min)")
+        logger.info(f"👁️ Session monitor started (idle threshold: {DOPE_MEMORY_IDLE_MINUTES}min)")
         
         while self._running:
             try:
