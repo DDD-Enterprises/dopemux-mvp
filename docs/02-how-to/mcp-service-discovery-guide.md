@@ -2,19 +2,15 @@
 id: mcp-service-discovery-guide
 title: Mcp Service Discovery Guide
 type: how-to
-owner: '@hu3mann'
-last_review: '2026-02-02'
-next_review: '2026-05-03'
----
----
-title: "MCP Service Discovery Implementation Guide"
-type: how-to
 date: 2026-02-03
 author: Dopemux Architecture Team
+owner: '@hu3mann'
+last_review: '2026-02-03'
+next_review: '2026-05-03'
 tags: [mcp, service-discovery, implementation, automation]
 category: how-to
 related: [ADR-208]
-prelude: "Step-by-step guide for adding /info endpoints to MCP servers and using the auto-generation script to eliminate configuration drift."
+prelude: "Step-by-step guide for adding /info endpoints to MCP servers and using auto-generation to eliminate config drift. Includes mcp-proxy wrapper solution."
 ---
 
 # MCP Service Discovery Implementation Guide
@@ -97,16 +93,16 @@ python scripts/generate-claude-config.py --diff
 
 ## Migration Checklist
 
-### Phase 1: Add /info Endpoints ✅ (1/12 complete)
+### Phase 1: Add /info Endpoints ✅ (3/12 complete)
 
 - [x] exa (completed)
+- [x] conport (completed - mcp-proxy wrapper with parallel info server)
+- [x] serena-v2 (completed - mcp-proxy wrapper with parallel info server)
 - [ ] gpt-researcher
 - [ ] desktop-commander
 - [ ] context7
 - [ ] task-orchestrator
 - [ ] pal
-- [ ] conport (needs mcp-proxy wrapper support)
-- [ ] serena-v2
 - [ ] leantime-bridge
 - [ ] dope-context
 - [ ] zen
@@ -236,16 +232,85 @@ add_info_endpoint(app, name="...", ...)
 
 **Examples**: dope-context, leantime-bridge
 
-### MCP-Proxy Wrapped Servers
+### MCP-Proxy Wrapped Servers ✅ SOLVED
 
-Requires mcp-proxy wrapper support (future work):
+For servers that use mcp-proxy (stdio → SSE conversion), we run a **parallel HTTP server** for service discovery:
 
-```python
-# conport/server.py wrapper needs to expose /info
-# via mcp-proxy HTTP layer
+**Architecture**:
+```
+┌─────────────────────────────────────┐
+│  Container (e.g., conport, serena)  │
+│                                     │
+│  Port 3004 → MCP Server (mcp-proxy) │
+│  Port 4004 → Info Server (FastAPI)  │
+└─────────────────────────────────────┘
 ```
 
-**Examples**: conport, serena-v2, task-orchestrator (if proxied)
+**Implementation**:
+
+1. **Info Server** (`info_server.py`):
+   ```python
+   # Parallel FastAPI server on PORT+1000
+   INFO_PORT = PORT + 1000  # e.g., 3004 → 4004
+
+   @app.get("/info")
+   async def service_info():
+       return {
+           "name": "conport",
+           "mcp": {
+               "protocol": "sse",
+               "connection": {
+                   "type": "sse",
+                   "url": f"http://localhost:{PORT}/sse"
+               }
+           },
+           "metadata": {
+               "mcp_proxy_wrapped": True,
+               "info_port": INFO_PORT,
+               "mcp_port": PORT
+           }
+       }
+   ```
+
+2. **Start Script** (`start_with_info.sh`):
+   ```bash
+   #!/bin/bash
+   # Start both servers in parallel
+   python info_server.py &
+   python mcp_server.py &
+   wait
+   ```
+
+3. **Dockerfile**:
+   ```dockerfile
+   # Install FastAPI + uvicorn
+   RUN pip install fastapi uvicorn
+
+   # Copy both servers
+   COPY info_server.py .
+   COPY start_with_info.sh .
+
+   # Expose both ports
+   EXPOSE 3004 4004
+
+   CMD ["bash", "start_with_info.sh"]
+   ```
+
+4. **Docker Compose**:
+   ```yaml
+   ports:
+     - "3004:3004"  # MCP server
+     - "4004:4004"  # Info server
+   ```
+
+**Benefits**:
+- ✅ MCP server runs unchanged (mcp-proxy stdio → SSE)
+- ✅ Info server provides /info endpoint on separate port
+- ✅ No mcp-proxy modification needed
+- ✅ Claude Code uses MCP port (3004)
+- ✅ Service discovery uses info port (4004)
+
+**Examples**: conport (ports 3004/4004), serena-v2 (ports 3006/4006)
 
 ## Testing
 
