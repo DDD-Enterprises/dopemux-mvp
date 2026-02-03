@@ -55,6 +55,33 @@ async def health_check():
         "linux_mode": IS_LINUX
     }
 
+@app.get("/info")
+async def service_info():
+    """Service discovery endpoint - auto-config support (ADR-208)"""
+    port = int(os.getenv("MCP_SERVER_PORT", 3012))
+    return {
+        "name": "desktop-commander",
+        "version": "2.0.0",
+        "mcp": {
+            "protocol": "sse",
+            "connection": {
+                "type": "sse",
+                "url": f"http://localhost:{port}/sse"
+            },
+            "env": {
+                "DISPLAY": "${DISPLAY:-:0}"
+            }
+        },
+        "health": "/health",
+        "description": "Desktop automation via Docker container",
+        "metadata": {
+            "role": "utility",
+            "priority": "medium",
+            "platform": platform.system(),
+            "adhd_integration": "Auto-focus windows, sub-2s context switching"
+        }
+    }
+
 @app.post("/mcp")
 async def handle_mcp_request(request: CommandRequest) -> CommandResponse:
     """Handle MCP protocol requests for desktop automation"""

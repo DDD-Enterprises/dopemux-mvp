@@ -1,76 +1,69 @@
 #!/bin/bash
 # ADHD Tmux Status Script
-# Fetches current ADHD state and formats for tmux status-right
-#
-# Usage in .tmux.conf:
-#   set -g status-right "#(~/.dopemux/adhd-tmux-status.sh)"
-#
-# Environment variables:
-#   ADHD_ENGINE_URL - API URL (default: http://localhost:3333)
-#   ADHD_TMUX_EMOJI - Use emoji (default: true, set to "false" for text)
+# Targets ADHD Engine (8001) and Serena (8003) for real-time status.
 
-ADHD_ENGINE_URL="${ADHD_ENGINE_URL:-http://localhost:3333}"
+ADHD_ENGINE_URL="${ADHD_ENGINE_URL:-http://localhost:8001}"
+SERENA_URL="${SERENA_URL:-http://localhost:8003}"
 ADHD_TMUX_EMOJI="${ADHD_TMUX_EMOJI:-true}"
 
-# Fetch state with timeout
-STATE=$(curl -s --connect-timeout 1 --max-time 2 \
+# Fetch state with aggressive timeout
+STATE=$(curl -s --connect-timeout 0.5 --max-time 1 \
     "${ADHD_ENGINE_URL}/api/v1/state?user_id=default" 2>/dev/null)
 
 if [ -z "$STATE" ] || [ "$STATE" = "null" ]; then
-    # Service unavailable
     if [ "$ADHD_TMUX_EMOJI" = "true" ]; then
-        echo "🔌 ADHD offline"
+        echo "#[fg=red]🔌 ADHD offline#[default]"
     else
-        echo "[ADHD: offline]"
+        echo "#[fg=red][OFFLINE]#[default]"
     fi
     exit 0
 fi
 
-# Parse JSON (using jq if available, fallback to grep)
+# Parse JSON (jq required for complex logic)
 if command -v jq &> /dev/null; then
-    ENERGY=$(echo "$STATE" | jq -r '.energy // "unknown"')
-    ATTENTION=$(echo "$STATE" | jq -r '.attention // "unknown"')
-    SESSION_MIN=$(echo "$STATE" | jq -r '.session_minutes // 0')
+    ENERGY=$(echo "$STATE" | jq -r '.energy_level // "medium"')
+    ATTENTION=$(echo "$STATE" | jq -r '.attention_state // "focused"')
+    LOAD=$(echo "$STATE" | jq -r '.cognitive_load // 0')
+    FLOW=$(echo "$STATE" | jq -r '.flow_state.active // false')
 else
-    # Fallback parsing with grep/sed
-    ENERGY=$(echo "$STATE" | grep -o '"energy":"[^"]*"' | cut -d'"' -f4)
-    ATTENTION=$(echo "$STATE" | grep -o '"attention":"[^"]*"' | cut -d'"' -f4)
-    SESSION_MIN=$(echo "$STATE" | grep -o '"session_minutes":[0-9]*' | cut -d':' -f2)
-    [ -z "$ENERGY" ] && ENERGY="unknown"
-    [ -z "$ATTENTION" ] && ATTENTION="unknown"
-    [ -z "$SESSION_MIN" ] && SESSION_MIN="0"
+    # Fallback to defaults if jq missing
+    ENERGY="medium"
+    ATTENTION="focused"
+    LOAD="0.5"
+    FLOW="false"
 fi
 
 # Format output
 if [ "$ADHD_TMUX_EMOJI" = "true" ]; then
-    # Emoji-based format
+    # Energy Icon
     case "$ENERGY" in
-        "high")   E_ICON="⚡" ;;
-        "medium") E_ICON="🔋" ;;
-        "low")    E_ICON="🪫" ;;
+        "high")   E_ICON="#[fg=#a6e3a1]⚡#[default]" ;; # Green
+        "medium") E_ICON="#[fg=#89b4fa]🔋#[default]" ;; # Blue
+        "low")    E_ICON="#[fg=#f38ba8]🪫#[default]" ;; # Red
         *)        E_ICON="❓" ;;
     esac
     
+    # Attention Icon
     case "$ATTENTION" in
-        "hyperfocus")   A_ICON="🔥" ;;
-        "focused")      A_ICON="🎯" ;;
-        "distracted")   A_ICON="🌊" ;;
-        "fatigued")     A_ICON="😴" ;;
-        "overwhelmed")  A_ICON="😰" ;;
+        "hyperfocus")   A_ICON="#[fg=#cba6f7]🔥#[default]" ;; # Mauve
+        "focused")      A_ICON="#[fg=#a6e3a1]🧠#[default]" ;; # Green
+        "distracted")   A_ICON="#[fg=#f9e2af]💨#[default]" ;; # Yellow
+        "fatigued")     A_ICON="#[fg=#f38ba8]😴#[default]" ;; # Red
         *)              A_ICON="🧠" ;;
     esac
-    
-    # Add session time if > 30 min
-    if [ "$SESSION_MIN" -ge 90 ]; then
-        TIME_ICON="⏰"  # Warning: long session
-    elif [ "$SESSION_MIN" -ge 30 ]; then
-        TIME_ICON="⏱️"  # Good session
+
+    # Flow State
+    if [ "$FLOW" = "true" ]; then
+        F_ICON="#[fg=#89dceb]🌊#[default] " # Sky
     else
-        TIME_ICON=""
+        F_ICON=""
     fi
+
+    # Cognitive Load (1-100%)
+    LOAD_PCT=$(echo "$LOAD * 100" | bc 2>/dev/null | cut -d. -f1)
+    if [ -z "$LOAD_PCT" ]; then LOAD_PCT="--"; fi
     
-    echo "${E_ICON}${A_ICON}${TIME_ICON}"
+    echo "${F_ICON}${E_ICON} ${A_ICON} ${LOAD_PCT}%"
 else
-    # Text-based format
-    echo "[${ENERGY:0:1}/${ATTENTION:0:1}]"
+    echo "[${ENERGY}/${ATTENTION}]"
 fi

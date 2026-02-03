@@ -63,6 +63,35 @@ async def health_check(request):
             "service": "Exa MCP Server"
         })
 
+# Add /info endpoint for service discovery (ADR-208)
+@mcp.custom_route("/info", methods=["GET"])
+async def service_info(request):
+    """Service discovery endpoint - returns connection details for auto-config"""
+    from starlette.responses import JSONResponse
+    port = int(os.getenv("MCP_SERVER_PORT", 3008))
+    
+    return JSONResponse({
+        "name": "exa",
+        "version": "1.0.0",
+        "mcp": {
+            "protocol": "sse",
+            "connection": {
+                "type": "sse",
+                "url": f"http://localhost:{port}/sse"
+            },
+            "env": {
+                "EXA_API_KEY": "${EXA_API_KEY:-}"
+            }
+        },
+        "health": "/health",
+        "description": "Neural web search - ONLY when Context7 lacks information",
+        "metadata": {
+            "role": "research",
+            "priority": "low",
+            "usage_pattern": "Fallback only when Context7 lacks required information"
+        }
+    })
+
 @mcp.tool()
 def search_web(
     query: str,

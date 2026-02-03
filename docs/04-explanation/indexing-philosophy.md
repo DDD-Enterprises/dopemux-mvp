@@ -1,3 +1,11 @@
+---
+id: indexing-philosophy
+title: Indexing Philosophy
+type: explanation
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # The Truth About Autonomous Indexing
 
 Let me be completely honest about what works and what doesn't:

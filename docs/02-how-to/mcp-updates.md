@@ -1,3 +1,11 @@
+---
+id: mcp-updates
+title: Mcp Updates
+type: how-to
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # MCP Server Update Tools
 
 Automated tools for checking and updating MCP servers in the dopemux project.

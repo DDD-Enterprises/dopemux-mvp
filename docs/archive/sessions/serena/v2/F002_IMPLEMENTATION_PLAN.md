@@ -1,3 +1,11 @@
+---
+id: F002_IMPLEMENTATION_PLAN
+title: F002_Implementation_Plan
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # F002 Multi-Session Support - Implementation Plan
 
 **Date**: 2025-10-18

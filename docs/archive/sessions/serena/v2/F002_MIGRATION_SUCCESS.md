@@ -1,3 +1,11 @@
+---
+id: F002_MIGRATION_SUCCESS
+title: F002_Migration_Success
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # F002 Migration - Successfully Applied! ✅
 
 **Date**: 2025-10-18

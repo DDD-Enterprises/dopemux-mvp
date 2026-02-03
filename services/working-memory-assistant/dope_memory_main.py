@@ -18,9 +18,10 @@ import json
 import logging
 import os
 import sys
+import uuid
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
 
@@ -38,6 +39,8 @@ from pydantic import BaseModel, Field
 from chronicle.store import ChronicleStore
 from promotion.redactor import Redactor
 from promotion.promotion import PromotionEngine
+from reflection.reflection import ReflectionGenerator
+from trajectory.manager import TrajectoryManager
 
 # Logging setup
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
@@ -396,6 +399,194 @@ class DopeMemoryMCPServer:
             cursor=cursor,
         )
 
+    # ─────────────────────────────────────────────────────────────────
+    # Phase 2: Reflection + Trajectory
+    # ─────────────────────────────────────────────────────────────────
+
+    def memory_generate_reflection(
+        self,
+        workspace_id: str,
+        instance_id: str,
+        session_id: Optional[str] = None,
+        window_hours: int = 2,
+    ) -> ToolResponse:
+        """Generate a reflection card from recent work.
+        
+        Uses ReflectionGenerator for deterministic reflection with:
+        - Top-3 decisions
+        - Top-3 blockers
+        - Progress summary
+        - Next steps
+        """
+        try:
+            store = self._get_store(workspace_id)
+            now_utc = datetime.now(timezone.utc)
+            window_start = (now_utc - timedelta(hours=window_hours)).isoformat()
+            window_end = now_utc.isoformat()
+            
+            # Generate reflection using ReflectionGenerator
+            generator = ReflectionGenerator(store)
+            reflection = generator.generate_reflection(
+                workspace_id=workspace_id,
+                instance_id=instance_id,
+                session_id=session_id,
+                window_start=window_start,
+                window_end=window_end,
+            )
+            
+            # If no data, return early
+            if reflection["reflection_id"] is None:
+                return ToolResponse(
+                    success=True,
+                    data={
+                        "reflection_id": None,
+                        "trajectory": reflection["trajectory_summary"],
+                        "top_decisions": [],
+                        "top_blockers": [],
+                        "progress": {},
+                        "next_suggested": [],
+                    },
+                )
+            
+            # Store reflection card
+            store.insert_reflection_card(reflection)
+            
+            # Update trajectory state using TrajectoryManager
+            trajectory_mgr = TrajectoryManager(store)
+            # Get most recent entry to update trajectory
+            recent_entries = store.search_work_log(
+                workspace_id=workspace_id,
+                instance_id=instance_id,
+                session_id=session_id,
+                limit=1,
+            )
+            if recent_entries:
+                trajectory_mgr.update_trajectory(
+                    workspace_id=workspace_id,
+                    instance_id=instance_id,
+                    entry=recent_entries[0],
+                )
+            
+            # Format response to match existing API contract
+            # Convert progress_summary format
+            progress = reflection["progress_summary"]
+            progress_formatted = {
+                "total_entries": progress["total_entries"],
+                "categories": progress["by_type"],
+                "active_session": session_id or "multi",
+            }
+            
+            # Convert suggested_next format (strings -> dicts with type/entry_id)
+            next_suggested = []
+            for suggestion in reflection["suggested_next"]:
+                # Parse suggestion format: "Resolve: ...", "Implement: ...", "Complete: ...", "Continue: ..."
+                if suggestion.startswith("Resolve:"):
+                    next_suggested.append({
+                        "type": "resolve_blocker",
+                        "summary": suggestion,
+                        "entry_id": reflection["top_blockers"][0]["id"] if reflection["top_blockers"] else "",
+                    })
+                elif suggestion.startswith("Implement:"):
+                    next_suggested.append({
+                        "type": "implement_decision",
+                        "summary": suggestion,
+                        "entry_id": reflection["top_decisions"][0]["id"] if reflection["top_decisions"] else "",
+                    })
+                elif suggestion.startswith("Complete:"):
+                    next_suggested.append({
+                        "type": "complete_task",
+                        "summary": suggestion,
+                        "entry_id": reflection["source_entry_ids"][0] if reflection["source_entry_ids"] else "",
+                    })
+                elif suggestion.startswith("Continue:"):
+                    next_suggested.append({
+                        "type": "continue",
+                        "summary": suggestion,
+                        "entry_id": reflection["source_entry_ids"][0] if reflection["source_entry_ids"] else "",
+                    })
+            
+            return ToolResponse(
+                success=True,
+                data={
+                    "reflection_id": reflection["reflection_id"],
+                    "trajectory": reflection["trajectory_summary"],
+                    "top_decisions": reflection["top_decisions"],
+                    "top_blockers": reflection["top_blockers"],
+                    "progress": progress_formatted,
+                    "next_suggested": next_suggested,
+                },
+            )
+        except Exception as e:
+            logger.error(f"memory_generate_reflection error: {e}")
+            return ToolResponse(success=False, data={}, error=str(e))
+
+    def memory_reflections(
+        self,
+        workspace_id: str,
+        instance_id: str,
+        session_id: Optional[str] = None,
+        limit: int = 3,
+    ) -> ToolResponse:
+        """Fetch recent reflection cards using ChronicleStore."""
+        try:
+            store = self._get_store(workspace_id)
+            reflections = store.get_reflection_cards(
+                workspace_id=workspace_id,
+                instance_id=instance_id,
+                session_id=session_id,
+                limit=limit,
+            )
+            
+            return ToolResponse(
+                success=True,
+                data={"reflections": reflections, "count": len(reflections)},
+            )
+        except Exception as e:
+            logger.error(f"memory_reflections error: {e}")
+            return ToolResponse(success=False, data={}, error=str(e))
+
+    def memory_trajectory(
+        self,
+        workspace_id: str,
+        instance_id: str,
+    ) -> ToolResponse:
+        """Get current trajectory state using TrajectoryManager."""
+        try:
+            store = self._get_store(workspace_id)
+            trajectory_mgr = TrajectoryManager(store)
+            
+            trajectory = trajectory_mgr.get_trajectory(workspace_id, instance_id)
+            
+            if not trajectory:
+                return ToolResponse(
+                    success=True,
+                    data={
+                        "current_stream": "idle",
+                        "current_goal": {},
+                        "last_steps": [],
+                        "boost_factor": 1.0,
+                    },
+                )
+            
+            # Calculate time-based boost factor (1.0-2.0 range, decays over 24 hours)
+            updated_at = datetime.fromisoformat(trajectory["updated_at_utc"])
+            now_utc = datetime.now(timezone.utc)
+            hours_since = (now_utc - updated_at).total_seconds() / 3600
+            boost_factor = max(1.0, min(2.0, 2.0 - (hours_since / 24)))
+            
+            return ToolResponse(
+                success=True,
+                data={
+                    "current_stream": trajectory.get("current_stream", "idle"),
+                    "current_goal": trajectory.get("current_goal", {}),
+                    "last_steps": trajectory.get("last_steps", []),
+                    "boost_factor": round(boost_factor, 2),
+                },
+            )
+        except Exception as e:
+            logger.error(f"memory_trajectory error: {e}")
+            return ToolResponse(success=False, data={}, error=str(e))
+
 
 # Global MCP server instance
 mcp_server: Optional[DopeMemoryMCPServer] = None
@@ -480,6 +671,31 @@ class MemoryReplaySessionRequest(BaseModel):
     session_id: str
     top_k: int = Field(default=3, ge=1, le=20)
     cursor: Optional[str] = None
+
+
+class MemoryGenerateReflectionRequest(BaseModel):
+    """Request for memory_generate_reflection tool."""
+
+    workspace_id: str = DEFAULT_WORKSPACE_ID
+    instance_id: str = DEFAULT_INSTANCE_ID
+    session_id: Optional[str] = None
+    window_hours: int = Field(default=2, ge=1, le=24)
+
+
+class MemoryReflectionsRequest(BaseModel):
+    """Request for memory_reflections tool."""
+
+    workspace_id: str = DEFAULT_WORKSPACE_ID
+    instance_id: str = DEFAULT_INSTANCE_ID
+    session_id: Optional[str] = None
+    limit: int = Field(default=3, ge=1, le=10)
+
+
+class MemoryTrajectoryRequest(BaseModel):
+    """Request for memory_trajectory tool."""
+
+    workspace_id: str = DEFAULT_WORKSPACE_ID
+    instance_id: str = DEFAULT_INSTANCE_ID
 
 
 # EventBus consumer (optional, started if REDIS_URL is set)
@@ -811,6 +1027,58 @@ async def memory_replay_session(request: MemoryReplaySessionRequest):
         session_id=request.session_id,
         top_k=request.top_k,
         cursor=request.cursor,
+    )
+
+    if not result.success:
+        raise HTTPException(status_code=400, detail=result.error)
+    return result.data
+
+
+@app.post("/tools/memory_generate_reflection")
+async def memory_generate_reflection(request: MemoryGenerateReflectionRequest):
+    """Generate a reflection card from recent work."""
+    if not mcp_server:
+        raise HTTPException(status_code=503, detail="MCP server not initialized")
+
+    result = mcp_server.memory_generate_reflection(
+        workspace_id=request.workspace_id,
+        instance_id=request.instance_id,
+        session_id=request.session_id,
+        window_hours=request.window_hours,
+    )
+
+    if not result.success:
+        raise HTTPException(status_code=400, detail=result.error)
+    return result.data
+
+
+@app.post("/tools/memory_reflections")
+async def memory_reflections(request: MemoryReflectionsRequest):
+    """Fetch recent reflection cards."""
+    if not mcp_server:
+        raise HTTPException(status_code=503, detail="MCP server not initialized")
+
+    result = mcp_server.memory_reflections(
+        workspace_id=request.workspace_id,
+        instance_id=request.instance_id,
+        session_id=request.session_id,
+        limit=request.limit,
+    )
+
+    if not result.success:
+        raise HTTPException(status_code=400, detail=result.error)
+    return result.data
+
+
+@app.post("/tools/memory_trajectory")
+async def memory_trajectory(request: MemoryTrajectoryRequest):
+    """Get current trajectory state."""
+    if not mcp_server:
+        raise HTTPException(status_code=503, detail="MCP server not initialized")
+
+    result = mcp_server.memory_trajectory(
+        workspace_id=request.workspace_id,
+        instance_id=request.instance_id,
     )
 
     if not result.success:
