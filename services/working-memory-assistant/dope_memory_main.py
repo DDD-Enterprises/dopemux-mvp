@@ -131,7 +131,7 @@ class DopeMemoryMCPServer:
         top_k: int = 3,
         cursor: Optional[str] = None,
     ) -> ToolResponse:
-        """Search work log entries."""
+        """Search work log entries with trajectory boost applied to ranking."""
         try:
             top_k = min(max(1, top_k), 10)
             store = self._get_store(workspace_id)
@@ -154,6 +154,10 @@ class DopeMemoryMCPServer:
             if cursor:
                 decoded_cursor = self._decode_cursor(cursor, scope_hash)
 
+            # Fetch extra rows to account for boost re-ranking
+            # Fetch 2x top_k to have candidates for boost re-ranking
+            fetch_limit = min(top_k * 2, 20)
+            
             rows = store.search_work_log(
                 workspace_id=workspace_id,
                 instance_id=instance_id,
@@ -164,12 +168,35 @@ class DopeMemoryMCPServer:
                 workflow_phase=f.get("workflow_phase"),
                 tags_any=f.get("tags_any"),
                 time_range=f.get("time_range"),
-                limit=top_k + 1,
+                limit=fetch_limit + 1,
                 cursor=decoded_cursor,
             )
 
-            has_more = len(rows) > top_k
-            items = rows[:top_k]
+            # Apply trajectory boost to ranking
+            trajectory_mgr = TrajectoryManager(store)
+            trajectory = trajectory_mgr.get_trajectory(workspace_id, instance_id)
+            
+            # Calculate boosted scores
+            boosted_rows = []
+            for row in rows:
+                base_score = row["importance_score"]
+                boost = trajectory_mgr.get_boost_factor(row, trajectory)
+                boosted_score = base_score + boost
+                
+                boosted_rows.append({
+                    **row,
+                    "_boosted_score": boosted_score,
+                    "_boost_applied": boost,
+                })
+            
+            # Re-sort by boosted score (desc), then ts_utc (desc), then id (asc)
+            boosted_rows.sort(
+                key=lambda r: (-r["_boosted_score"], -datetime.fromisoformat(r["ts_utc"]).timestamp(), r["id"])
+            )
+            
+            # Apply Top-K after boost
+            has_more = len(boosted_rows) > top_k
+            items = boosted_rows[:top_k]
 
             next_token = None
             if has_more and items:
@@ -190,13 +217,15 @@ class DopeMemoryMCPServer:
                     "outcome": row["outcome"],
                     "importance_score": row["importance_score"],
                     "tags": json.loads(row.get("tags_json", "[]")),
+                    # Include boost metadata for debugging (optional)
+                    "_boost_applied": row.get("_boost_applied", 0.0),
                 })
 
             return ToolResponse(
                 success=True,
                 data={
                     "items": response_items,
-                    "more_count": max(0, len(rows) - top_k - 1) if has_more else 0,
+                    "more_count": max(0, len(boosted_rows) - top_k - 1) if has_more else 0,
                     "next_token": next_token,
                 },
             )
@@ -476,34 +505,9 @@ class DopeMemoryMCPServer:
                 "active_session": session_id or "multi",
             }
             
-            # Convert suggested_next format (strings -> dicts with type/entry_id)
-            next_suggested = []
-            for suggestion in reflection["suggested_next"]:
-                # Parse suggestion format: "Resolve: ...", "Implement: ...", "Complete: ...", "Continue: ..."
-                if suggestion.startswith("Resolve:"):
-                    next_suggested.append({
-                        "type": "resolve_blocker",
-                        "summary": suggestion,
-                        "entry_id": reflection["top_blockers"][0]["id"] if reflection["top_blockers"] else "",
-                    })
-                elif suggestion.startswith("Implement:"):
-                    next_suggested.append({
-                        "type": "implement_decision",
-                        "summary": suggestion,
-                        "entry_id": reflection["top_decisions"][0]["id"] if reflection["top_decisions"] else "",
-                    })
-                elif suggestion.startswith("Complete:"):
-                    next_suggested.append({
-                        "type": "complete_task",
-                        "summary": suggestion,
-                        "entry_id": reflection["source_entry_ids"][0] if reflection["source_entry_ids"] else "",
-                    })
-                elif suggestion.startswith("Continue:"):
-                    next_suggested.append({
-                        "type": "continue",
-                        "summary": suggestion,
-                        "entry_id": reflection["source_entry_ids"][0] if reflection["source_entry_ids"] else "",
-                    })
+            # suggested_next is already in dict format from ReflectionGenerator
+            # Just pass it through directly
+            next_suggested = reflection["suggested_next"]
             
             return ToolResponse(
                 success=True,

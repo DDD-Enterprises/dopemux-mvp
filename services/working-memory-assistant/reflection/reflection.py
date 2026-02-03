@@ -10,6 +10,7 @@ Per docs/spec/dope-memory/v1/08_phased_roadmap.md Phase 2:
 No LLM calls - purely rule-based.
 """
 
+import json
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
@@ -49,6 +50,11 @@ class ReflectionGenerator:
             window_start = (now_utc - timedelta(hours=2)).isoformat()
         if not window_end:
             window_end = now_utc.isoformat()
+
+        # Idempotency check: if recent reflection exists with same window_end (within 5 min), return it
+        existing = self._check_existing_reflection(workspace_id, instance_id, window_end, session_id)
+        if existing:
+            return existing
 
         # Fetch entries in window
         entries = self.store.get_work_log_window(
@@ -100,16 +106,119 @@ class ReflectionGenerator:
             "source_entry_ids": source_entry_ids,
         }
 
+    def _check_existing_reflection(
+        self,
+        workspace_id: str,
+        instance_id: str,
+        window_end: str,
+        session_id: Optional[str] = None,
+    ) -> Optional[dict[str, Any]]:
+        """Check if a reflection already exists for this window_end (within 5 min).
+        
+        Returns existing reflection dict or None.
+        """
+        conn = self.store.connect()
+        
+        # Parse window_end timestamp - handle both string and datetime
+        if isinstance(window_end, datetime):
+            window_end_dt = window_end
+        elif isinstance(window_end, str):
+            # Remove timezone suffix if present for parsing
+            window_end_clean = window_end.replace('+00:00', '').replace('Z', '')
+            try:
+                window_end_dt = datetime.fromisoformat(window_end_clean)
+            except ValueError:
+                # If parsing fails, just return None (no idempotency check)
+                return None
+        else:
+            return None
+        
+        # Ensure timezone aware
+        if window_end_dt.tzinfo is None:
+            window_end_dt = window_end_dt.replace(tzinfo=timezone.utc)
+        
+        window_end_min = (window_end_dt - timedelta(minutes=5)).isoformat()
+        window_end_max = (window_end_dt + timedelta(minutes=5)).isoformat()
+        
+        if session_id:
+            row = conn.execute(
+                """
+                SELECT id, window_start_utc, window_end_utc, trajectory,
+                       top_decisions_json, top_blockers_json, progress_json, next_suggested_json
+                FROM reflection_cards
+                WHERE workspace_id = ? AND instance_id = ? AND session_id = ?
+                  AND window_end_utc >= ? AND window_end_utc <= ?
+                ORDER BY ts_utc DESC
+                LIMIT 1
+                """,
+                (workspace_id, instance_id, session_id, window_end_min, window_end_max),
+            ).fetchone()
+        else:
+            row = conn.execute(
+                """
+                SELECT id, window_start_utc, window_end_utc, trajectory,
+                       top_decisions_json, top_blockers_json, progress_json, next_suggested_json
+                FROM reflection_cards
+                WHERE workspace_id = ? AND instance_id = ?
+                  AND window_end_utc >= ? AND window_end_utc <= ?
+                ORDER BY ts_utc DESC
+                LIMIT 1
+                """,
+                (workspace_id, instance_id, window_end_min, window_end_max),
+            ).fetchone()
+        
+        if not row:
+            return None
+        
+        import json
+        return {
+            "reflection_id": row["id"],
+            "workspace_id": workspace_id,
+            "instance_id": instance_id,
+            "session_id": session_id,
+            "window_start": row["window_start_utc"],
+            "window_end": row["window_end_utc"],
+            "trajectory_summary": row["trajectory"],
+            "top_decisions": json.loads(row["top_decisions_json"]),
+            "top_blockers": json.loads(row["top_blockers_json"]),
+            "progress_summary": json.loads(row["progress_json"]),
+            "suggested_next": json.loads(row["next_suggested_json"]),
+            "source_entry_ids": [],  # Not stored separately, would need to reconstruct
+        }
+
     def select_top_decisions(self, entries: list[dict]) -> list[dict]:
         """Select top 3 decisions, deterministic sort.
 
         Sort by: (importance_score DESC, ts_utc DESC, id ASC)
         """
         decisions = [e for e in entries if e["entry_type"] == "decision"]
-        # Sort: importance_score descending (higher first), ts_utc descending (recent first), id ascending
+        # Sort: importance_score DESC (negate), ts_utc DESC (negate), id ASC (normal)
         decisions.sort(
-            key=lambda x: (x["importance_score"], x["ts_utc"], -ord(x["id"][0]) if x["id"] else 0),
-            reverse=True,
+            key=lambda x: (-x["importance_score"], x["ts_utc"], x["id"]),
+            reverse=False,  # Don't reverse because we want DESC for first two, ASC for last
+        )
+        # Actually, that's still wrong. Let me think...
+        # For DESC on ts_utc, we want LATER timestamps first
+        # When we negate a timestamp string, that doesn't work
+        # Solution: use tuple of (-importance, -timestamp_as_number, id) OR just use reverse on ts
+        decisions.sort(
+            key=lambda x: (
+                -x["importance_score"],  # Higher scores first
+                x["ts_utc"],             # This needs to be reversed for DESC
+                x["id"]                  # ASC
+            )
+        )
+        # Wait, if we don't use reverse=True, ts_utc will sort ascending (older first)
+        # We want DESC (newer first), so we need to negate or reverse
+        # Let's use proper multi-key sorting:
+        decisions.sort(
+            key=lambda x: x["id"]  # Third sort: id ASC
+        )
+        decisions.sort(
+            key=lambda x: x["ts_utc"], reverse=True  # Second sort: ts_utc DESC
+        )
+        decisions.sort(
+            key=lambda x: x["importance_score"], reverse=True  # First sort: importance DESC
         )
         return [{"id": d["id"], "summary": d["summary"]} for d in decisions[:3]]
 
@@ -119,9 +228,15 @@ class ReflectionGenerator:
         Sort by: (importance_score DESC, ts_utc DESC, id ASC)
         """
         blockers = [e for e in entries if e["entry_type"] in ("blocker", "error")]
+        # Stable multi-key sort: sort in reverse order of priority
         blockers.sort(
-            key=lambda x: (x["importance_score"], x["ts_utc"], -ord(x["id"][0]) if x["id"] else 0),
-            reverse=True,
+            key=lambda x: x["id"]  # Third sort: id ASC
+        )
+        blockers.sort(
+            key=lambda x: x["ts_utc"], reverse=True  # Second sort: ts_utc DESC
+        )
+        blockers.sort(
+            key=lambda x: x["importance_score"], reverse=True  # First sort: importance DESC
         )
         return [{"id": b["id"], "summary": b["summary"]} for b in blockers[:3]]
 
@@ -145,7 +260,7 @@ class ReflectionGenerator:
 
     def compute_suggested_next(
         self, entries: list[dict], top_blockers: list[dict]
-    ) -> list[str]:
+    ) -> list[dict]:
         """Compute suggested next steps (deterministic).
 
         Priority:
@@ -153,19 +268,32 @@ class ReflectionGenerator:
         2. Top decisions to implement
         3. Last incomplete tasks
         4. Last in_progress items
+        
+        Returns:
+            List of max 3 dicts with 'type' and 'summary' fields
         """
         suggestions = []
 
         # 1. Blockers
         if top_blockers:
-            suggestions.append(f"Resolve: {top_blockers[0]['summary'][:80]}")
+            suggestions.append({
+                "type": "resolve_blocker",
+                "summary": f"Resolve: {top_blockers[0]['summary'][:80]}",
+                "entry_id": top_blockers[0]["id"],
+            })
 
         # 2. Decisions to implement
         decisions = [e for e in entries if e["entry_type"] == "decision"]
         if decisions and len(suggestions) < 3:
-            # Sort by importance DESC (highest first)
+            # Sort by importance DESC, ts DESC, id ASC for determinism
+            decisions.sort(key=lambda x: x["id"])
+            decisions.sort(key=lambda x: x["ts_utc"], reverse=True)
             decisions.sort(key=lambda x: x["importance_score"], reverse=True)
-            suggestions.append(f"Implement: {decisions[0]['summary'][:80]}")
+            suggestions.append({
+                "type": "implement_decision",
+                "summary": f"Implement: {decisions[0]['summary'][:80]}",
+                "entry_id": decisions[0]["id"],
+            })
 
         # 3. Incomplete tasks (outcome != success)
         incomplete = [
@@ -175,12 +303,21 @@ class ReflectionGenerator:
             and e["outcome"] != "success"
         ]
         if incomplete and len(suggestions) < 3:
-            suggestions.append(f"Complete: {incomplete[0]['summary'][:80]}")
+            # Use first incomplete (already sorted by importance_score DESC, ts_utc DESC, id ASC from get_work_log_window)
+            suggestions.append({
+                "type": "complete_task",
+                "summary": f"Complete: {incomplete[0]['summary'][:80]}",
+                "entry_id": incomplete[0]["id"],
+            })
 
         # 4. In-progress items
         in_progress = [e for e in entries if e["outcome"] == "in_progress"]
         if in_progress and len(suggestions) < 3:
-            suggestions.append(f"Continue: {in_progress[0]['summary'][:80]}")
+            suggestions.append({
+                "type": "continue_work",
+                "summary": f"Continue: {in_progress[0]['summary'][:80]}",
+                "entry_id": in_progress[0]["id"],
+            })
 
         return suggestions[:3]  # Cap at 3
 
