@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import re
+import shlex
+import subprocess
 import time
 import warnings
 from dataclasses import dataclass
@@ -13,8 +15,9 @@ from ..config.manager import (
     ConfigManager,
     TmuxControllerConfig,
     TmuxPresetConfig,
+    TmuxPresetConfig,
 )
-from . import utils as tmux_utils
+from .common import PaneInfo, TmuxError
 
 try:  # pragma: no cover - optional dependency
     import libtmux  # type: ignore
@@ -22,17 +25,7 @@ except ImportError:  # pragma: no cover - handled gracefully
     libtmux = None  # type: ignore
 
 
-@dataclass
-class PaneInfo:
-    """Lightweight representation of a tmux pane."""
-
-    pane_id: str
-    title: str
-    command: str
-    window: str
-    session: str
-    path: str
-    active: bool
+# PaneInfo moved to .common
 
 
 @dataclass
@@ -142,24 +135,56 @@ class BaseTmuxBackend:
     def set_session_option(self, session: str, option: str, value: str) -> None:
         raise NotImplementedError
 
+    def set_global_option(self, option: str, value: str) -> None:
+        raise NotImplementedError
+
+
 
 class CliTmuxBackend(BaseTmuxBackend):
     """Backend using direct tmux CLI invocations."""
 
+    def _run_tmux(self, args: List[str], capture_output: bool = False) -> subprocess.CompletedProcess:
+        """Run a tmux command and return the completed process."""
+        proc = subprocess.run(
+            ["tmux", *args],
+            check=False,
+            text=True,
+            capture_output=capture_output,
+        )
+        if proc.returncode != 0:
+            stderr = proc.stderr.strip() if proc.stderr else ""
+            stdout = proc.stdout.strip() if proc.stdout else ""
+            message = stderr or stdout or "tmux command failed"
+            raise TmuxError(message)
+        return proc
+
     def list_panes(self) -> List[PaneInfo]:
-        panes = []
-        for pane in tmux_utils.list_panes():
-            panes.append(
-                PaneInfo(
-                    pane_id=pane.pane_id,
-                    title=pane.title,
-                    command=pane.command,
-                    window=pane.window,
-                    session=pane.session,
-                    path=pane.path,
-                    active=pane.active,
-                )
-            )
+        args: List[str] = [
+            "list-panes",
+            "-a",
+            "-F",
+            "#{pane_id}|#{pane_title}|#{pane_current_command}|#{window_name}|#{session_name}|#{pane_active}|#{pane_current_path}",
+        ]
+        proc = self._run_tmux(args, capture_output=True)
+        panes: List[PaneInfo] = []
+        for line in proc.stdout.strip().splitlines():
+             if not line:
+                 continue
+             parts = line.split("|", 6)
+             if len(parts) != 7:
+                 continue
+             pane_id, title, command, window, session, active, path = parts
+             panes.append(
+                 PaneInfo(
+                     pane_id=pane_id.strip(),
+                     title=title.strip(),
+                     command=command.strip(),
+                     window=window.strip(),
+                     session=session.strip(),
+                     path=path.strip(),
+                     active=active.strip() == "1",
+                 )
+             )
         return panes
 
     def split_window(
@@ -174,61 +199,145 @@ class CliTmuxBackend(BaseTmuxBackend):
         session: Optional[str],
         percent: Optional[int] = None,
     ) -> str:
-        return tmux_utils.split_window(
-            target,
-            command,
-            vertical=vertical,
-            start_directory=start_directory,
-            attach=focus,
-            environment=environment,
-            session=session,
-            percent=percent,
-        )
+        split_flag = "-v" if vertical else "-h"
+        args: List[str] = [
+            "split-window",
+            split_flag,
+            "-P",
+            "-F",
+            "#{pane_id}",
+        ]
+        if percent is not None:
+             args.extend(["-p", str(percent)])
+        if not focus:
+            args.append("-d")
+        if target:
+            # Logic from utils: handle sess:target
+            pane_target = target
+            if (
+                session
+                and ":" not in pane_target
+                and (not pane_target or pane_target[0] not in {"%", "@"})
+            ):
+                pane_target = f"{session}:{pane_target}"
+            args.extend(["-t", pane_target])
+        if start_directory:
+            args.extend(["-c", start_directory])
+
+        full_command = self._build_env_command(command, environment or {})
+        args.append(full_command)
+
+        proc = self._run_tmux(args, capture_output=True)
+        return proc.stdout.strip()
 
     def switch_client(self, target: str) -> None:
-        tmux_utils.switch_client(target)
+        subprocess.run(["tmux", "switch-client", "-t", target])
 
     def attach_session(self, target: str) -> None:
-        tmux_utils.attach_session(target)
+        subprocess.run(["tmux", "attach-session", "-t", target])
 
-        return tmux_utils.new_window(
-            session=session,
-            window_name=window_name,
-            command=command,
-            attach=attach,
-            start_directory=start_directory,
-            environment=environment,
-        )
+    def new_window(
+        self,
+        *,
+        session: str,
+        window_name: str,
+        command: str,
+        start_directory: Optional[str],
+        attach: bool,
+        environment: Dict[str, str],
+    ) -> str:
+        args: List[str] = [
+            "new-window",
+            "-P",
+            "-F",
+            "#{pane_id}",
+            "-n",
+            window_name,
+        ]
+        if not attach:
+            args.append("-d")
+        if session:
+            args.extend(["-t", f"{session}:"])
+        if start_directory:
+            args.extend(["-c", start_directory])
+
+        full_command = self._build_env_command(command, environment)
+        args.append(full_command)
+
+        proc = self._run_tmux(args, capture_output=True)
+        return proc.stdout.strip()
 
     def kill_window(self, session: str, window_name: str) -> None:
-        tmux_utils.kill_window(session, window_name)
+        target = f"{session}:{window_name}"
+        self._run_tmux(["kill-window", "-t", target])
 
     def session_exists(self, session: str) -> bool:
-        return tmux_utils.session_exists(session)
+        proc = subprocess.run(
+            ["tmux", "has-session", "-t", session],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        return proc.returncode == 0
 
     def create_session(self, session: str, start_directory: Optional[str] = None, window_name: Optional[str] = None) -> None:
-        tmux_utils.create_session(session, start_directory=start_directory, window_name=window_name)
+         args: List[str] = [
+            "new-session",
+            "-d",
+            "-s",
+            session,
+            "-n",
+            window_name or "main",
+        ]
+         if start_directory:
+            args.extend(["-c", start_directory])
+         
+         self._run_tmux(args, capture_output=True)
+         # Optional: turn off exit-empty
+         try:
+             self._run_tmux(["set-option", "-t", session, "exit-empty", "off"], capture_output=True)
+         except Exception:
+             pass
 
     def rename_window(self, session: str, window_id: str, new_name: str) -> None:
-        tmux_utils.rename_window(session, window_id, new_name)
+        target_window = window_id
+        if window_id.startswith("%"):
+             try:
+                 proc = self._run_tmux(["display-message", "-p", "-t", window_id, "#{window_index}"], capture_output=True)
+                 target_window = proc.stdout.strip() or "0"
+             except TmuxError:
+                 target_window = "0"
+        target = f"{session}:{target_window}"
+        self._run_tmux(["rename-window", "-t", target, new_name])
 
     def select_window(self, session: str, window_target: str) -> None:
-        tmux_utils.select_window(session, window_target)
+        target = f"{session}:{window_target}" if ":" not in window_target else window_target
+        self._run_tmux(["select-window", "-t", target])
 
     def rename_pane(self, pane_id: str, title: str) -> None:
-        tmux_utils.set_pane_title(pane_id, title)
+        self.set_pane_title(pane_id, title)
 
     def focus_pane(self, pane_id: str) -> None:
-        tmux_utils.focus_pane(pane_id)
+        self._run_tmux(["select-pane", "-t", pane_id])
 
     def capture_pane(self, pane_id: str, lines: Optional[int]) -> str:
-        return tmux_utils.capture_pane_output(pane_id, lines=lines)
+        args: List[str] = ["capture-pane", "-t", pane_id, "-p"]
+        if lines is not None:
+            args.extend(["-S", f"-{max(lines, 0)}"])
+        try:
+            proc = self._run_tmux(args, capture_output=True)
+            return proc.stdout
+        except TmuxError:
+            return ""
 
     def send_literal(self, pane_id: str, text: str, enter: bool) -> None:
-        tmux_utils.send_literal_text(pane_id, text, enter=enter)
+        if text:
+            self._run_tmux(["send-keys", "-t", pane_id, "-l", text])
+        if enter:
+            self._run_tmux(["send-keys", "-t", pane_id, "Enter"])
 
     def send_key(self, pane_id: str, key: str) -> None:
-        tmux_utils.send_key(pane_id, key)
+         self._run_tmux(["send-keys", "-t", pane_id, key])
 
     def get_pane(self, pane_id: str) -> Optional[PaneInfo]:
         return next(
@@ -237,34 +346,65 @@ class CliTmuxBackend(BaseTmuxBackend):
         )
 
     def kill_pane(self, pane_id: str) -> None:
-        tmux_utils.kill_pane(pane_id)
+         self._run_tmux(["kill-pane", "-t", pane_id])
 
     def set_pane_style(self, pane_id: str, style: str) -> None:
-        tmux_utils.set_pane_style(pane_id, style)
+         self._run_tmux(["select-pane", "-t", pane_id, "-P", style])
 
     def set_pane_border_style(self, pane_id: str, style: str) -> None:
-        tmux_utils.set_pane_border_style(pane_id, style)
+         if not style:
+             return
+         self._run_tmux(["select-pane", "-t", pane_id, "-P", f"border-style {style}"])
 
     def set_pane_title(self, pane_id: str, title: str) -> None:
-        tmux_utils.set_pane_title(pane_id, title)
+         self._run_tmux(["select-pane", "-t", pane_id, "-T", title])
 
     def set_layout(self, window: str, layout: str) -> None:
-        tmux_utils.set_layout(window, layout)
+         self._run_tmux(["select-layout", "-t", window, layout])
 
     def display_popup(self, command: str, width: str = "80%", height: str = "80%") -> None:
-        tmux_utils.display_popup(command, width=width, height=height)
+        self._run_tmux([
+            "display-popup",
+            "-E",
+            "-w",
+            width,
+            "-h",
+            height,
+            command,
+        ])
 
     def set_environment(self, session: str, key: str, value: str) -> None:
-        tmux_utils.set_environment(session, key, value)
+        self._run_tmux(["set-environment", "-t", session, key, value])
 
     def enable_pane_titles(self, session: str) -> None:
-        tmux_utils.enable_pane_titles(session)
+        self._run_tmux([
+            "set-option", "-t", session,
+            "pane-border-format",
+            "#[default]"
+            "#{?pane_active,#[bold],#[dim]}"
+            "#[bg=#{@dopemux_title_bg:-#1e1e2e}]"
+            "#[fg=#{@dopemux_title_fg:-#cdd6f4}] "
+            "#{pane_title} "
+            "#[default]"
+        ])
+        self._run_tmux(["set-option", "-t", session, "pane-border-status", "top"])
 
     def kill_session(self, session: str) -> None:
-        tmux_utils.kill_session(session)
+         self._run_tmux(["kill-session", "-t", session])
 
     def set_session_option(self, session: str, option: str, value: str) -> None:
-        tmux_utils.set_session_option(session, option, value)
+         self._run_tmux(["set-option", "-t", session, option, value])
+    
+    def set_global_option(self, option: str, value: str) -> None:
+         self._run_tmux(["set-option", "-g", option, value])
+
+    
+    def _build_env_command(self, command: str, env: Dict[str, str]) -> str:
+        """Return command prefixed with environment variables."""
+        if not env:
+            return command
+        assignments = " ".join(f"{key}={shlex.quote(value)}" for key, value in env.items())
+        return f"{assignments} {command}"
 
 
 class LibTmuxBackend(BaseTmuxBackend):  # pragma: no cover - depends on libtmux
@@ -481,6 +621,12 @@ class LibTmuxBackend(BaseTmuxBackend):  # pragma: no cover - depends on libtmux
              raise ValueError(f"Session not found: {session}")
         s.set_option(option, value)
 
+    def set_global_option(self, option: str, value: str) -> None:
+        # libtmux server.set_option sets global server options usually?
+        # Or cmd.
+        self.server.cmd("set-option", "-g", option, value)
+
+
     def _get_pane(self, pane_id: str):
         for session in self.server.sessions:
             for window in session.windows:
@@ -680,6 +826,11 @@ class TmuxController:
     def set_session_option(self, session: str, option: str, value: str) -> None:
         """Set a tmux session option."""
         self.backend.set_session_option(session, option, value)
+
+    def set_global_option(self, option: str, value: str) -> None:
+        """Set a global tmux option."""
+        self.backend.set_global_option(option, value)
+
 
     def new_window(
         self,

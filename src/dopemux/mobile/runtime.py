@@ -12,21 +12,10 @@ from pathlib import Path
 from typing import Iterable, List, Optional, Sequence, Tuple
 
 from ..config.manager import ConfigManager, MobileConfig
-from ..tmux.utils import (
-    TmuxError,
-    TmuxPane,
-    build_env_command,
-    display_popup,
-    kill_pane,
-    list_panes,
-    list_windows,
-    new_window,
-    send_interrupt,
-    set_global_option,
-    set_layout,
-    set_pane_title,
-    split_window,
-)
+from ..config.manager import ConfigManager, MobileConfig
+from ..tmux.common import PaneInfo, TmuxError
+from ..tmux.controller import TmuxController
+
 
 MOBILE_WINDOW_NAME = "mobile"
 
@@ -46,7 +35,11 @@ class MobileStatus:
     enabled: bool
     happy_ok: bool
     claude_ok: bool
-    sessions: List[TmuxPane]
+    enabled: bool
+    happy_ok: bool
+    claude_ok: bool
+    sessions: List[PaneInfo]
+    tmux_error: Optional[str]
     tmux_error: Optional[str]
 
 
@@ -91,15 +84,18 @@ def env_for_happy(config: MobileConfig) -> dict[str, str]:
     return env
 
 
-def list_claude_panes() -> List[TmuxPane]:
+def list_claude_panes(controller: Optional[TmuxController] = None) -> List[PaneInfo]:
     """Return panes that appear to host Claude sessions."""
+    
+    if controller is None:
+        controller = TmuxController()
 
     try:
-        panes = list_panes()
+        panes = controller.list_panes()
     except TmuxError:
         return []
 
-    claude_like: List[TmuxPane] = []
+    claude_like: List[PaneInfo] = []
     for pane in panes:
         haystack = " ".join(
             filter(
@@ -112,8 +108,8 @@ def list_claude_panes() -> List[TmuxPane]:
     return claude_like
 
 
-def _match_panes(panes: Sequence[TmuxPane], selectors: Sequence[str]) -> List[TmuxPane]:
-    selected: List[TmuxPane] = []
+def _match_panes(panes: Sequence[PaneInfo], selectors: Sequence[str]) -> List[PaneInfo]:
+    selected: List[PaneInfo] = []
     normalized = [selector.lower() for selector in selectors]
     for selector in normalized:
         for pane in panes:
@@ -134,10 +130,11 @@ def resolve_targets(
     explicit_panes: Sequence[str],
     mobile_config: MobileConfig,
     mapping_strategy: Optional[str] = None,
-) -> List[TmuxPane]:
+    controller: Optional[TmuxController] = None,
+) -> List[PaneInfo]:
     """Resolve requested panes to Claude pane metadata."""
 
-    panes = list_claude_panes()
+    panes = list_claude_panes(controller)
     if not panes:
         return []
 
@@ -172,15 +169,16 @@ def resolve_targets(
     return [panes[0]]
 
 
-def _existing_mobile_labels() -> List[str]:
+def _existing_mobile_labels(controller: TmuxController) -> List[str]:
     labels: List[str] = []
     try:
-        panes = list_panes()
+        panes = controller.list_panes()
     except TmuxError:
         return labels
 
     for pane in panes:
-        if pane.window == MOBILE_WINDOW_NAME and pane.command == "happy":
+        if pane.window == MOBILE_WINDOW_NAME and "happy" in pane.command:
+             # loose match for happy command
             if pane.title.startswith("mobile:"):
                 labels.append(pane.title.split(":", 1)[1])
             else:
@@ -188,34 +186,57 @@ def _existing_mobile_labels() -> List[str]:
     return labels
 
 
-def _label_for_pane(pane: TmuxPane) -> str:
+def _label_for_pane(pane: PaneInfo) -> str:
     base = pane.title or pane.window or pane.pane_id
     cleaned = base.replace("mobile:", "").strip() or pane.pane_id
     return cleaned
 
 
 def launch_happy_sessions(
-    targets: Sequence[TmuxPane],
+    targets: Sequence[PaneInfo],
     env: dict[str, str],
     mobile_config: MobileConfig,
     labels: Optional[Sequence[str]] = None,
+    controller: Optional[TmuxController] = None,
 ) -> LaunchOutcome:
     """Launch Happy instances for each target pane."""
+    
+    if controller is None:
+        controller = TmuxController()
 
     if not targets:
         return LaunchOutcome(started=[], skipped_existing=[])
 
-    existing_labels = set(label.lower() for label in _existing_mobile_labels())
+    existing_labels = set(label.lower() for label in _existing_mobile_labels(controller))
     started_labels: List[str] = []
     skipped_labels: List[str] = []
-    command = build_env_command("happy", env)
+    
+    # helper for env command building (now specialized here or via controller?)
+    # Controller doesn't expose build_env_command directly publicly, 
+    # but new_window/split_window accept env dict found in TmuxController.
+    # However, for display_popup we need a command string.
+    
+    # We can reconstruct helper or rely on controller options.
+    # TmuxController.display_popup takes a command string.
+    def build_cmd(cmd: str, environment: dict) -> str:
+        if not environment: return cmd
+        assigns = " ".join(f"{k}={shlex.quote(v)}" for k, v in environment.items())
+        return f"{assigns} {cmd}"
+
+    full_popup_cmd = build_cmd("happy", env)
 
     if mobile_config.popup_mode:
-        # Popup mode launches one session at a time
-        display_popup(command)
+        controller.display_popup(full_popup_cmd)
         return LaunchOutcome(started=["popup"], skipped_existing=[])
 
-    windows = list_windows()
+    # Check for window existence. TmuxController doesn't have list_windows directly returning names easily?
+    # Actually list_panes gives us windows.
+    try:
+        current_panes = controller.list_panes()
+        windows = {p.window for p in current_panes}
+    except TmuxError:
+        windows = set()
+        
     window_exists = MOBILE_WINDOW_NAME in windows
 
     for index, pane in enumerate(targets):
@@ -229,51 +250,96 @@ def launch_happy_sessions(
             continue
 
         if not window_exists and index == 0:
-            pane_id = new_window(MOBILE_WINDOW_NAME, command)
+            pane_id = controller.new_window(
+                session=pane.session, # Create in same session as target? Or active?
+                window_name=MOBILE_WINDOW_NAME,
+                command="happy",
+                environment=env,
+                attach=True
+            )
         else:
-            pane_id = split_window(MOBILE_WINDOW_NAME, command, vertical=index % 2 == 0)
-        set_pane_title(pane_id, f"mobile:{label}")
+            # Split window logic.
+            # We need to target the mobile window.
+            # Controller.open uses higher level logic.
+            # We can use backend directly or specific split.
+            # Let's use controller.open or backend split?
+            # Controller `new_window` creates a window.
+            # Controller `open` can split.
+            # But we want to split the *mobile window*.
+            # The mobile window might just have been created.
+            # If we just created it, we know the pane_id (returned by new_window).
+            # But subsequent iterations?
+            
+            # The original logic used `split_window(MOBILE_WINDOW_NAME, ...)` which targets window name.
+            # TmuxController backend split_window takes target.
+            
+            # Use backend directly for precise control if needed, 
+            # OR use `controller.backend.split_window`.
+            # Or `controller.config` based...
+            
+            # Let's use controller.backend for now to match logic closely.
+            pane_id = controller.backend.split_window(
+                target=MOBILE_WINDOW_NAME,
+                command="happy",
+                vertical=index % 2 == 0,
+                start_directory=None,
+                focus=True,
+                environment=env,
+                session=None # Target string handles it
+            )
+
+        controller.set_pane_title(pane_id, f"mobile:{label}")
         started_labels.append(label)
         window_exists = True
 
     if started_labels:
-        set_layout(MOBILE_WINDOW_NAME, "tiled")
+        controller.set_layout(MOBILE_WINDOW_NAME, "tiled")
 
     return LaunchOutcome(started=started_labels, skipped_existing=skipped_labels)
 
 
-def list_mobile_panes() -> List[TmuxPane]:
+def list_mobile_panes(controller: Optional[TmuxController] = None) -> List[PaneInfo]:
+    if controller is None:
+        controller = TmuxController()
     try:
-        panes = list_panes()
+        panes = controller.list_panes()
     except TmuxError:
         return []
-    return [pane for pane in panes if pane.window == MOBILE_WINDOW_NAME and pane.command == "happy"]
+    return [pane for pane in panes if pane.window == MOBILE_WINDOW_NAME and "happy" in pane.command]
 
 
-def detach_mobile_sessions(selected_labels: Optional[Sequence[str]] = None) -> List[str]:
+def detach_mobile_sessions(
+    selected_labels: Optional[Sequence[str]] = None,
+    controller: Optional[TmuxController] = None,
+) -> List[str]:
     """Detach Happy processes running in the mobile window."""
+    
+    if controller is None:
+        controller = TmuxController()
 
-    panes = list_mobile_panes()
+    panes = list_mobile_panes(controller)
     if not panes:
         return []
 
-    targets = panes
+    targets_to_kill = panes
     if selected_labels:
         normalized = {label.lower() for label in selected_labels}
-        targets = [
+        targets_to_kill = [
             pane
             for pane in panes
             if pane.title.lower().startswith("mobile:")
             and pane.title.split(":", 1)[1].lower() in normalized
         ]
-        if not targets:
+        if not targets_to_kill:
             return []
 
     detached: List[str] = []
-    for pane in targets:
-        send_interrupt(pane.pane_id)
+    for pane in targets_to_kill:
+        # send_interrupt replacement
+        controller.send_keys(pane.pane_id, "C-c", enter=False)
         time.sleep(0.1)
-        kill_pane(pane.pane_id)
+        controller.close_pane(pane.pane_id)
+        
         if pane.title.startswith("mobile:"):
             detached.append(pane.title.split(":", 1)[1])
         else:
@@ -318,7 +384,7 @@ def notify_mobile_event(config_manager: ConfigManager, message: str) -> bool:
     return result.returncode == 0
 
 
-def get_mobile_status(config_manager: ConfigManager) -> MobileStatus:
+def get_mobile_status(config_manager: ConfigManager, controller: Optional[TmuxController] = None) -> MobileStatus:
     """Collect mobile CLI health and session information."""
 
     mobile_cfg = config_manager.get_mobile_config()
@@ -326,7 +392,7 @@ def get_mobile_status(config_manager: ConfigManager) -> MobileStatus:
     claude_ok = check_cli_health("claude")
 
     try:
-        sessions = list_mobile_panes()
+        sessions = list_mobile_panes(controller)
         tmux_error: Optional[str] = None
     except TmuxError as exc:
         sessions = []
@@ -367,13 +433,26 @@ def format_mobile_indicator(status: MobileStatus) -> str:
     return colored("📱 idle", "#89b4fa")
 
 
-def update_tmux_mobile_indicator(config_manager: ConfigManager) -> None:
+def update_tmux_mobile_indicator(config_manager: ConfigManager, controller: Optional[TmuxController] = None) -> None:
     """Refresh the tmux statusline indicator for mobile readiness."""
+    
+    if controller is None:
+        controller = TmuxController(config_manager=config_manager)
 
     try:
-        status = get_mobile_status(config_manager)
+        status = get_mobile_status(config_manager, controller)
         indicator = format_mobile_indicator(status)
-        set_global_option("@dopemux_mobile_indicator", indicator)
+        controller.set_session_option(status.sessions[0].session if status.sessions else controller.get_active_session_name() or "", "@dopemux_mobile_indicator", indicator)
+        # set_session_option might fail if no session? 
+        # Actually mobile indicator is often global or per session. 
+        # Utils set_global_option was used.
+        # Controller doesn't expose set_global_option (set -g).
+        # We should use controller backend call if needed or just set on current session.
+        # Let's try to set it globally via backend command if possible or just rely on session.
+        # The original code used set_global_option("@dopemux_mobile_indicator", indicator).
+        # If I want global, I need to add it or use backend.
+        controller.set_global_option("@dopemux_mobile_indicator", indicator)
+        
         _persist_mobile_status(config_manager, status)
     except Exception as e:
         # tmux might not be available; ignore silently
