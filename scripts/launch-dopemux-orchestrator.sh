@@ -19,7 +19,7 @@
 
 set -e
 
-SESSION_NAME="dopemux-orchestrator"
+SESSION_NAME="dopemux-session-manager"
 WORKSPACE="/Users/hue/code/dopemux-mvp"
 
 # Colors for output

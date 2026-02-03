@@ -1,5 +1,5 @@
 [project]
-name = "dopemux-orchestrator"
+name = "dopemux-session-manager"
 version = "0.1.0"
 description = "ADHD-optimized multi-AI orchestration system for Dopemux"
 requires-python = ">=3.11"

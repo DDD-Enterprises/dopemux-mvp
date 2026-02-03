@@ -1,11 +1,14 @@
 ---
 trigger: always_on
 id: mem4sprint.schema_and_templates
-title: Mem4Sprint.Schema_And_Templates
-type: system-doc
+title: Mem4Sprint Schema and Template Patterns
+type: reference
 owner: '@hu3mann'
+date: '2026-02-02'
+author: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+prelude: "Defines entity shapes and validation rules for ConPort sprint entities including goals, subtasks, artifacts, and their allowed relationships."
 ---
 # --- mem4sprint Meta Schema and Starters (v1.0.0) ---
 

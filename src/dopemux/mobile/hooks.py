@@ -40,6 +40,6 @@ def mobile_task_notification(
     except Exception as e:
         notify_mobile_event(config_manager, failure_template)
         raise
-        logger.error(f"Error: {e}")
+
     else:
         notify_mobile_event(config_manager, success_template)
