@@ -1,3 +1,11 @@
+---
+id: CONPORT_LOCAL_GUIDE
+title: Conport_Local_Guide
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # ConPort Local Service Guide
 
 ## Quick Reference for ADHD Session Memory
