@@ -1,3 +1,11 @@
+---
+id: DESKTOP_COMMANDER_VALIDATION
+title: Desktop_Commander_Validation
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Desktop-Commander MCP - Token Limit Validation (No Fix Needed)
 
 **Date**: 2025-10-20
