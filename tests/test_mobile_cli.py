@@ -3,9 +3,11 @@ from types import SimpleNamespace
 
 from dopemux.cli import cli
 from dopemux.mobile.cli import mobile
-from dopemux.tmux.utils import TmuxPane
+from dopemux.tmux.common import PaneInfo
 from dopemux.mobile.runtime import MobileStatus
 from dopemux.config.manager import MobileConfig
+from dopemux.tmux.controller import TmuxController
+from unittest.mock import MagicMock
 
 
 class DummyConfigManager:
@@ -27,7 +29,7 @@ def test_mobile_status_lists_sessions(monkeypatch):
         happy_ok=True,
         claude_ok=True,
         sessions=[
-            TmuxPane(
+            PaneInfo(
                 pane_id="%1",
                 title="mobile:reviewer",
                 command="happy",
@@ -41,9 +43,15 @@ def test_mobile_status_lists_sessions(monkeypatch):
     )
 
     monkeypatch.setattr("dopemux.mobile.cli._get_config_manager", lambda ctx: dummy_cm)
-    monkeypatch.setattr("dopemux.mobile.cli.get_mobile_status", lambda cm: snapshot)
-    monkeypatch.setattr("dopemux.mobile.cli.update_tmux_mobile_indicator", lambda cm: None)
-
+    monkeypatch.setattr("dopemux.mobile.cli.get_mobile_status", lambda cm, ctrl=None: snapshot)
+    monkeypatch.setattr("dopemux.mobile.cli.update_tmux_mobile_indicator", lambda cm, ctrl=None: None)
+    controller = MagicMock(spec=TmuxController)
+    controller.list_panes.return_value = [] # existing labels empty
+    controller.backend = MagicMock()
+    
+    # Mock window creation sequence
+    monkeypatch.setattr("dopemux.mobile.cli._get_controller", lambda ctx: controller)
+    
     result = _runner().invoke(mobile, ["status"])
 
     assert result.exit_code == 0
@@ -62,8 +70,9 @@ def test_mobile_status_json_monkeypatch(monkeypatch):
     )
 
     monkeypatch.setattr("dopemux.mobile.cli._get_config_manager", lambda ctx: dummy_cm)
-    monkeypatch.setattr("dopemux.mobile.cli.get_mobile_status", lambda cm: snapshot)
-    monkeypatch.setattr("dopemux.mobile.cli.update_tmux_mobile_indicator", lambda cm: None)
+    monkeypatch.setattr("dopemux.mobile.cli.get_mobile_status", lambda cm, ctrl=None: snapshot)
+    monkeypatch.setattr("dopemux.mobile.cli.update_tmux_mobile_indicator", lambda cm, ctrl=None: None)
+    monkeypatch.setattr("dopemux.mobile.cli._get_controller", lambda ctx: MagicMock(spec=TmuxController))
 
     result = _runner().invoke(mobile, ["status", "--json"])
 
@@ -82,8 +91,9 @@ def test_mobile_status_watch_json_conflict(monkeypatch):
     )
 
     monkeypatch.setattr("dopemux.mobile.cli._get_config_manager", lambda ctx: dummy_cm)
-    monkeypatch.setattr("dopemux.mobile.cli.get_mobile_status", lambda cm: snapshot)
-    monkeypatch.setattr("dopemux.mobile.cli.update_tmux_mobile_indicator", lambda cm: None)
+    monkeypatch.setattr("dopemux.mobile.cli.get_mobile_status", lambda cm, ctrl=None: snapshot)
+    monkeypatch.setattr("dopemux.mobile.cli.update_tmux_mobile_indicator", lambda cm, ctrl=None: None)
+    monkeypatch.setattr("dopemux.mobile.cli._get_controller", lambda ctx: MagicMock(spec=TmuxController))
 
     result = _runner().invoke(mobile, ["status", "--json", "--watch"], catch_exceptions=False)
 
@@ -97,7 +107,7 @@ def test_run_tests_default(monkeypatch):
     monkeypatch.setattr(
         "dopemux.mobile.hooks.notify_mobile_event", lambda cfg, msg: recorded.setdefault("messages", []).append(msg)
     )
-    monkeypatch.setattr("dopemux.mobile.runtime.update_tmux_mobile_indicator", lambda cfg: None)
+    monkeypatch.setattr("dopemux.mobile.runtime.update_tmux_mobile_indicator", lambda cfg, ctrl=None: None)
 
     def fake_run(args, cwd=None, check=False):
         recorded["args"] = list(args)
@@ -116,7 +126,7 @@ def test_run_build_failure(monkeypatch):
     messages = []
 
     monkeypatch.setattr("dopemux.mobile.hooks.notify_mobile_event", lambda cfg, msg: messages.append(msg))
-    monkeypatch.setattr("dopemux.mobile.runtime.update_tmux_mobile_indicator", lambda cfg: None)
+    monkeypatch.setattr("dopemux.mobile.runtime.update_tmux_mobile_indicator", lambda cfg, ctrl=None: None)
 
     def fake_run(args, cwd=None, check=False):
         return SimpleNamespace(returncode=2)

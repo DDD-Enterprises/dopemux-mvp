@@ -10,7 +10,10 @@ from dopemux.tmux.layouts import EnergyLayoutManager
 
 @pytest.fixture
 def adhd_orchestrator():
-    return ADHDOrchestrator()
+    with patch('dopemux.orchestrator.adhd_orchestrator.AttentionMonitor'), \
+         patch('dopemux.orchestrator.adhd_orchestrator.TmuxController'), \
+         patch('dopemux.orchestrator.adhd_orchestrator.ConfigManager'):
+        return ADHDOrchestrator()
 
 def test_adhd_orchestrator_initialization(adhd_orchestrator):
     assert adhd_orchestrator.tmux_controller is not None
