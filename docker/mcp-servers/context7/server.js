@@ -23,6 +23,31 @@ const server = http.createServer((req, res) => {
       timestamp: new Date().toISOString(),
       mcp_process_running: !mcpProcess.killed
     }));
+  } else if (req.url === '/info') {
+    // Service discovery endpoint - auto-config support (ADR-208)
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      name: 'context7',
+      version: '1.0.0',
+      mcp: {
+        protocol: 'stdio',
+        connection: {
+          type: 'stdio',
+          command: 'npx',
+          args: ['-y', '@upstash/context7-mcp']
+        }
+      },
+      health: '/health',
+      description: 'Documentation & API references - ALWAYS FIRST for any code work',
+      metadata: {
+        role: 'critical_path',
+        priority: 'highest',
+        package: '@upstash/context7-mcp',
+        usage_pattern: 'MANDATORY first query for ANY code generation',
+        wrapper: true,
+        mcp_process_running: !mcpProcess.killed
+      }
+    }, null, 2));
   } else {
     res.writeHead(404);
     res.end('Not Found');

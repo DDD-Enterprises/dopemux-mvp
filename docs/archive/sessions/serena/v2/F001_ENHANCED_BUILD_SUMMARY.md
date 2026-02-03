@@ -1,3 +1,11 @@
+---
+id: F001_ENHANCED_BUILD_SUMMARY
+title: F001_Enhanced_Build_Summary
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # F001 Enhanced Build Summary
 
 **Date**: 2025-10-18

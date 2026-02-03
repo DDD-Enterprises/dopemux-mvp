@@ -1,3 +1,11 @@
+---
+id: database-audit
+title: Database Audit
+type: system-doc
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Database Module Audit - Session 1 Complete
 
 **File:** `database.py`
