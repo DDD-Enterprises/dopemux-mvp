@@ -1,3 +1,11 @@
+---
+id: CONPORT_TOKEN_LIMIT_FIX
+title: Conport_Token_Limit_Fix
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # ConPort Token Limit Fix - Progressive Truncation
 
 **Date**: 2025-10-20

@@ -1,3 +1,11 @@
+---
+id: README
+title: Readme
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # G35: Smoke Stack Runtime Gate
 
 **Date**: 2026-02-01

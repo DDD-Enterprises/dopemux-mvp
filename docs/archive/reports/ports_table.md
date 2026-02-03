@@ -1,3 +1,11 @@
+---
+id: ports_table
+title: Ports_Table
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Port Configuration: Before vs After G31
 
 ## BEFORE G31 ❌

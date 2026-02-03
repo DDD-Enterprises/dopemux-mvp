@@ -1,3 +1,11 @@
+---
+id: current_state
+title: Current_State
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Current State Snapshot - Before G31
 
 ## Date

@@ -1,3 +1,11 @@
+---
+id: WORKTREE_EXAMPLES
+title: Worktree_Examples
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Worktree Multi-Instance Examples
 
 Real-world examples demonstrating ADHD-optimized parallel workflows with git worktrees.
