@@ -1,3 +1,11 @@
+---
+id: DOCKERFILE_ARCHITECTURE_REVIEW
+title: Dockerfile_Architecture_Review
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Dockerfile Architecture Review (G34 Option B)
 
 **Date**: 2026-02-01

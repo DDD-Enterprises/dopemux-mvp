@@ -1,3 +1,11 @@
+---
+id: PHASE2_COMPLETE
+title: Phase2_Complete
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Working Memory Assistant - Phase 2 Implementation Complete
 
 ## Summary
@@ -26,7 +34,7 @@ Phase 2 Reflection + Trajectory features have been successfully implemented and 
 
 **Features**:
 - **Top-3 Decisions**: Sorted by importance_score DESC, ts_utc DESC
-- **Top-3 Blockers**: Sorted by importance_score DESC, ts_utc DESC  
+- **Top-3 Blockers**: Sorted by importance_score DESC, ts_utc DESC
 - **Progress Summary**: Total entries, category breakdown, active session
 - **Trajectory**: Current stream based on most active category
 - **Next Steps**: Deterministic prioritization:
@@ -146,17 +154,17 @@ CREATE TABLE IF NOT EXISTS reflection_cards (
   workspace_id TEXT NOT NULL,
   instance_id TEXT NOT NULL,
   session_id TEXT,
-  
+
   ts_utc TEXT NOT NULL,
   window_start_utc TEXT NOT NULL,
   window_end_utc TEXT NOT NULL,
-  
+
   trajectory TEXT NOT NULL,
   top_decisions_json TEXT NOT NULL DEFAULT '[]',
   top_blockers_json TEXT NOT NULL DEFAULT '[]',
   progress_json TEXT NOT NULL DEFAULT '{}',
   next_suggested_json TEXT NOT NULL DEFAULT '[]',
-  
+
   promotion_candidates_json TEXT NOT NULL DEFAULT '[]',
   created_at_utc TEXT NOT NULL
 );
@@ -168,13 +176,13 @@ CREATE TABLE IF NOT EXISTS trajectory_state (
   workspace_id TEXT NOT NULL,
   instance_id TEXT NOT NULL,
   session_id TEXT,
-  
+
   updated_at_utc TEXT NOT NULL,
-  
+
   current_stream TEXT NOT NULL DEFAULT '',
   current_goal_json TEXT NOT NULL DEFAULT '{}',
   last_steps_json TEXT NOT NULL DEFAULT '[]',
-  
+
   PRIMARY KEY (workspace_id, instance_id)
 );
 ```
@@ -191,12 +199,12 @@ CREATE TABLE IF NOT EXISTS trajectory_state (
   - Progress summary with category counts
   - Next steps prioritization (blocker → decision → continue)
   - Persistence in reflection_cards table
-  
+
 - ✓ `TestTrajectoryManager` (3 tests)
   - Empty state (returns "idle")
   - Updated on reflection generation
   - Boost factor decay (12h = ~1.5x, 24h = 1.0x)
-  
+
 - ✓ `TestMemoryReflections` (3 tests)
   - Empty list handling
   - Fetch recent reflections
@@ -281,6 +289,6 @@ curl -X POST http://localhost:3020/tools/memory_reflections \
 
 ---
 
-**Completed**: 2026-02-03  
-**Phase**: Phase 2 (Reflection + Trajectory)  
+**Completed**: 2026-02-03
+**Phase**: Phase 2 (Reflection + Trajectory)
 **Next**: Implement memory.pulse background emission task

@@ -1,3 +1,11 @@
+---
+id: PHASE2_REFACTOR_PLAN
+title: Phase2_Refactor_Plan
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Phase 2 Full Refactor - Remaining Work
 
 ## Completed ✅
@@ -95,7 +103,7 @@ self.trajectory_mgr = None  # Lazy init per workspace
 async def memory_generate_reflection(request: MemoryGenerateReflectionRequest):
     store = mcp_server._get_store(request.workspace_id)
     gen = ReflectionGenerator(store)
-    
+
     # Generate reflection
     card = gen.generate_reflection(
         workspace_id=request.workspace_id,
@@ -103,15 +111,15 @@ async def memory_generate_reflection(request: MemoryGenerateReflectionRequest):
         session_id=request.session_id,
         window_hours=request.window_hours,
     )
-    
+
     if card["reflection_id"]:
         # Persist
         store.insert_reflection_card(card)
-        
+
         # Emit reflection.created event (if eventbus enabled)
         if ENABLE_EVENTBUS:
             await emit_reflection_created(card)
-    
+
     return card
 ```
 
@@ -124,10 +132,10 @@ Similar refactoring for `/tools/memory_reflections` and `/tools/memory_trajector
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global mcp_server, eventbus_consumer_task
-    
+
     # Initialize MCP server
     mcp_server = DopeMemoryMCPServer(...)
-    
+
     # Start EventBus consumer (if enabled)
     if ENABLE_EVENTBUS and REDIS_URL:
         from eventbus_consumer import EventBusConsumer
@@ -136,9 +144,9 @@ async def lifespan(app: FastAPI):
             chronicle_stores=mcp_server._stores,
         )
         eventbus_consumer_task = asyncio.create_task(consumer.run())
-    
+
     yield
-    
+
     # Cleanup
     if eventbus_consumer_task:
         eventbus_consumer_task.cancel()

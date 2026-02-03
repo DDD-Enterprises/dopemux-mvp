@@ -1,3 +1,11 @@
+---
+id: G35_FINAL_SUMMARY
+title: G35_Final_Summary
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # G35 Final Summary - Smoke Stack Runtime Gate
 
 **Date**: 2026-02-01

@@ -1,3 +1,11 @@
+---
+id: env_support_matrix
+title: Env_Support_Matrix
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # G33 Phase 0: Environment Variable Support Matrix
 
 ## Unified Contract Env Vars (Proposed)
