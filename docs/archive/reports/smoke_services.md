@@ -1,3 +1,11 @@
+---
+id: smoke_services
+title: Smoke_Services
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # G33 Phase 0: Service Smoke Stack Inventory
 
 **Total Services**: 48

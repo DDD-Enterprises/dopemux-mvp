@@ -1,3 +1,11 @@
+---
+id: G35_IMPLEMENTATION_SUMMARY
+title: G35_Implementation_Summary
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # G35 Implementation Summary
 
 **Date**: 2026-02-01

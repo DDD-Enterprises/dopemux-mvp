@@ -1,3 +1,11 @@
+---
+id: STDIO_POSTGRESQL_CONFIG
+title: Stdio_Postgresql_Config
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Configuring stdio conport-mcp for PostgreSQL
 
 **Current Situation**:

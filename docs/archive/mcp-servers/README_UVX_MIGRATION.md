@@ -1,3 +1,11 @@
+---
+id: README_UVX_MIGRATION
+title: Readme_Uvx_Migration
+type: historical
+owner: '@hu3mann'
+last_review: '2026-02-02'
+next_review: '2026-05-03'
+---
 # Exa MCP - uvx Migration
 
 **Status**: ✅ Complete
