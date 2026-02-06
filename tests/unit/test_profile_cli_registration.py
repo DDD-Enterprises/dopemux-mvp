@@ -8,6 +8,7 @@ def test_profile_group_exposes_extended_command_set():
     expected = {
         "list",
         "init",
+        "analyze-usage",
         "auto-enable",
         "auto-disable",
         "auto-status",
