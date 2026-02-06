@@ -43,5 +43,10 @@
     "importer now adapts inserts to detected table columns",
     "progress entry IDs are now added to ID mapping for context_links restoration",
     "single-row workspace_contexts schema now uses combined-context upsert path"
-  ]
+  ],
+  "follow_up_closure": {
+    "relationship_backfill_artifact": "reports/strict_closure/conport_relationship_backfill_2026-02-06.json",
+    "final_entity_relationships_count": 111,
+    "context_links_parity": "111/111"
+  }
 }
