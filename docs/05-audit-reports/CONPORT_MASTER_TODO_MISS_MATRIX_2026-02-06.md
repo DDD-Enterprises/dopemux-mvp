@@ -256,3 +256,46 @@ Artifacts:
 - `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`
 - `reports/strict_closure/conport_live_backlog_true_open_candidates_2026-02-06.json`
 - `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md`
+
+## Live True-Open Explicit Promotion (Master Doc Closure)
+
+To eliminate remaining wording drift between live backlog and master TODO docs, the full live true-open packet is now promoted into this master matrix as explicit line items.
+
+Summary from delta extraction:
+
+1. Live true-open candidates compared: `25`.
+2. Missing in master doc by exact text: `25`.
+3. Missing in master doc by canonical phrase: `14`.
+4. Closure rule for this wave: explicit line coverage (all 25 listed verbatim).
+
+Promoted live true-open lines:
+
+1. `[kg_dependency_unification | P1] 3.2.2: Test semantic similarity & ADHD disclosure | Duration: 60m | Complexity: 0.6 | Energy: Medium-High | Depends: 3.2.1`
+2. `[kg_dependency_unification | P1] 3.2.1: Integrate dope-context in Serena, add Find Similar command | Duration: 60m | Complexity: 0.6 | Energy: Medium-High | Depends: 2.1.2, 2.3.1`
+3. `[kg_dependency_unification | P1] 3.1.1: Design & populate conport_integration_links | Duration: 60m | Complexity: 0.8 | Energy: Very High | Depends: 2.2.3`
+4. `[kg_dependency_unification | P1] 2.2.3: Validate embedding quality & schema | Duration: 45m | Complexity: 0.6 | Energy: Medium-High | Depends: 2.2.2`
+5. `[kg_dependency_unification | P1] 2.2.2: Write & run migration script (re-embed decisions) | Duration: 45m | Complexity: 0.6 | Energy: Medium-High | Depends: 2.2.1`
+6. `[kg_dependency_unification | P1] 2.2.1: Remove ConPort embedding_service, import from core | Duration: 30m | Complexity: 0.6 | Energy: Medium-High | Depends: 1.3.2`
+7. `[kg_dependency_unification | P1] 2.1.2: Update docs & add deprecation warnings | Duration: 30m | Complexity: 0.4 | Energy: Low-Medium | Depends: 2.1.1`
+8. `[shield_slack_beta | P1] Day 19-20: Feedback & Iteration (12-14 hours)`
+9. `[shield_slack_beta | P1] Day 9: Notification Batching (3-4 hours)`
+10. `[shield_slack_beta | P1] Day 8: Productivity Indicators Deep Dive (6-7 hours)`
+11. `[shield_slack_beta | P1] Day 7: Desktop Commander Integration (4-5 hours)`
+12. `[shield_slack_beta | P1] Day 6: macOS Focus Mode - AppleScript Implementation (5-6 hours)`
+13. `[shield_slack_beta | P1] Day 16-17: Beta Preparation & Recruitment (8-10 hours)`
+14. `[shield_slack_beta | P1] Day 18: Beta Deployment (6-8 hours)`
+15. `[shield_slack_beta | P1] Day 14-15: Message Triage System (10-12 hours)`
+16. `[shield_slack_beta | P1] Day 13: Slack Status Management (4-5 hours)`
+17. `[shield_slack_beta | P1] Day 11-12: Slack Client Setup (8-10 hours)`
+18. `[shield_slack_beta | P1] Week 3: Slack Integration & Message Triage`
+19. `[mcp_token_ops | P2] Monitor MCP servers for edge cases after token limit fixes deployment`
+20. `[mcp_token_ops | P2] Test MCP token limit fixes in production: large files (package-lock.json), bulk queries (100 decisions), multi-step Zen analysis`
+21. `[mcp_token_ops | P2] Restart Claude Code to load all MCP token limit fixes (dope-context, Serena, ConPort, Zen)`
+22. `[other | P2] Day 4: ConPort Integration & Metrics (4-5 hours)`
+23. `[other | P2] Day 3: ShieldCoordinator Core Logic (6-7 hours)`
+24. `[other | P2] Day 5: Productivity Monitoring & False Positive Detection (5-6 hours)`
+25. `[other | P2] Week 1: Core Infrastructure & ADHD Engine Integration`
+
+Supporting artifact:
+
+- `reports/strict_closure/conport_master_live_true_open_delta_2026-02-06.json`
