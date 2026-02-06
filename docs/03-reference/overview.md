@@ -47,9 +47,7 @@ Configuration schemas and references.
 - **[Profile YAML Schema](configuration/PROFILE-YAML-SCHEMA.md)** - Complete profile configuration reference
 
 ### MCP Configuration
-- **[MetaMCP Tool Mapping](metamcp-tool-mapping.md)** - MCP tool configuration
-- **[MetaMCP Configuration Checklist](metamcp-configuration-checklist.md)** - Setup verification
-- **[MetaMCP Post-Restart Config](metamcp-post-restart-config.md)** - After-restart configuration
+- **[MCP Tools Overview](mcp-tools-overview.md)** - MCP tool configuration and usage
 
 ---
 

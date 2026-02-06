@@ -373,7 +373,7 @@ def _invoke_switch_role_script(role_key: str) -> None:
     try:
         subprocess.run([str(script_path), role_key], check=True)
         console.print(
-            f"[dim]✓ Synced MetaMCP role via {script_path} {role_key}[/dim]"
+            f"[dim]✓ Synced role profile via {script_path} {role_key}[/dim]"
         )
     except subprocess.CalledProcessError as exc:
         console.print(

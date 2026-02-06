@@ -43,9 +43,8 @@ Connect Dopemux with external tools and services.
 - **[Leantime Deployment](integrations/LEANTIME_DEPLOYMENT_RECOMMENDATION.md)** - Deployment recommendations
 
 ### MCP Servers
-- **[MetaMCP Setup](metamcp-setup.md)** - Configure MetaMCP server
-- **[MetaMCP Quickstart](metamcp-quickstart.md)** - Quick integration guide
-- **[MetaMCP Debugging](metamcp-debugging.md)** - Troubleshooting guide
+- **[MCP Service Discovery Guide](mcp-service-discovery-guide.md)** - Discover and verify active MCP services
+- **[MCP Tools Overview](../03-reference/mcp-tools-overview.md)** - Tool catalog and usage patterns
 
 ---
 
