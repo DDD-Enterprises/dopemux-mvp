@@ -68,6 +68,7 @@ Executed verification checks (latest pass on 2026-02-06):
 - `pytest -q --no-cov tests/unit/test_ui_dashboard_backend_api.py tests/unit/test_pattern_correlation_engine.py tests/unit/test_unified_complexity_coordinator.py` (passes)
 - `pytest -q --no-cov tests/shared/test_dopecon_bridge_client.py` (passes)
 - `pytest -q --no-cov tests/unit/test_leantime_bridge.py` (passes)
+- `pytest -q --no-cov tests/unit/test_profile_cli_registration.py` (passes)
 - `pytest -q --no-cov tests/test_mobile_runtime.py` (passes)
 - `npm --prefix ui-dashboard run build` (passes)
 - `python scripts/deploy/migration/validate_age_pg_compat_stress.py ...` (passes via `mcp-conport` runtime with `overall_ok=true`)
@@ -211,6 +212,7 @@ Executed verification checks (latest pass on 2026-02-06):
 1. ConPort relationship restoration reached full parity for selected bundle (`111/111` `context_links` -> `entity_relationships`).
 2. AGE/PG compatibility and concurrency stress validation completed with `overall_ok=true` and zero query failures.
 3. AGE extension registration drift was fixed (`CREATE EXTENSION age`) and validated (`extversion 1.6.0`).
+4. Profile CLI command-shadowing defect was fixed by unifying profile-group registration; `profile apply` and `profile current` aliases are now exposed with command-registration test coverage.
 
 ## ConPort Backlog Misses Extracted Into Master Fix Scope
 
