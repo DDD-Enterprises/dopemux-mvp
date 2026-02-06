@@ -71,7 +71,7 @@ how_to:
   directory: "docs/02-how-to/"
   deployment: "docs/deployment/DEPLOYMENT-INSTRUCTIONS.md"
   leantime_setup: "docs/02-how-to/integrations/LEANTIME_SETUP_INSTRUCTIONS.md"
-  metamcp_setup: "docs/02-how-to/metamcp-setup.md"
+  mcp_service_discovery: "docs/02-how-to/mcp-service-discovery-guide.md"
   role_switching: "docs/02-how-to/role-switching-quickstart.md"
   multi_instance: "docs/02-how-to/multi-instance-workflow.md"
   orchestrator_dashboard: "docs/02-how-to/orchestrator-dashboard.md"
@@ -86,7 +86,7 @@ reference:
   directory: "docs/03-reference/"
   profile_schema: "docs/PROFILE-YAML-SCHEMA.md"
   features_index: "docs/FEATURES_INDEX.md"
-  metamcp_tools: "docs/03-reference/metamcp-tool-mapping.md"
+  mcp_tools_overview: "docs/03-reference/mcp-tools-overview.md"
 
 # Explanation & Deep Dives
 explanation:

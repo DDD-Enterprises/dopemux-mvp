@@ -92,7 +92,7 @@ repos:
             # 4. .conport/, conport_export/ - Local state/export
             # 5. .github/ - GitHub templates
             # 6. */README.md, */CHANGELOG.md, */CONTRIBUTING.md - Project visibility
-            # 7. Third-party: metamcp/, docker/mcp-servers/pal/
+            # 7. Third-party: docker/mcp-servers/pal/
             # 8. Archive: SYSTEM_ARCHIVE/, **/archive/
             
             while IFS= read -r -d '' file; do
@@ -112,7 +112,7 @@ repos:
               if [[ "$file" =~ /(SYSTEM_ARCHIVE|archive|ARCHIVE)/ ]]; then continue; fi
               
               # Allow third-party
-              if [[ "$file" =~ ^\./(metamcp/|docker/mcp-servers/pal/|gptr-mcp/) ]]; then continue; fi
+              if [[ "$file" =~ ^\./(docker/mcp-servers/pal/) ]]; then continue; fi
               
               # Allow root-level uppercase files
               if [[ "$file" =~ ^\./[A-Z][A-Z_0-9]*\.md$ ]]; then continue; fi

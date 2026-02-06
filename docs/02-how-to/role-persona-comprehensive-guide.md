@@ -682,10 +682,10 @@ dopemux tmux agent switch-role plan --target secondary
 ~/.claude/switch-role.sh act
 ```
 
-### Method 3: MetaMCP Web UI
-1. Go to http://localhost:12008
-2. Select namespace (dopemux-quickfix, dopemux-act, etc.)
-3. Restart Claude Code to apply
+### Method 3: Environment + Config Verification
+1. Confirm role env var: `echo "$DOPEMUX_AGENT_ROLE"`
+2. Inspect generated config: `cat ~/.claude/config/mcp_servers.json`
+3. Restart Claude Code to apply the updated tool set
 
 ---
 
