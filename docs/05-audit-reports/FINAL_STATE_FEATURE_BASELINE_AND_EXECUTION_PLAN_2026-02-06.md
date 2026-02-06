@@ -363,10 +363,12 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/conport_master_live_true_open_delta_2026-02-06.json`.
 45. Post-promotion recheck confirms exact-line closure for the full live true-open packet (`0` exact misses of `25`), with remaining canonical drift now limited to wording-level variants (`8`):
    `reports/strict_closure/conport_master_live_true_open_delta_recheck_2026-02-06.json`.
-46. KG dependency-unification deep verification now records `2` implemented/implemented-in-code items and `5` partial items with explicit residual gaps and next actions:
+46. KG dependency-unification deep verification now records `2` implemented items, `1` implemented-in-code item, and `4` partial items with explicit residual gaps and next actions:
    `reports/strict_closure/kg_dependency_unification_verification_2026-02-06.json`.
 47. Serena KG-related regression harnesses were unblocked by fixing annotation-time import failures and async test execution defaults; targeted suites now run green (`13` passed):
    `services/serena/intelligence/database.py`, `services/serena/tree_sitter_analyzer.py`, `pytest.ini`.
+48. ConPort semantic-search compatibility paths are now explicitly hard-deprecated in runtime responses/logging and active architecture docs, reducing ambiguity while preserving backward compatibility:
+   `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py`, `docs/04-explanation/DOPEMUX-CONTEXT-DEEP-DIVE.md`, `docs/04-explanation/architecture/architecture-3.0-implementation.md`.
 
 ## Prioritized Gap Register
 
