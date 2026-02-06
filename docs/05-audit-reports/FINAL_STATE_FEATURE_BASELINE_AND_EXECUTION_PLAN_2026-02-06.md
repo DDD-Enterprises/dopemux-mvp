@@ -347,6 +347,10 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/profile_week2_integration_testing_verification_2026-02-06.json`.
 39. Historical EPIC deliverable module gaps for rows `2`, `3`, and `4` are now implemented with compatibility shims (`signal_collectors`, `scorer`, `session_manager`, `claude_manager`, `switcher`, `statusline_integration`, `suggestion_engine`, `analytics`, `migration`) and targeted verification coverage:
    `reports/strict_closure/profile_epic_compat_shims_verification_2026-02-06.json`.
+40. Live ConPort backlog extraction from runtime `progress_entries` now shows `134` unique active backlog items with `66` still underrepresented in active master docs, and has been promoted into an owner-routed matrix:
+   `reports/strict_closure/conport_live_backlog_doc_coverage_2026-02-06.json`.
+41. Live underrepresented backlog clusters are now explicitly enumerated for closure (`profile_alias_or_residual=33`, `shield_slack_beta=11`, `kg_dependency_unification=7`, `bridge_orchestrator=6`, `mcp_token_ops=4`, `conport_persistence=1`, `other=4`):
+   `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`.
 
 ## Prioritized Gap Register
 
@@ -370,6 +374,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 8. Execute the 19-task secondary ConPort miss set and map each task to owner/test/doc evidence.
 9. Close the remaining full-bundle underrepresented ConPort backlog set (`167`) in phased owner-assigned packets.
 10. Execute packet #1 (`top 40`) from `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`.
+11. Close the live ConPort underrepresented set (`66`) from runtime backlog coverage diff and merge results into the master execution packet:
+    `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`.
 
 ### P2 (Optimization and Scale)
 
