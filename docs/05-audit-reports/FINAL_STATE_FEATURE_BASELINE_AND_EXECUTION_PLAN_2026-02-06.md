@@ -48,6 +48,7 @@ Generated during this pass:
 - `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`
 - `reports/strict_closure/conport_master_todo_coverage_recheck_2026-02-06.json`
 - `reports/strict_closure/conport_master_live_true_open_delta_2026-02-06.json`
+- `reports/strict_closure/conport_master_live_true_open_delta_recheck_2026-02-06.json`
 - `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json`
 - `reports/strict_closure/litellm_blocker_verification_2026-02-06.json`
 - `reports/strict_closure/profile_workstream_verification_2026-02-06.json`
@@ -358,6 +359,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md`.
 44. Live true-open packet rows have now been explicitly promoted into the master miss matrix to close literal line-coverage drift (`25/25` exact-line additions; canonical residual pre-promotion `14`):
    `reports/strict_closure/conport_master_live_true_open_delta_2026-02-06.json`.
+45. Post-promotion recheck confirms exact-line closure for the full live true-open packet (`0` exact misses of `25`), with remaining canonical drift now limited to wording-level variants (`8`):
+   `reports/strict_closure/conport_master_live_true_open_delta_recheck_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
