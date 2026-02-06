@@ -210,8 +210,8 @@
       "port_defined": false
     },
     {
-      "name": "context7",
-      "path": "services/context7",
+      "name": "pal",
+      "path": "services/pal",
       "has_main": false,
       "has_dockerfile": false,
       "has_requirements": false,

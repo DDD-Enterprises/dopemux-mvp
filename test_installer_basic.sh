@@ -31,7 +31,6 @@ OPENAI_API_KEY=test_openai_key
 OPENROUTER_API_KEY=test_openrouter_key
 GEMINI_API_KEY=test_gemini_key
 XAI_API_KEY=test_xai_key
-CONTEXT7_API_KEY=test_context7_key
 LEANTIME_URL=http://localhost:8097
 LEANTIME_TOKEN=test_leantime_token
 TASK_ORCHESTRATOR_API_KEY=test_task_key

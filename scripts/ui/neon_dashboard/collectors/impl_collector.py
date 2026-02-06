@@ -203,10 +203,9 @@ class ImplementationCollector(BaseCollector):
 
     async def fetch_mcp_health(self) -> Dict[str, Any]:
         servers = {
-            "zen": "http://localhost:3003",
+            "pal": "http://localhost:3003",
             "conport": "http://localhost:3004",
             "serena": self.services.activity_capture_url.rstrip("/"),
-            "context7": "http://localhost:3002",
             "gptr-mcp": "http://localhost:3009",
         }
         services: Dict[str, Dict[str, Any]] = {}
@@ -231,4 +230,3 @@ class ImplementationCollector(BaseCollector):
             "hourly_cost": payload.get("cost_per_hour"),
             "latency_ms": payload.get("average_latency_ms"),
         }
-

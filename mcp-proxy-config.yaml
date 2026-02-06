@@ -7,11 +7,6 @@ mcp_servers:
     port: 8001
     supports_workspace: false  # Legacy service
 
-  context7:
-    command: ["docker", "exec", "-i", "mcp-claude-context", "npx", "@modelcontextprotocol/server-context7"]
-    port: 8002
-    supports_workspace: false  # Legacy service
-
   exa:
     command: ["docker", "exec", "-i", "mcp-exa", "python", "server.py"]
     port: 8003

@@ -4,14 +4,15 @@ Complete registry of all MCP servers in the Dopemux orchestration, organized by 
 
 ## 📚 Critical Path Servers (Priority: Highest)
 
-### Context7 - Documentation & API References
-- **Container**: `mcp-context7`
-- **Port**: `3002`
+### PAL apilookup - Documentation & API References
+- **Container**: `mcp-pal`
+- **Port**: `3003`
 - **Role**: `critical_path`
-- **Package**: `@upstash/context7:^1.0.17`
+- **Package**: `pal-mcp-server` (uvx / git)
 - **Description**: ALWAYS FIRST for any code work - provides official documentation and API references
-- **Health Check**: `http://localhost:3002/health`
-- **Configuration**: `/docker/mcp-servers/context7/.env`
+- **Tool**: `apilookup` (PAL MCP method used for docs)
+- **Health Check**: `http://localhost:3003/health`
+- **Configuration**: `/docker/mcp-servers/pal/.env`
 
 **Key Features:**
 - Up-to-date, version-specific documentation
@@ -22,7 +23,7 @@ Complete registry of all MCP servers in the Dopemux orchestration, organized by 
 **Usage Pattern:**
 ```yaml
 rule: "MANDATORY first query for ANY code generation"
-fallback: "Only use Exa if Context7 lacks information"
+fallback: "Only use Exa if PAL apilookup lacks information"
 optimization: "max_results: 10, focus_on_examples: true"
 ```
 
@@ -267,18 +268,18 @@ docker exec -it mcp-gptr-stdio python /app/scripts/gpt-researcher/mcp_server.py 
 - **Port**: `3008`
 - **Role**: `research`
 - **Package**: `exa-mcp` (npm)
-- **Description**: Web research - ONLY when Context7 lacks information
+- **Description**: Web research - ONLY when PAL apilookup lacks information
 - **Health Check**: `http://localhost:3008/health`
 
 **Key Features:**
 - Real-time web search and research
 - Community solutions and best practices
 - Current trends and documentation
-- Fallback for Context7 gaps
+- Fallback for PAL apilookup gaps
 
 **Usage Pattern:**
 ```yaml
-rule: "ONLY use when Context7 lacks required information"
+rule: "ONLY use when PAL apilookup lacks required information"
 optimization: "min_query_length: 10, max_results: 3"
 ```
 
@@ -396,7 +397,7 @@ purpose: "PM system integration"
 ### Health Check Endpoints
 Most servers expose `/health`. MAS uses a port-liveness check:
 ```bash
-curl http://localhost:3002/health  # Context7
+curl http://localhost:3003/health  # PAL apilookup
 curl http://localhost:3003/health  # Zen
 nc -z localhost 3001 && echo "MAS up" || echo "MAS down"  # Sequential Thinking (no /health)
 # ... etc for all servers
@@ -420,14 +421,14 @@ cd /Users/hue/code/dopemux-mvp/docker/mcp-servers
 
 ### Individual Server Control
 ```bash
-docker-compose up -d context7                 # Start Context7
+docker-compose up -d pal                 # Start PAL apilookup
 docker-compose restart zen                    # Restart Zen
 docker-compose logs -f mas-sequential-thinking  # View MAS logs
 ```
 
 ### Health Check All Critical Servers
 ```bash
-for port in 3001 3002 3003; do
+for port in 3001 3003 3003; do
   if [ "$port" -eq 3001 ]; then
     nc -z localhost 3001 && echo "✅ MAS (3001) up" || echo "❌ MAS (3001) down"
   else

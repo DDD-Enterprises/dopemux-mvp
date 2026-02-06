@@ -47,7 +47,6 @@ echo ""
 
 # Array of MCP servers to install
 declare -A MCP_SERVERS
-MCP_SERVERS[context7]="context7-mcp"
 MCP_SERVERS[claude-context]="@zilliz/claude-context-mcp@latest"
 MCP_SERVERS[morphllm-fast-apply]="morphllm-fast-apply-mcp"
 MCP_SERVERS[exa]="exa-mcp"
@@ -112,6 +111,7 @@ echo "   export LEANTIME_URL='https://your-leantime-instance.com'"
 echo "   export LEANTIME_API_KEY='your_leantime_key'"
 echo ""
 echo "2. Run 'dopemux start' to launch with MCP servers enabled"
+echo "3. PAL apilookup runs via Docker (`docker/mcp-servers/`), not npm"
 echo ""
 
 if [[ ${#failed_servers[@]} -gt 0 ]]; then

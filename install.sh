@@ -38,7 +38,7 @@ STACK_SELECTED_FROM_FLAG=false
 INSTALLER_TEST_MODE="${INSTALLER_TEST_MODE:-0}"
 
 CORE_STACK_PORTS=(5432 6379 6333 6334 3004 8000 8095)
-FULL_STACK_EXTRA_PORTS=(3002 3003 3011 3016 4000 8081 8090)
+FULL_STACK_EXTRA_PORTS=(3003 3011 3016 4000 8081 8090)
 
 CORE_STACK_ENV_VARS=()
 FULL_STACK_ENV_VARS=(
@@ -48,7 +48,6 @@ FULL_STACK_ENV_VARS=(
     OPENROUTER_API_KEY
     GEMINI_API_KEY
     XAI_API_KEY
-    CONTEXT7_API_KEY
     LEANTIME_URL
     LEANTIME_TOKEN
     TASK_ORCHESTRATOR_API_KEY
@@ -67,7 +66,7 @@ CORE_STACK_SUMMARY=(
 FULL_STACK_SUMMARY=(
     "Everything from core stack"
     "Zen MCP (multi-model reasoning)"
-    "Context7 documentation MCP"
+    "PAL apilookup documentation MCP"
     "LiteLLM router (Anthropic/OpenAI/OpenRouter/Gemini)"
     "DopeconBridge + coordination plane"
     "Genetic Agent + monitoring"
@@ -190,7 +189,6 @@ env_prompt() {
         OPENROUTER_API_KEY) echo "OpenRouter API key (Grok/GPT routing)" ;;
         GEMINI_API_KEY) echo "Google Gemini API key (optional)" ;;
         XAI_API_KEY) echo "xAI Grok API key (optional)" ;;
-        CONTEXT7_API_KEY) echo "Context7 documentation API key" ;;
         LEANTIME_URL) echo "Leantime base URL" ;;
         LEANTIME_TOKEN) echo "Leantime API token" ;;
         TASK_ORCHESTRATOR_API_KEY) echo "Task Orchestrator API key" ;;
@@ -213,7 +211,7 @@ env_default() {
 
 env_is_sensitive() {
     case "$1" in
-        AGE_PASSWORD|ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|XAI_API_KEY|CONTEXT7_API_KEY|LEANTIME_TOKEN|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY)
+        AGE_PASSWORD|ANTHROPIC_API_KEY|OPENAI_API_KEY|OPENROUTER_API_KEY|GEMINI_API_KEY|XAI_API_KEY|LEANTIME_TOKEN|TASK_ORCHESTRATOR_API_KEY|ADHD_ENGINE_API_KEY)
             return 0
             ;;
         *)
@@ -267,7 +265,7 @@ choose_install_stack() {
     while true; do
         echo "Select installation scope:"
         echo "  1) Core services (Postgres, Redis, Qdrant, ConPort, ADHD Engine, Task Orchestrator)"
-        echo "  2) Full stack (adds Zen, Context7, LiteLLM, DopeconBridge, Genetic Agent, monitoring)"
+        echo "  2) Full stack (adds Zen, PAL apilookup, LiteLLM, DopeconBridge, Genetic Agent, monitoring)"
         read -p "$(echo -e "${CYAN}?${NC} Choose [1/2]: ")" stack_choice
         case "${stack_choice:-1}" in
             2) SELECTED_STACK="full" ;;
