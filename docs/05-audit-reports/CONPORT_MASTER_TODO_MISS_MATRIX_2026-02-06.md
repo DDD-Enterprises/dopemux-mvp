@@ -310,3 +310,8 @@ Post-promotion recheck:
 Recheck artifact:
 
 - `reports/strict_closure/conport_master_live_true_open_delta_recheck_2026-02-06.json`
+
+Cluster deep-dive verification:
+
+- `docs/05-audit-reports/KG_DEPENDENCY_UNIFICATION_VERIFICATION_2026-02-06.md`
+- `reports/strict_closure/kg_dependency_unification_verification_2026-02-06.json`
