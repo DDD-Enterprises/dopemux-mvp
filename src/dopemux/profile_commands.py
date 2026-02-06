@@ -11,6 +11,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+import os
+import shutil
+import subprocess
+from datetime import datetime
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
@@ -118,3 +122,96 @@ def create_profile(name: str, description: str, based_on: str):
         console.logger.info(f"[dim]Edit: ~/.dopemux/profiles/{name}.yaml[/dim]")
     except ValueError as e:
         console.logger.info(f"\n[red]❌ {e}[/red]")
+
+
+@click.command("copy")
+@click.argument("source_profile")
+@click.argument("target_profile")
+def copy_profile(source_profile: str, target_profile: str):
+    """📄 Copy a profile to a new name."""
+    manager = ProfileManager()
+
+    source = manager.get_profile(source_profile)
+    if not source:
+        console.logger.info(f"\n[red]❌ Source profile not found: {source_profile}[/red]")
+        return
+
+    target_path = manager.profiles_dir / f"{target_profile}.yaml"
+    if Path.exists(target_path):
+        console.logger.info(f"\n[red]❌ Target profile already exists: {target_profile}[/red]")
+        return
+
+    copied = manager.create_profile(
+        name=target_profile,
+        description=f"Copy of {source_profile}: {source.description}",
+        based_on=source_profile,
+    )
+    console.logger.info(f"\n✅ Profile copied: [cyan]{source_profile}[/cyan] → [cyan]{copied.name}[/cyan]")
+
+
+@click.command("delete")
+@click.argument("profile_name")
+@click.option("--force", "-f", is_flag=True, help="Force delete protected profiles")
+def delete_profile(profile_name: str, force: bool):
+    """🗑️ Archive a profile."""
+    manager = ProfileManager()
+    profile_path = manager.profiles_dir / f"{profile_name}.yaml"
+
+    if not Path.exists(profile_path):
+        console.logger.info(f"\n[red]❌ Profile not found: {profile_name}[/red]")
+        return
+
+    protected_profiles = {"full", "adhd-default"}
+    if profile_name in protected_profiles and not force:
+        console.logger.info(
+            f"\n[yellow]⚠️  '{profile_name}' is protected. Use --force to archive it.[/yellow]"
+        )
+        return
+
+    archive_dir = manager.profiles_dir / "archive"
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    archive_path = archive_dir / f"{profile_name}.{timestamp}.yaml"
+    shutil.move(str(profile_path), str(archive_path))
+
+    workspace = detect_workspace()
+    active = manager.get_active_profile(workspace)
+    if active == profile_name:
+        marker = workspace / ".dopemux" / "active_profile"
+        if Path.exists(marker):
+            marker.unlink()
+
+    console.logger.info(
+        f"\n✅ Profile archived: [cyan]{profile_name}[/cyan] → [dim]{archive_path}[/dim]"
+    )
+
+
+@click.command("edit")
+@click.argument("profile_name")
+@click.option("--editor", "-e", help="Editor command (defaults to $EDITOR)")
+def edit_profile(profile_name: str, editor: str):
+    """✏️ Edit a profile in $EDITOR and validate on save."""
+    manager = ProfileManager()
+    profile_path = manager.profiles_dir / f"{profile_name}.yaml"
+
+    if not Path.exists(profile_path):
+        console.logger.info(f"\n[red]❌ Profile not found: {profile_name}[/red]")
+        return
+
+    editor_cmd = editor or os.getenv("EDITOR")
+    if not editor_cmd:
+        console.logger.info("\n[red]❌ No editor configured. Set $EDITOR or pass --editor.[/red]")
+        return
+
+    backup_path = profile_path.with_suffix(".yaml.bak")
+    shutil.copy(profile_path, backup_path)
+
+    try:
+        subprocess.run([editor_cmd, str(profile_path)], check=True)
+        manager.get_profile(profile_name)
+        backup_path.unlink(missing_ok=True)
+        console.logger.info(f"\n✅ Profile updated: [cyan]{profile_name}[/cyan]")
+    except Exception as exc:
+        shutil.copy(backup_path, profile_path)
+        backup_path.unlink(missing_ok=True)
+        console.logger.info(f"\n[red]❌ Edit failed and was rolled back: {exc}[/red]")
