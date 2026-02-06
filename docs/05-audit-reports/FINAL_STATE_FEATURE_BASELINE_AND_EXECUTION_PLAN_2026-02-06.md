@@ -47,9 +47,11 @@ Generated during this pass:
 - `reports/strict_closure/conport_master_todo_miss_extract_2026-02-06.json`
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
+- `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
 - `docs/05-audit-reports/CONPORT_REAL_IMPORT_INTEGRITY_2026-02-06.md`
 - `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`
 - `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
+- `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
 Executed verification checks (latest pass on 2026-02-06):
 
@@ -62,6 +64,7 @@ Executed verification checks (latest pass on 2026-02-06):
 - `pytest -q --no-cov tests/test_mobile_runtime.py` (passes)
 - `npm --prefix ui-dashboard run build` (passes)
 - `python scripts/deploy/migration/validate_age_pg_compat_stress.py ...` (passes via `mcp-conport` runtime with `overall_ok=true`)
+- `docker exec dopemux-mcp-leantime-bridge ... /health?deep=1` and `/api/tools/list_projects` (failing with degraded upstream evidence captured)
 
 ## Executive Findings
 
@@ -70,6 +73,7 @@ Executed verification checks (latest pass on 2026-02-06):
 3. Core orchestration/event/memory components exist and are non-trivial; immediate contract/test/build blockers found in this pass were remediated, but broader architecture and docs parity work remains.
 4. The largest missing implementation remains the Stage-1/Stage-2 workflow from ADR-197 (Idea/Epic pipeline).
 5. The largest systemic risk is governance: no current single source of truth is actually enforced end-to-end despite docs claiming that it is.
+6. Leantime bridge remains a verified integration blocker: process liveness is healthy, but real API project-list calls are failing in live runtime.
 
 ## Claim Verification Matrix
 
@@ -193,6 +197,7 @@ Executed verification checks (latest pass on 2026-02-06):
 5. First non-dry-run ConPort historical import surfaced schema-shape drift (`ag_catalog` assumptions vs live `public` tables); importer and backfill hardening are now in place and verified for one selected bundle.
 6. Full import/backfill replay across remaining exported historical bundles is still pending a dedupe/merge policy decision (avoid duplicating historical records in active runtime DB).
 7. Historical ConPort backlog extraction surfaced additional unresolved work (132 TODO, 1 BLOCKED) not yet fully reflected in the active prioritized gap register.
+8. Leantime bridge deep integration remains blocked (`/health?deep=1` `503`, `/api/tools/list_projects` `502`) and bridge runtime currently lacks `LEANTIME_API_TOKEN`.
 
 ## Resolved In Current Wave
 
@@ -242,6 +247,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 4. Clarify `dope-query`/`conport` split and deprecate one naming contract.
 5. Triage and merge historically captured ConPort TODO/BLOCKED backlog into current execution ownership map (including blocked LiteLLM DB provisioning dependency).
 6. Decide and execute policy for replaying the remaining historical ConPort bundles (merge, dedupe, or archive-only import path).
+7. Complete Leantime manual setup closure so bridge deep health and project-list tooling are operational.
 
 ### P2 (Optimization and Scale)
 
@@ -396,6 +402,7 @@ Exit criteria:
 5. Implement ADR-197 Stage 1/2 primitives (`workflow_ideas` and `workflow_epics`).
 6. Define and execute replay strategy for the remaining historical ConPort bundles with dedupe guardrails.
 7. Fold extracted historical TODO/BLOCKED items (`reports/strict_closure/conport_backlog_extract_2026-02-06.json`) into the master prioritized fix ledger.
+8. Close Leantime readiness blocker using `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md` criteria and refresh strict-closure evidence.
 
 ---
 
