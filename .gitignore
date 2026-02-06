@@ -267,3 +267,9 @@ services/conport_kg/auth/keys/*.pem
 # LLM Archive files
 dopemux-mvp-llm-*.zip
 ARCHIVE_MANIFEST.txt
+
+# Dopemux runtime logs/artifacts
+**/logs/*.log
+**/logs/**/*.log
+.dopemux/
+quarantine/
