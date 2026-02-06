@@ -109,8 +109,8 @@ class PALMCPClient:
                 "model": model
             }
 
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(zen_endpoint, json=request_data)
+            with httpx.Client(timeout=30.0) as client:
+                response = client.post(zen_endpoint, json=request_data)
                 if response.status_code == 200:
                     zen_data = response.json()
                     return ZenResponse(
@@ -167,8 +167,8 @@ class PALMCPClient:
                 "model": model
             }
 
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(zen_endpoint, json=request_data)
+            with httpx.Client(timeout=30.0) as client:
+                response = client.post(zen_endpoint, json=request_data)
                 if response.status_code == 200:
                     zen_data = response.json()
                     return ZenResponse(
@@ -234,8 +234,8 @@ class PALMCPClient:
                 "models": models or []
             }
 
-            async with httpx.AsyncClient(timeout=45.0) as client:  # Longer timeout for consensus
-                response = await client.post(zen_endpoint, json=request_data)
+            with httpx.Client(timeout=45.0) as client:  # Longer timeout for consensus
+                response = client.post(zen_endpoint, json=request_data)
                 if response.status_code == 200:
                     zen_data = response.json()
                     models_used = ", ".join(m["model"] for m in models) if models else "auto-selected"
@@ -289,8 +289,8 @@ class PALMCPClient:
                 "continuation_id": ""  # New conversation
             }
 
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(zen_endpoint, json=request_data)
+            with httpx.Client(timeout=30.0) as client:
+                response = client.post(zen_endpoint, json=request_data)
                 if response.status_code == 200:
                     zen_data = response.json()
                     return ZenResponse(
@@ -350,8 +350,8 @@ class PALMCPClient:
                 "thinking_mode": "high"
             }
 
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(zen_endpoint, json=request_data)
+            with httpx.Client(timeout=30.0) as client:
+                response = client.post(zen_endpoint, json=request_data)
                 if response.status_code == 200:
                     zen_data = response.json()
                     return ZenResponse(
@@ -413,8 +413,8 @@ class PALMCPClient:
                 "severity_filter": "all"
             }
 
-            async with httpx.AsyncClient(timeout=60.0) as client:  # Longer timeout for code review
-                response = await client.post(zen_endpoint, json=request_data)
+            with httpx.Client(timeout=60.0) as client:  # Longer timeout for code review
+                response = client.post(zen_endpoint, json=request_data)
                 if response.status_code == 200:
                     zen_data = response.json()
                     return ZenResponse(

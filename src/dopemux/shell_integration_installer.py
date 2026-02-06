@@ -144,8 +144,6 @@ class ShellIntegrationInstaller:
                 integration_code = f.read()
         except Exception as e:
             return False, f"Failed to read integration script: {e}"
-
-            logger.error(f"Error: {e}")
         # Append to shell config
         try:
             with open(self.shell_config, 'a') as f:
@@ -162,8 +160,6 @@ class ShellIntegrationInstaller:
 
         except Exception as e:
             return False, f"Failed to write to shell config: {e}"
-
-            logger.error(f"Error: {e}")
     def _create_backup(self) -> Path:
         """Create timestamped backup of shell config."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

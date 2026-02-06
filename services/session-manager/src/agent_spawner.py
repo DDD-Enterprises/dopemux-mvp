@@ -11,7 +11,7 @@ Complexity: 0.65 (Medium-High)
 Effort: 6 focus blocks (150 minutes)
 """
 
-from typing import Optional, Literal
+from typing import Optional
 
 import logging
 
@@ -23,14 +23,15 @@ import subprocess
 import threading
 import queue
 import time
-import libtmux
 
 
 class AgentType(Enum):
     """Available AI CLI agents."""
 
-    DOPE_BRAINZ = "dope_brainz"
+    CLAUDE = "claude"
+    DOPE_BRAINZ = "dope_brainz"  # Legacy alias in older configs
     GEMINI = "gemini"
+    GROK = "grok"
     CODEX = "codex"
     AIDER = "aider"
 
@@ -183,9 +184,7 @@ class AIAgent:
             )
         except Exception as e:
             # Don't fail if tmux mirror fails
-            pass
-
-            logger.error(f"Error: {e}")
+            logger.debug("tmux mirror failed for %s: %s", self.config.agent_type.value, e)
     def send_command(self, command: str) -> bool:
         """
         Send command to AI agent.
@@ -209,26 +208,33 @@ class AIAgent:
             self.status = AgentStatus.ERROR
             return False
 
-    def get_output(self, timeout: float = 1.0) -> list[str]:
+    def get_output(self, timeout: float = 1.0, idle_timeout: float = 0.5) -> list[str]:
         """
         Get available output from agent.
 
         Args:
-            timeout: Seconds to wait for output
+            timeout: Max seconds to wait for response
+            idle_timeout: Return once this long passes with no new output
 
         Returns:
             List of output lines
         """
         output_lines = []
-        deadline = time.time() + timeout
+        start = time.time()
+        last_output = start
 
-        while time.time() < deadline:
+        while time.time() - start < timeout:
             try:
-                source, line = self.output_queue.get(timeout=0.1)
+                remaining = max(0.05, timeout - (time.time() - start))
+                source, line = self.output_queue.get(timeout=min(0.2, remaining))
                 output_lines.append(line)
+                last_output = time.time()
             except queue.Empty:
-                if output_lines:
-                    # Got some output, can return
+                # Once we have output, return after short quiet period.
+                if output_lines and (time.time() - last_output) >= idle_timeout:
+                    break
+                # If process exited and buffer is drained, return promptly.
+                if self.process and self.process.poll() is not None and self.output_queue.empty():
                     break
                 continue
 
@@ -373,7 +379,11 @@ class AgentSpawner:
                             logger.error(f"❌ Failed to restart {agent_type.value}")
 
     def send_to_agent(
-        self, agent_type: AgentType, command: str
+        self,
+        agent_type: AgentType,
+        command: str,
+        response_timeout: float = 8.0,
+        idle_timeout: float = 0.7,
     ) -> Optional[list[str]]:
         """
         Send command to specific agent and get response.
@@ -399,10 +409,8 @@ class AgentSpawner:
         if not success:
             return None
 
-        # Wait for response (TODO: smarter completion detection)
-        time.sleep(2)  # Give AI time to respond
-
-        return agent.get_output(timeout=5.0)
+        # Wait for response until output goes idle (smarter than fixed sleep).
+        return agent.get_output(timeout=response_timeout, idle_timeout=idle_timeout)
 
     def stop_all(self):
         """Stop all agents gracefully."""

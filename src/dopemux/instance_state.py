@@ -61,7 +61,6 @@ class InstanceState:
                 except Exception as e:
                     # Fallback to naive parse
                     return datetime.strptime(s.split('.')[0], '%Y-%m-%dT%H:%M:%S')
-                    logger.error(f"Error: {e}")
             return datetime.now(timezone.utc)
 
         data['created_at'] = _parse_iso(data['created_at'])

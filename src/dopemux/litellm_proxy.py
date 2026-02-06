@@ -1,6 +1,8 @@
 """LiteLLM proxy management helpers for Dopemux."""
 
 from __future__ import annotations
+import logging
+
 
 import hashlib
 import os
@@ -18,6 +20,8 @@ from typing import Dict, Optional, Tuple
 import litellm  # type: ignore
 import yaml
 
+
+logger = logging.getLogger(__name__)
 
 class LiteLLMProxyError(RuntimeError):
     """Raised when the LiteLLM proxy cannot be prepared or launched."""
@@ -185,8 +189,8 @@ def sync_litellm_database(instance_dir: Path, db_url: str) -> tuple[str, bool]:
         try:
             if sentinel_path.read_text().strip() == hash_key:
                 return "LiteLLM database schema already synchronized", True
-        except OSError:
-            pass
+        except OSError as exc:
+            logger.debug("Failed reading LiteLLM Prisma sentinel %s: %s", sentinel_path, exc)
 
     prisma_cli = shutil.which("prisma")
     if prisma_cli is None:
@@ -225,8 +229,7 @@ def sync_litellm_database(instance_dir: Path, db_url: str) -> tuple[str, bool]:
             try:
                 error_text = log_path.read_text(encoding="utf-8")[-2000:]
             except Exception as e:
-                pass
-                logger.error(f"Error: {e}")
+                logger.debug("Failed reading Prisma log tail %s: %s", log_path, e)
             lowered = error_text.lower()
             if ("can't reach database server" in lowered) or ("p1001" in lowered):
                 return (
@@ -336,7 +339,6 @@ class LiteLLMProxyManager:
             except OSError as exc:  # pragma: no cover - defensive
                 raise LiteLLMProxyError(f"Failed to launch LiteLLM proxy: {exc}") from exc
 
-                logger.error(f"Error: {e}")
             if process.poll() is not None:
                 log_excerpt = self._read_tail(log_path)
                 reason = self._should_disable_db_due_to_launch(log_excerpt)
@@ -513,8 +515,6 @@ class LiteLLMProxyManager:
                 return response.status == 200
         except Exception as e:
             return False
-
-            logger.error(f"Error: {e}")
     def _launch_proxy_process(
         self,
         env: Dict[str, str],
@@ -571,9 +571,9 @@ class LiteLLMProxyManager:
                 time.sleep(0.5)
             except ProcessLookupError:
                 # Process already dead
-                pass
-        except (ValueError, OSError):
-            pass
+                logger.debug("LiteLLM stale process %s already terminated", pid)
+        except (ValueError, OSError) as exc:
+            logger.debug("Failed cleaning stale LiteLLM process state: %s", exc)
         
         # Remove stale state file
         state_path.unlink(missing_ok=True)
@@ -583,10 +583,8 @@ class LiteLLMProxyManager:
         try:
             text = path.read_text(encoding="utf-8")
             return text[-length:]
-        except Exception as e:
+        except Exception:
             return ""
-
-            logger.error(f"Error: {e}")
     @staticmethod
     def _should_disable_db_due_to_launch(log_excerpt: str) -> Optional[str]:
         lowered = log_excerpt.lower()

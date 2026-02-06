@@ -6,6 +6,8 @@ Main entry point for all dopemux commands providing context preservation,
 attention monitoring, and task decomposition for neurodivergent developers.
 """
 
+import aiohttp
+
 import os
 
 import logging
@@ -413,9 +415,8 @@ def _start_minimal_session(
             context=context,
         )
     except Exception as e:
-        pass
-
-        logger.error(f"Error: {e}")
+        logger.error("Minimal Claude launcher failed: %s", e)
+        raise click.ClickException(f"Failed to start Claude Code session: {e}") from e
     if not background:
         console.logger.info("[green]✨ Claude Code is running (minimal mode)\n[/green]")
 
@@ -493,8 +494,8 @@ def init(ctx, directory: Optional[Path], profile: Optional[str], force: bool, te
     try:
         workspace_exists = Path.exists(workspace)
         dopemux_exists = Path.exists(dopemux_dir)
-    except TypeError:
-        pass
+    except TypeError as e:
+        logger.debug("Workspace path existence check failed for %s: %s", workspace, e)
 
     if directory and not workspace_exists and not dopemux_exists:
         console.logger.info(f"[red]Directory does not exist: {workspace}[/red]")
@@ -789,9 +790,7 @@ def start(
                     "[yellow]⚠️ LiteLLM health probe blocked by OS (operation not permitted); proceeding without inline check.[/yellow]"
                 )
         except Exception as e:
-            pass
-
-            logger.error(f"Error: {e}")
+            logger.debug("LiteLLM health probe failed on port %s: %s", litellm_port, e)
         if not litellm_master_key:
             base_candidate = env_master_key_raw or stored_master_key
             litellm_master_key, regenerated_master_key = ensure_master_key(base_candidate)
@@ -859,9 +858,7 @@ def start(
                 encoding="utf-8",
             )
         except Exception as e:
-            pass
-
-            logger.error(f"Error: {e}")
+            raise click.ClickException(f"Failed to write LiteLLM config: {e}") from e
         if litellm_running:
             console.logger.info(f"[green]✓ LiteLLM proxy already running on port {litellm_port}[/green]")
         else:
@@ -1078,9 +1075,7 @@ def start(
         else:
             logging.debug("Skipping tmux kill-server (inside tmux: %s)", bool(os.environ.get("TMUX")))
     except Exception as e:
-        pass
-
-        logger.error(f"Error: {e}")
+        logger.debug("tmux kill-server skipped due to error: %s", e)
     cwd_path = Path.cwd()
     project_path = cwd_path
 
@@ -1123,9 +1118,7 @@ def start(
             wire_script = Path(__file__).resolve().parents[2] / "scripts" / "wire_conport_project.py"
             check_call([sys.executable, str(wire_script)])
         except Exception as e:
-            pass
-
-            logger.error(f"Error: {e}")
+            logger.debug("ConPort wiring hook failed: %s", e)
     if project_path_real_exists:
         # Worktree Recovery Menu (ADHD-optimized session recovery)
         # Show menu if orphaned worktree sessions exist
@@ -1280,9 +1273,7 @@ def start(
             else:
                 console.logger.info(f"[dim]⚠️  DOPEMUX_FORCE_INSTANCE_ID={force_id} already in use; ignoring[/dim]")
     except Exception as e:
-        pass
-
-        logger.error(f"Error: {e}")
+        logger.debug("Failed applying DOPEMUX_FORCE_INSTANCE_ID override: %s", e)
     # Check if we should use OpenRouter via LiteLLM (for tmux --happy mode)
     if os.getenv("DOPEMUX_USE_OPENROUTER") == "1":
         _configure_openrouter_litellm()
@@ -2151,7 +2142,7 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
 
     if mobile:
         from .mobile.runtime import check_cli_health, list_mobile_panes
-        from .mobile.tmux_utils import TmuxError
+        from .tmux.common import TmuxError
 
         cfg_manager = ctx.obj.get("config_manager") if ctx.obj else ConfigManager()
         mobile_cfg = cfg_manager.get_mobile_config()
@@ -2165,8 +2156,6 @@ def status(ctx, attention: bool, context: bool, tasks: bool, mobile: bool):
         except TmuxError as exc:
             panes = []
             tmux_error = str(exc)
-
-            logger.error(f"Error: {e}")
         mobile_table = Table(title="📱 Mobile Status")
         mobile_table.add_column("Check", style="cyan")
         mobile_table.add_column("Status", style="green")
@@ -5788,7 +5777,7 @@ try:
 
 except ImportError as e:
     # Graceful degradation if dependencies not installed
-    pass  # Commands won't be available but CLI still works
+    logger.debug("Decision commands unavailable: %s", e)
 
 
 # ============================================================================
@@ -5825,7 +5814,7 @@ try:
     profile.add_command(create_profile, "create")
 
 except ImportError as e:
-    pass  # Profile commands not available
+    logger.debug("Profile commands unavailable: %s", e)
 
 
 # ============================================================================
@@ -5858,7 +5847,7 @@ try:
     dev.add_command(dev_paths, "paths")
 
 except ImportError as e:
-    pass  # Dev commands not available
+    logger.debug("Dev commands unavailable: %s", e)
 
 
 # Register mobile integration commands
@@ -6461,7 +6450,7 @@ def hooks_cmd(setup, teardown, status, enable, disable, shell_scripts, install_s
 
     except Exception as e:
         console.logger.error(f"[red]❌ Hook command failed: {e}[/red]")
-        if ctx.obj.get("verbose"):
+        if "--debug" in sys.argv:
             raise
         sys.exit(1)
 

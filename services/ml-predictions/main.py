@@ -3,6 +3,9 @@ ML Predictions API - Main FastAPI Application
 Real-time cognitive load prediction service for ADHD optimization
 """
 
+from fastapi.responses import JSONResponse
+from datetime import datetime
+
 import logging
 import asyncio
 import sys
@@ -68,7 +71,20 @@ async def startup_event():
 
 async def shutdown_event():
     """Clean up resources on shutdown."""
-    pass
+    global _predictor
+    if _predictor is None:
+        return
+    try:
+        maybe_async_close = getattr(_predictor, "aclose", None)
+        maybe_sync_close = getattr(_predictor, "close", None)
+        if callable(maybe_async_close):
+            await maybe_async_close()
+        elif callable(maybe_sync_close):
+            maybe_sync_close()
+    except Exception as exc:
+        logger.warning("Predictor shutdown cleanup failed: %s", exc)
+    finally:
+        _predictor = None
 
 
 def create_application() -> FastAPI:

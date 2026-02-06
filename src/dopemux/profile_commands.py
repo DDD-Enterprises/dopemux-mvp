@@ -32,9 +32,6 @@ def detect_workspace() -> Path:
         return Path(result.stdout.strip())
     except Exception as e:
         return Path.cwd()
-
-
-        logger.error(f"Error: {e}")
 @click.command("list")
 def list_profiles():
     """📋 List all available profiles"""

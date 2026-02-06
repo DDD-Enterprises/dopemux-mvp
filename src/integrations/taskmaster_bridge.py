@@ -255,8 +255,11 @@ class TaskMasterMCPClient:
                     request_json = json.dumps(shutdown_request) + "\n"
                     self._process.stdin.write(request_json)
                     self._process.stdin.flush()
-                except Exception:
-                    pass  # Ignore errors during shutdown notification
+                except Exception as exc:
+                    logger.debug(
+                        "Task-Master shutdown notification skipped due to stream error: %s",
+                        exc,
+                    )
 
                 # Terminate process
                 self._process.terminate()
@@ -406,16 +409,12 @@ class TaskMasterMCPClient:
 
         except Exception as exc:
             raise AIServiceError(f"Failed to parse PRD: {exc}") from exc
-            logger.error(f"Error: {e}")
         finally:
             # Clean up temporary file
             try:
                 os.unlink(temp_file_path)
-            except Exception as e:
-                pass
-
-                logger.error(f"Error: {e}")
-        raise AIServiceError("Failed to parse PRD")
+            except Exception as exc:
+                logger.debug("Failed to remove temporary PRD file %s: %s", temp_file_path, exc)
 
     def _parse_subtasks(self, subtasks_data: List[Dict]) -> List[TaskMasterTask]:
         """Parse subtasks recursively."""

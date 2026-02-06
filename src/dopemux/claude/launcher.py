@@ -324,7 +324,6 @@ Alternative: Set CLAUDE_PATH environment variable
                 claude_home.mkdir(parents=True, exist_ok=True)
                 env["CLAUDE_PLATFORM_HOME"] = str(claude_home)
             except Exception as e:
-                pass
                 logger.error(f"Error: {e}")
             # Remove any residual OAuth-related env to prevent mixed auth modes
             for k in list(env.keys()):
@@ -517,17 +516,13 @@ Alternative: Set CLAUDE_PATH environment variable
                         process.wait(timeout=2)
             except Exception as e:
                 # Silent cleanup - don't spam errors on exit
-                pass
-
-                logger.error(f"Error: {e}")
+                logger.debug("Failed terminating spawned process during cleanup: %s", e)
         # Clean up temporary settings files
         for temp_file in self._temp_files:
             try:
                 temp_file.unlink(missing_ok=True)
             except Exception as e:
-                pass
-
-                logger.error(f"Error: {e}")
+                logger.debug("Failed removing temporary settings file %s: %s", temp_file, e)
         # Clear tracking lists
         self._spawned_processes.clear()
         self._temp_files.clear()

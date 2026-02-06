@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import secrets
 import shutil
@@ -12,6 +13,8 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence
+
+logger = logging.getLogger(__name__)
 
 
 class DopeBrainzRouterError(RuntimeError):
@@ -234,8 +237,8 @@ class DopeBrainzRouterManager:
         if not ccr_legacy_path.exists():
             try:
                 ccr_legacy_path.symlink_to(self.router_home, target_is_directory=True)
-            except OSError:
-                pass  # Symlink might already exist or filesystem doesn't support it
+            except OSError as exc:
+                logger.debug("Could not create router symlink %s -> %s: %s", ccr_legacy_path, self.router_home, exc)
 
     def _load_config(self) -> Dict[str, object]:
         if not self.config_path.exists():
@@ -319,8 +322,8 @@ class DopeBrainzRouterManager:
         except OSError:
             try:
                 self.pid_path.unlink(missing_ok=True)
-            except OSError:
-                pass
+            except OSError as exc:
+                logger.debug("Could not remove stale PID file %s: %s", self.pid_path, exc)
             return False
 
     def _read_pid(self) -> Optional[int]:
@@ -331,8 +334,8 @@ class DopeBrainzRouterManager:
         except ValueError:
             try:
                 self.pid_path.unlink()
-            except OSError:
-                pass
+            except OSError as exc:
+                logger.debug("Could not clean invalid PID file %s: %s", self.pid_path, exc)
             return None
 
     def _build_process_env(self) -> Dict[str, str]:

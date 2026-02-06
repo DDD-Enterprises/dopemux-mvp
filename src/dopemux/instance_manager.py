@@ -5,6 +5,8 @@ Coordinates instance detection, worktree creation, and environment setup
 for multi-instance ADHD-optimized development workflows.
 """
 
+import logging
+
 import json
 import os
 import subprocess
@@ -15,6 +17,8 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import asyncio
+logger = logging.getLogger(__name__)
+
 try:
     import aiohttp  # type: ignore
 except ImportError:  # pragma: no cover - optional dependency
@@ -420,18 +424,15 @@ class InstanceManager:
 
         except Exception as e:
             # Silent failure - cache is optional optimization
-            pass
+            logger.debug("Failed writing instance cache %s: %s", self._cache_file, e)
 
-            logger.error(f"Error: {e}")
     def _invalidate_cache(self) -> None:
         """Invalidate cache (force fresh detection on next call)."""
         try:
             self._cache_file.unlink(missing_ok=True)
         except Exception as e:
-            pass
+            logger.debug("Failed invalidating instance cache %s: %s", self._cache_file, e)
 
-
-            logger.error(f"Error: {e}")
 def detect_instances_sync(workspace_root: Path) -> List[RunningInstance]:
     """
     Synchronous wrapper for detect_running_instances.

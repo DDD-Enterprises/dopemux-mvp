@@ -4,12 +4,16 @@ Week 6: Standalone Two-Plane Routing Test Server
 Minimal server for testing /route/pm and /route/cognitive endpoints
 without DopeconBridge dependencies.
 """
+import logging
+
 import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 import uvicorn
+
+logger = logging.getLogger(__name__)
 
 # ============================================================================
 # Models

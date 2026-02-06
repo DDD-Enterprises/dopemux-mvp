@@ -369,7 +369,6 @@ class EnhancedCommandRouter:
                 process.kill()
                 await process.wait()
             except Exception as e:
-                pass
                 logger.error(f"Error: {e}")
             raise  # Re-raise for retry handling
         except Exception as e:

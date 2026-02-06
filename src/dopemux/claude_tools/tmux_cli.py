@@ -271,8 +271,6 @@ class TmuxCli:
                     last_output = current_output
                     start_time = time.time()  # Reset timer
             except Exception as e:
-                pass  # Continue waiting
-
                 logger.error(f"Error: {e}")
             time.sleep(0.1)
 

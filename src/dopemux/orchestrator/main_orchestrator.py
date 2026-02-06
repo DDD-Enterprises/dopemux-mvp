@@ -6,13 +6,43 @@ Integrates parallel MCP operations, hook systems, and ADHD workflow management.
 """
 
 import asyncio
-from typing import Any, Dict, Optional
+from pathlib import Path
+from typing import Any, Dict, List
 
 from .adhd_orchestrator import ADHDOrchestrator
-from .hook_manager import HookManager
-from .conport_mcp_client import ConPortMCPClient
-from .parallel_executor import MCPParallelExecutor
-from .batch_handler import BatchFileOps
+from ..hooks.hook_manager import HookManager
+from ..mcp.parallel_executor import MCPParallelExecutor
+from ..tools.conport_client import ConPortClient
+
+
+class BatchFileOps:
+    """Simple async batch file operations used by main orchestrator."""
+
+    async def batch_read_files(self, paths: List[str]) -> List[Dict[str, Any]]:
+        async def _read(path_str: str) -> Dict[str, Any]:
+            path = Path(path_str)
+            try:
+                content = await asyncio.to_thread(path.read_text, encoding="utf-8")
+                return {"path": str(path), "success": True, "content": content}
+            except Exception as exc:
+                return {"path": str(path), "success": False, "error": str(exc)}
+
+        return await asyncio.gather(*[_read(path) for path in paths])
+
+    async def batch_write_files(self, writes: List[Dict[str, str]]) -> List[Dict[str, Any]]:
+        async def _write(item: Dict[str, str]) -> Dict[str, Any]:
+            path = Path(item.get("path", ""))
+            content = item.get("content", "")
+            if not path:
+                return {"path": "", "success": False, "error": "Missing path"}
+            try:
+                await asyncio.to_thread(path.parent.mkdir, parents=True, exist_ok=True)
+                await asyncio.to_thread(path.write_text, content, encoding="utf-8")
+                return {"path": str(path), "success": True}
+            except Exception as exc:
+                return {"path": str(path), "success": False, "error": str(exc)}
+
+        return await asyncio.gather(*[_write(item) for item in writes])
 
 class MainDopemuxOrchestrator:
     """
@@ -25,7 +55,7 @@ class MainDopemuxOrchestrator:
     def __init__(self):
         self.adhd_orchestrator = ADHDOrchestrator()
         self.hook_manager = HookManager()
-        self.conport_client = ConPortMCPClient()  # Assume initialized
+        self.conport_client = ConPortClient()
         self.parallel_executor = MCPParallelExecutor()
         self.batch_file_ops = BatchFileOps()
 
@@ -94,6 +124,8 @@ class MainDopemuxOrchestrator:
         """Execute MCP call with parallel processing."""
         method = params.get("method")
         kwargs = params.get("kwargs", {})
+        if not method or not hasattr(self.conport_client, method):
+            raise ValueError(f"Unknown ConPort client method: {method}")
 
         # Use parallel executor for batch operations
         if isinstance(kwargs.get("data"), list):

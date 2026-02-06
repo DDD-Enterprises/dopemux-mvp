@@ -114,8 +114,6 @@ class ProfileAnalytics:
 
         except Exception as e:
             return False
-
-            logger.error(f"Error: {e}")
     async def get_stats(self, days_back: int = 30) -> ProfileStats:
         """
         Get aggregated profile usage statistics.
@@ -167,8 +165,6 @@ class ProfileAnalytics:
 
         except Exception as e:
             return self._empty_stats()
-
-            logger.error(f"Error: {e}")
     def _analyze_switches(self, switches: List[ProfileSwitch], days_back: int) -> ProfileStats:
         """Analyze switch data to compute statistics."""
         if not switches:
