@@ -15,14 +15,20 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-import asyncpg
+try:
+    import asyncpg
+except ModuleNotFoundError:  # pragma: no cover - optional in dry-run mode
+    asyncpg = None
 import json
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 import sys
 from datetime import datetime
 import uuid
-from dateutil import parser as dateparser
+try:
+    from dateutil import parser as dateparser
+except ModuleNotFoundError:  # pragma: no cover - fallback parser below
+    dateparser = None
 
 
 # Schema mapping for decisions
@@ -44,11 +50,15 @@ class ConPortMigration:
 
     def __init__(self, db_url: str):
         self.db_url = db_url
-        self.conn: Optional[asyncpg.Connection] = None
+        self.conn: Optional[Any] = None
         self.id_mapping: Dict[int, str] = {}  # SQLite ID → PostgreSQL UUID
 
     async def connect(self):
         """Connect to PostgreSQL"""
+        if asyncpg is None:
+            raise RuntimeError(
+                "asyncpg is not installed. Install migration dependencies before non-dry-run import."
+            )
         logger.info("🔌 Connecting to PostgreSQL AGE...")
         self.conn = await asyncpg.connect(self.db_url)
         logger.info("   ✅ Connected")
@@ -425,7 +435,48 @@ class ConPortMigration:
         return imported
 
 
-async def run_import(json_path: Path, db_url: str) -> Dict[str, int]:
+def validate_export_structure(data: Dict[str, Any]) -> Dict[str, int]:
+    """
+    Validate importer input payload structure without DB access.
+
+    Returns:
+        Count summary for each top-level collection.
+
+    Raises:
+        ValueError: when required structure is missing.
+    """
+    required = [
+        "decisions",
+        "progress_entries",
+        "custom_data",
+        "context_links",
+        "system_patterns",
+    ]
+
+    missing = [key for key in required if key not in data]
+    if missing:
+        raise ValueError(f"Missing required top-level keys: {missing}")
+
+    counts: Dict[str, int] = {}
+    for key in required:
+        value = data.get(key)
+        if not isinstance(value, list):
+            raise ValueError(f"Expected list for '{key}', got {type(value).__name__}")
+        counts[key] = len(value)
+
+    # Optional context objects (allow dict or None)
+    for optional_key in ("active_context", "product_context"):
+        value = data.get(optional_key)
+        if value is not None and not isinstance(value, dict):
+            raise ValueError(
+                f"Expected dict or null for '{optional_key}', got {type(value).__name__}"
+            )
+        counts[optional_key] = 1 if isinstance(value, dict) else 0
+
+    return counts
+
+
+async def run_import(json_path: Path, db_url: str, dry_run: bool = False) -> Dict[str, int]:
     """
     Execute full import from JSON to PostgreSQL.
 
@@ -442,12 +493,24 @@ async def run_import(json_path: Path, db_url: str) -> Dict[str, int]:
     with open(json_path, 'r') as f:
         data = json.load(f)
 
+    counts = validate_export_structure(data)
     logger.info(f"📊 Export contains:")
-    logger.info(f"   - {len(data.get('decisions', []))} decisions")
-    logger.info(f"   - {len(data.get('progress_entries', []))} progress entries")
-    logger.info(f"   - {len(data.get('custom_data', []))} custom data entries")
-    logger.info(f"   - {len(data.get('context_links', []))} relationships")
-    logger.info(f"   - {len(data.get('system_patterns', []))} system patterns")
+    logger.info(f"   - {counts['decisions']} decisions")
+    logger.info(f"   - {counts['progress_entries']} progress entries")
+    logger.info(f"   - {counts['custom_data']} custom data entries")
+    logger.info(f"   - {counts['context_links']} relationships")
+    logger.info(f"   - {counts['system_patterns']} system patterns")
+
+    if dry_run:
+        logger.info("🔍 Dry-run validation complete (no database writes attempted).")
+        return {
+            "decisions": counts["decisions"],
+            "progress_entries": counts["progress_entries"],
+            "custom_data": counts["custom_data"],
+            "relationships": counts["context_links"],
+            "system_patterns": counts["system_patterns"],
+            "contexts": counts["active_context"] + counts["product_context"],
+        }
 
     # Initialize migrator
     migrator = ConPortMigration(db_url)
@@ -521,7 +584,7 @@ if __name__ == "__main__":
         logger.info("🔍 DRY RUN MODE - Validation only")
 
     try:
-        stats = asyncio.run(run_import(args.json_path, args.db_url))
+        stats = asyncio.run(run_import(args.json_path, args.db_url, dry_run=args.dry_run))
         logger.info(f"\n🎉 Migration successful!")
         logger.info(f"📊 Total items imported: {sum(stats.values())}")
     except Exception as e:
