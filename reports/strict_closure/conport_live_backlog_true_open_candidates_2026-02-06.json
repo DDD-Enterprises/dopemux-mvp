@@ -3,21 +3,25 @@
   "source_matrix": "reports/strict_closure/conport_live_backlog_underrepresented_matrix_2026-02-06.json",
   "summary": {
     "underrepresented_total": 66,
-    "resolved_in_runtime": 1,
-    "true_open_candidates": 32,
+    "resolved_in_current_wave": 2,
+    "true_open_candidates": 31,
     "likely_alias_or_already_implemented": 33,
     "open_cluster_counts": {
       "bridge_orchestrator": 6,
       "kg_dependency_unification": 7,
       "shield_slack_beta": 11,
-      "mcp_token_ops": 4,
+      "mcp_token_ops": 3,
       "other": 4
     }
   },
-  "resolved_in_runtime": [
+  "resolved_in_current_wave": [
     {
       "description": "ConPort database persistence implementation",
       "evidence": "reports/strict_closure/conport_persistence_verification_2026-02-06.json"
+    },
+    {
+      "description": "Document MCP token budgeting best practices for future MCP development (add to docs/best-practices/mcp-token-management.md)",
+      "evidence": "reports/strict_closure/mcp_token_management_doc_verification_2026-02-06.json"
     }
   ],
   "true_open_candidates": [
@@ -212,14 +216,6 @@
       "cluster": "shield_slack_beta",
       "priority_hint": "P1",
       "owner_bucket": "Integrations + UX"
-    },
-    {
-      "id": 17,
-      "status": "PLANNED",
-      "description": "Document MCP token budgeting best practices for future MCP development (add to docs/best-practices/mcp-token-management.md)",
-      "cluster": "mcp_token_ops",
-      "priority_hint": "P2",
-      "owner_bucket": "MCP Platform"
     },
     {
       "id": 18,

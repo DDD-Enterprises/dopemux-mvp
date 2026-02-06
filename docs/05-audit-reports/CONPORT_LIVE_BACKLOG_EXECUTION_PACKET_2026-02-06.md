@@ -15,14 +15,16 @@ prelude: Prioritized execution packet from live ConPort backlog undercoverage, f
 ## Summary
 
 1. Underrepresented runtime backlog items: `66`.
-2. Resolved in runtime: `1`.
-3. Likely true-open candidates: `32`.
+2. Resolved in current wave: `2`.
+3. Likely true-open candidates: `31`.
 4. Likely alias/already-implemented phrasing mismatches: `33`.
 
-## Resolved In Runtime
+## Resolved In Current Wave
 
 1. `ConPort database persistence implementation`
-   - Evidence: `docs/05-audit-reports/CONPORT_PERSISTENCE_VERIFICATION_2026-02-06.md`
+   - Evidence: `reports/strict_closure/conport_persistence_verification_2026-02-06.json`
+2. `Document MCP token budgeting best practices for future MCP development (add to docs/best-practices/mcp-token-management.md)`
+   - Evidence: `reports/strict_closure/mcp_token_management_doc_verification_2026-02-06.json`
 
 ## Cluster Counts (True-Open)
 
@@ -31,7 +33,7 @@ prelude: Prioritized execution packet from live ConPort backlog undercoverage, f
 | `bridge_orchestrator` | `6` |
 | `kg_dependency_unification` | `7` |
 | `shield_slack_beta` | `11` |
-| `mcp_token_ops` | `4` |
+| `mcp_token_ops` | `3` |
 | `other` | `4` |
 
 ## Packet
@@ -62,14 +64,13 @@ prelude: Prioritized execution packet from live ConPort backlog undercoverage, f
 | `22` | `P1` | `Integrations + UX` | `shield_slack_beta` | `Day 13: Slack Status Management (4-5 hours)` | `Slack/macOS/beta workflow integration scenarios` |
 | `23` | `P1` | `Integrations + UX` | `shield_slack_beta` | `Day 11-12: Slack Client Setup (8-10 hours)` | `Slack/macOS/beta workflow integration scenarios` |
 | `24` | `P1` | `Integrations + UX` | `shield_slack_beta` | `Week 3: Slack Integration & Message Triage` | `Slack/macOS/beta workflow integration scenarios` |
-| `25` | `P2` | `MCP Platform` | `mcp_token_ops` | `Document MCP token budgeting best practices for future MCP development (add to docs/best-practices/mcp-token-management.md)` | `MCP production token-limit validation checklist` |
-| `26` | `P2` | `MCP Platform` | `mcp_token_ops` | `Monitor MCP servers for edge cases after token limit fixes deployment` | `MCP production token-limit validation checklist` |
-| `27` | `P2` | `MCP Platform` | `mcp_token_ops` | `Test MCP token limit fixes in production: large files (package-lock.json), bulk queries (100 decisions), multi-step Zen analysis` | `MCP production token-limit validation checklist` |
-| `28` | `P2` | `MCP Platform` | `mcp_token_ops` | `Restart Claude Code to load all MCP token limit fixes (dope-context, Serena, ConPort, Zen)` | `MCP production token-limit validation checklist` |
-| `29` | `P2` | `Triage Needed` | `other` | `Day 4: ConPort Integration & Metrics (4-5 hours)` | `Targeted triage + owner assignment review` |
-| `30` | `P2` | `Triage Needed` | `other` | `Day 3: ShieldCoordinator Core Logic (6-7 hours)` | `Targeted triage + owner assignment review` |
-| `31` | `P2` | `Triage Needed` | `other` | `Day 5: Productivity Monitoring & False Positive Detection (5-6 hours)` | `Targeted triage + owner assignment review` |
-| `32` | `P2` | `Triage Needed` | `other` | `Week 1: Core Infrastructure & ADHD Engine Integration` | `Targeted triage + owner assignment review` |
+| `25` | `P2` | `MCP Platform` | `mcp_token_ops` | `Monitor MCP servers for edge cases after token limit fixes deployment` | `MCP production token-limit validation checklist` |
+| `26` | `P2` | `MCP Platform` | `mcp_token_ops` | `Test MCP token limit fixes in production: large files (package-lock.json), bulk queries (100 decisions), multi-step Zen analysis` | `MCP production token-limit validation checklist` |
+| `27` | `P2` | `MCP Platform` | `mcp_token_ops` | `Restart Claude Code to load all MCP token limit fixes (dope-context, Serena, ConPort, Zen)` | `MCP production token-limit validation checklist` |
+| `28` | `P2` | `Triage Needed` | `other` | `Day 4: ConPort Integration & Metrics (4-5 hours)` | `Targeted triage + owner assignment review` |
+| `29` | `P2` | `Triage Needed` | `other` | `Day 3: ShieldCoordinator Core Logic (6-7 hours)` | `Targeted triage + owner assignment review` |
+| `30` | `P2` | `Triage Needed` | `other` | `Day 5: Productivity Monitoring & False Positive Detection (5-6 hours)` | `Targeted triage + owner assignment review` |
+| `31` | `P2` | `Triage Needed` | `other` | `Week 1: Core Infrastructure & ADHD Engine Integration` | `Targeted triage + owner assignment review` |
 
 ## Notes
 
@@ -83,3 +84,5 @@ prelude: Prioritized execution packet from live ConPort backlog undercoverage, f
 - `reports/strict_closure/conport_live_backlog_underrepresented_matrix_2026-02-06.json`
 - `reports/strict_closure/conport_live_backlog_true_open_candidates_2026-02-06.json`
 - `reports/strict_closure/conport_persistence_verification_2026-02-06.json`
+- `docs/best-practices/mcp-token-management.md`
+- `reports/strict_closure/mcp_token_management_doc_verification_2026-02-06.json`
