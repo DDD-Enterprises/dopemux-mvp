@@ -1,5 +1,7 @@
 """Base agent class for the Genetic Coding Agent system."""
 
+import logging
+
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
 import asyncio
@@ -8,6 +10,8 @@ from datetime import datetime
 from .config import AgentConfig
 from .state import AgentState, AgentStatus
 
+
+logger = logging.getLogger(__name__)
 
 class BaseAgent(ABC):
     """Abstract base class for all coding agents."""
