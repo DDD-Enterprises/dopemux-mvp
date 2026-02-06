@@ -21,9 +21,9 @@ Top `40` underrepresented items from `reports/strict_closure/conport_full_todo_c
 | # | Status | Priority hint | Item | Recommended owner bucket | Verification anchor |
 |---:|---|---|---|---|---|
 | `1` | `BLOCKED` | `BLOCKED` | `Setting up LiteLLM database configuration and connection - BLOCKED: Waiting for PostgreSQL 'litellm' database creation (see Decision #210)` | `Platform/Infra + DB` | `DB provisioning + health checks` |
-| `2` | `TODO` | `P1` | `EPIC 2: Auto-Detection Engine (P1) \| Duration: 1.5 days \| Complexity: 0.6 \| Energy: Medium \| Deliverables: signal_collectors.py, scorer.py \| Can run PARALLEL with Epic 3` | `CLI + ADHD Engine` | `service-level smoke + unit tests` |
-| `3` | `TODO` | `P1` | `EPIC 3: Profile Switching (P1) \| Duration: 1.5 days \| Complexity: 0.7 \| Energy: High \| Deliverables: session_manager.py, claude_manager.py, switcher.py \| Can run PARALLEL with Epic 2` | `CLI + ADHD Engine` | `CLI regression + config compat tests` |
-| `4` | `TODO` | `P2` | `EPIC 4: UX Integration (P2) \| Duration: 2.5 days \| Complexity: 0.5 \| Energy: Medium \| Deliverables: statusline_integration.py, suggestion_engine.py, analytics.py, migration.py + docs` | `Docs + Service Owners` | `docs_validator + link checks` |
+| `2` | `IMPLEMENTED` | `P1` | `EPIC 2: Auto-Detection Engine (P1) \| Duration: 1.5 days \| Complexity: 0.6 \| Energy: Medium \| Deliverables: signal_collectors.py, scorer.py \| Can run PARALLEL with Epic 3` | `CLI + ADHD Engine` | `service-level smoke + unit tests` |
+| `3` | `IMPLEMENTED` | `P1` | `EPIC 3: Profile Switching (P1) \| Duration: 1.5 days \| Complexity: 0.7 \| Energy: High \| Deliverables: session_manager.py, claude_manager.py, switcher.py \| Can run PARALLEL with Epic 2` | `CLI + ADHD Engine` | `CLI regression + config compat tests` |
+| `4` | `IMPLEMENTED` | `P2` | `EPIC 4: UX Integration (P2) \| Duration: 2.5 days \| Complexity: 0.5 \| Energy: Medium \| Deliverables: statusline_integration.py, suggestion_engine.py, analytics.py, migration.py + docs` | `Docs + Service Owners` | `docs_validator + link checks` |
 | `5` | `TODO` | `UNSPECIFIED` | `1.2.3: Config backup & safety \| 1h \| Complexity: 0.6 \| Backup with timestamp, atomic write, rollback function` | `Core Platform` | `service-level smoke + unit tests` |
 | `6` | `TODO` | `UNSPECIFIED` | `1.2.4: Integration tests \| 1h \| Complexity: 0.7 \| Test full profile matches existing, developer has 3 MCPs, backup/rollback` | `MCP Platform` | `targeted pytest suites` |
 | `7` | `TODO` | `UNSPECIFIED` | `1.4.1: End-to-end test suite \| 1h \| Complexity: 0.6 \| Test default profile, --profile developer, validation errors, Claude starts` | `CLI + ADHD Engine` | `targeted pytest suites` |
@@ -142,6 +142,12 @@ Evidence: `docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2
 Evidence: `docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md`
 39. Row `40` (`Day 10: Week 2 Integration & Testing`) is now implemented via a reusable integration harness script and full execution evidence.
 Evidence: `docs/05-audit-reports/PROFILE_WEEK2_INTEGRATION_TESTING_VERIFICATION_2026-02-06.md`
+40. Row `2` (`EPIC 2: Auto-Detection Engine deliverables`) is now implemented with compatibility-facade modules for signal collection and profile scoring.
+Evidence: `docs/05-audit-reports/PROFILE_EPIC_COMPAT_SHIMS_VERIFICATION_2026-02-06.md`
+41. Row `3` (`EPIC 3: Profile Switching deliverables`) is now implemented with session-state, Claude-config manager, and orchestrated switcher module facades.
+Evidence: `docs/05-audit-reports/PROFILE_EPIC_COMPAT_SHIMS_VERIFICATION_2026-02-06.md`
+42. Row `4` (`EPIC 4: UX Integration deliverables`) is now implemented with statusline, suggestion-engine, analytics, and migration compatibility modules plus verification tests.
+Evidence: `docs/05-audit-reports/PROFILE_EPIC_COMPAT_SHIMS_VERIFICATION_2026-02-06.md`
 
 ## Source
 
