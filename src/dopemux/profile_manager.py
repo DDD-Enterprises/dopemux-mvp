@@ -170,7 +170,7 @@ class ProfileManager:
                 name=name,
                 description=description,
                 mcp_servers={
-                    "required": ["zen", "conport", "context7"],
+                    "required": ["zen", "conport", "pal"],
                     "enabled": [],
                     "disabled": []
                 },

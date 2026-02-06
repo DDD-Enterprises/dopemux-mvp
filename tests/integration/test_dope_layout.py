@@ -181,7 +181,7 @@ def _dummy_controller_for_agent(pane_title="agent:primary", pane_id="%1"):
 def test_agent_switch_role_primary(monkeypatch):
     runner = CliRunner()
 
-    config = _build_config_with_servers(["conport", "serena", "context7", "zen"])
+    config = _build_config_with_servers(["conport", "serena", "pal", "zen"])
 
     class DummyManager:
         def __init__(self, cfg):
@@ -234,7 +234,7 @@ def test_agent_switch_role_unknown(monkeypatch):
 def test_agent_switch_role_missing_services(monkeypatch):
     runner = CliRunner()
 
-    config = _build_config_with_servers(["conport", "context7"])
+    config = _build_config_with_servers(["conport", "pal"])
 
     class DummyManager:
         def __init__(self, cfg):

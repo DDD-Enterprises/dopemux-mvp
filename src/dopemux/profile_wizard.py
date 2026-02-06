@@ -33,7 +33,7 @@ class ProfileWizard:
         "serena-v2",
         "conport",
         "dope-context",
-        "context7",
+        "pal",
         "zen",
         "gpt-researcher",
         "exa",

@@ -23,7 +23,7 @@ echo "🔑 API Key Status:"
 [ -n "$EXA_API_KEY" ] && echo "  ✅ Exa API key configured" || echo "  ⚠️  Exa API key missing"
 [ -n "$TAVILY_API_KEY" ] && echo "  ✅ Tavily API key configured" || echo "  ⚠️  Tavily API key missing"
 [ -n "$PERPLEXITY_API_KEY" ] && echo "  ✅ Perplexity API key configured" || echo "  ⚠️  Perplexity API key missing"
-[ -n "$CONTEXT7_API_KEY" ] && echo "  ✅ Context7 API key configured" || echo "  ⚠️  Context7 API key missing"
+echo "  ℹ️  PAL apilookup uses the PAL MCP server (no separate API key)"
 
 # Create session storage directory
 echo ""

@@ -84,7 +84,7 @@ indices:
     preprocessing:
       chunker: endpoint_boundary
       sources:
-        - type: context7
+        - type: pal
           enabled: true
         - type: openapi
           enabled: true

@@ -20,7 +20,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
-from models.research_task import (
+from ..models.research_task import (
     ADHDConfiguration,
     ProjectContext,
     ResearchQuestion,
@@ -29,22 +29,25 @@ from models.research_task import (
     ResearchType,
     TaskStatus
 )
-from engines.query_classifier import (
+from ..engines.query_classifier import (
     QueryClassificationEngine,
     QueryIntent,
     ResearchScope,
     OutputFormat,
     SearchEngineStrategy
 )
-from engines.search.search_orchestrator import SearchOrchestrator, SearchStrategy
-from engines.search.exa_adapter import ExaSearchAdapter
-from engines.search.tavily_adapter import TavilySearchAdapter
-from engines.search.perplexity_adapter import PerplexitySearchAdapter
-from engines.search.context7_adapter import Context7SearchAdapter
+from ..engines.search.search_orchestrator import SearchOrchestrator, SearchStrategy
+from ..engines.search.exa_adapter import ExaSearchAdapter
+from ..engines.search.tavily_adapter import TavilySearchAdapter
+from ..engines.search.perplexity_adapter import PerplexitySearchAdapter
+from ..engines.search.pal_apilookup_adapter import PalApiLookupSearchAdapter
 
 # Discrete integrations for ADHD-friendly research enhancement
 try:
-    from adapters.context7_helper import discrete_enhance_research, analyze_for_documentation_hints
+    from ..adapters.pal_apilookup_helper import (
+        discrete_enhance_research,
+        analyze_for_documentation_hints,
+    )
 except ImportError:
     # Ultra-discrete fallback
     async def discrete_enhance_research(query, results): return results
@@ -148,12 +151,12 @@ class ResearchTaskOrchestrator:
             except Exception as e:
                 logger.warning(f"Failed to initialize Perplexity adapter: {e}")
 
-        # Context7 doesn't require API key, uses MCP integration
+        # PAL apilookup doesn't require API key, uses MCP integration
         try:
-            engines['context7'] = Context7SearchAdapter()
-            logger.info("Initialized Context7 search adapter")
+            engines['pal'] = PalApiLookupSearchAdapter()
+            logger.info("Initialized PAL apilookup search adapter")
         except Exception as e:
-            logger.warning(f"Failed to initialize Context7 adapter: {e}")
+            logger.warning(f"Failed to initialize PAL apilookup adapter: {e}")
 
         if not engines:
             logger.warning("No search engines available, creating minimal orchestrator")
@@ -246,7 +249,7 @@ class ResearchTaskOrchestrator:
                 pass  # Fail silently - research continues
 
                 logger.error(f"Error: {e}")
-        # Step 6: Discrete Context7 documentation hints (ADHD cognitive support)
+        # Step 6: Discrete PAL apilookup documentation hints (ADHD cognitive support)
         try:
             doc_hints = await analyze_for_documentation_hints(prompt)
             if doc_hints:
@@ -712,13 +715,13 @@ class ResearchTaskOrchestrator:
 
             logger.info(f"Research executed for '{question.question}': {len(sources)} sources from {len(engines_used)} engines")
 
-            # Step 7: Discrete Context7 documentation enhancement
+            # Step 7: Discrete PAL apilookup documentation enhancement
             enhanced_sources = sources
             try:
-                from adapters.context7_helper import discrete_enhance_research
+                from adapters.pal_apilookup_helper import discrete_enhance_research
                 enhanced_sources = await discrete_enhance_research(question.question, sources)
                 if enhanced_sources != sources:
-                    logger.debug(f"Context7 discretely enhanced results for '{question.question}'")
+                    logger.debug(f"PAL apilookup discretely enhanced results for '{question.question}'")
             except Exception as e:
                 pass  # Ultra-discrete - any failure is invisible
 

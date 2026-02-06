@@ -49,9 +49,9 @@ class OutputFormat(str, Enum):
 
 class SearchEngineStrategy(str, Enum):
     """Search engine selection strategy"""
-    DOCUMENTATION_FIRST = "documentation_first"  # Context7 → Exa → Tavily
+    DOCUMENTATION_FIRST = "documentation_first"  # PAL apilookup → Exa → Tavily
     RECENT_DEVELOPMENTS = "recent_developments"   # Tavily → Perplexity → Exa
-    TECHNICAL_DEEP_DIVE = "technical_deep_dive"   # Exa → Context7 → Tavily
+    TECHNICAL_DEEP_DIVE = "technical_deep_dive"   # Exa → PAL apilookup → Tavily
     BALANCED_APPROACH = "balanced_approach"       # All engines simultaneously
 
 @dataclass
@@ -405,21 +405,21 @@ class QueryClassificationEngine:
 
     def _plan_tool_orchestration(self, intent: QueryIntent, scope: ResearchScope, strategy: SearchEngineStrategy, patterns: Dict) -> Tuple[List[str], List[str]]:
         """Plan which tools to use for research"""
-        required_tools = ["context7"]  # Always start with documentation
+        required_tools = ["pal"]  # Always start with documentation
         optional_tools = []
 
         # Add search engines based on strategy
         if strategy == SearchEngineStrategy.DOCUMENTATION_FIRST:
-            required_tools.extend(["context7", "exa"])
+            required_tools.extend(["pal", "exa"])
             optional_tools.extend(["tavily", "perplexity"])
         elif strategy == SearchEngineStrategy.RECENT_DEVELOPMENTS:
             required_tools.extend(["tavily", "perplexity"])
-            optional_tools.extend(["exa", "context7"])
+            optional_tools.extend(["exa", "pal"])
         elif strategy == SearchEngineStrategy.TECHNICAL_DEEP_DIVE:
-            required_tools.extend(["exa", "context7"])
+            required_tools.extend(["exa", "pal"])
             optional_tools.extend(["tavily"])
         else:  # BALANCED_APPROACH
-            required_tools.extend(["context7", "exa", "tavily"])
+            required_tools.extend(["pal", "exa", "tavily"])
             optional_tools.extend(["perplexity"])
 
         # Add analysis tools based on intent
