@@ -56,3 +56,15 @@ It captures the `24` pending items identified as underrepresented in the active 
 2. Promote `Leantime manual setup completion` to explicit dependency gate in release readiness.
 3. Group Slack, macOS, and ShieldCoordinator items into a single integration sprint track with dedicated verification scenarios.
 4. Keep P2 items in this same push per locked policy (no deferred backlog for this epic run).
+
+## Wave Status Update (2026-02-06)
+
+Completed in this wave with evidence:
+
+1. `1.1.2: Run concurrent operations stress test`
+2. `1.1.3: Validate AGE/PG compatibility`
+
+Evidence:
+
+- `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
+- `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
