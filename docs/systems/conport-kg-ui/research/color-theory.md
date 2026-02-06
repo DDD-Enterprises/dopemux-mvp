@@ -1,10 +1,13 @@
 ---
 id: color-theory
 title: Color Theory
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Color Theory (reference) for dopemux documentation and developer workflows.
 ---
 # Color Theory and Accessibility Research for Developer Tools
 **Research Date**: 2025-10-15
@@ -892,56 +895,56 @@ Maintain across all themes for muscle memory:
 5. Dracula Theme (2023). Wikipedia and official statistics
 
 ### Syntax Highlighting Research
-6. Journal of Eye Movement Research (2016). "Syntax highlighting as an influencing factor"
-7. ResearchGate. "The impact of syntax colouring on program comprehension"
-8. ACM SIGACCESS. "Eye tracking study on background styling in code editors"
-9. Empirical Software Engineering. "Does syntax highlighting help programming novices?"
+1. Journal of Eye Movement Research (2016). "Syntax highlighting as an influencing factor"
+2. ResearchGate. "The impact of syntax colouring on program comprehension"
+3. ACM SIGACCESS. "Eye tracking study on background styling in code editors"
+4. Empirical Software Engineering. "Does syntax highlighting help programming novices?"
 
 ### Accessibility Standards
-10. Adobe (2020). "Color choices that are accessible"
-11. Visme. "A Detailed Guide to Color Blind Friendly Palettes"
-12. Microsoft Learn. "Verify page usability for people with color blindness"
-13. W3C (2012). "Optimal Colors to Improve Readability for People with Dyslexia"
-14. CMU (2017). "Good Background Colors for Readers" (dyslexia research)
-15. British Dyslexia Association (2023). "Dyslexia Style Guide"
+1. Adobe (2020). "Color choices that are accessible"
+2. Visme. "A Detailed Guide to Color Blind Friendly Palettes"
+3. Microsoft Learn. "Verify page usability for people with color blindness"
+4. W3C (2012). "Optimal Colors to Improve Readability for People with Dyslexia"
+5. CMU (2017). "Good Background Colors for Readers" (dyslexia research)
+6. British Dyslexia Association (2023). "Dyslexia Style Guide"
 
 ### Blue Light Research
-16. Chronobiology in Medicine (2024). "Impacts of Blue Light on Circadian Rhythm"
-17. PMC (2024). "Blue Light and Digital Screens Revisited"
-18. Nature Scientific Reports. "Analysis of circadian properties of blue light"
-19. Sleep Foundation. "Blue Light: What It Is and How It Affects Sleep"
+1. Chronobiology in Medicine (2024). "Impacts of Blue Light on Circadian Rhythm"
+2. PMC (2024). "Blue Light and Digital Screens Revisited"
+3. Nature Scientific Reports. "Analysis of circadian properties of blue light"
+4. Sleep Foundation. "Blue Light: What It Is and How It Affects Sleep"
 
 ### Semantic Color Usage
-20. Medium (2024). "Semantic Colors in UI/UX Design"
-21. Carbon Design System. "Status indicators"
-22. PatternFly. "Colors - Design Foundations"
-23. UXmatters (2020). "Capture Attention Through Color Psychology"
-24. Toptal. "Cross-cultural Design and the Role of UX"
+1. Medium (2024). "Semantic Colors in UI/UX Design"
+2. Carbon Design System. "Status indicators"
+3. PatternFly. "Colors - Design Foundations"
+4. UXmatters (2020). "Capture Attention Through Color Psychology"
+5. Toptal. "Cross-cultural Design and the Role of UX"
 
 ### Performance Metrics
-25. Grafana Documentation. "Dashboard best practices"
-26. Sigma Computing. "7 Best Practices for Using Color in Data Visualizations"
-27. NDepend Blog. "Understanding Cyclomatic Complexity"
-28. SciTools. "A visual tour of cyclomatic complexity"
-29. Stack Overflow. "Coverage color meaning in Eclipse"
+1. Grafana Documentation. "Dashboard best practices"
+2. Sigma Computing. "7 Best Practices for Using Color in Data Visualizations"
+3. NDepend Blog. "Understanding Cyclomatic Complexity"
+4. SciTools. "A visual tour of cyclomatic complexity"
+5. Stack Overflow. "Coverage color meaning in Eclipse"
 
 ### ADHD Color Psychology
-30. PMC (2006). "Color naming deficits and ADHD: A retinal dopaminergic hypothesis"
-31. Behavioral and Brain Functions (2014). "Colour vision in ADHD: Part 1 & 2"
-32. ScienceDirect (2014). "Color vision in ADHD: A pilot visual evoked potential study"
-33. Talkiatry. "ADHD & Overstimulation: A Psychiatrist Explains"
-34. TheraSpecs. "ADHD Light Sensitivity and Sensory Processing"
-35. ADDitude Magazine. "Color Coding Techniques for ADHD Organization"
-36. iACT Center. "Garanimals, Color Coding, and ADHD Brains"
-37. Malaysian Journal of Medical Sciences (2013). Color encoding and memory research
-38. Journal of Attention Disorders. Visual supports for ADHD research
-39. Shimmer ADHD Coaching. "Does the Pomodoro Method Work for ADHD?"
-40. Time Timer. "ADHD Time Management: The TimeTimer Method"
+1. PMC (2006). "Color naming deficits and ADHD: A retinal dopaminergic hypothesis"
+2. Behavioral and Brain Functions (2014). "Colour vision in ADHD: Part 1 & 2"
+3. ScienceDirect (2014). "Color vision in ADHD: A pilot visual evoked potential study"
+4. Talkiatry. "ADHD & Overstimulation: A Psychiatrist Explains"
+5. TheraSpecs. "ADHD Light Sensitivity and Sensory Processing"
+6. ADDitude Magazine. "Color Coding Techniques for ADHD Organization"
+7. iACT Center. "Garanimals, Color Coding, and ADHD Brains"
+8. Malaysian Journal of Medical Sciences (2013). Color encoding and memory research
+9. Journal of Attention Disorders. Visual supports for ADHD research
+10. Shimmer ADHD Coaching. "Does the Pomodoro Method Work for ADHD?"
+11. Time Timer. "ADHD Time Management: The TimeTimer Method"
 
 ### Theme Documentation
-41. Nord Theme. Official documentation (nordtheme.com)
-42. Dracula Theme. Official specification (draculatheme.com/spec)
-43. Tokyo Night. GitHub repositories (folke/tokyonight.nvim, tokyo-night/tokyo-night-vscode-theme)
+1. Nord Theme. Official documentation (nordtheme.com)
+2. Dracula Theme. Official specification (draculatheme.com/spec)
+3. Tokyo Night. GitHub repositories (folke/tokyonight.nvim, tokyo-night/tokyo-night-vscode-theme)
 
 ---
 

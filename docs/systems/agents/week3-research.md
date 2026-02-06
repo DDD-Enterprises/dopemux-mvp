@@ -1,10 +1,13 @@
 ---
 id: week3-research
 title: Week3 Research
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Week3 Research (reference) for dopemux documentation and developer workflows.
 ---
 # Week 3: CognitiveGuardian Production Implementation - Research & Plan
 
@@ -440,7 +443,7 @@ async def _detect_cognitive_load_biometric(self) -> float:
 **Production Code**: ~230 lines
 - cognitive_guardian.py: ~100 lines modified (ConPort integration)
 - enhanced_orchestrator.py: ~80 lines modified (routing integration)
-- __init__.py: ~50 lines (expose CognitiveGuardian)
+- **init**.py: ~50 lines (expose CognitiveGuardian)
 
 **Tests**: ~250 lines
 - test_cognitive_guardian.py: ~50 lines (ConPort tests)

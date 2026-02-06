@@ -5,6 +5,10 @@ type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Mcp Scripts Reference (reference) for dopemux documentation and developer
+  workflows.
 ---
 # MCP Management Scripts
 
@@ -89,9 +93,9 @@ python3 scripts/enable-autonomous-indexing.py
 ```
 
 **What it does**:
-- Starts file watching for code files (*.py, *.ts, *.js)
+- Starts file watching for code files (*.py,*.ts, *.js)
 - Auto-reindexes on file changes (5s debounce)
-- Enables autonomous docs indexing (*.md, *.pdf)
+- Enables autonomous docs indexing (*.md,*.pdf)
 
 **ADHD Benefit**: Never manually reindex again!
 

@@ -5,6 +5,9 @@ type: reference
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Features_Index (reference) for dopemux documentation and developer workflows.
 ---
 # Dopemux Features Index
 
@@ -43,9 +46,9 @@ next_review: '2026-02-08'
 
 **F-NEW-7: ConPort-KG 2.0 Multi-User & Cross-Workspace**
 - Status: ✅ ALL 3 Phases Complete
-  * Phase 1: Multi-tenancy deployed (1,495 decisions migrated)
-  * Phase 2: Unified queries (3 endpoints + 8 indexes)
-  * Phase 3: Cross-agent intelligence (4 pattern types)
+  - Phase 1: Multi-tenancy deployed (1,495 decisions migrated)
+  - Phase 2: Unified queries (3 endpoints + 8 indexes)
+  - Phase 3: Cross-agent intelligence (4 pattern types)
 - Impact: Cross-workspace search, intelligent insights
 - Performance: <200ms unified search, <500ms relationship traversal
 - Docs: F-NEW-7_COMPLETE_IMPLEMENTATION.md
@@ -53,9 +56,9 @@ next_review: '2026-02-08'
 
 **F-NEW-9: Energy-Aware Intelligent Task Router**
 - Status: ✅ ALL 3 Weeks Complete
-  * Week 1: Matching engine (100% test accuracy)
-  * Week 2: API integration (3 endpoints)
-  * Week 3: Pattern learning (personalization)
+  - Week 1: Matching engine (100% test accuracy)
+  - Week 2: API integration (3 endpoints)
+  - Week 3: Pattern learning (personalization)
 - Impact: +20% completion, -30% context switches, -50% frustration
 - Performance: 100% match accuracy (target: >75%)
 - Docs: F-NEW-9_COMPLETE_IMPLEMENTATION.md

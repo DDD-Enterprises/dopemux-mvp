@@ -1,10 +1,13 @@
 ---
 id: api-documentation
 title: Api Documentation
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Api Documentation (reference) for dopemux documentation and developer workflows.
 ---
 # GPT-Researcher Phase 2 API Documentation
 
@@ -42,12 +45,12 @@ cd backend
 ./start_api.sh
 ```
 
-2. **Access API Documentation**:
+1. **Access API Documentation**:
 
 - Swagger UI: <http://localhost:8000/docs>
 - ReDoc: <http://localhost:8000/redoc>
 
-3. **Test the API**:
+1. **Test the API**:
 
 ```bash
 python test_api.py
@@ -251,7 +254,7 @@ ws.onmessage = (event) => {
 }
 ```
 
-2. **Progress Update**:
+1. **Progress Update**:
 
 ```json
 {
@@ -266,7 +269,7 @@ ws.onmessage = (event) => {
 }
 ```
 
-3. **Completion**:
+1. **Completion**:
 
 ```json
 {
@@ -277,7 +280,7 @@ ws.onmessage = (event) => {
 }
 ```
 
-4. **Error**:
+1. **Error**:
 
 ```json
 {

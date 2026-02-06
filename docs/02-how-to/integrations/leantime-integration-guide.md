@@ -117,7 +117,7 @@ Show me all projects in Leantime
 **Cause**: Leantime container not running
 **Solution**:
 ```bash
-docker compose -f docker/leantime/docker-compose.yml up -d
+docker compose up -d mysql_leantime redis_leantime leantime leantime-bridge
 ```
 
 ## Health Check
@@ -134,10 +134,18 @@ docker ps --filter "name=leantime"
 
 # Test API directly
 curl http://localhost:3015/health
-# Expected: OK
+# Expected: {"status":"ok",...}
+
+# Deep readiness check (verifies live Leantime API call)
+curl "http://localhost:3015/health?deep=1"
+# Expected: {"status":"ok","leantime":"reachable",...}
 
 curl http://localhost:3015/info | jq
 # Expected: JSON with mcp/endpoints/leantime sections
+
+# REST compatibility endpoint used by dopecon-bridge
+curl http://localhost:3015/api/tools | jq
+# Expected: list of bridge tools
 ```
 
 ## What You Get

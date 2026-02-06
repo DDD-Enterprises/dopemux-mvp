@@ -11,6 +11,9 @@ tags:
 - setup
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+prelude: Development Setup - Quick Start (how-to) for dopemux documentation and developer
+  workflows.
 ---
 # Dopemux Development Setup - 5 Minute Quick Start
 
