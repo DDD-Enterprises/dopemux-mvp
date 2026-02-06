@@ -163,3 +163,12 @@ Post-update coverage recheck against the original miss extract now shows explici
 Evidence:
 
 - `reports/strict_closure/conport_master_todo_coverage_recheck_2026-02-06.json`
+
+## Full-Bundle Coverage Follow-On
+
+The targeted miss extraction is now explicitly represented, but a full-bundle sweep across all ConPort TODO/BLOCKED records still shows a larger underrepresented set that needs phased closure.
+
+Evidence:
+
+- `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json`
+- `docs/05-audit-reports/CONPORT_FULL_TODO_COVERAGE_MATRIX_2026-02-06.md`

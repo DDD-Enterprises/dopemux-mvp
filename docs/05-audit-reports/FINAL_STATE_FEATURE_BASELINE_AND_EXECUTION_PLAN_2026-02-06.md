@@ -47,11 +47,13 @@ Generated during this pass:
 - `reports/strict_closure/conport_master_todo_miss_extract_2026-02-06.json`
 - `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`
 - `reports/strict_closure/conport_master_todo_coverage_recheck_2026-02-06.json`
+- `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json`
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
 - `docs/05-audit-reports/CONPORT_REAL_IMPORT_INTEGRITY_2026-02-06.md`
 - `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`
+- `docs/05-audit-reports/CONPORT_FULL_TODO_COVERAGE_MATRIX_2026-02-06.md`
 - `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
 - `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
@@ -234,6 +236,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`.
 6. Coverage recheck confirms the original `24` miss-extract items are now explicitly represented in master docs (`24/24` closure):
    `reports/strict_closure/conport_master_todo_coverage_recheck_2026-02-06.json`.
+7. Full-bundle ConPort TODO/BLOCKED coverage extraction across all available import bundles shows `231` unique pending items with `167` still underrepresented in current master docs:
+   `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
@@ -255,6 +259,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 6. Decide and execute policy for replaying the remaining historical ConPort bundles (merge, dedupe, or archive-only import path).
 7. Complete Leantime manual setup closure so bridge deep health and project-list tooling are operational.
 8. Execute the 19-task secondary ConPort miss set and map each task to owner/test/doc evidence.
+9. Close the remaining full-bundle underrepresented ConPort backlog set (`167`) in phased owner-assigned packets.
 
 ### P2 (Optimization and Scale)
 
@@ -411,6 +416,7 @@ Exit criteria:
 7. Fold extracted historical TODO/BLOCKED items (`reports/strict_closure/conport_backlog_extract_2026-02-06.json`) into the master prioritized fix ledger.
 8. Close Leantime readiness blocker using `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md` criteria and refresh strict-closure evidence.
 9. Resolve the secondary explicit-task miss set from `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`.
+10. Execute and close the full-bundle underrepresented set from `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json` and refresh coverage counts.
 
 ---
 
