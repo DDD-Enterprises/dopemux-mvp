@@ -46,8 +46,10 @@ Generated during this pass:
 - `reports/strict_closure/conport_backlog_extract_2026-02-06.json`
 - `reports/strict_closure/conport_master_todo_miss_extract_2026-02-06.json`
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
+- `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `docs/05-audit-reports/CONPORT_REAL_IMPORT_INTEGRITY_2026-02-06.md`
 - `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`
+- `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
 
 Executed verification checks (latest pass on 2026-02-06):
 
@@ -59,6 +61,7 @@ Executed verification checks (latest pass on 2026-02-06):
 - `pytest -q --no-cov tests/unit/test_leantime_bridge.py` (passes)
 - `pytest -q --no-cov tests/test_mobile_runtime.py` (passes)
 - `npm --prefix ui-dashboard run build` (passes)
+- `python scripts/deploy/migration/validate_age_pg_compat_stress.py ...` (passes via `mcp-conport` runtime with `overall_ok=true`)
 
 ## Executive Findings
 
@@ -187,9 +190,15 @@ Executed verification checks (latest pass on 2026-02-06):
 2. `ui-dashboard-backend` now provides deterministic fallback plus optional live pull integration, but still lacks an event-stream push channel.
 3. Coverage policy (`fail-under=80`) still blocks targeted verification unless `--no-cov` is used.
 4. Multiple service directories have minimal scaffolding and no tests, but remain present in architecture narratives.
-5. First non-dry-run ConPort historical import surfaced schema-shape drift (`ag_catalog` assumptions vs live `public` tables); importer hardening is now in place but needs a clean rerun pass for full closure.
-6. `context_links` payload (111 rows) initially failed to materialize; dedicated backfill now restored 111/111 links (idempotent two-pass closure).
+5. First non-dry-run ConPort historical import surfaced schema-shape drift (`ag_catalog` assumptions vs live `public` tables); importer and backfill hardening are now in place and verified for one selected bundle.
+6. Full import/backfill replay across remaining exported historical bundles is still pending a dedupe/merge policy decision (avoid duplicating historical records in active runtime DB).
 7. Historical ConPort backlog extraction surfaced additional unresolved work (132 TODO, 1 BLOCKED) not yet fully reflected in the active prioritized gap register.
+
+## Resolved In Current Wave
+
+1. ConPort relationship restoration reached full parity for selected bundle (`111/111` `context_links` -> `entity_relationships`).
+2. AGE/PG compatibility and concurrency stress validation completed with `overall_ok=true` and zero query failures.
+3. AGE extension registration drift was fixed (`CREATE EXTENSION age`) and validated (`extversion 1.6.0`).
 
 ## ConPort Backlog Misses Extracted Into Master Fix Scope
 
@@ -224,7 +233,6 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 3. PAL migration incompleteness (stale Zen references across runtime/docs).
 4. Web UI real-time path still lacks production push transport (currently socket fallback to polling).
 5. Missing Stage 1/Stage 2 workflow implementation from ADR-197 (`workflow_ideas`, `workflow_epics`).
-6. ConPort historical relationship migration closure reached 111/111 parity for the selected bundle, with reproducible evidence artifact.
 
 ### P1 (High Impact, Not Immediate Blockers)
 
@@ -233,6 +241,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 3. Add tests for peripheral services with no coverage evidence (workspace-watcher, activity-capture, voice-commands, slack-integration).
 4. Clarify `dope-query`/`conport` split and deprecate one naming contract.
 5. Triage and merge historically captured ConPort TODO/BLOCKED backlog into current execution ownership map (including blocked LiteLLM DB provisioning dependency).
+6. Decide and execute policy for replaying the remaining historical ConPort bundles (merge, dedupe, or archive-only import path).
 
 ### P2 (Optimization and Scale)
 
@@ -385,7 +394,7 @@ Exit criteria:
 3. Stabilize test harness (async plugin + targeted suite policy).
 4. Resolve `ui-dashboard` build failures.
 5. Implement ADR-197 Stage 1/2 primitives (`workflow_ideas` and `workflow_epics`).
-6. Re-run relationship backfill across additional imported bundles after each source import to preserve 100% link parity.
+6. Define and execute replay strategy for the remaining historical ConPort bundles with dedupe guardrails.
 7. Fold extracted historical TODO/BLOCKED items (`reports/strict_closure/conport_backlog_extract_2026-02-06.json`) into the master prioritized fix ledger.
 
 ---
