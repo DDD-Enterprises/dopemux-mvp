@@ -638,6 +638,9 @@ mcp__conport__get_active_context --workspace_id $(pwd)
 # Check logs
 cat /tmp/statusline_debug.json | jq .
 tail -20 /tmp/statusline_debug.log
+
+# Build a full multi-service investigation packet
+python3 scripts/collect_task_packet.py --task-id statusline-debug --since 30m --services all
 ```
 
 ### Session time not showing
