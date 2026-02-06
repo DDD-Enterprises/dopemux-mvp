@@ -212,7 +212,7 @@ Executed verification checks (latest pass on 2026-02-06):
 1. ConPort relationship restoration reached full parity for selected bundle (`111/111` `context_links` -> `entity_relationships`).
 2. AGE/PG compatibility and concurrency stress validation completed with `overall_ok=true` and zero query failures.
 3. AGE extension registration drift was fixed (`CREATE EXTENSION age`) and validated (`extversion 1.6.0`).
-4. Profile CLI command-shadowing defect was fixed by unifying profile-group registration; `profile apply` and `profile current` aliases are now exposed with command-registration test coverage.
+4. Profile CLI command-shadowing defect was fixed by unifying profile-group registration; `profile apply`, `profile current`, `profile create`, `profile copy`, `profile edit`, and `profile delete` are now exposed with command-registration test coverage.
 
 ## ConPort Backlog Misses Extracted Into Master Fix Scope
 
