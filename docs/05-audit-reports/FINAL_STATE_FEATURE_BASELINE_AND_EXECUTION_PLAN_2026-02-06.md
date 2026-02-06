@@ -51,6 +51,10 @@ Generated during this pass:
 - `reports/strict_closure/litellm_blocker_verification_2026-02-06.json`
 - `reports/strict_closure/profile_workstream_verification_2026-02-06.json`
 - `reports/strict_closure/mcp_response_budget_verification_2026-02-06.json`
+- `reports/strict_closure/file_pattern_analyzer_verification_2026-02-06.json`
+- `reports/strict_closure/profile_detector_threshold_tests_verification_2026-02-06.json`
+- `reports/strict_closure/profile_config_swap_restart_verification_2026-02-06.json`
+- `reports/strict_closure/profile_error_recovery_rollback_verification_2026-02-06.json`
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
@@ -61,6 +65,10 @@ Generated during this pass:
 - `docs/05-audit-reports/LITELLM_BLOCKER_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/PROFILE_WORKSTREAM_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/FILE_PATTERN_ANALYZER_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_DETECTOR_THRESHOLD_TESTS_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_CONFIG_SWAP_RESTART_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_ERROR_RECOVERY_ROLLBACK_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
 - `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
@@ -272,6 +280,10 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/file_pattern_analyzer_verification_2026-02-06.json`.
 19. Detector threshold-coverage backlog item (`2.2.4`) is now implemented with explicit unit coverage for auto/prompt/none confidence transitions and signal combinations:
    `reports/strict_closure/profile_detector_threshold_tests_verification_2026-02-06.json`.
+20. Profile config swap and restart backlog item (`3.2.3`) is now implemented with backup-safe config application and optional restart command support in `profile apply/use`:
+   `reports/strict_closure/profile_config_swap_restart_verification_2026-02-06.json`.
+21. Profile error recovery and rollback backlog item (`3.2.4`) is now implemented with failure-path guardrails that preserve prior active state and restore Claude config backups when activation fails:
+   `reports/strict_closure/profile_error_recovery_rollback_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 

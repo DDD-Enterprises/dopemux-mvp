@@ -261,6 +261,25 @@ class TestClaudeConfig:
         current_config = claude_config.read_config()
         assert current_config == original_config
 
+    def test_apply_profile_returns_backup_path_when_requested(self, claude_config):
+        """Test optional backup-path return for rollback-safe workflows."""
+        profile = Profile(
+            name="minimal",
+            display_name="Minimal",
+            description="Minimal profile",
+            mcps=["conport", "zen"],
+        )
+
+        new_config, backup_path = claude_config.apply_profile(
+            profile,
+            create_backup=True,
+            return_backup_path=True,
+        )
+
+        assert new_config["_dopemux_active_profile"] == "minimal"
+        assert backup_path is not None
+        assert backup_path.exists()
+
     def test_rollback_to_backup(self, claude_config):
         """Test rolling back to a backup."""
         # Create a backup
