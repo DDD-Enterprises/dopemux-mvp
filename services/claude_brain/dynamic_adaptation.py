@@ -717,5 +717,4 @@ class DynamicAdaptationManager:
         """Clean up resources."""
         await self.adhd_integration.cleanup()
         self.user_states.clear()
-        self.performance_log.clear()</content>
-</xai:function_call">The file content contains invalid XML/HTML markup. Please provide clean Python code only.
+        self.performance_log.clear()

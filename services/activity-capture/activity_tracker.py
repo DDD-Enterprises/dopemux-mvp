@@ -1,276 +1,184 @@
 """
-Activity Tracker - Session and Activity Aggregation
+Activity Tracker for ADHD Engine Integration
 
-Tracks development sessions with 5-minute aggregation windows.
-Logs aggregated activity to ADHD Engine for energy/attention assessment.
-
-Session Tracking:
-- Start session: When workspace switches TO dopemux
-- End session: When workspace switches FROM dopemux (or 5-min window elapses)
-- Interruptions: Workspace switches during active session
-
-Activity Logging:
-- Every 5 minutes (or on session end)
-- Aggregates: duration, interruptions, complexity
-- Sends to ADHD Engine via HTTP client
-
-ADHD Optimization:
-- Automatic tracking (zero manual overhead)
-- Real-time interruption detection
-- Focus session duration measurement
+Tracks development activity and sends to ADHD Engine for accommodation adjustments.
 """
 
 import asyncio
+import json
 import logging
 import time
-from datetime import datetime
-from typing import Any, Dict, Optional
+from collections import defaultdict
+from typing import Dict, Any, List
 
 logger = logging.getLogger(__name__)
 
 
 class ActivityTracker:
     """
-    Tracks development activity sessions and aggregates for ADHD Engine.
+    Tracks development activity and aggregates it for ADHD Engine.
 
-    Features:
-    - Session start/end tracking
-    - 5-minute aggregation windows
-    - Interruption counting
-    - Automatic ADHD Engine logging
+    Aggregates activity over configurable time windows and sends
+    comprehensive activity reports to the ADHD Accommodation Engine.
     """
 
-    def __init__(
-        self,
-        adhd_client: Any,
-        aggregation_window_seconds: int = 300  # 5 minutes
-    ):
+    def __init__(self, adhd_client, aggregation_window_seconds: int = 300):
         """
         Initialize activity tracker.
 
         Args:
-            adhd_client: ADHDEngineClient instance
-            aggregation_window_seconds: Window size for aggregation (default: 300s = 5min)
+            adhd_client: ADHD Engine API client
+            aggregation_window_seconds: Time window for activity aggregation
         """
         self.adhd_client = adhd_client
         self.aggregation_window_seconds = aggregation_window_seconds
 
-        # Current session state
-        self.session_active = False
-        self.session_start_time: Optional[float] = None
-        self.session_interruptions = 0
-        self.current_workspace: Optional[str] = None  # Track workspace
+        # Activity storage
+        self.current_session = None
+        self.session_start_time = None
+        self.pending_activities: List[Dict[str, Any]] = []
 
-        # Metrics
-        self.sessions_tracked = 0
-        self.activities_logged = 0
-        self.logging_errors = 0
+        # Aggregation state
+        self.last_aggregation_time = time.time()
+        self.workspace_switches = 0
+        self.task_updates = 0
+        self.break_events = 0
 
-        # Background task
-        self.window_task: Optional[asyncio.Task] = None
-        self.running = False
+    async def handle_workspace_switch(self, event_data: dict):
+        """Handle workspace switch event."""
+        logger.info(f"Workspace switch: {event_data}")
 
-    async def start_session(self, workspace_path: Optional[str] = None):
-        """
-        Start a new activity session.
+        self.workspace_switches += 1
 
-        Called when workspace switches TO dopemux workspace.
-        
-        Args:
-            workspace_path: Optional workspace path for session
-        """
-        logger.debug(f"start_session() called (active: {self.session_active}, workspace: {workspace_path})")
+        # Record activity
+        activity = {
+            "type": "workspace_switch",
+            "timestamp": time.time(),
+            "from_workspace": event_data.get("from_workspace"),
+            "to_workspace": event_data.get("to_workspace"),
+            "from_app": event_data.get("from_app"),
+            "to_app": event_data.get("to_app"),
+            "file_activity": event_data.get("file_activity", {})
+        }
 
-        if self.session_active:
-            # Already in session, might be redundant event
-            logger.debug("Session already active, skipping")
-            return
+        self.pending_activities.append(activity)
 
-        self.session_active = True
+        # Check if we should aggregate and send
+        await self._check_and_aggregate()
+
+    async def handle_progress_update(self, event_data: dict):
+        """Handle progress update event."""
+        logger.debug(f"Progress update: {event_data}")
+
+        self.task_updates += 1
+
+        # Record activity
+        activity = {
+            "type": "progress_update",
+            "timestamp": time.time(),
+            "task_id": event_data.get("task_id"),
+            "status": event_data.get("status"),
+            "progress": event_data.get("progress", 0)
+        }
+
+        self.pending_activities.append(activity)
+
+    async def handle_session_start(self, event_data: dict):
+        """Handle session start event."""
+        logger.info(f"Session started: {event_data}")
+
+        self.current_session = event_data.get("session_id", "unknown")
         self.session_start_time = time.time()
-        self.session_interruptions = 0
-        self.sessions_tracked += 1
-        self.current_workspace = workspace_path  # Track workspace for session
 
-        logger.info(f"📍 Session started (#{self.sessions_tracked}, workspace: {workspace_path or 'auto'})")
+        # Reset counters for new session
+        self.workspace_switches = 0
+        self.task_updates = 0
+        self.break_events = 0
+        self.pending_activities = []
 
-        # Start aggregation window timer if not running
-        if not self.running:
-            self.running = True
-            self.window_task = asyncio.create_task(self._aggregation_window_loop())
+    async def handle_break_taken(self, event_data: dict):
+        """Handle break taken event."""
+        logger.info(f"Break taken: {event_data}")
 
-    async def end_session(self, interruption: bool = False):
-        """
-        End current activity session and log to ADHD Engine.
+        self.break_events += 1
 
-        Called when workspace switches FROM dopemux workspace or window elapses.
+        # Record break activity
+        activity = {
+            "type": "break_taken",
+            "timestamp": time.time(),
+            "duration_minutes": event_data.get("duration_minutes", 5),
+            "reason": event_data.get("reason", "scheduled")
+        }
 
-        Args:
-            interruption: Whether session ended due to interruption
-        """
-        if not self.session_active:
-            logger.debug("No active session to end")
+        self.pending_activities.append(activity)
+
+        # Send break data to ADHD Engine immediately
+        await self.adhd_client.send_activity_data({
+            "type": "break_taken",
+            "session_id": self.current_session,
+            "break_duration": activity["duration_minutes"],
+            "timestamp": activity["timestamp"]
+        })
+
+    async def _check_and_aggregate(self):
+        """Check if it's time to aggregate and send activity data."""
+        current_time = time.time()
+
+        if current_time - self.last_aggregation_time >= self.aggregation_window_seconds:
+            await self._aggregate_and_send()
+            self.last_aggregation_time = current_time
+
+    async def _aggregate_and_send(self):
+        """Aggregate pending activities and send to ADHD Engine."""
+        if not self.pending_activities:
             return
 
         # Calculate session duration
-        duration_seconds = time.time() - self.session_start_time if self.session_start_time else 0
-        duration_minutes = int(duration_seconds / 60)
+        session_duration = 0
+        if self.session_start_time:
+            session_duration = time.time() - self.session_start_time
 
-        # Only log if session was meaningful (> 1 minute)
-        if duration_minutes >= 1:
-            await self._log_activity(
-                duration_minutes=duration_minutes,
-                interruptions=self.session_interruptions + (1 if interruption else 0),
-                complexity=0.5,  # Default for MVP
-                activity_type="coding"
-            )
+        # Aggregate activity data
+        activity_summary = {
+            "session_id": self.current_session,
+            "time_window_seconds": self.aggregation_window_seconds,
+            "session_duration_minutes": session_duration / 60,
+            "workspace_switches": self.workspace_switches,
+            "task_updates": self.task_updates,
+            "break_events": self.break_events,
+            "total_activities": len(self.pending_activities),
+            "timestamp": time.time()
+        }
 
-            logger.info(
-                f"📤 Session ended: {duration_minutes}min, "
-                f"{self.session_interruptions} interruptions, "
-                f"{'interrupted' if interruption else 'clean exit'}"
-            )
-        else:
-            logger.debug(f"Session too short ({duration_seconds:.0f}s), not logging")
-
-        # Reset session
-        self.session_active = False
-        self.session_start_time = None
-        self.session_interruptions = 0
-
-    async def record_interruption(self):
-        """
-        Record an interruption during active session.
-
-        Called when workspace switches while session is active.
-        """
-        if not self.session_active:
-            return
-
-        self.session_interruptions += 1
-        logger.debug(f"🔔 Interruption #{self.session_interruptions} recorded")
-
-    async def _log_activity(
-        self,
-        duration_minutes: int,
-        interruptions: int,
-        complexity: float,
-        activity_type: str
-    ):
-        """
-        Log activity to ADHD Engine.
-
-        Args:
-            duration_minutes: Session duration
-            interruptions: Number of interruptions
-            complexity: Task complexity (0.0-1.0)
-            activity_type: Type of activity (coding/reviewing/debugging)
-        """
+        # Send to ADHD Engine
         try:
-            # Enrich with workspace if available
-            activity_data = {
-                "activity_type": activity_type,
-                "duration_minutes": duration_minutes,
-                "complexity": complexity,
-                "interruptions": interruptions,
-            }
-            
-            if self.current_workspace:
-                try:
-                    from workspace_support import enrich_event_with_workspace
-                    activity_data = enrich_event_with_workspace(
-                        activity_data,
-                        workspace_path=self.current_workspace,
-                        auto_detect=False,
-                    )
-                except Exception as e:
-                    # Workspace enrichment is optional
-                    pass
-            
-                    logger.error(f"Error: {e}")
-            success = await self.adhd_client.log_activity(**activity_data)
+            await self.adhd_client.send_activity_data(activity_summary)
+            logger.info(f"Sent activity summary: {activity_summary}")
 
-            if success:
-                self.activities_logged += 1
-                workspace_info = f" (workspace: {self.current_workspace})" if self.current_workspace else ""
-                logger.info(
-                    f"✅ Activity logged to ADHD Engine "
-                    f"({duration_minutes}min, {interruptions} interruptions){workspace_info}"
-                )
-            else:
-                self.logging_errors += 1
-                logger.warning("⚠️ Failed to log activity to ADHD Engine")
+            # Clear pending activities after successful send
+            self.pending_activities = []
 
         except Exception as e:
-            self.logging_errors += 1
-            logger.error(f"Activity logging error: {e}")
-
-    async def _aggregation_window_loop(self):
-        """
-        Background task that logs activity every N seconds if session active.
-
-        This ensures long sessions get logged periodically, not just on end.
-        """
-        while self.running:
-            try:
-                await asyncio.sleep(self.aggregation_window_seconds)
-
-                # If session is active and window elapsed, log partial activity
-                if self.session_active and self.session_start_time:
-                    duration_seconds = time.time() - self.session_start_time
-                    duration_minutes = int(duration_seconds / 60)
-
-                    if duration_minutes >= 5:  # Only log if meaningful duration
-                        await self._log_activity(
-                            duration_minutes=duration_minutes,
-                            interruptions=self.session_interruptions,
-                            complexity=0.5,
-                            activity_type="coding"
-                        )
-
-                        # Reset session for next window
-                        logger.info(f"🔄 Window completed, starting new window")
-                        self.session_start_time = time.time()
-                        self.session_interruptions = 0
-
-            except asyncio.CancelledError:
-                logger.info("⏹️ Aggregation window loop cancelled")
-                break
-            except Exception as e:
-                logger.error(f"Aggregation window error: {e}")
-                await asyncio.sleep(10)
+            logger.error(f"Failed to send activity data: {e}")
 
     async def flush_all(self):
-        """
-        Flush any pending activity on shutdown.
-
-        Ensures no data is lost when service stops.
-        """
-        if self.session_active:
-            logger.info("💾 Flushing pending session on shutdown")
-            await self.end_session(interruption=False)
-
-    def get_current_session_duration(self) -> int:
-        """
-        Get current session duration in minutes.
-
-        Returns:
-            Duration in minutes, or 0 if no active session
-        """
-        if not self.session_active or not self.session_start_time:
-            return 0
-
-        duration_seconds = time.time() - self.session_start_time
-        return int(duration_seconds / 60)
+        """Flush all pending activities (for shutdown)."""
+        if self.pending_activities:
+            await self._aggregate_and_send()
 
     def get_metrics(self) -> Dict[str, Any]:
-        """Get tracker metrics"""
+        """Get activity tracking metrics."""
+        session_duration = 0
+        if self.session_start_time:
+            session_duration = (time.time() - self.session_start_time) / 60
+
         return {
-            "sessions_tracked": self.sessions_tracked,
-            "activities_logged": self.activities_logged,
-            "logging_errors": self.logging_errors,
-            "session_active": self.session_active,
-            "current_session_duration_minutes": self.get_current_session_duration(),
-            "current_session_interruptions": self.session_interruptions if self.session_active else 0,
-            "aggregation_window_seconds": self.aggregation_window_seconds
+            "sessions_tracked": 1 if self.current_session else 0,
+            "current_session_id": self.current_session,
+            "current_session_duration_minutes": session_duration,
+            "workspace_switches": self.workspace_switches,
+            "task_updates": self.task_updates,
+            "break_events": self.break_events,
+            "pending_activities": len(self.pending_activities),
+            "last_aggregation_time": self.last_aggregation_time
         }
