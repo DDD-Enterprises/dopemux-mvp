@@ -42,6 +42,9 @@ Generated during this pass:
 - `reports/strict_closure/source_graph.json`
 - `reports/strict_closure/claim_catalog.json`
 - `reports/strict_closure/component_scorecards.json`
+- `reports/strict_closure/conport_real_import_integrity_2026-02-06.json`
+- `reports/strict_closure/conport_backlog_extract_2026-02-06.json`
+- `docs/05-audit-reports/CONPORT_REAL_IMPORT_INTEGRITY_2026-02-06.md`
 
 Executed verification checks (latest pass on 2026-02-06):
 
@@ -181,6 +184,24 @@ Executed verification checks (latest pass on 2026-02-06):
 2. `ui-dashboard-backend` now provides deterministic fallback plus optional live pull integration, but still lacks an event-stream push channel.
 3. Coverage policy (`fail-under=80`) still blocks targeted verification unless `--no-cov` is used.
 4. Multiple service directories have minimal scaffolding and no tests, but remain present in architecture narratives.
+5. First non-dry-run ConPort historical import surfaced schema-shape drift (`ag_catalog` assumptions vs live `public` tables); importer hardening is now in place but needs a clean rerun pass for full closure.
+6. `context_links` payload (111 rows) did not materialize in the initial real import run; relationship restoration still requires a dedicated rerun/backfill verification.
+7. Historical ConPort backlog extraction surfaced additional unresolved work (132 TODO, 1 BLOCKED) not yet fully reflected in the active prioritized gap register.
+
+## ConPort Backlog Misses Extracted Into Master Fix Scope
+
+Source: `reports/strict_closure/conport_backlog_extract_2026-02-06.json` (from historical SQLite snapshot import bundle).
+
+1. BLOCKED dependency captured in ConPort history and not yet in active fix register:
+   `Setting up LiteLLM database configuration and connection - BLOCKED: Waiting for PostgreSQL 'litellm' database creation (see Decision #210)`.
+2. Legacy architecture-consolidation epic backlog remains unresolved:
+   `EPIC: Architecture Consolidation - Shared Infrastructure Layer | 3 phases, 27 tasks, 24h total | P0-P2 priorities`.
+3. Legacy profile/automation epics remain unresolved in active planning:
+   profile manager implementation epic, auto-detection engine epic, profile switching epic, UX integration epic.
+4. Knowledge-graph integration backlog still open in historical queue:
+   `conport_integration_links`, bidirectional linking, `trace_decision_to_code` MCP tool, and traversal performance validation.
+5. Historical dependency-unification backlog still open:
+   remove duplicated semantic-search paths, centralize ADHD config service, and complete migration test coverage around those changes.
 
 ## Prioritized Gap Register
 
@@ -191,6 +212,7 @@ Executed verification checks (latest pass on 2026-02-06):
 3. PAL migration incompleteness (stale Zen references across runtime/docs).
 4. Web UI real-time path still lacks production push transport (currently socket fallback to polling).
 5. Missing Stage 1/Stage 2 workflow implementation from ADR-197 (`workflow_ideas`, `workflow_epics`).
+6. ConPort historical relationship migration closure not yet complete (initial run imported 0/111 `context_links` into `entity_relationships`).
 
 ### P1 (High Impact, Not Immediate Blockers)
 
@@ -198,6 +220,7 @@ Executed verification checks (latest pass on 2026-02-06):
 2. Resolve duplicated or ambiguous service families (`session-intelligence` vs `session_intelligence`, taskmaster variants).
 3. Add tests for peripheral services with no coverage evidence (workspace-watcher, activity-capture, voice-commands, slack-integration).
 4. Clarify `dope-query`/`conport` split and deprecate one naming contract.
+5. Triage and merge historically captured ConPort TODO/BLOCKED backlog into current execution ownership map (including blocked LiteLLM DB provisioning dependency).
 
 ### P2 (Optimization and Scale)
 
@@ -350,6 +373,8 @@ Exit criteria:
 3. Stabilize test harness (async plugin + targeted suite policy).
 4. Resolve `ui-dashboard` build failures.
 5. Implement ADR-197 Stage 1/2 primitives (`workflow_ideas` and `workflow_epics`).
+6. Complete ConPort historical import closure: rerun relationship restoration and verify expected `context_links` parity.
+7. Fold extracted historical TODO/BLOCKED items (`reports/strict_closure/conport_backlog_extract_2026-02-06.json`) into the master prioritized fix ledger.
 
 ---
 
