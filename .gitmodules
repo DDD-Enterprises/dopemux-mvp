@@ -1,3 +1,0 @@
-[submodule "services/claude-context"]
-	path = services/claude-context
-	url = https://github.com/hu3mann/dope-context.git
