@@ -245,6 +245,8 @@ Runtime recheck has already reclassified one persistence item and one MCP-token 
 - `docs/05-audit-reports/CONPORT_PERSISTENCE_VERIFICATION_2026-02-06.md`
 - `docs/best-practices/mcp-token-management.md`
 - `reports/strict_closure/mcp_token_management_doc_verification_2026-02-06.json`
+- `docs/05-audit-reports/BRIDGE_ORCHESTRATOR_INTEGRATION_VERIFICATION_2026-02-06.md`
+- `reports/strict_closure/bridge_orchestrator_integration_verification_2026-02-06.json`
 
 Artifacts:
 

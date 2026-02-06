@@ -3,11 +3,10 @@
   "source_matrix": "reports/strict_closure/conport_live_backlog_underrepresented_matrix_2026-02-06.json",
   "summary": {
     "underrepresented_total": 66,
-    "resolved_in_current_wave": 2,
-    "true_open_candidates": 31,
+    "resolved_in_current_wave": 8,
+    "true_open_candidates": 25,
     "likely_alias_or_already_implemented": 33,
     "open_cluster_counts": {
-      "bridge_orchestrator": 6,
       "kg_dependency_unification": 7,
       "shield_slack_beta": 11,
       "mcp_token_ops": 3,
@@ -22,57 +21,33 @@
     {
       "description": "Document MCP token budgeting best practices for future MCP development (add to docs/best-practices/mcp-token-management.md)",
       "evidence": "reports/strict_closure/mcp_token_management_doc_verification_2026-02-06.json"
+    },
+    {
+      "description": "Task 4.2: Configure ADHD Engine | Duration: 60m | Complexity: 0.5 | Energy: Medium | Integrate Task-Orchestrator ADHD engine with ConPort",
+      "evidence": "reports/strict_closure/bridge_orchestrator_integration_verification_2026-02-06.json"
+    },
+    {
+      "description": "Task 4.1: Enable Dependency Analysis | Duration: 75m | Complexity: 0.6 | Energy: High | Activate dependency analysis tools (Tools 1-10) with ConPort integration",
+      "evidence": "reports/strict_closure/bridge_orchestrator_integration_verification_2026-02-06.json"
+    },
+    {
+      "description": "Task 3.4: Test Bridge Communication | Duration: 45m | Complexity: 0.5 | Energy: Medium | Validate bidirectional Integration Bridge communication",
+      "evidence": "reports/strict_closure/bridge_orchestrator_integration_verification_2026-02-06.json"
+    },
+    {
+      "description": "Task 3.3: Implement Insight Publishing | Duration: 60m | Complexity: 0.6 | Energy: Medium | Enable Task-Orchestrator to send insights back to ConPort",
+      "evidence": "reports/strict_closure/bridge_orchestrator_integration_verification_2026-02-06.json"
+    },
+    {
+      "description": "Task 3.2: Implement Event Subscription | Duration: 75m | Complexity: 0.7 | Energy: High | Enable Task-Orchestrator to receive ConPort events via Integration Bridge",
+      "evidence": "reports/strict_closure/bridge_orchestrator_integration_verification_2026-02-06.json"
+    },
+    {
+      "description": "Task 3.1: Configure Integration Bridge | Duration: 60m | Complexity: 0.6 | Energy: Medium | Set up Integration Bridge routing for Task-Orchestrator",
+      "evidence": "reports/strict_closure/bridge_orchestrator_integration_verification_2026-02-06.json"
     }
   ],
   "true_open_candidates": [
-    {
-      "id": 24,
-      "status": "PLANNED",
-      "description": "Task 4.2: Configure ADHD Engine | Duration: 60m | Complexity: 0.5 | Energy: Medium | Integrate Task-Orchestrator ADHD engine with ConPort",
-      "cluster": "bridge_orchestrator",
-      "priority_hint": "P1",
-      "owner_bucket": "Coordination Services"
-    },
-    {
-      "id": 25,
-      "status": "PLANNED",
-      "description": "Task 4.1: Enable Dependency Analysis | Duration: 75m | Complexity: 0.6 | Energy: High | Activate dependency analysis tools (Tools 1-10) with ConPort integration",
-      "cluster": "bridge_orchestrator",
-      "priority_hint": "P1",
-      "owner_bucket": "Coordination Services"
-    },
-    {
-      "id": 27,
-      "status": "PLANNED",
-      "description": "Task 3.4: Test Bridge Communication | Duration: 45m | Complexity: 0.5 | Energy: Medium | Validate bidirectional Integration Bridge communication",
-      "cluster": "bridge_orchestrator",
-      "priority_hint": "P1",
-      "owner_bucket": "Coordination Services"
-    },
-    {
-      "id": 28,
-      "status": "PLANNED",
-      "description": "Task 3.3: Implement Insight Publishing | Duration: 60m | Complexity: 0.6 | Energy: Medium | Enable Task-Orchestrator to send insights back to ConPort",
-      "cluster": "bridge_orchestrator",
-      "priority_hint": "P1",
-      "owner_bucket": "Coordination Services"
-    },
-    {
-      "id": 29,
-      "status": "PLANNED",
-      "description": "Task 3.2: Implement Event Subscription | Duration: 75m | Complexity: 0.7 | Energy: High | Enable Task-Orchestrator to receive ConPort events via Integration Bridge",
-      "cluster": "bridge_orchestrator",
-      "priority_hint": "P1",
-      "owner_bucket": "Coordination Services"
-    },
-    {
-      "id": 30,
-      "status": "PLANNED",
-      "description": "Task 3.1: Configure Integration Bridge | Duration: 60m | Complexity: 0.6 | Energy: Medium | Set up Integration Bridge routing for Task-Orchestrator",
-      "cluster": "bridge_orchestrator",
-      "priority_hint": "P1",
-      "owner_bucket": "Coordination Services"
-    },
     {
       "id": 60,
       "status": "PLANNED",
