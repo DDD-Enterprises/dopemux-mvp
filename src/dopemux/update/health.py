@@ -63,15 +63,10 @@ class HealthChecker:
                 'url': 'http://localhost:3004/health',
                 'container': 'conport'
             },
-            'zen': {
+            'pal': {
                 'type': 'http',
                 'url': 'http://localhost:3003/health',
-                'container': 'zen'
-            },
-            'context7': {
-                'type': 'http',
-                'url': 'http://localhost:3002/health',
-                'container': 'context7'
+                'container': 'pal'
             },
             'gptr-mcp': {
                 'type': 'http',

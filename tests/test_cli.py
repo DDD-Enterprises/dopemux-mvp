@@ -169,7 +169,7 @@ class TestCLI:
 
         class DummyProfile:
             name = "quickfix"
-            mcps = ["conport", "serena", "context7"]
+            mcps = ["conport", "serena", "pal"]
 
         class DummyProfileManager:
             def __init__(self):

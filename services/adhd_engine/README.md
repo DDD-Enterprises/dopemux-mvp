@@ -336,7 +336,7 @@ curl http://localhost:8099/health  # break-suggester
 ### MCP Server Integration
 - **Serena**: Code complexity assessments and navigation assistance
 - **Zen**: Multi-model reasoning with ADHD-aware prompting
-- **Context7**: Documentation lookup for ADHD-friendly patterns
+- **PAL apilookup**: Documentation lookup for ADHD-friendly patterns
 
 ### Development Workflow Integration
 1. **Session Start**: Query ADHD state and energy levels

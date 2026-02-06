@@ -92,9 +92,9 @@ class ExternalDependencyIntegrationEngine:
     - Smart alerting to minimize interruptions
     """
 
-    def __init__(self, conport_client=None, context7_client=None):
+    def __init__(self, conport_client=None, pal_client=None):
         self.conport = conport_client
-        self.context7 = context7_client
+        self.pal = pal_client
 
         # Dependency registry
         self.dependencies: Dict[str, ExternalDependency] = {}

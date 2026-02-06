@@ -158,7 +158,6 @@ class MCPServer:
                 'exa_api_key': os.getenv('EXA_API_KEY'),
                 'tavily_api_key': os.getenv('TAVILY_API_KEY'),
                 'perplexity_api_key': os.getenv('PERPLEXITY_API_KEY'),
-                'context7_api_key': os.getenv('CONTEXT7_API_KEY'),
             }
 
             # Initialize project context

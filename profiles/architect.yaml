@@ -10,7 +10,7 @@ mcps:
   - zen              # Multi-model reasoning (consensus, planner, codereview)
   - serena-v2        # Code structure analysis
   - dope-context     # Semantic code search
-  - context7         # Framework patterns
+  - pal         # Framework patterns
 
 adhd_config:
   energy_preference: high

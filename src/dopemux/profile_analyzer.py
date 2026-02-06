@@ -288,11 +288,11 @@ class GitHistoryAnalyzer:
             # Code-heavy work
             if any(word in dir_lower for word in ['src', 'lib', 'app', 'components']):
                 mcps.add("dope-context")
-                mcps.add("context7")
+                mcps.add("pal")
 
             # Documentation work
             if any(word in dir_lower for word in ['docs', 'documentation']):
-                mcps.add("context7")
+                mcps.add("pal")
 
             # Testing work
             if any(word in dir_lower for word in ['test', 'tests', '__tests__']):

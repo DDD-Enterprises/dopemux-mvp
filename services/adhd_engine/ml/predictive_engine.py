@@ -21,7 +21,7 @@ try:
         BreakPattern,
     )
 except ImportError:  # pragma: no cover - fallback for script execution
-    from models import EnergyLevel, AttentionState  # type: ignore
+    from ..core.models import EnergyLevel, AttentionState  # type: ignore
     from .pattern_learner import (  # type: ignore
         ADHDPatternLearner,
         EnergyPattern,

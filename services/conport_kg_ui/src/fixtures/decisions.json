@@ -16,7 +16,7 @@
       "timestamp": "2025-10-14T15:45:00Z",
       "related_count": 8,
       "tags": ["superclaude", "mcp-integration", "workflow"],
-      "rationale": "SuperClaude provides 16 specialized personas and 25+ slash commands that need integration with Dopemux's enhanced MCP suite (Zen, ConPort, Serena, Context7, Exa, GPT-Researcher) for optimal ADHD-optimized development workflows.",
+      "rationale": "SuperClaude provides 16 specialized personas and 25+ slash commands that need integration with Dopemux's enhanced MCP suite (Zen, ConPort, Serena, PAL apilookup, Exa, GPT-Researcher) for optimal ADHD-optimized development workflows.",
       "implementation": "Created comprehensive MCP documentation in .claude/ directory, mapped SuperClaude commands to MCP tools, documented tool selection patterns, and established integration patterns for each workflow type.",
       "cognitive_load": "high"
     },

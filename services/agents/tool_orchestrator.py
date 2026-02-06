@@ -251,8 +251,8 @@ class ToolOrchestrator:
                     "description": "Semantic code search"
                 },
                 "documentation": {
-                    "primary": "context7",
-                    "method": "get-library-docs",
+                    "primary": "pal",
+                    "method": "apilookup",
                     "fallback": "exa"
                 },
                 "web_research": {
@@ -343,8 +343,8 @@ class ToolOrchestrator:
 
             if requirements.requires_documentation:
                 selections["docs"] = ToolSelection(
-                    primary_tool="context7",
-                    method="get-library-docs",
+                    primary_tool="pal",
+                    method="apilookup",
                     fallback_tool="exa",
                     rationale="Documentation lookup required"
                 )

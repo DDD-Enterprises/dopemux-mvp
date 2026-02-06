@@ -17,15 +17,14 @@ class RepairAttempt:
     """Represents a single repair attempt with metadata."""
 
     def __init__(self, code: str, explanation: str, confidence: float):
-
-import logging
-
-logger = logging.getLogger(__name__)
-
         self.code = code
         self.explanation = explanation
         self.confidence = confidence
         self.timestamp = datetime.now()
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class VanillaAgent(BaseAgent):
