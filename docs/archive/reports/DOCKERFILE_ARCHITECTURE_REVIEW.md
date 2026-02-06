@@ -1,10 +1,14 @@
 ---
 id: DOCKERFILE_ARCHITECTURE_REVIEW
 title: Dockerfile_Architecture_Review
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dockerfile_Architecture_Review (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # Dockerfile Architecture Review (G34 Option B)
 
