@@ -45,6 +45,21 @@ SCRIPT_DIR = Path(__file__).parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+# Shared MCP response-budget utilities
+try:
+    from services.shared.mcp.response_budget import (
+        estimate_tokens as estimate_mcp_tokens,
+        truncate_numbered_lines,
+    )
+except ImportError:
+    SERVICES_ROOT = SCRIPT_DIR.parent
+    if str(SERVICES_ROOT) not in sys.path:
+        sys.path.insert(0, str(SERVICES_ROOT))
+    from shared.mcp.response_budget import (
+        estimate_tokens as estimate_mcp_tokens,
+        truncate_numbered_lines,
+    )
+
 # ============================================================================
 # ADHD Engine Integration - Dynamic result limits (F-NEW-1)
 # ============================================================================
@@ -4776,8 +4791,8 @@ class SerenaV2MCPServer:
         except Exception as e:
             return f"(context unavailable: {e})"
     def _estimate_tokens(self, text: str) -> int:
-        """Conservative token estimation: 1 token ≈ 4 chars."""
-        return len(text) // 4
+        """Conservative token estimation delegated to shared utility."""
+        return estimate_mcp_tokens(text)
 
     def _truncate_to_token_budget(
         self,
@@ -4790,30 +4805,11 @@ class SerenaV2MCPServer:
 
         Returns (truncated_lines, was_truncated)
         """
-        result_lines = []
-        estimated_tokens = 50  # Base overhead for structure
-        truncated = False
-
-        for i, line in enumerate(lines):
-            # Format with line number (cat -n style)
-            line_num = start_line_num + i
-            formatted = f"{line_num:6d}→{line}"
-            line_tokens = self._estimate_tokens(formatted + "\n")
-
-            if estimated_tokens + line_tokens > max_tokens:
-                # Would exceed budget, stop here
-                truncated = True
-                # Add truncation notice
-                result_lines.append(
-                    f"{line_num:6d}→... [truncated: {len(lines) - i} more lines, "
-                    f"exceeded {max_tokens} token budget]"
-                )
-                break
-
-            result_lines.append(formatted)
-            estimated_tokens += line_tokens
-
-        return result_lines, truncated
+        return truncate_numbered_lines(
+            lines=lines,
+            max_tokens=max_tokens,
+            start_line_num=start_line_num,
+        )
 
     async def read_file_tool(
         self,

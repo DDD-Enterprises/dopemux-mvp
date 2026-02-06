@@ -50,6 +50,7 @@ Generated during this pass:
 - `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json`
 - `reports/strict_closure/litellm_blocker_verification_2026-02-06.json`
 - `reports/strict_closure/profile_workstream_verification_2026-02-06.json`
+- `reports/strict_closure/mcp_response_budget_verification_2026-02-06.json`
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
@@ -59,6 +60,7 @@ Generated during this pass:
 - `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`
 - `docs/05-audit-reports/LITELLM_BLOCKER_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/PROFILE_WORKSTREAM_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
 - `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
@@ -215,6 +217,7 @@ Executed verification checks (latest pass on 2026-02-06):
 2. AGE/PG compatibility and concurrency stress validation completed with `overall_ok=true` and zero query failures.
 3. AGE extension registration drift was fixed (`CREATE EXTENSION age`) and validated (`extversion 1.6.0`).
 4. Profile CLI command-shadowing defect was fixed by unifying profile-group registration; `profile apply`, `profile current`, `profile create`, `profile copy`, `profile edit`, and `profile delete` are now exposed with command-registration test coverage.
+5. Shared MCP response-budget utility is now implemented and integrated in Serena + GPT-Researcher MCP servers with unit test coverage.
 
 ## ConPort Backlog Misses Extracted Into Master Fix Scope
 
@@ -249,6 +252,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`.
 9. Profile/auto-detection workstream verification shows `12` extracted tasks already implemented and `3` partial, reducing true open scope in that cluster:
    `reports/strict_closure/profile_workstream_verification_2026-02-06.json`.
+10. Shared MCP response-budget work item from the underrepresented packet is now implemented and verified:
+   `reports/strict_closure/mcp_response_budget_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
