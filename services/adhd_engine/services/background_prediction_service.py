@@ -29,7 +29,7 @@ import os
 
 import redis.asyncio as redis
 
-from ..models import EnergyLevel, AttentionState
+from ..core.models import EnergyLevel, AttentionState
 from ..ml.predictive_engine import PredictiveADHDEngine
 from ..config import settings
 
@@ -73,7 +73,7 @@ class BackgroundPredictionService:
 
         # Initialize predictive engine
         try:
-            from ..ml.predictive_engine import PredictiveADHDEngine
+            from ml.predictive_engine import PredictiveADHDEngine
             self.predictive_engine = PredictiveADHDEngine(self.workspace_id)
             logger.info("✅ Predictive engine initialized")
         except Exception as e:

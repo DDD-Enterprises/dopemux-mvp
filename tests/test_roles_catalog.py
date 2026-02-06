@@ -33,7 +33,7 @@ class DummyConfigManager:
 
 def _build_dummy_config(servers: Optional[list[str]] = None) -> DummyConfigManager:
     """Create a dummy config manager with specific MCP servers."""
-    servers = servers or ["conport", "serena", "context7", "zen", "exa"]
+    servers = servers or ["conport", "serena", "pal", "zen", "exa"]
     config = DopemuxConfig()
     config.mcp_servers = {
         name: MCPServerConfig(
@@ -75,7 +75,7 @@ def test_activate_role_quickfix_filters_servers(monkeypatch):
     activation = activate_role("quickfix", cfg_manager, console)
 
     assert activation.resolved_key == "quickfix"
-    assert set(activation.enabled_servers) == {"conport", "context7", "serena"}
+    assert set(activation.enabled_servers) == {"conport", "pal", "serena"}
     disabled = {
         name
         for name, cfg in cfg_manager.load_config().mcp_servers.items()

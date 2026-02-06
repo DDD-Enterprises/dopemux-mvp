@@ -235,7 +235,7 @@ class ConfigGenerator:
             "serena": 26,
             "serena-v2": 26,
             "zen": 8,
-            "context7": 2,
+            "pal": 2,
             "gpt-researcher": 5,
             "dope-context": 8,
             "desktop-commander": 10,

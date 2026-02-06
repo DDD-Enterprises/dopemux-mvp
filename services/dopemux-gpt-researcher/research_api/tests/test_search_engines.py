@@ -23,7 +23,7 @@ from ..engines.search import (
     ExaSearchAdapter,
     TavilySearchAdapter,
     PerplexitySearchAdapter,
-    Context7SearchAdapter
+    PalApiLookupSearchAdapter
 )
 
 
@@ -87,7 +87,7 @@ def mock_engines():
         'exa': MockSearchAdapter('exa'),
         'tavily': MockSearchAdapter('tavily'),
         'perplexity': MockSearchAdapter('perplexity'),
-        'context7': MockSearchAdapter('context7')
+        'pal': MockSearchAdapter('pal')
     }
 
 
@@ -449,21 +449,21 @@ class TestPerplexityAdapter:
         assert "api documentation" in prompt.lower()
 
 
-class TestContext7Adapter:
-    """Test Context7 search adapter"""
+class TestPalApiLookupAdapter:
+    """Test PAL apilookup search adapter"""
 
     def test_initialization(self):
-        """Test Context7 adapter initialization"""
-        adapter = Context7SearchAdapter()
+        """Test PAL apilookup adapter initialization"""
+        adapter = PalApiLookupSearchAdapter()
 
-        assert adapter.engine_name == "context7"
+        assert adapter.engine_name == "pal"
         assert adapter.max_results_per_request == 10
         assert adapter.supports_date_filtering == False  # Official docs don't need date filtering
         assert adapter.supports_domain_filtering == False  # All results are official
 
     def test_library_name_extraction(self):
         """Test library name extraction from queries"""
-        adapter = Context7SearchAdapter()
+        adapter = PalApiLookupSearchAdapter()
 
         # Test popular library detection
         libraries = adapter._extract_library_names("How to use React hooks")
@@ -476,7 +476,7 @@ class TestContext7Adapter:
 
     def test_topic_extraction(self):
         """Test topic extraction from queries"""
-        adapter = Context7SearchAdapter()
+        adapter = PalApiLookupSearchAdapter()
 
         # Test installation topic
         topic = adapter._extract_topic_from_query(
@@ -494,7 +494,7 @@ class TestContext7Adapter:
 
     def test_token_calculation(self):
         """Test token limit calculation"""
-        adapter = Context7SearchAdapter()
+        adapter = PalApiLookupSearchAdapter()
 
         # Simple query should use default tokens
         tokens = adapter._calculate_token_limit("React", None)

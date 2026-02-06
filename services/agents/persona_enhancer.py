@@ -18,21 +18,21 @@ PERSONAS = [
         "name": "python-expert",
         "focus": "Python development, testing, debugging, optimization",
         "status": "COMPLETE",  # Already have python-expert-dopemux.md
-        "primary_tools": ["serena", "context7-python", "zen-codereview"],
+        "primary_tools": ["serena", "pal-python", "zen-codereview"],
         "complexity_range": "0.3-0.8"
     },
     {
         "name": "system-architect",
         "focus": "System design, scalability, architecture decisions",
         "status": "PENDING",
-        "primary_tools": ["zen-consensus", "zen-thinkdeep", "context7", "exa"],
+        "primary_tools": ["zen-consensus", "zen-thinkdeep", "pal", "exa"],
         "complexity_range": "0.6-0.9"
     },
     {
         "name": "quality-engineer",
         "focus": "Testing strategies, test coverage, quality assurance",
         "status": "PENDING",
-        "primary_tools": ["zen-codereview", "serena", "context7-testing"],
+        "primary_tools": ["zen-codereview", "serena", "pal-testing"],
         "complexity_range": "0.4-0.7"
     },
     {
@@ -46,28 +46,28 @@ PERSONAS = [
         "name": "frontend-architect",
         "focus": "UI/UX, React, accessibility, performance",
         "status": "PENDING",
-        "primary_tools": ["context7-react", "exa", "serena"],
+        "primary_tools": ["pal-react", "exa", "serena"],
         "complexity_range": "0.4-0.7"
     },
     {
         "name": "backend-architect",
         "focus": "APIs, databases, scalability, reliability",
         "status": "PENDING",
-        "primary_tools": ["context7-fastapi", "zen-thinkdeep", "serena"],
+        "primary_tools": ["pal-fastapi", "zen-thinkdeep", "serena"],
         "complexity_range": "0.5-0.8"
     },
     {
         "name": "security-engineer",
         "focus": "Security vulnerabilities, compliance, threat modeling",
         "status": "PENDING",
-        "primary_tools": ["zen-codereview", "exa-security", "context7"],
+        "primary_tools": ["zen-codereview", "exa-security", "pal"],
         "complexity_range": "0.6-0.9"
     },
     {
         "name": "performance-engineer",
         "focus": "Optimization, profiling, benchmarking, bottlenecks",
         "status": "PENDING",
-        "primary_tools": ["zen-thinkdeep", "serena-complexity", "context7"],
+        "primary_tools": ["zen-thinkdeep", "serena-complexity", "pal"],
         "complexity_range": "0.5-0.8"
     },
     {
@@ -81,14 +81,14 @@ PERSONAS = [
         "name": "devops-architect",
         "focus": "Infrastructure, CI/CD, deployment, monitoring",
         "status": "PENDING",
-        "primary_tools": ["context7-docker", "exa", "zen-planner"],
+        "primary_tools": ["pal-docker", "exa", "zen-planner"],
         "complexity_range": "0.5-0.8"
     },
     {
         "name": "learning-guide",
         "focus": "Teaching, explaining concepts, progressive learning",
         "status": "PENDING",
-        "primary_tools": ["context7", "exa", "zen-chat"],
+        "primary_tools": ["pal", "exa", "zen-chat"],
         "complexity_range": "0.2-0.5"
     },
     {
@@ -102,28 +102,28 @@ PERSONAS = [
         "name": "technical-writer",
         "focus": "Documentation, clarity, audience adaptation",
         "status": "PENDING",
-        "primary_tools": ["context7", "dope-context-docs", "exa"],
+        "primary_tools": ["pal", "dope-context-docs", "exa"],
         "complexity_range": "0.2-0.4"
     },
     {
         "name": "socratic-mentor",
         "focus": "Question-driven learning, discovery, critical thinking",
         "status": "PENDING",
-        "primary_tools": ["zen-chat", "context7", "exa"],
+        "primary_tools": ["zen-chat", "pal", "exa"],
         "complexity_range": "0.3-0.6"
     },
     {
         "name": "general-purpose",
         "focus": "Multi-domain tasks, balanced approach, adaptability",
         "status": "PENDING",
-        "primary_tools": ["tool-orchestrator", "zen-chat", "serena", "context7"],
+        "primary_tools": ["tool-orchestrator", "zen-chat", "serena", "pal"],
         "complexity_range": "0.3-0.7"
     },
     {
         "name": "statusline-setup",
         "focus": "Configuration, setup, system integration",
         "status": "PENDING",
-        "primary_tools": ["serena-read", "context7-config", "conport"],
+        "primary_tools": ["serena-read", "pal-config", "conport"],
         "complexity_range": "0.2-0.4"
     },
 ]
@@ -265,13 +265,13 @@ mcp__serena_v2__find_symbol(query="ClassName")
 mcp__serena_v2__read_file(relative_path="src/module.py")
 # ❌ NEVER: bash cat, grep, find
 ```""")
-            elif "context7" in tool:
+            elif "pal" in tool:
                 prefs.append("""
-**Documentation** (Context7 MCP):
+**Documentation** (PAL apilookup MCP):
 ```python
-# ✅ Use Context7 for official documentation
-mcp__context7__resolve_library_id(libraryName="fastapi")
-mcp__context7__get_library_docs(context7CompatibleLibraryID="/org/project")
+# ✅ Use PAL apilookup for official documentation
+mcp__pal__resolve_library_id(libraryName="fastapi")
+mcp__pal__get_library_docs(palCompatibleLibraryID="/org/project")
 ```""")
             elif "zen" in tool:
                 prefs.append(f"""

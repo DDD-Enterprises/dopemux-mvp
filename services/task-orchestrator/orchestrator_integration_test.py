@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Integration Test for Task Orchestrator with ConPort and Context7
+Integration Test for Task Orchestrator with ConPort and PAL apilookup
 Tests the discrete coordination capabilities and ADHD optimizations.
 """
 
@@ -131,11 +131,11 @@ async def test_conport_integration():
 
     return True
 
-async def test_context7_integration():
-    """Test integration with Context7 for documentation."""
-    logger.info("🔍 Testing Context7 integration...")
+async def test_pal_integration():
+    """Test integration with PAL apilookup for documentation."""
+    logger.info("🔍 Testing PAL apilookup integration...")
 
-    # Simulate Context7 documentation retrieval
+    # Simulate PAL apilookup documentation retrieval
     coordination_docs = [
         "Multi-team workflow patterns",
         "ADHD-optimized coordination strategies",
@@ -143,7 +143,7 @@ async def test_context7_integration():
     ]
 
     for doc in coordination_docs:
-        logger.info(f"✅ Would retrieve from Context7: {doc}")
+        logger.info(f"✅ Would retrieve from PAL apilookup: {doc}")
 
     return True
 
@@ -156,7 +156,7 @@ async def run_integration_tests():
         ("Multi-Team Coordination", test_multi_team_coordination),
         ("Discrete Coordination", test_discrete_coordination),
         ("ConPort Integration", test_conport_integration),
-        ("Context7 Integration", test_context7_integration)
+        ("PAL apilookup Integration", test_pal_integration)
     ]
 
     results = []

@@ -53,7 +53,7 @@ class EngineWeight:
     exa: float = 1.0
     tavily: float = 1.0
     perplexity: float = 1.0
-    context7: float = 1.0
+    pal: float = 1.0
 
 
 class SearchOrchestrator:
@@ -91,8 +91,8 @@ class SearchOrchestrator:
 
         return {
             SearchStrategy.DOCUMENTATION_FIRST: {
-                'engines': ['context7', 'exa', 'tavily'],
-                'weights': EngineWeight(context7=2.0, exa=1.5, tavily=1.0, perplexity=0.5),
+                'engines': ['pal', 'exa', 'tavily'],
+                'weights': EngineWeight(pal=2.0, exa=1.5, tavily=1.0, perplexity=0.5),
                 'result_types': [SearchResultType.DOCUMENTATION, SearchResultType.API_REFERENCE],
                 'max_per_engine': 4,
                 'parallel': True
@@ -100,7 +100,7 @@ class SearchOrchestrator:
 
             SearchStrategy.RECENT_DEVELOPMENTS: {
                 'engines': ['perplexity', 'tavily', 'exa'],
-                'weights': EngineWeight(perplexity=2.0, tavily=1.5, exa=1.0, context7=0.5),
+                'weights': EngineWeight(perplexity=2.0, tavily=1.5, exa=1.0, pal=0.5),
                 'result_types': [SearchResultType.NEWS_ARTICLE, SearchResultType.BLOG_POST],
                 'max_per_engine': 5,
                 'parallel': True,
@@ -108,16 +108,16 @@ class SearchOrchestrator:
             },
 
             SearchStrategy.COMPREHENSIVE: {
-                'engines': ['exa', 'tavily', 'perplexity', 'context7'],
-                'weights': EngineWeight(exa=1.2, tavily=1.2, perplexity=1.0, context7=1.5),
+                'engines': ['exa', 'tavily', 'perplexity', 'pal'],
+                'weights': EngineWeight(exa=1.2, tavily=1.2, perplexity=1.0, pal=1.5),
                 'result_types': None,  # All types
                 'max_per_engine': 4,
                 'parallel': True
             },
 
             SearchStrategy.TECHNICAL_DEEP_DIVE: {
-                'engines': ['context7', 'exa', 'tavily', 'perplexity'],
-                'weights': EngineWeight(context7=2.0, exa=1.8, tavily=1.2, perplexity=1.0),
+                'engines': ['pal', 'exa', 'tavily', 'perplexity'],
+                'weights': EngineWeight(pal=2.0, exa=1.8, tavily=1.2, perplexity=1.0),
                 'result_types': [
                     SearchResultType.DOCUMENTATION,
                     SearchResultType.API_REFERENCE,
@@ -129,8 +129,8 @@ class SearchOrchestrator:
             },
 
             SearchStrategy.QUICK_OVERVIEW: {
-                'engines': ['perplexity', 'context7'],
-                'weights': EngineWeight(perplexity=1.5, context7=1.2, exa=0.8, tavily=0.5),
+                'engines': ['perplexity', 'pal'],
+                'weights': EngineWeight(perplexity=1.5, pal=1.2, exa=0.8, tavily=0.5),
                 'result_types': [SearchResultType.DOCUMENTATION],
                 'max_per_engine': 3,
                 'parallel': True,
@@ -139,7 +139,7 @@ class SearchOrchestrator:
 
             SearchStrategy.TROUBLESHOOTING: {
                 'engines': ['tavily', 'perplexity', 'exa'],
-                'weights': EngineWeight(tavily=1.8, perplexity=1.5, exa=1.0, context7=0.8),
+                'weights': EngineWeight(tavily=1.8, perplexity=1.5, exa=1.0, pal=0.8),
                 'result_types': [
                     SearchResultType.STACK_OVERFLOW,
                     SearchResultType.GITHUB_ISSUE,
@@ -152,7 +152,7 @@ class SearchOrchestrator:
 
             SearchStrategy.COMPARISON: {
                 'engines': ['perplexity', 'exa', 'tavily'],
-                'weights': EngineWeight(perplexity=1.8, exa=1.2, tavily=1.0, context7=0.8),
+                'weights': EngineWeight(perplexity=1.8, exa=1.2, tavily=1.0, pal=0.8),
                 'result_types': [
                     SearchResultType.BLOG_POST,
                     SearchResultType.DOCUMENTATION,

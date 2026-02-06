@@ -586,7 +586,7 @@ class OrchestrationPhase(BasePhase):
             await asyncio.sleep(10)
 
             # MCP servers
-            mcp_services = ["mas-sequential-thinking", "conport", "zen", "context7"]
+            mcp_services = ["mas-sequential-thinking", "conport", "zen", "pal"]
             await self._restart_service_group(mcp_services, "MCP servers")
 
             # Wait for MCP servers to initialize

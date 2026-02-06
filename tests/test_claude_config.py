@@ -46,10 +46,14 @@ SAMPLE_CLAUDE_CONFIG = {
             "args": ["run", "python", "server.py"],
             "cwd": "/path/to/zen"
         },
-        "context7": {
+        "pal": {
             "type": "stdio",
-            "command": "npx",
-            "args": ["@upstash/context7-mcp"]
+            "command": "uvx",
+            "args": [
+                "--from",
+                "git+https://github.com/BeehiveInnovations/pal-mcp-server.git",
+                "pal-mcp-server"
+            ]
         },
         "gpt-researcher": {
             "type": "stdio",
@@ -345,7 +349,7 @@ class TestMCPNameMapping:
         assert "conport" in MCP_NAME_MAPPING
         assert "serena-v2" in MCP_NAME_MAPPING
         assert "zen" in MCP_NAME_MAPPING
-        assert "context7" in MCP_NAME_MAPPING
+        assert "pal" in MCP_NAME_MAPPING
 
     def test_mapping_bidirectional(self):
         """Test mapping works correctly."""

@@ -466,7 +466,6 @@ Alternative: Set CLAUDE_PATH environment variable
             # Install Node.js packages
             node_packages = [
                 "@zilliz/claude-context-mcp",
-                "context7-mcp",
                 "morphllm-fast-apply-mcp",
                 "exa-mcp",
             ]
@@ -482,7 +481,10 @@ Alternative: Set CLAUDE_PATH environment variable
                     )
 
             # Install Python packages
-            python_packages = ["context-portal-mcp"]  # Removed task-master-ai (crashes)
+            python_packages = [
+                "context-portal-mcp",  # Removed task-master-ai (crashes)
+                "git+https://github.com/BeehiveInnovations/pal-mcp-server.git",
+            ]
 
             for package in python_packages:
                 console.log(f"[blue]Installing {package}...[/blue]")

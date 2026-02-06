@@ -37,7 +37,7 @@ class ProductionMCPEventIntegrator:
             'conport': 'http://localhost:3004',
             'taskmaster': 'http://localhost:3005',
             'zen': 'http://localhost:3003',
-            'context7': 'http://localhost:3002'
+            'pal': 'http://localhost:3003'
         }
 
         self.session = None
@@ -202,7 +202,7 @@ async def demo_production_integration():
     try:
         # Check service health first
         print("🏥 Checking MCP service health:")
-        for service in ['conport', 'taskmaster', 'zen', 'context7']:
+        for service in ['conport', 'taskmaster', 'zen', 'pal']:
             health = await integrator.check_service_health(service)
             status = "✅ HEALTHY" if health['healthy'] else f"❌ UNHEALTHY: {health['error']}"
             print(f"   {service}: {status}")
@@ -342,7 +342,7 @@ async def main():
     print("• ConPort memory system (localhost:3004)")
     print("• TaskMaster AI (localhost:3005)")
     print("• Zen multi-model (localhost:3003)")
-    print("• Context7 docs (localhost:3002)")
+    print("• PAL apilookup docs (localhost:3003)")
     print()
 
     try:

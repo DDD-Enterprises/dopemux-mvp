@@ -131,7 +131,7 @@ class TestQueryClassification:
         result = await classifier.classify_query(query)
 
         # Should include core tools
-        assert "context7" in result.required_tools
+        assert "pal" in result.required_tools
         assert len(result.required_tools) >= 2
         assert len(result.optional_tools) >= 1
 

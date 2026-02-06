@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Optional, Tuple
 import os
 import shutil
+import subprocess
 import tempfile
 from datetime import datetime
 import sys
@@ -282,8 +283,6 @@ def _stash_changes(workspace_path: str) -> Optional[str]:
     Returns:
         Stash name if successful, None otherwise
     """
-    import subprocess
-
     try:
         stash_name = f"dopemux-migration-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
 
@@ -321,8 +320,6 @@ def _pop_stash(workspace_path: str, stash_name: str) -> bool:
     Returns:
         True if successful, False otherwise
     """
-    import subprocess
-
     try:
         # Find stash by name
         result = subprocess.run(
@@ -395,10 +392,6 @@ def _execute_worktree_creation(
     Returns:
         True if successful, False otherwise
     """
-    import subprocess
-    import os
-    from datetime import datetime
-
     workspace = Path(workspace_path)
 
     # Create worktree in sibling directory

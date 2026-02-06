@@ -31,43 +31,43 @@ from .models import (
     ADHDProfile,
     AccommodationRecommendation
 )
-from ..config import settings
+from ..config import settings  # Relative import
 from .activity_tracker import ActivityTracker
-from ..conport_mcp_client import ConPortMCPClient
-from ..bridge_integration import ConPortBridgeAdapter
-from ..pal_client import ADHDPALClient
+from ..conport_mcp_client import ConPortMCPClient  # Relative import
+from ..bridge_integration import ConPortBridgeAdapter  # Relative import
+from ..pal_client import ADHDPALClient  # Relative import
 
 # Domain Imports - Attention
 from ..domains.attention.attention_calibrator import AttentionCalibrator
-from domains.attention.hyperfocus_guard import HyperfocusGuard
-from domains.attention.procrastination_detector import ProcrastinationDetector
-from domains.attention.overwhelm_detector import OverwhelmDetector
-from domains.attention.intent_pattern_analyzer import IntentPatternAnalyzer
-from domains.attention.context_preserver import ContextPreserver
+from ..domains.attention.hyperfocus_guard import HyperfocusGuard
+from ..domains.attention.procrastination_detector import ProcrastinationDetector
+from ..domains.attention.overwhelm_detector import OverwhelmDetector
+from ..domains.attention.intent_pattern_analyzer import IntentPatternAnalyzer
+from ..domains.attention.context_preserver import ContextPreserver
 
 # Domain Imports - Wellbeing
-from domains.wellbeing.social_battery_monitor import SocialBatteryMonitor
-from domains.wellbeing.medication_effectiveness_tracker import MedicationEffectivenessTracker
-from domains.wellbeing.end_of_day_wind_down import EndOfDayWindDown
+from ..domains.wellbeing.social_battery_monitor import SocialBatteryMonitor
+from ..domains.wellbeing.medication_effectiveness_tracker import MedicationEffectivenessTracker
+from ..domains.wellbeing.end_of_day_wind_down import EndOfDayWindDown
 
 # Domain Imports - Task Enablement
-from domains.task_enablement.task_decomposition_assistant import TaskDecompositionAssistant
-from domains.task_enablement.decomposition_coordinator import DecompositionCoordinator
-from domains.task_enablement.working_memory_support import WorkingMemorySupport
-from domains.task_enablement.voice_assistant import VoiceAssistant
-from domains.task_enablement.task_decomposition_event_listener import TaskDecompositionEventListener
+from ..domains.task_enablement.task_decomposition_assistant import TaskDecompositionAssistant
+from ..domains.task_enablement.decomposition_coordinator import DecompositionCoordinator
+from ..domains.task_enablement.working_memory_support import WorkingMemorySupport
+from ..domains.task_enablement.voice_assistant import VoiceAssistant
+from ..domains.task_enablement.task_decomposition_event_listener import TaskDecompositionEventListener
 
 # Event Listener
-from event_listener import ADHDEventListener
+from ..event_listener import ADHDEventListener
 # Event Emitter
 try:
-    from event_emitter import ADHDEventEmitter
+    from ..event_emitter import ADHDEventEmitter
 except ImportError:
     pass
 
 # ConPort-KG Integration (optional)
 try:
-    from dopecon_bridge_connector import emit_state_update
+    from ..dopecon_bridge_connector import emit_state_update
     CONPORT_KG_INTEGRATION = True
 except ImportError:
     CONPORT_KG_INTEGRATION = False
@@ -219,7 +219,7 @@ class ADHDAccommodationEngine:
             logger.info("ℹ️  Background prediction service disabled")
 
         # Initialize trust building service (Phase 3.6)
-        from .services.trust_building_service import get_trust_building_service
+        from ..services.trust_building_service import get_trust_building_service
         self.trust_service = await get_trust_building_service(settings.workspace_id)
         logger.info("✅ Trust building service initialized (Phase 3.6)")
 
@@ -297,14 +297,14 @@ class ADHDAccommodationEngine:
         self.voice_assistant = VoiceAssistant(adhd_engine=self)
         
         # Event Listener
-        from ..event_listener import ADHDEventListener
+        from event_listener import ADHDEventListener
         # We need an EventBus - usually this would be injected or imported
         # For now, we will create a dummy event bus if not available or assume it's part of the engine
         # But wait, event_listener expects 'event_bus'.
         # Assuming engine has access to event bus, or we need to create one.
         # Let's import the event bus if available.
         try:
-            from ..event_emitter import ADHDEventEmitter
+            from event_emitter import ADHDEventEmitter
             self.event_bus = ADHDEventEmitter(self.conport) # Wrapper
         except ImportError:
             self.event_bus = None
@@ -1579,7 +1579,7 @@ Format: {{
         """
         try:
             # Import here to avoid circular dependency
-            from api.websocket import manager
+            from ..api.websocket import manager
             
             # Get current state
             energy_level = self.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)

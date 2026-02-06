@@ -14,7 +14,7 @@ scrape_configs:
   - job_name: 'mcp-services'
     static_configs:
       - targets:
-          - 'mcp-context7:3002'
+          - 'mcp-pal:3003'
           - 'mcp-zen:3003'
           - 'mcp-conport:3004'
           - 'mcp-serena:3006'

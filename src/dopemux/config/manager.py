@@ -550,11 +550,23 @@ class ConfigManager:
                 "timeout": 60,
                 "auto_restart": True,
             },
-            "context7": {
+            "pal": {
                 "enabled": True,
-                "command": "npx",
-                "args": ["-y", "context7-mcp"],
-                "env": {},
+                "command": "uvx",
+                "args": [
+                    "--from",
+                    "git+https://github.com/BeehiveInnovations/pal-mcp-server.git",
+                    "pal-mcp-server",
+                ],
+                "env": {
+                    "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+                    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
+                    "GEMINI_API_KEY": "${GEMINI_API_KEY}",
+                    "XAI_API_KEY": "${XAI_API_KEY}",
+                    "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
+                    "DEFAULT_MODEL": "auto",
+                    "PAL_DEFAULT_PROVIDER": "openrouter",
+                },
                 "timeout": 30,
                 "auto_restart": True,
             },
@@ -635,7 +647,7 @@ class ConfigManager:
                 ],
                 "mcp_servers": [
                     "mas-sequential-thinking",
-                    "context7",
+                    "pal",
                     "claude-context",
                 ],
                 "adhd_adaptations": {
@@ -650,7 +662,7 @@ class ConfigManager:
                     ".claude/context.md",
                     ".claude/llms.md",
                 ],
-                "mcp_servers": ["context7", "claude-context", "morphllm-fast-apply"],
+                "mcp_servers": ["pal", "claude-context", "morphllm-fast-apply"],
                 "adhd_adaptations": {
                     "focus_duration_avg": 25,
                     "visual_complexity": "minimal",
@@ -665,7 +677,7 @@ class ConfigManager:
                 ],
                 "mcp_servers": [
                     "mas-sequential-thinking",
-                    "context7",
+                    "pal",
                     "claude-context",
                 ],
                 "adhd_adaptations": {

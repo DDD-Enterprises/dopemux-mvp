@@ -42,7 +42,7 @@ class WorktreeAutoConfigurator:
     - Serena: LSP code navigation (auto-detects via env vars)
 
     **Non-Workspace Servers** (global, no changes needed):
-    - Context7, Zen, GPT-Researcher, Exa, Desktop-Commander
+    - PAL apilookup, Zen, GPT-Researcher, Exa, Desktop-Commander
     """
 
     def __init__(self, claude_config_path: Optional[Path] = None):

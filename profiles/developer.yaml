@@ -9,7 +9,7 @@ mcps:
   - conport          # Memory (required)
   - serena-v2        # LSP navigation and code intelligence
   - dope-context     # Semantic code search
-  - context7         # Library documentation
+  - pal         # Library documentation
 
 adhd_config:
   energy_preference: medium

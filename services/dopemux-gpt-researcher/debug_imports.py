@@ -46,10 +46,10 @@ try:
         logger.info(f"⚠️ Perplexity adapter import issue: {e}")
 
     try:
-        from engines.search.context7_adapter import Context7SearchAdapter
-        logger.info("✅ Context7 adapter imported successfully")
+        from engines.search.pal_apilookup_adapter import PalApiLookupSearchAdapter
+        logger.info("✅ PAL apilookup adapter imported successfully")
     except Exception as e:
-        logger.info(f"⚠️ Context7 adapter import issue: {e}")
+        logger.info(f"⚠️ PAL apilookup adapter import issue: {e}")
 
     logger.info("\nStep 5: Testing search orchestrator...")
     from engines.search.search_orchestrator import SearchOrchestrator, SearchStrategy
