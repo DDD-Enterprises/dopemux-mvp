@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Serena v2 Phase 2: Async PostgreSQL Intelligence Layer
 
@@ -21,6 +23,7 @@ try:
     import asyncpg
     ASYNCPG_AVAILABLE = True
 except ImportError:
+    asyncpg = None  # type: ignore[assignment]
     ASYNCPG_AVAILABLE = False
     logging.warning("asyncpg not available - install with: pip install asyncpg")
 
