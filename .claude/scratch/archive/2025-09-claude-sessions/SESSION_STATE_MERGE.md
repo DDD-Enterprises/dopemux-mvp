@@ -23,7 +23,7 @@
 3. **MCP Server Transition Plan**
    - Removed: `cli`, `devdocs` (as requested)
    - Added: `morphllm-fast-apply`, `desktop-commander`
-   - Maintained: All critical path servers (Context7, Zen, Sequential Thinking)
+   - Maintained: All critical path servers (PAL apilookup, Zen, Sequential Thinking)
    - Leantime integration ready
 
 ### 🔍 **Current State Analysis**
@@ -48,7 +48,7 @@
 
 ```yaml
 # Priority-based server organization
-critical_path: [context7:3002, zen:3003, sequential:3001]
+critical_path: [PAL apilookup:3002, zen:3003, sequential:3001]
 workflow: [conport:3004, task-master:3005, serena:3006, claude-context:3007]
 utility: [exa:3008, morphllm:3011, desktop-commander:3012]
 external: [leantime:8080]
@@ -66,7 +66,7 @@ external: [leantime:8080]
    - **Debug priority**: High (critical path server)
 
 2. **Docker Build Slow Performance**
-   - Context7 container build taking >2 minutes
+   - PAL apilookup container build taking >2 minutes
    - Need optimization for ADHD-friendly startup times
 
 3. **Claude Code MCP Integration**
@@ -252,7 +252,7 @@ python -c "import agno, exa_py, groq, mcp" && echo "✅ Dependencies OK" || echo
 1. Create HTTP-to-stdio bridge foundation
 2. Implement basic MetaMCP routing
 3. Test Docker container startup optimization
-4. Begin Context7-first routing implementation
+4. Begin PAL apilookup-first routing implementation
 
 ### **Session Success Criteria**
 
@@ -263,13 +263,13 @@ python -c "import agno, exa_py, groq, mcp" && echo "✅ Dependencies OK" || echo
 
 ## 💾 **Context Preservation Notes**
 
-**Mental Model**: Transitioning from stdio-based MCP servers to Docker orchestration while maintaining ADHD-friendly workflows and implementing Context7-first routing as specified in ADR-012.
+**Mental Model**: Transitioning from stdio-based MCP servers to Docker orchestration while maintaining ADHD-friendly workflows and implementing PAL apilookup-first routing as specified in ADR-012.
 
 **Decision History**:
 
 - Removed cli/devdocs servers as requested
 - Added morphllm-fast-apply and desktop-commander
-- Prioritized Context7-first routing for documentation-driven development
+- Prioritized PAL apilookup-first routing for documentation-driven development
 - Designed ADHD-optimized startup sequencing (critical → workflow → utility)
 
 **Progress Indicators**:

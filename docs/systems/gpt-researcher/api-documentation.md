@@ -85,7 +85,7 @@ Get API capabilities and limits.
   "version": "0.2.0",
   "capabilities": {
     "research_types": ["exploratory", "technical", "comparative", "systematic"],
-    "search_engines": ["exa", "tavily", "perplexity", "context7"],
+    "search_engines": ["exa", "tavily", "perplexity", "pal"],
     "adhd_features": [
       "session_persistence",
       "break_management",
@@ -334,7 +334,6 @@ SESSION_STORAGE_PATH=/path/to/sessions
 EXA_API_KEY=your-key
 TAVILY_API_KEY=your-key
 PERPLEXITY_API_KEY=your-key
-CONTEXT7_API_KEY=your-key
 
 # Debug
 DEBUG=false

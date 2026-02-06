@@ -24,7 +24,7 @@ dopemux-mvp main | ✅ Focus [2h] | 📚🧠🔬📊🔎🖥️ | 💤 215K/1000
 ```
 
 **Indicator Meanings**:
-- **📚** (Book) - Context7 (Documentation) - Port 3002
+- **📚** (Book) - PAL apilookup (Documentation) - Port 3003
 - **🧠** (Brain) - Zen (Multi-model reasoning) - Port 3003
 - **🔬** (Microscope) - Serena (Code intelligence) - Port 3006
 - **📊** (Chart) - DDG-MCP (Decision Graph) - Port 3016
@@ -56,7 +56,7 @@ dopemux-mvp main | ✅ Focus [2h] | 📚🧠🔬📊🔎🖥️ | 💤 215K/1000
 
 These are the **core MCP servers** for ADHD-optimized development:
 
-1. **Context7 📚** - Official documentation lookup (prevents guessing APIs)
+1. **PAL apilookup 📚** - Official documentation lookup (prevents guessing APIs)
 2. **Zen 🧠** - Multi-model reasoning (thinkdeep, consensus, debug, planner)
 3. **Serena 🔬** - Code intelligence (LSP navigation, complexity scoring)
 4. **DDG-MCP 📊** - Decision graph queries (related decisions, instance diff, cross-workspace)
@@ -76,7 +76,7 @@ These are the **core MCP servers** for ADHD-optimized development:
 Uses `nc -z` (netcat zero I/O mode) for fast port availability checks:
 
 ```bash
-if nc -z localhost 3002 2>/dev/null; then MCP_CONTEXT7="📚"; fi
+if nc -z localhost 3003 2>/dev/null; then MCP_PAL="📚"; fi
 if nc -z localhost 3003 2>/dev/null; then MCP_ZEN="🧠"; fi
 if nc -z localhost 3006 2>/dev/null; then MCP_SERENA="🔬"; fi
 if nc -z localhost 3016 2>/dev/null; then MCP_DDG="📊"; fi
@@ -133,18 +133,18 @@ dopemux mcp start-all
 
 **Check if container is running**:
 ```bash
-docker ps --filter "name=mcp-context7"  # Replace with server name
+docker ps --filter "name=mcp-pal"  # Replace with server name
 ```
 
 **Check container logs**:
 ```bash
-docker logs mcp-context7
+docker logs mcp-pal
 ```
 
 **Restart specific server**:
 ```bash
 cd docker/mcp-servers
-docker-compose restart context7
+docker-compose restart pal
 ```
 
 ### nc: command not found

@@ -14,7 +14,7 @@
 - **Tools:** 25+ (decisions, progress, patterns, knowledge graph, semantic search)
 - **MetaMCP Config:** STDIO via curl → http://localhost:3004/mcp
 
-### 2. context7 - Port 3002
+### 2. PAL apilookup - Port 3002
 - **Status:** ✅ Healthy (Up 4 hours)
 - **Health:** HTTP 200
 - **Tools:** 2 (resolve-library-id, get-library-docs)
@@ -75,7 +75,7 @@
 
 **Phase 1A - Immediate (4 servers):**
 1. conport
-2. context7
+2. PAL apilookup
 3. zen
 4. serena
 
@@ -97,7 +97,7 @@
 | conport | 25+ | Memory & Decisions |
 | serena | 26 | Code Navigation |
 | zen | 7 | Reasoning & Analysis |
-| context7 | 2 | Documentation |
+| PAL apilookup | 2 | Documentation |
 | mas-sequential-thinking | Multiple | Reasoning |
 | exa | Multiple | Web Research |
 | desktop-commander | Multiple | Automation |

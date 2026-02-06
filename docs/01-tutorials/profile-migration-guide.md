@@ -45,7 +45,7 @@ dopemux profile apply developer
 
 **Available Profiles:**
 - `minimal` - Lightweight (1 server: serena-v2)
-- `developer` - Code focus (4 servers: serena, conport, dope-context, context7)
+- `developer` - Code focus (4 servers: serena, conport, dope-context, pal)
 - `researcher` - Analysis (5 servers: + zen, gpt-researcher)
 - `architect` - Design (5 servers: + zen, exa)
 - `full` - Everything (9 servers: all MCP capabilities)
@@ -92,7 +92,7 @@ The wizard analyzes your commits to understand:
 💡 Recommendations:
    • Session: 30 minutes (matches your intensity)
    • Energy: high (you work in large bursts)
-   • MCPs: serena-v2, conport, dope-context, context7
+   • MCPs: serena-v2, conport, dope-context, pal
 ```
 
 ### Step 2: Interactive Questions (3 only!)
@@ -142,7 +142,7 @@ mcps:
   - serena-v2
   - conport
   - dope-context
-  - context7
+  - pal
 
 adhd_config:
   energy_preference: medium

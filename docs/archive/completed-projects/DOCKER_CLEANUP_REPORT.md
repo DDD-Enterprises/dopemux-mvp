@@ -79,7 +79,7 @@ Successfully cleaned up Docker environment, removing 15 containers and 9 volumes
 ### MCP Servers (10 containers) ✅
 | Server | Port | Health | Purpose |
 |--------|------|--------|---------|
-| mcp-context7 | 3002 | ✅ Healthy | Context/file operations |
+| mcp-pal | 3003 | ✅ Healthy | Context/file operations |
 | mcp-zen | 3003 | ✅ Healthy | Neon layout automation |
 | mcp-conport | 3004 | ✅ Healthy | HTTP context portal |
 | mcp-serena | 3006 | ⚠️ No HC | Code navigation/LSP |
@@ -123,7 +123,7 @@ dopemux-postgres-age    Port 5456  ✅ Healthy  - PostgreSQL + AGE
 ## Port Mapping (No Conflicts) ✅
 
 ### MCP Services (3000-3099 range)
-- **3002**: mcp-context7
+- **3003**: mcp-pal
 - **3003**: mcp-zen
 - **3004**: mcp-conport
 - **3006**: mcp-serena

@@ -5,7 +5,7 @@ allowed-tools: [
   "Bash", "Read", "Write", "Edit", "Grep", "Glob", "TodoWrite",
   "mcp__conport__*",
   "mcp__serena__*",
-  "mcp__context7__*",
+  "mcp__pal__apilookup",
   "mcp__zen__thinkdeep", "mcp__zen__debug", "mcp__zen__codereview"
 ]
 model: "claude-sonnet-4-5-20250929"

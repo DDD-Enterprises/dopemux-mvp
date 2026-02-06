@@ -175,7 +175,7 @@ Generated: 2025-10-28
 
 **Individual MCP Servers:**
 - **Sequential Thinking**: Reasoning steps, depth
-- **Context7**: Context queries, embeddings
+- **PAL apilookup**: Context queries, embeddings
 - **Exa**: Web search calls, results
 - **Zen**: Session state, thinkdeep analysis
 - **Serena MCP**: Code analysis, complexity

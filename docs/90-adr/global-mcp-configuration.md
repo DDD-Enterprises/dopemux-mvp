@@ -56,7 +56,7 @@ MCP servers and ADHD-optimized workflows should work **identically everywhere**:
 ```json
 {
   "mcpServers": {
-    "context7": {...},
+    "pal": {...},
     "conport": {...},
     "exa": {...},
     "mas-sequential-thinking": {...},
@@ -96,7 +96,7 @@ Consistent Dopemux Experience Everywhere
 
 All 8 servers now available globally:
 
-1. **context7**: Official framework documentation (React, Next.js, etc.)
+1. **pal**: Official framework documentation (React, Next.js, etc.)
 2. **conport**: Decision logging, knowledge graph, ADHD task management
 3. **exa**: Fast neural web search
 4. **mas-sequential-thinking**: Multi-step reasoning (may be replaced by Zen)

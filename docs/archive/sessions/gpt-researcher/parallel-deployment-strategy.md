@@ -171,7 +171,6 @@ Both phases share the same `.env` configuration:
 EXA_API_KEY=xxx
 TAVILY_API_KEY=xxx
 PERPLEXITY_API_KEY=xxx
-CONTEXT7_API_KEY=xxx
 
 # Phase-specific
 WORKSPACE_PATH=/path/to/workspace  # Phase 1

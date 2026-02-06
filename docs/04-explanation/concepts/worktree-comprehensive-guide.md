@@ -134,7 +134,7 @@ That's it! Everything else is automatic.
    - **Serena**: Auto-detects via env vars (no config needed)
 
 4. **Global MCP Servers** (unchanged):
-   - Context7, Zen, GPT-Researcher, Exa, Desktop-Commander
+   - PAL apilookup, Zen, GPT-Researcher, Exa, Desktop-Commander
    - These don't need workspace-specific configuration
 
 **Metrics**:
@@ -1550,7 +1550,7 @@ AGE config env (optional): `AGE_HOST`, `AGE_PORT`, `AGE_USER`, `AGE_PASSWORD`, `
   - `.git/hooks/post-checkout` (auto-installed)
 
 Server names in Claude:
-- Global: `mas-sequential-thinking`, `zen`, `context7`, `serena`, `exa`, `leantime-bridge`, `task-orchestrator`, `gptr-researcher-stdio`.
+- Global: `mas-sequential-thinking`, `zen`, `pal`, `serena`, `exa`, `leantime-bridge`, `task-orchestrator`, `gptr-researcher-stdio`.
 - Project: `conport` (stdio → docker exec into `mcp-conport[_<instance>]`).
 
 Optional DDG MCP tools (global): `ddg-mcp` (stdio)

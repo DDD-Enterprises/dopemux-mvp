@@ -459,7 +459,7 @@ async def _dispatch_to_serena(self, task):
 ### Tool Preferences
 - Code navigation → Serena MCP (NEVER bash)
 - Decisions → ConPort (ALWAYS log)
-- Documentation → Context7 (official docs)
+- Documentation → PAL apilookup (official docs)
 
 ### Two-Plane Awareness
 - Cognitive Plane: Serena, ConPort

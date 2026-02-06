@@ -22,7 +22,7 @@ This guide lists Dopemux MCP servers and their key tools with sample Claude usag
   - conport_promote(progress_id, conport_url)
   - conport_promote_all(workspace_id, conport_url)
 
-- mas-sequential-thinking, zen, context7 (stdio)
+- mas-sequential-thinking, zen, pal (stdio)
 - serena, exa, leantime-bridge (SSE)
 - task-orchestrator (stdio on-demand)
 - gptr-researcher-stdio (stdio)

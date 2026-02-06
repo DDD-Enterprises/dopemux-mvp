@@ -270,7 +270,7 @@ async def process_doc_file(file_path: str):
         'parameters': 'text',  # JSON schema
         'response_schema': 'text',
         'examples': 'text[]',
-        'source': 'keyword',  # context7/openapi/scraped
+        'source': 'keyword',  # pal/openapi/scraped
         'deprecated': 'bool',
         'workspace_id': 'keyword'
     }
@@ -281,13 +281,13 @@ async def process_doc_file(file_path: str):
 
 ```python
 async def process_api_docs(source: str, source_type: str):
-    if source_type == 'context7':
-        # Fetch from Context7 MCP
-        api_data = await context7_client.get_library_docs(
+    if source_type == 'pal':
+        # Fetch from PAL apilookup MCP
+        api_data = await pal_client.get_library_docs(
             library_id=source,
             topic='api-reference'
         )
-        endpoints = parse_context7_response(api_data)
+        endpoints = parse_pal_response(api_data)
 
     elif source_type == 'openapi':
         # Parse OpenAPI/Swagger spec
@@ -694,7 +694,7 @@ await event_bus.publish('search.completed', {
 
 **Phase 2 (Week 2)**:
 5. Docs index (voyage-context-3, no Claude calls)
-6. API index (Context7 integration)
+6. API index (PAL apilookup integration)
 7. Multi-index fusion with task profiles
 8. Enhanced MCP tools: `semantic_search`, `docurag_query`
 

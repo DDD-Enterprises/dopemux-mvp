@@ -10,11 +10,11 @@
 - **Purpose**: Find symbols, goto definition, analyze complexity
 - **Usage**: `mcp__serena-v2__find_symbol`, `goto_definition`, `analyze_complexity`
 
-### 2. **Context7** - Official Library Documentation
+### 2. **PAL apilookup** - Official Library Documentation
 - **Status**: ✅ HEALTHY
-- **Type**: stdio (npx @upstash/context7-mcp)
+- **Type**: stdio (PAL MCP server)
 - **Purpose**: Get accurate docs for React, Vue, Next.js, etc.
-- **Usage**: `mcp__context7__resolve-library-id`, `get-library-docs`
+- **Usage**: `mcp__pal__apilookup`, `apilookup`
 
 ### 3. **GPT-Researcher** - Deep Multi-Source Research
 - **Status**: ✅ HEALTHY
@@ -147,7 +147,7 @@ With the currently working servers, you can:
 - Analyze complexity
 - Navigate references
 
-✅ **Library Documentation** (Context7)
+✅ **Library Documentation** (PAL apilookup)
 - Get official React/Vue/Next.js docs
 - Framework best practices
 - API references
@@ -201,7 +201,7 @@ With the currently working servers, you can:
 
 ```bash
 # Research Phase
-mcp__context7__get-library-docs  # Library docs
+mcp__pal__apilookup  # Library docs
 mcp__dopemux-mcp-gptr-mcp__deep_research  # Deep research
 
 # Implementation Phase
