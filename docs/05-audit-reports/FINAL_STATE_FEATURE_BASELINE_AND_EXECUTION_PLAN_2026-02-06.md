@@ -39,22 +39,26 @@ Generated during this pass:
 - `reports/docs_unbuilt_signal_index.json`
 - `reports/master_history_headings.json`
 - `reports/master_history_status_signals.json`
+- `reports/strict_closure/source_graph.json`
+- `reports/strict_closure/claim_catalog.json`
+- `reports/strict_closure/component_scorecards.json`
 
-Executed verification checks:
+Executed verification checks (latest pass on 2026-02-06):
 
-- `pytest -q tests/arch/test_registry_compose_alignment.py` (fails on registry/compose drift)
-- `pytest -q services/agents/test_tool_orchestrator.py services/agents/test_cognitive_guardian_kg.py` (fails)
+- `pytest -q --no-cov tests/arch/test_registry_compose_alignment.py` (passes)
+- `pytest -q --no-cov services/agents/test_tool_orchestrator.py services/agents/test_cognitive_guardian_kg.py` (passes)
+- `pytest -q --no-cov tests/unit/test_taskmaster_bridge.py::TestTaskMasterMCPClient::test_parse_prd_failure` (passes)
+- `pytest -q --no-cov tests/unit/test_ui_dashboard_backend_api.py tests/unit/test_pattern_correlation_engine.py tests/unit/test_unified_complexity_coordinator.py` (passes)
 - `pytest -q --no-cov tests/shared/test_dopecon_bridge_client.py` (passes)
 - `pytest -q --no-cov tests/unit/test_leantime_bridge.py` (passes)
 - `pytest -q --no-cov tests/test_mobile_runtime.py` (passes)
-- `pytest -q --no-cov tests/unit/test_taskmaster_bridge.py` (1 failing test)
-- `npm --prefix ui-dashboard run build` (fails)
+- `npm --prefix ui-dashboard run build` (passes)
 
 ## Executive Findings
 
 1. Repository-scale drift is real: code, docs, registry, compose, and tests disagree in multiple critical places.
 2. The three archaeology docs are directionally useful but contain stale assertions.
-3. Core orchestration/event/memory components exist and are non-trivial, but production readiness is blocked by contract drift and test/build instability.
+3. Core orchestration/event/memory components exist and are non-trivial; immediate contract/test/build blockers found in this pass were remediated, but broader architecture and docs parity work remains.
 4. The largest missing implementation remains the Stage-1/Stage-2 workflow from ADR-197 (Idea/Epic pipeline).
 5. The largest systemic risk is governance: no current single source of truth is actually enforced end-to-end despite docs claiming that it is.
 
@@ -71,7 +75,7 @@ Executed verification checks:
 | DopeconBridge is event-bus centric | `DESIGN_EVOLUTION_2026.md` | True | Redis Streams event bus implementation in `services/dopecon-bridge/event_bus.py` and usage in integrations/tests | Correct |
 | Task-Orchestrator is central PM-plane coordinator | `DESIGN_EVOLUTION_2026.md` | Mostly true | Large codebase and event integration exist; Leantime/ConPort adapters present | Correct directionally; integration quality varies |
 | WMA guarantees <200ms capture and instant recovery | `DESIGN_EVOLUTION_2026.md` | Unverified | Performance claims documented, but no current benchmark evidence in this pass | Needs benchmark suite and SLO validation |
-| Registry is the single source of truth | `docs/03-reference/ports-and-registry-truth.md` | False (current state) | `tests/arch/test_registry_compose_alignment.py` fails | Contract broken today |
+| Registry is the single source of truth | `docs/03-reference/ports-and-registry-truth.md` | Partial | `tests/arch/test_registry_compose_alignment.py` now passes for smoke stack after remediation | Smoke contract repaired; full-stack canonicalization still pending |
 
 ## Complete Component Baseline
 
@@ -129,19 +133,19 @@ Executed verification checks:
 | Textual dashboard (core) | Implemented prototype | `src/dopemux/ui/dashboard.py` | Not validated as default production surface |
 | Session manager Textual TUI | Implemented | `services/session-manager/tui/main.py` | Deployment/readiness not unified |
 | Monitoring dashboard API/UI | Implemented | `services/monitoring-dashboard/server.py` | Needs production SLO validation |
-| React ultra dashboard | Broken build | `npm --prefix ui-dashboard run build` fails | Not production-ready |
-| UI backend demo | Simulated data | `ui-dashboard-backend/app.py` returns random/demo data | Not production-integrated |
+| React ultra dashboard | Build restored | `npm --prefix ui-dashboard run build` passes after entrypoint/dependency/code fixes | Still needs production data integration and UX hardening |
+| UI dashboard backend | Deterministic fallback + live pull adapters | `ui-dashboard-backend/app.py` now supports ADHD/Task-Orchestrator pull with explicit source metadata | Partially integrated (no event-stream push yet) |
 
 ### Compose and Infrastructure Components (Not Fully Represented in `services/` Runtime Taxonomy)
 
 | Component | Source of truth today | State | Risk |
 |---|---|---|---|
-| `postgres` | registry + compose | Active infrastructure dependency | Port alignment drift across stacks |
+| `postgres` | registry + compose | Active infrastructure dependency | Smoke-stack port alignment fixed; multi-compose alias drift remains |
 | `redis` / `redis-primary` / `redis-events` | registry + compose aliases | Multiple naming variants in compose | Naming and topology ambiguity |
-| `qdrant` / `mcp-qdrant` | registry + compose aliases | Active vector infrastructure | Host-port mismatch in alignment tests |
+| `qdrant` / `mcp-qdrant` | registry + compose aliases | Active vector infrastructure | Smoke-stack host/container alignment fixed; alias governance still needed |
 | `pal` (Zen successor) | compose + `docker/mcp-servers/pal` | Active but migration-incomplete ecosystem | Residual stale Zen references |
 | `exa` | registry + compose | Present and referenced | Registry/compose smoke inclusion inconsistency |
-| `litellm` | registry + compose | Present and referenced | Drift with smoke stack and validation |
+| `litellm` | registry + compose | Present and referenced | Intentionally excluded from smoke baseline; still needs explicit contract coverage in broader stack tests |
 | `desktop-commander` | registry + compose | Present | Needs consistent contract tests |
 | `leantime-bridge` | registry + compose | Present | Workflow-stage integration not complete |
 | `gptr-mcp` | compose-only naming | Present in compose but not registry canonical list | Governance drift |
@@ -168,27 +172,25 @@ Executed verification checks:
 
 1. **Registry vs Compose**: `services/registry.yaml` and `compose.yml` diverge materially.
 2. **Naming Drift**: `dope-query` vs `conport`, `adhd-engine` vs `adhd_engine`, `zen` vs `pal`.
-3. **Port Drift**: Alignment tests report mismatches and missing smoke services.
+3. **Port Drift**: Smoke-stack mismatches were fixed in this pass; broader multi-compose drift remains.
 4. **Architecture Doc Drift**: `docs/90-adr/ADR-207-architecture-3.0-three-layer-integration.md` currently contains frontmatter only.
 
 ## Additional Gaps Not Fully Captured in the 3 Input Files
 
 1. Broken relative links in `DESIGN_EVOLUTION_2026.md` to master history artifacts (pathing error).
-2. React dashboard build is currently broken, including missing dependencies and undefined variables.
-3. Async test environment inconsistency (`pytest-asyncio` style requirements missing for some suites).
-4. Coverage policy (`fail-under=80`) currently blocks targeted verification unless `--no-cov` is used.
-5. Multiple service directories have minimal scaffolding and no tests, but remain present in architecture narratives.
+2. `ui-dashboard-backend` now provides deterministic fallback plus optional live pull integration, but still lacks an event-stream push channel.
+3. Coverage policy (`fail-under=80`) still blocks targeted verification unless `--no-cov` is used.
+4. Multiple service directories have minimal scaffolding and no tests, but remain present in architecture narratives.
 
 ## Prioritized Gap Register
 
 ### P0 (Blockers to Production Readiness)
 
-1. Registry/compose/service naming drift and failing alignment tests.
+1. Registry/compose/service naming drift across non-smoke stacks (`compose.yml` vs smoke contracts).
 2. Broken architecture source-of-truth docs (ADR-207 empty + link integrity gaps).
 3. PAL migration incompleteness (stale Zen references across runtime/docs).
-4. Failing agent/test suites and missing async test plugin consistency.
-5. Broken UI web build and simulated-only backend data path.
-6. Missing Stage 1/Stage 2 workflow implementation from ADR-197 (`workflow_ideas`, `workflow_epics`).
+4. Web UI real-time path still lacks production push transport (currently socket fallback to polling).
+5. Missing Stage 1/Stage 2 workflow implementation from ADR-197 (`workflow_ideas`, `workflow_epics`).
 
 ### P1 (High Impact, Not Immediate Blockers)
 
