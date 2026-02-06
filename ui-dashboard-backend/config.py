@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
-"""
-Configuration for Dopemux ADHD Engine integration client.
+"""Environment-backed configuration for dashboard backend integration scripts."""
 
-Update these values with your actual API keys and URLs.
-"""
+from __future__ import annotations
+
+import os
+
 
 # Leantime Configuration
-LEANTIME_URL = "http://localhost:8080"
-LEANTIME_API_KEY = "lt_RasfLafCRqUi0ziWmNT8IxWSLxWaMJR7_OUXYQChTYhx0AtybcFNM6Mwy0ahvmJLCy"  # Generate in Leantime Admin → Settings → API Keys
+LEANTIME_URL = os.getenv("LEANTIME_URL", "http://localhost:8080")
+LEANTIME_API_KEY = os.getenv("LEANTIME_API_KEY", "")
 
 # ADHD Engine Configuration
-ADHD_ENGINE_URL = "http://localhost:8095"
-ADHD_API_KEY = "test-key-123"  # Default for ADHD Engine
+ADHD_ENGINE_URL = os.getenv("ADHD_ENGINE_URL", "http://localhost:8095")
+ADHD_API_KEY = os.getenv("ADHD_ENGINE_API_KEY", "")
 
 # User Configuration
-USER_ID = "hue"  # Your username
-
-print("Configuration loaded. Please update LEANTIME_API_KEY with your actual key.")
+USER_ID = os.getenv("USER_ID", "hue")
