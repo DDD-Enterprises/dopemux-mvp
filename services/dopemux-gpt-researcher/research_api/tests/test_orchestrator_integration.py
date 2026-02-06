@@ -9,14 +9,29 @@ import asyncio
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
+from pathlib import Path
+import sys
 
-from ..models.research_task import (
-    ResearchType,
-    ADHDConfiguration,
-    ProjectContext
-)
-from ..services.orchestrator import ResearchTaskOrchestrator
-from ..engines.search.base_adapter import SearchResult, SearchResultType, SourceQuality, SearchMetadata
+try:
+    from ..models.research_task import (
+        ResearchType,
+        ADHDConfiguration,
+        ProjectContext,
+    )
+    from ..services.orchestrator import ResearchTaskOrchestrator
+    from ..engines.search.base_adapter import SearchResult, SearchResultType, SourceQuality, SearchMetadata
+except ImportError:  # pragma: no cover - direct test execution fallback
+    ROOT = Path(__file__).resolve().parents[1]
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+
+    from models.research_task import (
+        ResearchType,
+        ADHDConfiguration,
+        ProjectContext,
+    )
+    from services.orchestrator import ResearchTaskOrchestrator
+    from engines.search.base_adapter import SearchResult, SearchResultType, SourceQuality, SearchMetadata
 
 
 class TestOrchestatorIntegration:
