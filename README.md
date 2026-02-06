@@ -332,11 +332,19 @@ dopemux start --role plan
 
 # Retarget the primary agent pane from the orchestrator session
 dopemux tmux agent switch-role act
+
+# Launch with an explicit profile
+dopemux start --profile developer
+
+# Preview profile effects without launch
+dopemux start --profile developer --dry-run
 ```
 
 The CLI rewrites `~/.claude/settings.json`, sets `DOPEMUX_AGENT_ROLE`, and warns if any required MCP services are offline (with suggested `dopemux mcp ...` commands to start them). Inside the orchestrator tmux session you can retarget agent panes on demand with `dopemux tmux agent switch-role ...`.
 
 Supported personas: `quickfix`, `act`, `plan`, `research`, `all`, `developer`, `architect`, `reviewer`, `debugger`, and `ops` (legacy aliases such as `orchestrator`/`agent` continue to work).
+
+Profile command reference: `docs/02-how-to/PROFILE-USAGE.md`.
 
 Note on authentication modes:
 - Default (`dopemux start`): Claude Code uses OAuth (Claude Pro/Max). No API key passed to the app.
