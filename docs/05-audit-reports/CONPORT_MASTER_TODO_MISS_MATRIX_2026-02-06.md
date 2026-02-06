@@ -240,6 +240,10 @@ Clustered underrepresented work now includes:
 6. `conport_persistence`: `1`
 7. `other`: `4`
 
+Runtime recheck has already reclassified the single `conport_persistence` item as resolved:
+
+- `docs/05-audit-reports/CONPORT_PERSISTENCE_VERIFICATION_2026-02-06.md`
+
 Artifacts:
 
 - `reports/strict_closure/conport_live_progress_backlog_2026-02-06.csv`
