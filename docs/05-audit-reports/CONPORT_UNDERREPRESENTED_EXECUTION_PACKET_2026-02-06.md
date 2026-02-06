@@ -84,6 +84,10 @@ Top `40` underrepresented items from `reports/strict_closure/conport_full_todo_c
    - `docs/05-audit-reports/PROFILE_DOCUMENTATION_VERIFICATION_2026-02-06.md`
 10. Row `9` (`2.1.3 ADHD Engine client`) is now implemented.
 Evidence: `docs/05-audit-reports/ADHD_ENGINE_PROFILE_DETECTOR_VERIFICATION_2026-02-06.md`
+11. Row `10` (`2.1.5 File pattern analyzer`) is now implemented.
+Evidence: `docs/05-audit-reports/FILE_PATTERN_ANALYZER_VERIFICATION_2026-02-06.md`
+12. Row `11` (`2.2.4 Unit tests`) is now implemented.
+Evidence: `docs/05-audit-reports/PROFILE_DETECTOR_THRESHOLD_TESTS_VERIFICATION_2026-02-06.md`
 
 ## Source
 
