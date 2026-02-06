@@ -623,25 +623,29 @@ async def get_linked_items(
 
 @app.post("/api/adhd/semantic-search")
 async def semantic_search(
-    query: Dict[str, Any],
+    payload: Dict[str, Any],
     workspace_id: str = Query("dopemux-mvp")
 ):
     """
-    Perform semantic search across ConPort data.
-    NOTE: Simplified implementation for MVP - searching across all nodes.
+    Deprecated compatibility endpoint for ConPort semantic search.
+    Uses keyword fallback across decisions and progress entries.
     """
     if not pool:
         raise HTTPException(status_code=503, detail="Database not available")
-    
-    query_text = query.get("query_text")
-    top_k = query.get("top_k", 5)
-    
+
+    query_text = (payload.get("query_text") or "").strip()
+    top_k = max(int(payload.get("top_k", 5)), 1)
+    if not query_text:
+        raise HTTPException(status_code=400, detail="query_text is required")
+
+    logger.warning(
+        "/api/adhd/semantic-search is deprecated and running in keyword fallback mode; "
+        "use dope-context/serena semantic search for vector retrieval."
+    )
+
     try:
         async with pool.acquire() as conn:
-            # For MVP, we'll do a simple text search if pgvector/embeddings aren't fully ready
-            # or if the query isn't already embedded.
-            # Real implementation would embed query_text using Voyage/local model.
-            query = """
+            sql = """
                 SELECT id::text, 'decision' as type, summary as content, created_at
                 FROM ag_catalog.decisions
                 WHERE workspace_id = $1 AND (summary ILIKE $2 OR rationale ILIKE $2)
@@ -653,12 +657,19 @@ async def semantic_search(
                 LIMIT $3
             """
             search_pattern = f"%{query_text}%"
-            rows = await conn.fetch(query, workspace_id, search_pattern, top_k)
-            
+            rows = await conn.fetch(sql, workspace_id, search_pattern, top_k)
+
+            deprecation_notice = (
+                "Deprecated compatibility endpoint: keyword fallback only. "
+                "Use dope-context/serena semantic search for vector retrieval."
+            )
             return {
                 "query": query_text,
                 "results": [dict(r) for r in rows],
-                "workspace_id": workspace_id
+                "workspace_id": workspace_id,
+                "search_mode": "keyword_fallback",
+                "deprecated": True,
+                "deprecation_notice": deprecation_notice
             }
     except Exception as e:
         logger.error(f"Semantic search failed: {e}")
