@@ -82,6 +82,8 @@ Top `40` underrepresented items from `reports/strict_closure/conport_full_todo_c
    - `docs/05-audit-reports/PROFILE_START_E2E_VERIFICATION_2026-02-06.md`
 9. Row `8` (`1.4.2 Documentation`) is now implemented:
    - `docs/05-audit-reports/PROFILE_DOCUMENTATION_VERIFICATION_2026-02-06.md`
+10. Row `9` (`2.1.3 ADHD Engine client`) is now implemented.
+Evidence: `docs/05-audit-reports/ADHD_ENGINE_PROFILE_DETECTOR_VERIFICATION_2026-02-06.md`
 
 ## Source
 
