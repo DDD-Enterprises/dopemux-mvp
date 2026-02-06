@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-02-06T13:19:32.475764+00:00",
+  "generated_at_utc": "2026-02-06T14:34:57.383277+00:00",
   "generator": "docs-parity-wave1-v1",
   "scope": {
     "active_docs_root": "docs/",
@@ -7,7 +7,7 @@
       "docs/archive/**",
       "SYSTEM_ARCHIVE/**"
     ],
-    "active_docs_count": 243
+    "active_docs_count": 245
   },
   "claims": [
     {
@@ -17,7 +17,7 @@
       "status": "verified_true",
       "method": "filesystem_inventory",
       "evidence": [
-        "active_docs_count=243"
+        "active_docs_count=245"
       ]
     },
     {
@@ -55,57 +55,57 @@
     },
     {
       "claim_id": "DPC0005",
-      "claim": "Link `deployment/DEPLOYMENT-INSTRUCTIONS.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `02-how-to/deployment-guide.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/deployment/DEPLOYMENT-INSTRUCTIONS.md"
+        "docs/02-how-to/deployment-guide.md"
       ]
     },
     {
       "claim_id": "DPC0006",
-      "claim": "Link `deployment/DEPLOYMENT-CHECKLIST.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `02-how-to/deployment-guide.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/deployment/DEPLOYMENT-CHECKLIST.md"
+        "docs/02-how-to/deployment-guide.md"
       ]
     },
     {
       "claim_id": "DPC0007",
-      "claim": "Link `deployment/DEPLOYMENT-WORKTREE-INSTRUCTIONS.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `02-how-to/deployment-worktree.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/deployment/DEPLOYMENT-WORKTREE-INSTRUCTIONS.md"
+        "docs/02-how-to/deployment-worktree.md"
       ]
     },
     {
       "claim_id": "DPC0008",
-      "claim": "Link `02-how-to/integrations/LEANTIME_SETUP_INSTRUCTIONS.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `02-how-to/integrations/leantime-integration-guide.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/02-how-to/integrations/LEANTIME_SETUP_INSTRUCTIONS.md"
+        "docs/02-how-to/integrations/leantime-integration-guide.md"
       ]
     },
     {
       "claim_id": "DPC0009",
-      "claim": "Link `02-how-to/integrations/LEANTIME_API_SETUP_GUIDE.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `02-how-to/integrations/leantime-integration-guide.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/02-how-to/integrations/LEANTIME_API_SETUP_GUIDE.md"
+        "docs/02-how-to/integrations/leantime-integration-guide.md"
       ]
     },
     {
@@ -187,112 +187,112 @@
     },
     {
       "claim_id": "DPC0017",
-      "claim": "Link `systems/conport/CONPORT_EXECUTIVE_SUMMARY.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `03-reference/systems/conport/conport-kg-status.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/systems/conport/CONPORT_EXECUTIVE_SUMMARY.md"
+        "docs/03-reference/systems/conport/conport-kg-status.md"
       ]
     },
     {
       "claim_id": "DPC0018",
-      "claim": "Link `systems/conport/CONPORT_SYSTEMS_ANALYSIS.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `04-explanation/conport-technical-deep-dive.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/systems/conport/CONPORT_SYSTEMS_ANALYSIS.md"
+        "docs/04-explanation/conport-technical-deep-dive.md"
       ]
     },
     {
       "claim_id": "DPC0019",
-      "claim": "Link `systems/conport/CONPORT_INTEGRATION_QUICKSTART.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `02-how-to/mcp-service-discovery-guide.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/systems/conport/CONPORT_INTEGRATION_QUICKSTART.md"
+        "docs/02-how-to/mcp-service-discovery-guide.md"
       ]
     },
     {
       "claim_id": "DPC0020",
-      "claim": "Link `systems/conport/CONPORT_COMPARISON_MATRIX.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `05-audit-reports/service-maturity-gap-analysis.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/systems/conport/CONPORT_COMPARISON_MATRIX.md"
+        "docs/05-audit-reports/service-maturity-gap-analysis.md"
       ]
     },
     {
       "claim_id": "DPC0021",
-      "claim": "Link `systems/conport/CONPORT_README.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `03-reference/systems/conport/conport-kg-status.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/systems/conport/CONPORT_README.md"
+        "docs/03-reference/systems/conport/conport-kg-status.md"
       ]
     },
     {
       "claim_id": "DPC0022",
-      "claim": "Link `systems/dashboard/TMUX_DASHBOARD_README.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `03-reference/systems/dashboard/tmux-dashboard-readme.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/systems/dashboard/TMUX_DASHBOARD_README.md"
+        "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md"
       ]
     },
     {
       "claim_id": "DPC0023",
-      "claim": "Link `systems/dashboard/TMUX_DASHBOARD_DESIGN.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `03-reference/systems/dashboard/tmux-dashboard-design.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/systems/dashboard/TMUX_DASHBOARD_DESIGN.md"
+        "docs/03-reference/systems/dashboard/tmux-dashboard-design.md"
       ]
     },
     {
       "claim_id": "DPC0024",
-      "claim": "Link `systems/dashboard/TMUX_METRICS_INVENTORY.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `03-reference/systems/dashboard/tmux-metrics-inventory.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/systems/dashboard/TMUX_METRICS_INVENTORY.md"
+        "docs/03-reference/systems/dashboard/tmux-metrics-inventory.md"
       ]
     },
     {
       "claim_id": "DPC0025",
-      "claim": "Link `systems/dashboard/DASHBOARD_IMPLEMENTATION_TRACKER.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `03-reference/systems/dashboard/dashboard-implementation-tracker.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/systems/dashboard/DASHBOARD_IMPLEMENTATION_TRACKER.md"
+        "docs/03-reference/systems/dashboard/dashboard-implementation-tracker.md"
       ]
     },
     {
       "claim_id": "DPC0026",
-      "claim": "Link `systems/dashboard/DASHBOARD_ENHANCEMENTS.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `03-reference/systems/dashboard/dashboard-enhancements.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/systems/dashboard/DASHBOARD_ENHANCEMENTS.md"
+        "docs/03-reference/systems/dashboard/dashboard-enhancements.md"
       ]
     },
     {
@@ -308,13 +308,13 @@
     },
     {
       "claim_id": "DPC0028",
-      "claim": "Link `94-architecture/system-bible.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `04-explanation/architecture/system-bible.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/94-architecture/system-bible.md"
+        "docs/04-explanation/architecture/system-bible.md"
       ]
     },
     {
@@ -330,13 +330,13 @@
     },
     {
       "claim_id": "DPC0030",
-      "claim": "Link `94-architecture/multi-instance-implementation.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `04-explanation/architecture/multi-instance-implementation.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/94-architecture/multi-instance-implementation.md"
+        "docs/04-explanation/architecture/multi-instance-implementation.md"
       ]
     },
     {
@@ -385,90 +385,90 @@
     },
     {
       "claim_id": "DPC0035",
-      "claim": "Link `development/planning/ACTION-PLAN-MASTER.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `archive/development/planning/ACTION-PLAN-MASTER.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/development/planning/ACTION-PLAN-MASTER.md"
+        "docs/archive/development/planning/ACTION-PLAN-MASTER.md"
       ]
     },
     {
       "claim_id": "DPC0036",
-      "claim": "Link `development/planning/DDDPG_KICKOFF.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `archive/development/planning/DDDPG_KICKOFF.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/development/planning/DDDPG_KICKOFF.md"
+        "docs/archive/development/planning/DDDPG_KICKOFF.md"
       ]
     },
     {
       "claim_id": "DPC0037",
-      "claim": "Link `development/planning/DOPE_LAYOUT_MODULAR_PLAN.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `archive/development/planning/DOPE_LAYOUT_MODULAR_PLAN.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/development/planning/DOPE_LAYOUT_MODULAR_PLAN.md"
+        "docs/archive/development/planning/DOPE_LAYOUT_MODULAR_PLAN.md"
       ]
     },
     {
       "claim_id": "DPC0038",
-      "claim": "Link `implementation-plans/00-MASTER-INDEX.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `archive/implementation-plans/00-MASTER-INDEX.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/implementation-plans/00-MASTER-INDEX.md"
+        "docs/archive/implementation-plans/00-MASTER-INDEX.md"
       ]
     },
     {
       "claim_id": "DPC0039",
-      "claim": "Link `implementation-plans/DASHBOARD_IMPLEMENTATION_TRACKER.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `archive/implementation-plans/DASHBOARD_IMPLEMENTATION_TRACKER.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/implementation-plans/DASHBOARD_IMPLEMENTATION_TRACKER.md"
+        "docs/archive/implementation-plans/DASHBOARD_IMPLEMENTATION_TRACKER.md"
       ]
     },
     {
       "claim_id": "DPC0040",
-      "claim": "Link `implementation-plans/CONPORT_HTTP_DEEP_PLANNING.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `archive/implementation-plans/CONPORT_HTTP_DEEP_PLANNING.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/implementation-plans/CONPORT_HTTP_DEEP_PLANNING.md"
+        "docs/archive/implementation-plans/CONPORT_HTTP_DEEP_PLANNING.md"
       ]
     },
     {
       "claim_id": "DPC0041",
-      "claim": "Link `implementation-plans/component-1-audit-summary.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `archive/implementation-plans/component-1-audit-summary.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/implementation-plans/component-1-audit-summary.md"
+        "docs/archive/implementation-plans/component-1-audit-summary.md"
       ]
     },
     {
       "claim_id": "DPC0042",
-      "claim": "Link `PROFILE-YAML-SCHEMA.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `03-reference/configuration/PROFILE-YAML-SCHEMA.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/PROFILE-YAML-SCHEMA.md"
+        "docs/03-reference/configuration/PROFILE-YAML-SCHEMA.md"
       ]
     },
     {
@@ -484,13 +484,13 @@
     },
     {
       "claim_id": "DPC0044",
-      "claim": "Link `FEATURES_INDEX.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "claim": "Link `03-reference/features/features-index.md` in `docs/00-MASTER-INDEX.md` resolves.",
       "source": "docs/00-MASTER-INDEX.md",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "link_resolution",
       "evidence": [
         "docs/00-MASTER-INDEX.md",
-        "docs/FEATURES_INDEX.md"
+        "docs/03-reference/features/features-index.md"
       ]
     },
     {
@@ -2585,112 +2585,112 @@
     },
     {
       "claim_id": "DPC0235",
-      "claim": "docs_index.yaml target `docs/systems/conport/CONPORT_EXECUTIVE_SUMMARY.md` exists.",
+      "claim": "docs_index.yaml target `docs/03-reference/systems/conport/conport-kg-status.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/systems/conport/CONPORT_EXECUTIVE_SUMMARY.md"
+        "docs/03-reference/systems/conport/conport-kg-status.md"
       ]
     },
     {
       "claim_id": "DPC0236",
-      "claim": "docs_index.yaml target `docs/systems/conport/CONPORT_SYSTEMS_ANALYSIS.md` exists.",
+      "claim": "docs_index.yaml target `docs/04-explanation/conport-technical-deep-dive.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/systems/conport/CONPORT_SYSTEMS_ANALYSIS.md"
+        "docs/04-explanation/conport-technical-deep-dive.md"
       ]
     },
     {
       "claim_id": "DPC0237",
-      "claim": "docs_index.yaml target `docs/systems/conport/CONPORT_INTEGRATION_QUICKSTART.md` exists.",
+      "claim": "docs_index.yaml target `docs/02-how-to/mcp-service-discovery-guide.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/systems/conport/CONPORT_INTEGRATION_QUICKSTART.md"
+        "docs/02-how-to/mcp-service-discovery-guide.md"
       ]
     },
     {
       "claim_id": "DPC0238",
-      "claim": "docs_index.yaml target `docs/systems/conport/CONPORT_COMPARISON_MATRIX.md` exists.",
+      "claim": "docs_index.yaml target `docs/05-audit-reports/service-maturity-gap-analysis.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/systems/conport/CONPORT_COMPARISON_MATRIX.md"
+        "docs/05-audit-reports/service-maturity-gap-analysis.md"
       ]
     },
     {
       "claim_id": "DPC0239",
-      "claim": "docs_index.yaml target `docs/systems/conport/CONPORT_README.md` exists.",
+      "claim": "docs_index.yaml target `docs/03-reference/systems/conport/conport-kg-status.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/systems/conport/CONPORT_README.md"
+        "docs/03-reference/systems/conport/conport-kg-status.md"
       ]
     },
     {
       "claim_id": "DPC0240",
-      "claim": "docs_index.yaml target `docs/systems/dashboard/TMUX_DASHBOARD_README.md` exists.",
+      "claim": "docs_index.yaml target `docs/03-reference/systems/dashboard/tmux-dashboard-readme.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/systems/dashboard/TMUX_DASHBOARD_README.md"
+        "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md"
       ]
     },
     {
       "claim_id": "DPC0241",
-      "claim": "docs_index.yaml target `docs/systems/dashboard/TMUX_DASHBOARD_DESIGN.md` exists.",
+      "claim": "docs_index.yaml target `docs/03-reference/systems/dashboard/tmux-dashboard-design.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/systems/dashboard/TMUX_DASHBOARD_DESIGN.md"
+        "docs/03-reference/systems/dashboard/tmux-dashboard-design.md"
       ]
     },
     {
       "claim_id": "DPC0242",
-      "claim": "docs_index.yaml target `docs/systems/dashboard/TMUX_METRICS_INVENTORY.md` exists.",
+      "claim": "docs_index.yaml target `docs/03-reference/systems/dashboard/tmux-metrics-inventory.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/systems/dashboard/TMUX_METRICS_INVENTORY.md"
+        "docs/03-reference/systems/dashboard/tmux-metrics-inventory.md"
       ]
     },
     {
       "claim_id": "DPC0243",
-      "claim": "docs_index.yaml target `docs/systems/dashboard/DASHBOARD_IMPLEMENTATION_TRACKER.md` exists.",
+      "claim": "docs_index.yaml target `docs/03-reference/systems/dashboard/dashboard-implementation-tracker.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/systems/dashboard/DASHBOARD_IMPLEMENTATION_TRACKER.md"
+        "docs/03-reference/systems/dashboard/dashboard-implementation-tracker.md"
       ]
     },
     {
       "claim_id": "DPC0244",
-      "claim": "docs_index.yaml target `docs/systems/dashboard/DASHBOARD_ENHANCEMENTS.md` exists.",
+      "claim": "docs_index.yaml target `docs/03-reference/systems/dashboard/dashboard-enhancements.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/systems/dashboard/DASHBOARD_ENHANCEMENTS.md"
+        "docs/03-reference/systems/dashboard/dashboard-enhancements.md"
       ]
     },
     {
@@ -2728,13 +2728,13 @@
     },
     {
       "claim_id": "DPC0248",
-      "claim": "docs_index.yaml target `services/task-orchestrator/README.md` exists.",
+      "claim": "docs_index.yaml target `docs/03-reference/services/task-orchestrator.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "services/task-orchestrator/README.md"
+        "docs/03-reference/services/task-orchestrator.md"
       ]
     },
     {
@@ -2761,13 +2761,13 @@
     },
     {
       "claim_id": "DPC0251",
-      "claim": "docs_index.yaml target `services/dopecon-bridge/docs/` exists.",
+      "claim": "docs_index.yaml target `services/dopecon-bridge/` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "services/dopecon-bridge/docs"
+        "services/dopecon-bridge"
       ]
     },
     {
@@ -2794,35 +2794,35 @@
     },
     {
       "claim_id": "DPC0254",
-      "claim": "docs_index.yaml target `services/orchestrator/README.md` exists.",
+      "claim": "docs_index.yaml target `docs/04-explanation/DOPEMUX-ORCHESTRATOR-FINAL-SPEC.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "services/orchestrator/README.md"
+        "docs/04-explanation/DOPEMUX-ORCHESTRATOR-FINAL-SPEC.md"
       ]
     },
     {
       "claim_id": "DPC0255",
-      "claim": "docs_index.yaml target `services/orchestrator/docs/` exists.",
+      "claim": "docs_index.yaml target `src/dopemux/orchestrator/` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "services/orchestrator/docs"
+        "src/dopemux/orchestrator"
       ]
     },
     {
       "claim_id": "DPC0256",
-      "claim": "docs_index.yaml target `services/orchestrator/claudedocs/` exists.",
+      "claim": "docs_index.yaml target `docs/04-explanation/design-decisions/` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "services/orchestrator/claudedocs"
+        "docs/04-explanation/design-decisions"
       ]
     },
     {
@@ -2838,13 +2838,13 @@
     },
     {
       "claim_id": "DPC0258",
-      "claim": "docs_index.yaml target `services/conport_kg_ui/claudedocs/` exists.",
+      "claim": "docs_index.yaml target `services/conport_kg_ui/src/` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "services/conport_kg_ui/claudedocs"
+        "services/conport_kg_ui/src"
       ]
     },
     {
@@ -2860,24 +2860,24 @@
     },
     {
       "claim_id": "DPC0260",
-      "claim": "docs_index.yaml target `docs/94-architecture/system-bible.md` exists.",
+      "claim": "docs_index.yaml target `docs/04-explanation/architecture/system-bible.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/94-architecture/system-bible.md"
+        "docs/04-explanation/architecture/system-bible.md"
       ]
     },
     {
       "claim_id": "DPC0261",
-      "claim": "docs_index.yaml target `docs/94-architecture/multi-instance-implementation.md` exists.",
+      "claim": "docs_index.yaml target `docs/04-explanation/architecture/multi-instance-implementation.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/94-architecture/multi-instance-implementation.md"
+        "docs/04-explanation/architecture/multi-instance-implementation.md"
       ]
     },
     {
@@ -2915,24 +2915,24 @@
     },
     {
       "claim_id": "DPC0265",
-      "claim": "docs_index.yaml target `docs/deployment/DEPLOYMENT-INSTRUCTIONS.md` exists.",
+      "claim": "docs_index.yaml target `docs/02-how-to/deployment-guide.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/deployment/DEPLOYMENT-INSTRUCTIONS.md"
+        "docs/02-how-to/deployment-guide.md"
       ]
     },
     {
       "claim_id": "DPC0266",
-      "claim": "docs_index.yaml target `docs/02-how-to/integrations/LEANTIME_SETUP_INSTRUCTIONS.md` exists.",
+      "claim": "docs_index.yaml target `docs/02-how-to/integrations/leantime-integration-guide.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/02-how-to/integrations/LEANTIME_SETUP_INSTRUCTIONS.md"
+        "docs/02-how-to/integrations/leantime-integration-guide.md"
       ]
     },
     {
@@ -3014,24 +3014,24 @@
     },
     {
       "claim_id": "DPC0274",
-      "claim": "docs_index.yaml target `docs/PROFILE-YAML-SCHEMA.md` exists.",
+      "claim": "docs_index.yaml target `docs/03-reference/configuration/PROFILE-YAML-SCHEMA.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/PROFILE-YAML-SCHEMA.md"
+        "docs/03-reference/configuration/PROFILE-YAML-SCHEMA.md"
       ]
     },
     {
       "claim_id": "DPC0275",
-      "claim": "docs_index.yaml target `docs/FEATURES_INDEX.md` exists.",
+      "claim": "docs_index.yaml target `docs/03-reference/features/features-index.md` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "docs/FEATURES_INDEX.md"
+        "docs/03-reference/features/features-index.md"
       ]
     },
     {
@@ -3245,24 +3245,24 @@
     },
     {
       "claim_id": "DPC0295",
-      "claim": "docs_index.yaml target `config/mcp/` exists.",
+      "claim": "docs_index.yaml target `config/.claude/` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "config/mcp"
+        "config/.claude"
       ]
     },
     {
       "claim_id": "DPC0296",
-      "claim": "docs_index.yaml target `config/routing/` exists.",
+      "claim": "docs_index.yaml target `config/env/` exists.",
       "source": "docs/docs_index.yaml",
-      "status": "verified_false",
+      "status": "verified_true",
       "method": "path_existence_check",
       "evidence": [
         "docs/docs_index.yaml",
-        "config/routing"
+        "config/env"
       ]
     },
     {
@@ -3414,8 +3414,8 @@
   ],
   "summary": {
     "total": 309,
-    "verified_true": 161,
-    "verified_false": 146,
+    "verified_true": 211,
+    "verified_false": 96,
     "partially_true": 1,
     "unverified": 1
   }

@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-02-06T13:19:32.475897+00:00",
+  "generated_at_utc": "2026-02-06T14:34:57.383422+00:00",
   "run_id": "docs-parity-wave1",
   "inputs": {
     "inventory_source": [
@@ -10,16 +10,16 @@
       "docs/archive/**",
       "SYSTEM_ARCHIVE/**"
     ],
-    "active_docs_count": 243
+    "active_docs_count": 245
   },
   "checks": {
     "link_resolution": {
       "checked": 228,
-      "broken": 119
+      "broken": 93
     },
     "docs_index_path_parity": {
       "checked": 72,
-      "missing": 24
+      "missing": 0
     },
     "curated_claims": {
       "count": 9,
@@ -31,10 +31,10 @@
     }
   },
   "contradictions": {
-    "total": 149,
+    "total": 99,
     "by_severity": {
       "P0": 1,
-      "P1": 53,
+      "P1": 3,
       "P2": 95,
       "P3": 0
     }
