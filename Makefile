@@ -1,6 +1,6 @@
 # Dopemux Development Makefile
 
-.PHONY: help install install-dev test test-unit test-integration test-coverage clean lint format type-check build docs serve-docs
+.PHONY: help install install-dev test test-unit test-integration test-coverage clean lint format type-check build docs serve-docs task-packet
 
 # Default target
 help:
@@ -28,6 +28,7 @@ help:
 	@echo "  build          Build distribution packages"
 	@echo "  docs           Build documentation"
 	@echo "  serve-docs     Serve documentation locally"
+	@echo "  task-packet    Collect multi-service debug packet (TASK_ID=<name> SINCE=2h SERVICES=all)"
 	@echo ""
 	@echo "Docs Audit:"
 	@echo "  docs-audit     Scan docs, create report + triage + rename plan (dry)"
@@ -182,3 +183,10 @@ bridge-validate:
 
 bridge-client-test:
 	@pytest tests/shared/test_dopecon_bridge_client.py -v
+
+# ---- Debugging / Investigation ----
+task-packet:
+	@python3 scripts/collect_task_packet.py \
+		--task-id "$(or $(TASK_ID),investigation)" \
+		--since "$(or $(SINCE),2h)" \
+		--services "$(or $(SERVICES),all)"
