@@ -260,6 +260,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/conport_deep_status_task_recheck_2026-02-06.json`.
 13. Config backup-safety backlog item (`1.2.3`) is now implemented in `ConfigGenerator` with atomic write, rollback safety, and targeted unit tests:
    `reports/strict_closure/config_backup_safety_verification_2026-02-06.json`.
+14. Profile-config integration backlog item (`1.2.4`) is now implemented with explicit tests for full-profile parity, developer 3-MCP shape, and backup rollback restore:
+   `reports/strict_closure/profile_config_integration_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
