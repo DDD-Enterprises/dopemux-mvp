@@ -1,0 +1,46 @@
+{
+  "run_timestamp_utc": "2026-02-06T17:01:25.172712Z",
+  "branch": "codex/wave-next",
+  "source_bundle": "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json",
+  "source_bundle_sha256": "2b658ebd55676e014efe1c4f345645781e4b54db63d48968218967dcbf934803",
+  "target_database": "postgresql://dopemux_age@dopemux-postgres-age:5432/dopemux_knowledge_graph",
+  "run_history": [
+    {
+      "run_timestamp_utc": "2026-02-06T16:59:41.609665Z",
+      "context_links_total": 111,
+      "resolved_candidates": 110,
+      "inserted": 110,
+      "deduplicated": 0,
+      "skipped": 1,
+      "skipped_by_reason": {
+        "target:unsupported_type:custom_data": 1
+      }
+    },
+    {
+      "run_timestamp_utc": "2026-02-06T17:01:25.172712Z",
+      "context_links_total": 111,
+      "resolved_candidates": 111,
+      "inserted": 1,
+      "deduplicated": 110,
+      "skipped": 0,
+      "skipped_by_reason": {}
+    }
+  ],
+  "lookup_stats_final_run": {
+    "decisions_scanned": 294,
+    "progress_entries_scanned": 209,
+    "custom_data_scanned": 14,
+    "decision_summary_collisions": 0,
+    "progress_description_collisions": 0,
+    "custom_data_key_collisions": 0
+  },
+  "counts": {
+    "pre_first_run_entity_relationships": 0,
+    "post_final_run_entity_relationships": 111
+  },
+  "closure_status": {
+    "relationship_parity_percent": 100.0,
+    "remaining_gap": "none",
+    "note": "Backfill is idempotent; rerun inserted only previously unsupported custom_data edge-case link."
+  }
+}
