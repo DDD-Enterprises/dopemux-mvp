@@ -13,65 +13,71 @@ prelude: Unbuilt Features And Roadmap (explanation) for dopemux documentation an
 # Unbuilt Features & Roadmap Catalog (The "Lost Futures")
 
 **Date**: 2026-02-06
-**Scope**: Features specified in ADRs/READMEs but absent from the codebase.
-**Status**: These are "Vaporware" - high-value designs waiting for implementation.
+**Scope**: Features specified in ADRs/READMEs where implementation maturity differs from documented intent.
+**Status**: Code-truth classification uses `Implemented`, `Partially Implemented`, and `Planned`.
+
+## Verification Status (Code-Truth, 2026-02-06)
+
+- Implemented: Core event bus, task-orchestrator runtime, and all seven agent module files exist.
+- Partially Implemented: Agent readiness, auto-resume reliability, and event-adapter depth are incomplete.
+- Planned: ADR-197 Stage-1/Stage-2 Idea/Epic workflow and bio-feedback integration remain roadmap work.
 
 ## 1. Executive Summary
 
-Our deep dive revealed a significant gap between the *documented vision* and the *implemented reality*. While the core "Two-Plane Architecture" allows data to flow, the advanced orchestration and ADHD-specific automation layers are largely unbuilt.
+Our deep dive revealed a significant gap between the *documented vision* and the *implemented reality*. The core "Two-Plane Architecture" is live, but advanced orchestration and ADHD automation remain uneven across components.
 
 **Top 3 Missing Capabilities:**
-1.  **The 4-Stage Workflow** (ADR-197): No bridge between "Ideas" and "Tasks".
-2.  **Auto-Resume** (ADR-180): Crash recovery is still manual.
-3.  **Cognitive Guardian**: The "ADHD" part of the engine (break enforcement) is a skeleton.
+1. **The 4-Stage Workflow** (ADR-197): Stage 1/2 (`Idea`/`Epic`) runtime is still missing.
+2. **Auto-Resume** (ADR-180): Core resume paths exist, but quality and integration hardening are incomplete.
+3. **Cognitive Guardian**: Module exists, but full intervention quality and production hardening are incomplete.
 
 ---
 
-## 2. Vaporware Matrix
+## 2. Implementation Reality Matrix
 
 | Feature | Source | Status | Description |
 |:---|:---|:---:|:---|
-| **Cognitive Guardian** | `agents/README` | ⏳ Pending | Break enforcement & focus monitoring agent. |
-| **TwoPlaneOrchestrator** | `agents/README` | ⏳ Pending | Dedicated authority for cross-plane sync. |
-| **TaskDecomposer** | `agents/README` | ⏳ Pending | AI that breaks Epics into Tasks (PRD parsing). |
-| **DopemuxEnforcer** | `agents/README` | ⏳ Pending | Architectural rule validation bot. |
-| **ToolOrchestrator** | `agents/README` | ⏳ Pending | Intelligent routing to optimal MCP models. |
-| **WorkflowCoordinator** | `agents/README` | ⏳ Pending | Multi-step wizard for complex processes. |
-| **Auto-Resume** | `ADR-180` | ❌ Unbuilt | `dopemux start` offering to resume orphaned sessions. |
-| **Idea -> Epic Flow** | `ADR-197` | ❌ Unbuilt | "Idea" capture stage in ConPort. |
-| **Event Adapters** | `ADR-207` | ❌ Unbuilt | Event-driven wiring inside Task Orchestrator. |
-| **Bio-Feedback** | `adhd-engine` | 💭 Concept | Hardware integration pointers (Placeholders only). |
+| **Cognitive Guardian** | `agents/README` | Partially Implemented | Agent module exists; intervention behavior needs production hardening. |
+| **TwoPlaneOrchestrator** | `agents/README` | Partially Implemented | Module exists; authoritative cross-plane enforcement remains incomplete. |
+| **TaskDecomposer** | `agents/README` | Partially Implemented | Module exists; PRD-to-task quality and validation depth need hardening. |
+| **DopemuxEnforcer** | `agents/README` | Partially Implemented | Module exists; architecture policy enforcement is not fully operationalized. |
+| **ToolOrchestrator** | `agents/README` | Partially Implemented | Module exists; intelligent model routing maturity remains limited. |
+| **WorkflowCoordinator** | `agents/README` | Partially Implemented | Module exists; end-to-end workflow orchestration depth is incomplete. |
+| **Auto-Resume** | `ADR-180` | Partially Implemented | Orphan detection and resume commands exist; reliability and UX hardening pending. |
+| **Idea -> Epic Flow** | `ADR-197` | Planned | Stage-1/Stage-2 workflow runtime is not present in active code paths. |
+| **Event Adapters** | `ADR-207` | Partially Implemented | Adapter modules exist, but full event-driven maturity remains incomplete. |
+| **Bio-Feedback** | `adhd-engine` | Planned | Hardware integration remains roadmap-level only. |
 
 ---
 
 ## 3. Deep Dive into Missing Systems
 
-### 👻 The Ghost Agents (6 of 7 Missing)
-Only `MemoryAgent` (Context Preservation) was built. The other 6 agents described in `services/agents/README.md` are pure design specs.
-*   **Impact**: The system preserves memory but doesn't *guide* the user or *enforce* breaks yet. It's a "Passive Savior" rather than an "Active Coach".
+### 👻 Agent Readiness Gap (Modules Present, Quality Incomplete)
+All seven agent module files are present in `services/agents/`, but several remain partially implemented in runtime quality, orchestration depth, and production hardening.
+- **Impact**: The system has more than passive memory support, but guidance/enforcement behavior is not yet uniformly reliable.
 
 ### 🚧  The Workflow Gap (ADR-197)
 We designed a beautiful 4-stage flow:
-1.  **Idea** (Unstructured)
-2.  **Epic** (Structured)
-3.  **Task** (Executable)
-4.  **Execution** (Tracked)
+1. **Idea** (Unstructured)
+2. **Epic** (Structured)
+3. **Task** (Executable)
+4. **Execution** (Tracked)
 
 **Reality**: We have `Leantime` (Stage 3) and `ConPort` (Stage 4 context).
 **Missing**: Stage 1 & 2. There is no "Idea Bucket". Users must go straight to Leantime tasks, raising the barrier to entry for ADHD brains (who need low-friction capture).
 
 ### 💔 The Orchestration Gap (ADR-207)
-The `task-orchestrator` service exists but operates as a CRUD wrapper.
-**Missing**: The complex `adapters/` and `insight_publisher.py` classes described in the Implementation Plan.
-**Consequence**: Dependency analysis (finding blockers between tasks) is likely manual or primitive, rather than event-driven.
+The `task-orchestrator` service exists with adapter implementations, but event-driven maturity and integration depth still lag the architecture intent.
+**Current State**: Adapter modules are present (`conport_adapter`, enhanced orchestrator paths), but complete contract hardening and coverage are incomplete.
+**Consequence**: Dependency analysis and cross-service signal quality can still be brittle in edge scenarios.
 
 ---
 
 ## 4. Recommendations for Next Phase
 
-1.  **Build the "Idea Bucket" (ADR-197 Phase 1)**: High impact for ADHD. Allow quick capture of random thoughts before they vanish.
-2.  **Implement Auto-Resume (ADR-180)**: High quality-of-life fix. "Crash = Lost Context" is a major pain point.
-3.  **Activate Cognitive Guardian**: Move `adhd-engine` from passive tracking to active intervention (Break Reminders).
+1. **Build the "Idea Bucket" (ADR-197 Phase 1)**: High impact for ADHD. Allow quick capture of random thoughts before they vanish.
+2. **Harden Auto-Resume (ADR-180)**: Stabilize and test current resume paths end-to-end rather than treating feature as absent.
+3. **Productionize Cognitive Guardian**: Convert current partial implementation into validated intervention workflows with measurable behavior.
 
 ---
 *Generated by Deep Dive Agent - Phase 5 Analysis*
