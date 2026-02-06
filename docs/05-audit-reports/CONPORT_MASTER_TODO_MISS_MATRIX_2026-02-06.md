@@ -299,3 +299,14 @@ Promoted live true-open lines:
 Supporting artifact:
 
 - `reports/strict_closure/conport_master_live_true_open_delta_2026-02-06.json`
+
+Post-promotion recheck:
+
+1. Live true-open total rechecked: `25`.
+2. Missing in master by exact text after promotion: `0`.
+3. Exact line coverage status: `closed`.
+4. Canonical residual drift after promotion: `8` (wording-level, not line-coverage gaps).
+
+Recheck artifact:
+
+- `reports/strict_closure/conport_master_live_true_open_delta_recheck_2026-02-06.json`
