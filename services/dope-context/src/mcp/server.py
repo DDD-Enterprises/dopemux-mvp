@@ -10,6 +10,7 @@ MCP Tools:
 """
 
 import asyncio
+import ast
 import json
 import logging
 import os
@@ -33,7 +34,7 @@ except ImportError:  # pragma: no cover - for constrained test envs
         """Fallback request stub."""
 
         def __init__(self, *args, **kwargs):
-            pass
+            self._starlette_unavailable = True
 
     class JSONResponse(dict):  # type: ignore
         """Fallback JSON response stub."""
@@ -373,10 +374,8 @@ def _discover_workspaces_from_snapshots() -> List[Path]:
             try:
                 data = json.loads(file_path.read_text())
                 workspace_str = data.get("workspace_path")
-            except Exception as e:
+            except Exception:
                 continue
-
-                logger.error(f"Error: {e}")
             if workspace_str:
                 workspace_path = Path(workspace_str)
                 break
@@ -1206,8 +1205,6 @@ async def _clear_index_impl(
             cleared.append(label)
         except Exception as exc:
             errors.append({"index": label, "error": str(exc)})
-
-            logger.error(f"Error: {e}")
     if target_normalized in {"code", "both"}:
         await _delete_collection(code_collection, "code")
         bm25_cache_path = _snapshot_dir_for_hash(workspace_hash) / "bm25_index.pkl"
@@ -1624,6 +1621,8 @@ async def _sync_workspace_impl(
     if not changes.has_changes():
         return {
             "workspace": str(workspace),
+            "has_changes": False,
+            "total_changes": 0,
             "changes": 0,
             "added": 0,
             "modified": 0,
@@ -1645,7 +1644,9 @@ async def _sync_workspace_impl(
             chunker = CodeChunker()
             openai_key = os.getenv("OPENAI_API_KEY")
             context_generator = OpenAIContextGenerator(api_key=openai_key) if openai_key else None
-            embedder = _get_cached_embedder(api_key=_get_voyage_api_key())
+            voyage_key = _get_voyage_api_key()
+            standard_embedder = _get_cached_embedder(api_key=voyage_key)
+            contextualized_embedder = _get_cached_contextualized_embedder(api_key=voyage_key)
 
             config = IndexingConfig(
                 workspace_path=workspace,
@@ -1656,7 +1657,8 @@ async def _sync_workspace_impl(
             pipeline = IndexingPipeline(
                 chunker=chunker,
                 context_generator=context_generator,
-                embedder=embedder,
+                standard_embedder=standard_embedder,
+                contextualized_embedder=contextualized_embedder,
                 vector_search=vector_search,
                 config=config,
             )
@@ -1664,10 +1666,11 @@ async def _sync_workspace_impl(
             # Index only changed files
             changed_files = changes.added + changes.modified
             if changed_files:
+                changed_patterns = [Path(path).as_posix().lstrip("./") for path in changed_files]
                 # Create temporary config with only changed files
                 temp_config = IndexingConfig(
                     workspace_path=workspace,
-                    include_patterns=changed_files,  # Only these specific files
+                    include_patterns=changed_patterns,  # Only these specific files
                     workspace_id=str(workspace),
                 )
                 pipeline.config = temp_config
@@ -1676,8 +1679,34 @@ async def _sync_workspace_impl(
 
             # Delete removed files from collection
             if changes.removed:
-                # TODO: Delete specific point IDs for removed files
-                logger.info(f"Note: {len(changes.removed)} files removed (manual cleanup needed)")
+                all_docs = await vector_search.get_all_payloads()
+                removed_set = {Path(path).as_posix() for path in changes.removed}
+                removed_basenames = {Path(path).name for path in changes.removed}
+                point_ids_to_delete: List[str] = []
+                for doc in all_docs:
+                    source_path = doc.get("file_path") or doc.get("source_path")
+                    point_id = doc.get("id")
+                    if not source_path or not point_id:
+                        continue
+                    source_norm = Path(str(source_path)).as_posix()
+                    if (
+                        source_norm in removed_set
+                        or source_norm.lstrip("./") in removed_set
+                        or Path(source_norm).name in removed_basenames
+                    ):
+                        point_ids_to_delete.append(str(point_id))
+                if point_ids_to_delete:
+                    await vector_search.delete_points(point_ids_to_delete)
+                    logger.info(
+                        "Deleted %s vectors for %s removed files",
+                        len(point_ids_to_delete),
+                        len(changes.removed),
+                    )
+                else:
+                    logger.info(
+                        "No matching vector points found for %s removed files",
+                        len(changes.removed),
+                    )
 
             # Rebuild BM25 index after incremental changes
             try:
@@ -1698,6 +1727,8 @@ async def _sync_workspace_impl(
 
             return {
                 "workspace": str(workspace),
+                "has_changes": changes.total_changes() > 0,
+                "total_changes": changes.total_changes(),
                 "changes": changes.total_changes(),
                 "added": len(changes.added),
                 "modified": len(changes.modified),
@@ -1710,6 +1741,8 @@ async def _sync_workspace_impl(
             logger.error(f"Auto-reindex failed: {reindex_error}")
             return {
                 "workspace": str(workspace),
+                "has_changes": changes.total_changes() > 0,
+                "total_changes": changes.total_changes(),
                 "changes": changes.total_changes(),
                 "added": len(changes.added),
                 "modified": len(changes.modified),
@@ -1721,6 +1754,8 @@ async def _sync_workspace_impl(
     # Just report changes without reindexing
     return {
         "workspace": str(workspace),
+        "has_changes": changes.total_changes() > 0,
+        "total_changes": changes.total_changes(),
         "changes": changes.total_changes(),
         "added": len(changes.added),
         "modified": len(changes.modified),
@@ -2309,9 +2344,103 @@ async def get_chunk_complexity(file_path: str, symbol: str) -> Dict:
 
     Returns complexity score 0.0-1.0 from Tree-sitter analysis.
     """
-    # TODO: Extract from existing chunking pipeline
-    # For now, return moderate complexity
-    return {"complexity": 0.5, "method": "tree-sitter-ast", "file_path": file_path, "symbol": symbol}
+    resolved = Path(file_path).expanduser()
+    if not resolved.is_absolute():
+        resolved = (Path.cwd() / resolved).resolve()
+    if not resolved.exists():
+        return {
+            "complexity": 0.5,
+            "method": "ast-heuristic",
+            "file_path": str(resolved),
+            "symbol": symbol,
+            "reason": "file_not_found",
+        }
+
+    try:
+        source = resolved.read_text(encoding="utf-8", errors="ignore")
+    except Exception as exc:
+        return {
+            "complexity": 0.5,
+            "method": "ast-heuristic",
+            "file_path": str(resolved),
+            "symbol": symbol,
+            "reason": f"read_error:{exc}",
+        }
+
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        # Fallback heuristic for non-Python files or parse failures.
+        line_count = max(1, len(source.splitlines()))
+        keyword_hits = sum(
+            source.lower().count(keyword)
+            for keyword in ("if ", "for ", "while ", "try:", "except", "class ", "def ")
+        )
+        complexity = min(1.0, 0.15 + (line_count / 400.0) + (keyword_hits / 100.0))
+        return {
+            "complexity": round(complexity, 3),
+            "method": "text-heuristic",
+            "file_path": str(resolved),
+            "symbol": symbol,
+            "line_count": line_count,
+            "keyword_hits": keyword_hits,
+        }
+
+    symbol_node: Optional[ast.AST] = None
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            if getattr(node, "name", None) == symbol:
+                symbol_node = node
+                break
+
+    if symbol_node is not None:
+        start = getattr(symbol_node, "lineno", 1)
+        end = getattr(symbol_node, "end_lineno", start)
+        target_source = "\n".join(source.splitlines()[start - 1 : end])
+        target_tree = symbol_node
+    else:
+        start = 1
+        end = len(source.splitlines())
+        target_source = source
+        target_tree = tree
+
+    branch_nodes = (
+        ast.If,
+        ast.For,
+        ast.AsyncFor,
+        ast.While,
+        ast.Try,
+        ast.With,
+        ast.AsyncWith,
+        ast.Match,
+        ast.comprehension,
+    )
+    branch_count = sum(1 for node in ast.walk(target_tree) if isinstance(node, branch_nodes))
+
+    def _max_depth(node: ast.AST, depth: int = 0) -> int:
+        children = list(ast.iter_child_nodes(node))
+        if not children:
+            return depth
+        return max(_max_depth(child, depth + 1) for child in children)
+
+    max_depth = _max_depth(target_tree)
+    line_count = max(1, len(target_source.splitlines()))
+
+    complexity = min(
+        1.0,
+        0.1 + (line_count / 220.0) + (branch_count / 20.0) + (max_depth / 30.0),
+    )
+    return {
+        "complexity": round(complexity, 3),
+        "method": "ast-heuristic",
+        "file_path": str(resolved),
+        "symbol": symbol,
+        "line_count": line_count,
+        "branch_count": branch_count,
+        "max_depth": max_depth,
+        "scope_start_line": start,
+        "scope_end_line": end,
+    }
 
 
 if __name__ == "__main__":

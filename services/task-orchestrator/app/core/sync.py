@@ -322,6 +322,11 @@ class MultiDirectionalSyncEngine:
         try:
             source_data = operation.source_data
             entity_type = operation.entity_type
+            conport_client = self.system_connectors.get("conport")
+
+            if conport_client is None:
+                logger.warning("ConPort connector unavailable; skipping Leantime→ConPort sync")
+                return False
 
             if entity_type == "task":
                 # Convert Leantime task to ConPort progress entry
@@ -536,6 +541,11 @@ class MultiDirectionalSyncEngine:
                 return True
 
             elif target_system == "conport":
+                conport_client = self.system_connectors.get("conport")
+                if conport_client is None:
+                    logger.warning("ConPort connector unavailable; skipping agent→ConPort sync")
+                    return False
+
                 # Log agent work as ConPort decision/progress
                 if agent_result.get("type") == "decision":
                     decision_data = {
@@ -857,13 +867,70 @@ class MultiDirectionalSyncEngine:
 
     async def _queue_user_resolution(self, conflict: SyncConflict) -> None:
         """Queue conflict for user resolution."""
-        # Placeholder - would present conflict to user for manual resolution
-        pass
+        payload = {
+            "id": conflict.id,
+            "operation_id": conflict.operation_id,
+            "entity_type": conflict.entity_type,
+            "entity_id": conflict.entity_id,
+            "field_name": conflict.field_name,
+            "source_value": conflict.source_value,
+            "target_value": conflict.target_value,
+            "strategy": conflict.resolution_strategy.value,
+            "detected_at": conflict.detected_at.isoformat(),
+        }
+
+        if self.redis_client:
+            try:
+                queue_key = f"sync:user_resolution:{self.workspace_id}"
+                await self.redis_client.lpush(queue_key, json.dumps(payload))
+                await self.redis_client.ltrim(queue_key, 0, 199)
+                await self.redis_client.expire(queue_key, 604800)  # 7 days
+                return
+            except Exception as exc:
+                logger.error("Failed to queue user conflict resolution in Redis: %s", exc)
+
+        logger.warning("Queued conflict %s for manual resolution (in-memory fallback)", conflict.id)
 
     async def _apply_conflict_resolution(self, conflict: SyncConflict) -> None:
         """Apply resolved conflict value to target system."""
-        # Placeholder - would update target system with resolved value
-        pass
+        operation = self.active_operations.get(conflict.operation_id)
+        if operation is None:
+            logger.warning("Conflict %s references unknown operation %s", conflict.id, conflict.operation_id)
+            return
+
+        operation.source_data[conflict.field_name] = conflict.resolved_value
+
+        connector = self.system_connectors.get(operation.target_system)
+        if connector is not None:
+            try:
+                if hasattr(connector, "apply_sync_resolution"):
+                    result = connector.apply_sync_resolution(operation, conflict)
+                    if asyncio.iscoroutine(result):
+                        await result
+                elif hasattr(connector, "update_entity"):
+                    result = connector.update_entity(
+                        operation.entity_type,
+                        operation.entity_id,
+                        {conflict.field_name: conflict.resolved_value},
+                    )
+                    if asyncio.iscoroutine(result):
+                        await result
+            except Exception as exc:
+                logger.error("Failed to apply conflict %s through connector: %s", conflict.id, exc)
+                return
+
+        if self.redis_client:
+            try:
+                key = f"sync:resolved:{self.workspace_id}:{conflict.id}"
+                payload = {
+                    "operation_id": conflict.operation_id,
+                    "field_name": conflict.field_name,
+                    "resolved_value": conflict.resolved_value,
+                    "resolved_at": datetime.now(timezone.utc).isoformat(),
+                }
+                await self.redis_client.setex(key, 86400, json.dumps(payload))
+            except Exception as exc:
+                logger.error("Failed to persist conflict resolution %s: %s", conflict.id, exc)
 
     # ADHD Accommodation Engine
 

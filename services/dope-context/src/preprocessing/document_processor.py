@@ -2,10 +2,14 @@
 Document processing and chunking utilities.
 """
 
+import logging
+
 import hashlib
 import re
 from pathlib import Path
 from typing import Any, List, Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 try:
     import tiktoken
@@ -94,9 +98,7 @@ class DocumentProcessor:
                 elif "officedocument" in mime_type and "wordprocessing" in mime_type:
                     return DocumentType.DOCX
             except Exception as e:
-                pass
-
-                logger.error(f"Error: {e}")
+                logger.debug("MIME detection failed for %s: %s", file_path, e)
         return DocumentType.UNKNOWN
 
     def extract_text(
@@ -122,9 +124,10 @@ class DocumentProcessor:
         except Exception as e:
             raise ValueError(f"Failed to extract text from {file_path}: {str(e)}")
 
-            logger.error(f"Error: {e}")
     def _extract_pdf_text(self, file_path: str) -> str:
         """Extract text from PDF file."""
+        if not PYPDF2_AVAILABLE:
+            raise ValueError("PyPDF2 is not installed; cannot read PDF files")
         with open(file_path, "rb") as file:
             reader = PdfReader(file)
             text_parts = []
@@ -136,6 +139,8 @@ class DocumentProcessor:
 
     def _extract_docx_text(self, file_path: str) -> str:
         """Extract text from DOCX file."""
+        if not DOCX_AVAILABLE:
+            raise ValueError("python-docx is not installed; cannot read DOCX files")
         doc = DocxDocument(file_path)
         text_parts = []
         for paragraph in doc.paragraphs:
@@ -145,6 +150,8 @@ class DocumentProcessor:
 
     def _extract_html_text(self, file_path: str) -> str:
         """Extract text from HTML file."""
+        if not BS4_AVAILABLE:
+            raise ValueError("beautifulsoup4 is not installed; cannot read HTML files")
         with open(file_path, "r", encoding="utf-8", errors="ignore") as file:
             content = file.read()
 

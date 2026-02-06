@@ -83,8 +83,8 @@ except ImportError:
 
         return patterns[:limit]
 
-    async def link_conport_items(**kwargs) -> None:
-        pass
+    async def link_conport_items(**kwargs) -> bool:
+        return True
 
     async def get_linked_items(**kwargs) -> List[Dict[str, Any]]:
         return []

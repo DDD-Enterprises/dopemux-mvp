@@ -145,6 +145,7 @@ class ADHDAccommodationEngine:
     async def initialize(self) -> None:
         """Initialize ADHD accommodation engine."""
         logger.info("🧠 Initializing ADHD Accommodation Engine...")
+        self.running = True
 
         # Initialize Redis connection
         self.redis_client = redis.from_url(
@@ -160,7 +161,6 @@ class ADHDAccommodationEngine:
         # Start background monitoring
         await self._start_accommodation_monitoring()
 
-        self.running = True
         logger.info("✅ ADHD Accommodation Engine ready!")
 
     async def _load_user_profiles(self) -> None:
@@ -309,8 +309,6 @@ class ADHDAccommodationEngine:
 
         except Exception as e:
             return 0.5  # Default moderate load
-
-            logger.error(f"Error: {e}")
     def _assess_energy_match(
         self,
         current_energy: EnergyLevel,
@@ -346,8 +344,6 @@ class ADHDAccommodationEngine:
 
         except Exception as e:
             return 0.5
-
-            logger.error(f"Error: {e}")
     def _assess_attention_compatibility(
         self,
         attention_state: AttentionState,
@@ -406,8 +402,6 @@ class ADHDAccommodationEngine:
 
         except Exception as e:
             return 0.5
-
-            logger.error(f"Error: {e}")
     async def _generate_task_recommendations(
         self,
         profile: ADHDProfile,
@@ -861,9 +855,9 @@ class ADHDAccommodationEngine:
                 "minutes_since_break": 20
             }
         except Exception as e:
+            logger.debug("Failed to fetch recent activity for %s: %s", user_id, e)
             return {}
 
-            logger.error(f"Error: {e}")
     async def _get_attention_indicators(self, user_id: str) -> Dict[str, Any]:
         """Get attention state indicators for user."""
         try:
@@ -876,9 +870,9 @@ class ADHDAccommodationEngine:
                 "distraction_events": 3
             }
         except Exception as e:
+            logger.debug("Failed to fetch attention indicators for %s: %s", user_id, e)
             return {}
 
-            logger.error(f"Error: {e}")
     # Health and Performance
 
     async def get_accommodation_health(self) -> Dict[str, Any]:
@@ -931,23 +925,162 @@ class ADHDAccommodationEngine:
     # Placeholder methods for integration points
     async def _log_energy_change(self, user_id: str, previous: EnergyLevel, current: EnergyLevel) -> None:
         """Log energy level change."""
-        pass
+        event = {
+            "user_id": user_id,
+            "event_type": "energy_change",
+            "previous": previous.value,
+            "current": current.value,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+        self.accommodation_stats["energy_optimizations"] += 1
+
+        if self.redis_client:
+            try:
+                await self.redis_client.lpush(
+                    f"adhd:energy_changes:{self.workspace_id}",
+                    json.dumps(event)
+                )
+                await self.redis_client.ltrim(
+                    f"adhd:energy_changes:{self.workspace_id}",
+                    0,
+                    99,
+                )
+            except Exception as exc:
+                logger.debug("Failed to persist energy change: %s", exc)
 
     async def _log_attention_change(self, user_id: str, previous: AttentionState, current: AttentionState) -> None:
         """Log attention state change."""
-        pass
+        timestamp = datetime.now(timezone.utc)
+        self.context_switch_history.append((timestamp, previous.value, current.value))
+
+        if previous != current:
+            self.accommodation_stats["context_switch_preventions"] += 1
+
+        event = {
+            "user_id": user_id,
+            "event_type": "attention_change",
+            "previous": previous.value,
+            "current": current.value,
+            "timestamp": timestamp.isoformat(),
+        }
+        if self.redis_client:
+            try:
+                await self.redis_client.lpush(
+                    f"adhd:attention_changes:{self.workspace_id}",
+                    json.dumps(event)
+                )
+                await self.redis_client.ltrim(
+                    f"adhd:attention_changes:{self.workspace_id}",
+                    0,
+                    199,
+                )
+            except Exception as exc:
+                logger.debug("Failed to persist attention change: %s", exc)
 
     async def _calculate_system_cognitive_load(self) -> float:
         """Calculate system-wide cognitive load."""
-        return 1.0  # Placeholder
+        if not self.user_profiles:
+            return 0.0
+
+        energy_load = {
+            EnergyLevel.VERY_LOW: 0.9,
+            EnergyLevel.LOW: 0.7,
+            EnergyLevel.MEDIUM: 0.5,
+            EnergyLevel.HIGH: 0.35,
+            EnergyLevel.HYPERFOCUS: 0.75,
+        }
+        attention_load = {
+            AttentionState.OVERWHELMED: 1.0,
+            AttentionState.SCATTERED: 0.8,
+            AttentionState.TRANSITIONING: 0.6,
+            AttentionState.FOCUSED: 0.35,
+            AttentionState.HYPERFOCUSED: 0.75,
+        }
+
+        total = 0.0
+        for user_id in self.user_profiles:
+            energy = self.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
+            attention = self.current_attention_states.get(user_id, AttentionState.FOCUSED)
+            active_count = len(self.active_accommodations.get(user_id, []))
+            user_load = (
+                energy_load.get(energy, 0.5) * 0.45
+                + attention_load.get(attention, 0.5) * 0.45
+                + min(0.1, active_count * 0.01)
+            )
+            total += user_load
+
+        return round(total, 3)
 
     async def _handle_cognitive_overload(self) -> None:
         """Handle system-wide cognitive overload."""
-        pass
+        overload_users: List[str] = []
+        for user_id in self.user_profiles:
+            energy = self.current_energy_levels.get(user_id, EnergyLevel.MEDIUM)
+            attention = self.current_attention_states.get(user_id, AttentionState.FOCUSED)
+            if energy in {EnergyLevel.VERY_LOW, EnergyLevel.LOW} or attention in {
+                AttentionState.OVERWHELMED,
+                AttentionState.SCATTERED,
+                AttentionState.HYPERFOCUSED,
+            }:
+                overload_users.append(user_id)
+
+        for user_id in overload_users:
+            await self._recommend_break(user_id, "low_energy_recovery", work_duration=30.0)
+
+        if self.redis_client:
+            try:
+                payload = {
+                    "workspace_id": self.workspace_id,
+                    "overload_users": overload_users,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                }
+                await self.redis_client.lpush(
+                    f"adhd:cognitive_overload:{self.workspace_id}",
+                    json.dumps(payload),
+                )
+                await self.redis_client.ltrim(
+                    f"adhd:cognitive_overload:{self.workspace_id}",
+                    0,
+                    49,
+                )
+            except Exception as exc:
+                logger.debug("Failed recording cognitive overload event: %s", exc)
+
+        self.accommodation_stats["cognitive_load_reductions"] += len(overload_users)
 
     async def _adjust_task_recommendations_for_protection(self, user_id: str) -> None:
         """Adjust task recommendations for hyperfocus protection."""
-        pass
+        recommendation = AccommodationRecommendation(
+            accommodation_type="task_complexity_downshift",
+            urgency="soon",
+            message="Shift to medium/low complexity tasks to avoid hyperfocus burnout.",
+            action_required=False,
+            suggested_actions=[
+                "Prefer tasks estimated under 25 minutes",
+                "Defer deep-dive tasks until after a short break",
+                "Use checklist-style next actions",
+            ],
+            cognitive_benefit="Reduces prolonged cognitive strain during hyperfocus periods",
+            implementation_effort="low",
+        )
+
+        self.active_accommodations.setdefault(user_id, []).append(recommendation)
+
+        if self.redis_client:
+            try:
+                await self.redis_client.setex(
+                    f"adhd:task_protection:{user_id}",
+                    1800,
+                    json.dumps(
+                        {
+                            "max_recommended_complexity": "moderate",
+                            "reason": "hyperfocus_protection",
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                        }
+                    ),
+                )
+            except Exception as exc:
+                logger.debug("Failed to persist task-protection hint for %s: %s", user_id, exc)
 
     async def close(self) -> None:
         """Shutdown ADHD accommodation engine."""

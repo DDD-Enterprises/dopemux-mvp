@@ -180,16 +180,6 @@ def cmd_break(args):
     print()
     return 0
 
-# ... (omitted) ...
-
-    # break
-    parser_break = subparsers.add_parser("break", help="Get break suggestion")
-    parser_break.add_argument("--start", action="store_true", help="Start the break")
-    parser_break.add_argument("--interactive", "-i", action="store_true", help="Interactive break menu")
-    parser_break.add_argument("--suggest", action="store_true", help="Show suggestion prompt")
-    parser_break.set_defaults(func=cmd_break)
-
-
 def cmd_focus(args):
     """Start focus session."""
     task = args.task or "Unspecified task"

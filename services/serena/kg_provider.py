@@ -200,8 +200,6 @@ class SerenaKGProvider:
                 for d in by_module:
                     all_decisions[d.id] = d
             except Exception as e:
-                pass
-
                 logger.error(f"Error: {e}")
         # Strategy 2: Full-text search on module
         if module and self.deep_context:
@@ -210,8 +208,6 @@ class SerenaKGProvider:
                 for d in by_text:
                     all_decisions[d.id] = d
             except Exception as e:
-                pass
-
                 logger.error(f"Error: {e}")
         # Strategy 3: Recent decisions (fallback)
         if len(all_decisions) < 3:
@@ -220,8 +216,6 @@ class SerenaKGProvider:
                 for d in recent:
                     all_decisions[d.id] = d
             except Exception as e:
-                pass
-
                 logger.error(f"Error: {e}")
         # Return Top-3 most relevant
         return list(all_decisions.values())[:3]

@@ -297,14 +297,14 @@ class ADHDAccommodationEngine:
         self.voice_assistant = VoiceAssistant(adhd_engine=self)
         
         # Event Listener
-        from event_listener import ADHDEventListener
+        from ..event_listener import ADHDEventListener
         # We need an EventBus - usually this would be injected or imported
         # For now, we will create a dummy event bus if not available or assume it's part of the engine
         # But wait, event_listener expects 'event_bus'.
         # Assuming engine has access to event bus, or we need to create one.
         # Let's import the event bus if available.
         try:
-            from event_emitter import ADHDEventEmitter
+            from ..event_emitter import ADHDEventEmitter
             self.event_bus = ADHDEventEmitter(self.conport) # Wrapper
         except ImportError:
             self.event_bus = None
@@ -1493,7 +1493,7 @@ Format: {{
     async def get_background_service_status(self) -> Dict[str, Any]:
         """Get background prediction service status."""
         try:
-            from .services.background_prediction_service import get_background_prediction_service
+            from ..services.background_prediction_service import get_background_prediction_service
             service = await get_background_prediction_service()
             return await service.get_status()
         except Exception as e:

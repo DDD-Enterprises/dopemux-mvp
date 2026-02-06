@@ -294,16 +294,12 @@ class DatabaseManager:
                             decrypted = decrypt_sensitive_data(json.dumps(snapshot_data['active_focus']))
                             snapshot_data['active_focus'] = json.loads(decrypted)
                         except Exception as e:
-                            pass  # Keep encrypted if decryption fails
-
                             logger.error(f"Error: {e}")
                     if snapshot_data and 'current_task' in snapshot_data:
                         try:
                             decrypted = decrypt_sensitive_data(json.dumps(snapshot_data['current_task']))
                             snapshot_data['current_task'] = json.loads(decrypted)
                         except Exception as e:
-                            pass  # Keep encrypted if decryption fails
-
                             logger.error(f"Error: {e}")
                     # Update last accessed
                     update_query = "UPDATE wma_contexts SET last_accessed = NOW() WHERE id = %s"

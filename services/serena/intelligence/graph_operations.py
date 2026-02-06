@@ -753,9 +753,6 @@ async def quick_performance_test(database: SerenaIntelligenceDatabase) -> Dict[s
 
     except Exception as e:
         return {"error": str(e), "adhd_compliant": False}
-
-
-        logger.error(f"Error: {e}")
 if __name__ == "__main__":
     # Performance test when run directly
     async def main():
