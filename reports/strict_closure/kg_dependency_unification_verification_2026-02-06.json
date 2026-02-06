@@ -1,6 +1,6 @@
 {
   "artifact": "reports/strict_closure/kg_dependency_unification_verification_2026-02-06.json",
-  "generated_at_utc": "2026-02-06T22:47:57Z",
+  "generated_at_utc": "2026-02-06T22:52:17Z",
   "scope": "kg_dependency_unification cluster from live true-open packet",
   "source_packet": "docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md",
   "verification_commands": [
@@ -18,6 +18,14 @@
     {
       "path": "pytest.ini",
       "change": "enable asyncio_mode=auto so async regression tests execute without per-test markers"
+    },
+    {
+      "path": "services/conport/http_server.py",
+      "change": "semantic-search endpoint now emits explicit deprecation metadata and keyword-fallback mode"
+    },
+    {
+      "path": "src/dopemux/mcp/conport_mcp_tools.py",
+      "change": "semantic_search shim now emits deprecation metadata and keyword-fallback mode"
     }
   ],
   "cluster_items": [
@@ -76,31 +84,33 @@
       "item": "2.2.1: Remove ConPort embedding_service, import from core",
       "status": "partial",
       "evidence": [
-        "services/conport/http_server.py:625",
-        "src/dopemux/mcp/conport_mcp_tools.py:368"
+        "services/conport/http_server.py:624",
+        "src/dopemux/mcp/conport_mcp_tools.py:371"
       ],
-      "residual_gap": "Legacy semantic-search stubs and placeholder embedding paths still present; full removal/consolidation not complete."
+      "residual_gap": "Embedding-service path is hard-deprecated with keyword fallback, but compatibility shim remains and is not fully removed."
     },
     {
       "id": 7,
       "item": "2.1.2: Update docs & add deprecation warnings",
-      "status": "partial",
+      "status": "implemented",
       "evidence": [
-        "docs/04-explanation/architecture/ARCHITECTURE-CONSOLIDATION-SYNTHESIS.md:425",
-        "docs/03-reference/serena-v2-mcp-tools.md:1097"
+        "docs/04-explanation/DOPEMUX-CONTEXT-DEEP-DIVE.md:99",
+        "docs/04-explanation/architecture/architecture-3.0-implementation.md:148",
+        "services/conport/http_server.py:642",
+        "src/dopemux/mcp/conport_mcp_tools.py:375"
       ],
-      "residual_gap": "Active code-truth docs still contain non-deprecated semantic-search references requiring explicit deprecation state labels."
+      "residual_gap": null
     }
   ],
   "summary": {
-    "implemented": 1,
+    "implemented": 2,
     "implemented_in_code": 1,
-    "partial": 5,
+    "partial": 4,
     "open": 0,
     "recommended_next_focus": [
       "harden semantic similarity + ADHD disclosure assertions",
       "execute and capture re-embed migration evidence",
-      "remove or hard-deprecate legacy semantic-search stubs and update active docs"
+      "remove deprecated semantic-search compatibility shims once callers are migrated"
     ]
   }
 }
