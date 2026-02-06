@@ -7,7 +7,7 @@ An MCP (Model Context Protocol) server wrapper for GPT-Researcher, providing ADH
 - **6 Research Tools**: Quick search, deep research, documentation search, code examples, trend analysis, and research summarization
 - **ADHD Optimizations**: Built-in break intervals, focus duration management, and gentle notifications
 - **Session Management**: Track active research tasks and maintain history
-- **Multi-Engine Support**: Integrates with Exa, Tavily, Perplexity, and Context7 search engines
+- **Multi-Engine Support**: Integrates with Exa, Tavily, Perplexity, and PAL apilookup search engines
 
 ## Installation
 
@@ -23,7 +23,6 @@ pip install gpt-researcher
 export EXA_API_KEY="your-exa-key"
 export TAVILY_API_KEY="your-tavily-key"
 export PERPLEXITY_API_KEY="your-perplexity-key"
-export CONTEXT7_API_KEY="your-context7-key"
 ```
 
 ## Usage
@@ -53,7 +52,6 @@ Add the following to your Claude configuration (`.claude/claude_config.json`):
         "EXA_API_KEY": "${EXA_API_KEY}",
         "TAVILY_API_KEY": "${TAVILY_API_KEY}",
         "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",
-        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
       }
     }
   }

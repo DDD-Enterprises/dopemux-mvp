@@ -189,7 +189,7 @@ WORKTREE_ERRORS: Dict[str, ADHDErrorMessage] = {
 
     "api_key_missing": ADHDErrorMessage(
         problem="Required API key not set",
-        why="Some MCP servers need API keys to function (Context7, Voyage, etc.)",
+        why="Some MCP servers need API keys to function (PAL apilookup, Voyage, etc.)",
         fix=[
             "Add to .env file: echo 'YOUR_API_KEY=xxx' >> .env",
             "Or export in shell: export YOUR_API_KEY=xxx",

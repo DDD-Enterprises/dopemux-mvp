@@ -9,7 +9,7 @@ mcps:
   - conport          # Memory (required)
   - serena-v2        # Code navigation
   - zen              # Multi-model reasoning
-  - context7         # Library documentation
+  - pal         # Library documentation
   - gpt-researcher   # Deep web research
   - dope-context     # Semantic search
   - desktop-commander # Desktop automation

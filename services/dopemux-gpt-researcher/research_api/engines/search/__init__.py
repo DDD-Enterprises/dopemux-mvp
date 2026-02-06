@@ -5,7 +5,7 @@ This module provides unified interfaces for multiple search engines optimized fo
 - Exa: Semantic search for technical documentation
 - Tavily: Developer-focused search with code examples
 - Perplexity: Real-time web search with citations
-- Context7: Official documentation prioritization
+- PAL apilookup: Official documentation prioritization
 
 Features:
 - Intelligent search orchestration with strategy-based routing
@@ -28,7 +28,7 @@ from .search_orchestrator import SearchOrchestrator, SearchStrategy, SearchConfi
 from .exa_adapter import ExaSearchAdapter
 from .tavily_adapter import TavilySearchAdapter
 from .perplexity_adapter import PerplexitySearchAdapter
-from .context7_adapter import Context7SearchAdapter
+from .pal_apilookup_adapter import PalApiLookupSearchAdapter
 
 __all__ = [
     # Base classes and types
@@ -48,5 +48,5 @@ __all__ = [
     "ExaSearchAdapter",
     "TavilySearchAdapter",
     "PerplexitySearchAdapter",
-    "Context7SearchAdapter"
+    "PalApiLookupSearchAdapter"
 ]

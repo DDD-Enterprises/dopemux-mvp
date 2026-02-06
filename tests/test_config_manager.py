@@ -261,7 +261,7 @@ class TestConfigManager:
         defaults = config_manager._get_default_mcp_servers()
 
         assert "mas-sequential-thinking" in defaults
-        assert "context7" in defaults
+        assert "pal" in defaults
         assert "claude-context" in defaults
 
         # Check environment variable substitution works

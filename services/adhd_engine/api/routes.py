@@ -44,16 +44,16 @@ except ImportError:
     PROMETHEUS_AVAILABLE = False
     logger.warning("Prometheus client not available - metrics disabled")
 
-import api.schemas as schemas
-from models import ADHDProfile, EnergyLevel, AttentionState
+from . import schemas
+from ..core.models import ADHDProfile, EnergyLevel, AttentionState
 
 from .schemas import (
     PredictionOverrideRequest, OverrideResponse, CustomizationSettings,
     PredictionFeedbackRequest, AutomationAdjustmentRequest,
     TrustMetricsResponse, TrustVisualizationResponse
 )
-from auth import verify_api_key
-from api.websocket import manager, send_heartbeat
+from ..auth import verify_api_key
+from .websocket import manager, send_heartbeat
 
 # Import time for caching
 import time

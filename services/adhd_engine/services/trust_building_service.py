@@ -23,7 +23,7 @@ from collections import defaultdict
 
 import redis.asyncio as redis
 
-from ..models import EnergyLevel, AttentionState
+from ..core.models import EnergyLevel, AttentionState
 from ..config import settings
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Integration test for discrete ConPort and Context7 integrations
+Integration test for discrete ConPort and PAL apilookup integrations
 
 Tests that both integrations:
 1. Work silently when services are available
@@ -20,12 +20,12 @@ from typing import Dict, List
 # Add backend to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-async def test_context7_pattern_detection():
-    """Test Context7 helper detects programming patterns correctly"""
-    print("🧪 Testing Context7 pattern detection...")
+async def test_pal_pattern_detection():
+    """Test PAL apilookup helper detects programming patterns correctly"""
+    print("🧪 Testing PAL apilookup pattern detection...")
 
     try:
-        from adapters.context7_helper import analyze_for_documentation_hints
+        from adapters.pal_apilookup_helper import analyze_for_documentation_hints
 
         # Test queries with programming concepts
         test_queries = [
@@ -50,21 +50,21 @@ async def test_context7_pattern_detection():
                     print(f"    💡 {hint.library} ({hint.confidence:.2f}) - {hint.topic}")
 
             # Performance check
-            assert response_time < 2.0, f"Context7 timeout exceeded: {response_time:.3f}s"
+            assert response_time < 2.0, f"PAL apilookup timeout exceeded: {response_time:.3f}s"
 
             print("    ✅ Pattern detection working")
 
     except Exception as e:
-        print(f"    ⚠️  Context7 discrete failure (expected): {e}")
+        print(f"    ⚠️  PAL apilookup discrete failure (expected): {e}")
 
-    print("  ✅ Context7 integration test passed\n")
+    print("  ✅ PAL apilookup integration test passed\n")
 
-async def test_context7_discrete_enhancement():
-    """Test Context7 search result enhancement works discretely"""
-    print("🧪 Testing Context7 discrete search enhancement...")
+async def test_pal_discrete_enhancement():
+    """Test PAL apilookup search result enhancement works discretely"""
+    print("🧪 Testing PAL apilookup discrete search enhancement...")
 
     try:
-        from adapters.context7_helper import discrete_enhance_research
+        from adapters.pal_apilookup_helper import discrete_enhance_research
 
         # Mock search results
         mock_results = [
@@ -96,7 +96,7 @@ async def test_context7_discrete_enhancement():
     except Exception as e:
         print(f"  ⚠️  Enhancement discrete failure (expected): {e}")
 
-    print("  ✅ Context7 enhancement test passed\n")
+    print("  ✅ PAL apilookup enhancement test passed\n")
 
 async def test_conport_discrete_logging():
     """Test ConPort adapter logs discretely without blocking"""
@@ -198,8 +198,8 @@ async def run_integration_tests():
     test_start = time.time()
 
     # Run all tests
-    await test_context7_pattern_detection()
-    await test_context7_discrete_enhancement()
+    await test_pal_pattern_detection()
+    await test_pal_discrete_enhancement()
     await test_conport_discrete_logging()
     await test_orchestrator_integration()
 
@@ -208,7 +208,7 @@ async def run_integration_tests():
     print("=" * 50)
     print(f"✅ All discrete integration tests completed in {total_time:.2f}s")
     print("\n🎯 Key Validations:")
-    print("   • Context7 pattern detection works silently")
+    print("   • PAL apilookup pattern detection works silently")
     print("   • Search result enhancement is discrete")
     print("   • ConPort logging fails gracefully")
     print("   • API workflow remains uninterrupted")
