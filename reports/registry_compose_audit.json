@@ -1,0 +1,95 @@
+{
+  "missing_in_compose": [
+    "dope-query"
+  ],
+  "unregistered_compose": [
+    "adhd-engine-2",
+    "break-suggester",
+    "conport",
+    "conport-mcp",
+    "conport-mcp-2",
+    "desktop-commander",
+    "dope-context",
+    "exa",
+    "genetic-agent",
+    "gptr-mcp",
+    "grafana",
+    "leantime-bridge",
+    "litellm",
+    "mcp-qdrant",
+    "pal",
+    "postgres-age",
+    "prometheus",
+    "redis-events",
+    "redis-primary",
+    "redis-ui",
+    "serena",
+    "serena-mcp",
+    "serena-mcp-2",
+    "task-orchestrator-2",
+    "traefik",
+    "wma"
+  ],
+  "compose_services": {
+    "docker-compose.master.yml": [
+      "adhd-engine",
+      "conport",
+      "desktop-commander",
+      "dope-context",
+      "dopecon-bridge",
+      "exa",
+      "genetic-agent",
+      "gptr-mcp",
+      "leantime-bridge",
+      "litellm",
+      "mcp-qdrant",
+      "pal",
+      "postgres",
+      "redis-events",
+      "redis-primary",
+      "redis-ui",
+      "serena",
+      "task-orchestrator"
+    ],
+    "docker-compose.unified.yml": [
+      "adhd-engine",
+      "conport",
+      "dopecon-bridge",
+      "postgres",
+      "qdrant",
+      "redis",
+      "task-orchestrator"
+    ],
+    "docker-compose.prod.yml": [
+      "grafana",
+      "prometheus",
+      "wma"
+    ],
+    "docker-compose.staging.yml": [
+      "adhd-engine",
+      "adhd-engine-2",
+      "break-suggester",
+      "conport-mcp",
+      "conport-mcp-2",
+      "grafana",
+      "postgres-age",
+      "prometheus",
+      "qdrant",
+      "redis",
+      "serena-mcp",
+      "serena-mcp-2",
+      "task-orchestrator",
+      "task-orchestrator-2",
+      "traefik"
+    ],
+    "docker-compose.smoke.yml": [
+      "conport",
+      "dope-memory",
+      "dopecon-bridge",
+      "postgres",
+      "qdrant",
+      "redis",
+      "task-orchestrator"
+    ]
+  }
+}

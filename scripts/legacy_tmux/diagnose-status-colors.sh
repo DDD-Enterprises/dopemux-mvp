@@ -109,5 +109,4 @@ echo "4. Try: tmux set-option -g status on"
 echo "5. Try: tmux set-option -g status-style 'bg=default,fg=default'"
 echo ""
 echo "Run this script inside tmux for accurate diagnostics:"
-echo "tmux new-session -d -s test && tmux send-keys './scripts/diagnose-status-colors.sh' Enter && tmux attach -t test"</content>
-</xai:function_call">Create diagnostic script to identify color output issues
+echo "tmux new-session -d -s test && tmux send-keys './scripts/diagnose-status-colors.sh' Enter && tmux attach -t test"
