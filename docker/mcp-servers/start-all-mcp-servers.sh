@@ -323,6 +323,13 @@ safe_up serena dopemux-mcp-serena
 echo "⏳ Waiting for workflow servers to stabilize..."
 sleep 10
 
+# Start plane coordinator unless explicitly disabled
+if [ "${DOPEMUX_START_PLANE_COORDINATOR:-1}" = "1" ]; then
+  safe_up plane-coordinator dopemux-mcp-plane-coordinator
+else
+  echo "• Skipping Plane Coordinator (set DOPEMUX_START_PLANE_COORDINATOR=1 to enable)"
+fi
+
 # Optional: Task Orchestrator (stdio MCP; disabled by default to avoid restart loops)
 if [ "${DOPEMUX_START_TASK_ORCHESTRATOR:-0}" = "1" ]; then
   echo "🧭 Starting Task Orchestrator (manual profile)"
@@ -343,6 +350,11 @@ safe_up gptr-mcp dopemux-mcp-gptr-mcp
 safe_up dopemux-gpt-researcher dopemux-gpt-researcher
 safe_up exa dopemux-mcp-exa
 safe_up desktop-commander dopemux-mcp-desktop-commander
+if [ "${ENABLE_LEANTIME:-0}" = "1" ]; then
+  safe_up leantime-bridge dopemux-mcp-leantime-bridge
+else
+  echo "• Skipping Leantime Bridge (set ENABLE_LEANTIME=1 to enable)"
+fi
 
 echo ""
 echo "⏳ Final startup wait..."
@@ -419,7 +431,7 @@ echo "🏥 Health check summary:"
 echo "========================"
 
 # Health check each critical server
-servers=("pal:3003" "litellm:4000" "dope-context:3010")
+servers=("pal:3003" "litellm:4000" "dope-context:3010" "plane-coordinator:8090")
 for server in "${servers[@]}"; do
     name="${server%:*}"
     port="${server#*:}"
@@ -470,6 +482,7 @@ echo "🔄 Workflow Servers:"
 echo "   Dope-Context: http://localhost:3010"
 echo "   Task Master:  http://localhost:3005"
 echo "   Serena:       http://localhost:3006"
+echo "   Plane Coord:  http://localhost:8090"
 echo ""
 echo "🔧 Quality & Utility Servers:"
 echo "   GPT Research: http://localhost:3009"
@@ -478,5 +491,6 @@ echo "   Desktop Cmd:  http://localhost:3012"
 echo ""
 echo "📋 PM Integration:"
 echo "   Leantime:     http://localhost:8080 (external)"
+echo "   LT Bridge:    http://localhost:3015"
 echo ""
 echo "🎯 Ready for MCP operations!"

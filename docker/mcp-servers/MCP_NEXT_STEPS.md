@@ -23,7 +23,6 @@ docker logs dopemux-mas-sequential-thinking
 # Decision: Keep, replace with Zen/pal, or deprecate?
 
 # 2. Review unclear servers (1 hour)
-- plane-coordinator: What does it do?
 - task-master-ai: Duplicate of task-orchestrator?
 - mcp-client: Purpose?
 # Decision: Document, fix, or remove

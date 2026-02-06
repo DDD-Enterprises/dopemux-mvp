@@ -2,7 +2,7 @@
 
 **Category**: MCP Server  
 **Status**: Production  
-**Port**: 3013  
+**Port**: 3015  
 **Purpose**: Project management integration
 
 ## Overview
@@ -13,18 +13,20 @@ Leantime Bridge provides MCP integration with Leantime project management system
 
 ```bash
 # Start via Docker Compose
-docker-compose -f docker-compose.master.yml up -d leantime-bridge
+cd docker/mcp-servers
+docker compose up -d --build leantime-bridge
 
 # Verify connectivity
-curl http://localhost:3013/health
+curl http://localhost:3015/health
 ```
 
 ## Configuration
 
 Environment variables:
-- `LEANTIME_URL` - Leantime instance URL (required)
-- `LEANTIME_API_KEY` - API key for Leantime (required)
-- `PORT` - MCP server port (default: 3013)
+- `LEANTIME_API_URL` - Leantime instance URL (default: `http://leantime:80`)
+- `LEANTIME_API_TOKEN` - API token for Leantime (recommended)
+- `MCP_SERVER_PORT` - MCP server port (default: `3015`)
+- `LEAN_TIME_RATE_LIMIT_SECONDS` - API call spacing in seconds (default: `1.0`)
 
 ## MCP Tools
 
@@ -49,9 +51,7 @@ See [docs/90-adr/](../../../docs/90-adr/) for architecture details.
 
 ```bash
 # Test task creation
-curl -X POST http://localhost:3013/tasks \
-  -H "Content-Type: application/json" \
-  -d '{"title": "Test task", "project_id": 1}'
+curl http://localhost:3015/info | jq
 ```
 
 ## Service Discovery
@@ -78,4 +78,3 @@ python test_info_endpoint.py
 ```
 
 This implements ADR-208 service discovery pattern, allowing Dopemux services to auto-detect Leantime Bridge configuration without hardcoded URLs.
-

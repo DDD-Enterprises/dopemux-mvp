@@ -9,47 +9,34 @@
 
 FROM python:3.11-slim
 
-# Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \
     COORDINATION_API_PORT=8090 \
+    PORT=8090 \
+    MCP_SERVER_PORT=8090 \
     WORKSPACE_ID=/workspace
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Create application directory
 WORKDIR /app
 
-# Copy requirements first for better caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt && pip install uvicorn[standard]==0.32.0 fastapi==0.115.2
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
-# Copy application code
-COPY plane_coordinator.py .
-COPY coordination_api.py .
-COPY sync_engine.py .
-COPY task_coordinator.py .
-COPY enhanced_orchestrator.py .
+COPY app /app/app
+COPY intelligence /app/intelligence
+COPY pal_client.py /app/pal_client.py
 
-# Copy adapters and intelligence modules
-COPY adapters/ ./adapters/
-COPY intelligence/ ./intelligence/
-
-# Create non-root user for security
 RUN useradd --create-home --shell /bin/bash coordination && \
     chown -R coordination:coordination /app
 USER coordination
 
-# Expose port
 EXPOSE 8090
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8090/health || exit 1
+    CMD curl -fsS "http://localhost:${PORT}/health" || exit 1
 
-# Start the coordination API service
-CMD ["python", "-m", "uvicorn", "coordination_api:app", "--host", "0.0.0.0", "--port", "8090", "--reload"]
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8090", "--log-level", "info"]
