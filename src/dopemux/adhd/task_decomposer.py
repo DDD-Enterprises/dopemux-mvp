@@ -8,6 +8,8 @@ that existing tests exercise.
 """
 
 from __future__ import annotations
+import logging
+
 
 import json
 import uuid
@@ -18,6 +20,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
+
+logger = logging.getLogger(__name__)
 
 def _now() -> str:
     """Return current timestamp in ISO-8601 format (UTC)."""

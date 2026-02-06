@@ -436,8 +436,11 @@ class TestVoyageAPIClient:
         assert "(555) 123-4567" not in cleaned_texts[2]
 
         # Should contain masks or redacted content
-        assert all("[EMAIL]" in text or "***" in text for text in cleaned_texts
-                  if "@" in texts_with_pii[i] for i, text in enumerate(cleaned_texts))
+        assert all(
+            "[EMAIL]" in text or "***" in text
+            for i, text in enumerate(cleaned_texts)
+            if "@" in texts_with_pii[i]
+        )
 
     @pytest.mark.asyncio
     async def test_concurrent_requests_limit(self, config, mock_session):

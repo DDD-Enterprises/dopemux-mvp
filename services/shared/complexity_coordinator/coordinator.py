@@ -156,11 +156,12 @@ class ComplexityCoordinator:
             return 0.5
 
         try:
-            # Query dope-context for chunk complexity
-            # TODO: Implement get_chunk_complexity MCP tool in dope-context
-            complexity_data = await self.dope.get_chunk_complexity(
-                file_path, symbol
-            )
+            if not hasattr(self.dope, "get_chunk_complexity"):
+                logger.debug(
+                    "dope-context client missing get_chunk_complexity, using fallback AST complexity"
+                )
+                return 0.5
+            complexity_data = await self.dope.get_chunk_complexity(file_path, symbol)
             return complexity_data.get("complexity", 0.5)
 
         except Exception as e:
@@ -189,9 +190,17 @@ class ComplexityCoordinator:
             return 0.5
 
         try:
-            # Query Serena for symbol metadata
-            # TODO: Implement get_symbol_metadata in Serena
-            metadata = await self.serena.get_symbol_metadata(file_path, symbol)
+            if hasattr(self.serena, "get_symbol_metadata"):
+                metadata = await self.serena.get_symbol_metadata(file_path, symbol)
+            elif hasattr(self.serena, "analyze_complexity"):
+                analysis = await self.serena.analyze_complexity(file_path, symbol)
+                score = analysis.get("complexity_score") if isinstance(analysis, dict) else None
+                if score is not None:
+                    return max(0.0, min(1.0, float(score)))
+                metadata = {}
+            else:
+                logger.debug("Serena client missing symbol metadata API, using fallback usage complexity")
+                return 0.5
 
             ref_count = metadata.get("references_count", 0)
             caller_count = metadata.get("callers_count", 0)
@@ -227,13 +236,28 @@ class ComplexityCoordinator:
             return 1.0
 
         try:
-            # Query ADHD Engine for complexity adjustment
-            # TODO: Implement get_complexity_adjustment endpoint
-            adjustment = await self.adhd.get_complexity_adjustment(
-                user_id=user_id, base_complexity=base_complexity
-            )
-
-            multiplier = adjustment.get("multiplier", 1.0)
+            if hasattr(self.adhd, "get_complexity_adjustment"):
+                adjustment = await self.adhd.get_complexity_adjustment(
+                    user_id=user_id, base_complexity=base_complexity
+                )
+                multiplier = adjustment.get("multiplier", 1.0)
+            elif hasattr(self.adhd, "get_attention_state"):
+                state_data = await self.adhd.get_attention_state(user_id)
+                state = (
+                    state_data.get("attention_state")
+                    if isinstance(state_data, dict)
+                    else str(state_data)
+                )
+                state = str(state or "").lower()
+                if state in {"hyperfocused", "focused", "hyperfocus"}:
+                    multiplier = 0.9
+                elif state in {"scattered", "overwhelmed", "fatigued"}:
+                    multiplier = 1.2
+                else:
+                    multiplier = 1.0
+            else:
+                logger.debug("ADHD client missing complexity APIs, using fallback multiplier")
+                multiplier = 1.0
 
             # Sanity check: Keep within reasonable bounds
             return max(0.5, min(2.0, multiplier))

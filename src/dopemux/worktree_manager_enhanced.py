@@ -179,9 +179,8 @@ class EnhancedWorktreeManager:
             )
             return bool(result.stdout.strip())
         except Exception as e:
+            logger.debug("Failed to inspect dirty status for %s: %s", worktree_path, e)
             return False
-
-            logger.error(f"Error: {e}")
     def _get_last_commit_time(self, worktree_path: Path) -> Optional[datetime]:
         """Get timestamp of last commit in worktree."""
         try:
@@ -196,7 +195,6 @@ class EnhancedWorktreeManager:
                 timestamp = int(result.stdout.strip())
                 return datetime.fromtimestamp(timestamp)
         except Exception as e:
-            pass
             logger.error(f"Error: {e}")
         return None
 
@@ -306,9 +304,8 @@ class EnhancedWorktreeManager:
             return bool(result.stdout.strip())
 
         except Exception as e:
+            logger.debug("Failed to inspect branch existence for %s: %s", branch_name, e)
             return False
-
-            logger.error(f"Error: {e}")
     def _configure_worktree(self, worktree_path: Path):
         """Configure worktree with hooks and settings."""
         try:

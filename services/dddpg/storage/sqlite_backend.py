@@ -3,6 +3,8 @@ DDDPG SQLite Storage Backend
 Local cache for fast reads, multi-instance support
 """
 
+import logging
+
 import aiosqlite
 import json
 from pathlib import Path
@@ -12,6 +14,8 @@ from datetime import datetime
 from .interface import StorageBackend
 from ..core.models import Decision, DecisionVisibility, WorkSession
 
+
+logger = logging.getLogger(__name__)
 
 class SQLiteBackend(StorageBackend):
     """

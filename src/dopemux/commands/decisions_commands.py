@@ -73,9 +73,6 @@ def get_workspace_id() -> str:
         return Path(full_path).name
     except Exception as e:
         return Path(os.getcwd()).name
-
-
-        logger.error(f"Error: {e}")
 # ============================================================================
 # QUICK WIN 1: Decision Review Command (~2 hours)
 # ============================================================================
@@ -289,6 +286,17 @@ def decision_stats(since: int, workspace: Optional[str]):
 
         try:
             stats = await get_decision_statistics(conn, workspace_id, since)
+            since_date = datetime.now() - timedelta(days=since)
+            decision_rows = await conn.fetch(
+                """
+                SELECT created_at, tags, outcome_status, confidence_level, decision_type
+                FROM decisions
+                WHERE workspace_id = $1 AND created_at > $2
+                """,
+                workspace_id,
+                since_date,
+            )
+            decisions = [dict(row) for row in decision_rows]
 
             if stats["total"] == 0:
                 console.log(f"\n[yellow]No decisions found in the last {since} days.[/yellow]")
@@ -1840,4 +1848,3 @@ def pattern_tags(min_support: int, workspace: Optional[str], save: bool):
             await conn.close()
 
     asyncio.run(_detect())
-
