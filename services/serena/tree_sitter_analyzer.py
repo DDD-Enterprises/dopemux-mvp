@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Serena v2 Tree-sitter Code Analyzer
 
@@ -31,6 +33,7 @@ try:
         logging.warning(f"Tree-sitter language bindings not available: {e}")
 
 except ImportError:
+    Language = Parser = Node = object  # type: ignore[assignment]
     TREE_SITTER_AVAILABLE = False
     logging.warning("Tree-sitter not available - install tree_sitter and language bindings")
 
