@@ -1,10 +1,13 @@
 ---
 id: coordination
 title: Coordination
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Coordination (reference) for dopemux documentation and developer workflows.
 ---
 # Plane Coordinator - Two-Plane Architecture Coordination Service
 
@@ -53,24 +56,27 @@ The Plane Coordinator provides unified coordination between Dopemux's two-plane 
 
 ## Deployment
 
-### Docker Compose (Master Stack)
+### Docker Compose (MCP Stack)
 ```bash
-# Start the complete Dopemux stack including plane coordinator
-docker-compose -f docker-compose.master.yml up -d plane-coordinator
+# Start plane coordinator from MCP stack
+cd /Users/hue/code/dopemux-mvp/docker/mcp-servers
+docker compose up -d --build plane-coordinator
 
 # Check logs
-docker-compose -f docker-compose.master.yml logs plane-coordinator
+docker compose logs plane-coordinator
 ```
 
 ### MCP Servers Stack
 ```bash
 # Start individual MCP servers including plane coordinator
-docker-compose -f docker/mcp-servers/docker-compose.yml up -d plane-coordinator
+docker compose -f docker/mcp-servers/docker-compose.yml up -d plane-coordinator
 ```
 
 ### Environment Variables
 ```bash
 COORDINATION_API_PORT=8090          # API port (default: 8090)
+MCP_SERVER_PORT=8090                # MCP/discovery port alignment
+PORT=8090                           # Uvicorn port
 WORKSPACE_ID=/workspace             # Workspace path
 REDIS_URL=redis://localhost:6379    # Redis connection
 CONPORT_URL=http://localhost:3004   # ConPort service URL
@@ -158,15 +164,15 @@ Cognitive Plane ─┘
 plane-coordinator:
   environment:
     - COORDINATION_API_PORT=8090
-    - REDIS_URL=redis://dopemux-redis-events:6379
+    - MCP_SERVER_PORT=8090
+    - PORT=8090
+    - REDIS_URL=redis://dopemux-redis-primary:6379
     - CONPORT_URL=http://conport:3004
-    - ADHD_ENGINE_URL=http://dopemux-adhd-engine:8095
+    - ADHD_ENGINE_URL=http://host.docker.internal:8095
   ports:
     - "8090:8090"
   depends_on:
-    - dopemux-redis-events
-    - conport
-    - dopemux-adhd-engine
+    - redis-primary
 ```
 
 ### Health Checks
@@ -201,13 +207,13 @@ plane-coordinator:
 ### Debug Commands
 ```bash
 # Check service logs
-docker logs dopemux-plane-coordinator
+docker logs dopemux-mcp-plane-coordinator
 
 # Test API connectivity
 curl -v http://localhost:8090/health
 
 # Check Redis connectivity
-docker exec dopemux-plane-coordinator redis-cli ping
+docker exec dopemux-mcp-redis-primary redis-cli ping
 ```
 
 ## Development
@@ -223,19 +229,19 @@ pip install -r requirements.txt
 python test_coordination_integration.py
 
 # Start API server
-python -m uvicorn coordination_api:app --host 0.0.0.0 --port 8090 --reload
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8090 --reload
 ```
 
 ### Code Structure
 ```
 services/task-orchestrator/
-├── plane_coordinator.py      # Core coordination engine
-├── coordination_api.py       # FastAPI service
-├── sync_engine.py           # Synchronization logic
-├── task_coordinator.py      # Task management
+├── app/main.py               # FastAPI coordination API
+├── app/core/coordinator.py   # Core coordination engine
+├── app/core/sync.py          # Synchronization logic
+├── app/services/task_coordinator.py  # ADHD-aware task coordination
 ├── test_coordination_integration.py  # Integration tests
 ├── Dockerfile.coordination   # Docker configuration
-└── adapters/                # Data adapters
+└── app/adapters/             # Data adapters
     └── conport_adapter.py
 ```
 

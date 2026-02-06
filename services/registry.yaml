@@ -15,7 +15,7 @@
 #   description: string - brief service description
 
 version: "1.0"
-last_updated: "2026-02-01"
+last_updated: "2026-02-06"
 
 services:
   # Infrastructure Services
@@ -157,3 +157,38 @@ services:
     spec_version: "v1"
     spec_path: "docs/spec/dope-memory/v1/"
 
+  - name: desktop-commander
+    port: 3012
+    container_port: 3012
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 5000
+    health_expected_status: 200
+    compose_service_name: desktop-commander
+    enabled_in_smoke: false
+    category: mcp
+    description: "Desktop Commander MCP - desktop automation and window control"
+
+  - name: leantime-bridge
+    port: 3015
+    container_port: 3015
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 10000
+    health_expected_status: 200
+    compose_service_name: leantime-bridge
+    enabled_in_smoke: false
+    category: coordination
+    description: "Leantime Bridge MCP - project management integration over HTTP/SSE"
+
+  - name: plane-coordinator
+    port: 8090
+    container_port: 8090
+    health_path: /health
+    health_method: GET
+    health_timeout_ms: 10000
+    health_expected_status: 200
+    compose_service_name: plane-coordinator
+    enabled_in_smoke: false
+    category: coordination
+    description: "Plane Coordinator - two-plane coordination API between PM and cognitive systems"

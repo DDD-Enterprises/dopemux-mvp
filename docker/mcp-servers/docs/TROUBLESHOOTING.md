@@ -226,7 +226,8 @@ docker stop <container-name>
 | 3012 | desktop-commander | ✅ Yes |
 | 3014 | task-orchestrator | ✅ Yes |
 | 3015 | leantime-bridge | ✅ Yes |
-| 3016 | conport | ✅ Yes |
+| 3016 | dopecon-bridge | ✅ Yes |
+| 8090 | plane-coordinator | ✅ Yes |
 | 8096 | activity-capture | ✅ Yes |
 | 6333-6334 | qdrant | ⚠️ May affect configs |
 
@@ -423,12 +424,14 @@ healthcheck:
 
 ### Common Causes & Solutions
 
-#### ❌ plane-coordinator: Files not found during COPY
-**Error**: `"/plane_coordinator.py": not found`
-**Cause**: Implementation files never created
-**Solution**: Remove from docker-compose.yml (unimplemented)
-```yaml
-# Comment out or remove plane-coordinator service
+#### ❌ plane-coordinator: Build context path errors
+**Error**: `failed to solve: failed to compute cache key` or missing `app/` files
+**Cause**: Running build from the wrong working directory or stale Docker cache
+**Solution**:
+```bash
+cd /Users/hue/code/dopemux-mvp/docker/mcp-servers
+docker compose build --no-cache plane-coordinator
+docker compose up -d plane-coordinator
 ```
 
 #### ❌ Build context too large
