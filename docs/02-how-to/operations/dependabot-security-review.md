@@ -47,7 +47,7 @@ next_review: '2026-02-08'
 
 2. **Add npm lockfiles**:
    ```bash
-   cd metamcp && pnpm install
+   cd <javascript-project> && pnpm install
    git add pnpm-lock.yaml
    ```
 
@@ -82,7 +82,7 @@ next_review: '2026-02-08'
 ✅ **aiohttp**: Updated to 3.12.14+ (secure)
 ⚠️  **Other packages**: Need audit review
 
-### JavaScript (metamcp/)
+### JavaScript (project monorepos)
 ⚠️  **No lockfile**: Cannot audit without pnpm-lock.yaml
 ⚠️  **typescript 5.8.2**: Check for known issues
 
@@ -92,7 +92,7 @@ next_review: '2026-02-08'
 
 1. ✅ **Review complete** - aiohttp already patched
 2. 🔄 **Access Dependabot dashboard** - Manual review required
-3. ⏭️  **Generate lockfiles** - Run `pnpm install` in metamcp/
+3. ⏭️  **Generate lockfiles** - Run `pnpm install` in the target JS project
 4. ⏭️  **Run audits** - After lockfiles generated
 5. ⏭️  **Apply patches** - Based on audit results
 
