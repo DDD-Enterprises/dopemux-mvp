@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Action Plan Master (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Master Action Plan - Extracted from Complete Audit
 **Date**: 2025-10-25 (Updated: F-NEW features, Dependabot, priorities complete)
@@ -68,7 +72,7 @@ Extracted **all action items** from comprehensive audit and categorized by:
 
 ### ⚠️ PENDING (From Older Audits)
 
-4. **ConPort KG SQL Injection** 🔴 CRITICAL
+1. **ConPort KG SQL Injection** 🔴 CRITICAL
    - Location: `services/conport_kg/queries/{overview,exploration,deep_context}.py`
    - Issue: Unvalidated `limit` parameter in Cypher queries
    - Attack: `limit = "1; DROP TABLE--"`
@@ -77,7 +81,7 @@ Extracted **all action items** from comprehensive audit and categorized by:
    - Priority: 🔴 **CRITICAL** (from conport-kg-analysis-2025-10-16.md)
    - **Action**: Fix before ANY ConPort KG production use
 
-5. **ConPort KG ReDoS Attack** 🔴 CRITICAL
+2. **ConPort KG ReDoS Attack** 🔴 CRITICAL
    - Location: `services/conport_kg/queries/deep_context.py:200`
    - Issue: Unescaped regex `pattern = f'.*{search_term}.*'`
    - Attack: `search_term = "(a+)+"` causes infinite loop
@@ -86,7 +90,7 @@ Extracted **all action items** from comprehensive audit and categorized by:
    - Priority: 🔴 **CRITICAL** (from ADR-201)
    - **Action**: Fix immediately
 
-6. **GPT-Researcher WebSocket Auth** 🟠 MEDIUM
+3. **GPT-Researcher WebSocket Auth** 🟠 MEDIUM
    - Location: `services/dopemux-gpt-researcher/backend/main.py:332`
    - Issue: No authentication on WS endpoint
    - Risk: Information disclosure (user can access any user's progress)
@@ -95,7 +99,7 @@ Extracted **all action items** from comprehensive audit and categorized by:
    - Priority: 🟠 MEDIUM (defense-in-depth)
    - **Action**: Add to next sprint
 
-7. **ConPort UI URL Encoding** 🟠 MEDIUM
+4. **ConPort UI URL Encoding** 🟠 MEDIUM
    - Location: `services/conport_kg_ui/src/api/client.ts`
    - Issue: Manual query string construction
    - Risk: Special characters break URLs
@@ -110,34 +114,34 @@ Extracted **all action items** from comprehensive audit and categorized by:
 
 ### ✅ COMPLETE (This Session)
 
-8. **DopeconBridge Completion** 🔴 CRITICAL
+1. **DopeconBridge Completion** 🔴 CRITICAL
    - Status: ✅ DONE (80% → 100%)
    - Impact: custom_data endpoints now functional
    - Evidence: mcp_client.py created, commit 1b76ef66
    - Time: 1 hour (projected 4-6h!)
 
-9. **ADHD Engine Migration** 🟡 HIGH
+2. **ADHD Engine Migration** 🟡 HIGH
    - Status: ✅ DONE (uses bridge, not direct SQLite)
    - Impact: Architecture violation eliminated
    - Evidence: bridge_integration.py, commit 2c8e7fbc
 
 ### ✅ COMPLETE (October 2025)
 
-10. **ConPort Orchestrator Bridge Wiring** 🟡 HIGH (ALREADY COMPLETE)
-   - Location: `services/conport_kg/orchestrator.py:127`
-   - Issue: TODO for DopeconBridge event publishing
-   - Current: Events not published
-   - Fix: Wire orchestrator to bridge HTTP API
-   - Effort: 2-3 hours
-   - Priority: 🟡 HIGH (completes automation layer)
-   - **Action**: Next architecture sprint
+1. **ConPort Orchestrator Bridge Wiring** 🟡 HIGH (ALREADY COMPLETE)
+- Location: `services/conport_kg/orchestrator.py:127`
+- Issue: TODO for DopeconBridge event publishing
+- Current: Events not published
+- Fix: Wire orchestrator to bridge HTTP API
+- Effort: 2-3 hours
+- Priority: 🟡 HIGH (completes automation layer)
+- **Action**: Next architecture sprint
 
-11. **Task-Orchestrator Un-Deprecation** 🟡 HIGH (✅ COMPLETE 2025-10-16)
-   - Status: ✅ UN-DEPRECATED (Decision #5, ADR-203)
-   - Result: 5,577 lines ML code preserved
-   - Deletion: CANCELLED (Nov 1 deadline averted)
-   - Next: Week 7 security audit + integration (13 hours)
-   - Evidence: STATUS.md created, DEPRECATED.md removed
+1. **Task-Orchestrator Un-Deprecation** 🟡 HIGH (✅ COMPLETE 2025-10-16)
+- Status: ✅ UN-DEPRECATED (Decision #5, ADR-203)
+- Result: 5,577 lines ML code preserved
+- Deletion: CANCELLED (Nov 1 deadline averted)
+- Next: Week 7 security audit + integration (13 hours)
+- Evidence: STATUS.md created, DEPRECATED.md removed
 
 ---
 
@@ -165,50 +169,50 @@ Extracted **all action items** from comprehensive audit and categorized by:
 
 ### 🔮 Future Enhancements (Q1-Q2 2026)
 
-12. **ADHD Engine ML Pattern Learning** 🔮
-   - Feature: Learn personal energy patterns, predict crashes
-   - Source: ADHD-ENGINE-DEEP-DIVE-PART4.md
-   - Benefits: Proactive interventions, personalized scheduling
-   - Effort: Major (4-6 weeks)
-   - Priority: 🟢 LOW (future phase)
-   - **Action**: Q1 2026 roadmap
+1. **ADHD Engine ML Pattern Learning** 🔮
+- Feature: Learn personal energy patterns, predict crashes
+- Source: ADHD-ENGINE-DEEP-DIVE-PART4.md
+- Benefits: Proactive interventions, personalized scheduling
+- Effort: Major (4-6 weeks)
+- Priority: 🟢 LOW (future phase)
+- **Action**: Q1 2026 roadmap
 
-13. **GPT-Researcher Terminal UI** 🔮
-   - Feature: Rich/Textual dashboard with visual progress
-   - Source: TERMINAL_UI_SPECIFICATION.md
-   - Benefits: ADHD-optimized research interface
-   - Effort: 3-4 weeks
-   - Priority: 🟢 LOW (enhancement)
-   - **Action**: Future sprint
+1. **GPT-Researcher Terminal UI** 🔮
+- Feature: Rich/Textual dashboard with visual progress
+- Source: TERMINAL_UI_SPECIFICATION.md
+- Benefits: ADHD-optimized research interface
+- Effort: 3-4 weeks
+- Priority: 🟢 LOW (enhancement)
+- **Action**: Future sprint
 
-14. **Multi-Team Coordination** 🔮
-   - Feature: Team break synchronization, pair programming energy matching
-   - Source: ADHD-ENGINE-DEEP-DIVE-PART4.md Phase 4
-   - Effort: Major (Q2 2026)
-   - Priority: 🟢 LOW (future)
+1. **Multi-Team Coordination** 🔮
+- Feature: Team break synchronization, pair programming energy matching
+- Source: ADHD-ENGINE-DEEP-DIVE-PART4.md Phase 4
+- Effort: Major (Q2 2026)
+- Priority: 🟢 LOW (future)
 
 ### 🟠 Medium-Term Improvements
 
-15. **ConPort Search Improvements** 🟠
-   - Current: Regex-based full-text search
-   - Improvement: PostgreSQL tsvector + GIN index
-   - Benefits: 10x faster search
-   - Effort: 4-6 hours
-   - Priority: 🟠 MEDIUM (performance)
-   - **Action**: Performance sprint
+1. **ConPort Search Improvements** 🟠
+- Current: Regex-based full-text search
+- Improvement: PostgreSQL tsvector + GIN index
+- Benefits: 10x faster search
+- Effort: 4-6 hours
+- Priority: 🟠 MEDIUM (performance)
+- **Action**: Performance sprint
 
-16. **Dope-Context ADHD Integration** 🟠
-   - Feature: Dynamic top_k based on attention state
-   - Evidence: Already implemented! (server.py:79-105)
-   - Status: ✅ FOUND during synthesis!
-   - **Action**: Document this feature
+1. **Dope-Context ADHD Integration** 🟠
+- Feature: Dynamic top_k based on attention state
+- Evidence: Already implemented! (server.py:79-105)
+- Status: ✅ FOUND during synthesis!
+- **Action**: Document this feature
 
-17. **DopeconBridge Event Bus** 🟠
-   - Feature: Event publishing/subscription
-   - Current: Infrastructure exists, partial adoption
-   - Effort: 6-8 hours
-   - Priority: 🟠 MEDIUM
-   - **Action**: Complete event-driven architecture
+1. **DopeconBridge Event Bus** 🟠
+- Feature: Event publishing/subscription
+- Current: Infrastructure exists, partial adoption
+- Effort: 6-8 hours
+- Priority: 🟠 MEDIUM
+- **Action**: Complete event-driven architecture
 
 ---
 
@@ -216,32 +220,32 @@ Extracted **all action items** from comprehensive audit and categorized by:
 
 ### ⚠️ PENDING
 
-18. **Integration Test Infrastructure** 🟡
-   - Issue: Cross-workspace import errors
-   - Impact: 634 tests can't run
-   - Root Cause: Tests import from ../dopemux-mvp/
-   - Fix Options:
-     - A: Workspace restructuring (4-6h)
-     - B: Monorepo setup (2-3h)
-     - C: Defer (separate task)
-   - Priority: 🟡 HIGH (quality)
-   - **Action**: Separate infrastructure task
+1. **Integration Test Infrastructure** 🟡
+- Issue: Cross-workspace import errors
+- Impact: 634 tests can't run
+- Root Cause: Tests import from ../dopemux-mvp/
+- Fix Options:
+  - A: Workspace restructuring (4-6h)
+  - B: Monorepo setup (2-3h)
+  - C: Defer (separate task)
+- Priority: 🟡 HIGH (quality)
+- **Action**: Separate infrastructure task
 
-19. **ConPort N+1 Query** 🟠
-   - Location: `services/conport_kg/orchestrator.py`
-   - Issue: Loads decisions one-by-one (10x slowdown)
-   - Fix: Batch loading with JOIN
-   - Effort: 2 hours
-   - Priority: 🟠 MEDIUM (performance)
-   - Status: Documented with TODO
+1. **ConPort N+1 Query** 🟠
+- Location: `services/conport_kg/orchestrator.py`
+- Issue: Loads decisions one-by-one (10x slowdown)
+- Fix: Batch loading with JOIN
+- Effort: 2 hours
+- Priority: 🟠 MEDIUM (performance)
+- Status: Documented with TODO
 
-20. **Full Subprocess Audit** 🟢
-   - Found: 54 subprocess calls
-   - Current: Sample review shows all safe (MCP wrappers)
-   - Recommendation: Full defensive audit
-   - Effort: 1-2 hours
-   - Priority: 🟢 LOW (defensive)
-   - **Action**: Optional quality task
+1. **Full Subprocess Audit** 🟢
+- Found: 54 subprocess calls
+- Current: Sample review shows all safe (MCP wrappers)
+- Recommendation: Full defensive audit
+- Effort: 1-2 hours
+- Priority: 🟢 LOW (defensive)
+- **Action**: Optional quality task
 
 ---
 
@@ -249,23 +253,23 @@ Extracted **all action items** from comprehensive audit and categorized by:
 
 ### ⚠️ MINOR UPDATES NEEDED
 
-21. **DopeconBridge Docs** 🟢
-   - Update: Remove "stub" notes (now 100% complete!)
-   - Files: README.md, kg_endpoints.py docstrings
-   - Effort: 15 minutes
-   - Priority: 🟢 LOW
+1. **DopeconBridge Docs** 🟢
+- Update: Remove "stub" notes (now 100% complete!)
+- Files: README.md, kg_endpoints.py docstrings
+- Effort: 15 minutes
+- Priority: 🟢 LOW
 
-22. **Endpoint Counting Standardization** 🟢
-   - Issue: ADHD Engine docs say "7" but has 6-8 depending on count
-   - Fix: Standardize to "6 API endpoints + 2 utility"
-   - Effort: 10 minutes
-   - Priority: 🟢 LOW
+1. **Endpoint Counting Standardization** 🟢
+- Issue: ADHD Engine docs say "7" but has 6-8 depending on count
+- Fix: Standardize to "6 API endpoints + 2 utility"
+- Effort: 10 minutes
+- Priority: 🟢 LOW
 
-23. **Event Bus Adoption Status** 🟢
-   - Document: Which services use Redis Streams event bus
-   - Current: Task-Orchestrator ✅, Serena ✅, others unknown
-   - Effort: 30 minutes (grep + document)
-   - Priority: 🟢 LOW
+1. **Event Bus Adoption Status** 🟢
+- Document: Which services use Redis Streams event bus
+- Current: Task-Orchestrator ✅, Serena ✅, others unknown
+- Effort: 30 minutes (grep + document)
+- Priority: 🟢 LOW
 
 ---
 

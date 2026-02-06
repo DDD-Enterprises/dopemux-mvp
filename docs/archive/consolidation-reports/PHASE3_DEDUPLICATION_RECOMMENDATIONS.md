@@ -1,10 +1,14 @@
 ---
 id: PHASE3_DEDUPLICATION_RECOMMENDATIONS
 title: Phase3_Deduplication_Recommendations
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Phase3_Deduplication_Recommendations (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # Phase 3 Deduplication - Recommendations
 
@@ -19,7 +23,7 @@ next_review: '2026-05-03'
 - `04-explanation/service_env_contract.md` (duplicate - kept in 03-reference/)
 - `03-reference/F001-untracked-work-detection.md` (base version - kept ENHANCED)
 
-###  📦 Archived (14 files)
+### 📦 Archived (14 files)
 - **11 COMPONENT_* files** → `archive/component-implementations/`
   - These were implementation progress docs, not canonical reference
 - **3 session summaries** → `archive/session-notes/`

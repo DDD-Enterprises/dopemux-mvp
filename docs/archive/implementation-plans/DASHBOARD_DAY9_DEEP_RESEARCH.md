@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dashboard_Day9_Deep_Research (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # Dashboard Day 9 - Deep Research & Planning
 # Enhanced Sparklines, Keyboard Navigation & Polish
@@ -168,6 +172,7 @@ quantile_over_time(0.95, adhd_context_switches[24h])
 - Textual Performance Docs (2024)
 
 **Target Metrics:**
+
 | Metric | Target | Measurement |
 |--------|--------|-------------|
 | **Latency (WebSocket)** | <100ms | End-to-end (engine → UI) |
