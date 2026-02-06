@@ -21,9 +21,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 import shutil
+import json
 import yaml
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
 
 
@@ -196,6 +197,92 @@ class ProfileManager:
             return profile_marker.read_text().strip()
 
         return None
+
+    def detect_profile_from_claude_config(
+        self,
+        workspace: Optional[Path] = None,
+        config_path: Optional[Path] = None,
+        cache_result: bool = True,
+    ) -> Optional[str]:
+        """
+        Detect active profile from Claude settings MCP selection.
+
+        Detection order:
+        1. `_dopemux_active_profile` metadata in Claude config, when profile exists.
+        2. Exact MCP-set match between config `mcpServers` and profile MCP mapping.
+        3. Best-overlap match when similarity >= 0.8.
+
+        Args:
+            workspace: Workspace path to cache detected profile marker.
+            config_path: Optional Claude settings path override.
+            cache_result: Whether to write detected profile into workspace marker.
+
+        Returns:
+            Detected profile name or None.
+        """
+        if config_path is None:
+            config_path = Path.home() / ".claude" / "settings.json"
+
+        if not config_path.exists():
+            return None
+
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                config = json.load(f)
+        except Exception as exc:
+            logger.debug("Could not read Claude config for profile detection: %s", exc)
+            return None
+
+        profiles = self.list_profiles()
+        if not profiles:
+            return None
+
+        profile_names = {p.name for p in profiles}
+
+        tagged_profile = config.get("_dopemux_active_profile")
+        if isinstance(tagged_profile, str) and tagged_profile in profile_names:
+            if cache_result and workspace is not None:
+                self.set_active_profile(workspace, tagged_profile)
+            return tagged_profile
+
+        selected_mcps = set((config.get("mcpServers") or {}).keys())
+        if not selected_mcps:
+            return None
+
+        # Keep mapping local to avoid module-level circular imports.
+        from .claude_config import MCP_NAME_MAPPING
+
+        def _profile_mcp_set(profile: DopemuxProfile) -> Set[str]:
+            mapped: Set[str] = set()
+            for mcp in profile.mcps:
+                config_name = MCP_NAME_MAPPING.get(mcp, mcp)
+                if config_name:
+                    mapped.add(config_name)
+            return mapped
+
+        exact_match = None
+        best_name = None
+        best_overlap = 0.0
+
+        for profile in profiles:
+            expected = _profile_mcp_set(profile)
+            if not expected:
+                continue
+
+            if expected == selected_mcps:
+                exact_match = profile.name
+                break
+
+            overlap = len(expected & selected_mcps) / len(expected | selected_mcps)
+            if overlap > best_overlap:
+                best_overlap = overlap
+                best_name = profile.name
+
+        detected = exact_match or (best_name if best_overlap >= 0.8 else None)
+        if detected and cache_result and workspace is not None:
+            self.set_active_profile(workspace, detected)
+
+        return detected
 
     def set_active_profile(self, workspace: Path, profile_name: str) -> None:
         """Set active profile for workspace."""
