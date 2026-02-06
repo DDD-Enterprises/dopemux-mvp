@@ -66,14 +66,41 @@ def use_profile(profile_name: str):
     """✅ Set active profile"""
     workspace = detect_workspace()
     manager = ProfileManager()
-    
+
     profile = manager.get_profile(profile_name)
     if not profile:
         console.logger.info(f"\n[red]❌ Profile not found: {profile_name}[/red]")
         return
 
+    previous = manager.get_active_profile(workspace)
+    started_at = datetime.utcnow()
     manager.set_active_profile(workspace, profile_name)
-    console.logger.info(f"\n✅ Active profile: [cyan]{profile_name}[/cyan]")
+
+    elapsed_seconds = (datetime.utcnow() - started_at).total_seconds()
+
+    # Best-effort telemetry into ConPort; never block UX if unavailable.
+    try:
+        from .profile_analytics import log_switch_sync
+
+        log_switch_sync(
+            workspace_id=str(workspace),
+            to_profile=profile_name,
+            from_profile=previous,
+            trigger="manual",
+        )
+    except Exception as exc:
+        logger.debug("Profile switch telemetry unavailable: %s", exc)
+
+    if previous and previous != profile_name:
+        console.logger.info(
+            f"\n✅ Active profile: [cyan]{profile_name}[/cyan] "
+            f"(from [dim]{previous}[/dim], {elapsed_seconds:.2f}s)"
+        )
+    else:
+        console.logger.info(
+            f"\n✅ Active profile: [cyan]{profile_name}[/cyan] "
+            f"({elapsed_seconds:.2f}s)"
+        )
 
 
 @click.command("show")

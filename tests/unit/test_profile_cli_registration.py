@@ -30,3 +30,10 @@ def test_profile_group_exposes_extended_command_set():
 def test_profile_apply_and_use_alias_same_callback():
     profile_group = cli.commands["profile"]
     assert profile_group.commands["apply"].callback is profile_group.commands["use"].callback
+
+
+def test_top_level_switch_alias_present():
+    assert "switch" in cli.commands
+
+    profile_group = cli.commands["profile"]
+    assert cli.commands["switch"].callback is profile_group.commands["use"].callback
