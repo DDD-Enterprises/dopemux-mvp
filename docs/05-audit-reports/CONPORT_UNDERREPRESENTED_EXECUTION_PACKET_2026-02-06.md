@@ -98,6 +98,8 @@ Evidence: `docs/05-audit-reports/PROFILE_SWITCH_COMMAND_VERIFICATION_2026-02-06.
 Evidence: `docs/05-audit-reports/PROFILE_SWITCH_TIME_OPTIMIZATION_VERIFICATION_2026-02-06.md`
 17. Row `18` (`3.3.3 Integration tests`) is now implemented.
 Evidence: `docs/05-audit-reports/PROFILE_SWITCH_INTEGRATION_TESTS_VERIFICATION_2026-02-06.md`
+18. Row `19` (`4.1.1 Detect current profile from config`) is now implemented.
+Evidence: `docs/05-audit-reports/PROFILE_CURRENT_DETECTION_VERIFICATION_2026-02-06.md`
 
 ## Source
 
