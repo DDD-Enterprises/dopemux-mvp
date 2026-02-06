@@ -1,5 +1,7 @@
 """Main application entry point for the Genetic Coding Agent system."""
 
+import logging
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from .core.config import AgentConfig
 from .vanilla.vanilla_agent import VanillaAgent
 from .genetic.genetic_agent import GeneticAgent
+
+logger = logging.getLogger(__name__)
 
 # Create FastAPI app
 app = FastAPI(

@@ -1,8 +1,7 @@
 """GPT-Researcher MCP Client."""
 
-import aiohttp
 from typing import Dict, Any, List, Optional
-from ..base_client import MCPClientBase
+from .base_client import MCPClientBase
 
 class GPTRClient(MCPClientBase):
     """Client for GPT-Researcher MCP service."""
