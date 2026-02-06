@@ -362,7 +362,6 @@ class RollbackManager:
 
                     if redis_dir:
                         # Copy backup to Redis data directory
-                        import shutil
                         redis_dump = redis_dir / "dump.rdb"
                         shutil.copy2(redis_backup, redis_dump)
                         logger.info(f"Redis data restored from {redis_backup} to {redis_dump}")
@@ -480,8 +479,6 @@ class RollbackManager:
                 return json.load(f)
         except Exception as e:
             return {'backups': [], 'rollback_points': [], 'last_successful_state': None}
-
-            logger.error(f"Error: {e}")
     def _save_registry(self, registry: Dict[str, Any]) -> None:
         """Save rollback registry."""
         with open(self.rollback_registry, 'w') as f:
@@ -497,8 +494,6 @@ class RollbackManager:
             return result.stdout.strip() if result.returncode == 0 else None
         except Exception as e:
             return None
-
-            logger.error(f"Error: {e}")
     def _get_current_version(self) -> str:
         """Get current version from VERSION file."""
         version_file = self.project_root / "VERSION"

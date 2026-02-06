@@ -68,16 +68,16 @@ class DopemuxEvent:
 class EventBus(ABC):
     @abstractmethod
     async def publish(self, event: DopemuxEvent) -> bool:
-        pass
+        ...
 
     @abstractmethod
     async def subscribe(self, pattern: str, callback: Callable[[DopemuxEvent], Any]) -> str:
         """Subscribe to events matching pattern. Returns subscription ID."""
-        pass
+        ...
 
     @abstractmethod
     async def unsubscribe(self, subscription_id: str) -> None:
-        pass
+        ...
 
 class InMemoryAdapter(EventBus):
     def __init__(self):
@@ -128,6 +128,7 @@ class RedisStreamsAdapter(EventBus):
     def __init__(self, redis_url: str):
         self.redis_url = redis_url
         self.connected = False
+        self._subscriptions: Dict[str, Dict[str, Any]] = {}
     
     async def connect(self):
         self.connected = True
@@ -137,10 +138,38 @@ class RedisStreamsAdapter(EventBus):
         self.connected = False
 
     async def publish(self, event: DopemuxEvent) -> bool:
+        if not self.connected:
+            logger.warning("RedisStreamsAdapter.publish called while disconnected; using local fan-out fallback")
+
+        for sub_id, subscription in list(self._subscriptions.items()):
+            pattern = subscription["pattern"]
+            callback = subscription["callback"]
+            if not self._matches(pattern, event):
+                continue
+            try:
+                if asyncio.iscoroutinefunction(callback):
+                    await callback(event)
+                else:
+                    callback(event)
+            except Exception as exc:
+                logger.error("Error in RedisStreamsAdapter subscriber %s: %s", sub_id, exc)
         return True
 
     async def subscribe(self, pattern: str, callback: Callable[[DopemuxEvent], Any]) -> str:
-        return str(uuid.uuid4())
+        subscription_id = str(uuid.uuid4())
+        self._subscriptions[subscription_id] = {
+            "pattern": pattern,
+            "callback": callback,
+        }
+        return subscription_id
 
     async def unsubscribe(self, subscription_id: str) -> None:
-        pass
+        self._subscriptions.pop(subscription_id, None)
+
+    def _matches(self, pattern: str, event: DopemuxEvent) -> bool:
+        if pattern == "*":
+            return True
+        namespace = getattr(event.envelope, "namespace", "")
+        if pattern.endswith("*"):
+            return namespace.startswith(pattern[:-1])
+        return namespace == pattern

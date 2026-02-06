@@ -575,8 +575,6 @@ class MCPServerManager:
                 return response.status == 200
         except Exception as e:
             return False
-
-            logger.error(f"Error: {e}")
     async def _health_check_websocket(self, connection: ServerConnection) -> bool:
         """Health check for WebSocket server"""
         if not connection.websocket:
@@ -588,8 +586,6 @@ class MCPServerManager:
             return True
         except Exception as e:
             return False
-
-            logger.error(f"Error: {e}")
     async def _call_stdio_tool(
         self,
         connection: ServerConnection,

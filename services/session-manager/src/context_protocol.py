@@ -270,7 +270,7 @@ class ContextSharingProtocol:
             if self.conport_client:
                 try:
                     # Get active context from ConPort
-                    active_context = await self.conport_client.get_active_context()
+                    active_context = self.conport_client.get_active_context()
                     if active_context and active_context.get("active_context"):
                         context_data = active_context["active_context"]
                         context["current_focus"] = context_data.get("current_focus", "unknown")

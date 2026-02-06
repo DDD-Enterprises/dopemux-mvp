@@ -37,9 +37,8 @@ class ConPortClient:
                 else:
                     return {"status": "unhealthy", "error": f"HTTP {response.status}"}
         except Exception as e:
+            logger.error(f"ConPort health check failed: {e}")
             return {"status": "error", "error": str(e)}
-
-            logger.error(f"Error: {e}")
     async def get_active_context(self, workspace_id: str) -> Dict[str, Any]:
         """
         Get active context for workspace - critical for ADHD developers

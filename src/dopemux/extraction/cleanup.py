@@ -485,8 +485,6 @@ class PipelineCleanup:
             return matches
         except Exception as e:
             return []
-
-            logger.error(f"Error: {e}")
     def _remove_files(self, file_paths: List[str]) -> Tuple[List[str], int]:
         """Remove files and return list of removed files and space freed."""
         removed_files = []

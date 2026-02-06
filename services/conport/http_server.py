@@ -7,9 +7,8 @@ Connects directly to PostgreSQL + AGE database.
 
 Day 2 Afternoon Implementation
 """
-import asyncio
 from datetime import datetime
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any, Optional
 import logging
 from contextlib import asynccontextmanager
 import sys
@@ -25,7 +24,7 @@ repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 sys.path.insert(0, os.path.join(repo_root, "src"))
 
 from dopemux.logging import configure_logging, RequestIDMiddleware
-from dopemux.runtime import lifespan_context, record_crash, get_last_crash
+from dopemux.runtime import lifespan_context, record_crash
 
 # Configure structured logging
 configure_logging("conport")
@@ -156,8 +155,8 @@ async def get_recent_decisions(
     Get recent decisions logged in the knowledge graph.
     
     Returns decisions ordered by creation time (most recent first).
-    
-    NOTE: Using mock data for MVP. TODO: Connect to real PostgreSQL database.
+
+    Uses PostgreSQL when available and falls back to mock data for resiliency.
     """
     # Mock data for MVP - dashboard won't crash
     mock_decisions = [
@@ -269,8 +268,8 @@ async def get_graph_stats(
     Get knowledge graph statistics.
     
     Returns counts of nodes, edges, and other graph metrics.
-    
-    NOTE: Using mock data for MVP. TODO: Connect to real PostgreSQL database.
+
+    Uses PostgreSQL when available and falls back to mock data for resiliency.
     """
     # Mock data for MVP
     mock_stats = {

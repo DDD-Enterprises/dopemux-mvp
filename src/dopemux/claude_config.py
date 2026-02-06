@@ -8,6 +8,8 @@ Config Location: ~/.claude/settings.json
 """
 
 from __future__ import annotations
+import logging
+
 
 import json
 import shutil
@@ -17,6 +19,8 @@ from typing import Any, Dict, List, Optional
 
 from .profile_models import Profile
 
+
+logger = logging.getLogger(__name__)
 
 # Mapping from profile-friendly names to actual Claude config names
 MCP_NAME_MAPPING = {
@@ -155,10 +159,8 @@ class ClaudeConfig:
             if backup_path and backup_path.exists():
                 try:
                     shutil.copy2(backup_path, self.config_path)
-                except Exception as e:
-                    pass  # Best effort
-
-                    logger.error(f"Error: {e}")
+                except Exception as backup_exc:
+                    logger.error(f"Error: {backup_exc}")
             raise ClaudeConfigError(
                 f"Failed to write config: {e}"
             )

@@ -13,6 +13,8 @@ Architecture:
 - Layer 1: Tmux Control (TmuxLayoutManager)
 """
 
+import logging
+
 import asyncio
 import os
 from datetime import datetime
@@ -24,6 +26,8 @@ from textual.reactive import reactive
 from textual import events
 from textual.screen import Screen
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 # Import our tmux layout manager
 import sys

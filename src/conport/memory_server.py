@@ -923,8 +923,6 @@ async def main():
                         await asyncio.sleep(60)
                         await response.write(b'data: {"type": "heartbeat"}\n\n')
                 except Exception as e:
-                    pass
-
                     logger.error(f"Error: {e}")
                 return response
 
