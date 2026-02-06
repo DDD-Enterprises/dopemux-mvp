@@ -20,27 +20,40 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
-from ..models.research_task import (
-    ADHDConfiguration,
-    ProjectContext,
-    ResearchQuestion,
-    ResearchResult,
-    ResearchTask,
-    ResearchType,
-    TaskStatus
-)
-from ..engines.query_classifier import (
-    QueryClassificationEngine,
-    QueryIntent,
-    ResearchScope,
-    OutputFormat,
-    SearchEngineStrategy
-)
-from ..engines.search.search_orchestrator import SearchOrchestrator, SearchStrategy
-from ..engines.search.exa_adapter import ExaSearchAdapter
-from ..engines.search.tavily_adapter import TavilySearchAdapter
-from ..engines.search.perplexity_adapter import PerplexitySearchAdapter
-from ..engines.search.pal_apilookup_adapter import PalApiLookupSearchAdapter
+try:
+    from ..models.research_task import (
+        ADHDConfiguration,
+        ProjectContext,
+        ResearchQuestion,
+        ResearchResult,
+        ResearchTask,
+        ResearchType,
+        TaskStatus,
+    )
+    from ..engines.query_classifier import QueryClassificationEngine
+    from ..engines.search.base_adapter import BaseSearchAdapter, SourceQuality
+    from ..engines.search.exa_adapter import ExaSearchAdapter
+    from ..engines.search.pal_apilookup_adapter import PalApiLookupSearchAdapter
+    from ..engines.search.perplexity_adapter import PerplexitySearchAdapter
+    from ..engines.search.search_orchestrator import SearchOrchestrator, SearchStrategy
+    from ..engines.search.tavily_adapter import TavilySearchAdapter
+except ImportError:  # pragma: no cover - script-mode fallback
+    from models.research_task import (
+        ADHDConfiguration,
+        ProjectContext,
+        ResearchQuestion,
+        ResearchResult,
+        ResearchTask,
+        ResearchType,
+        TaskStatus,
+    )
+    from engines.query_classifier import QueryClassificationEngine
+    from engines.search.base_adapter import BaseSearchAdapter, SourceQuality
+    from engines.search.exa_adapter import ExaSearchAdapter
+    from engines.search.pal_apilookup_adapter import PalApiLookupSearchAdapter
+    from engines.search.perplexity_adapter import PerplexitySearchAdapter
+    from engines.search.search_orchestrator import SearchOrchestrator, SearchStrategy
+    from engines.search.tavily_adapter import TavilySearchAdapter
 
 # Discrete integrations for ADHD-friendly research enhancement
 try:
@@ -62,11 +75,16 @@ try:
 except ImportError:
     # Fallback stubs for development
     class GPTResearcher:
-        async def conduct_research(self): pass
+        async def conduct_research(self):
+            return {}
+
     class ResearchPlanner:
-        async def plan(self): pass
+        async def plan(self):
+            return []
+
     class ResearchAgent:
-        async def research(self): pass
+        async def research(self):
+            return {}
 
 
 logger = logging.getLogger(__name__)
@@ -161,18 +179,34 @@ class ResearchTaskOrchestrator:
         if not engines:
             logger.warning("No search engines available, creating minimal orchestrator")
             # Create a mock engine for development
-            from engines.search.base_adapter import BaseSearchAdapter, SearchMetadata
             class MockAdapter(BaseSearchAdapter):
-                def __init__(self):
-                    super().__init__("mock_key")
-                    self.engine_name = "mock"
-                async def search(self, query, **kwargs):
-                    return [], SearchMetadata(
-                        engine_name="mock",
-                        query_time_ms=0,
-                        total_results=0,
-                        results_returned=0
-                    )
+                @property
+                def engine_name(self) -> str:
+                    return "mock"
+
+                @property
+                def max_results_per_request(self) -> int:
+                    return 10
+
+                @property
+                def supports_date_filtering(self) -> bool:
+                    return False
+
+                @property
+                def supports_domain_filtering(self) -> bool:
+                    return False
+
+                async def _execute_search(
+                    self,
+                    query: str,
+                    max_results: int,
+                    result_types: Optional[List[Any]],
+                    date_filter: Optional[str],
+                    domain_filter: Optional[List[str]],
+                    **kwargs: Any,
+                ) -> List[Any]:
+                    return []
+
             engines['mock'] = MockAdapter()
 
         # Initialize orchestrator with ADHD optimizations enabled
@@ -245,10 +279,9 @@ class ResearchTaskOrchestrator:
             try:
                 # Discretely log research task initiation
                 await self.conport.save_task_state(task)
-            except Exception as e:
-                pass  # Fail silently - research continues
-
-                logger.error(f"Error: {e}")
+            except Exception:
+                # Fail silently - research continues.
+                logger.debug("ConPort save_task_state failed during task creation", exc_info=True)
         # Step 6: Discrete PAL apilookup documentation hints (ADHD cognitive support)
         try:
             doc_hints = await analyze_for_documentation_hints(prompt)
@@ -258,10 +291,9 @@ class ResearchTaskOrchestrator:
                     {'library': h.library, 'topic': h.topic, 'confidence': h.confidence}
                     for h in doc_hints[:2]  # Limit to prevent overwhelm
                 ]
-        except Exception as e:
-            pass  # Ultra-discrete - any failure is invisible
-
-            logger.error(f"Error: {e}")
+        except Exception:
+            # Ultra-discrete - any failure is invisible.
+            logger.debug("PAL hint analysis failed during task creation", exc_info=True)
         # Step 7: Emit classification results via WebSocket
         if self.websocket:
             await self.websocket.emit_progress(task.id, {
@@ -290,7 +322,7 @@ class ResearchTaskOrchestrator:
         logger.info(f"Created research task {task.id} for user {user_id} ({classification.intent.value}, {classification.scope.value})")
         return task
 
-    async def generate_research_plan(self, task_id: UUID) -> List[ResearchQuestion]:
+    async def generate_research_plan(self, task_id: Union[UUID, str]) -> List[ResearchQuestion]:
         """
         Generate research plan using original Planner
 
@@ -341,7 +373,9 @@ class ResearchTaskOrchestrator:
             task.transition_to(TaskStatus.FAILED)
             raise
 
-    async def execute_research_step(self, task_id: UUID, question_index: int) -> ResearchResult:
+    async def execute_research_step(
+        self, task_id: Union[UUID, str], question_index: int
+    ) -> Optional[ResearchResult]:
         """
         Execute a single research question
 
@@ -424,7 +458,7 @@ class ResearchTaskOrchestrator:
             task.transition_to(TaskStatus.FAILED)
             raise
 
-    async def pause_task(self, task_id: UUID, reason: str = "User requested") -> bool:
+    async def pause_task(self, task_id: Union[UUID, str], reason: str = "User requested") -> bool:
         """
         Pause a research task with state preservation
 
@@ -461,7 +495,7 @@ class ResearchTaskOrchestrator:
         logger.info(f"Paused task {task_id}: {reason}")
         return True
 
-    async def resume_task(self, task_id: UUID) -> bool:
+    async def resume_task(self, task_id: Union[UUID, str]) -> bool:
         """
         Resume a paused research task
 
@@ -491,7 +525,7 @@ class ResearchTaskOrchestrator:
         logger.info(f"Resumed task {task_id}")
         return True
 
-    async def complete_research(self, task_id: UUID) -> ResearchTask:
+    async def complete_research(self, task_id: Union[UUID, str]) -> ResearchTask:
         """
         Mark research as complete and finalize results
         """
@@ -532,20 +566,76 @@ class ResearchTaskOrchestrator:
         logger.info(f"Completed research task {task_id}")
         return task
 
+    async def execute_task(self, task_id: Union[UUID, str]) -> Dict[str, Any]:
+        """Execute a full task from planning through completion."""
+        task = self._get_task(task_id)
+
+        if not task.research_plan:
+            await self.generate_research_plan(task.id)
+
+        start_index = max(0, task.current_question_index)
+        for question_index in range(start_index, len(task.research_plan)):
+            if task.status in {TaskStatus.PAUSED, TaskStatus.FAILED}:
+                break
+            await self.execute_research_step(task.id, question_index)
+
+        if task.status not in {TaskStatus.FAILED, TaskStatus.PAUSED}:
+            await self.complete_research(task.id)
+
+        status = await self.get_task_status(task.id)
+        return {
+            "summary": status.get("summary", ""),
+            "results": status.get("results", []),
+            "key_findings": status.get("key_findings", []),
+            "execution_time_minutes": int(task.total_processing_time / 60),
+        }
+
+    async def cancel_task(self, task_id: Union[UUID, str], reason: str = "User cancelled") -> bool:
+        """Cancel a task and stop auto-save workers."""
+        try:
+            task = self._get_task(task_id)
+        except ValueError:
+            return False
+
+        task.transition_to(TaskStatus.FAILED)
+        task.metadata["cancelled"] = True
+        task.metadata["cancel_reason"] = reason
+
+        auto_save_task = self.auto_save_tasks.pop(task.id, None)
+        if auto_save_task:
+            auto_save_task.cancel()
+
+        if self.websocket:
+            await self.websocket.emit_progress(task.id, {"phase": "cancelled", "reason": reason})
+
+        if self.conport:
+            try:
+                await self.conport.save_task_state(task)
+            except Exception:
+                logger.debug("ConPort save_task_state failed during cancellation", exc_info=True)
+
+        return True
+
     # Private helper methods
 
-    def _get_task(self, task_id: UUID) -> ResearchTask:
-        """Get task by ID with error checking"""
-        if task_id not in self.active_tasks:
-            raise ValueError(f"Task {task_id} not found")
-        return self.active_tasks[task_id]
+    def _coerce_task_id(self, task_id: Union[UUID, str]) -> UUID:
+        """Normalize task identifiers to UUID objects."""
+        if isinstance(task_id, UUID):
+            return task_id
+        if isinstance(task_id, str):
+            return UUID(task_id)
+        raise ValueError(f"Unsupported task id type: {type(task_id)!r}")
 
-    async def get_task_status(self, task_id: UUID) -> Dict[str, Any]:
+    def _get_task(self, task_id: Union[UUID, str]) -> ResearchTask:
+        """Get task by ID with error checking"""
+        normalized = self._coerce_task_id(task_id)
+        if normalized not in self.active_tasks:
+            raise ValueError(f"Task {task_id} not found")
+        return self.active_tasks[normalized]
+
+    async def get_task_status(self, task_id: Union[UUID, str]) -> Dict[str, Any]:
         """Get comprehensive task status for API responses"""
         try:
-            # Handle both string and UUID inputs
-            if isinstance(task_id, str):
-                task_id = UUID(task_id)
             task = self._get_task(task_id)
             progress_info = task.calculate_progress()
 
@@ -606,7 +696,6 @@ class ResearchTaskOrchestrator:
                 'meta': {}
             }
 
-            logger.error(f"Error: {e}")
     async def _enhance_prompt(self, task: ResearchTask) -> str:
         """Enhance the original prompt with context"""
         enhanced = task.initial_prompt
@@ -718,14 +807,12 @@ class ResearchTaskOrchestrator:
             # Step 7: Discrete PAL apilookup documentation enhancement
             enhanced_sources = sources
             try:
-                from adapters.pal_apilookup_helper import discrete_enhance_research
                 enhanced_sources = await discrete_enhance_research(question.question, sources)
                 if enhanced_sources != sources:
                     logger.debug(f"PAL apilookup discretely enhanced results for '{question.question}'")
-            except Exception as e:
-                pass  # Ultra-discrete - any failure is invisible
-
-                logger.error(f"Error: {e}")
+            except Exception:
+                # Ultra-discrete - any failure is invisible.
+                logger.debug("PAL result enhancement failed", exc_info=True)
             return {
                 "answer": answer,
                 "sources": enhanced_sources,
@@ -813,7 +900,10 @@ class ResearchTaskOrchestrator:
         }
 
         avg_quality = sum(
-            quality_scores.get(getattr(r, 'source_quality', 'good'), 0.6)
+            quality_scores.get(
+                getattr(getattr(r, "source_quality", SourceQuality.GOOD), "value", "good"),
+                0.6,
+            )
             for r in search_results
         ) / len(search_results)
 
