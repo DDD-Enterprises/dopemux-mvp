@@ -11,6 +11,9 @@ tags:
 - dev-mode
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+prelude: Development Troubleshooting (how-to) for dopemux documentation and developer
+  workflows.
 ---
 # Development Troubleshooting Guide
 

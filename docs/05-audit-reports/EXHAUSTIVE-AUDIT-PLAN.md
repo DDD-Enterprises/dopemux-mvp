@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Exhaustive Audit Plan (reference) for dopemux documentation and developer
+  workflows.
 ---
 # Exhaustive Line-by-Line Code Audit Plan
 **Date**: 2025-10-16

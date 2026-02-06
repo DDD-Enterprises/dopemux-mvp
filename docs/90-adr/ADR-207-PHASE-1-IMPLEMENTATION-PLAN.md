@@ -5,6 +5,15 @@ type: adr
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Adr 207 Phase 1 Implementation Plan (adr) for dopemux documentation and developer
+  workflows.
+status: proposed
+graph_metadata:
+  node_type: ADR
+  impact: medium
+  relates_to: []
 ---
 # ADR-207 Phase 1: Core Orchestration - Detailed Implementation Plan
 
@@ -1041,14 +1050,14 @@ Start
 3. **Begin Task 1.1** (Inventory Dependencies) - 45 minutes, can start now
 
 ### This Week
-4. Complete Component 1 (Audit) - 4 hours
-5. Make go/no-go decision based on audit
-6. Begin Component 2 (Adapters) if go
+1. Complete Component 1 (Audit) - 4 hours
+2. Make go/no-go decision based on audit
+3. Begin Component 2 (Adapters) if go
 
 ### Next Week
-7. Complete integration and activation
-8. Run comprehensive tests
-9. Validate Phase 1 complete
+1. Complete integration and activation
+2. Run comprehensive tests
+3. Validate Phase 1 complete
 
 ---
 

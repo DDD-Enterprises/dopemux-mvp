@@ -5,6 +5,10 @@ type: reference
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: F New 7_Complete_Implementation (reference) for dopemux documentation and
+  developer workflows.
 ---
 # F-NEW-7: ConPort-KG 2.0 - Complete Implementation
 
@@ -31,16 +35,16 @@ ConPort-KG 2.0 adds multi-user support, cross-workspace queries, and cross-agent
 
 ### Changes
 - Added `user_id VARCHAR(100) DEFAULT 'default'` to 5 core tables:
-  * decisions (1,495 records migrated)
-  * progress_entries
-  * workspace_contexts
-  * session_snapshots
-  * custom_data
+  - decisions (1,495 records migrated)
+  - progress_entries
+  - workspace_contexts
+  - session_snapshots
+  - custom_data
 
 - Created user management tables:
-  * users (1 default user)
-  * workspaces (schema exists, partial)
-  * user_workspace_access (partial due to schema conflict)
+  - users (1 default user)
+  - workspaces (schema exists, partial)
+  - user_workspace_access (partial due to schema conflict)
 
 ### Validation
 ```sql

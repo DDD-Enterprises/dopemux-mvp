@@ -5,6 +5,9 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: 04_Event_Taxonomy (explanation) for dopemux documentation and developer workflows.
 ---
 # Dope-Memory v1 — Event Taxonomy
 
@@ -43,18 +46,18 @@ These events are eligible for promotion into work_log_entries:
 1) decision.logged
 - data: {decision_id, title, choice, rationale, affected_files?, tags?}
 
-2) task.completed
-3) task.failed
-4) task.blocked
+1) task.completed
+2) task.failed
+3) task.blocked
 - data: {task_id, title, outcome, duration_seconds?, error?, service?, tags?}
 
-5) error.encountered
+1) error.encountered
 - data: {error_kind, message, stack?, file?, test?, ci_job?, tags?}
 
-6) workflow.phase_changed
+1) workflow.phase_changed
 - data: {from_phase, to_phase, reason?}
 
-7) manual.memory_store
+1) manual.memory_store
 - data: {category, entry_type, summary, details?, tags?, links?}
 
 ## Phase 1 Raw-Only Event Types
@@ -71,16 +74,16 @@ Stored in raw_activity_events only; not promoted in Phase 1:
 1) worklog.created
 - data: {entry_id, category, entry_type, importance_score, summary}
 
-2) worklog.updated
+1) worklog.updated
 - data: {entry_id, updated_fields}
 
-3) memory.pulse (Phase 2)
+1) memory.pulse (Phase 2)
 - data: {trajectory, constraints[], suggested_next[], source_entry_ids[]}
 
-4) reflection.created (Phase 2)
+1) reflection.created (Phase 2)
 - data: {reflection_id, window_start, window_end, trajectory}
 
-5) edge.proposed (Phase 3)
+1) edge.proposed (Phase 3)
 - data: {edge_type, from_id, to_id, confidence, evidence_ids[], window_start, window_end}
 
 ## Deterministic Promotion Contract

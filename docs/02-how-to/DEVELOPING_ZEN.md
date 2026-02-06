@@ -11,6 +11,8 @@ tags:
 - contributing
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+prelude: Developing Zen MCP (how-to) for dopemux documentation and developer workflows.
 ---
 # Developing Zen MCP - Contributor Guide
 

@@ -1,10 +1,14 @@
 ---
 id: autonomous-docs-indexing
 title: Autonomous Docs Indexing
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Autonomous Docs Indexing (reference) for dopemux documentation and developer
+  workflows.
 ---
 # Autonomous Docs Indexing Implementation
 
@@ -17,7 +21,7 @@ Added autonomous file-watching and indexing for **documentation files** (Markdow
 ### New MCP Tools
 
 1. **`start_autonomous_docs_indexing`**
-   - Starts file watcher for docs (*.md, *.pdf, *.html, *.txt)
+   - Starts file watcher for docs (*.md,*.pdf, *.html,*.txt)
    - 5-second debouncing (ADHD-optimized batching)
    - 10-minute periodic fallback sync
    - Automatic reindexing on file changes

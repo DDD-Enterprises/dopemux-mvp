@@ -1,10 +1,13 @@
 ---
 id: terminal-ui-spec
 title: Terminal Ui Spec
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Terminal Ui Spec (reference) for dopemux documentation and developer workflows.
 ---
 # GPT-Researcher Terminal UI Specification
 
