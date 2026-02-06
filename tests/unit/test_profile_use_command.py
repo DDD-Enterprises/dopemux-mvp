@@ -234,3 +234,28 @@ def test_use_profile_warns_when_switch_exceeds_target(monkeypatch, tmp_path: Pat
 
     assert result.exit_code == 0, result.output
     assert any("exceeded target" in msg for msg in fake_console.messages)
+
+
+def test_use_profile_logs_switch_duration_and_mcp_count(monkeypatch, tmp_path: Path):
+    runner = CliRunner()
+    profile = _DummyProfile("developer")
+    manager = _DummyManager(profile=profile, previous="full")
+    claude_config = _DummyClaudeConfig()
+    _patch_runtime(monkeypatch, tmp_path, manager, claude_config)
+
+    captured = {}
+    monkeypatch.setattr(
+        "dopemux.profile_analytics.log_switch_sync",
+        lambda **kwargs: captured.update(kwargs) or True,
+    )
+
+    result = runner.invoke(
+        profile_commands.use_profile,
+        ["developer", "--no-apply-config", "--no-save-session", "--no-restore-context"],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert captured["to_profile"] == "developer"
+    assert captured["from_profile"] == "full"
+    assert captured["mcp_count"] == 2
+    assert captured["switch_duration_seconds"] >= 0.0
