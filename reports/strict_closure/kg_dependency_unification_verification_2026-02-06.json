@@ -1,0 +1,106 @@
+{
+  "artifact": "reports/strict_closure/kg_dependency_unification_verification_2026-02-06.json",
+  "generated_at_utc": "2026-02-06T22:47:57Z",
+  "scope": "kg_dependency_unification cluster from live true-open packet",
+  "source_packet": "docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md",
+  "verification_commands": [
+    "pytest -q --no-cov services/serena/intelligence/integration_test.py tests/regression/test_serena_enhancements.py tests/regression/test_fnew5_code_graph_enrichment.py"
+  ],
+  "runtime_fixes_applied": [
+    {
+      "path": "services/serena/intelligence/database.py",
+      "change": "defer annotation evaluation and guard missing asyncpg symbol to prevent collection-time NameError"
+    },
+    {
+      "path": "services/serena/tree_sitter_analyzer.py",
+      "change": "defer annotation evaluation and provide fallback symbols when tree-sitter import fails"
+    },
+    {
+      "path": "pytest.ini",
+      "change": "enable asyncio_mode=auto so async regression tests execute without per-test markers"
+    }
+  ],
+  "cluster_items": [
+    {
+      "id": 1,
+      "item": "3.2.2: Test semantic similarity & ADHD disclosure",
+      "status": "partial",
+      "evidence": [
+        "tests/regression/test_serena_enhancements.py",
+        "tests/regression/test_fnew5_code_graph_enrichment.py"
+      ],
+      "residual_gap": "Tests run successfully but remain mostly smoke-level; no explicit assertion matrix for ADHD disclosure semantics."
+    },
+    {
+      "id": 2,
+      "item": "3.2.1: Integrate dope-context in Serena, add Find Similar command",
+      "status": "implemented",
+      "evidence": [
+        "services/serena/mcp_server.py:4969",
+        "services/serena/claude_context_integration.py:127"
+      ],
+      "residual_gap": null
+    },
+    {
+      "id": 3,
+      "item": "3.1.1: Design & populate conport_integration_links",
+      "status": "implemented_in_code",
+      "evidence": [
+        "services/serena/intelligence/schema.sql:279",
+        "services/serena/intelligence/conport_bridge.py:236",
+        "services/serena/intelligence/integration_test.py"
+      ],
+      "residual_gap": "Runtime population density not yet measured in active prod-like DB snapshot."
+    },
+    {
+      "id": 4,
+      "item": "2.2.3: Validate embedding quality & schema",
+      "status": "partial",
+      "evidence": [
+        "src/dopemux/extraction/consensus_validator.py",
+        "services/dope-context/src/pipeline/indexing_pipeline.py"
+      ],
+      "residual_gap": "No dedicated conport decision-embedding regression benchmark tied to this backlog line."
+    },
+    {
+      "id": 5,
+      "item": "2.2.2: Write & run migration script (re-embed decisions)",
+      "status": "partial",
+      "evidence": [
+        "scripts/deploy/migration/backfill_embeddings.py"
+      ],
+      "residual_gap": "Script exists; no current-wave execution artifact proving successful re-embed run against target dataset."
+    },
+    {
+      "id": 6,
+      "item": "2.2.1: Remove ConPort embedding_service, import from core",
+      "status": "partial",
+      "evidence": [
+        "services/conport/http_server.py:625",
+        "src/dopemux/mcp/conport_mcp_tools.py:368"
+      ],
+      "residual_gap": "Legacy semantic-search stubs and placeholder embedding paths still present; full removal/consolidation not complete."
+    },
+    {
+      "id": 7,
+      "item": "2.1.2: Update docs & add deprecation warnings",
+      "status": "partial",
+      "evidence": [
+        "docs/04-explanation/architecture/ARCHITECTURE-CONSOLIDATION-SYNTHESIS.md:425",
+        "docs/03-reference/serena-v2-mcp-tools.md:1097"
+      ],
+      "residual_gap": "Active code-truth docs still contain non-deprecated semantic-search references requiring explicit deprecation state labels."
+    }
+  ],
+  "summary": {
+    "implemented": 1,
+    "implemented_in_code": 1,
+    "partial": 5,
+    "open": 0,
+    "recommended_next_focus": [
+      "harden semantic similarity + ADHD disclosure assertions",
+      "execute and capture re-embed migration evidence",
+      "remove or hard-deprecate legacy semantic-search stubs and update active docs"
+    ]
+  }
+}
