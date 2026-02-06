@@ -1,7 +1,7 @@
 import React from 'react';
 import { Paper, Box, Typography, LinearProgress, Chip } from '@mui/material';
 import { Brain, AlertTriangle, CheckCircle, XCircle, Droplet } from 'lucide-react';
-import { brandTokens, statusStyles } from '../theme';
+import { statusStyles } from '../theme';
 
 interface CognitiveLoadGaugeProps {
   load: number;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import {
   Box,
@@ -9,7 +9,8 @@ import {
   ThemeProvider,
   CssBaseline,
   Chip,
-  Divider
+  Divider,
+  useMediaQuery,
 } from '@mui/material';
 import { Brain, Zap, Eye, TrendingUp, Droplet } from 'lucide-react';
 import theme, { brandTokens, statusStyles } from './theme';
@@ -41,8 +42,35 @@ function App() {
 
   // Connect to real-time data
   useEffect(() => {
+    let isUnmounted = false;
+
+    const fetchCognitiveState = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/cognitive-state');
+        if (!response.ok) {
+          return;
+        }
+
+        const payload = await response.json();
+        const state = payload.cognitive_state as Partial<CognitiveState> | undefined;
+        if (!state || isUnmounted) {
+          return;
+        }
+
+        setCognitiveState((prev) => ({
+          ...prev,
+          ...state,
+          prediction: state.prediction ?? prev.prediction,
+        }));
+      } catch {
+        // Silent fallback: keep last known state.
+      }
+    };
+
     const newSocket = io('http://localhost:3001', {
-      transports: ['websocket', 'polling']
+      transports: ['websocket', 'polling'],
+      timeout: 3000,
+      reconnectionAttempts: 2,
     });
 
     newSocket.on('cognitive-update', (data: CognitiveState) => {
@@ -56,7 +84,25 @@ function App() {
       }));
     });
 
+    newSocket.on('connect_error', () => {
+      void fetchCognitiveState();
+    });
+
+    newSocket.on('disconnect', () => {
+      void fetchCognitiveState();
+    });
+
+    const pollTimer = window.setInterval(() => {
+      if (!newSocket.connected) {
+        void fetchCognitiveState();
+      }
+    }, 15000);
+
+    void fetchCognitiveState();
+
     return () => {
+      isUnmounted = true;
+      window.clearInterval(pollTimer);
       newSocket.close();
     };
   }, []);
@@ -88,6 +134,7 @@ function App() {
   };
 
   const layout = getLayoutConfig();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const statusMeta = statusStyles[cognitiveState.status];
 
@@ -180,7 +227,7 @@ function App() {
         </Box>
 
         <Grid container spacing={3} sx={{ mb: 3 }}>
-          {metricCards.map((metric, index) => (
+          {metricCards.map((metric) => (
             <Grid item xs={12} md={6} lg={3} key={metric.label}>
               <Paper
                 sx={{
