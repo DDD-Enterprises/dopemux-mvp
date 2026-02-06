@@ -1,5 +1,10 @@
 # Paths to exclude from link checking
-exclude_path = ["docs/94-architecture/c4/"]
+exclude_path = [
+  "docs/94-architecture/c4/",
+  "docs/archive/**",
+  "docs/04-explanation/archive/**",
+  "docs/06-research/**"
+]
 
 # Exclude localhost URLs (documentation examples, dev servers)
 exclude = [
@@ -8,16 +13,22 @@ exclude = [
   "https://localhost:.*",
   "http://0\\.0\\.0\\.0:.*",
   "https://0\\.0\\.0\\.0:.*",
+  "http://host\\.docker\\.internal:.*",
+  "http://[a-z0-9-]+:[0-9]+.*",
   # Internal service hosts
   "http://.*:6333.*",  # Qdrant
   "http://.*-mcp:.*",  # MCP services (e.g., conport-mcp:5000)
   "http://.*-bridge:.*",  # Bridge services (e.g., dopecon-bridge:3016)
   "http://leantime:.*",  # Leantime internal
+  # Local file links are validated elsewhere in docs tooling
+  "file://.*",
   "https://docs\\.dopemux\\.dev.*",  # Internal docs site (not yet deployed)
   # Placeholder/example URLs
   "https://yourdomain\\.com.*",
   "https://.*\\.yourdomain\\.com.*",
   "https://your-.*\\.com.*",  # your-happy-server.com, your-happy-webapp.com, etc.
+  "https://YOUR_.*",
+  "https://myapp\\.com.*",
   "https://my-relay\\.com.*",
   "http://b\\.com.*",
   "http://test2\\.com.*",
@@ -28,6 +39,7 @@ exclude = [
   ".*github\\.com/DDD-Enterprises/dopemux-mvp/discussions/new.*",  # Discussion creation links
   ".*github\\.com/your-repo/.*",  # Placeholder repo links
   ".*github\\.com/your-org/.*",  # Placeholder org links
+  ".*github\\.com/YOUR_.*",  # Placeholder org/user links (uppercase)
   ".*github\\.com/dopemux/.*",  # Old org name
   ".*githubusercontent\\.com/dopemux/.*",  # Old org raw content
   # External sites requiring authentication
