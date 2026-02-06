@@ -5,7 +5,7 @@ Tracks profile switches, accuracy, and usage patterns in ConPort.
 Provides insights and optimization suggestions for ADHD workflows.
 """
 
-from collections import Counter, defaultdict
+from collections import Counter
 
 import logging
 
@@ -13,8 +13,7 @@ logger = logging.getLogger(__name__)
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 import asyncio
@@ -58,6 +57,7 @@ class ProfileAnalytics:
     """Tracks and analyzes profile usage patterns."""
 
     CATEGORY = "profile_metrics"
+    OPTIMIZATION_CATEGORY = "profile_optimization_recommendations"
 
     def __init__(self, workspace_id: str, conport_port: int = 3004):
         """
@@ -120,7 +120,7 @@ class ProfileAnalytics:
                 ) as response:
                     return response.status == 200
 
-        except Exception as e:
+        except Exception:
             return False
     async def get_stats(self, days_back: int = 30) -> ProfileStats:
         """
@@ -173,8 +173,63 @@ class ProfileAnalytics:
                     # Analyze switches
                     return self._analyze_switches(switches, days_back)
 
-        except Exception as e:
+        except Exception:
             return self._empty_stats()
+
+    async def archive_optimization_suggestions(
+        self,
+        suggestions: List[Dict[str, Any]],
+        stats: ProfileStats,
+        days_back: int = 30,
+    ) -> bool:
+        """
+        Persist optimization suggestions for auditability and follow-up.
+
+        Args:
+            suggestions: Suggestion payloads generated from usage metrics.
+            stats: Current usage stats snapshot used for suggestion generation.
+            days_back: History window used for analysis.
+
+        Returns:
+            True when archived successfully.
+        """
+        if not suggestions:
+            return True
+
+        try:
+            payload = {
+                "timestamp": datetime.now().isoformat(),
+                "days_back": days_back,
+                "stats": {
+                    "total_switches": stats.total_switches,
+                    "manual_switches": stats.manual_switches,
+                    "auto_switches": stats.auto_switches,
+                    "suggestion_accepted": stats.suggestion_accepted,
+                    "suggestion_declined": stats.suggestion_declined,
+                    "most_used_profile": stats.most_used_profile,
+                    "switch_accuracy": stats.switch_accuracy,
+                    "avg_switch_duration_seconds": stats.avg_switch_duration_seconds,
+                    "avg_mcp_count": stats.avg_mcp_count,
+                },
+                "suggestions": suggestions,
+            }
+            key = f"optimization_{datetime.now().timestamp()}"
+
+            async with aiohttp.ClientSession() as session:
+                data = {
+                    "workspace_id": self.workspace_id,
+                    "category": self.OPTIMIZATION_CATEGORY,
+                    "key": key,
+                    "value": payload,
+                }
+                async with session.post(
+                    f"{self.conport_url}/api/custom_data",
+                    json=data,
+                    timeout=aiohttp.ClientTimeout(total=5.0),
+                ) as response:
+                    return response.status == 200
+        except Exception:
+            return False
     def _analyze_switches(self, switches: List[ProfileSwitch], days_back: int) -> ProfileStats:
         """Analyze switch data to compute statistics."""
         if not switches:
@@ -316,6 +371,105 @@ def display_stats(stats: ProfileStats, days_back: int = 30) -> None:
             console.print(f"   {time_str}  {bar} {count}")
 
 
+def generate_optimization_suggestions(stats: ProfileStats) -> List[Dict[str, Any]]:
+    """
+    Generate deterministic optimization recommendations from profile metrics.
+
+    Returns:
+        Ordered list of recommendation dictionaries.
+    """
+    suggestions: List[Dict[str, Any]] = []
+    if stats.total_switches == 0:
+        return suggestions
+
+    if stats.switch_accuracy < 70:
+        suggestions.append(
+            {
+                "id": "low_switch_accuracy",
+                "severity": "medium",
+                "title": "Low switch accuracy",
+                "detail": (
+                    f"Switch accuracy is {stats.switch_accuracy:.0f}%. "
+                    "Tune profile rules or reduce frequent context swapping."
+                ),
+                "recommended_action": "Review auto-detection signals and profile matching rules.",
+            }
+        )
+
+    if stats.avg_switch_duration_seconds > 10:
+        suggestions.append(
+            {
+                "id": "slow_profile_switch",
+                "severity": "medium",
+                "title": "Switch latency above target",
+                "detail": (
+                    f"Average switch duration is {stats.avg_switch_duration_seconds:.2f}s. "
+                    "Target is under 10s."
+                ),
+                "recommended_action": "Inspect restart/config timing and disable optional restore steps when not needed.",
+            }
+        )
+
+    if stats.total_switches >= 15 and stats.auto_switches == 0:
+        suggestions.append(
+            {
+                "id": "manual_only_switching",
+                "severity": "low",
+                "title": "Manual-only switching detected",
+                "detail": "No automatic switches were recorded over a high-volume period.",
+                "recommended_action": "Enable auto-detection (`dopemux profile auto-enable`) for guided suggestions.",
+            }
+        )
+
+    if stats.suggestion_declined >= 3 and stats.suggestion_declined > (stats.suggestion_accepted * 2):
+        suggestions.append(
+            {
+                "id": "high_suggestion_decline_rate",
+                "severity": "medium",
+                "title": "Suggestions are frequently declined",
+                "detail": (
+                    f"Declined: {stats.suggestion_declined}, accepted: {stats.suggestion_accepted}. "
+                    "Current threshold may be too permissive."
+                ),
+                "recommended_action": "Increase confidence threshold or refine profile trigger patterns.",
+            }
+        )
+
+    dominant_profile = None
+    dominant_pct = 0.0
+    if stats.usage_by_profile:
+        dominant_profile, dominant_count = max(stats.usage_by_profile.items(), key=lambda item: item[1])
+        dominant_pct = (dominant_count / stats.total_switches) * 100
+
+    if dominant_profile and dominant_pct >= 70:
+        suggestions.append(
+            {
+                "id": "dominant_profile_detected",
+                "severity": "low",
+                "title": "One profile dominates usage",
+                "detail": (
+                    f"Profile '{dominant_profile}' represents {dominant_pct:.0f}% of switches."
+                ),
+                "recommended_action": (
+                    f"Promote '{dominant_profile}' as default and trim underused MCP combinations."
+                ),
+            }
+        )
+
+    if stats.avg_mcp_count > 6:
+        suggestions.append(
+            {
+                "id": "high_mcp_density",
+                "severity": "low",
+                "title": "High MCP density per switch",
+                "detail": f"Average MCP count per switch is {stats.avg_mcp_count:.2f}.",
+                "recommended_action": "Create a lighter profile variant to reduce cognitive/tooling overhead.",
+            }
+        )
+
+    return suggestions
+
+
 # Synchronous wrappers for CLI usage
 
 def log_switch_sync(
@@ -350,6 +504,24 @@ def get_stats_sync(
     """Synchronous wrapper for get_stats."""
     analytics = ProfileAnalytics(workspace_id, conport_port)
     return asyncio.run(analytics.get_stats(days_back))
+
+
+def archive_optimization_suggestions_sync(
+    workspace_id: str,
+    suggestions: List[Dict[str, Any]],
+    stats: ProfileStats,
+    days_back: int = 30,
+    conport_port: int = 3004,
+) -> bool:
+    """Synchronous wrapper for archiving profile optimization recommendations."""
+    analytics = ProfileAnalytics(workspace_id, conport_port)
+    return asyncio.run(
+        analytics.archive_optimization_suggestions(
+            suggestions=suggestions,
+            stats=stats,
+            days_back=days_back,
+        )
+    )
 
 
 if __name__ == "__main__":

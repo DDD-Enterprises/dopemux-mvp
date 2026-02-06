@@ -1,0 +1,23 @@
+{
+  "verification_id": "profile_documentation_completion_2026_02_06",
+  "date": "2026-02-06",
+  "rows_covered": [
+    35,
+    36,
+    37
+  ],
+  "status": "implemented",
+  "artifacts": {
+    "docs": [
+      "/Users/hue/code/dopemux-mvp/docs/01-tutorials/profile-user-guide.md",
+      "/Users/hue/code/dopemux-mvp/docs/01-tutorials/profile-migration-guide.md",
+      "/Users/hue/code/dopemux-mvp/docs/03-reference/profile-developer-guide.md",
+      "/Users/hue/code/dopemux-mvp/docs/02-how-to/PROFILE-USAGE.md",
+      "/Users/hue/code/dopemux-mvp/docs/docs_index.yaml"
+    ],
+    "doc": "/Users/hue/code/dopemux-mvp/docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md"
+  },
+  "verification_commands": [
+    "python scripts/docs_validator.py"
+  ]
+}
