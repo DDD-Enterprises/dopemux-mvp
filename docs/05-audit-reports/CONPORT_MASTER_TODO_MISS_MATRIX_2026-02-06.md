@@ -128,6 +128,30 @@ Evidence:
 
 - `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`
 
+### Secondary Miss Implementation Map
+
+| Task | Owner bucket | Primary target paths | Verification anchor |
+|---|---|---|---|
+| `1.1.1: Set up PostgreSQL AGE test environment` | ConPort + Infra | `scripts/deploy/migration/validate_age_pg_compat_stress.py`, `docker/`, `services/registry.yaml` | AGE validator and container health checks |
+| `1.2.1: Analyze Context Integration layer` | Dope-Context + Architecture | `services/dope-context/src/`, `services/dopecon-bridge/`, `services/task-orchestrator/` | integration-path ADR update |
+| `1.2.2: Document architecture decision` | Docs + Core platform | `docs/90-adr/`, `docs/04-explanation/architecture/` | ADR section completeness check |
+| `1.3.1: Create dopemux-core package structure` | Core platform | `src/dopemux/` | import-path consistency + packaging tests |
+| `1.3.4: Write unit tests for dopemux-core` | Core platform + QA | `tests/unit/`, `tests/contracts/` | targeted pytest suites |
+| `2.1.1: Remove ConPort semantic_search MCP tool` | ConPort + Bridge + Serena | `src/dopemux/mcp/conport_mcp_tools.py`, `services/conport/http_server.py`, `services/dopecon-bridge/main.py`, `services/serena/` | API compatibility shim + deprecation tests |
+| `2.1.2: Update docs and add deprecation warnings` | Docs + service owners | `docs/03-reference/`, `docs/02-how-to/`, service READMEs | docs parity and link checks |
+| `2.2.1: Remove ConPort embedding_service and import from core` | Dope-Context + ConPort | `services/dope-context/src/embeddings/`, `src/dopemux/embeddings/`, `src/conport/memory_server.py` | shared-embedding import contract tests |
+| `2.2.3: Validate embedding quality and schema` | AI/ML + Data | `services/dope-context/src/pipeline/`, `src/dopemux/embeddings/`, `mcp-qdrant` wiring | embedding regression + schema validation |
+| `2.3.1: Refactor Serena ADHD to use ADHDConfigService` | Serena + ADHD engine | `services/serena/`, `services/adhd_engine/adhd_config_service.py` | Serena config integration tests |
+| `2.3.2: Refactor dope-context ADHD to use ADHDConfigService` | Dope-Context + ADHD engine | `services/dope-context/src/`, `services/adhd_engine/adhd_config_service.py` | config-client contract test |
+| `2.3.3: Refactor ConPort ADHD to use ADHDConfigService` | ConPort + ADHD engine | `services/conport/`, `services/adhd_engine/adhd_config_service.py` | config fallback/compat tests |
+| `3.1.1: Design and populate conport_integration_links` | Serena intelligence + ConPort | `services/serena/intelligence/schema_manager.py`, `services/serena/intelligence/conport_bridge.py` | table lifecycle + seed validation |
+| `3.1.2: Implement bidirectional linking logic` | Serena intelligence + Task-Orchestrator | `services/serena/intelligence/conport_bridge.py`, `src/integrations/sync_manager.py`, `services/task-orchestrator/app/adapters/` | bidirectional sync tests |
+| `3.1.3: Create trace_decision_to_code MCP tool` | ConPort MCP + Bridge | `src/dopemux/mcp/`, `services/conport/http_server.py`, `services/dopecon-bridge/main.py` | MCP tool contract test |
+| `3.1.4: Write integration tests for knowledge graph` | QA + ConPort + Serena | `tests/integration/`, `services/dddpg/test_kg_integration.py` | end-to-end KG suite |
+| `3.1.5: Validate graph traversal performance` | Data + Performance | `services/dope-query/`, `services/dddpg/`, performance harness scripts | traversal latency benchmark |
+| `3.1.6: Document knowledge graph usage` | Docs + ConPort owners | `docs/03-reference/`, `docs/04-explanation/` | docs truth + usage walkthrough |
+| `3.2.1: Integrate dope-context in Serena and add Find Similar command` | Serena + Dope-Context | `services/serena/claude_context_integration.py`, `services/serena/layer1_validation.py`, `services/dope-context/src/mcp/server.py` | command behavior + UX acceptance tests |
+
 ## Coverage Recheck Status
 
 Post-update coverage recheck against the original miss extract now shows explicit representation closure:
