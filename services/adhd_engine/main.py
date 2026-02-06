@@ -19,6 +19,19 @@ from contextlib import asynccontextmanager
 import logging
 from prometheus_client import make_asgi_app
 
+try:
+    from dopemux.logging import configure_logging, RequestIDMiddleware
+except Exception:  # pragma: no cover - fallback path for isolated service images
+    RequestIDMiddleware = None
+
+    def configure_logging(service_name, *, level=None, **_):
+        resolved_level = getattr(logging, str(level or "INFO").upper(), logging.INFO)
+        logging.basicConfig(
+            level=resolved_level,
+            format="%(asctime)s %(levelname)s %(name)s %(message)s",
+        )
+        return logging.getLogger(service_name)
+
 # Use relative imports for module execution (python -m services.adhd_engine.main)
 from .core.engine import ADHDAccommodationEngine
 from .api import routes
@@ -57,10 +70,7 @@ from .core.error_handling import (
 )
 
 # Configure logging
-logging.basicConfig(
-    level=settings.log_level,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+configure_logging("adhd-engine", level=str(settings.log_level))
 logger = logging.getLogger(__name__)
 
 # Global instances
@@ -184,6 +194,8 @@ app.add_middleware(
     allow_methods=["GET", "POST"],  # Restrict to safe HTTP methods only
     allow_headers=["Content-Type", "Authorization", "X-API-Key"],  # Restrict to necessary headers
 )
+if RequestIDMiddleware is not None:
+    app.add_middleware(RequestIDMiddleware)
 
 # Rate limiting middleware - protect against abuse
 app.add_middleware(RateLimitMiddleware)

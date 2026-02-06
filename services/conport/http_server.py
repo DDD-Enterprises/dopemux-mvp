@@ -11,13 +11,21 @@ import asyncio
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 import logging
+from contextlib import asynccontextmanager
+import sys
+import os
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import asyncpg
 
+# Add repo root to path before importing dopemux modules
+repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(repo_root, "src"))
+
 from dopemux.logging import configure_logging, RequestIDMiddleware
+from dopemux.runtime import lifespan_context, record_crash, get_last_crash
 
 # Configure structured logging
 configure_logging("conport")
@@ -37,16 +45,6 @@ def log_startup_config():
     logger.info(f"  DB Name: {os.getenv('POSTGRES_DB', 'dopemux_knowledge_graph')}")
     logger.info(f"  DB User: {os.getenv('POSTGRES_USER', 'dopemux_age')}")
     logger.info("=" * 60)
-
-from contextlib import asynccontextmanager
-import sys
-import os
-
-# Add repo root to path
-repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, os.path.join(repo_root, "src"))
-
-from dopemux.runtime import lifespan_context, record_crash, get_last_crash
 
 # Database connection pool
 pool: Optional[asyncpg.Pool] = None

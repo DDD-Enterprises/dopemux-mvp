@@ -14,6 +14,7 @@ All functionality has been extracted into focused modules:
 """
 
 import logging
+from typing import Any
 from contextlib import asynccontextmanager
 
 import uvicorn
@@ -26,12 +27,27 @@ from dopecon_bridge.config import settings
 from dopecon_bridge.core import cache_manager, db_manager
 from dopecon_bridge.routes import get_all_routers
 
+try:
+    from dopemux.logging import configure_logging, RequestIDMiddleware
+except Exception:  # pragma: no cover - fallback path for isolated service images
+    RequestIDMiddleware = None
+
+    def configure_logging(
+        service_name: str,
+        *,
+        level: str | None = None,
+        **_: Any,
+    ) -> logging.Logger:
+        resolved_level = getattr(logging, (level or "INFO").upper(), logging.INFO)
+        logging.basicConfig(
+            level=resolved_level,
+            format="%(asctime)s %(levelname)s %(name)s %(message)s",
+        )
+        return logging.getLogger(service_name)
+
 
 # Configure logging
-logging.basicConfig(
-    level=getattr(logging, settings.log_level, logging.INFO),
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+configure_logging("dopecon-bridge", level=str(settings.log_level))
 logger = logging.getLogger(__name__)
 
 
@@ -85,6 +101,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+if RequestIDMiddleware is not None:
+    app.add_middleware(RequestIDMiddleware)
 
 # ConPort context middleware for ADHD-friendly context preservation
 conport_middleware = ConPortMiddleware(conport_client)

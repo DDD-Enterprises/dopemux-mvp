@@ -62,12 +62,25 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.orm import sessionmaker
 from tenacity import retry, stop_after_attempt, wait_exponential
 
+try:
+    from dopemux.logging import configure_logging, RequestIDMiddleware
+except Exception:  # pragma: no cover - fallback path for isolated service images
+    RequestIDMiddleware = None
+
+    def configure_logging(service_name, *, level=None, **_):
+        resolved_level = getattr(logging, str(level or "INFO").upper(), logging.INFO)
+        logging.basicConfig(
+            level=resolved_level,
+            format="%(asctime)s %(levelname)s %(name)s %(message)s",
+        )
+        return logging.getLogger(service_name)
+
 # Import EventBus for Redis Streams coordination
 from event_bus import EventBus, Event, EventType
 
 # Configure logging with env var support (G33)
 LOG_LEVEL = os.getenv("LOG_LEVEL", "info").upper()
-logging.basicConfig(level=getattr(logging, LOG_LEVEL, logging.INFO))
+configure_logging("dopecon-bridge", level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 # ============================================================================
@@ -1336,6 +1349,8 @@ app = FastAPI(
     version="1.0.0",
     description=f"Task management coordination for Dopemux instance: {INSTANCE_NAME}"
 )
+if RequestIDMiddleware is not None:
+    app.add_middleware(RequestIDMiddleware)
 
 # JWT Auth constants and functions
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
