@@ -5791,11 +5791,20 @@ try:
     from .profile_commands import (
         use_profile,
         show_profile,
-        create_profile
+        create_profile,
+        copy_profile,
+        edit_profile,
+        delete_profile,
     )
 
     if "create" not in profile.commands:
         profile.add_command(create_profile, "create")
+    if "copy" not in profile.commands:
+        profile.add_command(copy_profile, "copy")
+    if "edit" not in profile.commands:
+        profile.add_command(edit_profile, "edit")
+    if "delete" not in profile.commands:
+        profile.add_command(delete_profile, "delete")
     if "apply" not in profile.commands:
         profile.add_command(use_profile, "apply")
     if "use" not in profile.commands:
