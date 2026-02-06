@@ -45,6 +45,7 @@ Generated during this pass:
 - `reports/strict_closure/conport_real_import_integrity_2026-02-06.json`
 - `reports/strict_closure/conport_backlog_extract_2026-02-06.json`
 - `reports/strict_closure/conport_master_todo_miss_extract_2026-02-06.json`
+- `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `docs/05-audit-reports/CONPORT_REAL_IMPORT_INTEGRITY_2026-02-06.md`
 
 Executed verification checks (latest pass on 2026-02-06):
@@ -186,7 +187,7 @@ Executed verification checks (latest pass on 2026-02-06):
 3. Coverage policy (`fail-under=80`) still blocks targeted verification unless `--no-cov` is used.
 4. Multiple service directories have minimal scaffolding and no tests, but remain present in architecture narratives.
 5. First non-dry-run ConPort historical import surfaced schema-shape drift (`ag_catalog` assumptions vs live `public` tables); importer hardening is now in place but needs a clean rerun pass for full closure.
-6. `context_links` payload (111 rows) did not materialize in the initial real import run; relationship restoration still requires a dedicated rerun/backfill verification.
+6. `context_links` payload (111 rows) initially failed to materialize; dedicated backfill now restored 111/111 links (idempotent two-pass closure).
 7. Historical ConPort backlog extraction surfaced additional unresolved work (132 TODO, 1 BLOCKED) not yet fully reflected in the active prioritized gap register.
 
 ## ConPort Backlog Misses Extracted Into Master Fix Scope
@@ -220,7 +221,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 3. PAL migration incompleteness (stale Zen references across runtime/docs).
 4. Web UI real-time path still lacks production push transport (currently socket fallback to polling).
 5. Missing Stage 1/Stage 2 workflow implementation from ADR-197 (`workflow_ideas`, `workflow_epics`).
-6. ConPort historical relationship migration closure not yet complete (initial run imported 0/111 `context_links` into `entity_relationships`).
+6. ConPort historical relationship migration closure reached 111/111 parity for the selected bundle, with reproducible evidence artifact.
 
 ### P1 (High Impact, Not Immediate Blockers)
 
@@ -381,7 +382,7 @@ Exit criteria:
 3. Stabilize test harness (async plugin + targeted suite policy).
 4. Resolve `ui-dashboard` build failures.
 5. Implement ADR-197 Stage 1/2 primitives (`workflow_ideas` and `workflow_epics`).
-6. Complete ConPort historical import closure: rerun relationship restoration and verify expected `context_links` parity.
+6. Re-run relationship backfill across additional imported bundles after each source import to preserve 100% link parity.
 7. Fold extracted historical TODO/BLOCKED items (`reports/strict_closure/conport_backlog_extract_2026-02-06.json`) into the master prioritized fix ledger.
 
 ---

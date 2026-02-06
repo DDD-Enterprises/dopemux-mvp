@@ -52,7 +52,20 @@ prelude: Pre/post integrity evidence for the first non-dry-run import of histori
 3. Progress-entry IDs now join the ID mapping (required for relationship restoration).
 4. Single-row `workspace_contexts` schemas now use combined-context upsert behavior.
 
+## Relationship Backfill Closure
+
+Executed with `scripts/deploy/migration/backfill_conport_relationships.py` against the same bundle and workspace.
+
+1. `context_links_total`: 111
+2. first pass inserted: 110 (1 skipped custom_data edge case)
+3. second pass inserted: 1, deduplicated: 110 (idempotent closure run)
+4. skipped after final run: 0
+5. live table count moved from `0` to `111`
+
+This closes the previously open relationship-restoration gap to 100% parity for this bundle.
+
 ## Evidence Artifact
 
 - `reports/strict_closure/conport_real_import_integrity_2026-02-06.json`
 - `reports/strict_closure/conport_backlog_extract_2026-02-06.json`
+- `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
