@@ -118,6 +118,12 @@ Evidence: `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-0
 Evidence: `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md`
 27. Row `28` (`4.3.5 profile current`) is now implemented.
 Evidence: `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md`
+28. Row `29` (`4.4.1 Metrics collection`) is now implemented.
+Evidence: `docs/05-audit-reports/PROFILE_ANALYTICS_VERIFICATION_2026-02-06.md`
+29. Row `30` (`4.4.2 profile stats command`) is now implemented.
+Evidence: `docs/05-audit-reports/PROFILE_ANALYTICS_VERIFICATION_2026-02-06.md`
+30. Row `31` (`4.4.3 Analytics dashboard`) is now implemented.
+Evidence: `docs/05-audit-reports/PROFILE_ANALYTICS_VERIFICATION_2026-02-06.md`
 
 ## Source
 
