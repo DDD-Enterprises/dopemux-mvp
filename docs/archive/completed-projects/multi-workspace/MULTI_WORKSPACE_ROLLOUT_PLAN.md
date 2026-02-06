@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Multi_Workspace_Rollout_Plan (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # Multi-Workspace Support - Dopemux Ecosystem Rollout Plan
 
@@ -22,19 +26,19 @@ Extend multi-workspace support to all dopemux services, MCP servers, and infrast
 
 ### 🔥 HIGH PRIORITY - Core MCP Servers
 
-2. **serena** (Code Graph Analysis)
+1. **serena** (Code Graph Analysis)
    - Location: `services/serena/`
    - Functions: Call graph, dependency analysis, impact assessment
    - Multi-workspace need: Track relationships across worktrees
    - Priority: HIGH (used by dope-context for graph enrichment)
 
-3. **conport_kg** (Knowledge Graph)
+2. **conport_kg** (Knowledge Graph)
    - Location: `services/conport_kg/`
    - Functions: Context storage, decision logging, session memory
    - Multi-workspace need: Isolate contexts per workspace
    - Priority: HIGH (persistent memory across sessions)
 
-4. **workspace-watcher** (File Monitoring)
+3. **workspace-watcher** (File Monitoring)
    - Location: `services/workspace-watcher/`
    - Functions: File change detection, git event monitoring
    - Multi-workspace need: Monitor multiple directories
@@ -42,25 +46,25 @@ Extend multi-workspace support to all dopemux services, MCP servers, and infrast
 
 ### 🟡 MEDIUM PRIORITY - Intelligence & Coordination
 
-5. **task-orchestrator** (Task Management)
+1. **task-orchestrator** (Task Management)
    - Location: `services/task-orchestrator/`
    - Functions: Task routing, workflow coordination
    - Multi-workspace need: Per-workspace task queues
    - Priority: MEDIUM
 
-6. **orchestrator** (Service Coordination)
+2. **orchestrator** (Service Coordination)
    - Location: `services/orchestrator/`
    - Functions: Service health, message routing
    - Multi-workspace need: Workspace-aware routing
    - Priority: MEDIUM
 
-7. **session_intelligence** (Session Context)
+3. **session_intelligence** (Session Context)
    - Location: `services/session_intelligence/`
    - Functions: Session state, context switching
    - Multi-workspace need: Track sessions per workspace
    - Priority: MEDIUM
 
-8. **intelligence** (AI Coordination)
+4. **intelligence** (AI Coordination)
    - Location: `services/intelligence/`
    - Functions: Model selection, prompt routing
    - Multi-workspace need: Workspace-specific prompts
@@ -68,19 +72,19 @@ Extend multi-workspace support to all dopemux services, MCP servers, and infrast
 
 ### 🟢 LOW PRIORITY - ADHD Features
 
-9. **adhd_engine** (ADHD Accommodations)
+1. **adhd_engine** (ADHD Accommodations)
    - Location: `services/adhd_engine/`
    - Functions: Energy tracking, attention state
    - Multi-workspace need: Per-workspace energy tracking
    - Priority: LOW (nice-to-have)
 
-10. **activity-capture** (Activity Logging)
+2. **activity-capture** (Activity Logging)
     - Location: `services/activity-capture/`
     - Functions: Event logging, metrics
     - Multi-workspace need: Tag events by workspace
     - Priority: LOW
 
-11. **context-switch-tracker** (Context Switching)
+3. **context-switch-tracker** (Context Switching)
     - Location: `services/context-switch-tracker/`
     - Functions: Track workspace switches
     - Multi-workspace need: Core feature!
@@ -88,12 +92,12 @@ Extend multi-workspace support to all dopemux services, MCP servers, and infrast
 
 ### 🔧 INFRASTRUCTURE
 
-12. **Docker Compose Files**
+1. **Docker Compose Files**
     - Environment variables for multi-workspace
     - Volume mounts for multiple workspaces
     - Service configuration
 
-13. **MCP DopeconBridge**
+2. **MCP DopeconBridge**
     - Location: `services/mcp-dopecon-bridge/`
     - Workspace-aware request routing
     - Priority: HIGH
@@ -107,20 +111,20 @@ Extend multi-workspace support to all dopemux services, MCP servers, and infrast
 4. workspace-watcher - File monitoring
 
 ### Phase 2: Coordination Layer (Week 2)
-5. mcp-dopecon-bridge - Request routing
-6. orchestrator - Service coordination
-7. task-orchestrator - Task management
+1. mcp-dopecon-bridge - Request routing
+2. orchestrator - Service coordination
+3. task-orchestrator - Task management
 
 ### Phase 3: Intelligence & ADHD (Week 3)
-8. session_intelligence - Session context
-9. context-switch-tracker - Workspace switching
-10. intelligence - AI coordination
+1. session_intelligence - Session context
+2. context-switch-tracker - Workspace switching
+3. intelligence - AI coordination
 
 ### Phase 4: Infrastructure & Polish (Week 4)
-11. Docker compose updates
-12. Environment variable standards
-13. Documentation & examples
-14. Integration tests
+1. Docker compose updates
+2. Environment variable standards
+3. Documentation & examples
+4. Integration tests
 
 ## 🎨 Design Patterns
 

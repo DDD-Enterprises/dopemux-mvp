@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dopeconbridge_Index (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # DopeconBridge Documentation Index
 **Last Updated**: 2025-11-13
@@ -38,7 +42,7 @@ next_review: '2026-05-02'
    - Troubleshooting guide
 
 ### Comprehensive Reference (15-30 minutes)
-3. **[DOPECONBRIDGE_COMPLETE_INTEGRATION.md](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md)**
+1. **[DOPECONBRIDGE_COMPLETE_INTEGRATION.md](./DOPECONBRIDGE_COMPLETE_INTEGRATION.md)**
    - Full architectural reference
    - Migration status (20+ components)
    - Shared client library docs
@@ -51,7 +55,7 @@ next_review: '2026-05-02'
    - Future roadmap
 
 ### Execution Report (Technical Deep Dive)
-4. **[DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md](./DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md)**
+1. **[DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md](./DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md)**
    - Complete session execution report
    - Detailed deliverables breakdown
    - Architectural validation
