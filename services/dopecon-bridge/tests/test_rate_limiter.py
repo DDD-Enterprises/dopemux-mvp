@@ -7,7 +7,7 @@ import asyncio
 import pytest
 import time
 
-import redis.asyncio as redis
+redis = pytest.importorskip("redis.asyncio", reason="redis package not installed")
 
 from rate_limiter import RateLimiter, RateLimitExceeded
 

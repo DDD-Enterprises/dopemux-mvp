@@ -30,10 +30,17 @@ Environment variables:
 
 ## MCP Tools
 
-- `create_task` - Create new task in Leantime
-- `update_task` - Update task status/details
-- `list_tasks` - Query tasks by project/status
+- `create_ticket` - Create new task/ticket in Leantime
+- `update_ticket` - Update ticket status/details
+- `list_tickets` - Query tickets by project/status
 - `create_project` - Create new project
+- `get_project_stats` - Fetch project status/progress metadata
+- `create_milestone` - Create project milestone
+
+Compatibility aliases supported for legacy callers:
+- `create_task` -> `create_ticket`
+- `list_tasks` -> `list_tickets`
+- `update_ticket_status` -> `update_ticket`
 
 ## Integration with Dopemux
 
@@ -50,9 +57,24 @@ See [docs/90-adr/](../../../docs/90-adr/) for architecture details.
 ## Development
 
 ```bash
-# Test task creation
+# Test discovery
 curl http://localhost:3015/info | jq
+
+# List REST compatibility tools
+curl http://localhost:3015/api/tools | jq
+
+# Call a tool through REST compatibility endpoint
+curl -X POST http://localhost:3015/api/tools/list_tickets \
+  -H "Content-Type: application/json" \
+  -d '{"projectId": 1}'
 ```
+
+## REST Compatibility Endpoint
+
+`dopecon-bridge` and other legacy services call:
+- `POST /api/tools/{tool_name}`
+
+This endpoint is now first-class and mirrors MCP tool execution to support mixed SSE + REST integration paths during migration.
 
 ## Service Discovery
 
