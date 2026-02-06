@@ -1,137 +1,266 @@
-
 #!/usr/bin/env python3
-"""Ensure every docs/*.md has required YAML front-matter.
-- Adds missing front-matter
-- Repairs malformed YAML (e.g., unquoted @handles)
-- Updates last_review to today if missing
-- Fills owner if missing (default "@hu3mann")
-Usage:
-  python scripts/docs_frontmatter_guard.py        # dry run (non-zero exit if changes needed)
-  python scripts/docs_frontmatter_guard.py --fix  # apply fixes in-place
+"""Ensure docs markdown files have valid, consistent YAML frontmatter.
+
+- Repairs malformed YAML frontmatter where possible
+- Adds missing fields required by docs validation hooks
+- Supports checking specific files (pre-commit) or all docs (manual runs)
 """
-import sys, re, os, datetime, yaml, io
 
-import logging
+import argparse
+import datetime
+import io
+import os
+import re
+from pathlib import Path
+from typing import Dict, Iterable, Optional, Tuple
 
-logger = logging.getLogger(__name__)
+import yaml
 
 
 TODAY = datetime.date.today()
 DEFAULT_OWNER = "@hu3mann"
-REQUIRED = ["id","title","type","owner","last_review","next_review"]
+DEFAULT_AUTHOR = "@hu3mann"
+VALID_DOC_TYPES = {
+    "adr",
+    "rfc",
+    "caveat",
+    "pattern",
+    "runbook",
+    "tutorial",
+    "how-to",
+    "reference",
+    "explanation",
+}
 
-def parse_frontmatter(text):
-    """Parse frontmatter block, attempting light repairs when YAML is malformed.
 
-    Returns (data, body, repaired):
-      - data: dict or None when no/invalid frontmatter
-      - body: content without the frontmatter block (if detected)
-      - repaired: True when we fixed frontmatter formatting (e.g., quoted @owner)
-    """
-    if text.startswith('---\n'):
-        end = text.find('\n---\n', 4)
-        if end != -1:
-            fm = text[4:end]
-            body = text[end+5:]
-            try:
-                data = yaml.safe_load(fm) or {}
-                return data, body, False
-            except Exception as e:
-                # Try to repair common issues: unquoted @handles
-                repaired_fm = re.sub(r"(^|\n)(\s*owner\s*:\s*)(@[^\n]+)", r"\1\2" + '"' + r"\3" + '"', fm)
-                try:
-                    data = yaml.safe_load(repaired_fm) or {}
-                    return data, body, True
-                except Exception as e:
-                    # Give up: treat as missing frontmatter but strip the broken block
-                    return None, body, False
-                    logger.error(f"Error: {e}")
-    return None, text, False
+def parse_frontmatter(text: str) -> Tuple[Optional[Dict], str, bool]:
+    """Parse frontmatter block and attempt small YAML repairs."""
+    if not text.startswith("---\n"):
+        return None, text, False
 
-def build_frontmatter(data):
+    end = text.find("\n---\n", 4)
+    if end == -1:
+        return None, text, False
+
+    fm = text[4:end]
+    body = text[end + 5 :]
+
+    try:
+        data = yaml.safe_load(fm) or {}
+        return data if isinstance(data, dict) else None, body, False
+    except Exception:
+        repaired_fm = re.sub(
+            r"(^|\n)(\s*owner\s*:\s*)(@[^\n]+)",
+            r'\1\2"\3"',
+            fm,
+        )
+        try:
+            data = yaml.safe_load(repaired_fm) or {}
+            return data if isinstance(data, dict) else None, body, True
+        except Exception:
+            return None, body, False
+
+
+def build_frontmatter(data: Dict) -> str:
     buf = io.StringIO()
     yaml.safe_dump(data, buf, sort_keys=False)
     return f"---\n{buf.getvalue()}---\n"
 
-def ensure_fm(path, fix=False):
-    with open(path, 'r', encoding='utf-8') as f:
-        text = f.read()
-    data, body, repaired = parse_frontmatter(text)
-    changed = bool(repaired)
-    if data is None:
-        # Create new front-matter
-        slug = os.path.splitext(os.path.basename(path))[0]
-        title = slug.replace('-', ' ').title()
-        data = {
-            "id": slug,
-            "title": title,
-            "type": guess_type(path),
-            "owner": DEFAULT_OWNER,
-            "last_review": str(TODAY),
-            "next_review": str(TODAY + datetime.timedelta(days=90)),
-        }
-        changed = True
-    else:
-        # Fill missing keys
-        for k in REQUIRED:
-            if k not in data:
-                if k == "id":
-                    data[k] = os.path.splitext(os.path.basename(path))[0]
-                elif k == "title":
-                    data[k] = os.path.splitext(os.path.basename(path))[0].replace('-', ' ').title()
-                elif k == "type":
-                    data[k] = guess_type(path)
-                elif k == "owner":
-                    data[k] = DEFAULT_OWNER
-                elif k == "last_review":
-                    data[k] = str(TODAY)
-                elif k == "next_review":
-                    data[k] = str(TODAY + datetime.timedelta(days=90))
-                changed = True
-        # Normalize owner quoting for @handles
-        if isinstance(data.get("owner"), str) and data["owner"].startswith("@"):
-            # ensure a plain string value
-            data["owner"] = data["owner"]
-    if changed and fix:
-        fm = build_frontmatter(data)
-        with open(path, 'w', encoding='utf-8') as f:
-            f.write(fm + body.lstrip())
+
+def default_title(path: Path) -> str:
+    return path.stem.replace("-", " ").replace("_", " ").title()
+
+
+def default_prelude(path: Path, title: str) -> str:
+    doc_type = guess_type(str(path))
+    return f"{title} ({doc_type}) for dopemux documentation and developer workflows."
+
+
+def guess_type(path: str) -> str:
+    p = path.replace("\\", "/")
+    if "/90-adr/" in p:
+        return "adr"
+    if "/91-rfc/" in p:
+        return "rfc"
+    if "/92-runbooks/" in p:
+        return "runbook"
+    if "/01-tutorials/" in p:
+        return "tutorial"
+    if "/02-how-to/" in p or "/deployment/" in p:
+        return "how-to"
+    if "/03-reference/" in p or "/05-audit-reports/" in p or "/06-research/" in p or "/systems/" in p:
+        return "reference"
+    return "explanation"
+
+
+def normalize_type(path: Path, value: object) -> str:
+    if isinstance(value, str) and value in VALID_DOC_TYPES:
+        return value
+    return guess_type(str(path))
+
+
+def normalize_status(doc_type: str, status: object) -> Optional[str]:
+    if not isinstance(status, str):
+        return None
+
+    normalized = status.strip().lower()
+    if doc_type == "adr" and normalized == "approved":
+        return "accepted"
+    return normalized
+
+
+def ensure_type_specific_fields(data: Dict, path: Path) -> bool:
+    changed = False
+    doc_type = data.get("type", "explanation")
+
+    if doc_type == "adr":
+        status = normalize_status("adr", data.get("status"))
+        if status and status != data.get("status"):
+            data["status"] = status
+            changed = True
+        if "status" not in data:
+            data["status"] = "proposed"
+            changed = True
+        if "graph_metadata" not in data or not isinstance(data.get("graph_metadata"), dict):
+            data["graph_metadata"] = {"node_type": "ADR", "impact": "medium", "relates_to": []}
+            changed = True
+        if not data.get("prelude"):
+            data["prelude"] = default_prelude(path, data["title"])
+            changed = True
+
+    elif doc_type == "rfc":
+        status = normalize_status("rfc", data.get("status"))
+        if status and status != data.get("status"):
+            data["status"] = status
+            changed = True
+        if "status" not in data:
+            data["status"] = "draft"
+            changed = True
+        if "derived_from" not in data:
+            data["derived_from"] = []
+            changed = True
+        if not data.get("prelude"):
+            data["prelude"] = default_prelude(path, data["title"])
+            changed = True
+
+    elif doc_type == "caveat":
+        if "severity" not in data:
+            data["severity"] = "medium"
+            changed = True
+        if "impact" not in data:
+            data["impact"] = "medium"
+            changed = True
+        if not data.get("prelude"):
+            data["prelude"] = default_prelude(path, data["title"])
+            changed = True
+
+    elif doc_type == "pattern":
+        if "usage_context" not in data:
+            data["usage_context"] = "general"
+            changed = True
+        if not data.get("prelude"):
+            data["prelude"] = default_prelude(path, data["title"])
+            changed = True
+
     return changed
 
-def guess_type(path):
-    p = path.replace('\\','/')
-    if '/90-adr/' in p: return 'adr'
-    if '/91-rfc/' in p: return 'rfc'
-    if '/92-runbooks/' in p: return 'runbook'
-    if '/01-tutorials/' in p: return 'tutorial'
-    if '/02-how-to/' in p: return 'how-to'
-    if '/03-reference/' in p: return 'reference'
-    if '/04-explanation/' in p: return 'explanation'
-    if '/05-audit-reports/' in p: return 'audit-report'
-    if '/06-research/' in p: return 'research'
-    if '/archive/' in p: return 'historical'
-    if '/systems/' in p: return 'system-doc'
-    if '/deployment/' in p: return 'deployment'
-    if '/implementation-plans/' in p: return 'planning'
-    return 'explanation'
 
-def main():
-    fix = '--fix' in sys.argv
+def ensure_frontmatter(path: Path, fix: bool = False) -> bool:
+    text = path.read_text(encoding="utf-8")
+    data, body, repaired = parse_frontmatter(text)
+    changed = bool(repaired)
+
+    if data is None:
+        data = {}
+        changed = True
+
+    if not isinstance(data, dict):
+        data = {}
+        changed = True
+
+    if "id" not in data:
+        data["id"] = path.stem
+        changed = True
+
+    if "title" not in data:
+        data["title"] = default_title(path)
+        changed = True
+
+    normalized_type = normalize_type(path, data.get("type"))
+    if data.get("type") != normalized_type:
+        data["type"] = normalized_type
+        changed = True
+
+    if "owner" not in data:
+        data["owner"] = DEFAULT_OWNER
+        changed = True
+
+    if "author" not in data:
+        data["author"] = DEFAULT_AUTHOR
+        changed = True
+
+    if "date" not in data:
+        data["date"] = str(TODAY)
+        changed = True
+
+    if "last_review" not in data:
+        data["last_review"] = str(TODAY)
+        changed = True
+
+    if "next_review" not in data:
+        data["next_review"] = str(TODAY + datetime.timedelta(days=90))
+        changed = True
+
+    if "prelude" not in data:
+        data["prelude"] = default_prelude(path, data["title"])
+        changed = True
+
+    changed = ensure_type_specific_fields(data, path) or changed
+
+    if changed and fix:
+        fm = build_frontmatter(data)
+        path.write_text(fm + body.lstrip(), encoding="utf-8")
+
+    return changed
+
+
+def iter_markdown_files(cli_files: Iterable[str]) -> Iterable[Path]:
+    files = [Path(p) for p in cli_files if p.endswith(".md")]
+    if files:
+        for path in files:
+            if path.exists() and path.is_file():
+                yield path
+        return
+
+    docs_root = Path("docs")
+    if not docs_root.exists():
+        return
+
+    for path in docs_root.rglob("*.md"):
+        yield path
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Validate/fix docs frontmatter")
+    parser.add_argument("--fix", action="store_true", help="Apply fixes in place")
+    parser.add_argument("files", nargs="*", help="Specific markdown files to validate")
+    args = parser.parse_args()
+
     changed_files = []
-    for root, _, files in os.walk('docs'):
-        for fn in files:
-            if fn.endswith('.md'):
-                path = os.path.join(root, fn)
-                if ensure_fm(path, fix=fix):
-                    changed_files.append(path)
-    if changed_files:
-        logger.info(f"Updated {len(changed_files)} files:")
-        for p in changed_files:
-            logger.info(" -", p)
-        raise SystemExit(1 if not fix else 0)
-    else:
-        logger.info("All docs have front-matter.")
-        raise SystemExit(0)
+    for path in iter_markdown_files(args.files):
+        if ensure_frontmatter(path, fix=args.fix):
+            changed_files.append(str(path))
 
-if __name__ == '__main__':
-    main()
+    if changed_files:
+        action = "Updated" if args.fix else "Needs update"
+        print(f"{action} {len(changed_files)} file(s):")
+        for path in changed_files:
+            print(f" - {path}")
+        return 0 if args.fix else 1
+
+    print("All docs have valid frontmatter.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
