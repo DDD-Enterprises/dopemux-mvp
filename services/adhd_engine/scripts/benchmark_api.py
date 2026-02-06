@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-\"\"\"Performance benchmarking script for ADHD Engine APIs.
-
-import logging
-
-logger = logging.getLogger(__name__)
-
+"""Performance benchmarking script for ADHD Engine APIs.
 
 Usage:
     python scripts/benchmark_api.py --endpoint /api/v1/energy-level/{user_id} --iterations 100 --concurrency 10
@@ -20,9 +15,10 @@ Requirements:
 - rich for pretty output
 - ADHD Engine running on localhost:8001
 
-\"\"\"
+"""
 
 import asyncio
+import logging
 import time
 from typing import Optional
 from dataclasses import dataclass
@@ -34,6 +30,8 @@ import httpx
 from rich.console import Console
 from rich.table import Table
 from rich import print as rprint
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class BenchmarkResult:
@@ -54,7 +52,7 @@ async def benchmark_endpoint(
     api_key: str,
     user_id: str = "test_user"
 ):
-    \"\"\"Benchmark a single API endpoint with concurrency.\"\"\"
+    """Benchmark a single API endpoint with concurrency."""
     console = Console()
 
     # Prepare URL
@@ -78,6 +76,7 @@ async def benchmark_endpoint(
         semaphore = asyncio.Semaphore(concurrency)
 
         async def make_request():
+            nonlocal cache_hits, total_requests, errors
             async with semaphore:
                 start_time = time.time()
                 try:
@@ -93,11 +92,11 @@ async def benchmark_endpoint(
 
                     if response.status_code != 200:
                         errors += 1
-                        console.logger.error(f"[red]ERROR[/red]: {response.status_code} - {response.text[:100]}")
+                        console.print(f"[red]ERROR[/red]: {response.status_code} - {response.text[:100]}")
 
                 except Exception as e:
                     errors += 1
-                    console.logger.error(f"[red]REQUEST FAILED[/red]: {str(e)}")
+                    console.print(f"[red]REQUEST FAILED[/red]: {str(e)}")
 
         # Execute concurrent requests
         tasks = [make_request() for _ in range(iterations)]
@@ -138,15 +137,15 @@ async def benchmark_endpoint(
 @click.option('--api-key', '-k', default='test', help='API key for authentication')
 @click.option('--user-id', '-u', default='test_user', help='User ID for requests')
 def main(endpoint, iterations, concurrency, api_key, user_id):
-    \"\"\"Run API benchmark.\"\"\"
+    """Run API benchmark."""
     console = Console()
 
-    rlogger.info(f"[bold cyan]🚀 Benchmarking ADHD Engine API[/bold cyan]")
-    rlogger.info(f"Endpoint: {endpoint}")
-    rlogger.info(f"Iterations: {iterations}")
-    rlogger.info(f"Concurrency: {concurrency}")
-    rlogger.info(f"User ID: {user_id}")
-    rlogger.info("=" * 60)
+    logger.info(f"[bold cyan]🚀 Benchmarking ADHD Engine API[/bold cyan]")
+    logger.info(f"Endpoint: {endpoint}")
+    logger.info(f"Iterations: {iterations}")
+    logger.info(f"Concurrency: {concurrency}")
+    logger.info(f"User ID: {user_id}")
+    logger.info("=" * 60)
 
     start_time = time.time()
     result = asyncio.run(benchmark_endpoint(endpoint, iterations, concurrency, api_key, user_id))
@@ -167,23 +166,23 @@ def main(endpoint, iterations, concurrency, api_key, user_id):
     table.add_row("Error Rate", f"{result.error_rate:.1f}%")
     table.add_row("Total Duration", f"{end_time - start_time:.2f}s")
 
-    console.logger.info(table)
+    console.print(table)
 
     # Success indicators
     if result.avg_response_time < 0.1:
-        rlogger.info("[bold green]✅ Performance target met (<100ms average)[/bold green]")
+        logger.info("[bold green]✅ Performance target met (<100ms average)[/bold green]")
     else:
-        rlogger.info("[bold yellow]⚠️ Performance target not met[/bold yellow]")
+        logger.info("[bold yellow]⚠️ Performance target not met[/bold yellow]")
 
     if result.cache_hit_rate > 80:
-        rlogger.info("[bold green]✅ Cache hit rate target met (>80%)[/bold green]")
+        logger.info("[bold green]✅ Cache hit rate target met (>80%)[/bold green]")
     else:
-        rlogger.info("[bold yellow]⚠️ Cache hit rate target not met[/bold yellow]")
+        logger.info("[bold yellow]⚠️ Cache hit rate target not met[/bold yellow]")
 
     if result.error_rate == 0:
-        rlogger.error("[bold green]✅ Zero errors - excellent![/bold green]")
+        logger.error("[bold green]✅ Zero errors - excellent![/bold green]")
     else:
-        rlogger.error(f"[bold red]❌ Errors: {result.error_rate:.1f}%[/bold red]")
+        logger.error(f"[bold red]❌ Errors: {result.error_rate:.1f}%[/bold red]")
 
 if __name__ == "__main__":
     main()

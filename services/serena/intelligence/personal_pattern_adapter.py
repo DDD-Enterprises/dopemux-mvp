@@ -5,6 +5,8 @@ Delta patch system for personalizing navigation strategy templates while maintai
 immutable template integrity and enabling automatic template evolution.
 """
 
+import statistics
+
 import asyncio
 import json
 import logging
@@ -865,8 +867,6 @@ class PersonalPatternAdapter:
 
         except Exception as e:
             return False
-
-            logger.error(f"Error: {e}")
     async def _invalidate_personalization_cache(self, user_session_id: str, template_hash: str) -> None:
         """Invalidate personalization cache for user and template."""
         keys_to_remove = [

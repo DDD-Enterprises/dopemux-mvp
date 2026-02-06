@@ -14,8 +14,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 # Add shared utilities to path
-# __file__ is in services/serena/v2/, so parent.parent.parent.parent gives repo root
-REPO_ROOT = Path(__file__).parent.parent.parent.parent
+# __file__ is in services/serena/, so parent.parent.parent gives repo root.
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(REPO_ROOT / "services"))
 
 from shared.workspace_utils import (
@@ -49,15 +49,13 @@ class SerenaMultiWorkspace:
         workspace_key = str(workspace)
         
         if workspace_key not in self._workspace_instances:
-            # Import SerenaServer here to avoid circular deps
-            from mcp_server import SerenaServer
-            
-            # Create instance for this workspace
-            # Note: This requires changing directory or passing workspace
-            instance = SerenaServer()
-            # TODO: Initialize with specific workspace
-            # This may require modifying SerenaServer.__init__
-            
+            # Import lazily to avoid circular deps.
+            from mcp_server import SerenaV2MCPServer
+
+            instance = SerenaV2MCPServer()
+            await instance.initialize()
+            # Pin workspace explicitly so file operations resolve correctly.
+            instance.workspace = workspace
             self._workspace_instances[workspace_key] = instance
         
         return self._workspace_instances[workspace_key]
@@ -97,7 +95,11 @@ class SerenaMultiWorkspace:
         for workspace in workspaces:
             instance = await self.get_workspace_instance(workspace)
             result = await instance.find_symbol_tool(
-                query, symbol_type, max_results, user_id
+                query,
+                symbol_type,
+                max_results,
+                user_id,
+                workspace_path=str(workspace),
             )
             # Parse JSON result back to dict if needed
             import json
@@ -138,8 +140,12 @@ class SerenaMultiWorkspace:
         results = []
         for workspace in workspaces:
             instance = await self.get_workspace_instance(workspace)
+            target_line = line if line is not None else 1
             result = await instance.get_context_tool(
-                file_path, line, context_lines
+                file_path,
+                target_line,
+                context_lines,
+                workspace_path=str(workspace),
             )
             import json
             if isinstance(result, str):
@@ -175,7 +181,10 @@ class SerenaMultiWorkspace:
         results = []
         for workspace in workspaces:
             instance = await self.get_workspace_instance(workspace)
-            result = await instance.find_relationships_tool(symbol_name)
+            result = await instance.find_relationships_tool(
+                symbol_name,
+                workspace_path=str(workspace),
+            )
             import json
             if isinstance(result, str):
                 result = json.loads(result)
@@ -215,7 +224,10 @@ class SerenaMultiWorkspace:
         for workspace in workspaces:
             instance = await self.get_workspace_instance(workspace)
             result = await instance.find_similar_code_tool(
-                query, top_k, user_id
+                query,
+                top_k,
+                user_id,
+                workspace_path=str(workspace),
             )
             import json
             if isinstance(result, str):
@@ -276,7 +288,10 @@ class SerenaMultiWorkspace:
         for workspace in workspaces:
             instance = await self.get_workspace_instance(workspace)
             result = await instance.get_unified_complexity_tool(
-                file_path, symbol, user_id
+                file_path,
+                symbol,
+                user_id,
+                workspace_path=str(workspace),
             )
             import json
             if isinstance(result, str):
@@ -335,7 +350,10 @@ class SerenaMultiWorkspace:
         results = []
         for workspace in workspaces:
             instance = await self.get_workspace_instance(workspace)
-            result = await instance.get_navigation_patterns_tool(days_back)
+            result = await instance.get_navigation_patterns_tool(
+                days_back,
+                workspace_path=str(workspace),
+            )
             import json
             if isinstance(result, str):
                 result = json.loads(result)
@@ -376,7 +394,9 @@ class SerenaMultiWorkspace:
         for workspace in workspaces:
             instance = await self.get_workspace_instance(workspace)
             result = await instance.analyze_complexity_tool(
-                file_path, symbol_name
+                file_path,
+                symbol_name,
+                workspace_path=str(workspace),
             )
             import json
             if isinstance(result, str):
@@ -440,7 +460,11 @@ class SerenaMultiWorkspace:
         all_file_data = []
         for workspace in workspaces:
             instance = await self.get_workspace_instance(workspace)
-            result = await instance.get_reading_order_tool(files, symbols)
+            result = await instance.get_reading_order_tool(
+                files,
+                symbols,
+                workspace_path=str(workspace),
+            )
             import json
             if isinstance(result, str):
                 result = json.loads(result)
@@ -497,7 +521,10 @@ class SerenaMultiWorkspace:
         results = []
         for workspace in workspaces:
             instance = await self.get_workspace_instance(workspace)
-            result = await instance.find_test_file_tool(file_path)
+            result = await instance.find_test_file_tool(
+                file_path,
+                workspace_path=str(workspace),
+            )
             import json
             if isinstance(result, str):
                 result = json.loads(result)

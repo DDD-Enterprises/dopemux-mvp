@@ -17,10 +17,10 @@ from datetime import datetime
 import asyncio
 
 class SerenaClient:
-    \"\"\"
+    """
     Client for Serena LSP integration with Working Memory Assistant.
     Captures code navigation context, cursor positions, and file state.
-    \"\"\"
+    """
 
     def __init__(self, base_url: str = None, api_key: str = None):
         self.base_url = base_url or "http://localhost:3005"  # Default Serena port
@@ -37,7 +37,7 @@ class SerenaClient:
         await self.client.aclose()
 
     async def capture_code_context(self, file_path: str, cursor_line: int = None, cursor_column: int = None) -> Optional[Dict[str, Any]]:
-        \"\"\"
+        """
         Capture comprehensive code context for a file including LSP information.
 
         Args:
@@ -47,103 +47,103 @@ class SerenaClient:
 
         Returns:
             Code context with LSP information
-        \"\"\"
+        """
         try:
             payload = {
-                \"file_path\": file_path,
-                \"cursor_line\": cursor_line,
-                \"cursor_column\": cursor_column,
-                \"include_context\": True,
-                \"include_symbols\": True,
-                \"include_references\": False  # Too heavy for snapshots
+                "file_path": file_path,
+                "cursor_line": cursor_line,
+                "cursor_column": cursor_column,
+                "include_context": True,
+                "include_symbols": True,
+                "include_references": False  # Too heavy for snapshots
             }
 
-            response = await self.client.post(f\"{self.base_url}/lsp/context\", json=payload)
+            response = await self.client.post(f"{self.base_url}/lsp/context", json=payload)
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logger.error(f\"Serena context capture failed: {e}\")
+            logger.error(f"Serena context capture failed: {e}")
             # Return basic fallback context
             return {
-                \"file_path\": file_path,
-                \"cursor_position\": {\"line\": cursor_line, \"column\": cursor_column},
-                \"fallback\": True,
-                \"error\": str(e)
+                "file_path": file_path,
+                "cursor_position": {"line": cursor_line, "column": cursor_column},
+                "fallback": True,
+                "error": str(e)
             }
 
     async def get_file_symbols(self, file_path: str) -> Optional[List[Dict[str, Any]]]:
-        \"\"\"Get symbols (functions, classes, variables) in a file\"\"\"
+        """Get symbols (functions, classes, variables) in a file"""
         try:
-            response = await self.client.get(f\"{self.base_url}/lsp/symbols\", params={\"file_path\": file_path})
+            response = await self.client.get(f"{self.base_url}/lsp/symbols", params={"file_path": file_path})
             response.raise_for_status()
-            return response.json().get(\"symbols\", [])
+            return response.json().get("symbols", [])
         except Exception as e:
-            logger.error(f\"Serena symbols retrieval failed: {e}\")
+            logger.error(f"Serena symbols retrieval failed: {e}")
             return []
 
     async def get_navigation_history(self, user_id: str, limit: int = 10) -> List[Dict[str, Any]]:
-        \"\"\"Get recent navigation history for user\"\"\"
+        """Get recent navigation history for user"""
         try:
-            response = await self.client.get(f\"{self.base_url}/navigation/history/{user_id}\",
-                                           params={\"limit\": limit})
+            response = await self.client.get(f"{self.base_url}/navigation/history/{user_id}",
+                                           params={"limit": limit})
             response.raise_for_status()
-            return response.json().get(\"history\", [])
+            return response.json().get("history", [])
         except Exception as e:
-            logger.error(f\"Serena navigation history failed: {e}\")
+            logger.error(f"Serena navigation history failed: {e}")
             return []
 
     async def analyze_code_complexity(self, file_path: str, code_snippet: str = None) -> Optional[Dict[str, Any]]:
-        \"\"\"Analyze code complexity using Serena's LSP analysis\"\"\"
+        """Analyze code complexity using Serena's LSP analysis"""
         try:
             payload = {
-                \"file_path\": file_path,
-                \"code_snippet\": code_snippet
+                "file_path": file_path,
+                "code_snippet": code_snippet
             }
-            response = await self.client.post(f\"{self.base_url}/analysis/complexity\", json=payload)
+            response = await self.client.post(f"{self.base_url}/analysis/complexity", json=payload)
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logger.error(f\"Serena complexity analysis failed: {e}\")
+            logger.error(f"Serena complexity analysis failed: {e}")
             return None
 
     async def find_similar_code(self, query: str, file_path: str = None, limit: int = 5) -> List[Dict[str, Any]]:
-        \"\"\"Find similar code patterns using semantic search\"\"\"
+        """Find similar code patterns using semantic search"""
         try:
             payload = {
-                \"query\": query,
-                \"file_path\": file_path,
-                \"limit\": limit
+                "query": query,
+                "file_path": file_path,
+                "limit": limit
             }
-            response = await self.client.post(f\"{self.base_url}/search/similar\", json=payload)
+            response = await self.client.post(f"{self.base_url}/search/similar", json=payload)
             response.raise_for_status()
-            return response.json().get(\"results\", [])
+            return response.json().get("results", [])
         except Exception as e:
-            logger.error(f\"Serena similar code search failed: {e}\")
+            logger.error(f"Serena similar code search failed: {e}")
             return []
 
     async def get_project_structure(self, project_root: str) -> Optional[Dict[str, Any]]:
-        \"\"\"Get project structure and file relationships\"\"\"
+        """Get project structure and file relationships"""
         try:
-            response = await self.client.get(f\"{self.base_url}/project/structure\",
-                                           params={\"root_path\": project_root})
+            response = await self.client.get(f"{self.base_url}/project/structure",
+                                           params={"root_path": project_root})
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            logger.error(f\"Serena project structure failed: {e}\")
+            logger.error(f"Serena project structure failed: {e}")
             return None
 
 # Global client instance
 _serena_client = None
 
 def get_serena_client() -> SerenaClient:
-    \"\"\"Get global Serena client instance\"\"\"
+    """Get global Serena client instance"""
     global _serena_client
     if _serena_client is None:
         _serena_client = SerenaClient()
     return _serena_client
 
 async def close_serena_client():
-    \"\"\"Close global Serena client\"\"\"
+    """Close global Serena client"""
     global _serena_client
     if _serena_client:
         await _serena_client.client.aclose()
@@ -151,10 +151,10 @@ async def close_serena_client():
 
 # Integration functions for WMA
 async def capture_serena_context_for_snapshot(user_id: str, file_path: str = None, cursor_line: int = None, cursor_column: int = None) -> Dict[str, Any]:
-    \"\"\"
+    """
     Capture Serena LSP context for WMA snapshot creation.
     Returns comprehensive code context including cursor position, symbols, and navigation state.
-    \"\"\"
+    """
     client = get_serena_client()
 
     # Get current file context if available
@@ -171,20 +171,20 @@ async def capture_serena_context_for_snapshot(user_id: str, file_path: str = Non
         symbols = await client.get_file_symbols(file_path)
 
     serena_context = {
-        \"captured_at\": datetime.now().isoformat(),
-        \"code_context\": code_context,
-        \"navigation_history\": nav_history,
-        \"file_symbols\": symbols,
-        \"available\": code_context is not None
+        "captured_at": datetime.now().isoformat(),
+        "code_context": code_context,
+        "navigation_history": nav_history,
+        "file_symbols": symbols,
+        "available": code_context is not None
     }
 
     return serena_context
 
 async def enhance_snapshot_with_serena(snapshot: Dict[str, Any], user_id: str) -> Dict[str, Any]:
-    \"\"\"
+    """
     Enhance a WMA snapshot with Serena LSP context.
     Adds code navigation state, cursor positions, and symbol information.
-    \"\"\"
+    """
     try:
         # Extract file information from snapshot
         active_focus = snapshot.get('active_focus', {})
@@ -213,15 +213,15 @@ async def enhance_snapshot_with_serena(snapshot: Dict[str, Any], user_id: str) -
     return snapshot
 
 async def restore_serena_context(serena_context: Dict[str, Any]) -> Dict[str, Any]:
-    \"\"\"
+    """
     Restore code navigation context using Serena data.
     Provides information for cursor positioning and file state restoration.
-    \"\"\"
+    """
     restoration_info = {
-        \"cursor_restoration\": {},
-        \"file_state\": {},
-        \"navigation_suggestions\": [],
-        \"available\": False
+        "cursor_restoration": {},
+        "file_state": {},
+        "navigation_suggestions": [],
+        "available": False
     }
 
     try:
