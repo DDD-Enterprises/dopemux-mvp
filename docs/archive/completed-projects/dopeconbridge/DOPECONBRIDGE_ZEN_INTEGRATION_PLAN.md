@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dopeconbridge_Zen_Integration_Plan (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # DopeconBridge: Zen Integration Master Plan
 
@@ -115,12 +119,12 @@ All services MUST use DopeconBridge for cross-plane communication:
    from services.shared.dopecon_bridge_client import DopeconBridgeClient
    ```
 
-2. **Initialize:**
+1. **Initialize:**
    ```python
    bridge = DopeconBridgeClient.from_env()
    ```
 
-3. **Use bridge methods:**
+2. **Use bridge methods:**
    - Events: `bridge.publish_event(...)`
    - PM routing: `bridge.route_pm(...)`
    - Cognitive routing: `bridge.route_cognitive(...)`

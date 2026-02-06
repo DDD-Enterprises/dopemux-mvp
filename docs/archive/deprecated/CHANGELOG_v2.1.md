@@ -5,6 +5,9 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Changelog_V2.1 (explanation) for dopemux documentation and developer workflows.
 ---
 # Dopemux MVP v2.1 - Comprehensive Changelog
 
@@ -381,24 +384,24 @@ conport = ConPortClient(workspace_id)  # Auto-detects backend
 
 ### Short-Term (Weeks 2-4)
 
-3. **Agent Integration** (Phase 2):
+1. **Agent Integration** (Phase 2):
    - Redis Streams event bus
    - 6-agent integration
    - Cross-agent insights
 
-4. **Performance & Reliability** (Phase 3):
+2. **Performance & Reliability** (Phase 3):
    - Multi-tier caching
    - Rate limiting
    - Monitoring (Prometheus + Grafana)
 
 ### Medium-Term (Weeks 5-8)
 
-5. **ADHD UX** (Phase 4):
+1. **ADHD UX** (Phase 4):
    - Adaptive UI components
    - Decision health scoring
    - Cognitive load forecasting
 
-6. **Testing & Deployment** (Phases 5-6):
+2. **Testing & Deployment** (Phases 5-6):
    - 200+ comprehensive tests
    - Production Docker stack
    - User acceptance testing

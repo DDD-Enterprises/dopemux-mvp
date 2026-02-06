@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Mcp_Token_Limit_Fix_Summary (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # MCP Token Limit Fix - Complete Summary
 
@@ -260,14 +264,14 @@ cd docker/mcp-servers/desktop-commander
 3. ✅ Desktop-Commander validation (DONE - Decision #140)
 
 ### Phase 2: Medium Risk (Week 2) ✅ COMPLETE
-4. ✅ ConPort bulk query truncation (DONE - Decision #141)
-5. ✅ Zen multi-step response budgeting (DONE - Decision #142)
+1. ✅ ConPort bulk query truncation (DONE - Decision #141)
+2. ✅ Zen multi-step response budgeting (DONE - Decision #142)
 
 ### Phase 3: Hardening (Week 3) ✅ COMPLETE
-6. ✅ GPT-Researcher report truncation (DONE - Decision #143)
-7. ✅ Leantime-Bridge list truncation (DONE - Decision #144)
-8. 🔄 Create shared `mcp_response_budget` utility (Future)
-9. 🔄 Document MCP token budgeting best practices (Future)
+1. ✅ GPT-Researcher report truncation (DONE - Decision #143)
+2. ✅ Leantime-Bridge list truncation (DONE - Decision #144)
+3. 🔄 Create shared `mcp_response_budget` utility (Future)
+4. 🔄 Document MCP token budgeting best practices (Future)
 
 **Completion**: **7/9 items complete** (78% - core fixes 100% ✅)
 

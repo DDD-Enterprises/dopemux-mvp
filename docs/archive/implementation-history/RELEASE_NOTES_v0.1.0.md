@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Release_Notes_V0.1.0 (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Dopemux v0.1.0 - Initial Public Alpha Release
 

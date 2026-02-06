@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dopeconbridge_Executive_Summary (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # DopeconBridge Refactor - Executive Summary
 
@@ -100,11 +104,11 @@ All endpoints enforce cognitive plane authority for writes.
 5. **GPT-Researcher** - Research state, findings
 
 ### Pending Migration 🔄
-6. **agents/cognitive_guardian.py** - ConPort references
-7. **agents/memory_agent_conport.py** - Direct access
-8. **orchestrator/src/context_protocol.py** - ConPort imports
-9. **orchestrator/src/conversation_manager.py** - ConPort refs
-10. **genetic_agent/** - Multiple files
+1. **agents/cognitive_guardian.py** - ConPort references
+2. **agents/memory_agent_conport.py** - Direct access
+3. **orchestrator/src/context_protocol.py** - ConPort imports
+4. **orchestrator/src/conversation_manager.py** - ConPort refs
+5. **genetic_agent/** - Multiple files
 
 ### Legacy/Experimental (Documented as Not Bridge-Safe) 📝
 - `ml-risk-assessment` - Experimental

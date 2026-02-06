@@ -5,6 +5,9 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Unfinished_Work (explanation) for dopemux documentation and developer workflows.
 ---
 # Unfinished Work - Multi-Workspace Integration
 
@@ -255,6 +258,7 @@ results = await query_across_workspaces(
 ## 📊 Summary - Unfinished Work
 
 ### Serena
+
 | Item | Priority | Effort | Status |
 |------|----------|--------|--------|
 | LSP per workspace | LOW | 1-2h | Optional |
@@ -264,6 +268,7 @@ results = await query_across_workspaces(
 **Total**: 3.5-5.5 hours of polish work
 
 ### ConPort_KG
+
 | Item | Priority | Effort | Status |
 |------|----------|--------|--------|
 | Overview queries | HIGH | 1-2h | Core functionality |

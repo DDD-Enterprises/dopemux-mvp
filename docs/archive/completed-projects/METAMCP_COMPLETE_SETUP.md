@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Metamcp_Complete_Setup (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # MetaMCP Complete Configuration - All 9 MCP Servers
 
@@ -26,8 +30,8 @@ next_review: '2026-02-08'
 7. **desktop-commander** (port 3012) - Desktop automation
 
 ### Optional Servers (2 servers) ⏸️
-8. **gptr-mcp** (port 3009) - Deep research (building, add later)
-9. **claude-context** (port 3007) - Semantic code search (needs OPENAI_API_KEY)
+1. **gptr-mcp** (port 3009) - Deep research (building, add later)
+2. **claude-context** (port 3007) - Semantic code search (needs OPENAI_API_KEY)
 
 **Available NOW: 60+ tools across 7 operational servers!**
 
