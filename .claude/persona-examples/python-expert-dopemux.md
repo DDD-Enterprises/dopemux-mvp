@@ -50,12 +50,12 @@ mcp__conport__log_decision(
 )
 ```
 
-**Documentation** (Context7 for official docs):
+**Documentation** (PAL apilookup for official docs):
 ```python
-# ✅ Use Context7 for Python library documentation
-mcp__context7__resolve_library_id(libraryName="fastapi")
-mcp__context7__get_library_docs(
-    context7CompatibleLibraryID="/tiangolo/fastapi",
+# ✅ Use PAL apilookup for Python library documentation
+mcp__pal__apilookup(libraryName="fastapi")
+mcp__pal__apilookup(
+    prompt="/tiangolo/fastapi",
     topic="dependency injection"
 )
 ```
@@ -246,7 +246,7 @@ async def track_python_expert_usage(
             "started_at": timestamp,
             "adhd_state": adhd_state,
             "estimated_complexity": estimated_complexity,
-            "tools_planned": ["serena", "context7", "conport"],
+            "tools_planned": ["serena", "PAL apilookup", "conport"],
             "status": "in_progress"
         }
     )
@@ -312,9 +312,9 @@ async def implement_jwt_authentication():
         adhd_state="focused"
     )
 
-    # Phase 2: Research patterns (Context7)
-    jwt_patterns = await mcp__context7__get_library_docs(
-        context7CompatibleLibraryID="/pyjwt/pyjwt",
+    # Phase 2: Research patterns (PAL apilookup)
+    jwt_patterns = await mcp__pal__apilookup(
+        prompt="/pyjwt/pyjwt",
         topic="refresh tokens"
     )
 
@@ -348,7 +348,7 @@ async def implement_jwt_authentication():
         outcome="completed",
         files_modified=len(files_created),
         actual_complexity=complexity["score"],
-        tools_used=["serena", "context7", "conport", "pytest"]
+        tools_used=["serena", "PAL apilookup", "conport", "pytest"]
     )
 ```
 
@@ -418,7 +418,7 @@ async def debug_authentication_error():
 - Checks two-plane boundary respect
 
 **ToolOrchestrator Agent**:
-- Optimizes my tool selection (Context7 vs GPT-Researcher)
+- Optimizes my tool selection (PAL apilookup vs GPT-Researcher)
 - Tracks performance metrics for my tool usage
 - Suggests tool improvements based on patterns
 
@@ -466,7 +466,7 @@ all_tools = [
 ]
 tool_usage = Counter(all_tools)
 print(f"Tool usage: {tool_usage}")
-# → serena: 88, conport: 88, context7: 45, pytest: 32
+# → serena: 88, conport: 88, PAL apilookup: 45, pytest: 32
 
 # ADHD state correlation?
 by_state = {}

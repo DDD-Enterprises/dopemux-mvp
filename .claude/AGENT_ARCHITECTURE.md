@@ -60,7 +60,7 @@
                  │
 ┌────────────────▼────────────────────────────────────────────────┐
 │  Layer 4: Tools (MCP Servers)                                    │
-│  Zen, ConPort, Serena, Context7, GPT-Researcher, Exa,            │
+│  Zen, ConPort, Serena, PAL apilookup, GPT-Researcher, Exa,            │
 │  Magic, Playwright, DopeconBridge, Leantime API             │
 └──────────────────────────────────────────────────────────────────┘
 ```
@@ -326,7 +326,7 @@ async def handle_task(task: Task):
 
     # Returns: {
     #   "analysis": {"primary": "zen", "method": "thinkdeep", "model": "gpt-5"},
-    #   "documentation": {"primary": "context7", "fallback": "exa"},
+    #   "documentation": {"primary": "PAL apilookup", "fallback": "exa"},
     #   "code_nav": {"primary": "serena", "fallback": None}  # Required
     # }
 
@@ -405,13 +405,13 @@ if readiness.ready:
         "language": "python",
         "complexity": 0.6
     })
-    # → Returns: Serena (code), Context7 (docs), Zen (analysis)
+    # → Returns: Serena (code), PAL apilookup (docs), Zen (analysis)
 
     # 5. Claude (as Python Expert) implements
     # Uses Python Expert tool preferences:
     # - Serena for code navigation
     # - ConPort for decision logging
-    # - Context7 for JWT patterns
+    # - PAL apilookup for JWT patterns
 
     code = await implement_with_tools(tools)
 
@@ -438,7 +438,7 @@ For personas to work effectively with agents, each needs:
    ```markdown
    - Code navigation → Serena MCP (NEVER bash)
    - Decisions → ConPort (ALWAYS log)
-   - Documentation → Context7 (official docs)
+   - Documentation → PAL apilookup (official docs)
    ```
 
 2. **Two-Plane Awareness** (for TwoPlaneOrchestrator routing):

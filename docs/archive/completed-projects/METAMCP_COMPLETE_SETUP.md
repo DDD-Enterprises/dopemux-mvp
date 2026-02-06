@@ -18,7 +18,7 @@ next_review: '2026-02-08'
 
 ### Currently Running & Ready (7 servers) ✅
 1. **conport** (port 3004) - Decision logging, knowledge graph (25+ tools)
-2. **context7** (port 3002) - External library documentation (2 tools)
+2. **pal** (port 3003) - External library documentation (2 tools)
 3. **zen** (port 3003) - Multi-model orchestration (7 tools)
 4. **serena** (port 3006) - Code navigation & LSP (26 tools)
 5. **mas-sequential-thinking** (stdio) - Multi-step reasoning (via docker exec)
@@ -52,15 +52,15 @@ Args (one per line):
   @-
 ```
 
-### Server 2: context7 ✅ Running
+### Server 2: pal ✅ Running
 ```
-Name: context7
+Name: pal
 Type: STDIO
 Command: curl
 Args:
   -X
   POST
-  http://localhost:3002/mcp
+  http://localhost:3003/mcp
   -H
   Content-Type: application/json
   -d
@@ -186,28 +186,28 @@ Note: Add your OPENAI_API_KEY to .env, then: docker-compose -f docker-compose.un
 
 ### Namespace 1: dopemux-quickfix (ADHD Scattered State)
 **Tools:** 8 carefully selected
-**Servers:** conport, serena, context7
+**Servers:** conport, serena, pal
 
 **Purpose:** 5-15 min quick wins, minimal cognitive load
 **Use when:** Scattered attention, need momentum
 
 ### Namespace 2: dopemux-act (Implementation Mode)
 **Tools:** 10 implementation-focused
-**Servers:** conport, serena, context7, zen, mas-sequential-thinking, desktop-commander
+**Servers:** conport, serena, pal, zen, mas-sequential-thinking, desktop-commander
 
 **Purpose:** Coding, debugging, testing, refactoring
 **Use when:** Focused to hyperfocus states
 
 ### Namespace 3: dopemux-plan (Strategic Planning)
 **Tools:** 9 strategic thinking tools
-**Servers:** conport, zen, mas-sequential-thinking, context7, gptr-mcp, exa
+**Servers:** conport, zen, mas-sequential-thinking, pal, gptr-mcp, exa
 
 **Purpose:** Sprint planning, architecture, ADRs
 **Use when:** Strategic thinking sessions
 
 ### Namespace 4: dopemux-research (Deep Investigation)
 **Tools:** 10 research tools
-**Servers:** conport, gptr-mcp, exa, context7, zen, mas-sequential-thinking
+**Servers:** conport, gptr-mcp, exa, pal, zen, mas-sequential-thinking
 
 **Purpose:** Learning frameworks, technical research
 **Use when:** Deep investigation mode
@@ -366,19 +366,19 @@ The CLI applies the matching profile, rewrites Claude settings, and warns if sup
 ### QUICKFIX Mode (8 tools) - Phase 1A Ready Now
 **ConPort (3):** log_progress, get_active_context, update_active_context
 **Serena (3):** find_symbol, read_file, get_symbols_overview
-**Context7 (2):** resolve-library-id, get-library-docs
+**PAL apilookup (1):** apilookup
 
 ### ACT Mode (10 tools) - Needs mas-sequential-thinking
 **Serena (6):** find_symbol, find_referencing_symbols, get_symbols_overview, read_file, replace_symbol_body, search_for_pattern
 **ConPort (3):** log_progress, update_progress, get_active_context
 **Zen (2):** debug, codereview
-**Context7 (2):** Both tools
+**PAL apilookup (1):** apilookup
 **Desktop-Commander (optional):** Automation tools
 
 ### PLAN Mode (9 tools) - Needs mas-sequential-thinking, gptr-mcp, exa
 **ConPort (5):** log_decision, get_decisions, search_decisions_fts, log_custom_data, semantic_search
 **Zen (4):** planner, consensus, thinkdeep, chat
-**Context7 (2):** Both tools
+**PAL apilookup (1):** apilookup
 **MAS-Sequential:** reasoning tools
 **Exa:** web search
 **GPTR:** deep research
@@ -386,7 +386,7 @@ The CLI applies the matching profile, rewrites Claude settings, and warns if sup
 ### RESEARCH Mode (10 tools) - Needs gptr-mcp, exa
 **Zen (3):** thinkdeep, chat, consensus
 **ConPort (5):** log_decision, semantic_search, log_custom_data, link_items, get_linked_items
-**Context7 (2):** Both tools
+**PAL apilookup (1):** apilookup
 **GPTR-MCP:** Autonomous research
 **Exa:** Web search
 

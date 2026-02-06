@@ -142,8 +142,7 @@ else
 fi
 
 # MCP Server Status (fast port checks with nc)
-MCP_CONTEXT7="⚠️"   # 📚 Documentation (port 3002)
-MCP_ZEN="⚠️"        # 🧠 Multi-model reasoning (port 3003)
+MCP_PAL="⚠️"        # 📚 PAL apilookup (port 3003)
 MCP_SERENA="⚠️"     # 🔬 Code intelligence (port 3006)
 MCP_DDG="⚠️"        # 📊 Decision Graph (port 3016)
 MCP_DOPE="⚠️"       # 🔎 Semantic Search - via Qdrant (port 6333)
@@ -213,8 +212,7 @@ check_mcp_port() {
 }
 
 # Fast port checks using nc (netcat) - now multi-instance aware
-if context7_port=$(check_mcp_port 2); then MCP_CONTEXT7="📚"; fi
-if zen_port=$(check_mcp_port 3); then MCP_ZEN="🧠"; fi
+if pal_port=$(check_mcp_port 3); then MCP_PAL="📚"; fi
 if serena_port=$(check_mcp_port 6); then MCP_SERENA="🔬"; fi
 if ddg_port=$(check_mcp_port 16); then MCP_DDG="📊"; fi
 if nc -z -w 1 localhost 6333 2>/dev/null; then MCP_DOPE="🔎"; fi

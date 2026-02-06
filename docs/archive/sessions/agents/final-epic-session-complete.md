@@ -123,7 +123,7 @@ Utility (1):
 ```
 
 **Each Persona Has**:
-- Dopemux MCP awareness (Serena, ConPort, Zen, Context7)
+- Dopemux MCP awareness (Serena, ConPort, Zen, PAL apilookup)
 - Two-plane architecture understanding
 - ADHD accommodations (progressive disclosure, breaks)
 - Agent coordination patterns (all 7 agents)

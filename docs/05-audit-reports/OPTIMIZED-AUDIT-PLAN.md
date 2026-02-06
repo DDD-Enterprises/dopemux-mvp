@@ -21,7 +21,7 @@ next_review: '2026-02-08'
 1. **Dope-Context**: Already has 158 code vectors indexed → instant semantic search
 2. **Zen codereview**: Automate 700+ function reviews → manual review only flagged issues
 3. **Serena-v2**: Complexity scoring → prioritize high-risk functions automatically
-4. **Context7**: Validate framework usage → verify React/Next.js patterns instantly
+4. **PAL apilookup**: Validate framework usage → verify React/Next.js patterns instantly
 
 **Key Insight**: Don't manually review what AI can validate. Focus human time on:
 - Architecture violations

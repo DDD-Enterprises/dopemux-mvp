@@ -546,8 +546,8 @@ DopeconBridge| Cross-plane coord      | ⚠️ Incomplete
    - Models: 27 available (OpenAI configured)
    - Version: 9.0.2 (update to 9.0.3 available)
 
-4. **Context7** ✅
-   - 2 tools: resolve-library-id, get-library-docs
+4. **PAL apilookup** ✅
+   - 2 tools: apilookup, apilookup
    - Purpose: Official framework documentation
    - Tested: React library resolution working
 

@@ -43,7 +43,7 @@ next_review: '2026-05-03'
 | conport_kg | ❌ | N/A | ❌ | ❌ | 0 |
 | conport_kg_ui | ❌ | N/A | ❌ | ❌ | 0 |
 | context-switch-tracker | ❌ | N/A | ❌ | ❌ | 0 |
-| context7 | ❌ | N/A | ❌ | ❌ | 0 |
+| pal | ❌ | N/A | ❌ | ❌ | 0 |
 | dddpg | ❌ | N/A | ❌ | ❌ | 0 |
 | dope-context | ❌ | N/A | ❌ | ✅ | 0 |
 | dopecon-bridge | ✅ | 3016 | ✅ | ✅ | 26 |

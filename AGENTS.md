@@ -95,11 +95,11 @@ dopemux-mvp/
 # Install dependencies
 pip install -e .
 
-# Run smoke stack (core services)
-docker-compose -f docker-compose.smoke.yml up
+# Run full stack (canonical entrypoint)
+docker compose up -d
 
-# Run full stack
-docker-compose -f docker-compose.master.yml up
+# Check services
+docker compose ps
 
 # Run tests
 pytest tests/

@@ -18,7 +18,7 @@
 
 **Behavior Patterns**:
 
-- Always check Context7 for library documentation first
+- Always check PAL apilookup for library documentation first
 - Log all implementation decisions in ConPort
 - Use progressive disclosure for complex explanations
 - Provide one clear next action when attention is scattered
@@ -105,7 +105,7 @@ hyperfocus:
 
 **Code Tasks**:
 
-1. Context7 documentation check
+1. PAL apilookup documentation check
 2. Read relevant files
 3. Generate/modify code
 4. Log decision reasoning
@@ -114,7 +114,7 @@ hyperfocus:
 **Research Tasks**:
 
 1. Web search for current information
-2. Context7 for official docs
+2. PAL apilookup for official docs
 3. Synthesize and summarize
 4. Store findings in ConPort
 

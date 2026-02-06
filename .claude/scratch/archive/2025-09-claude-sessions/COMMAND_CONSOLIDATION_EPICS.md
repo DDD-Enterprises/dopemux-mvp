@@ -364,7 +364,7 @@
    - Security persona: Auth, validation, security review
    - QA persona: Test generation
 6. **Phase 3 (from sc:)**: MCP coordination
-   - Context7: Framework patterns (React, Next.js, Vue, Express)
+   - PAL apilookup: Framework patterns (React, Next.js, Vue, Express)
    - Magic: UI component generation for frontend tasks
    - Zen: Analysis for complex features
    - Playwright: E2E test generation
@@ -400,7 +400,7 @@
 3. **Test 3: React component implementation**
    - Frontend persona activated
    - Magic MCP generates UI
-   - Context7 provides React patterns
+   - PAL apilookup provides React patterns
    - Result: Working component code
 
 4. **Test 4: API service implementation**
@@ -411,7 +411,7 @@
 
 5. **Test 5: Full-stack feature**
    - Multi-persona coordination
-   - Context7 + Magic + Zen all used
+   - PAL apilookup + Magic + Zen all used
    - Frontend + Backend integration
    - Result: Complete feature
 
@@ -1423,7 +1423,7 @@
 1. **Functional**: Each command works correctly
 2. **Performance**: Targets met (Type A < 30s, Type B < 5s, Type C handles long)
 3. **ADHD**: Energy matching, sessions, breaks all functional
-4. **Integration**: ConPort, Serena, Zen, Context7, GPT-Researcher, Magic, Playwright
+4. **Integration**: ConPort, Serena, Zen, PAL apilookup, GPT-Researcher, Magic, Playwright
 5. **Error Handling**: Graceful degradation when MCPs unavailable
 
 **Test Matrix** (29 commands × 5 dimensions = 145 test points):

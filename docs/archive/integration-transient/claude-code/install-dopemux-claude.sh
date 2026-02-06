@@ -68,7 +68,7 @@ validate_dopemux_infrastructure() {
 
     # Critical servers that must be running
     local critical_servers=(
-        "localhost:3002"  # context7
+        "localhost:3003"  # pal
         "localhost:3003"  # zen
         "localhost:3005"  # task-master-ai
         "localhost:3010"  # conport-memory
@@ -211,7 +211,7 @@ const commands = {
     description: 'Check health of all MCP servers',
     handler: async () => {
       const servers = [
-        'localhost:3002', 'localhost:3003', 'localhost:3005',
+        'localhost:3003', 'localhost:3003', 'localhost:3005',
         'localhost:3010', 'localhost:3011', 'localhost:3012'
       ];
 

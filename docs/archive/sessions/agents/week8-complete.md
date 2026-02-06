@@ -37,7 +37,7 @@ next_review: '2026-05-03'
    - Debugging → Zen (debug)
    - Code navigation → Serena (find_symbol) - REQUIRED, no fallback
    - Code search → Dope-Context (search_code)
-   - Documentation → Context7 (with Exa fallback)
+   - Documentation → PAL apilookup (with Exa fallback)
    - Web research → Exa (with GPT-Researcher for deep research)
 
 3. **Cost Optimization**
@@ -93,7 +93,7 @@ next_review: '2026-05-03'
 
 5. **test_documentation_with_fallback**
    - Documentation task
-   - Expected: Context7 primary, Exa fallback
+   - Expected: PAL apilookup primary, Exa fallback
    - Result: ✅ PASS
 
 6. **test_task_type_inference**
@@ -141,7 +141,7 @@ code_review      → zen           → N/A
 debugging        → zen           → N/A
 code_navigation  → serena        → REQUIRED (no fallback)
 code_search      → dope-context  → N/A
-documentation    → context7      → exa
+documentation    → pal      → exa
 web_research     → exa           → gpt-researcher
 deep_research    → gpt-researcher → N/A
 ```
@@ -228,7 +228,7 @@ selections = await orchestrator.select_tools_for_task(
 # {
 #   "primary": ToolSelection(zen, thinkdeep, gpt-5),
 #   "code_nav": ToolSelection(serena, find_symbol),
-#   "docs": ToolSelection(context7, get-library-docs, fallback=exa)
+#   "docs": ToolSelection(pal, apilookup, fallback=exa)
 # }
 ```
 

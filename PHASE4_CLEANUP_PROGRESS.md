@@ -81,7 +81,7 @@
 
 ### Issue 4: Missing READMEs (41 total)
 **MCP Servers** (17 missing):
-- claude-context, context7, desktop-commander, exa, leantime-bridge
+- claude-context, pal, desktop-commander, exa, leantime-bridge
 - mcp-server-mas-sequential-thinking, morphllm-fast-apply, pal
 - serena, task-master-ai
 - (7 more)
@@ -229,7 +229,7 @@ python main.py
 
 **Priority MCP Servers** (10 most critical):
 1. `docker/mcp-servers/serena/README.md`
-2. `docker/mcp-servers/context7/README.md`
+2. `docker/mcp-servers/pal/README.md`
 3. `docker/mcp-servers/desktop-commander/README.md`
 4. `docker/mcp-servers/exa/README.md`
 5. `docker/mcp-servers/leantime-bridge/README.md`

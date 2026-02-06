@@ -55,7 +55,7 @@ next_review: '2026-02-08'
 | **GPT-Researcher** | ✅ Fixed | Progressive truncation | **8.2K** ✅ |
 | **Leantime-Bridge** | ✅ Fixed | MCP boundary | **8.7K** ✅ |
 | **Desktop-Commander** | ✅ Safe | File path pattern | **30 tokens** ✅ |
-| Context7 | ✅ Safe | External service | N/A |
+| PAL apilookup | ✅ Safe | External service | N/A |
 
 **System Status**: 🟢 **8/8 servers protected** (100% coverage)
 

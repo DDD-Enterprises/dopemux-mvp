@@ -216,7 +216,7 @@ curl http://localhost:4000/v1/chat/completions \
 - **Role**: Critical Path Infrastructure
 - **Priority**: High
 - **Port**: 4000
-- **Startup Order**: With zen and context7 (first wave)
+- **Startup Order**: With zen and pal (first wave)
 - **Dependencies**: None (standalone proxy)
 - **Dependents**: All services using LLM calls
 

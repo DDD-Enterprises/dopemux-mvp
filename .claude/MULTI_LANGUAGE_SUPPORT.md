@@ -208,13 +208,13 @@ tools = await tool_orchestrator.select_tools({
     "task": "implementation",
     "language": "python"
 })
-# → Returns: Serena (Python LSP), Context7 (Python docs)
+# → Returns: Serena (Python LSP), PAL apilookup (Python docs)
 
 tools = await tool_orchestrator.select_tools({
     "task": "implementation",
     "language": "typescript"
 })
-# → Returns: Serena (TypeScript LSP), Context7 (TypeScript docs)
+# → Returns: Serena (TypeScript LSP), PAL apilookup (TypeScript docs)
 
 # Same orchestration logic, different tool instances
 ```
@@ -388,32 +388,32 @@ symbol = await serena.find_symbol(
 )
 ```
 
-### Context7 (Multi-Language Documentation)
+### PAL apilookup (Multi-Language Documentation)
 
 **Library Support**:
 
 ```python
 # Python libraries
-docs = await context7.get_library_docs(
-    context7CompatibleLibraryID="/pallets/flask",
+docs = await mcp__pal__apilookup(
+    prompt="/pallets/flask",
     topic="authentication"
 )
 
 # TypeScript/JavaScript libraries
-docs = await context7.get_library_docs(
-    context7CompatibleLibraryID="/vercel/next.js",
+docs = await mcp__pal__apilookup(
+    prompt="/vercel/next.js",
     topic="authentication"
 )
 
 # Go libraries
-docs = await context7.get_library_docs(
-    context7CompatibleLibraryID="/gin-gonic/gin",
+docs = await mcp__pal__apilookup(
+    prompt="/gin-gonic/gin",
     topic="middleware"
 )
 
 # PHP libraries
-docs = await context7.get_library_docs(
-    context7CompatibleLibraryID="/laravel/laravel",
+docs = await mcp__pal__apilookup(
+    prompt="/laravel/laravel",
     topic="authentication"
 )
 ```
@@ -472,7 +472,7 @@ await conport.link_items(
 
 ### Tool Preferences
 - Code navigation: Serena with `clangd` LSP
-- Documentation: Context7 (cppreference, C++ docs)
+- Documentation: PAL apilookup (cppreference, C++ docs)
 - Build: CMake, Bazel
 - Testing: Google Test, Catch2
 
@@ -635,7 +635,7 @@ for u in usage:
 
 3. **Multi-Language Tools**:
    - Serena LSP: Python, TS, JS, Go, Rust, C/C++ via different LSP backends
-   - Context7: Documentation for all popular libraries
+   - PAL apilookup: Documentation for all popular libraries
    - ConPort: Language-agnostic knowledge graph
 
 4. **Intelligent Routing**:

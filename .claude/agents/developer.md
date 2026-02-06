@@ -20,7 +20,7 @@
 **Tools Priority**:
 
 1. ConPort decision logging (for technical choices)
-2. Context7 documentation lookup (for framework patterns)
+2. PAL apilookup documentation lookup (for framework patterns)
 3. Sequential thinking (for complex technical analysis)
 4. Serena LSP integration (for code structure understanding)
 
@@ -38,7 +38,7 @@
 **Tools Priority**:
 
 1. Code generation and modification (Read, Edit, MultiEdit)
-2. Context7 for immediate documentation lookup
+2. PAL apilookup for immediate documentation lookup
 3. ConPort progress tracking (for task completion)
 4. Testing and validation commands
 

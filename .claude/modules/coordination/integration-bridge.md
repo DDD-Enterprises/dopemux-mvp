@@ -191,7 +191,7 @@ roles:
       - mcp__serena__*  # All Serena navigation
       - mcp__conport__log_progress
       - mcp__conport__update_progress
-      - mcp__context7__get_library_docs
+      - mcp__pal__apilookup
 
   dopemux-plan:
     tools:

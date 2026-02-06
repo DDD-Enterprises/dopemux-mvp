@@ -34,13 +34,13 @@ Before implementing ANY new feature or using unfamiliar libraries:
 1. **Resolve Library ID**
 
    ```
-   mcp__context7__resolve-library-id "library-name"
+   mcp__pal__apilookup "library-name"
    ```
 
 2. **Get Focused Documentation**
 
    ```
-   mcp__context7__get-library-docs "/org/library" --topic "specific-feature" --tokens 2000
+   mcp__pal__apilookup "/org/library" --topic "specific-feature" --tokens 2000
    ```
 
 3. **Never guess** - always get authoritative documentation first
@@ -71,7 +71,7 @@ This user has ADHD - context loss is devastating:
 
 ### Primary Servers (Always Available)
 
-- **Context7**: Documentation for 10,000+ libraries
+- **PAL apilookup**: Documentation for 10,000+ libraries
 - **ConPort**: ADHD-optimized context & memory
 - **EXA**: High-signal developer research
 
@@ -92,7 +92,7 @@ This user has ADHD - context loss is devastating:
 
 ### Cognitive Load Management
 
-- ✅ Use focused Context7 queries with specific `--topic` and token limits
+- ✅ Use focused PAL apilookup queries with specific `--topic` and token limits
 - ✅ Never overwhelm with too much information at once
 - ✅ Use role-based tool limits to prevent decision paralysis
 - ✅ Store complex information in ConPort rather than keeping in memory
@@ -116,8 +116,8 @@ This user has ADHD - context loss is devastating:
 ### Documentation Access
 
 ```bash
-mcp__context7__resolve-library-id "library-name"
-mcp__context7__get-library-docs "/org/lib" --topic "feature" --tokens 2000
+mcp__pal__apilookup "library-name"
+mcp__pal__apilookup "/org/lib" --topic "feature" --tokens 2000
 ```
 
 ### Context Management
@@ -159,14 +159,14 @@ ps aux | grep python3 | grep start_metamcp
 ### New Feature Development
 
 1. Check current context with ConPort
-2. Get documentation with Context7
+2. Get documentation with PAL apilookup
 3. Log implementation decision
 4. Implement with context preservation
 5. Update progress and store learnings
 
 ### Research Sessions
 
-1. Use focused Context7 queries
+1. Use focused PAL apilookup queries
 2. Store findings in ConPort custom data
 3. Log research decisions and rationale
 4. Maintain structured notes for future reference
@@ -196,7 +196,7 @@ ps aux | grep python3 | grep start_metamcp
 
 ### If Information Overwhelming
 
-- **Use more focused Context7 queries**
+- **Use more focused PAL apilookup queries**
 - **Reduce token limits**
 - **Store information in ConPort instead of displaying**
 - **Switch to simpler role (e.g., developer vs architect)**

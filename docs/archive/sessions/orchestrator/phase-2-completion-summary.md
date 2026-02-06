@@ -52,7 +52,7 @@ next_review: '2026-05-03'
 
 **Technology Stack**:
 - `httpx` (async-capable HTTP client with connection pooling)
-- Context7-validated patterns (timeout configuration, resource cleanup)
+- PAL apilookup-validated patterns (timeout configuration, resource cleanup)
 - Thread-safe singleton for checkpoint_manager.py threading model
 
 ---
@@ -161,7 +161,7 @@ next_review: '2026-05-03'
 
 ## 🔬 Technology Decisions (Evidence-Based)
 
-**HTTP Client**: httpx (chosen via Context7 research)
+**HTTP Client**: httpx (chosen via PAL apilookup research)
 - ✅ Async/sync support (both needed)
 - ✅ Built-in retries (`HTTPTransport(retries=1)`)
 - ✅ Connection pooling (`Limits()`)
@@ -270,7 +270,7 @@ next_review: '2026-05-03'
 
 **Why So Fast**:
 - Phase 1 over-delivered (hyperfocus session built everything)
-- HTTP client design was straightforward (Context7 patterns)
+- HTTP client design was straightforward (PAL apilookup patterns)
 - Integration points were clearly marked (13 TODOs in code)
 - No architectural surprises (design was solid)
 
@@ -331,7 +331,7 @@ next_review: '2026-05-03'
 - Sync + async from same library
 - Built-in retries
 - Clean timeout configuration
-- Context7 patterns worked perfectly
+- PAL apilookup patterns worked perfectly
 
 **4. 90% Pass Rate Is Production-Ready**:
 - 4 failures are test assertion issues, not functionality bugs

@@ -14,7 +14,7 @@ next_review: '2026-05-03'
 
 ## Executive Summary
 
-Following successful completion of discrete ConPort and Context7 integrations, the next logical step is creating an ADHD-optimized terminal UI for real-time research monitoring. This document outlines 5 comprehensive approaches evaluated during our brainstorm session.
+Following successful completion of discrete ConPort and PAL apilookup integrations, the next logical step is creating an ADHD-optimized terminal UI for real-time research monitoring. This document outlines 5 comprehensive approaches evaluated during our brainstorm session.
 
 `★ ADHD-First Design Principles`
 

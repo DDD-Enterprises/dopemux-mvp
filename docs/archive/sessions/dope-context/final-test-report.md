@@ -64,7 +64,7 @@ Dope-context semantic search system has been comprehensively indexed, tested, an
 ✅ **AST-Aware Chunking** (`src/preprocessing/code_chunker.py:96`)
 - **Issue**: tree-sitter v0.21.3 incompatible with `Language()` wrapper
 - **Solution**: Upgraded to tree-sitter v0.25.2
-- **Fix**: `Language(tspython.language())` pattern from Context7
+- **Fix**: `Language(tspython.language())` pattern from PAL apilookup
 - **Result**:
   - ✅ Function/class/method detection working
   - ✅ Semantic boundaries (not line-based)
@@ -283,8 +283,8 @@ Type: function
 ## 🎓 Key Learnings
 
 ### 1. tree-sitter Version Compatibility
-- **v0.21.x**: Different `Language()` API (incompatible with Context7 examples)
-- **v0.25.2**: Matches Context7 docs, `Language(capsule)` works
+- **v0.21.x**: Different `Language()` API (incompatible with PAL apilookup examples)
+- **v0.25.2**: Matches PAL apilookup docs, `Language(capsule)` works
 - **Solution**: Always use `tree-sitter>=0.25.2` for modern API
 - **Pattern**: `Language(tspython.language())` → `Parser(lang)` → `parse(bytes)`
 

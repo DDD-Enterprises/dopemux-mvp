@@ -256,7 +256,7 @@ After Week 5:
 **Day 3: MCP Tool Preference Validation** (2 focus blocks)
 - Check Serena for code (not bash)
 - Check ConPort for decisions
-- Check Context7 for docs
+- Check PAL apilookup for docs
 - Complexity: 0.4, Energy: Medium
 
 **Day 4: ADHD Constraint Validation** (2 focus blocks)
@@ -301,7 +301,7 @@ After Week 5:
 
 **Day 4: MCP Server Selection** (2 focus blocks)
 - Code -> Serena (required)
-- Docs -> Context7 vs Exa vs GPT-Researcher
+- Docs -> PAL apilookup vs Exa vs GPT-Researcher
 - Analysis -> Zen tools
 - Complexity: 0.5, Energy: Medium
 
@@ -466,7 +466,7 @@ After Week 5:
 **Personas**: system-architect, quality-engineer, root-cause-analyst, frontend-architect, backend-architect, security-engineer, performance-engineer, refactoring-expert
 
 **Enhancement Pattern** (3 hours per persona):
-1. Tool Preferences (Serena, ConPort, Context7)
+1. Tool Preferences (Serena, ConPort, PAL apilookup)
 2. Two-Plane Awareness (Cognitive vs PM)
 3. ADHD Accommodations (progressive disclosure, complexity, breaks)
 4. Usage Tracking (log start/end, outcomes)
@@ -521,7 +521,7 @@ After Week 5:
 
 **Day 2-3: Build MetaMCP Bridge** (4 focus blocks)
 - Translate SuperClaude -> Dopemux MCPs
-  - Context7 -> context7 + claude-context + docrag
+  - PAL apilookup -> pal + claude-context + docrag
   - Sequential -> zen (multi-model)
   - Magic -> morphllm + serena
 - Complexity: 0.7, Energy: High

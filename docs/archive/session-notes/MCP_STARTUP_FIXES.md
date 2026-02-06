@@ -88,7 +88,7 @@ networks:
 ### Service Network Assignments
 
 **Single network** (dopemux-network only):
-- context7, pal, mas-sequential-thinking
+- pal, pal, mas-sequential-thinking
 - task-master-ai, mcp-client, task-orchestrator
 - serena, dopemux-gpt-researcher, exa, dope-context
 - gptr-mcp, desktop-commander
@@ -120,7 +120,7 @@ cd docker/mcp-servers
 **Expected**:
 - ✅ Compose validation passes
 - ℹ️ Skipping Leantime (ENABLE_LEANTIME=0)
-- ✅ Critical servers start (context7, litellm, conport)
+- ✅ Critical servers start (pal, litellm, conport)
 - ✅ No duplicate network errors
 
 ### 3. Test Startup (With Leantime)

@@ -45,7 +45,7 @@ dopeclaude:
   persona_mappings:
     architect:
       role: "architect"
-      tools: ["zen", "sequential-thinking", "context7"]
+      tools: ["zen", "sequential-thinking", "pal"]
       description: "System design and high-level architecture"
       enhanced_capabilities: ["multi-model consensus", "deep reasoning"]
 
@@ -63,7 +63,7 @@ dopeclaude:
 
     security:
       role: "reviewer"
-      tools: ["zen", "sequential-thinking", "context7"]
+      tools: ["zen", "sequential-thinking", "pal"]
       description: "Security analysis and threat modeling"
       enhanced_capabilities: ["systematic review", "consensus validation"]
 
@@ -123,7 +123,7 @@ dopeclaude:
 
     audit:
       role: "reviewer"
-      tools: ["zen", "sequential-thinking", "context7"]
+      tools: ["zen", "sequential-thinking", "pal"]
       consensus: true
       systematic: true
       depth: "comprehensive"
@@ -207,7 +207,7 @@ dopeclaude:
     # Research Commands
     research:
       role: "researcher"
-      tools: ["exa", "context7", "sequential-thinking"]
+      tools: ["exa", "pal", "sequential-thinking"]
       depth: "deep"
       systematic: true
       description: "Comprehensive research with official sources"
@@ -217,7 +217,7 @@ dopeclaude:
 
     document:
       role: "researcher"
-      tools: ["context7", "claude-context"]
+      tools: ["pal", "claude-context"]
       comprehensive: true
       structured: true
       description: "Documentation creation and organization"
@@ -347,7 +347,7 @@ dopeclaude:
       simple_queries: ["claude-context"]
       complex_analysis: ["zen", "sequential-thinking"]
       code_tasks: ["serena", "morphllm-fast-apply"]
-      research_tasks: ["exa", "context7"]
+      research_tasks: ["exa", "pal"]
       planning_tasks: ["task-master-ai"]
 
     fallback_strategy: "graceful_degradation"

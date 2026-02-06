@@ -67,18 +67,18 @@ Cross-plane routing and authority enforcement
 You have access to a **fully operational MCP (Model Context Protocol) ecosystem** with 50+ specialized tools optimized for ADHD developers. This system is your primary resource for documentation, context preservation, research, and task management.
 
 ### **Core MCP Servers Available**
-- **Context7**: Official documentation for 10,000+ libraries (USE FIRST for any coding task)
+- **PAL apilookup**: Official documentation for 10,000+ libraries (USE FIRST for any coding task)
 - **ConPort**: ADHD-optimized context preservation and project memory
 - **EXA**: High-quality developer research and web search
 - **MetaMCP Broker**: Aggregates 9 servers at `localhost:8090`
 
 ### **MANDATORY MCP Usage Patterns**
 
-#### **1. ALWAYS Start with Documentation (Context7)**
-Before implementing ANYTHING new, query Context7 for official documentation:
+#### **1. ALWAYS Start with Documentation (PAL apilookup)**
+Before implementing ANYTHING new, query PAL apilookup for official documentation:
 ```
-mcp__context7__resolve-library-id "library-name"
-mcp__context7__get-library-docs "/org/library" --topic "specific-feature" --tokens 2000
+mcp__pal__apilookup "library-name"
+mcp__pal__apilookup "/org/library" --topic "specific-feature" --tokens 2000
 ```
 
 #### **2. AUTOMATIC ConPort Memory Management**
@@ -184,7 +184,7 @@ The system has ADHD-optimized roles with tool limits:
 - **Architect Role**: 5 tools max, 25k tokens (deep analysis)
 
 ### **ADHD Accommodations - MANDATORY**
-- **Never overwhelm**: Use focused Context7 queries with specific --topic and token limits
+- **Never overwhelm**: Use focused PAL apilookup queries with specific --topic and token limits
 - **Always preserve context**: Use ConPort before/after any interruption
 - **Provide visual progress**: Use ConPort progress tracking for motivation
 - **Make decisions explicit**: Log reasoning in ConPort for future reference
@@ -258,11 +258,11 @@ mcp__conport__get_item_history --workspace_id "/Users/hue/code/dopemux-mvp" --it
 mcp__conport__batch_log_items --workspace_id "/Users/hue/code/dopemux-mvp" --item_type "decision" --items [{"summary": "...", "rationale": "..."}, ...]
 ```
 
-#### **Documentation & Context7**
+#### **Documentation & PAL apilookup**
 ```bash
 # Documentation (always check first for any coding task)
-mcp__context7__resolve-library-id "library-name"
-mcp__context7__get-library-docs "/org/library" --topic "specific-feature" --tokens 2000
+mcp__pal__apilookup "library-name"
+mcp__pal__apilookup "/org/library" --topic "specific-feature" --tokens 2000
 
 # Research (via MetaMCP broker)
 # EXA and other tools available through broker at localhost:8090

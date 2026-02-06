@@ -31,7 +31,7 @@ We're building **4 interconnected UX enhancements** for Dopemux:
 - **Click** - CLI framework (already in use)
 
 **Current State:**
-- ✅ 9 MCP servers running (ConPort, Zen, Serena, Context7, etc.)
+- ✅ 9 MCP servers running (ConPort, Zen, Serena, PAL apilookup, etc.)
 - ✅ Role/persona switching working (`dopemux start --role <role>`)
 - ✅ Status dashboard exists (basic tables)
 - ✅ HYPERFOCUS REVIVAL spec complete (F001-ENHANCED)
