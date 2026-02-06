@@ -1,3 +1,0 @@
-docker/mcp-servers/zen/zen-mcp-server/
-version: 9.0.3
-updated: Wed 15 Oct 2025 21:27:23 PDT
