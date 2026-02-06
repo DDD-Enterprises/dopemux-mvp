@@ -31,14 +31,29 @@ from engines.search.search_orchestrator import SearchStrategy
 MCP_MAX_TOKENS = 10000
 SAFE_TOKEN_BUDGET = 9000  # 10% headroom for safety
 
+# Shared MCP response-budget utilities
+SCRIPT_DIR = os.path.dirname(__file__)
+SERVICES_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
+if SERVICES_ROOT not in sys.path:
+    sys.path.insert(0, SERVICES_ROOT)
+
+try:
+    from shared.mcp.response_budget import (
+        estimate_tokens as shared_estimate_tokens,
+        enforce_dict_token_budget,
+    )
+except ImportError:
+    from services.shared.mcp.response_budget import (  # type: ignore[no-redef]
+        estimate_tokens as shared_estimate_tokens,
+        enforce_dict_token_budget,
+    )
+
 def estimate_tokens(text: str) -> int:
     """
     Conservative token estimation: 1 token ≈ 4 chars.
     Used to enforce MCP 10K token hard limit.
     """
-    if text is None:
-        return 0
-    return len(str(text)) // 4
+    return shared_estimate_tokens(text)
 
 def enforce_token_budget(result: Dict[str, Any], tool_name: str, max_tokens: int = SAFE_TOKEN_BUDGET) -> Dict[str, Any]:
     """
@@ -57,87 +72,31 @@ def enforce_token_budget(result: Dict[str, Any], tool_name: str, max_tokens: int
         Truncated result dictionary with token budget metadata
     """
     try:
-        # Clean result of None values that could cause JSON serialization issues
-        def clean_for_json(obj):
-            if obj is None:
-                return "None"
-            elif isinstance(obj, dict):
-                return {k: clean_for_json(v) for k, v in obj.items()}
-            elif isinstance(obj, list):
-                return [clean_for_json(item) for item in obj]
-            elif isinstance(obj, (str, int, float, bool)):
-                return obj
-            else:
-                return str(obj)
+        current_tokens = estimate_tokens(json.dumps(result, indent=2))
+    except Exception:
+        current_tokens = 0
 
-        # Clean the result
-        clean_result = clean_for_json(result)
+    truncated = enforce_dict_token_budget(
+        result=result,
+        tool_name=tool_name,
+        max_tokens=max_tokens,
+        max_results=5,
+        max_sources=10,
+        max_findings=5,
+        max_answer_chars=1000,
+        max_summary_chars=2000,
+    )
 
-        # Estimate current token usage
-        result_json = json.dumps(clean_result, indent=2)
-        current_tokens = estimate_tokens(result_json)
-    except Exception as e:
-        logger.error(f"Error in token budget enforcement: {e}")
-        # Return a safe minimal response
-        return {
-            'error': f'Token budget enforcement failed: {str(e)}',
-            'tool_name': tool_name,
-            '_token_budget_failed': True
-        }
-
-    # If under budget, return as-is
-    if current_tokens <= max_tokens:
-        logger.info(f"Tool {tool_name}: {current_tokens} tokens (under budget)")
-        return result
-
-    logger.warning(f"Tool {tool_name}: {current_tokens} tokens (over {max_tokens} budget) - truncating")
-
-    # Create truncated copy
-    truncated = result.copy()
-
-    # Progressive truncation strategy for research results
-    overhead_tokens = 500  # Reserve for structure
-    available_tokens = max_tokens - overhead_tokens
-
-    # Truncate verbose fields
-    if 'results' in truncated and isinstance(truncated['results'], list):
-        # Truncate individual result answers
-        for r in truncated['results']:
-            if 'answer' in r:
-                r['answer'] = r['answer'][:1000] + "... [truncated]" if len(r['answer']) > 1000 else r['answer']
-
-        # Limit number of results
-        max_results = 5
-        if len(truncated['results']) > max_results:
-            truncated['results'] = truncated['results'][:max_results]
-            truncated['results_truncated'] = True
-            truncated['original_result_count'] = len(result.get('results', []))
-
-    if 'sources' in truncated and isinstance(truncated['sources'], list):
-        # Limit number of sources
-        max_sources = 10
-        if len(truncated['sources']) > max_sources:
-            truncated['sources'] = truncated['sources'][:max_sources]
-            truncated['sources_truncated'] = True
-
-    if 'summary' in truncated and isinstance(truncated['summary'], str):
-        # Truncate summary
-        max_summary_chars = 2000
-        if len(truncated['summary']) > max_summary_chars:
-            truncated['summary'] = truncated['summary'][:max_summary_chars] + "\n\n... [truncated to fit MCP 10K token budget]"
-
-    if 'key_findings' in truncated and isinstance(truncated['key_findings'], list):
-        # Limit key findings
-        max_findings = 5
-        if len(truncated['key_findings']) > max_findings:
-            truncated['key_findings'] = truncated['key_findings'][:max_findings]
-
-    # Add metadata
-    truncated['_token_budget_enforced'] = True
-    truncated['_original_tokens'] = current_tokens
-    truncated['_truncated_tokens'] = estimate_tokens(json.dumps(truncated))
-
-    logger.info(f"Tool {tool_name}: Truncated from {current_tokens} to {truncated['_truncated_tokens']} tokens")
+    if isinstance(truncated, dict) and truncated.get("_token_budget_enforced"):
+        logger.warning(
+            "Tool %s: %s tokens (over %s budget) - truncated to %s tokens",
+            tool_name,
+            truncated.get("_original_tokens", current_tokens),
+            max_tokens,
+            truncated.get("_truncated_tokens"),
+        )
+    else:
+        logger.info("Tool %s: %s tokens (under budget)", tool_name, current_tokens)
 
     return truncated
 
