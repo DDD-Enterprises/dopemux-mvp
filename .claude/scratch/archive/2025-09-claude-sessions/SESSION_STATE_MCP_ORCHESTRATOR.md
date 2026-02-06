@@ -98,7 +98,7 @@
 
 ### Roles (11 Total)
 
-1. researcher - Information gathering with MAS, Exa, Context7
+1. researcher - Information gathering with MAS, Exa, PAL apilookup
 2. implementer - Code generation with Morphllm, Claude-Context
 3. reviewer - Quality assurance with Zen consensus
 4. architect - System design with MAS sequential thinking
@@ -139,7 +139,7 @@
 ### Enhancement Servers (Important)
 
 7. Leantime - Project management
-8. Context7 - Documentation
+8. PAL apilookup - Documentation
 9. Exa - Web research
 10. OpenMemory - Cross-session persistence
 

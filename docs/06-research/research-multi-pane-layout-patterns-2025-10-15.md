@@ -603,7 +603,7 @@ PM Plane (70%)              Cognitive Plane (30%)
 PM Plane (30%)              Cognitive Plane (70%)
 - Current Task              - Code Navigator (Serena LSP)
 - Progress Tracker          - Memory Context
-- Blocker Alerts            - Reference Docs (Context7)
+- Blocker Alerts            - Reference Docs (PAL apilookup)
 ```
 
 **Rationale**: Layout adapts to mode, emphasizing relevant plane

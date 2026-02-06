@@ -55,7 +55,7 @@ Some MCP servers need to know which worktree you're currently in:
 These servers provide global services and don't need worktree awareness:
 
 - **Zen** - Multi-model reasoning (no workspace needed)
-- **Context7** - Framework documentation (global reference)
+- **PAL apilookup** - Framework documentation (global reference)
 - **GPT-Researcher** - Web research (no local files)
 - **Exa** - Neural search (web-based)
 - **Dope-Context** - Semantic code search (may be workspace-aware in future)
@@ -123,7 +123,7 @@ cd /Users/hue/code/your-worktree
 claude mcp add conport /Users/hue/code/dopemux-mvp/scripts/mcp-wrappers/conport-wrapper.sh
 claude mcp add serena /Users/hue/code/dopemux-mvp/scripts/mcp-wrappers/serena-wrapper.sh
 claude mcp add zen -- docker exec -i mcp-zen bash -c "source .venv/bin/activate && python server.py"
-claude mcp add context7 -- npx -y @context7/mcp-server
+claude mcp add PAL apilookup -- npx -y @PAL apilookup/mcp-server
 claude mcp add gpt-researcher -- docker exec -e MCP_TRANSPORT=stdio -i dopemux-mcp-gptr-mcp python /app/server.py
 claude mcp add exa -- uvx exa-mcp
 claude mcp add dope-context /Users/hue/code/dopemux-mvp/services/dope-context/run_mcp.sh

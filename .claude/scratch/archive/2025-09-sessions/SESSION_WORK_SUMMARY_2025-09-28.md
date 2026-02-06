@@ -17,7 +17,7 @@
 **Services Now Operational:**
 - **Infrastructure Layer**: PostgreSQL (5432), Redis Primary (6379), Redis Leantime (6380), MySQL (3306), Milvus (19530)
 - **PM Plane**: LeanTime (8080)
-- **Cognitive Plane**: Context7 (3002), Zen (3003), ConPort (3004), Serena (3006), Claude Context (3007)
+- **Cognitive Plane**: PAL apilookup (3002), Zen (3003), ConPort (3004), Serena (3006), Claude Context (3007)
 - **Coordination**: DopeconBridge (3016) ✅ **NEWLY IMPLEMENTED**
 - **Monitoring**: Redis Commander (8081), Minio Console (9001)
 
@@ -67,7 +67,7 @@
 
 **Our Reality (What We Actually Have - BETTER):**
 - **Zen MCP**: Multi-model orchestration (GPT-5, O3, Gemini simultaneously)
-- **Context7**: Document structure extraction and analysis
+- **PAL apilookup**: Document structure extraction and analysis
 - **Claude Context**: Semantic understanding with vector search (Milvus + VoyageAI)
 - **ConPort**: Learning system with decision memory
 - **DopeconBridge**: Complete task orchestration engine (already built!)
@@ -76,7 +76,7 @@
 
 | **Capability** | **Research Report** | **Our Implementation** | **Advantage** |
 |---|---|---|---|
-| **Document→Tasks** | TaskMaster-AI (broken) | Context7 + Zen Analyze | ✅ Multi-model intelligence |
+| **Document→Tasks** | TaskMaster-AI (broken) | PAL apilookup + Zen Analyze | ✅ Multi-model intelligence |
 | **Task Orchestration** | 37 external tools | DopeconBridge + 5 MCP services | ✅ Internal control |
 | **Intelligence** | Single model | Multi-model consensus | ✅ Superior AI coordination |
 | **Learning** | Static templates | ConPort decision memory | ✅ Adaptive intelligence |
@@ -151,9 +151,9 @@
 
 **Key Insight**: Zen can orchestrate multiple AI models for different aspects of task decomposition - much more sophisticated than single TaskMaster-AI model
 
-### **Context7 MCP - Document Intelligence**
+### **PAL apilookup MCP - Document Intelligence**
 
-**Service**: Upstash Context7 integration via NPX package
+**Service**: Upstash PAL apilookup integration via NPX package
 **Capabilities**: Document structure extraction, API reference processing
 **Potential**: Can parse PRDs, design docs, architecture diagrams for task extraction
 
@@ -192,7 +192,7 @@
 **Our Custom Pipeline:**
 ```
 Document Input →
-Context7 (structure extraction) →
+PAL apilookup (structure extraction) →
 Zen Analyze (systematic understanding) →
 Zen Planner (step-by-step decomposition) →
 Zen Consensus (multi-model validation) →
@@ -214,7 +214,7 @@ LeanTime (ticket creation via bridge)
 ```
 Epic Ticket →
 Zen Analysis (complexity, scope) →
-Context7 (similar patterns) →
+PAL apilookup (similar patterns) →
 DopeconBridge (ADHD-optimized breakdown) →
 Sub-tickets in LeanTime
 ```
@@ -273,7 +273,7 @@ Sub-tickets in LeanTime
 ### **Phase 2: Document Intelligence Pipeline** (2-3 sessions)
 
 **Custom Intelligence Implementation:**
-1. **Context7 Integration**: Document structure extraction from PRDs, designs, diagrams
+1. **PAL apilookup Integration**: Document structure extraction from PRDs, designs, diagrams
 2. **Zen Multi-Model Analysis**: Systematic understanding using Analyze + Planner tools
 3. **Claude Context Semantic Search**: Vector-based pattern matching with previous decompositions
 4. **DopeconBridge Enhancement**: AI-generated tasks with ADHD optimization
@@ -306,9 +306,9 @@ Sub-tickets in LeanTime
 - Only blocked by port mapping fix and API configuration
 
 ### **Document Intelligence Pipeline**: 30% Complete 🔄
-- All required MCP services operational (Context7, Zen, Claude Context)
+- All required MCP services operational (PAL apilookup, Zen, Claude Context)
 - DopeconBridge has template system foundation
-- Need to implement Context7 → Zen → Claude Context workflow
+- Need to implement PAL apilookup → Zen → Claude Context workflow
 
 ### **Advanced AI Features**: 10% Complete 🚀
 - ConPort decision logging ready for learning patterns
@@ -436,7 +436,7 @@ class MCPClientManager:
 **Multi-Model Intelligence Pipeline:**
 ```
 Input Document →
-Context7 (structure) →
+PAL apilookup (structure) →
 Zen Analyze (understanding) →
 Zen Planner (decomposition) →
 Zen Consensus (validation) →
@@ -466,7 +466,7 @@ LeanTime (tracking)
 
 **Document Intelligence Pipeline:**
 - All MCP services operational and accessible
-- Need to implement Context7 → Zen workflow coordination
+- Need to implement PAL apilookup → Zen workflow coordination
 - DopeconBridge template system ready for AI enhancement
 
 ### **🚀 Advanced Features (10% Complete)**
@@ -499,7 +499,7 @@ LeanTime (tracking)
 ### **Development Sessions (2-4)**
 
 1. **Document Intelligence Integration**
-   - Connect Context7 + Zen Analyze for document processing
+   - Connect PAL apilookup + Zen Analyze for document processing
    - Implement Zen Planner for task decomposition
    - Add multi-model consensus validation
 

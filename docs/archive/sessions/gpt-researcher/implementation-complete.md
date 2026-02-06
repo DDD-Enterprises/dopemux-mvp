@@ -213,7 +213,7 @@ services/dopemux-gpt-researcher/
 1. **Exa API** - High-quality search with developer focus
 2. **Tavily API** - Research-optimized search engine
 3. **Perplexity API** - AI-powered search and analysis
-4. **Context7 API** - Documentation and code search
+4. **PAL apilookup API** - Documentation and code search
 
 ### Multi-Engine Orchestration
 
@@ -316,7 +316,6 @@ uvicorn api.main:app --host 0.0.0.0 --port 8000 --workers 4
 export EXA_API_KEY="your-key"
 export TAVILY_API_KEY="your-key"
 export PERPLEXITY_API_KEY="your-key"
-export CONTEXT7_API_KEY="your-key"
 
 # Optional Configuration
 export WORKSPACE_PATH="/path/to/workspace"

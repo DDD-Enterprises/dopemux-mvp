@@ -42,7 +42,7 @@ next_review: '2026-05-03'
 | conport_kg | ❌ | 0 | ❌ | ❌ |
 | conport_kg_ui | ❌ | 0 | ❌ | ❌ |
 | context-switch-tracker | ❌ | 0 | ❌ | ❌ |
-| context7 | ❌ | 0 | ❌ | ❌ |
+| pal | ❌ | 0 | ❌ | ❌ |
 | dddpg | ❌ | 0 | ❌ | ❌ |
 | dope-context | ❌ | 0 | ❌ | ❌ |
 | dopemux-gpt-researcher | ❌ | 0 | ❌ | ❌ |

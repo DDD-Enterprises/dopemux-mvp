@@ -316,7 +316,7 @@ Orchestrator routes to:
 │  │ MEM:  4.2/16GB ██░░░░░░       │  │  │ ✅ ConPort (5455)      2.1ms p95         │ │
 │  │ DISK: 45/500GB ░░░░░░░░       │  │  │ ✅ Serena LSP          78ms p95          │ │
 │  │                              │  │  │ ✅ Zen MCP (3003)      120ms p95         │ │
-│  │ API Usage (Today):           │  │  │ ✅ Context7            -                 │  │
+│  │ API Usage (Today):           │  │  │ ✅ PAL apilookup            -                 │  │
 │  │ OpenAI:  12K/50K tokens      │  │  │ ✅ Exa Search          -                 │  │
 │  │ Anthropic: 8K/100K tokens    │  │  │ ✅ GPT-Researcher      -                 │  │
 │  │ Google: 15K/1M tokens        │  │  │                                          │  │

@@ -353,7 +353,7 @@ next_review: '2026-02-08'
 ## Network Topology
 
 ```
-localhost:3002  - Context7 MCP
+localhost:3003  - PAL apilookup MCP
 localhost:3003  - Zen MCP
 localhost:3006  - Serena MCP
 localhost:3012  - Desktop-Commander MCP

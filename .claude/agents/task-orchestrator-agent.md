@@ -138,7 +138,7 @@ conport_graph_link({
 - **Complex Analysis**: → Zen MCP consensus
 - **Strategic Questions**: → Leantime MCP for project context
 - **Code Search**: → Dope-Context MCP for patterns
-- **External APIs**: → Context7 MCP for documentation
+- **External APIs**: → PAL apilookup MCP for documentation
 
 ## Quality Standards
 

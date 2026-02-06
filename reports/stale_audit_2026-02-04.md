@@ -1,0 +1,7495 @@
+# Stale File Audit Report (2026-02-04)
+
+## Criteria
+- Stale: last modified before 2026-01-05 (over 30 days)
+- Unused: no references found via Python import graph or path string references
+- Action: moved to quarantine (no deletes)
+
+## Summary
+- Files scanned (repo + quarantine): 8707
+- Stale candidates: 5479
+- Referenced Python files detected: 150
+- Restored from quarantine (referenced): 0
+- Newly moved to quarantine (unreferenced): 30
+- Remaining in quarantine: 5440
+- Bytes quarantined: 3969262418
+- Quarantine location: quarantine/2026-02-04
+
+## Restored From Quarantine
+- None
+
+## Newly Quarantined
+- .claude/.DS_Store
+- .claude/modules/.DS_Store
+- .claude/scratch/.DS_Store
+- .claude/scratch/archive/.DS_Store
+- .dopemux/.DS_Store
+- .dopemux/claude-code-router/.DS_Store
+- .dopemux/litellm/.DS_Store
+- .github/.DS_Store
+- .serena/.DS_Store
+- .worktrees/.DS_Store
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/docs/.DS_Store
+- config/.DS_Store
+- context_portal/.DS_Store
+- dashboard/.DS_Store
+- docker/leantime/.DS_Store
+- docker/leantime/app/.DS_Store
+- docker/leantime/app/Plugins/.DS_Store
+- docker/leantime/app/Plugins/Dopemux/.DS_Store
+- docker/leantime/docker/leantime/plugins/Dopemux/.DS_Store
+- docker/leantime/plugins/.DS_Store
+- docker/mcp-servers/.dopemux/.DS_Store
+- docs/04-explanation/.DS_Store
+- docs/04-explanation/architecture/.DS_Store
+- docs/04-explanation/backlog/stories/.DS_Store
+- docs/91-rfc/.DS_Store
+- docs/archive/session-notes/.DS_Store
+- docs/archive/session-notes/2025-10/.DS_Store
+- plugins/Dopemux/.DS_Store
+- src/.DS_Store
+- src/dopemux/.DS_Store
+
+## Remaining In Quarantine
+- .claude-flow/metrics/agent-metrics.json
+- .claude-flow/metrics/performance.json
+- .claude-flow/metrics/task-metrics.json
+- .claude/.DS_Store
+- .claude/commands/adr-new.md
+- .claude/commands/dangerous.md
+- .claude/commands/doc-ensure-frontmatter.md
+- .claude/commands/doc-new.md
+- .claude/commands/docs-helper.md
+- .claude/commands/dx/assess.md
+- .claude/commands/dx/commit.md
+- .claude/commands/dx/load.md
+- .claude/commands/dx/prd-parse.md
+- .claude/commands/dx/save.md
+- .claude/commands/dx/session/break.md
+- .claude/commands/dx/session/end.md
+- .claude/commands/dx/session/resume.md
+- .claude/commands/dx/session/start.md
+- .claude/commands/dx/session/status.md
+- .claude/commands/dx/stats.md
+- .claude/commands/rfc-lint.md
+- .claude/commands/rfc-new.md
+- .claude/commands/rfc-promote.md
+- .claude/commands/safe.md
+- .claude/commands/save.md
+- .claude/commands/security-review.md
+- .claude/config.json
+- .claude/docs/MCP_ConPort.md
+- .claude/docs/MCP_DopeContext.md
+- .claude/docs/MCP_Exa.md
+- .claude/docs/MCP_GPTResearcher.md
+- .claude/docs/MCP_Serena.md
+- .claude/docs/MCP_Zen.md
+- .claude/docs/README.md
+- .claude/docs/STATUSLINE-EXAMPLES.md
+- .claude/docs/STATUSLINE-QUICKREF.md
+- .claude/docs/STATUSLINE.md
+- .claude/modules/.DS_Store
+- .claude/modules/cognitive-plane/conport-memory.md
+- .claude/modules/pm-plane/leantime.md
+- .claude/modules/pm-plane/task-master.md
+- .claude/modules/pm-plane/task-orchestrator.md
+- .claude/modules/shared/adhd-patterns.md
+- .claude/modules/shared/sprint.md
+- .claude/personas/refactoring-expert-dopemux.md
+- .claude/personas/requirements-analyst-dopemux.md
+- .claude/personas/root-cause-analyst-dopemux.md
+- .claude/scratch/.DS_Store
+- .claude/scratch/README.md
+- .claude/scratch/archive/.DS_Store
+- .claude/scratch/archive/2025-09-claude-sessions/SESSION_STATE_DOC_ENFORCEMENT.md
+- .claude/scratch/archive/2025-09-claude-sessions/session_state.md
+- .claude/scratch/archive/2025-09-sessions/CONPORT_STATUS.md
+- .claude/scratch/archive/2025-09-sessions/CRASH_RECOVERY_COMPLETE.md
+- .claude/scratch/archive/2025-09-sessions/DOCUMENTATION_CLEANUP_SUMMARY_2025-09-25.md
+- .claude/scratch/archive/2025-09-sessions/DOCUXTRACTOR_PLANNING_LOG.md
+- .claude/scratch/archive/2025-09-sessions/INTEGRATION_COMPLETE.md
+- .claude/scratch/archive/2025-09-sessions/PHASE3_COMPLETE.md
+- .claude/scratch/archive/2025-09-sessions/SECURITY_FIXES_2025-09-26.md
+- .claude/scratch/archive/2025-09-sessions/SERENA_V2_COMPLETE_SYSTEM_GUIDE.md
+- .claude/scratch/archive/2025-09-sessions/SERENA_V2_COMPLETE_VALIDATION_REPORT.md
+- .claude/scratch/archive/2025-09-sessions/SESSION_CONTEXT_DOCS_PROCESSING.md
+- .claude/scratch/codebase-analysis-2025-10-05-findings.md
+- .claude/scratch/reports/2025-10-04-session-summary.md
+- .claude/scratch/session-handoff-2025-10-05.md
+- .claude/scratch/summaries/2025-10-04-docs-architecture-rules.md
+- .claude/session_log.txt
+- .config/nvim/serena.lua
+- .conport/.gitignore
+- .conport/sessions/import_metadata.json
+- .conport/sessions/session-2025-09-26-conport-installation.json
+- .coveragerc
+- .dopemux/.DS_Store
+- .dopemux/active_profile
+- .dopemux/archive/tasks_archived_2025-10-03/tasks.json
+- .dopemux/attention.json
+- .dopemux/attention/session_20250923_204529.json
+- .dopemux/attention/session_20250926_205934.json
+- .dopemux/claude-code-router/.DS_Store
+- .dopemux/claude-code-router/A/.claude-code-router/.claude-code-router/.claude-code-router.pid
+- .dopemux/claude-code-router/A/.claude-code-router/.claude-code-router/config.json
+- .dopemux/claude-code-router/A/.claude-code-router/api.key
+- .dopemux/claude-code-router/A/.claude-code-router/logs/ccr-20251021002123.log.txt
+- .dopemux/claude-code-router/A/.claude-code-router/logs/ccr-20251025044756.log.txt
+- .dopemux/claude-code-router/A/.claude-code-router/logs/ccr-20251027222230.log.txt
+- .dopemux/claude-code-router/A/.claude-code-router/logs/ccr-20251031155819.log.txt
+- .dopemux/claude-code-router/A/.claude-code-router/logs/ccr-20251103234933.log.txt
+- .dopemux/claude-code-router/A/.claude-code-router/logs/ccr-20251104165303.log.txt
+- .dopemux/claude-code-router/A/.claude-code-router/logs/ccr-20251107164443.log.txt
+- .dopemux/claude-code-router/A/.claude.json
+- .dopemux/config.json
+- .dopemux/context.db
+- .dopemux/context.json
+- .dopemux/dope-brainz-router/A/.claude.json
+- .dopemux/dope-brainz-router/A/.dope-brainz-router/.claude-code-router.pid
+- .dopemux/dope-brainz-router/A/.dope-brainz-router/api.key
+- .dopemux/dope-brainz-router/A/.dope-brainz-router/config.json
+- .dopemux/dope-brainz-router/A/.dope-brainz-router/logs/ccr-20251115185801.log.txt
+- .dopemux/litellm/.DS_Store
+- .dopemux/litellm/A/.litellm_master_key
+- .dopemux/litellm/A/database.url
+- .dopemux/litellm/A/master.key
+- .dopemux/litellm/A/prisma.ready
+- .dopemux/litellm/Abc/database.url
+- .dopemux/litellm/Abc/litellm.config.yaml
+- .dopemux/litellm/Abc/litellm.state
+- .dopemux/litellm/Abc/master.key
+- .dopemux/litellm/Abc/prisma.ready
+- .dopemux/litellm/Z/litellm.config.yaml
+- .dopemux/litellm/Z/master.key
+- .dopemux/litellm/prisma-client/__init__.py
+- .dopemux/litellm/prisma-client/__main__.py
+- .dopemux/litellm/prisma-client/_async_http.py
+- .dopemux/litellm/prisma-client/_base_client.py
+- .dopemux/litellm/prisma-client/_builder.py
+- .dopemux/litellm/prisma-client/_compat.py
+- .dopemux/litellm/prisma-client/_config.py
+- .dopemux/litellm/prisma-client/_constants.py
+- .dopemux/litellm/prisma-client/_fields.py
+- .dopemux/litellm/prisma-client/_metrics.py
+- .dopemux/litellm/prisma-client/_proxy.py
+- .dopemux/litellm/prisma-client/_raw_query.py
+- .dopemux/litellm/prisma-client/_registry.py
+- .dopemux/litellm/prisma-client/_sync_http.py
+- .dopemux/litellm/prisma-client/_transactions.py
+- .dopemux/litellm/prisma-client/_types.py
+- .dopemux/litellm/prisma-client/_typing.py
+- .dopemux/litellm/prisma-client/_vendor/__init__.py
+- .dopemux/litellm/prisma-client/_vendor/lark_schema_parser.py
+- .dopemux/litellm/prisma-client/_vendor/lark_schema_scan_parser.py
+- .dopemux/litellm/prisma-client/actions.py
+- .dopemux/litellm/prisma-client/bases.py
+- .dopemux/litellm/prisma-client/binaries/__init__.py
+- .dopemux/litellm/prisma-client/binaries/constants.py
+- .dopemux/litellm/prisma-client/binaries/platform.py
+- .dopemux/litellm/prisma-client/cli/__init__.py
+- .dopemux/litellm/prisma-client/cli/_node.py
+- .dopemux/litellm/prisma-client/cli/cli.py
+- .dopemux/litellm/prisma-client/cli/commands/__init__.py
+- .dopemux/litellm/prisma-client/cli/commands/dev.py
+- .dopemux/litellm/prisma-client/cli/commands/fetch.py
+- .dopemux/litellm/prisma-client/cli/commands/generate.py
+- .dopemux/litellm/prisma-client/cli/commands/version.py
+- .dopemux/litellm/prisma-client/cli/custom.py
+- .dopemux/litellm/prisma-client/cli/options.py
+- .dopemux/litellm/prisma-client/cli/prisma.py
+- .dopemux/litellm/prisma-client/cli/utils.py
+- .dopemux/litellm/prisma-client/client.py
+- .dopemux/litellm/prisma-client/engine/__init__.py
+- .dopemux/litellm/prisma-client/engine/_abstract.py
+- .dopemux/litellm/prisma-client/engine/_http.py
+- .dopemux/litellm/prisma-client/engine/_query.py
+- .dopemux/litellm/prisma-client/engine/abstract.py
+- .dopemux/litellm/prisma-client/engine/errors.py
+- .dopemux/litellm/prisma-client/engine/http.py
+- .dopemux/litellm/prisma-client/engine/query.py
+- .dopemux/litellm/prisma-client/engine/utils.py
+- .dopemux/litellm/prisma-client/engines/package-lock.json
+- .dopemux/litellm/prisma-client/engines/package.json
+- .dopemux/litellm/prisma-client/enums.py
+- .dopemux/litellm/prisma-client/errors.py
+- .dopemux/litellm/prisma-client/fields.py
+- .dopemux/litellm/prisma-client/generator/__init__.py
+- .dopemux/litellm/prisma-client/generator/_dsl_parser/__init__.py
+- .dopemux/litellm/prisma-client/generator/_dsl_parser/parser.py
+- .dopemux/litellm/prisma-client/generator/_dsl_parser/transformer.py
+- .dopemux/litellm/prisma-client/generator/errors.py
+- .dopemux/litellm/prisma-client/generator/filters.py
+- .dopemux/litellm/prisma-client/generator/generator.py
+- .dopemux/litellm/prisma-client/generator/jsonrpc.py
+- .dopemux/litellm/prisma-client/generator/models.py
+- .dopemux/litellm/prisma-client/generator/schema.py
+- .dopemux/litellm/prisma-client/generator/templates/_header.py.jinja
+- .dopemux/litellm/prisma-client/generator/templates/_pragma.py.jinja
+- .dopemux/litellm/prisma-client/generator/templates/_utils.py.jinja
+- .dopemux/litellm/prisma-client/generator/templates/actions.py.jinja
+- .dopemux/litellm/prisma-client/generator/templates/bases.py.jinja
+- .dopemux/litellm/prisma-client/generator/templates/client.py.jinja
+- .dopemux/litellm/prisma-client/generator/templates/engine/abstract.py.jinja
+- .dopemux/litellm/prisma-client/generator/templates/engine/http.py.jinja
+- .dopemux/litellm/prisma-client/generator/templates/engine/query.py.jinja
+- .dopemux/litellm/prisma-client/generator/templates/enums.py.jinja
+- .dopemux/litellm/prisma-client/generator/templates/http.py.jinja
+- .dopemux/litellm/prisma-client/generator/templates/metadata.py.jinja
+- .dopemux/litellm/prisma-client/generator/templates/models.py.jinja
+- .dopemux/litellm/prisma-client/generator/templates/partials.py.jinja
+- .dopemux/litellm/prisma-client/generator/templates/types.py.jinja
+- .dopemux/litellm/prisma-client/generator/types.py
+- .dopemux/litellm/prisma-client/generator/utils.py
+- .dopemux/litellm/prisma-client/http.py
+- .dopemux/litellm/prisma-client/http_abstract.py
+- .dopemux/litellm/prisma-client/metadata.py
+- .dopemux/litellm/prisma-client/models.py
+- .dopemux/litellm/prisma-client/mypy.py
+- .dopemux/litellm/prisma-client/partials.py
+- .dopemux/litellm/prisma-client/py.typed
+- .dopemux/litellm/prisma-client/schema.prisma
+- .dopemux/litellm/prisma-client/testing.py
+- .dopemux/litellm/prisma-client/types.py
+- .dopemux/litellm/prisma-client/utils.py
+- .dopemux/litellm/prisma-client/validator.py
+- .dopemux/litellm/schema.prisma
+- .dopemux/profile-settings.yaml
+- .dopemux/rollback/registry.json
+- .dopemux/sessions/session-0689a013-6b8c-4162-ab93-493f6a7d95aa.json
+- .dopemux/sessions/session-0bc6a30e-a13a-475b-81c9-0c2cd20bf026.json
+- .dopemux/sessions/session-0caa8a7f-7576-417d-b16f-5595a34ddec3.json
+- .dopemux/sessions/session-11adb804-de6e-4b2a-8bfb-75a40c426be6.json
+- .dopemux/sessions/session-1d91ed74-9253-426f-8162-e3f793346eb5.json
+- .dopemux/sessions/session-1e1cc6ee-ea34-48f3-a05a-3d794dc14f06.json
+- .dopemux/sessions/session-2025-10-03-23-17.json
+- .dopemux/sessions/session-2025-10-04T08-56-00.json
+- .dopemux/sessions/session-2025-10-05T12-10-35Z.json
+- .dopemux/sessions/session-2025-10-16T09-06-14Z.json
+- .dopemux/sessions/session-2025-10-20T070600Z.json
+- .dopemux/sessions/session-20251004-163500.json
+- .dopemux/sessions/session-20251020_001441.json
+- .dopemux/sessions/session-3ac306ce-c907-44a4-b555-2eb187389af5.json
+- .dopemux/sessions/session-3b1c8906-9665-49fd-8785-ad022bdd1305.json
+- .dopemux/sessions/session-485568d8-a5ac-43f9-ad7a-89a244f480ec.json
+- .dopemux/sessions/session-4efec000-3af5-4432-b3ee-9b5124abbe11.json
+- .dopemux/sessions/session-52d6b7a6-d342-45e0-b681-7f917d9408ba.json
+- .dopemux/sessions/session-57b5b49b-5b71-4ed0-b8f1-30907da508fe.json
+- .dopemux/sessions/session-5ed00017-1879-44f9-aa0d-c51f00518c6d.json
+- .dopemux/sessions/session-62b5715a-e7f5-49c8-a8d4-ebc824e4388b.json
+- .dopemux/sessions/session-6e18ee42-6e66-48cd-90bd-de6960230fa3.json
+- .dopemux/sessions/session-70716116-919d-4ac6-9a8c-155c7686c49b.json
+- .dopemux/sessions/session-80f67e84-68e9-485e-96f9-9715f8d6d445.json
+- .dopemux/sessions/session-818da5f3-c5c9-4648-87b0-f168826c4e09.json
+- .dopemux/sessions/session-96d28e21-501c-41b8-ab4c-75cc67517b36.json
+- .dopemux/sessions/session-99fa89f4-dcb3-4880-be9e-494722832497.json
+- .dopemux/sessions/session-9a4558e8-0f6c-4303-9940-9c0b6689babd.json
+- .dopemux/sessions/session-9fe65445-f319-4e43-b1a5-0c9f39175635.json
+- .dopemux/sessions/session-ac33c24d-9c15-475b-86f2-bae44a46af54.json
+- .dopemux/sessions/session-b7d3471a-ff0d-4b8b-877b-4bed3169d509.json
+- .dopemux/sessions/session-bfb75068-77cd-45de-aa57-130c5cffe18f.json
+- .dopemux/sessions/session-d9e0733d-9529-45dd-b1ab-511a394237ec.json
+- .dopemux/sessions/session-f193f433-3467-4316-91b0-7ec1d52c3846.json
+- .dopemux/sessions/session-f4b9dfa4-d7c6-4e29-a969-33847598ec94.json
+- .dopemux/sessions/session-f91f49a9-56b1-4082-b66a-051545a1ac00.json
+- .github/.DS_Store
+- .github/README.md
+- .github/dependabot.yml
+- .github/security-filtering-instructions.txt
+- .github/security-scan-instructions.txt
+- .gitmodules
+- .markdownlint.jsonc
+- .python-version
+- .serena/.DS_Store
+- .sessions/3e99aa93-da34-4344-a456-af660d5d05c2.json
+- .sessions/f647fd12-72b7-4fa2-a1fc-ac8c7e5d1ad0.json
+- .vale.ini
+- .worktrees/.DS_Store
+- .zen-version.txt
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/.coverage
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/.env
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/.env.example
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/adhd_engine.egg-info/PKG-INFO
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/adhd_engine.egg-info/SOURCES.txt
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/adhd_engine.egg-info/dependency_links.txt
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/adhd_engine.egg-info/requires.txt
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/adhd_engine.egg-info/top_level.txt
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/adhd_engine.log
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/.gitignore
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/__init___py.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/activity_tracker_py.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/class_index.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/config_py.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/conport_client_py.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/coverage_html_cb_6fb7b396.js
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/engine_py.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/favicon_32_cb_58284776.png
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/function_index.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/index.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/keybd_closed_cb_ce680311.png
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/main_py.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/models_py.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/status.json
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/style_cb_6b508a39.css
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/z_10fae538ba4e8521___init___py.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/z_10fae538ba4e8521_routes_py.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/z_10fae538ba4e8521_schemas_py.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/z_a44f0ac069e85531___init___py.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/z_a44f0ac069e85531_conftest_py.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/z_a44f0ac069e85531_test_activity_tracker_py.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/htmlcov/z_a44f0ac069e85531_test_engine_py.html
+- SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/server.log
+- SYSTEM_ARCHIVE/db_backups/context_20251024_181418.db
+- SYSTEM_ARCHIVE/db_backups/context_20251024_181432.db
+- SYSTEM_ARCHIVE/db_backups/context_20251024_181450.db
+- SYSTEM_ARCHIVE/logs/ccr/ccr-20251103210547.log
+- SYSTEM_ARCHIVE/logs/ccr/ccr-20251103233103.log
+- SYSTEM_ARCHIVE/logs/ccr/ccr-20251113000123_1.log
+- SYSTEM_ARCHIVE/logs/ccr/ccr-20251114002527_1.log
+- SYSTEM_ARCHIVE/logs/ccr/ccr-20251115004942_1.log
+- SYSTEM_ARCHIVE/logs/ccr/ccr-20251115185713.log
+- SYSTEM_ARCHIVE/logs/ccr/ccr-20251115185801.log
+- SYSTEM_ARCHIVE/logs/ccr/ccr-20251215002231_1.log
+- SYSTEM_ARCHIVE/logs/ccr/ccr-20251216000712_1.log
+- SYSTEM_ARCHIVE/logs/ccr/ccr-20251217001703_1.log
+- SYSTEM_ARCHIVE/logs/ccr/claude-code-router.log
+- SYSTEM_ARCHIVE/logs/ccr/dope-brainz-router.log
+- SYSTEM_ARCHIVE/logs/ccr/litellm-4000.log
+- SYSTEM_ARCHIVE/logs/ccr/litellm.log
+- SYSTEM_ARCHIVE/logs/ccr/prisma.log
+- SYSTEM_ARCHIVE/logs/general/conport.log
+- SYSTEM_ARCHIVE/logs/general/install-errors.log
+- SYSTEM_ARCHIVE/logs/general/install.log
+- SYSTEM_ARCHIVE/logs/general/load_test.log
+- SYSTEM_ARCHIVE/logs/general/mcp-client.log
+- SYSTEM_ARCHIVE/logs/general/mcp_activity.log
+- SYSTEM_ARCHIVE/logs/general/startup.log
+- SYSTEM_ARCHIVE/logs/general/zen-server.log
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.env
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/.gitignore
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/.lock
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/CACHEDIR.TAG
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/activate
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/activate.bat
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/activate.csh
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/activate.fish
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/activate.nu
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/activate.ps1
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/activate_this.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/deactivate.bat
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/distro
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/dotenv
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/httpx
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/jsonschema
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/mcp
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/normalizer
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/openai
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/pip
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/pip3
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/pip3.12
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/pydoc.bat
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/pyrsa-decrypt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/pyrsa-encrypt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/pyrsa-keygen
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/pyrsa-priv2pub
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/pyrsa-sign
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/pyrsa-verify
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/python
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/python3
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/python3.12
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/tqdm
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/uvicorn
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/bin/websockets
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/_virtualenv.pth
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/_virtualenv.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/annotated_types-0.7.0.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/annotated_types-0.7.0.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/annotated_types-0.7.0.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/annotated_types-0.7.0.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/annotated_types-0.7.0.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/annotated_types-0.7.0.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/annotated_types/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/annotated_types/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/annotated_types/test_cases.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio-4.10.0.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio-4.10.0.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio-4.10.0.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio-4.10.0.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio-4.10.0.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio-4.10.0.dist-info/entry_points.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio-4.10.0.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio-4.10.0.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_backends/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_backends/_trio.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/_asyncio_selector_thread.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/_contextmanagers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/_eventloop.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/_exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/_fileio.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/_resources.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/_signals.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/_sockets.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/_streams.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/_subprocesses.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/_synchronization.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/_tasks.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/_tempfile.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/_testing.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/_core/_typedattr.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/abc/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/abc/_eventloop.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/abc/_resources.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/abc/_sockets.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/abc/_streams.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/abc/_subprocesses.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/abc/_tasks.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/abc/_testing.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/from_thread.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/lowlevel.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/pytest_plugin.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/streams/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/streams/buffered.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/streams/file.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/streams/memory.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/streams/stapled.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/streams/text.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/streams/tls.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/to_interpreter.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/to_process.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio/to_thread.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/__init__.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/_cmp.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/_cmp.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/_compat.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/_config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/_funcs.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/_make.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/_next_gen.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/_typing_compat.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/_version_info.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/_version_info.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/converters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/converters.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/exceptions.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/filters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/filters.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/setters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/setters.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/validators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attr/validators.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attrs-25.3.0.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attrs-25.3.0.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attrs-25.3.0.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attrs-25.3.0.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attrs-25.3.0.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attrs-25.3.0.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attrs/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attrs/__init__.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attrs/converters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attrs/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attrs/filters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attrs/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attrs/setters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attrs/validators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/cachetools-5.5.2.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/cachetools-5.5.2.dist-info/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/cachetools-5.5.2.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/cachetools-5.5.2.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/cachetools-5.5.2.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/cachetools-5.5.2.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/cachetools-5.5.2.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/cachetools/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/cachetools/_decorators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/cachetools/func.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/cachetools/keys.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/certifi-2025.8.3.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/certifi-2025.8.3.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/certifi-2025.8.3.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/certifi-2025.8.3.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/certifi-2025.8.3.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/certifi-2025.8.3.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/certifi-2025.8.3.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/certifi/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/certifi/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/certifi/cacert.pem
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/certifi/core.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/certifi/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer-3.4.3.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer-3.4.3.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer-3.4.3.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer-3.4.3.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer-3.4.3.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer-3.4.3.dist-info/entry_points.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer-3.4.3.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer-3.4.3.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer/api.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer/cd.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer/cli/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer/cli/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer/constant.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer/legacy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer/md.cpython-312-darwin.so
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer/md.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer/md__mypyc.cpython-312-darwin.so
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer/models.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer/utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer/version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click-8.2.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click-8.2.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click-8.2.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click-8.2.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click-8.2.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click-8.2.1.dist-info/licenses/LICENSE.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/_compat.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/_termui_impl.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/_textwrap.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/_winconsole.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/core.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/decorators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/formatting.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/globals.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/parser.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/shell_completion.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/termui.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/testing.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click/utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/distro-1.9.0.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/distro-1.9.0.dist-info/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/distro-1.9.0.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/distro-1.9.0.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/distro-1.9.0.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/distro-1.9.0.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/distro-1.9.0.dist-info/entry_points.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/distro-1.9.0.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/distro/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/distro/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/distro/distro.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/distro/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/dotenv/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/dotenv/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/dotenv/cli.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/dotenv/ipython.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/dotenv/main.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/dotenv/parser.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/dotenv/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/dotenv/variables.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/dotenv/version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/_cloud_sdk.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/_credentials_async.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/_credentials_base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/_default.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/_default_async.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/_exponential_backoff.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/_helpers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/_jwt_async.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/_oauth2client.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/_refresh_worker.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/_service_account_info.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/aio/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/aio/_helpers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/aio/credentials.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/aio/transport/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/aio/transport/aiohttp.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/aio/transport/sessions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/api_key.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/app_engine.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/aws.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/compute_engine/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/compute_engine/_metadata.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/compute_engine/credentials.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/credentials.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/crypt/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/crypt/_cryptography_rsa.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/crypt/_helpers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/crypt/_python_rsa.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/crypt/base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/crypt/es256.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/crypt/rsa.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/downscoped.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/environment_vars.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/external_account.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/external_account_authorized_user.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/iam.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/identity_pool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/impersonated_credentials.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/jwt.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/metrics.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/pluggable.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/transport/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/transport/_aiohttp_requests.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/transport/_custom_tls_signer.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/transport/_http_client.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/transport/_mtls_helper.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/transport/_requests_base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/transport/grpc.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/transport/mtls.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/transport/requests.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/transport/urllib3.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/auth/version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_adapters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_api_client.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_api_module.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_automatic_function_calling_util.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_base_transformers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_base_url.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_common.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_extra_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_live_converters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_local_tokenizer_loader.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_mcp_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_operations_converters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_replay_api_client.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_test_api_client.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_tokens_converters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/_transformers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/batches.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/caches.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/chats.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/client.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/errors.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/files.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/live.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/live_music.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/local_tokenizer.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/models.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/operations.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/pagers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/tokens.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/tunings.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/genai/version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/_client.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/_client_async.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/_credentials_async.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/_id_token_async.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/_reauth_async.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/_service_account_async.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/challenges.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/credentials.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/gdch_credentials.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/id_token.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/reauth.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/service_account.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/sts.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/webauthn_handler.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/webauthn_handler_factory.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google/oauth2/webauthn_types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_auth-2.40.3.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_auth-2.40.3.dist-info/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_auth-2.40.3.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_auth-2.40.3.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_auth-2.40.3.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_auth-2.40.3.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_auth-2.40.3.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_genai-1.33.0.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_genai-1.33.0.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_genai-1.33.0.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_genai-1.33.0.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_genai-1.33.0.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_genai-1.33.0.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_genai-1.33.0.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11-0.16.0.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11-0.16.0.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11-0.16.0.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11-0.16.0.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11-0.16.0.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11-0.16.0.dist-info/licenses/LICENSE.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11-0.16.0.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11/_abnf.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11/_connection.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11/_events.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11/_headers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11/_readers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11/_receivebuffer.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11/_state.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11/_util.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11/_version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11/_writers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore-1.0.9.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore-1.0.9.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore-1.0.9.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore-1.0.9.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore-1.0.9.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore-1.0.9.dist-info/licenses/LICENSE.md
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_api.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_async/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_async/connection.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_async/connection_pool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_async/http11.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_async/http2.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_async/http_proxy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_async/interfaces.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_async/socks_proxy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_backends/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_backends/anyio.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_backends/auto.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_backends/base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_backends/mock.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_backends/sync.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_backends/trio.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_models.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_ssl.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_sync/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_sync/connection.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_sync/http11.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_sync/http2.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_sync/http_proxy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_sync/interfaces.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_sync/socks_proxy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_synchronization.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_trace.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx-0.28.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx-0.28.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx-0.28.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx-0.28.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx-0.28.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx-0.28.1.dist-info/entry_points.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx-0.28.1.dist-info/licenses/LICENSE.md
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/__version__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_api.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_auth.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_client.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_content.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_decoders.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_main.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_models.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_multipart.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_status_codes.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_transports/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_transports/asgi.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_transports/base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_transports/default.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_transports/mock.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_transports/wsgi.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_urlparse.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_urls.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx_sse-0.4.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx_sse-0.4.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx_sse-0.4.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx_sse-0.4.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx_sse-0.4.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx_sse-0.4.1.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx_sse-0.4.1.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx_sse/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx_sse/_api.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx_sse/_decoders.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx_sse/_exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx_sse/_models.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx_sse/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna-3.10.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna-3.10.dist-info/LICENSE.md
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna-3.10.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna-3.10.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna-3.10.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna-3.10.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna/codec.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna/compat.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna/core.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna/idnadata.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna/intranges.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna/package_data.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna/uts46data.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jiter-0.10.0.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jiter-0.10.0.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jiter-0.10.0.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jiter-0.10.0.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jiter-0.10.0.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jiter/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jiter/__init__.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jiter/jiter.cpython-312-darwin.so
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jiter/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema-4.25.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema-4.25.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema-4.25.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema-4.25.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema-4.25.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema-4.25.1.dist-info/entry_points.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema-4.25.1.dist-info/licenses/COPYING
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/_format.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/_keywords.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/_legacy_keywords.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/_types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/_typing.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/benchmarks/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/benchmarks/const_vs_enum.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/benchmarks/contains.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/benchmarks/issue232.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/benchmarks/issue232/issue.json
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/benchmarks/json_schema_test_suite.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/benchmarks/nested_schemas.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/benchmarks/subcomponents.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/benchmarks/unused_registry.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/benchmarks/useless_applicator_schemas.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/benchmarks/useless_keywords.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/benchmarks/validator_creation.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/cli.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/protocols.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/tests/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/tests/_suite.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/tests/fuzz_validate.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/tests/test_cli.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/tests/test_deprecations.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/tests/test_exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/tests/test_format.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/tests/test_jsonschema_test_suite.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/tests/test_types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/tests/test_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/tests/test_validators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/tests/typing/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/tests/typing/test_all_concrete_validators_match_protocol.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema/validators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications-2025.4.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications-2025.4.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications-2025.4.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications-2025.4.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications-2025.4.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications-2025.4.1.dist-info/licenses/COPYING
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/_core.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft201909/metaschema.json
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft201909/vocabularies/applicator
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft201909/vocabularies/content
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft201909/vocabularies/core
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft201909/vocabularies/meta-data
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft201909/vocabularies/validation
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft202012/metaschema.json
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft202012/vocabularies/applicator
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft202012/vocabularies/content
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft202012/vocabularies/core
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft202012/vocabularies/format
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft202012/vocabularies/format-annotation
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft202012/vocabularies/format-assertion
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft202012/vocabularies/meta-data
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft202012/vocabularies/unevaluated
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft202012/vocabularies/validation
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft3/metaschema.json
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft4/metaschema.json
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft6/metaschema.json
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/schemas/draft7/metaschema.json
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/tests/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications/tests/test_jsonschema_specifications.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp-1.13.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp-1.13.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp-1.13.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp-1.13.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp-1.13.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp-1.13.1.dist-info/entry_points.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp-1.13.1.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/cli/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/cli/claude.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/cli/cli.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/client/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/client/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/client/auth.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/client/session.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/client/session_group.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/client/sse.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/client/stdio/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/client/streamable_http.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/client/websocket.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/os/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/os/posix/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/os/posix/utilities.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/os/win32/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/os/win32/utilities.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/errors.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/handlers/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/handlers/authorize.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/handlers/metadata.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/handlers/register.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/handlers/revoke.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/handlers/token.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/json_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/middleware/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/middleware/auth_context.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/middleware/bearer_auth.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/middleware/client_auth.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/provider.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/routes.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/auth/settings.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/elicitation.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/prompts/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/prompts/base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/prompts/manager.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/resources/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/resources/base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/resources/resource_manager.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/resources/templates.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/resources/types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/server.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/tools/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/tools/base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/tools/tool_manager.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/utilities/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/utilities/func_metadata.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/utilities/logging.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/fastmcp/utilities/types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/lowlevel/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/lowlevel/helper_types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/lowlevel/server.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/models.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/session.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/sse.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/stdio.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/streamable_http.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/streamable_http_manager.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/streaming_asgi_transport.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/transport_security.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/server/websocket.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/shared/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/shared/_httpx_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/shared/auth.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/shared/auth_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/shared/context.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/shared/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/shared/memory.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/shared/message.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/shared/metadata_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/shared/progress.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/shared/session.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/shared/version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp/types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/multipart/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/multipart/decoders.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/multipart/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/multipart/multipart.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai-1.106.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai-1.106.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai-1.106.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai-1.106.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai-1.106.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai-1.106.1.dist-info/entry_points.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai-1.106.1.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_base_client.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_client.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_compat.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_constants.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_extras/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_extras/_common.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_extras/numpy_proxy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_extras/pandas_proxy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_extras/sounddevice_proxy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_files.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_legacy_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_models.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_module_client.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_qs.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_resource.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_streaming.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_utils/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_utils/_compat.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_utils/_datetime_parse.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_utils/_logs.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_utils/_proxy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_utils/_reflection.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_utils/_resources_proxy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_utils/_streams.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_utils/_sync.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_utils/_transform.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_utils/_typing.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_utils/_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/_version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_api/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_api/_main.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_api/audio.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_api/chat/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_api/chat/completions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_api/completions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_api/files.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_api/fine_tuning/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_api/fine_tuning/jobs.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_api/image.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_api/models.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_cli.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_errors.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_models.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_progress.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_tools/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_tools/_main.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_tools/fine_tunes.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_tools/migrate.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/cli/_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/helpers/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/helpers/local_audio_player.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/helpers/microphone.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/.keep
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/_old_api.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/_parsing/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/_parsing/_completions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/_parsing/_responses.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/_pydantic.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/_tools.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/_validators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/azure.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/streaming/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/streaming/_assistants.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/streaming/_deltas.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/streaming/chat/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/streaming/chat/_completions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/streaming/chat/_events.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/streaming/chat/_types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/streaming/responses/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/streaming/responses/_events.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/streaming/responses/_responses.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/lib/streaming/responses/_types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/pagination.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/audio/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/audio/audio.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/audio/speech.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/audio/transcriptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/audio/translations.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/batches.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/beta/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/beta/assistants.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/beta/beta.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/beta/realtime/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/beta/realtime/realtime.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/beta/realtime/sessions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/beta/realtime/transcription_sessions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/beta/threads/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/beta/threads/messages.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/beta/threads/runs/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/beta/threads/runs/runs.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/beta/threads/runs/steps.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/beta/threads/threads.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/chat/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/chat/chat.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/chat/completions/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/chat/completions/completions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/chat/completions/messages.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/completions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/containers/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/containers/containers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/containers/files/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/containers/files/content.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/containers/files/files.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/conversations/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/conversations/conversations.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/conversations/items.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/embeddings.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/evals/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/evals/evals.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/evals/runs/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/evals/runs/output_items.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/evals/runs/runs.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/files.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/fine_tuning/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/fine_tuning/alpha/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/fine_tuning/alpha/alpha.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/fine_tuning/alpha/graders.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/fine_tuning/checkpoints/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/fine_tuning/checkpoints/checkpoints.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/fine_tuning/checkpoints/permissions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/fine_tuning/fine_tuning.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/fine_tuning/jobs/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/fine_tuning/jobs/checkpoints.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/fine_tuning/jobs/jobs.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/images.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/models.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/moderations.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/realtime/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/realtime/client_secrets.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/realtime/realtime.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/responses/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/responses/input_items.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/responses/responses.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/uploads/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/uploads/parts.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/uploads/uploads.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/vector_stores/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/vector_stores/file_batches.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/vector_stores/files.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/vector_stores/vector_stores.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/resources/webhooks.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/speech_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/speech_model.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/transcription.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/transcription_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/transcription_create_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/transcription_include.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/transcription_segment.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/transcription_stream_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/transcription_text_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/transcription_text_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/transcription_verbose.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/transcription_word.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/translation.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/translation_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/translation_create_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio/translation_verbose.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio_model.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/audio_response_format.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/auto_file_chunking_strategy_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/batch.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/batch_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/batch_error.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/batch_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/batch_request_counts.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant_deleted.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant_response_format_option.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant_response_format_option_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant_stream_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant_tool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant_tool_choice.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant_tool_choice_function.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant_tool_choice_function_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant_tool_choice_option.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant_tool_choice_option_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant_tool_choice_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant_tool_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/assistant_update_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/chat/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/code_interpreter_tool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/code_interpreter_tool_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/file_search_tool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/file_search_tool_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/function_tool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/function_tool_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_created_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_content.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_content_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_create_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_create_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_created_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_delete_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_delete_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_deleted_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_input_audio_transcription_completed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_input_audio_transcription_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_input_audio_transcription_failed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_retrieve_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_retrieve_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_truncate_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_truncate_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_truncated_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_with_reference.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/conversation_item_with_reference_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/error_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/input_audio_buffer_append_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/input_audio_buffer_append_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/input_audio_buffer_clear_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/input_audio_buffer_clear_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/input_audio_buffer_cleared_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/input_audio_buffer_commit_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/input_audio_buffer_commit_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/input_audio_buffer_committed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/input_audio_buffer_speech_started_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/input_audio_buffer_speech_stopped_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/rate_limits_updated_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/realtime_client_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/realtime_client_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/realtime_connect_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/realtime_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/realtime_response_status.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/realtime_response_usage.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/realtime_server_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_audio_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_audio_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_audio_transcript_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_audio_transcript_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_cancel_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_cancel_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_content_part_added_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_content_part_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_create_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_create_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_created_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_function_call_arguments_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_function_call_arguments_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_output_item_added_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_output_item_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_text_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/response_text_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/session.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/session_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/session_create_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/session_created_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/session_update_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/session_update_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/session_updated_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/transcription_session.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/transcription_session_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/transcription_session_update.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/transcription_session_update_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/realtime/transcription_session_updated_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/thread.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/thread_create_and_run_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/thread_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/thread_deleted.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/thread_update_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/annotation.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/annotation_delta.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/file_citation_annotation.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/file_citation_delta_annotation.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/file_path_annotation.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/file_path_delta_annotation.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/image_file.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/image_file_content_block.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/image_file_content_block_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/image_file_delta.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/image_file_delta_block.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/image_file_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/image_url.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/image_url_content_block.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/image_url_content_block_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/image_url_delta.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/image_url_delta_block.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/image_url_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/message.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/message_content.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/message_content_delta.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/message_content_part_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/message_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/message_deleted.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/message_delta.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/message_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/message_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/message_update_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/refusal_content_block.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/refusal_delta_block.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/required_action_function_tool_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/run.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/run_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/run_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/run_status.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/run_submit_tool_outputs_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/run_update_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/code_interpreter_logs.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/code_interpreter_output_image.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/code_interpreter_tool_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/code_interpreter_tool_call_delta.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/file_search_tool_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/file_search_tool_call_delta.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/function_tool_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/function_tool_call_delta.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/message_creation_step_details.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/run_step.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/run_step_delta.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/run_step_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/run_step_delta_message_delta.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/run_step_include.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/step_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/step_retrieve_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/tool_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/tool_call_delta.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/tool_call_delta_object.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/runs/tool_calls_step_details.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/text.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/text_content_block.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/text_content_block_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/text_delta.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/beta/threads/text_delta_block.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_allowed_tool_choice_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_allowed_tools_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_assistant_message_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_audio.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_audio_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_chunk.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_content_part_image.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_content_part_image_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_content_part_input_audio_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_content_part_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_content_part_refusal_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_content_part_text.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_content_part_text_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_custom_tool_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_deleted.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_developer_message_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_function_call_option_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_function_message_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_function_tool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_function_tool_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_message.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_message_custom_tool_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_message_custom_tool_call_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_message_function_tool_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_message_function_tool_call_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_message_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_message_tool_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_message_tool_call_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_message_tool_call_union_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_modality.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_named_tool_choice_custom_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_named_tool_choice_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_prediction_content_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_reasoning_effort.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_role.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_store_message.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_stream_options_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_system_message_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_token_logprob.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_tool_choice_option_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_tool_message_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_tool_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_tool_union_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/chat_completion_user_message_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/completion_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/completion_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/completion_update_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/completions/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/completions/message_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/parsed_chat_completion.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat/parsed_function_tool_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/chat_model.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/completion.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/completion_choice.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/completion_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/completion_usage.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/container_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/container_create_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/container_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/container_list_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/container_retrieve_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/containers/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/containers/file_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/containers/file_create_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/containers/file_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/containers/file_list_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/containers/file_retrieve_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/containers/files/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/computer_screenshot_content.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/container_file_citation_body.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/conversation.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/conversation_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/conversation_deleted_resource.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/conversation_item.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/conversation_item_list.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/conversation_update_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/file_citation_body.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/input_file_content.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/input_image_content.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/input_text_content.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/item_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/item_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/item_retrieve_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/lob_prob.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/message.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/output_text_content.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/refusal_content.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/summary_text_content.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/text_content.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/top_log_prob.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/conversations/url_citation_body.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/create_embedding_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/embedding.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/embedding_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/embedding_model.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/eval_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/eval_create_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/eval_custom_data_source_config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/eval_delete_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/eval_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/eval_list_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/eval_retrieve_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/eval_stored_completions_data_source_config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/eval_update_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/eval_update_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/create_eval_completions_run_data_source.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/create_eval_completions_run_data_source_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/create_eval_jsonl_run_data_source.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/create_eval_jsonl_run_data_source_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/eval_api_error.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/run_cancel_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/run_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/run_create_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/run_delete_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/run_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/run_list_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/run_retrieve_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/runs/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/runs/output_item_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/runs/output_item_list_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/evals/runs/output_item_retrieve_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/file_chunking_strategy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/file_chunking_strategy_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/file_content.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/file_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/file_deleted.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/file_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/file_object.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/file_purpose.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/alpha/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/alpha/grader_run_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/alpha/grader_run_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/alpha/grader_validate_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/alpha/grader_validate_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/checkpoints/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/checkpoints/permission_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/checkpoints/permission_create_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/checkpoints/permission_delete_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/checkpoints/permission_retrieve_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/checkpoints/permission_retrieve_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/dpo_hyperparameters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/dpo_hyperparameters_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/dpo_method.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/dpo_method_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/fine_tuning_job.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/fine_tuning_job_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/fine_tuning_job_integration.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/fine_tuning_job_wandb_integration.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/fine_tuning_job_wandb_integration_object.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/job_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/job_list_events_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/job_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/jobs/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/jobs/checkpoint_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/jobs/fine_tuning_job_checkpoint.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/reinforcement_hyperparameters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/reinforcement_hyperparameters_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/reinforcement_method.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/reinforcement_method_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/supervised_hyperparameters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/supervised_hyperparameters_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/supervised_method.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/fine_tuning/supervised_method_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/graders/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/graders/label_model_grader.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/graders/label_model_grader_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/graders/multi_grader.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/graders/multi_grader_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/graders/python_grader.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/graders/python_grader_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/graders/score_model_grader.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/graders/score_model_grader_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/graders/string_check_grader.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/graders/string_check_grader_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/graders/text_similarity_grader.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/graders/text_similarity_grader_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/image.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/image_create_variation_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/image_edit_completed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/image_edit_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/image_edit_partial_image_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/image_edit_stream_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/image_gen_completed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/image_gen_partial_image_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/image_gen_stream_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/image_generate_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/image_model.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/images_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/model.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/model_deleted.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/moderation.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/moderation_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/moderation_create_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/moderation_image_url_input_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/moderation_model.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/moderation_multi_modal_input_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/moderation_text_input_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/other_file_chunking_strategy_object.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/client_secret_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/client_secret_create_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_created_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_added.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_create_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_create_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_created_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_delete_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_delete_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_deleted_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_done.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_input_audio_transcription_completed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_input_audio_transcription_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_input_audio_transcription_failed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_input_audio_transcription_segment.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_retrieve_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_retrieve_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_truncate_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_truncate_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/conversation_item_truncated_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/input_audio_buffer_append_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/input_audio_buffer_append_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/input_audio_buffer_clear_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/input_audio_buffer_clear_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/input_audio_buffer_cleared_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/input_audio_buffer_commit_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/input_audio_buffer_commit_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/input_audio_buffer_committed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/input_audio_buffer_speech_started_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/input_audio_buffer_speech_stopped_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/input_audio_buffer_timeout_triggered.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/log_prob_properties.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/mcp_list_tools_completed.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/mcp_list_tools_failed.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/mcp_list_tools_in_progress.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/output_audio_buffer_clear_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/output_audio_buffer_clear_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/rate_limits_updated_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_audio_config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_audio_config_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_client_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_client_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_client_secret_config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_client_secret_config_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_connect_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_conversation_item_assistant_message.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_conversation_item_assistant_message_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_conversation_item_function_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_conversation_item_function_call_output.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_conversation_item_function_call_output_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_conversation_item_function_call_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_conversation_item_system_message.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_conversation_item_system_message_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_conversation_item_user_message.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_conversation_item_user_message_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_error.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_error_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_mcp_approval_request.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_mcp_approval_request_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_mcp_approval_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_mcp_approval_response_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_mcp_list_tools.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_mcp_list_tools_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_mcp_protocol_error.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_mcp_protocol_error_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_mcp_tool_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_mcp_tool_call_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_mcp_tool_execution_error.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_mcp_tool_execution_error_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_mcphttp_error.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_mcphttp_error_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_response_status.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_response_usage.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_response_usage_input_token_details.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_response_usage_output_token_details.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_server_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_session.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_session_create_request.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_session_create_request_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_session_create_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_tool_choice_config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_tool_choice_config_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_tools_config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_tools_config_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_tools_config_union.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_tools_config_union_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_tracing_config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_tracing_config_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_transcription_session_create_request.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_transcription_session_create_request_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_truncation.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/realtime_truncation_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_audio_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_audio_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_audio_transcript_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_audio_transcript_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_cancel_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_cancel_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_content_part_added_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_content_part_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_create_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_create_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_created_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_function_call_arguments_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_function_call_arguments_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_mcp_call_arguments_delta.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_mcp_call_arguments_done.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_mcp_call_completed.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_mcp_call_failed.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_mcp_call_in_progress.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_output_item_added_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_output_item_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_text_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/response_text_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/session_created_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/session_update_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/session_update_event_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/session_updated_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/transcription_session_created.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/transcription_session_update.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/transcription_session_update_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/realtime/transcription_session_updated_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/computer_tool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/computer_tool_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/custom_tool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/custom_tool_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/easy_input_message.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/easy_input_message_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/file_search_tool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/file_search_tool_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/function_tool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/function_tool_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/input_item_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/parsed_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_audio_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_audio_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_audio_transcript_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_audio_transcript_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_code_interpreter_call_code_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_code_interpreter_call_code_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_code_interpreter_call_completed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_code_interpreter_call_in_progress_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_code_interpreter_call_interpreting_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_code_interpreter_tool_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_code_interpreter_tool_call_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_completed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_computer_tool_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_computer_tool_call_output_item.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_computer_tool_call_output_screenshot.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_computer_tool_call_output_screenshot_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_computer_tool_call_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_content_part_added_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_content_part_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_conversation_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_created_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_custom_tool_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_custom_tool_call_input_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_custom_tool_call_input_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_custom_tool_call_output.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_custom_tool_call_output_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_custom_tool_call_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_error.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_error_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_failed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_file_search_call_completed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_file_search_call_in_progress_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_file_search_call_searching_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_file_search_tool_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_file_search_tool_call_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_format_text_config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_format_text_config_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_format_text_json_schema_config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_format_text_json_schema_config_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_function_call_arguments_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_function_call_arguments_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_function_tool_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_function_tool_call_item.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_function_tool_call_output_item.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_function_tool_call_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_function_web_search.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_function_web_search_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_image_gen_call_completed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_image_gen_call_generating_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_image_gen_call_in_progress_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_image_gen_call_partial_image_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_in_progress_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_includable.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_incomplete_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_audio.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_audio_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_content.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_content_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_file.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_file_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_image.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_image_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_item.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_item_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_message_content_list.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_message_content_list_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_message_item.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_text.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_input_text_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_item.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_item_list.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_mcp_call_arguments_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_mcp_call_arguments_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_mcp_call_completed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_mcp_call_failed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_mcp_call_in_progress_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_mcp_list_tools_completed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_mcp_list_tools_failed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_mcp_list_tools_in_progress_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_output_item.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_output_item_added_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_output_item_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_output_message.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_output_message_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_output_refusal.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_output_refusal_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_output_text.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_output_text_annotation_added_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_output_text_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_prompt.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_prompt_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_queued_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_reasoning_item.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_reasoning_item_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_reasoning_summary_part_added_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_reasoning_summary_part_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_reasoning_summary_text_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_reasoning_summary_text_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_reasoning_text_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_reasoning_text_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_refusal_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_refusal_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_retrieve_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_status.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_stream_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_text_config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_text_config_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_text_delta_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_text_done_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_usage.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_web_search_call_completed_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_web_search_call_in_progress_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/response_web_search_call_searching_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/tool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/tool_choice_allowed.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/tool_choice_allowed_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/tool_choice_custom.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/tool_choice_custom_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/tool_choice_function.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/tool_choice_function_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/tool_choice_mcp.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/tool_choice_mcp_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/tool_choice_options.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/tool_choice_types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/tool_choice_types_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/tool_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/web_search_preview_tool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/web_search_preview_tool_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/web_search_tool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/responses/web_search_tool_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/all_models.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/chat_model.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/comparison_filter.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/compound_filter.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/custom_tool_input_format.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/error_object.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/function_definition.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/function_parameters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/metadata.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/reasoning.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/reasoning_effort.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/response_format_json_object.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/response_format_json_schema.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/response_format_text.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/response_format_text_grammar.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/response_format_text_python.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared/responses_model.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared_params/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared_params/chat_model.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared_params/comparison_filter.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared_params/compound_filter.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared_params/custom_tool_input_format.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared_params/function_definition.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared_params/function_parameters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared_params/metadata.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared_params/reasoning.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared_params/reasoning_effort.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared_params/response_format_json_object.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared_params/response_format_json_schema.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared_params/response_format_text.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/shared_params/responses_model.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/static_file_chunking_strategy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/static_file_chunking_strategy_object.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/static_file_chunking_strategy_object_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/static_file_chunking_strategy_param.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/upload.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/upload_complete_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/upload_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/uploads/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/uploads/part_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/uploads/upload_part.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_store.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_store_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_store_deleted.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_store_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_store_search_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_store_search_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_store_update_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_stores/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_stores/file_batch_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_stores/file_batch_list_files_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_stores/file_content_response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_stores/file_create_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_stores/file_list_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_stores/file_update_params.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_stores/vector_store_file.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_stores/vector_store_file_batch.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/vector_stores/vector_store_file_deleted.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/batch_cancelled_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/batch_completed_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/batch_expired_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/batch_failed_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/eval_run_canceled_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/eval_run_failed_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/eval_run_succeeded_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/fine_tuning_job_cancelled_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/fine_tuning_job_failed_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/fine_tuning_job_succeeded_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/realtime_call_incoming_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/response_cancelled_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/response_completed_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/response_failed_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/response_incomplete_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/webhooks/unwrap_webhook_event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/types/websocket_connection_options.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai/version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip-25.1.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip-25.1.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip-25.1.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip-25.1.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip-25.1.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip-25.1.1.dist-info/entry_points.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip-25.1.1.dist-info/licenses/AUTHORS.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip-25.1.1.dist-info/licenses/LICENSE.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip-25.1.1.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/__pip-runner__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/build_env.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/cache.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/cli/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/cli/autocompletion.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/cli/base_command.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/cli/cmdoptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/cli/command_context.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/cli/index_command.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/cli/main.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/cli/main_parser.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/cli/parser.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/cli/progress_bars.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/cli/req_command.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/cli/spinners.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/cli/status_codes.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/cache.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/check.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/completion.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/configuration.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/debug.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/download.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/freeze.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/hash.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/help.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/index.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/inspect.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/install.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/list.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/lock.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/search.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/show.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/uninstall.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/commands/wheel.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/configuration.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/distributions/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/distributions/base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/distributions/installed.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/distributions/sdist.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/distributions/wheel.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/index/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/index/collector.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/index/package_finder.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/index/sources.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/locations/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/locations/_distutils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/locations/_sysconfig.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/locations/base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/main.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/metadata/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/metadata/_json.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/metadata/base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/metadata/importlib/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/metadata/importlib/_compat.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/metadata/importlib/_dists.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/metadata/importlib/_envs.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/metadata/pkg_resources.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/models/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/models/candidate.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/models/direct_url.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/models/format_control.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/models/index.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/models/installation_report.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/models/link.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/models/pylock.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/models/scheme.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/models/search_scope.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/models/selection_prefs.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/models/target_python.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/models/wheel.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/network/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/network/auth.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/network/cache.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/network/download.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/network/lazy_wheel.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/network/session.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/network/utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/network/xmlrpc.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/operations/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/operations/check.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/operations/freeze.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/operations/install/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/operations/install/editable_legacy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/operations/install/wheel.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/operations/prepare.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/pyproject.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/req/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/req/constructors.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/req/req_dependency_group.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/req/req_file.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/req/req_install.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/req/req_set.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/req/req_uninstall.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/resolution/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/resolution/base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/resolution/legacy/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/resolution/legacy/resolver.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/resolution/resolvelib/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/resolution/resolvelib/base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/resolution/resolvelib/candidates.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/resolution/resolvelib/factory.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/resolution/resolvelib/found_candidates.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/resolution/resolvelib/provider.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/resolution/resolvelib/reporter.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/resolution/resolvelib/requirements.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/resolution/resolvelib/resolver.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/self_outdated_check.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/_jaraco_text.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/_log.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/appdirs.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/compat.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/compatibility_tags.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/datetime.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/deprecation.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/direct_url_helpers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/egg_link.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/entrypoints.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/filesystem.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/filetypes.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/glibc.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/hashes.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/logging.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/misc.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/packaging.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/retry.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/setuptools_build.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/subprocess.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/temp_dir.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/unpacking.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/urls.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/virtualenv.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/utils/wheel.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/vcs/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/vcs/bazaar.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/vcs/git.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/vcs/mercurial.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/vcs/subversion.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/vcs/versioncontrol.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_internal/wheel_builder.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/cachecontrol/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/cachecontrol/_cmd.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/cachecontrol/adapter.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/cachecontrol/cache.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/cachecontrol/caches/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/cachecontrol/caches/file_cache.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/cachecontrol/caches/redis_cache.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/cachecontrol/controller.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/cachecontrol/filewrapper.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/cachecontrol/heuristics.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/cachecontrol/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/cachecontrol/serialize.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/cachecontrol/wrapper.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/certifi/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/certifi/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/certifi/cacert.pem
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/certifi/core.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/certifi/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/dependency_groups/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/dependency_groups/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/dependency_groups/_implementation.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/dependency_groups/_lint_dependency_groups.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/dependency_groups/_pip_wrapper.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/dependency_groups/_toml_compat.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/dependency_groups/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/compat.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/database.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/index.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/locators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/manifest.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/markers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/metadata.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/resources.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/scripts.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/t32.exe
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/t64-arm.exe
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/t64.exe
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/util.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/w32.exe
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/w64-arm.exe
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/w64.exe
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distlib/wheel.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distro/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distro/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distro/distro.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/distro/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/idna/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/idna/codec.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/idna/compat.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/idna/core.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/idna/idnadata.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/idna/intranges.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/idna/package_data.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/idna/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/idna/uts46data.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/msgpack/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/msgpack/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/msgpack/ext.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/msgpack/fallback.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/_elffile.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/_manylinux.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/_musllinux.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/_parser.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/_structures.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/_tokenizer.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/licenses/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/licenses/_spdx.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/markers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/metadata.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/requirements.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/specifiers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/tags.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/packaging/version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pkg_resources/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/platformdirs/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/platformdirs/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/platformdirs/android.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/platformdirs/api.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/platformdirs/macos.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/platformdirs/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/platformdirs/unix.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/platformdirs/version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/platformdirs/windows.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/console.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/filter.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/filters/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/formatter.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/formatters/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/formatters/_mapping.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/lexer.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/lexers/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/lexers/_mapping.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/lexers/python.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/modeline.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/plugin.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/regexopt.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/scanner.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/sphinxext.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/style.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/styles/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/styles/_mapping.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/token.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/unistring.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pygments/util.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_impl.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/__version__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/_internal_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/adapters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/api.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/auth.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/certs.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/compat.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/cookies.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/help.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/hooks.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/models.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/packages.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/sessions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/status_codes.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/structures.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/requests/utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/resolvelib/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/resolvelib/providers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/resolvelib/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/resolvelib/reporters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/resolvelib/resolvers/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/resolvelib/resolvers/abstract.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/resolvelib/resolvers/criterion.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/resolvelib/resolvers/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/resolvelib/resolvers/resolution.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/resolvelib/structs.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_cell_widths.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_emoji_codes.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_emoji_replace.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_export_format.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_extension.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_fileno.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_inspect.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_log_render.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_loop.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_null_file.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_palettes.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_pick.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_ratio.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_spinners.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_stack.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_timer.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_win32_console.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_windows.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_windows_renderer.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/_wrap.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/abc.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/align.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/ansi.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/bar.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/box.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/cells.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/color.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/color_triplet.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/columns.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/console.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/constrain.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/containers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/control.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/default_styles.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/diagnose.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/emoji.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/errors.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/file_proxy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/filesize.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/highlighter.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/json.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/jupyter.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/layout.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/live.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/live_render.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/logging.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/markup.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/measure.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/padding.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/pager.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/palette.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/panel.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/pretty.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/progress.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/progress_bar.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/prompt.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/protocol.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/region.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/repr.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/rule.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/scope.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/screen.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/segment.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/spinner.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/status.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/style.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/styled.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/syntax.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/table.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/terminal_theme.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/text.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/theme.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/themes.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/traceback.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/rich/tree.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/tomli/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/tomli/_parser.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/tomli/_re.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/tomli/_types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/tomli/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/tomli_w/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/tomli_w/_writer.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/tomli_w/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/truststore/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/truststore/_api.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/truststore/_macos.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/truststore/_openssl.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/truststore/_ssl_constants.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/truststore/_windows.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/truststore/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/typing_extensions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/_collections.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/_version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/connection.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/connectionpool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/_appengine_environ.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/_securetransport/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/_securetransport/bindings.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/_securetransport/low_level.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/appengine.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/ntlmpool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/pyopenssl.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/securetransport.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/socks.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/fields.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/filepost.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/packages/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/packages/backports/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/packages/backports/makefile.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/packages/backports/weakref_finalize.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/packages/six.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/poolmanager.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/request.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/connection.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/proxy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/queue.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/request.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/retry.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/ssl_.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/ssl_match_hostname.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/ssltransport.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/timeout.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/url.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/wait.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/_vendor/vendor.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1-0.6.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1-0.6.1.dist-info/LICENSE.rst
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1-0.6.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1-0.6.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1-0.6.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1-0.6.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1-0.6.1.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1-0.6.1.dist-info/zip-safe
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/codec/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/codec/ber/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/codec/ber/decoder.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/codec/ber/encoder.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/codec/ber/eoo.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/codec/cer/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/codec/cer/decoder.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/codec/cer/encoder.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/codec/der/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/codec/der/decoder.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/codec/der/encoder.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/codec/native/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/codec/native/decoder.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/codec/native/encoder.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/codec/streaming.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/compat/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/compat/integer.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/debug.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/error.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/type/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/type/base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/type/char.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/type/constraint.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/type/error.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/type/namedtype.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/type/namedval.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/type/opentype.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/type/tag.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/type/tagmap.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/type/univ.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1/type/useful.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules-0.4.2.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules-0.4.2.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules-0.4.2.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules-0.4.2.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules-0.4.2.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules-0.4.2.dist-info/licenses/LICENSE.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules-0.4.2.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules-0.4.2.dist-info/zip-safe
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/pem.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc1155.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc1157.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc1901.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc1902.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc1905.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc2251.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc2314.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc2315.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc2437.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc2459.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc2511.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc2560.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc2631.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc2634.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc2876.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc2985.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc2986.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3058.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3114.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3125.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3161.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3274.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3279.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3280.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3281.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3370.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3412.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3414.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3447.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3537.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3560.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3565.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3657.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3709.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3739.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3770.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3779.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3820.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc3852.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc4010.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc4043.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc4055.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc4073.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc4108.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc4210.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc4211.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc4334.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc4357.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc4387.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc4476.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc4490.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc4491.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc4683.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc4985.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5035.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5083.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5084.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5126.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5208.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5275.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5280.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5480.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5636.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5639.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5649.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5652.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5697.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5751.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5752.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5753.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5755.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5913.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5914.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5915.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5916.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5917.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5924.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5934.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5940.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5958.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc5990.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6010.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6019.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6031.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6032.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6120.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6170.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6187.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6210.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6211.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6402.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6482.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6486.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6487.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6664.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6955.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc6960.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc7030.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc7191.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc7229.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc7292.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc7296.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc7508.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc7585.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc7633.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc7773.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc7894.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc7906.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc7914.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8017.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8018.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8103.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8209.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8226.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8358.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8360.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8398.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8410.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8418.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8419.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8479.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8494.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8520.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8619.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8649.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8692.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8696.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8702.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8708.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules/rfc8769.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic-2.11.7.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic-2.11.7.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic-2.11.7.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic-2.11.7.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic-2.11.7.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic-2.11.7.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_core_metadata.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_core_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_dataclasses.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_decorators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_decorators_v1.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_discriminated_union.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_docs_extraction.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_fields.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_forward_ref.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_generics.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_git.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_import_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_internal_dataclass.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_known_annotated_metadata.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_mock_val_ser.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_model_construction.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_namespace_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_repr.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_schema_gather.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_schema_generation_shared.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_serializers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_signature.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_typing_extra.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_validate_call.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_internal/_validators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/_migration.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/alias_generators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/aliases.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/annotated_handlers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/class_validators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/color.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/dataclasses.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/datetime_parse.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/decorator.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/deprecated/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/deprecated/class_validators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/deprecated/config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/deprecated/copy_internals.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/deprecated/decorator.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/deprecated/json.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/deprecated/parse.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/deprecated/tools.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/env_settings.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/error_wrappers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/errors.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/experimental/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/experimental/arguments_schema.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/experimental/pipeline.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/fields.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/functional_serializers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/functional_validators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/generics.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/json.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/json_schema.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/main.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/mypy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/networks.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/parse.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/plugin/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/plugin/_loader.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/plugin/_schema_validator.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/root_model.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/schema.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/tools.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/type_adapter.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/typing.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/_hypothesis_plugin.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/annotated_types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/class_validators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/color.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/dataclasses.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/datetime_parse.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/decorator.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/env_settings.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/error_wrappers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/errors.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/fields.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/generics.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/json.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/main.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/mypy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/networks.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/parse.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/schema.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/tools.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/typing.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/validators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/v1/version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/validate_call_decorator.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/validators.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic/warnings.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_core-2.33.2.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_core-2.33.2.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_core-2.33.2.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_core-2.33.2.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_core-2.33.2.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_core-2.33.2.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_core/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_core/_pydantic_core.cpython-312-darwin.so
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_core/_pydantic_core.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_core/core_schema.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_core/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings-2.10.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings-2.10.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings-2.10.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings-2.10.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings-2.10.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings-2.10.1.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/main.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/providers/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/providers/aws.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/providers/azure.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/providers/cli.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/providers/dotenv.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/providers/env.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/providers/gcp.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/providers/json.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/providers/pyproject.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/providers/secrets.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/providers/toml.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/providers/yaml.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/sources/utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings/version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_dotenv-1.1.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_dotenv-1.1.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_dotenv-1.1.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_dotenv-1.1.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_dotenv-1.1.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_dotenv-1.1.1.dist-info/entry_points.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_dotenv-1.1.1.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_dotenv-1.1.1.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_multipart-0.0.20.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_multipart-0.0.20.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_multipart-0.0.20.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_multipart-0.0.20.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_multipart-0.0.20.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_multipart-0.0.20.dist-info/licenses/LICENSE.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_multipart/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_multipart/decoders.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_multipart/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_multipart/multipart.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_multipart/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing-0.36.2.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing-0.36.2.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing-0.36.2.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing-0.36.2.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing-0.36.2.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing-0.36.2.dist-info/licenses/COPYING
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing/_attrs.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing/_attrs.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing/_core.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing/jsonschema.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing/retrieval.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing/tests/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing/tests/test_core.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing/tests/test_exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing/tests/test_jsonschema.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing/tests/test_referencing_suite.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing/tests/test_retrieval.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing/typing.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests-2.32.5.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests-2.32.5.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests-2.32.5.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests-2.32.5.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests-2.32.5.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests-2.32.5.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests-2.32.5.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/__version__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/_internal_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/adapters.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/api.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/auth.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/certs.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/compat.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/cookies.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/help.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/hooks.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/models.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/packages.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/sessions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/status_codes.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/structures.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests/utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rpds/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rpds/__init__.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rpds/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rpds/rpds.cpython-312-darwin.so
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rpds_py-0.27.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rpds_py-0.27.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rpds_py-0.27.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rpds_py-0.27.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rpds_py-0.27.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rpds_py-0.27.1.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa-4.9.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa-4.9.1.dist-info/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa-4.9.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa-4.9.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa-4.9.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa-4.9.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa-4.9.1.dist-info/entry_points.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa/asn1.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa/cli.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa/common.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa/core.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa/key.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa/parallel.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa/pem.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa/pkcs1.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa/pkcs1_v2.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa/prime.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa/randnum.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa/transform.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa/util.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio-1.3.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio-1.3.1.dist-info/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio-1.3.1.dist-info/LICENSE.APACHE2
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio-1.3.1.dist-info/LICENSE.MIT
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio-1.3.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio-1.3.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio-1.3.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio-1.3.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio-1.3.1.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio/_impl.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio/_tests/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio/_tests/test_sniffio.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio/_version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sse_starlette-3.0.2.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sse_starlette-3.0.2.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sse_starlette-3.0.2.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sse_starlette-3.0.2.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sse_starlette-3.0.2.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sse_starlette-3.0.2.dist-info/licenses/AUTHORS
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sse_starlette-3.0.2.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sse_starlette-3.0.2.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sse_starlette/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sse_starlette/event.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sse_starlette/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sse_starlette/sse.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette-0.47.3.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette-0.47.3.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette-0.47.3.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette-0.47.3.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette-0.47.3.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette-0.47.3.dist-info/licenses/LICENSE.md
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/_exception_handler.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/applications.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/authentication.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/background.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/concurrency.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/convertors.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/datastructures.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/endpoints.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/formparsers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/middleware/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/middleware/authentication.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/middleware/base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/middleware/cors.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/middleware/errors.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/middleware/gzip.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/middleware/httpsredirect.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/middleware/sessions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/middleware/trustedhost.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/middleware/wsgi.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/requests.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/responses.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/routing.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/schemas.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/staticfiles.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/status.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/templating.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/testclient.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette/websockets.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity-9.1.2.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity-9.1.2.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity-9.1.2.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity-9.1.2.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity-9.1.2.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity-9.1.2.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity-9.1.2.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity/_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity/after.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity/asyncio/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity/asyncio/retry.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity/before.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity/before_sleep.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity/nap.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity/retry.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity/stop.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity/tornadoweb.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity/wait.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm-4.67.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm-4.67.1.dist-info/LICENCE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm-4.67.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm-4.67.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm-4.67.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm-4.67.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm-4.67.1.dist-info/entry_points.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm-4.67.1.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/_dist_ver.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/_main.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/_monitor.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/_tqdm.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/_tqdm_gui.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/_tqdm_notebook.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/_tqdm_pandas.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/_utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/asyncio.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/auto.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/autonotebook.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/cli.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/completion.sh
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/contrib/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/contrib/bells.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/contrib/concurrent.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/contrib/discord.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/contrib/itertools.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/contrib/logging.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/contrib/slack.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/contrib/telegram.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/contrib/utils_worker.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/dask.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/gui.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/keras.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/notebook.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/rich.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/std.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/tk.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/tqdm.1
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm/version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_extensions-4.15.0.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_extensions-4.15.0.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_extensions-4.15.0.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_extensions-4.15.0.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_extensions-4.15.0.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_extensions-4.15.0.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_extensions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_inspection-0.4.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_inspection-0.4.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_inspection-0.4.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_inspection-0.4.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_inspection-0.4.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_inspection-0.4.1.dist-info/licenses/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_inspection/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_inspection/introspection.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_inspection/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_inspection/typing_objects.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_inspection/typing_objects.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3-2.5.0.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3-2.5.0.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3-2.5.0.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3-2.5.0.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3-2.5.0.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3-2.5.0.dist-info/licenses/LICENSE.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/_base_connection.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/_collections.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/_request_methods.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/_version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/connection.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/connectionpool.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/contrib/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/contrib/emscripten/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/contrib/emscripten/connection.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/contrib/emscripten/emscripten_fetch_worker.js
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/contrib/emscripten/fetch.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/contrib/emscripten/request.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/contrib/emscripten/response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/contrib/pyopenssl.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/contrib/socks.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/fields.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/filepost.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/http2/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/http2/connection.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/http2/probe.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/poolmanager.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/util/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/util/connection.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/util/proxy.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/util/request.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/util/response.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/util/retry.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/util/ssl_.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/util/ssl_match_hostname.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/util/ssltransport.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/util/timeout.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/util/url.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/util/util.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3/util/wait.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn-0.35.0.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn-0.35.0.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn-0.35.0.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn-0.35.0.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn-0.35.0.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn-0.35.0.dist-info/entry_points.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn-0.35.0.dist-info/licenses/LICENSE.md
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/_subprocess.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/_types.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/config.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/importer.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/lifespan/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/lifespan/off.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/lifespan/on.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/logging.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/loops/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/loops/asyncio.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/loops/auto.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/loops/uvloop.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/main.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/middleware/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/middleware/asgi2.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/middleware/message_logger.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/middleware/wsgi.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/protocols/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/protocols/http/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/protocols/http/auto.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/protocols/http/flow_control.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/protocols/http/h11_impl.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/protocols/http/httptools_impl.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/protocols/utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/auto.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_impl.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/websockets_sansio_impl.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/protocols/websockets/wsproto_impl.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/server.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/supervisors/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/supervisors/basereload.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/supervisors/multiprocess.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/supervisors/statreload.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/supervisors/watchfilesreload.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn/workers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets-15.0.1.dist-info/INSTALLER
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets-15.0.1.dist-info/LICENSE
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets-15.0.1.dist-info/METADATA
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets-15.0.1.dist-info/RECORD
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets-15.0.1.dist-info/REQUESTED
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets-15.0.1.dist-info/WHEEL
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets-15.0.1.dist-info/entry_points.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets-15.0.1.dist-info/top_level.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/__main__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/asyncio/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/asyncio/async_timeout.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/asyncio/client.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/asyncio/compatibility.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/asyncio/connection.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/asyncio/messages.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/asyncio/router.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/asyncio/server.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/auth.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/cli.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/client.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/connection.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/datastructures.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/extensions/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/extensions/base.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/extensions/permessage_deflate.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/frames.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/headers.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/http.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/http11.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/imports.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/legacy/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/legacy/auth.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/legacy/client.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/legacy/exceptions.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/legacy/framing.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/legacy/handshake.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/legacy/http.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/legacy/protocol.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/legacy/server.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/protocol.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/py.typed
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/server.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/speedups.c
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/speedups.cpython-312-darwin.so
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/speedups.pyi
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/streams.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/sync/__init__.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/sync/client.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/sync/connection.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/sync/messages.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/sync/router.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/sync/server.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/sync/utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/typing.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/uri.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/utils.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets/version.py
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/pyvenv.cfg
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/uv_created
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/docs/.DS_Store
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/zen_mcp_server.egg-info/PKG-INFO
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/zen_mcp_server.egg-info/SOURCES.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/zen_mcp_server.egg-info/dependency_links.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/zen_mcp_server.egg-info/entry_points.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/zen_mcp_server.egg-info/requires.txt
+- SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/zen_mcp_server.egg-info/top_level.txt
+- VERSION
+- config/.DS_Store
+- config/docs/enforcement.yaml
+- config/env/conport.env
+- config/env/conport.env.example
+- config/env/routing.env
+- config/escalations/escalations.yml
+- config/mcp-proxy-config.json
+- config/mcp/clear_thought.yml
+- config/mcp/policy.yaml
+- config/profiles/dangerous.yaml.bak
+- config/profiles/safe.yaml.bak
+- config/rag/evaluation-metrics.yaml
+- config/rag/pipeline-config.yaml
+- config/rag/role-policies.json
+- config/routing/clear_thought_rules.yml
+- context_portal/.DS_Store
+- context_portal/alembic.ini
+- context_portal/alembic/env.py
+- context_portal/alembic/versions/2025_06_17_initial_schema.py
+- context_portal/conport_vector_data/8daad09f-a6b4-4bca-9b86-186daf1756fc/data_level0.bin
+- context_portal/conport_vector_data/8daad09f-a6b4-4bca-9b86-186daf1756fc/header.bin
+- context_portal/conport_vector_data/8daad09f-a6b4-4bca-9b86-186daf1756fc/index_metadata.pickle
+- context_portal/conport_vector_data/8daad09f-a6b4-4bca-9b86-186daf1756fc/length.bin
+- context_portal/conport_vector_data/8daad09f-a6b4-4bca-9b86-186daf1756fc/link_lists.bin
+- context_portal/conport_vector_data/chroma.sqlite3
+- context_portal/logs/conport-http.log
+- context_portal/logs/conport.log
+- dashboard/.DS_Store
+- data/tasks.db
+- doc_processor/__init__.py
+- doc_processor/embedder.py
+- doc_processor/embedder_v2.py
+- doc_processor/normalizer.py
+- doc_processor/registries.py
+- docker/conport-kg/.env
+- docker/docker-compose.event-bus.yml
+- docker/leantime/.DS_Store
+- docker/leantime/.env
+- docker/leantime/app/.DS_Store
+- docker/leantime/app/Plugins/.DS_Store
+- docker/leantime/app/Plugins/Dopemux/.DS_Store
+- docker/leantime/app/Plugins/Dopemux/Language/en-US.ini
+- docker/leantime/app/Plugins/Dopemux/composer.json
+- docker/leantime/app/Plugins/Dopemux/register.php
+- docker/leantime/docker/leantime/plugins/Dopemux/.DS_Store
+- docker/leantime/mysql-init/01-leantime-init.sql
+- docker/leantime/plugins/.DS_Store
+- docker/mcp-servers/.claude/claude.md
+- docker/mcp-servers/.claude/context.md
+- docker/mcp-servers/.claude/session.md
+- docker/mcp-servers/.claude/settings.local.json
+- docker/mcp-servers/.dopemux/.DS_Store
+- docker/mcp-servers/.dopemux/context.db
+- docker/mcp-servers/.dopemux/sessions/session-3fdfac40-ad48-4b93-b37f-11508bed4ad1.json
+- docker/mcp-servers/.dopemux/sessions/session-70643daa-3347-43ee-980b-37a8fba64f78.json
+- docker/mcp-servers/.dopemux/sessions/session-722ac7f8-4bbd-4a8f-bcda-cba77f6b4c3c.json
+- docker/mcp-servers/SLASH-COMMANDS-SETUP.md
+- docker/mcp-servers/claude-context/Dockerfile
+- docker/mcp-servers/claude-context/index_codebase.js
+- docker/mcp-servers/claude-context/wrapper.js
+- docker/mcp-servers/desktop-commander/.env
+- docker/mcp-servers/desktop-commander/Dockerfile
+- docker/mcp-servers/desktop-commander/pyproject.toml
+- docker/mcp-servers/desktop-commander/requirements.txt
+- docker/mcp-servers/desktop-commander/stdio_bridge.py
+- docker/mcp-servers/desktop-commander/test_stdio_bridge.py
+- docker/mcp-servers/exa/Dockerfile
+- docker/mcp-servers/exa/pyproject.toml
+- docker/mcp-servers/exa/requirements.txt
+- docker/mcp-servers/exa/start_with_uvx.sh
+- docker/mcp-servers/exa/wrapper.js
+- docker/mcp-servers/exa/wrapper.py
+- docker/mcp-servers/gptr-mcp/README.md
+- docker/mcp-servers/health-check-server.py
+- docker/mcp-servers/leantime-bridge/.env
+- docker/mcp-servers/leantime-bridge/.env.bak
+- docker/mcp-servers/leantime-bridge/Dockerfile
+- docker/mcp-servers/leantime-bridge/leantime_bridge/__init__.py
+- docker/mcp-servers/leantime-bridge/requirements.txt
+- docker/mcp-servers/leantime-bridge/test_http_server.py
+- docker/mcp-servers/leantime-bridge/test_token_limit_fix.py
+- docker/mcp-servers/mcp-config.yaml
+- docker/mcp-servers/morphllm-fast-apply/.env
+- docker/mcp-servers/morphllm-fast-apply/Dockerfile
+- docker/mcp-servers/morphllm-fast-apply/server.py
+- docker/mcp-servers/services/mcp-client-python/mcp_client_python.egg-info/PKG-INFO
+- docker/mcp-servers/services/mcp-client-python/mcp_client_python.egg-info/SOURCES.txt
+- docker/mcp-servers/services/mcp-client-python/mcp_client_python.egg-info/dependency_links.txt
+- docker/mcp-servers/services/mcp-client-python/mcp_client_python.egg-info/entry_points.txt
+- docker/mcp-servers/services/mcp-client-python/mcp_client_python.egg-info/requires.txt
+- docker/mcp-servers/services/mcp-client-python/mcp_client_python.egg-info/top_level.txt
+- docker/mcp-servers/services/mcp-client-python/services/mcp-client-python/mcp_client_python.egg-info/PKG-INFO
+- docker/mcp-servers/services/mcp-client-python/services/mcp-client-python/mcp_client_python.egg-info/SOURCES.txt
+- docker/mcp-servers/services/mcp-client-python/services/mcp-client-python/mcp_client_python.egg-info/dependency_links.txt
+- docker/mcp-servers/services/mcp-client-python/services/mcp-client-python/mcp_client_python.egg-info/entry_points.txt
+- docker/mcp-servers/services/mcp-client-python/services/mcp-client-python/mcp_client_python.egg-info/requires.txt
+- docker/mcp-servers/services/mcp-client-python/services/mcp-client-python/mcp_client_python.egg-info/top_level.txt
+- docker/mcp-servers/start-gptr-stdio.sh
+- docker/mcp-servers/start-gptr.sh
+- docker/mcp-servers/start-mas.sh
+- docker/mcp-servers/start-mcp-server.sh
+- docker/mcp-servers/stop-all-mcp-servers.sh
+- docker/mcp-servers/view-logs.sh
+- docker/memory-stack/Dockerfile.conport
+- docker/memory-stack/docker-compose.age.yml
+- docker/memory-stack/docker-compose.yml
+- docker/memory-stack/init-db.sql
+- docker/memory-stack/init-scripts/01-init-age.sql
+- docker/memory-stack/milvus_lite.db
+- docker/redis/redis.conf
+- docs/04-explanation/.DS_Store
+- docs/04-explanation/architecture/.DS_Store
+- docs/04-explanation/backlog/stories/.DS_Store
+- docs/91-rfc/.DS_Store
+- docs/archive/deprecated/conport_enhancement_decisions.json
+- docs/archive/integration-transient/claude-code/test-integration.py
+- docs/archive/services/INTEGRATION_DAY_3_STATUS.md
+- docs/archive/services/SESSION_SUMMARY_2025-10-29.md
+- docs/archive/services/SESSION_WRAP_UP.md
+- docs/archive/session-notes/.DS_Store
+- docs/archive/session-notes/2025-10/.DS_Store
+- exa_server.py
+- extraction/__init__.py
+- extraction/adhd_entities.py
+- extraction/markdown_patterns.py
+- extraction/test_docs/test.yaml
+- extraction/yaml_extractor.py
+- gptr-mcp/.env
+- gptr-mcp/.env.example
+- gptr-mcp/.gitignore
+- gptr-mcp/Dockerfile
+- gptr-mcp/LICENSE
+- gptr-mcp/README.md
+- gptr-mcp/__init__.py
+- gptr-mcp/docker-compose.yml
+- gptr-mcp/requirements.txt
+- gptr-mcp/run.sh
+- gptr-mcp/server.py
+- gptr-mcp/tests/test_mcp_server.py
+- gptr-mcp/utils.py
+- install_dopemux_claude_router.sh
+- installers/leantime/configs/default.yaml
+- installers/leantime/health_check.py
+- installers/macos/com.dopemux.mcp.plist.template
+- installers/systemd/dopemux-mcp.service.template
+- interruption_shield/__init__.py
+- interruption_shield/monitor.py
+- interruption_shield/shields.py
+- logs/latest.log
+- logs/task-orchestrator.log
+- metamcp/.dockerignore
+- metamcp/.env
+- metamcp/.github/workflows/docker-publish.yml
+- metamcp/.gitignore
+- metamcp/.npmrc
+- metamcp/CONTRIBUTING.md
+- metamcp/Dockerfile
+- metamcp/Dockerfile.dev
+- metamcp/LICENSE
+- metamcp/README-i18n.md
+- metamcp/README-oauth.md
+- metamcp/README.md
+- metamcp/README_cn.md
+- metamcp/apps/backend/.gitignore
+- metamcp/apps/backend/drizzle.config.ts
+- metamcp/apps/backend/drizzle/0000_greedy_tiger_shark.sql
+- metamcp/apps/backend/drizzle/0001_stale_micromax.sql
+- metamcp/apps/backend/drizzle/0002_dear_night_thrasher.sql
+- metamcp/apps/backend/drizzle/0003_strong_peter_parker.sql
+- metamcp/apps/backend/drizzle/0004_remarkable_george_stacy.sql
+- metamcp/apps/backend/drizzle/0005_clammy_speedball.sql
+- metamcp/apps/backend/drizzle/0006_volatile_inhumans.sql
+- metamcp/apps/backend/drizzle/0007_elite_madame_masque.sql
+- metamcp/apps/backend/drizzle/0008_shallow_puppet_master.sql
+- metamcp/apps/backend/drizzle/0009_stormy_sentinel.sql
+- metamcp/apps/backend/drizzle/meta/0000_snapshot.json
+- metamcp/apps/backend/drizzle/meta/0001_snapshot.json
+- metamcp/apps/backend/drizzle/meta/0002_snapshot.json
+- metamcp/apps/backend/drizzle/meta/0003_snapshot.json
+- metamcp/apps/backend/drizzle/meta/0004_snapshot.json
+- metamcp/apps/backend/drizzle/meta/0005_snapshot.json
+- metamcp/apps/backend/drizzle/meta/0006_snapshot.json
+- metamcp/apps/backend/drizzle/meta/0007_snapshot.json
+- metamcp/apps/backend/drizzle/meta/0008_snapshot.json
+- metamcp/apps/backend/drizzle/meta/0009_snapshot.json
+- metamcp/apps/backend/drizzle/meta/_journal.json
+- metamcp/apps/backend/eslint.config.js
+- metamcp/apps/backend/package.json
+- metamcp/apps/backend/src/auth.ts
+- metamcp/apps/backend/src/db/index.ts
+- metamcp/apps/backend/src/db/repositories/api-keys.repo.ts
+- metamcp/apps/backend/src/db/repositories/config.repo.ts
+- metamcp/apps/backend/src/db/repositories/endpoints.repo.ts
+- metamcp/apps/backend/src/db/repositories/index.ts
+- metamcp/apps/backend/src/db/repositories/mcp-servers.repo.ts
+- metamcp/apps/backend/src/db/repositories/namespace-mappings.repo.ts
+- metamcp/apps/backend/src/db/repositories/namespaces.repo.ts
+- metamcp/apps/backend/src/db/repositories/oauth-sessions.repo.ts
+- metamcp/apps/backend/src/db/repositories/oauth.repo.ts
+- metamcp/apps/backend/src/db/repositories/tools.repo.ts
+- metamcp/apps/backend/src/db/schema.ts
+- metamcp/apps/backend/src/db/serializers/api-keys.serializer.ts
+- metamcp/apps/backend/src/db/serializers/endpoints.serializer.ts
+- metamcp/apps/backend/src/db/serializers/index.ts
+- metamcp/apps/backend/src/db/serializers/mcp-servers.serializer.ts
+- metamcp/apps/backend/src/db/serializers/namespaces.serializer.ts
+- metamcp/apps/backend/src/db/serializers/oauth-sessions.serializer.ts
+- metamcp/apps/backend/src/db/serializers/tools.serializer.ts
+- metamcp/apps/backend/src/index.ts
+- metamcp/apps/backend/src/lib/auth-rate-limiter.ts
+- metamcp/apps/backend/src/lib/config.service.ts
+- metamcp/apps/backend/src/lib/mcp-proxy.ts
+- metamcp/apps/backend/src/lib/metamcp/client.ts
+- metamcp/apps/backend/src/lib/metamcp/fetch-metamcp.ts
+- metamcp/apps/backend/src/lib/metamcp/index.ts
+- metamcp/apps/backend/src/lib/metamcp/log-store.ts
+- metamcp/apps/backend/src/lib/metamcp/mcp-server-pool.ts
+- metamcp/apps/backend/src/lib/metamcp/metamcp-middleware/filter-tools.functional.ts
+- metamcp/apps/backend/src/lib/metamcp/metamcp-middleware/functional-middleware.ts
+- metamcp/apps/backend/src/lib/metamcp/metamcp-middleware/tool-overrides.functional.ts
+- metamcp/apps/backend/src/lib/metamcp/metamcp-proxy.ts
+- metamcp/apps/backend/src/lib/metamcp/metamcp-server-pool.ts
+- metamcp/apps/backend/src/lib/metamcp/server-error-tracker.ts
+- metamcp/apps/backend/src/lib/metamcp/tool-name-parser.ts
+- metamcp/apps/backend/src/lib/metamcp/utils.ts
+- metamcp/apps/backend/src/lib/session-lifetime-manager.ts
+- metamcp/apps/backend/src/lib/startup.ts
+- metamcp/apps/backend/src/lib/stdio-transport/process-managed-transport.ts
+- metamcp/apps/backend/src/lib/stdio-transport/shared.ts
+- metamcp/apps/backend/src/middleware/api-key-oauth.middleware.ts
+- metamcp/apps/backend/src/middleware/better-auth-mcp.middleware.ts
+- metamcp/apps/backend/src/middleware/lookup-endpoint-middleware.ts
+- metamcp/apps/backend/src/routers/mcp-proxy.ts
+- metamcp/apps/backend/src/routers/mcp-proxy/metamcp.ts
+- metamcp/apps/backend/src/routers/mcp-proxy/server.ts
+- metamcp/apps/backend/src/routers/oauth/authorization.ts
+- metamcp/apps/backend/src/routers/oauth/index.ts
+- metamcp/apps/backend/src/routers/oauth/metadata.ts
+- metamcp/apps/backend/src/routers/oauth/registration.ts
+- metamcp/apps/backend/src/routers/oauth/token.ts
+- metamcp/apps/backend/src/routers/oauth/userinfo.ts
+- metamcp/apps/backend/src/routers/oauth/utils.ts
+- metamcp/apps/backend/src/routers/public-metamcp.ts
+- metamcp/apps/backend/src/routers/public-metamcp/openapi/handlers.ts
+- metamcp/apps/backend/src/routers/public-metamcp/openapi/index.ts
+- metamcp/apps/backend/src/routers/public-metamcp/openapi/routes.ts
+- metamcp/apps/backend/src/routers/public-metamcp/openapi/schema-generator.ts
+- metamcp/apps/backend/src/routers/public-metamcp/openapi/tool-execution.ts
+- metamcp/apps/backend/src/routers/public-metamcp/openapi/types.ts
+- metamcp/apps/backend/src/routers/public-metamcp/sse.ts
+- metamcp/apps/backend/src/routers/public-metamcp/streamable-http.ts
+- metamcp/apps/backend/src/routers/trpc.ts
+- metamcp/apps/backend/src/trpc.ts
+- metamcp/apps/backend/src/trpc/api-keys.impl.ts
+- metamcp/apps/backend/src/trpc/config.impl.ts
+- metamcp/apps/backend/src/trpc/endpoints.impl.ts
+- metamcp/apps/backend/src/trpc/logs.impl.ts
+- metamcp/apps/backend/src/trpc/mcp-servers.impl.ts
+- metamcp/apps/backend/src/trpc/namespaces.impl.ts
+- metamcp/apps/backend/src/trpc/oauth.impl.ts
+- metamcp/apps/backend/src/trpc/tools.impl.ts
+- metamcp/apps/backend/tsconfig.json
+- metamcp/apps/backend/tsup.config.ts
+- metamcp/apps/frontend/.gitignore
+- metamcp/apps/frontend/app/[locale]/(sidebar)/api-keys/page.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/endpoints/endpoints-list.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/endpoints/page.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/layout.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/live-logs/page.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/mcp-inspector/components/inspector.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/mcp-inspector/components/inspector/inspector-ping.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/mcp-inspector/components/inspector/inspector-prompts.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/mcp-inspector/components/inspector/inspector-resources.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/mcp-inspector/components/inspector/inspector-roots.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/mcp-inspector/components/inspector/inspector-sampling.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/mcp-inspector/components/inspector/inspector-tools.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/mcp-inspector/components/notifications-panel.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/mcp-inspector/page.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/mcp-servers/[uuid]/components/tool-management.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/mcp-servers/[uuid]/components/tools-data-table.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/mcp-servers/[uuid]/page.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/mcp-servers/export-import-buttons.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/mcp-servers/mcp-servers-list.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/mcp-servers/page.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/namespaces/[uuid]/components/enhanced-namespace-tools-table.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/namespaces/[uuid]/components/namespace-servers-table.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/namespaces/[uuid]/components/namespace-tool-management.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/namespaces/[uuid]/page.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/namespaces/namespaces-list.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/namespaces/page.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/page.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/search/components/CardGrid.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/search/components/PaginationUi.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/search/page.tsx
+- metamcp/apps/frontend/app/[locale]/(sidebar)/settings/page.tsx
+- metamcp/apps/frontend/app/[locale]/cors-error/page.tsx
+- metamcp/apps/frontend/app/[locale]/layout.tsx
+- metamcp/apps/frontend/app/[locale]/login/page.tsx
+- metamcp/apps/frontend/app/[locale]/register/page.tsx
+- metamcp/apps/frontend/app/favicon.ico
+- metamcp/apps/frontend/app/fe-oauth/callback/page.tsx
+- metamcp/apps/frontend/app/fonts/GeistMonoVF.woff
+- metamcp/apps/frontend/app/fonts/GeistVF.woff
+- metamcp/apps/frontend/app/globals.css
+- metamcp/apps/frontend/app/layout.tsx
+- metamcp/apps/frontend/components.json
+- metamcp/apps/frontend/components/OAuthCallback.tsx
+- metamcp/apps/frontend/components/domain-warning-banner.tsx
+- metamcp/apps/frontend/components/edit-endpoint.tsx
+- metamcp/apps/frontend/components/edit-mcp-server.tsx
+- metamcp/apps/frontend/components/edit-namespace.tsx
+- metamcp/apps/frontend/components/language-switcher.tsx
+- metamcp/apps/frontend/components/logs-status-indicator.tsx
+- metamcp/apps/frontend/components/providers/theme-provider.tsx
+- metamcp/apps/frontend/components/providers/trpc-provider.tsx
+- metamcp/apps/frontend/components/skeletons/inspector-skeleton.tsx
+- metamcp/apps/frontend/components/skeletons/mcp-servers-list-skeleton.tsx
+- metamcp/apps/frontend/components/skeletons/search-skeleton.tsx
+- metamcp/apps/frontend/components/skeletons/server-details-skeleton.tsx
+- metamcp/apps/frontend/components/skeletons/tool-management-skeleton.tsx
+- metamcp/apps/frontend/components/ui/alert-dialog.tsx
+- metamcp/apps/frontend/components/ui/alert.tsx
+- metamcp/apps/frontend/components/ui/badge.tsx
+- metamcp/apps/frontend/components/ui/button.tsx
+- metamcp/apps/frontend/components/ui/card.tsx
+- metamcp/apps/frontend/components/ui/checkbox.tsx
+- metamcp/apps/frontend/components/ui/code-block.tsx
+- metamcp/apps/frontend/components/ui/dialog.tsx
+- metamcp/apps/frontend/components/ui/dropdown-menu.tsx
+- metamcp/apps/frontend/components/ui/form.tsx
+- metamcp/apps/frontend/components/ui/input.tsx
+- metamcp/apps/frontend/components/ui/label.tsx
+- metamcp/apps/frontend/components/ui/pagination.tsx
+- metamcp/apps/frontend/components/ui/select.tsx
+- metamcp/apps/frontend/components/ui/separator.tsx
+- metamcp/apps/frontend/components/ui/sheet.tsx
+- metamcp/apps/frontend/components/ui/sidebar.tsx
+- metamcp/apps/frontend/components/ui/skeleton.tsx
+- metamcp/apps/frontend/components/ui/switch.tsx
+- metamcp/apps/frontend/components/ui/table.tsx
+- metamcp/apps/frontend/components/ui/tabs.tsx
+- metamcp/apps/frontend/components/ui/textarea.tsx
+- metamcp/apps/frontend/components/ui/theme-toggle.tsx
+- metamcp/apps/frontend/components/ui/tooltip.tsx
+- metamcp/apps/frontend/eslint.config.mjs
+- metamcp/apps/frontend/hooks/use-mobile.ts
+- metamcp/apps/frontend/hooks/useConnection.ts
+- metamcp/apps/frontend/hooks/useLocale.ts
+- metamcp/apps/frontend/hooks/useTranslations.ts
+- metamcp/apps/frontend/lib/auth-client.ts
+- metamcp/apps/frontend/lib/constants.ts
+- metamcp/apps/frontend/lib/env.ts
+- metamcp/apps/frontend/lib/i18n.ts
+- metamcp/apps/frontend/lib/notificationTypes.ts
+- metamcp/apps/frontend/lib/oauth-provider.ts
+- metamcp/apps/frontend/lib/stores/logs-store.ts
+- metamcp/apps/frontend/lib/tool-name-parser.ts
+- metamcp/apps/frontend/lib/trpc.ts
+- metamcp/apps/frontend/lib/utils.ts
+- metamcp/apps/frontend/lib/validation-utils.ts
+- metamcp/apps/frontend/lib/zod-resolver.ts
+- metamcp/apps/frontend/middleware.ts
+- metamcp/apps/frontend/next.config.js
+- metamcp/apps/frontend/package.json
+- metamcp/apps/frontend/postcss.config.js
+- metamcp/apps/frontend/public/file-text.svg
+- metamcp/apps/frontend/public/globe.svg
+- metamcp/apps/frontend/public/locales/en/api-keys.json
+- metamcp/apps/frontend/public/locales/en/auth.json
+- metamcp/apps/frontend/public/locales/en/common.json
+- metamcp/apps/frontend/public/locales/en/endpoints.json
+- metamcp/apps/frontend/public/locales/en/inspector.json
+- metamcp/apps/frontend/public/locales/en/logs.json
+- metamcp/apps/frontend/public/locales/en/mcp-servers.json
+- metamcp/apps/frontend/public/locales/en/namespaces.json
+- metamcp/apps/frontend/public/locales/en/navigation.json
+- metamcp/apps/frontend/public/locales/en/search.json
+- metamcp/apps/frontend/public/locales/en/settings.json
+- metamcp/apps/frontend/public/locales/en/validation.json
+- metamcp/apps/frontend/public/locales/zh/api-keys.json
+- metamcp/apps/frontend/public/locales/zh/auth.json
+- metamcp/apps/frontend/public/locales/zh/common.json
+- metamcp/apps/frontend/public/locales/zh/endpoints.json
+- metamcp/apps/frontend/public/locales/zh/inspector.json
+- metamcp/apps/frontend/public/locales/zh/logs.json
+- metamcp/apps/frontend/public/locales/zh/mcp-servers.json
+- metamcp/apps/frontend/public/locales/zh/namespaces.json
+- metamcp/apps/frontend/public/locales/zh/navigation.json
+- metamcp/apps/frontend/public/locales/zh/search.json
+- metamcp/apps/frontend/public/locales/zh/settings.json
+- metamcp/apps/frontend/public/locales/zh/validation.json
+- metamcp/apps/frontend/public/next.svg
+- metamcp/apps/frontend/public/turborepo-dark.svg
+- metamcp/apps/frontend/public/turborepo-light.svg
+- metamcp/apps/frontend/public/vercel.svg
+- metamcp/apps/frontend/public/window.svg
+- metamcp/apps/frontend/tsconfig.json
+- metamcp/apps/frontend/types/search.ts
+- metamcp/docker-compose.dev.yml
+- metamcp/docker-compose.test.yml
+- metamcp/docker-compose.yml
+- metamcp/docker-entrypoint-dev.sh
+- metamcp/docker-entrypoint.sh
+- metamcp/docs/README.md
+- metamcp/docs/cn/concepts/endpoints.mdx
+- metamcp/docs/cn/concepts/inspector.mdx
+- metamcp/docs/cn/concepts/mcp-servers.mdx
+- metamcp/docs/cn/concepts/middleware-future.mdx
+- metamcp/docs/cn/concepts/middleware.mdx
+- metamcp/docs/cn/concepts/namespaces.mdx
+- metamcp/docs/cn/deployment/custom-deployment.mdx
+- metamcp/docs/cn/development/architecture.mdx
+- metamcp/docs/cn/development/contributing.mdx
+- metamcp/docs/cn/development/i18n.mdx
+- metamcp/docs/cn/index.mdx
+- metamcp/docs/cn/integrations/claude-desktop.mdx
+- metamcp/docs/cn/integrations/cursor.mdx
+- metamcp/docs/cn/integrations/general-stdio-with-api-key.mdx
+- metamcp/docs/cn/integrations/open-web-ui.mdx
+- metamcp/docs/cn/integrations/troubleshooting-future.mdx
+- metamcp/docs/cn/quickstart.mdx
+- metamcp/docs/cn/troubleshooting/oauth-troubleshooting.mdx
+- metamcp/docs/docs.json
+- metamcp/docs/en/concepts/endpoints.mdx
+- metamcp/docs/en/concepts/inspector.mdx
+- metamcp/docs/en/concepts/mcp-servers.mdx
+- metamcp/docs/en/concepts/middleware-future.mdx
+- metamcp/docs/en/concepts/middleware.mdx
+- metamcp/docs/en/concepts/namespaces.mdx
+- metamcp/docs/en/deployment/custom-deployment.mdx
+- metamcp/docs/en/development/architecture.mdx
+- metamcp/docs/en/development/contributing.mdx
+- metamcp/docs/en/development/i18n.mdx
+- metamcp/docs/en/index.mdx
+- metamcp/docs/en/integrations/claude-desktop.mdx
+- metamcp/docs/en/integrations/cursor.mdx
+- metamcp/docs/en/integrations/general-stdio-with-api-key.mdx
+- metamcp/docs/en/integrations/general-stdio-with-oauth.mdx
+- metamcp/docs/en/integrations/open-web-ui.mdx
+- metamcp/docs/en/integrations/troubleshooting-future.mdx
+- metamcp/docs/en/quickstart.mdx
+- metamcp/docs/en/troubleshooting/oauth-troubleshooting.mdx
+- metamcp/docs/essentials/code.mdx
+- metamcp/docs/essentials/images.mdx
+- metamcp/docs/essentials/markdown.mdx
+- metamcp/docs/essentials/navigation.mdx
+- metamcp/docs/essentials/reusable-snippets.mdx
+- metamcp/docs/essentials/settings.mdx
+- metamcp/docs/favicon.png
+- metamcp/docs/images/checks-passed.png
+- metamcp/docs/images/hero-dark.png
+- metamcp/docs/images/hero-light.png
+- metamcp/docs/images/metamcp.svg
+- metamcp/docs/images/metamcp_screenshot.png
+- metamcp/docs/images/open-web-ui/1.png
+- metamcp/docs/images/open-web-ui/2.png
+- metamcp/docs/images/open-web-ui/3.png
+- metamcp/docs/images/open-web-ui/4.png
+- metamcp/docs/images/open-web-ui/5.png
+- metamcp/docs/images/open-web-ui/6.png
+- metamcp/docs/logo/dark.svg
+- metamcp/docs/logo/light.svg
+- metamcp/docs/snippets/snippet-intro.mdx
+- metamcp/example.env
+- metamcp/invalidation.md
+- metamcp/metamcp.svg
+- metamcp/metamcp_screenshot.png
+- metamcp/nginx.conf.example
+- metamcp/package.json
+- metamcp/packages/eslint-config/README.md
+- metamcp/packages/eslint-config/base.js
+- metamcp/packages/eslint-config/express.js
+- metamcp/packages/eslint-config/next.js
+- metamcp/packages/eslint-config/package.json
+- metamcp/packages/eslint-config/react-internal.js
+- metamcp/packages/trpc/eslint.config.mjs
+- metamcp/packages/trpc/package.json
+- metamcp/packages/trpc/src/index.ts
+- metamcp/packages/trpc/src/router.ts
+- metamcp/packages/trpc/src/routers/frontend/api-keys.ts
+- metamcp/packages/trpc/src/routers/frontend/config.ts
+- metamcp/packages/trpc/src/routers/frontend/endpoints.ts
+- metamcp/packages/trpc/src/routers/frontend/index.ts
+- metamcp/packages/trpc/src/routers/frontend/logs.ts
+- metamcp/packages/trpc/src/routers/frontend/mcp-servers.ts
+- metamcp/packages/trpc/src/routers/frontend/namespaces.ts
+- metamcp/packages/trpc/src/routers/frontend/oauth.ts
+- metamcp/packages/trpc/src/routers/frontend/tools.ts
+- metamcp/packages/trpc/src/trpc.ts
+- metamcp/packages/trpc/tsconfig.json
+- metamcp/packages/trpc/tsup.config.ts
+- metamcp/packages/typescript-config/base.json
+- metamcp/packages/typescript-config/nextjs.json
+- metamcp/packages/typescript-config/package.json
+- metamcp/packages/typescript-config/react-library.json
+- metamcp/packages/zod-types/.gitignore
+- metamcp/packages/zod-types/eslint.config.mjs
+- metamcp/packages/zod-types/package.json
+- metamcp/packages/zod-types/src/api-keys.zod.ts
+- metamcp/packages/zod-types/src/api.zod.ts
+- metamcp/packages/zod-types/src/config.zod.ts
+- metamcp/packages/zod-types/src/endpoints.zod.ts
+- metamcp/packages/zod-types/src/index.ts
+- metamcp/packages/zod-types/src/logs.zod.ts
+- metamcp/packages/zod-types/src/mcp-servers.zod.ts
+- metamcp/packages/zod-types/src/metamcp.zod.ts
+- metamcp/packages/zod-types/src/namespaces.zod.ts
+- metamcp/packages/zod-types/src/oauth.zod.ts
+- metamcp/packages/zod-types/src/tools.zod.ts
+- metamcp/packages/zod-types/tsconfig.json
+- metamcp/packages/zod-types/tsup.config.ts
+- metamcp/pnpm-lock.yaml
+- metamcp/pnpm-workspace.yaml
+- metamcp/turbo.json
+- mkdocs.yml
+- plugins/Dopemux/.DS_Store
+- profiles/minimal.yaml
+- scripts/.dopemux/claude-code-router/A/.claude-code-router/.claude-code-router.pid
+- scripts/.dopemux/claude-code-router/A/.claude-code-router/api.key
+- scripts/.dopemux/claude-code-router/A/.claude-code-router/config.json
+- scripts/.dopemux/claude-code-router/A/.claude.json
+- scripts/.dopemux/claude-code-router/A/claude-code-router.log
+- scripts/.dopemux/context.db
+- scripts/.dopemux/env/current.env
+- scripts/.dopemux/env/current.sh
+- scripts/.dopemux/env/instance_A.env
+- scripts/.dopemux/env/instance_A.sh
+- scripts/.dopemux/instances_cache.json
+- scripts/.dopemux/litellm/A/database.url
+- scripts/.dopemux/litellm/A/litellm.config.yaml
+- scripts/.dopemux/litellm/A/master.key
+- scripts/.dopemux/litellm/A/prisma.log
+- scripts/.dopemux/litellm/A/prisma.ready
+- scripts/auto-start/docker-wait-up.sh
+- scripts/auto-start/setup-macos-launchagent.sh
+- scripts/auto-start/setup-systemd-service.sh
+- scripts/db/backup-conport-kg.sh
+- scripts/db/conport/restart.sh
+- scripts/db/conport/start.sh
+- scripts/db/conport/status.sh
+- scripts/db/conport/stop.sh
+- scripts/db/migrate-docs-architecture.sh
+- scripts/db/prepare_claude_migration.sh
+- scripts/db/sql/components_missing_slos.sql
+- scripts/db/sql/components_security_gaps.sql
+- scripts/db/sql/evidence_top_components.sql
+- scripts/db/sql/evidence_top_features.sql
+- scripts/db/sql/init-multiple-databases.sql
+- scripts/db/sql/research_recent_high_confidence.sql
+- scripts/deploy/deployment/stack_down_all.sh
+- scripts/deploy/deployment/stack_rebuild_all.sh
+- scripts/deploy/deployment/start-all-mcp.sh
+- scripts/deploy/deployment/start_cli_dashboard.sh
+- scripts/deploy/deployment/start_dashboard.sh
+- scripts/deploy/migration/001_create_decisions_v2.sql
+- scripts/deploy/migration/002_create_relationships_v2.sql
+- scripts/deploy/migration/003_create_age_indexes.sql
+- scripts/deploy/migration/004_create_age_indexes_fixed.sql
+- scripts/deploy/migration/README.md
+- scripts/deploy/migration/compute_hop_distance.py
+- scripts/deploy/setup/install_claude_code_router.sh
+- scripts/deploy/setup/setup-leantime-env.sh
+- scripts/deploy/setup/setup-xai.sh
+- scripts/dev/test_data/demo_all_commands.sh
+- scripts/dev/testing/test-serena-v2.sh
+- scripts/dev/testing/test_chunking_fix.py
+- scripts/dev/testing/test_session_integration.py
+- scripts/dev/testing/test_sqlite_wal_performance.py
+- scripts/docs_audit/README.md
+- scripts/git-hooks/git_post_worktree_hook.sh
+- scripts/indexing/auto-sync-indexing.sh
+- scripts/indexing/simple-auto-sync.sh
+- scripts/legacy_tmux/debug_statusline.sh
+- scripts/legacy_tmux/set-profile.sh
+- scripts/legacy_tmux/tmux_dopemux_dashboard.sh
+- scripts/legacy_tmux/tmux_quick.sh
+- scripts/mcp/conport-wrapper.sh
+- scripts/mcp/mas-stdio-wrapper.sh
+- scripts/mcp/serena-wrapper.sh
+- scripts/mcp/start_metamcp_broker.py
+- scripts/mcp/start_metamcp_minimal.py
+- scripts/mcp/update-mcp.sh
+- scripts/monitoring/adhd-activity-logger.sh
+- scripts/ui/test_interactive_integration.py
+- scripts/ui/test_tmux_integration.sh
+- scripts/utilities/cleanup-multi-instance.sh
+- scripts/utilities/enhanced_patterns.py
+- scripts/utilities/save_enhancement_plans_to_conport.sh
+- scripts/utilities/session_formatter.py
+- services/.gitignore
+- services/__init__.py
+- services/activity-capture/.env.example
+- services/activity-capture/__init__.py
+- services/adhd_engine/domains/interruption-shield/.coverage
+- services/adhd_engine/domains/interruption-shield/.github/workflows/ci.yml
+- services/adhd_engine/domains/interruption-shield/.pre-commit-config.yaml
+- services/adhd_engine/domains/interruption-shield/Makefile
+- services/adhd_engine/domains/interruption-shield/README.md
+- services/adhd_engine/domains/interruption-shield/__init__.py
+- services/adhd_engine/domains/interruption-shield/htmlcov/.gitignore
+- services/adhd_engine/domains/interruption-shield/htmlcov/class_index.html
+- services/adhd_engine/domains/interruption-shield/htmlcov/coverage_html_cb_6fb7b396.js
+- services/adhd_engine/domains/interruption-shield/htmlcov/favicon_32_cb_58284776.png
+- services/adhd_engine/domains/interruption-shield/htmlcov/function_index.html
+- services/adhd_engine/domains/interruption-shield/htmlcov/index.html
+- services/adhd_engine/domains/interruption-shield/htmlcov/keybd_closed_cb_ce680311.png
+- services/adhd_engine/domains/interruption-shield/htmlcov/status.json
+- services/adhd_engine/domains/interruption-shield/htmlcov/style_cb_6b508a39.css
+- services/adhd_engine/domains/interruption-shield/htmlcov/z_8b2cfe4807180590___init___py.html
+- services/adhd_engine/domains/interruption-shield/htmlcov/z_8b2cfe4807180590_adhd_engine_client_py.html
+- services/adhd_engine/domains/interruption-shield/htmlcov/z_8b2cfe4807180590_dnd_manager_py.html
+- services/adhd_engine/domains/interruption-shield/htmlcov/z_8b2cfe4807180590_notification_manager_py.html
+- services/adhd_engine/domains/interruption-shield/htmlcov/z_b3f5aba8e68a9d53___init___py.html
+- services/adhd_engine/domains/interruption-shield/htmlcov/z_b3f5aba8e68a9d53_message_queue_py.html
+- services/adhd_engine/domains/interruption-shield/htmlcov/z_b3f5aba8e68a9d53_message_triage_py.html
+- services/adhd_engine/domains/interruption-shield/htmlcov/z_b3f5aba8e68a9d53_models_py.html
+- services/adhd_engine/domains/interruption-shield/htmlcov/z_b3f5aba8e68a9d53_urgency_scorer_py.html
+- services/adhd_engine/domains/interruption-shield/htmlcov/z_fc94b3ce97723b9c___init___py.html
+- services/adhd_engine/domains/interruption-shield/htmlcov/z_fd105f6d099ba7d0___init___py.html
+- services/adhd_engine/domains/interruption-shield/htmlcov/z_fd105f6d099ba7d0_coordinator_py.html
+- services/adhd_engine/domains/interruption-shield/htmlcov/z_fd105f6d099ba7d0_models_py.html
+- services/adhd_engine/domains/interruption-shield/interruption_shield.egg-info/PKG-INFO
+- services/adhd_engine/domains/interruption-shield/interruption_shield.egg-info/SOURCES.txt
+- services/adhd_engine/domains/interruption-shield/interruption_shield.egg-info/dependency_links.txt
+- services/adhd_engine/domains/interruption-shield/interruption_shield.egg-info/requires.txt
+- services/adhd_engine/domains/interruption-shield/interruption_shield.egg-info/top_level.txt
+- services/adhd_engine/domains/interruption-shield/interruption_shield/__init__.py
+- services/adhd_engine/domains/interruption-shield/interruption_shield/core/__init__.py
+- services/adhd_engine/domains/interruption-shield/interruption_shield/integrations/__init__.py
+- services/adhd_engine/domains/interruption-shield/interruption_shield/integrations/dnd_manager.py
+- services/adhd_engine/domains/interruption-shield/interruption_shield/integrations/notification_manager.py
+- services/adhd_engine/domains/interruption-shield/interruption_shield/triage/__init__.py
+- services/adhd_engine/domains/interruption-shield/interruption_shield/triage/message_queue.py
+- services/adhd_engine/domains/interruption-shield/interruption_shield/triage/message_triage.py
+- services/adhd_engine/domains/interruption-shield/interruption_shield/triage/models.py
+- services/adhd_engine/domains/interruption-shield/interruption_shield/triage/urgency_scorer.py
+- services/adhd_engine/domains/interruption-shield/pyproject.toml
+- services/adhd_engine/domains/interruption-shield/requirements.txt
+- services/adhd_engine/domains/interruption-shield/setup.py
+- services/adhd_engine/domains/interruption-shield/tests/__init__.py
+- services/adhd_engine/domains/interruption-shield/tests/conftest.py
+- services/adhd_engine/domains/interruption-shield/tests/integration/test_adhd_engine_integration.py
+- services/adhd_engine/domains/interruption-shield/tests/unit/test_coordinator.py
+- services/adhd_engine/domains/interruption-shield/tests/unit/test_coordinator_adhd_integration.py
+- services/agents/__init__.py
+- services/agents/test_cognitive_guardian.py
+- services/agents/test_dopemux_enforcer.py
+- services/agents/test_memory_agent.py
+- services/agents/test_real_workflow.py
+- services/agents/test_task_decomposer.py
+- services/agents/test_week6_orchestrator.py
+- services/agents/test_workflow_coordinator.py
+- services/conport/.dockerignore
+- services/conport/.github/FUNDING.yml
+- services/conport/.github/workflows/dependency-review.yml
+- services/conport/.gitignore
+- services/conport/CODE_OF_CONDUCT.md
+- services/conport/CONTRIBUTING.md
+- services/conport/LICENSE
+- services/conport/README.md
+- services/conport/assets/images/cline.png
+- services/conport/assets/images/cursor.png
+- services/conport/assets/images/roo-logo.png
+- services/conport/assets/images/windsurf.png
+- services/conport/conport-custom-instructions/cascade_conport_strategy
+- services/conport/conport-custom-instructions/cascade_conport_strategy_compact
+- services/conport/conport-custom-instructions/cline_conport_strategy
+- services/conport/conport-custom-instructions/generic_conport_strategy
+- services/conport/conport-custom-instructions/roo_code_conport_strategy
+- services/conport/requirements.txt
+- services/conport/run_wma_migration.py
+- services/conport/src/conport/core/config.py
+- services/conport/src/conport/core/dope_context_indexer.py
+- services/conport/src/conport/core/embedding_service.py
+- services/conport/src/conport/core/exceptions.py
+- services/conport/src/conport/core/workspace_detector.py
+- services/conport/src/conport/db/database.py
+- services/conport/src/conport/db/models.py
+- services/conport/src/conport/db/vector_store_service.py
+- services/conport/src/conport/handlers/mcp_handlers.py
+- services/conport/src/conport/main.py
+- services/conport/src/conport/v2/__init__.py
+- services/conport/src/conport/v2/cache.py
+- services/conport/src/conport/v2/database.py
+- services/conport/src/conport/v2/embedding_pipeline.py
+- services/conport/src/conport/v2/handlers.py
+- services/conport/src/conport/v2/vector_store.py
+- services/conport/src/context_portal_mcp.egg-info/PKG-INFO
+- services/conport/src/context_portal_mcp.egg-info/SOURCES.txt
+- services/conport/src/context_portal_mcp.egg-info/dependency_links.txt
+- services/conport/src/context_portal_mcp.egg-info/entry_points.txt
+- services/conport/src/context_portal_mcp.egg-info/requires.txt
+- services/conport/src/context_portal_mcp.egg-info/top_level.txt
+- services/conport/tests/conftest.py
+- services/conport/tests/test_handlers_integration.py
+- services/conport/tests/test_int_coercion.py
+- services/conport/uv.lock
+- services/conport/wma_migration.sql
+- services/conport_kg_ui/demo.sh
+- services/conport_kg_ui/package-lock.json
+- services/conport_kg_ui/package.json
+- services/conport_kg_ui/src/App.tsx
+- services/conport_kg_ui/src/api/client.ts
+- services/conport_kg_ui/src/cli.tsx
+- services/conport_kg_ui/src/components/DecisionBrowser.tsx
+- services/conport_kg_ui/src/components/DeepContextViewer.tsx
+- services/conport_kg_ui/src/components/GenealogyExplorer.tsx
+- services/conport_kg_ui/src/mock-server.ts
+- services/conport_kg_ui/src/types/index.ts
+- services/conport_kg_ui/test_url_encoding.js
+- services/conport_kg_ui/tsconfig.json
+- services/dope-context/.env.container
+- services/dope-context/.gitignore
+- services/dope-context/OPTIMIZATION_COMPLETE.md
+- services/dope-context/config/defaults.yaml
+- services/dope-context/data/qdrant/aliases/data.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/newest_clocks.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/replica_state.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/LOG
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/segment.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/version.info
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/LOG
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/segment.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/version.info
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/LOG
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/segment.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/version.info
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/LOG
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/segment.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/version.info
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/LOG
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/segment.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/version.info
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/LOG
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/segment.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/version.info
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/LOG
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/segment.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/version.info
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/shard_config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/wal/first-index
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/wal/open-1
+- services/dope-context/data/qdrant/collections/code_3ca12e07/0/wal/open-2
+- services/dope-context/data/qdrant/collections/code_3ca12e07/config.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/payload_index.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/shard_key_mapping.json
+- services/dope-context/data/qdrant/collections/code_3ca12e07/version.info
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/newest_clocks.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/replica_state.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/LOG
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/segment.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/version.info
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/LOG
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/segment.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/version.info
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/LOG
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/segment.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/version.info
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/LOG
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/segment.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/version.info
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/LOG
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/segment.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/version.info
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/LOG
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/segment.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/version.info
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/LOG
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/segment.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/version.info
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/shard_config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/wal/first-index
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/wal/open-1
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/wal/open-2
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/config.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/payload_index.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/shard_key_mapping.json
+- services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/version.info
+- services/dope-context/data/qdrant/collections/dopemux_source/0/newest_clocks.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/replica_state.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/000027.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/000028.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/000029.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/000040.log
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/LOG
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/MANIFEST-000041
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/OPTIONS-000039
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/OPTIONS-000043
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/segment.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/version.info
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/000027.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/000028.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/000029.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/000040.log
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/LOG
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/MANIFEST-000041
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/OPTIONS-000039
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/OPTIONS-000043
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/segment.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/version.info
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/000027.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/000028.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/000029.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/000040.log
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/LOG
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/MANIFEST-000041
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/OPTIONS-000039
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/OPTIONS-000043
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/segment.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/version.info
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/000027.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/000028.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/000029.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/000040.log
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/LOG
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/MANIFEST-000041
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/OPTIONS-000039
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/OPTIONS-000043
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/segment.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/version.info
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/000034.log
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/LOG
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/MANIFEST-000035
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/OPTIONS-000033
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/OPTIONS-000037
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/segment.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/version.info
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/000027.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/000028.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/000029.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/000040.log
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/LOG
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/MANIFEST-000041
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/OPTIONS-000039
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/OPTIONS-000043
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/segment.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/version.info
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/000027.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/000028.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/000029.sst
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/000040.log
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/LOG
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/MANIFEST-000041
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/OPTIONS-000039
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/OPTIONS-000043
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/segment.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/version.info
+- services/dope-context/data/qdrant/collections/dopemux_source/0/shard_config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/0/wal/first-index
+- services/dope-context/data/qdrant/collections/dopemux_source/0/wal/open-1
+- services/dope-context/data/qdrant/collections/dopemux_source/0/wal/open-2
+- services/dope-context/data/qdrant/collections/dopemux_source/config.json
+- services/dope-context/data/qdrant/collections/dopemux_source/payload_index.json
+- services/dope-context/data/qdrant/collections/dopemux_source/shard_key_mapping.json
+- services/dope-context/data/qdrant/collections/dopemux_source/version.info
+- services/dope-context/data/qdrant/collections/perf_test/0/newest_clocks.json
+- services/dope-context/data/qdrant/collections/perf_test/0/replica_state.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/LOG
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/segment.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/version.info
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/LOG
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/segment.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/version.info
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/LOG
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/segment.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/version.info
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/LOG
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/segment.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/version.info
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/LOG
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/segment.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/version.info
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/LOG
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/segment.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/version.info
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/LOG
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/segment.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/version.info
+- services/dope-context/data/qdrant/collections/perf_test/0/shard_config.json
+- services/dope-context/data/qdrant/collections/perf_test/0/wal/first-index
+- services/dope-context/data/qdrant/collections/perf_test/0/wal/open-1
+- services/dope-context/data/qdrant/collections/perf_test/0/wal/open-2
+- services/dope-context/data/qdrant/collections/perf_test/config.json
+- services/dope-context/data/qdrant/collections/perf_test/payload_index.json
+- services/dope-context/data/qdrant/collections/perf_test/shard_key_mapping.json
+- services/dope-context/data/qdrant/collections/perf_test/version.info
+- services/dope-context/data/qdrant/collections/test_perf/0/newest_clocks.json
+- services/dope-context/data/qdrant/collections/test_perf/0/replica_state.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/LOG
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/segment.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/version.info
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/LOG
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/segment.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/version.info
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/LOG
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/segment.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/version.info
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/LOG
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/segment.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/version.info
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/LOG
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/segment.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/version.info
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/LOG
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/segment.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/version.info
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/mutable_id_tracker.mappings
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/mutable_id_tracker.versions
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/000004.log
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/CURRENT
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/IDENTITY
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/LOCK
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/LOG
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/MANIFEST-000005
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/OPTIONS-000023
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/OPTIONS-000025
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_storage/bitmask.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_storage/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_storage/gaps.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_storage/page_0.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_storage/tracker.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/segment.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-breadcrumb_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-breadcrumb_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-breadcrumb_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-content_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-content_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-content_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-content_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-content_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-title_vec/deleted/flags_a.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-title_vec/deleted/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-title_vec/vectors/chunk_0.mmap
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-title_vec/vectors/config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-title_vec/vectors/status.dat
+- services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/version.info
+- services/dope-context/data/qdrant/collections/test_perf/0/shard_config.json
+- services/dope-context/data/qdrant/collections/test_perf/0/wal/first-index
+- services/dope-context/data/qdrant/collections/test_perf/0/wal/open-1
+- services/dope-context/data/qdrant/collections/test_perf/0/wal/open-2
+- services/dope-context/data/qdrant/collections/test_perf/config.json
+- services/dope-context/data/qdrant/collections/test_perf/payload_index.json
+- services/dope-context/data/qdrant/collections/test_perf/shard_key_mapping.json
+- services/dope-context/data/qdrant/collections/test_perf/version.info
+- services/dope-context/data/qdrant/raft_state.json
+- services/dope-context/run_mcp.sh
+- services/dope-context/src/autonomous/__init__.py
+- services/dope-context/src/autonomous/indexing_worker.py
+- services/dope-context/src/autonomous/periodic_sync.py
+- services/dope-context/src/context/__init__.py
+- services/dope-context/src/core/__init__.py
+- services/dope-context/src/core/vector_store.py
+- services/dope-context/src/embeddings/__init__.py
+- services/dope-context/src/enrichment/__init__.py
+- services/dope-context/src/enrichment/graph_enrichment.py
+- services/dope-context/src/mcp/__init__.py
+- services/dope-context/src/pipeline/__init__.py
+- services/dope-context/src/pipeline/docs_pipeline.py
+- services/dope-context/src/preprocessing/__init__.py
+- services/dope-context/src/preprocessing/models.py
+- services/dope-context/src/rerank/__init__.py
+- services/dope-context/src/search/__init__.py
+- services/dope-context/src/search/docs_search.py
+- services/dope-context/src/sync/__init__.py
+- services/dope-context/src/utils/__init__.py
+- services/dope-context/tests/test_claude_generator.py
+- services/dope-context/tests/test_code_chunker.py
+- services/dope-context/tests/test_dense_search.py
+- services/dope-context/tests/test_hybrid_search.py
+- services/dope-context/tests/test_indexing_pipeline.py
+- services/dope-context/tests/test_multi_project.py
+- services/dope-context/tests/test_optimizations.py
+- services/dope-context/tests/test_voyage_embedder.py
+- services/dope-context/tests/test_voyage_reranker.py
+- services/dopemux-gpt-researcher/.dockerignore
+- services/dopemux-gpt-researcher/mcp-server/test_server.py
+- services/dopemux-gpt-researcher/mcp-server/wrapper.py
+- services/dopemux-gpt-researcher/requirements.txt
+- services/dopemux-gpt-researcher/research_api/__init__.py
+- services/dopemux-gpt-researcher/research_api/adapters/websocket_streamer.py
+- services/dopemux-gpt-researcher/research_api/engines/__init__.py
+- services/dopemux-gpt-researcher/research_api/engines/search/perplexity_adapter.py
+- services/dopemux-gpt-researcher/research_api/extraction_pipeline.py
+- services/dopemux-gpt-researcher/research_api/extractors/__init__.py
+- services/dopemux-gpt-researcher/research_api/extractors/base_extractor.py
+- services/dopemux-gpt-researcher/research_api/extractors/constraint_extractor.py
+- services/dopemux-gpt-researcher/research_api/extractors/decision_extractor.py
+- services/dopemux-gpt-researcher/research_api/extractors/feature_extractor.py
+- services/dopemux-gpt-researcher/research_api/extractors/research_extractor.py
+- services/dopemux-gpt-researcher/research_api/extractors/risk_extractor.py
+- services/dopemux-gpt-researcher/research_api/extractors/security_extractor.py
+- services/dopemux-gpt-researcher/research_api/extractors/stakeholder_extractor.py
+- services/dopemux-gpt-researcher/research_api/models/__init__.py
+- services/dopemux-gpt-researcher/research_api/models/research_task.py
+- services/dopemux-gpt-researcher/research_api/requirements.txt
+- services/dopemux-gpt-researcher/research_api/requirements_enhanced.txt
+- services/dopemux-gpt-researcher/research_api/synthesis/__init__.py
+- services/dopemux-gpt-researcher/research_api/synthesis/synthesis_engine.py
+- services/dopemux-gpt-researcher/research_api/synthesis/template_selector.py
+- services/dopemux-gpt-researcher/research_api/synthesis/templates/adr.md.j2
+- services/dopemux-gpt-researcher/research_api/synthesis/templates/architecture_doc.md.j2
+- services/dopemux-gpt-researcher/research_api/synthesis/templates/business_plan.md.j2
+- services/dopemux-gpt-researcher/research_api/synthesis/templates/design_spec.md.j2
+- services/dopemux-gpt-researcher/research_api/synthesis/templates/implementation_plan.md.j2
+- services/dopemux-gpt-researcher/research_api/synthesis/templates/prd.md.j2
+- services/dopemux-gpt-researcher/research_api/synthesis/templates/research_summary.md.j2
+- services/dopemux-gpt-researcher/research_api/synthesis/templates/risk_register.md.j2
+- services/dopemux-gpt-researcher/research_api/synthesis/templates/security_assessment.md.j2
+- services/dopemux-gpt-researcher/research_api/synthesis/templates/stakeholder_map.md.j2
+- services/dopemux-gpt-researcher/research_api/tests/__init__.py
+- services/dopemux-gpt-researcher/test_session_persistence.py
+- services/dopemux-gpt-researcher/test_token_limit_fix.py
+- services/mcp-conport/.env
+- services/mcp-integration-bridge/.env
+- services/serena/src/serena/v2/intelligence/.coverage
+- services/session-manager/.coverage
+- services/session-manager/config/agents.yaml
+- services/session-manager/research/message-bus-decision-analysis.md
+- services/session-manager/research/step2-validation-request.md
+- services/session-manager/src/__init__.py
+- services/session-manager/src/layouts/__init__.py
+- services/session-manager/test_ai_cli_spawning.py
+- services/session-manager/test_config_integration.py
+- services/session-manager/test_error_recovery.py
+- services/session-manager/test_multi_ai_parallel.py
+- services/session-manager/test_response_parser.py
+- services/session-manager/tests/test_command_parser.py
+- services/session-manager/tmux/__init__.py
+- services/session-manager/tui/README.md
+- services/session-manager/tui/__init__.py
+- services/session-manager/tui/parallel_orchestrator.py
+- services/session-manager/tui/state_manager.py
+- services/session-manager/tui/test_command_router.py
+- services/session-manager/tui/test_day8-10_integration.py
+- services/session-manager/tui/test_e2e_integration.py
+- services/session-manager/tui/test_enhanced_router.py
+- services/session-manager/tui/test_parallel_orchestrator.py
+- services/task-orchestrator/app/adapters/__init__.py
+- services/task-orchestrator/intelligence/__init__.py
+- services/task-orchestrator/intelligence/flow_metrics.py
+- services/task-orchestrator/intelligence/flow_state_detector.py
+- services/task-orchestrator/intelligence/load_alert_manager.py
+- services/task-orchestrator/intelligence/test_cognitive_load_balancer.py
+- services/task-orchestrator/intelligence/test_context_switch_recovery.py
+- services/task-orchestrator/intelligence/test_load_alert_manager.py
+- services/task-orchestrator/intelligence/test_predictive_orchestrator.py
+- services/task-orchestrator/ml/__init__.py
+- services/task-orchestrator/ml/contextual_bandit.py
+- services/task-orchestrator/ml/dynamic_recommendation.py
+- services/task-orchestrator/ml/feature_engineering.py
+- services/task-orchestrator/observability/__init__.py
+- services/task-orchestrator/observability/docker-compose-monitoring.yml
+- services/task-orchestrator/observability/prometheus.yml
+- services/task-orchestrator/test_adhd_prioritization.py
+- services/task-orchestrator/test_week2_integration.py
+- services/task-orchestrator/test_week5_adhd_routing.py
+- services/task-orchestrator/tests/test_conport_adapter.py
+- services/task-orchestrator/tests/test_insight_publisher.py
+- services/task-orchestrator/tests/test_integration_event_flow.py
+- services/taskmaster-mcp-client/taskmaster_mcp_client.egg-info/PKG-INFO
+- services/taskmaster-mcp-client/taskmaster_mcp_client.egg-info/SOURCES.txt
+- services/taskmaster-mcp-client/taskmaster_mcp_client.egg-info/dependency_links.txt
+- services/taskmaster-mcp-client/taskmaster_mcp_client.egg-info/entry_points.txt
+- services/taskmaster-mcp-client/taskmaster_mcp_client.egg-info/requires.txt
+- services/taskmaster-mcp-client/taskmaster_mcp_client.egg-info/top_level.txt
+- src/.DS_Store
+- src/.dopemux/rollback/registry.json
+- src/conport/__init__.py
+- src/conport/importers.py
+- src/dopemux/.DS_Store
+- src/dopemux/__main__.py
+- src/dopemux/adhd/archived/attention_manager.py.archived
+- src/dopemux/embeddings/README.md
+- src/dopemux/export_workspace_env.sh
+- src/dopemux/test_instance_state.py
+- src/integrations/leantime_mcp_server.js
+- test.db
+- tox.ini
+- ui-dashboard/lib/api/health.ts
+- ui-dashboard/lib/utils.ts
+
+## Potential Breakage Flags
+- High-risk quarantined paths (config/entrypoints):
+  - .claude/docs/README.md
+  - .claude/scratch/README.md
+  - .coveragerc
+  - .github/README.md
+  - .python-version
+  - .vale.ini
+  - SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/.env
+  - SYSTEM_ARCHIVE/adhd-engine-legacy-20260201/.env.example
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.env
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/annotated_types-0.7.0.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/anyio-4.10.0.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/attrs-25.3.0.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/cachetools-5.5.2.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/certifi-2025.8.3.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/charset_normalizer-3.4.3.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/click-8.2.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/distro-1.9.0.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_auth-2.40.3.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/google_genai-1.33.0.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/h11-0.16.0.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpcore-1.0.9.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx-0.28.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/httpx_sse-0.4.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/idna-3.10.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jiter-0.10.0.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema-4.25.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/jsonschema_specifications-2025.4.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/mcp-1.13.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/openai-1.106.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pip-25.1.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1-0.6.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pyasn1_modules-0.4.2.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic-2.11.7.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_core-2.33.2.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/pydantic_settings-2.10.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_dotenv-1.1.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/python_multipart-0.0.20.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/referencing-0.36.2.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/requests-2.32.5.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rpds_py-0.27.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/rsa-4.9.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sniffio-1.3.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/sse_starlette-3.0.2.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/starlette-0.47.3.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tenacity-9.1.2.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/tqdm-4.67.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_extensions-4.15.0.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/typing_inspection-0.4.1.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/urllib3-2.5.0.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/uvicorn-0.35.0.dist-info/INSTALLER
+  - SYSTEM_ARCHIVE/zen-mcp-server-v7.0.2-backup/.zen_venv/lib/python3.12/site-packages/websockets-15.0.1.dist-info/INSTALLER
+  - config/.DS_Store
+  - config/docs/enforcement.yaml
+  - config/env/conport.env
+  - config/env/conport.env.example
+  - config/env/routing.env
+  - config/escalations/escalations.yml
+  - config/mcp-proxy-config.json
+  - config/mcp/clear_thought.yml
+  - config/mcp/policy.yaml
+  - config/profiles/dangerous.yaml.bak
+  - config/profiles/safe.yaml.bak
+  - config/rag/evaluation-metrics.yaml
+  - config/rag/pipeline-config.yaml
+  - config/rag/role-policies.json
+  - config/routing/clear_thought_rules.yml
+  - docker/conport-kg/.env
+  - docker/docker-compose.event-bus.yml
+  - docker/leantime/.env
+  - docker/mcp-servers/claude-context/Dockerfile
+  - docker/mcp-servers/desktop-commander/.env
+  - docker/mcp-servers/desktop-commander/Dockerfile
+  - docker/mcp-servers/desktop-commander/pyproject.toml
+  - docker/mcp-servers/desktop-commander/requirements.txt
+  - docker/mcp-servers/exa/Dockerfile
+  - docker/mcp-servers/exa/pyproject.toml
+  - docker/mcp-servers/exa/requirements.txt
+  - docker/mcp-servers/gptr-mcp/README.md
+  - docker/mcp-servers/leantime-bridge/.env
+  - docker/mcp-servers/leantime-bridge/.env.bak
+  - docker/mcp-servers/leantime-bridge/Dockerfile
+  - docker/mcp-servers/leantime-bridge/requirements.txt
+  - docker/mcp-servers/morphllm-fast-apply/.env
+  - docker/mcp-servers/morphllm-fast-apply/Dockerfile
+  - docker/memory-stack/Dockerfile.conport
+  - docker/memory-stack/docker-compose.age.yml
+  - docker/memory-stack/docker-compose.yml
+  - gptr-mcp/.env
+  - gptr-mcp/.env.example
+  - gptr-mcp/Dockerfile
+  - gptr-mcp/README.md
+  - gptr-mcp/docker-compose.yml
+  - gptr-mcp/requirements.txt
+  - metamcp/.env
+  - metamcp/Dockerfile
+  - metamcp/Dockerfile.dev
+  - metamcp/README-i18n.md
+  - metamcp/README-oauth.md
+  - metamcp/README.md
+  - metamcp/README_cn.md
+  - metamcp/docker-compose.dev.yml
+  - metamcp/docker-compose.test.yml
+  - metamcp/docker-compose.yml
+  - metamcp/docs/README.md
+  - metamcp/example.env
+  - metamcp/packages/eslint-config/README.md
+  - mkdocs.yml
+  - scripts/.dopemux/claude-code-router/A/.claude-code-router/.claude-code-router.pid
+  - scripts/.dopemux/claude-code-router/A/.claude-code-router/api.key
+  - scripts/.dopemux/claude-code-router/A/.claude-code-router/config.json
+  - scripts/.dopemux/claude-code-router/A/.claude.json
+  - scripts/.dopemux/claude-code-router/A/claude-code-router.log
+  - scripts/.dopemux/context.db
+  - scripts/.dopemux/env/current.env
+  - scripts/.dopemux/env/current.sh
+  - scripts/.dopemux/env/instance_A.env
+  - scripts/.dopemux/env/instance_A.sh
+  - scripts/.dopemux/instances_cache.json
+  - scripts/.dopemux/litellm/A/database.url
+  - scripts/.dopemux/litellm/A/litellm.config.yaml
+  - scripts/.dopemux/litellm/A/master.key
+  - scripts/.dopemux/litellm/A/prisma.log
+  - scripts/.dopemux/litellm/A/prisma.ready
+  - scripts/auto-start/docker-wait-up.sh
+  - scripts/auto-start/setup-macos-launchagent.sh
+  - scripts/auto-start/setup-systemd-service.sh
+  - scripts/db/backup-conport-kg.sh
+  - scripts/db/conport/restart.sh
+  - scripts/db/conport/start.sh
+  - scripts/db/conport/status.sh
+  - scripts/db/conport/stop.sh
+  - scripts/db/migrate-docs-architecture.sh
+  - scripts/db/prepare_claude_migration.sh
+  - scripts/db/sql/components_missing_slos.sql
+  - scripts/db/sql/components_security_gaps.sql
+  - scripts/db/sql/evidence_top_components.sql
+  - scripts/db/sql/evidence_top_features.sql
+  - scripts/db/sql/init-multiple-databases.sql
+  - scripts/db/sql/research_recent_high_confidence.sql
+  - scripts/deploy/deployment/stack_down_all.sh
+  - scripts/deploy/deployment/stack_rebuild_all.sh
+  - scripts/deploy/deployment/start-all-mcp.sh
+  - scripts/deploy/deployment/start_cli_dashboard.sh
+  - scripts/deploy/deployment/start_dashboard.sh
+  - scripts/deploy/migration/001_create_decisions_v2.sql
+  - scripts/deploy/migration/002_create_relationships_v2.sql
+  - scripts/deploy/migration/003_create_age_indexes.sql
+  - scripts/deploy/migration/004_create_age_indexes_fixed.sql
+  - scripts/deploy/migration/README.md
+  - scripts/deploy/migration/compute_hop_distance.py
+  - scripts/deploy/setup/install_claude_code_router.sh
+  - scripts/deploy/setup/setup-leantime-env.sh
+  - scripts/deploy/setup/setup-xai.sh
+  - scripts/dev/test_data/demo_all_commands.sh
+  - scripts/dev/testing/test-serena-v2.sh
+  - scripts/dev/testing/test_chunking_fix.py
+  - scripts/dev/testing/test_session_integration.py
+  - scripts/dev/testing/test_sqlite_wal_performance.py
+  - scripts/docs_audit/README.md
+  - scripts/git-hooks/git_post_worktree_hook.sh
+  - scripts/indexing/auto-sync-indexing.sh
+  - scripts/indexing/simple-auto-sync.sh
+  - scripts/legacy_tmux/debug_statusline.sh
+  - scripts/legacy_tmux/set-profile.sh
+  - scripts/legacy_tmux/tmux_dopemux_dashboard.sh
+  - scripts/legacy_tmux/tmux_quick.sh
+  - scripts/mcp/conport-wrapper.sh
+  - scripts/mcp/mas-stdio-wrapper.sh
+  - scripts/mcp/serena-wrapper.sh
+  - scripts/mcp/start_metamcp_broker.py
+  - scripts/mcp/start_metamcp_minimal.py
+  - scripts/mcp/update-mcp.sh
+  - scripts/monitoring/adhd-activity-logger.sh
+  - scripts/ui/test_interactive_integration.py
+  - scripts/ui/test_tmux_integration.sh
+  - scripts/utilities/cleanup-multi-instance.sh
+  - scripts/utilities/enhanced_patterns.py
+  - scripts/utilities/save_enhancement_plans_to_conport.sh
+  - scripts/utilities/session_formatter.py
+  - services/.gitignore
+  - services/__init__.py
+  - services/activity-capture/.env.example
+  - services/activity-capture/__init__.py
+  - services/adhd_engine/domains/interruption-shield/.coverage
+  - services/adhd_engine/domains/interruption-shield/.github/workflows/ci.yml
+  - services/adhd_engine/domains/interruption-shield/.pre-commit-config.yaml
+  - services/adhd_engine/domains/interruption-shield/Makefile
+  - services/adhd_engine/domains/interruption-shield/README.md
+  - services/adhd_engine/domains/interruption-shield/__init__.py
+  - services/adhd_engine/domains/interruption-shield/htmlcov/.gitignore
+  - services/adhd_engine/domains/interruption-shield/htmlcov/class_index.html
+  - services/adhd_engine/domains/interruption-shield/htmlcov/coverage_html_cb_6fb7b396.js
+  - services/adhd_engine/domains/interruption-shield/htmlcov/favicon_32_cb_58284776.png
+  - services/adhd_engine/domains/interruption-shield/htmlcov/function_index.html
+  - services/adhd_engine/domains/interruption-shield/htmlcov/index.html
+  - services/adhd_engine/domains/interruption-shield/htmlcov/keybd_closed_cb_ce680311.png
+  - services/adhd_engine/domains/interruption-shield/htmlcov/status.json
+  - services/adhd_engine/domains/interruption-shield/htmlcov/style_cb_6b508a39.css
+  - services/adhd_engine/domains/interruption-shield/htmlcov/z_8b2cfe4807180590___init___py.html
+  - services/adhd_engine/domains/interruption-shield/htmlcov/z_8b2cfe4807180590_adhd_engine_client_py.html
+  - services/adhd_engine/domains/interruption-shield/htmlcov/z_8b2cfe4807180590_dnd_manager_py.html
+  - services/adhd_engine/domains/interruption-shield/htmlcov/z_8b2cfe4807180590_notification_manager_py.html
+  - services/adhd_engine/domains/interruption-shield/htmlcov/z_b3f5aba8e68a9d53___init___py.html
+  - services/adhd_engine/domains/interruption-shield/htmlcov/z_b3f5aba8e68a9d53_message_queue_py.html
+  - services/adhd_engine/domains/interruption-shield/htmlcov/z_b3f5aba8e68a9d53_message_triage_py.html
+  - services/adhd_engine/domains/interruption-shield/htmlcov/z_b3f5aba8e68a9d53_models_py.html
+  - services/adhd_engine/domains/interruption-shield/htmlcov/z_b3f5aba8e68a9d53_urgency_scorer_py.html
+  - services/adhd_engine/domains/interruption-shield/htmlcov/z_fc94b3ce97723b9c___init___py.html
+  - services/adhd_engine/domains/interruption-shield/htmlcov/z_fd105f6d099ba7d0___init___py.html
+  - services/adhd_engine/domains/interruption-shield/htmlcov/z_fd105f6d099ba7d0_coordinator_py.html
+  - services/adhd_engine/domains/interruption-shield/htmlcov/z_fd105f6d099ba7d0_models_py.html
+  - services/adhd_engine/domains/interruption-shield/interruption_shield.egg-info/PKG-INFO
+  - services/adhd_engine/domains/interruption-shield/interruption_shield.egg-info/SOURCES.txt
+  - services/adhd_engine/domains/interruption-shield/interruption_shield.egg-info/dependency_links.txt
+  - services/adhd_engine/domains/interruption-shield/interruption_shield.egg-info/requires.txt
+  - services/adhd_engine/domains/interruption-shield/interruption_shield.egg-info/top_level.txt
+  - services/adhd_engine/domains/interruption-shield/interruption_shield/__init__.py
+  - services/adhd_engine/domains/interruption-shield/interruption_shield/core/__init__.py
+  - services/adhd_engine/domains/interruption-shield/interruption_shield/integrations/__init__.py
+  - services/adhd_engine/domains/interruption-shield/interruption_shield/integrations/dnd_manager.py
+  - services/adhd_engine/domains/interruption-shield/interruption_shield/integrations/notification_manager.py
+  - services/adhd_engine/domains/interruption-shield/interruption_shield/triage/__init__.py
+  - services/adhd_engine/domains/interruption-shield/interruption_shield/triage/message_queue.py
+  - services/adhd_engine/domains/interruption-shield/interruption_shield/triage/message_triage.py
+  - services/adhd_engine/domains/interruption-shield/interruption_shield/triage/models.py
+  - services/adhd_engine/domains/interruption-shield/interruption_shield/triage/urgency_scorer.py
+  - services/adhd_engine/domains/interruption-shield/pyproject.toml
+  - services/adhd_engine/domains/interruption-shield/requirements.txt
+  - services/adhd_engine/domains/interruption-shield/setup.py
+  - services/adhd_engine/domains/interruption-shield/tests/__init__.py
+  - services/adhd_engine/domains/interruption-shield/tests/conftest.py
+  - services/adhd_engine/domains/interruption-shield/tests/integration/test_adhd_engine_integration.py
+  - services/adhd_engine/domains/interruption-shield/tests/unit/test_coordinator.py
+  - services/adhd_engine/domains/interruption-shield/tests/unit/test_coordinator_adhd_integration.py
+  - services/agents/__init__.py
+  - services/agents/test_cognitive_guardian.py
+  - services/agents/test_dopemux_enforcer.py
+  - services/agents/test_memory_agent.py
+  - services/agents/test_real_workflow.py
+  - services/agents/test_task_decomposer.py
+  - services/agents/test_week6_orchestrator.py
+  - services/agents/test_workflow_coordinator.py
+  - services/conport/.dockerignore
+  - services/conport/.github/FUNDING.yml
+  - services/conport/.github/workflows/dependency-review.yml
+  - services/conport/.gitignore
+  - services/conport/CODE_OF_CONDUCT.md
+  - services/conport/CONTRIBUTING.md
+  - services/conport/LICENSE
+  - services/conport/README.md
+  - services/conport/assets/images/cline.png
+  - services/conport/assets/images/cursor.png
+  - services/conport/assets/images/roo-logo.png
+  - services/conport/assets/images/windsurf.png
+  - services/conport/conport-custom-instructions/cascade_conport_strategy
+  - services/conport/conport-custom-instructions/cascade_conport_strategy_compact
+  - services/conport/conport-custom-instructions/cline_conport_strategy
+  - services/conport/conport-custom-instructions/generic_conport_strategy
+  - services/conport/conport-custom-instructions/roo_code_conport_strategy
+  - services/conport/requirements.txt
+  - services/conport/run_wma_migration.py
+  - services/conport/src/conport/core/config.py
+  - services/conport/src/conport/core/dope_context_indexer.py
+  - services/conport/src/conport/core/embedding_service.py
+  - services/conport/src/conport/core/exceptions.py
+  - services/conport/src/conport/core/workspace_detector.py
+  - services/conport/src/conport/db/database.py
+  - services/conport/src/conport/db/models.py
+  - services/conport/src/conport/db/vector_store_service.py
+  - services/conport/src/conport/handlers/mcp_handlers.py
+  - services/conport/src/conport/main.py
+  - services/conport/src/conport/v2/__init__.py
+  - services/conport/src/conport/v2/cache.py
+  - services/conport/src/conport/v2/database.py
+  - services/conport/src/conport/v2/embedding_pipeline.py
+  - services/conport/src/conport/v2/handlers.py
+  - services/conport/src/conport/v2/vector_store.py
+  - services/conport/src/context_portal_mcp.egg-info/PKG-INFO
+  - services/conport/src/context_portal_mcp.egg-info/SOURCES.txt
+  - services/conport/src/context_portal_mcp.egg-info/dependency_links.txt
+  - services/conport/src/context_portal_mcp.egg-info/entry_points.txt
+  - services/conport/src/context_portal_mcp.egg-info/requires.txt
+  - services/conport/src/context_portal_mcp.egg-info/top_level.txt
+  - services/conport/tests/conftest.py
+  - services/conport/tests/test_handlers_integration.py
+  - services/conport/tests/test_int_coercion.py
+  - services/conport/uv.lock
+  - services/conport/wma_migration.sql
+  - services/conport_kg_ui/demo.sh
+  - services/conport_kg_ui/package-lock.json
+  - services/conport_kg_ui/package.json
+  - services/conport_kg_ui/src/App.tsx
+  - services/conport_kg_ui/src/api/client.ts
+  - services/conport_kg_ui/src/cli.tsx
+  - services/conport_kg_ui/src/components/DecisionBrowser.tsx
+  - services/conport_kg_ui/src/components/DeepContextViewer.tsx
+  - services/conport_kg_ui/src/components/GenealogyExplorer.tsx
+  - services/conport_kg_ui/src/mock-server.ts
+  - services/conport_kg_ui/src/types/index.ts
+  - services/conport_kg_ui/test_url_encoding.js
+  - services/conport_kg_ui/tsconfig.json
+  - services/dope-context/.env.container
+  - services/dope-context/.gitignore
+  - services/dope-context/OPTIMIZATION_COMPLETE.md
+  - services/dope-context/config/defaults.yaml
+  - services/dope-context/data/qdrant/aliases/data.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/newest_clocks.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/replica_state.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/segment.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/15342cb8-8fe8-4a55-9775-62def425be64/version.info
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/segment.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/30cf7033-1bc3-4ac0-a200-bc06688796cc/version.info
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/segment.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/388ddafb-f3a5-4442-ab0a-a3430d4482f9/version.info
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/segment.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/53b714f1-ef58-41f2-8630-e02fa97e2514/version.info
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/segment.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/637727d8-2da4-48b5-89be-98abd22b3d6b/version.info
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/segment.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/95bc65c4-a1ed-45e0-9ebb-b99ce76c1d0c/version.info
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/segment.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/segments/b7e3fdbf-050a-4150-a459-63f0975aa1f6/version.info
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/shard_config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/wal/first-index
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/wal/open-1
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/0/wal/open-2
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/config.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/payload_index.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/shard_key_mapping.json
+  - services/dope-context/data/qdrant/collections/code_3ca12e07/version.info
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/newest_clocks.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/replica_state.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/segment.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/15f63d29-7f82-4c18-af6c-5181dec513fe/version.info
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/segment.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/1b4962a7-8bc4-475c-8f8b-324ab4ffa6e0/version.info
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/segment.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/427fc3f7-3ec5-48eb-b62a-49f77e18ce27/version.info
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/segment.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/830787df-7640-4f60-98b1-07c37f0b6c9c/version.info
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/segment.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/bb3f9a85-3b25-46fe-99f7-a95b8a3962cf/version.info
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/segment.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/cbda87a9-f9a7-45b6-90a7-c36bd7710737/version.info
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/segment.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/segments/f79192ee-72c1-4d7e-8f30-6277c95a63fc/version.info
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/shard_config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/wal/first-index
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/wal/open-1
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/0/wal/open-2
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/config.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/payload_index.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/shard_key_mapping.json
+  - services/dope-context/data/qdrant/collections/code_index_dopemux_mvp/version.info
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/newest_clocks.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/replica_state.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/000027.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/000028.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/000029.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/000040.log
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/MANIFEST-000041
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/OPTIONS-000039
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/OPTIONS-000043
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/segment.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/4b603364-20fc-42e8-9554-934f93f67dc0/version.info
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/000027.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/000028.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/000029.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/000040.log
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/MANIFEST-000041
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/OPTIONS-000039
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/OPTIONS-000043
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/segment.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/b6191ae6-0901-4c6a-ae4b-9b04902c70ce/version.info
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/000027.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/000028.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/000029.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/000040.log
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/MANIFEST-000041
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/OPTIONS-000039
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/OPTIONS-000043
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/segment.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/bbc1403b-db00-4840-92a9-cfc4f94a5d5c/version.info
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/000027.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/000028.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/000029.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/000040.log
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/MANIFEST-000041
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/OPTIONS-000039
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/OPTIONS-000043
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/segment.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/ca801038-851f-4332-9ad9-f8d678d74cce/version.info
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/000034.log
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/MANIFEST-000035
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/OPTIONS-000033
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/OPTIONS-000037
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/segment.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/df790275-4498-41af-b956-167a36532a2c/version.info
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/000027.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/000028.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/000029.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/000040.log
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/MANIFEST-000041
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/OPTIONS-000039
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/OPTIONS-000043
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/segment.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/e4491074-fbbb-4289-b4a0-02b2fbf337d8/version.info
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/000027.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/000028.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/000029.sst
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/000040.log
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/MANIFEST-000041
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/OPTIONS-000039
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/OPTIONS-000043
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/segment.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/segments/efba698f-9da0-4b55-93db-4728957e4836/version.info
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/shard_config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/wal/first-index
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/wal/open-1
+  - services/dope-context/data/qdrant/collections/dopemux_source/0/wal/open-2
+  - services/dope-context/data/qdrant/collections/dopemux_source/config.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/payload_index.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/shard_key_mapping.json
+  - services/dope-context/data/qdrant/collections/dopemux_source/version.info
+  - services/dope-context/data/qdrant/collections/perf_test/0/newest_clocks.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/replica_state.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/segment.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1be614bb-c9b8-430b-8a67-1c5304708ff0/version.info
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/segment.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/1f8d48d3-f889-4a66-b6c9-45555685fbbf/version.info
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/segment.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/558fadc7-0f93-40a8-a6e3-fca3862105db/version.info
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/segment.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/65bb48bf-f8fc-48b5-9356-37b7fe249718/version.info
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/segment.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/66c709e9-43f3-462e-9d94-ce0033bbb6f7/version.info
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/segment.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/7325c825-f16d-479b-9040-6beca29d5896/version.info
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/segment.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/perf_test/0/segments/89d2a6a6-dd85-4a29-bbd4-e25730752440/version.info
+  - services/dope-context/data/qdrant/collections/perf_test/0/shard_config.json
+  - services/dope-context/data/qdrant/collections/perf_test/0/wal/first-index
+  - services/dope-context/data/qdrant/collections/perf_test/0/wal/open-1
+  - services/dope-context/data/qdrant/collections/perf_test/0/wal/open-2
+  - services/dope-context/data/qdrant/collections/perf_test/config.json
+  - services/dope-context/data/qdrant/collections/perf_test/payload_index.json
+  - services/dope-context/data/qdrant/collections/perf_test/shard_key_mapping.json
+  - services/dope-context/data/qdrant/collections/perf_test/version.info
+  - services/dope-context/data/qdrant/collections/test_perf/0/newest_clocks.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/replica_state.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/segment.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/14dfae6c-7fa7-45a1-b921-2f67201f2192/version.info
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/segment.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/3a3e8449-2a46-4f82-a562-3c6a374cdee7/version.info
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/segment.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/61708a11-bae2-438e-ac06-03d3dd9a41fd/version.info
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/segment.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/69194ea7-9c65-4793-bf62-396ef50d95e4/version.info
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/segment.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/a83a8ea2-97fa-43b2-85ae-1473756a46ef/version.info
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/segment.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c198f5b9-ac5a-4784-a186-fc3a6f7cda4d/version.info
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/mutable_id_tracker.mappings
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/mutable_id_tracker.versions
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/000004.log
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/21abn26h8hm8qom12882oqrv-file_pat-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/CURRENT
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/IDENTITY
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/LOCK
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/LOG
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/MANIFEST-000005
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/OPTIONS-000023
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/OPTIONS-000025
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/j1g8tu9vp2n9lqn4bu0e456f-workspac-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/kjnj0it458g0nbunhc26s239-language-null/has_values/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_index/kjnj0it458g0nbunhc26s239-language-null/is_null/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_storage/bitmask.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_storage/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_storage/gaps.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_storage/page_0.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/payload_storage/tracker.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/segment.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-breadcrumb_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-breadcrumb_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-breadcrumb_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-breadcrumb_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-breadcrumb_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-content_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-content_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-content_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-content_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-content_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-title_vec/deleted/flags_a.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-title_vec/deleted/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-title_vec/vectors/chunk_0.mmap
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-title_vec/vectors/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/vector_storage-title_vec/vectors/status.dat
+  - services/dope-context/data/qdrant/collections/test_perf/0/segments/c9d147d1-dba7-49d3-8cae-16dbc13b9179/version.info
+  - services/dope-context/data/qdrant/collections/test_perf/0/shard_config.json
+  - services/dope-context/data/qdrant/collections/test_perf/0/wal/first-index
+  - services/dope-context/data/qdrant/collections/test_perf/0/wal/open-1
+  - services/dope-context/data/qdrant/collections/test_perf/0/wal/open-2
+  - services/dope-context/data/qdrant/collections/test_perf/config.json
+  - services/dope-context/data/qdrant/collections/test_perf/payload_index.json
+  - services/dope-context/data/qdrant/collections/test_perf/shard_key_mapping.json
+  - services/dope-context/data/qdrant/collections/test_perf/version.info
+  - services/dope-context/data/qdrant/raft_state.json
+  - services/dope-context/run_mcp.sh
+  - services/dope-context/src/autonomous/__init__.py
+  - services/dope-context/src/autonomous/indexing_worker.py
+  - services/dope-context/src/autonomous/periodic_sync.py
+  - services/dope-context/src/context/__init__.py
+  - services/dope-context/src/core/__init__.py
+  - services/dope-context/src/core/vector_store.py
+  - services/dope-context/src/embeddings/__init__.py
+  - services/dope-context/src/enrichment/__init__.py
+  - services/dope-context/src/enrichment/graph_enrichment.py
+  - services/dope-context/src/mcp/__init__.py
+  - services/dope-context/src/pipeline/__init__.py
+  - services/dope-context/src/pipeline/docs_pipeline.py
+  - services/dope-context/src/preprocessing/__init__.py
+  - services/dope-context/src/preprocessing/models.py
+  - services/dope-context/src/rerank/__init__.py
+  - services/dope-context/src/search/__init__.py
+  - services/dope-context/src/search/docs_search.py
+  - services/dope-context/src/sync/__init__.py
+  - services/dope-context/src/utils/__init__.py
+  - services/dope-context/tests/test_claude_generator.py
+  - services/dope-context/tests/test_code_chunker.py
+  - services/dope-context/tests/test_dense_search.py
+  - services/dope-context/tests/test_hybrid_search.py
+  - services/dope-context/tests/test_indexing_pipeline.py
+  - services/dope-context/tests/test_multi_project.py
+  - services/dope-context/tests/test_optimizations.py
+  - services/dope-context/tests/test_voyage_embedder.py
+  - services/dope-context/tests/test_voyage_reranker.py
+  - services/dopemux-gpt-researcher/.dockerignore
+  - services/dopemux-gpt-researcher/mcp-server/test_server.py
+  - services/dopemux-gpt-researcher/mcp-server/wrapper.py
+  - services/dopemux-gpt-researcher/requirements.txt
+  - services/dopemux-gpt-researcher/research_api/__init__.py
+  - services/dopemux-gpt-researcher/research_api/adapters/websocket_streamer.py
+  - services/dopemux-gpt-researcher/research_api/engines/__init__.py
+  - services/dopemux-gpt-researcher/research_api/engines/search/perplexity_adapter.py
+  - services/dopemux-gpt-researcher/research_api/extraction_pipeline.py
+  - services/dopemux-gpt-researcher/research_api/extractors/__init__.py
+  - services/dopemux-gpt-researcher/research_api/extractors/base_extractor.py
+  - services/dopemux-gpt-researcher/research_api/extractors/constraint_extractor.py
+  - services/dopemux-gpt-researcher/research_api/extractors/decision_extractor.py
+  - services/dopemux-gpt-researcher/research_api/extractors/feature_extractor.py
+  - services/dopemux-gpt-researcher/research_api/extractors/research_extractor.py
+  - services/dopemux-gpt-researcher/research_api/extractors/risk_extractor.py
+  - services/dopemux-gpt-researcher/research_api/extractors/security_extractor.py
+  - services/dopemux-gpt-researcher/research_api/extractors/stakeholder_extractor.py
+  - services/dopemux-gpt-researcher/research_api/models/__init__.py
+  - services/dopemux-gpt-researcher/research_api/models/research_task.py
+  - services/dopemux-gpt-researcher/research_api/requirements.txt
+  - services/dopemux-gpt-researcher/research_api/requirements_enhanced.txt
+  - services/dopemux-gpt-researcher/research_api/synthesis/__init__.py
+  - services/dopemux-gpt-researcher/research_api/synthesis/synthesis_engine.py
+  - services/dopemux-gpt-researcher/research_api/synthesis/template_selector.py
+  - services/dopemux-gpt-researcher/research_api/synthesis/templates/adr.md.j2
+  - services/dopemux-gpt-researcher/research_api/synthesis/templates/architecture_doc.md.j2
+  - services/dopemux-gpt-researcher/research_api/synthesis/templates/business_plan.md.j2
+  - services/dopemux-gpt-researcher/research_api/synthesis/templates/design_spec.md.j2
+  - services/dopemux-gpt-researcher/research_api/synthesis/templates/implementation_plan.md.j2
+  - services/dopemux-gpt-researcher/research_api/synthesis/templates/prd.md.j2
+  - services/dopemux-gpt-researcher/research_api/synthesis/templates/research_summary.md.j2
+  - services/dopemux-gpt-researcher/research_api/synthesis/templates/risk_register.md.j2
+  - services/dopemux-gpt-researcher/research_api/synthesis/templates/security_assessment.md.j2
+  - services/dopemux-gpt-researcher/research_api/synthesis/templates/stakeholder_map.md.j2
+  - services/dopemux-gpt-researcher/research_api/tests/__init__.py
+  - services/dopemux-gpt-researcher/test_session_persistence.py
+  - services/dopemux-gpt-researcher/test_token_limit_fix.py
+  - services/mcp-conport/.env
+  - services/mcp-integration-bridge/.env
+  - services/serena/src/serena/v2/intelligence/.coverage
+  - services/session-manager/.coverage
+  - services/session-manager/config/agents.yaml
+  - services/session-manager/research/message-bus-decision-analysis.md
+  - services/session-manager/research/step2-validation-request.md
+  - services/session-manager/src/__init__.py
+  - services/session-manager/src/layouts/__init__.py
+  - services/session-manager/test_ai_cli_spawning.py
+  - services/session-manager/test_config_integration.py
+  - services/session-manager/test_error_recovery.py
+  - services/session-manager/test_multi_ai_parallel.py
+  - services/session-manager/test_response_parser.py
+  - services/session-manager/tests/test_command_parser.py
+  - services/session-manager/tmux/__init__.py
+  - services/session-manager/tui/README.md
+  - services/session-manager/tui/__init__.py
+  - services/session-manager/tui/parallel_orchestrator.py
+  - services/session-manager/tui/state_manager.py
+  - services/session-manager/tui/test_command_router.py
+  - services/session-manager/tui/test_day8-10_integration.py
+  - services/session-manager/tui/test_e2e_integration.py
+  - services/session-manager/tui/test_enhanced_router.py
+  - services/session-manager/tui/test_parallel_orchestrator.py
+  - services/task-orchestrator/app/adapters/__init__.py
+  - services/task-orchestrator/intelligence/__init__.py
+  - services/task-orchestrator/intelligence/flow_metrics.py
+  - services/task-orchestrator/intelligence/flow_state_detector.py
+  - services/task-orchestrator/intelligence/load_alert_manager.py
+  - services/task-orchestrator/intelligence/test_cognitive_load_balancer.py
+  - services/task-orchestrator/intelligence/test_context_switch_recovery.py
+  - services/task-orchestrator/intelligence/test_load_alert_manager.py
+  - services/task-orchestrator/intelligence/test_predictive_orchestrator.py
+  - services/task-orchestrator/ml/__init__.py
+  - services/task-orchestrator/ml/contextual_bandit.py
+  - services/task-orchestrator/ml/dynamic_recommendation.py
+  - services/task-orchestrator/ml/feature_engineering.py
+  - services/task-orchestrator/observability/__init__.py
+  - services/task-orchestrator/observability/docker-compose-monitoring.yml
+  - services/task-orchestrator/observability/prometheus.yml
+  - services/task-orchestrator/test_adhd_prioritization.py
+  - services/task-orchestrator/test_week2_integration.py
+  - services/task-orchestrator/test_week5_adhd_routing.py
+  - services/task-orchestrator/tests/test_conport_adapter.py
+  - services/task-orchestrator/tests/test_insight_publisher.py
+  - services/task-orchestrator/tests/test_integration_event_flow.py
+  - services/taskmaster-mcp-client/taskmaster_mcp_client.egg-info/PKG-INFO
+  - services/taskmaster-mcp-client/taskmaster_mcp_client.egg-info/SOURCES.txt
+  - services/taskmaster-mcp-client/taskmaster_mcp_client.egg-info/dependency_links.txt
+  - services/taskmaster-mcp-client/taskmaster_mcp_client.egg-info/entry_points.txt
+  - services/taskmaster-mcp-client/taskmaster_mcp_client.egg-info/requires.txt
+  - services/taskmaster-mcp-client/taskmaster_mcp_client.egg-info/top_level.txt
+  - src/dopemux/embeddings/README.md
+  - tox.ini
+- Dynamic/runtime references were not detected.
+- No tests or runtime checks were executed.

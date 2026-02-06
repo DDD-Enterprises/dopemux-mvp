@@ -85,7 +85,7 @@ next_review: '2026-01-15'
 ### Decision #7: MCP Server Consolidation Deep Dive ✅
 **Method**: Zen thinkdeep with infrastructure duplication analysis
 **Key Findings**:
-- **6 Active MCP Servers**: context7, zen, conport, serena, claude-context, gptr-mcp (3002-3009 ports)
+- **6 Active MCP Servers**: pal, zen, conport, serena, claude-context, gptr-mcp (3003-3009 ports)
 - **5 Duplication Categories**: API clients (4 use OpenAI, 2 use VoyageAI), embeddings (2 pipelines), vector DBs (3), databases (ConPort split-brain), coordination (DopeconBridge underutilized)
 - **No Shared Infrastructure**: Each MCP isolated, duplicated API clients/caching/error handling
 **Recommendation**: 3-tier strategy - dopemux-core shared library (Tier 1), infrastructure consolidation (Tier 2), maintain MCP independence (Tier 3). 17 days → 21 days with Decision #8
@@ -502,7 +502,7 @@ src/dopemux-core/
 3. mcp-zen: Use shared OpenAI/Gemini clients with circuit breakers
 4. mcp-gptr-mcp: Use shared OpenAI client
 5. mcp-serena: Use shared ADHDConfigService
-6. mcp-context7: Minimal changes (external API dependency)
+6. mcp-pal: Minimal changes (external API dependency)
 
 **Success Criteria**:
 - ✅ All MCPs successfully import dopemux-core

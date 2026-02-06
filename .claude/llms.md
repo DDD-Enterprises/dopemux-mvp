@@ -88,7 +88,7 @@
 
 ### Essential Servers (Always Active)
 
-- **Context7**: Documentation retrieval for all model calls
+- **PAL apilookup**: Documentation retrieval for all model calls
 - **ConPort**: Memory management with automatic logging
 - **Sequential-Thinking**: Complex reasoning support
 - **Claude-Context**: Semantic code search

@@ -25,8 +25,8 @@
       },
       "type": "stdio"
     },
-    "context7": {
-      "url": "http://localhost:3002/mcp",
+    "pal": {
+      "url": "http://localhost:3003/mcp",
       "type": "http"
     },
     "zen": {

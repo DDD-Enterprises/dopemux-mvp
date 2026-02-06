@@ -41,7 +41,7 @@ next_review: '2026-05-03'
 ### Tool Preferences
 - Code navigation → Serena MCP
 - Decisions → ConPort log_decision
-- Documentation → Context7
+- Documentation → PAL apilookup
 - Analysis → Zen (thinkdeep/planner/etc)
 
 ### Two-Plane Awareness
@@ -105,12 +105,12 @@ next_review: '2026-05-03'
 
 **Code-Heavy Personas** (python-expert, refactoring-expert, quality-engineer):
 - Primary: Serena MCP (code navigation, complexity)
-- Secondary: Context7 (framework docs), Zen codereview
+- Secondary: PAL apilookup (framework docs), Zen codereview
 - NEVER: bash cat/grep/find
 
 **Architecture Personas** (system-architect, backend-architect, frontend-architect):
 - Primary: Zen consensus/thinkdeep (multi-model analysis)
-- Secondary: Context7 (design patterns), Exa (research)
+- Secondary: PAL apilookup (design patterns), Exa (research)
 - Analysis: Deep thinking required
 
 **Analysis Personas** (root-cause-analyst, performance-engineer, security-engineer):
@@ -119,7 +119,7 @@ next_review: '2026-05-03'
 - Deep analysis: 45-90 min sessions
 
 **Communication Personas** (technical-writer, learning-guide, socratic-mentor):
-- Primary: Context7 (reference docs), Exa (examples)
+- Primary: PAL apilookup (reference docs), Exa (examples)
 - Secondary: Dope-Context docs search
 - Clarity: Progressive disclosure
 
@@ -184,7 +184,7 @@ System Architect (complexity 0.8):
 - ✅ Log decisions (ConPort)
 - ✅ Analyze complexity (Serena)
 - ✅ Search code/docs (Dope-Context)
-- ✅ Research (Exa, GPT-Researcher, Context7)
+- ✅ Research (Exa, GPT-Researcher, PAL apilookup)
 - ✅ Multi-model analysis (Zen)
 
 **What Personas CANNOT Do**:
@@ -329,7 +329,7 @@ async def persona_workflow(task_description: str, complexity: float):
 **Tool Preferences**:
 - Serena MCP for code (not bash cat/grep)
 - ConPort for decision logging
-- Context7 for documentation
+- PAL apilookup for documentation
 - Zen for analysis/planning/review
 - Dope-Context for semantic search
 

@@ -100,7 +100,7 @@ python scripts/generate-claude-config.py --diff
 - [x] serena-v2 (completed - mcp-proxy wrapper with parallel info server)
 - [ ] gpt-researcher
 - [ ] desktop-commander
-- [ ] context7
+- [ ] pal
 - [ ] task-orchestrator
 - [ ] pal
 - [ ] leantime-bridge
@@ -439,7 +439,7 @@ Infrastructure changes → /info endpoint auto-updated → Generate script → N
 
 ## Next Steps
 
-1. **Immediate**: Add /info to 3-4 more servers (gpt-researcher, desktop-commander, context7)
+1. **Immediate**: Add /info to 3-4 more servers (gpt-researcher, desktop-commander, pal)
 2. **Short-term**: Generate and validate config, commit to repo
 3. **Long-term**: Add CI validation, service registry dashboard
 

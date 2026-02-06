@@ -48,7 +48,7 @@ source "$(python3 scripts/workspace_env_path.py)"
 # 5. Edit .env with your API keys
 nano .env
 # Required: OPENAI_API_KEY, VOYAGEAI_API_KEY
-# Optional: ANTHROPIC_API_KEY, GEMINI_API_KEY, CONTEXT7_API_KEY
+# Optional: ANTHROPIC_API_KEY, GEMINI_API_KEY, OPENROUTER_API_KEY, XAI_API_KEY
 
 # 6. Verify installation
 dopemux health
@@ -112,7 +112,8 @@ nano .env
 **Optional Keys** (enhanced functionality):
 - `ANTHROPIC_API_KEY` - Claude models (Zen MCP)
 - `GEMINI_API_KEY` - Google Gemini (Zen MCP)
-- `CONTEXT7_API_KEY` - Documentation access
+- `OPENROUTER_API_KEY` - PAL apilookup via PAL MCP
+- `XAI_API_KEY` - xAI models (PAL MCP)
 - `EXA_API_KEY` - Neural web search
 - `TAVILY_API_KEY` - Research (GPT-Researcher)
 
@@ -121,7 +122,8 @@ nano .env
 - Voyage AI: https://www.voyageai.com/
 - Anthropic: https://console.anthropic.com/
 - Google Gemini: https://makersuite.google.com/app/apikey
-- Context7: https://context7.com/
+- OpenRouter: https://openrouter.ai/
+- xAI: https://console.x.ai/
 
 ### **Step 4: Verify Installation**
 
@@ -133,7 +135,7 @@ dopemux health
 ```
 ✅ ConPort: Healthy
 ✅ Zen MCP: Healthy
-✅ Context7: Healthy
+✅ PAL apilookup: Healthy
 ...
 ```
 

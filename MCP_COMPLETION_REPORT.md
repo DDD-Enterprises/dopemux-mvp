@@ -31,9 +31,9 @@ Successfully fixed and deployed all critical MCP servers, bringing the system fr
    - Port: 3006
    - Purpose: LSP code navigation
 
-4. **✅ Context7** (dopemux-mcp-context7)
+4. **✅ PAL apilookup** (dopemux-mcp-pal)
    - Status: Up 2 hours (healthy)
-   - Port: 3002
+   - Port: 3003
    - Purpose: Official framework documentation
 
 5. **✅ GPT-Researcher** (dopemux-mcp-gptr-mcp)
@@ -143,7 +143,7 @@ Your Dopemux MCP stack is **production-ready**:
 ✅ **Can navigate code** (Serena)
 ✅ **Can research** (GPT-Researcher)
 ✅ **Can reason** (PAL/Zen)
-✅ **Can get docs** (Context7)
+✅ **Can get docs** (PAL apilookup)
 ✅ **Can coordinate events** (DopeconBridge)
 ✅ **Can route models** (LiteLLM)
 ✅ **Can store vectors** (Qdrant)

@@ -27,7 +27,7 @@
 ## ✅ Already Operational
 
 **MCP Servers:** 7/7 healthy
-- conport, context7, zen, serena, mas-sequential-thinking, exa, desktop-commander
+- conport, PAL apilookup, zen, serena, mas-sequential-thinking, exa, desktop-commander
 
 **Cognitive Plane:** 100% operational
 - Serena v2 validated (75 tests passing)

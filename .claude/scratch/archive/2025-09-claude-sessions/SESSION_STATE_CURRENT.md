@@ -44,7 +44,7 @@
 - ✅ Task-Master AI: Configured in Claude config
 - ✅ Leantime MCP: JavaScript server ready
 - ✅ Claude-Context: Available (project needs indexing)
-- ✅ Context7: Working
+- ✅ PAL apilookup: Working
 - ✅ Morphllm: Working
 - ✅ Exa: Working
 - ❌ ConPort: Critical missing piece (Priority #1 installation)
