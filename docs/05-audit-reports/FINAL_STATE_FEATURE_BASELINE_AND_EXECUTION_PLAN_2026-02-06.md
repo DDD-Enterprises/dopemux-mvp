@@ -47,6 +47,7 @@ Generated during this pass:
 - `reports/strict_closure/conport_master_todo_miss_extract_2026-02-06.json`
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `docs/05-audit-reports/CONPORT_REAL_IMPORT_INTEGRITY_2026-02-06.md`
+- `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`
 
 Executed verification checks (latest pass on 2026-02-06):
 
@@ -211,6 +212,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 2. Coverage diff against this master doc: 24 pending items were not represented clearly enough in the active plan text.
 3. Missed clusters now explicitly in scope:
    AGE/PG stress + compatibility validation tasks, Slack client/status/triage workflow tasks, macOS focus/window-management integration tasks, beta-prep/recruitment/deployment tasks, and manual Leantime web setup completion path.
+4. Normalized priority matrix for the 24 underrepresented items:
+   `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`.
 
 ## Prioritized Gap Register
 
