@@ -15,9 +15,9 @@ import {
 import {
   CheckCircle,
   Circle,
-  PlayArrow,
+  Play,
   Pause,
-  SkipNext,
+  SkipForward,
   Timer,
   Flame,
   Swords,
@@ -78,7 +78,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (isTimerRunning) {
       interval = setInterval(() => {
         setTaskTimer((prev) => prev + 1);
@@ -188,7 +188,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             <Button
               size="small"
               variant="contained"
-              startIcon={isTimerRunning ? <Pause /> : <PlayArrow />}
+              startIcon={isTimerRunning ? <Pause /> : <Play />}
               onClick={() => setIsTimerRunning(!isTimerRunning)}
             >
               {isTimerRunning ? 'Pause' : 'Start'}
@@ -204,7 +204,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
             <Button
               size="small"
               variant="text"
-              startIcon={<SkipNext />}
+              startIcon={<SkipForward />}
               onClick={() => skipTask(currentTask.id)}
               sx={{ color: brandTokens.colors.gremlinPink }}
             >
@@ -243,7 +243,7 @@ const TaskSequencer: React.FC<TaskSequencerProps> = ({ cognitiveState }) => {
                   {isCompleted ? (
                     <CheckCircle color={brandTokens.colors.serumMint} size={20} />
                   ) : isCurrent ? (
-                    <PlayArrow color={brandTokens.colors.ritualCyan} size={20} />
+                    <Play color={brandTokens.colors.ritualCyan} size={20} />
                   ) : (
                     <Circle color="rgba(255, 255, 255, 0.3)" size={18} />
                   )}
