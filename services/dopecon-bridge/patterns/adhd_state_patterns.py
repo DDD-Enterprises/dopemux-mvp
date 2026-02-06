@@ -5,12 +5,16 @@ Detects recurring cognitive load spikes or attention state patterns,
 suggesting schedule adjustments or workflow optimizations.
 """
 
+import logging
+
 from collections import defaultdict
 from datetime import datetime, time
 from typing import Any, Dict, List
 
 from .base_pattern import BasePattern, PatternInsight
 
+
+logger = logging.getLogger(__name__)
 
 class ADHDStatePattern(BasePattern):
     """
