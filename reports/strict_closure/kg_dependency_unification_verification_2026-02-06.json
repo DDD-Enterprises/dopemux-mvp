@@ -112,5 +112,13 @@
       "execute and capture re-embed migration evidence",
       "remove deprecated semantic-search compatibility shims once callers are migrated"
     ]
-  }
+  },
+  "deprecated_semantic_search_caller_inventory": [
+    "services/working-memory-assistant/conport_client.py",
+    "services/task-orchestrator/conport_mcp_client.py",
+    "services/session-manager/src/conport_http_client.py",
+    "services/session-manager/src/conport_client.py",
+    "src/dopemux/tools/conport_client.py",
+    "services/task-orchestrator/app/adapters/conport_adapter.py"
+  ]
 }

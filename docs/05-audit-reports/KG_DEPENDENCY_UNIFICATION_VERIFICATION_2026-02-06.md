@@ -53,6 +53,17 @@ This verification covers the `kg_dependency_unification` cluster (`7` items) fro
 2. Run `backfill_embeddings.py` against target decision dataset and capture success/failure artifact.
 3. Complete removal of deprecated ConPort semantic-search compatibility shims once external callers are migrated.
 
+## Deprecated Shim Caller Inventory (Snapshot)
+
+Primary active call sites referencing ConPort semantic-search compatibility paths:
+
+1. `services/working-memory-assistant/conport_client.py`
+2. `services/task-orchestrator/conport_mcp_client.py`
+3. `services/session-manager/src/conport_http_client.py`
+4. `services/session-manager/src/conport_client.py`
+5. `src/dopemux/tools/conport_client.py`
+6. `services/task-orchestrator/app/adapters/conport_adapter.py`
+
 ## Artifact
 
 - `reports/strict_closure/kg_dependency_unification_verification_2026-02-06.json`
