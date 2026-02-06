@@ -21,6 +21,8 @@ This matrix is derived from:
 
 It captures the `24` pending items identified as underrepresented in the active master fix plan.
 
+Follow-on deep extraction now adds `4` additional TODO checkpoint tasks from structured `custom_data` status payloads that were not included in the original full-coverage artifact.
+
 ## Prioritized Miss Matrix
 
 | Item | Priority | Domain | Recommended owner bucket |
@@ -127,6 +129,47 @@ Secondary misses now promoted into master fix scope:
 Evidence:
 
 - `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`
+
+## Deep Status-Field Miss Extraction (Custom Data)
+
+A deep pass against ConPort import-bundle `custom_data` values (including nested TODO/BLOCKED status fields) identified additional explicit milestone checkpoints that were still not represented in the active master fix docs.
+
+Summary:
+
+1. raw status records scanned: `646`
+2. source mix: `630` progress entries + `16` custom-data status records
+3. unique status-task items: `235`
+4. uncovered in current master docs: `166`
+5. net-new uncovered items vs previous full-coverage artifact: `4`
+
+Newly extracted misses promoted into master fix scope:
+
+1. `week1 checkpoint | Criteria: Functional: Full workflow FOCUSED -> activation -> 15min no activity -> deactivation`
+2. `week2 checkpoint | Criteria: macOS Focus Mode reliable across versions`
+3. `week3 checkpoint | Criteria: Slack status updates working reliably`
+4. `week4 checkpoint final | Criteria: 60% interruption reduction (from 20/day baseline)`
+
+Owner bucket recommendation:
+
+1. Week 1: `ADHD engine + runtime/orchestration`
+2. Week 2: `Desktop integration`
+3. Week 3: `Notifications/integrations`
+4. Week 4: `Product operations + analytics`
+
+Evidence:
+
+- `reports/strict_closure/conport_deep_status_task_extract_2026-02-06.json`
+- `docs/05-audit-reports/CONPORT_DEEP_STATUS_TASK_EXTRACT_2026-02-06.md`
+
+Recheck after promoting these 4 items into this matrix:
+
+1. unique status-task items: `235`
+2. uncovered in active master docs: `162`
+3. net-new uncovered vs prior full-coverage artifact: `0`
+
+Evidence:
+
+- `reports/strict_closure/conport_deep_status_task_recheck_2026-02-06.json`
 
 ### Secondary Miss Implementation Map
 
