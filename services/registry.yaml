@@ -94,10 +94,10 @@ services:
     health_method: GET
     health_timeout_ms: 10000
     health_expected_status: 200
-    compose_service_name: dope-query
+    compose_service_name: conport
     enabled_in_smoke: true
     category: mcp
-    description: "DopeQuery (formerly ConPort) - Knowledge graph and context management MCP server"
+    description: "DopeQuery (ConPort runtime) - Knowledge graph and context management MCP server"
     env_contract_exceptions:
       - variable: MCP_SERVER_PORT
         reason: "DopeQuery uses PORT directly; MCP_SERVER_PORT is redundant"
@@ -214,7 +214,7 @@ services:
     health_timeout_ms: 5000
     health_expected_status: 200
     compose_service_name: workspace-watcher
-    enabled_in_smoke: true
+    enabled_in_smoke: false
     category: sensory
     description: "Workspace Watcher - Real-time file system monitoring and change detection"
 
@@ -226,7 +226,7 @@ services:
     health_timeout_ms: 5000
     health_expected_status: 200
     compose_service_name: activity-capture
-    enabled_in_smoke: true
+    enabled_in_smoke: false
     category: sensory
     description: "Activity Capture - Passive development activity tracking and logging"
 
@@ -251,7 +251,7 @@ services:
     health_timeout_ms: 5000
     health_expected_status: 200
     compose_service_name: adhd-notifier
-    enabled_in_smoke: true
+    enabled_in_smoke: false
     category: cognitive
     description: "ADHD Notifier - Context-aware notification routing and break management"
 
@@ -263,7 +263,7 @@ services:
     health_timeout_ms: 5000
     health_expected_status: 200
     compose_service_name: adhd-dashboard
-    enabled_in_smoke: true
+    enabled_in_smoke: false
     category: cognitive
     description: "ADHD Dashboard - Specific visualization of energy, attention, and cognitive load"
 
@@ -276,7 +276,7 @@ services:
     health_timeout_ms: 5000
     health_expected_status: 200
     compose_service_name: litellm
-    enabled_in_smoke: true
+    enabled_in_smoke: false
     category: infrastructure
     description: "LiteLLM Proxy - Unified OpenAI-compatible interface for all LLM providers (GPT, Grok, Claude)"
 
@@ -288,7 +288,6 @@ services:
     health_timeout_ms: 5000
     health_expected_status: 200
     compose_service_name: exa
-    enabled_in_smoke: true
+    enabled_in_smoke: false
     category: mcp
     description: "Exa Search MCP - Neural semantic web search integration"
-
