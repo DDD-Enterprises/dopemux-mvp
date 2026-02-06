@@ -262,7 +262,7 @@ Source: `reports/strict_closure/conport_backlog_extract_2026-02-06.json` (from h
    `reports/strict_closure/litellm_blocker_verification_2026-02-06.json`.
 2. Legacy architecture-consolidation epic backlog remains unresolved:
    `EPIC: Architecture Consolidation - Shared Infrastructure Layer | 3 phases, 27 tasks, 24h total | P0-P2 priorities`.
-3. Legacy profile/automation epics remain unresolved in active planning:
+3. Legacy profile/automation epics are now represented in active runtime and compatibility module surfaces:
    profile manager implementation epic, auto-detection engine epic, profile switching epic, UX integration epic.
 4. Knowledge-graph integration backlog still open in historical queue:
    `conport_integration_links`, bidirectional linking, `trace_decision_to_code` MCP tool, and traversal performance validation.
@@ -345,6 +345,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/profile_documentation_completion_verification_2026-02-06.json`.
 38. Week-2 integration/testing backlog item (`Day 10`) is now implemented with a reusable end-to-end verification harness:
    `reports/strict_closure/profile_week2_integration_testing_verification_2026-02-06.json`.
+39. Historical EPIC deliverable module gaps for rows `2`, `3`, and `4` are now implemented with compatibility shims (`signal_collectors`, `scorer`, `session_manager`, `claude_manager`, `switcher`, `statusline_integration`, `suggestion_engine`, `analytics`, `migration`) and targeted verification coverage:
+   `reports/strict_closure/profile_epic_compat_shims_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
