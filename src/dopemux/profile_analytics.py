@@ -33,6 +33,8 @@ class ProfileSwitch:
     to_profile: str
     trigger: str  # 'manual', 'auto', 'suggestion_accepted'
     confidence: Optional[float] = None  # For auto-detection
+    switch_duration_seconds: Optional[float] = None
+    mcp_count: Optional[int] = None
 
 
 @dataclass
@@ -46,6 +48,8 @@ class ProfileStats:
     most_used_profile: str
     avg_switches_per_day: float
     switch_accuracy: float  # % of switches that weren't immediately reversed
+    avg_switch_duration_seconds: float
+    avg_mcp_count: float
     usage_by_hour: Dict[int, int]  # Hour -> switch count
     usage_by_profile: Dict[str, int]  # Profile -> switch count
 
@@ -71,7 +75,9 @@ class ProfileAnalytics:
         to_profile: str,
         trigger: str,
         from_profile: Optional[str] = None,
-        confidence: Optional[float] = None
+        confidence: Optional[float] = None,
+        switch_duration_seconds: Optional[float] = None,
+        mcp_count: Optional[int] = None,
     ) -> bool:
         """
         Log a profile switch to ConPort.
@@ -91,7 +97,9 @@ class ProfileAnalytics:
                 'to_profile': to_profile,
                 'from_profile': from_profile,
                 'trigger': trigger,
-                'confidence': confidence
+                'confidence': confidence,
+                'switch_duration_seconds': switch_duration_seconds,
+                'mcp_count': mcp_count,
             }
 
             # Generate unique key with timestamp
@@ -157,7 +165,9 @@ class ProfileAnalytics:
                                         from_profile=switch_data.get('from_profile'),
                                         to_profile=switch_data['to_profile'],
                                         trigger=switch_data['trigger'],
-                                        confidence=switch_data.get('confidence')
+                                        confidence=switch_data.get('confidence'),
+                                        switch_duration_seconds=switch_data.get('switch_duration_seconds'),
+                                        mcp_count=switch_data.get('mcp_count'),
                                     ))
 
                     # Analyze switches
@@ -198,6 +208,12 @@ class ProfileAnalytics:
 
         accuracy = (accurate_switches / len(switches)) * 100 if switches else 0.0
 
+        durations = [s.switch_duration_seconds for s in switches if isinstance(s.switch_duration_seconds, (int, float))]
+        avg_duration = sum(durations) / len(durations) if durations else 0.0
+
+        mcp_counts = [s.mcp_count for s in switches if isinstance(s.mcp_count, int)]
+        avg_mcp_count = sum(mcp_counts) / len(mcp_counts) if mcp_counts else 0.0
+
         return ProfileStats(
             total_switches=len(switches),
             manual_switches=manual,
@@ -207,6 +223,8 @@ class ProfileAnalytics:
             most_used_profile=most_used,
             avg_switches_per_day=len(switches) / days_back if days_back > 0 else 0,
             switch_accuracy=round(accuracy, 1),
+            avg_switch_duration_seconds=round(avg_duration, 2),
+            avg_mcp_count=round(avg_mcp_count, 2),
             usage_by_hour=dict(hour_counter),
             usage_by_profile=dict(profile_counter)
         )
@@ -222,6 +240,8 @@ class ProfileAnalytics:
             most_used_profile="none",
             avg_switches_per_day=0.0,
             switch_accuracy=0.0,
+            avg_switch_duration_seconds=0.0,
+            avg_mcp_count=0.0,
             usage_by_hour={},
             usage_by_profile={}
         )
@@ -252,6 +272,8 @@ def display_stats(stats: ProfileStats, days_back: int = 30) -> None:
     console.print(f"   Per day (avg): [cyan]{stats.avg_switches_per_day:.1f}[/cyan]")
     console.print(f"   Most used: [cyan]{stats.most_used_profile}[/cyan]")
     console.print(f"   Accuracy: [cyan]{stats.switch_accuracy:.0f}%[/cyan] (switches lasting >30 min)")
+    console.print(f"   Avg switch time: [cyan]{stats.avg_switch_duration_seconds:.2f}s[/cyan]")
+    console.print(f"   Avg MCPs per switch: [cyan]{stats.avg_mcp_count:.2f}[/cyan]")
 
     # Switch breakdown
     console.print(f"\n[bold]🎯 Switch Types:[/bold]")
@@ -302,11 +324,22 @@ def log_switch_sync(
     trigger: str,
     from_profile: Optional[str] = None,
     confidence: Optional[float] = None,
+    switch_duration_seconds: Optional[float] = None,
+    mcp_count: Optional[int] = None,
     conport_port: int = 3004
 ) -> bool:
     """Synchronous wrapper for log_switch."""
     analytics = ProfileAnalytics(workspace_id, conport_port)
-    return asyncio.run(analytics.log_switch(to_profile, trigger, from_profile, confidence))
+    return asyncio.run(
+        analytics.log_switch(
+            to_profile,
+            trigger,
+            from_profile,
+            confidence,
+            switch_duration_seconds=switch_duration_seconds,
+            mcp_count=mcp_count,
+        )
+    )
 
 
 def get_stats_sync(
