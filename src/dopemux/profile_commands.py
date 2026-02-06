@@ -334,11 +334,29 @@ def show_profile(verbose: bool):
 @click.argument("name")
 @click.option("--description", "-d")
 @click.option("--based-on", "-b")
-def create_profile(name: str, description: str, based_on: str):
+@click.option(
+    "--interactive/--non-interactive",
+    default=False,
+    show_default=True,
+    help="Use interactive profile wizard for MCP/ADHD preference selection.",
+)
+def create_profile(name: str, description: str, based_on: str, interactive: bool):
     """➕ Create custom profile"""
     manager = ProfileManager()
-    
+
     try:
+        if interactive:
+            from .profile_wizard import ProfileWizard
+
+            wizard = ProfileWizard()
+            result_file = wizard.run(profile_name=name, output_dir=manager.profiles_dir)
+            if result_file:
+                console.logger.info(f"\n✅ Profile created: [cyan]{name}[/cyan]")
+                console.logger.info(f"[dim]Wizard output: {result_file}[/dim]")
+            else:
+                console.logger.info(f"\n[yellow]⚠️  Wizard cancelled for profile: {name}[/yellow]")
+            return
+
         desc = description or f"Custom: {name}"
         profile = manager.create_profile(name, desc, based_on)
         console.logger.info(f"\n✅ Profile created: [cyan]{name}[/cyan]")

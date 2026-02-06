@@ -108,6 +108,16 @@ Evidence: `docs/05-audit-reports/AUTO_DETECTION_SERVICE_VERIFICATION_2026-02-06.
 Evidence: `docs/05-audit-reports/AUTO_DETECTION_SERVICE_VERIFICATION_2026-02-06.md`
 22. Row `23` (`4.2.4 Configuration options`) is now implemented.
 Evidence: `docs/05-audit-reports/AUTO_DETECTION_SERVICE_VERIFICATION_2026-02-06.md`
+23. Row `24` (`4.3.1 profile create`) is now implemented.
+Evidence: `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md`
+24. Row `25` (`4.3.2 profile edit`) is now implemented.
+Evidence: `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md`
+25. Row `26` (`4.3.3 profile copy`) is now implemented.
+Evidence: `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md`
+26. Row `27` (`4.3.4 profile delete`) is now implemented.
+Evidence: `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md`
+27. Row `28` (`4.3.5 profile current`) is now implemented.
+Evidence: `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md`
 
 ## Source
 
