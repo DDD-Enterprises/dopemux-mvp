@@ -55,13 +55,19 @@
       },
       "type": "stdio"
     },
-    "context7": {
-      "command": "npx",
+    "pal": {
+      "command": "/Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server/.venv/bin/python",
       "args": [
-        "@upstash/context7-mcp"
+        "/Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server/server.py"
       ],
       "env": {
-        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
+        "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
+        "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY:-}",
+        "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
+        "XAI_API_KEY": "${XAI_API_KEY:-}",
+        "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
+        "DEFAULT_MODEL": "auto",
+        "PAL_DEFAULT_PROVIDER": "openrouter"
       },
       "type": "stdio"
     },

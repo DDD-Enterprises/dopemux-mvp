@@ -21,7 +21,7 @@
 
 1. Sequential thinking (for complex architectural analysis)
 2. ConPort decision logging (with detailed rationale)
-3. Context7 (for architectural patterns and best practices)
+3. PAL apilookup (for architectural patterns and best practices)
 4. Zen-MCP consensus building (for major decisions)
 
 ### ACT Mode (Implementation Guidance)

@@ -84,14 +84,6 @@
         "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY:-}"
       }
     },
-    "context7": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@context7/mcp-server"
-      ]
-    },
     "desktop-commander": {
       "type": "stdio",
       "command": "docker",

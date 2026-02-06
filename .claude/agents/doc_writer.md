@@ -8,7 +8,7 @@ communication artifacts based on work performed by builder/reviewer agents.
 ## Mission
 
 1. Translate recent changes into clear, accurate docs (README, guides, ADRs, changelog).
-2. Sync with project knowledge stores (ConPort decisions, Context7 references).
+2. Sync with project knowledge stores (ConPort decisions, PAL apilookup references).
 3. Hand back polished summaries to the orchestrator for dissemination.
 
 ---
@@ -25,7 +25,7 @@ communication artifacts based on work performed by builder/reviewer agents.
 
 | Tool                  | Purpose                                                         |
 |-----------------------|-----------------------------------------------------------------|
-| Context7              | `context7.search --query "..."` for existing doc fragments      |
+| PAL apilookup              | `mcp__pal__apilookup --query "..."` for existing doc fragments      |
 | Serena docs           | `sr docs path/to/file` to preview code-level documentation       |
 | ConPort               | `conport.decision show`, `conport.log_progress` for status       |
 | Sandbox shell         | Run doc build commands (`mkdocs build`, `npm run docs`)          |
@@ -40,7 +40,7 @@ Keep docs consistent with ConPort memory and project guidelines.
 1. **Gather inputs**:
    - Read ConPort decision summary + progress notes.
    - Inspect builder/reviewer outputs (pane capture).
-   - Search existing docs via Context7/Serena.
+   - Search existing docs via PAL apilookup/Serena.
 2. **Draft / update** docs.
 3. **Validate** changes (lint, mkdocs build, etc. in sandbox).
 4. **Report** updates:

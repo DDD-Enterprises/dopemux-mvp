@@ -40,8 +40,8 @@ That's it! The installer handles everything automatically.
 ```bash
 ./install.sh --full
 ```
-- Installs everything from quick mode **plus** Zen, Context7, LiteLLM, DopeconBridge, Genetic Agent, coordination plane services, and shared Redis/PostgreSQL infra
-- Requires API keys (Anthropic, OpenRouter, Context7, etc.) stored in a repo-local `.env` file
+- Installs everything from quick mode **plus** Zen, PAL apilookup, LiteLLM, DopeconBridge, Genetic Agent, coordination plane services, and shared Redis/PostgreSQL infra
+- Requires API keys (Anthropic, OpenRouter, PAL apilookup, etc.) stored in a repo-local `.env` file
 - Takes ~10-15 minutes
 - Use `./install.sh --full --yes` for unattended installs **after** pre-populating `.env`
 - Skip the interactive prompt with `./install.sh --stack full`
@@ -64,10 +64,9 @@ That's it! The installer handles everything automatically.
 
 | Mode | Compose File | Services Included |
 |------|--------------|-------------------|
-| **Core (default/quick)** | `docker-compose.unified.yml` | PostgreSQL + AGE, Redis, Qdrant, ConPort MCP, ADHD Engine, Task Orchestrator |
-| **Full (--full)** | `docker-compose.master.yml` | Core stack **plus** Zen MCP, Context7, LiteLLM router, DopeconBridge, Genetic Agent, coordination plane, Redis Insight, multi-network wiring |
+| **Canonical (recommended)** | `compose.yml` | All services: PostgreSQL + AGE, Redis (2x), Qdrant, ConPort MCP, PAL, LiteLLM, Dope-Context, Serena, GPT-Researcher, Exa, Desktop Commander, Leantime Bridge, DopeconBridge, Task Orchestrator, ADHD Engine, Genetic Agent |
 
-During interactive runs the installer now previews each bundle (services + estimated runtime) so you know exactly what will be launched. Passing `--stack` skips the prompt but still prints the summary. Full installs automatically create the required Docker networks (`mcp-network`, `dopemux-unified-network`, `leantime-net`).
+The canonical `compose.yml` file at the repository root is now the single source of truth for running Dopemux services. Legacy compose files (docker-compose.master.yml, docker-compose.staging.yml, etc.) are deprecated.
 
 ### Environment Variables & `.env`
 
@@ -78,7 +77,6 @@ Full installs prompt for the secrets listed below and store them in a git-ignore
 - `OPENROUTER_API_KEY`
 - `OPENAI_API_KEY` (optional but recommended)
 - `GEMINI_API_KEY` / `XAI_API_KEY` (optional)
-- `CONTEXT7_API_KEY`
 - `LEANTIME_URL` / `LEANTIME_TOKEN`
 - `TASK_ORCHESTRATOR_API_KEY` / `ADHD_ENGINE_API_KEY`
 - `LITELLM_DATABASE_URL` (defaults to the bundled Postgres DSN)
@@ -121,7 +119,7 @@ Running `./install.sh --full --yes` expects these values to be present ahead of 
   - consensus: Multi-model decision making (2-5 models)
   - debug: Root cause analysis and hypothesis testing
   - codereview: Comprehensive quality/security/performance analysis
-- **Context7** - Official framework documentation
+- **PAL apilookup** - Official framework documentation
   - React, Vue.js, Next.js, TypeScript, Node.js docs
   - Version-specific API references
   - Best practices and patterns

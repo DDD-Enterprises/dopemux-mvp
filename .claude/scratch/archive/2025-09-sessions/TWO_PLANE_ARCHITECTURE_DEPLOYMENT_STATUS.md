@@ -98,7 +98,7 @@
 
 ### MCP Servers (7 Running) ✅
 1. conport (3004) ✅
-2. context7 (3002) ✅
+2. PAL apilookup (3002) ✅
 3. zen (3003) ✅
 4. serena (3006) ✅
 5. mas-sequential-thinking (stdio) ✅

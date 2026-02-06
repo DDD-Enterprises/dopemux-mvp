@@ -49,7 +49,7 @@ Valid MCP server names (must match Claude settings.json keys):
 - `conport` - **REQUIRED** in all profiles (memory authority)
 - `serena-v2` - Code navigation and LSP
 - `zen` - Multi-model reasoning (thinkdeep, planner, consensus, debug, codereview)
-- `context7` - Official library documentation
+- `pal` - Official library documentation
 - `gpt-researcher` - Deep web research
 - `dope-context` - Hybrid code search
 - `desktop-commander` - Desktop automation and control
@@ -104,7 +104,7 @@ mcps:
   - conport
   - serena-v2
   - zen
-  - context7
+  - pal
   - gpt-researcher
   - claude-context
   - dope-context
@@ -163,7 +163,7 @@ mcps:
   - conport
   - zen
   - gpt-researcher
-  - context7
+  - pal
 
 adhd_config:
   energy_preference: high
@@ -255,7 +255,7 @@ Fix: Add 'conport' to mcps array
 ```
 Error: Profile 'custom' is invalid
 Reason: MCP server 'unknown-mcp' not found in Claude config
-Available: conport, serena-v2, zen, context7, gpt-researcher, claude-context, dope-context
+Available: conport, serena-v2, zen, pal, gpt-researcher, claude-context, dope-context
 Fix: Use only valid MCP server names
 ```
 

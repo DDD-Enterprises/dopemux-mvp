@@ -224,7 +224,7 @@ Update all MCP servers to expose `/info`:
 - gpt-researcher
 - exa
 - desktop-commander
-- context7 (missing from .claude.json)
+- pal (missing from .claude.json)
 - task-orchestrator
 - pal
 

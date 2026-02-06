@@ -27,7 +27,7 @@ next_review: '2026-01-15'
 |---------|--------|--------|---------|
 | **mcp-conport** | ✅ Up 10min | Healthy | Knowledge graph, decisions, progress tracking |
 | **mcp-serena** | ✅ Up 4h | Running | LSP, code navigation, ADHD features |
-| **mcp-context7** | ✅ Up 4h | Healthy | Official documentation lookup |
+| **mcp-pal** | ✅ Up 4h | Healthy | Official documentation lookup |
 | **mcp-zen** | ✅ Up 4h | Healthy | Multi-model reasoning (thinkdeep, planner, consensus, debug, codereview) |
 | **mcp-litellm** | ✅ Up 4h | Healthy | Unified LLM proxy with routing |
 
@@ -196,7 +196,7 @@ instances = await detect_running_instances(use_cache=False)
 **Healthy (5):**
 - ✅ mcp-conport (Knowledge graph)
 - ✅ mcp-zen (Multi-model reasoning)
-- ✅ mcp-context7 (Documentation)
+- ✅ mcp-pal (Documentation)
 - ✅ mcp-litellm (LLM proxy)
 - ✅ mcp-desktop-commander (Desktop automation)
 
@@ -318,7 +318,7 @@ echo $DOPEMUX_WORKSPACE_ROOT
 - ✅ ConPort (decisions, memory)
 - ✅ Serena (code intelligence)
 - ✅ Zen (multi-model reasoning)
-- ✅ Context7 (documentation)
+- ✅ PAL apilookup (documentation)
 
 ### Performance: Excellent
 - ✅ Sub-20ms worktree operations

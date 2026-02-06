@@ -185,7 +185,7 @@ next_review: '2026-05-02'
 - **Dope-Context**: 4,439 chunks indexed, semantic search working
 - **Serena-v2**: File ops, LSP navigation, complexity scoring
 - **Zen**: 27 models, 9 tools, codereview validated
-- **Context7**: Library docs lookup working
+- **PAL apilookup**: Library docs lookup working
 
 **Collections**:
 - `code_92e96527`: 26 chunks (React UI)

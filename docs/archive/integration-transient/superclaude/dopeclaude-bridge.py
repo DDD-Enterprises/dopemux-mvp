@@ -188,10 +188,10 @@ class DopeCladueBridge:
 
                 # Persona-to-role mappings
                 "persona_mappings": {
-                    "architect": {"role": "architect", "tools": ["zen", "sequential-thinking", "context7"]},
+                    "architect": {"role": "architect", "tools": ["zen", "sequential-thinking", "pal"]},
                     "frontend": {"role": "developer", "tools": ["serena", "morphllm-fast-apply", "claude-context"]},
                     "backend": {"role": "developer", "tools": ["serena", "claude-context", "zen"]},
-                    "security": {"role": "reviewer", "tools": ["zen", "sequential-thinking", "context7"]},
+                    "security": {"role": "reviewer", "tools": ["zen", "sequential-thinking", "pal"]},
                     "analyzer": {"role": "researcher", "tools": ["exa", "claude-context", "sequential-thinking"]},
                     "qa": {"role": "reviewer", "tools": ["claude-context", "zen", "sequential-thinking"]},
                     "performance": {"role": "developer", "tools": ["morphllm-fast-apply", "zen", "claude-context"]},
@@ -204,7 +204,7 @@ class DopeCladueBridge:
                     "analyze": {"role": "researcher", "tools": ["zen", "claude-context"], "consensus": True},
                     "implement": {"role": "developer", "tools": ["serena", "morphllm-fast-apply"], "chunking": True},
                     "design": {"role": "architect", "tools": ["zen", "sequential-thinking"], "consensus": True},
-                    "research": {"role": "researcher", "tools": ["exa", "context7", "sequential-thinking"], "depth": "deep"},
+                    "research": {"role": "researcher", "tools": ["exa", "pal", "sequential-thinking"], "depth": "deep"},
                     "review": {"role": "reviewer", "tools": ["claude-context", "zen"], "consensus": True},
                     "optimize": {"role": "developer", "tools": ["morphllm-fast-apply", "zen"], "performance": True},
                     "troubleshoot": {"role": "debugger", "tools": ["zen", "sequential-thinking", "claude-context"], "systematic": True},

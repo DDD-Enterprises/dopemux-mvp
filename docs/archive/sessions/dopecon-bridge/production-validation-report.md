@@ -119,7 +119,7 @@ Successfully validated complete DopeconBridge infrastructure with **100% test pa
 | ConPort | 3004 | Up 1h | ✅ Healthy |
 | Serena | 3006 | Up 1h | ✅ Running |
 | Zen | 3003 | Up 40m | ✅ Healthy |
-| Context7 | 3002 | Up 1h | ✅ Healthy |
+| PAL apilookup | 3003 | Up 1h | ✅ Healthy |
 | Exa | 3008 | Up 1h | ✅ Healthy |
 | Task-Orchestrator | 3014 | Up 1h | ✅ Healthy |
 | GPT-Researcher | 3009 | Up 42m | ✅ Healthy |

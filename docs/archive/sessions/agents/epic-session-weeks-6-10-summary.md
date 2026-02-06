@@ -662,7 +662,7 @@ async def production_feature_workflow(feature_description: str):
 ### Tool Preferences
 - Code navigation → Serena MCP
 - Decisions → ConPort log_decision
-- Documentation → Context7
+- Documentation → PAL apilookup
 
 ### Agent Coordination
 - Break checking → CognitiveGuardian

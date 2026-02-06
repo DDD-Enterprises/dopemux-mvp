@@ -94,7 +94,7 @@ We'll extend SuperClaude's command system with Dopemux capabilities:
 # Standard SuperClaude → Dopemux Enhanced
 /sc:analyze               → /dx:analyze --role researcher --mcp zen
 /sc:implement             → /dx:implement --role developer --session 25min
-/sc:research              → /dx:research --role researcher --tools exa,context7
+/sc:research              → /dx:research --role researcher --tools exa,pal
 /sc:design                → /dx:design --role architect --consensus zen,sequential
 ```
 
@@ -121,7 +121,7 @@ We'll extend SuperClaude's command system with Dopemux capabilities:
 ```bash
 # Automatic role detection and tool mounting
 /dx:switch-role developer           # Mount dev tools (serena, claude-context)
-/dx:switch-role researcher          # Mount research tools (exa, context7)
+/dx:switch-role researcher          # Mount research tools (exa, pal)
 /dx:switch-role architect           # Mount design tools (zen, sequential)
 /dx:switch-role planner             # Mount PM tools (task-master-ai, leantime)
 ```
@@ -179,7 +179,7 @@ We'll extend SuperClaude's command system with Dopemux capabilities:
 # SuperClaude commands enhanced with MetaMCP intelligence
 /dx:research "authentication patterns"
   → MetaMCP detects: research + security context
-  → Auto-mount: exa (web research), context7 (docs), zen (analysis)
+  → Auto-mount: exa (web research), pal (docs), zen (analysis)
   → ADHD: Progressive disclosure of research results
 
 /dx:implement "login component"
@@ -285,7 +285,7 @@ dopemux_superclaude:
 
   role_mappings:
     developer: [serena, claude-context, morphllm-fast-apply]
-    researcher: [exa, context7, docrag]
+    researcher: [exa, pal, docrag]
     architect: [zen, sequential-thinking, claude-context]
     planner: [task-master-ai, conport, leantime-mcp]
 

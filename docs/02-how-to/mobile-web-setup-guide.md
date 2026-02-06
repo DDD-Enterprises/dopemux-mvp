@@ -375,7 +375,7 @@ dopemux mobile start
 - **Full MCP tool access** from mobile
 - **Serena LSP features** available remotely
 - **Zen reasoning tools** work on mobile
-- **Context7 documentation** lookup from phone
+- **PAL apilookup documentation** lookup from phone
 
 ---
 

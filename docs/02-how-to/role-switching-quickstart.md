@@ -34,7 +34,7 @@ Click **"MCP Servers"** → **"Add Server"** and add these 4:
 | Server Name | Port | Command | Args |
 |-------------|------|---------|------|
 | conport | 3004 | curl | -X, POST, http://localhost:3004/mcp, -H, Content-Type: application/json, -d, @- |
-| context7 | 3002 | curl | -X, POST, http://localhost:3002/mcp, -H, Content-Type: application/json, -d, @- |
+| pal | 3003 | curl | -X, POST, http://localhost:3003/mcp, -H, Content-Type: application/json, -d, @- |
 | zen | 3003 | curl | -X, POST, http://localhost:3003/mcp, -H, Content-Type: application/json, -d, @- |
 | serena | 3006 | curl | -X, POST, http://localhost:3006/mcp, -H, Content-Type: application/json, -d, @- |
 
@@ -52,13 +52,13 @@ Click **"Namespaces"** → **"Create Namespace"**
 ### Namespace 1: dopemux-quickfix
 - Name: `dopemux-quickfix`
 - Description: `ADHD-optimized quick wins mode (3 tools)`
-- Select servers: ☑ conport, ☑ serena, ☑ context7
+- Select servers: ☑ conport, ☑ serena, ☑ pal
 - Click Save
 
 ### Namespace 2: dopemux-act
 - Name: `dopemux-act`
 - Description: `Implementation mode (4 tools)`
-- Select servers: ☑ conport, ☑ serena, ☑ context7, ☑ zen
+- Select servers: ☑ conport, ☑ serena, ☑ pal, ☑ zen
 - Click Save
 
 ---
@@ -120,7 +120,7 @@ After switching, restart Claude Code if it was already running:
 ```bash
 exit  # or Ctrl+D
 claude
-/mcp  # Should see 3 tools from conport, serena, context7
+/mcp  # Should see 3 tools from conport, serena, pal
 ```
 
 ### Switch to ACT mode:
@@ -157,7 +157,7 @@ The command interrupts the existing process, reruns `dopemux start --role ...` i
 Tools:
 - conport - Track wins, maintain context
 - serena - Fast code navigation (single-file focus)
-- context7 - Quick API lookups
+- pal - Quick API lookups
 
 **When to use:** Scattered attention, need quick momentum
 
@@ -169,7 +169,7 @@ Tools:
 Tools:
 - conport - Progress tracking, decision linking
 - serena - Full code navigation & LSP (max 10 results, 3-level depth)
-- context7 - API documentation
+- pal - API documentation
 - zen - Debug & code review (thinkdeep, debug, codereview tools)
 
 **When to use:** Focused to hyperfocus, deep implementation work
@@ -182,7 +182,7 @@ Tools:
 Tools (Phase 1A):
 - conport - Decision logging & memory
 - serena - Code navigation & LSP
-- context7 - Documentation & API references
+- pal - Documentation & API references
 - zen - Multi-model orchestration (all tools)
 
 **When to use:**

@@ -30,7 +30,7 @@ next_review: '2026-01-15'
 ## Background: MetaMCP Context
 
 ### Original Problem
-- 8 MCP servers (serena-v2, conport, zen, gpt-researcher, context7, mas-sequential-thinking, dope-context, exa)
+- 8 MCP servers (serena-v2, conport, zen, gpt-researcher, pal, mas-sequential-thinking, dope-context, exa)
 - 50+ tools exposed to Claude Code in every conversation
 - 15-20K tokens of overhead just for tool schemas
 - LLM decision paralysis and token waste
@@ -138,7 +138,7 @@ auto_detection:
 | Profile | MCPs | Tool Count | Use Case |
 |---------|------|------------|----------|
 | developer | serena-v2, conport, dope-context | ~10-12 | Implementation |
-| researcher | zen, gpt-researcher, context7, conport | ~12-15 | Investigation |
+| researcher | zen, gpt-researcher, pal, conport | ~12-15 | Investigation |
 | architect | zen, serena-v2, conport, dope-context | ~15-18 | Design/planning |
 | full | all 8 MCPs | ~50+ | Complex tasks |
 
@@ -297,7 +297,7 @@ mcps:
   - conport
   - zen
   - gpt-researcher
-  - context7
+  - pal
   - mas-sequential-thinking
   - dope-context
 

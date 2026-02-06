@@ -27,7 +27,7 @@ From dx: commands:
 ### Layer 2 (Inner): Technical Execution
 From sc: commands:
 - Multi-persona coordination (architect, frontend, backend, security, qa)
-- MCP orchestration (Context7, Magic, Zen, Playwright)
+- MCP orchestration (PAL apilookup, Magic, Zen, Playwright)
 - Framework detection and patterns
 - Comprehensive tool selection
 - Behavioral activation patterns
