@@ -3,265 +3,72 @@ id: role-switching-quickstart
 title: Role Switching Quickstart
 type: how-to
 owner: '@hu3mann'
-last_review: '2025-10-17'
-next_review: '2026-01-15'
+last_review: '2026-02-06'
+next_review: '2026-05-06'
 ---
-# Role Switching Quick Start - Phase 1A
+# Role Switching Quickstart
 
-## Status: Ready for Testing
+## Goal
+Switch Dopemux agent roles quickly using the built-in CLI role system.
 
-All scripts and configs created! You just need to:
-1. Configure MetaMCP Web UI (10 min)
-2. Paste API keys into config files (2 min)
-3. Test role switching (<2s per switch!)
+## Prerequisites
+- Dopemux installed
+- MCP services running (`dopemux mcp status`)
 
----
-
-## Step 1: Access MetaMCP Web UI
-
-**URL:** http://localhost:12008
-
-**Login:**
-- First time: Click "Sign Up" and create account
-- Returning: Login with your credentials
-
----
-
-## Step 2: Configure MCP Servers (5 min)
-
-Click **"MCP Servers"** → **"Add Server"** and add these 4:
-
-| Server Name | Port | Command | Args |
-|-------------|------|---------|------|
-| conport | 3004 | curl | -X, POST, http://localhost:3004/mcp, -H, Content-Type: application/json, -d, @- |
-| pal | 3003 | curl | -X, POST, http://localhost:3003/mcp, -H, Content-Type: application/json, -d, @- |
-| zen | 3003 | curl | -X, POST, http://localhost:3003/mcp, -H, Content-Type: application/json, -d, @- |
-| serena | 3006 | curl | -X, POST, http://localhost:3006/mcp, -H, Content-Type: application/json, -d, @- |
-
-**For each server:**
-- Type: STDIO
-- Environment Variables: (leave empty)
-- Click Save
-
----
-
-## Step 3: Create Namespaces (2 min)
-
-Click **"Namespaces"** → **"Create Namespace"**
-
-### Namespace 1: dopemux-quickfix
-- Name: `dopemux-quickfix`
-- Description: `ADHD-optimized quick wins mode (3 tools)`
-- Select servers: ☑ conport, ☑ serena, ☑ pal
-- Click Save
-
-### Namespace 2: dopemux-act
-- Name: `dopemux-act`
-- Description: `Implementation mode (4 tools)`
-- Select servers: ☑ conport, ☑ serena, ☑ pal, ☑ zen
-- Click Save
-
----
-
-## Step 4: Create Endpoints (2 min)
-
-Click **"Endpoints"** → **"Create Endpoint"**
-
-### Endpoint 1: quickfix-endpoint
-- Endpoint ID: `quickfix-endpoint`
-- Namespace: Select `dopemux-quickfix`
-- Transport: SSE
-- Authentication: API Key
-- Click **Generate API Key** → **COPY THE KEY!**
-- Click Save
-
-### Endpoint 2: act-endpoint
-- Endpoint ID: `act-endpoint`
-- Namespace: Select `dopemux-act`
-- Transport: SSE
-- Authentication: API Key
-- Click **Generate API Key** → **COPY THE KEY!**
-- Click Save
-
----
-
-## Step 5: Update Config Files with API Keys (1 min)
-
-**Edit these files and paste your API keys:**
-
-File: `~/.claude/config/mcp_servers_quickfix.json`
-```
-Replace: "PASTE_YOUR_QUICKFIX_API_KEY_HERE"
-With: Your actual quickfix-endpoint API key
-```
-
-File: `~/.claude/config/mcp_servers_act.json`
-```
-Replace: "PASTE_YOUR_ACT_API_KEY_HERE"
-With: Your actual act-endpoint API key
-```
-
----
-
-## Step 6: Test Role Switching!
-
-### Switch to QUICKFIX mode (CLI shortcut):
+## Switch Roles (Primary Workflow)
 ```bash
-dopemux start --role quickfix --dry-run   # preview tool changes
-dopemux start --role quickfix             # launch with role applied
+# Preview what changes (safe)
+dopemux start --role quickfix --dry-run
+
+# Apply role and launch
+dopemux start --role quickfix
 ```
 
-CLI automatically rewrites the Claude config, sets `DOPEMUX_AGENT_ROLE`, and shows any missing services. The legacy helper script still works:
+Common roles:
+- `quickfix`
+- `act`
+- `plan`
+- `research`
+- `all`
+
+## Switch Roles In Tmux Agent Panes
 ```bash
-~/.claude/switch-role.sh quickfix
-```
-
-After switching, restart Claude Code if it was already running:
-```bash
-exit  # or Ctrl+D
-claude
-/mcp  # Should see 3 tools from conport, serena, pal
-```
-
-### Switch to ACT mode:
-```bash
-dopemux start --role act
-```
-
-Restart Claude Code (or let the CLI relaunch it) and verify the tool set.
-
-### Switch agent panes from the orchestrator
-
-Inside the orchestrator tmux session you can retarget an agent pane on demand:
-
-```bash
-# Primary agent → ACT mode
+# Primary pane
 dopemux tmux agent switch-role act
 
-# Secondary agent → PLAN mode
+# Secondary pane
 dopemux tmux agent switch-role plan --target secondary
 
-# Target a pane explicitly
+# Explicit pane id
 dopemux tmux agent switch-role research --pane %27
 ```
 
-The command interrupts the existing process, reruns `dopemux start --role ...` in that pane, and warns if any required MCP services are offline (including the exact `dopemux mcp up --services ...` command to start them).
+## Legacy Script (Optional)
+```bash
+~/.claude/switch-role.sh quickfix
+~/.claude/switch-role.sh act
+```
 
----
+## Verify Active Role
+```bash
+echo "$DOPEMUX_AGENT_ROLE"
+```
 
-## What You Get
-
-### QUICKFIX Mode (3 tools)
-**Purpose:** 5-15 min quick wins, minimal cognitive load
-
-Tools:
-- conport - Track wins, maintain context
-- serena - Fast code navigation (single-file focus)
-- pal - Quick API lookups
-
-**When to use:** Scattered attention, need quick momentum
-
----
-
-### ACT Mode (4 tools)
-**Purpose:** Implementation, debugging, testing
-
-Tools:
-- conport - Progress tracking, decision linking
-- serena - Full code navigation & LSP (max 10 results, 3-level depth)
-- pal - API documentation
-- zen - Debug & code review (thinkdeep, debug, codereview tools)
-
-**When to use:** Focused to hyperfocus, deep implementation work
-
----
-
-### ALL Mode (4 tools in Phase 1A)
-**Purpose:** Full flexibility, exploratory work, multi-role tasks
-
-Tools (Phase 1A):
-- conport - Decision logging & memory
-- serena - Code navigation & LSP
-- pal - Documentation & API references
-- zen - Multi-model orchestration (all tools)
-
-**When to use:**
-- Learning/exploring new areas
-- Tasks that span multiple role types
-- When you're not sure which mode you need
-- Full flexibility needed
-
-**Note:** More cognitive load than focused modes, but maximum capability
-
----
+Or inspect generated Claude MCP config:
+```bash
+cat ~/.claude/config/mcp_servers.json
+```
 
 ## Troubleshooting
+- Role switch fails:
+  - Run `dopemux mcp status`
+  - Start required services shown by the CLI warning
+- Tools missing after switch:
+  - Restart Claude Code session
+  - Re-run `dopemux start --role <role>`
+- Role mismatch across panes:
+  - Re-target pane explicitly with `--pane` or `--target`
 
-**Issue: "No procedure found" error**
-- MetaMCP requires authentication for API access
-- Use Web UI instead (it's faster anyway!)
-
-**Issue: Role switch doesn't work**
-- Make sure you replaced API key placeholders in config files
-- Restart Claude Code after switching
-- Check: ls -la ~/.claude/config/mcp_servers*.json
-
-**Issue: Can't access MetaMCP Web UI**
-- Check MetaMCP is running: docker ps | grep metamcp
-- Try: docker-compose -f metamcp/docker-compose.yml restart
-- Logs: docker logs metamcp --tail 50
-
----
-
-## Phase 1B & 1C (Coming Soon)
-
-**When mas-sequential-thinking finishes building:**
-- Add PLAN mode (6 tools)
-- Enhance ACT mode (5 tools)
-
-**When exa/gptr-mcp finish building:**
-- Add RESEARCH mode (6 tools)
-- Complete all 4 roles
-
----
-
-## Quick Reference
-
-**Role Switching Command:**
-```bash
-~/.claude/switch-role.sh [quickfix|act|all]
-```
-
-**Add Alias (optional):**
-```bash
-echo 'alias sr="~/.claude/switch-role.sh"' >> ~/.zshrc
-source ~/.zshrc
-# Now use: sr quickfix
-```
-
-**Available Modes (Phase 1A):**
-- `quickfix` - 3 tools, minimal cognitive load
-- `act` - 4 tools, implementation focus
-- `plan` - strategic planning / architecture persona
-- `research` - investigation persona
-- `all` - 4 tools, full flexibility
-
-**Extended personas (CLI shortcut):**
-```bash
-dopemux start --role developer   # Implementation persona
-dopemux start --role architect   # Architecture/ADR persona
-dopemux start --role reviewer    # Review & QA persona
-dopemux start --role debugger    # Incident + debugging persona
-dopemux start --role ops         # Runbook / operational persona
-```
-
-**Check Current Mode:**
-```bash
-cat ~/.claude/config/mcp_servers.json | grep "metamcp-"
-# Shows: "metamcp-quickfix" or "metamcp-act"
-```
-
----
-
-Estimated Setup Time: 10-15 minutes total
-Role Switch Time: <2 seconds (instant config swap!)
+## Notes
+- Prefer focused roles (`quickfix`, `act`, `plan`, `research`) over `all` to reduce tool noise.
+- Use `--dry-run` when changing roles mid-task.

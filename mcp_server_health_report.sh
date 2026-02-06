@@ -89,7 +89,7 @@ echo ""
 echo "=== MCP Server Containers ==="
 echo ""
 
-docker ps --filter "name=mcp-" --format "table {{.Names}}\t{{.Status}}" | grep -v "metamcp-pg"
+docker ps --filter "name=mcp-" --format "table {{.Names}}\t{{.Status}}"
 
 echo ""
 echo "=== Port Listeners ==="
@@ -102,8 +102,8 @@ echo "=== Summary ==="
 echo ""
 
 # Count healthy containers
-healthy_count=$(docker ps --filter "name=mcp-" --filter "health=healthy" | grep -v "metamcp-pg" | wc -l | tr -d ' ')
-total_count=$(docker ps --filter "name=mcp-" | grep -v "metamcp-pg\|NAMES" | wc -l | tr -d ' ')
+healthy_count=$(docker ps --filter "name=mcp-" --filter "health=healthy" | wc -l | tr -d ' ')
+total_count=$(docker ps --filter "name=mcp-" | grep -v "NAMES" | wc -l | tr -d ' ')
 
 echo "Healthy containers: $healthy_count/$total_count"
 echo ""

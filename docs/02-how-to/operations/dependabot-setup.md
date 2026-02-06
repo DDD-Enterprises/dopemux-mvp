@@ -34,7 +34,6 @@ Dependabot automatically:
 - zen-mcp, desktop-commander, exa-mcp
 
 **Wednesday**: JavaScript/TypeScript
-- metamcp (monorepo)
 - frontend, backend apps
 
 **Thursday**: GitHub Actions
