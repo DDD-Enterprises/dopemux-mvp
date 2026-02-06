@@ -17,6 +17,15 @@ prelude: Design Evolution 2026 (explanation) for dopemux documentation and devel
 
 ---
 
+## Verification Status (Code-Truth, 2026-02-06)
+
+- Implemented: DopeconBridge event-bus runtime, Task-Orchestrator core runtime, agent module files, and UI fallback paths are present.
+- Partially Implemented: Several components in this history are implemented but not fully production-hardened (agent readiness, workflow automation depth, naming migration from Zen -> PAL).
+- Planned: Future trajectory items are roadmap targets, not current production guarantees.
+- Unverified Claims: Performance/SLO assertions without repeatable benchmark tests are treated as targets, not certified guarantees.
+
+---
+
 ## 🚀 Executive Summary
 
 Dopemux-MVP has evolved from a simple tmux-based workspace manager into a sophisticated **Cognitive Augmentation Platform** for ADHD developers. The evolution follows a clear trajectory from scripts to a distributed, event-driven microservices architecture dubbed the **"Two-Plane Architecture"**.
@@ -53,6 +62,7 @@ Clickable index of deep-dive history for every service component.
 | [16. Notifications](../../archive/services/history/NOTIFICATIONS_UI_MASTER_HISTORY.md) | `notifier`, `dashboard` | User Interface & interruptions. |
 
 ### 🕵️‍♀️ Archaeology & Vaporware
+
 | Report | Description |
 |:-------|:------------|
 | [Unbuilt Features](UNBUILT_FEATURES_AND_ROADMAP.md) | The "Lost Futures" (Agents, Workflow, Auto-Resume). |
@@ -126,7 +136,7 @@ Clickable index of deep-dive history for every service component.
 **Phase 3 (Proactive)**:
 - **Background Prediction Service**: Scans users every 5 mins to predict energy dips.
 - **ML Integration**: `ml_prediction` field in API responses giving confidence scores.
-- **Redis Caching**: Endpoint-specific TTLs (<100ms latency target).
+- **Redis Caching**: Endpoint-specific TTLs (documented `<100ms` latency target; benchmark evidence pending).
 - **Evolution Source**: `adhd_engine/docs/PHASE_3_IMPLEMENTATION.md`.
 
 ### 4. Task Orchestrator (The PM Plane)
@@ -138,7 +148,7 @@ Clickable index of deep-dive history for every service component.
   - **Capabilities**: ML Risk Assessment (blocker prediction), Multi-team coordination.
 - **Current Role**: Central node in the **PM Plane**.
   - Connects **Leantime** (Human Project Management) with **ConPort** (Knowledge Graph).
-  - Routes tasks to specialized agents (Serena, Zen, Taskmaster).
+  - Routes tasks to specialized agents (Serena, PAL/Zen-legacy lineage, Taskmaster family).
 - **Evolution Source**: `task-orchestrator/docs/pm-plane-architecture.md`, `ADR-203`.
 
 ### 5. DopeconBridge
@@ -156,7 +166,7 @@ Clickable index of deep-dive history for every service component.
 
 **Core Contract**:
 - **DevelopmentSnapshot**: Captures open files, cursor positions, tmux state, AND cognitive context (thought process, energy level).
-- **Performance**: Guaranteed <200ms capture time.
+- **Performance**: Target `<200ms` capture time (production benchmark certification pending).
 - **Recovery**: "Instant Recovery" with progressive disclosure to help users resume flow after interruptions.
 - **Evolution Source**: `working-memory-assistant/docs/api_contracts.md`.
 
