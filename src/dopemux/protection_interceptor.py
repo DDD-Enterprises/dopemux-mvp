@@ -569,7 +569,6 @@ def _sync_project_scaffolding(source: Path, destination: Path, symlink_root: Opt
                 try:
                     dest_file.unlink()
                 except Exception as e:
-                    pass
                     logger.error(f"Error: {e}")
             shutil.copy2(src_file, dest_file)
         except Exception as exc:  # pragma: no cover

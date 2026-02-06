@@ -242,15 +242,11 @@ class PTYAgent:
                     pass
 
             except Exception as e:
-                pass
-
                 logger.error(f"Error: {e}")
         if self.master_fd:
             try:
                 os.close(self.master_fd)
             except Exception as e:
-                pass
-
                 logger.error(f"Error: {e}")
         self.status = AgentStatus.STOPPED
         logger.info(f"✅ {self.config.agent_type.value} stopped")

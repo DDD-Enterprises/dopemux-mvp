@@ -113,8 +113,6 @@ class WorktreeDiagnostics:
         except Exception as e:
             self._check_fail(f"Workspace detection error: {e}")
             return False
-
-            logger.error(f"Error: {e}")
     def _check_mcp_configuration(self, verbose: bool) -> bool:
         """Check Phase 2: MCP auto-configuration status."""
         try:
@@ -147,8 +145,6 @@ class WorktreeDiagnostics:
         except Exception as e:
             self._check_fail(f"MCP configuration check error: {e}")
             return False
-
-            logger.error(f"Error: {e}")
     def _check_template_coverage(self, verbose: bool) -> bool:
         """Check Phase 3: Template file coverage."""
         try:
@@ -181,8 +177,6 @@ class WorktreeDiagnostics:
         except Exception as e:
             self._check_fail(f"Template coverage check error: {e}")
             return False
-
-            logger.error(f"Error: {e}")
     def _check_shell_integration(self, verbose: bool) -> bool:
         """Check Phase 3: Shell integration status."""
         try:
@@ -225,8 +219,6 @@ class WorktreeDiagnostics:
         except Exception as e:
             self._check_fail(f"Shell integration check error: {e}")
             return False
-
-            logger.error(f"Error: {e}")
     def _check_pass(self, message: str):
         """Record a passed check."""
         self.checks_passed += 1

@@ -13,6 +13,8 @@ Architecture:
 - Layer 1: Tmux Control (TmuxLayoutManager)
 """
 
+import logging
+
 import asyncio
 import os
 from datetime import datetime
@@ -21,8 +23,11 @@ from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import Header, Footer, Static, Input, ProgressBar, Label
 from textual.binding import Binding
 from textual.reactive import reactive
+from textual.screen import ModalScreen
 from textual import events
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 # Import our tmux layout manager
 import sys
@@ -34,6 +39,7 @@ from .command_router import get_command_router
 
 # Import TUI State Manager (coordinates all state: progress, breaks, energy, history)
 from .state_manager import get_state_manager
+from .conport_tracker import get_progress_tracker
 
 
 class AIOutputPane(Static):
@@ -291,6 +297,56 @@ class CommandInput(Input):
                 event.prevent_default()
 
 
+class HelpModal(ModalScreen[None]):
+    """Keyboard shortcuts modal for the orchestrator TUI."""
+
+    DEFAULT_CSS = """
+    #help_modal {
+        align: center middle;
+        width: 72;
+        height: 18;
+        border: heavy $accent;
+        background: $surface;
+        padding: 1 2;
+    }
+
+    #help_modal_text {
+        content-align: left top;
+    }
+    """
+
+    BINDINGS = [
+        Binding("escape", "dismiss_modal", "Close", show=False),
+        Binding("q", "dismiss_modal", "Close", show=False),
+        Binding("enter", "dismiss_modal", "Close", show=False),
+    ]
+
+    HELP_TEXT = """
+[bold]Keyboard Shortcuts[/bold]
+
+@claude <cmd>  Send command to Claude
+@gemini <cmd>  Send command to Gemini
+@grok <cmd>    Send command to Grok
+@all <cmd>     Send command to all AIs
+
+Ctrl+1/2/3     Focus Claude/Gemini/Grok pane
+Ctrl+R         Refresh energy state
+?              Open this help
+q              Quit
+
+Press [bold]Esc[/bold], [bold]Enter[/bold], or [bold]q[/bold] to close.
+""".strip()
+
+    def compose(self) -> ComposeResult:
+        yield Container(
+            Static(self.HELP_TEXT, id="help_modal_text"),
+            id="help_modal",
+        )
+
+    def action_dismiss_modal(self) -> None:
+        self.dismiss(None)
+
+
 class DopemuxOrchestratorTUI(App):
     """
     Main Dopemux Orchestrator TUI Application.
@@ -468,8 +524,7 @@ class DopemuxOrchestratorTUI(App):
             return
 
         # Coordinate command start (progress, history, break activity)
-        start_result = await self.state_manager.on_command_start(ai, command)
-        progress_id = start_result.get('progress_id')
+        await self.state_manager.on_command_start(ai, command)
 
         # Define callbacks for streaming output
         def on_output(line: str):
@@ -534,15 +589,27 @@ class DopemuxOrchestratorTUI(App):
 
     def check_energy_level(self) -> None:
         """Check energy level via state manager and update UI."""
-        # Energy detection happens in update_progress_display
-        # This method kept for backward compatibility
-        pass
+        # get_ui_state() refreshes energy; keep this timer for explicit updates.
+        self.update_progress_display()
 
     def update_break_countdown(self) -> None:
         """Update break reminder countdown."""
-        # TODO: Track actual work time and calculate remaining
-        # For now, show static 25 min
-        self.query_one(ProgressTrackerPane).update_break_timer(25 * 60)
+        async def _update():
+            try:
+                ui_state = await self.state_manager.get_ui_state()
+                break_state = ui_state.get("break", {})
+                if break_state and not break_state.get("error"):
+                    elapsed_seconds = int(break_state.get("elapsed_seconds", 0))
+                    work_duration_minutes = int(
+                        getattr(self.state_manager.breaks, "work_duration_minutes", 25)
+                    )
+                    remaining_seconds = max(0, (work_duration_minutes * 60) - elapsed_seconds)
+                    self.query_one(ProgressTrackerPane).update_break_timer(remaining_seconds)
+            except Exception as exc:
+                logger.debug("Failed to update break countdown: %s", exc)
+
+        asyncio.create_task(_update())
+
     def update_progress_display(self) -> None:
         """Update all UI elements from TUI State Manager (single optimized call)."""
         async def _update():
@@ -565,12 +632,15 @@ class DopemuxOrchestratorTUI(App):
             break_state = ui_state.get('break', {})
             if break_state and not break_state.get('error'):
                 elapsed_seconds = break_state.get('elapsed_seconds', 0)
-                status_color = break_state.get('status_color', 'green')
                 break_suggested = break_state.get('break_suggested', False)
                 break_mandatory = break_state.get('break_mandatory', False)
+                work_duration_minutes = int(
+                    getattr(self.state_manager.breaks, "work_duration_minutes", 25)
+                )
+                remaining_seconds = max(0, (work_duration_minutes * 60) - int(elapsed_seconds))
                 
                 # Update break timer display
-                self.query_one(ProgressTrackerPane).update_break_timer(elapsed_seconds)
+                self.query_one(ProgressTrackerPane).update_break_timer(remaining_seconds)
                 
                 # Day 9: Show break notification if needed
                 if break_suggested and not hasattr(self, '_break_notified'):
@@ -651,17 +721,7 @@ class DopemuxOrchestratorTUI(App):
 
     def action_help(self) -> None:
         """Show help screen."""
-        # TODO: Create help modal
-        self.query_one("#pane_claude", AIOutputPane).add_output("""
-📖 Keyboard Shortcuts:
-  @claude <cmd> - Send to Claude
-  @gemini <cmd> - Send to Gemini
-  @grok <cmd> - Send to Grok
-  @all <cmd> - Send to all AIs
-  Ctrl+1/2/3 - Focus pane
-  ? - This help
-  q - Quit
-        """.strip())
+        self.push_screen(HelpModal())
 
     def action_refresh_energy(self) -> None:
         """Manually refresh energy level from ADHD Engine."""

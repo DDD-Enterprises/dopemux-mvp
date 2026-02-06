@@ -350,8 +350,6 @@ class SerenaAdapter(BaseIntegration):
             except Exception as e:
                 # Skip binary files
                 return ""
-
-                logger.error(f"Error: {e}")
     def _should_exclude_file(self, file_path: Path) -> bool:
         """Check if file should be excluded from processing."""
         path_parts = file_path.parts

@@ -173,9 +173,6 @@ class DopeconBridgeClient:
                 "status": "unreachable",
                 "error": str(e)
             }
-
-
-            logger.error(f"Error: {e}")
 # Example usage
 async def main():
     """Test bridge client"""

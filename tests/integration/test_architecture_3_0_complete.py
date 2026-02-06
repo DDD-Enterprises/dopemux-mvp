@@ -29,7 +29,8 @@ try:
         LoadAlertManager,
         ContextSwitchRecovery,
         RecommendationContext,
-        TaskRecommendation
+        TaskRecommendation,
+        LoadFactors,
     )
     COMPONENT_6_AVAILABLE = True
 except ImportError as e:

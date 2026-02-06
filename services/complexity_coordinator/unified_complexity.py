@@ -21,6 +21,7 @@ import asyncio
 import logging
 from dataclasses import dataclass
 from pathlib import Path
+import sys
 from typing import Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
@@ -178,7 +179,6 @@ class ComplexityCoordinator:
             # Try importing Serena's ADHD features for complexity analysis
             serena_path = Path(__file__).parent.parent / "serena" / "v2"
             if str(serena_path) not in sys.path:
-                import sys
                 sys.path.insert(0, str(serena_path))
 
             from adhd_features import CodeComplexityAnalyzer
@@ -223,7 +223,6 @@ class ComplexityCoordinator:
             # Try using Serena's database for reference counting
             serena_db_path = Path(__file__).parent.parent / "serena" / "v2" / "intelligence"
             if str(serena_db_path) not in sys.path:
-                import sys
                 sys.path.insert(0, str(serena_db_path))
 
             from database import SerenaDatabase
