@@ -5811,6 +5811,8 @@ try:
         profile.add_command(use_profile, "use")
     if "current" not in profile.commands:
         profile.add_command(show_profile, "current")
+    if "switch" not in cli.commands:
+        cli.add_command(use_profile, "switch")
 
 except ImportError as e:
     logger.debug("Profile commands unavailable: %s", e)
