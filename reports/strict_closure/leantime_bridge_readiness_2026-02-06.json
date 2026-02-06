@@ -1,0 +1,65 @@
+{
+  "run_timestamp_utc": "2026-02-06T19:18:32Z",
+  "branch": "codex/wave-next",
+  "bridge_container": "dopemux-mcp-leantime-bridge",
+  "leantime_container": "leantime",
+  "bridge_runtime_env": {
+    "LEANTIME_API_URL": "http://leantime:80",
+    "LEANTIME_API_TOKEN_present": false,
+    "MCP_SERVER_HOST": "0.0.0.0",
+    "MCP_SERVER_PORT": "3015"
+  },
+  "bridge_probe_results": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3015/health",
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "service": "leantime-bridge",
+        "transport": "http-sse"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:3015/health?deep=1",
+      "status": 503,
+      "body": {
+        "status": "degraded",
+        "service": "leantime-bridge",
+        "leantime": "unreachable",
+        "error": "All method candidates failed for tool 'list_projects': leantime.rpc.Projects.getAllProjects; leantime.rpc.projects.getAllProjects; leantime.rpc.projects.getAll; leantime.getProjects"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:3015/api/tools/list_projects",
+      "status": 502,
+      "body": {
+        "error": "All method candidates failed for tool 'list_projects': leantime.rpc.Projects.getAllProjects; leantime.rpc.projects.getAllProjects; leantime.rpc.projects.getAll; leantime.getProjects"
+      }
+    }
+  ],
+  "leantime_log_window": {
+    "tail_lines": 500,
+    "counts": {
+      "queue_emails_fail": 110,
+      "queue_httprequests_fail": 22,
+      "queue_default_fail": 22,
+      "get_index_303": 220,
+      "post_index_303": 16
+    },
+    "observed_patterns": [
+      "queue workers repeatedly fail for emails, httprequests, and default queues",
+      "repeated 303 redirect responses on GET /index.php and POST /index.php"
+    ]
+  },
+  "status": "blocked",
+  "blocking_reason": "Leantime bridge liveness is up but deep upstream calls fail and API token is unset; manual setup completion is still required.",
+  "close_criteria": [
+    "Configure valid Leantime API credentials in bridge runtime env",
+    "GET /health?deep=1 returns 200 with reachable upstream",
+    "POST /api/tools/list_projects returns 200 and non-empty project payload",
+    "Leantime queue worker failures drop to zero in repeated log windows"
+  ]
+}

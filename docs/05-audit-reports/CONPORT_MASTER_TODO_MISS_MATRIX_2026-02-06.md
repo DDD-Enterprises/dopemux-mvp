@@ -68,3 +68,24 @@ Evidence:
 
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
+
+## Remaining P1 Blocker (Evidenced)
+
+1. `Leantime manual setup completion` remains open.
+2. Bridge liveness is up, but upstream readiness is not:
+   - `GET /health?deep=1` returns `503` (`leantime=unreachable`)
+   - `POST /api/tools/list_projects` returns `502` (all method candidates failed)
+   - `LEANTIME_API_TOKEN` is currently unset in bridge runtime
+3. Supporting container evidence shows persistent Leantime queue failures and redirect-only traffic patterns.
+
+Evidence:
+
+- `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
+- `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
+
+## Leantime Close Criteria
+
+1. Valid Leantime API credentials are configured for bridge runtime.
+2. `GET /health?deep=1` returns `200` with upstream reachability.
+3. `POST /api/tools/list_projects` returns `200` and non-empty project payload.
+4. Leantime queue worker failures drop to zero across repeated log windows.
