@@ -21,7 +21,7 @@ except ModuleNotFoundError:  # pragma: no cover - optional in dry-run mode
     asyncpg = None
 import json
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Set
 import sys
 from datetime import datetime
 import uuid
@@ -45,6 +45,21 @@ DECISION_MAPPING = {
 }
 
 
+def parse_timestamp(value: Optional[str]) -> datetime:
+    """Best-effort timestamp parsing with UTC fallback."""
+    if not value:
+        return datetime.utcnow()
+    if dateparser is not None:
+        try:
+            return dateparser.parse(value)
+        except Exception:
+            pass
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except Exception:
+        return datetime.utcnow()
+
+
 class ConPortMigration:
     """PostgreSQL AGE migration handler"""
 
@@ -52,6 +67,8 @@ class ConPortMigration:
         self.db_url = db_url
         self.conn: Optional[Any] = None
         self.id_mapping: Dict[int, str] = {}  # SQLite ID → PostgreSQL UUID
+        self.schema: Optional[str] = None
+        self.table_columns: Dict[str, Set[str]] = {}
 
     async def connect(self):
         """Connect to PostgreSQL"""
@@ -68,27 +85,97 @@ class ConPortMigration:
         if self.conn:
             await self.conn.close()
 
+    async def detect_schema(self) -> str:
+        """Detect ConPort target schema."""
+        if self.schema is not None:
+            return self.schema
+        for candidate in ("ag_catalog", "public"):
+            exists = await self.conn.fetchval(
+                """
+                SELECT EXISTS (
+                    SELECT 1 FROM information_schema.tables
+                    WHERE table_schema = $1
+                    AND table_name = 'decisions'
+                )
+                """,
+                candidate,
+            )
+            if exists:
+                self.schema = candidate
+                return candidate
+        raise RuntimeError("Unable to detect ConPort schema (expected ag_catalog or public)")
+
+    async def table_exists(self, table_name: str) -> bool:
+        """Check table existence in active schema."""
+        schema = await self.detect_schema()
+        return await self.conn.fetchval(
+            """
+            SELECT EXISTS (
+                SELECT 1 FROM information_schema.tables
+                WHERE table_schema = $1
+                AND table_name = $2
+            )
+            """,
+            schema,
+            table_name,
+        )
+
+    async def load_table_columns(self, table_name: str) -> Set[str]:
+        """Load and cache table columns from active schema."""
+        if table_name in self.table_columns:
+            return self.table_columns[table_name]
+        schema = await self.detect_schema()
+        rows = await self.conn.fetch(
+            """
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_schema = $1
+            AND table_name = $2
+            """,
+            schema,
+            table_name,
+        )
+        columns = {row["column_name"] for row in rows}
+        self.table_columns[table_name] = columns
+        return columns
+
+    async def has_column(self, table_name: str, column_name: str) -> bool:
+        """Check whether a column exists in a table."""
+        return column_name in await self.load_table_columns(table_name)
+
+    def qname(self, table_name: str) -> str:
+        """Qualified table name for active schema."""
+        if self.schema is None:
+            raise RuntimeError("Schema not initialized. Call detect_schema() first.")
+        return f'"{self.schema}"."{table_name}"'
+
     async def verify_schema(self) -> bool:
         """Verify required tables exist"""
         logger.info("\n🔍 Verifying schema...")
+        schema = await self.detect_schema()
+        logger.info(f"   ℹ️  Using schema: {schema}")
 
-        tables = ['decisions', 'progress_entries', 'custom_data',
-                  'entity_relationships', 'workspaces', 'workspace_contexts']
+        required_tables = [
+            "decisions",
+            "progress_entries",
+            "custom_data",
+            "entity_relationships",
+            "workspace_contexts",
+        ]
+        optional_tables = ["workspaces", "system_patterns"]
 
-        for table in tables:
-            exists = await self.conn.fetchval(f"""
-                SELECT EXISTS (
-                    SELECT 1 FROM information_schema.tables
-                    WHERE table_schema = 'ag_catalog'
-                    AND table_name = $1
-                )
-            """, table)
-
-            if exists:
+        for table in required_tables:
+            if await self.table_exists(table):
                 logger.info(f"   ✅ {table}")
             else:
                 logger.info(f"   ❌ {table} - MISSING!")
                 return False
+
+        for table in optional_tables:
+            if await self.table_exists(table):
+                logger.info(f"   ✅ {table}")
+            else:
+                logger.info(f"   ⚠️  {table} - optional, not present")
 
         return True
 
@@ -114,14 +201,14 @@ class ConPortMigration:
                         logger.error(f"Error: {e}")
                 # Parse timestamps
                 created_at_str = decision.get('timestamp') or decision.get('created_at')
-                created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
+                created_at = parse_timestamp(created_at_str)
 
                 updated_at_str = decision.get('updated_at')
-                updated_at = dateparser.parse(updated_at_str) if updated_at_str else datetime.utcnow()
+                updated_at = parse_timestamp(updated_at_str)
 
                 # Insert decision
-                await self.conn.execute("""
-                    INSERT INTO ag_catalog.decisions
+                await self.conn.execute(f"""
+                    INSERT INTO {self.qname('decisions')}
                     (id, workspace_id, summary, rationale, alternatives, tags,
                      confidence_level, decision_type, created_at, updated_at)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -152,10 +239,15 @@ class ConPortMigration:
         """Import progress entries"""
         logger.info(f"\n📊 Importing {len(entries)} progress entries...")
 
+        table_name = "progress_entries"
+        columns = await self.load_table_columns(table_name)
         imported = 0
         for entry in entries:
             try:
                 new_id = str(uuid.uuid4())
+                old_id = entry.get("id")
+                if old_id is not None:
+                    self.id_mapping[old_id] = new_id
 
                 # Map tags
                 tags = entry.get('tags', [])
@@ -180,27 +272,55 @@ class ConPortMigration:
 
                 # Parse timestamps
                 created_at_str = entry.get('timestamp') or entry.get('created_at')
-                created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
+                created_at = parse_timestamp(created_at_str)
 
                 updated_at_str = entry.get('updated_at')
-                updated_at = dateparser.parse(updated_at_str) if updated_at_str else datetime.utcnow()
+                updated_at = parse_timestamp(updated_at_str)
 
-                await self.conn.execute("""
-                    INSERT INTO ag_catalog.progress_entries
-                    (id, workspace_id, status, description, parent_id,
-                     linked_decision_id, link_relationship_type, tags, created_at, updated_at)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-                """,
-                    new_id,
-                    entry.get('workspace_id', '/Users/hue/code/dopemux-mvp'),
-                    status,
-                    entry.get('description', ''),
-                    parent_id,
-                    self.id_mapping.get(entry.get('linked_item_id')) if entry.get('linked_item_type') == 'decision' else None,
-                    entry.get('link_relationship_type', 'relates_to_progress'),
-                    tags,
-                    created_at,
-                    updated_at
+                values_by_column: Dict[str, Any] = {
+                    "id": new_id,
+                    "workspace_id": entry.get('workspace_id', '/Users/hue/code/dopemux-mvp'),
+                    "status": status,
+                    "description": entry.get('description', ''),
+                }
+                if "parent_id" in columns:
+                    values_by_column["parent_id"] = parent_id
+                if "linked_decision_id" in columns:
+                    values_by_column["linked_decision_id"] = (
+                        self.id_mapping.get(entry.get('linked_item_id'))
+                        if entry.get('linked_item_type') == 'decision'
+                        else None
+                    )
+                if "link_relationship_type" in columns:
+                    values_by_column["link_relationship_type"] = entry.get(
+                        "link_relationship_type", "relates_to_progress"
+                    )
+                if "tags" in columns:
+                    values_by_column["tags"] = tags
+                if "priority" in columns:
+                    values_by_column["priority"] = entry.get("priority", "medium")
+                if "percentage" in columns:
+                    values_by_column["percentage"] = entry.get("percentage", 0)
+                if "estimated_hours" in columns:
+                    values_by_column["estimated_hours"] = entry.get("estimated_hours")
+                if "actual_hours" in columns:
+                    values_by_column["actual_hours"] = entry.get("actual_hours")
+                if "completed_at" in columns:
+                    values_by_column["completed_at"] = (
+                        updated_at if status == "COMPLETED" else None
+                    )
+                if "created_at" in columns:
+                    values_by_column["created_at"] = created_at
+                if "updated_at" in columns:
+                    values_by_column["updated_at"] = updated_at
+
+                present_columns = [name for name in values_by_column if name in columns]
+                placeholders = ", ".join(f"${index}" for index in range(1, len(present_columns) + 1))
+                column_sql = ", ".join(f'"{name}"' for name in present_columns)
+                values = [values_by_column[name] for name in present_columns]
+                await self.conn.execute(
+                    f"INSERT INTO {self.qname(table_name)} ({column_sql}) VALUES ({placeholders})",
+                    *values,
                 )
 
                 imported += 1
@@ -228,13 +348,13 @@ class ConPortMigration:
                         logger.error(f"Error: {e}")
                 # Parse timestamps
                 created_at_str = entry.get('created_at')
-                created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
+                created_at = parse_timestamp(created_at_str)
 
                 updated_at_str = entry.get('updated_at')
-                updated_at = dateparser.parse(updated_at_str) if updated_at_str else datetime.utcnow()
+                updated_at = parse_timestamp(updated_at_str)
 
-                await self.conn.execute("""
-                    INSERT INTO ag_catalog.custom_data
+                await self.conn.execute(f"""
+                    INSERT INTO {self.qname('custom_data')}
                     (workspace_id, category, key, value, created_at, updated_at)
                     VALUES ($1, $2, $3, $4, $5, $6)
                     ON CONFLICT (workspace_id, category, key) DO UPDATE
@@ -260,6 +380,8 @@ class ConPortMigration:
         """Import entity relationships"""
         logger.info(f"\n🔗 Importing {len(links)} relationships...")
 
+        table_name = "entity_relationships"
+        columns = await self.load_table_columns(table_name)
         imported = 0
         for link in links:
             try:
@@ -273,22 +395,28 @@ class ConPortMigration:
 
                 # Parse timestamp
                 created_at_str = link.get('created_at')
-                created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
+                created_at = parse_timestamp(created_at_str)
 
-                # Schema uses source_type/source_id (not source_item_type/source_item_id)
-                await self.conn.execute("""
-                    INSERT INTO ag_catalog.entity_relationships
-                    (workspace_id, source_type, source_id, target_type, target_id,
-                     relationship_type, created_at)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7)
-                """,
-                    link.get('workspace_id', '/Users/hue/code/dopemux-mvp'),
-                    link.get('source_item_type', 'decision'),
-                    source_id,
-                    link.get('target_item_type', 'decision'),
-                    target_id,
-                    link.get('relationship_type', 'relates_to'),
-                    created_at
+                values_by_column: Dict[str, Any] = {
+                    "workspace_id": link.get('workspace_id', '/Users/hue/code/dopemux-mvp'),
+                    "source_type": link.get('source_item_type', 'decision'),
+                    "source_id": source_id,
+                    "target_type": link.get('target_item_type', 'decision'),
+                    "target_id": target_id,
+                    "relationship_type": link.get('relationship_type', 'relates_to'),
+                }
+                if "strength" in columns:
+                    values_by_column["strength"] = link.get("strength", 1.0)
+                if "created_at" in columns:
+                    values_by_column["created_at"] = created_at
+
+                present_columns = [name for name in values_by_column if name in columns]
+                placeholders = ", ".join(f"${index}" for index in range(1, len(present_columns) + 1))
+                column_sql = ", ".join(f'"{name}"' for name in present_columns)
+                values = [values_by_column[name] for name in present_columns]
+                await self.conn.execute(
+                    f"INSERT INTO {self.qname(table_name)} ({column_sql}) VALUES ({placeholders})",
+                    *values,
                 )
 
                 imported += 1
@@ -304,13 +432,7 @@ class ConPortMigration:
         logger.info(f"\n🧩 Importing {len(patterns)} system patterns...")
 
         # Check if table exists first
-        table_exists = await self.conn.fetchval("""
-            SELECT EXISTS (
-                SELECT 1 FROM information_schema.tables
-                WHERE table_schema = 'ag_catalog'
-                AND table_name = 'system_patterns'
-            )
-        """)
+        table_exists = await self.table_exists("system_patterns")
 
         if not table_exists:
             logger.info("   ⚠️  system_patterns table doesn't exist - skipping")
@@ -331,13 +453,13 @@ class ConPortMigration:
                         logger.error(f"Error: {e}")
                 # Parse timestamps
                 created_at_str = pattern.get('created_at')
-                created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
+                created_at = parse_timestamp(created_at_str)
 
                 updated_at_str = pattern.get('updated_at')
-                updated_at = dateparser.parse(updated_at_str) if updated_at_str else datetime.utcnow()
+                updated_at = parse_timestamp(updated_at_str)
 
-                await self.conn.execute("""
-                    INSERT INTO ag_catalog.system_patterns
+                await self.conn.execute(f"""
+                    INSERT INTO {self.qname('system_patterns')}
                     (id, workspace_id, name, description, tags, created_at, updated_at)
                     VALUES ($1, $2, $3, $4, $5, $6, $7)
                 """,
@@ -360,37 +482,119 @@ class ConPortMigration:
 
     async def import_contexts(self, active_context: Optional[Dict], product_context: Optional[Dict]) -> int:
         """Import active and product contexts"""
+        table_name = "workspace_contexts"
+        columns = await self.load_table_columns(table_name)
         imported = 0
+
+        def decode_content(context_obj: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+            if not context_obj:
+                return {}
+            content = context_obj.get("content", {})
+            if isinstance(content, str):
+                try:
+                    return json.loads(content)
+                except Exception:
+                    return {}
+            if isinstance(content, dict):
+                return content
+            return {}
+
+        # Older public schema stores one row per workspace with no context_type column.
+        # Preserve both active/product payloads by storing them in a combined JSON object.
+        if "context_type" not in columns and (active_context or product_context):
+            logger.info("\n🧠 Importing combined workspace context (single-row schema)...")
+            try:
+                workspace_id = (
+                    (active_context or {}).get("workspace_id")
+                    or (product_context or {}).get("workspace_id")
+                    or "/Users/hue/code/dopemux-mvp"
+                )
+                active_created = parse_timestamp((active_context or {}).get("created_at"))
+                product_created = parse_timestamp((product_context or {}).get("created_at"))
+                active_updated = parse_timestamp((active_context or {}).get("updated_at"))
+                product_updated = parse_timestamp((product_context or {}).get("updated_at"))
+
+                values_by_column: Dict[str, Any] = {
+                    "workspace_id": workspace_id,
+                    "active_context": json.dumps(
+                        {
+                            "active_context": decode_content(active_context),
+                            "product_context": decode_content(product_context),
+                        }
+                    ),
+                }
+                if "session_milestone" in columns:
+                    values_by_column["session_milestone"] = "combined_context_imported"
+                if "last_activity" in columns:
+                    values_by_column["last_activity"] = "historical_context_import"
+                if "created_at" in columns:
+                    values_by_column["created_at"] = min(active_created, product_created)
+                if "updated_at" in columns:
+                    values_by_column["updated_at"] = max(active_updated, product_updated)
+
+                present_columns = [name for name in values_by_column if name in columns]
+                placeholders = ", ".join(
+                    f"${index}" for index in range(1, len(present_columns) + 1)
+                )
+                column_sql = ", ".join(f'"{name}"' for name in present_columns)
+                values = [values_by_column[name] for name in present_columns]
+
+                update_columns = [
+                    name for name in ("active_context", "updated_at", "session_milestone", "last_activity")
+                    if name in present_columns
+                ]
+                if update_columns:
+                    update_sql = ", ".join(
+                        f'"{name}" = EXCLUDED."{name}"' for name in update_columns
+                    )
+                    sql = (
+                        f"INSERT INTO {self.qname(table_name)} ({column_sql}) VALUES ({placeholders}) "
+                        f'ON CONFLICT ("workspace_id") DO UPDATE SET {update_sql}'
+                    )
+                else:
+                    sql = (
+                        f"INSERT INTO {self.qname(table_name)} ({column_sql}) VALUES ({placeholders}) "
+                        f'ON CONFLICT ("workspace_id") DO NOTHING'
+                    )
+
+                await self.conn.execute(sql, *values)
+                logger.info("   ✅ Imported combined workspace context")
+                return 1
+            except Exception as e:
+                logger.error(f"   ⚠️  Failed to import combined workspace context: {e}")
+                return 0
 
         if active_context:
             logger.info("\n🎯 Importing active context...")
             try:
-                content = active_context.get('content', {})
-                if isinstance(content, str):
-                    try:
-                        content = json.loads(content)
-                    except Exception as e:
-                        pass
-
-                        logger.error(f"Error: {e}")
+                content = decode_content(active_context)
                 # Parse timestamps
                 created_at_str = active_context.get('created_at')
-                created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
+                created_at = parse_timestamp(created_at_str)
 
                 updated_at_str = active_context.get('updated_at')
-                updated_at = dateparser.parse(updated_at_str) if updated_at_str else datetime.utcnow()
+                updated_at = parse_timestamp(updated_at_str)
 
-                # Store content in active_context column (not content)
-                await self.conn.execute("""
-                    INSERT INTO ag_catalog.workspace_contexts
-                    (workspace_id, active_context, context_type, created_at, updated_at)
-                    VALUES ($1, $2, $3, $4, $5)
-                """,
-                    active_context.get('workspace_id', '/Users/hue/code/dopemux-mvp'),
-                    json.dumps(content),
-                    'active',
-                    created_at,
-                    updated_at
+                values_by_column: Dict[str, Any] = {
+                    "workspace_id": active_context.get('workspace_id', '/Users/hue/code/dopemux-mvp'),
+                    "active_context": json.dumps(content),
+                }
+                if "context_type" in columns:
+                    values_by_column["context_type"] = "active"
+                if "session_milestone" in columns:
+                    values_by_column["session_milestone"] = "active_context_imported"
+                if "created_at" in columns:
+                    values_by_column["created_at"] = created_at
+                if "updated_at" in columns:
+                    values_by_column["updated_at"] = updated_at
+
+                present_columns = [name for name in values_by_column if name in columns]
+                placeholders = ", ".join(f"${index}" for index in range(1, len(present_columns) + 1))
+                column_sql = ", ".join(f'"{name}"' for name in present_columns)
+                values = [values_by_column[name] for name in present_columns]
+                await self.conn.execute(
+                    f"INSERT INTO {self.qname(table_name)} ({column_sql}) VALUES ({placeholders})",
+                    *values,
                 )
                 imported += 1
                 logger.info("   ✅ Imported active context")
@@ -400,32 +604,34 @@ class ConPortMigration:
         if product_context:
             logger.info("\n📦 Importing product context...")
             try:
-                content = product_context.get('content', {})
-                if isinstance(content, str):
-                    try:
-                        content = json.loads(content)
-                    except Exception as e:
-                        pass
-
-                        logger.error(f"Error: {e}")
+                content = decode_content(product_context)
                 # Parse timestamps
                 created_at_str = product_context.get('created_at')
-                created_at = dateparser.parse(created_at_str) if created_at_str else datetime.utcnow()
+                created_at = parse_timestamp(created_at_str)
 
                 updated_at_str = product_context.get('updated_at')
-                updated_at = dateparser.parse(updated_at_str) if updated_at_str else datetime.utcnow()
+                updated_at = parse_timestamp(updated_at_str)
 
-                # Store in active_context column (reuse same column, differentiate by context_type)
-                await self.conn.execute("""
-                    INSERT INTO ag_catalog.workspace_contexts
-                    (workspace_id, active_context, context_type, created_at, updated_at)
-                    VALUES ($1, $2, $3, $4, $5)
-                """,
-                    product_context.get('workspace_id', '/Users/hue/code/dopemux-mvp'),
-                    json.dumps(content),
-                    'product',
-                    created_at,
-                    updated_at
+                values_by_column: Dict[str, Any] = {
+                    "workspace_id": product_context.get('workspace_id', '/Users/hue/code/dopemux-mvp'),
+                    "active_context": json.dumps(content),
+                }
+                if "context_type" in columns:
+                    values_by_column["context_type"] = "product"
+                if "session_milestone" in columns:
+                    values_by_column["session_milestone"] = "product_context_imported"
+                if "created_at" in columns:
+                    values_by_column["created_at"] = created_at
+                if "updated_at" in columns:
+                    values_by_column["updated_at"] = updated_at
+
+                present_columns = [name for name in values_by_column if name in columns]
+                placeholders = ", ".join(f"${index}" for index in range(1, len(present_columns) + 1))
+                column_sql = ", ".join(f'"{name}"' for name in present_columns)
+                values = [values_by_column[name] for name in present_columns]
+                await self.conn.execute(
+                    f"INSERT INTO {self.qname(table_name)} ({column_sql}) VALUES ({placeholders})",
+                    *values,
                 )
                 imported += 1
                 logger.info("   ✅ Imported product context")
