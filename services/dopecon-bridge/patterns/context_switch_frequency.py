@@ -5,12 +5,16 @@ Detects excessive workspace switching that degrades productivity,
 suggesting focus mode or task batching.
 """
 
+import logging
+
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
 from .base_pattern import BasePattern, PatternInsight
 
+
+logger = logging.getLogger(__name__)
 
 class ContextSwitchFrequencyPattern(BasePattern):
     """
@@ -142,9 +146,7 @@ class ContextSwitchFrequencyPattern(BasePattern):
 
             except Exception as e:
                 # Skip malformed timestamps
-                pass
-
-                logger.error(f"Error: {e}")
+                logger.debug("Skipping malformed timestamp in context switch event: %s", e)
         return insights
 
     def _detect_overload_patterns(

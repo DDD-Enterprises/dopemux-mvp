@@ -85,8 +85,6 @@ async def health_check():
             return {"status": "healthy", "message": "KG queries operational"}
     except Exception as e:
         return {"status": "unhealthy", "error": str(e)}
-
-        logger.error(f"Error: {e}")
     return {"status": "unavailable", "message": "KG queries not initialized"}
 
 
