@@ -46,6 +46,7 @@ Generated during this pass:
 - `reports/strict_closure/conport_backlog_extract_2026-02-06.json`
 - `reports/strict_closure/conport_master_todo_miss_extract_2026-02-06.json`
 - `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`
+- `reports/strict_closure/conport_master_todo_coverage_recheck_2026-02-06.json`
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
@@ -231,6 +232,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`.
 5. Secondary explicit-task-line extraction against current master docs surfaced `19` additional underrepresented implementation tasks from historical TODO samples (core package extraction, semantic/embedding deprecation path, ADHDConfigService rollouts, KG link/tool/test/perf/documentation tasks):
    `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`.
+6. Coverage recheck confirms the original `24` miss-extract items are now explicitly represented in master docs (`24/24` closure):
+   `reports/strict_closure/conport_master_todo_coverage_recheck_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
