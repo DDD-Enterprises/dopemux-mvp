@@ -1,0 +1,160 @@
+{
+  "generated_at_utc": "2026-02-06T11:24:00.592396+00:00",
+  "generator": "wave0-strict-closure-v4",
+  "claims": [
+    {
+      "claim_id": "C001",
+      "claim": "Smoke-enabled registry services are present in docker-compose.smoke.yml.",
+      "source": "tests/arch/test_registry_compose_alignment.py",
+      "status": "verified_true",
+      "method": "automated_test",
+      "evidence": [
+        "services/registry.yaml",
+        "docker-compose.smoke.yml"
+      ]
+    },
+    {
+      "claim_id": "C002",
+      "claim": "Registry host/container ports align with docker-compose.smoke.yml for smoke-enabled services.",
+      "source": "tests/arch/test_registry_compose_alignment.py",
+      "status": "verified_true",
+      "method": "automated_test",
+      "evidence": [
+        "services/registry.yaml",
+        "docker-compose.smoke.yml"
+      ]
+    },
+    {
+      "claim_id": "C003",
+      "claim": "CognitiveGuardianKG dependency injection works even when ConPort-KG optional imports are unavailable.",
+      "source": "services/agents/cognitive_guardian_kg.py",
+      "status": "verified_true",
+      "method": "unit_test",
+      "evidence": [
+        "services/agents/test_cognitive_guardian_kg.py"
+      ]
+    },
+    {
+      "claim_id": "C004",
+      "claim": "Task relationship queries in CognitiveGuardianKG use parameterized query arguments.",
+      "source": "services/agents/cognitive_guardian_kg.py",
+      "status": "verified_true",
+      "method": "unit_test",
+      "evidence": [
+        "services/agents/test_cognitive_guardian_kg.py"
+      ]
+    },
+    {
+      "claim_id": "C005",
+      "claim": "TaskMaster parse_prd raises AIServiceError for empty/malformed MCP payloads.",
+      "source": "src/integrations/taskmaster_bridge.py",
+      "status": "verified_true",
+      "method": "unit_test",
+      "evidence": [
+        "tests/unit/test_taskmaster_bridge.py"
+      ]
+    },
+    {
+      "claim_id": "C006",
+      "claim": "UI dashboard TypeScript build compiles with the current source tree.",
+      "source": "ui-dashboard",
+      "status": "verified_true",
+      "method": "build_verification",
+      "evidence": [
+        "ui-dashboard/src/App.tsx",
+        "ui-dashboard/src/components/TaskSequencer.tsx",
+        "ui-dashboard/index.html"
+      ]
+    },
+    {
+      "claim_id": "C007",
+      "claim": "UI dashboard has a Vite entrypoint index.html.",
+      "source": "ui-dashboard/index.html",
+      "status": "verified_true",
+      "method": "file_inspection",
+      "evidence": [
+        "ui-dashboard/index.html"
+      ]
+    },
+    {
+      "claim_id": "C008",
+      "claim": "The roadmap feature list in history docs is fully code-verified.",
+      "source": "docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md",
+      "status": "in_progress",
+      "method": "manual_crosswalk_pending",
+      "evidence": [
+        "docs/05-audit-reports/FINAL_STATE_FEATURE_BASELINE_AND_EXECUTION_PLAN_2026-02-06.md"
+      ]
+    },
+    {
+      "claim_id": "C009",
+      "claim": "Zen MCP is active as a standalone runtime service.",
+      "source": "docs/04-explanation/history/PROJECT_ARCHAEOLOGY_REPORT.md",
+      "status": "partially_true",
+      "method": "code_and_doc_inspection",
+      "evidence": [
+        "compose.yml"
+      ]
+    },
+    {
+      "claim_id": "C010",
+      "claim": "All active docs are fully code-truth aligned.",
+      "source": "docs/",
+      "status": "in_progress",
+      "method": "docs_parity_wave_pending",
+      "evidence": [
+        "docs/05-audit-reports/FINAL_STATE_FEATURE_BASELINE_AND_EXECUTION_PLAN_2026-02-06.md"
+      ]
+    },
+    {
+      "claim_id": "C011",
+      "claim": "Design evolution master-history links resolve to docs/archive service history documents.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "reports/strict_closure/source_graph.json"
+      ]
+    },
+    {
+      "claim_id": "C012",
+      "claim": "UI dashboard backend now serves deterministic fallback payloads and optional live pull integrations for cognitive state and tasks.",
+      "source": "ui-dashboard-backend/app.py",
+      "status": "verified_true",
+      "method": "api_contract_tests",
+      "evidence": [
+        "tests/unit/test_ui_dashboard_backend_api.py",
+        "ui-dashboard-backend/README.md"
+      ]
+    },
+    {
+      "claim_id": "C013",
+      "claim": "Pattern correlation event windows are timezone-safe for mixed timestamp formats.",
+      "source": "services/intelligence/pattern_correlation_engine.py",
+      "status": "verified_true",
+      "method": "unit_test",
+      "evidence": [
+        "tests/unit/test_pattern_correlation_engine.py"
+      ]
+    },
+    {
+      "claim_id": "C014",
+      "claim": "ComplexityCoordinator unified scoring and ADHD multiplier clamping are now protected by direct unit tests.",
+      "source": "services/complexity_coordinator/unified_complexity.py",
+      "status": "verified_true",
+      "method": "unit_test",
+      "evidence": [
+        "tests/unit/test_unified_complexity_coordinator.py",
+        "services/complexity_coordinator/README.md"
+      ]
+    }
+  ],
+  "summary": {
+    "total": 14,
+    "verified_true": 11,
+    "verified_false": 0,
+    "partially_true": 1,
+    "in_progress": 2
+  }
+}

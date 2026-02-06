@@ -22,10 +22,10 @@ prelude: Design Evolution 2026 (explanation) for dopemux documentation and devel
 Dopemux-MVP has evolved from a simple tmux-based workspace manager into a sophisticated **Cognitive Augmentation Platform** for ADHD developers. The evolution follows a clear trajectory from scripts to a distributed, event-driven microservices architecture dubbed the **"Two-Plane Architecture"**.
 
 **Key Evolutionary Themes:**
-1.  **From Reactive to Proactive**: Initially reacting to user commands (tmux scripts), now anticipating needs (ML Risk Assessment, Background Prediction Service).
-2.  **Two-Plane Architecture**: Explicit separation between the **Human Plane** (Leantime, CLI) and the **Intelligence Plane** (ConPort KG, AI Agents, Taskmaster).
-3.  **Event-Driven Coordination**: Moving from direct API calls to an asynchronous **Redis Streams Event Bus** (DopeconBridge).
-4.  **Cognitive Load Management**: "ADHD-First" isn't just a label—it's implemented via **Progressive Disclosure**, strictly typed **API Contracts** for context snapshots, and **Visual Indicators** (sparklines, color coding).
+1. **From Reactive to Proactive**: Initially reacting to user commands (tmux scripts), now anticipating needs (ML Risk Assessment, Background Prediction Service).
+2. **Two-Plane Architecture**: Explicit separation between the **Human Plane** (Leantime, CLI) and the **Intelligence Plane** (ConPort KG, AI Agents, Taskmaster).
+3. **Event-Driven Coordination**: Moving from direct API calls to an asynchronous **Redis Streams Event Bus** (DopeconBridge).
+4. **Cognitive Load Management**: "ADHD-First" isn't just a label—it's implemented via **Progressive Disclosure**, strictly typed **API Contracts** for context snapshots, and **Visual Indicators** (sparklines, color coding).
 
 ---
 
@@ -35,22 +35,22 @@ Clickable index of deep-dive history for every service component.
 
 | Service Group | Components | Description |
 |:--------------|:-----------|:------------|
-| [1. ConPort](../../../archive/services/history/CONPORT_MASTER_HISTORY.md) | `conport`, `postgresql` | Context Portal & Knowledge Graph. |
-| [2. ADHD Engine](../../../archive/services/history/ADHD_ENGINE_MASTER_HISTORY.md) | `adhd_engine` | Proactive state tracking & risk assessment. |
-| [3. Task Orchestrator](../../../archive/services/history/TASK_ORCHESTRATOR_MASTER_HISTORY.md) | `task-orchestrator` | PM Plane connector (Leantime <-> AI). |
-| [4. Serena](../../../archive/services/history/SERENA_MASTER_HISTORY.md) | `serena` | Cognitive Assistant & LSP Server. |
-| [5. DopeconBridge](../../../archive/services/history/DOPECON_BRIDGE_MASTER_HISTORY.md) | `dopecon-bridge` | Central Event Bus (Redis Streams). |
-| [6. Working Memory](../../../archive/services/history/WORKING_MEMORY_ASSISTANT_MASTER_HISTORY.md) | `wma` | Snapshotting & Context Recovery. |
-| [7. Session Manager](../../../archive/services/history/SESSION_DASHBOARD_MASTER_HISTORY.md) | `session-manager` | Multi-AI Layout & TUI. |
-| [8. Dope Context](../../../archive/services/history/DOPE_CONTEXT_MASTER_HISTORY.md) | `dope-context` | Semantic search & indexing. |
-| [9. Genetic Agent](../../../archive/services/history/GENETIC_ML_SERVICES_MASTER_HISTORY.md) | `genetic`, `ml-risk` | Code repair eugenics & risk modeling. |
-| [10. Monitoring](../../../archive/services/history/MONITORING_MASTER_HISTORY.md) | `monitoring`, `grafana` | Prometheus/Grafana stack. |
-| [11. Intelligence](../../../archive/services/history/INTELLIGENCE_SUPPORT_MASTER_HISTORY.md) | `brain`, `prediction` | Meta-prompting & load prediction. |
-| [12. Task Execution](../../../archive/services/history/TASK_EXECUTION_MASTER_HISTORY.md) | `agents`, `router` | Infrastructure agents & routing. |
-| [13. Environment](../../../archive/services/history/ENVIRONMENT_SERVICES_MASTER_HISTORY.md) | `watcher`, `desktop` | Workspace sensory layer. |
-| [14. Integrations](../../../archive/services/history/INTEGRATION_SERVICES_MASTER_HISTORY.md) | `slack`, `litellm` | External world connectors. |
-| [15. Data & Query](../../../archive/services/history/DATA_QUERY_SERVICES_MASTER_HISTORY.md) | `dddpg`, `kg-ui` | Multi-workspace recall & TUI. |
-| [16. Notifications](../../../archive/services/history/NOTIFICATIONS_UI_MASTER_HISTORY.md) | `notifier`, `dashboard` | User Interface & interruptions. |
+| [1. ConPort](../../archive/services/history/CONPORT_MASTER_HISTORY.md) | `conport`, `postgresql` | Context Portal & Knowledge Graph. |
+| [2. ADHD Engine](../../archive/services/history/ADHD_ENGINE_MASTER_HISTORY.md) | `adhd_engine` | Proactive state tracking & risk assessment. |
+| [3. Task Orchestrator](../../archive/services/history/TASK_ORCHESTRATOR_MASTER_HISTORY.md) | `task-orchestrator` | PM Plane connector (Leantime <-> AI). |
+| [4. Serena](../../archive/services/history/SERENA_MASTER_HISTORY.md) | `serena` | Cognitive Assistant & LSP Server. |
+| [5. DopeconBridge](../../archive/services/history/DOPECON_BRIDGE_MASTER_HISTORY.md) | `dopecon-bridge` | Central Event Bus (Redis Streams). |
+| [6. Working Memory](../../archive/services/history/WORKING_MEMORY_ASSISTANT_MASTER_HISTORY.md) | `wma` | Snapshotting & Context Recovery. |
+| [7. Session Manager](../../archive/services/history/SESSION_DASHBOARD_MASTER_HISTORY.md) | `session-manager` | Multi-AI Layout & TUI. |
+| [8. Dope Context](../../archive/services/history/DOPE_CONTEXT_MASTER_HISTORY.md) | `dope-context` | Semantic search & indexing. |
+| [9. Genetic Agent](../../archive/services/history/GENETIC_ML_SERVICES_MASTER_HISTORY.md) | `genetic`, `ml-risk` | Code repair eugenics & risk modeling. |
+| [10. Monitoring](../../archive/services/history/MONITORING_MASTER_HISTORY.md) | `monitoring`, `grafana` | Prometheus/Grafana stack. |
+| [11. Intelligence](../../archive/services/history/INTELLIGENCE_SUPPORT_MASTER_HISTORY.md) | `brain`, `prediction` | Meta-prompting & load prediction. |
+| [12. Task Execution](../../archive/services/history/TASK_EXECUTION_MASTER_HISTORY.md) | `agents`, `router` | Infrastructure agents & routing. |
+| [13. Environment](../../archive/services/history/ENVIRONMENT_SERVICES_MASTER_HISTORY.md) | `watcher`, `desktop` | Workspace sensory layer. |
+| [14. Integrations](../../archive/services/history/INTEGRATION_SERVICES_MASTER_HISTORY.md) | `slack`, `litellm` | External world connectors. |
+| [15. Data & Query](../../archive/services/history/DATA_QUERY_SERVICES_MASTER_HISTORY.md) | `dddpg`, `kg-ui` | Multi-workspace recall & TUI. |
+| [16. Notifications](../../archive/services/history/NOTIFICATIONS_UI_MASTER_HISTORY.md) | `notifier`, `dashboard` | User Interface & interruptions. |
 
 ### 🕵️‍♀️ Archaeology & Vaporware
 | Report | Description |
@@ -77,9 +77,9 @@ Clickable index of deep-dive history for every service component.
 - **State**: Enterprise-grade (PostgreSQL, Qdrant, Redis Streams).
 - **Communication**: **DopeconBridge** (Async Event Bus) + MCP (stdio).
 - **Key Components**:
-    - **PM Plane**: Leantime (Human) ↔ Task Orchestrator ↔ ConPort (AI).
-    - **Proactive Engine**: ML-driven background predictions.
-    - **Session Manager**: Multi-AI orchestration via tmux.
+  - **PM Plane**: Leantime (Human) ↔ Task Orchestrator ↔ ConPort (AI).
+  - **Proactive Engine**: ML-driven background predictions.
+  - **Session Manager**: Multi-AI orchestration via tmux.
 
 ---
 
@@ -106,9 +106,9 @@ Clickable index of deep-dive history for every service component.
 *From status bar to command center.*
 
 **Evolutionary Path:**
-1.  **Tmux Status Line**: Simple bash scripts showing CPU/Mem.
-2.  **Compact Dashboard**: 3-line Python script (Rich library) showing Energy, Warnings, Tasks.
-3.  **Full Interactive Dashboard**: Textual-based TUI with sparklines, modal drill-downs, and keyboard navigation.
+1. **Tmux Status Line**: Simple bash scripts showing CPU/Mem.
+2. **Compact Dashboard**: 3-line Python script (Rich library) showing Energy, Warnings, Tasks.
+3. **Full Interactive Dashboard**: Textual-based TUI with sparklines, modal drill-downs, and keyboard navigation.
 
 **Design Philosophy (ADHD-Optimized):**
 - **Miller's Law**: Status bar limited to 7±2 items.
@@ -135,10 +135,10 @@ Clickable index of deep-dive history for every service component.
 **History**:
 - **Oct 2025**: Deprecated (Decision #140) in favor of "SuperClaude".
 - **Oct 16, 2025**: **Un-Deprecated** (ADR-203). Systematic audit proved uniqueness.
-    - **Capabilities**: ML Risk Assessment (blocker prediction), Multi-team coordination.
+  - **Capabilities**: ML Risk Assessment (blocker prediction), Multi-team coordination.
 - **Current Role**: Central node in the **PM Plane**.
-    - Connects **Leantime** (Human Project Management) with **ConPort** (Knowledge Graph).
-    - Routes tasks to specialized agents (Serena, Zen, Taskmaster).
+  - Connects **Leantime** (Human Project Management) with **ConPort** (Knowledge Graph).
+  - Routes tasks to specialized agents (Serena, Zen, Taskmaster).
 - **Evolution Source**: `task-orchestrator/docs/pm-plane-architecture.md`, `ADR-203`.
 
 ### 5. DopeconBridge
@@ -186,10 +186,10 @@ Clickable index of deep-dive history for every service component.
 ## 🔮 Future Trajectory
 
 Based on the latest implementation plans:
-1.  **Full "Zen" Mode**: Deep integration of "Flow State" metrics into IDEs.
-2.  **Autonomous Context**: `autonomous-indexing-daemon` implies self-healing/self-updating context without user intervention.
-3.  **Bio-Feedback Integration**: Placeholders in ADHD engine suggest future hardware integration for energy monitoring.
-4.  **Two-Plane Maturity**: Deeper integration between the Human Plane (Leantime) and AI Plane (ConPort) to fully automate project management overhead.
+1. **Full "Zen" Mode**: Deep integration of "Flow State" metrics into IDEs.
+2. **Autonomous Context**: `autonomous-indexing-daemon` implies self-healing/self-updating context without user intervention.
+3. **Bio-Feedback Integration**: Placeholders in ADHD engine suggest future hardware integration for energy monitoring.
+4. **Two-Plane Maturity**: Deeper integration between the Human Plane (Leantime) and AI Plane (ConPort) to fully automate project management overhead.
 
 ---
 
