@@ -62,6 +62,10 @@ Generated during this pass:
 - `reports/strict_closure/auto_detection_service_verification_2026-02-06.json`
 - `reports/strict_closure/profile_management_commands_verification_2026-02-06.json`
 - `reports/strict_closure/profile_analytics_verification_2026-02-06.json`
+- `reports/strict_closure/dope_context_decision_auto_index_unified_search_verification_2026-02-06.json`
+- `reports/strict_closure/profile_optimization_suggestions_verification_2026-02-06.json`
+- `reports/strict_closure/profile_usage_analysis_and_init_wizard_verification_2026-02-06.json`
+- `reports/strict_closure/profile_documentation_completion_verification_2026-02-06.json`
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
@@ -83,6 +87,10 @@ Generated during this pass:
 - `docs/05-audit-reports/AUTO_DETECTION_SERVICE_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/PROFILE_ANALYTICS_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_OPTIMIZATION_SUGGESTIONS_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_USAGE_ANALYSIS_AND_INIT_WIZARD_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
 - `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
@@ -95,7 +103,9 @@ Executed verification checks (latest pass on 2026-02-06):
 - `pytest -q --no-cov tests/shared/test_dopecon_bridge_client.py` (passes)
 - `pytest -q --no-cov tests/unit/test_leantime_bridge.py` (passes)
 - `pytest -q --no-cov tests/unit/test_profile_cli_registration.py` (passes)
+- `pytest -q --no-cov tests/unit/test_profile_usage_analysis_command.py tests/unit/test_profile_analyzer.py tests/unit/test_profile_wizard.py` (passes)
 - `pytest -q --no-cov tests/test_mobile_runtime.py` (passes)
+- `PYTHONPATH=/Users/hue/code/dopemux-mvp/services/dope-context pytest -q --no-cov -k 'not trio' services/dope-context/tests/test_mcp_server.py` (passes)
 - `npm --prefix ui-dashboard run build` (passes)
 - `python scripts/deploy/migration/validate_age_pg_compat_stress.py ...` (passes via `mcp-conport` runtime with `overall_ok=true`)
 - `docker exec dopemux-mcp-leantime-bridge ... /health?deep=1` and `/api/tools/list_projects` (failing with degraded upstream evidence captured)
@@ -312,6 +322,24 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/profile_management_commands_verification_2026-02-06.json`.
 28. Profile analytics backlog items (`4.4.1` through `4.4.3`) are now implemented and verified for metrics capture, stats command insights, and ASCII dashboard/heatmap rendering:
    `reports/strict_closure/profile_analytics_verification_2026-02-06.json`.
+29. Dope-context decision auto-index configuration backlog item (`3.3.1`) is now implemented with workspace-scoped decision retrieval settings and persisted config:
+   `reports/strict_closure/dope_context_decision_auto_index_unified_search_verification_2026-02-06.json`.
+30. Unified search validation backlog item (`3.3.2`) is now implemented with merged code/docs/decision behavior verification:
+   `reports/strict_closure/dope_context_decision_auto_index_unified_search_verification_2026-02-06.json`.
+31. Profile optimization suggestion backlog item (`4.4.4`) is now implemented with deterministic recommendation generation and ConPort archival:
+   `reports/strict_closure/profile_optimization_suggestions_verification_2026-02-06.json`.
+32. Usage pattern analysis backlog item (`4.5.1`) is now implemented with `dopemux profile analyze-usage` and unit coverage:
+   `reports/strict_closure/profile_usage_analysis_and_init_wizard_verification_2026-02-06.json`.
+33. Profile init wizard backlog item (`4.5.2`) is now implemented and verified with wizard build/save coverage:
+   `reports/strict_closure/profile_usage_analysis_and_init_wizard_verification_2026-02-06.json`.
+34. Migration guide documentation backlog item (`4.5.3`) is now implemented with code-truth tutorial updates:
+   `reports/strict_closure/profile_documentation_completion_verification_2026-02-06.json`.
+35. User documentation backlog item (`4.6.1`) is now implemented with complete tutorial and operational command guidance:
+   `reports/strict_closure/profile_documentation_completion_verification_2026-02-06.json`.
+36. Developer documentation backlog item (`4.6.2`) is now implemented with architecture, interface, and signal-collector extension guidance:
+   `reports/strict_closure/profile_documentation_completion_verification_2026-02-06.json`.
+37. Remaining profile UX docs polish (`4.6.3`) is now addressed for active docs through command-parity updates and index refresh:
+   `reports/strict_closure/profile_documentation_completion_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
