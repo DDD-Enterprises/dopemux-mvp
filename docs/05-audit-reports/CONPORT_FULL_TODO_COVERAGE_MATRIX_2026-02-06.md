@@ -36,6 +36,19 @@ Task-type distribution:
 - `TASK_PLAN`: `25`
 - `WEEK_PLAN`: `4`
 
+## Runtime Override Notes
+
+The only historical `BLOCKED` entry in this extraction has been runtime-verified as stale:
+
+1. `litellm` database exists in current PostgreSQL runtime.
+2. `mcp-litellm` is healthy and reachable.
+3. Blocker status should be reclassified to `resolved_in_runtime` for active planning.
+
+Evidence:
+
+- `reports/strict_closure/litellm_blocker_verification_2026-02-06.json`
+- `docs/05-audit-reports/LITELLM_BLOCKER_VERIFICATION_2026-02-06.md`
+
 ## Highest-Priority Underrepresented Items
 
 | Status | Priority hint | Type | Item | Bundle hits |
@@ -104,7 +117,7 @@ Task-type distribution:
 ## Closure Guidance
 
 1. Keep the original 24-item miss matrix as closed representation baseline (`24/24` explicit coverage).
-2. Promote the remaining underrepresented set (`167`) into phased owner-mapped work packets, starting with BLOCKED/P0/P1 hints and high bundle-hit recurrence.
+2. Promote the remaining underrepresented set (`167`) into phased owner-mapped work packets, starting with P0/P1 hints and high bundle-hit recurrence.
 3. Maintain additive/no-break compatibility while implementing each item and update master docs after each closure slice.
 
 ## Evidence Artifact
