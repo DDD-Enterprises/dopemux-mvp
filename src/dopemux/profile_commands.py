@@ -244,6 +244,8 @@ def use_profile(
             to_profile=profile_name,
             from_profile=previous,
             trigger="manual",
+            switch_duration_seconds=elapsed_seconds,
+            mcp_count=len(getattr(profile, "mcps", []) or []),
         )
     except Exception as exc:
         logger.debug("Profile switch telemetry unavailable: %s", exc)
