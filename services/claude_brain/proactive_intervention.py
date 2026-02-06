@@ -1113,5 +1113,4 @@ class ProactiveInterventionSystem:
             "learned_patterns": total_patterns,
             "pending_interventions": len(all_pending),
             "system_health": "operational"
-        }</content>
-</xai:function_call">The file content contains invalid XML/HTML markup. Please provide clean Python code only.
+        }

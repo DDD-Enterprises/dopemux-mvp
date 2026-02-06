@@ -1,17 +1,13 @@
 """
-ADHD Engine HTTP Client
+ADHD Engine Client for Activity Capture
 
-Simple HTTP client for logging activities to the ADHD Accommodation Engine.
-
-Features:
-- Activity logging (PUT /activity/{user_id})
-- Health check
-- Async HTTP requests
-- Error handling with retries
+Handles communication with the ADHD Accommodation Engine API.
 """
 
+import asyncio
+import json
 import logging
-from typing import Any, Dict, Optional
+from typing import Dict, Any, Optional
 
 import aiohttp
 
@@ -20,169 +16,91 @@ logger = logging.getLogger(__name__)
 
 class ADHDEngineClient:
     """
-    HTTP client for ADHD Accommodation Engine API.
+    Client for communicating with ADHD Accommodation Engine.
 
-    Handles activity logging and health checks.
+    Sends activity data and receives accommodation recommendations.
     """
 
-    def __init__(
-        self,
-        base_url: str = "http://localhost:8095",
-        user_id: str = "hue",
-        timeout_seconds: int = 5
-    ):
+    def __init__(self, base_url: str, user_id: str, api_key: Optional[str] = None):
         """
         Initialize ADHD Engine client.
 
         Args:
-            base_url: ADHD Engine base URL
-            user_id: User ID for activity logging
-            timeout_seconds: Request timeout (default: 5s)
+            base_url: ADHD Engine API base URL
+            user_id: User identifier for activity tracking
+            api_key: Optional API key for authentication
         """
         self.base_url = base_url.rstrip("/")
         self.user_id = user_id
-        self.timeout = aiohttp.ClientTimeout(total=timeout_seconds)
+        self.api_key = api_key
 
-        # Metrics
-        self.activities_logged = 0
-        self.health_checks = 0
-        self.errors = 0
+        # HTTP session
+        self.session: Optional[aiohttp.ClientSession] = None
+        self.headers = {}
+        if api_key:
+            self.headers["X-API-Key"] = api_key
 
-    async def log_activity(
-        self,
-        activity_type: str,
-        duration_minutes: int,
-        complexity: float,
-        interruptions: int
-    ) -> bool:
-        """
-        Log activity to ADHD Engine.
+    async def initialize(self):
+        """Initialize HTTP session."""
+        self.session = aiohttp.ClientSession(headers=self.headers)
 
-        Args:
-            activity_type: Type of activity (coding/reviewing/debugging)
-            duration_minutes: Activity duration
-            complexity: Task complexity (0.0-1.0)
-            interruptions: Number of interruptions
-
-        Returns:
-            True if logged successfully, False otherwise
-        """
-        url = f"{self.base_url}/api/v1/activity/{self.user_id}"
-
-        payload = {
-            "user_id": self.user_id,
-            "activity_type": activity_type,
-            "duration_minutes": duration_minutes,
-            "complexity": complexity,
-            "interruptions": interruptions
-        }
-
-        try:
-            async with aiohttp.ClientSession(timeout=self.timeout) as session:
-                async with session.put(url, json=payload) as response:
-                    if response.status == 200:
-                        self.activities_logged += 1
-                        logger.debug(f"✅ Activity logged: {duration_minutes}min, {interruptions} interruptions")
-                        return True
-                    else:
-                        self.errors += 1
-                        error_text = await response.text()
-                        logger.warning(f"⚠️ Activity log failed ({response.status}): {error_text}")
-                        return False
-
-        except aiohttp.ClientError as e:
-            self.errors += 1
-            logger.error(f"❌ ADHD Engine unreachable: {e}")
-            return False
-        except Exception as e:
-            self.errors += 1
-            logger.error(f"❌ Activity logging error: {e}")
-            return False
+    async def close(self):
+        """Close HTTP session."""
+        if self.session:
+            await self.session.close()
 
     async def check_health(self) -> bool:
-        """
-        Check if ADHD Engine is healthy.
-
-        Returns:
-            True if healthy, False otherwise
-        """
-        url = f"{self.base_url}/health"
-
+        """Check if ADHD Engine is healthy."""
         try:
-            async with aiohttp.ClientSession(timeout=self.timeout) as session:
-                async with session.get(url) as response:
-                    self.health_checks += 1
-                    healthy = response.status == 200
-
-                    if healthy:
-                        logger.debug("✅ ADHD Engine healthy")
-                    else:
-                        logger.warning(f"⚠️ ADHD Engine unhealthy ({response.status})")
-
-                    return healthy
-
-        except aiohttp.ClientError as e:
-            logger.error(f"❌ ADHD Engine health check failed: {e}")
-            return False
+            async with self.session.get(f"{self.base_url}/health") as response:
+                return response.status == 200
         except Exception as e:
-            logger.error(f"❌ Health check error: {e}")
+            logger.error(f"Health check failed: {e}")
             return False
 
-    async def get_energy_level(self) -> Optional[Dict[str, Any]]:
+    async def send_activity_data(self, activity_data: Dict[str, Any]):
         """
-        Get current energy level from ADHD Engine.
+        Send activity data to ADHD Engine.
 
-        Returns:
-            Energy level data or None if unavailable
+        Args:
+            activity_data: Activity data to send
         """
-        url = f"{self.base_url}/api/v1/energy-level/{self.user_id}"
-
         try:
-            async with aiohttp.ClientSession(timeout=self.timeout) as session:
-                async with session.get(url) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        return data
-                    else:
-                        return None
+            payload = {
+                "user_id": self.user_id,
+                "activity_data": activity_data,
+                "timestamp": activity_data.get("timestamp", asyncio.get_event_loop().time())
+            }
+
+            async with self.session.post(
+                f"{self.base_url}/api/v1/activity/{self.user_id}",
+                json=payload
+            ) as response:
+                if response.status == 200:
+                    logger.debug("Activity data sent successfully")
+                else:
+                    logger.warning(f"Failed to send activity data: {response.status}")
 
         except Exception as e:
-            logger.error(f"Energy level query error: {e}")
-            return None
+            logger.error(f"Error sending activity data: {e}")
 
-    async def get_attention_state(self) -> Optional[Dict[str, Any]]:
+    async def get_accommodation_recommendations(self) -> Dict[str, Any]:
         """
-        Get current attention state from ADHD Engine.
+        Get current accommodation recommendations from ADHD Engine.
 
         Returns:
-            Attention state data or None if unavailable
+            Dict with accommodation recommendations
         """
-        url = f"{self.base_url}/api/v1/attention-state/{self.user_id}"
-
         try:
-            async with aiohttp.ClientSession(timeout=self.timeout) as session:
-                async with session.get(url) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        return data
-                    else:
-                        return None
+            async with self.session.get(
+                f"{self.base_url}/api/v1/recommend-break?user_id={self.user_id}"
+            ) as response:
+                if response.status == 200:
+                    return await response.json()
+                else:
+                    logger.warning(f"Failed to get recommendations: {response.status}")
+                    return {}
 
         except Exception as e:
-            logger.error(f"Attention state query error: {e}")
-            return None
-
-    def get_metrics(self) -> Dict[str, Any]:
-        """Get client metrics"""
-        return {
-            "base_url": self.base_url,
-            "user_id": self.user_id,
-            "activities_logged": self.activities_logged,
-            "health_checks": self.health_checks,
-            "errors": self.errors,
-            "success_rate": (
-                self.activities_logged / (self.activities_logged + self.errors)
-                if (self.activities_logged + self.errors) > 0
-                else 0.0
-            )
-        }
+            logger.error(f"Error getting recommendations: {e}")
+            return {}

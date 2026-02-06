@@ -711,5 +711,4 @@ class FederatedPersonalizationEngine:
             "privacy_compliance": privacy_audit,
             "federated_model_status": "active",
             "differential_privacy_active": True
-        }</content>
-</xai:function_call">The file content contains invalid XML/HTML markup. Please provide clean Python code only.
+        }

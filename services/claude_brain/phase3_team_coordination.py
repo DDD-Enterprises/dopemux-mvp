@@ -694,5 +694,4 @@ class TeamCoordinationHub:
             try:
                 await self.event_processing_task
             except asyncio.CancelledError:
-                pass</content>
-</xai:function_call">The file content contains invalid XML/HTML markup. Please provide clean Python code only.
+                pass
