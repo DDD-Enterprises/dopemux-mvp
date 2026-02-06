@@ -88,6 +88,10 @@ Evidence: `docs/05-audit-reports/ADHD_ENGINE_PROFILE_DETECTOR_VERIFICATION_2026-
 Evidence: `docs/05-audit-reports/FILE_PATTERN_ANALYZER_VERIFICATION_2026-02-06.md`
 12. Row `11` (`2.2.4 Unit tests`) is now implemented.
 Evidence: `docs/05-audit-reports/PROFILE_DETECTOR_THRESHOLD_TESTS_VERIFICATION_2026-02-06.md`
+13. Row `12` (`3.2.3 Config swap and restart`) is now implemented.
+Evidence: `docs/05-audit-reports/PROFILE_CONFIG_SWAP_RESTART_VERIFICATION_2026-02-06.md`
+14. Row `13` (`3.2.4 Error recovery and rollback`) is now implemented.
+Evidence: `docs/05-audit-reports/PROFILE_ERROR_RECOVERY_ROLLBACK_VERIFICATION_2026-02-06.md`
 
 ## Source
 

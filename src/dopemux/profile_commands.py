@@ -67,7 +67,18 @@ def list_profiles():
 
 @click.command("use")
 @click.argument("profile_name")
-def use_profile(profile_name: str):
+@click.option(
+    "--apply-config/--no-apply-config",
+    default=True,
+    show_default=True,
+    help="Apply profile MCP selection to Claude settings.json before activation.",
+)
+@click.option(
+    "--restart-claude",
+    is_flag=True,
+    help="After activation, launch 'dopemux start --profile <name>' and verify startup exit status.",
+)
+def use_profile(profile_name: str, apply_config: bool, restart_claude: bool):
     """✅ Set active profile"""
     workspace = detect_workspace()
     manager = ProfileManager()
@@ -79,7 +90,41 @@ def use_profile(profile_name: str):
 
     previous = manager.get_active_profile(workspace)
     started_at = datetime.utcnow()
-    manager.set_active_profile(workspace, profile_name)
+
+    backup_path: Path | None = None
+    claude_config = None
+
+    if apply_config:
+        try:
+            from .claude_config import ClaudeConfig
+
+            claude_config = ClaudeConfig()
+            _, backup_path = claude_config.apply_profile(
+                profile,
+                create_backup=True,
+                dry_run=False,
+                return_backup_path=True,
+            )
+        except Exception as exc:
+            console.logger.info(
+                f"\n[red]❌ Failed to apply Claude config for profile '{profile_name}': {exc}[/red]"
+            )
+            if previous:
+                console.logger.info(f"[dim]Active profile remains: {previous}[/dim]")
+            return
+
+    try:
+        manager.set_active_profile(workspace, profile_name)
+    except Exception as exc:
+        # If profile marker write fails after config swap, restore previous config snapshot.
+        if claude_config and backup_path:
+            try:
+                claude_config.rollback_to_backup(backup_path)
+                console.logger.info("[yellow]↩ Configuration rolled back from backup[/yellow]")
+            except Exception as rollback_exc:
+                logger.error("Profile rollback failed: %s", rollback_exc)
+        console.logger.info(f"\n[red]❌ Failed to set active profile: {exc}[/red]")
+        return
 
     elapsed_seconds = (datetime.utcnow() - started_at).total_seconds()
 
@@ -106,6 +151,19 @@ def use_profile(profile_name: str):
             f"\n✅ Active profile: [cyan]{profile_name}[/cyan] "
             f"({elapsed_seconds:.2f}s)"
         )
+
+    if apply_config:
+        console.logger.info("[dim]✓ Claude settings updated with profile MCP selection[/dim]")
+
+    if restart_claude:
+        try:
+            subprocess.run(
+                ["dopemux", "start", "--profile", profile_name],
+                check=True,
+            )
+            console.logger.info("[dim]✓ Claude restart command completed successfully[/dim]")
+        except Exception as exc:
+            console.logger.info(f"[red]❌ Claude restart command failed: {exc}[/red]")
 
 
 @click.command("show")
