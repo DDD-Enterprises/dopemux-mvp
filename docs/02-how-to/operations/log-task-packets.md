@@ -3,8 +3,12 @@ id: LOG_TASK_PACKETS
 title: Log Task Packets
 type: how-to
 owner: '@hu3mann'
+author: '@hu3mann'
+date: '2026-02-06'
 last_review: '2026-02-06'
 next_review: '2026-05-06'
+prelude: Generate task packets with logs, health snapshots, and handoff artifacts for
+  fast multi-service debugging and incident triage.
 ---
 # Log Task Packets for Rapid Debugging
 
