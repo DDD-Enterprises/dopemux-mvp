@@ -50,7 +50,7 @@ class SimpleMetaMCPServer:
         # Docker MCP server endpoints
         self.mcp_servers = {
             "zen": "http://localhost:3003",
-            "context7": "http://localhost:3002",
+            "pal": "http://localhost:3003",
             "exa": "http://localhost:3008"
         }
 
@@ -286,7 +286,7 @@ class SimpleMetaMCPServer:
                 },
                 {
                     "name": "get_docs",
-                    "description": "Get official documentation (simulated context7)",
+                    "description": "Get official documentation (simulated pal)",
                     "inputSchema": {
                         "type": "object",
                         "properties": {

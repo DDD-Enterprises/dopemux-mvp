@@ -4,34 +4,6 @@
 services:
   # === CRITICAL PATH SERVERS (Priority: High) ===
 
-  # Context7 - ALWAYS FIRST for documentation and API references
-  context7:
-    build:
-      context: ./context7
-      dockerfile: Dockerfile
-    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-context7"
-    restart: unless-stopped
-    networks:
-      - dopemux-network
-    environment:
-      - CONTEXT7_API_KEY=${CONTEXT7_API_KEY}
-      - CONTEXT7_ENDPOINT=${CONTEXT7_ENDPOINT}
-      - MCP_SERVER_PORT=3002
-    ports:
-      - "3002:3002"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3002/health || nc -z localhost 3002"]
-      timeout: 10s
-      retries: 3
-      interval: 30s
-      start_period: 45s
-    volumes:
-      - mcp_context7_cache:/app/cache
-    labels:
-      - "mcp.role=critical_path"
-      - "mcp.priority=highest"
-      - "mcp.description=Documentation and API references"
-
   # PAL - Multi-model orchestration and complex decision making
   pal:
     build:
@@ -51,6 +23,8 @@ services:
       - PAL_DEFAULT_PROVIDER=openrouter  # Prefer OpenRouter for routing
       - MCP_SERVER_PORT=3003
       - MCP_TRANSPORT=http
+    ports:
+      - "3003:3003"
     working_dir: /app
     healthcheck:
       test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
@@ -83,7 +57,8 @@ services:
       - LITELLM_DROP_PARAMS=true
     # Note: network_mode: host means no port mapping needed (uses host's port 4000)
     healthcheck:
-      test: ["CMD-SHELL", "curl -f -H 'Authorization: Bearer sk-master-dopemux-local-20251101' http://localhost:4000/health || exit 1"]
+      # Using proc filesystem since ps not available and host networking prevents localhost curl
+      test: ["CMD-SHELL", "test -e /proc/1/exe || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -96,37 +71,8 @@ services:
       - "mcp.priority=high"
       - "mcp.description=Unified LLM proxy with intelligent routing and cost tracking"
 
-  # Sequential Thinking - Multi-step reasoning and architectural analysis
-  mas-sequential-thinking:
-    build:
-      context: ./mcp-server-mas-sequential-thinking
-      dockerfile: Dockerfile
-    container_name: "${DOPEMUX_STACK_PREFIX:-dopemux}-mcp-mas-sequential-thinking"
-    restart: unless-stopped
-    networks:
-      - dopemux-network
-    env_file:
-      - ./mcp-server-mas-sequential-thinking/.env
-    environment:
-      - MCP_SERVER_PORT=3011
-    ports:
-      - "3011:3011"
-    healthcheck:
-      # MCP server runs over stdio via proxy, port checks can be misleading. Consider process running as healthy.
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
-      timeout: 10s
-      retries: 3
-      interval: 30s
-      start_period: 45s
-    volumes:
-      - mcp_logs:/app/logs
-      - mcp_cache:/app/cache
-    labels:
-      - "mcp.role=critical_path"
-      - "mcp.priority=high"
-      - "mcp.description=Multi-step reasoning and analysis"
-
   # === WORKFLOW SERVERS (Priority: Medium) ===
+  # NOTE: mas-sequential-thinking removed 2026-02-05 - replaced by Zen/pal multi-step reasoning
 
   # Task Master AI - Task management and PRD processing
   task-master-ai:
@@ -198,22 +144,24 @@ services:
     env_file:
       - ./task-orchestrator/.env
     environment:
-      - MCP_SERVER_PORT=3014
+      - MCP_SERVER_PORT=8000
       - JVM_HEAP_SIZE=512m
+      - REDIS_URL=redis://dopemux-redis-primary:6379
     ports:
-      - "3014:3014"
-    # MCP server runs as persistent stdio server
+      - "3014:8000"
+    # depends_on: redis-primary (redis already running externally)
+    # MCP server health check
     healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       timeout: 10s
       retries: 3
       interval: 30s
-      start_period: 10s
+      start_period: 45s
     volumes:
       - mcp_task_orchestrator_data:/app/data
       - mcp_task_orchestrator_logs:/app/logs
-    # Run as persistent MCP stdio server
-    command: ["python", "/app/server.py"]
+    # Run uvicorn server (uses Dockerfile CMD)
+    # command defaults to: uvicorn app.main:app --host 0.0.0.0 --port 8000
     stdin_open: true
     tty: true
     labels:
@@ -230,7 +178,6 @@ services:
     restart: unless-stopped
     networks:
       - dopemux-network
-      - leantime-net
     env_file:
       - ./leantime-bridge/.env
     environment:
@@ -363,7 +310,7 @@ services:
       - "mcp.priority=highest"
       - "mcp.description=ADHD-optimized research with real-time progress and pause/resume"
 
-  # Exa - Web research (ONLY when context7 lacks information)
+  # Exa - Web research (ONLY when pal lacks information)
   exa:
     build:
       context: ./exa
@@ -417,7 +364,8 @@ services:
     depends_on:
       - qdrant
     healthcheck:
-      test: ["CMD", "pgrep", "-f", "python.*server.py"]  # Check for Python process
+      # Check actual health endpoint instead of process
+      test: ["CMD-SHELL", "curl -f http://localhost:3010/health || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -563,7 +511,7 @@ services:
     networks:
       - dopemux-network
     environment:
-      - REDIS_URL=redis://dopemux-redis-events:6379
+      - REDIS_URL=redis://redis-events:6379
       - STREAM_NAME=dopemux:events
       - CONSUMER_GROUP=activity-capture
       - CONSUMER_NAME=activity-capture-1
@@ -618,7 +566,8 @@ services:
     volumes:
       - mcp_qdrant_data:/qdrant/storage
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 6333 || exit 1"]
+      # Use curl instead of wget (more commonly available)
+      test: ["CMD-SHELL", "curl -f http://localhost:6333/readyz || exit 1"]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -633,10 +582,6 @@ networks:
   dopemux-network:
     external: true
     name: dopemux-network
-  # Connect to existing Leantime network for PM integration
-  leantime-net:
-    external: true
-    name: leantime-net
 
 # === VOLUMES ===
 volumes:
@@ -650,9 +595,6 @@ volumes:
   mcp_cache:
     external: true
     name: mcp_cache
-  mcp_context7_cache:
-    driver: local
-    name: mcp_context7_cache
   mcp_task_master_data:
     driver: local
     name: mcp_task_master_data
@@ -696,7 +638,7 @@ volumes:
     driver: local
     name: mcp_dopemux_gpt_cache
   mcp_litellm_data:
-    driver: local
+    external: true
     name: mcp_litellm_data
   mcp_qdrant_data:
     driver: local

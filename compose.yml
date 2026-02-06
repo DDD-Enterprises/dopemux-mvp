@@ -1,23 +1,23 @@
-# ⚠️ DEPRECATED - Use compose.yml instead
-# This file is kept for reference only. The canonical compose file is now compose.yml at repo root.
-# See: compose.yml
+# Dopemux Canonical Docker Compose
 #
-# Dopemux Master Docker Compose - Complete Stack Orchestration
+# CANONICAL DEVELOPMENT ENTRYPOINT
+# This is the single source of truth for running Dopemux services.
 #
-# This master compose file coordinates all Dopemux services:
-# - MCP Servers (12 services)
-# - Application Services (DopeconBridge, Task Orchestrator)
-# - Infrastructure (PostgreSQL, Redis, Qdrant)
+# Services Included:
+# - Infrastructure: PostgreSQL (AGE), Redis (2x), Qdrant
+# - MCP Servers: ConPort, PAL, LiteLLM, Dope-Context, Serena, GPT-Researcher, Exa, Desktop Commander, Leantime Bridge
+# - Application Services: DopeconBridge, Task Orchestrator, ADHD Engine, Genetic Agent
 #
 # Usage:
-#   docker-compose -f docker-compose.master.yml up -d
-#   docker-compose -f docker-compose.master.yml down
-#   docker-compose -f docker-compose.master.yml ps
+#   docker compose up -d                    # Start all services
+#   docker compose ps                       # View running services
+#   docker compose down                     # Stop all services
+#   docker compose logs -f <service>        # View logs
 #
-# Or use the convenience command:
-#   dopemux mcp start-all
-
-version: '3.8'
+# Guidelines:
+# - Do not create *-2 service definitions for scaling
+# - Use `docker compose up --scale service=N` for replicas
+# - This file replaces compose.master.yml, compose.staging.yml, etc.
 
 networks:
   dopemux-network:
@@ -26,7 +26,6 @@ networks:
 
 volumes:
   pg_age_data:
-  mcp_pal_cache:
   mcp_litellm_data:
   mcp_logs:
   mcp_cache:
@@ -259,9 +258,12 @@ services:
       - QDRANT_URL=http://mcp-qdrant:6333
       - REDIS_URL=redis://redis-events:6379
     depends_on:
-      - postgres
-      - redis-events
-      - mcp-qdrant
+      postgres:
+        condition: service_healthy
+      redis-events:
+        condition: service_healthy
+      mcp-qdrant:
+        condition: service_started
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:3016/health || exit 1" ]
       timeout: 10s
@@ -295,13 +297,6 @@ services:
     depends_on:
       - redis-primary
       - conport
-    deploy:
-      replicas: 2
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
       timeout: 10s
@@ -341,13 +336,6 @@ services:
       - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8097,http://adhd-dashboard:8097
     depends_on:
       - redis-primary
-    deploy:
-      replicas: 3
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.adhd-engine.rule=Host(`adhd-engine.staging.local`)"
@@ -400,24 +388,6 @@ services:
       - "dopemux.service=application"
       - "dopemux.component=ai-code-repair"
       - "dopemux.description=Intelligent code repair using hybrid LLM + genetic programming approach"
-
-  # Plane Coordinator - DISABLED (missing source files)
-  # plane-coordinator:
-  #   build:
-  #     context: ./services/task-orchestrator
-  #     dockerfile: Dockerfile.coordination
-  #   container_name: dopemux-plane-coordinator
-  #   restart: unless-stopped
-  #   networks:
-  #     - dopemux-network
-  #   ports:
-  #     - "8090:8090"
-  #   environment:
-  #     - COORDINATION_API_PORT=8090
-  #   depends_on:
-  #     - redis-events
-  #     - conport
-  #     - adhd-engine
 
   # Serena v2 - ADHD Engine MCP
   serena:
@@ -528,8 +498,3 @@ services:
       timeout: 10s
       retries: 3
       interval: 30s
-
-  # Note: Additional MCP servers (Serena, Exa, Desktop Commander, etc.)
-  # can be added here following the same pattern. For brevity, only core
-  # services are shown. See docker/mcp-servers/docker-compose.yml for
-  # the complete list of available MCP servers.

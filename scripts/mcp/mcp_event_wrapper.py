@@ -62,9 +62,12 @@ class MCPEventWrapper:
                 ],
                 "env": {}
             },
-            "context7": {
-                "command": ["npx", "context7-mcp"],
-                "env": {"CONTEXT7_API_KEY": os.environ.get("CONTEXT7_API_KEY", "")}
+            "pal": {
+                "command": [
+                    "/Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server/.venv/bin/python",
+                    "/Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server/server.py"
+                ],
+                "env": {}
             },
             "zen": {
                 "command": [
@@ -358,7 +361,7 @@ def main():
     parser.add_argument(
         "--server",
         required=True,
-        choices=["conport", "context7", "zen", "task-master-ai", "gptr-researcher"],
+        choices=["conport", "pal", "zen", "task-master-ai", "gptr-researcher"],
         help="MCP server to wrap"
     )
     parser.add_argument(

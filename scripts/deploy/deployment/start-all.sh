@@ -3,7 +3,7 @@
 # Start All Dopemux Services - Complete Stack
 #
 # This script starts ALL Dopemux services including:
-# - 12 MCP servers (ConPort, Zen, Serena, Context7, etc.)
+# - 12 MCP servers (ConPort, Zen, Serena, PAL apilookup, etc.)
 # - DopeconBridge (event processing, pattern detection)
 # - Task Orchestrator (ADHD task coordination)
 # - All infrastructure (PostgreSQL, Redis, Qdrant)

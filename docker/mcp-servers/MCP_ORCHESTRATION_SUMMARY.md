@@ -9,7 +9,7 @@ You now have a **complete Docker-based MCP server orchestration** that implement
 ### **Critical Path Servers (Highest Priority)**
 | Server | Port | Role | Description |
 |--------|------|------|-------------|
-| **Context7** | 3002 | Documentation | ALWAYS FIRST - Official API docs and patterns |
+| **PAL apilookup** | 3003 | Documentation | ALWAYS FIRST - Official API docs and patterns |
 | **Zen** | 3003 | Multi-model | Orchestrates GPT-5, Gemini, DeepSeek for complex decisions |
 | **Sequential Thinking** | 3001 | Reasoning | Multi-step analysis and architectural reasoning |
 
@@ -24,7 +24,7 @@ You now have a **complete Docker-based MCP server orchestration** that implement
 ### **Quality & Utility Servers (Medium-Low Priority)**
 | Server | Port | Role | Description |
 |--------|------|------|-------------|
-| **Exa** | 3008 | Research | Web research (fallback when Context7 lacks info) |
+| **Exa** | 3008 | Research | Web research (fallback when PAL apilookup lacks info) |
 | **MorphLLM Fast Apply** | 3011 | Transforms | Pattern-based edits and bulk transformations |
 | **Desktop Commander** | 3012 | Automation | Desktop automation and system control |
 
@@ -42,7 +42,7 @@ cd /Users/hue/code/dopemux-mvp/docker/mcp-servers
 ```
 
 **Startup Sequence:**
-1. **Critical Path** (Context7, Zen, Sequential) - 10s wait
+1. **Critical Path** (PAL apilookup, Zen, Sequential) - 10s wait
 2. **Workflow** (ConPort, Task Master, Serena, Claude Context) - 10s wait
 3. **Quality & Utility** (Exa, MorphLLM, Desktop Commander) - 5s wait
 4. **Health Checks** for all critical servers
@@ -57,7 +57,7 @@ docker-compose logs -f [service-name]
 ./view-logs.sh [service-name]
 
 # Individual server control
-docker-compose up -d context7        # Start just Context7
+docker-compose up -d pal        # Start just PAL apilookup
 docker-compose restart zen           # Restart Zen
 ```
 
@@ -72,8 +72,8 @@ docker-compose restart zen           # Restart Zen
 ### **Routing Implementation Points**
 Your MetaMCP orchestrator should:
 
-1. **Priority Routing**: Always try Context7 first for documentation
-2. **Fallback Chains**: Context7 → Community research via Exa
+1. **Priority Routing**: Always try PAL apilookup first for documentation
+2. **Fallback Chains**: PAL apilookup → Community research via Exa
 3. **Load Balancing**: Round-robin within same priority tier
 4. **Circuit Breaking**: Automatic failover when servers are unhealthy
 5. **ADHD Optimizations**: <50ms routing overhead target
@@ -88,7 +88,7 @@ Your MetaMCP orchestrator should:
 
 ### **Individual Server Configs**
 - Each server has its own `.env` file with ADHD optimizations
-- Dockerfile for custom servers (Context7, ConPort, Task Master AI, etc.)
+- Dockerfile for custom servers (PAL apilookup, ConPort, Task Master AI, etc.)
 - HTTP wrapper for stdio-based MCP servers
 
 ### **Environment Variables Required**
@@ -100,7 +100,6 @@ EXA_API_KEY=your_key_here
 # Optional but recommended
 OPENROUTER_API_KEY=your_key_here
 GEMINI_API_KEY=your_key_here
-CONTEXT7_API_KEY=your_key_here
 
 # For desktop automation
 DISPLAY=:0
@@ -110,12 +109,12 @@ DISPLAY=:0
 
 ### **Phase 1: MetaMCP Development**
 1. Build the central routing logic in your main Dopemux app
-2. Implement the Context7-first rule from ADR-012
+2. Implement the PAL apilookup-first rule from ADR-012
 3. Add circuit breakers and health monitoring
 4. Create request/response transformation layers
 
 ### **Phase 2: Integration Testing**
-1. Test the critical path: Context7 → Zen → Sequential Thinking
+1. Test the critical path: PAL apilookup → Zen → Sequential Thinking
 2. Validate workflow servers: ConPort, Task Master AI, Serena
 3. Performance testing: <50ms ADHD-critical response times
 4. Load testing: Token optimization (15-25% reduction target)
@@ -136,7 +135,7 @@ DISPLAY=:0
 
 ## 🚨 Key Implementation Notes
 
-1. **Context7 First Rule**: Always query Context7 before any code generation
+1. **PAL apilookup First Rule**: Always query PAL apilookup before any code generation
 2. **Zen for Complex Decisions**: Use for architectural choices and code reviews
 3. **Token Optimization**: Implement query patterns from ADR-012
 4. **Circuit Breaking**: Essential for ADHD-friendly error handling

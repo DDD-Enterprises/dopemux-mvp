@@ -1,3 +1,9 @@
+# ⚠️ DEPRECATED - Use compose.yml instead
+# This file is kept for reference only. The canonical compose file is now compose.yml at repo root.
+# See: compose.yml
+#
+# Staging Deployment Configuration for Dopemux
+
 version: '3.8'
 
 # Staging Deployment Configuration for Dopemux
