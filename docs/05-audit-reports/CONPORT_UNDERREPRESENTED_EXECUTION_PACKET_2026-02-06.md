@@ -70,6 +70,8 @@ Top `40` underrepresented items from `reports/strict_closure/conport_full_todo_c
    - `docs/05-audit-reports/PROFILE_WORKSTREAM_VERIFICATION_2026-02-06.md`
 3. Row `39` (shared MCP response-budget utility) is now implemented:
    - `docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md`
+4. Row `38` (MCP token-budget monitoring/logging) is now implemented:
+   - `docs/05-audit-reports/MCP_BUDGET_MONITORING_VERIFICATION_2026-02-06.md`
 
 ## Source
 
