@@ -1,3 +1,8 @@
+# ⚠️ DEPRECATED - Use compose.yml instead
+# This file is kept for reference only. The canonical compose file is now compose.yml at repo root.
+# Monitoring services can be added to compose.yml if needed.
+# See: compose.yml
+
 version: '3.8'
 
 services:

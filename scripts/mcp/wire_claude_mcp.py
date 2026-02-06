@@ -5,7 +5,7 @@ Wire Dopemux MCP servers into Claude Desktop global config.
 Targets (global):
   - mas-sequential-thinking (stdio via docker exec)
   - zen (stdio via docker exec)
-  - context7 (stdio via docker exec)
+  - pal (stdio via docker exec)
   - serena (SSE http://127.0.0.1:3006/sse)
   - exa (SSE http://127.0.0.1:3008/sse)
   - leantime-bridge (SSE http://127.0.0.1:3015/sse)
@@ -66,10 +66,6 @@ def deep_merge(a: dict, b: dict) -> dict:
 
 
 def build_mcp_servers(env: dict) -> dict:
-    # Read sensitive values used by some servers (optional)
-    context7_api_key = env.get("CONTEXT7_API_KEY", "")
-    context7_endpoint = env.get("CONTEXT7_ENDPOINT", "")
-
     servers = {
         "mas-sequential-thinking": {
             "type": "stdio",
@@ -89,17 +85,14 @@ def build_mcp_servers(env: dict) -> dict:
             ],
             "env": {}
         },
-        "context7": {
+        "pal": {
             "type": "stdio",
             "command": "docker",
             "args": [
-                "exec", "-i", "mcp-context7",
-                "npx", "-y", "@upstash/context7-mcp"
+                "exec", "-i", "mcp-pal",
+                "/app/.venv/bin/python", "server.py"
             ],
-            "env": {
-                **({"CONTEXT7_API_KEY": context7_api_key} if context7_api_key else {}),
-                **({"CONTEXT7_ENDPOINT": context7_endpoint} if context7_endpoint else {}),
-            },
+            "env": {},
         },
         "serena": {
             "type": "sse",
