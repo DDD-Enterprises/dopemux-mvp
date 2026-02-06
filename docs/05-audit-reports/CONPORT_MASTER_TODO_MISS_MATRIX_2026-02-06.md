@@ -246,3 +246,5 @@ Artifacts:
 - `reports/strict_closure/conport_live_backlog_doc_coverage_2026-02-06.json`
 - `reports/strict_closure/conport_live_backlog_underrepresented_matrix_2026-02-06.json`
 - `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`
+- `reports/strict_closure/conport_live_backlog_true_open_candidates_2026-02-06.json`
+- `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md`
