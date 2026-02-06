@@ -89,12 +89,14 @@ class ADHDEngineIntegration:
 
     async def get_adhd_context(self, user_id: str) -> ADHDContext:
         """Get comprehensive ADHD context"""
-        # Parallel async calls for performance
-        energy_task = self.client.get_energy_level(user_id)
-        attention_task = self.client.get_attention_state(user_id)
-        load_task = self.client.get_cognitive_load(user_id)
-
-        energy, attention, load = await asyncio.gather(energy_task, attention_task, load_task)
+        async with self.client as client:
+            # Parallel async calls for performance
+            energy_task = client.get_energy_level(user_id)
+            attention_task = client.get_attention_state(user_id)
+            load_task = client.get_cognitive_load(user_id)
+            energy, attention, load = await asyncio.gather(
+                energy_task, attention_task, load_task
+            )
 
         return ADHDContext(
             energy_level=energy.get("energy_level", 0.5),
@@ -108,9 +110,9 @@ class ADHDEngineIntegration:
 
 async def test_adhd_integration():
     """Test ADHD Engine integration"""
-    async with ADHDEngineClient() as client:
-        context = await get_adhd_context("test_user")
-        logger.info(f"ADHD Context: {context}")
+    integration = ADHDEngineIntegration()
+    context = await integration.get_adhd_context("test_user")
+    logger.info(f"ADHD Context: {context}")
 
 if __name__ == "__main__":
     asyncio.run(test_adhd_integration())

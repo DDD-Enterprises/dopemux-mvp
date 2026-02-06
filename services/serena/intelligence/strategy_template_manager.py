@@ -5,6 +5,8 @@ Curated navigation strategy template management with ADHD-optimized templates,
 immutable versioning, and integration with ConPort strategic layer.
 """
 
+import statistics
+
 import asyncio
 import json
 import logging

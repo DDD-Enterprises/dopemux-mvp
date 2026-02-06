@@ -5,6 +5,8 @@ Automatic template improvement system using effectiveness feedback, A/B testing,
 and ADHD accommodation optimization for continuous pattern enhancement.
 """
 
+import hashlib
+
 import asyncio
 import json
 import logging
@@ -790,8 +792,6 @@ class EffectivenessEvolutionSystem:
 
         except Exception as e:
             return "1.0.1"  # Default if parsing fails
-
-            logger.error(f"Error: {e}")
     def _assess_adhd_benefit_potential(self, effectiveness_data: Dict[str, Any]) -> float:
         """Assess potential ADHD benefit from evolution."""
         # High benefit if cognitive load can be reduced

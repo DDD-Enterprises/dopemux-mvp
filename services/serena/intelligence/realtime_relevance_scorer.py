@@ -945,7 +945,36 @@ class RealtimeRelevanceScorer:
         return None  # Would retrieve stored relationship
 
     async def _update_attention_alignment_score(self, dynamic_score: DynamicRelationshipScore, new_attention_state: AttentionState, context: NavigationContext) -> None:
-        pass  # Would update attention alignment
+        attention_weights = self.attention_state_weights.get(new_attention_state)
+        if not attention_weights:
+            return
+
+        tolerance = attention_weights["complexity_tolerance"]
+        if dynamic_score.cognitive_load_score <= tolerance:
+            new_alignment = 1.0
+        else:
+            excess = dynamic_score.cognitive_load_score - tolerance
+            new_alignment = max(0.0, 1.0 - (excess * 2))
+
+        now = datetime.now(timezone.utc)
+        attention_score = dynamic_score.dimension_scores.get(ScoringDimension.ATTENTION_ALIGNMENT)
+
+        if attention_score:
+            attention_score.score = new_alignment
+            attention_score.last_updated = now
+            attention_score.update_trigger = ScoringTrigger.ATTENTION_STATE_CHANGE
+        else:
+            dynamic_score.dimension_scores[ScoringDimension.ATTENTION_ALIGNMENT] = RelevanceScore(
+                dimension=ScoringDimension.ATTENTION_ALIGNMENT,
+                score=new_alignment,
+                confidence=0.7,
+                last_updated=now,
+                update_trigger=ScoringTrigger.ATTENTION_STATE_CHANGE,
+            )
+
+        dynamic_score.attention_state_compatibility = new_alignment
+        dynamic_score.last_updated = now
+        dynamic_score.update_count += 1
 
 
 # Convenience functions

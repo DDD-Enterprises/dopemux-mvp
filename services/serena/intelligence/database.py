@@ -502,9 +502,6 @@ async def test_database_performance() -> Dict[str, Any]:
 
     except Exception as e:
         return {"error": str(e), "adhd_compliant": False}
-
-
-        logger.error(f"Error: {e}")
 if __name__ == "__main__":
     # Quick performance test when run directly
     async def main():
