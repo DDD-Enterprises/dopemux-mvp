@@ -258,6 +258,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/conport_deep_status_task_extract_2026-02-06.json`.
 12. Recheck confirms the `4` deep-extraction misses are now represented in active master docs (`new_uncovered_vs_full_coverage = 0`):
    `reports/strict_closure/conport_deep_status_task_recheck_2026-02-06.json`.
+13. Config backup-safety backlog item (`1.2.3`) is now implemented in `ConfigGenerator` with atomic write, rollback safety, and targeted unit tests:
+   `reports/strict_closure/config_backup_safety_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
