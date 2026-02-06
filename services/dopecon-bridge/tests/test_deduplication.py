@@ -10,7 +10,7 @@ import pytest
 import time
 from datetime import datetime
 
-import redis.asyncio as redis
+redis = pytest.importorskip("redis.asyncio", reason="redis package not installed")
 
 from event_deduplication import EventDeduplicator
 from event_bus import Event, EventBus

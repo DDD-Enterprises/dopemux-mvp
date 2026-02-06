@@ -22,7 +22,10 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, Optional, Set
 from dataclasses import dataclass
 
-import redis.asyncio as redis
+try:
+    import redis.asyncio as redis
+except ImportError:  # pragma: no cover - optional dependency in lightweight envs
+    redis = None  # type: ignore[assignment]
 
 logger = logging.getLogger(__name__)
 
@@ -184,7 +187,7 @@ class MultiTierCache:
 
     def __init__(
         self,
-        redis_client: redis.Redis,
+        redis_client: Optional[Any] = None,
         database_client: Optional[Any] = None,
         memory_ttl: int = 5,
         redis_ttl: int = 60
@@ -202,6 +205,7 @@ class MultiTierCache:
         self.redis_client = redis_client
         self.database_client = database_client
         self.redis_ttl = redis_ttl
+        self._database_fallback: Dict[str, Any] = {}
 
         # Metrics
         self.redis_hits = 0
@@ -225,23 +229,26 @@ class MultiTierCache:
             return value
 
         # Tier 2: Check Redis
-        try:
-            redis_value = await self.redis_client.get(key)
-            if redis_value:
-                self.redis_hits += 1
+        if self.redis_client is not None:
+            try:
+                redis_value = await self.redis_client.get(key)
+                if redis_value:
+                    self.redis_hits += 1
 
-                # Deserialize
-                value = json.loads(redis_value)
+                    # Deserialize
+                    value = json.loads(redis_value)
 
-                # Populate memory tier (write-back)
-                self.memory.set(key, value, ttl=self.memory.default_ttl)
+                    # Populate memory tier (write-back)
+                    self.memory.set(key, value, ttl=self.memory.default_ttl)
 
-                return value
+                    return value
 
-            self.redis_misses += 1
+                self.redis_misses += 1
 
-        except Exception as e:
-            logger.error(f"Redis cache error: {e}")
+            except Exception as e:
+                logger.error(f"Redis cache error: {e}")
+                self.redis_misses += 1
+        else:
             self.redis_misses += 1
 
         # Tier 3: Check database (if available)
@@ -277,18 +284,19 @@ class MultiTierCache:
         self.memory.set(key, value, ttl=self.memory.default_ttl)
 
         # Tier 2: Redis
-        try:
-            serialized = json.dumps(value)
-            ttl_seconds = ttl if ttl is not None else self.redis_ttl
+        if self.redis_client is not None:
+            try:
+                serialized = json.dumps(value)
+                ttl_seconds = ttl if ttl is not None else self.redis_ttl
 
-            await self.redis_client.set(
-                key,
-                serialized,
-                ex=ttl_seconds
-            )
+                await self.redis_client.set(
+                    key,
+                    serialized,
+                    ex=ttl_seconds
+                )
 
-        except Exception as e:
-            logger.error(f"Failed to set Redis cache: {e}")
+            except Exception as e:
+                logger.error(f"Failed to set Redis cache: {e}")
 
         # Tier 3: Database (optional, for permanent caching)
         if self.database_client:
@@ -303,10 +311,11 @@ class MultiTierCache:
         self.memory.delete(key)
 
         # Redis
-        try:
-            await self.redis_client.delete(key)
-        except Exception as e:
-            logger.error(f"Failed to delete from Redis: {e}")
+        if self.redis_client is not None:
+            try:
+                await self.redis_client.delete(key)
+            except Exception as e:
+                logger.error(f"Failed to delete from Redis: {e}")
 
         # Database
         if self.database_client:
@@ -332,23 +341,24 @@ class MultiTierCache:
             self.memory.delete(key)
 
         # Redis: Use SCAN + DELETE
-        try:
-            cursor = 0
-            while True:
-                cursor, keys = await self.redis_client.scan(
-                    cursor=cursor,
-                    match=pattern,
-                    count=100
-                )
+        if self.redis_client is not None:
+            try:
+                cursor = 0
+                while True:
+                    cursor, keys = await self.redis_client.scan(
+                        cursor=cursor,
+                        match=pattern,
+                        count=100
+                    )
 
-                if keys:
-                    await self.redis_client.delete(*keys)
+                    if keys:
+                        await self.redis_client.delete(*keys)
 
-                if cursor == 0:
-                    break
+                    if cursor == 0:
+                        break
 
-        except Exception as e:
-            logger.error(f"Failed to invalidate Redis pattern: {e}")
+            except Exception as e:
+                logger.error(f"Failed to invalidate Redis pattern: {e}")
 
         logger.info(f"Invalidated cache pattern: {pattern}")
 
@@ -359,20 +369,67 @@ class MultiTierCache:
         return bool(re.match(f"^{regex_pattern}$", key))
 
     async def _get_from_database(self, key: str) -> Optional[Any]:
-        """Get value from database tier (placeholder)"""
-        # Would query database for cached value
-        # For now, not implemented (database caching optional)
-        return None
+        """Get value from database tier with in-memory fallback."""
+        if self.database_client is None:
+            return self._database_fallback.get(key)
+
+        try:
+            if hasattr(self.database_client, "get_cache"):
+                result = self.database_client.get_cache(key)
+                if asyncio.iscoroutine(result):
+                    result = await result
+                return result
+            if hasattr(self.database_client, "get"):
+                result = self.database_client.get(key)
+                if asyncio.iscoroutine(result):
+                    result = await result
+                return result
+        except Exception as exc:
+            logger.error("Database cache get failed for key %s: %s", key, exc)
+
+        return self._database_fallback.get(key)
 
     async def _set_in_database(self, key: str, value: Any):
-        """Set value in database tier (placeholder)"""
-        # Would store in database for permanent caching
-        # For now, not implemented
-        pass
+        """Set value in database tier with in-memory fallback."""
+        self._database_fallback[key] = value
+
+        if self.database_client is None:
+            return
+
+        try:
+            if hasattr(self.database_client, "set_cache"):
+                result = self.database_client.set_cache(key, value)
+                if asyncio.iscoroutine(result):
+                    await result
+                return
+            if hasattr(self.database_client, "set"):
+                result = self.database_client.set(key, value)
+                if asyncio.iscoroutine(result):
+                    await result
+                return
+        except Exception as exc:
+            logger.error("Database cache set failed for key %s: %s", key, exc)
 
     async def _delete_from_database(self, key: str):
-        """Delete from database tier (placeholder)"""
-        pass
+        """Delete from database tier with in-memory fallback."""
+        self._database_fallback.pop(key, None)
+
+        if self.database_client is None:
+            return
+
+        try:
+            if hasattr(self.database_client, "delete_cache"):
+                result = self.database_client.delete_cache(key)
+                if asyncio.iscoroutine(result):
+                    await result
+                return
+            if hasattr(self.database_client, "delete"):
+                result = self.database_client.delete(key)
+                if asyncio.iscoroutine(result):
+                    await result
+                return
+        except Exception as exc:
+            logger.error("Database cache delete failed for key %s: %s", key, exc)
 
     def get_metrics(self) -> Dict[str, Any]:
         """Get comprehensive cache metrics"""
