@@ -46,7 +46,7 @@ ML-powered risk assessment engine that predicts potential blockers before they i
 
 **Current Dependencies**:
 - ConPort client (for logging assessments)
-- Context7 client (optional, for documentation lookup)
+- PAL apilookup client (optional, for documentation lookup)
 
 **Future Integration** (Week 7+):
 - ConPort HTTP API (replace direct SQLite)
@@ -63,7 +63,7 @@ from engine import PredictiveRiskAssessmentEngine, RiskLevel
 # Initialize
 risk_engine = PredictiveRiskAssessmentEngine(
     conport_client=conport,
-    context7_client=context7
+    pal_client=pal
 )
 await risk_engine.initialize()
 

@@ -21,8 +21,8 @@ try:
     from adhd_engine.models import EnergyLevel, AttentionState
     from adhd_engine.bridge_integration import ConPortBridgeAdapter
 except ImportError:  # pragma: no cover - fallback when run as script
-    from models import EnergyLevel, AttentionState  # type: ignore
-    from bridge_integration import ConPortBridgeAdapter  # type: ignore
+    from ..core.models import EnergyLevel, AttentionState  # type: ignore
+    from ..bridge_integration import ConPortBridgeAdapter  # type: ignore
 
 logger = logging.getLogger(__name__)
 

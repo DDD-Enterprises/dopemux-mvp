@@ -19,7 +19,7 @@ echo "🔑 Checking API keys..."
 [ -n "$EXA_API_KEY" ] && echo "  ✅ Exa API key found" || echo "  ⚠️  Exa API key missing"
 [ -n "$TAVILY_API_KEY" ] && echo "  ✅ Tavily API key found" || echo "  ⚠️  Tavily API key missing"
 [ -n "$PERPLEXITY_API_KEY" ] && echo "  ✅ Perplexity API key found" || echo "  ⚠️  Perplexity API key missing"
-[ -n "$CONTEXT7_API_KEY" ] && echo "  ✅ Context7 API key found" || echo "  ⚠️  Context7 API key missing"
+echo "  ℹ️  PAL apilookup uses the PAL MCP server (no separate API key)"
 
 # Enable debug mode if requested
 if [ "$1" = "--debug" ]; then

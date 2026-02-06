@@ -127,7 +127,7 @@ async def test_code_navigation_selection():
 async def test_documentation_with_fallback():
     """Test 5: Documentation task has fallback"""
     print("\n" + "="*70)
-    print("Test 5: Documentation → Context7 (with Exa fallback)")
+    print("Test 5: Documentation → PAL apilookup (with Exa fallback)")
     print("="*70)
 
     orchestrator = ToolOrchestrator(workspace_id="/Users/hue/code/dopemux-mvp")
@@ -143,9 +143,9 @@ async def test_documentation_with_fallback():
     print(f"Primary Tool: {primary.primary_tool}")
     print(f"Fallback Tool: {primary.fallback_tool}")
 
-    assert primary.primary_tool == "context7", "Should select Context7 for docs"
+    assert primary.primary_tool == "pal", "Should select PAL apilookup for docs"
     assert primary.fallback_tool == "exa", "Should have Exa as fallback"
-    print("✅ Test passed! Context7 with Exa fallback")
+    print("✅ Test passed! PAL apilookup with Exa fallback")
 
     await orchestrator.close()
 
@@ -252,7 +252,7 @@ async def main():
         ("Medium Task → Mid Model", test_medium_task_mid_model),
         ("Complex Task → Power Model", test_complex_task_power_model),
         ("Code Navigation → Serena", test_code_navigation_selection),
-        ("Documentation → Context7 + Fallback", test_documentation_with_fallback),
+        ("Documentation → PAL apilookup + Fallback", test_documentation_with_fallback),
         ("Task Type Inference", test_task_type_inference),
         ("FREE Model Priority", test_free_model_priority),
         ("Metrics Tracking", test_metrics_tracking),

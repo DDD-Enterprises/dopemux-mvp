@@ -11,8 +11,8 @@ import logging
 import asyncio
 from datetime import datetime
 
-from decomposition_coordinator import DecompositionCoordinator
-from task_decomposition_assistant import TaskDecompositionAssistant
+from .decomposition_coordinator import DecompositionCoordinator
+from .task_decomposition_assistant import TaskDecompositionAssistant
 
 logger = logging.getLogger(__name__)
 

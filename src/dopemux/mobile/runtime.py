@@ -7,11 +7,11 @@ import json
 import os
 import shutil
 import subprocess
+import shlex
 import time
 from pathlib import Path
 from typing import Iterable, List, Optional, Sequence, Tuple
 
-from ..config.manager import ConfigManager, MobileConfig
 from ..config.manager import ConfigManager, MobileConfig
 from ..tmux.common import PaneInfo, TmuxError
 from ..tmux.controller import TmuxController
@@ -35,11 +35,7 @@ class MobileStatus:
     enabled: bool
     happy_ok: bool
     claude_ok: bool
-    enabled: bool
-    happy_ok: bool
-    claude_ok: bool
     sessions: List[PaneInfo]
-    tmux_error: Optional[str]
     tmux_error: Optional[str]
 
 

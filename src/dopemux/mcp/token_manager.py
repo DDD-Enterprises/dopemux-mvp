@@ -649,7 +649,7 @@ class TokenBudgetManager:
             "zen": 2500,
             "exa": 1500,
             "task-master-ai": 800,
-            "context7": 600,
+            "pal": 600,
             "serena": 400,
             "conport": 300,
             "cli": 200,

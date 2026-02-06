@@ -1,16 +1,12 @@
 """PAL MCP client for ADHD Engine multi-model reasoning."""
 
 from typing import Dict, Any, List, Optional
-import sys
-import os
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Add the genetic_agent path to import the shared MCP client
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'genetic_agent', 'genetic_agent'))
-
-from genetic_agent.shared.mcp.pal_client import PALClient as BasePALClient
+# Import from centralized shared MCP library
+from services.shared.mcp.pal_client import PALClient as BasePALClient
 
 class ADHDPALClient(BasePALClient):
     """PAL MCP client specialized for ADHD Engine reasoning and planning."""

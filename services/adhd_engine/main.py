@@ -19,19 +19,12 @@ from contextlib import asynccontextmanager
 import logging
 from prometheus_client import make_asgi_app
 
-try:
-    from core.engine import ADHDAccommodationEngine
-    from api import routes
-    from core.config import settings
-    from middleware.rate_limit import RateLimitMiddleware
-    from core.error_handling import with_error_handling
-except ImportError:  # pragma: no cover - fallback when run as script
-    # Inside Docker or when running as python -m, core is a top-level package if configured correctly
-    from core.engine import ADHDAccommodationEngine
-    from api import routes
-    from core.config import settings
-    from middleware.rate_limit import RateLimitMiddleware
-    from core.error_handling import with_error_handling
+# Use relative imports for module execution (python -m services.adhd_engine.main)
+from .core.engine import ADHDAccommodationEngine
+from .api import routes
+from .config import settings
+from .middleware.rate_limit import RateLimitMiddleware
+from .core.error_handling import with_error_handling
 
 # Import shared Redis pool and cache for performance optimization
 import sys
@@ -40,25 +33,28 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'docker', 'mcp-servers',
 from redis_pool import get_redis_pool
 from cache import get_cache
 
-# Import monitoring
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-from shared.monitoring.base import DopemuxMonitoring
-
-# Import error handling for circuit breaker protection
-# Import error handling for circuit breaker protection
+# Import shared monitoring (optional - from repo root shared/, not services/shared)
 try:
-    from core.error_handling import (
-        GlobalErrorHandler,
-        CircuitBreaker,
-        CircuitBreakerConfig,
-        ErrorType,
-        ErrorSeverity
-    )
+    import sys
+    import os
+    # Add repo root to path to find shared/monitoring
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    if repo_root not in sys.path:
+        sys.path.insert(0, repo_root)
+    from shared.monitoring.base import DopemuxMonitoring
 except ImportError:
-    # Fallback if error handling module not available
-    GlobalErrorHandler = None
-    CircuitBreaker = None
-    CircuitBreakerConfig = None
+    DopemuxMonitoring = None
+    logger = logging.getLogger(__name__)
+    logger.warning("DopemuxMonitoring not available - metrics disabled")
+
+# Use relative imports for module execution
+from .core.error_handling import (
+    GlobalErrorHandler,
+    CircuitBreaker,
+    CircuitBreakerConfig,
+    ErrorType,
+    ErrorSeverity
+)
 
 # Configure logging
 logging.basicConfig(
@@ -180,7 +176,7 @@ app = FastAPI(
 
 # CORS middleware for browser access
 # Security: Use environment-based origin whitelist with secure defaults and validation
-from config import ALLOWED_ORIGINS
+from .config import ALLOWED_ORIGINS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -309,8 +305,8 @@ if __name__ == "__main__":
     logger.info("🔧 Starting in development mode...")
 
     uvicorn.run(
-        "main:app",
-        host=settings.api_host,
+        "services.adhd_engine.main:app",
+        host="0.0.0.0",
         port=settings.api_port,
         reload=True,  # Hot reload for development
         log_level=settings.log_level.lower()

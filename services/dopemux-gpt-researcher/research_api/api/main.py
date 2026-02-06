@@ -187,7 +187,6 @@ async def lifespan(app: FastAPI):
         'exa_api_key': os.getenv('EXA_API_KEY'),
         'tavily_api_key': os.getenv('TAVILY_API_KEY'),
         'perplexity_api_key': os.getenv('PERPLEXITY_API_KEY'),
-        'context7_api_key': os.getenv('CONTEXT7_API_KEY'),
     }
 
     project_context = ProjectContext(
@@ -272,7 +271,7 @@ async def get_status():
         "version": API_VERSION,
         "capabilities": {
             "research_types": ["feature_research", "system_architecture", "bug_investigation", "technology_evaluation", "documentation_research", "competitive_analysis"],
-            "search_engines": ["exa", "tavily", "perplexity", "context7"],
+            "search_engines": ["exa", "tavily", "perplexity", "pal"],
             "adhd_features": [
                 "session_persistence",
                 "break_management",

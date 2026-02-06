@@ -28,7 +28,7 @@ MCP_NAME_MAPPING = {
     # Direct mappings (same name in both)
     "conport": "conport",
     "zen": "zen",
-    "context7": "context7",
+    "pal": "pal",
     "gpt-researcher": "gpt-researcher",
     "claude-context": "claude-context",
     "desktop-commander": "desktop-commander",

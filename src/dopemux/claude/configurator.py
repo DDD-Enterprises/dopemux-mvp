@@ -581,19 +581,19 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
         servers = {
             "python": """
 - **mas-sequential-thinking**: Complex reasoning for architecture
-- **context7**: Python documentation and patterns
+- **pal**: Python documentation and patterns
 - **dope-context**: Semantic code search with hybrid search
 - **morphllm-fast-apply**: Code transformations
 """,
             "javascript": """
-- **context7**: React/Vue/Node.js documentation
+- **pal**: React/Vue/Node.js documentation
 - **dope-context**: Codebase semantic search with reranking
 - **morphllm-fast-apply**: Framework migrations
 - **exa**: Web research for best practices
 """,
             "rust": """
 - **mas-sequential-thinking**: Systems design reasoning
-- **context7**: Rust documentation and crates
+- **pal**: Rust documentation and crates
 - **dope-context**: Large codebase navigation with AST chunking
 - **morphllm-fast-apply**: Code modernization
 """,
@@ -602,7 +602,7 @@ Multi-model AI configuration optimized for {template} development with ADHD acco
         return servers.get(
             template,
             """
-- **context7**: Language documentation
+- **pal**: Language documentation
 - **dope-context**: Semantic code + docs search
 - **morphllm-fast-apply**: Transformations
 """,

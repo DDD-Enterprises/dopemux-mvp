@@ -19,7 +19,7 @@ def get_conport_circuit_breaker():
     global circuit_breaker
     if circuit_breaker is None:
         try:
-            from ..error_handling import CircuitBreaker, CircuitBreakerConfig
+            from error_handling import CircuitBreaker, CircuitBreakerConfig
             circuit_breaker = CircuitBreaker(
                 CircuitBreakerConfig(
                     name="conport_mcp_circuit",

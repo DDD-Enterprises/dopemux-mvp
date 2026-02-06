@@ -314,7 +314,7 @@ class TestClaudeConfigurator:
         servers = configurator._get_mcp_servers_for_template("python")
 
         assert "mas-sequential-thinking" in servers
-        assert "context7" in servers
+        assert "pal" in servers
         assert "claude-context" in servers
         assert "Python documentation" in servers
 
@@ -456,7 +456,7 @@ class TestClaudeConfigurator:
 
         servers = configurator._get_mcp_servers_for_template("unknown")
 
-        assert "context7" in servers
+        assert "pal" in servers
         assert "claude-context" in servers
         assert "morphllm-fast-apply" in servers
 

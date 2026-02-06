@@ -9,7 +9,7 @@ mcps:
   - conport          # Memory (required)
   - zen              # Multi-model reasoning (thinkdeep, planner, debug)
   - gpt-researcher   # Deep web research
-  - context7         # Library documentation
+  - pal         # Library documentation
   - serena-v2        # Code analysis when needed
 
 adhd_config:

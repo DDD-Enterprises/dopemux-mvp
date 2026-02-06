@@ -132,7 +132,7 @@ class TestClaudeCodeIntegration:
                         server_names = [result["name"] for result in validation_results]
                         expected_servers = [
                             "mas-sequential-thinking",
-                            "context7",
+                            "pal",
                             "claude-context",
                             "morphllm-fast-apply",
                             "exa",
