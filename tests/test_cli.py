@@ -2,6 +2,9 @@
 Tests for the CLI module.
 """
 
+import ast
+import inspect
+import textwrap
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -207,6 +210,23 @@ class TestCLI:
         assert "Dry run" in result.output
         assert "quickfix" in result.output
         assert any(call["dry_run"] for call in dummy_config.calls)
+
+    def test_start_command_has_no_local_subprocess_import(self):
+        """Regression: avoid local 'import subprocess' in start() that breaks exception handling."""
+        from dopemux import cli as dopemux_cli
+
+        start_source = inspect.getsource(dopemux_cli.start.callback)
+        module_ast = ast.parse(textwrap.dedent(start_source))
+        start_def = module_ast.body[0]
+
+        local_imports = [
+            node
+            for node in ast.walk(start_def)
+            if isinstance(node, ast.Import)
+            and any(alias.name == "subprocess" for alias in node.names)
+        ]
+
+        assert local_imports == []
 
     def test_invoke_switch_role_script_executes(self, monkeypatch, tmp_path):
         script = tmp_path / "switch-role.sh"
