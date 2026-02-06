@@ -1,0 +1,246 @@
+[
+  {
+    "file": "docs/archive/services/history/ADHD_ENGINE_MASTER_HISTORY.md",
+    "h1": [
+      "ADHD Engine: Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary & Evolution",
+      "2. Feature Catalog (Exhaustive)",
+      "3. Architecture Deep Dive",
+      "4. Validated Status (Audit Results)",
+      "5. Known Integration Points"
+    ],
+    "status_lines": [
+      "*   **Dashboard UI (Status: MISSING)**: The `adhd-dashboard` service (port 8097) is referenced but code is missing. There is no visual frontend for the data."
+    ]
+  },
+  {
+    "file": "docs/archive/services/history/CONPORT_MASTER_HISTORY.md",
+    "h1": [
+      "ConPort (Context Portal): Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary & Evolution",
+      "2. Feature Catalog (Exhaustive)",
+      "3. Architecture Deep Dive",
+      "4. Integration Points",
+      "5. Validated Status (Audit Results)",
+      "6. Development Artifacts & Schemas"
+    ],
+    "status_lines": []
+  },
+  {
+    "file": "docs/archive/services/history/DATA_QUERY_SERVICES_MASTER_HISTORY.md",
+    "h1": [
+      "Data & Query Services: Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary",
+      "2. Feature Catalog",
+      "3. Architecture Deep Dive",
+      "4. Validated Status (Audit Results)"
+    ],
+    "status_lines": [
+      "**Status**:"
+    ]
+  },
+  {
+    "file": "docs/archive/services/history/DOPECON_BRIDGE_MASTER_HISTORY.md",
+    "h1": [
+      "DopeconBridge: Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary & Evolution",
+      "2. Feature Catalog (Exhaustive)",
+      "3. Architecture Deep Dive",
+      "4. Validated Status (Audit Results)"
+    ],
+    "status_lines": [
+      "*   **Migration Status**: 100% Complete (19/19 services)."
+    ]
+  },
+  {
+    "file": "docs/archive/services/history/DOPE_CONTEXT_MASTER_HISTORY.md",
+    "h1": [
+      "Dope Context: Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary & Evolution",
+      "2. Feature Catalog (Exhaustive)",
+      "3. Architecture Deep Dive",
+      "4. Validated Status (Audit Results)"
+    ],
+    "status_lines": []
+  },
+  {
+    "file": "docs/archive/services/history/ENVIRONMENT_SERVICES_MASTER_HISTORY.md",
+    "h1": [
+      "Environment & Workspace Services: Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary",
+      "2. Feature Catalog",
+      "3. Architecture Deep Dive",
+      "4. Validated Status (Audit Results)"
+    ],
+    "status_lines": [
+      "**Status**:"
+    ]
+  },
+  {
+    "file": "docs/archive/services/history/GENETIC_ML_SERVICES_MASTER_HISTORY.md",
+    "h1": [
+      "Genetic Agent & ML Services: Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary & Evolution",
+      "2. Feature Catalog (Exhaustive)",
+      "3. Architecture Deep Dive",
+      "4. Validated Status (Audit Results)"
+    ],
+    "status_lines": [
+      "*   **Status**: Active, used for quick fixes.",
+      "*   **Status**: Extracted standalone Python module (services/ml-risk-assessment)."
+    ]
+  },
+  {
+    "file": "docs/archive/services/history/INTEGRATION_SERVICES_MASTER_HISTORY.md",
+    "h1": [
+      "Integration Services: Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary",
+      "2. Feature Catalog",
+      "3. Architecture Deep Dive",
+      "4. Validated Status (Audit Results)"
+    ],
+    "status_lines": [
+      "**Status**:"
+    ]
+  },
+  {
+    "file": "docs/archive/services/history/INTELLIGENCE_SUPPORT_MASTER_HISTORY.md",
+    "h1": [
+      "Intelligence Support Services: Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary",
+      "2. Feature Catalog",
+      "3. Architecture Deep Dive",
+      "4. Validated Status (Audit Results)"
+    ],
+    "status_lines": [
+      "*   **Status**: Python module integration (not yet a standalone microservice).",
+      "*   **Status**: Design Complete, Implementation Pending (Phase 1)."
+    ]
+  },
+  {
+    "file": "docs/archive/services/history/MONITORING_MASTER_HISTORY.md",
+    "h1": [
+      "Monitoring Stack: Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary & Evolution",
+      "2. Feature Catalog (Exhaustive)",
+      "3. Architecture Deep Dive",
+      "4. Validated Status (Audit Results)"
+    ],
+    "status_lines": [
+      "*   **Status**: \"FULLY OPERATIONAL\" (95% complete)."
+    ]
+  },
+  {
+    "file": "docs/archive/services/history/NOTIFICATIONS_UI_MASTER_HISTORY.md",
+    "h1": [
+      "Notifications & UI Services: Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary",
+      "2. Feature Catalog",
+      "3. Architecture Deep Dive",
+      "4. Validated Status (Audit Results)"
+    ],
+    "status_lines": [
+      "**Status**:"
+    ]
+  },
+  {
+    "file": "docs/archive/services/history/SERENA_MASTER_HISTORY.md",
+    "h1": [
+      "Serena: Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary & Evolution",
+      "2. Feature Catalog (Exhaustive)",
+      "3. Architecture Deep Dive",
+      "4. Validated Status (Audit Results)"
+    ],
+    "status_lines": [
+      "**Status**: Production Ready (Quality Score 8.5/10)"
+    ]
+  },
+  {
+    "file": "docs/archive/services/history/SESSION_DASHBOARD_MASTER_HISTORY.md",
+    "h1": [
+      "Session Manager & Dashboard: Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary & Evolution",
+      "2. Feature Catalog (Exhaustive)",
+      "3. Architecture Deep Dive",
+      "4. Validated Status (Audit Results)"
+    ],
+    "status_lines": [
+      "1.  **Tier 1 (Status Bar)**: Always visible, 0% CPU. Shows Energy (\u26a1), Attention (\ud83e\udde0), and Break Timer.",
+      "*   **Status**: \"Phase 1: Basic Setup\" complete."
+    ]
+  },
+  {
+    "file": "docs/archive/services/history/TASK_EXECUTION_MASTER_HISTORY.md",
+    "h1": [
+      "Task Execution Services: Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary",
+      "2. Feature Catalog",
+      "3. Architecture Deep Dive",
+      "4. Validated Status (Audit Results)"
+    ],
+    "status_lines": [
+      "**Status**:"
+    ]
+  },
+  {
+    "file": "docs/archive/services/history/TASK_ORCHESTRATOR_MASTER_HISTORY.md",
+    "h1": [
+      "Task Orchestrator: Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary & Evolution",
+      "2. Feature Catalog (Exhaustive)",
+      "3. Architecture Deep Dive",
+      "4. Validated Status (Audit Results)",
+      "5. Integration Points"
+    ],
+    "status_lines": [
+      "*   **Output**: Unified Status Update -> ConPort -> Leantime.",
+      "*   **Un-Deprecation Status**: Fully restored after ADR-203."
+    ]
+  },
+  {
+    "file": "docs/archive/services/history/WORKING_MEMORY_ASSISTANT_MASTER_HISTORY.md",
+    "h1": [
+      "Working Memory Assistant: Master History & Feature Catalog"
+    ],
+    "h2": [
+      "1. Executive Summary & Evolution",
+      "2. Feature Catalog (Exhaustive)",
+      "3. Architecture Deep Dive",
+      "4. Validated Status (Audit Results)"
+    ],
+    "status_lines": [
+      "*   **Status**: **NOT yet widely deployed** to all workflows like ConPort/Serena. It is functional but in active development."
+    ]
+  }
+]
