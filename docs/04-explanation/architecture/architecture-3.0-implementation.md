@@ -144,7 +144,8 @@ Architecture 3.0 implements **complete bidirectional communication** between the
 **Achievements**:
 
 #### Part A: ConPort MCP Queries
-- ✅ 7 query tool wrappers (get_decisions, get_patterns, semantic_search, etc.)
+- ✅ 7 query tool wrappers (get_decisions, get_patterns, etc.)
+- ⚠️ `semantic_search` remains available only as a deprecated keyword-fallback compatibility shim (vector retrieval delegated to dope-context/serena)
 - ✅ 5 high-level methods (enrich_task_with_decisions, get_applicable_patterns, etc.)
 - ✅ Knowledge graph traversal
 - ✅ ADHD-aware recommendations
