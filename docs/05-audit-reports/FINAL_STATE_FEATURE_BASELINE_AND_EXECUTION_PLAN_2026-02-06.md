@@ -351,9 +351,9 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/conport_live_backlog_doc_coverage_2026-02-06.json`.
 41. Live underrepresented backlog clusters are now explicitly enumerated for closure (`profile_alias_or_residual=33`, `shield_slack_beta=11`, `kg_dependency_unification=7`, `bridge_orchestrator=6`, `mcp_token_ops=4`, `conport_persistence=1`, `other=4`):
    `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`.
-42. Live underrepresented backlog has now been triaged into `31` likely true-open candidates, `33` likely alias/already-implemented phrasing mismatches, and `2` resolved-in-current-wave items:
+42. Live underrepresented backlog has now been triaged into `25` likely true-open candidates, `33` likely alias/already-implemented phrasing mismatches, and `8` resolved-in-current-wave items:
    `reports/strict_closure/conport_live_backlog_true_open_candidates_2026-02-06.json`.
-43. A dedicated live backlog execution packet is now materialized for the true-open set with owner and verification anchors, with ConPort persistence explicitly reclassified as resolved in runtime:
+43. A dedicated live backlog execution packet is now materialized for the true-open set with owner and verification anchors, and now includes runtime/documentation reclassification for persistence, MCP token-doc parity, and bridge-orchestrator integration tasks:
    `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md`.
 
 ## Prioritized Gap Register
@@ -380,7 +380,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 10. Execute packet #1 (`top 40`) from `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`.
 11. Close the live ConPort underrepresented set (`66`) from runtime backlog coverage diff and merge results into the master execution packet:
     `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`.
-12. Execute the live true-open packet (`31`) and fold closure evidence back into the master fix stream:
+12. Execute the live true-open packet (`25`) and fold closure evidence back into the master fix stream:
     `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md`.
 
 ### P2 (Optimization and Scale)
