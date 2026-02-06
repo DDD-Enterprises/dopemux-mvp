@@ -148,6 +148,8 @@ Evidence: `docs/05-audit-reports/PROFILE_EPIC_COMPAT_SHIMS_VERIFICATION_2026-02-
 Evidence: `docs/05-audit-reports/PROFILE_EPIC_COMPAT_SHIMS_VERIFICATION_2026-02-06.md`
 42. Row `4` (`EPIC 4: UX Integration deliverables`) is now implemented with statusline, suggestion-engine, analytics, and migration compatibility modules plus verification tests.
 Evidence: `docs/05-audit-reports/PROFILE_EPIC_COMPAT_SHIMS_VERIFICATION_2026-02-06.md`
+43. Live ConPort runtime backlog extraction now identifies an additional `66` underrepresented active items from `progress_entries` that are not yet explicit in master docs and are promoted into a dedicated owner matrix.
+Evidence: `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`
 
 ## Source
 

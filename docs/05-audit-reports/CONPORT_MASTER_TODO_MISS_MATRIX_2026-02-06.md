@@ -219,3 +219,30 @@ Evidence:
 - `docs/05-audit-reports/LITELLM_BLOCKER_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/PROFILE_WORKSTREAM_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md`
+
+## Live Runtime Backlog Coverage Diff (Progress Entries)
+
+Live ConPort runtime extraction (`progress_entries` from `dopemux_knowledge_graph`) has now been compared directly against active master docs.
+
+Summary:
+
+1. unique live backlog items: `134`
+2. represented in active master docs: `68`
+3. underrepresented in active master docs: `66`
+
+Clustered underrepresented work now includes:
+
+1. `profile_alias_or_residual`: `33`
+2. `shield_slack_beta`: `11`
+3. `kg_dependency_unification`: `7`
+4. `bridge_orchestrator`: `6`
+5. `mcp_token_ops`: `4`
+6. `conport_persistence`: `1`
+7. `other`: `4`
+
+Artifacts:
+
+- `reports/strict_closure/conport_live_progress_backlog_2026-02-06.csv`
+- `reports/strict_closure/conport_live_backlog_doc_coverage_2026-02-06.json`
+- `reports/strict_closure/conport_live_backlog_underrepresented_matrix_2026-02-06.json`
+- `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`
