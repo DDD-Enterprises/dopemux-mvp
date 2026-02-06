@@ -369,6 +369,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `services/serena/intelligence/database.py`, `services/serena/tree_sitter_analyzer.py`, `pytest.ini`.
 48. ConPort semantic-search compatibility paths are now explicitly hard-deprecated in runtime responses/logging and active architecture docs, reducing ambiguity while preserving backward compatibility:
    `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py`, `docs/04-explanation/DOPEMUX-CONTEXT-DEEP-DIVE.md`, `docs/04-explanation/architecture/architecture-3.0-implementation.md`.
+49. A caller inventory for deprecated ConPort semantic-search paths is now captured to guide safe shim removal sequencing:
+   `reports/strict_closure/kg_dependency_unification_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
