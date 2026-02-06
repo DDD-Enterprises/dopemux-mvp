@@ -71,6 +71,23 @@ fi
 echo "🚀 Starting all Dopemux MCP servers..."
 echo "=========================================="
 
+# Compose validation fails if an `env_file` path is missing, even when the
+# service can run with inherited environment variables. Create placeholders for
+# optional local env files to keep startup resilient.
+ensure_optional_env_file() {
+  local env_path="$1"
+  if [ -f "$env_path" ]; then
+    return 0
+  fi
+  mkdir -p "$(dirname "$env_path")"
+  : > "$env_path"
+  echo "⚠️  Created placeholder env file: $env_path"
+}
+
+ensure_optional_env_file "./task-master-ai/.env"
+ensure_optional_env_file "./task-orchestrator/.env"
+ensure_optional_env_file "./leantime-bridge/.env"
+
 # P0: Validate docker-compose.yml before proceeding
 echo "🔍 Validating docker-compose.yml..."
 if ! docker compose config >/dev/null 2>&1; then
