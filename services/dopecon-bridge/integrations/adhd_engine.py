@@ -531,7 +531,7 @@ class ADHDEngineIntegrationManager:
             try:
                 await self.worker_task
             except asyncio.CancelledError:
-                pass
+                logger.debug("ADHD Engine buffer flush worker cancelled")
 
         logger.info("⏹️  Stopped ADHD Engine buffer flush worker")
 
