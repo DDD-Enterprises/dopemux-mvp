@@ -10,6 +10,8 @@ Part of CONPORT-KG-2025 Two-Phase Migration (Decision #112)
 4. UUID mapping complete
 """
 
+from typing import Dict
+
 import asyncio
 
 import logging

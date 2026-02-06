@@ -93,4 +93,4 @@ echo "2. Check status with 'dopemux status'"
 echo "3. Your statusline should show: dopemux-mvp main | 📊 Dopemux setup complete [0m] | ..."
 
 echo ""
-echo "If you encounter issues, run: dopemux doctor
+echo "If you encounter issues, run: dopemux doctor"

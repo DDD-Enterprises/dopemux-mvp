@@ -1,0 +1,100 @@
+{
+  "missing": [
+    {
+      "key": "systems.conport.overview",
+      "path": "docs/systems/conport/CONPORT_EXECUTIVE_SUMMARY.md"
+    },
+    {
+      "key": "systems.conport.technical",
+      "path": "docs/systems/conport/CONPORT_SYSTEMS_ANALYSIS.md"
+    },
+    {
+      "key": "systems.conport.integration",
+      "path": "docs/systems/conport/CONPORT_INTEGRATION_QUICKSTART.md"
+    },
+    {
+      "key": "systems.conport.comparison",
+      "path": "docs/systems/conport/CONPORT_COMPARISON_MATRIX.md"
+    },
+    {
+      "key": "systems.conport.readme",
+      "path": "docs/systems/conport/CONPORT_README.md"
+    },
+    {
+      "key": "systems.dashboard.overview",
+      "path": "docs/systems/dashboard/TMUX_DASHBOARD_README.md"
+    },
+    {
+      "key": "systems.dashboard.design",
+      "path": "docs/systems/dashboard/TMUX_DASHBOARD_DESIGN.md"
+    },
+    {
+      "key": "systems.dashboard.metrics",
+      "path": "docs/systems/dashboard/TMUX_METRICS_INVENTORY.md"
+    },
+    {
+      "key": "systems.dashboard.implementation",
+      "path": "docs/systems/dashboard/DASHBOARD_IMPLEMENTATION_TRACKER.md"
+    },
+    {
+      "key": "systems.dashboard.enhancements",
+      "path": "docs/systems/dashboard/DASHBOARD_ENHANCEMENTS.md"
+    },
+    {
+      "key": "services.task-orchestrator.readme",
+      "path": "services/task-orchestrator/README.md"
+    },
+    {
+      "key": "services.dopecon-bridge.docs_dir",
+      "path": "services/dopecon-bridge/docs/"
+    },
+    {
+      "key": "services.orchestrator.readme",
+      "path": "services/orchestrator/README.md"
+    },
+    {
+      "key": "services.orchestrator.docs_dir",
+      "path": "services/orchestrator/docs/"
+    },
+    {
+      "key": "services.orchestrator.claudedocs_dir",
+      "path": "services/orchestrator/claudedocs/"
+    },
+    {
+      "key": "services.conport-kg-ui.claudedocs_dir",
+      "path": "services/conport_kg_ui/claudedocs/"
+    },
+    {
+      "key": "architecture.system_bible",
+      "path": "docs/94-architecture/system-bible.md"
+    },
+    {
+      "key": "architecture.multi_instance",
+      "path": "docs/94-architecture/multi-instance-implementation.md"
+    },
+    {
+      "key": "how_to.deployment",
+      "path": "docs/deployment/DEPLOYMENT-INSTRUCTIONS.md"
+    },
+    {
+      "key": "how_to.leantime_setup",
+      "path": "docs/02-how-to/integrations/LEANTIME_SETUP_INSTRUCTIONS.md"
+    },
+    {
+      "key": "reference.profile_schema",
+      "path": "docs/PROFILE-YAML-SCHEMA.md"
+    },
+    {
+      "key": "reference.features_index",
+      "path": "docs/FEATURES_INDEX.md"
+    },
+    {
+      "key": "config.mcp",
+      "path": "config/mcp/"
+    },
+    {
+      "key": "config.routing",
+      "path": "config/routing/"
+    }
+  ]
+}

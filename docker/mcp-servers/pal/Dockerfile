@@ -17,7 +17,7 @@ COPY pal-mcp-server/ .
 COPY pal_http_wrapper.py .
 
 # Install dependencies using uv
-RUN uv venv && \
+RUN rm -rf .venv && uv venv && \
     . .venv/bin/activate && \
     uv pip install -r requirements.txt
 
