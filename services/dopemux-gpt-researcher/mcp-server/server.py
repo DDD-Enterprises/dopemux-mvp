@@ -41,11 +41,13 @@ try:
     from shared.mcp.response_budget import (
         estimate_tokens as shared_estimate_tokens,
         enforce_dict_token_budget,
+        record_budget_outcome,
     )
 except ImportError:
     from services.shared.mcp.response_budget import (  # type: ignore[no-redef]
         estimate_tokens as shared_estimate_tokens,
         enforce_dict_token_budget,
+        record_budget_outcome,
     )
 
 def estimate_tokens(text: str) -> int:
@@ -87,16 +89,37 @@ def enforce_token_budget(result: Dict[str, Any], tool_name: str, max_tokens: int
         max_summary_chars=2000,
     )
 
-    if isinstance(truncated, dict) and truncated.get("_token_budget_enforced"):
+    was_truncated = bool(isinstance(truncated, dict) and truncated.get("_token_budget_enforced"))
+    observed_tokens = (
+        int(truncated.get("_truncated_tokens", current_tokens))
+        if isinstance(truncated, dict)
+        else current_tokens
+    )
+    budget_event = record_budget_outcome(
+        tool_name=f"gptr.{tool_name}",
+        tokens_used=observed_tokens,
+        max_tokens=max_tokens,
+        was_truncated=was_truncated,
+    )
+
+    if was_truncated:
         logger.warning(
-            "Tool %s: %s tokens (over %s budget) - truncated to %s tokens",
+            "Tool %s: %s tokens (over %s budget) - truncated to %s tokens (usage=%s%%, trunc_rate=%s%%)",
             tool_name,
             truncated.get("_original_tokens", current_tokens),
             max_tokens,
             truncated.get("_truncated_tokens"),
+            budget_event["usage_pct"],
+            budget_event["truncation_rate_pct"],
         )
     else:
-        logger.info("Tool %s: %s tokens (under budget)", tool_name, current_tokens)
+        logger.info(
+            "Tool %s: %s tokens (under budget, usage=%s%%, trunc_rate=%s%%)",
+            tool_name,
+            current_tokens,
+            budget_event["usage_pct"],
+            budget_event["truncation_rate_pct"],
+        )
 
     return truncated
 
