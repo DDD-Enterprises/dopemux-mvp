@@ -5781,37 +5781,27 @@ except ImportError as e:
 
 
 # ============================================================================
-# Profile Management Commands (Multi-User Support)
+# Profile Command Compatibility Aliases
 # ============================================================================
 
-@cli.group()
-def profile():
-    """
-    👤 Profile management (multi-project configuration)
-
-    Manage configuration profiles for different project types:
-    - python-ml: ML/AI development with Jupyter
-    - web-dev: Modern web development (React, Next.js, TypeScript)
-    - adhd-default: Universal ADHD-optimized settings
-
-    Profiles control MCP servers, ADHD accommodations, and database strategy.
-    """
-    pass
-
-
-# Import and register profile commands
+# Register supplemental profile-management commands onto the primary profile
+# group declared earlier in this file. This avoids command shadowing caused by
+# redefining the "profile" group multiple times.
 try:
     from .profile_commands import (
-        list_profiles,
         use_profile,
         show_profile,
         create_profile
     )
 
-    profile.add_command(list_profiles, "list")
-    profile.add_command(use_profile, "use")
-    profile.add_command(show_profile, "show")
-    profile.add_command(create_profile, "create")
+    if "create" not in profile.commands:
+        profile.add_command(create_profile, "create")
+    if "apply" not in profile.commands:
+        profile.add_command(use_profile, "apply")
+    if "use" not in profile.commands:
+        profile.add_command(use_profile, "use")
+    if "current" not in profile.commands:
+        profile.add_command(show_profile, "current")
 
 except ImportError as e:
     logger.debug("Profile commands unavailable: %s", e)
