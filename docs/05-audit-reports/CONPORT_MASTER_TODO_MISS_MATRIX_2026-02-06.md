@@ -89,3 +89,39 @@ Evidence:
 2. `GET /health?deep=1` returns `200` with upstream reachability.
 3. `POST /api/tools/list_projects` returns `200` and non-empty project payload.
 4. Leantime queue worker failures drop to zero across repeated log windows.
+
+## Secondary Explicit-Task Miss Extraction
+
+A second pass compared ConPort backlog task-line samples to the current master-doc text and found additional explicit tasks that were still underrepresented as first-class todo lines.
+
+Summary:
+
+1. todo samples checked: `25`
+2. explicitly covered: `6`
+3. secondary misses: `19`
+
+Secondary misses now promoted into master fix scope:
+
+1. `1.1.1: Set up PostgreSQL AGE test environment`
+2. `1.2.1: Analyze Context Integration layer`
+3. `1.2.2: Document architecture decision`
+4. `1.3.1: Create dopemux-core package structure`
+5. `1.3.4: Write unit tests for dopemux-core`
+6. `2.1.1: Remove ConPort semantic_search MCP tool`
+7. `2.1.2: Update docs and add deprecation warnings`
+8. `2.2.1: Remove ConPort embedding_service and import from core`
+9. `2.2.3: Validate embedding quality and schema`
+10. `2.3.1: Refactor Serena ADHD to use ADHDConfigService`
+11. `2.3.2: Refactor dope-context ADHD to use ADHDConfigService`
+12. `2.3.3: Refactor ConPort ADHD to use ADHDConfigService`
+13. `3.1.1: Design and populate conport_integration_links`
+14. `3.1.2: Implement bidirectional linking logic`
+15. `3.1.3: Create trace_decision_to_code MCP tool`
+16. `3.1.4: Write integration tests for knowledge graph`
+17. `3.1.5: Validate graph traversal performance`
+18. `3.1.6: Document knowledge graph usage`
+19. `3.2.1: Integrate dope-context in Serena and add Find Similar command`
+
+Evidence:
+
+- `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`
