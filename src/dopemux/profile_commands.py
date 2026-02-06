@@ -303,8 +303,13 @@ def show_profile(verbose: bool):
     active_name = manager.get_active_profile(workspace)
 
     if not active_name:
-        console.logger.info(f"\n[yellow]No active profile[/yellow]")
-        return
+        active_name = manager.detect_profile_from_claude_config(workspace=workspace, cache_result=True)
+        if not active_name:
+            console.logger.info(f"\n[yellow]No active profile[/yellow]")
+            return
+        console.logger.info(
+            f"\n[dim]Detected active profile from Claude config: {active_name}[/dim]"
+        )
 
     profile = manager.get_profile(active_name)
     if not profile:

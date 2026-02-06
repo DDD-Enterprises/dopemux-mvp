@@ -58,6 +58,7 @@ Generated during this pass:
 - `reports/strict_closure/profile_switch_command_verification_2026-02-06.json`
 - `reports/strict_closure/profile_switch_time_optimization_verification_2026-02-06.json`
 - `reports/strict_closure/profile_switch_integration_tests_verification_2026-02-06.json`
+- `reports/strict_closure/profile_current_detection_verification_2026-02-06.json`
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
@@ -75,6 +76,7 @@ Generated during this pass:
 - `docs/05-audit-reports/PROFILE_SWITCH_COMMAND_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/PROFILE_SWITCH_TIME_OPTIMIZATION_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/PROFILE_SWITCH_INTEGRATION_TESTS_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_CURRENT_DETECTION_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
 - `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
@@ -296,6 +298,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/profile_switch_time_optimization_verification_2026-02-06.json`.
 24. Switch integration-test backlog item (`3.3.3`) is now implemented with full->developer->full flow validation and save/restore/timing assertions:
    `reports/strict_closure/profile_switch_integration_tests_verification_2026-02-06.json`.
+25. Current-profile detection backlog item (`4.1.1`) is now implemented with Claude-config MCP-set matching and workspace marker cache updates:
+   `reports/strict_closure/profile_current_detection_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
