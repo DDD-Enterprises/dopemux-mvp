@@ -140,6 +140,8 @@ Evidence: `docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2
 Evidence: `docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md`
 38. Row `37` (`4.6.2 Developer documentation`) is now implemented with architecture, interfaces, and signal-collector extension guidance.
 Evidence: `docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md`
+39. Row `40` (`Day 10: Week 2 Integration & Testing`) is now implemented via a reusable integration harness script and full execution evidence.
+Evidence: `docs/05-audit-reports/PROFILE_WEEK2_INTEGRATION_TESTING_VERIFICATION_2026-02-06.md`
 
 ## Source
 
