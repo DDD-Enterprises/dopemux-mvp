@@ -1,10 +1,14 @@
 ---
 id: AUDIT_SUMMARY_2025-10-16
 title: Audit_Summary_2025 10 16
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Audit_Summary_2025 10 16 (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Code Audit Summary - 2025-10-16
 **Auditor**: Claude Code (Sonnet 4.5)
@@ -178,14 +182,14 @@ Completed systematic security and quality audit of 6 critical Dopemux services. 
 
 ### Tier 2: Ship with Minor Fixes ⚠️
 
-5. **ConPort KG UI** (7/10)
+1. **ConPort KG UI** (7/10)
    - Simple, clean terminal UI
    - Needs: 30min URL encoding fix
    - Then: Production-ready
 
 ### Tier 3: Ship with Restrictions ⚠️
 
-6. **ADHD Engine** (7/10)
+1. **ADHD Engine** (7/10)
    - Good code quality
    - Needs: Localhost-only OR add auth (2h)
    - Future: Fix service boundaries (Week 7)
@@ -279,15 +283,15 @@ Completed systematic security and quality audit of 6 critical Dopemux services. 
 
 ### Short-term (Week 7)
 
-4. **ADHD Engine**: Migrate to ConPort HTTP API (3 hours)
-5. **All Services**: Add integration tests
-6. **All Services**: Add monitoring/metrics
+1. **ADHD Engine**: Migrate to ConPort HTTP API (3 hours)
+2. **All Services**: Add integration tests
+3. **All Services**: Add monitoring/metrics
 
 ### Long-term
 
-7. **ConPort KG**: Implement N+1 fix
-8. **Serena v2**: Optional password env var
-9. **All Services**: Performance optimization
+1. **ConPort KG**: Implement N+1 fix
+2. **Serena v2**: Optional password env var
+3. **All Services**: Performance optimization
 
 ---
 

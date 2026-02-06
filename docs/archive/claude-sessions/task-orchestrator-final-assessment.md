@@ -1,10 +1,14 @@
 ---
 id: task-orchestrator-final-assessment
 title: Task Orchestrator Final Assessment
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Task Orchestrator Final Assessment (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # Task-Orchestrator Final Assessment - UN-DEPRECATE RECOMMENDED
 **Date**: 2025-10-16

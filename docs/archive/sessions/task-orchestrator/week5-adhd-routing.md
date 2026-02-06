@@ -1,10 +1,14 @@
 ---
 id: week5-adhd-routing
 title: Week5 Adhd Routing
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Week5 Adhd Routing (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Week 5: ADHD Routing Activation - COMPLETE
 
@@ -20,10 +24,10 @@ next_review: '2026-05-03'
 
 **Files Modified**:
 - `enhanced_orchestrator.py` (+80 lines)
-  * Imported CognitiveGuardian
-  * Added `_initialize_adhd_agents()` method
-  * Initialized CognitiveGuardian with monitoring
-  * Uncommented ADHD readiness checks in `_assign_optimal_agent`
+  - Imported CognitiveGuardian
+  - Added `_initialize_adhd_agents()` method
+  - Initialized CognitiveGuardian with monitoring
+  - Uncommented ADHD readiness checks in `_assign_optimal_agent`
 
 **Features Added**:
 - CognitiveGuardian instance created at orchestrator initialization

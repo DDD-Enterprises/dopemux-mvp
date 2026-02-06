@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Final_Session_Summary (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Multi-Workspace Implementation - Final Session Summary
 
@@ -61,13 +65,13 @@ next_review: '2026-05-02'
 
 #### Wrapper Pattern Services (3)
 
-4. **🟡 serena** (70% Complete)
+1. **🟡 serena** (70% Complete)
    - Wrapper created: `v2/multi_workspace_wrapper.py`
    - 9/9 wrapper tests passing
    - NOT yet integrated into MCP server
    - Remaining: MCP tool integration (4-6 hours)
 
-5. **🟡 conport_kg** (60% Complete)
+2. **🟡 conport_kg** (60% Complete)
    - Workspace support utilities created
    - 9/9 utility tests passing
    - NOT yet integrated with AGE client
@@ -142,7 +146,7 @@ DOPE_CONTEXT_WORKSPACES="/ws1,/ws2" \
   python scripts/autonomous-indexing-daemon.py
 ```
 
-2. **orchestrator**: Workspace-aware routing
+1. **orchestrator**: Workspace-aware routing
 ```python
 result = await router.route_command(
     "analyze this code",
@@ -150,7 +154,7 @@ result = await router.route_command(
 )
 ```
 
-3. **activity-capture**: Workspace-tagged events
+1. **activity-capture**: Workspace-tagged events
 ```python
 await tracker.start_session(workspace_path="/workspace")
 # Events automatically include workspace metadata
@@ -174,11 +178,11 @@ await tracker.start_session(workspace_path="/workspace")
 
 ### Next 5 Priority Services
 
-6. **task-orchestrator** (0% - HIGH) - 3-4h
-7. **session_intelligence** (0% - HIGH) - 2-3h
-8. **mcp-client** (0% - MEDIUM) - 1-2h
-9. **adhd_engine** (0% - MEDIUM) - 1-2h
-10. **intelligence** (0% - LOW) - 1-2h
+1. **task-orchestrator** (0% - HIGH) - 3-4h
+2. **session_intelligence** (0% - HIGH) - 2-3h
+3. **mcp-client** (0% - MEDIUM) - 1-2h
+4. **adhd_engine** (0% - MEDIUM) - 1-2h
+5. **intelligence** (0% - LOW) - 1-2h
 
 **Total for Next 5**: 8-13 hours
 
@@ -284,7 +288,7 @@ await tracker.start_session(workspace_path="/workspace")
    - Graph initialization
 
 ### After First 5 Complete
-3. Implement next 5 services (8-13h)
+1. Implement next 5 services (8-13h)
    - task-orchestrator (task workspace tagging)
    - session_intelligence (per-workspace sessions)
    - mcp-client (param forwarding)

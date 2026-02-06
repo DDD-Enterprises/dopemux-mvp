@@ -1,10 +1,13 @@
 ---
 id: week7-complete
 title: Week7 Complete
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Week7 Complete (explanation) for dopemux documentation and developer workflows.
 ---
 # Week 7 Complete: DopemuxEnforcer
 

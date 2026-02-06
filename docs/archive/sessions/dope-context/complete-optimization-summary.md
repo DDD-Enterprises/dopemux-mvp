@@ -1,10 +1,14 @@
 ---
 id: complete-optimization-summary
 title: Complete Optimization Summary
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Complete Optimization Summary (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # Dope-Context Complete Optimization Summary
 
@@ -59,6 +63,7 @@ Search "authentication flow":
 ```
 
 **Metrics**:
+
 | Metric | Before | After | Gain |
 |--------|--------|-------|------|
 | Search relevance | 0.3-0.5 | 0.5-0.8 | +30-40% |
