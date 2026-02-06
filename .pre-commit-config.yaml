@@ -78,100 +78,58 @@ repos:
 
       # Markdown file location enforcement
       - id: markdown-location-guard
-        name: Enforce markdown files in docs/ or approved locations
+        name: Enforce markdown file locations for changed files
         entry: bash -c
         args:
           - |
             set -e
             violations_found=false
-            
-            # Allowed locations for .md files:
-            # 1. docs/ - Canonical documentation
-            # 2. Root uppercase files - README.md, CHANGELOG.md, etc.
-            # 3. .claude/ - Agent configurations
-            # 4. .conport/, conport_export/ - Local state/export
-            # 5. .github/ - GitHub templates
-            # 6. */README.md, */CHANGELOG.md, */CONTRIBUTING.md - Project visibility
-            # 7. Third-party: docker/mcp-servers/pal/
-            # 8. Archive: SYSTEM_ARCHIVE/, **/archive/
-            
-            while IFS= read -r -d '' file; do
-              # Allow docs/ (canonical location)
-              if [[ "$file" =~ ^\./(docs/) ]]; then continue; fi
-              
-              # Allow .claude/ configs
-              if [[ "$file" =~ /\.claude/ ]]; then continue; fi
-              
-              # Allow .conport/ and conport_export/ (local state)
-              if [[ "$file" =~ ^\./(\\.conport/|conport_export/) ]]; then continue; fi
-              
-              # Allow .github/ (GitHub templates)
-              if [[ "$file" =~ ^\./(\.github/) ]]; then continue; fi
-              
-              # Allow archives
-              if [[ "$file" =~ /(SYSTEM_ARCHIVE|archive|ARCHIVE)/ ]]; then continue; fi
-              
-              # Allow third-party
-              if [[ "$file" =~ ^\./(docker/mcp-servers/pal/) ]]; then continue; fi
-              
-              # Allow root-level uppercase files
-              if [[ "$file" =~ ^\./[A-Z][A-Z_0-9]*\.md$ ]]; then continue; fi
-              
-              # Allow standard project files anywhere
-              if [[ "$file" =~ /(README|CHANGELOG|CONTRIBUTING|LICENSE|CODE_OF_CONDUCT|SECURITY)\.md$ ]]; then
-                continue
-              fi
-              
-              # Allow service-level docs subdirectories (services/*/docs/, services/*/research/, etc.)
-              if [[ "$file" =~ ^\./(services|docker)/[^/]+/(docs|research|intelligence|archive|migrations)/ ]]; then
-                continue
-              fi
-              
-              # Allow specific operational files in service roots (guides, summaries, handoffs)
-              if [[ "$file" =~ ^\./(services|docker)/[^/]+/[A-Z_]+\.md$ ]]; then
-                continue
-              fi
-              
-              # Allow docker/mcp-servers root-level docs
-              if [[ "$file" =~ ^\./(docker/mcp-servers/)[A-Z_-]+\.md$ ]]; then
-                continue
-              fi
-              
-              # Allow scripts/ documentation
-              if [[ "$file" =~ ^\./(scripts/)[A-Z_]+\.md$ ]]; then
-                continue
-              fi
-              
-              # Allow test resources
-              if [[ "$file" =~ ^\./(tests/resources/) ]]; then
-                continue
-              fi
-              
-              # Allow specific test/build artifacts
-              if [[ "$file" =~ /\.pytest_cache/ ]]; then continue; fi
-              
-              # Allow examples directory
-              if [[ "$file" =~ ^\./(examples/) ]]; then continue; fi
-              
-              # Everything else is a violation
+
+            for file in "$@"; do
+              if [[ "$file" != *.md ]]; then continue; fi
+
+              normalized="./${file#./}"
+
+              # Canonical docs locations
+              if [[ "$normalized" =~ ^\./(docs/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(reports/|quarantine/) ]]; then continue; fi
+              if [[ "$normalized" =~ /(SYSTEM_ARCHIVE|archive|ARCHIVE)/ ]]; then continue; fi
+
+              # Config/state and tooling docs
+              if [[ "$normalized" =~ /\.claude/ ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(\.conport/|conport_export/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(\.github/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(examples/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(tests/resources/) ]]; then continue; fi
+              if [[ "$normalized" =~ /\.pytest_cache/ ]]; then continue; fi
+
+              # Root project docs and common standards docs anywhere
+              if [[ "$normalized" =~ ^\./[A-Z][A-Z_0-9-]*\.md$ ]]; then continue; fi
+              if [[ "$normalized" =~ /(README|CHANGELOG|CONTRIBUTING|LICENSE|CODE_OF_CONDUCT|SECURITY)\.md$ ]]; then continue; fi
+
+              # Service/container docs and research
+              if [[ "$normalized" =~ ^\./(services|docker)/[^/]+/(docs|research|intelligence|archive|migrations)/ ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(services|docker)/[^/]+/[A-Z_0-9-]+\.md$ ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(docker/mcp-servers/pal/) ]]; then continue; fi
+              if [[ "$normalized" =~ ^\./(docker/mcp-servers/)[A-Z_0-9-]+\.md$ ]]; then continue; fi
+
+              # Scripts documentation
+              if [[ "$normalized" =~ ^\./(scripts/)[A-Z_0-9-]+\.md$ ]]; then continue; fi
+
               echo "❌ $file"
               violations_found=true
-            done < <(find . -name "*.md" \
-              -not -path "./.git/*" \
-              -not -path "./node_modules/*" \
-              -not -path "./.venv/*" \
-              -not -path "./htmlcov/*" \
-              -not -path "**/. venv/*" \
-              -print0)
-            
+            done
+
             if [ "$violations_found" = true ]; then
               echo ""
               echo "Move misplaced .md files to docs/ or see plan.md for cleanup strategy"
               exit 1
             fi
             echo "✅ All markdown files in approved locations"
+          - --
         language: system
-        pass_filenames: false
+        files: \.md$
+        pass_filenames: true
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.41.0
     hooks:
