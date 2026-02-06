@@ -22,15 +22,15 @@ Use task packets when you need a full multi-service debug bundle you can hand to
 - `docker compose ps`, image list, service list
 - per-service logs with timestamps and time window controls
 
-2. **Service-level diagnostics**
+1. **Service-level diagnostics**
 - `/health` snapshots from `services/registry.yaml`
 - `/metrics` snapshots when available
 
-3. **Component-level logs**
+1. **Component-level logs**
 - local files from `./logs/` (tail-captured)
 - normalized JSONL logs per service for programmatic analysis
 
-4. **Investigation artifacts**
+1. **Investigation artifacts**
 - `summary.json` (machine-readable report)
 - `README.md` (human triage summary)
 - `TASK_PACKET.md` (handoff prompt template)
@@ -65,17 +65,17 @@ Use whichever mode fits the debugging workflow:
 - open `README.md`
 - open `TASK_PACKET.md`
 
-2. **CLI grep/ripgrep workflow**
+1. **CLI grep/ripgrep workflow**
 
 ```bash
 rg -n "error|critical|exception|traceback" reports/task-packets/<packet>/logs
 ```
 
-3. **Structured processing**
+1. **Structured processing**
 - `normalized/*.jsonl` for scripts, notebooks, LLM pipelines
 - `summary.json` for dashboards and ticket enrichment
 
-4. **Metrics systems**
+1. **Metrics systems**
 - Prometheus: ingest `analysis/packet_metrics.prom`
 - Datadog: use `analysis/datadog_series.json`
 
