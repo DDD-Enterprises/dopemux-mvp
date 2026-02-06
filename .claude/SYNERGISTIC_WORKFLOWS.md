@@ -1,6 +1,6 @@
 # Synergistic MCP Workflow Examples
 
-**Purpose**: Real-world workflows showing how Serena-v2, Dope-Context, Context7, ConPort, and Zen MCPs work together synergistically for maximum productivity with minimal cognitive load.
+**Purpose**: Real-world workflows showing how Serena-v2, Dope-Context, PAL apilookup, ConPort, and Zen MCPs work together synergistically for maximum productivity with minimal cognitive load.
 
 ## Core Principle: Tool Synergy
 
@@ -8,7 +8,7 @@ Each MCP server has a specialized role. **Synergy** means using them together so
 
 - **Dope-Context** finds WHAT exists (code, patterns, complexity)
 - **Serena** shows WHERE and HOW (LSP navigation, references)
-- **Context7** provides CORRECT patterns (official docs)
+- **PAL apilookup** provides CORRECT patterns (official docs)
 - **ConPort** remembers WHY (decisions, context, knowledge graph)
 - **Zen** validates and analyzes (multi-model reasoning)
 
@@ -30,9 +30,9 @@ mcp__dope-context__search_code(
 # SYNERGY: Informs WHERE to integrate and WHAT patterns exist
 
 # 2. DOCS: Get official patterns (ensures correctness)
-mcp__context7__resolve-library-id(libraryName="passport")
-mcp__context7__get-library-docs(
-    context7CompatibleLibraryID="/jaredhanson/passport",
+mcp__pal__apilookup(libraryName="passport")
+mcp__pal__apilookup(
+    prompt="/jaredhanson/passport",
     topic="OAuth 2.0 strategy setup"
 )
 # Returns: Official Passport.js OAuth patterns
@@ -66,7 +66,7 @@ mcp__zen__planner(
 # SYNERGY: Zen breaks down complex task using context from search + docs
 
 # 6. IMPLEMENT: Follow discovered patterns + official docs
-# (Use patterns from Dope-Context search + Context7 docs)
+# (Use patterns from Dope-Context search + PAL apilookup docs)
 
 # 7. TRACK: Log progress (ADHD context preservation)
 mcp__conport__log_progress(
@@ -145,8 +145,8 @@ mcp__dope-context__search_code(
 # SYNERGY: Finds existing pool config to understand settings
 
 # 5. DOCS: Check official recommendations
-mcp__context7__get-library-docs(
-    context7CompatibleLibraryID="/pg-pool/pg-pool",
+mcp__pal__apilookup(
+    prompt="/pg-pool/pg-pool",
     topic="connection pool sizing best practices"
 )
 # SYNERGY: Official guidance for pool configuration
@@ -222,8 +222,8 @@ mcp__dope-context__search_code(
 # SYNERGY: Finds existing patterns to follow
 
 # 5. DOCS: Verify pattern correctness
-mcp__context7__get-library-docs(
-    context7CompatibleLibraryID="/facebook/react",
+mcp__pal__apilookup(
+    prompt="/facebook/react",
     topic="strategy pattern implementation"
 )
 
@@ -394,7 +394,7 @@ mcp__conport__link_conport_items(
 
 ### Pattern 1: Search → Docs → Implement
 **Why**: Existing code shows patterns, official docs validate correctness
-**Tools**: Dope-Context → Context7 → Your editor
+**Tools**: Dope-Context → PAL apilookup → Your editor
 **Benefit**: Reduces both reinvention AND errors
 
 ### Pattern 2: Navigate → Analyze → Refactor
@@ -444,7 +444,7 @@ mcp__conport__link_conport_items(
 |------|-------------|-----------|----------|
 | Find code patterns | Dope-Context search | Serena find_symbol | - |
 | Navigate to definition | Serena goto_definition | - | - |
-| Get official docs | Context7 | - | - |
+| Get official docs | PAL apilookup | - | - |
 | Log decisions | ConPort log_decision | - | - |
 | Track tasks | ConPort log_progress | - | - |
 | Debug issues | Zen debug | Dope-Context search | Serena navigate |

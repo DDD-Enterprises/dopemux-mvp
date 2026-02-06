@@ -189,7 +189,7 @@ Dopemux implements a **three-layer context architecture** designed specifically 
 │  └─ Cost: ~$0.03 per 200 docs                       │
 │                                                      │
 │  Index 3: API (voyage-context-3)                     │
-│  ├─ OpenAPI/Context7 integration                    │
+│  ├─ OpenAPI/PAL apilookup integration                    │
 │  ├─ Per-endpoint chunking                          │
 │  └─ Cost: ~$0.01 per 100 endpoints                  │
 │                                                      │
@@ -229,7 +229,7 @@ Dopemux implements a **three-layer context architecture** designed specifically 
 **Integration Points**:
 - **Serena**: Uses Tree-sitter for AST-aware code chunking
 - **ConPort**: Indexes ConPort decisions for unified search
-- **Context7**: Fetches official library documentation
+- **PAL apilookup**: Fetches official library documentation
 - **Qdrant**: Vector database for storage (port 6333)
 
 **MCP Tools** (9 exposed):

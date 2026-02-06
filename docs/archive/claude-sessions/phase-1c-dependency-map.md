@@ -65,7 +65,7 @@ next_review: '2026-05-02'
 | Service | Offset | Port | Type | Status |
 |---------|--------|------|------|--------|
 | (Reserved) | +1 | 3001 | - | - |
-| Context7 | +2 | 3002 | MCP | Active |
+| PAL apilookup | +2 | 3003 | MCP | Active |
 | Zen | +3 | 3003 | MCP | Active |
 | ConPort | +4 | 3004 | MCP | Active |
 | Task Master | +5 | 3005 | MCP | ? |

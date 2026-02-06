@@ -35,7 +35,7 @@ next_review: '2026-05-02'
 - Research orchestration: `services/orchestrator.py`
 - Session management: `services/session_manager.py`
 - Search engines: Query classifier + engine weights
-- Adapters: ConPort, Context7, WebSocket
+- Adapters: ConPort, PAL apilookup, WebSocket
 
 **Quality**: Well-organized, clear separation of concerns
 
@@ -164,8 +164,8 @@ async def websocket_progress_endpoint(websocket: WebSocket, user_id: str, api_ke
 - Research history persistence ✅
 - Planning phase integration: TODO (1 instance)
 
-**Context7**:
-- Helper created ✅ (`adapters/context7_helper.py`)
+**PAL apilookup**:
+- Helper created ✅ (`adapters/pal_helper.py`)
 - Documentation hints ✅
 - Discrete enhancement ✅
 

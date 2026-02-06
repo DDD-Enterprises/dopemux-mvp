@@ -47,7 +47,7 @@ This document outlines the strategy for integrating Claude Code with the enhance
 
 ### Research & Information
 **Standard**: `brave-search` / `perplexity`
-**Enhanced**: `exa` + `context7` + `docrag`
+**Enhanced**: `exa` + `pal` + `docrag`
 - Higher quality, developer-focused search results
 - Official documentation prioritization
 - RAG-enhanced code documentation
@@ -116,7 +116,7 @@ Claude Code ← JSON-RPC → MetaMCP Server ← Broker → Specialized Servers
 
 ### Enhanced Tool Mounting
 - **Developer Role**: serena, claude-context, morphllm-fast-apply
-- **Researcher Role**: exa, context7, docrag
+- **Researcher Role**: exa, pal, docrag
 - **Planner Role**: task-master-ai, conport, leantime-mcp
 - **Architect Role**: zen, sequential-thinking, claude-context
 

@@ -19,7 +19,7 @@ SuperClaude is a sophisticated meta-programming configuration framework that enh
 - **100% Local Operation**: Privacy-focused, no third-party data collection
 
 ### Current MCP Servers in SuperClaude
-1. **Context7**: Documentation lookup (similar to our `context7`)
+1. **PAL apilookup**: Documentation lookup (similar to our `pal`)
 2. **Sequential**: Multi-step reasoning (similar to our `mas-sequential-thinking`)
 3. **Magic**: UI component generation (unique capability)
 4. **Puppeteer**: Browser automation/testing (similar to our `desktop-commander`)
@@ -28,7 +28,7 @@ SuperClaude is a sophisticated meta-programming configuration framework that enh
 
 | **SuperClaude MCP** | **Dopemux Enhanced Equivalent** | **Dopemux Advantages** |
 |-------------------|--------------------------------|------------------------|
-| `Context7` (basic docs) | `context7` + `claude-context` + `docrag` | **Semantic code search, RAG-enhanced documentation, project-specific knowledge graphs** |
+| `PAL apilookup` (basic docs) | `pal` + `claude-context` + `docrag` | **Semantic code search, RAG-enhanced documentation, project-specific knowledge graphs** |
 | `Sequential` (basic reasoning) | `mas-sequential-thinking` + `zen` | **Multi-model consensus, ADHD-optimized thinking patterns, role-aware reasoning** |
 | `Magic` (UI generation) | `morphllm-fast-apply` + `serena` | **Advanced code transformations, intelligent refactoring, cross-language support** |
 | `Puppeteer` (browser automation) | `desktop-commander` + `task-master-ai` | **System-wide automation, intelligent task orchestration, ADHD task management** |
@@ -48,7 +48,7 @@ Replace SuperClaude's standard MCP servers with Dopemux enhanced equivalents:
 
 ```bash
 # Standard SuperClaude MCPs → Dopemux Enhanced
-Context7 → context7 + claude-context + docrag
+PAL apilookup → pal + claude-context + docrag
 Sequential → mas-sequential-thinking + zen
 Magic → morphllm-fast-apply + serena
 Puppeteer → desktop-commander + task-master-ai
@@ -108,7 +108,7 @@ Puppeteer → desktop-commander + task-master-ai
 1. **Dramatically Enhanced Capabilities**: Replace basic MCPs with enterprise-grade alternatives
 2. **Multi-Model Intelligence**: Zen consensus for critical SuperClaude decisions
 3. **Advanced Memory**: Cross-session knowledge retention and project understanding
-4. **Superior Research**: Exa + Context7 for comprehensive information gathering
+4. **Superior Research**: Exa + PAL apilookup for comprehensive information gathering
 
 ### For Complex Development Projects
 1. **Orchestrated Workflows**: SuperClaude commands backed by intelligent tool selection

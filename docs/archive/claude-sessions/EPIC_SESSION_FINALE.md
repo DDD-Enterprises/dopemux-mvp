@@ -37,7 +37,7 @@ dopemux-mvp main | ✅ Focus | 📚🧠🔬📊🔎🖥️🎯 | 🧠 ⚡= 👁�
 ```
 
 **Every Indicator Working**:
-- 📚 Context7 - Documentation
+- 📚 PAL apilookup - Documentation
 - 🧠 Zen - Multi-model reasoning
 - 🔬 Serena - Code intelligence
 - 📊 DDG-MCP - Decision graph

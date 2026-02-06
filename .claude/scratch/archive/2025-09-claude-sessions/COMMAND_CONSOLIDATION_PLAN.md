@@ -138,7 +138,7 @@
    - File: `/Users/hue/code/dopemux-mvp/.claude/commands/dx/implement.md`
    - Phase 1 (from dx:): ADHD Engine energy check, task complexity, suitability confirmation
    - Phase 2 (from dx:): ConPort status → IN_PROGRESS, 25-minute timer, session start message
-   - Phase 3 (from sc:): Persona activation (architect, frontend, backend, security, qa), Context7 framework patterns, Magic UI generation, Zen analysis, Playwright testing
+   - Phase 3 (from sc:): Persona activation (architect, frontend, backend, security, qa), PAL apilookup framework patterns, Magic UI generation, Zen analysis, Playwright testing
    - Phase 4 (from dx:): Status check, ConPort update, break reminder, celebration
    - Backup: Keep original as `dx/implement.md.bak`
 
@@ -147,7 +147,7 @@
    - Test 2: ADHD Engine unavailable → Graceful degradation, session still works
    - Test 3: React component → Magic MCP activates, frontend persona
    - Test 4: API service → Backend + Security personas, no UI generation
-   - Test 5: Full-stack feature → Multi-persona coordination, Context7 + Magic + Zen
+   - Test 5: Full-stack feature → Multi-persona coordination, PAL apilookup + Magic + Zen
    - Measure: Setup < 30s, execution works, break reminder at 25min
    - Deliverable: Test results for all 5 scenarios
 

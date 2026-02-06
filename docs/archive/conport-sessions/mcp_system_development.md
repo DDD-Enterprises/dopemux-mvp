@@ -201,7 +201,7 @@ Size: 771 words
 ### 2. **MCP Server Status Verification**
 ```bash
 # Current MCP Status:
-- context7: ✓ Connected (documentation lookup)
+- pal: ✓ Connected (documentation lookup)
 - zen: ✓ Connected (thinkdeep, consensus, debug capabilities)
 - exa: ❌ Demo server only (no real web research)
 - mas-sequential-thinking: ❌ Health check fails (but HTTP works)
@@ -269,7 +269,7 @@ Size: 771 words
 
 ### **Already Available**:
 - **zen MCP**: thinkdeep, consensus, debug, planner, codereview
-- **context7 MCP**: Documentation lookup and library research
+- **pal MCP**: Documentation lookup and library research
 
 ## 🚀 **Execution Plan After MCP Fix**
 
@@ -379,8 +379,8 @@ Size: 812 words
 - Confidence progression: low → medium → high → very_high
 - **Key Finding**: HTTP servers lack JSON-RPC 2.0 over HTTP with MCP protocol compliance
 
-### Phase 2: Research with Context7
-- Researched MetaMCP patterns via `mcp__context7__get-library-docs`
+### Phase 2: Research with PAL apilookup
+- Researched MetaMCP patterns via `mcp__pal__apilookup`
 - Discovered proper MCP Streamable HTTP transport requirements
 - Found `mcp-proxy --transport streamablehttp` solution pattern
 
@@ -447,7 +447,7 @@ $ uvx mcp-proxy --transport streamablehttp http://localhost:3004/mcp
 
 | Server | Status | Transport | Capabilities |
 |--------|--------|-----------|-------------|
-| **Context7** | ✅ Connected | stdio | Documentation & library lookup |
+| **PAL apilookup** | ✅ Connected | stdio | Documentation & library lookup |
 | **Zen MCP** | ✅ Connected | stdio | Multi-model reasoning, thinkdeep, consensus |
 | **EXA** | ✅ Connected | stdio | Research & development tools |
 | **ConPort** | ✅ Connected | mcp-proxy → streamablehttp | Context preservation, ADHD optimization |
@@ -479,7 +479,7 @@ $ uvx mcp-proxy --transport streamablehttp http://localhost:3004/mcp
 - ❌ Direct HTTP endpoint exposure without transport negotiation
 
 ### What Works:
-- ✅ stdio-based MCP servers (Context7, Zen, EXA)
+- ✅ stdio-based MCP servers (PAL apilookup, Zen, EXA)
 - ✅ mcp-proxy bridging stdio ↔ streamablehttp
 - ✅ Proper MCP protocol negotiation
 - ✅ MetaMCP aggregation patterns
@@ -488,7 +488,7 @@ $ uvx mcp-proxy --transport streamablehttp http://localhost:3004/mcp
 
 ### Immediate (Ready to Use):
 - ConPort context preservation now available
-- Enhanced documentation lookup via Context7
+- Enhanced documentation lookup via PAL apilookup
 - Advanced reasoning via Zen MCP tools
 
 ### Future Implementation:
@@ -506,7 +506,7 @@ $ uvx mcp-proxy --transport streamablehttp http://localhost:3004/mcp
 - Painful development workflow gaps
 
 ### After Resolution:
-- ✅ **Context7**: Up-to-date library documentation
+- ✅ **PAL apilookup**: Up-to-date library documentation
 - ✅ **Zen MCP**: Advanced reasoning and debugging
 - ✅ **ConPort**: ADHD-optimized context preservation
 - ✅ **Systematic debugging**: thinkdeep tool proven effective
@@ -537,7 +537,7 @@ claude mcp list
 
 **Status**: ✅ **MISSION ACCOMPLISHED**
 
-Through systematic investigation using the Zen MCP thinkdeep tool, proper research via Context7, and implementation of MetaMCP patterns, we successfully resolved the MCP server connection issues. The solution involved converting from basic HTTP to proper MCP Streamable HTTP transport via mcp-proxy.
+Through systematic investigation using the Zen MCP thinkdeep tool, proper research via PAL apilookup, and implementation of MetaMCP patterns, we successfully resolved the MCP server connection issues. The solution involved converting from basic HTTP to proper MCP Streamable HTTP transport via mcp-proxy.
 
 **Key Success Factor**: Using the right tools (thinkdeep) to systematically analyze the problem rather than guessing.
 
@@ -569,7 +569,7 @@ Size: 862 words
 ## ✅ **Completed Work**
 
 ### 1. **Research & Analysis**
-- ✅ **Context7 Research**: Retrieved official Exa API documentation from `/exa-labs/exa-py`
+- ✅ **PAL apilookup Research**: Retrieved official Exa API documentation from `/exa-labs/exa-py`
 - ✅ **FastMCP Documentation**: Retrieved proper implementation patterns for health endpoints and server setup
 - ✅ **API Key Discovery**: Located real EXA_API_KEY in `/Users/hue/code/dopemux-mvp/docker/mcp-servers/.env`
 
@@ -753,13 +753,13 @@ Size: 769 words
 
 ## 🎯 SESSION OBJECTIVES COMPLETED ✅
 
-### ✅ 1. Thorough Documentation Audit via Context7
-- **Completed**: Full context7 research on MCP specifications
+### ✅ 1. Thorough Documentation Audit via PAL apilookup
+- **Completed**: Full pal research on MCP specifications
 - **Key Learnings**:
   - MCP supports stdio/SSE/streamable-HTTP transports
   - FastMCP Python SDK with decorators for tools/resources/prompts
   - Docker integration patterns with volume mounts and env vars
-- **Source**: context7 queries on MCP documentation and Python SDK
+- **Source**: pal queries on MCP documentation and Python SDK
 
 ### ✅ 2. Complete Reality vs Documentation Gap Analysis
 - **Critical Finding**: Documentation claims 13 servers "READY FOR DEPLOYMENT"
@@ -780,7 +780,7 @@ Size: 769 words
 7. ConPort (3004) - ❌ MCP endpoint hangs (timeout 2min), connected but non-functional
 
 **Missing Servers (6/13)**:
-- Context7 (3002), Claude Context (3007), DocRAG (3009)
+- PAL apilookup (3003), Claude Context (3007), DocRAG (3009)
 - Desktop Commander (3012), ClearThought (3013), Unknown 13th
 
 ## 🔍 CURRENT INVESTIGATION: ConPort MCP Hanging Issue
@@ -814,7 +814,7 @@ response = self.server.conport_process.stdout.readline()  # <-- BLOCKS HERE
 - **Expected Result**: 7/7 available servers connected (100% utilization)
 
 ### Priority 3: Deploy Missing Critical Servers
-- **High Priority**: Context7 (documentation lookup)
+- **High Priority**: PAL apilookup (documentation lookup)
 - **Medium Priority**: Claude Context (semantic search)
 - **Research Needed**: Evaluate necessity of others
 
@@ -836,7 +836,7 @@ response = self.server.conport_process.stdout.readline()  # <-- BLOCKS HERE
 - **HTTP with subprocess**: ❌ Hanging (conport wrapper issue)
 
 ### Missing Infrastructure
-- **Context7**: High-value documentation server, not deployed
+- **PAL apilookup**: High-value documentation server, not deployed
 - **Claude Context**: Semantic search with Milvus, not deployed
 - **6 Additional**: Various specialized servers not deployed
 
@@ -860,7 +860,7 @@ response = self.server.conport_process.stdout.readline()  # <-- BLOCKS HERE
 3. **Test full MetaMCP integration** - Verify all 7 servers work
 
 ### Follow-up Sessions
-4. **Deploy Context7 server** - High value documentation lookup
+4. **Deploy PAL apilookup server** - High value documentation lookup
 5. **Update all inaccurate documentation** - Align with actual state
 6. **Evaluate and deploy remaining missing servers** - Based on value analysis
 
@@ -885,7 +885,7 @@ cat MCP_SYSTEM_AUDIT_LOG.md
 
 ### Environment State
 - **Todos**: 5 items tracked, 2 completed, 1 in progress
-- **Context7**: Successfully used for MCP research
+- **PAL apilookup**: Successfully used for MCP research
 - **Zen Tools**: Available but discovered planner/thinkdeep/consensus not used yet
 
 ---
@@ -917,13 +917,13 @@ Size: 1,003 words
 ### **Before Deployment**
 - **Server Status**: 3/7 connected (43% utilization)
 - **Tool Availability**: ~10 tools
-- **Major Issues**: ConPort hanging, 4 healthy servers not connected, Context7 missing
+- **Major Issues**: ConPort hanging, 4 healthy servers not connected, PAL apilookup missing
 - **Documentation Gap**: Reality vs. claims mismatch
 
 ### **After Deployment**
 - **Server Status**: 7/7 connected (100% utilization) ✅
 - **Tool Availability**: 30+ tools across all domains ✅
-- **Critical Infrastructure**: Context7 operational with 1750+ React snippets ✅
+- **Critical Infrastructure**: PAL apilookup operational with 1750+ React snippets ✅
 - **Documentation**: Evidence-based configuration using comprehensive tool audit ✅
 
 ## 🔧 Technical Achievements
@@ -944,17 +944,17 @@ Size: 1,003 words
 - Token budgets per role (8k-25k based on complexity)
 - Max tool limits (3-5 per role) to prevent cognitive overload
 
-### **3. Context7 Deployment** ✅
+### **3. PAL apilookup Deployment** ✅
 **Problem**: ⭐⭐⭐⭐⭐ priority server missing (ADR-012 compliance)
 **Solution**: Fixed docker-compose configuration and deployed successfully
 **Files Modified**:
 - `docker/mcp-servers/docker-compose.yml` (port mapping fix)
-- Built and started Context7 container
+- Built and started PAL apilookup container
 **Result**: Official documentation access with trust scoring system
 
 ### **4. Complete Server Verification** ✅
 **All 7 servers verified healthy**:
-- mcp-context7: ✅ Healthy (Documentation & API references)
+- mcp-pal: ✅ Healthy (Documentation & API references)
 - mcp-zen: ✅ Healthy (Multi-model orchestration, 16 tools)
 - mcp-serena: ✅ Healthy (Code navigation & refactoring)
 - mcp-exa: ✅ Healthy (Web research, EXA API configured)
@@ -1006,7 +1006,7 @@ Based on comprehensive tool audit documentation:
 ### **Quantitative Results**
 - ✅ **Server Utilization**: 43% → 100% (3/7 → 7/7)
 - ✅ **Tool Availability**: ~10 → 30+ tools
-- ✅ **Documentation Access**: 1750+ React code snippets via Context7
+- ✅ **Documentation Access**: 1750+ React code snippets via PAL apilookup
 - ✅ **Response Performance**: All health checks <200ms
 
 ### **Qualitative Improvements**
@@ -1024,7 +1024,7 @@ Based on comprehensive tool audit documentation:
 4. **MCP_SYSTEM_AUDIT_LOG.md**: Initial audit findings and server status
 
 ### **Key Insights Applied**
-- Context7 "Always First" principle (ADR-012 compliance)
+- PAL apilookup "Always First" principle (ADR-012 compliance)
 - Server priority ratings (⭐⭐⭐⭐⭐ system)
 - ADHD-optimized tool limits and token budgets
 - Role-to-server mapping based on actual capabilities
@@ -1194,7 +1194,7 @@ Size: 1,111 words
 ## 🔧 Technical Context Preserved
 
 ### **Current MCP System Status**
-- **Core Servers**: 3/3 operational (context7, zen-mcp, exa) ✅
+- **Core Servers**: 3/3 operational (pal, zen-mcp, exa) ✅
 - **Overall Integration**: 85% operational status ✅
 - **Health Endpoints**: Fixed via ping method instead of HTTP ✅
 - **MetaMCP Simple**: Functional but Claude connection shows failed ⚠️
@@ -1632,7 +1632,7 @@ Size: 464 words
 ## 🔧 Previous Session Context (MCP Infrastructure)
 
 ### MCP Servers Status (from previous work)
-- ✅ **context7**: Working - Documentation and API references
+- ✅ **pal**: Working - Documentation and API references
 - ✅ **zen**: Working - Multi-model reasoning (thinkdeep, debug, consensus)
 - ✅ **exa**: Working - Testing and examples
 - 🔧 **claude-context**: ARM64 issues resolved, connection issues remain

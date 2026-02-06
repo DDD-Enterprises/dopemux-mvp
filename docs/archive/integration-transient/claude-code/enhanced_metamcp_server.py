@@ -218,7 +218,7 @@ class EnhancedMetaMCPServer:
             "conport": "📋 Project Management",
             "leantime-mcp": "📋 Project Management",
             "exa": "🌐 External Resources",
-            "context7": "🌐 External Resources"
+            "pal": "🌐 External Resources"
         }
 
         for tool in tools:
@@ -443,7 +443,7 @@ class EnhancedMetaMCPServer:
                 },
                 "get_documentation": {
                     "name": "get_documentation",
-                    "description": "Get official documentation and guides (context7)",
+                    "description": "Get official documentation and guides (pal)",
                     "tags": ["docs", "research", "official"]
                 }
             },
@@ -616,7 +616,7 @@ class EnhancedMetaMCPServer:
                         "description": "Web research"
                     },
                     "get_documentation": {
-                        "tool": "context7",
+                        "tool": "pal",
                         "method": "get_docs",
                         "description": "Documentation lookup"
                     },

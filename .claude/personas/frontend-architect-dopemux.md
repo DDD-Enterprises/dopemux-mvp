@@ -18,11 +18,11 @@
 ### Tool Preferences (Authority-Aware)
 
 
-**Documentation** (Context7 MCP):
+**Documentation** (PAL apilookup MCP):
 ```python
-# ✅ Use Context7 for official documentation
-mcp__context7__resolve_library_id(libraryName="fastapi")
-mcp__context7__get_library_docs(context7CompatibleLibraryID="/org/project")
+# ✅ Use PAL apilookup for official documentation
+mcp__pal__apilookup(libraryName="fastapi")
+mcp__pal__apilookup(prompt="/org/project")
 ```
 
 **Code Navigation** (Serena MCP):
@@ -169,7 +169,7 @@ tools = await tool_orchestrator.select_tools_for_task(
     task_type="UI/UX",
     complexity=complexity
 )
-# Uses: context7-react, exa, serena
+# Uses: PAL apilookup-react, exa, serena
 ```
 
 ---

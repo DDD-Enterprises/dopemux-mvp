@@ -50,15 +50,15 @@ Args (one per line):
 Environment: (leave empty)
 ```
 
-**Server 2: context7**
+**Server 2: pal**
 ```
-Name: context7
+Name: pal
 Type: STDIO
 Command: curl
 Args:
   -X
   POST
-  http://localhost:3002/mcp
+  http://localhost:3003/mcp
   -H
   Content-Type: application/json
   -d
@@ -107,19 +107,19 @@ Click **"Namespaces"** → **"Create Namespace"**
 **Namespace 1: dopemux-quickfix**
 - Name: `dopemux-quickfix`
 - Description: `ADHD quick wins - 3 tools`
-- Select servers: ☑ conport, ☑ serena, ☑ context7
+- Select servers: ☑ conport, ☑ serena, ☑ pal
 - Click Save
 
 **Namespace 2: dopemux-act**
 - Name: `dopemux-act`
 - Description: `Implementation mode - 4 tools`
-- Select servers: ☑ conport, ☑ serena, ☑ context7, ☑ zen
+- Select servers: ☑ conport, ☑ serena, ☑ pal, ☑ zen
 - Click Save
 
 **Namespace 3: dopemux-all**
 - Name: `dopemux-all`
 - Description: `All tools mode - full flexibility`
-- Select servers: ☑ conport, ☑ serena, ☑ context7, ☑ zen
+- Select servers: ☑ conport, ☑ serena, ☑ pal, ☑ zen
 - Click Save
 
 ---
@@ -166,12 +166,12 @@ claude
 
 # Verify
 /mcp
-# Should see: conport, serena, context7 tools
+# Should see: conport, serena, pal tools
 
 # Try ACT mode
 ~/.claude/switch-role.sh act
 # Restart Claude Code
-# Should see: conport, serena, context7, zen tools
+# Should see: conport, serena, pal, zen tools
 
 # Try ALL mode
 ~/.claude/switch-role.sh all
@@ -192,12 +192,12 @@ source ~/.zshrc
 
 ### QUICKFIX Mode (3 tools)
 **When:** Scattered attention, 5-15 min tasks, need quick wins
-**Tools:** conport (memory), serena (code nav), context7 (docs)
+**Tools:** conport (memory), serena (code nav), pal (docs)
 **Switch:** `sr quickfix`
 
 ### ACT Mode (4 tools)
 **When:** Implementation, debugging, testing, focused work
-**Tools:** conport, serena, context7, zen (debug/codereview)
+**Tools:** conport, serena, pal, zen (debug/codereview)
 **Switch:** `sr act`
 
 ### ALL Mode (4 tools in Phase 1A)

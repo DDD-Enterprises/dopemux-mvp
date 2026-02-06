@@ -177,7 +177,7 @@ Dopemux MCP Servers
     ├─ ConPort (knowledge graph)
     ├─ Serena (code intelligence)
     ├─ Zen (multi-model reasoning)
-    ├─ Context7 (documentation)
+    ├─ PAL apilookup (documentation)
     ├─ Dope-Context (semantic search)
     ├─ Exa (web search)
     └─ GPT-Researcher (deep research)

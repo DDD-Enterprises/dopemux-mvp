@@ -141,7 +141,7 @@ curl -s http://localhost:3015/info | jq -r '.mcp.endpoints.sse'
 ### Services by Network
 
 **Single network** (dopemux-network):
-- All MCP servers (context7, litellm, conport, serena, etc.)
+- All MCP servers (pal, litellm, conport, serena, etc.)
 - plane-coordinator (fixed)
 - activity-capture (fixed)
 

@@ -51,7 +51,7 @@ Task-Orchestrator un-deprecation (ADR-203) restored 5,577 lines of code. To maxi
 
 **3. Service Independence**:
 - Self-contained ML logic
-- Minimal dependencies (ConPort client, optional Context7)
+- Minimal dependencies (ConPort client, optional PAL apilookup)
 - Can evolve independently
 
 ### Why Not Keep in Task-Orchestrator?
@@ -152,7 +152,7 @@ from ml_risk_assessment.engine import PredictiveRiskAssessmentEngine
 
 engine = PredictiveRiskAssessmentEngine(
     conport_client=conport,
-    context7_client=context7
+    pal_client=pal
 )
 
 risk_profile = await engine.assess_risk(
@@ -209,7 +209,7 @@ ls -lh services/ml-risk-assessment/
 ✅ **ML Algorithms**: Feature extraction, risk prediction preserved
 ✅ **ADHD Patterns**: Cognitive overload, hyperfocus detection intact
 ✅ **Data Models**: RiskFactor, RiskProfile, RiskLevel complete
-✅ **Integration**: ConPort/Context7 client interfaces preserved
+✅ **Integration**: ConPort/PAL apilookup client interfaces preserved
 
 ---
 

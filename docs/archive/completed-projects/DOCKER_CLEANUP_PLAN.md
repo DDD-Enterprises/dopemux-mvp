@@ -69,7 +69,7 @@ All healthy and serving specific purposes:
 
 | Container | Port | Purpose | Status | Health |
 |-----------|------|---------|--------|--------|
-| mcp-context7 | 3002 | Context/file operations | Up 2d | ✅ Healthy |
+| mcp-pal | 3003 | Context/file operations | Up 2d | ✅ Healthy |
 | mcp-zen | 3003 | Neon layout automation | Up 10h | ✅ Healthy |
 | mcp-conport | 3004 | HTTP context port | Up 13h | ✅ Healthy |
 | mcp-serena | 3006 | Code navigation/LSP | Up 2d | ⚠️ No health |
@@ -80,7 +80,7 @@ All healthy and serving specific purposes:
 | mcp-leantime-bridge | 3015 | Leantime integration | Up 1h | ✅ Healthy |
 | mcp-qdrant | 6333-6334 | Vector database | Up 2d | ⚠️ No health |
 
-**Port Range**: 3002-3016 (no conflicts)
+**Port Range**: 3003-3016 (no conflicts)
 
 ### Issues to Fix:
 1. `mcp-serena` - No health check
@@ -124,7 +124,7 @@ dopemux-postgres-age    Port 5456 - Main PostgreSQL with AGE extension
 ### Current Port Usage (NO CONFLICTS FOUND ✅)
 
 **MCP Servers (3000 range):**
-- 3002: mcp-context7
+- 3003: mcp-pal
 - 3003: mcp-zen
 - 3004: mcp-conport
 - 3006: mcp-serena
@@ -239,7 +239,7 @@ echo "✅ No port conflicts"
 docker ps --filter "name=mcp-" --format "{{.Names}}: {{.Status}}"
 
 # 2. Test MCP endpoints
-curl -f http://localhost:3002/health  # context7
+curl -f http://localhost:3003/health  # pal
 curl -f http://localhost:3003/health  # zen
 curl -f http://localhost:3004/health  # conport
 curl -f http://localhost:3015/sse --head  # leantime-bridge
@@ -282,7 +282,7 @@ curl -f http://localhost:6333/health
 ```
 Production Stack (21 containers):
 ├── MCP Servers (10)
-│   ├── context7, zen, conport, serena
+│   ├── pal, zen, conport, serena
 │   ├── exa, gptr-mcp, desktop-commander
 │   ├── task-orchestrator, leantime-bridge
 │   └── qdrant (shared vector DB)
@@ -299,7 +299,7 @@ Production Stack (21 containers):
 ```
 
 **Port Map:**
-- 3002-3016: MCP Services
+- 3003-3016: MCP Services
 - 5455-5456: PostgreSQL
 - 6333-6334: Qdrant
 - 6379: Redis Events

@@ -496,7 +496,7 @@ async def complete_dopemux_workflow(feature_description: str):
         if step.persona == "python-expert":
             # Persona uses:
             # - Serena for code navigation
-            # - Context7 for Python docs
+            # - PAL apilookup for Python docs
             # - ConPort for decision logging
             # - Zen codereview for validation
             result = await apply_python_expert_persona(step, tools)

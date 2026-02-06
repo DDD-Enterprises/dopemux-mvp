@@ -25,7 +25,7 @@ tags:
 
 | Role | MCP Servers | Complexity | Best For | Energy Level | Session Length |
 |------|-------------|------------|----------|--------------|----------------|
-| **quickfix** | 3 (ConPort, Serena, Context7) | 0.3-0.5 | Quick fixes, simple tasks | Low-Medium | 15-25 min |
+| **quickfix** | 3 (ConPort, Serena, PAL apilookup) | 0.3-0.5 | Quick fixes, simple tasks | Low-Medium | 15-25 min |
 | **act** | 4 (+ Zen) | 0.5-0.7 | Implementation, coding | Medium-High | 25-45 min |
 | **research** | 7+ (+ GPT-R, Exa, Magic) | 0.4-0.6 | Deep research, learning | Medium | 30-60 min |
 | **plan** | 5 (+ Task Orchestrator) | 0.6-0.8 | Strategic planning | High | 45-90 min |
@@ -36,7 +36,7 @@ tags:
 | **all** | All available | 0.5-0.8 | Flexible work | Any | Any |
 | **developer** | 4 (Standard set) | 0.5-0.7 | General development | Medium | 30-60 min |
 
-**Standard Set:** ConPort, Serena, Context7, Zen
+**Standard Set:** ConPort, Serena, PAL apilookup, Zen
 
 ---
 
@@ -47,7 +47,7 @@ tags:
 **MCP Servers:** 3
 - ✅ ConPort (context/decisions)
 - ✅ Serena (code navigation)
-- ✅ Context7 (documentation)
+- ✅ PAL apilookup (documentation)
 
 **When to Use:**
 - 🔥 Low energy / scattered attention
@@ -100,7 +100,7 @@ dopemux start --role quickfix
 **MCP Servers:** 4
 - ✅ ConPort (context/decisions)
 - ✅ Serena (code navigation)
-- ✅ Context7 (documentation)
+- ✅ PAL apilookup (documentation)
 - ✅ Zen (multi-model analysis)
 
 **When to Use:**
@@ -155,7 +155,7 @@ dopemux start --role act
 **MCP Servers:** 7+
 - ✅ ConPort (context/decisions)
 - ✅ Serena (code navigation)
-- ✅ Context7 (documentation)
+- ✅ PAL apilookup (documentation)
 - ✅ Zen (multi-model analysis)
 - ✅ GPT-Researcher (web search + synthesis)
 - ✅ Exa (semantic web search)
@@ -173,7 +173,7 @@ dopemux start --role act
 - GPT-Researcher does autonomous multi-source research
 - Exa provides semantic search (not just keywords)
 - Zen synthesizes findings from multiple sources
-- Context7 provides authoritative documentation
+- PAL apilookup provides authoritative documentation
 
 **ADHD Optimization:**
 - **Complexity:** 0.4-0.6 (interesting but not overwhelming)
@@ -196,7 +196,7 @@ dopemux start --role research
 1. Define research question clearly
 2. Use GPT-Researcher for comprehensive web search
 3. Use Exa for semantic paper/article search
-4. Use Context7 for official docs
+4. Use PAL apilookup for official docs
 5. Use Zen to synthesize findings
 6. Log research summary to ConPort
 7. Complete with actionable insights
@@ -220,7 +220,7 @@ dopemux start --role research
 **MCP Servers:** 5
 - ✅ ConPort (context/decisions)
 - ✅ Serena (code navigation)
-- ✅ Context7 (documentation)
+- ✅ PAL apilookup (documentation)
 - ✅ Zen (multi-model analysis)
 - ✅ Task Orchestrator (task management)
 
@@ -283,7 +283,7 @@ dopemux start --role plan
 **MCP Servers:** 5
 - ✅ ConPort (context/decisions)
 - ✅ Serena (code navigation)
-- ✅ Context7 (documentation)
+- ✅ PAL apilookup (documentation)
 - ✅ Zen (multi-model analysis)
 - ✅ Task Orchestrator (planning)
 
@@ -299,7 +299,7 @@ dopemux start --role plan
 - Zen provides deep architectural analysis
 - ConPort logs all design decisions (ADRs)
 - Serena explores existing codebase patterns
-- Context7 references best practices
+- PAL apilookup references best practices
 
 **ADHD Optimization:**
 - **Complexity:** 0.7-0.9 (high cognitive load)
@@ -320,7 +320,7 @@ dopemux start --role architect
 
 **Example Workflow:**
 1. Define problem space (ConPort context)
-2. Research patterns (Context7 + Zen)
+2. Research patterns (PAL apilookup + Zen)
 3. Explore existing architecture (Serena)
 4. Design solution with trade-offs
 5. Create ADR documenting decision
@@ -352,7 +352,7 @@ dopemux start --role architect
 **MCP Servers:** 4
 - ✅ ConPort (context/decisions)
 - ✅ Serena (code navigation)
-- ✅ Context7 (documentation)
+- ✅ PAL apilookup (documentation)
 - ✅ Zen (analysis)
 
 **When to Use:**
@@ -383,7 +383,7 @@ dopemux start --role reviewer
 **Example Workflow:**
 1. Load PR context (Serena)
 2. Review code changes systematically
-3. Check against best practices (Context7)
+3. Check against best practices (PAL apilookup)
 4. Use Zen for deeper analysis
 5. Log findings to ConPort
 6. Provide constructive feedback
@@ -401,7 +401,7 @@ dopemux start --role reviewer
 **MCP Servers:** 4
 - ✅ ConPort (context/decisions)
 - ✅ Serena (code navigation)
-- ✅ Context7 (documentation)
+- ✅ PAL apilookup (documentation)
 - ✅ Zen (analysis)
 
 **When to Use:**
@@ -457,7 +457,7 @@ dopemux start --role debugger
 **MCP Servers:** 5+
 - ✅ ConPort (context/decisions)
 - ✅ Serena (code navigation)
-- ✅ Context7 (documentation)
+- ✅ PAL apilookup (documentation)
 - ✅ Zen (analysis)
 - ✅ Deployment tools (Docker, K8s access)
 
@@ -531,7 +531,7 @@ dopemux start --role ops
 **MCP Servers:** 4 (Standard set)
 - ✅ ConPort
 - ✅ Serena
-- ✅ Context7
+- ✅ PAL apilookup
 - ✅ Zen
 
 **When to Use:**
@@ -580,7 +580,7 @@ When you use a role, Claude Code applies relevant persona guidelines:
 When working on backend tasks:
 - ✅ Use Serena for code navigation (never bash cat/grep)
 - ✅ Log design decisions to ConPort
-- ✅ Use Context7 for official docs
+- ✅ Use PAL apilookup for official docs
 - ✅ Use Zen for architectural analysis
 - ✅ Apply SOLID principles
 - ✅ Consider scalability and performance
@@ -750,7 +750,7 @@ dopemux tmux agent switch-role act --pane 2
 dopemux start --role research
 
 # Task: Research ADHD neuroscience, interventions, UX patterns
-# MCP servers: GPT-Researcher, Exa, Zen, Context7
+# MCP servers: GPT-Researcher, Exa, Zen, PAL apilookup
 # Energy: Medium
 # Duration: 60 minutes
 # Output: Research document with citations
@@ -783,7 +783,7 @@ dopemux start --role plan
 dopemux start --role act
 
 # Task: Implement detection engine
-# MCP servers: Serena, ConPort, Context7, Zen
+# MCP servers: Serena, ConPort, PAL apilookup, Zen
 # Energy: Medium-High
 # Duration: 45 minutes per session (multiple sessions)
 # Output: Working code, tests, decisions logged
@@ -794,7 +794,7 @@ dopemux start --role act
 dopemux start --role reviewer
 
 # Task: Code review, test coverage, documentation
-# MCP servers: Serena, ConPort, Context7, Zen
+# MCP servers: Serena, ConPort, PAL apilookup, Zen
 # Energy: Medium
 # Duration: 30 minutes
 # Output: Reviewed code, updated docs

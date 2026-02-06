@@ -22,7 +22,7 @@ Claude Code treats each git worktree as a separate project with independent MCP 
 {
   "mcpServers": {
     // GLOBAL: All 8 Dopemux MCPs available everywhere
-    "context7": {...},
+    "PAL apilookup": {...},
     "conport": {...},
     "serena-v2": {...},
     "zen": {...},
@@ -117,7 +117,7 @@ claude mcp list  # Should show all 8 servers from any directory
 - Zero duplication
 
 **Server List** (Global):
-1. `context7` - Official framework documentation
+1. `PAL apilookup` - Official framework documentation
 2. `conport` - Knowledge graph and decision logging
 3. `serena-v2` - LSP-based code navigation
 4. `zen` - Multi-model reasoning suite
@@ -172,7 +172,7 @@ claude mcp list  # Should show same 8 servers
 
 **Expected Output**:
 ```
-✓ Connected: context7, conport, dope-context, serena-v2, zen, gpt-researcher
+✓ Connected: PAL apilookup, conport, dope-context, serena-v2, zen, gpt-researcher
 ✗ Failed: exa (known issue)
 ✓ Connected: mas-sequential-thinking
 ```

@@ -21,7 +21,7 @@ next_review: '2026-05-02'
 📚🧠🔬📊🔎🖥️🎯 | 🧠 ⚡= 👁️●
 ```
 
-- 📚 Context7 (3002) - Documentation
+- 📚 PAL apilookup (3003) - Documentation
 - 🧠 Zen (3003) - Multi-model reasoning
 - 🔬 Serena (3006) - Code intelligence
 - 📊 DDG-MCP (3016) - Decision graph

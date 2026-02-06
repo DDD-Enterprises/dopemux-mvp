@@ -35,15 +35,15 @@ Click **"MCP Servers"** → **"Add Server"** for each:
 - **Environment Variables:** (leave empty)
 - Click **Save**
 
-### Server 2: context7
-- **Name:** `context7`
+### Server 2: pal
+- **Name:** `pal`
 - **Type:** `STDIO`
 - **Command:** `curl`
 - **Args:**
   ```
   -X
   POST
-  http://localhost:3002/mcp
+  http://localhost:3003/mcp
   -H
   Content-Type: application/json
   -d
@@ -98,7 +98,7 @@ Click **"Namespaces"** → **"Create Namespace"**
 - **Select Servers:**
   - ☑ conport
   - ☑ serena
-  - ☑ context7
+  - ☑ pal
 - **Middleware:** (none for now)
 - Click **Save**
 
@@ -108,7 +108,7 @@ Click **"Namespaces"** → **"Create Namespace"**
 - **Select Servers:**
   - ☑ conport
   - ☑ serena
-  - ☑ context7
+  - ☑ pal
   - ☑ zen
 - **Middleware:** (none for now)
 - Click **Save**
@@ -119,7 +119,7 @@ Click **"Namespaces"** → **"Create Namespace"**
 - **Select Servers:**
   - ☑ conport
   - ☑ serena
-  - ☑ context7
+  - ☑ pal
   - ☑ zen
 - **Middleware:** (none for now)
 - Click **Save**
@@ -177,7 +177,7 @@ In MetaMCP UI:
 1. Click **"Inspector"**
 2. Select `quickfix-endpoint`
 3. Click **"Connect"**
-4. Verify you see 3 tools: conport tools, serena tools, context7 tools
+4. Verify you see 3 tools: conport tools, serena tools, pal tools
 5. Repeat for `act-endpoint` (should see 4 servers' tools)
 6. Repeat for `all-endpoint` (should see 4 servers' tools - same as act for Phase 1A)
 
