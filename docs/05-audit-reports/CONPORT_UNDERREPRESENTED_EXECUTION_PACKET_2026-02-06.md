@@ -61,6 +61,16 @@ Top `40` underrepresented items from `reports/strict_closure/conport_full_todo_c
 | `39` | `TODO` | `UNSPECIFIED` | `Create shared MCP response budget utility (services/shared/mcp_response_budget.py) to standardize token management across all MCP servers` | `MCP Platform` | `service-level smoke + unit tests` |
 | `40` | `TODO` | `UNSPECIFIED` | `Day 10: Week 2 Integration & Testing (6-7 hours)` | `QA + Service Owners` | `targeted pytest suites` |
 
+## Implementation Updates (Current Wave)
+
+1. Row `1` (`LiteLLM BLOCKED`) has been runtime-reverified and reclassified as `resolved_in_runtime`:
+   - `docs/05-audit-reports/LITELLM_BLOCKER_VERIFICATION_2026-02-06.md`
+2. Profile/auto-detection cluster (rows `19` through `35`) has been reclassified with verification:
+   - `12 implemented`, `3 partial`
+   - `docs/05-audit-reports/PROFILE_WORKSTREAM_VERIFICATION_2026-02-06.md`
+3. Row `39` (shared MCP response-budget utility) is now implemented:
+   - `docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md`
+
 ## Source
 
 - `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json`
