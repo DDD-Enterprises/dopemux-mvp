@@ -16,9 +16,9 @@ if [ -z "${OPENROUTER_API_KEY:-}" ] || [ "$OPENROUTER_API_KEY" = "your_openroute
     echo "Get your key: https://openrouter.ai/keys"
     echo ""
     echo "Then run ONE of these:"
-    echo "  export OPENROUTER_API_KEY='sk-or-v1-YOUR_KEY' && ./START_HERE_ROUTING.sh"
+    echo "  export OPENROUTER_API_KEY='sk-or-v1-YOUR_KEY' && ./scripts/routing/start_here_routing.sh"
     echo "  OR"
-    echo "  echo 'OPENROUTER_API_KEY=sk-or-v1-YOUR_KEY' >> .env && source .env && ./START_HERE_ROUTING.sh"
+    echo "  echo 'OPENROUTER_API_KEY=sk-or-v1-YOUR_KEY' >> .env && source .env && ./scripts/routing/start_here_routing.sh"
     echo ""
     exit 1
 fi

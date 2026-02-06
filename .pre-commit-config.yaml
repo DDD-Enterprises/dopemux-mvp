@@ -130,6 +130,14 @@ repos:
         language: system
         files: \.md$
         pass_filenames: true
+
+      # Repo root hygiene enforcement
+      - id: root-hygiene
+        name: Enforce repository root hygiene (no random root files)
+        entry: python scripts/check_root_hygiene.py
+        language: system
+        files: .*
+        pass_filenames: true
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.41.0
     hooks:
