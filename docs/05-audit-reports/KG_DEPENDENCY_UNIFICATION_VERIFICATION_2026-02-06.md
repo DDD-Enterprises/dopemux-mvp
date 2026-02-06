@@ -37,21 +37,21 @@ This verification covers the `kg_dependency_unification` cluster (`7` items) fro
 | `3.1.1: Design & populate conport_integration_links` | `implemented_in_code` | `services/serena/intelligence/schema.sql`, `services/serena/intelligence/conport_bridge.py`, `services/serena/intelligence/integration_test.py` | runtime population density not yet measured on prod-like dataset |
 | `2.2.3: Validate embedding quality & schema` | `partial` | `src/dopemux/extraction/consensus_validator.py`, `services/dope-context/src/pipeline/indexing_pipeline.py` | no dedicated conport decision embedding regression benchmark |
 | `2.2.2: Write & run migration script (re-embed decisions)` | `partial` | `scripts/deploy/migration/backfill_embeddings.py` | script exists; no current-wave run artifact against target dataset |
-| `2.2.1: Remove ConPort embedding_service, import from core` | `partial` | `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py` | legacy semantic-search stubs still present |
-| `2.1.2: Update docs & add deprecation warnings` | `partial` | `docs/04-explanation/architecture/ARCHITECTURE-CONSOLIDATION-SYNTHESIS.md`, `docs/03-reference/serena-v2-mcp-tools.md` | active code-truth docs still contain non-deprecated semantic-search references |
+| `2.2.1: Remove ConPort embedding_service, import from core` | `partial` | `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py` | embedding-service path is now hard-deprecated with keyword fallback, but compatibility shim is still present (not removed) |
+| `2.1.2: Update docs & add deprecation warnings` | `implemented` | `docs/04-explanation/DOPEMUX-CONTEXT-DEEP-DIVE.md`, `docs/04-explanation/architecture/architecture-3.0-implementation.md`, `services/conport/http_server.py`, `src/dopemux/mcp/conport_mcp_tools.py` | none for current deprecation-label requirement |
 
 ## Summary
 
-1. Implemented: `1`
+1. Implemented: `2`
 2. Implemented in code (runtime population pending): `1`
-3. Partial: `5`
+3. Partial: `4`
 4. Open with no evidence: `0`
 
 ## Recommended Next Focus
 
 1. Strengthen semantic-similarity and ADHD-disclosure assertions from smoke to deterministic regression checks.
 2. Run `backfill_embeddings.py` against target decision dataset and capture success/failure artifact.
-3. Remove or hard-deprecate ConPort semantic-search placeholder paths and align active docs to code truth.
+3. Complete removal of deprecated ConPort semantic-search compatibility shims once external callers are migrated.
 
 ## Artifact
 

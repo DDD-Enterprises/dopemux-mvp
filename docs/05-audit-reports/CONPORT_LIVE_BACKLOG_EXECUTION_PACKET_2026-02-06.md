@@ -18,7 +18,7 @@ prelude: Prioritized execution packet from live ConPort backlog undercoverage, f
 2. Resolved in current wave: `8`.
 3. Likely true-open candidates: `25`.
 4. Likely alias/already-implemented phrasing mismatches: `33`.
-5. `kg_dependency_unification` recheck: `2` implemented/implemented-in-code, `5` partial (evidence-linked).
+5. `kg_dependency_unification` recheck: `2` implemented, `1` implemented-in-code, `4` partial (evidence-linked).
 
 ## Resolved In Current Wave
 
