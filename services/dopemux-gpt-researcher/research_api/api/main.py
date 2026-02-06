@@ -18,20 +18,23 @@ from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import uvicorn
 
-# Add backend to path for imports
-import sys
-backend_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, backend_path)
+try:
+    from ..models.research_task import ResearchType, ADHDConfiguration, ProjectContext
+    from ..services.orchestrator import ResearchTaskOrchestrator
+    from ..services.session_manager import SessionManager
+except ImportError:  # pragma: no cover - script-mode fallback
+    import sys
 
-# Import from backend modules using absolute imports
-from models.research_task import ResearchType, ADHDConfiguration, ProjectContext
-from services.orchestrator import ResearchTaskOrchestrator
-from services.session_manager import SessionManager
-from engines.search.search_orchestrator import SearchStrategy
+    backend_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if backend_path not in sys.path:
+        sys.path.insert(0, backend_path)
+
+    from models.research_task import ResearchType, ADHDConfiguration, ProjectContext
+    from services.orchestrator import ResearchTaskOrchestrator
+    from services.session_manager import SessionManager
 
 # ========================
 # Configuration
@@ -310,6 +313,19 @@ async def create_research_task(
             session = await app_state.session_manager.get_or_create_session(session_id)
 
         # Configure ADHD settings
+        research_type_mapping = {
+            "exploratory": ResearchType.DOCUMENTATION_RESEARCH,
+            "technical": ResearchType.FEATURE_RESEARCH,
+            "comparative": ResearchType.TECHNOLOGY_EVALUATION,
+            "systematic": ResearchType.SYSTEM_ARCHITECTURE,
+        }
+        parsed_research_type = research_type_mapping.get(request.research_type)
+        if parsed_research_type is None:
+            try:
+                parsed_research_type = ResearchType(request.research_type)
+            except ValueError:
+                parsed_research_type = None
+
         adhd_config = ADHDConfiguration(
             break_duration_minutes=request.adhd_config.get('break_interval', 5) if request.adhd_config else 5,
             work_duration_minutes=request.adhd_config.get('focus_duration', 25) if request.adhd_config else 25,
@@ -325,7 +341,7 @@ async def create_research_task(
         task = await app_state.orchestrator.create_research_task(
             user_id=session_id,  # Use session_id as user_id
             prompt=request.topic,  # Map topic to prompt
-            research_type=request.research_type,
+            research_type=parsed_research_type,
             adhd_config=adhd_config,
             user_context={'depth': request.depth} if request.depth else None
         )
@@ -366,10 +382,8 @@ async def create_research_task(
         )
 
     except Exception as e:
+        logger.exception("Failed to create research task")
         raise HTTPException(status_code=500, detail=f"Failed to create research task: {str(e)}")
-
-
-        logger.error(f"Error: {e}")
 @app.get("/api/v1/research/{task_id}")
 async def get_research_status(task_id: str):
     """Get research task status and results"""
@@ -556,16 +570,14 @@ async def websocket_endpoint(websocket: WebSocket, task_id: str, api_key: str = 
             await asyncio.sleep(2)
 
     except WebSocketDisconnect:
-        del app_state.active_websockets[task_id]
+        app_state.active_websockets.pop(task_id, None)
     except Exception as e:
         await websocket.send_json({
             "type": "error",
             "message": str(e)
         })
         await websocket.close()
-
-
-        logger.error(f"Error: {e}")
+        logger.exception("WebSocket progress stream failed")
 # ========================
 # Helper Functions
 # ========================
@@ -615,9 +627,7 @@ async def execute_research_task(task_id: str, session_id: str):
                 "task_id": task_id,
                 "message": f"Research failed: {str(e)}"
             })
-
-
-        logger.error(f"Error: {e}")
+        logger.exception("Background research execution failed")
 # ========================
 # Main Entry Point
 # ========================

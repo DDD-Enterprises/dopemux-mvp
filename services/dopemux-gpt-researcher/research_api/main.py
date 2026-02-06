@@ -9,6 +9,8 @@ FastAPI application that provides enhanced research capabilities with:
 - Transparent planning and execution phases
 """
 
+import json
+
 import asyncio
 import logging
 import os
