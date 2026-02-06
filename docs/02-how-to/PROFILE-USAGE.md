@@ -73,6 +73,7 @@ Create a new profile interactively:
 
 ```bash
 dopemux profile init
+dopemux profile analyze-usage --days 90 --max-commits 500
 ```
 
 Edit, copy, and archive profiles:
@@ -110,3 +111,4 @@ Notes:
 1. `conport` is required in all profiles.
 2. MCP names can map to runtime aliases (for example `serena-v2` to `serena` in Claude config).
 3. Backup and rollback safeguards are active when profile-backed config writes occur.
+4. `dopemux profile stats` emits optimization suggestions and archives them to ConPort under `profile_optimization_recommendations`.

@@ -124,6 +124,22 @@ Evidence: `docs/05-audit-reports/PROFILE_ANALYTICS_VERIFICATION_2026-02-06.md`
 Evidence: `docs/05-audit-reports/PROFILE_ANALYTICS_VERIFICATION_2026-02-06.md`
 30. Row `31` (`4.4.3 Analytics dashboard`) is now implemented.
 Evidence: `docs/05-audit-reports/PROFILE_ANALYTICS_VERIFICATION_2026-02-06.md`
+31. Row `14` (`3.3.1 Configure dope-context auto-index for decisions`) is now implemented with workspace-scoped decision retrieval config and unified-search integration.
+Evidence: `docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md`
+32. Row `17` (`3.3.2 Test unified search (code + decisions + docs)`) is now implemented with dope-context tests covering code/docs/decision merged results.
+Evidence: `docs/05-audit-reports/DOPE_CONTEXT_DECISION_AUTO_INDEX_UNIFIED_SEARCH_VERIFICATION_2026-02-06.md`
+33. Row `32` (`4.4.4 Profile optimization suggestions`) is now implemented with deterministic suggestion generation and ConPort archival.
+Evidence: `docs/05-audit-reports/PROFILE_OPTIMIZATION_SUGGESTIONS_VERIFICATION_2026-02-06.md`
+34. Row `33` (`4.5.1 Usage pattern analysis`) is now implemented with `dopemux profile analyze-usage` and analyzer test coverage.
+Evidence: `docs/05-audit-reports/PROFILE_USAGE_ANALYSIS_AND_INIT_WIZARD_VERIFICATION_2026-02-06.md`
+35. Row `34` (`4.5.2 dopemux profile init wizard`) is now implemented and verified with unit coverage for profile construction and YAML persistence.
+Evidence: `docs/05-audit-reports/PROFILE_USAGE_ANALYSIS_AND_INIT_WIZARD_VERIFICATION_2026-02-06.md`
+36. Row `35` (`4.5.3 Migration guide documentation`) is now implemented with code-truth migration workflow content.
+Evidence: `docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md`
+37. Row `36` (`4.6.1 User documentation`) is now implemented with a complete profile user tutorial aligned to current CLI behavior.
+Evidence: `docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md`
+38. Row `37` (`4.6.2 Developer documentation`) is now implemented with architecture, interfaces, and signal-collector extension guidance.
+Evidence: `docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md`
 
 ## Source
 

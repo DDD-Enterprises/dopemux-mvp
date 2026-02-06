@@ -81,11 +81,14 @@ how_to:
 tutorials:
   directory: "docs/01-tutorials/"
   start_here: "docs/01-tutorials/START-HERE.md"
+  profile_user_guide: "docs/01-tutorials/profile-user-guide.md"
+  profile_migration_guide: "docs/01-tutorials/profile-migration-guide.md"
 
 # Reference Documentation
 reference:
   directory: "docs/03-reference/"
   profile_schema: "docs/03-reference/configuration/PROFILE-YAML-SCHEMA.md"
+  profile_developer_guide: "docs/03-reference/profile-developer-guide.md"
   features_index: "docs/03-reference/features/features-index.md"
   mcp_tools_overview: "docs/03-reference/mcp-tools-overview.md"
 
