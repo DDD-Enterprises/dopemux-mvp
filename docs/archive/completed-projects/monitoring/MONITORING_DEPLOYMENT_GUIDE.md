@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Monitoring_Deployment_Guide (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Monitoring Deployment Guide
 
@@ -224,7 +228,7 @@ After deployment, verify:
 6. `services/monitoring/grafana/provisioning/` - Grafana auto-config
 7. `docker-compose.monitoring.yml` - Monitoring stack compose
 8. `docker/mcp-servers/conport/shared_monitoring.py` - ConPort copy of monitoring
-9. `docker/mcp-servers/conport/shared_monitoring_init.py` - ConPort __init__
+9. `docker/mcp-servers/conport/shared_monitoring_init.py` - ConPort **init**
 
 ### Modified Files
 

@@ -1,10 +1,14 @@
 ---
 id: DOPECLAUDE_PROGRESS
 title: Dopeclaude_Progress
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dopeclaude_Progress (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # DopeClaude Implementation Progress - PAUSED
 

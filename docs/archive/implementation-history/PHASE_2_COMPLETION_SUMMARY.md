@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Phase_2_Completion_Summary (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # ConPort-KG 2.0 Phase 2: Agent Integration - COMPLETION SUMMARY
 
@@ -197,28 +201,28 @@ Patterns:           7/7 operational
 3. code.navigation.performed (optional)
 
 ### Search Events (Dope-Context)
-4. knowledge.gap.detected
-5. search.pattern.discovered
-6. search.completed (optional)
+1. knowledge.gap.detected
+2. search.pattern.discovered
+3. search.completed (optional)
 
 ### Decision Events (Zen)
-7. decision.consensus.reached
-8. architecture.choice.made
-9. analysis.completed (optional)
+1. decision.consensus.reached
+2. architecture.choice.made
+3. analysis.completed (optional)
 
 ### ADHD Events (ADHD Engine)
-10. cognitive.state.changed (buffered)
-11. adhd.overload.detected (immediate)
-12. break.recommended
+1. cognitive.state.changed (buffered)
+2. adhd.overload.detected (immediate)
+3. break.recommended
 
 ### Workspace Events (Desktop Commander)
-13. workspace.switched
-14. context.lost
+1. workspace.switched
+2. context.lost
 
 ### Task Events (Task-Orchestrator)
-15. task.progress.updated
-16. task.completed
-17. task.blocked
+1. task.progress.updated
+2. task.completed
+3. task.blocked
 
 ---
 
