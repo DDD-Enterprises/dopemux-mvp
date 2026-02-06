@@ -644,6 +644,11 @@ def wire_conport(instance: Optional[str], project: Optional[str]):
     help="Run Claude with a specific role/persona (e.g. quickfix, act, plan, research, all, orchestrator).",
 )
 @click.option(
+    "--profile",
+    "profile_name",
+    help="Apply a specific profile before launch (e.g. developer, full).",
+)
+@click.option(
     "--dry-run",
     is_flag=True,
     help="Preview role/profile effects without launching Claude Code.",
@@ -662,6 +667,7 @@ def start(
     use_alt_routing: bool,
     use_claude_router: bool,
     role: Optional[str],
+    profile_name: Optional[str],
     dry_run: bool,
     **legacy_kwargs,
 ):
@@ -966,7 +972,8 @@ def start(
     config_manager = ctx.obj["config_manager"]
 
     role_activation = None
-    pending_profile_name: Optional[str] = None
+    explicit_profile_requested = bool(profile_name)
+    pending_profile_name: Optional[str] = profile_name.strip() if profile_name else None
     role_profile = None
     requested_role = role or os.environ.get("DOPEMUX_AGENT_ROLE")
     if requested_role:
@@ -982,7 +989,12 @@ def start(
 
         spec = role_activation.spec
         role_profile = _ensure_role_profile(spec)
-        pending_profile_name = getattr(role_profile, "name", spec.profile_name)
+        if not explicit_profile_requested:
+            pending_profile_name = getattr(role_profile, "name", spec.profile_name)
+        elif role_profile and pending_profile_name != getattr(role_profile, "name", None):
+            console.print(
+                f"[dim]Using explicit profile '{pending_profile_name}' instead of role default '{getattr(role_profile, 'name', spec.profile_name)}'.[/dim]"
+            )
         if role:
             console.print(
                 f"[cyan]🎭 Role activated:[/cyan] {spec.label} "
@@ -1001,8 +1013,6 @@ def start(
                 f"[dim]🎭 Active role:[/dim] {spec.label} "
                 f"[dim]({spec.key})[/dim]"
             )
-    else:
-        pending_profile_name = None
 
     if dry_run:
         console.logger.info("[cyan]Dry run: no tmux or Claude Code processes will be started.[/cyan]")
@@ -1034,7 +1044,11 @@ def start(
             _suggest_server_start(role_activation.missing_required)
 
         if pending_profile_name:
-            profile = role_profile or ProfileManager().get_profile(pending_profile_name)
+            profile_manager = ProfileManager()
+            if role_profile and not explicit_profile_requested:
+                profile = role_profile
+            else:
+                profile = profile_manager.get_profile(pending_profile_name)
             if profile:
                 try:
                     claude_config = ClaudeConfig()
@@ -1303,7 +1317,10 @@ def start(
     active_profile_applied = False
     if pending_profile_name:
         profile_manager = ProfileManager()
-        profile = role_profile or profile_manager.get_profile(pending_profile_name)
+        if role_profile and not explicit_profile_requested:
+            profile = role_profile
+        else:
+            profile = profile_manager.get_profile(pending_profile_name)
         if profile:
             try:
                 claude_config = ClaudeConfig()
