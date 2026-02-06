@@ -1,5 +1,5 @@
 version: "1.0"
-last_updated: "2026-02-01"
+last_updated: "2026-02-06"
 description: "Machine-readable index of dopemux-mvp documentation for AI/tool consumption"
 
 # Entry Points - Key documents for getting started
@@ -13,18 +13,18 @@ entry_points:
 # Systems Documentation - Component-specific doc hubs
 systems:
   conport:
-    overview: "docs/systems/conport/CONPORT_EXECUTIVE_SUMMARY.md"
-    technical: "docs/systems/conport/CONPORT_SYSTEMS_ANALYSIS.md"
-    integration: "docs/systems/conport/CONPORT_INTEGRATION_QUICKSTART.md"
-    comparison: "docs/systems/conport/CONPORT_COMPARISON_MATRIX.md"
-    readme: "docs/systems/conport/CONPORT_README.md"
+    overview: "docs/03-reference/systems/conport/conport-kg-status.md"
+    technical: "docs/04-explanation/conport-technical-deep-dive.md"
+    integration: "docs/02-how-to/mcp-service-discovery-guide.md"
+    comparison: "docs/05-audit-reports/service-maturity-gap-analysis.md"
+    readme: "docs/03-reference/systems/conport/conport-kg-status.md"
     
   dashboard:
-    overview: "docs/systems/dashboard/TMUX_DASHBOARD_README.md"
-    design: "docs/systems/dashboard/TMUX_DASHBOARD_DESIGN.md"
-    metrics: "docs/systems/dashboard/TMUX_METRICS_INVENTORY.md"
-    implementation: "docs/systems/dashboard/DASHBOARD_IMPLEMENTATION_TRACKER.md"
-    enhancements: "docs/systems/dashboard/DASHBOARD_ENHANCEMENTS.md"
+    overview: "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md"
+    design: "docs/03-reference/systems/dashboard/tmux-dashboard-design.md"
+    metrics: "docs/03-reference/systems/dashboard/tmux-metrics-inventory.md"
+    implementation: "docs/03-reference/systems/dashboard/dashboard-implementation-tracker.md"
+    enhancements: "docs/03-reference/systems/dashboard/dashboard-enhancements.md"
     
   dopecon-bridge:
     readme: "docs/systems/dopecon-bridge/README.md"
@@ -38,39 +38,39 @@ systems:
 # Services - Service-specific documentation
 services:
   task-orchestrator:
-    readme: "services/task-orchestrator/README.md"
+    readme: "docs/03-reference/services/task-orchestrator.md"
     docs_dir: "services/task-orchestrator/docs/"
     
   dopecon-bridge:
     readme: "services/dopecon-bridge/README.md"
-    docs_dir: "services/dopecon-bridge/docs/"
+    docs_dir: "services/dopecon-bridge/"
     
   adhd-engine:
     readme: "services/adhd_engine/README.md"
     docs_dir: "services/adhd_engine/docs/"
     
   orchestrator:
-    readme: "services/orchestrator/README.md"
-    docs_dir: "services/orchestrator/docs/"
-    claudedocs_dir: "services/orchestrator/claudedocs/"
+    readme: "docs/04-explanation/DOPEMUX-ORCHESTRATOR-FINAL-SPEC.md"
+    docs_dir: "src/dopemux/orchestrator/"
+    claudedocs_dir: "docs/04-explanation/design-decisions/"
     
   conport-kg-ui:
     readme: "services/conport_kg_ui/README.md"
-    claudedocs_dir: "services/conport_kg_ui/claudedocs/"
+    claudedocs_dir: "services/conport_kg_ui/src/"
 
 # Architecture & Design Documents
 architecture:
   overview: "docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md"
-  system_bible: "docs/94-architecture/system-bible.md"
-  multi_instance: "docs/94-architecture/multi-instance-implementation.md"
+  system_bible: "docs/04-explanation/architecture/system-bible.md"
+  multi_instance: "docs/04-explanation/architecture/multi-instance-implementation.md"
   adr_index: "docs/90-adr/"
   rfc_index: "docs/91-rfc/"
 
 # How-To Guides
 how_to:
   directory: "docs/02-how-to/"
-  deployment: "docs/deployment/DEPLOYMENT-INSTRUCTIONS.md"
-  leantime_setup: "docs/02-how-to/integrations/LEANTIME_SETUP_INSTRUCTIONS.md"
+  deployment: "docs/02-how-to/deployment-guide.md"
+  leantime_setup: "docs/02-how-to/integrations/leantime-integration-guide.md"
   mcp_service_discovery: "docs/02-how-to/mcp-service-discovery-guide.md"
   role_switching: "docs/02-how-to/role-switching-quickstart.md"
   multi_instance: "docs/02-how-to/multi-instance-workflow.md"
@@ -84,8 +84,8 @@ tutorials:
 # Reference Documentation
 reference:
   directory: "docs/03-reference/"
-  profile_schema: "docs/PROFILE-YAML-SCHEMA.md"
-  features_index: "docs/FEATURES_INDEX.md"
+  profile_schema: "docs/03-reference/configuration/PROFILE-YAML-SCHEMA.md"
+  features_index: "docs/03-reference/features/features-index.md"
   mcp_tools_overview: "docs/03-reference/mcp-tools-overview.md"
 
 # Explanation & Deep Dives
@@ -122,8 +122,8 @@ docker:
 # Configuration
 config:
   profiles: "config/profiles/"
-  mcp: "config/mcp/"
-  routing: "config/routing/"
+  mcp: "config/.claude/"
+  routing: "config/env/"
 
 # Scripts & Tools
 scripts:
