@@ -155,7 +155,8 @@ class RuleBasedRecommender:
 
     def __init__(self):
         """Initialize rule-based recommender."""
-        pass
+        self.default_confidence = 0.7
+        self.max_recommendations = 3
 
     async def recommend_tasks(
         self,
@@ -215,7 +216,7 @@ class RuleBasedRecommender:
             rec = TaskRecommendation(
                 task_id=getattr(task, 'task_id', 'unknown'),
                 task=task,
-                confidence=0.7,  # Fixed confidence for rule-based
+                confidence=self.default_confidence,  # Fixed confidence for rule-based
                 completion_probability=self._estimate_completion_probability(task, context),
                 recommendation_source=RecommendationSource.RULE_BASED,
                 rationale=self._generate_rationale(task, context, score),

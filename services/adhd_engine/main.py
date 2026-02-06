@@ -296,7 +296,10 @@ async def health():
 async def background_service_status():
     """Get background prediction service status (Phase 3.4)."""
     try:
-        from engine.services.background_prediction_service import get_background_prediction_service
+        try:
+            from .services.background_prediction_service import get_background_prediction_service
+        except ImportError:
+            from services.background_prediction_service import get_background_prediction_service
         service = await get_background_prediction_service()
         return await service.get_status()
     except Exception as e:

@@ -387,7 +387,7 @@ class TreeSitterAnalyzer:
             overall_complexity=overall_complexity,
             complexity_level=complexity_level,
             lines_of_code=total_lines,
-            analysis_duration_ms=analysis_duration,
+            analysis_duration_ms=analysis_duration_ms,
             adhd_recommendations=adhd_recommendations,
             timestamp=datetime.now(timezone.utc)
         )
@@ -458,8 +458,6 @@ class TreeSitterAnalyzer:
 
         except Exception as e:
             return None
-
-            logger.error(f"Error: {e}")
     def _calculate_node_complexity(self, node: Node, element_type: str, depth: int) -> float:
         """Calculate complexity score for a structural element."""
         base_complexity = 0.1

@@ -6,6 +6,8 @@ Part of Phase 1 Security Hardening
 SQLAlchemy models for user management and authentication.
 """
 
+from typing import List
+
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, JSON, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base

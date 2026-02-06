@@ -10,7 +10,7 @@ ADHD Benefit: Know your peak hours, schedule hard work accordingly
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import Any, Dict, List
 import aiohttp
 
 logger = logging.getLogger(__name__)
@@ -144,6 +144,75 @@ Future: Track your actual patterns over time for personalized insights
             return "Low energy - take a break, do simple tasks, or call it a day"
         else:
             return "Monitor your energy and adjust tasks accordingly"
+
+    async def analyze_trends(self, user_id: str, days: int = 7) -> Dict[str, Any]:
+        """Analyze user energy trends with lightweight MVP heuristics."""
+        previous_user = self.user_id
+        self.user_id = user_id
+        try:
+            current_energy = await self.get_current_energy()
+            current_hour = datetime.now().hour
+            recommendation = self._get_recommendation(current_energy, current_hour)
+
+            return {
+                "current_energy": current_energy,
+                "analysis_window_days": days,
+                "current_hour": current_hour,
+                "recommendation": recommendation,
+                "peak_hours": [9, 10, 11, 14, 15, 16],
+                "low_energy_hours": [12, 13, 20, 21, 22],
+                "generated_at": datetime.utcnow().isoformat(),
+            }
+        finally:
+            self.user_id = previous_user
+
+    async def generate_visualization(self, user_id: str, format: str = "daily") -> Dict[str, Any]:
+        """Generate visualization payloads for API consumers."""
+        normalized_format = (format or "daily").lower()
+        trend_data = await self.analyze_trends(user_id=user_id, days=7)
+
+        if normalized_format == "daily":
+            previous_user = self.user_id
+            self.user_id = user_id
+            try:
+                report = await self.generate_daily_trend()
+            finally:
+                self.user_id = previous_user
+            return {
+                "format": "daily",
+                "render_mode": "text",
+                "report": report,
+                "trend_data": trend_data,
+            }
+
+        if normalized_format == "weekly":
+            return {
+                "format": "weekly",
+                "render_mode": "summary",
+                "trend_data": trend_data,
+                "insights": [
+                    "Schedule deep work during identified peak hours.",
+                    "Protect low-energy windows for lighter admin work.",
+                ],
+            }
+
+        if normalized_format == "monthly":
+            monthly_trend = await self.analyze_trends(user_id=user_id, days=30)
+            return {
+                "format": "monthly",
+                "render_mode": "summary",
+                "trend_data": monthly_trend,
+                "insights": [
+                    "Use recurring routines to stabilize energy fluctuations.",
+                    "Review sleep and break cadence for sustained focus blocks.",
+                ],
+            }
+
+        return {
+            "format": normalized_format,
+            "render_mode": "error",
+            "error": f"Unsupported visualization format: {format}",
+        }
 
 
 if __name__ == "__main__":

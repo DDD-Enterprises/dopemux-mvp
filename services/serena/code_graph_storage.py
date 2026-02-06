@@ -761,8 +761,6 @@ class CodeGraphStorage:
 
         except Exception as e:
             return {"file": root_file, "children": []}
-
-            logger.error(f"Error: {e}")
     def _assess_dependency_complexity(self, dependencies: List[Dict]) -> str:
         """Assess dependency complexity for ADHD users."""
         if not dependencies:

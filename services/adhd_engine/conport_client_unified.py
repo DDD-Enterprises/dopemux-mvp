@@ -97,5 +97,6 @@ class ConPortSQLiteClient:
         return None
 
     def close(self):
-        """Stub: Do nothing"""
-        pass
+        """Release in-memory state."""
+        self._custom_data.clear()
+        logger.debug("ConPort stub client closed for %s", self.workspace_id)

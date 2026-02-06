@@ -8,6 +8,8 @@ Created: 2025-10-19 (Task 2.3)
 Specification: docs/implementation-plans/conport-event-schema-design.md
 """
 
+import asyncio
+
 import logging
 from dataclasses import dataclass, asdict
 from datetime import datetime
