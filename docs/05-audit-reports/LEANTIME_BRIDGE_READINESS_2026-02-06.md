@@ -44,13 +44,17 @@ From `docker logs --tail=500 leantime`:
 Current closure state: `BLOCKED`.
 
 Bridge process liveness is healthy, but real Leantime API integration is not yet operational for project listing. This keeps PM-plane integration below production-ready state.
+ConPort historical TODO context remains accurate: Leantime containers are running and healthy, but manual web setup completion is still required before bridge API operations can succeed.
+Historical task description: `Leantime containers are running and healthy - needs manual web setup completion: access http://localhost:8080 to complete installation wizard, create admin user, generate API token, then configure bridge`.
 
 ## Required Close Criteria
 
-1. Provide valid Leantime API credentials to bridge runtime.
-2. `GET /health?deep=1` returns `200` with reachable upstream.
-3. `POST /api/tools/list_projects` returns `200` with a real project payload.
-4. Queue worker failures in Leantime logs fall to zero in repeated windows.
+1. Complete Leantime web installation wizard at `http://localhost:8080`.
+2. Create/confirm Leantime admin user in the completed setup flow.
+3. Generate a valid Leantime API token and configure bridge runtime env.
+4. `GET /health?deep=1` returns `200` with reachable upstream.
+5. `POST /api/tools/list_projects` returns `200` with a real project payload.
+6. Queue worker failures in Leantime logs fall to zero in repeated windows.
 
 ## Evidence Artifact
 

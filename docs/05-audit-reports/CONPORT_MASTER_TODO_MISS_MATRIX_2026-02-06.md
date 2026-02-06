@@ -85,10 +85,12 @@ Evidence:
 
 ## Leantime Close Criteria
 
-1. Valid Leantime API credentials are configured for bridge runtime.
-2. `GET /health?deep=1` returns `200` with upstream reachability.
-3. `POST /api/tools/list_projects` returns `200` and non-empty project payload.
-4. Leantime queue worker failures drop to zero across repeated log windows.
+1. Complete Leantime web installation wizard at `http://localhost:8080`.
+2. Create/confirm admin user and generate API token from the completed setup.
+3. Valid Leantime API credentials are configured for bridge runtime.
+4. `GET /health?deep=1` returns `200` with upstream reachability.
+5. `POST /api/tools/list_projects` returns `200` and non-empty project payload.
+6. Leantime queue worker failures drop to zero across repeated log windows.
 
 ## Secondary Explicit-Task Miss Extraction
 
@@ -125,3 +127,15 @@ Secondary misses now promoted into master fix scope:
 Evidence:
 
 - `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`
+
+## Coverage Recheck Status
+
+Post-update coverage recheck against the original miss extract now shows explicit representation closure:
+
+1. original miss-extract items: `24`
+2. explicitly represented now: `24`
+3. still not explicit: `0`
+
+Evidence:
+
+- `reports/strict_closure/conport_master_todo_coverage_recheck_2026-02-06.json`
