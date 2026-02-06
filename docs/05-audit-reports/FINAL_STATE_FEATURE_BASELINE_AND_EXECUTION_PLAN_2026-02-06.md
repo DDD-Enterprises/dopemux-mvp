@@ -48,6 +48,7 @@ Generated during this pass:
 - `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`
 - `reports/strict_closure/conport_master_todo_coverage_recheck_2026-02-06.json`
 - `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json`
+- `reports/strict_closure/litellm_blocker_verification_2026-02-06.json`
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
@@ -55,6 +56,7 @@ Generated during this pass:
 - `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`
 - `docs/05-audit-reports/CONPORT_FULL_TODO_COVERAGE_MATRIX_2026-02-06.md`
 - `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`
+- `docs/05-audit-reports/LITELLM_BLOCKER_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
 - `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
@@ -214,8 +216,8 @@ Executed verification checks (latest pass on 2026-02-06):
 
 Source: `reports/strict_closure/conport_backlog_extract_2026-02-06.json` (from historical SQLite snapshot import bundle).
 
-1. BLOCKED dependency captured in ConPort history and not yet in active fix register:
-   `Setting up LiteLLM database configuration and connection - BLOCKED: Waiting for PostgreSQL 'litellm' database creation (see Decision #210)`.
+1. Historical BLOCKED LiteLLM DB dependency from ConPort backlog was runtime-reverified and is now stale/resolved:
+   `reports/strict_closure/litellm_blocker_verification_2026-02-06.json`.
 2. Legacy architecture-consolidation epic backlog remains unresolved:
    `EPIC: Architecture Consolidation - Shared Infrastructure Layer | 3 phases, 27 tasks, 24h total | P0-P2 priorities`.
 3. Legacy profile/automation epics remain unresolved in active planning:
@@ -258,7 +260,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 2. Resolve duplicated or ambiguous service families (`session-intelligence` vs `session_intelligence`, taskmaster variants).
 3. Add tests for peripheral services with no coverage evidence (workspace-watcher, activity-capture, voice-commands, slack-integration).
 4. Clarify `dope-query`/`conport` split and deprecate one naming contract.
-5. Triage and merge historically captured ConPort TODO/BLOCKED backlog into current execution ownership map (including blocked LiteLLM DB provisioning dependency).
+5. Triage and merge historically captured ConPort TODO/BLOCKED backlog into current execution ownership map (LiteLLM DB creation blocker reclassified as resolved-in-runtime).
 6. Decide and execute policy for replaying the remaining historical ConPort bundles (merge, dedupe, or archive-only import path).
 7. Complete Leantime manual setup closure so bridge deep health and project-list tooling are operational.
 8. Execute the 19-task secondary ConPort miss set and map each task to owner/test/doc evidence.
