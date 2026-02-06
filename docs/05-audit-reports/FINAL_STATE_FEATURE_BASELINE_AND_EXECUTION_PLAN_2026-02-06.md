@@ -266,6 +266,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/profile_start_e2e_verification_2026-02-06.json`.
 16. Profile documentation backlog item (`1.4.2`) is now implemented with README updates, a dedicated profile usage guide, and schema-linked examples:
    `reports/strict_closure/profile_documentation_verification_2026-02-06.json`.
+17. ADHD-engine signal collection backlog item (`2.1.3`) is now implemented with runtime endpoint probing (5448-first), energy/attention extraction, and graceful fallback:
+   `reports/strict_closure/adhd_engine_profile_detector_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
