@@ -34,7 +34,7 @@ services:
       - smoke_pg_data:/var/lib/postgresql/data
       - ./docker/postgres/01-init-age.sql:/docker-entrypoint-initdb.d/01-init-age.sql
     ports:
-      - "${POSTGRES_PORT:-5440}:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     networks:
       - dopemux-smoke-network
     healthcheck:
@@ -49,7 +49,7 @@ services:
     container_name: smoke-redis
     restart: unless-stopped
     ports:
-      - "${REDIS_PORT:-6381}:6379"
+      - "${REDIS_PORT:-6379}:6379"
     networks:
       dopemux-smoke-network:
         aliases:
@@ -67,7 +67,7 @@ services:
     container_name: smoke-qdrant
     restart: unless-stopped
     ports:
-      - "${QDRANT_PORT:-6340}:6333"
+      - "${QDRANT_PORT:-6333}:6333"
       - "6341:6334"
     volumes:
       - smoke_qdrant_data:/qdrant/storage
@@ -82,14 +82,14 @@ services:
     container_name: smoke-conport
     restart: unless-stopped
     environment:
-      - PORT=${CONPORT_CONTAINER_PORT:-8005}
+      - PORT=${CONPORT_CONTAINER_PORT:-3004}
       - DATABASE_URL=postgresql://dopemux_age:dopemux_age_dev_password@postgres:5432/dopemux_knowledge_graph
       - POSTGRES_USER=dopemux_age
       - POSTGRES_PASSWORD=dopemux_age_dev_password
       - POSTGRES_DB=dopemux_knowledge_graph
       - REDIS_URL=redis://redis:6379
     ports:
-      - "${CONPORT_PORT:-8005}:${CONPORT_CONTAINER_PORT:-8005}"
+      - "${CONPORT_PORT:-3004}:${CONPORT_CONTAINER_PORT:-3004}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -98,7 +98,7 @@ services:
     networks:
       - dopemux-smoke-network
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:${CONPORT_CONTAINER_PORT:-8005}/health || exit 1" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost:${CONPORT_CONTAINER_PORT:-3004}/health || exit 1" ]
       timeout: 10s
       retries: 3
       interval: 30s
@@ -112,7 +112,7 @@ services:
     restart: unless-stopped
     environment:
       - DOPECON_BRIDGE_PORT=${DOPECON_BRIDGE_CONTAINER_PORT:-3016}
-      - CONPORT_URL=http://conport:${CONPORT_CONTAINER_PORT:-8005}
+      - CONPORT_URL=http://conport:${CONPORT_CONTAINER_PORT:-3004}
       - REDIS_URL=redis://redis:6379
       - POSTGRES_URL=postgresql+asyncpg://dopemux_age:dopemux_age_dev_password@postgres:5432/dopemux_knowledge_graph
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
@@ -143,7 +143,7 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379
       - WORKSPACE_ID=/workspace
-      - CONPORT_URL=http://conport:${CONPORT_CONTAINER_PORT:-8005}
+      - CONPORT_URL=http://conport:${CONPORT_CONTAINER_PORT:-3004}
       - DOPECON_BRIDGE_URL=http://dopecon-bridge:${DOPECON_BRIDGE_CONTAINER_PORT:-3016}
       - DOPECON_BRIDGE_SOURCE_PLANE=cognitive_plane
       - TASK_ORCHESTRATOR_API_KEY=dev-smoke-test-key
