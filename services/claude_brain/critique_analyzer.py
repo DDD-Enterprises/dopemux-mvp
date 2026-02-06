@@ -350,5 +350,4 @@ class CritiqueAnalyzer:
         if not plan:
             plan.append("✅ EXCELLENT: Prompt quality is already high - minor refinements possible")
 
-        return plan</content>
-</xai:function_call">The file content contains invalid XML/HTML markup. Please provide clean Python code only.
+        return plan

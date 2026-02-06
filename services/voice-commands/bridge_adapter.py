@@ -200,8 +200,8 @@ class VoiceCommandsBridgeAdapter:
                 "sub_task_ids": [task.get("id") for task in created_tasks],
             }
 
-        except Exception as e:
-            logger.error(f"Voice decomposition storage failed: {e}")
+        except Exception as exc:
+            logger.error(f"Voice decomposition storage failed: {exc}")
             
             # Publish failure event
             try:
@@ -210,12 +210,10 @@ class VoiceCommandsBridgeAdapter:
                     data={
                         "user_id": user_id,
                         "task": original_task,
-                        "error": str(e),
+                        "error": str(exc),
                     },
                     source="voice-commands",
                 )
-            except Exception as e:
-                pass  # Don't fail on event publishing failure
-            
-                logger.error(f"Error: {e}")
-            return {"success": False, "error": str(e)}
+            except Exception as publish_exc:
+                logger.error(f"Failed to publish voice decomposition failure event: {publish_exc}")
+            return {"success": False, "error": str(exc)}

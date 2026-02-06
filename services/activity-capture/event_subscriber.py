@@ -1,22 +1,13 @@
 """
-Event Subscriber - Redis Streams Consumer for Activity Events
+Event Subscriber for Activity Capture
 
-Subscribes to workspace.switched events from Desktop-Commander and forwards
-them to the Activity Tracker for aggregation and logging to ADHD Engine.
-
-Features:
-- Redis Streams consumer with consumer group
-- Automatic reconnection on failure
-- Event filtering (workspace.switched only for MVP)
-- Error handling and logging
-- Background task execution
+Subscribes to Redis Streams and routes events to activity tracker.
 """
 
 import asyncio
-import logging
 import json
-from typing import Any, Dict, Optional
-from datetime import datetime
+import logging
+from typing import Optional
 
 import redis.asyncio as redis
 
@@ -25,10 +16,10 @@ logger = logging.getLogger(__name__)
 
 class EventSubscriber:
     """
-    Redis Streams event subscriber for activity capture.
+    Redis Streams subscriber for activity events.
 
-    Subscribes to dopemux:events stream and forwards workspace events
-    to the Activity Tracker.
+    Subscribes to dopemux:events stream and forwards relevant events
+    to the activity tracker for processing.
     """
 
     def __init__(
@@ -37,17 +28,17 @@ class EventSubscriber:
         stream_name: str,
         consumer_group: str,
         consumer_name: str,
-        activity_tracker: Any
+        activity_tracker
     ):
         """
         Initialize event subscriber.
 
         Args:
             redis_url: Redis connection URL
-            stream_name: Stream to subscribe to (dopemux:events)
+            stream_name: Stream to subscribe to
             consumer_group: Consumer group name
-            consumer_name: This consumer's name
-            activity_tracker: ActivityTracker instance to forward events to
+            consumer_name: Consumer name
+            activity_tracker: ActivityTracker instance
         """
         self.redis_url = redis_url
         self.stream_name = stream_name
@@ -55,208 +46,98 @@ class EventSubscriber:
         self.consumer_name = consumer_name
         self.activity_tracker = activity_tracker
 
-        # Connection
-        self.redis: Optional[redis.Redis] = None
-
-        # State
+        self.redis_client: Optional[redis.Redis] = None
         self.running = False
-        self.subscriber_task: Optional[asyncio.Task] = None
 
         # Metrics
         self.events_processed = 0
-        self.workspace_switches = 0
         self.errors = 0
 
-    async def start(self):
-        """Start event subscriber in background"""
-        # Connect to Redis
-        self.redis = redis.from_url(self.redis_url, decode_responses=True)
+    async def initialize(self):
+        """Initialize Redis connection."""
+        self.redis_client = redis.from_url(self.redis_url)
 
-        # Create consumer group (ignore error if exists)
+        # Create consumer group if it doesn't exist
         try:
-            await self.redis.xgroup_create(
-                name=self.stream_name,
-                groupname=self.consumer_group,
-                id="0",
+            await self.redis_client.xgroup_create(
+                self.stream_name,
+                self.consumer_group,
+                "$",
                 mkstream=True
             )
-            logger.info(f"✅ Created consumer group: {self.consumer_group}")
+            logger.info(f"Created consumer group: {self.consumer_group}")
         except redis.ResponseError as e:
-            if "BUSYGROUP" in str(e):
-                logger.info(f"📋 Consumer group already exists: {self.consumer_group}")
-            else:
+            if "BUSYGROUP" not in str(e):
                 raise
 
-        # Start subscriber task
-        self.running = True
-        self.subscriber_task = asyncio.create_task(self._subscribe_loop())
-        logger.info(f"▶️  Started event subscriber: {self.stream_name}")
+    async def start(self):
+        """Start event subscription loop."""
+        if not self.redis_client:
+            await self.initialize()
 
-    async def _subscribe_loop(self):
-        """Main event subscription loop"""
-        logger.debug(f"Subscribe loop started: stream={self.stream_name}, group={self.consumer_group}")
+        self.running = True
+        logger.info(f"Starting event subscription to {self.stream_name}")
 
         while self.running:
             try:
-                # Read events from stream
-                events = await self.redis.xreadgroup(
-                    groupname=self.consumer_group,
-                    consumername=self.consumer_name,
-                    streams={self.stream_name: ">"},
+                # Read pending messages
+                messages = await self.redis_client.xreadgroup(
+                    self.consumer_group,
+                    self.consumer_name,
+                    {self.stream_name: ">"},
                     count=10,
-                    block=1000  # Block for 1 second
+                    block=1000  # 1 second block
                 )
 
-                # Process events
-                for stream, messages in events:
-                    logger.debug(f"Received {len(messages)} message(s) from stream {stream}")
-                    for message_id, data in messages:
-                        await self._process_event(message_id, data)
+                for stream, message_list in messages:
+                    for message_id, message_data in message_list:
+                        try:
+                            await self._process_message(message_data)
+                            self.events_processed += 1
 
-                        # Acknowledge message
-                        await self.redis.xack(
-                            self.stream_name,
-                            self.consumer_group,
-                            message_id
-                        )
+                            # Acknowledge message
+                            await self.redis_client.xack(
+                                self.stream_name,
+                                self.consumer_group,
+                                message_id
+                            )
 
-            except asyncio.CancelledError:
-                logger.info("⏹️  Subscriber loop cancelled")
-                break
+                        except Exception as e:
+                            logger.error(f"Error processing message {message_id}: {e}")
+                            self.errors += 1
+
             except Exception as e:
+                logger.error(f"Error in event subscription loop: {e}")
                 self.errors += 1
-                logger.error(f"Subscriber error: {e}")
-                await asyncio.sleep(5)  # Back off on error
+                await asyncio.sleep(5)  # Back off on errors
 
-    async def _process_event(self, message_id: str, data: Dict[str, str]):
+    async def _process_message(self, message_data: dict):
         """
-        Process a single event from the stream.
+        Process incoming message.
 
-        Args:
-            message_id: Redis stream message ID
-            data: Event data from stream
+        Routes different event types to appropriate handlers.
         """
-        logger.debug(f"Processing event: message_id={message_id}, data keys={list(data.keys())}")
+        event_type = message_data.get("type", "")
+        event_data = message_data.get("data", {})
 
-        try:
-            # Parse event data - Redis uses "event_type" not "type"
-            event_type = data.get("event_type", data.get("type", ""))
-            event_data_str = data.get("data", "{}")
-            event_data = json.loads(event_data_str) if isinstance(event_data_str, str) else event_data_str
+        logger.debug(f"Processing event: {event_type}")
 
-            self.events_processed += 1
-
-            logger.info(f"📥 Event #{self.events_processed}: {event_type}")
-
-            # Handle workspace.switched events
-            if event_type == "workspace.switched":
-                logger.info(f"🔍 Processing workspace.switched event")
-                logger.debug(f"Event data: {event_data}")
-                await self._handle_workspace_switched(event_data)
-
-            # Handle code.committed events (git commits)
-            elif event_type == "code.committed":
-                logger.info(f"📝 Processing code.committed event")
-                await self._handle_code_committed(event_data)
-
-            else:
-                logger.debug(f"Skipping event type: {event_type}")
-
-            # Future: Handle other event types
-            # elif event_type == "progress.updated":
-            #     await self._handle_progress_updated(event_data)
-
-        except Exception as e:
-            self.errors += 1
-            logger.error(f"Event processing error: {e} | Data: {data}")
-            import traceback
-            logger.error(f"Traceback: {traceback.format_exc()}")
-
-    async def _handle_workspace_switched(self, event_data: Dict[str, Any]):
-        """
-        Handle workspace switch event from Desktop-Commander.
-
-        Args:
-            event_data: Event payload with from_workspace, to_workspace, etc.
-        """
-        from_workspace = event_data.get("from_workspace", "")
-        to_workspace = event_data.get("to_workspace", "")
-        switch_type = event_data.get("switch_type", "manual")
-
-        logger.debug(f"Workspace switch: {from_workspace} → {to_workspace} ({switch_type})")
-
-        self.workspace_switches += 1
-
-        # Detect if switching TO dopemux workspace (start session)
-        if "dopemux" in to_workspace.lower():
-            logger.info(f"📍 Session started: {to_workspace}")
-            await self.activity_tracker.start_session()
-
-        # Detect if switching FROM dopemux workspace (end session, log activity)
-        elif "dopemux" in from_workspace.lower():
-            logger.info(f"📤 Session ended: {from_workspace} → {to_workspace}")
-            await self.activity_tracker.end_session(interruption=True)
-
-        # Switching between other workspaces (count as interruption if session active)
+        if event_type == "workspace.switched":
+            await self.activity_tracker.handle_workspace_switch(event_data)
+        elif event_type == "progress.updated":
+            await self.activity_tracker.handle_progress_update(event_data)
+        elif event_type == "session.started":
+            await self.activity_tracker.handle_session_start(event_data)
+        elif event_type == "break.taken":
+            await self.activity_tracker.handle_break_taken(event_data)
         else:
-            logger.debug(f"Non-dopemux workspace switch: {from_workspace} → {to_workspace}")
-            await self.activity_tracker.record_interruption()
-
-    async def _handle_code_committed(self, event_data: Dict[str, Any]):
-        """
-        Handle git commit event.
-
-        Commits are high-productivity signals - log immediately to ADHD Engine.
-
-        Args:
-            event_data: Event payload with commit metadata
-        """
-        logger.info(f"📝 Git commit detected")
-
-        commit_hash = event_data.get("commit_hash", "unknown")[:8]
-        total_changes = event_data.get("total_changes", 0)
-        complexity = event_data.get("complexity", 0.7)
-        commit_message = event_data.get("commit_message", "")[:50]
-
-        logger.info(
-            f"📝 Commit: {commit_hash} "
-            f"({total_changes} lines, complexity: {complexity:.2f})"
-        )
-
-        # Log as immediate high-productivity activity
-        # Commits represent completed work regardless of session state
-        await self.activity_tracker._log_activity(
-            duration_minutes=5,  # Assume ~5 min work for a commit
-            interruptions=0,
-            complexity=complexity,
-            activity_type="committing"
-        )
-
-        logger.info(f"✅ Commit activity logged to ADHD Engine")
+            logger.debug(f"Ignoring unknown event type: {event_type}")
 
     async def stop(self):
-        """Stop event subscriber gracefully"""
+        """Stop event subscription."""
         self.running = False
 
-        if self.subscriber_task:
-            self.subscriber_task.cancel()
-            try:
-                await self.subscriber_task
-            except asyncio.CancelledError:
-                pass
+        if self.redis_client:
+            await self.redis_client.close()
 
-        if self.redis:
-            await self.redis.close()
-
-        logger.info("⏹️  Event subscriber stopped")
-
-    def get_metrics(self) -> Dict[str, Any]:
-        """Get subscriber metrics"""
-        return {
-            "running": self.running,
-            "events_processed": self.events_processed,
-            "workspace_switches": self.workspace_switches,
-            "errors": self.errors,
-            "stream_name": self.stream_name,
-            "consumer_group": self.consumer_group
-        }
+        logger.info("Event subscriber stopped")
