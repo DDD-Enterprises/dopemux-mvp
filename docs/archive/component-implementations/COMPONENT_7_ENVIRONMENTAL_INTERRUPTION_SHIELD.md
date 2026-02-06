@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Component_7_Environmental_Interruption_Shield (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # Component 7: Environmental Interruption Shield - Technical Specification
 
@@ -1159,7 +1163,7 @@ def test_vip_sender_scoring():
     assert scorer.score(message) >= UrgencyLevel.HIGH
 ```
 
-2. **ShieldCoordinator Tests**:
+1. **ShieldCoordinator Tests**:
 ```python
 @pytest.mark.asyncio
 async def test_shield_activation_on_focused_state():
@@ -1174,7 +1178,7 @@ async def test_shield_activation_on_focused_state():
     assert coordinator.dnd.focus_mode_enabled == True
 ```
 
-3. **MessageQueue Tests**:
+1. **MessageQueue Tests**:
 ```python
 @pytest.mark.asyncio
 async def test_queue_size_limit():

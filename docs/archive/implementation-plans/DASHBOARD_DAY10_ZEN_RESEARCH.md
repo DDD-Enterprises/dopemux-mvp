@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dashboard_Day10_Zen_Research (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # Dashboard Day 10 - Zen Research & Deep Planning 🧘
 # Drill-Down Views, Advanced Interactions & Production Hardening
@@ -93,40 +97,40 @@ After completing enhanced sparklines and keyboard navigation (Day 9), we now foc
 #### Key Findings from RealPython, Textual Docs, GitHub Awesome-TUIs
 
 **1. Modularize Dashboard Components**
-   - Break into widgets/panels using Textual containers
-   - Reusable, testable components (tables, charts, status displays)
-   - Textual layout engine: vertical, horizontal, docked, grid
-   - Responsive layouts adapt to terminal size
+- Break into widgets/panels using Textual containers
+- Reusable, testable components (tables, charts, status displays)
+- Textual layout engine: vertical, horizontal, docked, grid
+- Responsive layouts adapt to terminal size
 
 **2. Responsive & Adaptive Layouts**
-   - CSS-style layout system for different terminal sizes
-   - Readable content regardless of window dimensions
-   - Auto-adjust sparkline widths based on container size
+- CSS-style layout system for different terminal sizes
+- Readable content regardless of window dimensions
+- Auto-adjust sparkline widths based on container size
 
 **3. Real-Time Data Handling**
-   - Asynchronous programming with `asyncio` (Textual is async-native)
-   - Non-blocking data retrieval (background tasks, callbacks)
-   - Avoid freezing UI updates during API calls
+- Asynchronous programming with `asyncio` (Textual is async-native)
+- Non-blocking data retrieval (background tasks, callbacks)
+- Avoid freezing UI updates during API calls
 
 **4. Leverage Rich's Visualization Widgets**
-   - Built-in: tables, progress bars, interactive logs, pretty-print
-   - Live rendering for dynamic charts/tables (real-time monitoring)
-   - Rich's syntax highlighting for code snippets in drill-downs
+- Built-in: tables, progress bars, interactive logs, pretty-print
+- Live rendering for dynamic charts/tables (real-time monitoring)
+- Rich's syntax highlighting for code snippets in drill-downs
 
 **5. Interactivity & Events**
-   - Key bindings for panel switching, filtering, commands
-   - Mouse support for interactive widgets (optional)
-   - Event-driven actions (on_click, on_key, on_mount)
+- Key bindings for panel switching, filtering, commands
+- Mouse support for interactive widgets (optional)
+- Event-driven actions (on_click, on_key, on_mount)
 
 **6. Performance Optimization**
-   - Minimize terminal redraws (only update changed widgets)
-   - Efficient data polling (throttle/debounce rapid updates)
-   - Lazy loading for drill-down data (fetch on demand)
+- Minimize terminal redraws (only update changed widgets)
+- Efficient data polling (throttle/debounce rapid updates)
+- Lazy loading for drill-down data (fetch on demand)
 
 **7. Error Handling & Data Integrity**
-   - Gracefully handle network errors, data source issues
-   - Display meaningful error messages in UI widgets
-   - Avoid entire dashboard crashes (error boundaries)
+- Gracefully handle network errors, data source issues
+- Display meaningful error messages in UI widgets
+- Avoid entire dashboard crashes (error boundaries)
 
 **TUI Dashboard Architecture Pattern:**
 ```python
@@ -153,15 +157,15 @@ class DashboardApp(App):
 #### Key Findings from Grafana, FasterCapital, MoldStud
 
 **1. Sparklines Integration**
-   - Minimalist yet powerful for trend visualization
-   - Place beside numerical KPIs for immediate context
-   - Enable rapid comparative analysis without clutter
-   - Pattern recognition: 3x faster than tables
+- Minimalist yet powerful for trend visualization
+- Place beside numerical KPIs for immediate context
+- Enable rapid comparative analysis without clutter
+- Pattern recognition: 3x faster than tables
 
 **2. Trend Analysis Patterns**
-   - **Line Charts:** Best for fluctuating metrics (CPU, memory, latency)
-   - **Area Charts:** Show volume/magnitude trends (requests, errors)
-   - **Histogram Quantiles:** P50/P95/P99 latency distribution
+- **Line Charts:** Best for fluctuating metrics (CPU, memory, latency)
+- **Area Charts:** Show volume/magnitude trends (requests, errors)
+- **Histogram Quantiles:** P50/P95/P99 latency distribution
 
 **3. Prometheus Query Patterns for Dashboards**
    ```promql
@@ -179,16 +183,16 @@ class DashboardApp(App):
    ```
 
 **4. Dashboard Design Best Practices**
-   - **Minimalism:** Emphasize critical metrics only
-   - **Consistent Colors:** Red=alerts, green=healthy, yellow=warning
-   - **Contextual Placement:** Sparklines beside KPIs
-   - **Interactive Elements:** Filtering, drilling, time range selection
-   - **Regular Review:** Revise dashboards for relevance
+- **Minimalism:** Emphasize critical metrics only
+- **Consistent Colors:** Red=alerts, green=healthy, yellow=warning
+- **Contextual Placement:** Sparklines beside KPIs
+- **Interactive Elements:** Filtering, drilling, time range selection
+- **Regular Review:** Revise dashboards for relevance
 
 **5. Comparative Analysis**
-   - Use sparklines for rapid cross-service comparison
-   - Color-code by service/host for quick identification
-   - Side-by-side panels for before/after comparisons
+- Use sparklines for rapid cross-service comparison
+- Color-code by service/host for quick identification
+- Side-by-side panels for before/after comparisons
 
 **Example Dashboard Layout (Grafana-inspired):**
 ```

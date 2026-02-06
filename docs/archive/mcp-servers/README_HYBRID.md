@@ -1,10 +1,13 @@
 ---
 id: README_HYBRID
 title: Readme_Hybrid
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Readme_Hybrid (explanation) for dopemux documentation and developer workflows.
 ---
 # Desktop Commander MCP v2.0 - Hybrid OS Support
 
@@ -252,11 +255,11 @@ If you were using the Docker version on macOS:
 docker stop mcp-desktop-commander
 ```
 
-2. Update `.claude.json` to use `start_with_uvx.sh`
+1. Update `.claude.json` to use `start_with_uvx.sh`
 
-3. Grant macOS permissions (see above)
+2. Grant macOS permissions (see above)
 
-4. Test with Claude Code
+3. Test with Claude Code
 
 **Benefits**:
 - ✅ No Docker overhead (~80% faster startup)

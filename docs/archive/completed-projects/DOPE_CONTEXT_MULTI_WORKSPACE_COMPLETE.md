@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dope_Context_Multi_Workspace_Complete (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # Dope-Context Multi-Workspace Support - Implementation Complete
 
@@ -198,7 +202,7 @@ DOPE_CONTEXT_WORKSPACES="/path/ws1,/path/ws2;/path/ws3" \
 3. `scripts/enable-autonomous-indexing.py` - Updated documentation
 
 ### Test Code
-4. `services/dope-context/tests/test_mcp_server.py`:
+1. `services/dope-context/tests/test_mcp_server.py`:
    - Changed pytest markers from `asyncio` to `anyio`
    - Added 3 new multi-workspace test functions
    - Added `sync_docs` to imports

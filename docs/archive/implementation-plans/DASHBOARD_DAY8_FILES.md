@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dashboard_Day8_Files (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Dashboard Day 8 - Files Summary
 
@@ -247,7 +251,7 @@ next_review: '2026-02-08'
        # Reactive vars automatically trigger render() ✨
    ```
 
-4. **DopemuxDashboard.__init__** (lines 1225-1241, +3 lines)
+4. **DopemuxDashboard.**init**** (lines 1225-1241, +3 lines)
    ```python
    def __init__(self):
        super().__init__()

@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Day2_Morning_Progress (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Day 2 Progress - ADHD Engine Endpoints Added ✅
 
@@ -140,14 +144,14 @@ async def get_breaks_info(...):
 4. [ ] Verify dashboard ADHD panel shows 100% real data
 
 ### Afternoon
-5. [ ] Create ConPort HTTP wrapper
-6. [ ] Test decisions and graph stats endpoints
-7. [ ] Update dashboard to use ConPort data
+1. [ ] Create ConPort HTTP wrapper
+2. [ ] Test decisions and graph stats endpoints
+3. [ ] Update dashboard to use ConPort data
 
 ### Evening
-8. [ ] Create Serena HTTP wrapper
-9. [ ] Test metrics and detections endpoints
-10. [ ] Update dashboard to use Serena data
+1. [ ] Create Serena HTTP wrapper
+2. [ ] Test metrics and detections endpoints
+3. [ ] Update dashboard to use Serena data
 
 ---
 
