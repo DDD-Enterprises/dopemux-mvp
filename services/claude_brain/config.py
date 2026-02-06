@@ -67,5 +67,4 @@ class Settings(BaseSettings):
 
 
 # Global settings instance
-settings = Settings()</content>
-</xai:function_call">The file content contains invalid XML/HTML markup. Please provide clean Python code only.
+settings = Settings()

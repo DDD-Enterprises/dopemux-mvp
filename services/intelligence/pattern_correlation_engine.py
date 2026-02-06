@@ -299,7 +299,5 @@ class PatternCorrelationEngine:
                     if timestamp >= cutoff:
                         recent.append(event)
                 except Exception as e:
-                    pass
-
                     logger.error(f"Error: {e}")
         return recent
