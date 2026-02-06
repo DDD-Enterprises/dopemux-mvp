@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Adhd_Complete_Documentation (reference) for dopemux documentation and developer
+  workflows.
 ---
 # ADHD Intelligence Stack - Complete Documentation
 
@@ -42,9 +46,9 @@ cd services/adhd-notifier && python daily_reporter.py
 6. **Dashboard** (optional, 8097) - Web UI + API
 
 ### Utility Services (3)
-7. **Context Switch Tracker** - Interruption cost analysis
-8. **Energy Trends** - Pattern visualization
-9. **Slack Integration** - Team summaries
+1. **Context Switch Tracker** - Interruption cost analysis
+2. **Energy Trends** - Pattern visualization
+3. **Slack Integration** - Team summaries
 
 ## Features (16 Complete)
 

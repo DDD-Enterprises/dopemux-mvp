@@ -5,6 +5,15 @@ type: adr
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Adr 207 Task Orchestrator Capabilities (adr) for dopemux documentation and
+  developer workflows.
+status: proposed
+graph_metadata:
+  node_type: ADR
+  impact: medium
+  relates_to: []
 ---
 # ADR-207 Appendix: Task-Orchestrator 37 Tools - Comprehensive Capabilities Inventory
 
@@ -50,13 +59,13 @@ next_review: '2026-02-08'
 
 **Module**: `multi_team_coordination.py` (562+ lines)
 
-11. **register_team** - Register team profiles with capacity and ADHD characteristics
-12. **create_cross_team_dependency** - Track dependencies between teams
-13. **optimize_team_workload** - Balance workload across teams with cognitive load consideration
-14. **resolve_coordination_conflicts** - Resolve cross-team dependency conflicts
-15. **get_team_coordination_status** - Get real-time team coordination state
-16. **schedule_coordination** - Schedule cross-team coordination with minimal interruption
-17. **analyze_team_workload** - Analyze team capacity and cognitive load distribution
+1. **register_team** - Register team profiles with capacity and ADHD characteristics
+2. **create_cross_team_dependency** - Track dependencies between teams
+3. **optimize_team_workload** - Balance workload across teams with cognitive load consideration
+4. **resolve_coordination_conflicts** - Resolve cross-team dependency conflicts
+5. **get_team_coordination_status** - Get real-time team coordination state
+6. **schedule_coordination** - Schedule cross-team coordination with minimal interruption
+7. **analyze_team_workload** - Analyze team capacity and cognitive load distribution
 
 **Unique Features**:
 - **TeamProfile**: Tracks `capacity`, `cognitive_load`, `peak_hours`, `adhd_members`, `context_switch_cost`
@@ -71,14 +80,14 @@ next_review: '2026-02-08'
 
 **Module**: `predictive_risk_assessment.py` (562 lines)
 
-18. **assess_task_risk** - ML-based risk prediction for individual tasks
-19. **predict_blockers** - Predict potential blockers before they manifest
-20. **generate_mitigation_strategies** - Auto-generate risk mitigation plans
-21. **calculate_risk_score** - Composite risk scoring (0.0-1.0)
-22. **identify_adhd_risk_factors** - Detect ADHD-specific risks (cognitive overload, hyperfocus burnout)
-23. **track_prediction_accuracy** - Monitor ML model accuracy over time
-24. **update_risk_models** - Continuous learning from outcomes
-25. **get_risk_profile** - Comprehensive risk profile for tasks/projects
+1. **assess_task_risk** - ML-based risk prediction for individual tasks
+2. **predict_blockers** - Predict potential blockers before they manifest
+3. **generate_mitigation_strategies** - Auto-generate risk mitigation plans
+4. **calculate_risk_score** - Composite risk scoring (0.0-1.0)
+5. **identify_adhd_risk_factors** - Detect ADHD-specific risks (cognitive overload, hyperfocus burnout)
+6. **track_prediction_accuracy** - Monitor ML model accuracy over time
+7. **update_risk_models** - Continuous learning from outcomes
+8. **get_risk_profile** - Comprehensive risk profile for tasks/projects
 
 **Risk Categories Detected**:
 - `COGNITIVE_OVERLOAD` - ADHD-specific cognitive capacity risks
@@ -104,12 +113,12 @@ next_review: '2026-02-08'
 
 **Module**: `automation_workflows.py` (946 lines, 54 methods)
 
-26. **automate_sprint_planning** - Implicit sprint setup and task organization
-27. **automate_progress_tracking** - Correlate code commits to task completion
-28. **generate_retrospective** - Auto-generate sprint retrospectives from patterns
-29. **preserve_context** - Automatic context preservation across workflows
-30. **orchestrate_breaks** - Intelligent break timing respecting hyperfocus states
-31. **trigger_workflows** - Event-driven workflow automation
+1. **automate_sprint_planning** - Implicit sprint setup and task organization
+2. **automate_progress_tracking** - Correlate code commits to task completion
+3. **generate_retrospective** - Auto-generate sprint retrospectives from patterns
+4. **preserve_context** - Automatic context preservation across workflows
+5. **orchestrate_breaks** - Intelligent break timing respecting hyperfocus states
+6. **trigger_workflows** - Event-driven workflow automation
 
 **Automation Types**:
 - `SPRINT_PLANNING` - Automatic sprint setup
@@ -137,10 +146,10 @@ next_review: '2026-02-08'
 
 **Module**: `performance_optimizer.py` (589 lines)
 
-32. **learn_productivity_patterns** - ML-based individual productivity pattern recognition
-33. **generate_optimization_recommendations** - Personalized workflow optimization suggestions
-34. **monitor_performance** - Real-time productivity monitoring
-35. **apply_optimizations** - Auto-apply approved optimization strategies
+1. **learn_productivity_patterns** - ML-based individual productivity pattern recognition
+2. **generate_optimization_recommendations** - Personalized workflow optimization suggestions
+3. **monitor_performance** - Real-time productivity monitoring
+4. **apply_optimizations** - Auto-apply approved optimization strategies
 
 **Productivity Metrics Tracked**:
 - `TASK_COMPLETION_RATE` - How many tasks completed per session
@@ -168,8 +177,8 @@ next_review: '2026-02-08'
 
 **Module**: `deployment_orchestration.py` (709 lines)
 
-36. **orchestrate_deployment** - CI/CD pipeline orchestration with ADHD-friendly progress
-37. **monitor_deployment** - Real-time deployment monitoring with rollback capabilities
+1. **orchestrate_deployment** - CI/CD pipeline orchestration with ADHD-friendly progress
+2. **monitor_deployment** - Real-time deployment monitoring with rollback capabilities
 
 **Deployment Features**:
 - **DeploymentStage**: Preparation → Testing → Staging → Production → Verification → Rollback
@@ -379,41 +388,41 @@ Based on module analysis, here are the 37 specialized orchestration tools:
 10. optimize_workflow
 
 ### Multi-Team Coordination (7)
-11. register_team
-12. create_cross_team_dependency
-13. optimize_team_workload
-14. resolve_coordination_conflicts
-15. get_team_coordination_status
-16. schedule_coordination
-17. analyze_team_workload
+1. register_team
+2. create_cross_team_dependency
+3. optimize_team_workload
+4. resolve_coordination_conflicts
+5. get_team_coordination_status
+6. schedule_coordination
+7. analyze_team_workload
 
 ### ML Risk Assessment (8)
-18. assess_task_risk
-19. predict_blockers
-20. generate_mitigation_strategies
-21. calculate_risk_score
-22. identify_adhd_risk_factors
-23. track_prediction_accuracy
-24. update_risk_models
-25. get_risk_profile
+1. assess_task_risk
+2. predict_blockers
+3. generate_mitigation_strategies
+4. calculate_risk_score
+5. identify_adhd_risk_factors
+6. track_prediction_accuracy
+7. update_risk_models
+8. get_risk_profile
 
 ### Workflow Automation (6)
-26. automate_sprint_planning
-27. automate_progress_tracking
-28. generate_retrospective
-29. preserve_context
-30. orchestrate_breaks
-31. trigger_workflows
+1. automate_sprint_planning
+2. automate_progress_tracking
+3. generate_retrospective
+4. preserve_context
+5. orchestrate_breaks
+6. trigger_workflows
 
 ### Performance Optimization (4)
-32. learn_productivity_patterns
-33. generate_optimization_recommendations
-34. monitor_performance
-35. apply_optimizations
+1. learn_productivity_patterns
+2. generate_optimization_recommendations
+3. monitor_performance
+4. apply_optimizations
 
 ### Deployment Orchestration (2)
-36. orchestrate_deployment
-37. monitor_deployment
+1. orchestrate_deployment
+2. monitor_deployment
 
 **Total**: 37 specialized orchestration tools
 

@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Documentation Audit 2025 10 16 (reference) for dopemux documentation and
+  developer workflows.
 ---
 # Documentation Audit Report
 **Date**: 2025-10-16
@@ -92,6 +96,7 @@ From INDEX.md:
 ### 🟡 3. Incomplete Service Documentation
 
 **Service Coverage**:
+
 | Service | Documented? | Location |
 |---------|-------------|----------|
 | Serena v2 | ✅ Yes | serena-v2-mcp-tools.md, reference/ |

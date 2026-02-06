@@ -5,6 +5,10 @@ type: reference
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: F New 7_Implementation_Plan (reference) for dopemux documentation and developer
+  workflows.
 ---
 # F-NEW-7 Implementation Plan - Remaining Work
 

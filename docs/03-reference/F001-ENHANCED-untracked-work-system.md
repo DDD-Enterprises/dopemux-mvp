@@ -7,18 +7,17 @@ date: '2025-10-18'
 status: design
 adhd_score: 10.0
 tags:
-  - adhd-critical
-  - task-completion
-  - false-starts
-  - untracked-work
-  - gentle-nudging
+- adhd-critical
+- task-completion
+- false-starts
+- untracked-work
+- gentle-nudging
 last_review: '2025-10-18'
 next_review: '2025-11-18'
-prelude: >
-  Enhanced F001 specification adding false-starts dashboard, design-first prompting,
+prelude: Enhanced F001 specification adding false-starts dashboard, design-first prompting,
   abandoned work revival, and prioritization context to the base untracked work detection.
+author: '@hu3mann'
 ---
-
 # F001 Enhanced: Complete Untracked Work Management System
 
 **Building on F001 Base Specification**
