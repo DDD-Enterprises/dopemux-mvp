@@ -4,7 +4,7 @@
 # Usage: ./scripts/update-mcp.sh --all
 #
 # Examples:
-#   ./scripts/update-mcp.sh zen
+#   ./scripts/update-mcp.sh pal
 #   ./scripts/update-mcp.sh --all
 
 set -e
@@ -23,28 +23,28 @@ DOCKER_COMPOSE_DIR="${PROJECT_ROOT}/docker/mcp-servers"
 update_pal() {
     echo -e "${GREEN}🔄 Updating PAL MCP...${NC}"
 
-    cd "${PROJECT_ROOT}/docker/mcp-servers/zen/pal-mcp-server" || exit 1
+    cd "${PROJECT_ROOT}/docker/mcp-servers/pal/pal-mcp-server" || exit 1
 
     # Clone latest from upstream
     echo "📥 Fetching latest version from GitHub..."
-    rm -rf /tmp/zen-mcp-temp
-    git clone --depth 1 https://github.com/BeehiveInnovations/pal-mcp-server.git /tmp/zen-mcp-temp
+    rm -rf /tmp/pal-mcp-temp
+    git clone --depth 1 https://github.com/BeehiveInnovations/pal-mcp-server.git /tmp/pal-mcp-temp
 
     # Backup current config if it exists
     if [ -f ".env" ]; then
         echo "💾 Backing up .env file..."
-        cp .env /tmp/zen-mcp-env-backup
+        cp .env /tmp/pal-mcp-env-backup
     fi
 
     # Copy new files
     echo "📋 Copying updated files..."
-    cp -r /tmp/zen-mcp-temp/* .
+    cp -r /tmp/pal-mcp-temp/* .
 
     # Restore config if it existed
-    if [ -f "/tmp/zen-mcp-env-backup" ]; then
+    if [ -f "/tmp/pal-mcp-env-backup" ]; then
         echo "♻️  Restoring .env file..."
-        cp /tmp/zen-mcp-env-backup .env
-        rm /tmp/zen-mcp-env-backup
+        cp /tmp/pal-mcp-env-backup .env
+        rm /tmp/pal-mcp-env-backup
     fi
 
     # Clean Python cache
@@ -55,10 +55,10 @@ update_pal() {
     # Rebuild Docker container
     echo "🏗️  Rebuilding Docker container..."
     cd "${DOCKER_COMPOSE_DIR}" || exit 1
-    docker-compose stop zen
-    docker-compose rm -f zen
-    docker-compose build --no-cache zen
-    docker-compose up -d zen
+    docker-compose stop pal
+    docker-compose rm -f pal
+    docker-compose build --no-cache pal
+    docker-compose up -d pal
 
     # Wait for container to be healthy
     echo "⏳ Waiting for container to be healthy..."
@@ -66,7 +66,7 @@ update_pal() {
 
     # Verify update
     echo "✅ Verifying update..."
-    NEW_VERSION=$(docker exec mcp-zen python -c "from config import __version__; print(__version__)" 2>/dev/null || echo "Unknown")
+    NEW_VERSION=$(docker exec mcp-pal python -c "from config import __version__; print(__version__)" 2>/dev/null || echo "Unknown")
 
     echo -e "${GREEN}✅ PAL MCP updated successfully!${NC}"
     echo "   New version: ${NEW_VERSION}"
@@ -116,12 +116,12 @@ if [ -z "$MCP_SERVER" ]; then
     echo "Usage: ./scripts/update-mcp.sh <server-name>"
     echo "   or: ./scripts/update-mcp.sh --all"
     echo ""
-    echo "Available servers: zen, conport, serena"
+    echo "Available servers: pal, conport, serena"
     exit 1
 fi
 
 case "$MCP_SERVER" in
-    zen)
+    pal)
         update_pal
         ;;
     conport)
@@ -145,7 +145,7 @@ case "$MCP_SERVER" in
     *)
         echo -e "${RED}❌ Error: Unknown server '${MCP_SERVER}'${NC}"
         echo ""
-        echo "Available servers: zen, conport, serena"
+        echo "Available servers: pal, conport, serena"
         echo "Or use --all to update all servers"
         exit 1
         ;;

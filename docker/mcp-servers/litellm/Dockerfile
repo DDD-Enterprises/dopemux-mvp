@@ -29,9 +29,7 @@ RUN mkdir -p /app/data
 # Expose port
 EXPOSE 4000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f -H "Authorization: Bearer ${LITELLM_MASTER_KEY:-sk-master-dopemux-local-20251101}" http://localhost:4000/health || exit 1
+# NOTE: Healthcheck defined in docker-compose.yml to use correct auth token
 
 # Use entrypoint script
 ENTRYPOINT ["/app/entrypoint.sh"]

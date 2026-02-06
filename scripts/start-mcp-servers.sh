@@ -75,7 +75,7 @@ check_container_health "mcp-qdrant"
 
 # Start MCP servers
 echo "🔧 Starting MCP servers..."
-docker-compose -f "$PROJECT_ROOT/docker-compose.master.yml" up -d mcp-conport mcp-zen mcp-context7 mcp-serena mcp-dope-context mcp-exa mcp-gptr-mcp mcp-leantime-bridge mcp-desktop-commander mcp-task-orchestrator mcp-clear-thought
+docker-compose -f "$PROJECT_ROOT/docker-compose.master.yml" up -d mcp-conport mcp-zen mcp-pal mcp-serena mcp-dope-context mcp-exa mcp-gptr-mcp mcp-leantime-bridge mcp-desktop-commander mcp-task-orchestrator mcp-clear-thought
 
 # Wait for MCP servers to be ready
 echo "🏥 Checking MCP server health..."
@@ -87,8 +87,8 @@ check_port_health "localhost" "3004" "ConPort"
 check_container_health "mcp-zen"
 check_port_health "localhost" "3003" "Zen"
 
-check_container_health "mcp-context7"
-check_port_health "localhost" "3002" "Context7"
+check_container_health "mcp-pal"
+check_port_health "localhost" "3003" "PAL apilookup"
 
 check_container_health "mcp-serena"
 # Serena doesn't have a health endpoint, just check if port is open

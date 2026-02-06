@@ -15,8 +15,7 @@ check() {
   fi
 }
 
-check "Context7" "http://127.0.0.1:3002/health"
-check "Zen" "http://127.0.0.1:3003/health"
+check "PAL apilookup" "http://127.0.0.1:3003/health"
 
 # LiteLLM requires auth; just show raw health
 echo -n "LiteLLM: "; curl -s -H "Authorization: Bearer HZy6cX-h1t5wPed3XJHRByCK3lde4Pu17zDA5mz-BvM" http://127.0.0.1:4000/health | head -n 1 || echo "unreachable"
@@ -25,4 +24,3 @@ check "ConPort" "http://127.0.0.1:3004/health"
 check "Sequential" "http://127.0.0.1:3011/health"
 
 echo "\n✅ Status gathered."
-

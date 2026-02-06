@@ -74,7 +74,6 @@ check_env_var "PERPLEXITY_API_KEY" "Required for Perplexity research" || ((env_e
 
 # Specialized APIs
 check_env_var "VOYAGEAI_API_KEY" "Required for vector embeddings" || ((env_errors++))
-check_env_var "CONTEXT7_API_KEY" "Required for documentation lookup" || ((env_errors++))
 
 # XAI Grok (optional but recommended)
 check_env_var "XAI_API_KEY" "Optional: Required for xAI Grok models" || echo "⚠️  XAI_API_KEY not set (xAI Grok will not be available)"
@@ -93,7 +92,7 @@ check_container "mcp-qdrant" "Vector database for semantic search" || ((containe
 # Core MCP servers
 check_container "mcp-conport" "Knowledge graph and context management" || ((container_errors++))
 check_container "mcp-zen" "Multi-model reasoning and orchestration" || ((container_errors++))
-check_container "mcp-context7" "Official documentation and API references" || ((container_errors++))
+check_container "mcp-pal" "Official documentation and API references" || ((container_errors++))
 check_container "mcp-serena" "Code navigation and LSP functionality" || ((container_errors++))
 check_container "mcp-dope-context" "Semantic code and document search" || ((container_errors++))
 
@@ -113,7 +112,7 @@ endpoint_errors=0
 
 # Core servers with health endpoints
 test_mcp_server "ConPort" "http://localhost:3004/health" "Knowledge graph API" || ((endpoint_errors++))
-test_mcp_server "Context7" "http://localhost:3002/health" "Documentation API" || ((endpoint_errors++))
+test_mcp_server "PAL apilookup" "http://localhost:3003/health" "Documentation API" || ((endpoint_errors++))
 test_mcp_server "Dope Context" "http://localhost:3010/health" "Semantic search API" || ((endpoint_errors++))
 
 # Servers with SSE endpoints (check if port is open)

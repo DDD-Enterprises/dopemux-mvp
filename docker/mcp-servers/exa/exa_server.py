@@ -84,11 +84,11 @@ async def service_info(request):
             }
         },
         "health": "/health",
-        "description": "Neural web search - ONLY when Context7 lacks information",
+        "description": "Neural web search - ONLY when PAL apilookup lacks information",
         "metadata": {
             "role": "research",
             "priority": "low",
-            "usage_pattern": "Fallback only when Context7 lacks required information"
+            "usage_pattern": "Fallback only when PAL apilookup lacks required information"
         }
     })
 

@@ -38,7 +38,7 @@ Multi-model AI configuration optimized for python development with ADHD accommod
 ### Active Servers
 
 - **mas-sequential-thinking**: Complex reasoning for architecture
-- **context7**: Python documentation and patterns
+- **PAL apilookup**: Python documentation and patterns
 - **claude-context**: Semantic code search
 - **morphllm-fast-apply**: Code transformations
 
