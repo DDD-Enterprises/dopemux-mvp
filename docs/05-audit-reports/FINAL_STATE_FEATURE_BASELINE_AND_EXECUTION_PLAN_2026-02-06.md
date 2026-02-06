@@ -61,6 +61,7 @@ Generated during this pass:
 - `reports/strict_closure/profile_current_detection_verification_2026-02-06.json`
 - `reports/strict_closure/auto_detection_service_verification_2026-02-06.json`
 - `reports/strict_closure/profile_management_commands_verification_2026-02-06.json`
+- `reports/strict_closure/profile_analytics_verification_2026-02-06.json`
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
@@ -81,6 +82,7 @@ Generated during this pass:
 - `docs/05-audit-reports/PROFILE_CURRENT_DETECTION_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/AUTO_DETECTION_SERVICE_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/PROFILE_MANAGEMENT_COMMANDS_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_ANALYTICS_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
 - `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
@@ -308,6 +310,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/auto_detection_service_verification_2026-02-06.json`.
 27. Profile management command backlog items (`4.3.1` through `4.3.5`) are now implemented and verified for create/edit/copy/delete/current workflows, including interactive create and fallback current-profile detection:
    `reports/strict_closure/profile_management_commands_verification_2026-02-06.json`.
+28. Profile analytics backlog items (`4.4.1` through `4.4.3`) are now implemented and verified for metrics capture, stats command insights, and ASCII dashboard/heatmap rendering:
+   `reports/strict_closure/profile_analytics_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
