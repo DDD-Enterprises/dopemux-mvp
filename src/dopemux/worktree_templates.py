@@ -14,6 +14,8 @@ Key Features:
 Design Principle: "Copy what makes sense, preserve what's unique"
 """
 
+import logging
+
 import json
 import shutil
 from pathlib import Path
@@ -21,6 +23,8 @@ from typing import Dict, List, Optional, Tuple
 
 from .workspace_detection import get_workspace_root
 
+
+logger = logging.getLogger(__name__)
 
 class WorktreeTemplateManager:
     """
@@ -82,8 +86,6 @@ class WorktreeTemplateManager:
 
         except Exception as e:
             return None
-
-            logger.error(f"Error: {e}")
     def get_template_files(self, main_repo: Optional[Path] = None) -> List[Path]:
         """
         Get list of files to copy from main repo as templates.
@@ -200,8 +202,6 @@ class WorktreeTemplateManager:
 
         except Exception as e:
             return False
-
-            logger.error(f"Error: {e}")
     def copy_templates_to_worktree(
         self,
         worktree: Path,

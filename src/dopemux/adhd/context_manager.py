@@ -5,6 +5,8 @@ Handles automatic preservation and restoration of development context including
 files, cursor positions, mental model, and decision history.
 """
 
+import os
+
 import hashlib
 
 import logging

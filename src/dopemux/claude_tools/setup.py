@@ -4,6 +4,8 @@ Claude-Code-Tools Integration Setup
 Configures and initializes Claude-Code-Tools integration for Dopemux.
 """
 
+from typing import Optional
+
 import logging
 from pathlib import Path
 

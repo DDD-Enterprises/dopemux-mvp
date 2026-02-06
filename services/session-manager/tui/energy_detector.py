@@ -18,6 +18,8 @@ Architecture:
 - Logs energy patterns to ConPort for learning
 """
 
+from typing import List
+
 import logging
 import os
 import sys

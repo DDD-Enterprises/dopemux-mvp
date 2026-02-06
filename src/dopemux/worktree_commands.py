@@ -114,9 +114,6 @@ def get_repo_root(fallback_cwd: bool = True) -> Optional[str]:
         if fallback_cwd:
             return str(Path.cwd().resolve())
         return None
-
-
-        logger.error(f"Error: {e}")
 def get_current_worktree(use_cache: bool = True, quiet: bool = False) -> Optional[str]:
     """
     Get the current worktree path with intelligent caching.
@@ -284,9 +281,6 @@ def get_worktree_status(worktree_path: str) -> str:
 
     except Exception as e:
         return "unknown"
-
-
-        logger.error(f"Error: {e}")
 def list_worktrees(workspace_path: Optional[Path] = None) -> None:
     """
     List all git worktrees with ADHD-friendly display.

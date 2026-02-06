@@ -8,6 +8,8 @@ consistent behaviour across the CLI, tmux layouts, and Claude launcher.
 """
 
 from __future__ import annotations
+import logging
+
 
 import os
 from dataclasses import dataclass, field
@@ -17,6 +19,8 @@ from rich.console import Console
 
 from ..config import ConfigManager
 
+
+logger = logging.getLogger(__name__)
 
 class RoleNotFoundError(ValueError):
     """Raised when a requested role is not defined in the catalog."""
@@ -284,8 +288,6 @@ def activate_role(
         spec = resolve_role(role_name)
     except RoleNotFoundError as exc:
         raise RoleNotFoundError(str(exc)) from exc
-
-        logger.error(f"Error: {e}")
     canonical_key = spec.key
     if role_name.strip().lower() != canonical_key:
         alias_used = role_name.strip()

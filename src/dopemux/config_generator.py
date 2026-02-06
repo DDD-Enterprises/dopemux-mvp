@@ -27,13 +27,13 @@ class ConfigGenerator:
         Initialize generator with Claude config path.
 
         Args:
-            claude_config_path: Path to Claude settings.json
-                              Defaults to ~/.claude/settings.json
+            dope_brainz_config_path: Path to DopeBrainz settings.json
+                Defaults to ~/.dope-brainz/settings.json
         """
-        if claude_config_path is None:
+        if dope_brainz_config_path is None:
             dope_brainz_config_path = Path.home() / ".dope-brainz" / "settings.json"
 
-        self.config_path = Path(claude_config_path)
+        self.config_path = Path(dope_brainz_config_path)
         self._full_config = None
 
     def load_full_config(self) -> Dict[str, Any]:

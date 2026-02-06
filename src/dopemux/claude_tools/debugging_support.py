@@ -7,6 +7,8 @@ supporting pdb interaction, error analysis, and step-through debugging.
 Based on Claude-Code-Tools interactive debugging patterns.
 """
 
+import logging
+
 import re
 import time
 from typing import Dict, Any, Optional, List, Tuple
@@ -16,6 +18,8 @@ from enum import Enum
 from .tmux_cli import TmuxCli, PaneInfo
 from .agent_communication import AgentCommunicator, AgentMessage
 
+
+logger = logging.getLogger(__name__)
 
 class DebugState(Enum):
     """Current state of debugging session."""
@@ -396,8 +400,6 @@ class InteractiveDebugger:
             try:
                 self.tmux_cli.kill(session.pane_id)
             except Exception as e:
-                pass  # Pane might already be dead
-
                 logger.error(f"Error: {e}")
     def analyze_error(self, error_output: str) -> Dict[str, Any]:
         """

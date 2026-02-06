@@ -73,8 +73,6 @@ class SessionManager:
             return False
         except Exception as e:
             return False
-
-            logger.error(f"Error: {e}")
     def _store_session_in_conport(self, session_data: Dict[str, Any]) -> bool:
         """
         Store session data in ConPort.

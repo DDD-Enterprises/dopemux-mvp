@@ -231,8 +231,6 @@ class ErrorRecoveryManager:
             agent.stop()
             time.sleep(1)
         except Exception as e:
-            pass
-
             logger.error(f"Error: {e}")
         # Force kill if still alive
         if agent.pid:
@@ -240,8 +238,6 @@ class ErrorRecoveryManager:
                 os.kill(agent.pid, 9)  # SIGKILL
                 logger.info(f"   Killed process {agent.pid}")
             except Exception as e:
-                pass
-
                 logger.error(f"Error: {e}")
         # Wait a moment for cleanup
         time.sleep(2)

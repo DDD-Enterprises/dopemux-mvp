@@ -113,8 +113,8 @@ class ADHDOrchestrator:
             self.tmux_controller.set_session_option(session, "@adhd_icon", icon)
             # Optional: Refresh client to update status bar immediately
             # self.tmux_controller.server.cmd("refresh-client", "-S") # access to server? No.
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Failed to publish attention state for session %s: %s", session, e)
 
 
     def apply_energy_layout(self, session_name: str, energy_level: str) -> None:
@@ -300,16 +300,15 @@ class ADHDOrchestrator:
 
     def exit_break_mode(self) -> None:
         """Exit break mode (close popup)."""
-        # There isn't a direct 'close-popup' command in controller yet.
-        # But usually popups close on exit. 
-        # If we need to force close, we can use send keys 'C-c' if we knew the pane id of popup.
-        # Check controller... `display_popup` doesn't return ID.
-        # However, `display-popup` normally blocks inputs to underlying panes.
-        # If the command finishes (sleep ends), it closes automatically!
-        # So explicit exit might not be needed if the sleep matches.
-        # But if we want to cancel early?
-        # Typically user cancels with ESC key.
-        pass
+        # Try to close popup early by sending Escape to active pane.
+        # If popup already exited, this is a no-op.
+        try:
+            panes = self.tmux_controller.list_panes()
+            active = next((p for p in panes if p.active), None)
+            if active:
+                self.tmux_controller.send_key(active.pane_id, "Escape")
+        except Exception as e:
+            logger.debug("Failed to exit break mode popup explicitly: %s", e)
 
     def end_session(self) -> Dict[str, Any]:
         """End the current session."""
@@ -336,9 +335,11 @@ async def execute_adhd_optimized(operation, **kwargs):
 
 async def prompt_adhd_action(actions: list, context: str = "") -> Optional[str]:
     """Convenience function for ADHD-optimized prompting."""
-    return await adhd_orchestrator.prompt_user_action(actions, context)
+    orchestrator = ADHDOrchestrator()
+    return await orchestrator.prompt_user_action(actions, context)
 
 
 def get_adhd_status() -> Dict[str, Any]:
     """Get current ADHD status."""
-    return adhd_orchestrator.get_status_snapshot()
+    orchestrator = ADHDOrchestrator()
+    return orchestrator.get_status_snapshot()
