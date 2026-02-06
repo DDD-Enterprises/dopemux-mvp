@@ -91,6 +91,7 @@ reference:
   profile_developer_guide: "docs/03-reference/profile-developer-guide.md"
   features_index: "docs/03-reference/features/features-index.md"
   mcp_tools_overview: "docs/03-reference/mcp-tools-overview.md"
+  mcp_token_management_best_practices: "docs/best-practices/mcp-token-management.md"
 
 # Explanation & Deep Dives
 explanation:
