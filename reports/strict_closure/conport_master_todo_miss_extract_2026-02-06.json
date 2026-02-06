@@ -1,0 +1,1140 @@
+{
+  "generated_at_utc": "2026-02-06T16:42:08Z",
+  "master_doc": "docs/05-audit-reports/FINAL_STATE_FEATURE_BASELINE_AND_EXECUTION_PLAN_2026-02-06.md",
+  "bundle_count": 5,
+  "pending_item_count_unique": 231,
+  "covered_item_count": 207,
+  "missed_item_count": 24,
+  "summary": {
+    "blocked_unique": 1,
+    "todo_unique": 230
+  },
+  "missed_items_top_50": [
+    {
+      "description": "1.1.2: Run concurrent operations stress test | Duration: 30m | Complexity: 0.6 | Energy: Medium | Depends: 1.1.1",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "concurrent",
+        "operations",
+        "stress",
+        "test",
+        "medium"
+      ]
+    },
+    {
+      "description": "1.1.3: Validate AGE/PG compatibility | Duration: 45m | Complexity: 0.6 | Energy: Medium | Depends: 1.1.2",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "validate",
+        "compatibility",
+        "medium"
+      ]
+    },
+    {
+      "description": "1.3.2: Extract VoyageEmbedder & QdrantClient singletons | Duration: 60m | Complexity: 0.7 | Energy: High | Depends: 1.3.1",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "extract",
+        "voyageembedder",
+        "qdrantclient",
+        "singletons",
+        "high"
+      ]
+    },
+    {
+      "description": "1.3.3: Create ADHDConfigService wrapper | Duration: 60m | Complexity: 0.7 | Energy: High | Depends: 1.3.1",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "create",
+        "adhdconfigservice",
+        "wrapper",
+        "high"
+      ]
+    },
+    {
+      "description": "2.1.4: Time window checker | 1h | Complexity: 0.4 | Parse HH:MM-HH:MM format, 15 points if in window",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "time",
+        "window",
+        "checker",
+        "parse",
+        "format",
+        "points",
+        "window"
+      ]
+    },
+    {
+      "description": "2.2.2: Suggestion strategy logic | 1h | Complexity: 0.5 | >0.85=gentle, 0.65-0.85=explain, <0.65=skip",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 1,
+      "coverage_tokens_checked": [
+        "suggestion",
+        "strategy",
+        "logic",
+        "gentle",
+        "explain",
+        "skip"
+      ]
+    },
+    {
+      "description": "3.2.2: Graceful shutdown | 1.5h | Complexity: 0.8 | SIGTERM (3s timeout), SIGKILL if needed, verify termination",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "graceful",
+        "shutdown",
+        "sigterm",
+        "timeout",
+        "sigkill",
+        "needed",
+        "verify",
+        "termination"
+      ]
+    },
+    {
+      "description": "4.1.2: Enhance statusline display | 1h | Complexity: 0.4 | Add [DEVELOPER] | MED | FOCUS, color coding (green=matched, yellow=custom)",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "enhance",
+        "statusline",
+        "display",
+        "developer",
+        "focus",
+        "color",
+        "coding",
+        "green"
+      ]
+    },
+    {
+      "description": "4.6.3: Polish & UX improvements | 1h | Complexity: 0.4 | Better error messages, progress indicators, confirmations, help text",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "polish",
+        "improvements",
+        "better",
+        "error",
+        "messages",
+        "progress",
+        "indicators",
+        "confirmations"
+      ]
+    },
+    {
+      "description": "Day 11-12: Slack Client Setup (8-10 hours)",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "slack",
+        "client",
+        "setup",
+        "hours"
+      ]
+    },
+    {
+      "description": "Day 13: Slack Status Management (4-5 hours)",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "slack",
+        "status",
+        "management",
+        "hours"
+      ]
+    },
+    {
+      "description": "Day 14-15: Message Triage System (10-12 hours)",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "message",
+        "triage",
+        "system",
+        "hours"
+      ]
+    },
+    {
+      "description": "Day 16-17: Beta Preparation & Recruitment (8-10 hours)",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 0,
+      "coverage_tokens_checked": [
+        "beta",
+        "preparation",
+        "recruitment",
+        "hours"
+      ]
+    },
+    {
+      "description": "Day 18: Beta Deployment (6-8 hours)",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 1,
+      "coverage_tokens_checked": [
+        "beta",
+        "deployment",
+        "hours"
+      ]
+    },
+    {
+      "description": "Day 19-20: Feedback & Iteration (12-14 hours)",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 0,
+      "coverage_tokens_checked": [
+        "feedback",
+        "iteration",
+        "hours"
+      ]
+    },
+    {
+      "description": "Day 3: ShieldCoordinator Core Logic (6-7 hours)",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "shieldcoordinator",
+        "core",
+        "logic",
+        "hours"
+      ]
+    },
+    {
+      "description": "Day 6: macOS Focus Mode - AppleScript Implementation (5-6 hours)",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "macos",
+        "focus",
+        "mode",
+        "applescript",
+        "implementation",
+        "hours"
+      ]
+    },
+    {
+      "description": "Day 8: Productivity Indicators Deep Dive (6-7 hours)",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 1,
+      "coverage_tokens_checked": [
+        "productivity",
+        "indicators",
+        "deep",
+        "dive",
+        "hours"
+      ]
+    },
+    {
+      "description": "Day 9: Notification Batching (3-4 hours)",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 1,
+      "coverage_tokens_checked": [
+        "notification",
+        "batching",
+        "hours"
+      ]
+    },
+    {
+      "description": "Task 4.3: Profile Management Commands | Duration: 3h | Complexity: 0.5 | Energy: Low | Priority: LOW | Depends: Epic 1 + Epic 2",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "profile",
+        "management",
+        "commands"
+      ]
+    },
+    {
+      "description": "Task 4.6: Documentation & Polish | Duration: 3h | Complexity: 0.4 | Energy: Low | Priority: MEDIUM | Depends: All above",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "documentation",
+        "polish",
+        "medium",
+        "above"
+      ]
+    },
+    {
+      "description": "Week 2: macOS Integration & Window Management",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "week",
+        "macos",
+        "integration",
+        "window",
+        "management"
+      ]
+    },
+    {
+      "description": "Week 4: Beta Testing & Iteration",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "week",
+        "beta",
+        "testing",
+        "iteration"
+      ]
+    },
+    {
+      "description": "Leantime containers are running and healthy - needs manual web setup completion: access http://localhost:8080 to complete installation wizard, create admin user, generate API token, then configure bridge",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 1,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 2,
+      "coverage_tokens_checked": [
+        "leantime",
+        "containers",
+        "running",
+        "healthy",
+        "needs",
+        "manual",
+        "setup",
+        "completion"
+      ]
+    }
+  ],
+  "covered_items_top_25": [
+    {
+      "description": "1.1.1: Set up PostgreSQL AGE test environment | Duration: 45m | Complexity: 0.6 | Energy: Medium",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 4,
+      "coverage_tokens_checked": [
+        "postgresql",
+        "test",
+        "environment",
+        "medium"
+      ]
+    },
+    {
+      "description": "1.2.1: Analyze Context Integration layer | Duration: 30m | Complexity: 0.5 | Energy: Medium",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 4,
+      "coverage_tokens_checked": [
+        "analyze",
+        "context",
+        "integration",
+        "layer",
+        "medium"
+      ]
+    },
+    {
+      "description": "1.2.2: Build config generator | 2h | Complexity: 0.8 | Profile \u2192 Claude config.json, preserve non-MCP settings",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 7,
+      "coverage_tokens_checked": [
+        "build",
+        "config",
+        "generator",
+        "profile",
+        "claude",
+        "config",
+        "json",
+        "preserve"
+      ]
+    },
+    {
+      "description": "1.2.2: Document architecture decision | Duration: 30m | Complexity: 0.5 | Energy: Medium | Depends: 1.2.1",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 4,
+      "coverage_tokens_checked": [
+        "document",
+        "architecture",
+        "decision",
+        "medium"
+      ]
+    },
+    {
+      "description": "1.2.3: Config backup & safety | 1h | Complexity: 0.6 | Backup with timestamp, atomic write, rollback function",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 3,
+      "coverage_tokens_checked": [
+        "config",
+        "backup",
+        "safety",
+        "backup",
+        "with",
+        "timestamp",
+        "atomic",
+        "write"
+      ]
+    },
+    {
+      "description": "1.2.4: Integration tests | 1h | Complexity: 0.7 | Test full profile matches existing, developer has 3 MCPs, backup/rollback",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 6,
+      "coverage_tokens_checked": [
+        "integration",
+        "tests",
+        "test",
+        "full",
+        "profile",
+        "matches",
+        "existing",
+        "developer"
+      ]
+    },
+    {
+      "description": "1.3.1: Create dopemux-core package structure | Duration: 60m | Complexity: 0.7 | Energy: High",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 5,
+      "coverage_tokens_checked": [
+        "create",
+        "dopemux",
+        "core",
+        "package",
+        "structure",
+        "high"
+      ]
+    },
+    {
+      "description": "1.3.1: Enhance dopemux start command | 1.5h | Complexity: 0.6 | Add --profile flag, default to 'full', error handling",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 8,
+      "coverage_tokens_checked": [
+        "enhance",
+        "dopemux",
+        "start",
+        "command",
+        "profile",
+        "flag",
+        "default",
+        "full"
+      ]
+    },
+    {
+      "description": "1.3.2: Add dopemux profile list | 0.5h | Complexity: 0.4 | Discover profiles, display name, description, MCP count",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 4,
+      "coverage_tokens_checked": [
+        "dopemux",
+        "profile",
+        "list",
+        "discover",
+        "profiles",
+        "display",
+        "name",
+        "description"
+      ]
+    },
+    {
+      "description": "1.3.3: Add dopemux profile show | 0.5h | Complexity: 0.4 | Display full profile details, pretty-print YAML",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 5,
+      "coverage_tokens_checked": [
+        "dopemux",
+        "profile",
+        "show",
+        "display",
+        "full",
+        "profile",
+        "details",
+        "pretty"
+      ]
+    },
+    {
+      "description": "1.3.4: Add dopemux profile validate | 0.5h | Complexity: 0.5 | Validate profile, test config generation dry-run",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 7,
+      "coverage_tokens_checked": [
+        "dopemux",
+        "profile",
+        "validate",
+        "validate",
+        "profile",
+        "test",
+        "config",
+        "generation"
+      ]
+    },
+    {
+      "description": "1.3.4: Write unit tests for dopemux-core | Duration: 60m | Complexity: 0.7 | Energy: High | Depends: 1.3.2, 1.3.3",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 6,
+      "coverage_tokens_checked": [
+        "write",
+        "unit",
+        "tests",
+        "dopemux",
+        "core",
+        "high"
+      ]
+    },
+    {
+      "description": "1.4.1: End-to-end test suite | 1h | Complexity: 0.6 | Test default profile, --profile developer, validation errors, Claude starts",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 7,
+      "coverage_tokens_checked": [
+        "test",
+        "suite",
+        "test",
+        "default",
+        "profile",
+        "profile",
+        "developer",
+        "validation"
+      ]
+    },
+    {
+      "description": "1.4.2: Documentation | 1h | Complexity: 0.4 | Update README, create PROFILE-USAGE.md, schema format, examples",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 6,
+      "coverage_tokens_checked": [
+        "documentation",
+        "update",
+        "readme",
+        "create",
+        "profile",
+        "usage",
+        "schema",
+        "format"
+      ]
+    },
+    {
+      "description": "2.1.1: Git branch pattern matcher | 1.5h | Complexity: 0.5 | Use gitpython, support wildcards, 30 points if match",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 3,
+      "coverage_tokens_checked": [
+        "branch",
+        "pattern",
+        "matcher",
+        "gitpython",
+        "support",
+        "wildcards",
+        "points",
+        "match"
+      ]
+    },
+    {
+      "description": "2.1.1: Remove ConPort semantic_search MCP tool | Duration: 30m | Complexity: 0.4 | Energy: Low-Medium | Depends: 1.3.4",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 6,
+      "coverage_tokens_checked": [
+        "remove",
+        "conport",
+        "semantic",
+        "search",
+        "tool",
+        "medium"
+      ]
+    },
+    {
+      "description": "2.1.2: Directory pattern analyzer | 1h | Complexity: 0.4 | Match pwd against patterns, 25 points if match",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 3,
+      "coverage_tokens_checked": [
+        "directory",
+        "pattern",
+        "analyzer",
+        "match",
+        "against",
+        "patterns",
+        "points",
+        "match"
+      ]
+    },
+    {
+      "description": "2.1.2: Update docs & add deprecation warnings | Duration: 30m | Complexity: 0.4 | Energy: Low-Medium | Depends: 2.1.1",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 3,
+      "coverage_tokens_checked": [
+        "update",
+        "docs",
+        "deprecation",
+        "warnings",
+        "medium"
+      ]
+    },
+    {
+      "description": "2.1.3: ADHD Engine client | 1.5h | Complexity: 0.7 | Query port 5448, extract energy/attention, 20 points, graceful fallback",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 7,
+      "coverage_tokens_checked": [
+        "adhd",
+        "engine",
+        "client",
+        "query",
+        "port",
+        "5448",
+        "extract",
+        "attention"
+      ]
+    },
+    {
+      "description": "2.1.5: File pattern analyzer | 1h | Complexity: 0.5 | Match recent files vs patterns, 0-10 points based on % match",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 4,
+      "coverage_tokens_checked": [
+        "file",
+        "pattern",
+        "analyzer",
+        "match",
+        "recent",
+        "files",
+        "patterns",
+        "points"
+      ]
+    },
+    {
+      "description": "2.2.1: Remove ConPort embedding_service, import from core | Duration: 30m | Complexity: 0.6 | Energy: Medium-High | Depends: 1.3.2",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 7,
+      "coverage_tokens_checked": [
+        "remove",
+        "conport",
+        "embedding",
+        "service",
+        "import",
+        "from",
+        "core",
+        "medium"
+      ]
+    },
+    {
+      "description": "2.2.1: Scoring algorithm implementation | 1.5h | Complexity: 0.7 | Sum signals, calculate confidence (total/100)",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 4,
+      "coverage_tokens_checked": [
+        "scoring",
+        "algorithm",
+        "implementation",
+        "signals",
+        "calculate",
+        "confidence",
+        "total"
+      ]
+    },
+    {
+      "description": "2.2.2: Write & run migration script (re-embed decisions) | Duration: 45m | Complexity: 0.6 | Energy: Medium-High | Depends: 2.2.1",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 6,
+      "coverage_tokens_checked": [
+        "write",
+        "migration",
+        "script",
+        "embed",
+        "decisions",
+        "medium",
+        "high"
+      ]
+    },
+    {
+      "description": "2.2.3: Fallback hierarchy | 1h | Complexity: 0.5 | ADHD Engine optional, git optional, manual override wins",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 5,
+      "coverage_tokens_checked": [
+        "fallback",
+        "hierarchy",
+        "adhd",
+        "engine",
+        "optional",
+        "optional",
+        "manual",
+        "override"
+      ]
+    },
+    {
+      "description": "2.2.3: Validate embedding quality & schema | Duration: 45m | Complexity: 0.6 | Energy: Medium-High | Depends: 2.2.2",
+      "statuses": [
+        "TODO"
+      ],
+      "bundle_hits": 4,
+      "bundle_paths": [
+        "reports/conport_sqlite_exports/20260206T143748Z/import_bundles/__Users__hue__code__dopemux-mvp__context_portal__context_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181418_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181432_db__conport_import_bundle.json",
+        "reports/conport_sqlite_exports/20260206T144006Z/import_bundles/quarantine__2026-02-04__SYSTEM_ARCHIVE__db_backups__context_20251024_181450_db__conport_import_bundle.json"
+      ],
+      "sample_tags": [],
+      "coverage_token_hits": 5,
+      "coverage_tokens_checked": [
+        "validate",
+        "embedding",
+        "quality",
+        "schema",
+        "medium",
+        "high"
+      ]
+    }
+  ]
+}
