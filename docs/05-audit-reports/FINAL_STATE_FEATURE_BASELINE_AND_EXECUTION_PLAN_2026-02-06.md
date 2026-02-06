@@ -262,6 +262,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/config_backup_safety_verification_2026-02-06.json`.
 14. Profile-config integration backlog item (`1.2.4`) is now implemented with explicit tests for full-profile parity, developer 3-MCP shape, and backup rollback restore:
    `reports/strict_closure/profile_config_integration_verification_2026-02-06.json`.
+15. End-to-end profile start-flow backlog item (`1.4.1`) is now implemented with additive `dopemux start --profile` support and dry-run coverage for success and invalid-profile paths:
+   `reports/strict_closure/profile_start_e2e_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
