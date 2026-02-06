@@ -9,22 +9,45 @@ import pytest
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
+from pathlib import Path
+import sys
 
-from ..engines.search import (
-    BaseSearchAdapter,
-    SearchResult,
-    SearchResultType,
-    SourceQuality,
-    SearchMetadata,
-    SearchOrchestrator,
-    SearchStrategy,
-    SearchConfig,
-    EngineWeight,
-    ExaSearchAdapter,
-    TavilySearchAdapter,
-    PerplexitySearchAdapter,
-    PalApiLookupSearchAdapter
-)
+try:
+    from ..engines.search import (
+        BaseSearchAdapter,
+        SearchResult,
+        SearchResultType,
+        SourceQuality,
+        SearchMetadata,
+        SearchOrchestrator,
+        SearchStrategy,
+        SearchConfig,
+        EngineWeight,
+        ExaSearchAdapter,
+        TavilySearchAdapter,
+        PerplexitySearchAdapter,
+        PalApiLookupSearchAdapter,
+    )
+except ImportError:  # pragma: no cover - direct test execution fallback
+    ROOT = Path(__file__).resolve().parents[1]
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+
+    from engines.search import (
+        BaseSearchAdapter,
+        SearchResult,
+        SearchResultType,
+        SourceQuality,
+        SearchMetadata,
+        SearchOrchestrator,
+        SearchStrategy,
+        SearchConfig,
+        EngineWeight,
+        ExaSearchAdapter,
+        TavilySearchAdapter,
+        PerplexitySearchAdapter,
+        PalApiLookupSearchAdapter,
+    )
 
 
 class MockSearchAdapter(BaseSearchAdapter):

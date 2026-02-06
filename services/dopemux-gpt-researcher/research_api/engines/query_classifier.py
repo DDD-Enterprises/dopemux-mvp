@@ -14,7 +14,10 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional, Set, Tuple
-from models.research_task import ResearchType, ADHDConfiguration
+try:
+    from ..models.research_task import ADHDConfiguration, ResearchType
+except ImportError:  # pragma: no cover - script-mode fallback
+    from models.research_task import ADHDConfiguration, ResearchType
 
 class QueryIntent(str, Enum):
     """Primary intent behind the research query"""
@@ -123,7 +126,7 @@ class QueryClassificationEngine:
         scope, complexity = self._assess_scope_and_complexity(query, keywords, user_context)
 
         # Step 5: Select search strategy
-        search_strategy = self._select_search_strategy(intent, scope, patterns)
+        search_strategy = self._select_search_strategy(intent, scope, patterns, query)
 
         # Step 6: Determine output format
         output_format = self._determine_output_format(intent, research_type, user_context)
@@ -337,12 +340,20 @@ class QueryClassificationEngine:
 
     def _assess_scope_and_complexity(self, query: str, keywords: List[str], user_context: Optional[Dict]) -> Tuple[ResearchScope, float]:
         """Assess research scope and complexity"""
+        query_lower = query.lower()
+
         # Assess scope based on indicators
         scope_scores = {}
         for scope, indicators in self.scope_indicators.items():
             score = sum(1 for pattern in indicators if re.search(pattern, query, re.IGNORECASE))
             if score > 0:
                 scope_scores[scope] = score
+
+        quick_markers = {"quick", "overview", "example", "snippet", "intro", "basic"}
+        if len(query.split()) <= 6 and any(marker in query_lower for marker in quick_markers):
+            scope_scores[ResearchScope.QUICK_OVERVIEW] = scope_scores.get(
+                ResearchScope.QUICK_OVERVIEW, 0
+            ) + 2
 
         # Default scope determination
         if not scope_scores:
@@ -371,8 +382,15 @@ class QueryClassificationEngine:
 
         return scope, complexity_score
 
-    def _select_search_strategy(self, intent: QueryIntent, scope: ResearchScope, patterns: Dict) -> SearchEngineStrategy:
+    def _select_search_strategy(
+        self, intent: QueryIntent, scope: ResearchScope, patterns: Dict, query: str = ""
+    ) -> SearchEngineStrategy:
         """Select optimal search engine strategy"""
+        query_lower = query.lower()
+
+        if any(token in query_lower for token in ["latest", "recent", "2024", "2025", "2026", "updates"]):
+            return SearchEngineStrategy.RECENT_DEVELOPMENTS
+
         # Strategy based on intent
         intent_strategies = {
             QueryIntent.DOCUMENTATION_RESEARCH: SearchEngineStrategy.DOCUMENTATION_FIRST,
@@ -475,7 +493,10 @@ class QueryClassificationEngine:
         duration = base_duration * (0.7 + 0.6 * complexity)
 
         # Adjust for tool count
-        duration += (tool_count - 2) * 3
+        duration += max(0, tool_count - 2) * 2
+
+        if scope == ResearchScope.QUICK_OVERVIEW:
+            duration = min(duration, 18)
 
         return int(duration)
 
@@ -490,11 +511,18 @@ class QueryClassificationEngine:
         ]
 
         # Adjust confidence based on keyword clarity
-        if len(keywords) >= 5:
+        if len(keywords) >= 4:
             confidence += 0.1
+        elif len(keywords) >= 2:
+            confidence += 0.05
         if complexity > 0.8 or complexity < 0.3:
             confidence += 0.05
 
+        vague_terms = {"make", "better", "improve", "thing", "stuff", "help", "fix", "it"}
+        specific_keywords = [kw for kw in keywords if kw.lower() not in vague_terms and len(kw) > 3]
+        if len(specific_keywords) < 2:
+            confidence -= 0.2
+
         reasoning = " ".join(reasoning_parts)
 
-        return min(0.95, confidence), reasoning
+        return max(0.1, min(0.95, confidence)), reasoning
