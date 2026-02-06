@@ -1,0 +1,28 @@
+{
+  "run_timestamp_utc": "2026-02-06T23:53:00Z",
+  "branch": "codex/wave-next",
+  "backlog_item": "2.2.4: Unit tests (confidence thresholds and signal combinations)",
+  "implementation": {
+    "test_module": "tests/unit/test_profile_detector_scoring.py",
+    "scenarios": [
+      "exact auto threshold: total score 85 => confidence 0.85 => auto",
+      "exact prompt threshold: total score 65 => confidence 0.65 => prompt",
+      "below prompt threshold: total score 60 => confidence 0.60 => none",
+      "signal-combination breakdown includes git_branch, directory, and file_patterns contributions"
+    ],
+    "runtime_module_under_test": "src/dopemux/profile_detector.py"
+  },
+  "verification": {
+    "commands": [
+      {
+        "command": "pytest -q --no-cov tests/unit/test_profile_detector_scoring.py",
+        "status": "pass"
+      },
+      {
+        "command": "pytest -q --no-cov tests/unit/test_profile_detector_adhd_client.py",
+        "status": "pass"
+      }
+    ]
+  },
+  "status": "implemented"
+}
