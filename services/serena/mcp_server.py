@@ -49,6 +49,7 @@ if str(SCRIPT_DIR) not in sys.path:
 try:
     from services.shared.mcp.response_budget import (
         estimate_tokens as estimate_mcp_tokens,
+        record_budget_outcome,
         truncate_numbered_lines,
     )
 except ImportError:
@@ -57,6 +58,7 @@ except ImportError:
         sys.path.insert(0, str(SERVICES_ROOT))
     from shared.mcp.response_budget import (
         estimate_tokens as estimate_mcp_tokens,
+        record_budget_outcome,
         truncate_numbered_lines,
     )
 
@@ -4869,9 +4871,20 @@ class SerenaV2MCPServer:
         # Log with truncation info
         status = "TRUNCATED" if was_truncated else "complete"
         estimated_tokens = self._estimate_tokens(result)
+        budget_event = record_budget_outcome(
+            tool_name="serena.read_file",
+            tokens_used=estimated_tokens,
+            max_tokens=max_tokens,
+            was_truncated=was_truncated,
+        )
         logger.info(
-            f"read_file: {relative_path} ({len(numbered_lines)} lines, "
-            f"{estimated_tokens} tokens, {status})"
+            "read_file: %s (%s lines, %s tokens, %s, usage=%s%%, trunc_rate=%s%%)",
+            relative_path,
+            len(numbered_lines),
+            estimated_tokens,
+            status,
+            budget_event["usage_pct"],
+            budget_event["truncation_rate_pct"],
         )
 
         return result
