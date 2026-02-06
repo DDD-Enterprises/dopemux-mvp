@@ -45,6 +45,7 @@ Generated during this pass:
 - `reports/strict_closure/conport_real_import_integrity_2026-02-06.json`
 - `reports/strict_closure/conport_backlog_extract_2026-02-06.json`
 - `reports/strict_closure/conport_master_todo_miss_extract_2026-02-06.json`
+- `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
@@ -228,6 +229,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    AGE/PG stress + compatibility validation tasks, Slack client/status/triage workflow tasks, macOS focus/window-management integration tasks, beta-prep/recruitment/deployment tasks, and manual Leantime web setup completion path.
 4. Normalized priority matrix for the 24 underrepresented items:
    `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`.
+5. Secondary explicit-task-line extraction against current master docs surfaced `19` additional underrepresented implementation tasks from historical TODO samples (core package extraction, semantic/embedding deprecation path, ADHDConfigService rollouts, KG link/tool/test/perf/documentation tasks):
+   `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
@@ -248,6 +251,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 5. Triage and merge historically captured ConPort TODO/BLOCKED backlog into current execution ownership map (including blocked LiteLLM DB provisioning dependency).
 6. Decide and execute policy for replaying the remaining historical ConPort bundles (merge, dedupe, or archive-only import path).
 7. Complete Leantime manual setup closure so bridge deep health and project-list tooling are operational.
+8. Execute the 19-task secondary ConPort miss set and map each task to owner/test/doc evidence.
 
 ### P2 (Optimization and Scale)
 
@@ -403,6 +407,7 @@ Exit criteria:
 6. Define and execute replay strategy for the remaining historical ConPort bundles with dedupe guardrails.
 7. Fold extracted historical TODO/BLOCKED items (`reports/strict_closure/conport_backlog_extract_2026-02-06.json`) into the master prioritized fix ledger.
 8. Close Leantime readiness blocker using `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md` criteria and refresh strict-closure evidence.
+9. Resolve the secondary explicit-task miss set from `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`.
 
 ---
 
