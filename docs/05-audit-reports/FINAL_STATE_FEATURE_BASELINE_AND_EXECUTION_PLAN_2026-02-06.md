@@ -55,6 +55,9 @@ Generated during this pass:
 - `reports/strict_closure/profile_detector_threshold_tests_verification_2026-02-06.json`
 - `reports/strict_closure/profile_config_swap_restart_verification_2026-02-06.json`
 - `reports/strict_closure/profile_error_recovery_rollback_verification_2026-02-06.json`
+- `reports/strict_closure/profile_switch_command_verification_2026-02-06.json`
+- `reports/strict_closure/profile_switch_time_optimization_verification_2026-02-06.json`
+- `reports/strict_closure/profile_switch_integration_tests_verification_2026-02-06.json`
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
@@ -69,6 +72,9 @@ Generated during this pass:
 - `docs/05-audit-reports/PROFILE_DETECTOR_THRESHOLD_TESTS_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/PROFILE_CONFIG_SWAP_RESTART_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/PROFILE_ERROR_RECOVERY_ROLLBACK_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_SWITCH_COMMAND_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_SWITCH_TIME_OPTIMIZATION_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_SWITCH_INTEGRATION_TESTS_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
 - `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
@@ -284,6 +290,12 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/profile_config_swap_restart_verification_2026-02-06.json`.
 21. Profile error recovery and rollback backlog item (`3.2.4`) is now implemented with failure-path guardrails that preserve prior active state and restore Claude config backups when activation fails:
    `reports/strict_closure/profile_error_recovery_rollback_verification_2026-02-06.json`.
+22. Profile switch-command backlog item (`3.3.1`) is now implemented with orchestrated save/swap/restart/restore behavior and compatibility-preserving command surface:
+   `reports/strict_closure/profile_switch_command_verification_2026-02-06.json`.
+23. Switch time-optimization backlog item (`3.3.2`) is now implemented with parallel save/apply execution and step-level timing telemetry with target-threshold warning:
+   `reports/strict_closure/profile_switch_time_optimization_verification_2026-02-06.json`.
+24. Switch integration-test backlog item (`3.3.3`) is now implemented with full->developer->full flow validation and save/restore/timing assertions:
+   `reports/strict_closure/profile_switch_integration_tests_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
