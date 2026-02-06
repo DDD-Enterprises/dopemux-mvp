@@ -5,6 +5,9 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Final Audit Report (reference) for dopemux documentation and developer workflows.
 ---
 # Final Code Audit Report - Code-Audit Workspace
 **Date**: 2025-10-16
@@ -271,26 +274,26 @@ async def save_custom_data(...):
 
 ### Short-Term (This Week)
 
-5. [ ] Test all security fixes
-6. [ ] Verify SQL injection candidates
-7. [ ] Complete Phases 3-4 (documentation validation)
-8. [ ] Run integration test suite
+1. [ ] Test all security fixes
+2. [ ] Verify SQL injection candidates
+3. [ ] Complete Phases 3-4 (documentation validation)
+4. [ ] Run integration test suite
 
 ### Week 7 (Integration Work)
 
-9. [ ] Complete DopeconBridge (4-6h)
+1. [ ] Complete DopeconBridge (4-6h)
    - Implement MCP client
    - Wire custom_data to actual ConPort calls
 
-10. [ ] Migrate Services (6-8h)
-   - Remove direct SQLite access
-   - Update to HTTP API
-   - Test end-to-end
+2. [ ] Migrate Services (6-8h)
+- Remove direct SQLite access
+- Update to HTTP API
+- Test end-to-end
 
-11. [ ] Validate Authority Enforcement (2h)
-   - Test X-Source-Plane headers
-   - Verify PM plane read-only
-   - Integration tests
+1. [ ] Validate Authority Enforcement (2h)
+- Test X-Source-Plane headers
+- Verify PM plane read-only
+- Integration tests
 
 ---
 

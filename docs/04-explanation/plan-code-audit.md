@@ -5,6 +5,9 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Plan_Code_Audit (explanation) for dopemux documentation and developer workflows.
 ---
 # Dopemux Comprehensive Code Audit Remediation Plan
 
@@ -19,6 +22,7 @@ next_review: '2026-05-02'
 - Maintainability: central utility modules for subprocess, IO, config parsing; remove duplicated code across services.
 
 ## Risk Categories & Remediation Tactics
+
 | Category | Issues Found | Remediation Pattern |
 |----------|--------------|---------------------|
 | Broad Exception | Thousands across repo | Replace with specific exceptions; add `# EXC_REVIEW` tag when ambiguity remains |
@@ -105,6 +109,7 @@ next_review: '2026-05-02'
 - navigation_cache: move config + key generation to `cache_utils.py`.
 
 ## Metrics to Track (Baseline vs Target)
+
 | Metric | Baseline (approx) | Target |
 |--------|-------------------|--------|
 | Broad except count | ~3800 | <400 ( <10% remain, all justified ) |

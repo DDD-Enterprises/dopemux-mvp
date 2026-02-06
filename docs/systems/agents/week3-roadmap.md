@@ -1,10 +1,13 @@
 ---
 id: week3-roadmap
 title: Week3 Roadmap
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Week3 Roadmap (reference) for dopemux documentation and developer workflows.
 ---
 # Week 3 Implementation Roadmap: Day-by-Day Execution Plan
 

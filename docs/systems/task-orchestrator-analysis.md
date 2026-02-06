@@ -1,11 +1,15 @@
 ---
 id: task-orchestrator-analysis
 title: Task Orchestrator - Comprehensive Analysis
-type: system
+type: reference
 owner: '@hu3mann'
 created: '2026-02-02'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Task Orchestrator - Comprehensive Analysis (reference) for dopemux documentation
+  and developer workflows.
 ---
 # Task Orchestrator - Comprehensive Analysis
 

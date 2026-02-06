@@ -5,6 +5,10 @@ type: how-to
 owner: '@hu3mann'
 last_review: '2025-10-17'
 next_review: '2026-01-15'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Instance State Persistence (how-to) for dopemux documentation and developer
+  workflows.
 ---
 sh-recovery
 - adhd-optimization
