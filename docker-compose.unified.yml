@@ -1,3 +1,7 @@
+# ⚠️ DEPRECATED - Use compose.yml instead
+# This file is kept for reference only. The canonical compose file is now compose.yml at repo root.
+# See: compose.yml
+#
 # Dopemux Unified Docker Compose
 # Simplified version for quick setup - includes core services only
 

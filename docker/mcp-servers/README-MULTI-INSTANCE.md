@@ -100,7 +100,7 @@ Each instance uses 21 consecutive ports starting from `PORT_BASE`:
 | Service | Port Offset | Example (BASE=3000) | Example (BASE=3030) |
 |---------|-------------|---------------------|---------------------|
 | MAS Sequential | +1 | 3001 | 3031 |
-| Context7 | +2 | 3002 | 3032 |
+| PAL apilookup | +2 | 3003 | 3032 |
 | Zen | +3 | 3003 | 3033 |
 | ConPort | +4 | 3004 | 3034 |
 | Task Master | +5 | 3005 | 3035 |
@@ -134,7 +134,7 @@ These volumes are shared across ALL instances for efficiency:
 - `mcp_shared_minio_data` - Object storage
 
 **📖 Documentation Cache:**
-- `mcp_shared_context7_cache` - API reference cache
+- `mcp_shared_pal_cache` - API reference cache
 
 **💾 Session State & Context:**
 - `mcp_shared_dopemux_sessions` - Dopemux session data (.dopemux/)

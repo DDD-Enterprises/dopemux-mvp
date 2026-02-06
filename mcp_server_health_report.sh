@@ -78,8 +78,7 @@ test_endpoint() {
 }
 
 # Test each MCP server
-test_endpoint 3002 "context7        "
-test_endpoint 3003 "zen             "
+test_endpoint 3003 "pal        "
 test_endpoint 3004 "conport         "
 test_endpoint 3006 "serena          "
 test_endpoint 3008 "exa             "
@@ -96,7 +95,7 @@ echo ""
 echo "=== Port Listeners ==="
 echo ""
 
-lsof -iTCP -sTCP:LISTEN -n -P | grep -E ":(3001|3002|3003|3004|3006|3007|3008|3009|3012)" | awk '{print $9}' | sort -t: -k2 -n || echo "None found"
+lsof -iTCP -sTCP:LISTEN -n -P | grep -E ":(3001|3003|3004|3006|3007|3008|3009|3012)" | awk '{print $9}' | sort -t: -k2 -n || echo "None found"
 
 echo ""
 echo "=== Summary ==="
@@ -110,7 +109,7 @@ echo "Healthy containers: $healthy_count/$total_count"
 echo ""
 
 # List ports listening
-listening_ports=$(lsof -iTCP -sTCP:LISTEN -n -P | grep -E ":(3001|3002|3003|3004|3006|3007|3008|3009|3012)" | awk '{print $9}' | cut -d: -f2 | sort -n | tr '\n' ' ')
+listening_ports=$(lsof -iTCP -sTCP:LISTEN -n -P | grep -E ":(3001|3003|3004|3006|3007|3008|3009|3012)" | awk '{print $9}' | cut -d: -f2 | sort -n | tr '\n' ' ')
 
 echo "Ports listening: $listening_ports"
 echo ""

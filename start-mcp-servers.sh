@@ -39,7 +39,7 @@ start_service() {
     else
         echo "  🚀 Starting $service..."
         cd /Users/hue/code/dopemux-mvp
-        docker-compose -f docker-compose.master.yml up -d --no-recreate $service 2>&1 | grep -v "level=warning" || true
+        docker compose -f compose.yml up -d --no-recreate $service 2>&1 | grep -v "level=warning" || true
         echo "  ✅ Started $service"
     fi
     echo
@@ -71,5 +71,5 @@ echo
 echo "Running containers:"
 docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "(dopemux|mcp)"
 echo
-echo "💡 Tip: Use 'docker-compose -f docker-compose.master.yml ps' to check all services"
+echo "💡 Tip: Use 'docker compose -f compose.yml ps' to check all services"
 echo "💡 Tip: Use 'docker logs <container-name>' to view logs"

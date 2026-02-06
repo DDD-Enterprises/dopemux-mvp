@@ -178,6 +178,13 @@ echo "🔨 Building and starting containers (idempotent)..."
 safe_up() {
   local service="$1"; shift
   local cname="$1"; shift
+  
+  # Check if service exists in docker-compose first
+  if ! docker compose config --services 2>/dev/null | grep -q "^${service}$"; then
+    echo "ℹ️  ${service} not in docker-compose.yml (skipping)"
+    return 0
+  fi
+  
   if docker ps -a --format '{{.Names}}' | grep -q "^${cname}$"; then
     if [ "$(docker inspect -f '{{.State.Running}}' "${cname}")" != "true" ]; then
       echo "▶️  Starting existing container ${cname}"
@@ -202,12 +209,32 @@ SUFFIX="${DOPEMUX_INSTANCE_ID:+_}${DOPEMUX_INSTANCE_ID}"
 
 # Start infrastructure first (vector database for dope-context)
 echo "🗄️  Starting infrastructure..."
-# Databases/caches first
-safe_up redis-primary dopemux-redis-primary
-safe_up dopemux-postgres-age dopemux-postgres-age
-safe_up qdrant mcp-qdrant
+# Databases/caches first - only if they exist in docker-compose
+if docker compose config --services | grep -q "^redis-primary$"; then
+  safe_up redis-primary dopemux-redis-primary
+else
+  echo "ℹ️  redis-primary not in compose (should be started via smoke/master stack)"
+fi
 
-echo "⏳ Waiting for Qdrant to be ready..."
+if docker compose config --services | grep -q "^dopemux-postgres-age$"; then
+  safe_up dopemux-postgres-age dopemux-postgres-age
+else
+  echo "ℹ️  postgres not in MCP compose (should be started via smoke/master stack)"
+fi
+
+if docker compose config --services | grep -q "^qdrant$"; then
+  safe_up qdrant mcp-qdrant
+else
+  echo "ℹ️  qdrant not in MCP compose (should be started via smoke/master stack)"
+  # Check if qdrant is already running elsewhere
+  if docker ps --format '{{.Names}}' | grep -q "qdrant"; then
+    echo "✅ Qdrant already running (external)"
+  else
+    echo "⚠️  Qdrant not found - dope-context may not work"
+  fi
+fi
+
+echo "⏳ Waiting for infrastructure to be ready..."
 sleep 5
 
 # Initialize ConPort schema on first run (idempotent)
@@ -262,18 +289,19 @@ fi
 
 # Start critical path servers (staggered for ADHD optimizations)
 echo "⚡ Starting critical path servers..."
-safe_up context7 mcp-context7
-safe_up zen mcp-zen
-safe_up litellm mcp-litellm
-safe_up mas-sequential-thinking mcp-mas-sequential-thinking
+safe_up pal dopemux-mcp-pal
+safe_up pal dopemux-mcp-pal  # pal is the zen/code analysis server
+safe_up litellm dopemux-mcp-litellm
 
 echo "⏳ Waiting for critical servers to stabilize..."
 sleep 10
 
 # Start workflow servers
 echo "🔄 Starting workflow servers..."
-safe_up conport "mcp-conport${SUFFIX}"
-safe_up serena "mcp-serena${SUFFIX}"
+# dope-context (formerly conport for this stack)
+safe_up dope-context dopemux-mcp-dope-context
+# serena
+safe_up serena dopemux-mcp-serena
 
 echo "⏳ Waiting for workflow servers to stabilize..."
 sleep 10
@@ -293,15 +321,11 @@ fi
 
 # Start research + quality & utility servers
 echo "🧠 Starting research + quality & utility servers..."
-safe_up gptr-mcp mcp-gptr-mcp
-# Only start gptr-mcp-stdio if the directory exists (optional component)
-if [ -d "./gptr-mcp-stdio" ] && [ -f "./gptr-mcp-stdio/Dockerfile" ]; then
-  safe_up gptr-mcp-stdio mcp-gptr-stdio
-else
-  echo "• Skipping gptr-mcp-stdio (not present)"
-fi
-safe_up exa mcp-exa
-safe_up desktop-commander mcp-desktop-commander
+safe_up gptr-mcp dopemux-mcp-gptr-mcp
+# Only start dopemux-gpt-researcher if exists
+safe_up dopemux-gpt-researcher dopemux-gpt-researcher
+safe_up exa dopemux-mcp-exa
+safe_up desktop-commander dopemux-mcp-desktop-commander
 
 echo ""
 echo "⏳ Final startup wait..."
@@ -326,7 +350,7 @@ echo "🔁 Ensuring LiteLLM has latest config..."
 
 ensure_litellm_config_applied() {
   local config="../../litellm.config.yaml"
-  local cname="mcp-litellm"
+  local cname="dopemux-mcp-litellm"
   if [ ! -f "$config" ]; then
     echo "ℹ️  Skipping: $config not found"
     return
@@ -378,7 +402,7 @@ echo "🏥 Health check summary:"
 echo "========================"
 
 # Health check each critical server
-servers=("context7:3002" "zen:3003" "litellm:4000" "conport:3004" "mas-sequential-thinking:3011")
+servers=("pal:3003" "litellm:4000" "dope-context:3010")
 for server in "${servers[@]}"; do
     name="${server%:*}"
     port="${server#*:}"
@@ -421,24 +445,21 @@ echo ""
 echo "🔍 Server endpoints:"
 echo ""
 echo "📚 Critical Path Servers:"
-echo "   Context7:     http://localhost:3002"
-echo "   Zen:          http://localhost:3003"
+echo "   PAL (apilookup): http://localhost:3003"
 echo "   LiteLLM:      http://localhost:4000"
 echo "   Sequential:   http://localhost:3011"
 echo ""
 echo "🔄 Workflow Servers:"
-echo "   ConPort:      http://localhost:3004"
+echo "   Dope-Context: http://localhost:3010"
 echo "   Task Master:  http://localhost:3005"
 echo "   Serena:       http://localhost:3006"
-echo "   Claude Ctx:   http://localhost:3007"
 echo ""
 echo "🔧 Quality & Utility Servers:"
 echo "   GPT Research: http://localhost:3009"
 echo "   Exa:          http://localhost:3008"
-echo "   MorphLLM:     http://localhost:3011"
 echo "   Desktop Cmd:  http://localhost:3012"
 echo ""
 echo "📋 PM Integration:"
 echo "   Leantime:     http://localhost:8080 (external)"
 echo ""
-echo "🎯 Ready for MetaMCP orchestration!"
+echo "🎯 Ready for MCP operations!"

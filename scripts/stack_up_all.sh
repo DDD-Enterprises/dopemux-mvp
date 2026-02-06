@@ -97,8 +97,7 @@ docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | sed -n '1,200p'
 echo "\n== Helpful endpoints =="
 cat <<EOF
 ConPort:      http://localhost:3004
-Zen:          http://localhost:3003
-Context7:     http://localhost:3002
+PAL MCP (apilookup): http://localhost:3003
 LiteLLM:      http://localhost:4000 (Authorization header required)
 Sequential:   http://localhost:3011
 Redis UI:     http://localhost:8081 (if Event Bus started)

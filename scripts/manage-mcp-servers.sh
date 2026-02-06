@@ -136,12 +136,7 @@ show_status() {
 
     # NPM servers status (basic check)
     echo "📦 NPM MCP Servers:"
-    if command -v context7-mcp >/dev/null 2>&1; then
-        echo "   ✅ context7-mcp: Available"
-    else
-        echo "   ❌ context7-mcp: Not found"
-    fi
-
+    echo "   ℹ️ PAL apilookup is provided by the Docker `mcp-pal` service"
     if npm list -g exa-mcp >/dev/null 2>&1; then
         echo "   ✅ exa-mcp: Available"
     else
@@ -238,7 +233,7 @@ update_servers() {
 
     # Update NPM servers
     echo "📦 Updating NPM MCP servers..."
-    npm update -g context7-mcp exa-mcp morphllm-fast-apply-mcp 2>/dev/null || echo "⚠️ Some NPM updates may have failed"
+    npm update -g exa-mcp morphllm-fast-apply-mcp 2>/dev/null || echo "⚠️ Some NPM updates may have failed"
 
     echo "✅ Update complete!"
 }

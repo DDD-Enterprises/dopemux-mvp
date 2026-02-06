@@ -63,9 +63,12 @@ async def setup_claude_code_integration():
             "env": {}
         },
         {
-            "name": "context7",
-            "command": ["npx", "context7-mcp"],
-            "env": {"CONTEXT7_API_KEY": os.environ.get("CONTEXT7_API_KEY", "")}
+            "name": "pal",
+            "command": [
+                "/Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server/.venv/bin/python",
+                "/Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server/server.py"
+            ],
+            "env": {}
         },
         {
             "name": "zen",
@@ -130,7 +133,7 @@ async def demonstrate_integration():
     # Simulate Claude Code operations
     logger.info("📋 Simulating Claude Code MCP calls:")
     logger.info("1. ConPort: Getting active context")
-    logger.info("2. Context7: Fetching documentation")
+    logger.info("2. PAL apilookup: Fetching documentation")
     logger.info("3. Zen: Multi-model reasoning")
     logger.info()
 
@@ -174,16 +177,14 @@ def generate_claude_config_update():
                     "WORKSPACE_ID": "/Users/hue/code/dopemux-mvp"
                 }
             },
-            "context7_wrapped": {
+            "pal_wrapped": {
                 "command": "python",
                 "args": [
                     "/Users/hue/code/dopemux-mvp/scripts/mcp_event_wrapper.py",
-                    "--server", "context7",
+                    "--server", "pal",
                     "--instance", "${DOPEMUX_INSTANCE_ID:-A}"
                 ],
-                "env": {
-                    "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
-                }
+                "env": {}
             },
             "zen_wrapped": {
                 "command": "python",

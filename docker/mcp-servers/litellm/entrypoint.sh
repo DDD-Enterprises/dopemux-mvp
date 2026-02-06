@@ -3,8 +3,9 @@ set -e
 
 echo "🔧 Starting LiteLLM with PostgreSQL database..."
 
-# Use PostgreSQL on host (accessible via localhost due to host networking)
-export DATABASE_URL="postgresql://dopemux_age:dopemux_age_dev_password@localhost:5432/litellm"
+# Use DATABASE_URL from environment (set by docker-compose)
+# Default to localhost for backwards compatibility with host networking
+export DATABASE_URL="${DATABASE_URL:-postgresql://dopemux_age:dopemux_age_dev_password@localhost:5432/litellm}"
 echo "📊 DATABASE_URL: ${DATABASE_URL}"
 
 # Remove any cached Prisma client
