@@ -36,6 +36,11 @@ def detect_workspace() -> Path:
         return Path(result.stdout.strip())
     except Exception as e:
         return Path.cwd()
+
+
+def get_profiles_directory() -> Path:
+    """Return the canonical profile directory used by ProfileManager."""
+    return ProfileManager().profiles_dir
 @click.command("list")
 def list_profiles():
     """📋 List all available profiles"""
