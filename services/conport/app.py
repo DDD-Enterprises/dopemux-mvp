@@ -12,12 +12,22 @@ from typing import Optional
 import asyncpg
 from fastapi import FastAPI, Query
 
+try:
+    from dopemux.logging import configure_logging, RequestIDMiddleware
+except Exception:  # pragma: no cover - fallback path for isolated service images
+    RequestIDMiddleware = None
+
+    def configure_logging(service_name, *, level=None, **_):
+        resolved_level = getattr(logging, str(level or "INFO").upper(), logging.INFO)
+        logging.basicConfig(
+            level=resolved_level,
+            format="%(asctime)s %(levelname)s %(name)s %(message)s",
+        )
+        return logging.getLogger(service_name)
+
 # Configure logging
 LOG_LEVEL = os.getenv("LOG_LEVEL", "info").upper()
-logging.basicConfig(
-    level=LOG_LEVEL,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+configure_logging("conport", level=LOG_LEVEL)
 logger = logging.getLogger("conport")
 
 # Environment variable contract (G33)
@@ -158,6 +168,8 @@ def create_app() -> FastAPI:
         description="Dashboard access to ConPort knowledge graph",
         lifespan=app_lifespan
     )
+    if RequestIDMiddleware is not None:
+        app.add_middleware(RequestIDMiddleware)
     
     # Health check route
     @app.get(HEALTH_CHECK_PATH)
