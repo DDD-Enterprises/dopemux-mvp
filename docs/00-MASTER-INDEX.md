@@ -31,8 +31,8 @@ next_review: '2026-02-08'
 ### Integrations
 - [Leantime Setup](02-how-to/integrations/LEANTIME_SETUP_INSTRUCTIONS.md)
 - [Leantime API Configuration](02-how-to/integrations/LEANTIME_API_SETUP_GUIDE.md)
-- [MCP Server Configuration](02-how-to/metamcp-setup.md)
-- [MetaMCP Quickstart](02-how-to/metamcp-quickstart.md)
+- [MCP Service Discovery Guide](02-how-to/mcp-service-discovery-guide.md)
+- [MCP Tools Overview](03-reference/mcp-tools-overview.md)
 
 ### Operations
 - [Role Switching](02-how-to/role-switching-quickstart.md)
@@ -101,7 +101,7 @@ next_review: '2026-02-08'
 
 ### Configuration
 - [Profile YAML Schema](PROFILE-YAML-SCHEMA.md)
-- [MetaMCP Tool Mapping](03-reference/metamcp-tool-mapping.md)
+- [MCP Tools Overview](03-reference/mcp-tools-overview.md)
 
 ### Features
 - [Features Index](FEATURES_INDEX.md)

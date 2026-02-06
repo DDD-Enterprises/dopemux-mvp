@@ -69,7 +69,6 @@ System monitoring and healthchecks:
 MCP server management and configuration:
 
 - `manage-mcp-servers.sh` - MCP lifecycle management
-- `metamcp_server.py` - MetaMCP broker server
 - `wire_claude_mcp.py` - Wire Claude to MCP
 - `check-mcp-updates.py` - Check for MCP updates
 - See [`MCP_SCRIPTS_README.md`](file:///Users/hue/code/dopemux-mvp/scripts/mcp/MCP_SCRIPTS_README.md)
