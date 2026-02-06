@@ -54,6 +54,7 @@ Generated during this pass:
 - `docs/05-audit-reports/CONPORT_REAL_IMPORT_INTEGRITY_2026-02-06.md`
 - `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`
 - `docs/05-audit-reports/CONPORT_FULL_TODO_COVERAGE_MATRIX_2026-02-06.md`
+- `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`
 - `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
 - `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
@@ -238,6 +239,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/conport_master_todo_coverage_recheck_2026-02-06.json`.
 7. Full-bundle ConPort TODO/BLOCKED coverage extraction across all available import bundles shows `231` unique pending items with `167` still underrepresented in current master docs:
    `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json`.
+8. First execution packet for the underrepresented set is now materialized with owner buckets and verification anchors for the top `40` items:
+   `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`.
 
 ## Prioritized Gap Register
 
@@ -260,6 +263,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 7. Complete Leantime manual setup closure so bridge deep health and project-list tooling are operational.
 8. Execute the 19-task secondary ConPort miss set and map each task to owner/test/doc evidence.
 9. Close the remaining full-bundle underrepresented ConPort backlog set (`167`) in phased owner-assigned packets.
+10. Execute packet #1 (`top 40`) from `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`.
 
 ### P2 (Optimization and Scale)
 
@@ -417,6 +421,7 @@ Exit criteria:
 8. Close Leantime readiness blocker using `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md` criteria and refresh strict-closure evidence.
 9. Resolve the secondary explicit-task miss set from `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`.
 10. Execute and close the full-bundle underrepresented set from `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json` and refresh coverage counts.
+11. Execute and close packet #1 and regenerate packet #2 from remaining uncovered items.
 
 ---
 
