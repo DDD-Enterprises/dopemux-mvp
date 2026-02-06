@@ -254,6 +254,10 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/profile_workstream_verification_2026-02-06.json`.
 10. Shared MCP response-budget work item from the underrepresented packet is now implemented and verified:
    `reports/strict_closure/mcp_response_budget_verification_2026-02-06.json`.
+11. Deep status-field extraction from ConPort `custom_data` payloads identified `4` additional missed milestone checkpoints (not present in the prior full-coverage artifact), and these are now explicitly promoted in the master miss matrix:
+   `reports/strict_closure/conport_deep_status_task_extract_2026-02-06.json`.
+12. Recheck confirms the `4` deep-extraction misses are now represented in active master docs (`new_uncovered_vs_full_coverage = 0`):
+   `reports/strict_closure/conport_deep_status_task_recheck_2026-02-06.json`.
 
 ## Prioritized Gap Register
 

@@ -72,6 +72,8 @@ Top `40` underrepresented items from `reports/strict_closure/conport_full_todo_c
    - `docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md`
 4. Row `38` (MCP token-budget monitoring/logging) is now implemented:
    - `docs/05-audit-reports/MCP_BUDGET_MONITORING_VERIFICATION_2026-02-06.md`
+5. Deep status-field extraction surfaced `4` additional checkpoint tasks from ConPort `custom_data`, now promoted into the master miss matrix:
+   - `docs/05-audit-reports/CONPORT_DEEP_STATUS_TASK_EXTRACT_2026-02-06.md`
 
 ## Source
 

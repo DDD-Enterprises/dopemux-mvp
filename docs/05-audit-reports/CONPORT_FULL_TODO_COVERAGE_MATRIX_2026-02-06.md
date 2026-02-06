@@ -36,6 +36,17 @@ Task-type distribution:
 - `TASK_PLAN`: `25`
 - `WEEK_PLAN`: `4`
 
+## Extraction Boundary Note
+
+The original full-coverage artifact above was derived from TODO/BLOCKED `progress_entries`.
+
+Follow-on deep extraction added nested status records from `custom_data.value` payloads and surfaced `4` additional TODO checkpoint items not represented in the original full-coverage artifact.
+
+Evidence:
+
+- `reports/strict_closure/conport_deep_status_task_extract_2026-02-06.json`
+- `docs/05-audit-reports/CONPORT_DEEP_STATUS_TASK_EXTRACT_2026-02-06.md`
+
 ## Runtime Override Notes
 
 The only historical `BLOCKED` entry in this extraction has been runtime-verified as stale:
