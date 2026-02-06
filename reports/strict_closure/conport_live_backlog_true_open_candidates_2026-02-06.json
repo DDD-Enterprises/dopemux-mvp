@@ -3,10 +3,10 @@
   "source_matrix": "reports/strict_closure/conport_live_backlog_underrepresented_matrix_2026-02-06.json",
   "summary": {
     "underrepresented_total": 66,
-    "true_open_candidates": 33,
+    "resolved_in_runtime": 1,
+    "true_open_candidates": 32,
     "likely_alias_or_already_implemented": 33,
     "open_cluster_counts": {
-      "conport_persistence": 1,
       "bridge_orchestrator": 6,
       "kg_dependency_unification": 7,
       "shield_slack_beta": 11,
@@ -14,15 +14,13 @@
       "other": 4
     }
   },
-  "true_open_candidates": [
+  "resolved_in_runtime": [
     {
-      "id": 1,
-      "status": "IN_PROGRESS",
       "description": "ConPort database persistence implementation",
-      "cluster": "conport_persistence",
-      "priority_hint": "P1",
-      "owner_bucket": "Core Platform"
-    },
+      "evidence": "reports/strict_closure/conport_persistence_verification_2026-02-06.json"
+    }
+  ],
+  "true_open_candidates": [
     {
       "id": 24,
       "status": "PLANNED",
