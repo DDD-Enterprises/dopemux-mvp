@@ -1,0 +1,376 @@
+[
+  {
+    "service": "activity-capture",
+    "py_files": 6,
+    "md_files": 0,
+    "test_files": 0,
+    "dockerfile": true,
+    "readme": false,
+    "main_entry_candidates": [
+      "services/activity-capture/main.py"
+    ],
+    "health_ref_files": 2
+  },
+  {
+    "service": "adhd-dashboard",
+    "py_files": 4,
+    "md_files": 1,
+    "test_files": 4,
+    "dockerfile": true,
+    "readme": true,
+    "main_entry_candidates": [],
+    "health_ref_files": 1
+  },
+  {
+    "service": "adhd-notifier",
+    "py_files": 10,
+    "md_files": 1,
+    "test_files": 8,
+    "dockerfile": true,
+    "readme": true,
+    "main_entry_candidates": [
+      "services/adhd-notifier/main.py"
+    ],
+    "health_ref_files": 1
+  },
+  {
+    "service": "adhd_engine",
+    "py_files": 116,
+    "md_files": 5,
+    "test_files": 48,
+    "dockerfile": true,
+    "readme": true,
+    "main_entry_candidates": [
+      "services/adhd_engine/main.py",
+      "services/adhd_engine/domains/energy-trends/main.py",
+      "services/adhd_engine/domains/roast-engine/server.py",
+      "services/adhd_engine/domains/context-switch-tracker/main.py"
+    ],
+    "health_ref_files": 11
+  },
+  {
+    "service": "agents",
+    "py_files": 15,
+    "md_files": 1,
+    "test_files": 6,
+    "dockerfile": false,
+    "readme": true,
+    "main_entry_candidates": [],
+    "health_ref_files": 2
+  },
+  {
+    "service": "claude_brain",
+    "py_files": 13,
+    "md_files": 1,
+    "test_files": 0,
+    "dockerfile": true,
+    "readme": true,
+    "main_entry_candidates": [
+      "services/claude_brain/main.py"
+    ],
+    "health_ref_files": 2
+  },
+  {
+    "service": "complexity_coordinator",
+    "py_files": 1,
+    "md_files": 0,
+    "test_files": 0,
+    "dockerfile": false,
+    "readme": false,
+    "main_entry_candidates": [],
+    "health_ref_files": 0
+  },
+  {
+    "service": "conport",
+    "py_files": 3,
+    "md_files": 1,
+    "test_files": 0,
+    "dockerfile": true,
+    "readme": false,
+    "main_entry_candidates": [
+      "services/conport/app.py"
+    ],
+    "health_ref_files": 2
+  },
+  {
+    "service": "conport_kg_ui",
+    "py_files": 0,
+    "md_files": 1,
+    "test_files": 0,
+    "dockerfile": false,
+    "readme": true,
+    "main_entry_candidates": [],
+    "health_ref_files": 0
+  },
+  {
+    "service": "dddpg",
+    "py_files": 11,
+    "md_files": 2,
+    "test_files": 2,
+    "dockerfile": false,
+    "readme": false,
+    "main_entry_candidates": [],
+    "health_ref_files": 0
+  },
+  {
+    "service": "dope-context",
+    "py_files": 35,
+    "md_files": 1,
+    "test_files": 5,
+    "dockerfile": true,
+    "readme": true,
+    "main_entry_candidates": [
+      "services/dope-context/src/mcp/server.py"
+    ],
+    "health_ref_files": 2
+  },
+  {
+    "service": "dope-query",
+    "py_files": 27,
+    "md_files": 1,
+    "test_files": 14,
+    "dockerfile": false,
+    "readme": false,
+    "main_entry_candidates": [],
+    "health_ref_files": 0
+  },
+  {
+    "service": "dopecon-bridge",
+    "py_files": 68,
+    "md_files": 1,
+    "test_files": 55,
+    "dockerfile": true,
+    "readme": true,
+    "main_entry_candidates": [
+      "services/dopecon-bridge/main.py",
+      "services/dopecon-bridge/dopecon_bridge/app.py"
+    ],
+    "health_ref_files": 7
+  },
+  {
+    "service": "dopemux-gpt-researcher",
+    "py_files": 36,
+    "md_files": 2,
+    "test_files": 16,
+    "dockerfile": true,
+    "readme": false,
+    "main_entry_candidates": [
+      "services/dopemux-gpt-researcher/mcp-server/server.py",
+      "services/dopemux-gpt-researcher/research_api/main.py",
+      "services/dopemux-gpt-researcher/research_api/api/main.py"
+    ],
+    "health_ref_files": 3
+  },
+  {
+    "service": "genetic_agent",
+    "py_files": 40,
+    "md_files": 1,
+    "test_files": 12,
+    "dockerfile": true,
+    "readme": true,
+    "main_entry_candidates": [
+      "services/genetic_agent/main.py"
+    ],
+    "health_ref_files": 5
+  },
+  {
+    "service": "intelligence",
+    "py_files": 1,
+    "md_files": 0,
+    "test_files": 0,
+    "dockerfile": false,
+    "readme": false,
+    "main_entry_candidates": [],
+    "health_ref_files": 0
+  },
+  {
+    "service": "mcp-client",
+    "py_files": 1,
+    "md_files": 0,
+    "test_files": 0,
+    "dockerfile": true,
+    "readme": false,
+    "main_entry_candidates": [
+      "services/mcp-client/main.py"
+    ],
+    "health_ref_files": 0
+  },
+  {
+    "service": "ml-predictions",
+    "py_files": 11,
+    "md_files": 0,
+    "test_files": 0,
+    "dockerfile": false,
+    "readme": false,
+    "main_entry_candidates": [
+      "services/ml-predictions/main.py",
+      "services/ml-predictions/services/ml-predictions/main.py"
+    ],
+    "health_ref_files": 4
+  },
+  {
+    "service": "ml-risk-assessment",
+    "py_files": 2,
+    "md_files": 1,
+    "test_files": 0,
+    "dockerfile": false,
+    "readme": true,
+    "main_entry_candidates": [],
+    "health_ref_files": 0
+  },
+  {
+    "service": "monitoring",
+    "py_files": 2,
+    "md_files": 0,
+    "test_files": 0,
+    "dockerfile": false,
+    "readme": false,
+    "main_entry_candidates": [],
+    "health_ref_files": 1
+  },
+  {
+    "service": "monitoring-dashboard",
+    "py_files": 2,
+    "md_files": 1,
+    "test_files": 0,
+    "dockerfile": true,
+    "readme": true,
+    "main_entry_candidates": [
+      "services/monitoring-dashboard/server.py"
+    ],
+    "health_ref_files": 1
+  },
+  {
+    "service": "serena",
+    "py_files": 81,
+    "md_files": 0,
+    "test_files": 20,
+    "dockerfile": false,
+    "readme": false,
+    "main_entry_candidates": [],
+    "health_ref_files": 3
+  },
+  {
+    "service": "session-intelligence",
+    "py_files": 1,
+    "md_files": 1,
+    "test_files": 0,
+    "dockerfile": false,
+    "readme": true,
+    "main_entry_candidates": [],
+    "health_ref_files": 0
+  },
+  {
+    "service": "session-manager",
+    "py_files": 42,
+    "md_files": 2,
+    "test_files": 6,
+    "dockerfile": false,
+    "readme": true,
+    "main_entry_candidates": [
+      "services/session-manager/tui/main.py",
+      "services/session-manager/src/main.py"
+    ],
+    "health_ref_files": 3
+  },
+  {
+    "service": "session_intelligence",
+    "py_files": 1,
+    "md_files": 0,
+    "test_files": 0,
+    "dockerfile": false,
+    "readme": false,
+    "main_entry_candidates": [],
+    "health_ref_files": 0
+  },
+  {
+    "service": "slack-integration",
+    "py_files": 1,
+    "md_files": 0,
+    "test_files": 0,
+    "dockerfile": false,
+    "readme": false,
+    "main_entry_candidates": [],
+    "health_ref_files": 1
+  },
+  {
+    "service": "task-orchestrator",
+    "py_files": 52,
+    "md_files": 3,
+    "test_files": 14,
+    "dockerfile": true,
+    "readme": false,
+    "main_entry_candidates": [
+      "services/task-orchestrator/task_orchestrator/app.py",
+      "services/task-orchestrator/app/main.py"
+    ],
+    "health_ref_files": 5
+  },
+  {
+    "service": "task-router",
+    "py_files": 3,
+    "md_files": 0,
+    "test_files": 0,
+    "dockerfile": false,
+    "readme": false,
+    "main_entry_candidates": [],
+    "health_ref_files": 1
+  },
+  {
+    "service": "taskmaster",
+    "py_files": 2,
+    "md_files": 0,
+    "test_files": 0,
+    "dockerfile": false,
+    "readme": false,
+    "main_entry_candidates": [
+      "services/taskmaster/server.py"
+    ],
+    "health_ref_files": 0
+  },
+  {
+    "service": "taskmaster-mcp-client",
+    "py_files": 1,
+    "md_files": 0,
+    "test_files": 0,
+    "dockerfile": false,
+    "readme": false,
+    "main_entry_candidates": [],
+    "health_ref_files": 0
+  },
+  {
+    "service": "voice-commands",
+    "py_files": 5,
+    "md_files": 0,
+    "test_files": 0,
+    "dockerfile": true,
+    "readme": false,
+    "main_entry_candidates": [],
+    "health_ref_files": 1
+  },
+  {
+    "service": "working-memory-assistant",
+    "py_files": 49,
+    "md_files": 3,
+    "test_files": 29,
+    "dockerfile": true,
+    "readme": true,
+    "main_entry_candidates": [
+      "services/working-memory-assistant/main.py",
+      "services/working-memory-assistant/mcp/server.py"
+    ],
+    "health_ref_files": 4
+  },
+  {
+    "service": "workspace-watcher",
+    "py_files": 7,
+    "md_files": 1,
+    "test_files": 0,
+    "dockerfile": false,
+    "readme": true,
+    "main_entry_candidates": [
+      "services/workspace-watcher/main.py"
+    ],
+    "health_ref_files": 0
+  }
+]

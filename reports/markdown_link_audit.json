@@ -1,0 +1,1457 @@
+{
+  "markdown_files": 1015,
+  "issues": [
+    {
+      "file": "INSTALL.md",
+      "link": "color_orange",
+      "line": 647,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "INSTALL.md",
+      "link": "bg:color_yellow",
+      "line": 650,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "INSTALL.md",
+      "link": "fg:color_yellow",
+      "line": 652,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "INSTALL.md",
+      "link": "fg:color_aqua",
+      "line": 655,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "INSTALL.md",
+      "link": "fg:color_blue",
+      "line": 666,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "INSTALL.md",
+      "link": "fg:color_bg3",
+      "line": 669,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "INSTALL.md",
+      "link": "fg:color_green",
+      "line": 671,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "INSTALL.md",
+      "link": "$style",
+      "line": 676,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "INSTALL.md",
+      "link": "bg:color_aqua",
+      "line": 683,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "INSTALL.md",
+      "link": "bg:color_aqua",
+      "line": 687,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "INSTALL.md",
+      "link": "bg:color_green",
+      "line": 693,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "INSTALL.md",
+      "link": "bg:color_purple",
+      "line": 701,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "README.md",
+      "link": "docs/branding/D\u00d8PEMUX_BRAND_SYSTEM.md",
+      "line": 11,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "README.md",
+      "link": "docs/TERMINAL_SETUP.md",
+      "line": 137,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "README.md",
+      "link": "./services/dope-context/AUTONOMOUS_INDEXING.md",
+      "line": 448,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "README.md",
+      "link": "./docs/94-architecture/system-bible.md",
+      "line": 594,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "README.md",
+      "link": "./docs/94-architecture/system-bible.md",
+      "line": 680,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "README.md",
+      "link": "./docs/ADHD-ENGINE-DEEP-DIVE-PART1.md",
+      "line": 681,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "README.md",
+      "link": "docs/02-how-to/DEVELOPING_DOPEMUX_CORE.md",
+      "line": 712,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "README.md",
+      "link": "docs/api/workspace.md",
+      "line": 1079,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "README.md",
+      "link": "docs/troubleshooting/workspaces.md",
+      "line": 1080,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "deployment/DEPLOYMENT-INSTRUCTIONS.md",
+      "line": 27,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "deployment/DEPLOYMENT-CHECKLIST.md",
+      "line": 28,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "deployment/DEPLOYMENT-WORKTREE-INSTRUCTIONS.md",
+      "line": 29,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "02-how-to/integrations/LEANTIME_SETUP_INSTRUCTIONS.md",
+      "line": 32,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "02-how-to/integrations/LEANTIME_API_SETUP_GUIDE.md",
+      "line": 33,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "systems/conport/CONPORT_EXECUTIVE_SUMMARY.md",
+      "line": 50,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "systems/conport/CONPORT_SYSTEMS_ANALYSIS.md",
+      "line": 51,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "systems/conport/CONPORT_INTEGRATION_QUICKSTART.md",
+      "line": 52,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "systems/conport/CONPORT_COMPARISON_MATRIX.md",
+      "line": 53,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "systems/conport/CONPORT_README.md",
+      "line": 54,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "systems/dashboard/TMUX_DASHBOARD_README.md",
+      "line": 58,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "systems/dashboard/TMUX_DASHBOARD_DESIGN.md",
+      "line": 59,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "systems/dashboard/TMUX_METRICS_INVENTORY.md",
+      "line": 60,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "systems/dashboard/DASHBOARD_IMPLEMENTATION_TRACKER.md",
+      "line": 61,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "systems/dashboard/DASHBOARD_ENHANCEMENTS.md",
+      "line": 62,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "94-architecture/system-bible.md",
+      "line": 70,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "94-architecture/multi-instance-implementation.md",
+      "line": 72,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "development/planning/ACTION-PLAN-MASTER.md",
+      "line": 87,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "development/planning/DDDPG_KICKOFF.md",
+      "line": 88,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "development/planning/DOPE_LAYOUT_MODULAR_PLAN.md",
+      "line": 89,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "implementation-plans/00-MASTER-INDEX.md",
+      "line": 93,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "implementation-plans/DASHBOARD_IMPLEMENTATION_TRACKER.md",
+      "line": 94,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "implementation-plans/CONPORT_HTTP_DEEP_PLANNING.md",
+      "line": 95,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "implementation-plans/component-1-audit-summary.md",
+      "line": 96,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "PROFILE-YAML-SCHEMA.md",
+      "line": 103,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/00-master-index.md",
+      "link": "FEATURES_INDEX.md",
+      "line": 107,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "services/dope-query/MULTI_WORKSPACE_GUIDE.md",
+      "link": "../../docs/94-architecture/",
+      "line": 334,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "services/dope-query/MULTI_WORKSPACE_GUIDE.md",
+      "link": "./queries/README.md",
+      "line": 335,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "services/dope-query/MULTI_WORKSPACE_GUIDE.md",
+      "link": "./tests/test_multi_workspace.py",
+      "line": 337,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/pandoc/tests.md",
+      "link": "/url",
+      "line": 88,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/pandoc/tests.md",
+      "link": "/url",
+      "line": 1162,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/pandoc/tests.md",
+      "link": "lalune.jpg",
+      "line": 1282,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/pandoc/tests.md",
+      "link": "/url/of/image.png",
+      "line": 1300,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/pandoc/tests.md",
+      "link": "/url/of/image.png",
+      "line": 1310,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/pandoc/tests.md",
+      "link": "foo.jpg",
+      "line": 1320,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/pandoc/tests.md",
+      "link": "file.jpg",
+      "line": 1333,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/onnxruntime/Privacy.md",
+      "link": "../README.md#binaries",
+      "line": 14,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/onnxruntime/Privacy.md",
+      "link": "../onnxruntime/core/platform/telemetry.h",
+      "line": 14,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/onnxruntime/Privacy.md",
+      "link": "../README.md#api-documentation",
+      "line": 19,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/onnxruntime/Privacy.md",
+      "link": "./C_API.md#telemetry",
+      "line": 20,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/litellm/integrations/levo/README.md",
+      "link": "../../../../docs/my-website/docs/observability/levo_integration.md",
+      "line": 117,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/litellm/proxy/client/README.md",
+      "link": "../../CONTRIBUTING.md",
+      "line": 297,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/litellm/proxy/client/README.md",
+      "link": "../../LICENSE",
+      "line": 301,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/nltk-3.9.2.dist-info/licenses/README.md",
+      "link": "CONTRIBUTING.md",
+      "line": 15,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/pypdfium2-5.3.0.dist-info/licenses/data/darwin_arm64/BUILD_LICENSES/libjpeg_turbo.md",
+      "link": "README.ijg",
+      "line": 7,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".venv/lib/python3.13/site-packages/mdit_py_plugins/texmath/README.md",
+      "link": "./license.txt",
+      "line": 135,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/overview.md",
+      "link": "features/FEATURES_INDEX.md",
+      "line": 59,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/overview.md",
+      "link": "F001-untracked-work-detection.md",
+      "line": 63,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/overview.md",
+      "link": "serena-v2-test-summary.md",
+      "line": 70,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/overview.md",
+      "link": "serena-v2-validation-report.md",
+      "line": 71,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/overview.md",
+      "link": "../deployment/DEPLOYMENT-INSTRUCTIONS.md",
+      "line": 26,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/overview.md",
+      "link": "../deployment/DEPLOYMENT-CHECKLIST.md",
+      "line": 27,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/overview.md",
+      "link": "../deployment/DEPLOYMENT-WORKTREE-INSTRUCTIONS.md",
+      "line": 28,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/overview.md",
+      "link": "integrations/LEANTIME_SETUP_INSTRUCTIONS.md",
+      "line": 41,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/overview.md",
+      "link": "integrations/LEANTIME_API_SETUP_GUIDE.md",
+      "line": 42,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/overview.md",
+      "link": "integrations/LEANTIME_DEPLOYMENT_RECOMMENDATION.md",
+      "line": 43,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/overview.md",
+      "link": "serena-v2-deployment.md",
+      "line": 61,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/terminal-setup.md",
+      "link": "$style",
+      "line": 299,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/DEVELOPMENT_SETUP.md",
+      "link": "./DEVELOPING_DOPEMUX_CORE.md",
+      "line": 410,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/DEVELOPMENT_SETUP.md",
+      "link": "../94-architecture/system-bible.md",
+      "line": 416,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/create-llm-archive.md",
+      "link": "../03-reference/code-review-checklist.md",
+      "line": 279,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/create-llm-archive.md",
+      "link": "../03-reference/security-guidelines.md",
+      "line": 280,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/create-llm-archive.md",
+      "link": "../04-explanation/architecture/overview.md",
+      "line": 281,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/create-llm-archive.md",
+      "link": "../04-explanation/systems/adhd-engine.md",
+      "line": 282,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/DEVELOPING_ZEN.md",
+      "link": "../../03-reference/services/zen-mcp.md",
+      "line": 512,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/DEVELOPING_ZEN.md",
+      "link": "../../docker/mcp-servers/zen/zen-mcp-server/tools/thinkdeep.py",
+      "line": 518,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/DEVELOPING_ZEN.md",
+      "link": "../../docker/mcp-servers/zen/zen-mcp-server/models/",
+      "line": 519,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/multi-instance-workflow.md",
+      "link": "../WORKTREE_SWITCHING_GUIDE.md",
+      "line": 627,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/mobile-web-setup-guide.md",
+      "link": "../systems/adhd-intelligence/overview.md",
+      "line": 386,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/mobile-web-setup-guide.md",
+      "link": "../troubleshooting-playbook.md",
+      "line": 387,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/02-how-to/mcp-updates.md",
+      "link": "[^\"\\']+",
+      "line": 255,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "link": "DEPLOYMENT-READY-SUMMARY.md",
+      "line": 17,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "link": "phase-2-security-quality-complete.md",
+      "line": 21,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "link": "phase-1a-inventory.md",
+      "line": 50,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "link": "phase-1b-service-catalog.md",
+      "line": 51,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "link": "phase-1c-dependency-map.md",
+      "line": 52,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "link": "phase-1d-documentation-inventory.md",
+      "line": 53,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "link": "phase-2a-security-scan.md",
+      "line": 56,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "link": "phase-2-security-quality-complete.md",
+      "line": 57,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/05-audit-reports/audit-overview.md",
+      "link": "phase-3-manual-review-findings.md",
+      "line": 60,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/01-tutorials/quick-launch-commands.md",
+      "link": "../systems/dashboard/TMUX_DASHBOARD_DESIGN.md",
+      "line": 402,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/conport/release-notes.md",
+      "link": "src/context_portal_mcp/db/models.py",
+      "line": 32,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/conport/release-notes.md",
+      "link": "src/context_portal_mcp/db/database.py",
+      "line": 32,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/conport/release-notes.md",
+      "link": "README.md",
+      "line": 239,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/conport/release-notes.md",
+      "link": "CONTRIBUTING.md",
+      "line": 240,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/conport/release-notes.md",
+      "link": "README.md",
+      "line": 300,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/conport/release-notes.md",
+      "link": "v0.2.3_UPDATE_GUIDE.md",
+      "line": 300,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/conport/release-notes.md",
+      "link": "v0.2.3_UPDATE_GUIDE.md",
+      "line": 304,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/serena/multi-workspace-guide.md",
+      "link": "./docs/F002_USER_GUIDE.md",
+      "line": 546,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/serena/multi-workspace-guide.md",
+      "link": "./multi_workspace_wrapper.py",
+      "line": 547,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/serena/multi-workspace-guide.md",
+      "link": "../../services/shared/complexity_coordinator/",
+      "line": 548,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/serena/multi-workspace-guide.md",
+      "link": "./adhd_features.py",
+      "line": 549,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/dope-context/deployment.md",
+      "link": "README.md",
+      "line": 768,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/dope-context/deployment.md",
+      "link": "API_REFERENCE.md",
+      "line": 768,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/dope-context/api-reference.md",
+      "link": "PERFORMANCE_TUNING.md",
+      "line": 667,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/adhd-features/README.md",
+      "link": "../adhd-engine-api.md",
+      "line": 39,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+      "link": "docs/PHASE1_SPRINT_PLAN.md",
+      "line": 293,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+      "link": "../../docs/COMPONENT_7_ENVIRONMENTAL_INTERRUPTION_SHIELD.md",
+      "line": 315,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+      "link": "docs/PHASE1_SPRINT_PLAN.md",
+      "line": 316,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+      "link": "README.md",
+      "line": 317,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/04-explanation/concepts/worktree-comprehensive-guide.md",
+      "link": "WORKTREE_SWITCHING_GUIDE.md",
+      "line": 559,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/04-explanation/concepts/worktree-comprehensive-guide.md",
+      "link": "ADVANCED_WORKTREE_WORKFLOWS.md",
+      "line": 560,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/04-explanation/concepts/worktree-comprehensive-guide.md",
+      "link": "troubleshooting/WORKTREE_VALIDATION_REPORT.md",
+      "line": 561,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "TMUX_DASHBOARD_README.md",
+      "line": 15,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "TMUX_DASHBOARD_DESIGN.md",
+      "line": 16,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "TMUX_METRICS_INVENTORY.md",
+      "line": 17,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "TMUX_DASHBOARD_README.md",
+      "line": 29,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "DASHBOARD_ENHANCEMENTS.md",
+      "line": 30,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "TMUX_DASHBOARD_DESIGN.md",
+      "line": 33,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "TMUX_METRICS_INVENTORY.md",
+      "line": 34,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "DASHBOARD_IMPLEMENTATION_TRACKER.md",
+      "line": 35,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "DASHBOARD_ENHANCEMENTS.md",
+      "line": 38,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "../../implementation-plans/DASHBOARD_SESSION_SUMMARY.md",
+      "line": 39,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "TMUX_METRICS_INVENTORY.md",
+      "line": 97,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "DASHBOARD_IMPLEMENTATION_TRACKER.md",
+      "line": 116,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "DASHBOARD_ENHANCEMENTS.md",
+      "line": 125,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "../../ADHD_COMPLETE_DOCUMENTATION.md",
+      "line": 135,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "../../04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md",
+      "line": 136,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/overview.md",
+      "link": "../../implementation-plans/",
+      "line": 137,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md",
+      "link": "./TMUX_METRICS_INVENTORY.md",
+      "line": 15,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md",
+      "link": "./TMUX_DASHBOARD_DESIGN.md",
+      "line": 16,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md",
+      "link": "./dopemux_dashboard.py",
+      "line": 17,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "link": "ADHD_COMPLETE_DOCUMENTATION.md",
+      "line": 15,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "link": "ADHD_STACK_README.md",
+      "line": 16,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "link": "ADHD_ARCHITECTURE_DIAGRAM.md",
+      "line": 17,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "link": "ADHD_COMPLETE_DOCUMENTATION.md",
+      "line": 31,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "link": "ADHD_STACK_README.md",
+      "line": 32,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "link": "ADHD_ARCHITECTURE_DIAGRAM.md",
+      "line": 35,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART1.md",
+      "line": 36,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART2.md",
+      "line": 37,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART3.md",
+      "line": 38,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART4.md",
+      "line": 39,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "link": "../../04-explanation/",
+      "line": 42,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "link": "../../04-explanation/architecture/",
+      "line": 155,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "link": "../../04-explanation/",
+      "line": 156,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "link": "../../03-reference/",
+      "line": 157,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "link": "../../02-how-to/",
+      "line": 158,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART1.md",
+      "line": 617,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART1.md",
+      "line": 1554,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART2.md",
+      "line": 1554,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+      "link": "ADHD-ENGINE-DEEP-DIVE-PART3.md",
+      "line": 1554,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/implementation-plans/DASHBOARD_DAY10_INDEX.md",
+      "link": "../../dopemux_dashboard.py",
+      "line": 285,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/implementation-plans/DASHBOARD_DAY9_INDEX.md",
+      "link": "../archive/session-notes/2025-historical/DASHBOARD_DAY9_SUMMARY.md",
+      "line": 21,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/implementation-plans/DASHBOARD_DAY9_INDEX.md",
+      "link": "../archive/session-notes/2025-historical/DASHBOARD_DAY9_SUMMARY.md",
+      "line": 415,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/WORKSPACE_MIGRATION_GUIDE.md",
+      "link": "docs/troubleshooting/workspaces.md",
+      "line": 272,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/WORKSPACE_MIGRATION_GUIDE.md",
+      "link": "README.md#multi-workspace-usage",
+      "line": 280,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/WORKSPACE_MIGRATION_GUIDE.md",
+      "link": "docs/api/workspace.md",
+      "line": 281,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/WORKSPACE_MIGRATION_GUIDE.md",
+      "link": "docs/advanced/workspace-patterns.md",
+      "line": 282,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/claude-sessions/dopemux-orchestrator-roadmap.md",
+      "link": "self.agent_spawner",
+      "line": 803,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/implementation-history/RELEASE_NOTES_v0.1.0.md",
+      "link": "CONTRIBUTING.md",
+      "line": 182,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "link": "docs/01-tutorials/",
+      "line": 161,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "link": "docs/02-how-to/",
+      "line": 164,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "link": "docs/03-reference/",
+      "line": 167,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "link": "docs/04-explanation/",
+      "line": 170,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "link": "docs/systems/conport/",
+      "line": 173,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "link": "docs/systems/dashboard/",
+      "line": 176,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "link": "docs/archive/session-notes/",
+      "line": 179,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "link": "docs/development/",
+      "line": 182,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/implementation-history/REORGANIZATION-2025-10-29.md",
+      "link": "docs/deployment/",
+      "line": 185,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/audit-reports/deployment-ready-summary.md",
+      "link": "FINAL-AUDIT-REPORT.md",
+      "line": 12,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/audit-reports/deployment-ready-summary.md",
+      "link": "FINAL-AUDIT-REPORT.md",
+      "line": 20,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/audit-reports/deployment-ready-summary.md",
+      "link": "PHASE-1-COMPLETE.md",
+      "line": 21,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/audit-reports/deployment-ready-summary.md",
+      "link": "audit-overview.md",
+      "line": 22,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "link": "DEPLOYMENT-INSTRUCTIONS.md",
+      "line": 15,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "link": "DEPLOYMENT-CHECKLIST.md",
+      "line": 16,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "link": "DEPLOYMENT-WORKTREE-INSTRUCTIONS.md",
+      "line": 17,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "link": "DEPLOYMENT-INSTRUCTIONS.md",
+      "line": 24,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "link": "DEPLOYMENT-CHECKLIST.md",
+      "line": 34,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "link": "DEPLOYMENT-WORKTREE-INSTRUCTIONS.md",
+      "line": 44,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "link": "../04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md",
+      "line": 89,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "link": "../02-how-to/",
+      "line": 90,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "link": "../03-reference/configuration/",
+      "line": 91,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "link": "../02-how-to/",
+      "line": 139,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/deployment-overview.md",
+      "link": "../04-explanation/",
+      "line": 140,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/CHANGELOG_v2.1.md",
+      "link": "README.md",
+      "line": 450,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/CHANGELOG_v2.1.md",
+      "link": "docs/94-architecture/CONPORT_KG_2.0_MASTER_PLAN.md",
+      "line": 451,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/CHANGELOG_v2.1.md",
+      "link": "services/dope-context/AUTONOMOUS_INDEXING.md",
+      "line": 452,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/CHANGELOG_v2.1.md",
+      "link": "services/shared/conport_client/README.md",
+      "line": 453,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/deprecated/CHANGELOG_v2.1.md",
+      "link": "claudedocs/serena_adhd_cross_system_analysis_20251023.md",
+      "line": 454,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_SUMMARY_WEEK1_DAY1.md",
+      "link": "PRODUCTION_READINESS_PLAN.md",
+      "line": 345,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_SUMMARY_WEEK1_DAY1.md",
+      "link": "PRODUCTION_READINESS_QUICK_REF.md",
+      "line": 346,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_SUMMARY_WEEK1_DAY1.md",
+      "link": "INSTALLER_TESTING_REPORT.md",
+      "line": 347,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_SUMMARY_WEEK1_DAY1.md",
+      "link": "install.sh",
+      "line": 348,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/DASHBOARD_QUICK_REFERENCE.md",
+      "link": "docs/systems/dashboard/TMUX_DASHBOARD_DESIGN.md",
+      "line": 206,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/DASHBOARD_QUICK_REFERENCE.md",
+      "link": "TMUX_METRICS_INVENTORY.md",
+      "line": 207,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/DASHBOARD_QUICK_REFERENCE.md",
+      "link": "DASHBOARD_ENHANCEMENTS.md",
+      "line": 208,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/DASHBOARD_QUICK_REFERENCE.md",
+      "link": "docs/implementation-plans/tmux-dashboard-sprint-plan.md",
+      "line": 209,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_PLAN_WEEK1_DAY2.md",
+      "link": "./test_installer_ubuntu.sh",
+      "line": 427,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_PLAN_WEEK1_DAY2.md",
+      "link": "./install.sh",
+      "line": 428,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_PLAN_WEEK1_DAY2.md",
+      "link": "./INSTALLER_TESTING_REPORT.md",
+      "line": 429,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/session-notes/2025-historical/SESSION_PLAN_WEEK1_DAY2.md",
+      "link": "./PRODUCTION_READINESS_QUICK_REF.md",
+      "line": 430,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/sessions/serena/v2/f001-usage-examples.md",
+      "link": "F001_ENHANCED_USER_GUIDE.md",
+      "line": 391,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/sessions/serena/v2/f001-usage-examples.md",
+      "link": "../F001_TEST_RESULTS.md",
+      "line": 392,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/sessions/serena/v2/f001-usage-examples.md",
+      "link": "../F001_ENHANCED_BUILD_SUMMARY.md",
+      "line": 393,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_COMPLETE_FINAL_V2.md",
+      "link": "./START_HERE_DOPECONBRIDGE.md",
+      "line": 288,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_COMPLETE_FINAL_V2.md",
+      "link": "./START_HERE_DOPECONBRIDGE.md",
+      "line": 579,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_CONPORT_UPDATE.md",
+      "link": "./context_portal/README.md",
+      "line": 783,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_CONPORT_UPDATE.md",
+      "link": "./docs/mcp-protocol.md",
+      "line": 784,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_CONPORT_UPDATE.md",
+      "link": "./services/dopecon-bridge/EVENTBUS_VALIDATION.md",
+      "line": 785,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_INDEX.md",
+      "link": "./README.md",
+      "line": 241,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_INDEX.md",
+      "link": "./docs/04-explanation/",
+      "line": 242,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md",
+      "link": "./README.md",
+      "line": 106,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_PATH_B_COMPLETE_EXECUTION.md",
+      "link": "./Makefile",
+      "line": 112,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_MASTER_INDEX.md",
+      "link": "./DOPECON_BRIDGE_MIGRATION_COMPLETE.md",
+      "line": 56,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_MASTER_INDEX.md",
+      "link": "./DOPECON_BRIDGE_COMPLETE.md",
+      "line": 57,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_MASTER_INDEX.md",
+      "link": "./DOPECON_BRIDGE_QUICK_START.md",
+      "line": 66,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_MASTER_INDEX.md",
+      "link": "./DOPECON_BRIDGE_EXECUTIVE_SUMMARY.md",
+      "line": 73,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_MASTER_INDEX.md",
+      "link": "./services/shared/dopecon_bridge_client/README.md",
+      "line": 82,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_MASTER_INDEX.md",
+      "link": "./DOPECON_BRIDGE_COMPLETE.md",
+      "line": 195,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docs/archive/completed-projects/dopeconbridge/DOPECONBRIDGE_DEPLOYMENT_SUMMARY.md",
+      "link": "./START_HERE_DOPECONBRIDGE.md",
+      "line": 59,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".claude/scratch/archive/2025-09-claude-sessions/SESSION_STATE_MERGE.md",
+      "link": "./docker/mcp-servers/SERVER_REGISTRY.md",
+      "line": 12,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".claude/scratch/archive/2025-09-claude-sessions/SESSION_STATE_MERGE.md",
+      "link": "./docker/mcp-servers/MCP_ORCHESTRATION_SUMMARY.md",
+      "line": 13,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".claude/scratch/archive/2025-09-claude-sessions/SESSION_STATE_MERGE.md",
+      "link": "./docs/METAMCP_ORCHESTRATION_ROADMAP.md",
+      "line": 14,
+      "type": "missing_local_link"
+    },
+    {
+      "file": ".claude/scratch/archive/2025-09-claude-sessions/SESSION_STATE_MERGE.md",
+      "link": "./docker/mcp-servers/docker-compose.yml",
+      "line": 17,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docker/mcp-servers/desktop-commander/README.md",
+      "link": "CONNECTION_GUIDE.md",
+      "line": 45,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docker/mcp-servers/desktop-commander/README.md",
+      "link": "DESKTOP_COMMANDER_VALIDATION.md",
+      "line": 46,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docker/mcp-servers/leantime-bridge/README.md",
+      "link": "./INFO_ENDPOINT.md",
+      "line": 73,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docker/mcp-servers/litellm/README.md",
+      "link": "../../docs/02-architecture/",
+      "line": 143,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docker/mcp-servers/litellm/README.md",
+      "link": "../../docs/90-adr/ADR-012-mcp-integration-patterns.md",
+      "line": 144,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docker/mcp-servers/pal/pal-mcp-server/docs/custom_models.md",
+      "link": "conf/openrouter_models.json",
+      "line": 73,
+      "type": "missing_local_link"
+    },
+    {
+      "file": "docker/mcp-servers/pal/pal-mcp-server/docs/custom_models.md",
+      "link": "conf/custom_models.json",
+      "line": 73,
+      "type": "missing_local_link"
+    }
+  ]
+}
