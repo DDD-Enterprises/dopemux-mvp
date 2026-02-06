@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dopemux_Architecture_Overview (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # 🧠 Dopemux Architecture Overview
 ## The Complete Guide to ADHD-Optimized Development
@@ -53,7 +57,6 @@ Dopemux is a **development platform designed specifically for developers with AD
 ---
 
 ## 🏗️ High-Level Architecture
-
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -122,7 +125,6 @@ Dopemux is a **development platform designed specifically for developers with AD
 │  └──────────────┘  └──────────────┘  └──────────────┘                  │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
-
 
 ### Architecture Philosophy
 

@@ -5,6 +5,10 @@ type: reference
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: "D\xD8PEM\xDCX Brand System (v1.0) (explanation) for dopemux documentation\
+  \ and developer workflows."
 ---
 # DØPEMÜX Brand System (v1.0)
 

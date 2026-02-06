@@ -1,10 +1,14 @@
 ---
 id: tui-design-principles
 title: Tui Design Principles
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Tui Design Principles (reference) for dopemux documentation and developer
+  workflows.
 ---
 # Research: What Makes Terminal UIs Beloved by Developers
 

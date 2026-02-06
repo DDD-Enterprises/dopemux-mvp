@@ -1,10 +1,14 @@
 ---
 id: import-issue-resolution
 title: Import Issue Resolution
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Import Issue Resolution (reference) for dopemux documentation and developer
+  workflows.
 ---
 # Import Issue Resolution - Database Tests
 
@@ -130,7 +134,7 @@ python_functions = test_*
 ✅ **Fixed 2 bugs** in database.py (missing `import os`, pytest fixture)
 ✅ **Documented RED phase** completely
 ✅ **Identified root cause** of import issue
-✅ **Created __init__.py files** in package hierarchy
+✅ **Created **init**.py files** in package hierarchy
 
 **Remaining**: Fix imports (10-15 min) → Run GREEN phase (30-60 min)
 

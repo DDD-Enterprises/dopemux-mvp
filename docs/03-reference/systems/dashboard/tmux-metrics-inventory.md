@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Tmux_Metrics_Inventory (reference) for dopemux documentation and developer
+  workflows.
 ---
 # Tmux Dashboard Metrics - Exhaustive Inventory
 
@@ -278,25 +282,25 @@ Generated: 2025-10-28
 ### TIER 2: High Value (Toggle View)
 **Important context - show in expanded view**
 
-9. **Tasks completed today** (with completion rate %)
-10. **Decisions logged** (count with trend)
-11. **Context switches** (count with rate)
-12. **Pattern boosts** (active patterns count)
-13. **Abandoned work** (by severity: stale/likely/definitely)
-14. **MCP tool calls** (total + by server)
-15. **Cache hit rate** (percentage)
+1. **Tasks completed today** (with completion rate %)
+2. **Decisions logged** (count with trend)
+3. **Context switches** (count with rate)
+4. **Pattern boosts** (active patterns count)
+5. **Abandoned work** (by severity: stale/likely/definitely)
+6. **MCP tool calls** (total + by server)
+7. **Cache hit rate** (percentage)
 
 ### TIER 3: Deep Metrics (Detailed Panel)
 **Diagnostic data - for troubleshooting and optimization**
 
-16. **Session intelligence**: Focus duration history
-17. **Complexity trends**: Avg complexity over time
-18. **Break adherence**: Suggested vs taken ratio
-19. **Error rates**: By service
-20. **Performance**: P95 latencies by operation
-21. **Event bus**: Consumer lag, throughput
-22. **Database**: Query performance, connection pool
-23. **Workspace**: File activity heatmap
+1. **Session intelligence**: Focus duration history
+2. **Complexity trends**: Avg complexity over time
+3. **Break adherence**: Suggested vs taken ratio
+4. **Error rates**: By service
+5. **Performance**: P95 latencies by operation
+6. **Event bus**: Consumer lag, throughput
+7. **Database**: Query performance, connection pool
+8. **Workspace**: File activity heatmap
 
 ---
 

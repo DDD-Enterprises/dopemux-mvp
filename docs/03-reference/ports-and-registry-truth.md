@@ -7,9 +7,15 @@ last_review: '2026-02-01'
 next_review: '2026-05-02'
 date: '2026-02-01'
 author: Platform Team
-tags: [infrastructure, registry, ports, health-checks, smoke-stack]
+tags:
+- infrastructure
+- registry
+- ports
+- health-checks
+- smoke-stack
+prelude: Ports and Registry - Single Source of Truth (reference) for dopemux documentation
+  and developer workflows.
 ---
-
 <!-- PRELUDE: Registry.yaml is the canonical source of truth for service ports and health endpoints, eliminating silent drift between compose files and runtime configuration through automated validation. -->
 
 # Ports and Registry: Single Source of Truth

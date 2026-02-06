@@ -7,6 +7,9 @@ id: adhd-engine-deep-dive
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+prelude: ADHD Engine - Complete Deep Dive (reference) for dopemux documentation and
+  developer workflows.
 ---
 # ADHD Engine - Complete Deep Dive
 
@@ -14,7 +17,6 @@ next_review: '2026-05-03'
 **Last Updated**: 2026-02-02
 
 ---
-
 
 ## Part 1: Architecture Overview
 
@@ -605,7 +607,6 @@ The answer involves real-time activity analysis, ConPort task metadata, Redis st
 **Next**: Part 2 - Energy Matching & Task Selection (3,000 words)
 
 ---
-
 
 ## Part 2: Core Features
 
@@ -1536,13 +1537,9 @@ The answer involves real-time activity pattern analysis, Redis state tracking, b
 
 ---
 
-
 ## Part 3: Advanced Features
 
-
-
 ---
-
 
 ## Part 4: Integration & API
 

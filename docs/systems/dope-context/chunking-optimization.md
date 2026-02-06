@@ -1,10 +1,14 @@
 ---
 id: chunking-optimization
 title: Chunking Optimization
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Chunking Optimization (reference) for dopemux documentation and developer
+  workflows.
 ---
 # Chunking and Embedding Optimization Analysis
 
@@ -215,16 +219,16 @@ def adaptive_chunk_size(text, doc_type):
    - Improves search precision
 
 ### **Medium Impact**
-3. **PDF bookmark/outline chunking**
+1. **PDF bookmark/outline chunking**
    - More complex implementation
    - Fewer PDF files in typical projects
 
-4. **Adaptive chunk sizing**
+2. **Adaptive chunk sizing**
    - Nice-to-have optimization
    - Can be added incrementally
 
 ### **Low Impact** (Nice-to-Have)
-5. **HTML structure parsing**
+1. **HTML structure parsing**
    - Use article tags, h1-h6
    - Less common in dev projects
 
