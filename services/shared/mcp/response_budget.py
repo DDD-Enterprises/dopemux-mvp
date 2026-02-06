@@ -8,8 +8,13 @@ across MCP servers while preserving compatibility-friendly output.
 from __future__ import annotations
 
 import json
+from collections import defaultdict
 from copy import deepcopy
 from typing import Any, Dict, List, Tuple
+
+_BUDGET_STATS: Dict[str, Dict[str, int]] = defaultdict(
+    lambda: {"calls": 0, "truncated_calls": 0}
+)
 
 
 def estimate_tokens(value: Any) -> int:
@@ -22,6 +27,71 @@ def estimate_tokens(value: Any) -> int:
     if value is None:
         return 0
     return len(str(value)) // 4
+
+
+def budget_usage_pct(tokens_used: int, max_tokens: int) -> float:
+    """Return token-budget usage percentage."""
+    if max_tokens <= 0:
+        return 0.0
+    return round((tokens_used / max_tokens) * 100, 2)
+
+
+def record_budget_outcome(
+    tool_name: str,
+    tokens_used: int,
+    max_tokens: int,
+    was_truncated: bool,
+) -> Dict[str, Any]:
+    """
+    Record budget usage/truncation telemetry for a tool call.
+
+    Returns a telemetry dictionary ready to log.
+    """
+    stats = _BUDGET_STATS[tool_name]
+    stats["calls"] += 1
+    if was_truncated:
+        stats["truncated_calls"] += 1
+
+    calls = stats["calls"]
+    truncated_calls = stats["truncated_calls"]
+    truncation_rate_pct = round((truncated_calls / calls) * 100, 2) if calls else 0.0
+
+    return {
+        "tool_name": tool_name,
+        "tokens_used": tokens_used,
+        "max_tokens": max_tokens,
+        "usage_pct": budget_usage_pct(tokens_used, max_tokens),
+        "truncated": was_truncated,
+        "calls": calls,
+        "truncated_calls": truncated_calls,
+        "truncation_rate_pct": truncation_rate_pct,
+    }
+
+
+def get_budget_stats(tool_name: str | None = None) -> Dict[str, Any]:
+    """Read in-memory budget telemetry stats."""
+    if tool_name is not None:
+        entry = _BUDGET_STATS.get(tool_name, {"calls": 0, "truncated_calls": 0})
+        calls = entry["calls"]
+        truncated_calls = entry["truncated_calls"]
+        truncation_rate_pct = round((truncated_calls / calls) * 100, 2) if calls else 0.0
+        return {
+            "tool_name": tool_name,
+            "calls": calls,
+            "truncated_calls": truncated_calls,
+            "truncation_rate_pct": truncation_rate_pct,
+        }
+
+    total_calls = sum(v["calls"] for v in _BUDGET_STATS.values())
+    total_truncated = sum(v["truncated_calls"] for v in _BUDGET_STATS.values())
+    total_rate = round((total_truncated / total_calls) * 100, 2) if total_calls else 0.0
+
+    return {
+        "tools": dict(_BUDGET_STATS),
+        "total_calls": total_calls,
+        "total_truncated_calls": total_truncated,
+        "total_truncation_rate_pct": total_rate,
+    }
 
 
 def _clean_for_json(obj: Any) -> Any:
@@ -133,4 +203,3 @@ def enforce_dict_token_budget(
     truncated["_truncated_tokens"] = estimate_tokens(json.dumps(_clean_for_json(truncated)))
 
     return truncated
-
