@@ -1,10 +1,14 @@
 ---
 id: adhd-engine-analysis-2025-10-16
 title: Adhd Engine Analysis 2025 10 16
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Adhd Engine Analysis 2025 10 16 (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # ADHD Engine Analysis Report
 **Date**: 2025-10-16

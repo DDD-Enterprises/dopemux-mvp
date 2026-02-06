@@ -1,10 +1,14 @@
 ---
 id: week3-day3-research
 title: Week3 Day3 Research
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Week3 Day3 Research (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Week 3 Day 3: Research & Analysis Complete
 

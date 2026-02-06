@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Monitoring Design Sprint Summary (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # 🎯 Monitoring Code Design Sprint - Quick Reference
 
@@ -332,23 +336,23 @@ GET http://localhost:8091/api/context/current
 4. Peak hour detection
 
 ### Session (3)
-5. Duration (minutes)
-6. Interruptions (count)
-7. Recovery cost (23 min × count)
+1. Duration (minutes)
+2. Interruptions (count)
+3. Recovery cost (23 min × count)
 
 ### Work Context (7)
-8. Git branch
-9. Git project
-10. Modified files
-11. Untracked files
-12. Stale branches
-13. Unpushed commits
-14. Workspace complexity
+1. Git branch
+2. Git project
+3. Modified files
+4. Untracked files
+5. Stale branches
+6. Unpushed commits
+7. Workspace complexity
 
 ### Tasks (3)
-15. In-progress count
-16. Todo count
-17. Overdue warnings
+1. In-progress count
+2. Todo count
+3. Overdue warnings
 
 ### System (9)
 18-26. Services, Docker, CPU, Memory, etc.

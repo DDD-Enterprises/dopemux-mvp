@@ -1,10 +1,13 @@
 ---
 id: G34_SUMMARY
 title: G34_Summary
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: G34_Summary (explanation) for dopemux documentation and developer workflows.
 ---
 # G34 Runtime Boot Campaign - Partial Progress
 
@@ -15,7 +18,7 @@ next_review: '2026-05-03'
 
 ### Phase 1: Syntax Errors Fixed (5 fixes)
 1. **dopecon-bridge/orchestrator_endpoints.py:414** - Fixed malformed function name `slogger.info` → `sprint_info`
-2. **task-orchestrator/enhanced_orchestrator.py:1167** - Fixed `slogger.info` → `sprint_optimizations`  
+2. **task-orchestrator/enhanced_orchestrator.py:1167** - Fixed `slogger.info` → `sprint_optimizations`
 3. **task-orchestrator/enhanced_orchestrator.py:1689** - Fixed `slogger.info` → `sprint_info`
 4. **task-orchestrator/query_server.py:153** - Fixed `slogger.info` → `sprint_info` (2 occurrences)
 5. **task-orchestrator/zen_client.py:23** - Moved misplaced imports out of return statement
@@ -26,9 +29,9 @@ next_review: '2026-05-03'
 - **docker-compose.smoke.yml** - Changed all 3 services from `context: ./services/<name>` to `context: .` (repo root)
 - **Reason**: Dockerfiles require repo root access for `src/`, `pyproject.toml`, `services/shared/`
 
-### Phase 3: Image Builds Successful  
+### Phase 3: Image Builds Successful
 - ✅ **conport** image built
-- ✅ **dopecon-bridge** image built  
+- ✅ **dopecon-bridge** image built
 - ✅ **task-orchestrator** image built
 
 ### Infrastructure Running
@@ -54,7 +57,7 @@ next_review: '2026-05-03'
 
 **Impact**: conport cannot start (Restarting loop)
 
-#### 2. dopecon-bridge: Wrong Entrypoint Path  
+#### 2. dopecon-bridge: Wrong Entrypoint Path
 **Error**: `python: can't open file '/app/main.py': [Errno 2] No such file or directory`
 
 **Analysis**:
@@ -76,7 +79,7 @@ next_review: '2026-05-03'
 ```
 Infrastructure:
 ✅ postgres           UP (healthy)
-✅ redis              UP (healthy)  
+✅ redis              UP (healthy)
 ✅ qdrant             UP (HTTP 200)
 
 Applications:
@@ -98,7 +101,7 @@ Applications:
 ### Fixed (4 files):
 - `services/dopecon-bridge/orchestrator_endpoints.py` - 1 syntax fix
 - `services/task-orchestrator/enhanced_orchestrator.py` - 2 syntax fixes
-- `services/task-orchestrator/query_server.py` - 2 syntax fixes  
+- `services/task-orchestrator/query_server.py` - 2 syntax fixes
 - `services/task-orchestrator/zen_client.py` - 1 import fix
 - `docker-compose.smoke.yml` - 3 build context fixes
 
@@ -118,7 +121,7 @@ Applications:
 - task-orchestrator Dockerfile: Add `WORKDIR /app/services/task-orchestrator` before CMD
 - OR: Update CMD to use absolute paths
 
-### Fix 3: Health Endpoints  
+### Fix 3: Health Endpoints
 Once services start, verify `/health` endpoints return 200
 
 ---

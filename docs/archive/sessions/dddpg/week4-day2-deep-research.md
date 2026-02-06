@@ -1,10 +1,14 @@
 ---
 id: week4-day2-deep-research
 title: Week4 Day2 Deep Research
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Week4 Day2 Deep Research (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Week 4 Day 2: Deep Research & Planning
 ## Task Relationship Mapping - Architecture Analysis
