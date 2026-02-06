@@ -165,7 +165,8 @@ class WorktreeRecoveryMenu:
             # stdin is not a real file (e.g., in pytest) - return None immediately
             return None
 
-        logger.info(prompt, end='', flush=True)
+        sys.stdout.write(prompt)
+        sys.stdout.flush()
 
         # Use selector for async-compatible input
         selector = selectors.DefaultSelector()
@@ -198,7 +199,7 @@ class WorktreeRecoveryMenu:
                 await asyncio.sleep(0.1)  # Yield to event loop
 
         except asyncio.TimeoutError:
-            logger.info()  # Newline after timeout
+            logger.info("")  # Newline after timeout
             return None
         finally:
             selector.unregister(sys.stdin)
@@ -419,7 +420,7 @@ class WorktreeRecoveryMenu:
                 if all_options:
                     options = all_options
                     has_more = False  # No more to show
-                    logger.info()  # Blank line before re-display
+                    logger.info("")  # Blank line before re-display
                     continue
                 else:
                     logger.info("⚠️ No additional sessions found.")
