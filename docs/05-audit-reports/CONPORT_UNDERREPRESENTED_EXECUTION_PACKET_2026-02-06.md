@@ -150,7 +150,7 @@ Evidence: `docs/05-audit-reports/PROFILE_EPIC_COMPAT_SHIMS_VERIFICATION_2026-02-
 Evidence: `docs/05-audit-reports/PROFILE_EPIC_COMPAT_SHIMS_VERIFICATION_2026-02-06.md`
 43. Live ConPort runtime backlog extraction now identifies an additional `66` underrepresented active items from `progress_entries` that are not yet explicit in master docs and are promoted into a dedicated owner matrix.
 Evidence: `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_UNDERREPRESENTED_MATRIX_2026-02-06.md`
-44. Live underrepresented set has now been triaged into a focused true-open execution packet (`33` items) to reduce alias noise and prioritize concrete delivery work.
+44. Live underrepresented set has now been triaged into a focused true-open execution packet (`32` items), with one persistence item reclassified as resolved-in-runtime.
 Evidence: `docs/05-audit-reports/CONPORT_LIVE_BACKLOG_EXECUTION_PACKET_2026-02-06.md`
 
 ## Source
