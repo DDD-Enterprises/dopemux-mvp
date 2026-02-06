@@ -173,3 +173,4 @@ Evidence:
 - `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json`
 - `docs/05-audit-reports/CONPORT_FULL_TODO_COVERAGE_MATRIX_2026-02-06.md`
 - `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`
+- `docs/05-audit-reports/LITELLM_BLOCKER_VERIFICATION_2026-02-06.md`
