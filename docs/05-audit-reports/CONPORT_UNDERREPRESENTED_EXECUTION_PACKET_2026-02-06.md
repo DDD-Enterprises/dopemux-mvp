@@ -80,6 +80,8 @@ Top `40` underrepresented items from `reports/strict_closure/conport_full_todo_c
    - `docs/05-audit-reports/PROFILE_CONFIG_INTEGRATION_VERIFICATION_2026-02-06.md`
 8. Row `7` (`1.4.1 End-to-end test suite`) is now implemented:
    - `docs/05-audit-reports/PROFILE_START_E2E_VERIFICATION_2026-02-06.md`
+9. Row `8` (`1.4.2 Documentation`) is now implemented:
+   - `docs/05-audit-reports/PROFILE_DOCUMENTATION_VERIFICATION_2026-02-06.md`
 
 ## Source
 

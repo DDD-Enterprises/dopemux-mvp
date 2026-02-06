@@ -264,6 +264,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/profile_config_integration_verification_2026-02-06.json`.
 15. End-to-end profile start-flow backlog item (`1.4.1`) is now implemented with additive `dopemux start --profile` support and dry-run coverage for success and invalid-profile paths:
    `reports/strict_closure/profile_start_e2e_verification_2026-02-06.json`.
+16. Profile documentation backlog item (`1.4.2`) is now implemented with README updates, a dedicated profile usage guide, and schema-linked examples:
+   `reports/strict_closure/profile_documentation_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
