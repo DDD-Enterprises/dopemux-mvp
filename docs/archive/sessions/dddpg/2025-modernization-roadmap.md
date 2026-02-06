@@ -1,10 +1,14 @@
 ---
 id: 2025-modernization-roadmap
 title: 2025 Modernization Roadmap
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: 2025 Modernization Roadmap (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # DDDPG Service: 2025 Complete Modernization & Implementation Roadmap
 **Created**: 2025-10-29

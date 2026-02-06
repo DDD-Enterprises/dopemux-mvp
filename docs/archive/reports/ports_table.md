@@ -1,16 +1,20 @@
 ---
 id: ports_table
 title: Ports_Table
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Ports_Table (explanation) for dopemux documentation and developer workflows.
 ---
 # Port Configuration: Before vs After G31
 
 ## BEFORE G31 ❌
 
 ### Port Sources (Multiple, Conflicting)
+
 | Source | conport | dopecon-bridge | task-orchestrator | Notes |
 |--------|---------|----------------|-------------------|-------|
 | docker-compose.unified.yml | `3004:3004` | `3016:3016` | `8000:8000` | Hardcoded |
@@ -44,6 +48,7 @@ next_review: '2026-05-03'
 ```
 
 ### Derived Artifacts (Generated, Never Edited)
+
 | Artifact | Source | Purpose | Auto-generated |
 |----------|--------|---------|----------------|
 | `.env.smoke` | registry.yaml | Environment variables for compose | ✅ `generate_smoke_env.py` |
@@ -51,6 +56,7 @@ next_review: '2026-05-03'
 | Health check URLs | registry.yaml | Runtime validation | ✅ `ports_health_audit.py` |
 
 ### Validation (Enforced)
+
 | Tool | Mode | What It Checks | Fails If |
 |------|------|----------------|----------|
 | `ports_health_audit.py` | `--mode static` | Registry completeness | Missing port/health_path |
@@ -77,10 +83,10 @@ next_review: '2026-05-03'
   enabled_in_smoke: true
 ```
 
-2. Regenerate: `python tools/generate_smoke_env.py`
-3. Validate: `pytest tests/arch/test_registry_compose_alignment.py`
-4. Deploy: `docker compose -f docker-compose.smoke.yml up -d --build`
-5. Verify: `python tools/ports_health_audit.py --mode runtime`
+1. Regenerate: `python tools/generate_smoke_env.py`
+2. Validate: `pytest tests/arch/test_registry_compose_alignment.py`
+3. Deploy: `docker compose -f docker-compose.smoke.yml up -d --build`
+4. Verify: `python tools/ports_health_audit.py --mode runtime`
 
 If ports don't match → **test fails immediately**, not at runtime.
 
@@ -97,7 +103,7 @@ If ports don't match → **test fails immediately**, not at runtime.
 | dopecon-bridge | 3016 | `${DOPECON_BRIDGE_PORT:-3016}:3016` | `DOPECON_BRIDGE_PORT=3016` | ✅ Aligned |
 | task-orchestrator | 8000 | `${TASK_ORCHESTRATOR_PORT:-8000}:8000` | `TASK_ORCHESTRATOR_PORT=8000` | ✅ Aligned |
 
-**Drift Detection:** `python tools/ports_health_audit.py --mode static --explain-drift`  
+**Drift Detection:** `python tools/ports_health_audit.py --mode static --explain-drift`
 **Current Status:** ✅ No drift detected
 
 ---

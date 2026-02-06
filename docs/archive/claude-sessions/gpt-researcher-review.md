@@ -1,10 +1,14 @@
 ---
 id: gpt-researcher-review
 title: Gpt Researcher Review
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Gpt Researcher Review (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # GPT-Researcher Service Review
 **Date**: 2025-10-16
