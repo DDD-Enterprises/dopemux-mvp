@@ -15,6 +15,7 @@ Decision #118 (to be logged)
 import asyncio
 
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +127,7 @@ class KGOrchestrator:
                 # Store suggestions (non-interruptive)
                 await self.redis.set(
                     f'kg:suggestions:{decision_id}',
-                    [d.id for d in similar[:5]],  # Top 5
+                    json.dumps([d.id for d in similar[:5]]),  # Top 5
                     ex=3600  # 1 hour TTL
                 )
 
@@ -198,7 +199,12 @@ class KGOrchestrator:
         contexts = []
         try:
             # Try batch loading first for better performance
-            batch_contexts = await self.exploration_queries.get_multiple_neighborhoods(decision_refs)
+            batch_contexts = await self.exploration.get_multiple_neighborhoods(
+                decision_refs,
+                max_hops=2,
+                limit_per_hop=5,
+                workspace_path=workspace_path,
+            )
             contexts = batch_contexts
             logger.info(f"[KG Orchestrator] Batch loaded {len(contexts)} decision contexts")
         except (AttributeError, NotImplementedError):
@@ -224,7 +230,16 @@ class KGOrchestrator:
             # Cache for Serena to use
             await self.redis.set(
                 f'task:{task_id}:decision_context',
-                contexts,
+                json.dumps(
+                    [
+                        {
+                            "center": context.center.id,
+                            "hop_1": [neighbor.id for neighbor in context.hop_1_neighbors],
+                            "hop_2": [neighbor.id for neighbor in context.hop_2_neighbors],
+                        }
+                        for context in contexts
+                    ]
+                ),
                 ex=3600
             )
             logger.info(f"   → Cached {len(contexts)} decision contexts")
@@ -268,8 +283,45 @@ class KGOrchestrator:
 
             logger.info(f"   → Found {len(related)} related decisions")
 
-            # TODO: Update Serena sidebar
-            # await serena.update_sidebar('Related Decisions', related, collapsed=True)
+            workspace_id = workspace_path or os.getenv("WORKSPACE_ID", "/Users/hue/code/dopemux-mvp")
+
+            # Cache lightweight sidebar payload so Serena can render immediately.
+            if self.redis:
+                sidebar_payload = [
+                    {
+                        "id": decision.id,
+                        "summary": decision.summary,
+                        "timestamp": decision.timestamp,
+                    }
+                    for decision in related
+                ]
+                await self.redis.set(
+                    f"kg:file_context:{module_name}",
+                    json.dumps(sidebar_payload),
+                    ex=1800,
+                )
+
+            if self.bridge and related:
+                await self.bridge.save_custom_data(
+                    workspace_id=workspace_id,
+                    category="serena_sidebar",
+                    key=f"related_decisions_{module_name}",
+                    value={
+                        "module": module_name,
+                        "file_path": file_path,
+                        "decisions": [
+                            {
+                                "id": decision.id,
+                                "summary": decision.summary,
+                                "timestamp": decision.timestamp,
+                            }
+                            for decision in related
+                        ],
+                        "collapsed": True,
+                        "event_type": "serena.sidebar.related_decisions",
+                        "timestamp": event.timestamp,
+                    },
+                )
 
         except Exception as e:
             logger.error(f"   ⚠️  Related decision search failed: {e}")
@@ -315,12 +367,29 @@ class KGOrchestrator:
                     )
                     genealogies[decision.id] = neighborhood
                 except Exception as e:
-                    pass
+                    logger.debug(
+                        "   Skipping genealogy for decision #%s: %s",
+                        decision.id,
+                        e,
+                    )
 
             logger.info(f"   → Built genealogy for {len(genealogies)} decisions")
 
-            # TODO: Cache for Leantime
-            # await redis.set(f'sprint:{sprint_id}:context', genealogies, ex=7200)
+            if self.redis and genealogies:
+                serialized = {
+                    str(decision_id): {
+                        "center": neighborhood.center.id,
+                        "hop_1": [neighbor.id for neighbor in neighborhood.hop_1_neighbors],
+                        "hop_2": [neighbor.id for neighbor in neighborhood.hop_2_neighbors],
+                    }
+                    for decision_id, neighborhood in genealogies.items()
+                }
+                await self.redis.set(
+                    f"sprint:{sprint_id}:context",
+                    json.dumps(serialized),
+                    ex=7200,
+                )
+                logger.info("   → Cached sprint genealogy context for Leantime")
 
         except Exception as e:
             logger.error(f"   ⚠️  Sprint context loading failed: {e}")

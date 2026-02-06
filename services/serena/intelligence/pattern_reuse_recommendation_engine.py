@@ -5,6 +5,8 @@ Intelligent recommendation system for navigation pattern reuse, achieving 30% ti
 through proven strategy suggestions with ADHD-optimized presentation and effectiveness tracking.
 """
 
+import hashlib
+
 import asyncio
 import json
 import logging
@@ -18,7 +20,11 @@ from enum import Enum
 import math
 
 # Phase 2D Components
-from .strategy_template_manager import StrategyTemplateManager, NavigationStrategyTemplate
+from .strategy_template_manager import (
+    StrategyTemplateManager,
+    NavigationStrategyTemplate,
+    AccommodationType,
+)
 from .personal_pattern_adapter import PersonalPatternAdapter, PersonalizedTemplate
 from .cross_session_persistence_bridge import CrossSessionPersistenceBridge
 from .effectiveness_evolution_system import EffectivenessEvolutionSystem

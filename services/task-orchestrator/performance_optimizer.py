@@ -147,6 +147,7 @@ class PerformanceOptimizerEngine:
             "productivity_improvements": 0.0,
             "adhd_accommodations_applied": 0
         }
+        self._monitor_task: Optional[asyncio.Task] = None
 
     async def initialize(self) -> None:
         """Initialize the performance optimizer engine."""
@@ -294,8 +295,71 @@ class PerformanceOptimizerEngine:
 
     async def _load_user_patterns(self) -> None:
         """Load existing productivity patterns from storage."""
-        # Implementation would load saved patterns
-        pass
+        loaded_patterns = 0
+        raw_payload: Any = None
+
+        if self.conport:
+            for method_name in ("get_productivity_patterns", "get_optimization_patterns", "query_productivity_patterns"):
+                if not hasattr(self.conport, method_name):
+                    continue
+                try:
+                    result = getattr(self.conport, method_name)()
+                    if asyncio.iscoroutine(result):
+                        result = await result
+                    raw_payload = result
+                    break
+                except Exception as exc:
+                    logger.debug("Pattern load via %s failed: %s", method_name, exc)
+
+        if raw_payload is None:
+            self.productivity_patterns.setdefault("default", [])
+            return
+
+        if isinstance(raw_payload, dict):
+            # Expected shape: {user_id: [pattern_dicts]}
+            iterable = raw_payload.items()
+        elif isinstance(raw_payload, list):
+            # Flat shape: [{user_id: ..., ...}]
+            grouped: Dict[str, List[Dict[str, Any]]] = {}
+            for item in raw_payload:
+                if not isinstance(item, dict):
+                    continue
+                user_id = str(item.get("user_id", "default"))
+                grouped.setdefault(user_id, []).append(item)
+            iterable = grouped.items()
+        else:
+            iterable = []
+
+        for user_id, patterns in iterable:
+            parsed: List[ProductivityPattern] = []
+            for item in patterns or []:
+                if not isinstance(item, dict):
+                    continue
+                try:
+                    pattern = ProductivityPattern(
+                        pattern_id=str(item.get("pattern_id", f"pattern_{uuid.uuid4().hex[:8]}")),
+                        user_id=str(item.get("user_id", user_id)),
+                        pattern_type=str(item.get("pattern_type", "unknown")),
+                        confidence=float(item.get("confidence", 0.6)),
+                        effectiveness_score=float(item.get("effectiveness_score", 0.6)),
+                        optimal_times=[time.fromisoformat(t) if isinstance(t, str) else t for t in item.get("optimal_times", [])],
+                        duration_range=tuple(item.get("duration_range", (25.0, 90.0))),  # type: ignore[arg-type]
+                        prerequisites=list(item.get("prerequisites", [])),
+                        success_indicators=list(item.get("success_indicators", [])),
+                        adhd_accommodations=list(item.get("adhd_accommodations", [])),
+                        energy_requirements=list(item.get("energy_requirements", [])),
+                        attention_requirements=list(item.get("attention_requirements", [])),
+                        data_points=int(item.get("data_points", 0)),
+                        last_updated=datetime.fromisoformat(item.get("last_updated")) if isinstance(item.get("last_updated"), str) else datetime.now(),
+                        trend_direction=str(item.get("trend_direction", "stable")),
+                    )
+                    parsed.append(pattern)
+                    loaded_patterns += 1
+                except Exception as exc:
+                    logger.debug("Failed parsing productivity pattern for %s: %s", user_id, exc)
+            self.productivity_patterns[str(user_id)] = parsed
+
+        logger.info("Loaded %d productivity patterns", loaded_patterns)
 
     async def _initialize_optimization_models(self) -> None:
         """Initialize ML models for each optimization strategy."""
@@ -309,8 +373,36 @@ class PerformanceOptimizerEngine:
 
     async def _start_performance_monitoring(self) -> None:
         """Start background performance monitoring."""
-        # Implementation would start monitoring loops
-        pass
+        if self._monitor_task and not self._monitor_task.done():
+            return
+        self._monitor_task = asyncio.create_task(self._performance_monitor_loop())
+
+    async def _performance_monitor_loop(self) -> None:
+        """Background loop to track drift and model health."""
+        try:
+            while True:
+                await asyncio.sleep(300)
+                total_patterns = sum(len(v) for v in self.productivity_patterns.values())
+                if total_patterns == 0:
+                    continue
+
+                confidences = [
+                    p.confidence
+                    for patterns in self.productivity_patterns.values()
+                    for p in patterns
+                ]
+                avg_confidence = statistics.mean(confidences) if confidences else 0.0
+
+                if avg_confidence < 0.5:
+                    logger.info("Pattern confidence low (%.2f), increasing exploration", avg_confidence)
+                    self.learning_rate = min(0.3, self.learning_rate + 0.02)
+                else:
+                    self.learning_rate = max(0.05, self.learning_rate - 0.01)
+        except asyncio.CancelledError:
+            logger.debug("Performance monitor loop cancelled")
+            raise
+        except Exception as exc:
+            logger.error("Performance monitor loop failed: %s", exc)
 
     async def _extract_pattern_candidates(
         self, user_id: str, session_data: Dict[str, Any]
@@ -586,5 +678,51 @@ class PerformanceOptimizerEngine:
         self, recommendation_id: str, results: Dict[str, Any]
     ) -> None:
         """Update optimization models based on results."""
-        # Implementation would update ML models
-        pass
+        strategy_hint = str(results.get("strategy", "")).lower()
+        if not strategy_hint:
+            for strategy in OptimizationStrategy:
+                if strategy.value in recommendation_id:
+                    strategy_hint = strategy.value
+                    break
+
+        target_strategy = None
+        for strategy in OptimizationStrategy:
+            if strategy.value == strategy_hint:
+                target_strategy = strategy
+                break
+
+        if target_strategy is None:
+            target_strategy = OptimizationStrategy.TASK_REORDERING
+
+        model = self.optimization_models.setdefault(
+            target_strategy,
+            {
+                "effectiveness_score": 0.6,
+                "confidence": 0.5,
+                "usage_count": 0,
+                "success_rate": 0.5,
+            },
+        )
+
+        improvement = float(results.get("productivity_improvement", 0.0))
+        success = improvement > 0.05
+        confidence = float(results.get("confidence", 0.7))
+
+        model["usage_count"] += 1
+        old_success = float(model.get("success_rate", 0.5))
+        old_effectiveness = float(model.get("effectiveness_score", 0.6))
+        old_confidence = float(model.get("confidence", 0.5))
+
+        outcome_value = 1.0 if success else 0.0
+        model["success_rate"] = round((1 - self.learning_rate) * old_success + self.learning_rate * outcome_value, 4)
+        model["effectiveness_score"] = round(
+            (1 - self.learning_rate) * old_effectiveness + self.learning_rate * max(0.0, min(1.0, 0.5 + improvement)),
+            4,
+        )
+        model["confidence"] = round((1 - self.learning_rate) * old_confidence + self.learning_rate * confidence, 4)
+
+    async def close(self) -> None:
+        """Shutdown background optimizer tasks."""
+        if self._monitor_task and not self._monitor_task.done():
+            self._monitor_task.cancel()
+            await asyncio.gather(self._monitor_task, return_exceptions=True)

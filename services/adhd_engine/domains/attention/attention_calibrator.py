@@ -7,7 +7,7 @@ Improves accuracy of attention state predictions over time.
 ADHD Benefit: Personalized to individual patterns, not one-size-fits-all
 """
 from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 import logging
 import json
@@ -260,8 +260,6 @@ class AttentionCalibrator:
                     hyperfocus_durations.append(duration)
         
         if len(hyperfocus_durations) >= 3:
-            # Use minimum observed hyperfocus duration
-            min_duration = min(hyperfocus_durations)
             avg_duration = mean(hyperfocus_durations)
             
             # Set threshold at 80% of average, but not less than 30 min
@@ -300,12 +298,100 @@ class AttentionCalibrator:
         Analyzes which context features (energy, complexity, switches) best predict
         user's actual attention state.
         """
-        # Simple heuristic: analyze correlation between features and correct predictions
-        # TODO: Could use more sophisticated feature importance analysis
-        
-        # For now, keep default weights
-        # In production, could use logistic regression or similar
-        pass
+        feature_values = {
+            "energy": [],
+            "complexity": [],
+            "switches": [],
+        }
+        by_state = {
+            "energy": {},
+            "complexity": {},
+            "switches": {},
+        }
+
+        for sample in self.samples:
+            state = sample.actual_state
+            context = sample.context or {}
+
+            values = {
+                "energy": self._extract_energy_score(context),
+                "complexity": self._safe_float(
+                    context.get("complexity")
+                    or context.get("task_complexity")
+                    or context.get("cognitive_load")
+                ),
+                "switches": self._safe_float(
+                    context.get("recent_switches") or context.get("context_switches")
+                ),
+            }
+
+            for feature, value in values.items():
+                if value is None:
+                    continue
+                feature_values[feature].append(value)
+                by_state[feature].setdefault(state, []).append(value)
+
+        raw_importance: Dict[str, float] = {}
+        for feature, values in feature_values.items():
+            if len(values) < 5:
+                raw_importance[feature] = 0.05  # keep non-zero fallback weight
+                continue
+
+            baseline = mean(values)
+            sigma = stdev(values) if len(values) > 1 else 1.0
+            sigma = sigma if sigma > 0 else 1.0
+
+            separability = 0.0
+            state_count = 0
+            for state_values in by_state[feature].values():
+                if not state_values:
+                    continue
+                state_count += 1
+                separability += abs(mean(state_values) - baseline) / sigma
+
+            raw_importance[feature] = max(0.05, separability / max(1, state_count))
+
+        total_importance = sum(raw_importance.values())
+        if total_importance <= 0:
+            return
+
+        self.personal_thresholds["energy_weight"] = round(raw_importance["energy"] / total_importance, 3)
+        self.personal_thresholds["complexity_weight"] = round(raw_importance["complexity"] / total_importance, 3)
+        self.personal_thresholds["switches_weight"] = round(raw_importance["switches"] / total_importance, 3)
+
+        logger.info(
+            "🎯 Feature weights calibrated: energy=%.3f complexity=%.3f switches=%.3f",
+            self.personal_thresholds["energy_weight"],
+            self.personal_thresholds["complexity_weight"],
+            self.personal_thresholds["switches_weight"],
+        )
+
+    def _extract_energy_score(self, context: Dict[str, Any]) -> Optional[float]:
+        """Extract normalized energy score from context payload."""
+        if "energy_score" in context:
+            return self._safe_float(context.get("energy_score"))
+
+        energy_level = str(context.get("energy_level", "")).lower()
+        energy_map = {
+            "very_low": 0.1,
+            "low": 0.25,
+            "medium": 0.5,
+            "high": 0.75,
+            "very_high": 0.9,
+            "hyperfocus": 1.0,
+        }
+        if energy_level in energy_map:
+            return energy_map[energy_level]
+        return None
+
+    def _safe_float(self, value: Any) -> Optional[float]:
+        """Best-effort float conversion."""
+        if value is None:
+            return None
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
     
     def get_calibrated_prediction(
         self,

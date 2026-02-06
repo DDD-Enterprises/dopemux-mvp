@@ -806,6 +806,7 @@ class MemoryManager:
         """Store compressed snapshot with configurable compression"""
         original_data = json.dumps(asdict(snapshot), cls=DateTimeEncoder).encode('utf-8')
         compressed = self._compress_snapshot(snapshot, compression)
+        compression_ratio = self._calculate_compression_ratio(original_data, compressed)
 
         # Store in Redis or fallback to memory
         if self.use_redis:
@@ -830,7 +831,6 @@ class MemoryManager:
         # Update stats
         self.stats['total_snapshots'] += 1
         self.stats['total_size_bytes'] += len(compressed)
-        compression_ratio = self._calculate_compression_ratio(original_data, compressed)
 
         # Update rolling average compression ratio
         if self.stats['total_snapshots'] == 1:
@@ -1121,7 +1121,7 @@ class WorkingMemoryAssistant:
 
     async def _perform_predictive_recovery(
         self,
-        prediction: 'PredictionResult',
+        prediction: Any,
         current_context: Dict[str, Any]
     ) -> RecoveryResult:
         """Perform recovery enhanced with predictive suggestions"""
@@ -1174,7 +1174,7 @@ class WorkingMemoryAssistant:
     def _enhance_with_predictions(
         self,
         standard_result: RecoveryResult,
-        prediction: 'PredictionResult'
+        prediction: Any
     ) -> RecoveryResult:
         """Enhance standard recovery result with predictive insights"""
         # Add prediction metadata to result (would extend RecoveryResult in production)

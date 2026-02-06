@@ -36,14 +36,7 @@ async def demo_hover_enrichment():
     logger.info("SCENARIO 1: Developer hovers over 'Event' class in IDE")
     logger.info("=" * 70 + "\n")
     
-    import subprocess
-from pathlib import Path
-
-# Worktree-relative path fix
-worktree_root = subprocess.check_output(["git", "rev-parse", "--show-toplevel"]).decode().strip()
-symbol_path = Path(worktree_root) / "relative/path.py"
-
-symbol = "Event"
+    symbol = "Event"
     decisions = get_decisions_for_symbol(symbol, limit=3)
     
     original_hover = """**Event** - Event type definition

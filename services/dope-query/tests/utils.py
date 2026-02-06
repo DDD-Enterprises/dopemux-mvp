@@ -4,6 +4,8 @@ ConPort-KG Test Utilities
 Common testing utilities and helpers for comprehensive test coverage.
 """
 
+import os
+
 import asyncio
 import json
 import time

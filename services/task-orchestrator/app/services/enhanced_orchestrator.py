@@ -851,33 +851,28 @@ class EnhancedTaskOrchestrator:
         Creates or updates ConPort progress_entry with ADHD metadata.
         """
         try:
-            # In Claude Code context, use real MCP calls
-            # NOTE: These mcp__ functions are available in Claude Code execution context
+            if not self.conport_adapter:
+                logger.warning("ConPort adapter unavailable; cannot dispatch task")
+                return False
 
             if task.conport_id:
                 # Update existing progress entry
                 logger.info(f"📊 ConPort update: {task.title} (ID: {task.conport_id})")
-
-                await mcp__conport__update_progress(
-                    workspace_id=self.workspace_id,
-                    progress_id=task.conport_id,
-                    status=task.status.value.upper(),
-                    description=f"{task.title} (complexity: {task.complexity_score:.2f})"
+                updated = await self.conport_adapter.update_task_status(
+                    task.id, task.status.value.upper()
                 )
-
+                if not updated:
+                    return False
                 logger.debug(f"Updated ConPort progress entry {task.conport_id}")
 
             else:
                 # Create new progress entry with ADHD metadata
                 logger.info(f"📊 ConPort create: {task.title}")
 
-                result = await mcp__conport__log_progress(
-                    workspace_id=self.workspace_id,
-                    status=task.status.value.upper(),
-                    description=task.title,
-                    # ADHD metadata would be added as custom JSON in description or via custom_data
-                )
-                task.conport_id = result['id']
+                conport_id = await self.conport_adapter.create_task_in_conport(task)
+                if not conport_id:
+                    return False
+                task.conport_id = conport_id
 
                 logger.debug(f"Created ConPort progress entry for {task.title}")
 
@@ -1082,8 +1077,6 @@ class EnhancedTaskOrchestrator:
 
         except Exception as e:
             return 0.5  # Default moderate load
-
-            logger.error(f"Error: {e}")
     async def _get_task_count_from_conport(self) -> int:
         """Get total task count from ConPort (Architecture 3.0 storage authority)."""
         try:
@@ -1238,8 +1231,6 @@ class EnhancedTaskOrchestrator:
 
         except Exception as e:
             return 25  # Default ADHD-friendly duration
-
-            logger.error(f"Error: {e}")
     def _next_request_id(self) -> int:
         """Generate next request ID."""
         return int(datetime.now().timestamp() * 1000)
@@ -1262,8 +1253,43 @@ class EnhancedTaskOrchestrator:
 
     async def _correlate_code_changes_to_tasks(self) -> None:
         """Correlate file changes to task progress."""
-        # Placeholder - would integrate with Serena file monitoring
-        pass
+        try:
+            if not self.redis_client or not self.conport_adapter:
+                return
+
+            change_key = f"serena:file-changes:{self.workspace_id}"
+            recent_changes = await self.redis_client.lrange(change_key, 0, 49)
+            if not recent_changes:
+                return
+
+            active_tasks = await self.conport_adapter.get_all_tasks_from_conport(
+                status_filter="IN_PROGRESS"
+            )
+            if not active_tasks:
+                return
+
+            normalized_changes = []
+            for entry in recent_changes:
+                try:
+                    payload = json.loads(entry)
+                    if isinstance(payload, dict):
+                        normalized_changes.append(str(payload.get("path") or payload.get("file") or ""))
+                    else:
+                        normalized_changes.append(str(payload))
+                except Exception:
+                    normalized_changes.append(str(entry))
+
+            correlations = 0
+            for task in active_tasks:
+                task_text = f"{task.get('title', '')} {task.get('description', '')}".lower()
+                if any(change and change.lower().split('/')[-1] in task_text for change in normalized_changes):
+                    correlations += 1
+
+            if correlations:
+                self.metrics["code_task_correlations"] = self.metrics.get("code_task_correlations", 0) + correlations
+
+        except Exception as e:
+            logger.error(f"Failed to correlate code changes to tasks: {e}")
 
     # DopeconBridge Event Subscription (Component 3)
 
@@ -1442,23 +1468,126 @@ class EnhancedTaskOrchestrator:
 
     async def _monitor_cognitive_load(self) -> None:
         """Monitor overall cognitive load across tasks."""
-        # Placeholder - would analyze active task load
-        pass
+        try:
+            if not self.conport_adapter:
+                return
+
+            active_tasks = await self.conport_adapter.get_all_tasks_from_conport(
+                status_filter="IN_PROGRESS"
+            )
+            if not active_tasks:
+                self.metrics["cognitive_load_avg"] = 0.0
+                return
+
+            scores = []
+            for task in active_tasks:
+                score = task.get("complexity_score")
+                if score is None:
+                    score = task.get("complexity", 0.5)
+                try:
+                    scores.append(float(score))
+                except (TypeError, ValueError):
+                    scores.append(0.5)
+
+            avg_load = sum(scores) / len(scores)
+            self.metrics["cognitive_load_avg"] = round(avg_load, 3)
+
+            if self.redis_client:
+                key = f"orchestrator:cognitive-load:{self.workspace_id}"
+                payload = {
+                    "avg_load": avg_load,
+                    "task_count": len(active_tasks),
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                }
+                await self.redis_client.setex(key, 600, json.dumps(payload))
+
+        except Exception as e:
+            logger.error(f"Failed cognitive load monitor: {e}")
 
     async def _detect_excessive_context_switching(self) -> None:
         """Detect and mitigate excessive context switching."""
-        # Placeholder - would analyze task switching patterns
-        pass
+        try:
+            if not self.redis_client:
+                return
+
+            switch_key = f"orchestrator:context-switch:{self.workspace_id}"
+            recent_switches = await self.redis_client.llen(switch_key)
+            self.metrics["recent_context_switches"] = recent_switches
+
+            if recent_switches >= 5:
+                focus_key = f"orchestrator:focus-mode:{self.workspace_id}"
+                focus_payload = {
+                    "mode": "single_task_focus",
+                    "trigger": "excessive_context_switching",
+                    "switches": recent_switches,
+                    "activated_at": datetime.now(timezone.utc).isoformat(),
+                }
+                await self.redis_client.setex(focus_key, 1800, json.dumps(focus_payload))
+                self.metrics["focus_interventions"] = self.metrics.get("focus_interventions", 0) + 1
+
+        except Exception as e:
+            logger.error(f"Failed context-switch detection: {e}")
 
     async def _check_retrospective_triggers(self) -> None:
         """Check for retrospective automation triggers."""
-        # Placeholder - would detect sprint completion
-        pass
+        try:
+            completed = int(self.metrics.get("tasks_orchestrated", 0))
+            if completed == 0 or completed % 10 != 0:
+                return
+
+            if self.redis_client:
+                key = f"orchestrator:retrospective-triggers:{self.workspace_id}"
+                payload = {
+                    "tasks_orchestrated": completed,
+                    "triggered_at": datetime.now(timezone.utc).isoformat(),
+                }
+                await self.redis_client.lpush(key, json.dumps(payload))
+                await self.redis_client.ltrim(key, 0, 19)
+                await self.redis_client.expire(key, 604800)  # 7 days
+
+            self.metrics["retrospectives_triggered"] = self.metrics.get("retrospectives_triggered", 0) + 1
+
+        except Exception as e:
+            logger.error(f"Failed retrospective trigger check: {e}")
 
     async def _check_task_decomposition_triggers(self) -> None:
         """Check for automatic task decomposition triggers."""
-        # Placeholder - would identify complex tasks needing breakdown
-        pass
+        try:
+            if not self.conport_adapter:
+                return
+
+            todo_tasks = await self.conport_adapter.get_all_tasks_from_conport(status_filter="TODO")
+            if not todo_tasks:
+                return
+
+            decomposed = 0
+            for task_data in todo_tasks[:10]:
+                complexity = task_data.get("complexity_score", task_data.get("complexity", 0.0))
+                try:
+                    complexity = float(complexity)
+                except (TypeError, ValueError):
+                    complexity = 0.0
+
+                if complexity < 0.8:
+                    continue
+
+                task = OrchestrationTask(
+                    id=str(task_data.get("id")),
+                    title=task_data.get("title") or task_data.get("description", "Untitled task"),
+                    description=task_data.get("description", ""),
+                    complexity_score=complexity,
+                )
+                subtasks = await self._auto_decompose_task(task)
+                if subtasks:
+                    decomposed += 1
+
+            if decomposed:
+                self.metrics["auto_decompositions_triggered"] = (
+                    self.metrics.get("auto_decompositions_triggered", 0) + decomposed
+                )
+
+        except Exception as e:
+            logger.error(f"Failed task decomposition trigger check: {e}")
 
     # Health and Monitoring
 

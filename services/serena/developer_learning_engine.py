@@ -17,6 +17,8 @@ from enum import Enum
 import statistics
 import re
 
+logger = logging.getLogger(__name__)
+
 # ML and analysis imports
 try:
     import numpy as np
@@ -30,8 +32,6 @@ except ImportError:
     logger.warning("ML libraries not available - install with: pip install numpy pandas scikit-learn")
 
 import redis.asyncio as redis
-
-logger = logging.getLogger(__name__)
 
 
 class DeveloperPatternType(str, Enum):
@@ -574,8 +574,6 @@ class DeveloperLearningEngine:
 
         except Exception as e:
             return 0.0
-
-            logger.error(f"Error: {e}")
     async def _assess_refactoring_success(self, commit: Dict[str, Any]) -> Dict[str, Any]:
         """Assess indicators of refactoring success."""
         try:
@@ -600,8 +598,6 @@ class DeveloperLearningEngine:
 
         except Exception as e:
             return {"success_probability": 0.5, "confidence": "low"}
-
-            logger.error(f"Error: {e}")
     # Pattern Recognition and Learning
 
     async def learn_navigation_patterns(self, developer_id: str) -> Dict[str, Any]:

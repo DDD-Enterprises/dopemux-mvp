@@ -5,6 +5,8 @@ Integration bridge between Serena code intelligence and ConPort knowledge graph,
 providing decision context for code relationships and ADHD-optimized knowledge correlation.
 """
 
+import statistics
+
 import asyncio
 import json
 import logging
@@ -737,8 +739,6 @@ class ConPortKnowledgeGraphBridge:
                 else:
                     return ContextRelevance.HISTORICAL
             except Exception as e:
-                pass
-
                 logger.error(f"Error: {e}")
         return ContextRelevance.BACKGROUND
 

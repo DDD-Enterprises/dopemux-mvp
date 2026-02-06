@@ -170,7 +170,6 @@ class RedisConnectionPool:
                 if ":" in auth_part:
                     return auth_part.split(":")[1]
         except Exception as e:
-            pass
             logger.error(f"Error: {e}")
         return ""
 

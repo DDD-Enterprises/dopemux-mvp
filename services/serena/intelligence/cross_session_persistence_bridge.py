@@ -5,6 +5,8 @@ Synchronization system between ConPort strategic templates and PostgreSQL tactic
 implementing the expert-recommended immutable template + delta patch architecture.
 """
 
+from dataclasses import asdict
+
 import asyncio
 import json
 import logging
@@ -709,8 +711,6 @@ class CrossSessionPersistenceBridge:
 
         except Exception as e:
             return False
-
-            logger.error(f"Error: {e}")
     async def _test_postgres_connection(self) -> bool:
         """Test PostgreSQL connection health."""
         try:
@@ -718,8 +718,6 @@ class CrossSessionPersistenceBridge:
             return True
         except Exception as e:
             return False
-
-            logger.error(f"Error: {e}")
     async def _check_template_exists_in_postgres(self, template_hash: str) -> Optional[Dict[str, Any]]:
         """Check if template exists in PostgreSQL."""
         try:

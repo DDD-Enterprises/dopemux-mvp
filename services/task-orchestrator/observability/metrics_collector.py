@@ -82,6 +82,8 @@ class MetricsCollector:
 
         # In-memory fallback for when Prometheus unavailable
         self.in_memory_metrics: Dict[str, List[float]] = {}
+        self._task_started_total: float = 0.0
+        self._task_completed_total: float = 0.0
 
         if self.enabled:
             self._initialize_prometheus_metrics()
@@ -242,12 +244,14 @@ class MetricsCollector:
     ):
         """Record when a task is started."""
         complexity_range = self._classify_complexity(complexity)
+        self._task_started_total += 1.0
 
         if self.enabled:
             self.tasks_started.labels(
                 energy_level=energy_level,
                 complexity_range=complexity_range
             ).inc()
+            self._update_completion_rate()
         else:
             self._record_in_memory('tasks_started', 1.0)
 
@@ -270,6 +274,8 @@ class MetricsCollector:
             completion_type: full/partial/abandoned
         """
         complexity_range = self._classify_complexity(complexity)
+        if completion_type == "full":
+            self._task_completed_total += 1.0
 
         if self.enabled:
             self.tasks_completed.labels(
@@ -413,9 +419,17 @@ class MetricsCollector:
 
     def _update_completion_rate(self):
         """Update task completion rate gauge."""
-        # This would query Prometheus to calculate rate
-        # For now, it's updated externally via dedicated calculation
-        pass
+        if not self.enabled:
+            return
+
+        started = self._task_started_total
+        completed = self._task_completed_total
+        if started <= 0:
+            self.task_completion_rate.set(0.0)
+            return
+
+        rate = max(0.0, min(1.0, completed / started))
+        self.task_completion_rate.set(rate)
 
     def _record_in_memory(self, metric_name: str, value: float):
         """Fallback: record metric in memory when Prometheus unavailable."""
