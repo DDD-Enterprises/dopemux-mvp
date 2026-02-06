@@ -124,31 +124,31 @@ class GPOperators:
         """Negate a conditional expression (research-based operator from GP literature)."""
         class ConditionNegator(ast.NodeTransformer):
             def visit_Compare(self, node):
-                # Handle comparison operators: > í <=, < í >=, == í !=, etc.
+                # Handle comparison operators: > ' <=, < ' >=, == ' !=, etc.
                 if len(node.ops) == 1:
                     op = node.ops[0]
                     if isinstance(op, ast.Gt):
-                        # > í <=
+                        # > ' <=
                         node.ops[0] = ast.LtE()
                     elif isinstance(op, ast.Lt):
-                        # < í >=
+                        # < ' >=
                         node.ops[0] = ast.GtE()
                     elif isinstance(op, ast.GtE):
-                        # >= í <
+                        # >= ' <
                         node.ops[0] = ast.Lt()
                     elif isinstance(op, ast.LtE):
-                        # <= í >
+                        # <= ' >
                         node.ops[0] = ast.Gt()
                     elif isinstance(op, ast.Eq):
-                        # == í !=
+                        # == ' !=
                         node.ops[0] = ast.NotEq()
                     elif isinstance(op, ast.NotEq):
-                        # != í ==
+                        # != ' ==
                         node.ops[0] = ast.Eq()
                 return self.generic_visit(node)
 
             def visit_If(self, node):
-                # Negate if condition and swap branches (if A then B else C í if !A then C else B)
+                # Negate if condition and swap branches (if A then B else C ' if !A then C else B)
                 if node.orelse:  # Has else clause
                     # Swap the bodies
                     node.body, node.orelse = node.orelse, node.body
@@ -163,7 +163,7 @@ class GPOperators:
         """Swap operators in expressions (research-based operator from GP literature)."""
         class OperatorSwapper(ast.NodeTransformer):
             def visit_BinOp(self, node):
-                # Swap arithmetic operators: + î -, * î /
+                # Swap arithmetic operators: + ‚Äù -, * ‚Äù /
                 if isinstance(node.op, ast.Add):
                     node.op = ast.Sub()
                 elif isinstance(node.op, ast.Sub):
@@ -179,7 +179,7 @@ class GPOperators:
                 return self.generic_visit(node)
 
             def visit_BoolOp(self, node):
-                # Swap logical operators: and î or
+                # Swap logical operators: and ‚Äù or
                 if isinstance(node.op, ast.And):
                     node.op = ast.Or()
                 elif isinstance(node.op, ast.Or):

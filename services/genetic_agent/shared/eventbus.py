@@ -4,18 +4,16 @@ from typing import Dict, Any, List, Callable
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+import logging
 import threading
 import time
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class Event:
     """Event data class."""
     event_type: str
-
-import logging
-
-logger = logging.getLogger(__name__)
-
     payload: Dict[str, Any]
     timestamp: datetime
     source: str = "unknown"
