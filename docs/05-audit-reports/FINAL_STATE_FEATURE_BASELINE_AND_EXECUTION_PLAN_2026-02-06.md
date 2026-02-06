@@ -268,6 +268,10 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/profile_documentation_verification_2026-02-06.json`.
 17. ADHD-engine signal collection backlog item (`2.1.3`) is now implemented with runtime endpoint probing (5448-first), energy/attention extraction, and graceful fallback:
    `reports/strict_closure/adhd_engine_profile_detector_verification_2026-02-06.json`.
+18. File-pattern analyzer backlog item (`2.1.5`) is now implemented with percentage-based 0-10 scoring against deduplicated recent files:
+   `reports/strict_closure/file_pattern_analyzer_verification_2026-02-06.json`.
+19. Detector threshold-coverage backlog item (`2.2.4`) is now implemented with explicit unit coverage for auto/prompt/none confidence transitions and signal combinations:
+   `reports/strict_closure/profile_detector_threshold_tests_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 

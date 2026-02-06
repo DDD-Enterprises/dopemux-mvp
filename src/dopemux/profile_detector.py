@@ -283,20 +283,29 @@ class ProfileDetector:
         if not patterns or not recent_files:
             return 0.0
 
-        # Check if any recent file matches any pattern
+        # Row 2.1.5 requirement: score by match percentage (0-10 points).
+        candidates: List[str] = []
+        seen = set()
+        for file in recent_files[:10]:
+            normalized = str(file).strip()
+            if not normalized or normalized in seen:
+                continue
+            candidates.append(normalized)
+            seen.add(normalized)
+
+        if not candidates:
+            return 0.0
+
         matches = 0
-        for file in recent_files[:10]:  # Check last 10 files
+        for file in candidates:
+            file_name = Path(file).name
             for pattern in patterns:
-                if fnmatch.fnmatch(file, pattern):
+                if fnmatch.fnmatch(file, pattern) or fnmatch.fnmatch(file_name, pattern):
                     matches += 1
                     break  # Count each file once
 
-        if matches == 0:
-            return 0.0
-
-        # Partial scoring: more matches = higher score
-        ratio = min(matches / 5, 1.0)  # Cap at 5 matches
-        return self.WEIGHT_FILE_PATTERNS * ratio
+        match_ratio = matches / len(candidates)
+        return self.WEIGHT_FILE_PATTERNS * match_ratio
 
     def _gather_context(self) -> DetectionContext:
         """Auto-gather detection context from environment"""
