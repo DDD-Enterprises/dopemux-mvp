@@ -44,6 +44,7 @@ Generated during this pass:
 - `reports/strict_closure/component_scorecards.json`
 - `reports/strict_closure/conport_real_import_integrity_2026-02-06.json`
 - `reports/strict_closure/conport_backlog_extract_2026-02-06.json`
+- `reports/strict_closure/conport_master_todo_miss_extract_2026-02-06.json`
 - `docs/05-audit-reports/CONPORT_REAL_IMPORT_INTEGRITY_2026-02-06.md`
 
 Executed verification checks (latest pass on 2026-02-06):
@@ -202,6 +203,13 @@ Source: `reports/strict_closure/conport_backlog_extract_2026-02-06.json` (from h
    `conport_integration_links`, bidirectional linking, `trace_decision_to_code` MCP tool, and traversal performance validation.
 5. Historical dependency-unification backlog still open:
    remove duplicated semantic-search paths, centralize ADHD config service, and complete migration test coverage around those changes.
+
+Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026-02-06.json`.
+
+1. Unique pending items mined from all export bundles: 231 (230 TODO, 1 BLOCKED).
+2. Coverage diff against this master doc: 24 pending items were not represented clearly enough in the active plan text.
+3. Missed clusters now explicitly in scope:
+   AGE/PG stress + compatibility validation tasks, Slack client/status/triage workflow tasks, macOS focus/window-management integration tasks, beta-prep/recruitment/deployment tasks, and manual Leantime web setup completion path.
 
 ## Prioritized Gap Register
 
