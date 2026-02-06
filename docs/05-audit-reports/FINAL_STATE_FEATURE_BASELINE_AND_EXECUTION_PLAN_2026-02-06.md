@@ -49,6 +49,7 @@ Generated during this pass:
 - `reports/strict_closure/conport_master_todo_coverage_recheck_2026-02-06.json`
 - `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json`
 - `reports/strict_closure/litellm_blocker_verification_2026-02-06.json`
+- `reports/strict_closure/profile_workstream_verification_2026-02-06.json`
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
@@ -57,6 +58,7 @@ Generated during this pass:
 - `docs/05-audit-reports/CONPORT_FULL_TODO_COVERAGE_MATRIX_2026-02-06.md`
 - `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`
 - `docs/05-audit-reports/LITELLM_BLOCKER_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_WORKSTREAM_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
 - `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
@@ -245,6 +247,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json`.
 8. First execution packet for the underrepresented set is now materialized with owner buckets and verification anchors for the top `40` items:
    `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`.
+9. Profile/auto-detection workstream verification shows `12` extracted tasks already implemented and `3` partial, reducing true open scope in that cluster:
+   `reports/strict_closure/profile_workstream_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
