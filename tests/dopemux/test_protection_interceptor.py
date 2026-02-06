@@ -19,6 +19,7 @@ from src.dopemux.protection_interceptor import (
     _offer_worktree_creation,
     _create_worktree_interactive,
     _parse_name_choice,
+    _parse_migration_choice,
     _execute_worktree_creation,
     _stash_changes,
     _pop_stash,
@@ -365,6 +366,18 @@ def test_parse_name_choice_default():
     assert result == "issue-123"
 
 
+def test_parse_migration_choice():
+    """Test migration prompt parser supports common yes/no inputs."""
+    assert _parse_migration_choice("") is True
+    assert _parse_migration_choice("y") is True
+    assert _parse_migration_choice("yes") is True
+
+    assert _parse_migration_choice("n") is False
+    assert _parse_migration_choice("no") is False
+    assert _parse_migration_choice("No") is False
+    assert _parse_migration_choice("false") is False
+
+
 def test_parse_name_choice_numeric():
     """Test parsing numeric choice (1-3)."""
     suggestions = [
@@ -656,7 +669,7 @@ def test_create_worktree_interactive_with_migration_yes(mock_execute, mock_input
 def test_create_worktree_interactive_with_migration_no(mock_execute, mock_input, git_repo):
     """Test interactive creation without migration (user says no)."""
     # Mock name choice
-    mock_input.side_effect = ["1", "n"]  # Choose first suggestion, no to migration
+    mock_input.side_effect = ["1", "no"]  # Choose first suggestion, no to migration
     mock_execute.return_value = True
 
     trigger = ProtectionTrigger(

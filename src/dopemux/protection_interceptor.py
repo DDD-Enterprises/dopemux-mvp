@@ -222,7 +222,7 @@ def _create_worktree_interactive(
         console.print("\n[dim]Cancelled - staying in main[/dim]")
         return False
 
-    migrate_changes = migrate_choice != "n"  # Default to Yes
+    migrate_changes = _parse_migration_choice(migrate_choice)
 
     # Create the worktree with optional migration
     success = _execute_worktree_creation(workspace_path, worktree_name, migrate_changes=migrate_changes)
@@ -274,6 +274,19 @@ def _parse_name_choice(
         return resolved
 
     return custom_name
+
+
+def _parse_migration_choice(choice_input: str) -> bool:
+    """
+    Parse migration prompt input with a default-yes policy.
+
+    Accepts common negative forms so explicit "no" does not trigger migration.
+    """
+    normalized = choice_input.strip().lower()
+    if not normalized:
+        return True
+
+    return normalized not in {"n", "no", "nope", "nah", "false", "0"}
 
 
 def _stash_changes(workspace_path: str) -> Optional[str]:
