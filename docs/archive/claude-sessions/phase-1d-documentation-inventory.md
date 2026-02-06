@@ -1,10 +1,14 @@
 ---
 id: phase-1d-documentation-inventory
 title: Phase 1D Documentation Inventory
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Phase 1D Documentation Inventory (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # Phase 1D: Documentation Inventory
 **Date**: 2025-10-16

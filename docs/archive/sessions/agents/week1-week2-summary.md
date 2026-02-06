@@ -1,10 +1,14 @@
 ---
 id: week1-week2-summary
 title: Week1 Week2 Summary
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Week1 Week2 Summary (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Week 1-2 Summary: Agent Implementation Quick Start
 

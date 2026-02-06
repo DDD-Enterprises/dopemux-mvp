@@ -1,10 +1,14 @@
 ---
 id: week3-days-1-2-complete
 title: Week3 Days 1 2 Complete
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Week3 Days 1 2 Complete (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Week 3 Days 1-2: COMPLETE ✅
 

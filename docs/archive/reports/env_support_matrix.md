@@ -1,10 +1,14 @@
 ---
 id: env_support_matrix
 title: Env_Support_Matrix
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Env_Support_Matrix (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # G33 Phase 0: Environment Variable Support Matrix
 

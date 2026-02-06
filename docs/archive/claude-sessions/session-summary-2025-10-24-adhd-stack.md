@@ -1,10 +1,14 @@
 ---
 id: session-summary-2025-10-24-adhd-stack
 title: Session Summary 2025 10 24 Adhd Stack
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Session Summary 2025 10 24 Adhd Stack (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # Epic Session Summary - Complete ADHD Intelligence Stack
 
@@ -152,12 +156,12 @@ Dashboard (8097): Web UI + API
 1. Activity Capture (8096) - Event consumer & aggregator
 
 ### Background Processes
-2. ADHD Engine (8095) - Energy/attention assessment
-3. Workspace Watcher - App monitoring
-4. ADHD Notifier - Break/hyperfocus alerts
+1. ADHD Engine (8095) - Energy/attention assessment
+2. Workspace Watcher - App monitoring
+3. ADHD Notifier - Break/hyperfocus alerts
 
 ### Optional
-5. Dashboard (8097) - Web UI & REST API
+1. Dashboard (8097) - Web UI & REST API
 
 ---
 

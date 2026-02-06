@@ -1,10 +1,13 @@
 ---
 id: start-here-2025
 title: Start Here 2025
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Start Here 2025 (explanation) for dopemux documentation and developer workflows.
 ---
 # DDDPG: START HERE (2025 Edition)
 **Service**: DDDPG (Decision-Driven Development Planning Graph)
@@ -268,30 +271,30 @@ open 2025_MODERNIZATION_ROADMAP.md
 4. `2025_TECHNICAL_SPEC.md` - Technical details
 
 ### Week 4 Implementation
-5. `WEEK4_DAY1_COMPLETE.md` - Day 1 results (✅ complete)
-6. `WEEK4_DAY2_IMPLEMENTATION_PLAN.md` - Day 2 plan (ready to build)
-7. `WEEK4_DAY2_FINAL_ROADMAP.md` - Day 2 architecture
-8. `WEEK4_DAY2_SPEC.md` - Day 2 specifications
-9. `WEEK4_DAY2_DEEP_RESEARCH.md` - Day 2 research
-10. `WEEK4_PROGRESS.md` - Week 4 tracking
+1. `WEEK4_DAY1_COMPLETE.md` - Day 1 results (✅ complete)
+2. `WEEK4_DAY2_IMPLEMENTATION_PLAN.md` - Day 2 plan (ready to build)
+3. `WEEK4_DAY2_FINAL_ROADMAP.md` - Day 2 architecture
+4. `WEEK4_DAY2_SPEC.md` - Day 2 specifications
+5. `WEEK4_DAY2_DEEP_RESEARCH.md` - Day 2 research
+6. `WEEK4_PROGRESS.md` - Week 4 tracking
 
 ### Architecture & Design
-11. `DEEP_ANALYSIS_CURRENT_STATE.md` - Current state audit
-12. `ARCHITECTURE_ANALYSIS.md` - Architecture review
-13. `STORAGE_DESIGN.md` - Storage layer design
-14. `MODERNIZATION_ANALYSIS_2025.md` - Modernization analysis
+1. `DEEP_ANALYSIS_CURRENT_STATE.md` - Current state audit
+2. `ARCHITECTURE_ANALYSIS.md` - Architecture review
+3. `STORAGE_DESIGN.md` - Storage layer design
+4. `MODERNIZATION_ANALYSIS_2025.md` - Modernization analysis
 
 ### Historical/Reference
-15. `EXECUTIVE_SUMMARY.md` - High-level overview
-16. `BUILD_STATUS_SUMMARY.md` - Build status
-17. `ANALYSIS_COMPLETE.md` - Analysis completion
-18. `QUICK_REFERENCE.md` - Quick reference guide
-19. Other planning docs (see `ANALYSIS_INDEX.md`)
+1. `EXECUTIVE_SUMMARY.md` - High-level overview
+2. `BUILD_STATUS_SUMMARY.md` - Build status
+3. `ANALYSIS_COMPLETE.md` - Analysis completion
+4. `QUICK_REFERENCE.md` - Quick reference guide
+5. Other planning docs (see `ANALYSIS_INDEX.md`)
 
 ### Code Documentation
-20. `README_START_HERE.md` - Original start here
-21. `START_HERE.md` - Alternative start
-22. `ANALYSIS_INDEX_OLD.md` - Old index
+1. `README_START_HERE.md` - Original start here
+2. `START_HERE.md` - Alternative start
+3. `ANALYSIS_INDEX_OLD.md` - Old index
 
 ---
 

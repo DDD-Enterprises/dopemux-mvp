@@ -1,10 +1,14 @@
 ---
 id: F-NEW-1_F-NEW-2_COMPLETION
 title: F New 1_F New 2_Completion
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: F New 1_F New 2_Completion (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # F-NEW-1 & F-NEW-2 Implementation Complete
 

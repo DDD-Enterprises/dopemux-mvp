@@ -1,10 +1,13 @@
 ---
 id: week6-complete
 title: Week6 Complete
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Week6 Complete (explanation) for dopemux documentation and developer workflows.
 ---
 # Week 6 Complete: TwoPlaneOrchestrator
 

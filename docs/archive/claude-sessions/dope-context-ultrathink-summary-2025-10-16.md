@@ -1,10 +1,14 @@
 ---
 id: dope-context-ultrathink-summary-2025-10-16
 title: Dope Context Ultrathink Summary 2025 10 16
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dope Context Ultrathink Summary 2025 10 16 (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # Dope-Context Ultrathink Analysis & Fixes
 

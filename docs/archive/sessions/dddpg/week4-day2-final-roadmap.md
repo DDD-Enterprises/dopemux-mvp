@@ -1,10 +1,14 @@
 ---
 id: week4-day2-final-roadmap
 title: Week4 Day2 Final Roadmap
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Week4 Day2 Final Roadmap (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Week 4 Day 2: Final Implementation Roadmap
 ## Task Relationship Mapping - Validated & Ready
