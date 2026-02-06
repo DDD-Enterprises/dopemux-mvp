@@ -1,0 +1,18 @@
+{
+  "verification_id": "profile_week2_integration_testing_2026_02_06",
+  "date": "2026-02-06",
+  "rows_covered": [
+    40
+  ],
+  "status": "implemented",
+  "artifacts": {
+    "script": "/Users/hue/code/dopemux-mvp/scripts/verify_profile_week2_integration.sh",
+    "doc": "/Users/hue/code/dopemux-mvp/docs/05-audit-reports/PROFILE_WEEK2_INTEGRATION_TESTING_VERIFICATION_2026-02-06.md"
+  },
+  "verification_commands": [
+    "scripts/verify_profile_week2_integration.sh"
+  ],
+  "notes": [
+    "Dope-context suite is executed with -k 'not trio' due missing trio backend in this environment."
+  ]
+}

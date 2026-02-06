@@ -66,6 +66,7 @@ Generated during this pass:
 - `reports/strict_closure/profile_optimization_suggestions_verification_2026-02-06.json`
 - `reports/strict_closure/profile_usage_analysis_and_init_wizard_verification_2026-02-06.json`
 - `reports/strict_closure/profile_documentation_completion_verification_2026-02-06.json`
+- `reports/strict_closure/profile_week2_integration_testing_verification_2026-02-06.json`
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
@@ -91,6 +92,7 @@ Generated during this pass:
 - `docs/05-audit-reports/PROFILE_OPTIMIZATION_SUGGESTIONS_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/PROFILE_USAGE_ANALYSIS_AND_INIT_WIZARD_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/PROFILE_DOCUMENTATION_COMPLETION_VERIFICATION_2026-02-06.md`
+- `docs/05-audit-reports/PROFILE_WEEK2_INTEGRATION_TESTING_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/AGE_PG_COMPAT_STRESS_2026-02-06.md`
 - `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
@@ -106,6 +108,7 @@ Executed verification checks (latest pass on 2026-02-06):
 - `pytest -q --no-cov tests/unit/test_profile_usage_analysis_command.py tests/unit/test_profile_analyzer.py tests/unit/test_profile_wizard.py` (passes)
 - `pytest -q --no-cov tests/test_mobile_runtime.py` (passes)
 - `PYTHONPATH=/Users/hue/code/dopemux-mvp/services/dope-context pytest -q --no-cov -k 'not trio' services/dope-context/tests/test_mcp_server.py` (passes)
+- `scripts/verify_profile_week2_integration.sh` (passes)
 - `npm --prefix ui-dashboard run build` (passes)
 - `python scripts/deploy/migration/validate_age_pg_compat_stress.py ...` (passes via `mcp-conport` runtime with `overall_ok=true`)
 - `docker exec dopemux-mcp-leantime-bridge ... /health?deep=1` and `/api/tools/list_projects` (failing with degraded upstream evidence captured)
@@ -340,6 +343,8 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/profile_documentation_completion_verification_2026-02-06.json`.
 37. Remaining profile UX docs polish (`4.6.3`) is now addressed for active docs through command-parity updates and index refresh:
    `reports/strict_closure/profile_documentation_completion_verification_2026-02-06.json`.
+38. Week-2 integration/testing backlog item (`Day 10`) is now implemented with a reusable end-to-end verification harness:
+   `reports/strict_closure/profile_week2_integration_testing_verification_2026-02-06.json`.
 
 ## Prioritized Gap Register
 
