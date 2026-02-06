@@ -100,6 +100,14 @@ Evidence: `docs/05-audit-reports/PROFILE_SWITCH_TIME_OPTIMIZATION_VERIFICATION_2
 Evidence: `docs/05-audit-reports/PROFILE_SWITCH_INTEGRATION_TESTS_VERIFICATION_2026-02-06.md`
 18. Row `19` (`4.1.1 Detect current profile from config`) is now implemented.
 Evidence: `docs/05-audit-reports/PROFILE_CURRENT_DETECTION_VERIFICATION_2026-02-06.md`
+19. Row `20` (`4.2.1 Background detection service`) is now implemented.
+Evidence: `docs/05-audit-reports/AUTO_DETECTION_SERVICE_VERIFICATION_2026-02-06.md`
+20. Row `21` (`4.2.2 Suggestion UI design`) is now implemented.
+Evidence: `docs/05-audit-reports/AUTO_DETECTION_SERVICE_VERIFICATION_2026-02-06.md`
+21. Row `22` (`4.2.3 Suggestion acceptance flow`) is now implemented.
+Evidence: `docs/05-audit-reports/AUTO_DETECTION_SERVICE_VERIFICATION_2026-02-06.md`
+22. Row `23` (`4.2.4 Configuration options`) is now implemented.
+Evidence: `docs/05-audit-reports/AUTO_DETECTION_SERVICE_VERIFICATION_2026-02-06.md`
 
 ## Source
 
