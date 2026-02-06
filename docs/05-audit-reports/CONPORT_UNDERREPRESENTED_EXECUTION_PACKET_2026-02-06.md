@@ -92,6 +92,12 @@ Evidence: `docs/05-audit-reports/PROFILE_DETECTOR_THRESHOLD_TESTS_VERIFICATION_2
 Evidence: `docs/05-audit-reports/PROFILE_CONFIG_SWAP_RESTART_VERIFICATION_2026-02-06.md`
 14. Row `13` (`3.2.4 Error recovery and rollback`) is now implemented.
 Evidence: `docs/05-audit-reports/PROFILE_ERROR_RECOVERY_ROLLBACK_VERIFICATION_2026-02-06.md`
+15. Row `15` (`3.3.1 dopemux switch <profile> command`) is now implemented.
+Evidence: `docs/05-audit-reports/PROFILE_SWITCH_COMMAND_VERIFICATION_2026-02-06.md`
+16. Row `16` (`3.3.2 Switch time optimization`) is now implemented.
+Evidence: `docs/05-audit-reports/PROFILE_SWITCH_TIME_OPTIMIZATION_VERIFICATION_2026-02-06.md`
+17. Row `18` (`3.3.3 Integration tests`) is now implemented.
+Evidence: `docs/05-audit-reports/PROFILE_SWITCH_INTEGRATION_TESTS_VERIFICATION_2026-02-06.md`
 
 ## Source
 
