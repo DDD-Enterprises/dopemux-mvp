@@ -5205,7 +5205,12 @@ def profile_auto_status_cmd(ctx):
 def profile_stats_cmd(ctx, days: int):
     """📊 Show profile usage analytics and trends."""
     try:
-        from .profile_analytics import get_stats_sync, display_stats
+        from .profile_analytics import (
+            archive_optimization_suggestions_sync,
+            display_stats,
+            generate_optimization_suggestions,
+            get_stats_sync,
+        )
 
         workspace_id = str(Path.cwd())
 
@@ -5216,24 +5221,64 @@ def profile_stats_cmd(ctx, days: int):
         # Display with visual dashboard
         display_stats(stats, days_back=days)
 
-        # Optimization suggestions (if enough data)
-        if stats.total_switches >= 10:
-            console.logger.info(f"\n[bold]💡 Optimization Suggestions:[/bold]")
+        suggestions = generate_optimization_suggestions(stats)
+        if suggestions:
+            console.logger.info("\n[bold]💡 Optimization Suggestions:[/bold]")
+            for suggestion in suggestions:
+                severity_color = {
+                    "high": "red",
+                    "medium": "yellow",
+                    "low": "cyan",
+                }.get(suggestion.get("severity", "low"), "cyan")
+                console.logger.info(
+                    f"   • [{severity_color}]{suggestion['title']}[/{severity_color}]: "
+                    f"{suggestion['detail']}"
+                )
 
-            # Suggest based on patterns
-            if stats.switch_accuracy < 70:
-                console.logger.info(f"   • [yellow]Low accuracy ({stats.switch_accuracy:.0f}%)[/yellow]: Consider refining auto-detection rules")
+            archived = archive_optimization_suggestions_sync(
+                workspace_id=workspace_id,
+                suggestions=suggestions,
+                stats=stats,
+                days_back=days,
+            )
+            if archived:
+                console.logger.info(
+                    "[dim]✓ Suggestions archived to ConPort for follow-up[/dim]"
+                )
+            else:
+                console.logger.info(
+                    "[yellow]⚠ Could not archive optimization suggestions to ConPort[/yellow]"
+                )
 
-            if stats.auto_switches == 0 and stats.total_switches > 20:
-                console.logger.info(f"   • [cyan]All manual switches[/cyan]: Try 'dopemux profile auto-enable' for suggestions")
+    except Exception as e:
+        console.logger.error(f"[red]Error: {e}[/red]")
+        if ctx.obj.get("verbose"):
+            raise
+        sys.exit(1)
 
-            if stats.suggestion_declined > stats.suggestion_accepted * 2:
-                console.logger.info(f"   • [yellow]Many declined suggestions[/yellow]: Lower confidence threshold or adjust profile rules")
 
-            # Suggest creating a new profile for common patterns
-            if stats.most_used_profile and stats.usage_by_profile.get(stats.most_used_profile, 0) > stats.total_switches * 0.7:
-                console.logger.info(f"   • [green]Stable workflow detected[/green]: Your '{stats.most_used_profile}' profile is well-matched!")
+@profile.command("analyze-usage")
+@click.option("--days", "-d", type=int, default=90, help="Days of git history to analyze (default: 90)")
+@click.option("--max-commits", type=int, default=500, show_default=True, help="Maximum commits to inspect")
+@click.pass_context
+def profile_analyze_usage_cmd(ctx, days: int, max_commits: int):
+    """🔎 Analyze git usage patterns for profile tuning and init defaults."""
+    try:
+        from .profile_analyzer import GitHistoryAnalyzer
 
+        analyzer = GitHistoryAnalyzer(Path.cwd())
+        analysis = analyzer.analyze(days_back=days, max_commits=max_commits)
+        analyzer.display_analysis(analysis)
+
+        if analysis.total_commits == 0:
+            console.logger.info(
+                "\n[yellow]No recent commits found. Use `dopemux profile init` for default-guided setup.[/yellow]"
+            )
+            return
+
+        console.logger.info("\n[bold]Recommended Next Actions:[/bold]")
+        console.logger.info("   • Generate personalized profile: [white]dopemux profile init[/white]")
+        console.logger.info("   • Apply likely fit: [white]dopemux profile apply developer[/white]")
     except Exception as e:
         console.logger.error(f"[red]Error: {e}[/red]")
         if ctx.obj.get("verbose"):

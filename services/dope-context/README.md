@@ -97,12 +97,13 @@ mcp__dope-context__docs_search(
 
 ### Unified Search - `mcp__dope-context__search_all`
 
-**Purpose**: Search both code and docs simultaneously
+**Purpose**: Search code + docs, with optional ConPort decision context
 
 **Parameters**:
 - `query`: Natural language query
-- `top_k`: Total results (split between code/docs)
+- `top_k`: Total result budget
 - `workspace_path`: Auto-detects workspace
+- `include_decisions`: Include decision matches when configured (default `true`)
 
 **Example**:
 ```python
@@ -117,8 +118,32 @@ mcp__dope-context__search_all(
 {
   "code_results": [...],
   "docs_results": [...],
+  "decision_results": [...],
+  "decision_search_enabled": true,
   "total_results": 10
 }
+```
+
+### Decision Retrieval Config - `mcp__dope-context__configure_decision_auto_indexing`
+
+**Purpose**: Configure workspace-scoped decision retrieval for `search_all`
+
+**Parameters**:
+- `workspace_path`: Target workspace
+- `enabled`: Enable/disable decision retrieval
+- `bridge_url`: Dopecon-bridge base URL (default `http://localhost:3016`)
+- `decision_limit`: Max decision matches per unified search
+- `auto_include_in_search_all`: Automatically include decisions in `search_all`
+
+**Example**:
+```python
+mcp__dope-context__configure_decision_auto_indexing(
+    workspace_path="/path/to/project",
+    enabled=True,
+    bridge_url="http://localhost:3016",
+    decision_limit=6,
+    auto_include_in_search_all=True
+)
 ```
 
 ## 🏗️ Indexing Operations

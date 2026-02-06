@@ -15,6 +15,7 @@ import json
 import logging
 import os
 import pickle
+import aiohttp
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
@@ -1497,13 +1498,180 @@ async def docs_search(
     }
 
 
+def _decision_sync_config_path(workspace: Path) -> Path:
+    """Path to workspace-scoped decision search config."""
+    return get_snapshot_dir(workspace) / "decision_sync_config.json"
+
+
+def _default_decision_sync_config() -> Dict[str, Any]:
+    """Default decision-search settings for unified retrieval."""
+    return {
+        "enabled": False,
+        "bridge_url": os.getenv("DOPECON_BRIDGE_URL", "http://localhost:3016"),
+        "limit": 6,
+        "auto_include_in_search_all": True,
+        "updated_at": datetime.utcnow().isoformat(),
+    }
+
+
+def _load_decision_sync_config(workspace: Path) -> Dict[str, Any]:
+    """Load decision-search settings; fallback to defaults."""
+    defaults = _default_decision_sync_config()
+    config_path = _decision_sync_config_path(workspace)
+
+    if not config_path.exists():
+        return defaults
+
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+        if isinstance(payload, dict):
+            defaults.update(payload)
+    except Exception as exc:
+        logger.warning("Failed to load decision sync config at %s: %s", config_path, exc)
+
+    return defaults
+
+
+def _save_decision_sync_config(workspace: Path, config: Dict[str, Any]) -> Path:
+    """Persist decision-search settings for a workspace."""
+    config_path = _decision_sync_config_path(workspace)
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+
+    normalized = _default_decision_sync_config()
+    normalized.update(config)
+    normalized["limit"] = max(1, min(int(normalized.get("limit", 6)), 20))
+    normalized["updated_at"] = datetime.utcnow().isoformat()
+
+    with open(config_path, "w", encoding="utf-8") as f:
+        json.dump(normalized, f, indent=2)
+
+    return config_path
+
+
+async def _search_decisions_impl(
+    query: str,
+    top_k: int = 6,
+    workspace_path: Optional[str] = None,
+    bridge_url: Optional[str] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Query ConPort decisions through dopecon-bridge for unified retrieval.
+    """
+    workspace = Path(workspace_path) if workspace_path else get_workspace_root()
+    config = _load_decision_sync_config(workspace)
+
+    if not config.get("enabled", False):
+        return []
+
+    target_url = str(bridge_url or config.get("bridge_url") or "").rstrip("/")
+    if not target_url:
+        return []
+
+    limit = max(1, min(int(top_k), 20))
+    params = {"text": query, "limit": limit}
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"{target_url}/kg/decisions/search",
+                params=params,
+                timeout=aiohttp.ClientTimeout(total=5.0),
+            ) as response:
+                if response.status != 200:
+                    logger.debug(
+                        "Decision search failed (%s): %s",
+                        response.status,
+                        target_url,
+                    )
+                    return []
+                payload = await response.json()
+    except Exception as exc:
+        logger.debug("Decision search unavailable: %s", exc)
+        return []
+
+    raw_items = payload.get("decisions") or payload.get("items") or []
+    normalized: List[Dict[str, Any]] = []
+    for item in raw_items[:limit]:
+        if not isinstance(item, dict):
+            continue
+        normalized.append(
+            {
+                "id": item.get("id"),
+                "summary": item.get("summary") or item.get("title") or "",
+                "timestamp": item.get("timestamp") or item.get("updated_at"),
+                "source": "conport",
+            }
+        )
+
+    return normalized
+
+
+@mcp.tool()
+async def configure_decision_auto_indexing(
+    workspace_path: Optional[str] = None,
+    enabled: bool = True,
+    bridge_url: Optional[str] = None,
+    decision_limit: int = 6,
+    auto_include_in_search_all: bool = True,
+) -> Dict[str, Any]:
+    """
+    Configure decision retrieval for unified search.
+
+    This enables `search_all` to automatically include ConPort decision matches
+    alongside code and docs results.
+    """
+    workspace = Path(workspace_path) if workspace_path else get_workspace_root()
+    current = _load_decision_sync_config(workspace)
+    current.update(
+        {
+            "enabled": enabled,
+            "bridge_url": bridge_url or current.get("bridge_url"),
+            "limit": max(1, min(int(decision_limit), 20)),
+            "auto_include_in_search_all": auto_include_in_search_all,
+        }
+    )
+    config_path = _save_decision_sync_config(workspace, current)
+
+    return {
+        "workspace": str(workspace),
+        "config_path": str(config_path),
+        "config": current,
+        "message": (
+            "Decision retrieval enabled for search_all"
+            if enabled
+            else "Decision retrieval disabled for search_all"
+        ),
+    }
+
+
 async def _search_all_impl(
     query: str,
     top_k: int = 10,
     workspace_path: Optional[str] = None,
+    include_decisions: bool = True,
 ) -> Dict:
     """Implementation of unified search_all tool."""
     workspace = Path(workspace_path) if workspace_path else get_workspace_root()
+    decision_config = _load_decision_sync_config(workspace)
+    decision_enabled = bool(
+        include_decisions
+        and decision_config.get("enabled", False)
+        and decision_config.get("auto_include_in_search_all", True)
+    )
+
+    code_top_k = max(1, top_k // 2)
+    docs_top_k = max(1, top_k // 2)
+    decision_top_k = 0
+    code_budget = 4000
+    docs_budget = 4000
+
+    if decision_enabled:
+        code_top_k = max(1, top_k // 3)
+        docs_top_k = max(1, top_k // 3)
+        decision_top_k = max(1, top_k - code_top_k - docs_top_k)
+        code_budget = 3200
+        docs_budget = 3200
 
     # Log metrics for benchmarking
     get_tracker().log_search(
@@ -1515,27 +1683,48 @@ async def _search_all_impl(
 
     logger.info(f"Unified search in workspace: {workspace}")
 
-    # Search both code and docs in parallel (split budget to stay under 10K)
-    # Each gets 4K token budget (4K code + 4K docs + 1K overhead = 9K total)
+    # Search code + docs in parallel, optionally adding ConPort decision retrieval.
     code_results_task = _search_code_impl(
-        query, top_k // 2, use_reranking=False, workspace_path=str(workspace),
-        budget_tokens=4000  # Half budget for unified search
+        query,
+        code_top_k,
+        use_reranking=False,
+        workspace_path=str(workspace),
+        budget_tokens=code_budget,
     )
     docs_results_task = _docs_search_impl(
-        query, top_k // 2, workspace_path=str(workspace), max_content_length=1500,
-        budget_tokens=4000  # Half budget for unified search
+        query,
+        docs_top_k,
+        workspace_path=str(workspace),
+        max_content_length=1500,
+        budget_tokens=docs_budget,
     )
 
-    code_results, docs_results = await asyncio.gather(
-        code_results_task,
-        docs_results_task,
-    )
+    if decision_enabled:
+        decision_results_task = _search_decisions_impl(
+            query=query,
+            top_k=decision_top_k,
+            workspace_path=str(workspace),
+            bridge_url=decision_config.get("bridge_url"),
+        )
+        code_results, docs_results, decision_results = await asyncio.gather(
+            code_results_task,
+            docs_results_task,
+            decision_results_task,
+        )
+    else:
+        code_results, docs_results = await asyncio.gather(
+            code_results_task,
+            docs_results_task,
+        )
+        decision_results = []
 
     return {
         "workspace": str(workspace),
         "code_results": code_results,
         "docs_results": docs_results,
-        "total_results": len(code_results) + len(docs_results),
+        "decision_results": decision_results,
+        "decision_search_enabled": decision_enabled,
+        "total_results": len(code_results) + len(docs_results) + len(decision_results),
     }
 
 
@@ -1545,9 +1734,10 @@ async def search_all(
     top_k: int = 10,
     workspace_path: Optional[str] = None,
     workspace_paths: Optional[List[str]] = None,
+    include_decisions: bool = True,
 ) -> Any:
     """
-    Unified search across BOTH code and docs.
+    Unified search across code, docs, and optional ConPort decisions.
 
     🎯 **WHEN TO USE**:
     - **Complete context**: Need both implementation and documentation together
@@ -1559,12 +1749,14 @@ async def search_all(
 
     Args:
         query: Natural language search query
-        top_k: Total results (split between code and docs, default 10)
+        top_k: Total results budget (default 10)
         workspace_path: Optional workspace path (auto-detects if None)
         workspace_paths: Optional list of workspaces to query sequentially
+        include_decisions: Include decision matches when configured
 
     Returns:
-        Combined results with workspace, code_results, docs_results, total_results
+        Combined results with workspace, code_results, docs_results,
+        decision_results, and total_results.
     """
     targets = _resolve_explicit_workspaces(
         workspace_path,
@@ -1581,6 +1773,7 @@ async def search_all(
             query,
             top_k,
             str(workspace),
+            include_decisions=include_decisions,
         )
         aggregated_results.append(workspace_results)
         total_results += workspace_results.get("total_results", 0)
