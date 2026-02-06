@@ -33,6 +33,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, validator
 import json
 
+try:
+    from dopemux.logging import configure_logging, RequestIDMiddleware
+except Exception:  # pragma: no cover - fallback path for isolated service images
+    RequestIDMiddleware = None
+
+    def configure_logging(
+        service_name: str,
+        *,
+        level: str | None = None,
+        **_: Any,
+    ) -> logging.Logger:
+        resolved_level = getattr(logging, (level or "INFO").upper(), logging.INFO)
+        logging.basicConfig(
+            level=resolved_level,
+            format="%(asctime)s %(levelname)s %(name)s %(message)s",
+        )
+        return logging.getLogger(service_name)
+
 from app.core.coordinator import (
     PlaneType,
     CoordinationEventType,
@@ -40,6 +58,7 @@ from app.core.coordinator import (
     create_plane_coordinator
 )
 
+configure_logging("task-orchestrator", level=os.getenv("LOG_LEVEL", "INFO"))
 logger = logging.getLogger(__name__)
 
 # ============================================================================
@@ -162,6 +181,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+if RequestIDMiddleware is not None:
+    app.add_middleware(RequestIDMiddleware)
 
 # ============================================================================
 # WebSocket Connection Manager
