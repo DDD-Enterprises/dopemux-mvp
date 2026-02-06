@@ -73,6 +73,7 @@ how_to:
   leantime_setup: "docs/02-how-to/integrations/leantime-integration-guide.md"
   mcp_service_discovery: "docs/02-how-to/mcp-service-discovery-guide.md"
   role_switching: "docs/02-how-to/role-switching-quickstart.md"
+  profile_usage: "docs/02-how-to/PROFILE-USAGE.md"
   multi_instance: "docs/02-how-to/multi-instance-workflow.md"
   orchestrator_dashboard: "docs/02-how-to/orchestrator-dashboard.md"
 
