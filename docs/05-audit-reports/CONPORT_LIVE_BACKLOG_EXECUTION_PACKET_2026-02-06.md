@@ -18,6 +18,7 @@ prelude: Prioritized execution packet from live ConPort backlog undercoverage, f
 2. Resolved in current wave: `8`.
 3. Likely true-open candidates: `25`.
 4. Likely alias/already-implemented phrasing mismatches: `33`.
+5. `kg_dependency_unification` recheck: `2` implemented/implemented-in-code, `5` partial (evidence-linked).
 
 ## Resolved In Current Wave
 
@@ -85,6 +86,8 @@ prelude: Prioritized execution packet from live ConPort backlog undercoverage, f
    `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`.
 4. Post-promotion recheck confirms exact line-coverage closure for this packet (`0` exact misses out of `25`):
    `reports/strict_closure/conport_master_live_true_open_delta_recheck_2026-02-06.json`.
+5. Detailed verification for the `kg_dependency_unification` subset is captured in:
+   `docs/05-audit-reports/KG_DEPENDENCY_UNIFICATION_VERIFICATION_2026-02-06.md`.
 
 ## Source Artifacts
 
@@ -94,6 +97,7 @@ prelude: Prioritized execution packet from live ConPort backlog undercoverage, f
 - `reports/strict_closure/conport_live_backlog_true_open_candidates_2026-02-06.json`
 - `reports/strict_closure/conport_master_live_true_open_delta_2026-02-06.json`
 - `reports/strict_closure/conport_master_live_true_open_delta_recheck_2026-02-06.json`
+- `reports/strict_closure/kg_dependency_unification_verification_2026-02-06.json`
 - `reports/strict_closure/conport_persistence_verification_2026-02-06.json`
 - `reports/strict_closure/mcp_token_management_doc_verification_2026-02-06.json`
 - `reports/strict_closure/bridge_orchestrator_integration_verification_2026-02-06.json`

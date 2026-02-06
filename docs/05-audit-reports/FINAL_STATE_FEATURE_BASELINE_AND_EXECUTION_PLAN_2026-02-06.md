@@ -49,6 +49,7 @@ Generated during this pass:
 - `reports/strict_closure/conport_master_todo_coverage_recheck_2026-02-06.json`
 - `reports/strict_closure/conport_master_live_true_open_delta_2026-02-06.json`
 - `reports/strict_closure/conport_master_live_true_open_delta_recheck_2026-02-06.json`
+- `reports/strict_closure/kg_dependency_unification_verification_2026-02-06.json`
 - `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json`
 - `reports/strict_closure/litellm_blocker_verification_2026-02-06.json`
 - `reports/strict_closure/profile_workstream_verification_2026-02-06.json`
@@ -76,6 +77,7 @@ Generated during this pass:
 - `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`
 - `docs/05-audit-reports/CONPORT_FULL_TODO_COVERAGE_MATRIX_2026-02-06.md`
 - `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`
+- `docs/05-audit-reports/KG_DEPENDENCY_UNIFICATION_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/LITELLM_BLOCKER_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/PROFILE_WORKSTREAM_VERIFICATION_2026-02-06.md`
 - `docs/05-audit-reports/MCP_RESPONSE_BUDGET_VERIFICATION_2026-02-06.md`
@@ -361,6 +363,10 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
    `reports/strict_closure/conport_master_live_true_open_delta_2026-02-06.json`.
 45. Post-promotion recheck confirms exact-line closure for the full live true-open packet (`0` exact misses of `25`), with remaining canonical drift now limited to wording-level variants (`8`):
    `reports/strict_closure/conport_master_live_true_open_delta_recheck_2026-02-06.json`.
+46. KG dependency-unification deep verification now records `2` implemented/implemented-in-code items and `5` partial items with explicit residual gaps and next actions:
+   `reports/strict_closure/kg_dependency_unification_verification_2026-02-06.json`.
+47. Serena KG-related regression harnesses were unblocked by fixing annotation-time import failures and async test execution defaults; targeted suites now run green (`13` passed):
+   `services/serena/intelligence/database.py`, `services/serena/tree_sitter_analyzer.py`, `pytest.ini`.
 
 ## Prioritized Gap Register
 
