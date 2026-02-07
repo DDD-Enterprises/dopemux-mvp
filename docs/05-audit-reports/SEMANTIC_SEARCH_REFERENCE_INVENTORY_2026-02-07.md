@@ -30,14 +30,14 @@ Artifacts and generator:
 
 Current active-reference counts:
 
-1. files with semantic-search refs: `34`
-2. code files: `19`
-3. test files: `5`
+1. files with semantic-search refs: `36`
+2. code files: `20`
+3. test files: `6`
 4. doc files: `10`
 5. bridge legacy route refs (`/conport/semantic_search`): `5`
-6. legacy endpoint refs (`/api/semantic-search`): `5` (compat fallback + tests)
-7. current endpoint refs (`/api/adhd/semantic-search`): `10`
-8. `semantic_search_conport` tool refs: `17`
+6. legacy endpoint refs (`/api/semantic-search`): `11` (compat fallback + tests)
+7. current endpoint refs (`/api/adhd/semantic-search`): `16`
+8. `semantic_search_conport` tool refs: `19`
 
 ## P1 Findings Promoted To Master Fix Scope
 
@@ -59,19 +59,22 @@ Required closure:
 1. Keep route-level integration test coverage (HTTP-level) to guard startup wiring.
 2. Continue planned migration away from bridge legacy route when downstream callers are updated.
 
-### 2) Deprecated ConPort tool callers still active
+### 2) Deprecated ConPort tool callers still active (partially closed)
 
-Runtime callers still directly invoke `semantic_search_conport` compatibility tool.
+Runtime callers now prefer the non-legacy semantic tool where available, but
+legacy alias support is still present for compatibility.
 
 Primary paths:
 
 1. `services/task-orchestrator/conport_mcp_client.py`
 2. `services/task-orchestrator/app/adapters/conport_adapter.py`
 3. `services/working-memory-assistant/conport_client.py`
+4. `tests/unit/test_task_orchestrator_conport_semantic_resolution.py`
+5. `tests/unit/test_wma_conport_semantic_resolution.py`
 
 Required closure:
 
-1. Migrate to final intended retrieval path (`dope-context`/Serena-backed flow) or keep shim with explicit deprecation horizon and owner.
+1. Remove/rename remaining legacy-named method and adapter references (`semantic_search_conport`) after downstream contract migration is complete.
 2. Keep no-breaking behavior while migration is in flight.
 
 ### 3) Active docs still describe old/default semantic-search behavior
