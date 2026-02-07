@@ -11,6 +11,10 @@ prelude: Release Notes (reference) for dopemux documentation and developer workf
 ---
 # Context Portal MCP Release Notes
 
+Status note (2026-02-07): release entries below preserve historical tool names.
+Current dopemux runtime treats ConPort semantic search as a compatibility path
+and prefers dope-context/Serena retrieval for primary semantic flows.
+
 <br>
 
 ## v0.3.4 (2025-09-18)
