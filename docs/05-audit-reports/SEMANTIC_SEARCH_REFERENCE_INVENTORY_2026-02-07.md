@@ -34,27 +34,30 @@ Current active-reference counts:
 2. code files: `19`
 3. test files: `5`
 4. doc files: `10`
-5. bridge legacy route refs (`/conport/semantic_search`): `3`
-6. legacy endpoint refs (`/api/semantic-search`): `4` (compat fallback + tests)
-7. current endpoint refs (`/api/adhd/semantic-search`): `8`
+5. bridge legacy route refs (`/conport/semantic_search`): `5`
+6. legacy endpoint refs (`/api/semantic-search`): `5` (compat fallback + tests)
+7. current endpoint refs (`/api/adhd/semantic-search`): `10`
 8. `semantic_search_conport` tool refs: `17`
 
 ## P1 Findings Promoted To Master Fix Scope
 
-### 1) Session-manager bridge route drift
+### 1) Session-manager bridge route drift (closed in this wave)
 
-`session-manager` clients currently call `/conport/semantic_search` on dopecon-bridge, but active dopecon-bridge routes do not expose that path.
+`session-manager` clients call `/conport/semantic_search` on dopecon-bridge.
+This compatibility route is now explicitly implemented in active bridge runtime.
 
 Primary paths:
 
 1. `services/session-manager/src/conport_client.py`
 2. `services/session-manager/src/conport_http_client.py`
 3. `services/dopecon-bridge/main.py`
+4. `services/dopecon-bridge/dopecon_bridge/conport_semantic_proxy.py`
+5. `tests/unit/test_dopecon_bridge_semantic_proxy.py`
 
 Required closure:
 
-1. Add additive compatibility route in dopecon-bridge or migrate callers to the supported ConPort path with explicit compatibility handling.
-2. Add regression coverage for the chosen path so route drift does not regress.
+1. Keep route-level integration test coverage (HTTP-level) to guard startup wiring.
+2. Continue planned migration away from bridge legacy route when downstream callers are updated.
 
 ### 2) Deprecated ConPort tool callers still active
 

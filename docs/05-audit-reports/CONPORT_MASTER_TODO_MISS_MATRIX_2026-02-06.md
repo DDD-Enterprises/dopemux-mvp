@@ -343,11 +343,14 @@ that was not yet explicit as first-class closure lines in this master matrix.
 
 Promoted explicit tasks:
 
-1. `P1: Close session-manager route drift`:
+1. `P1: Close session-manager route drift` (implemented in current wave):
    `services/session-manager/src/conport_client.py` and
    `services/session-manager/src/conport_http_client.py` currently call
-   `/conport/semantic_search` on dopecon-bridge, but this route is not exposed
-   in active bridge runtime (`services/dopecon-bridge/main.py`).
+   `/conport/semantic_search` on dopecon-bridge. A backward-compatible route
+   is now implemented in active bridge runtime with endpoint fallback coverage:
+   `services/dopecon-bridge/main.py`,
+   `services/dopecon-bridge/dopecon_bridge/conport_semantic_proxy.py`,
+   `tests/unit/test_dopecon_bridge_semantic_proxy.py`.
 2. `P1: Migrate remaining semantic_search_conport runtime callers`:
    `services/task-orchestrator/conport_mcp_client.py`,
    `services/task-orchestrator/app/adapters/conport_adapter.py`, and
