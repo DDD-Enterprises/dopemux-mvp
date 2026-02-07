@@ -360,6 +360,8 @@ Promoted explicit tasks:
    `mcp__conport__semantic_search_conport`:
    `tests/unit/test_task_orchestrator_conport_semantic_resolution.py`,
    `tests/unit/test_wma_conport_semantic_resolution.py`.
+   `conport_adapter.py` now calls the primary `semantic_search()` client method;
+   legacy `semantic_search_conport()` remains as an explicit compatibility alias.
 3. `P2: Complete active-doc semantic-search labeling parity`:
    update active docs to explicitly label compatibility shim behavior vs final
    migrated path.
