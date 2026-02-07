@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pytest
+from fastapi import HTTPException
 
 from dopecon_bridge.clients import MCPClientManager
 from dopecon_bridge.leantime_contract import (
@@ -12,14 +13,23 @@ from dopecon_bridge.leantime_contract import (
 
 
 class _FakeResponse:
-    def __init__(self, payload: dict):
+    def __init__(self, payload: dict | None = None, *, status: int = 200, text_body: str = ""):
         self._payload = payload
+        self.status = status
+        self._text_body = text_body
 
     def raise_for_status(self) -> None:
         return None
 
     async def json(self):
-        return self._payload
+        return self._payload or {}
+
+    async def text(self):
+        if self._payload is not None:
+            import json as _json
+
+            return _json.dumps(self._payload)
+        return self._text_body
 
     async def __aenter__(self):
         return self
@@ -29,13 +39,15 @@ class _FakeResponse:
 
 
 class _FakeSession:
-    def __init__(self, payload: dict):
+    def __init__(self, payload: dict | None = None, *, status: int = 200, text_body: str = ""):
         self.payload = payload
+        self.status = status
+        self.text_body = text_body
         self.calls: list[tuple[str, dict]] = []
 
     def post(self, url: str, json: dict):
         self.calls.append((url, json))
-        return _FakeResponse(self.payload)
+        return _FakeResponse(self.payload, status=self.status, text_body=self.text_body)
 
 
 @pytest.mark.asyncio
@@ -116,3 +128,31 @@ def test_route_contract_allocate_resource_translation_and_response_shape():
         {"ticketId": 11, "assignedTo": 5},
     )
     assert normalized["allocated"] is True
+
+
+@pytest.mark.asyncio
+async def test_mcp_client_includes_leantime_setup_hint_on_upstream_error(monkeypatch):
+    manager = MCPClientManager()
+    manager.session = _FakeSession(status=503, text_body="LEANTIME_API_TOKEN not configured")
+    monkeypatch.setattr(manager, "_get_service_url", lambda _service: "http://leantime-bridge:3015")
+
+    with pytest.raises(HTTPException) as exc:
+        await manager.call_tool("leantime-bridge", "list_tickets", {"projectId": 9})
+
+    assert exc.value.status_code == 502
+    assert "Leantime readiness hint" in exc.value.detail
+    assert "LEANTIME_API_TOKEN" in exc.value.detail
+
+
+@pytest.mark.asyncio
+async def test_mcp_client_preserves_non_leantime_status_context(monkeypatch):
+    manager = MCPClientManager()
+    manager.session = _FakeSession(status=500, text_body="upstream failure")
+    monkeypatch.setattr(manager, "_get_service_url", lambda _service: "http://task-orchestrator:3014")
+
+    with pytest.raises(HTTPException) as exc:
+        await manager.call_tool("task-orchestrator", "analyze_dependencies", {"tasks": []})
+
+    assert exc.value.status_code == 502
+    assert "task-orchestrator.analyze_dependencies" in exc.value.detail
+    assert "upstream status 500" in exc.value.detail
