@@ -488,7 +488,7 @@ class ConPortMCPClient:
             logger.error(f"ConPort get_linked_items failed: {e}")
             raise
 
-    async def semantic_search_conport(
+    async def semantic_search(
         self,
         workspace_id: str,
         query_text: str,
@@ -549,6 +549,29 @@ class ConPortMCPClient:
         except Exception as e:
             logger.error(f"ConPort semantic_search failed: {e}")
             raise
+
+    async def semantic_search_conport(
+        self,
+        workspace_id: str,
+        query_text: str,
+        top_k: int = 5,
+        filter_item_types: Optional[List[str]] = None,
+        filter_tags_include_any: Optional[List[str]] = None,
+        filter_tags_include_all: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Backward-compatible alias for semantic_search().
+
+        Keep until all downstream callers migrate off the legacy method name.
+        """
+        return await self.semantic_search(
+            workspace_id=workspace_id,
+            query_text=query_text,
+            top_k=top_k,
+            filter_item_types=filter_item_types,
+            filter_tags_include_any=filter_tags_include_any,
+            filter_tags_include_all=filter_tags_include_all,
+        )
 
     async def get_active_context(
         self,
@@ -794,7 +817,7 @@ class ConPortMCPClient:
         call_specs = []
         for query in queries:
             call_specs.append({
-                "method": "semantic_search_conport",
+                "method": "semantic_search",
                 "kwargs": {
                     "workspace_id": workspace_id,
                     "query_text": query
