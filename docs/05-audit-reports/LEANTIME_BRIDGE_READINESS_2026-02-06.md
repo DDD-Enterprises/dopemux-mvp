@@ -5,8 +5,8 @@ type: explanation
 owner: '@hu3mann'
 author: Codex
 date: '2026-02-06'
-last_review: '2026-02-06'
-next_review: '2026-02-20'
+last_review: '2026-02-07'
+next_review: '2026-02-21'
 status: draft
 prelude: Runtime evidence for Leantime bridge integration readiness and manual-setup closure status.
 ---
@@ -47,6 +47,27 @@ Bridge process liveness is healthy, but real Leantime API integration is not yet
 ConPort historical TODO context remains accurate: Leantime containers are running and healthy, but manual web setup completion is still required before bridge API operations can succeed.
 Historical task description: `Leantime containers are running and healthy - needs manual web setup completion: access http://localhost:8080 to complete installation wizard, create admin user, generate API token, then configure bridge`.
 
+## In-Wave Hardening (2026-02-07)
+
+While manual Leantime setup is still externally blocked, PM-plane failure handling
+is now hardened so operators receive actionable setup guidance instead of generic
+bridge-unavailable errors.
+
+Implemented:
+
+1. `MCPClientManager.call_tool()` now preserves upstream status/body context in
+   502 error details.
+2. Leantime-specific failures now include readiness hints:
+   complete wizard at `http://localhost:8080`, verify credentials, and set
+   `LEANTIME_API_TOKEN`.
+3. Contract tests were added for both Leantime-hinted failures and non-Leantime
+   upstream failure context preservation.
+
+Primary evidence:
+
+1. `reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json`
+2. `services/dopecon-bridge/tests/test_leantime_route_contract.py`
+
 ## Required Close Criteria
 
 1. Complete Leantime web installation wizard at `http://localhost:8080`.
@@ -59,3 +80,4 @@ Historical task description: `Leantime containers are running and healthy - need
 ## Evidence Artifact
 
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
+- `reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json`

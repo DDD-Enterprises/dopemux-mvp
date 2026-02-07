@@ -79,10 +79,14 @@ Evidence:
    - `POST /api/tools/list_projects` returns `502` (all method candidates failed)
    - `LEANTIME_API_TOKEN` is currently unset in bridge runtime
 3. Supporting container evidence shows persistent Leantime queue failures and redirect-only traffic patterns.
+4. In-wave hardening completed: PM route error contracts now preserve upstream
+   status/body context and add explicit setup guidance for Leantime failures.
+   This reduces operator ambiguity but does not replace required external setup.
 
 Evidence:
 
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
+- `reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json`
 - `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md`
 
 ## Leantime Close Criteria
