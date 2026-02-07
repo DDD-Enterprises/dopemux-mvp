@@ -81,6 +81,7 @@ from dopecon_bridge.leantime_contract import (
     build_leantime_tool_request as _contract_build_leantime_tool_request,
     normalize_leantime_route_response as _contract_normalize_leantime_route_response,
 )
+from dopecon_bridge.conport_semantic_proxy import run_semantic_search_with_fallback
 
 # Configure logging with env var support (G33)
 LOG_LEVEL = os.getenv("LOG_LEVEL", "info").upper()
@@ -573,6 +574,42 @@ class ConPortClient:
             # Still update fallback cache
             await self._update_fallback_context(context_token, context_deltas)
             return False
+
+    async def semantic_search(
+        self,
+        workspace_id: Optional[str],
+        query_text: str,
+        top_k: int = 5,
+        filter_item_types: Optional[List[str]] = None,
+        filter_tags_include_any: Optional[List[str]] = None,
+        filter_tags_include_all: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Proxy semantic search to ConPort with compatibility fallback.
+
+        Preferred endpoint is `/api/adhd/semantic-search`; fallback to legacy
+        `/api/semantic-search` on 404/405 to preserve no-breaking behavior.
+        """
+        if not self.session:
+            await self.initialize()
+
+        payload: Dict[str, Any] = {
+            "workspace_id": workspace_id or self.workspace_id,
+            "query_text": query_text,
+            "top_k": max(1, min(int(top_k), 25)),
+        }
+        if filter_item_types:
+            payload["filter_item_types"] = filter_item_types
+        if filter_tags_include_any:
+            payload["filter_tags_include_any"] = filter_tags_include_any
+        if filter_tags_include_all:
+            payload["filter_tags_include_all"] = filter_tags_include_all
+        return await run_semantic_search_with_fallback(
+            session=self.session,
+            base_url=self.base_url,
+            payload=payload,
+            logger=logger,
+        )
 
     async def _get_fallback_context(self, context_token: str) -> Dict[str, Any]:
         """Get context from Redis fallback cache"""
@@ -1710,6 +1747,15 @@ class WorkflowFromTemplateRequest(BaseModel):
     project_id: str
     context: Dict[str, Any] = {}
 
+
+class ConPortSemanticSearchRequest(BaseModel):
+    workspace_id: Optional[str] = None
+    query_text: str
+    top_k: int = Field(default=5, ge=1, le=25)
+    filter_item_types: Optional[List[str]] = None
+    filter_tags_include_any: Optional[List[str]] = None
+    filter_tags_include_all: Optional[List[str]] = None
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize all connections on startup"""
@@ -1804,6 +1850,32 @@ async def health_check():
         "services": mcp_health,
         "event_bus": "ready"
     }
+
+
+@app.post("/conport/semantic_search")
+async def conport_semantic_search(request: ConPortSemanticSearchRequest):
+    """
+    Backward-compatible semantic search proxy for legacy bridge clients.
+
+    Preserves the historic `/conport/semantic_search` contract while routing to
+    ConPort's current endpoint (`/api/adhd/semantic-search`) and falling back
+    to the legacy ConPort endpoint only when required.
+    """
+    try:
+        result = await conport_client.semantic_search(
+            workspace_id=request.workspace_id,
+            query_text=request.query_text,
+            top_k=request.top_k,
+            filter_item_types=request.filter_item_types,
+            filter_tags_include_any=request.filter_tags_include_any,
+            filter_tags_include_all=request.filter_tags_include_all,
+        )
+        if isinstance(result, dict):
+            result.setdefault("bridge_proxy", True)
+        return result
+    except Exception as exc:
+        logger.error("❌ ConPort semantic_search proxy failed: %s", exc)
+        raise HTTPException(status_code=502, detail=f"ConPort semantic_search proxy failed: {exc}")
 
 # ============================================================================
 # EVENT BUS ENDPOINTS
