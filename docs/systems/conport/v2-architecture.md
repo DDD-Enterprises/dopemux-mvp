@@ -389,6 +389,11 @@ if user_requests_more:
 
 ## 🔗 Integration Points
 
+Compatibility note (2026-02-07): `semantic_search_conport_v2` in this section
+is a historical v2 design label. Active runtime preserves ConPort semantic
+search as a compatibility path while primary semantic retrieval is routed
+through dope-context/Serena flows.
+
 ### **MCP Tool Interface**
 
 ```python

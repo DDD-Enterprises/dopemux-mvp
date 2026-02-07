@@ -37,7 +37,7 @@ Current active-reference counts:
 5. bridge legacy route refs (`/conport/semantic_search`): `5`
 6. legacy endpoint refs (`/api/semantic-search`): `11` (compat fallback + tests)
 7. current endpoint refs (`/api/adhd/semantic-search`): `16`
-8. `semantic_search_conport` tool refs: `21`
+8. `semantic_search_conport` tool refs: `22`
 
 ## P1 Findings Promoted To Master Fix Scope
 
