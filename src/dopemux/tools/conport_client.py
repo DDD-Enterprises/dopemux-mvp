@@ -178,10 +178,10 @@ class ConPortClient:
                            filter_tags_include_any: Optional[List[str]] = None,
                            filter_tags_include_all: Optional[List[str]] = None) -> Dict[str, Any]:
         """
-        Perform semantic search on ConPort knowledge graph - ADHD-optimized discovery
+        Perform ConPort search using compatibility-safe endpoint routing.
 
-        Uses vector embeddings to find relevant content by meaning, not keywords.
-        Perfect for exploring complex relationships and discovering hidden connections.
+        Preferred path is `/api/adhd/semantic-search` (current). Falls back to
+        `/api/semantic-search` for older server variants.
         """
         await self._ensure_session()
 
@@ -199,20 +199,49 @@ class ConPortClient:
         if filter_tags_include_all:
             payload["filter_tags_include_all"] = filter_tags_include_all
 
+        endpoints = ["/api/adhd/semantic-search", "/api/semantic-search"]
+        last_error: Optional[str] = None
+
         try:
-            async with self.session.post(
-                f"{self.base_url}/api/semantic-search",
-                json=payload,
-                headers={"Content-Type": "application/json"}
-            ) as response:
-                if response.status == 200:
-                    result = await response.json()
-                    result_count = len(result.get("result", []))
-                    logger.info(f"Semantic search found {result_count} results for '{query}'")
-                    return result
-                else:
+            for idx, endpoint in enumerate(endpoints):
+                async with self.session.post(
+                    f"{self.base_url}{endpoint}",
+                    json=payload,
+                    headers={"Content-Type": "application/json"}
+                ) as response:
+                    if response.status == 200:
+                        result = await response.json()
+                        if isinstance(result, dict):
+                            results = result.get("results")
+                            if isinstance(results, list):
+                                result_count = len(results)
+                            else:
+                                legacy = result.get("result")
+                                result_count = len(legacy) if isinstance(legacy, list) else 0
+
+                            if result.get("deprecated"):
+                                logger.warning(
+                                    "ConPort search endpoint returned deprecated mode (%s): %s",
+                                    result.get("search_mode"),
+                                    result.get("deprecation_notice", "no notice provided"),
+                                )
+
+                            result["_endpoint_used"] = endpoint
+                            logger.info(
+                                "ConPort search found %s results for '%s' via %s",
+                                result_count,
+                                query,
+                                endpoint,
+                            )
+                        return result
+
                     error_text = await response.text()
-                    return {"error": f"HTTP {response.status}: {error_text}"}
+                    last_error = f"HTTP {response.status}: {error_text}"
+                    should_fallback = idx == 0 and response.status in (404, 405)
+                    if not should_fallback:
+                        return {"error": last_error, "endpoint": endpoint}
+
+            return {"error": last_error or "All semantic search endpoints failed"}
         except Exception as e:
             logger.error(f"Semantic search failed: {e}")
             return {"error": str(e)}
