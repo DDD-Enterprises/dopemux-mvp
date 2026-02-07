@@ -351,10 +351,15 @@ Promoted explicit tasks:
    `services/dopecon-bridge/main.py`,
    `services/dopecon-bridge/dopecon_bridge/conport_semantic_proxy.py`,
    `tests/unit/test_dopecon_bridge_semantic_proxy.py`.
-2. `P1: Migrate remaining semantic_search_conport runtime callers`:
+2. `P1: Migrate remaining semantic_search_conport runtime callers` (partially implemented in current wave):
    `services/task-orchestrator/conport_mcp_client.py`,
    `services/task-orchestrator/app/adapters/conport_adapter.py`, and
    `services/working-memory-assistant/conport_client.py`.
+   Current wave completed compatibility-first migration so these callers now
+   prefer `mcp__conport__semantic_search` when available and fall back to
+   `mcp__conport__semantic_search_conport`:
+   `tests/unit/test_task_orchestrator_conport_semantic_resolution.py`,
+   `tests/unit/test_wma_conport_semantic_resolution.py`.
 3. `P2: Complete active-doc semantic-search labeling parity`:
    update active docs to explicitly label compatibility shim behavior vs final
    migrated path.
