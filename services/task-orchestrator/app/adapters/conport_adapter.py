@@ -1249,7 +1249,7 @@ class ConPortEventAdapter:
             logger.info(f"🔍 Semantic search for similar tasks: '{task_description}'")
 
             # Semantic search ConPort for similar progress entries
-            result = await self.conport_client.semantic_search_conport(
+            result = await self.conport_client.semantic_search(
                 workspace_id=self.workspace_id,
                 query_text=task_description,
                 top_k=limit,

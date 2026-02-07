@@ -355,7 +355,8 @@ Load = 0.4 * task_complexity        # Primary load factor
 - `link_conport_items()` - Create task relationships
 - `log_decision()` - Record architectural decisions
 - `get_decisions()` - Query decision history
-- `semantic_search_conport()` - Compatibility semantic task search (prefers primary semantic tool and falls back to legacy alias)
+- `semantic_search()` - Primary semantic task search (prefers primary semantic MCP tool with legacy fallback)
+- `semantic_search_conport()` - Backward-compatible alias to `semantic_search()`
 - `get_active_context()` - Current work context
 
 **Integration Pattern**: Wraps ConPort MCP tools with async/await error handling
