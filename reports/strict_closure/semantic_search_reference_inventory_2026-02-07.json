@@ -7,9 +7,9 @@
     "code_files": 19,
     "test_files": 5,
     "doc_files": 10,
-    "bridge_legacy_route_ref_count": 3,
-    "legacy_endpoint_ref_count": 4,
-    "adhd_endpoint_ref_count": 8,
+    "bridge_legacy_route_ref_count": 5,
+    "legacy_endpoint_ref_count": 5,
+    "adhd_endpoint_ref_count": 10,
     "conport_tool_ref_count": 17
   },
   "records": [
@@ -197,10 +197,70 @@
     {
       "path": "services/dopecon-bridge/main.py",
       "scope": "code",
-      "hit_count": 1,
+      "hit_count": 13,
       "hits": [
         {
-          "line": 3061,
+          "line": 84,
+          "kind": "semantic_token",
+          "text": "from dopecon_bridge.conport_semantic_proxy import run_semantic_search_with_fallback"
+        },
+        {
+          "line": 578,
+          "kind": "semantic_token",
+          "text": "async def semantic_search("
+        },
+        {
+          "line": 590,
+          "kind": "adhd_endpoint_ref",
+          "text": "Preferred endpoint is `/api/adhd/semantic-search`; fallback to legacy"
+        },
+        {
+          "line": 591,
+          "kind": "legacy_endpoint_ref",
+          "text": "`/api/semantic-search` on 404/405 to preserve no-breaking behavior."
+        },
+        {
+          "line": 607,
+          "kind": "semantic_token",
+          "text": "return await run_semantic_search_with_fallback("
+        },
+        {
+          "line": 1855,
+          "kind": "bridge_legacy_route_ref",
+          "text": "@app.post(\"/conport/semantic_search\")"
+        },
+        {
+          "line": 1856,
+          "kind": "semantic_token",
+          "text": "async def conport_semantic_search(request: ConPortSemanticSearchRequest):"
+        },
+        {
+          "line": 1860,
+          "kind": "bridge_legacy_route_ref",
+          "text": "Preserves the historic `/conport/semantic_search` contract while routing to"
+        },
+        {
+          "line": 1861,
+          "kind": "adhd_endpoint_ref",
+          "text": "ConPort's current endpoint (`/api/adhd/semantic-search`) and falling back"
+        },
+        {
+          "line": 1865,
+          "kind": "semantic_token",
+          "text": "result = await conport_client.semantic_search("
+        },
+        {
+          "line": 1877,
+          "kind": "semantic_token",
+          "text": "logger.error(\"\u274c ConPort semantic_search proxy failed: %s\", exc)"
+        },
+        {
+          "line": 1878,
+          "kind": "semantic_token",
+          "text": "raise HTTPException(status_code=502, detail=f\"ConPort semantic_search proxy failed: {exc}\")"
+        },
+        {
+          "line": 3133,
           "kind": "semantic_token",
           "text": "- semantic_search"
         }
