@@ -30,14 +30,14 @@ Artifacts and generator:
 
 Current active-reference counts:
 
-1. files with semantic-search refs: `36`
+1. files with semantic-search refs: `38`
 2. code files: `20`
-3. test files: `6`
+3. test files: `8`
 4. doc files: `10`
 5. bridge legacy route refs (`/conport/semantic_search`): `5`
 6. legacy endpoint refs (`/api/semantic-search`): `11` (compat fallback + tests)
 7. current endpoint refs (`/api/adhd/semantic-search`): `16`
-8. `semantic_search_conport` tool refs: `19`
+8. `semantic_search_conport` tool refs: `25`
 
 ## P1 Findings Promoted To Master Fix Scope
 

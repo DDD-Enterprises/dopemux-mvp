@@ -3,25 +3,30 @@
   "generated_at_utc": "2026-02-07T00:00:00Z",
   "scope": "tracked files under src/services/tests/docs excluding docs/archive, docs/05-audit-reports, docs/06-research",
   "summary": {
-    "files_with_hits": 36,
+    "files_with_hits": 38,
     "code_files": 20,
-    "test_files": 6,
+    "test_files": 8,
     "doc_files": 10,
     "bridge_legacy_route_ref_count": 5,
     "legacy_endpoint_ref_count": 11,
     "adhd_endpoint_ref_count": 16,
-    "conport_tool_ref_count": 19
+    "conport_tool_ref_count": 25
   },
   "records": [
     {
       "path": "docs/03-reference/serena-v2-mcp-tools.md",
       "scope": "docs",
-      "hit_count": 1,
+      "hit_count": 2,
       "hits": [
         {
           "line": 1097,
           "kind": "semantic_token",
           "text": "**Total Tools**: 15 operational, 1 deferred (semantic_search for Phase 3)"
+        },
+        {
+          "line": 1100,
+          "kind": "semantic_token",
+          "text": "preferred paths; ConPort semantic-search remains available only as a compatibility shim."
         }
       ]
     },
@@ -81,7 +86,7 @@
         {
           "line": 139,
           "kind": "conport_tool_ref",
-          "text": "note: \"Prefer semantic_search_conport for conceptual queries when keywords are weak. Keep retrieved context small and targeted.\""
+          "text": "note: \"Prefer dope-context/Serena retrieval for conceptual queries; use semantic_search_conport only as a compatibility fallback when primary paths are unavailable. Keep retrieved context small and targeted.\""
         }
       ]
     },
@@ -144,7 +149,7 @@
         {
           "line": 358,
           "kind": "conport_tool_ref",
-          "text": "- `semantic_search_conport()` - Semantic task search"
+          "text": "- `semantic_search_conport()` - Compatibility semantic task search (prefers primary semantic tool and falls back to legacy alias)"
         }
       ]
     },
@@ -957,6 +962,125 @@
           "line": 141,
           "kind": "adhd_endpoint_ref",
           "text": "assert result[\"endpoint\"] == \"/api/adhd/semantic-search\""
+        }
+      ]
+    },
+    {
+      "path": "tests/unit/test_task_orchestrator_conport_semantic_resolution.py",
+      "scope": "tests",
+      "hit_count": 11,
+      "hits": [
+        {
+          "line": 41,
+          "kind": "semantic_token",
+          "text": "async def test_semantic_search_prefers_primary_tool():"
+        },
+        {
+          "line": 45,
+          "kind": "semantic_token",
+          "text": "async def mcp__conport__semantic_search(self, **kwargs):"
+        },
+        {
+          "line": 49,
+          "kind": "conport_tool_ref",
+          "text": "async def mcp__conport__semantic_search_conport(self, **kwargs):"
+        },
+        {
+          "line": 54,
+          "kind": "conport_tool_ref",
+          "text": "result = await client.semantic_search_conport("
+        },
+        {
+          "line": 63,
+          "kind": "semantic_token",
+          "text": "assert result.get(\"_tool_used\") == \"mcp__conport__semantic_search\""
+        },
+        {
+          "line": 67,
+          "kind": "semantic_token",
+          "text": "async def test_semantic_search_uses_legacy_fallback_tool():"
+        },
+        {
+          "line": 71,
+          "kind": "conport_tool_ref",
+          "text": "async def mcp__conport__semantic_search_conport(self, **kwargs):"
+        },
+        {
+          "line": 76,
+          "kind": "conport_tool_ref",
+          "text": "result = await client.semantic_search_conport("
+        },
+        {
+          "line": 85,
+          "kind": "conport_tool_ref",
+          "text": "assert result.get(\"_tool_used\") == \"mcp__conport__semantic_search_conport\""
+        },
+        {
+          "line": 89,
+          "kind": "semantic_token",
+          "text": "async def test_semantic_search_raises_when_no_tool_available():"
+        },
+        {
+          "line": 95,
+          "kind": "conport_tool_ref",
+          "text": "await client.semantic_search_conport("
+        }
+      ]
+    },
+    {
+      "path": "tests/unit/test_wma_conport_semantic_resolution.py",
+      "scope": "tests",
+      "hit_count": 10,
+      "hits": [
+        {
+          "line": 21,
+          "kind": "semantic_token",
+          "text": "async def test_wma_semantic_search_uses_configured_tool(monkeypatch):"
+        },
+        {
+          "line": 28,
+          "kind": "semantic_token",
+          "text": "monkeypatch.setattr(WMA_MODULE, \"_semantic_search_tool\", _fake_tool)"
+        },
+        {
+          "line": 29,
+          "kind": "semantic_token",
+          "text": "monkeypatch.setattr(WMA_MODULE, \"_semantic_search_tool_name\", \"test_primary_tool\")"
+        },
+        {
+          "line": 32,
+          "kind": "semantic_token",
+          "text": "results = await client.semantic_search(query=\"auth flow\", top_k=4)"
+        },
+        {
+          "line": 41,
+          "kind": "semantic_token",
+          "text": "async def test_wma_semantic_search_accepts_list_result(monkeypatch):"
+        },
+        {
+          "line": 45,
+          "kind": "semantic_token",
+          "text": "monkeypatch.setattr(WMA_MODULE, \"_semantic_search_tool\", _fake_tool)"
+        },
+        {
+          "line": 48,
+          "kind": "semantic_token",
+          "text": "results = await client.semantic_search(query=\"auth\", top_k=2)"
+        },
+        {
+          "line": 54,
+          "kind": "semantic_token",
+          "text": "async def test_wma_semantic_search_returns_empty_on_tool_error(monkeypatch):"
+        },
+        {
+          "line": 58,
+          "kind": "semantic_token",
+          "text": "monkeypatch.setattr(WMA_MODULE, \"_semantic_search_tool\", _failing_tool)"
+        },
+        {
+          "line": 61,
+          "kind": "semantic_token",
+          "text": "results = await client.semantic_search(query=\"auth\", top_k=2)"
         }
       ]
     }
