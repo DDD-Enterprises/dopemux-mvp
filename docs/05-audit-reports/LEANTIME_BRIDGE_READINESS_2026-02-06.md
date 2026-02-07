@@ -32,6 +32,29 @@ Probe outcomes:
 2. `GET /health?deep=1` -> `503` (`status=degraded`, `leantime=unreachable`)
 3. `POST /api/tools/list_projects` -> `502` (`All method candidates failed`)
 
+## Runtime Probe Recheck (2026-02-07)
+
+Fresh live probe from `dopemux-mcp-leantime-bridge` with expanded log window:
+
+1. `GET /health` -> `200` (`status=ok`, `transport=http-sse`)
+2. `GET /health?deep=1` -> `503` (`status=degraded`, `leantime=unreachable`)
+3. `POST /api/tools/list_projects` -> `502` (`All method candidates failed`)
+4. Bridge env confirms:
+   - `LEANTIME_API_URL=http://leantime:80`
+   - `LEANTIME_API_TOKEN=unset`
+5. Leantime log signal counts (`--tail=500`):
+   - `queue:emails FAIL`: `105`
+   - `queue:httprequests FAIL`: `21`
+   - `queue:default FAIL`: `21`
+   - `GET /index.php 303`: `208`
+   - `POST /index.php 303`: `40`
+
+Interpretation:
+
+1. Bridge process remains alive but upstream integration remains degraded.
+2. Failure pattern is still consistent with incomplete Leantime setup and/or missing API credentials.
+3. Manual setup closure remains the external gating step.
+
 ## Leantime Container Signal Check
 
 From `docker logs --tail=500 leantime`:
@@ -67,6 +90,7 @@ Primary evidence:
 
 1. `reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json`
 2. `services/dopecon-bridge/tests/test_leantime_route_contract.py`
+3. `scripts/docs_audit/probe_leantime_bridge_readiness.py`
 
 ## Required Close Criteria
 
@@ -80,4 +104,5 @@ Primary evidence:
 ## Evidence Artifact
 
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
+- `reports/strict_closure/leantime_bridge_readiness_2026-02-07.json`
 - `reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json`
