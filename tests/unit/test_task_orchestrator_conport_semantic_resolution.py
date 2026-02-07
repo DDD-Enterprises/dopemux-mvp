@@ -51,7 +51,7 @@ async def test_semantic_search_prefers_primary_tool():
             return {"results": [{"id": "legacy"}]}
 
     client = TASK_ORCH_MODULE.ConPortMCPClient(_Tools())
-    result = await client.semantic_search_conport(
+    result = await client.semantic_search(
         workspace_id="/tmp/ws",
         query_text="auth",
         top_k=7,
@@ -73,7 +73,7 @@ async def test_semantic_search_uses_legacy_fallback_tool():
             return {"results": [{"id": "legacy"}]}
 
     client = TASK_ORCH_MODULE.ConPortMCPClient(_Tools())
-    result = await client.semantic_search_conport(
+    result = await client.semantic_search(
         workspace_id="/tmp/ws",
         query_text="auth",
         top_k=99,
@@ -92,8 +92,29 @@ async def test_semantic_search_raises_when_no_tool_available():
 
     client = TASK_ORCH_MODULE.ConPortMCPClient(_Tools())
     with pytest.raises(AttributeError):
-        await client.semantic_search_conport(
+        await client.semantic_search(
             workspace_id="/tmp/ws",
             query_text="auth",
             top_k=5,
         )
+
+
+@pytest.mark.asyncio
+async def test_legacy_alias_delegates_to_primary_method():
+    calls = []
+
+    class _Tools:
+        async def mcp__conport__semantic_search(self, **kwargs):
+            calls.append(kwargs)
+            return {"results": [{"id": "primary"}]}
+
+    client = TASK_ORCH_MODULE.ConPortMCPClient(_Tools())
+    result = await client.semantic_search_conport(
+        workspace_id="/tmp/ws",
+        query_text="auth",
+        top_k=3,
+    )
+
+    assert len(calls) == 1
+    assert calls[0]["top_k"] == "3"
+    assert result.get("_tool_used") == "mcp__conport__semantic_search"
