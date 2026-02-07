@@ -10,7 +10,7 @@
     "bridge_legacy_route_ref_count": 5,
     "legacy_endpoint_ref_count": 11,
     "adhd_endpoint_ref_count": 16,
-    "conport_tool_ref_count": 21
+    "conport_tool_ref_count": 22
   },
   "records": [
     {
@@ -96,12 +96,12 @@
       "hit_count": 2,
       "hits": [
         {
-          "line": 24,
+          "line": 28,
           "kind": "conport_tool_ref",
           "text": "- **Affected Tools:** `get_decisions`, `get_progress`, `get_system_patterns`, `get_custom_data`, `search_decisions_fts`, `search_custom_data_value_fts`, `search_project_glossary_fts`, `get_recent_activity_summary`, `semantic_search_conport`"
         },
         {
-          "line": 411,
+          "line": 415,
           "kind": "conport_tool_ref",
           "text": "- **New Semantic Search Tool (`semantic_search_conport`)**:"
         }
@@ -110,7 +110,7 @@
     {
       "path": "docs/systems/conport/v2-architecture.md",
       "scope": "docs",
-      "hit_count": 3,
+      "hit_count": 4,
       "hits": [
         {
           "line": 264,
@@ -123,7 +123,12 @@
           "text": "initial_results = await quick_semantic_search(query, limit=5)"
         },
         {
-          "line": 399,
+          "line": 392,
+          "kind": "conport_tool_ref",
+          "text": "Compatibility note (2026-02-07): `semantic_search_conport_v2` in this section"
+        },
+        {
+          "line": 404,
           "kind": "conport_tool_ref",
           "text": "\"semantic_search_conport_v2\": \"Qdrant-powered semantic search\","
         }
