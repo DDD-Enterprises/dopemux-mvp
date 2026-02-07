@@ -73,6 +73,7 @@ Generated during this pass:
 - `reports/strict_closure/conport_relationship_backfill_2026-02-06.json`
 - `reports/strict_closure/age_pg_compat_stress_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
+- `reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json`
 - `reports/strict_closure/conport_live_progress_backlog_2026-02-07.csv`
 - `reports/strict_closure/conport_live_backlog_delta_2026-02-07.json`
 - `reports/strict_closure/semantic_search_reference_inventory_2026-02-07.json`
@@ -394,7 +395,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 4. Clarify `dope-query`/`conport` split and deprecate one naming contract.
 5. Triage and merge historically captured ConPort TODO/BLOCKED backlog into current execution ownership map (LiteLLM DB creation blocker reclassified as resolved-in-runtime).
 6. Decide and execute policy for replaying the remaining historical ConPort bundles (merge, dedupe, or archive-only import path).
-7. Complete Leantime manual setup closure so bridge deep health and project-list tooling are operational.
+7. Complete Leantime manual setup closure (external) so bridge deep health and project-list tooling are operational; in-code PM error diagnostics are now hardened.
 8. Execute the 19-task secondary ConPort miss set and map each task to owner/test/doc evidence.
 9. Close the remaining full-bundle underrepresented ConPort backlog set (`167`) in phased owner-assigned packets.
 10. Execute packet #1 (`top 40`) from `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`.
