@@ -336,6 +336,32 @@ Evidence:
 - `reports/strict_closure/conport_live_backlog_delta_2026-02-07.json`
 - `scripts/docs_audit/recheck_conport_live_master_delta.py`
 
+## Semantic-Search Residual Caller Recheck (2026-02-07)
+
+An active tracked-file inventory found additional semantic-search migration work
+that was not yet explicit as first-class closure lines in this master matrix.
+
+Promoted explicit tasks:
+
+1. `P1: Close session-manager route drift`:
+   `services/session-manager/src/conport_client.py` and
+   `services/session-manager/src/conport_http_client.py` currently call
+   `/conport/semantic_search` on dopecon-bridge, but this route is not exposed
+   in active bridge runtime (`services/dopecon-bridge/main.py`).
+2. `P1: Migrate remaining semantic_search_conport runtime callers`:
+   `services/task-orchestrator/conport_mcp_client.py`,
+   `services/task-orchestrator/app/adapters/conport_adapter.py`, and
+   `services/working-memory-assistant/conport_client.py`.
+3. `P2: Complete active-doc semantic-search labeling parity`:
+   update active docs to explicitly label compatibility shim behavior vs final
+   migrated path.
+
+Evidence:
+
+1. `reports/strict_closure/semantic_search_reference_inventory_2026-02-07.json`
+2. `docs/05-audit-reports/SEMANTIC_SEARCH_REFERENCE_INVENTORY_2026-02-07.md`
+3. `scripts/docs_audit/extract_semantic_search_reference_inventory.py`
+
 Cluster deep-dive verification:
 
 - `docs/05-audit-reports/KG_DEPENDENCY_UNIFICATION_VERIFICATION_2026-02-06.md`

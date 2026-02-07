@@ -75,6 +75,8 @@ Generated during this pass:
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
 - `reports/strict_closure/conport_live_progress_backlog_2026-02-07.csv`
 - `reports/strict_closure/conport_live_backlog_delta_2026-02-07.json`
+- `reports/strict_closure/semantic_search_reference_inventory_2026-02-07.json`
+- `docs/05-audit-reports/SEMANTIC_SEARCH_REFERENCE_INVENTORY_2026-02-07.md`
 - `docs/05-audit-reports/CONPORT_REAL_IMPORT_INTEGRITY_2026-02-06.md`
 - `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`
 - `docs/05-audit-reports/CONPORT_FULL_TODO_COVERAGE_MATRIX_2026-02-06.md`
