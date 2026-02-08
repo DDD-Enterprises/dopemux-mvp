@@ -123,7 +123,7 @@ Executed verification checks (latest pass on 2026-02-06):
 - `scripts/verify_profile_week2_integration.sh` (passes)
 - `npm --prefix ui-dashboard run build` (passes)
 - `python scripts/deploy/migration/validate_age_pg_compat_stress.py ...` (passes via `mcp-conport` runtime with `overall_ok=true`)
-- `docker exec dopemux-mcp-leantime-bridge ... /health?deep=1` and `/api/tools/list_projects` (failing with degraded upstream evidence captured)
+- `docker exec dopemux-mcp-leantime-bridge ... /health?deep=1` and `/api/tools/list_projects` (explicit `needs_setup` classification now emitted; upstream install/token gate still open)
 - `pytest -q --no-cov tests/unit/test_adhd_engine_settings_contract.py` (passes)
 - `docker compose up -d --build --force-recreate adhd-engine` (container healthy, startup verified)
 - `docker compose up -d --build --force-recreate genetic-agent` (container healthy, startup verified)
@@ -135,7 +135,7 @@ Executed verification checks (latest pass on 2026-02-06):
 3. Core orchestration/event/memory components exist and are non-trivial; immediate contract/test/build blockers found in this pass were remediated, but broader architecture and docs parity work remains.
 4. The largest missing implementation remains the Stage-1/Stage-2 workflow from ADR-197 (Idea/Epic pipeline).
 5. The largest systemic risk is governance: no current single source of truth is actually enforced end-to-end despite docs claiming that it is.
-6. Leantime bridge remains a verified integration blocker: process liveness is healthy, but real API project-list calls are failing in live runtime.
+6. Leantime bridge remains a verified integration blocker: process liveness is healthy and failure signaling is now explicit (`needs_setup`), but real API project-list calls remain blocked until Leantime install/token setup is completed.
 
 ## Claim Verification Matrix
 
