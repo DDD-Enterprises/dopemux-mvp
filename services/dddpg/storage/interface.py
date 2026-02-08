@@ -5,7 +5,10 @@ Abstract base class for all storage backends
 
 from abc import ABC, abstractmethod
 from typing import List, Optional
+import logging
 from ..core.models import Decision, DecisionRelationship, DecisionGraph, WorkSession
+
+logger = logging.getLogger(__name__)
 
 
 class StorageBackend(ABC):
@@ -86,7 +89,11 @@ class StorageBackend(ABC):
     
     async def create_relationship(self, rel: DecisionRelationship) -> DecisionRelationship:
         """Create relationship between decisions (optional)"""
-        raise NotImplementedError("Graph relationships not supported by this backend")
+        logger.debug(
+            "Storage backend %s does not support graph relationships; returning input relationship unchanged.",
+            self.__class__.__name__,
+        )
+        return rel
     
     async def get_relationships(self, decision_id: int) -> List[DecisionRelationship]:
         """Get all relationships for a decision (optional)"""
@@ -99,13 +106,27 @@ class StorageBackend(ABC):
         relationship_types: Optional[List[str]] = None
     ) -> DecisionGraph:
         """Traverse graph from starting decision (optional)"""
-        raise NotImplementedError("Graph queries not supported by this backend")
+        logger.debug(
+            "Storage backend %s does not support graph queries; returning empty DecisionGraph.",
+            self.__class__.__name__,
+        )
+        return DecisionGraph(
+            nodes=[],
+            edges=[],
+            query_type="unsupported",
+            depth=max(1, depth),
+            total_nodes=0,
+        )
     
     # ===== Sessions (optional) =====
     
     async def create_session(self, session: WorkSession) -> WorkSession:
         """Create work session (optional)"""
-        raise NotImplementedError("Sessions not supported by this backend")
+        logger.debug(
+            "Storage backend %s does not support sessions; returning input session unchanged.",
+            self.__class__.__name__,
+        )
+        return session
     
     async def get_active_session(self, workspace_id: str, instance_id: str) -> Optional[WorkSession]:
         """Get active session for instance (optional)"""
