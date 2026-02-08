@@ -75,7 +75,7 @@ Generated during this pass:
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-07.json`
 - `reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json`
-- `reports/strict_closure/leantime_api_key_generator_probe_2026-02-08.json`
+- `reports/strict_closure/leantime_api_key_automation_verification_2026-02-08.json`
 - `reports/strict_closure/conport_live_progress_backlog_2026-02-07.csv`
 - `reports/strict_closure/conport_live_backlog_delta_2026-02-07.json`
 - `reports/strict_closure/semantic_search_reference_inventory_2026-02-07.json`
@@ -124,7 +124,7 @@ Executed verification checks (latest pass on 2026-02-06):
 - `scripts/verify_profile_week2_integration.sh` (passes)
 - `npm --prefix ui-dashboard run build` (passes)
 - `python scripts/deploy/migration/validate_age_pg_compat_stress.py ...` (passes via `mcp-conport` runtime with `overall_ok=true`)
-- `docker exec dopemux-mcp-leantime-bridge ... /health?deep=1` and `/api/tools/list_projects` (explicit `needs_setup` classification now emitted; upstream install/token gate still open)
+- `docker exec dopemux-mcp-leantime-bridge ... /health?deep=1` and `/api/tools/list_projects` (both return `200`; upstream install/token gate closed in current environment)
 - `pytest -q --no-cov tests/unit/test_adhd_engine_settings_contract.py` (passes)
 - `docker compose up -d --build --force-recreate adhd-engine` (container healthy, startup verified)
 - `docker compose up -d --build --force-recreate genetic-agent` (container healthy, startup verified)
@@ -136,7 +136,7 @@ Executed verification checks (latest pass on 2026-02-06):
 3. Core orchestration/event/memory components exist and are non-trivial; immediate contract/test/build blockers found in this pass were remediated, but broader architecture and docs parity work remains.
 4. The largest missing implementation remains the Stage-1/Stage-2 workflow from ADR-197 (Idea/Epic pipeline).
 5. The largest systemic risk is governance: no current single source of truth is actually enforced end-to-end despite docs claiming that it is.
-6. Leantime bridge remains a verified integration blocker: process liveness is healthy and failure signaling is now explicit (`needs_setup`), but real API project-list calls remain blocked until Leantime install/token setup is completed.
+6. Leantime bridge readiness blocker was closed in this wave: deep health and project-list calls now return `200`, and setup/token automation is verified.
 
 ## Claim Verification Matrix
 
@@ -260,7 +260,7 @@ Executed verification checks (latest pass on 2026-02-06):
 5. First non-dry-run ConPort historical import surfaced schema-shape drift (`ag_catalog` assumptions vs live `public` tables); importer and backfill hardening are now in place and verified for one selected bundle.
 6. Full import/backfill replay across remaining exported historical bundles is still pending a dedupe/merge policy decision (avoid duplicating historical records in active runtime DB).
 7. Historical ConPort backlog extraction surfaced additional unresolved work (132 TODO, 1 BLOCKED) not yet fully reflected in the active prioritized gap register.
-8. Leantime bridge deep integration remains blocked (`/health?deep=1` `503`, `/api/tools/list_projects` `502`) and bridge runtime currently lacks `LEANTIME_API_TOKEN`.
+8. Leantime bridge deep integration is now operational (`/health?deep=1` and `/api/tools/list_projects` return `200`), with `LEANTIME_API_TOKEN` wired in runtime.
 
 ## Resolved In Current Wave
 
@@ -290,7 +290,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 1. Unique pending items mined from all export bundles: 231 (230 TODO, 1 BLOCKED).
 2. Coverage diff against this master doc: 24 pending items were not represented clearly enough in the active plan text.
 3. Missed clusters now explicitly in scope:
-   AGE/PG stress + compatibility validation tasks, Slack client/status/triage workflow tasks, macOS focus/window-management integration tasks, beta-prep/recruitment/deployment tasks, and manual Leantime web setup completion path.
+   AGE/PG stress + compatibility validation tasks, Slack client/status/triage workflow tasks, macOS focus/window-management integration tasks, beta-prep/recruitment/deployment tasks, and Leantime readiness automation/regression coverage tasks.
 4. Normalized priority matrix for the 24 underrepresented items:
    `docs/05-audit-reports/CONPORT_MASTER_TODO_MISS_MATRIX_2026-02-06.md`.
 5. Secondary explicit-task-line extraction against current master docs surfaced `19` additional underrepresented implementation tasks from historical TODO samples (core package extraction, semantic/embedding deprecation path, ADHDConfigService rollouts, KG link/tool/test/perf/documentation tasks):
@@ -402,7 +402,7 @@ Secondary extract: `reports/strict_closure/conport_master_todo_miss_extract_2026
 4. Clarify `dope-query`/`conport` split and deprecate one naming contract.
 5. Triage and merge historically captured ConPort TODO/BLOCKED backlog into current execution ownership map (LiteLLM DB creation blocker reclassified as resolved-in-runtime).
 6. Decide and execute policy for replaying the remaining historical ConPort bundles (merge, dedupe, or archive-only import path).
-7. Complete Leantime manual setup closure (external) so bridge deep health and project-list tooling are operational; in-code PM error diagnostics are now hardened.
+7. Preserve Leantime readiness closure with regression checks (deep-health/project-list probes and token/env compatibility coverage) so PM-plane integration remains operational.
 8. Execute the 19-task secondary ConPort miss set and map each task to owner/test/doc evidence.
 9. Close the remaining full-bundle underrepresented ConPort backlog set (`167`) in phased owner-assigned packets.
 10. Execute packet #1 (`top 40`) from `docs/05-audit-reports/CONPORT_UNDERREPRESENTED_EXECUTION_PACKET_2026-02-06.md`.
@@ -564,7 +564,7 @@ Exit criteria:
 5. Implement ADR-197 Stage 1/2 primitives (`workflow_ideas` and `workflow_epics`).
 6. Define and execute replay strategy for the remaining historical ConPort bundles with dedupe guardrails.
 7. Fold extracted historical TODO/BLOCKED items (`reports/strict_closure/conport_backlog_extract_2026-02-06.json`) into the master prioritized fix ledger.
-8. Close Leantime readiness blocker using `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md` criteria and refresh strict-closure evidence.
+8. Maintain Leantime readiness closure by re-running `docs/05-audit-reports/LEANTIME_BRIDGE_READINESS_2026-02-06.md` criteria and refreshing strict-closure evidence on each wave.
 9. Resolve the secondary explicit-task miss set from `reports/strict_closure/conport_master_todo_secondary_miss_extract_2026-02-06.json`.
 10. Execute and close the full-bundle underrepresented set from `reports/strict_closure/conport_full_todo_coverage_2026-02-06.json` and refresh coverage counts.
 11. Execute and close packet #1 and regenerate packet #2 from remaining uncovered items.

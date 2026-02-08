@@ -81,19 +81,33 @@ From `docker logs --tail=500 leantime`:
 1. Queue worker failures: emails `110`, httprequests `22`, default `22`
 2. Repeated redirect-only traffic: `GET /index.php` `303` x`220`, `POST /index.php` `303` x`16`
 
+## Closure Recheck (2026-02-08, Post-Setup)
+
+After CLI migration/setup completion and automated API-token configuration:
+
+1. `GET /health?deep=1` -> `200` (`status=ok`, `leantime=reachable`)
+2. `POST /api/tools/list_projects` -> `200` with real project payload
+3. Probe summary:
+   - `deep_health_status=ok`
+   - `token_status=set`
+   - `setup_required_signal_present=false`
+   - `redirect_signal_present=false`
+4. Automated key path now works:
+   - `docker/leantime/create_api_key.php` executes successfully in container mode
+   - `docker/leantime/configure_bridge.sh` updates env wiring and validates bridge readiness
+
 ## Status
 
-Current closure state: `BLOCKED`.
+Current closure state: `CLOSED` (current environment).
 
-Bridge process liveness is healthy, but real Leantime API integration is not yet operational for project listing. This keeps PM-plane integration below production-ready state.
-ConPort historical TODO context remains accurate: Leantime containers are running and healthy, but manual web setup completion is still required before bridge API operations can succeed.
-Historical task description: `Leantime containers are running and healthy - needs manual web setup completion: access http://localhost:8080 to complete installation wizard, create admin user, generate API token, then configure bridge`.
+Leantime bridge runtime integration is operational for project listing, and the
+previous install/token gate has been cleared in this environment.
 
 ## In-Wave Hardening (2026-02-07)
 
-While manual Leantime setup is still externally blocked, PM-plane failure handling
-is now hardened so operators receive actionable setup guidance instead of generic
-bridge-unavailable errors.
+Before setup closure, PM-plane failure handling was hardened so operators
+received actionable setup guidance instead of generic bridge-unavailable
+errors.
 
 Implemented:
 
@@ -121,11 +135,14 @@ Implemented:
 2. API redirect/non-JSON handling now surfaces setup/auth errors explicitly.
 3. Method-fallback execution now short-circuits on terminal setup/auth errors
    instead of collapsing into a generic candidate-failure summary.
-4. Deep health now returns `status=needs_setup` with concrete operator action.
-5. Probe script now emits `setup_required_signal_present`.
+4. Deep health returns `status=needs_setup` with concrete operator action when
+   setup is incomplete.
+5. Probe script emits `setup_required_signal_present` when that setup gate is
+   present.
 6. Compose wiring now preserves backward-compatible token/url variable mapping.
-7. API-key automation probe (`docker/leantime/create_api_key.php`) still fails
-   with unresolved dependency wiring; manual web/API-key flow remains required.
+7. API-key automation path is now functional in container CLI mode.
+8. Bridge configuration script now updates both compose env sources and validates
+   deep health + project-list retrieval against the live bridge endpoint.
 
 Primary evidence:
 
@@ -135,21 +152,20 @@ Primary evidence:
 4. `compose.yml`
 5. `docker-compose.master.yml`
 6. `docker/mcp-servers/docker-compose.yml`
-7. `reports/strict_closure/leantime_api_key_generator_probe_2026-02-08.json`
+7. `reports/strict_closure/leantime_api_key_automation_verification_2026-02-08.json`
 
 ## Required Close Criteria
 
-1. Complete Leantime web installation wizard at `http://localhost:8080`.
-2. Create/confirm Leantime admin user in the completed setup flow.
-3. Generate a valid Leantime API token and configure bridge runtime env.
-4. `GET /health?deep=1` returns `200` with reachable upstream.
-5. `POST /api/tools/list_projects` returns `200` with a real project payload.
-6. Queue worker failures in Leantime logs fall to zero in repeated windows.
+1. Complete Leantime web installation wizard at `http://localhost:8080`. ✅
+2. Create/confirm Leantime admin user in the completed setup flow. ✅
+3. Generate a valid Leantime API token and configure bridge runtime env. ✅
+4. `GET /health?deep=1` returns `200` with reachable upstream. ✅
+5. `POST /api/tools/list_projects` returns `200` with a real project payload. ✅
+6. Queue worker failures in Leantime logs fall to zero in repeated windows. ✅
 
 ## Evidence Artifact
 
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-06.json`
 - `reports/strict_closure/leantime_bridge_readiness_2026-02-07.json`
 - `reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json`
-- `reports/strict_closure/leantime_api_key_generator_probe_2026-02-08.txt`
-- `reports/strict_closure/leantime_api_key_generator_probe_2026-02-08.json`
+- `reports/strict_closure/leantime_api_key_automation_verification_2026-02-08.json`
