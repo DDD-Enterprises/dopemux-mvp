@@ -1,8 +1,12 @@
 """Dope-Context MCP client for semantic code search."""
 
+import logging
+
 from typing import Dict, Any
 from .base_client import MCPClient
 
+
+logger = logging.getLogger(__name__)
 
 class DopeContextClient(MCPClient):
     """Client for Dope-Context semantic search and documentation."""

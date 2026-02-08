@@ -12,6 +12,9 @@ Architecture:
 - Progressive disclosure: overview → details → deep diagnostics
 """
 
+from collections import deque
+from statistics import stdev
+
 import asyncio
 import json
 import logging
@@ -30,17 +33,36 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-# Import the global error handling framework
-from ..error_handling import (
-    GlobalErrorHandler,
-    with_error_handling,
-    create_dopemux_error,
-    ErrorType,
-    ErrorSeverity,
-    CircuitBreaker,
-    CircuitBreakerConfig,
-    CircuitBreakerState
-)
+# Ensure local service packages are importable in both module and script execution.
+SERVICES_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+for candidate in (str(SERVICES_ROOT), str(PROJECT_ROOT)):
+    if candidate not in sys.path:
+        sys.path.insert(0, candidate)
+
+# Import the global error handling framework.
+try:
+    from adhd_engine.core.error_handling import (
+        GlobalErrorHandler,
+        with_error_handling,
+        create_dopemux_error,
+        ErrorType,
+        ErrorSeverity,
+        CircuitBreaker,
+        CircuitBreakerConfig,
+        CircuitBreakerState,
+    )
+except ImportError:
+    from ..error_handling import (
+        GlobalErrorHandler,
+        with_error_handling,
+        create_dopemux_error,
+        ErrorType,
+        ErrorSeverity,
+        CircuitBreaker,
+        CircuitBreakerConfig,
+        CircuitBreakerState,
+    )
 
 # Add src to path for dopemux imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
@@ -76,6 +98,46 @@ class DashboardResponse(BaseModel):
     last_update: datetime
     services: List[ServiceHealth]
     summary: Dict[str, Any]
+
+
+class ADHDAlertSystem:
+    """Generate ADHD-friendly health alerts with progressive urgency."""
+
+    def __init__(self, dashboard: "MonitoringDashboard"):
+        self.dashboard = dashboard
+        self.last_alert_level: Optional[str] = None
+
+    async def check_and_generate_alerts(self, response: DashboardResponse) -> Optional[Dict[str, Any]]:
+        thresholds = getattr(self.dashboard, "alert_thresholds", {})
+        critical_threshold = thresholds.get("critical_threshold", 1)
+        warning_threshold = thresholds.get("warning_threshold", 2)
+
+        if response.critical_services >= critical_threshold:
+            level = "critical"
+            urgency = "immediate"
+            message = f"{response.critical_services} critical service(s) need immediate attention."
+            recommendation = "Stabilize critical services first, then re-check warnings."
+            break_suggestion = "Take a 5-minute reset after resolving the top issue."
+        elif response.warning_services >= warning_threshold:
+            level = "warning"
+            urgency = "soon"
+            message = f"{response.warning_services} warning service(s) detected."
+            recommendation = "Address warnings in small batches to avoid overload."
+            break_suggestion = "Use a short break before the next debugging batch."
+        else:
+            self.last_alert_level = "none"
+            return None
+
+        self.last_alert_level = level
+        return {
+            "level": level,
+            "urgency": urgency,
+            "message": message,
+            "recommendation": recommendation,
+            "break_suggestion": break_suggestion,
+            "timestamp": datetime.now().isoformat(),
+        }
+
 
 class MonitoringDashboard:
     """
@@ -573,7 +635,8 @@ class MonitoringDashboard:
         if not self.session:
             await self.init_session()
 
-        async with self.session.get(url, timeout=timeout) as response:
+        try:
+            async with self.session.get(url, timeout=timeout) as response:
                 response_time = (datetime.now(timezone.utc) - start_time).total_seconds()
 
                 if response.status == 200:
@@ -593,7 +656,6 @@ class MonitoringDashboard:
                             "response_time": response_time,
                             "details": {"response": "non-json"}
                         }
-                        logger.error(f"Error: {e}")
                 elif response.status == 302 and auth_required:
                     # Redirect to login is expected for auth-required services
                     return {
@@ -1010,35 +1072,18 @@ class MonitoringDashboard:
 
         summary["performance_summary"]["recommendations"] = recommendations[:3]  # Top 3 recommendations
 
-        dashboard_data = DashboardResponse(
-            overall_health=overall_health,
-            total_services=total_services,
-            healthy_services=healthy_count,
-            warning_services=warning_count,
-            critical_services=critical_count,
-            last_update=now,
-            services=services,
-            summary=summary
-        )
-
-        # Cache the result
-        self.cache["dashboard"] = dashboard_data
-        self.last_update = now
-
-        return dashboard_data
-
         # ADHD-optimized summary
-        summary = {
+        summary.update({
             "healthy_percentage": round((healthy_count / len(services)) * 100, 1),
             "adhd_services_count": sum(1 for s in services if s.adhd_optimized),
             "adhd_services_healthy": sum(1 for s in services if s.adhd_optimized and s.status == HealthLevel.HEALTHY),
             "quick_status": "All good" if overall_health == HealthLevel.HEALTHY else "Needs attention" if overall_health == HealthLevel.WARNING else "Critical issues",
             "recommendation": self._get_adhd_recommendation(overall_health, warning_count, critical_count)
-        }
+        })
 
         response = DashboardResponse(
             overall_health=overall_health,
-            total_services=len(services),
+            total_services=total_services,
             healthy_services=healthy_count,
             warning_services=warning_count,
             critical_services=critical_count,

@@ -9,6 +9,8 @@ id: F002-multi-session-support
 owner: '@hu3mann'
 last_review: '2025-10-04'
 next_review: '2026-01-02'
+prelude: 'Feature 2: Multi-Session Support (reference) for dopemux documentation and
+  developer workflows.'
 ---
 # Feature 2: Multi-Session + Git Worktree Support - Final Specification
 

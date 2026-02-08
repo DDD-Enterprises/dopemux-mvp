@@ -1,0 +1,130 @@
+[
+  {
+    "agent": "memory_agent",
+    "exists": true,
+    "lines": 587,
+    "classes": [
+      "SessionState",
+      "MemoryAgent"
+    ],
+    "async_defs": 10,
+    "todo_markers": 0,
+    "simulation_markers": 11,
+    "tests": [],
+    "status_guess": "partial",
+    "path": "services/agents/memory_agent.py"
+  },
+  {
+    "agent": "cognitive_guardian",
+    "exists": true,
+    "lines": 782,
+    "classes": [
+      "AttentionState",
+      "EnergyLevel",
+      "UserState",
+      "BreakReminder",
+      "CognitiveGuardian"
+    ],
+    "async_defs": 12,
+    "todo_markers": 2,
+    "simulation_markers": 14,
+    "tests": [
+      "services/agents/test_cognitive_guardian_kg.py"
+    ],
+    "status_guess": "partial",
+    "path": "services/agents/cognitive_guardian.py"
+  },
+  {
+    "agent": "two_plane_orchestrator",
+    "exists": true,
+    "lines": 781,
+    "classes": [
+      "Plane",
+      "RequestType",
+      "CrossPlaneRequest",
+      "AuthorityRule",
+      "TwoPlaneOrchestrator"
+    ],
+    "async_defs": 14,
+    "todo_markers": 1,
+    "simulation_markers": 0,
+    "tests": [],
+    "status_guess": "implemented",
+    "path": "services/agents/two_plane_orchestrator.py"
+  },
+  {
+    "agent": "task_decomposer",
+    "exists": true,
+    "lines": 882,
+    "classes": [
+      "TaskType",
+      "TaskInput",
+      "SubTask",
+      "DecompositionResult",
+      "TaskDecomposer"
+    ],
+    "async_defs": 7,
+    "todo_markers": 1,
+    "simulation_markers": 0,
+    "tests": [],
+    "status_guess": "implemented",
+    "path": "services/agents/task_decomposer.py"
+  },
+  {
+    "agent": "dopemux_enforcer",
+    "exists": true,
+    "lines": 608,
+    "classes": [
+      "ViolationSeverity",
+      "ViolationType",
+      "ComplianceViolation",
+      "ComplianceReport",
+      "DopemuxEnforcer"
+    ],
+    "async_defs": 9,
+    "todo_markers": 1,
+    "simulation_markers": 0,
+    "tests": [],
+    "status_guess": "implemented",
+    "path": "services/agents/dopemux_enforcer.py"
+  },
+  {
+    "agent": "tool_orchestrator",
+    "exists": true,
+    "lines": 639,
+    "classes": [
+      "TaskComplexity",
+      "ModelTier",
+      "ToolSelection",
+      "TaskToolRequirements",
+      "ToolOrchestrator"
+    ],
+    "async_defs": 9,
+    "todo_markers": 1,
+    "simulation_markers": 0,
+    "tests": [
+      "services/agents/test_tool_orchestrator.py"
+    ],
+    "status_guess": "implemented",
+    "path": "services/agents/tool_orchestrator.py"
+  },
+  {
+    "agent": "workflow_coordinator",
+    "exists": true,
+    "lines": 596,
+    "classes": [
+      "WorkflowType",
+      "StepType",
+      "WorkflowStep",
+      "WorkflowTemplate",
+      "WorkflowExecution",
+      "WorkflowCoordinator"
+    ],
+    "async_defs": 9,
+    "todo_markers": 0,
+    "simulation_markers": 1,
+    "tests": [],
+    "status_guess": "implemented",
+    "path": "services/agents/workflow_coordinator.py"
+  }
+]

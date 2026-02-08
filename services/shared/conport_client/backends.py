@@ -2,10 +2,14 @@
 Backend adapters for ConPort client.
 """
 
+import logging
+
 from enum import Enum
 from typing import Protocol, List, Optional, Dict, Any
 from .models import Decision, ProgressEntry, ActiveContext
 
+
+logger = logging.getLogger(__name__)
 
 class BackendType(Enum):
     """Available backend types."""
@@ -70,12 +74,10 @@ def get_backend_adapter(config) -> ConPortBackend:
     try:
         from .adapters.postgresql_adapter import PostgreSQLAGEAdapter
         adapter = PostgreSQLAGEAdapter(config)
-        # TODO: Test connection
+        # Connection is validated lazily on first async call.
         return adapter
     except Exception as e:
-        pass
-
-        logger.error(f"Error: {e}")
+        logger.warning("PostgreSQL adapter unavailable, falling back to file backend: %s", e)
     # Fallback to file-based (always works)
     from .adapters.file_adapter import FileAdapter
     return FileAdapter(config)

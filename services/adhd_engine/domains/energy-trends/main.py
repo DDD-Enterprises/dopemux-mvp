@@ -64,8 +64,14 @@ async def get_energy_trends(user_id: str, days: int = 7):
         days: Number of days to analyze (default: 7)
     """
     try:
-        # TODO: Fetch actual data from ADHD Engine
         trends = await visualizer.analyze_trends(user_id, days)
+        try:
+            async with EnergyTrendsBridgeAdapter(workspace_id=user_id) as adapter:
+                historical = await adapter.get_energy_trends(days=days)
+                if historical:
+                    trends["historical"] = historical
+        except Exception as bridge_exc:
+            logger.debug("Bridge-backed trend enrichment unavailable: %s", bridge_exc)
         return {
             "user_id": user_id,
             "days": days,
@@ -87,6 +93,8 @@ async def get_visualization(user_id: str, format: str = "daily"):
     """
     try:
         viz_data = await visualizer.generate_visualization(user_id, format)
+        if viz_data.get("error"):
+            raise HTTPException(status_code=400, detail=viz_data["error"])
         return {
             "user_id": user_id,
             "format": format,

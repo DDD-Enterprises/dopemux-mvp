@@ -1,10 +1,13 @@
 ---
 id: error-recovery
 title: Error Recovery
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Error Recovery (reference) for dopemux documentation and developer workflows.
 ---
 # Error Recovery & Robustness System - Priority 4 Complete
 
@@ -101,6 +104,7 @@ result = agent.send_and_wait(command, timeout=research_timeout)
 **Design**: Fixed decision tree with ConPort logging
 
 **Recovery Actions**:
+
 | Error Type | Action | Description |
 |------------|--------|-------------|
 | CRASH | restart_with_backoff | Exponential delays (10s, 20s, 40s, capped at 60s) |
@@ -140,6 +144,7 @@ Check: restart_count < max_restarts?
 **Design**: Fixed timeouts per operation type, user-configurable
 
 **Default Timeouts**:
+
 | Operation | Timeout | Rationale |
 |-----------|---------|-----------|
 | spawn | 10s | AI CLIs start quickly |

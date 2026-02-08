@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Service_Workspace_Analysis (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Service Workspace Analysis
 
@@ -17,16 +21,16 @@ next_review: '2026-05-02'
 4. **workspace-watcher** - Different use case (detects active workspace)
 
 ### ⚠️ WORKSPACE-AWARE (Route by workspace)
-5. **mcp-integration-bridge** - Routes requests with workspace context
-6. **orchestrator** - Coordinates services with workspace context
-7. **task-orchestrator** - Tasks associated with workspaces
-8. **session_intelligence** - Sessions per workspace
+1. **mcp-integration-bridge** - Routes requests with workspace context
+2. **orchestrator** - Coordinates services with workspace context
+3. **task-orchestrator** - Tasks associated with workspaces
+4. **session_intelligence** - Sessions per workspace
 
 ### 🤷 WORKSPACE-AGNOSTIC (No file operations)
-9. **adhd_engine** - Energy/attention (user-focused, not workspace)
-10. **activity-capture** - Logs events (workspace is metadata)
-11. **context-switch-tracker** - Tracks switches (workspace is data)
-12. **intelligence** - AI coordination (workspace-agnostic)
+1. **adhd_engine** - Energy/attention (user-focused, not workspace)
+2. **activity-capture** - Logs events (workspace is metadata)
+3. **context-switch-tracker** - Tracks switches (workspace is data)
+4. **intelligence** - AI coordination (workspace-agnostic)
 
 ## Implementation Priority
 
@@ -36,19 +40,19 @@ next_review: '2026-05-02'
 3. 🔄 conport_kg - Context storage per workspace
 
 ### MEDIUM PRIORITY (Workspace routing/context)
-4. 🔄 mcp-integration-bridge - Forward workspace in requests
-5. 🔄 task-orchestrator - Tag tasks with workspace
-6. 🔄 session_intelligence - Track sessions per workspace
+1. 🔄 mcp-integration-bridge - Forward workspace in requests
+2. 🔄 task-orchestrator - Tag tasks with workspace
+3. 🔄 session_intelligence - Track sessions per workspace
 
 ### LOW PRIORITY (Workspace as metadata)
-7. 🔄 orchestrator - Include workspace in service calls
-8. 🔄 adhd_engine - Tag metrics with workspace
-9. 🔄 activity-capture - Tag events with workspace
+1. 🔄 orchestrator - Include workspace in service calls
+2. 🔄 adhd_engine - Tag metrics with workspace
+3. 🔄 activity-capture - Tag events with workspace
 
 ### NOT NEEDED (Workspace-agnostic)
-10. ❌ workspace-watcher - Different use case
-11. ❌ context-switch-tracker - Workspace is the data being tracked
-12. ❌ intelligence - Workspace-agnostic AI routing
+1. ❌ workspace-watcher - Different use case
+2. ❌ context-switch-tracker - Workspace is the data being tracked
+3. ❌ intelligence - Workspace-agnostic AI routing
 
 ## Revised Implementation Plan
 

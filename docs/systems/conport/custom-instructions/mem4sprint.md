@@ -2,10 +2,13 @@
 trigger: always_on
 id: mem4sprint
 title: Mem4Sprint
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Mem4Sprint (reference) for dopemux documentation and developer workflows.
 ---
 mem4sprint_strategy:
   notes:
@@ -133,7 +136,7 @@ mem4sprint_strategy:
       - "Fallback if sparse: get_product_context or get_active_context (be brief)."
       - "Optionally 1-hop expand: get_linked_items for top candidates."
       - "Sift + synthesize concise context; attribute sources briefly."
-    note: "Prefer semantic_search_conport for conceptual queries when keywords are weak. Keep retrieved context small and targeted."
+    note: "Prefer dope-context/Serena retrieval for conceptual queries; use semantic_search_conport only as a compatibility fallback when primary paths are unavailable. Keep retrieved context small and targeted."
 
   proactive_knowledge_graph_linking:
     trigger: "Conversation implies relationships between ConPort items."

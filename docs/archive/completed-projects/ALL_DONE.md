@@ -5,6 +5,9 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: All_Done (explanation) for dopemux documentation and developer workflows.
 ---
 # Multi-Workspace Support - IMPLEMENTATION COMPLETE ✅
 
@@ -45,8 +48,8 @@ next_review: '2026-05-02'
 3. ✅ **conport_kg** - Knowledge graph (workspace-scoped)
 
 ### Supporting Services (100% of high-priority)
-4. ✅ **orchestrator** - Service coordination & routing
-5. ✅ **activity-capture** - Event logging with workspace tags
+1. ✅ **orchestrator** - Service coordination & routing
+2. ✅ **activity-capture** - Event logging with workspace tags
 
 ---
 

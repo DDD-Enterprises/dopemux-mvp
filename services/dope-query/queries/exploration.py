@@ -154,6 +154,39 @@ class ExplorationQueries:
             is_expanded=(max_hops == 2)
         )
 
+    async def get_multiple_neighborhoods(
+        self,
+        decision_ids: List[int],
+        max_hops: int = 2,
+        limit_per_hop: int = 5,
+        workspace_path: Optional[str] = None,
+    ) -> List[DecisionNeighborhood]:
+        """Batch-load neighborhoods for multiple decisions."""
+        neighborhoods: List[DecisionNeighborhood] = []
+        for decision_id in decision_ids:
+            try:
+                normalized_id = int(decision_id)
+            except (TypeError, ValueError):
+                logger.debug("Skipping invalid decision id %r during batch load", decision_id)
+                continue
+
+            try:
+                neighborhoods.append(
+                    self.get_decision_neighborhood(
+                        normalized_id,
+                        max_hops=max_hops,
+                        limit_per_hop=limit_per_hop,
+                        workspace_path=workspace_path,
+                    )
+                )
+            except Exception as exc:
+                logger.warning(
+                    "Failed to load neighborhood for decision %s: %s",
+                    normalized_id,
+                    exc,
+                )
+        return neighborhoods
+
     def get_genealogy_chain(
         self,
         decision_id: int,

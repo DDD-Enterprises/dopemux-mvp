@@ -8,6 +8,8 @@ Schema Version: 1.0.0
 """
 
 from __future__ import annotations
+import logging
+
 
 import json
 from pathlib import Path
@@ -21,6 +23,8 @@ from .profile_models import (
     Profile,
     ProfileCollection,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ProfileParseError(Exception):
@@ -117,8 +121,6 @@ class ProfileParser:
                 f"Failed to read file: {e}",
                 file_path=file_path
             )
-
-            logger.error(f"Error: {e}")
         return self._parse_data(data, file_path)
 
     def parse_string(self, yaml_content: str) -> ProfileCollection:
@@ -187,8 +189,6 @@ class ProfileParser:
                 file_path=file_path,
                 errors=errors
             )
-
-            logger.error(f"Error: {e}")
         # Validate MCP servers if enabled
         if self.validate_mcps:
             invalid_mcps = collection.validate_mcp_servers(self.available_mcps)

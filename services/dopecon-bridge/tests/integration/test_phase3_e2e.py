@@ -20,7 +20,7 @@ from dataclasses import asdict
 from datetime import datetime
 from typing import List, Dict, Any
 
-import redis.asyncio as redis
+redis = pytest.importorskip("redis.asyncio", reason="redis package not installed")
 
 import sys
 from pathlib import Path

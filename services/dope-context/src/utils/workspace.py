@@ -4,9 +4,12 @@ Ensures proper multi-project isolation.
 """
 
 import hashlib
+import logging
 import sys
 from pathlib import Path
 from typing import Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 # Add project root to path for imports
 # Detect if running in Docker (different path structure)

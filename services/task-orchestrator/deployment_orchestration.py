@@ -458,8 +458,6 @@ class DeploymentOrchestrationCoordinator:
             task.status = DeploymentStatus.FAILED
             task.error_message = str(e)
             return False
-
-            logger.error(f"Error: {e}")
         finally:
             task.completed_at = datetime.now()
 

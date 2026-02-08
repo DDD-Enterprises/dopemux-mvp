@@ -6,6 +6,10 @@ This module provides the integration points to add automatic snapshots functiona
 to the main WMA FastAPI application.
 """
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 # Add these imports to main.py
 AUTOMATIC_SNAPSHOTS_IMPORTS = """
 

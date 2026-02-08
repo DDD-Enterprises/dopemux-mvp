@@ -1,10 +1,14 @@
 ---
 id: week4-build-roadmap
 title: Week4 Build Roadmap
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Week4 Build Roadmap (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # DDDPG Week 4 Build Roadmap - Complete Implementation Guide
 **Service**: DDDPG (Decision-Driven Development Planning Graph)

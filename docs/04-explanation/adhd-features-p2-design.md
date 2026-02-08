@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Adhd Features P2 Design (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # P2 Priority ADHD Features - Design Document
 
@@ -1074,14 +1078,14 @@ GET    /api/v1/emergency/{id}/analysis
 **Total Phase 1**: 18-23 hours
 
 ### Phase 2 (Medium Impact)
-4. **Sensory Overload** (5-7h) - Protection feature
-5. **Sleep Pattern Analysis** (4-6h) - Foundation for other features
-6. **Code Review Accommodations** (8-10h) - Development workflow
+1. **Sensory Overload** (5-7h) - Protection feature
+2. **Sleep Pattern Analysis** (4-6h) - Foundation for other features
+3. **Code Review Accommodations** (8-10h) - Development workflow
 
 **Total Phase 2**: 17-23 hours
 
 ### Phase 3 (Quality of Life)
-7. **Habit Streak Tracker** (4-5h) - Motivation boost
+1. **Habit Streak Tracker** (4-5h) - Motivation boost
 
 **Total Phase 3**: 4-5 hours
 

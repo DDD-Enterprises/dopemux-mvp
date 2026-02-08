@@ -1,0 +1,518 @@
+{
+  "artifact": "conport_live_backlog_true_open_candidates_2026-02-06",
+  "source_matrix": "reports/strict_closure/conport_live_backlog_underrepresented_matrix_2026-02-06.json",
+  "summary": {
+    "underrepresented_total": 66,
+    "resolved_in_current_wave": 8,
+    "true_open_candidates": 25,
+    "likely_alias_or_already_implemented": 33,
+    "open_cluster_counts": {
+      "kg_dependency_unification": 7,
+      "shield_slack_beta": 11,
+      "mcp_token_ops": 3,
+      "other": 4
+    }
+  },
+  "resolved_in_current_wave": [
+    {
+      "description": "ConPort database persistence implementation",
+      "evidence": "reports/strict_closure/conport_persistence_verification_2026-02-06.json"
+    },
+    {
+      "description": "Document MCP token budgeting best practices for future MCP development (add to docs/best-practices/mcp-token-management.md)",
+      "evidence": "reports/strict_closure/mcp_token_management_doc_verification_2026-02-06.json"
+    },
+    {
+      "description": "Task 4.2: Configure ADHD Engine | Duration: 60m | Complexity: 0.5 | Energy: Medium | Integrate Task-Orchestrator ADHD engine with ConPort",
+      "evidence": "reports/strict_closure/bridge_orchestrator_integration_verification_2026-02-06.json"
+    },
+    {
+      "description": "Task 4.1: Enable Dependency Analysis | Duration: 75m | Complexity: 0.6 | Energy: High | Activate dependency analysis tools (Tools 1-10) with ConPort integration",
+      "evidence": "reports/strict_closure/bridge_orchestrator_integration_verification_2026-02-06.json"
+    },
+    {
+      "description": "Task 3.4: Test Bridge Communication | Duration: 45m | Complexity: 0.5 | Energy: Medium | Validate bidirectional Integration Bridge communication",
+      "evidence": "reports/strict_closure/bridge_orchestrator_integration_verification_2026-02-06.json"
+    },
+    {
+      "description": "Task 3.3: Implement Insight Publishing | Duration: 60m | Complexity: 0.6 | Energy: Medium | Enable Task-Orchestrator to send insights back to ConPort",
+      "evidence": "reports/strict_closure/bridge_orchestrator_integration_verification_2026-02-06.json"
+    },
+    {
+      "description": "Task 3.2: Implement Event Subscription | Duration: 75m | Complexity: 0.7 | Energy: High | Enable Task-Orchestrator to receive ConPort events via Integration Bridge",
+      "evidence": "reports/strict_closure/bridge_orchestrator_integration_verification_2026-02-06.json"
+    },
+    {
+      "description": "Task 3.1: Configure Integration Bridge | Duration: 60m | Complexity: 0.6 | Energy: Medium | Set up Integration Bridge routing for Task-Orchestrator",
+      "evidence": "reports/strict_closure/bridge_orchestrator_integration_verification_2026-02-06.json"
+    }
+  ],
+  "true_open_candidates": [
+    {
+      "id": 60,
+      "status": "PLANNED",
+      "description": "3.2.2: Test semantic similarity & ADHD disclosure | Duration: 60m | Complexity: 0.6 | Energy: Medium-High | Depends: 3.2.1",
+      "cluster": "kg_dependency_unification",
+      "priority_hint": "P1",
+      "owner_bucket": "Knowledge Graph + Search"
+    },
+    {
+      "id": 61,
+      "status": "PLANNED",
+      "description": "3.2.1: Integrate dope-context in Serena, add Find Similar command | Duration: 60m | Complexity: 0.6 | Energy: Medium-High | Depends: 2.1.2, 2.3.1",
+      "cluster": "kg_dependency_unification",
+      "priority_hint": "P1",
+      "owner_bucket": "Knowledge Graph + Search"
+    },
+    {
+      "id": 62,
+      "status": "PLANNED",
+      "description": "3.1.1: Design & populate conport_integration_links | Duration: 60m | Complexity: 0.8 | Energy: Very High | Depends: 2.2.3",
+      "cluster": "kg_dependency_unification",
+      "priority_hint": "P1",
+      "owner_bucket": "Knowledge Graph + Search"
+    },
+    {
+      "id": 63,
+      "status": "PLANNED",
+      "description": "2.2.3: Validate embedding quality & schema | Duration: 45m | Complexity: 0.6 | Energy: Medium-High | Depends: 2.2.2",
+      "cluster": "kg_dependency_unification",
+      "priority_hint": "P1",
+      "owner_bucket": "Knowledge Graph + Search"
+    },
+    {
+      "id": 64,
+      "status": "PLANNED",
+      "description": "2.2.2: Write & run migration script (re-embed decisions) | Duration: 45m | Complexity: 0.6 | Energy: Medium-High | Depends: 2.2.1",
+      "cluster": "kg_dependency_unification",
+      "priority_hint": "P1",
+      "owner_bucket": "Knowledge Graph + Search"
+    },
+    {
+      "id": 65,
+      "status": "PLANNED",
+      "description": "2.2.1: Remove ConPort embedding_service, import from core | Duration: 30m | Complexity: 0.6 | Energy: Medium-High | Depends: 1.3.2",
+      "cluster": "kg_dependency_unification",
+      "priority_hint": "P1",
+      "owner_bucket": "Knowledge Graph + Search"
+    },
+    {
+      "id": 66,
+      "status": "PLANNED",
+      "description": "2.1.2: Update docs & add deprecation warnings | Duration: 30m | Complexity: 0.4 | Energy: Low-Medium | Depends: 2.1.1",
+      "cluster": "kg_dependency_unification",
+      "priority_hint": "P1",
+      "owner_bucket": "Knowledge Graph + Search"
+    },
+    {
+      "id": 2,
+      "status": "PLANNED",
+      "description": "Day 19-20: Feedback & Iteration (12-14 hours)",
+      "cluster": "shield_slack_beta",
+      "priority_hint": "P1",
+      "owner_bucket": "Integrations + UX"
+    },
+    {
+      "id": 3,
+      "status": "PLANNED",
+      "description": "Day 9: Notification Batching (3-4 hours)",
+      "cluster": "shield_slack_beta",
+      "priority_hint": "P1",
+      "owner_bucket": "Integrations + UX"
+    },
+    {
+      "id": 4,
+      "status": "PLANNED",
+      "description": "Day 8: Productivity Indicators Deep Dive (6-7 hours)",
+      "cluster": "shield_slack_beta",
+      "priority_hint": "P1",
+      "owner_bucket": "Integrations + UX"
+    },
+    {
+      "id": 5,
+      "status": "PLANNED",
+      "description": "Day 7: Desktop Commander Integration (4-5 hours)",
+      "cluster": "shield_slack_beta",
+      "priority_hint": "P1",
+      "owner_bucket": "Integrations + UX"
+    },
+    {
+      "id": 6,
+      "status": "PLANNED",
+      "description": "Day 6: macOS Focus Mode - AppleScript Implementation (5-6 hours)",
+      "cluster": "shield_slack_beta",
+      "priority_hint": "P1",
+      "owner_bucket": "Integrations + UX"
+    },
+    {
+      "id": 7,
+      "status": "PLANNED",
+      "description": "Day 16-17: Beta Preparation & Recruitment (8-10 hours)",
+      "cluster": "shield_slack_beta",
+      "priority_hint": "P1",
+      "owner_bucket": "Integrations + UX"
+    },
+    {
+      "id": 8,
+      "status": "PLANNED",
+      "description": "Day 18: Beta Deployment (6-8 hours)",
+      "cluster": "shield_slack_beta",
+      "priority_hint": "P1",
+      "owner_bucket": "Integrations + UX"
+    },
+    {
+      "id": 9,
+      "status": "PLANNED",
+      "description": "Day 14-15: Message Triage System (10-12 hours)",
+      "cluster": "shield_slack_beta",
+      "priority_hint": "P1",
+      "owner_bucket": "Integrations + UX"
+    },
+    {
+      "id": 10,
+      "status": "PLANNED",
+      "description": "Day 13: Slack Status Management (4-5 hours)",
+      "cluster": "shield_slack_beta",
+      "priority_hint": "P1",
+      "owner_bucket": "Integrations + UX"
+    },
+    {
+      "id": 11,
+      "status": "PLANNED",
+      "description": "Day 11-12: Slack Client Setup (8-10 hours)",
+      "cluster": "shield_slack_beta",
+      "priority_hint": "P1",
+      "owner_bucket": "Integrations + UX"
+    },
+    {
+      "id": 15,
+      "status": "PLANNED",
+      "description": "Week 3: Slack Integration & Message Triage",
+      "cluster": "shield_slack_beta",
+      "priority_hint": "P1",
+      "owner_bucket": "Integrations + UX"
+    },
+    {
+      "id": 18,
+      "status": "PLANNED",
+      "description": "Monitor MCP servers for edge cases after token limit fixes deployment",
+      "cluster": "mcp_token_ops",
+      "priority_hint": "P2",
+      "owner_bucket": "MCP Platform"
+    },
+    {
+      "id": 19,
+      "status": "PLANNED",
+      "description": "Test MCP token limit fixes in production: large files (package-lock.json), bulk queries (100 decisions), multi-step Zen analysis",
+      "cluster": "mcp_token_ops",
+      "priority_hint": "P2",
+      "owner_bucket": "MCP Platform"
+    },
+    {
+      "id": 20,
+      "status": "PLANNED",
+      "description": "Restart Claude Code to load all MCP token limit fixes (dope-context, Serena, ConPort, Zen)",
+      "cluster": "mcp_token_ops",
+      "priority_hint": "P2",
+      "owner_bucket": "MCP Platform"
+    },
+    {
+      "id": 12,
+      "status": "PLANNED",
+      "description": "Day 4: ConPort Integration & Metrics (4-5 hours)",
+      "cluster": "other",
+      "priority_hint": "P2",
+      "owner_bucket": "Triage Needed"
+    },
+    {
+      "id": 13,
+      "status": "PLANNED",
+      "description": "Day 3: ShieldCoordinator Core Logic (6-7 hours)",
+      "cluster": "other",
+      "priority_hint": "P2",
+      "owner_bucket": "Triage Needed"
+    },
+    {
+      "id": 14,
+      "status": "PLANNED",
+      "description": "Day 5: Productivity Monitoring & False Positive Detection (5-6 hours)",
+      "cluster": "other",
+      "priority_hint": "P2",
+      "owner_bucket": "Triage Needed"
+    },
+    {
+      "id": 16,
+      "status": "PLANNED",
+      "description": "Week 1: Core Infrastructure & ADHD Engine Integration",
+      "cluster": "other",
+      "priority_hint": "P2",
+      "owner_bucket": "Triage Needed"
+    }
+  ],
+  "likely_alias_items": [
+    {
+      "id": 21,
+      "status": "PLANNED",
+      "description": "Task 5.1: Create Integration Test Suite | Duration: 60m | Complexity: 0.6 | Energy: High | Comprehensive integration test coverage (>90%)",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 22,
+      "status": "PLANNED",
+      "description": "Task 4.4: End-to-End Validation | Duration: 60m | Complexity: 0.6 | Energy: Medium | Validate complete Phase 1 integration works end-to-end",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 23,
+      "status": "PLANNED",
+      "description": "Task 4.3: Disable Advanced Features | Duration: 45m | Complexity: 0.4 | Energy: Low | Implement feature flags and disable tools 11-37 (defer to Phase 3)",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 26,
+      "status": "PLANNED",
+      "description": "Task 5.2: Performance and Load Testing | Duration: 60m | Complexity: 0.5 | Energy: Medium | Load testing (>50 events/sec, <500MB memory)",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 31,
+      "status": "PLANNED",
+      "description": "Task 4.5: Migration Assistant | Duration: 3h | Complexity: 0.5 | Energy: Medium | Priority: MEDIUM | Depends: All above",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 32,
+      "status": "PLANNED",
+      "description": "Task 4.4: Usage Analytics & Optimization | Duration: 4h | Complexity: 0.6 | Energy: Medium | Priority: LOW | Depends: Epic 3 + Task 4.2",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 33,
+      "status": "PLANNED",
+      "description": "Task 4.2: Gentle Auto-Detection Suggestions | Duration: 4h | Complexity: 0.6 | Energy: Medium | Priority: HIGH | Depends: Epic 2 + Epic 3",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 34,
+      "status": "PLANNED",
+      "description": "Task 4.1: Statusline Profile Indicator | Duration: 3h | Complexity: 0.5 | Energy: Medium | Priority: MEDIUM | Depends: Epic 1",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 35,
+      "status": "PLANNED",
+      "description": "Task 3.1: ConPort Session Management | Duration: 5h | Complexity: 0.7 | Energy: High | Priority: CRITICAL | Can start after Epic 1",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 36,
+      "status": "PLANNED",
+      "description": "3.1.1: Design session schema | 1h | Complexity: 0.6 | Category: profile_sessions, fields: session_id, profile_from/to, context_snapshot",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 37,
+      "status": "PLANNED",
+      "description": "3.1.2: Implement session save | 1.5h | Complexity: 0.7 | Collect open files, cursor, decisions, call log_custom_data",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 38,
+      "status": "PLANNED",
+      "description": "3.1.3: Implement session restore | 1.5h | Complexity: 0.7 | Query ConPort, extract context, return SessionContext object",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 39,
+      "status": "PLANNED",
+      "description": "3.1.4: Fallback handling | 1h | Complexity: 0.6 | ConPort unavailable -> warn but continue, graceful degradation",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 40,
+      "status": "PLANNED",
+      "description": "Task 3.2: Claude Process Management | Duration: 4h | Complexity: 0.8 | Energy: High | Priority: CRITICAL | Depends: Task 1.2",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 41,
+      "status": "PLANNED",
+      "description": "3.2.1: Claude process detection | 1h | Complexity: 0.6 | Use psutil, find by process name, handle multiple instances",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 42,
+      "status": "PLANNED",
+      "description": "Task 3.3: Profile Switch Orchestration | Duration: 3h | Complexity: 0.7 | Energy: High | Priority: HIGH | Depends: Task 3.1 + 3.2",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 43,
+      "status": "PLANNED",
+      "description": "2.3.2: Enhance dopemux start with --auto-detect | 1h | Complexity: 0.5 | Run detection if flag present, gentle prompt if >0.85",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 44,
+      "status": "PLANNED",
+      "description": "2.3.1: dopemux profile suggest command | 1h | Complexity: 0.5 | Run detection, show top 3 matches with scores",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 45,
+      "status": "PLANNED",
+      "description": "Task 2.3: CLI Integration - Auto-Suggest | Duration: 2h | Complexity: 0.4 | Energy: Low | Priority: MEDIUM | Depends: Task 2.2",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 46,
+      "status": "PLANNED",
+      "description": "2.2.3: Fallback hierarchy | 1h | Complexity: 0.5 | ADHD Engine optional, git optional, manual override wins",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 47,
+      "status": "PLANNED",
+      "description": "2.2.1: Scoring algorithm implementation | 1.5h | Complexity: 0.7 | Sum signals, calculate confidence (total/100)",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 48,
+      "status": "PLANNED",
+      "description": "Task 2.2: Profile Scoring & Selection | Duration: 4h | Complexity: 0.6 | Energy: Medium | Priority: HIGH | Depends: Task 2.1",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 49,
+      "status": "PLANNED",
+      "description": "2.1.2: Directory pattern analyzer | 1h | Complexity: 0.4 | Match pwd against patterns, 25 points if match",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 50,
+      "status": "PLANNED",
+      "description": "2.1.1: Git branch pattern matcher | 1.5h | Complexity: 0.5 | Use gitpython, support wildcards, 30 points if match",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 51,
+      "status": "PLANNED",
+      "description": "Task 2.1: Context Signal Collectors | Duration: 6h | Complexity: 0.6 | Energy: Medium | Priority: HIGH | Can start after Epic 1",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 52,
+      "status": "PLANNED",
+      "description": "Task 1.4: Integration Testing & Documentation | Duration: 2h | Complexity: 0.5 | Energy: Medium | Priority: MEDIUM",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 53,
+      "status": "PLANNED",
+      "description": "1.3.4: Add dopemux profile validate | 0.5h | Complexity: 0.5 | Validate profile, test config generation dry-run",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 54,
+      "status": "PLANNED",
+      "description": "1.3.3: Add dopemux profile show | 0.5h | Complexity: 0.4 | Display full profile details, pretty-print YAML",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 55,
+      "status": "PLANNED",
+      "description": "1.3.2: Add dopemux profile list | 0.5h | Complexity: 0.4 | Discover profiles, display name, description, MCP count",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 56,
+      "status": "PLANNED",
+      "description": "1.3.1: Enhance dopemux start command | 1.5h | Complexity: 0.6 | Add --profile flag, default to 'full', error handling",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 57,
+      "status": "PLANNED",
+      "description": "Task 1.3: CLI Commands - Manual Profile Selection | Duration: 3h | Complexity: 0.5 | Energy: Medium | Priority: HIGH",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 58,
+      "status": "PLANNED",
+      "description": "1.2.2: Build config generator | 2h | Complexity: 0.8 | Profile \u2192 Claude config.json, preserve non-MCP settings",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    },
+    {
+      "id": 59,
+      "status": "PLANNED",
+      "description": "Task 1.1: Profile YAML Schema Definition & Validation | Duration: 4h | Complexity: 0.6 | Energy: Medium | Priority: CRITICAL (foundation)",
+      "cluster": "profile_alias_or_residual",
+      "priority_hint": "P2",
+      "owner_bucket": "CLI + ADHD Engine"
+    }
+  ]
+}

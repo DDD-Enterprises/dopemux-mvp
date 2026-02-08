@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-10-17'
 next_review: '2026-01-15'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Profile_System_Architecture (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Profile System Architecture
 
@@ -173,7 +177,7 @@ class DetectionContext:
     primary_language: Optional[str] = None
 ```
 
-2. **Add scoring method:**
+1. **Add scoring method:**
 ```python
 def _score_language(self, patterns: List[str], current_lang: str) -> float:
     """Score language match (0-X points)"""
@@ -181,7 +185,7 @@ def _score_language(self, patterns: List[str], current_lang: str) -> float:
     return score
 ```
 
-3. **Integrate in detect():**
+1. **Integrate in detect():**
 ```python
 signal_scores['language'] = self._score_language(
     profile.auto_detection.languages,
@@ -189,7 +193,7 @@ signal_scores['language'] = self._score_language(
 )
 ```
 
-4. **Update Profile model:**
+1. **Update Profile model:**
 ```python
 # profile_models.py
 class AutoDetection(BaseModel):
@@ -209,14 +213,14 @@ class ProfileSwitch:
     duration_minutes: Optional[int] = None
 ```
 
-2. **Update logging:**
+1. **Update logging:**
 ```python
 # profile_analytics.py
 async def log_switch(..., duration: Optional[int] = None):
     switch_data['duration_minutes'] = duration
 ```
 
-3. **Compute in stats:**
+1. **Compute in stats:**
 ```python
 # _analyze_switches()
 avg_duration = sum(s.duration_minutes for s in switches if s.duration_minutes) / len(switches)

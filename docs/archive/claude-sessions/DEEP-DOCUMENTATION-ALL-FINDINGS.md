@@ -1,10 +1,14 @@
 ---
 id: DEEP-DOCUMENTATION-ALL-FINDINGS
 title: Deep Documentation All Findings
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Deep Documentation All Findings (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # Deep Documentation - Complete Audit Findings & Context
 **Date**: 2025-10-16
@@ -634,15 +638,15 @@ app = FastAPI(lifespan=lifespan)
    - Added api_key parameter to all 7 endpoints
 
 5-7. GPT-Researcher CORS fixes:
-   - `backend/main.py:110-119`
-   - `backend/api/main.py:233-242`
+- `backend/main.py:110-119`
+- `backend/api/main.py:233-242`
 
-8. `services/mcp-dopecon-bridge/main.py`
+1. `services/mcp-dopecon-bridge/main.py`
    - CORS fix (lines 1164-1172)
 
 9-10. Serena credential fixes:
-   - `v2/intelligence/database.py:39`
-   - `v2/intelligence/integration_test.py:67`
+- `v2/intelligence/database.py:39`
+- `v2/intelligence/integration_test.py:67`
 
 ### New Files Created (6):
 

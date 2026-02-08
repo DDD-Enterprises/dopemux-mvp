@@ -1,10 +1,14 @@
 ---
 id: DOCUMENTATION_UPDATE_SUMMARY_20251023
 title: Documentation_Update_Summary_20251023
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Documentation_Update_Summary_20251023 (explanation) for dopemux documentation
+  and developer workflows.
 ---
 # Documentation Update Summary - 2025-10-23
 

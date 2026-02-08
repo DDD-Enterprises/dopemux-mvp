@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-10-17'
 next_review: '2026-01-15'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dopemux Context Deep Dive (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Dopemux Context Architecture: Deep Technical Analysis
 
@@ -92,7 +96,7 @@ Dopemux implements a **three-layer context architecture** designed specifically 
 - `log_progress`, `get_progress`, `update_progress`
 - `update_active_context`, `get_active_context`
 - `log_system_pattern`, `get_system_patterns`
-- `semantic_search_conport` (vector search when AGE migration completes)
+- `semantic_search_conport` (deprecated compatibility shim; keyword fallback only, vector retrieval delegated to dope-context/serena)
 
 **Current Status** (measured 2025-10-05):
 - **Backend**: SQLite at `context_portal/context.db` (4MB)

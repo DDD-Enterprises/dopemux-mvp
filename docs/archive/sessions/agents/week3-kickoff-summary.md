@@ -1,10 +1,14 @@
 ---
 id: week3-kickoff-summary
 title: Week3 Kickoff Summary
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Week3 Kickoff Summary (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Week 3 Kickoff: Complete Research & Planning Summary
 

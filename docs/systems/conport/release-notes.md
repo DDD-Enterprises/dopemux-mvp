@@ -1,12 +1,19 @@
 ---
 id: release-notes
 title: Release Notes
-type: system-doc
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Release Notes (reference) for dopemux documentation and developer workflows.
 ---
 # Context Portal MCP Release Notes
+
+Status note (2026-02-07): release entries below preserve historical tool names.
+Current dopemux runtime treats ConPort semantic search as a compatibility path
+and prefers dope-context/Serena retrieval for primary semantic flows.
 
 <br>
 

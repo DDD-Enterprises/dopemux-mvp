@@ -1,6 +1,8 @@
 """Transient message overlay system for ADHD-friendly nudges."""
 
 from __future__ import annotations
+import logging
+
 
 import asyncio
 from dataclasses import dataclass, field
@@ -14,6 +16,8 @@ from textual.message import Message
 from textual.reactive import reactive
 from textual.widget import Widget
 
+
+logger = logging.getLogger(__name__)
 
 class TransientPriority(str, Enum):
     CRITICAL = "critical"

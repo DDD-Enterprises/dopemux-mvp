@@ -6,6 +6,9 @@ Provides encrypted environment backup and sync functionality using SOPS.
 Based on Claude-Code-Tools vault patterns.
 """
 
+from typing import List
+from datetime import datetime
+
 import os
 import json
 from pathlib import Path

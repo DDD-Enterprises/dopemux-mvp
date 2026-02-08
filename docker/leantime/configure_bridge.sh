@@ -3,6 +3,8 @@
 
 set -e
 
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
 if [ -z "$1" ]; then
     echo "Usage: $0 <api-key>"
     echo ""
@@ -20,11 +22,12 @@ echo "════════════════════════�
 echo ""
 
 # Validate API key format
-if [[ ! $API_KEY =~ ^lt_[a-zA-Z0-9]+_[a-zA-Z0-9]+$ ]]; then
+# Key format is lt_<api-user-without-underscore>_<secret-without-underscore>
+if [[ ! $API_KEY =~ ^lt_[^_]+_[A-Za-z0-9]+$ ]]; then
     echo "❌ Invalid API key format!"
     echo ""
-    echo "Expected format: lt_<user_id>_<secret>"
-    echo "Example: lt_abc123def456_xyz789ghi012..."
+    echo "Expected format: lt_<api_user>_<secret>"
+    echo "Example: lt_abc123def456_xyz789ghi012abcdef..."
     echo ""
     exit 1
 fi
@@ -32,37 +35,58 @@ fi
 echo "✓ API key format validated"
 echo ""
 
-# Update .env file
-ENV_FILE="docker/mcp-servers/leantime-bridge/.env"
+# Update bridge env file
+BRIDGE_ENV_FILE="${PROJECT_ROOT}/docker/mcp-servers/leantime-bridge/.env"
+# Update root compose env file (compose variable expansion source)
+ROOT_ENV_FILE="${PROJECT_ROOT}/.env"
 
-if [ ! -f "$ENV_FILE" ]; then
-    echo "❌ Config file not found: $ENV_FILE"
+if [ ! -f "$BRIDGE_ENV_FILE" ]; then
+    echo "❌ Config file not found: $BRIDGE_ENV_FILE"
     exit 1
 fi
 
-# Backup existing config
-cp "$ENV_FILE" "${ENV_FILE}.backup.$(date +%Y%m%d_%H%M%S)"
-echo "✓ Created backup of existing config"
+cp "$BRIDGE_ENV_FILE" "${BRIDGE_ENV_FILE}.backup.$(date +%Y%m%d_%H%M%S)"
 
-# Update API token
-if grep -q "^LEANTIME_API_TOKEN=" "$ENV_FILE"; then
-    # Replace existing token
-    sed -i.tmp "s|^LEANTIME_API_TOKEN=.*|LEANTIME_API_TOKEN=$API_KEY|" "$ENV_FILE"
-    rm -f "${ENV_FILE}.tmp"
-    echo "✓ Updated LEANTIME_API_TOKEN in $ENV_FILE"
+if grep -q "^LEANTIME_API_TOKEN=" "$BRIDGE_ENV_FILE"; then
+    sed -i.bak "s|^LEANTIME_API_TOKEN=.*|LEANTIME_API_TOKEN=$API_KEY|" "$BRIDGE_ENV_FILE"
 else
-    # Add new token
-    echo "" >> "$ENV_FILE"
-    echo "# API Token (added $(date))" >> "$ENV_FILE"
-    echo "LEANTIME_API_TOKEN=$API_KEY" >> "$ENV_FILE"
-    echo "✓ Added LEANTIME_API_TOKEN to $ENV_FILE"
+    echo "LEANTIME_API_TOKEN=$API_KEY" >> "$BRIDGE_ENV_FILE"
+fi
+
+if grep -q "^LEANTIME_TOKEN=" "$BRIDGE_ENV_FILE"; then
+    sed -i.bak "s|^LEANTIME_TOKEN=.*|LEANTIME_TOKEN=$API_KEY|" "$BRIDGE_ENV_FILE"
+else
+    echo "LEANTIME_TOKEN=$API_KEY" >> "$BRIDGE_ENV_FILE"
+fi
+
+rm -f "${BRIDGE_ENV_FILE}.bak"
+echo "✓ Updated bridge env file: $BRIDGE_ENV_FILE"
+
+if [ -f "$ROOT_ENV_FILE" ]; then
+    if grep -q "^LEANTIME_API_TOKEN=" "$ROOT_ENV_FILE"; then
+        sed -i.bak "s|^LEANTIME_API_TOKEN=.*|LEANTIME_API_TOKEN=$API_KEY|" "$ROOT_ENV_FILE"
+    else
+        echo "LEANTIME_API_TOKEN=$API_KEY" >> "$ROOT_ENV_FILE"
+    fi
+
+    if grep -q "^LEANTIME_TOKEN=" "$ROOT_ENV_FILE"; then
+        sed -i.bak "s|^LEANTIME_TOKEN=.*|LEANTIME_TOKEN=$API_KEY|" "$ROOT_ENV_FILE"
+    else
+        echo "LEANTIME_TOKEN=$API_KEY" >> "$ROOT_ENV_FILE"
+    fi
+
+    rm -f "${ROOT_ENV_FILE}.bak"
+    echo "✓ Updated root env file: $ROOT_ENV_FILE"
 fi
 
 echo ""
 
 # Restart bridge
 echo "Restarting Leantime MCP Bridge..."
-docker-compose -f docker/mcp-servers/docker-compose.yml restart leantime-bridge
+(
+    cd "$PROJECT_ROOT"
+    docker compose up -d --force-recreate leantime-bridge
+)
 
 echo ""
 echo "✓ Bridge restarted"
@@ -74,33 +98,12 @@ sleep 5
 
 # Test the connection
 echo "Testing API connection..."
-docker exec mcp-leantime-bridge python -c "
-import asyncio
-import sys
-sys.path.insert(0, '/app')
-from leantime_bridge.http_server import LeantimeClient, LEANTIME_API_URL, LEANTIME_API_TOKEN
-
-async def test():
-    print(f'Testing: {LEANTIME_API_URL}/api/jsonrpc')
-    async with LeantimeClient(LEANTIME_API_URL, LEANTIME_API_TOKEN) as client:
-        try:
-            result = await client.call_api('leantime.rpc.projects.getProjects')
-            print('✅ API connection successful!')
-            print(f'Projects available: {len(result) if isinstance(result, list) else 1}')
-            return True
-        except Exception as e:
-            print(f'❌ Connection failed: {e}')
-            return False
-
-success = asyncio.run(test())
-sys.exit(0 if success else 1)
-" 2>&1
-
-TEST_RESULT=$?
+DEEP_HEALTH="$(docker exec dopemux-mcp-leantime-bridge sh -lc "curl -s http://127.0.0.1:3015/health?deep=1")"
+PROJECT_LIST="$(docker exec dopemux-mcp-leantime-bridge sh -lc "curl -s -X POST http://127.0.0.1:3015/api/tools/list_projects -H 'Content-Type: application/json' -d '{}'")"
 
 echo ""
 
-if [ $TEST_RESULT -eq 0 ]; then
+if echo "$DEEP_HEALTH" | grep -q '"status":"ok"'; then
     echo "════════════════════════════════════════════════════════════"
     echo "  ✅ CONFIGURATION SUCCESSFUL!"
     echo "════════════════════════════════════════════════════════════"
@@ -110,13 +113,19 @@ if [ $TEST_RESULT -eq 0 ]; then
     echo "Next steps:"
     echo "  1. Test the integration:"
     echo "     cd docker/mcp-servers/leantime-bridge"
-    echo "     python test_http_server.py"
+    echo "     pytest -q --no-cov docker/mcp-servers/leantime-bridge/test_contract_api_tools.py"
     echo ""
     echo "  2. Use in Claude:"
     echo "     Ask Claude to list Leantime projects or create tasks"
     echo ""
     echo "  3. Check logs:"
-    echo "     docker logs mcp-leantime-bridge"
+    echo "     docker logs dopemux-mcp-leantime-bridge"
+    echo ""
+    echo "Deep health:"
+    echo "$DEEP_HEALTH"
+    echo ""
+    echo "list_projects sample:"
+    echo "$PROJECT_LIST"
     echo ""
 else
     echo "════════════════════════════════════════════════════════════"
@@ -134,6 +143,12 @@ else
     echo "  1. Wait a few minutes and test again"
     echo "  2. Check Leantime logs: docker logs leantime"
     echo "  3. Verify API key in Leantime web UI"
-    echo "  4. Check bridge logs: docker logs mcp-leantime-bridge"
+    echo "  4. Check bridge logs: docker logs dopemux-mcp-leantime-bridge"
+    echo ""
+    echo "Deep health:"
+    echo "$DEEP_HEALTH"
+    echo ""
+    echo "list_projects sample:"
+    echo "$PROJECT_LIST"
     echo ""
 fi

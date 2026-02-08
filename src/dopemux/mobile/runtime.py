@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+import logging
 import os
 import shutil
 import subprocess
@@ -18,6 +19,7 @@ from ..tmux.controller import TmuxController
 
 
 MOBILE_WINDOW_NAME = "mobile"
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -451,8 +453,8 @@ def update_tmux_mobile_indicator(config_manager: ConfigManager, controller: Opti
         
         _persist_mobile_status(config_manager, status)
     except Exception as e:
-        # tmux might not be available; ignore silently
-        pass
+        # tmux might not be available; keep runtime running and log debug context.
+        logger.debug("Failed updating tmux mobile indicator: %s", e)
 
 
 
@@ -483,4 +485,4 @@ def _persist_mobile_status(config_manager: ConfigManager, status: MobileStatus) 
         snapshot_path = cache_dir / "mobile_status.json"
         snapshot_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     except Exception as e:
-        pass
+        logger.debug("Failed persisting mobile status snapshot: %s", e)

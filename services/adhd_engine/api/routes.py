@@ -17,6 +17,7 @@ All endpoints secured with X-API-Key authentication (configurable via ADHD_ENGIN
 from fastapi import APIRouter, HTTPException, Depends, Security, WebSocket, WebSocketDisconnect
 from typing import Any
 from datetime import datetime, timezone
+from dataclasses import asdict
 import logging
 import asyncio
 import json
@@ -437,7 +438,7 @@ async def recommend_break(
         if engine.predictive_engine:
             try:
                 minutes_until_break, confidence, explanation = await engine.predictive_engine.predict_optimal_break_timing(
-                    user_id, minutes_since_break
+                    request.user_id, request.minutes_since_break or 0
                 )
                 ml_prediction = schemas.MLPrediction(
                     predicted_value=f"{minutes_until_break} minutes",
@@ -542,11 +543,10 @@ async def create_or_update_profile(
         # Store in engine
         engine.user_profiles[request.user_id] = profile
 
-        # TODO (Day 4): Persist to Redis
-        # await engine.redis_client.set(
-        #     f"adhd:profile:{request.user_id}",
-        #     json.dumps(asdict(profile))
-        # )
+        # Persist profile snapshot in shared cache for cross-process reuse.
+        cache = await get_cache_instance()
+        profile_key = f"adhd:profile:{request.user_id}"
+        await cache.set(profile_key, json.dumps(asdict(profile), default=str), ttl=86400)
 
         return schemas.UserProfileResponse(
             user_id=request.user_id,
@@ -580,14 +580,25 @@ async def update_activity(
             logger.debug(f"Cache hit for activity update: {user_id}")
             return schemas.ActivityUpdateResponse.model_validate_json(cached_data)
 
-        # Cache miss - execute normal logic
-        # TODO (Day 4): Store activity in Redis for tracking
-        # activity_event = {
-        #     "user_id": user_id,
-        #     "timestamp": datetime.now(timezone.utc).isoformat(),
-        #     "metrics": request.model_dump(exclude_none=True)
-        # }
-        # await engine.redis_client.lpush(f"adhd:activity:{user_id}", json.dumps(activity_event))
+        # Cache miss - record current event and append to rolling activity history.
+        activity_event = {
+            "user_id": user_id,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "metrics": request.model_dump(exclude_none=True),
+        }
+        latest_key = f"adhd:activity:{user_id}:latest"
+        history_key = f"adhd:activity:{user_id}:history"
+        await cache.set(latest_key, json.dumps(activity_event), ttl=86400)
+        history_raw = await cache.get(history_key, "[]")
+        try:
+            history = json.loads(history_raw) if isinstance(history_raw, str) else list(history_raw)
+            if not isinstance(history, list):
+                history = []
+        except Exception:
+            history = []
+        history.append(activity_event)
+        history = history[-200:]  # keep recent bounded history
+        await cache.set(history_key, json.dumps(history), ttl=86400)
 
         # Trigger reassessment if engine has this user
         energy_updated = False

@@ -5,13 +5,12 @@ Automatically generates insights from cross-agent event correlations.
 ADHD Impact: Proactive guidance before problems occur.
 """
 
-import asyncio
 import logging
 from collections import deque
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +175,7 @@ class PatternCorrelationEngine:
                     recommended_action=f"Consider: 1) Refactor complex logic into smaller functions, 2) Add architecture documentation, 3) Create README for {directory}",
                     triggered_by=[e.get('id', '') for e in recent if directory in e.get('data', {}).get('file', '')],
                     confidence=0.85,
-                    timestamp=datetime.now()
+                    timestamp=datetime.now(timezone.utc)
                 )
 
         return None
@@ -213,7 +212,7 @@ class PatternCorrelationEngine:
                 recommended_action="Switch to simpler task (complexity <0.3) OR take 10-minute break to recharge",
                 triggered_by=[latest_cognitive.get('id', ''), latest_complexity_event.get('id', '')],
                 confidence=0.90,
-                timestamp=datetime.now()
+                timestamp=datetime.now(timezone.utc)
             )
 
         return None
@@ -245,7 +244,7 @@ class PatternCorrelationEngine:
                     recommended_action=f"Files to review: {', '.join(uncommitted_files[:3])}",
                     triggered_by=[events[-1].get('id', '')],
                     confidence=1.0,
-                    timestamp=datetime.now()
+                    timestamp=datetime.now(timezone.utc)
                 )
 
         return None
@@ -281,25 +280,27 @@ class PatternCorrelationEngine:
                     recommended_action=f"Create README in relevant directory OR add bookmark to commonly-searched code",
                     triggered_by=[e.get('id', '') for e in recent_searches if query in e.get('data', {}).get('query', '').lower()],
                     confidence=0.75,
-                    timestamp=datetime.now()
+                    timestamp=datetime.now(timezone.utc)
                 )
 
         return None
 
     def _get_recent_events(self, event_queue: deque, minutes: int) -> List[Dict]:
         """Get events from queue within time window."""
-        cutoff = datetime.now() - timedelta(minutes=minutes)
+        cutoff = datetime.now(timezone.utc) - timedelta(minutes=minutes)
         recent = []
 
         for event in event_queue:
             timestamp_str = event.get('timestamp')
             if timestamp_str:
                 try:
-                    timestamp = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                    timestamp = datetime.fromisoformat(str(timestamp_str).replace('Z', '+00:00'))
+                    if timestamp.tzinfo is None:
+                        timestamp = timestamp.replace(tzinfo=timezone.utc)
+                    else:
+                        timestamp = timestamp.astimezone(timezone.utc)
                     if timestamp >= cutoff:
                         recent.append(event)
                 except Exception as e:
-                    pass
-
-                    logger.error(f"Error: {e}")
+                    logger.debug(f"Failed to parse event timestamp '{timestamp_str}': {e}")
         return recent

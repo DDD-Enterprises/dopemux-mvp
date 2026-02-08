@@ -1,10 +1,14 @@
 ---
 id: gpt-researcher-token-limit-fix
 title: Gpt Researcher Token Limit Fix
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Gpt Researcher Token Limit Fix (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # GPT-Researcher MCP Token Limit Fix - Progressive Truncation
 
@@ -112,7 +116,7 @@ return {'result': {'content': [{'text': json.dumps(result)}]}}
 
 **1 modification**:
 
-4. **Apply at MCP Boundary** (line 331):
+1. **Apply at MCP Boundary** (line 331):
    ```python
    # Enforce MCP token budget before returning (10K hard limit)
    result = enforce_token_budget(result, tool_name, max_tokens=SAFE_TOKEN_BUDGET)

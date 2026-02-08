@@ -72,8 +72,7 @@ class HealthChecker:
             self.docker_client = docker.from_env()
         except Exception as e:
             self.docker_client = None
-
-            logger.error(f"Error: {e}")
+            logger.debug("Docker client unavailable: %s", e)
         # Health check registry
         self.checks = {
             "dopemux_core": self._check_dopemux_core,
@@ -170,6 +169,7 @@ class HealthChecker:
             )
 
         except Exception as e:
+            logger.debug("Dopemux core check failed: %s", e)
             return ServiceHealth(
                 name="dopemux_core",
                 status=HealthStatus.CRITICAL,
@@ -177,7 +177,6 @@ class HealthChecker:
                 details={"error": str(e)},
             )
 
-            logger.error(f"Error: {e}")
     def _check_claude_code(self, detailed: bool = False) -> ServiceHealth:
         """Check Claude Code integration health."""
         details = {}
@@ -249,6 +248,7 @@ class HealthChecker:
             )
 
         except Exception as e:
+            logger.debug("DopeBrainz check failed: %s", e)
             return ServiceHealth(
                 name="dope_brainz",
                 status=HealthStatus.CRITICAL,
@@ -256,7 +256,6 @@ class HealthChecker:
                 details={"error": str(e)},
             )
 
-            logger.error(f"Error: {e}")
     def _check_mcp_servers(self, detailed: bool = False) -> ServiceHealth:
         """Check MCP server health."""
         details = {}
@@ -298,6 +297,7 @@ class HealthChecker:
             )
 
         except Exception as e:
+            logger.debug("MCP server check failed: %s", e)
             return ServiceHealth(
                 name="mcp_servers",
                 status=HealthStatus.CRITICAL,
@@ -305,7 +305,6 @@ class HealthChecker:
                 details={"error": str(e)},
             )
 
-            logger.error(f"Error: {e}")
     def _check_docker_services(self, detailed: bool = False) -> ServiceHealth:
         """Check Docker-based MCP services."""
         details = {}
@@ -369,6 +368,7 @@ class HealthChecker:
             )
 
         except Exception as e:
+            logger.debug("Docker services check failed: %s", e)
             return ServiceHealth(
                 name="docker_services",
                 status=HealthStatus.CRITICAL,
@@ -376,7 +376,6 @@ class HealthChecker:
                 details={"error": str(e)},
             )
 
-            logger.error(f"Error: {e}")
     def _check_system_resources(self, detailed: bool = False) -> ServiceHealth:
         """Check system resource health."""
         details = {}
@@ -427,6 +426,7 @@ class HealthChecker:
             )
 
         except Exception as e:
+            logger.debug("System resources check failed: %s", e)
             return ServiceHealth(
                 name="system_resources",
                 status=HealthStatus.CRITICAL,
@@ -434,7 +434,6 @@ class HealthChecker:
                 details={"error": str(e)},
             )
 
-            logger.error(f"Error: {e}")
     def _check_adhd_features(self, detailed: bool = False) -> ServiceHealth:
         """Check ADHD feature effectiveness."""
         details = {}
@@ -471,7 +470,7 @@ class HealthChecker:
                         details["focus_score"] = attention_data.get("focus_score", 0)
                 except Exception as e:
                     features_inactive.append("attention_monitoring")
-                    logger.error(f"Error: {e}")
+                    logger.debug("Failed reading attention metrics file %s: %s", attention_file, e)
             else:
                 features_inactive.append("attention_monitoring")
 
@@ -486,7 +485,7 @@ class HealthChecker:
                         )
                 except Exception as e:
                     features_inactive.append("context_preservation")
-                    logger.error(f"Error: {e}")
+                    logger.debug("Failed reading context metrics file %s: %s", context_file, e)
             else:
                 features_inactive.append("context_preservation")
 
@@ -514,6 +513,7 @@ class HealthChecker:
             )
 
         except Exception as e:
+            logger.debug("ADHD features check failed: %s", e)
             return ServiceHealth(
                 name="adhd_features",
                 status=HealthStatus.CRITICAL,
@@ -521,7 +521,6 @@ class HealthChecker:
                 details={"error": str(e)},
             )
 
-            logger.error(f"Error: {e}")
     def display_health_report(
         self, results: Dict[str, ServiceHealth], detailed: bool = False
     ):
@@ -621,12 +620,27 @@ class HealthChecker:
 
     def restart_unhealthy_services(self) -> List[str]:
         """Attempt to restart unhealthy services."""
-        results = self.check_all()
+        results = self.check_all(detailed=True)
         restarted = []
 
         for service_name, health in results.items():
             if health.status in [HealthStatus.CRITICAL, HealthStatus.WARNING]:
-                # No automatic restart hooks currently configured
-                pass
+                if service_name != "docker_services" or not self.docker_client:
+                    logger.info("No automatic restart hook for service: %s", service_name)
+                    continue
+
+                containers = health.details.get("containers", [])
+                for container in containers:
+                    if container.get("status") == "running":
+                        continue
+                    container_name = container.get("name")
+                    if not container_name:
+                        continue
+                    try:
+                        docker_container = self.docker_client.containers.get(container_name)
+                        docker_container.restart(timeout=10)
+                        restarted.append(container_name)
+                    except Exception as exc:
+                        logger.warning("Failed restarting container %s: %s", container_name, exc)
 
         return restarted

@@ -8,6 +8,9 @@ Helps choose appropriate work for your current cognitive capacity.
 ADHD Benefit: "Should I work on this now?" answered automatically
 """
 
+import uvicorn
+from datetime import datetime
+
 import asyncio
 import logging
 import aiohttp
@@ -215,5 +218,4 @@ class TaskRecommender:
 
 
 if __name__ == "__main__":
-    logger.info("Starting ADHD Dashboard...")
-    uvicorn.run(app, host="0.0.0.0", port=8097, log_level="info")
+    logger.info("TaskRecommender module loaded. Import TaskRecommender in a service entrypoint.")

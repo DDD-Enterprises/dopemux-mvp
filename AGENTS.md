@@ -171,6 +171,22 @@ See [ADR-207](file:///Users/hue/code/dopemux-mvp/docs/90-adr/ADR-207-architectur
 - **Environment**: `.env.example` for reference, actual secrets in `.env`
 - **MCP Servers**: Configured in `.claude.json`
 
+### File Placement (Enforced)
+- **Policy File**: `config/repo_hygiene/root_hygiene_policy.json`
+- **Guard Script**: `scripts/check_root_hygiene.py`
+- **CI/Pre-commit Gate**: New root entries must pass the root hygiene check
+
+Put files in these locations:
+- **Product code** (`*.py`, service code): `src/` or `services/<service>/`
+- **Reusable automation scripts** (`*.py`, `*.sh`, `*.rb`): `scripts/`
+- **Long-lived documentation** (`*.md`): `docs/` (or `docs/05-audit-reports/` for durable audit reports)
+- **Generated machine output** (`*.json`, `*.xml`, `*.zip`): `reports/`
+- **Runtime logs** (`*.log`): `logs/`
+- **Temporary scratch files**: `tmp/`
+- **Quarantined uncertain files**: `quarantine/`
+
+Root-level files are allowlisted. If a new root file or top-level directory is truly intentional, update `config/repo_hygiene/root_hygiene_policy.json` in the same change.
+
 ## Searching the Codebase
 
 ### Find Documentation

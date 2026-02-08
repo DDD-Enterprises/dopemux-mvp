@@ -131,6 +131,7 @@ class PredictiveRiskAssessmentEngine:
             "adhd_specific_interventions": 0,
             "model_improvements": 0
         }
+        self._continuous_task: Optional[asyncio.Task] = None
 
     async def initialize(self) -> None:
         """Initialize the predictive risk assessment engine."""
@@ -294,8 +295,35 @@ class PredictiveRiskAssessmentEngine:
 
     async def _load_historical_data(self) -> None:
         """Load historical patterns for ML training."""
-        # Implementation would load historical risk data
-        pass
+        history: List[Dict[str, Any]] = []
+
+        if self.conport:
+            for method_name in ("get_risk_history", "get_historical_risks", "query_risk_assessments"):
+                if not hasattr(self.conport, method_name):
+                    continue
+                try:
+                    result = getattr(self.conport, method_name)()
+                    if asyncio.iscoroutine(result):
+                        result = await result
+                    if isinstance(result, list):
+                        history = result
+                        break
+                except Exception as exc:
+                    logger.debug("Historical risk load via %s failed: %s", method_name, exc)
+
+        self.historical_patterns["risk_history"] = history
+
+        if history:
+            successful = [
+                float(item.get("accuracy_score", 0.0))
+                for item in history
+                if isinstance(item, dict) and "accuracy_score" in item
+            ]
+            if successful:
+                baseline = max(0.0, min(1.0, statistics.mean(successful)))
+                self.prediction_accuracy["task"] = baseline
+                self.prediction_accuracy["project"] = baseline
+                self.prediction_accuracy["team"] = baseline
 
     async def _initialize_ml_models(self) -> None:
         """Initialize ML models for each risk category."""
@@ -309,8 +337,36 @@ class PredictiveRiskAssessmentEngine:
 
     async def _start_continuous_assessment(self) -> None:
         """Start background continuous risk assessment."""
-        # Implementation would start monitoring loops
-        pass
+        if self._continuous_task and not self._continuous_task.done():
+            return
+        self._continuous_task = asyncio.create_task(self._continuous_assessment_loop())
+
+    async def _continuous_assessment_loop(self) -> None:
+        """Reassess cached entities periodically without blocking callers."""
+        try:
+            while True:
+                await asyncio.sleep(300)
+                now = datetime.now()
+                due_entities = [
+                    (entity_id, profile)
+                    for entity_id, profile in self.risk_cache.items()
+                    if profile.next_reassessment <= now
+                ]
+
+                for entity_id, profile in due_entities[:25]:
+                    context = {
+                        "complexity": profile.risk_score,
+                        "timeline_pressure": profile.risk_score,
+                        "dependency_count": len(profile.risk_factors),
+                    }
+                    reassessment = await self.assess_risk(entity_id, profile.entity_type, context)
+                    if reassessment and reassessment.risk_score <= profile.risk_score:
+                        self.assessment_stats["risks_prevented"] += 1
+        except asyncio.CancelledError:
+            logger.debug("Continuous risk assessment loop cancelled")
+            raise
+        except Exception as exc:
+            logger.error("Continuous risk assessment loop failed: %s", exc)
 
     async def _extract_features(
         self, entity_id: str, entity_type: str, context_data: Dict[str, Any]
@@ -524,5 +580,52 @@ class PredictiveRiskAssessmentEngine:
 
     async def _log_risk_assessment(self, risk_profile: RiskProfile) -> None:
         """Log risk assessment to ConPort."""
-        # Implementation would log to ConPort if available
-        pass
+        self.historical_patterns.setdefault("recent_assessments", []).append(
+            {
+                "profile_id": risk_profile.profile_id,
+                "target_entity": risk_profile.target_entity,
+                "entity_type": risk_profile.entity_type,
+                "risk_score": risk_profile.risk_score,
+                "risk_level": risk_profile.overall_risk_level.value,
+                "timestamp": risk_profile.assessment_timestamp.isoformat(),
+            }
+        )
+
+        if not self.conport:
+            return
+
+        payload = {
+            "assessment_id": risk_profile.profile_id,
+            "target_entity": risk_profile.target_entity,
+            "entity_type": risk_profile.entity_type,
+            "overall_risk_level": risk_profile.overall_risk_level.value,
+            "risk_score": risk_profile.risk_score,
+            "risk_factors": [
+                {
+                    "id": factor.factor_id,
+                    "category": factor.category.value,
+                    "risk_level": factor.risk_level.value,
+                    "confidence": factor.confidence,
+                    "impact": factor.predicted_impact,
+                }
+                for factor in risk_profile.risk_factors
+            ],
+            "assessment_timestamp": risk_profile.assessment_timestamp.isoformat(),
+            "next_reassessment": risk_profile.next_reassessment.isoformat(),
+        }
+
+        for method_name in (
+            "record_risk_assessment",
+            "log_risk_assessment",
+            "add_risk_profile",
+            "add_observation",
+        ):
+            if not hasattr(self.conport, method_name):
+                continue
+            try:
+                result = getattr(self.conport, method_name)(payload)
+                if asyncio.iscoroutine(result):
+                    await result
+                return
+            except Exception as exc:
+                logger.debug("ConPort %s failed for risk assessment: %s", method_name, exc)

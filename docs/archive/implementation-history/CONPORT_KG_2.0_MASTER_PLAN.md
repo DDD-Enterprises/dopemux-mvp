@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Conport_Kg_2.0_Master_Plan (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # ConPort-KG 2.0: Multi-Agent Memory Hub - Master Plan
 
@@ -644,24 +648,24 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
 
 **Week 2: PostgreSQL RLS + Authorization**
 6. Implement PostgreSQL RLS policies (rls_policies.sql - 150 lines)
-   - Policy on Decision vertices
-   - Policy on relationship edges
-   - Session variable setup
-   - Testing policies with multiple users
+- Policy on Decision vertices
+- Policy on relationship edges
+- Session variable setup
+- Testing policies with multiple users
 
-7. Add workspace isolation to queries (refactor queries/ - 500 lines)
+1. Add workspace isolation to queries (refactor queries/ - 500 lines)
    - Update all 12 query methods
    - Add `workspace_id` filtering
    - Test cross-workspace isolation
    - Performance regression testing
 
-8. Implement RBAC middleware (rbac.py - 300 lines)
+2. Implement RBAC middleware (rbac.py - 300 lines)
    - Role checking (owner/admin/member/viewer)
    - Permission enforcement
    - Workspace access validation
    - Audit logging integration
 
-9. Create FastAPI endpoints (api/auth_routes.py - 400 lines)
+3. Create FastAPI endpoints (api/auth_routes.py - 400 lines)
    - POST /auth/register
    - POST /auth/login
    - POST /auth/refresh
@@ -669,7 +673,7 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
    - GET /auth/me
    - GET /auth/workspaces
 
-10. Fix Cypher injection vulnerability (30 lines)
+4. Fix Cypher injection vulnerability (30 lines)
     - Sanitize tag parameter in search_by_tag()
     - Add validation to decision_id parameters
     - Security regression testing
@@ -701,26 +705,26 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
     - Event schema validation
     - Dead letter queue for failures
 
-12. Event processor workers (event_processor.py - 500 lines)
+1. Event processor workers (event_processor.py - 500 lines)
     - Worker pool (4 workers)
     - Event deduplication (content hashing)
     - Pattern detection (7 patterns)
     - Insight generation
     - Database persistence
 
-13. Circuit breaker implementation (circuit_breaker.py - 200 lines)
+2. Circuit breaker implementation (circuit_breaker.py - 200 lines)
     - Failure threshold tracking
     - Automatic fallback to local logging
     - Recovery detection
     - Health monitoring
 
-14. Agent event middleware (agent_middleware.py - 300 lines)
+3. Agent event middleware (agent_middleware.py - 300 lines)
     - Transparent event interception
     - Correlation ID propagation
     - Workspace detection
     - Non-blocking emission
 
-15. Event aggregation engine (aggregation.py - 400 lines)
+4. Event aggregation engine (aggregation.py - 400 lines)
     - Deduplication by content hash
     - Merge similar events from multiple agents
     - Provenance tracking
@@ -732,27 +736,27 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
     - Event: code.complexity.high (>0.6 threshold)
     - Decision: Auto-log refactoring recommendations
 
-17. Dope-Context integration (integrations/dope_context.py - 250 lines)
+1. Dope-Context integration (integrations/dope_context.py - 250 lines)
     - Hook: Pattern discovery events
     - Event: search.pattern.discovered
     - Pattern: Auto-create system_pattern entries
 
-18. Zen integration (integrations/zen.py - 250 lines)
+2. Zen integration (integrations/zen.py - 250 lines)
     - Hook: Consensus reached events
     - Event: decision.consensus.reached
     - Decision: Auto-log architectural choices
 
-19. ADHD Engine integration (integrations/adhd_engine.py - 300 lines)
+3. ADHD Engine integration (integrations/adhd_engine.py - 300 lines)
     - Hook: Cognitive state changes (buffered, every 30s)
     - Event: cognitive.state.changed
     - Context: Update active_context with ADHD state
 
-20. Task-Orchestrator integration (integrations/task_orchestrator.py - 350 lines)
+4. Task-Orchestrator integration (integrations/task_orchestrator.py - 350 lines)
     - Hook: Task progress updates
     - Event: task.progress.updated
     - Progress: Auto-sync task status to ConPort
 
-21. Desktop Commander integration (integrations/desktop_commander.py - 250 lines)
+5. Desktop Commander integration (integrations/desktop_commander.py - 250 lines)
     - Hook: Workspace switch events
     - Event: workspace.switched
     - Context: Auto-capture context for recovery
@@ -776,38 +780,38 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
 
 **Tasks**:
 
-22. Multi-tier caching (cache.py - 300 lines)
+1. Multi-tier caching (cache.py - 300 lines)
     - Memory tier (5s TTL, <0.1ms)
     - Redis tier (60s TTL, ~2ms)
     - Database tier (permanent)
     - Cache invalidation on writes
 
-23. Rate limiting (rate_limiter.py - 200 lines)
+2. Rate limiting (rate_limiter.py - 200 lines)
     - 100 req/min per user
     - 1000 req/min per workspace
     - Sliding window algorithm
     - Redis-backed counters
 
-24. Query complexity budgets (complexity_scorer.py - 250 lines)
+3. Query complexity budgets (complexity_scorer.py - 250 lines)
     - Score queries by graph depth + result count
     - Budget: 1000 complexity points per user per minute
     - Reject expensive queries when budget exceeded
     - Alert user with simpler alternative
 
-25. Monitoring & metrics (monitoring.py - 400 lines)
+4. Monitoring & metrics (monitoring.py - 400 lines)
     - Prometheus metrics (20+ metrics)
     - Event processing latency
     - Cache hit rates
     - Agent activity tracking
     - Query complexity distribution
 
-26. Error handling & retry (error_handler.py - 300 lines)
+5. Error handling & retry (error_handler.py - 300 lines)
     - Exponential backoff for retries
     - Graceful degradation strategies
     - Error categorization (retryable vs fatal)
     - Dead letter queue for manual intervention
 
-27. Performance testing (tests/performance/ - 500 lines)
+6. Performance testing (tests/performance/ - 500 lines)
     - Load testing (10K events/min)
     - Concurrency testing (100 concurrent users)
     - Cache performance validation
@@ -840,19 +844,19 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
     - Collapsed details (click to expand)
     - WebSocket real-time updates
 
-29. Cross-agent insight cards (ui/insights.tsx - 350 lines)
+1. Cross-agent insight cards (ui/insights.tsx - 350 lines)
     - Priority-based display (High/Medium/Low)
     - Actionable buttons (implement, snooze, dismiss)
     - Pattern visualization
     - Persistent across sessions
 
-30. Cognitive load dashboard (ui/dashboard.tsx - 500 lines)
+2. Cognitive load dashboard (ui/dashboard.tsx - 500 lines)
     - Real-time energy/load graphs
     - Task complexity breakdown
     - Predictive recommendations
     - Break reminders (Pomodoro)
 
-31. Adaptive UI framework (ui/adaptive.tsx - 300 lines)
+3. Adaptive UI framework (ui/adaptive.tsx - 300 lines)
     - Detect attention state from ADHD Engine
     - Render different UI based on state:
       - Scattered: Simple UI (3 results, large text)
@@ -866,19 +870,19 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
     - Notification preferences
     - Real-time WebSocket updates
 
-33. Cognitive load heatmap (ui/heatmap.tsx - 350 lines)
+1. Cognitive load heatmap (ui/heatmap.tsx - 350 lines)
     - File tree with complexity colors
     - Agent activity overlay
     - Energy-appropriate task highlighting
     - Export reports
 
-34. Decision provenance viewer (ui/provenance.tsx - 450 lines)
+2. Decision provenance viewer (ui/provenance.tsx - 450 lines)
     - Sankey diagram of decision flow
     - Contributing agents visualization
     - Confidence scores displayed
     - Interactive exploration
 
-35. Agent collaboration graph (ui/agent_graph.tsx - 400 lines)
+3. Agent collaboration graph (ui/agent_graph.tsx - 400 lines)
     - D3.js force-directed graph
     - Real-time agent coordination display
     - Click nodes for event details
@@ -903,43 +907,43 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
 
 **Tasks**:
 
-36. Test infrastructure setup (tests/conftest.py - 500 lines)
+1. Test infrastructure setup (tests/conftest.py - 500 lines)
     - Pytest fixtures (auth, database, Redis)
     - Factory Boy for test data
     - Testcontainers for PostgreSQL
     - Mock agent event generators
 
-37. Authentication tests (tests/auth/ - 800 lines)
+2. Authentication tests (tests/auth/ - 800 lines)
     - JWT creation/validation (20 tests)
     - Password hashing/validation (15 tests)
     - Refresh token rotation (10 tests)
     - Audit logging (8 tests)
 
-38. Authorization tests (tests/authorization/ - 600 lines)
+3. Authorization tests (tests/authorization/ - 600 lines)
     - RLS policy enforcement (15 tests)
     - Role-based access (12 tests)
     - Cross-workspace isolation (10 tests)
     - Permission checks (10 tests)
 
-39. Agent integration tests (tests/agents/ - 700 lines)
+4. Agent integration tests (tests/agents/ - 700 lines)
     - Event publishing (6 agents × 5 tests = 30 tests)
     - Deduplication (10 tests)
     - Pattern detection (7 patterns × 3 tests = 21 tests)
     - Insight generation (10 tests)
 
-40. Performance tests (tests/performance/ - 500 lines)
+5. Performance tests (tests/performance/ - 500 lines)
     - Load testing (10K events/min sustained)
     - Concurrent users (100 simultaneous)
     - Cache hit rate validation (>80%)
     - Query latency (p95 <20ms)
 
-41. ADHD UX validation (tests/ux/ - 400 lines)
+6. ADHD UX validation (tests/ux/ - 400 lines)
     - Adaptive UI behavior (3 states × 5 tests)
     - Progressive disclosure (10 tests)
     - Notification priority (7 tests)
     - Cognitive load calculation (8 tests)
 
-42. Integration testing (tests/integration/ - 600 lines)
+7. Integration testing (tests/integration/ - 600 lines)
     - End-to-end workflows (10 scenarios)
     - Cross-service coordination (5 tests)
     - Error handling (15 tests)
@@ -964,20 +968,20 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
 
 **Tasks**:
 
-43. Docker Compose configuration (docker-compose.conport-kg.yml - 200 lines)
+1. Docker Compose configuration (docker-compose.conport-kg.yml - 200 lines)
     - PostgreSQL + AGE service
     - Redis service
     - ConPort-KG API service
     - Event processor workers (4 containers)
     - Monitoring stack (Prometheus + Grafana)
 
-44. Database migrations (migrations/ - 400 lines)
+2. Database migrations (migrations/ - 400 lines)
     - Alembic setup for schema versioning
     - Initial migration (create tables)
     - RLS policy migration
     - Data seeding for dev/staging
 
-45. Monitoring dashboards (monitoring/ - 600 lines)
+3. Monitoring dashboards (monitoring/ - 600 lines)
     - Grafana dashboards (4 dashboards):
       - Agent Activity Dashboard
       - Query Performance Dashboard
@@ -986,7 +990,7 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
     - Prometheus alert rules (15 rules)
     - Anomaly detection
 
-46. Deployment runbook (docs/runbook.md - 800 lines)
+4. Deployment runbook (docs/runbook.md - 800 lines)
     - Pre-deployment checklist
     - Staging deployment procedure
     - Production deployment (blue-green)
@@ -994,7 +998,7 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
     - Health check verification
     - Troubleshooting guide
 
-47. API documentation (docs/api/ - 1,000 lines)
+5. API documentation (docs/api/ - 1,000 lines)
     - OpenAPI specification
     - Authentication guide
     - Agent integration guide
@@ -1002,7 +1006,7 @@ def detect_cross_agent_patterns(recent_events, window_minutes=60):
     - Event schema reference
     - Code examples
 
-48. User acceptance testing (Week 10)
+6. User acceptance testing (Week 10)
     - Internal dogfooding (5 users, 1 week)
     - ADHD user testing (3 users)
     - Agent coordination validation
@@ -2070,18 +2074,18 @@ networks:
 ---
 
 ### High-Value Additions (Phase 3, 1 week)
-6. Multi-tier caching (3x performance improvement)
-7. Rate limiting (DoS prevention)
-8. Monitoring (production observability)
+1. Multi-tier caching (3x performance improvement)
+2. Rate limiting (DoS prevention)
+3. Monitoring (production observability)
 
 **Without these**: System works but lacks production reliability
 
 ---
 
 ### ADHD Differentiation (Phase 4, 2 weeks)
-9. Adaptive UI (cognitive load management)
-10. Energy-matched tasks (completion rate improvement)
-11. Decision health scoring (quality tracking)
+1. Adaptive UI (cognitive load management)
+2. Energy-matched tasks (completion rate improvement)
+3. Decision health scoring (quality tracking)
 
 **Without these**: System is functional but loses ADHD competitive advantage
 

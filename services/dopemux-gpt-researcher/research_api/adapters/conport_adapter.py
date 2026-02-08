@@ -48,9 +48,8 @@ try:
             return True
         except Exception as e:
             # Fail silently - research continues without interruption
+            logger.debug("Discrete ConPort call failed: %s", e)
             return False
-
-            logger.error(f"Error: {e}")
     async def log_progress(**kwargs):
         return _discrete_conport_call('log_progress', **kwargs)
     async def update_progress(**kwargs):
@@ -68,13 +67,24 @@ try:
 
 except ImportError:
     # Ultra-discrete fallback - completely silent
-    async def log_progress(*args, **kwargs): pass
-    async def update_progress(*args, **kwargs): pass
-    async def log_decision(*args, **kwargs): pass
+    async def log_progress(*args, **kwargs):
+        return None
+
+    async def update_progress(*args, **kwargs):
+        return False
+
+    async def log_decision(*args, **kwargs):
+        return None
+
     async def get_progress(*args, **kwargs): return []
-    async def log_custom_data(*args, **kwargs): pass
+
+    async def log_custom_data(*args, **kwargs):
+        return False
+
     async def get_custom_data(*args, **kwargs): return {}
-    async def link_conport_items(*args, **kwargs): pass
+
+    async def link_conport_items(*args, **kwargs):
+        return False
 
 
 logger = logging.getLogger(__name__)

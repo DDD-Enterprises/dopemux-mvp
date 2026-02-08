@@ -1,10 +1,13 @@
 ---
 id: conport-dopemux
 title: Conport Dopemux
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Conport Dopemux (explanation) for dopemux documentation and developer workflows.
 ---
 # Blueprint: ConPort Memory Hub Integration in Dopemux
 

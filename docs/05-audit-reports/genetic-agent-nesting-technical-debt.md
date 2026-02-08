@@ -1,10 +1,14 @@
 ---
 id: genetic-agent-nesting-technical-debt
 title: Genetic Agent Nesting Technical Debt
-type: audit-report
+type: reference
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Genetic Agent Nesting Technical Debt (reference) for dopemux documentation
+  and developer workflows.
 ---
 # Genetic Agent Nested Directory Technical Debt
 

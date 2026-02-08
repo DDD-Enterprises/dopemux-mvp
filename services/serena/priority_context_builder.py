@@ -131,11 +131,17 @@ class PriorityContextBuilder:
         try:
             # Query ConPort progress entries
             # Status filter: IN_PROGRESS, TODO, BLOCKED (not DONE)
-            result = await conport_client.get_progress(
-                workspace_id=self.workspace_id
-                # TODO: Add status filter if ConPort API supports it
-                # status_filter=["IN_PROGRESS", "TODO", "BLOCKED"]
-            )
+            active_statuses = ["IN_PROGRESS", "TODO", "BLOCKED"]
+            try:
+                result = await conport_client.get_progress(
+                    workspace_id=self.workspace_id,
+                    status_filter=active_statuses,
+                )
+            except TypeError:
+                # Fallback for clients without status_filter support.
+                result = await conport_client.get_progress(
+                    workspace_id=self.workspace_id
+                )
 
             # Filter to active statuses
             if isinstance(result, list):

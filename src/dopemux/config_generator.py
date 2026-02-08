@@ -13,8 +13,10 @@ logger = logging.getLogger(__name__)
 
 from typing import Dict, Any, Optional, List
 from pathlib import Path
+import os
 import shutil
 from datetime import datetime
+from tempfile import NamedTemporaryFile
 
 from .profile_models import Profile
 
@@ -27,13 +29,13 @@ class ConfigGenerator:
         Initialize generator with Claude config path.
 
         Args:
-            claude_config_path: Path to Claude settings.json
-                              Defaults to ~/.claude/settings.json
+            dope_brainz_config_path: Path to DopeBrainz settings.json
+                Defaults to ~/.dope-brainz/settings.json
         """
-        if claude_config_path is None:
+        if dope_brainz_config_path is None:
             dope_brainz_config_path = Path.home() / ".dope-brainz" / "settings.json"
 
-        self.config_path = Path(claude_config_path)
+        self.config_path = Path(dope_brainz_config_path)
         self._full_config = None
 
     def load_full_config(self) -> Dict[str, Any]:
@@ -166,17 +168,47 @@ class ConfigGenerator:
         new_config = self.generate_config(profile)
 
         # Backup existing config
+        backup_path: Optional[Path] = None
         if backup and output_path.exists():
             backup_path = self._create_backup(output_path)
             logger.info(f"📦 Backed up existing config to: {backup_path}")
 
-        # Write new config
+        # Write new config with atomic swap and rollback-on-failure safety.
         output_path.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(output_path, 'w') as f:
-            json.dump(new_config, f, indent=2)
+        try:
+            self._atomic_write_json(output_path, new_config)
+        except Exception:
+            if backup_path and backup_path.exists():
+                self.rollback_config(output_path, backup_path)
+            raise
 
         return output_path
+
+    def _atomic_write_json(self, output_path: Path, data: Dict[str, Any]) -> None:
+        """
+        Write JSON via temp file + atomic replace.
+        """
+        tmp_name: Optional[str] = None
+        try:
+            with NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                dir=str(output_path.parent),
+                prefix=f"{output_path.name}.",
+                suffix=".tmp",
+                delete=False,
+            ) as tmp_file:
+                tmp_name = tmp_file.name
+                json.dump(data, tmp_file, indent=2)
+                tmp_file.write("\n")
+                tmp_file.flush()
+                os.fsync(tmp_file.fileno())
+            Path(tmp_name).replace(output_path)
+        finally:
+            if tmp_name:
+                tmp_path = Path(tmp_name)
+                if tmp_path.exists():
+                    tmp_path.unlink(missing_ok=True)
 
     def _create_backup(self, config_path: Path) -> Path:
         """
@@ -188,13 +220,21 @@ class ConfigGenerator:
         Returns:
             Path to backup file
         """
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         backup_name = f"settings.backup.{timestamp}.json"
         backup_path = config_path.parent / backup_name
 
         shutil.copy2(config_path, backup_path)
 
         return backup_path
+
+    def rollback_config(self, output_path: Path, backup_path: Path) -> None:
+        """
+        Restore configuration from a backup snapshot.
+        """
+        if not backup_path.exists():
+            raise FileNotFoundError(f"Backup file does not exist: {backup_path}")
+        shutil.copy2(backup_path, output_path)
 
     def validate_profile_mcps(self, profile: Profile) -> tuple[bool, List[str]]:
         """

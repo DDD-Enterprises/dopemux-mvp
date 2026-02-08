@@ -7,6 +7,8 @@ supporting collaborative workflows and multi-agent scenarios.
 Based on Claude-Code-Tools tmux-cli agent-to-agent patterns.
 """
 
+import logging
+
 import time
 import json
 from typing import Dict, Any, Optional, List, Callable
@@ -16,6 +18,8 @@ from enum import Enum
 from .tmux_cli import TmuxCli, PaneInfo
 from .safety_hooks import SafetyHooks
 
+
+logger = logging.getLogger(__name__)
 
 class CommunicationMode(Enum):
     """Communication modes between agents."""

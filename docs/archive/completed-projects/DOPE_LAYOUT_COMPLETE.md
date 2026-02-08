@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dope_Layout_Complete (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Dope Layout Implementation Complete
 
@@ -183,7 +187,7 @@ Meets all targets from the plan:
 - `scripts/neon_dashboard/tests/test_panes.py`
 - `scripts/neon_dashboard/tests/test_transient_messages.py`
 - `scripts/neon_dashboard/tests/test_integration.py`
-- + 1 `__init__.py` file
+- - 1 `__init__.py` file
 
 ### Modified Files (1 total)
 - `src/dopemux/tmux/cli.py` - Added `_setup_dope_layout()` function

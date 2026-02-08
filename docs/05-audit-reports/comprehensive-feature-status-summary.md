@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Comprehensive_Feature_Status_Summary (reference) for dopemux documentation
+  and developer workflows.
 ---
 # Comprehensive Feature Status Summary
 **Generated**: 2025-11-04
@@ -18,6 +22,7 @@ A comprehensive line-by-line audit of all documentation in `/docs` (200+ files) 
 ## Categories of Unfinished Work
 
 ### 1. Audit Phases (4 items)
+
 | Task | Status | ConPort ID | Time Estimate |
 |------|--------|------------|---------------|
 | Phase 3: Manual Review (8 services) | ❌ Not Started | 279 | 6-10h |
@@ -26,6 +31,7 @@ A comprehensive line-by-line audit of all documentation in `/docs` (200+ files) 
 | Phase 8: Final Synthesis | ❌ Not Started | 282 | 2h |
 
 ### 2. F-NEW Features (3 items)
+
 | Task | Status | ConPort ID | Time Estimate |
 |------|--------|------------|---------------|
 | F-NEW-7 Phase 3: Unified Queries | ❌ Not Started | 283 | Unknown |
@@ -34,6 +40,7 @@ A comprehensive line-by-line audit of all documentation in `/docs` (200+ files) 
 | F-NEW-9: EventBus Wiring | ❌ Not Started | N/A | Unknown |
 
 ### 3. System Integrations (6 items)
+
 | Task | Status | ConPort ID | Time Estimate |
 |------|--------|------------|---------------|
 | Leantime Setup & API Enablement | ⚠️ Partial (bridge ready) | 289 | 10-15m |
@@ -42,6 +49,7 @@ A comprehensive line-by-line audit of all documentation in `/docs` (200+ files) 
 | Profile System Implementation | ❌ Not Started | 287 | Unknown |
 
 ### 4. PM Integration (7 items)
+
 | Task | Status | ConPort ID | Time Estimate |
 |------|--------|------------|---------------|
 | Enable Leantime API for Full Sync | ❌ Not Started | 290 | Unknown |
@@ -73,14 +81,14 @@ A comprehensive line-by-line audit of all documentation in `/docs` (200+ files) 
 3. **SQL Injection Verification** (from audit) - 30 minutes security check
 
 ### Short-term (1-2 Weeks)
-4. **DopeconBridge Fixes** (291) - Critical for service communication
-5. **Phase 3 Service Reviews** (279) - Complete audit coverage
-6. **Replace Mock Data** (296) - Production readiness
+1. **DopeconBridge Fixes** (291) - Critical for service communication
+2. **Phase 3 Service Reviews** (279) - Complete audit coverage
+3. **Replace Mock Data** (296) - Production readiness
 
 ### Medium-term (1-2 Months)
-7. **F-NEW-7 Implementation** (283, 284) - Advanced features
-8. **Full PM Deployment** (293, 294) - Complete workflow integration
-9. **Claude-Code-Tools Integration** (285) - Enhanced tooling
+1. **F-NEW-7 Implementation** (283, 284) - Advanced features
+2. **Full PM Deployment** (293, 294) - Complete workflow integration
+3. **Claude-Code-Tools Integration** (285) - Enhanced tooling
 
 ## ConPort Integration
 

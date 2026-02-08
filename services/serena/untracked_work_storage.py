@@ -180,7 +180,7 @@ class UntrackedWorkStorage:
             current = await conport_client.get_custom_data(
                 workspace_id=self.workspace_id,
                 category=self.category,
-                key=work_id
+                key=key
             )
 
             if not current:
@@ -607,8 +607,6 @@ class UntrackedWorkStorage:
                     task_data = json.loads(task_result)
                     task_id = task_data.get("id")
                 except Exception as e:
-                    pass
-
                     logger.error(f"Error: {e}")
             if task_id:
                 logger.info(f"Auto-created task #{task_id}: {description}")

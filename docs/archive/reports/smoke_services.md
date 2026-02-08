@@ -1,10 +1,13 @@
 ---
 id: smoke_services
 title: Smoke_Services
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Smoke_Services (explanation) for dopemux documentation and developer workflows.
 ---
 # G33 Phase 0: Service Smoke Stack Inventory
 
