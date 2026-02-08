@@ -154,6 +154,16 @@ prelude: Active-doc claim parity matrix with severity, ownership, fix action, an
   `docs/03-reference/systems/adhd-intelligence/overview.md`,
   `docs/03-reference/systems/dashboard/overview.md`,
   `docs/03-reference/systems/dashboard/tmux-dashboard-readme.md`.
+- Resolved on 2026-02-08 (link-drift batch, reference/explanation/audit docs):
+  `DPC0105`, `DPC0107`, `DPC0110`, `DPC0111`, `DPC0118`, `DPC0119`,
+  `DPC0120`, `DPC0121`, `DPC0156`, `DPC0157`, `DPC0158`, `DPC0182`,
+  `DPC0184`, `DPC0187`, `DPC0188`, `DPC0189`, `DPC0190`, `DPC0191`,
+  `DPC0192`, and `DPC0193` via canonical path normalization and archive-link
+  retargeting in:
+  `docs/03-reference/overview.md`,
+  `docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md`,
+  `docs/04-explanation/concepts/worktree-comprehensive-guide.md`,
+  `docs/05-audit-reports/audit-overview.md`.
 
 Artifacts generated in this wave:
 
