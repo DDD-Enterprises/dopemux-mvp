@@ -2,13 +2,12 @@
 id: DASHBOARD_DAY9_DEEP_RESEARCH
 title: Dashboard_Day9_Deep_Research
 type: explanation
+date: '2025-11-10'
+author: '@hu3mann'
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
-author: '@hu3mann'
-date: '2026-02-05'
-prelude: Dashboard_Day9_Deep_Research (explanation) for dopemux documentation and
-  developer workflows.
+prelude: Explanation of Dashboard_Day9_Deep_Research.
 ---
 # Dashboard Day 9 - Deep Research & Planning
 # Enhanced Sparklines, Keyboard Navigation & Polish

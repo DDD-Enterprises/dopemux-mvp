@@ -177,10 +177,10 @@ dopemux mcp status          # Check MCP server status
 This is an **alpha release** - we're actively seeking feedback!
 
 **Found a bug?**
-- [Open an issue](https://github.com/dopemux/dopemux-mvp/issues)
+- [Open an issue](https://github.com/DDD-Enterprises/dopemux-mvp/issues)
 
 **Have a question?**
-- [GitHub Discussions](https://github.com/dopemux/dopemux-mvp/discussions)
+- [GitHub Issues](https://github.com/DDD-Enterprises/dopemux-mvp/issues)
 
 **Want to contribute?**
 - See [CONTRIBUTING.md](CONTRIBUTING.md)
@@ -222,11 +222,11 @@ Special thanks to:
 
 ---
 
-**Download:** [GitHub Releases](https://github.com/dopemux/dopemux-mvp/releases/tag/v0.1.0)
+**Download:** [GitHub Releases](https://github.com/DDD-Enterprises/dopemux-mvp/releases)
 
 **Install:** `pip install dopemux`
 
-**Questions?** [Open an issue](https://github.com/dopemux/dopemux-mvp/issues)
+**Questions?** [Open an issue](https://github.com/DDD-Enterprises/dopemux-mvp/issues)
 
 ---
 

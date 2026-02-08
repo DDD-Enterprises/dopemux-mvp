@@ -217,6 +217,6 @@ To bump version:
 ## Links
 
 - **PyPI:** https://pypi.org/project/dopemux/ (after publishing)
-- **GitHub:** https://github.com/dopemux/dopemux-mvp
-- **Documentation:** https://docs.dopemux.dev
-- **Issues:** https://github.com/dopemux/dopemux-mvp/issues
+- **GitHub:** https://github.com/DDD-Enterprises/dopemux-mvp
+- **Documentation:** https://github.com/DDD-Enterprises/dopemux-mvp/tree/main/docs
+- **Issues:** https://github.com/DDD-Enterprises/dopemux-mvp/issues

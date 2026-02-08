@@ -26,6 +26,11 @@ prelude: 00 Master Index (explanation) for dopemux documentation and developer w
 
 ## How-To Guides
 
+### ADHD Features
+- **[ADHD Features User Guide](02-how-to/adhd-features-user-guide.md)** - Complete guide to all 11 cognitive features
+- **[ADHD Quick Reference](02-how-to/adhd-features-quick-reference.md)** - Quick command reference card
+- **[ADHD Engine API](03-reference/adhd-engine-api.md)** - Full API documentation
+
 ### Deployment
 - [Production Deployment](02-how-to/deployment-guide.md)
 - [Docker Setup](02-how-to/deployment-guide.md)
