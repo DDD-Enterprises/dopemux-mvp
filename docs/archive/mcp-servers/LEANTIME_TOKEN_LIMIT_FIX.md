@@ -1,10 +1,14 @@
 ---
 id: LEANTIME_TOKEN_LIMIT_FIX
 title: Leantime_Token_Limit_Fix
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Leantime_Token_Limit_Fix (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Leantime-Bridge MCP Token Limit Fix - MCP Boundary Enforcement
 
@@ -94,7 +98,7 @@ return enforce_token_budget_on_text_content(result_content, name, max_tokens=SAF
 
 **1 modification**:
 
-4. **Apply at MCP Boundary** (lines 257-328):
+1. **Apply at MCP Boundary** (lines 257-328):
    - Refactored `call_tool()` to collect result_content first
    - Apply enforcement before return: `return enforce_token_budget_on_text_content(...)`
    - Applied to both success and error paths

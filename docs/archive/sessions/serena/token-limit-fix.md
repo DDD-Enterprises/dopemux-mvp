@@ -1,10 +1,13 @@
 ---
 id: token-limit-fix
 title: Token Limit Fix
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Token Limit Fix (explanation) for dopemux documentation and developer workflows.
 ---
 # Serena-v2 Token Limit Fix - Complete Solution
 
@@ -24,7 +27,7 @@ MCP tool "read_file" can return large files (e.g., package-lock.json at 200KB)
 
 **Specific Example**:
 - package-lock.json: 200KB = 5000 lines
-- With line number formatting (`     1→content`): +25% overhead
+- With line number formatting (`1→content`): +25% overhead
 - Total: 5000 lines × 90 chars/line = 450K chars = 112K tokens ❌ (11x over limit)
 
 ## ✅ Solution

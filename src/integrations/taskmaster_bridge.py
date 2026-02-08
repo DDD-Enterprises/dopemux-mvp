@@ -255,8 +255,11 @@ class TaskMasterMCPClient:
                     request_json = json.dumps(shutdown_request) + "\n"
                     self._process.stdin.write(request_json)
                     self._process.stdin.flush()
-                except Exception:
-                    pass  # Ignore errors during shutdown notification
+                except Exception as exc:
+                    logger.debug(
+                        "Task-Master shutdown notification skipped due to stream error: %s",
+                        exc,
+                    )
 
                 # Terminate process
                 self._process.terminate()
@@ -368,54 +371,57 @@ class TaskMasterMCPClient:
                 }
             )
 
-            if response.get("result", {}).get("content"):
-                result_data = json.loads(response["result"]["content"][0]["text"])
+            content = response.get("result", {}).get("content")
+            if not content:
+                raise AIServiceError("Failed to parse PRD: empty response from Task-Master")
 
-                # Parse tasks from result
-                tasks = []
-                for task_data in result_data.get("tasks", []):
-                    task = TaskMasterTask(
-                        id=task_data.get("id", ""),
-                        title=task_data.get("title", ""),
-                        description=task_data.get("description", ""),
-                        status=task_data.get("status", "pending"),
-                        priority=task_data.get("priority", 1),
-                        complexity_score=task_data.get("complexity"),
-                        estimated_hours=task_data.get("estimatedHours"),
-                        dependencies=task_data.get("dependencies", []),
-                        tags=task_data.get("tags", []),
-                        ai_analysis=task_data.get("aiAnalysis"),
-                    )
+            text_payload = content[0].get("text") if isinstance(content[0], dict) else None
+            if not text_payload:
+                raise AIServiceError("Failed to parse PRD: malformed Task-Master payload")
 
-                    # Parse subtasks recursively
-                    if task_data.get("subtasks"):
-                        task.subtasks = self._parse_subtasks(task_data["subtasks"])
+            result_data = json.loads(text_payload)
 
-                    tasks.append(task)
-
-                return PRDAnalysis(
-                    project_name=project_name,
-                    version=result_data.get("version", "1.0"),
-                    requirements=result_data.get("requirements", []),
-                    tasks=tasks,
-                    complexity_summary=result_data.get("complexitySummary", {}),
-                    estimated_timeline=result_data.get("estimatedTimeline"),
-                    key_dependencies=result_data.get("keyDependencies", []),
-                    risk_factors=result_data.get("riskFactors", []),
+            # Parse tasks from result
+            tasks = []
+            for task_data in result_data.get("tasks", []):
+                task = TaskMasterTask(
+                    id=task_data.get("id", ""),
+                    title=task_data.get("title", ""),
+                    description=task_data.get("description", ""),
+                    status=task_data.get("status", "pending"),
+                    priority=task_data.get("priority", 1),
+                    complexity_score=task_data.get("complexity"),
+                    estimated_hours=task_data.get("estimatedHours"),
+                    dependencies=task_data.get("dependencies", []),
+                    tags=task_data.get("tags", []),
+                    ai_analysis=task_data.get("aiAnalysis"),
                 )
+
+                # Parse subtasks recursively
+                if task_data.get("subtasks"):
+                    task.subtasks = self._parse_subtasks(task_data["subtasks"])
+
+                tasks.append(task)
+
+            return PRDAnalysis(
+                project_name=project_name,
+                version=result_data.get("version", "1.0"),
+                requirements=result_data.get("requirements", []),
+                tasks=tasks,
+                complexity_summary=result_data.get("complexitySummary", {}),
+                estimated_timeline=result_data.get("estimatedTimeline"),
+                key_dependencies=result_data.get("keyDependencies", []),
+                risk_factors=result_data.get("riskFactors", []),
+            )
 
         except Exception as exc:
             raise AIServiceError(f"Failed to parse PRD: {exc}") from exc
-            logger.error(f"Error: {e}")
         finally:
             # Clean up temporary file
             try:
                 os.unlink(temp_file_path)
-            except Exception as e:
-                pass
-
-                logger.error(f"Error: {e}")
-        raise AIServiceError("Failed to parse PRD")
+            except Exception as exc:
+                logger.debug("Failed to remove temporary PRD file %s: %s", temp_file_path, exc)
 
     def _parse_subtasks(self, subtasks_data: List[Dict]) -> List[TaskMasterTask]:
         """Parse subtasks recursively."""

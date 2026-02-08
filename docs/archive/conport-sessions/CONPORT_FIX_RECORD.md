@@ -1,10 +1,14 @@
 ---
 id: CONPORT_FIX_RECORD
 title: Conport_Fix_Record
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Conport_Fix_Record (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # ConPort MCP Server Fix Record
 

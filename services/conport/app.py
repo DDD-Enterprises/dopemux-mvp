@@ -202,10 +202,8 @@ def register_routes(app: FastAPI):
         Get recent decisions logged in the knowledge graph.
         
         Returns decisions ordered by creation time (most recent first).
-        
-        NOTE: Using mock data for MVP. TODO: Connect to real PostgreSQL database.
         """
-        # Mock data for MVP - dashboard won't crash
+        # Fallback data used when database is unavailable.
         mock_decisions = [
             {
                 "id": "20d95436-873f-472b-a533-9bfc7f867046",
@@ -244,11 +242,58 @@ def register_routes(app: FastAPI):
                 "created_at": "2025-10-29T06:00:00Z"
             }
         ]
-        
+
+        # Prefer real database results when available.
+        if pool:
+            try:
+                async with pool.acquire() as conn:
+                    query = """
+                        SELECT
+                            id::text,
+                            summary,
+                            rationale,
+                            tags,
+                            confidence_level,
+                            decision_type,
+                            created_at,
+                            cognitive_load,
+                            energy_level,
+                            decision_time_minutes
+                        FROM ag_catalog.decisions
+                        WHERE workspace_id = $1
+                        ORDER BY created_at DESC
+                        LIMIT $2
+                    """
+                    rows = await conn.fetch(query, workspace_id, limit)
+                    decisions = [
+                        {
+                            "id": row["id"],
+                            "title": row["summary"],
+                            "context": row["rationale"],
+                            "type": row["decision_type"],
+                            "confidence": row["confidence_level"],
+                            "tags": row["tags"] or [],
+                            "cognitive_load": float(row["cognitive_load"]) if row["cognitive_load"] else None,
+                            "energy_level": row["energy_level"],
+                            "decision_time": float(row["decision_time_minutes"]) if row["decision_time_minutes"] else None,
+                            "created_at": row["created_at"].isoformat() if row["created_at"] else None,
+                        }
+                        for row in rows
+                    ]
+                    return {
+                        "decisions": decisions,
+                        "workspace_id": workspace_id,
+                        "total_count": len(decisions),
+                        "source": "database",
+                    }
+            except Exception as exc:
+                logger.warning("Database query failed for recent decisions; using mock data: %s", exc)
+
         return {
             "decisions": mock_decisions[:limit],
             "workspace_id": workspace_id,
-            "total_count": len(mock_decisions)
+            "total_count": len(mock_decisions[:limit]),
+            "source": "mock",
         }
     
     @app.get("/api/adhd/cognitive_load/current")

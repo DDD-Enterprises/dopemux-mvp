@@ -15,6 +15,8 @@ Key Features:
 Target: Reduce cognitive load from 9/10 to 2/10 (78% improvement)
 """
 
+import logging
+
 import json
 import os
 import shutil
@@ -24,6 +26,8 @@ from typing import Dict, List, Optional, Tuple
 
 from .workspace_detection import get_workspace_root, get_workspace_info
 
+
+logger = logging.getLogger(__name__)
 
 class WorktreeAutoConfigurator:
     """
@@ -111,8 +115,6 @@ class WorktreeAutoConfigurator:
         except Exception as e:
             # On error, assume update needed for safety
             return True
-
-            logger.error(f"Error: {e}")
     def configure_workspace(
         self,
         workspace: Optional[Path] = None,
@@ -200,8 +202,6 @@ class WorktreeAutoConfigurator:
 
         except Exception as e:
             return False, f"Configuration failed: {e}"
-
-            logger.error(f"Error: {e}")
     def _load_config(self) -> Dict:
         """Load .claude.json configuration."""
         with open(self.claude_config_path, 'r') as f:

@@ -1,0 +1,3422 @@
+{
+  "generated_at_utc": "2026-02-06T14:34:57.383277+00:00",
+  "generator": "docs-parity-wave1-v1",
+  "scope": {
+    "active_docs_root": "docs/",
+    "excluded": [
+      "docs/archive/**",
+      "SYSTEM_ARCHIVE/**"
+    ],
+    "active_docs_count": 245
+  },
+  "claims": [
+    {
+      "claim_id": "DPC0001",
+      "claim": "Active docs inventory was built from docs/ excluding docs/archive/** and SYSTEM_ARCHIVE/**.",
+      "source": "docs/",
+      "status": "verified_true",
+      "method": "filesystem_inventory",
+      "evidence": [
+        "active_docs_count=245"
+      ]
+    },
+    {
+      "claim_id": "DPC0002",
+      "claim": "Link `../QUICK_START.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "QUICK_START.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0003",
+      "claim": "Link `01-tutorials/START-HERE.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/01-tutorials/START-HERE.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0004",
+      "claim": "Link `../README.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0005",
+      "claim": "Link `02-how-to/deployment-guide.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/02-how-to/deployment-guide.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0006",
+      "claim": "Link `02-how-to/deployment-guide.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/02-how-to/deployment-guide.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0007",
+      "claim": "Link `02-how-to/deployment-worktree.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/02-how-to/deployment-worktree.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0008",
+      "claim": "Link `02-how-to/integrations/leantime-integration-guide.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/02-how-to/integrations/leantime-integration-guide.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0009",
+      "claim": "Link `02-how-to/integrations/leantime-integration-guide.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/02-how-to/integrations/leantime-integration-guide.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0010",
+      "claim": "Link `02-how-to/mcp-service-discovery-guide.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/02-how-to/mcp-service-discovery-guide.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0011",
+      "claim": "Link `03-reference/mcp-tools-overview.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/03-reference/mcp-tools-overview.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0012",
+      "claim": "Link `02-how-to/role-switching-quickstart.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/02-how-to/role-switching-quickstart.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0013",
+      "claim": "Link `02-how-to/multi-instance-workflow.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/02-how-to/multi-instance-workflow.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0014",
+      "claim": "Link `02-how-to/instance-state-persistence.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/02-how-to/instance-state-persistence.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0015",
+      "claim": "Link `02-how-to/orchestrator-dashboard.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/02-how-to/orchestrator-dashboard.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0016",
+      "claim": "Link `02-how-to/serena-v2-production-deployment.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/02-how-to/serena-v2-production-deployment.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0017",
+      "claim": "Link `03-reference/systems/conport/conport-kg-status.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/03-reference/systems/conport/conport-kg-status.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0018",
+      "claim": "Link `04-explanation/conport-technical-deep-dive.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/04-explanation/conport-technical-deep-dive.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0019",
+      "claim": "Link `02-how-to/mcp-service-discovery-guide.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/02-how-to/mcp-service-discovery-guide.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0020",
+      "claim": "Link `05-audit-reports/service-maturity-gap-analysis.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/05-audit-reports/service-maturity-gap-analysis.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0021",
+      "claim": "Link `03-reference/systems/conport/conport-kg-status.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/03-reference/systems/conport/conport-kg-status.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0022",
+      "claim": "Link `03-reference/systems/dashboard/tmux-dashboard-readme.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0023",
+      "claim": "Link `03-reference/systems/dashboard/tmux-dashboard-design.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/03-reference/systems/dashboard/tmux-dashboard-design.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0024",
+      "claim": "Link `03-reference/systems/dashboard/tmux-metrics-inventory.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/03-reference/systems/dashboard/tmux-metrics-inventory.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0025",
+      "claim": "Link `03-reference/systems/dashboard/dashboard-implementation-tracker.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/03-reference/systems/dashboard/dashboard-implementation-tracker.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0026",
+      "claim": "Link `03-reference/systems/dashboard/dashboard-enhancements.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/03-reference/systems/dashboard/dashboard-enhancements.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0027",
+      "claim": "Link `04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0028",
+      "claim": "Link `04-explanation/architecture/system-bible.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/04-explanation/architecture/system-bible.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0029",
+      "claim": "Link `90-adr/ADR-207-architecture-3.0-three-layer-integration.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/90-adr/ADR-207-architecture-3.0-three-layer-integration.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0030",
+      "claim": "Link `04-explanation/architecture/multi-instance-implementation.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/04-explanation/architecture/multi-instance-implementation.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0031",
+      "claim": "Link `90-adr/ADR-207-architecture-3.0-three-layer-integration.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/90-adr/ADR-207-architecture-3.0-three-layer-integration.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0032",
+      "claim": "Link `90-adr/ADR-203-task-orchestrator-un-deprecation.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/90-adr/ADR-203-task-orchestrator-un-deprecation.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0033",
+      "claim": "Link `90-adr/ADR-202-serena-v2-production-validation.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/90-adr/ADR-202-serena-v2-production-validation.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0034",
+      "claim": "Link `90-adr/ADR-201-conport-kg-security-hardening.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/90-adr/ADR-201-conport-kg-security-hardening.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0035",
+      "claim": "Link `archive/development/planning/ACTION-PLAN-MASTER.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/archive/development/planning/ACTION-PLAN-MASTER.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0036",
+      "claim": "Link `archive/development/planning/DDDPG_KICKOFF.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/archive/development/planning/DDDPG_KICKOFF.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0037",
+      "claim": "Link `archive/development/planning/DOPE_LAYOUT_MODULAR_PLAN.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/archive/development/planning/DOPE_LAYOUT_MODULAR_PLAN.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0038",
+      "claim": "Link `archive/implementation-plans/00-MASTER-INDEX.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/archive/implementation-plans/00-MASTER-INDEX.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0039",
+      "claim": "Link `archive/implementation-plans/DASHBOARD_IMPLEMENTATION_TRACKER.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/archive/implementation-plans/DASHBOARD_IMPLEMENTATION_TRACKER.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0040",
+      "claim": "Link `archive/implementation-plans/CONPORT_HTTP_DEEP_PLANNING.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/archive/implementation-plans/CONPORT_HTTP_DEEP_PLANNING.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0041",
+      "claim": "Link `archive/implementation-plans/component-1-audit-summary.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/archive/implementation-plans/component-1-audit-summary.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0042",
+      "claim": "Link `03-reference/configuration/PROFILE-YAML-SCHEMA.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/03-reference/configuration/PROFILE-YAML-SCHEMA.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0043",
+      "claim": "Link `03-reference/mcp-tools-overview.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/03-reference/mcp-tools-overview.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0044",
+      "claim": "Link `03-reference/features/features-index.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/03-reference/features/features-index.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0045",
+      "claim": "Link `03-reference/F001-ENHANCED-untracked-work-system.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/03-reference/F001-ENHANCED-untracked-work-system.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0046",
+      "claim": "Link `03-reference/F002-multi-session-support.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/03-reference/F002-multi-session-support.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0047",
+      "claim": "Link `04-explanation/serena-v2-technical-deep-dive.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/04-explanation/serena-v2-technical-deep-dive.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0048",
+      "claim": "Link `04-explanation/conport-technical-deep-dive.md` in `docs/00-MASTER-INDEX.md` resolves.",
+      "source": "docs/00-MASTER-INDEX.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/00-MASTER-INDEX.md",
+        "docs/04-explanation/conport-technical-deep-dive.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0049",
+      "claim": "Link `../04-explanation/architecture/` in `docs/01-tutorials/INSTALLATION.md` resolves.",
+      "source": "docs/01-tutorials/INSTALLATION.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/01-tutorials/INSTALLATION.md",
+        "docs/04-explanation/architecture"
+      ]
+    },
+    {
+      "claim_id": "DPC0050",
+      "claim": "Link `../03-reference/overview.md` in `docs/01-tutorials/INSTALLATION.md` resolves.",
+      "source": "docs/01-tutorials/INSTALLATION.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/01-tutorials/INSTALLATION.md",
+        "docs/03-reference/overview.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0051",
+      "claim": "Link `../02-how-to/overview.md` in `docs/01-tutorials/INSTALLATION.md` resolves.",
+      "source": "docs/01-tutorials/INSTALLATION.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/01-tutorials/INSTALLATION.md",
+        "docs/02-how-to/overview.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0052",
+      "claim": "Link `../02-how-to/operations/` in `docs/01-tutorials/quick-launch-commands.md` resolves.",
+      "source": "docs/01-tutorials/quick-launch-commands.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/01-tutorials/quick-launch-commands.md",
+        "docs/02-how-to/operations"
+      ]
+    },
+    {
+      "claim_id": "DPC0053",
+      "claim": "Link `../systems/dashboard/TMUX_DASHBOARD_DESIGN.md` in `docs/01-tutorials/quick-launch-commands.md` resolves.",
+      "source": "docs/01-tutorials/quick-launch-commands.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/01-tutorials/quick-launch-commands.md",
+        "docs/systems/dashboard/TMUX_DASHBOARD_DESIGN.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0054",
+      "claim": "Link `../04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md` in `docs/01-tutorials/quick-launch-commands.md` resolves.",
+      "source": "docs/01-tutorials/quick-launch-commands.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/01-tutorials/quick-launch-commands.md",
+        "docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0055",
+      "claim": "Link `../../03-reference/services/zen-mcp.md` in `docs/02-how-to/DEVELOPING_ZEN.md` resolves.",
+      "source": "docs/02-how-to/DEVELOPING_ZEN.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/DEVELOPING_ZEN.md",
+        "03-reference/services/zen-mcp.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0056",
+      "claim": "Link `./DEVELOPMENT_SETUP.md` in `docs/02-how-to/DEVELOPING_ZEN.md` resolves.",
+      "source": "docs/02-how-to/DEVELOPING_ZEN.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/DEVELOPING_ZEN.md",
+        "docs/02-how-to/DEVELOPMENT_SETUP.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0057",
+      "claim": "Link `../../docker/mcp-servers/zen/zen-mcp-server/tools/thinkdeep.py` in `docs/02-how-to/DEVELOPING_ZEN.md` resolves.",
+      "source": "docs/02-how-to/DEVELOPING_ZEN.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/DEVELOPING_ZEN.md",
+        "docker/mcp-servers/zen/zen-mcp-server/tools/thinkdeep.py"
+      ]
+    },
+    {
+      "claim_id": "DPC0058",
+      "claim": "Link `../../docker/mcp-servers/zen/zen-mcp-server/models/` in `docs/02-how-to/DEVELOPING_ZEN.md` resolves.",
+      "source": "docs/02-how-to/DEVELOPING_ZEN.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/DEVELOPING_ZEN.md",
+        "docker/mcp-servers/zen/zen-mcp-server/models"
+      ]
+    },
+    {
+      "claim_id": "DPC0059",
+      "claim": "Link `./development-troubleshooting.md` in `docs/02-how-to/DEVELOPING_ZEN.md` resolves.",
+      "source": "docs/02-how-to/DEVELOPING_ZEN.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/DEVELOPING_ZEN.md",
+        "docs/02-how-to/development-troubleshooting.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0060",
+      "claim": "Link `./DEVELOPING_ZEN.md` in `docs/02-how-to/DEVELOPMENT_SETUP.md` resolves.",
+      "source": "docs/02-how-to/DEVELOPMENT_SETUP.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/DEVELOPMENT_SETUP.md",
+        "docs/02-how-to/DEVELOPING_ZEN.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0061",
+      "claim": "Link `./DEVELOPING_DOPEMUX_CORE.md` in `docs/02-how-to/DEVELOPMENT_SETUP.md` resolves.",
+      "source": "docs/02-how-to/DEVELOPMENT_SETUP.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/DEVELOPMENT_SETUP.md",
+        "docs/02-how-to/DEVELOPING_DOPEMUX_CORE.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0062",
+      "claim": "Link `./development-troubleshooting.md` in `docs/02-how-to/DEVELOPMENT_SETUP.md` resolves.",
+      "source": "docs/02-how-to/DEVELOPMENT_SETUP.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/DEVELOPMENT_SETUP.md",
+        "docs/02-how-to/development-troubleshooting.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0063",
+      "claim": "Link `../04-explanation/design-decisions/dev-mode-design.md` in `docs/02-how-to/DEVELOPMENT_SETUP.md` resolves.",
+      "source": "docs/02-how-to/DEVELOPMENT_SETUP.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/DEVELOPMENT_SETUP.md",
+        "docs/04-explanation/design-decisions/dev-mode-design.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0064",
+      "claim": "Link `../94-architecture/system-bible.md` in `docs/02-how-to/DEVELOPMENT_SETUP.md` resolves.",
+      "source": "docs/02-how-to/DEVELOPMENT_SETUP.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/DEVELOPMENT_SETUP.md",
+        "docs/94-architecture/system-bible.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0065",
+      "claim": "Link `../03-reference/services/` in `docs/02-how-to/DEVELOPMENT_SETUP.md` resolves.",
+      "source": "docs/02-how-to/DEVELOPMENT_SETUP.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/DEVELOPMENT_SETUP.md",
+        "docs/03-reference/services"
+      ]
+    },
+    {
+      "claim_id": "DPC0066",
+      "claim": "Link `adhd-features-user-guide.md` in `docs/02-how-to/adhd-features-quick-reference.md` resolves.",
+      "source": "docs/02-how-to/adhd-features-quick-reference.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/adhd-features-quick-reference.md",
+        "docs/02-how-to/adhd-features-user-guide.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0067",
+      "claim": "Link `../03-reference/adhd-engine-api.md` in `docs/02-how-to/adhd-features-quick-reference.md` resolves.",
+      "source": "docs/02-how-to/adhd-features-quick-reference.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/adhd-features-quick-reference.md",
+        "docs/03-reference/adhd-engine-api.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0068",
+      "claim": "Link `adhd-features-user-guide.md` in `docs/02-how-to/adhd-features-quick-reference.md` resolves.",
+      "source": "docs/02-how-to/adhd-features-quick-reference.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/adhd-features-quick-reference.md",
+        "docs/02-how-to/adhd-features-user-guide.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0069",
+      "claim": "Link `../03-reference/adhd-engine-api.md` in `docs/02-how-to/adhd-features-quick-reference.md` resolves.",
+      "source": "docs/02-how-to/adhd-features-quick-reference.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/adhd-features-quick-reference.md",
+        "docs/03-reference/adhd-engine-api.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0070",
+      "claim": "Link `../03-reference/code-review-checklist.md` in `docs/02-how-to/create-llm-archive.md` resolves.",
+      "source": "docs/02-how-to/create-llm-archive.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/create-llm-archive.md",
+        "docs/03-reference/code-review-checklist.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0071",
+      "claim": "Link `../03-reference/security-guidelines.md` in `docs/02-how-to/create-llm-archive.md` resolves.",
+      "source": "docs/02-how-to/create-llm-archive.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/create-llm-archive.md",
+        "docs/03-reference/security-guidelines.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0072",
+      "claim": "Link `../04-explanation/architecture/overview.md` in `docs/02-how-to/create-llm-archive.md` resolves.",
+      "source": "docs/02-how-to/create-llm-archive.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/create-llm-archive.md",
+        "docs/04-explanation/architecture/overview.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0073",
+      "claim": "Link `../04-explanation/systems/adhd-engine.md` in `docs/02-how-to/create-llm-archive.md` resolves.",
+      "source": "docs/02-how-to/create-llm-archive.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/create-llm-archive.md",
+        "docs/04-explanation/systems/adhd-engine.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0074",
+      "claim": "Link `serena-v2-production-deployment.md` in `docs/02-how-to/deployment-guide.md` resolves.",
+      "source": "docs/02-how-to/deployment-guide.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/deployment-guide.md",
+        "docs/02-how-to/serena-v2-production-deployment.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0075",
+      "claim": "Link `../../INSTALL.md` in `docs/02-how-to/deployment-guide.md` resolves.",
+      "source": "docs/02-how-to/deployment-guide.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/deployment-guide.md",
+        "INSTALL.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0076",
+      "claim": "Link `../../QUICK_START.md` in `docs/02-how-to/deployment-guide.md` resolves.",
+      "source": "docs/02-how-to/deployment-guide.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/deployment-guide.md",
+        "QUICK_START.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0077",
+      "claim": "Link `../../services/registry.yaml` in `docs/02-how-to/deployment-guide.md` resolves.",
+      "source": "docs/02-how-to/deployment-guide.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/deployment-guide.md",
+        "services/registry.yaml"
+      ]
+    },
+    {
+      "claim_id": "DPC0078",
+      "claim": "Link `../04-explanation/architecture/` in `docs/02-how-to/deployment-guide.md` resolves.",
+      "source": "docs/02-how-to/deployment-guide.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/deployment-guide.md",
+        "docs/04-explanation/architecture"
+      ]
+    },
+    {
+      "claim_id": "DPC0079",
+      "claim": "Link `./DEVELOPMENT_SETUP.md` in `docs/02-how-to/development-troubleshooting.md` resolves.",
+      "source": "docs/02-how-to/development-troubleshooting.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/development-troubleshooting.md",
+        "docs/02-how-to/DEVELOPMENT_SETUP.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0080",
+      "claim": "Link `multi-instance-workflow.md` in `docs/02-how-to/instance-slash-commands.md` resolves.",
+      "source": "docs/02-how-to/instance-slash-commands.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/instance-slash-commands.md",
+        "docs/02-how-to/multi-instance-workflow.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0081",
+      "claim": "Link `../../README.md` in `docs/02-how-to/mobile-web-setup-guide.md` resolves.",
+      "source": "docs/02-how-to/mobile-web-setup-guide.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/mobile-web-setup-guide.md",
+        "README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0082",
+      "claim": "Link `overview.md` in `docs/02-how-to/mobile-web-setup-guide.md` resolves.",
+      "source": "docs/02-how-to/mobile-web-setup-guide.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/mobile-web-setup-guide.md",
+        "docs/02-how-to/overview.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0083",
+      "claim": "Link `../systems/adhd-intelligence/overview.md` in `docs/02-how-to/mobile-web-setup-guide.md` resolves.",
+      "source": "docs/02-how-to/mobile-web-setup-guide.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/mobile-web-setup-guide.md",
+        "docs/systems/adhd-intelligence/overview.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0084",
+      "claim": "Link `../troubleshooting-playbook.md` in `docs/02-how-to/mobile-web-setup-guide.md` resolves.",
+      "source": "docs/02-how-to/mobile-web-setup-guide.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/mobile-web-setup-guide.md",
+        "docs/troubleshooting-playbook.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0085",
+      "claim": "Link `../WORKTREE_SWITCHING_GUIDE.md` in `docs/02-how-to/multi-instance-workflow.md` resolves.",
+      "source": "docs/02-how-to/multi-instance-workflow.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/multi-instance-workflow.md",
+        "docs/WORKTREE_SWITCHING_GUIDE.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0086",
+      "claim": "Link `../deployment/DEPLOYMENT-INSTRUCTIONS.md` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/deployment/DEPLOYMENT-INSTRUCTIONS.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0087",
+      "claim": "Link `../deployment/DEPLOYMENT-CHECKLIST.md` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/deployment/DEPLOYMENT-CHECKLIST.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0088",
+      "claim": "Link `../deployment/DEPLOYMENT-WORKTREE-INSTRUCTIONS.md` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/deployment/DEPLOYMENT-WORKTREE-INSTRUCTIONS.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0089",
+      "claim": "Link `instance-state-persistence.md` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/02-how-to/instance-state-persistence.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0090",
+      "claim": "Link `multi-instance-workflow.md` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/02-how-to/multi-instance-workflow.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0091",
+      "claim": "Link `integrations/LEANTIME_SETUP_INSTRUCTIONS.md` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/02-how-to/integrations/LEANTIME_SETUP_INSTRUCTIONS.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0092",
+      "claim": "Link `integrations/LEANTIME_API_SETUP_GUIDE.md` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/02-how-to/integrations/LEANTIME_API_SETUP_GUIDE.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0093",
+      "claim": "Link `integrations/LEANTIME_DEPLOYMENT_RECOMMENDATION.md` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/02-how-to/integrations/LEANTIME_DEPLOYMENT_RECOMMENDATION.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0094",
+      "claim": "Link `mcp-service-discovery-guide.md` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/02-how-to/mcp-service-discovery-guide.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0095",
+      "claim": "Link `../03-reference/mcp-tools-overview.md` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/03-reference/mcp-tools-overview.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0096",
+      "claim": "Link `role-switching-quickstart.md` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/02-how-to/role-switching-quickstart.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0097",
+      "claim": "Link `instance-slash-commands.md` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/02-how-to/instance-slash-commands.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0098",
+      "claim": "Link `serena-v2-production-deployment.md` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/02-how-to/serena-v2-production-deployment.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0099",
+      "claim": "Link `serena-v2-deployment.md` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/02-how-to/serena-v2-deployment.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0100",
+      "claim": "Link `../01-tutorials/` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/01-tutorials"
+      ]
+    },
+    {
+      "claim_id": "DPC0101",
+      "claim": "Link `../03-reference/` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/03-reference"
+      ]
+    },
+    {
+      "claim_id": "DPC0102",
+      "claim": "Link `../04-explanation/` in `docs/02-how-to/overview.md` resolves.",
+      "source": "docs/02-how-to/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/02-how-to/overview.md",
+        "docs/04-explanation"
+      ]
+    },
+    {
+      "claim_id": "DPC0103",
+      "claim": "Link `configuration/PROFILE-YAML-SCHEMA.md` in `docs/03-reference/overview.md` resolves.",
+      "source": "docs/03-reference/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/overview.md",
+        "docs/03-reference/configuration/PROFILE-YAML-SCHEMA.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0104",
+      "claim": "Link `mcp-tools-overview.md` in `docs/03-reference/overview.md` resolves.",
+      "source": "docs/03-reference/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/overview.md",
+        "docs/03-reference/mcp-tools-overview.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0105",
+      "claim": "Link `features/FEATURES_INDEX.md` in `docs/03-reference/overview.md` resolves.",
+      "source": "docs/03-reference/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/overview.md",
+        "docs/03-reference/features/FEATURES_INDEX.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0106",
+      "claim": "Link `F001-ENHANCED-untracked-work-system.md` in `docs/03-reference/overview.md` resolves.",
+      "source": "docs/03-reference/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/overview.md",
+        "docs/03-reference/F001-ENHANCED-untracked-work-system.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0107",
+      "claim": "Link `F001-untracked-work-detection.md` in `docs/03-reference/overview.md` resolves.",
+      "source": "docs/03-reference/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/overview.md",
+        "docs/03-reference/F001-untracked-work-detection.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0108",
+      "claim": "Link `F002-multi-session-support.md` in `docs/03-reference/overview.md` resolves.",
+      "source": "docs/03-reference/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/overview.md",
+        "docs/03-reference/F002-multi-session-support.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0109",
+      "claim": "Link `python-tmux-research.md` in `docs/03-reference/overview.md` resolves.",
+      "source": "docs/03-reference/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/overview.md",
+        "docs/03-reference/python-tmux-research.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0110",
+      "claim": "Link `serena-v2-test-summary.md` in `docs/03-reference/overview.md` resolves.",
+      "source": "docs/03-reference/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/overview.md",
+        "docs/03-reference/serena-v2-test-summary.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0111",
+      "claim": "Link `serena-v2-validation-report.md` in `docs/03-reference/overview.md` resolves.",
+      "source": "docs/03-reference/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/overview.md",
+        "docs/03-reference/serena-v2-validation-report.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0112",
+      "claim": "Link `adhd-theme-design-principles.md` in `docs/03-reference/overview.md` resolves.",
+      "source": "docs/03-reference/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/overview.md",
+        "docs/03-reference/adhd-theme-design-principles.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0113",
+      "claim": "Link `../01-tutorials/` in `docs/03-reference/overview.md` resolves.",
+      "source": "docs/03-reference/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/overview.md",
+        "docs/01-tutorials"
+      ]
+    },
+    {
+      "claim_id": "DPC0114",
+      "claim": "Link `../02-how-to/` in `docs/03-reference/overview.md` resolves.",
+      "source": "docs/03-reference/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/overview.md",
+        "docs/02-how-to"
+      ]
+    },
+    {
+      "claim_id": "DPC0115",
+      "claim": "Link `../04-explanation/` in `docs/03-reference/overview.md` resolves.",
+      "source": "docs/03-reference/overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/overview.md",
+        "docs/04-explanation"
+      ]
+    },
+    {
+      "claim_id": "DPC0116",
+      "claim": "Link `../../docker-compose.smoke.yml` in `docs/03-reference/ports-and-registry-truth.md` resolves.",
+      "source": "docs/03-reference/ports-and-registry-truth.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/ports-and-registry-truth.md",
+        "docker-compose.smoke.yml"
+      ]
+    },
+    {
+      "claim_id": "DPC0117",
+      "claim": "Link `../../services/registry.yaml` in `docs/03-reference/ports-and-registry-truth.md` resolves.",
+      "source": "docs/03-reference/ports-and-registry-truth.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/ports-and-registry-truth.md",
+        "services/registry.yaml"
+      ]
+    },
+    {
+      "claim_id": "DPC0118",
+      "claim": "Link `ADHD-ENGINE-DEEP-DIVE-PART1.md` in `docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+        "docs/03-reference/systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART1.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0119",
+      "claim": "Link `ADHD-ENGINE-DEEP-DIVE-PART1.md` in `docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+        "docs/03-reference/systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART1.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0120",
+      "claim": "Link `ADHD-ENGINE-DEEP-DIVE-PART2.md` in `docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+        "docs/03-reference/systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART2.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0121",
+      "claim": "Link `ADHD-ENGINE-DEEP-DIVE-PART3.md` in `docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/adhd-engine-deep-dive.md",
+        "docs/03-reference/systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART3.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0122",
+      "claim": "Link `ADHD_COMPLETE_DOCUMENTATION.md` in `docs/03-reference/systems/adhd-intelligence/overview.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/overview.md",
+        "docs/03-reference/systems/adhd-intelligence/ADHD_COMPLETE_DOCUMENTATION.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0123",
+      "claim": "Link `ADHD_STACK_README.md` in `docs/03-reference/systems/adhd-intelligence/overview.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/overview.md",
+        "docs/03-reference/systems/adhd-intelligence/ADHD_STACK_README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0124",
+      "claim": "Link `ADHD_ARCHITECTURE_DIAGRAM.md` in `docs/03-reference/systems/adhd-intelligence/overview.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/overview.md",
+        "docs/03-reference/systems/adhd-intelligence/ADHD_ARCHITECTURE_DIAGRAM.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0125",
+      "claim": "Link `ADHD_COMPLETE_DOCUMENTATION.md` in `docs/03-reference/systems/adhd-intelligence/overview.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/overview.md",
+        "docs/03-reference/systems/adhd-intelligence/ADHD_COMPLETE_DOCUMENTATION.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0126",
+      "claim": "Link `ADHD_STACK_README.md` in `docs/03-reference/systems/adhd-intelligence/overview.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/overview.md",
+        "docs/03-reference/systems/adhd-intelligence/ADHD_STACK_README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0127",
+      "claim": "Link `ADHD_ARCHITECTURE_DIAGRAM.md` in `docs/03-reference/systems/adhd-intelligence/overview.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/overview.md",
+        "docs/03-reference/systems/adhd-intelligence/ADHD_ARCHITECTURE_DIAGRAM.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0128",
+      "claim": "Link `ADHD-ENGINE-DEEP-DIVE-PART1.md` in `docs/03-reference/systems/adhd-intelligence/overview.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/overview.md",
+        "docs/03-reference/systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART1.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0129",
+      "claim": "Link `ADHD-ENGINE-DEEP-DIVE-PART2.md` in `docs/03-reference/systems/adhd-intelligence/overview.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/overview.md",
+        "docs/03-reference/systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART2.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0130",
+      "claim": "Link `ADHD-ENGINE-DEEP-DIVE-PART3.md` in `docs/03-reference/systems/adhd-intelligence/overview.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/overview.md",
+        "docs/03-reference/systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART3.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0131",
+      "claim": "Link `ADHD-ENGINE-DEEP-DIVE-PART4.md` in `docs/03-reference/systems/adhd-intelligence/overview.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/overview.md",
+        "docs/03-reference/systems/adhd-intelligence/ADHD-ENGINE-DEEP-DIVE-PART4.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0132",
+      "claim": "Link `../../04-explanation/` in `docs/03-reference/systems/adhd-intelligence/overview.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/overview.md",
+        "docs/03-reference/04-explanation"
+      ]
+    },
+    {
+      "claim_id": "DPC0133",
+      "claim": "Link `../../04-explanation/architecture/` in `docs/03-reference/systems/adhd-intelligence/overview.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/overview.md",
+        "docs/03-reference/04-explanation/architecture"
+      ]
+    },
+    {
+      "claim_id": "DPC0134",
+      "claim": "Link `../../04-explanation/` in `docs/03-reference/systems/adhd-intelligence/overview.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/overview.md",
+        "docs/03-reference/04-explanation"
+      ]
+    },
+    {
+      "claim_id": "DPC0135",
+      "claim": "Link `../../03-reference/` in `docs/03-reference/systems/adhd-intelligence/overview.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/overview.md",
+        "docs/03-reference/03-reference"
+      ]
+    },
+    {
+      "claim_id": "DPC0136",
+      "claim": "Link `../../02-how-to/` in `docs/03-reference/systems/adhd-intelligence/overview.md` resolves.",
+      "source": "docs/03-reference/systems/adhd-intelligence/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/adhd-intelligence/overview.md",
+        "docs/03-reference/02-how-to"
+      ]
+    },
+    {
+      "claim_id": "DPC0137",
+      "claim": "Link `TMUX_DASHBOARD_README.md` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/systems/dashboard/TMUX_DASHBOARD_README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0138",
+      "claim": "Link `TMUX_DASHBOARD_DESIGN.md` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/systems/dashboard/TMUX_DASHBOARD_DESIGN.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0139",
+      "claim": "Link `TMUX_METRICS_INVENTORY.md` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/systems/dashboard/TMUX_METRICS_INVENTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0140",
+      "claim": "Link `TMUX_DASHBOARD_README.md` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/systems/dashboard/TMUX_DASHBOARD_README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0141",
+      "claim": "Link `DASHBOARD_ENHANCEMENTS.md` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/systems/dashboard/DASHBOARD_ENHANCEMENTS.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0142",
+      "claim": "Link `TMUX_DASHBOARD_DESIGN.md` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/systems/dashboard/TMUX_DASHBOARD_DESIGN.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0143",
+      "claim": "Link `TMUX_METRICS_INVENTORY.md` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/systems/dashboard/TMUX_METRICS_INVENTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0144",
+      "claim": "Link `DASHBOARD_IMPLEMENTATION_TRACKER.md` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/systems/dashboard/DASHBOARD_IMPLEMENTATION_TRACKER.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0145",
+      "claim": "Link `DASHBOARD_ENHANCEMENTS.md` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/systems/dashboard/DASHBOARD_ENHANCEMENTS.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0146",
+      "claim": "Link `../../implementation-plans/DASHBOARD_SESSION_SUMMARY.md` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/implementation-plans/DASHBOARD_SESSION_SUMMARY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0147",
+      "claim": "Link `TMUX_METRICS_INVENTORY.md` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/systems/dashboard/TMUX_METRICS_INVENTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0148",
+      "claim": "Link `DASHBOARD_IMPLEMENTATION_TRACKER.md` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/systems/dashboard/DASHBOARD_IMPLEMENTATION_TRACKER.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0149",
+      "claim": "Link `DASHBOARD_ENHANCEMENTS.md` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/systems/dashboard/DASHBOARD_ENHANCEMENTS.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0150",
+      "claim": "Link `../../ADHD_COMPLETE_DOCUMENTATION.md` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/ADHD_COMPLETE_DOCUMENTATION.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0151",
+      "claim": "Link `../../04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0152",
+      "claim": "Link `../../implementation-plans/` in `docs/03-reference/systems/dashboard/overview.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/overview.md",
+        "docs/03-reference/implementation-plans"
+      ]
+    },
+    {
+      "claim_id": "DPC0153",
+      "claim": "Link `./TMUX_METRICS_INVENTORY.md` in `docs/03-reference/systems/dashboard/tmux-dashboard-readme.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md",
+        "docs/03-reference/systems/dashboard/TMUX_METRICS_INVENTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0154",
+      "claim": "Link `./TMUX_DASHBOARD_DESIGN.md` in `docs/03-reference/systems/dashboard/tmux-dashboard-readme.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md",
+        "docs/03-reference/systems/dashboard/TMUX_DASHBOARD_DESIGN.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0155",
+      "claim": "Link `./dopemux_dashboard.py` in `docs/03-reference/systems/dashboard/tmux-dashboard-readme.md` resolves.",
+      "source": "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md",
+        "docs/03-reference/systems/dashboard/dopemux_dashboard.py"
+      ]
+    },
+    {
+      "claim_id": "DPC0156",
+      "claim": "Link `WORKTREE_SWITCHING_GUIDE.md` in `docs/04-explanation/concepts/worktree-comprehensive-guide.md` resolves.",
+      "source": "docs/04-explanation/concepts/worktree-comprehensive-guide.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/concepts/worktree-comprehensive-guide.md",
+        "docs/04-explanation/concepts/WORKTREE_SWITCHING_GUIDE.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0157",
+      "claim": "Link `ADVANCED_WORKTREE_WORKFLOWS.md` in `docs/04-explanation/concepts/worktree-comprehensive-guide.md` resolves.",
+      "source": "docs/04-explanation/concepts/worktree-comprehensive-guide.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/concepts/worktree-comprehensive-guide.md",
+        "docs/04-explanation/concepts/ADVANCED_WORKTREE_WORKFLOWS.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0158",
+      "claim": "Link `troubleshooting/WORKTREE_VALIDATION_REPORT.md` in `docs/04-explanation/concepts/worktree-comprehensive-guide.md` resolves.",
+      "source": "docs/04-explanation/concepts/worktree-comprehensive-guide.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/concepts/worktree-comprehensive-guide.md",
+        "docs/04-explanation/concepts/troubleshooting/WORKTREE_VALIDATION_REPORT.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0159",
+      "claim": "Link `../../archive/services/history/CONPORT_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/CONPORT_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0160",
+      "claim": "Link `../../archive/services/history/ADHD_ENGINE_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/ADHD_ENGINE_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0161",
+      "claim": "Link `../../archive/services/history/TASK_ORCHESTRATOR_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/TASK_ORCHESTRATOR_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0162",
+      "claim": "Link `../../archive/services/history/SERENA_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/SERENA_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0163",
+      "claim": "Link `../../archive/services/history/DOPECON_BRIDGE_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/DOPECON_BRIDGE_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0164",
+      "claim": "Link `../../archive/services/history/WORKING_MEMORY_ASSISTANT_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/WORKING_MEMORY_ASSISTANT_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0165",
+      "claim": "Link `../../archive/services/history/SESSION_DASHBOARD_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/SESSION_DASHBOARD_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0166",
+      "claim": "Link `../../archive/services/history/DOPE_CONTEXT_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/DOPE_CONTEXT_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0167",
+      "claim": "Link `../../archive/services/history/GENETIC_ML_SERVICES_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/GENETIC_ML_SERVICES_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0168",
+      "claim": "Link `../../archive/services/history/MONITORING_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/MONITORING_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0169",
+      "claim": "Link `../../archive/services/history/INTELLIGENCE_SUPPORT_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/INTELLIGENCE_SUPPORT_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0170",
+      "claim": "Link `../../archive/services/history/TASK_EXECUTION_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/TASK_EXECUTION_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0171",
+      "claim": "Link `../../archive/services/history/ENVIRONMENT_SERVICES_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/ENVIRONMENT_SERVICES_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0172",
+      "claim": "Link `../../archive/services/history/INTEGRATION_SERVICES_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/INTEGRATION_SERVICES_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0173",
+      "claim": "Link `../../archive/services/history/DATA_QUERY_SERVICES_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/DATA_QUERY_SERVICES_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0174",
+      "claim": "Link `../../archive/services/history/NOTIFICATIONS_UI_MASTER_HISTORY.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/archive/services/history/NOTIFICATIONS_UI_MASTER_HISTORY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0175",
+      "claim": "Link `UNBUILT_FEATURES_AND_ROADMAP.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0176",
+      "claim": "Link `PROJECT_ARCHAEOLOGY_REPORT.md` in `docs/04-explanation/history/DESIGN_EVOLUTION_2026.md` resolves.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+        "docs/04-explanation/history/PROJECT_ARCHAEOLOGY_REPORT.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0177",
+      "claim": "Link `FINAL-AUDIT-REPORT.md` in `docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md` resolves.",
+      "source": "docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md",
+        "docs/05-audit-reports/FINAL-AUDIT-REPORT.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0178",
+      "claim": "Link `FINAL-AUDIT-REPORT.md` in `docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md` resolves.",
+      "source": "docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md",
+        "docs/05-audit-reports/FINAL-AUDIT-REPORT.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0179",
+      "claim": "Link `PHASE-1-COMPLETE.md` in `docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md` resolves.",
+      "source": "docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md",
+        "docs/05-audit-reports/PHASE-1-COMPLETE.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0180",
+      "claim": "Link `audit-overview.md` in `docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md` resolves.",
+      "source": "docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md",
+        "docs/05-audit-reports/audit-overview.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0181",
+      "claim": "Link `FINAL-AUDIT-REPORT.md` in `docs/05-audit-reports/audit-overview.md` resolves.",
+      "source": "docs/05-audit-reports/audit-overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/audit-overview.md",
+        "docs/05-audit-reports/FINAL-AUDIT-REPORT.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0182",
+      "claim": "Link `DEPLOYMENT-READY-SUMMARY.md` in `docs/05-audit-reports/audit-overview.md` resolves.",
+      "source": "docs/05-audit-reports/audit-overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/audit-overview.md",
+        "docs/05-audit-reports/DEPLOYMENT-READY-SUMMARY.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0183",
+      "claim": "Link `PHASE-1-COMPLETE.md` in `docs/05-audit-reports/audit-overview.md` resolves.",
+      "source": "docs/05-audit-reports/audit-overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/audit-overview.md",
+        "docs/05-audit-reports/PHASE-1-COMPLETE.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0184",
+      "claim": "Link `phase-2-security-quality-complete.md` in `docs/05-audit-reports/audit-overview.md` resolves.",
+      "source": "docs/05-audit-reports/audit-overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/audit-overview.md",
+        "docs/05-audit-reports/phase-2-security-quality-complete.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0185",
+      "claim": "Link `OPTIMIZED-AUDIT-PLAN.md` in `docs/05-audit-reports/audit-overview.md` resolves.",
+      "source": "docs/05-audit-reports/audit-overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/audit-overview.md",
+        "docs/05-audit-reports/OPTIMIZED-AUDIT-PLAN.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0186",
+      "claim": "Link `EXHAUSTIVE-AUDIT-PLAN.md` in `docs/05-audit-reports/audit-overview.md` resolves.",
+      "source": "docs/05-audit-reports/audit-overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/audit-overview.md",
+        "docs/05-audit-reports/EXHAUSTIVE-AUDIT-PLAN.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0187",
+      "claim": "Link `phase-1a-inventory.md` in `docs/05-audit-reports/audit-overview.md` resolves.",
+      "source": "docs/05-audit-reports/audit-overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/audit-overview.md",
+        "docs/05-audit-reports/phase-1a-inventory.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0188",
+      "claim": "Link `phase-1b-service-catalog.md` in `docs/05-audit-reports/audit-overview.md` resolves.",
+      "source": "docs/05-audit-reports/audit-overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/audit-overview.md",
+        "docs/05-audit-reports/phase-1b-service-catalog.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0189",
+      "claim": "Link `phase-1c-dependency-map.md` in `docs/05-audit-reports/audit-overview.md` resolves.",
+      "source": "docs/05-audit-reports/audit-overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/audit-overview.md",
+        "docs/05-audit-reports/phase-1c-dependency-map.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0190",
+      "claim": "Link `phase-1d-documentation-inventory.md` in `docs/05-audit-reports/audit-overview.md` resolves.",
+      "source": "docs/05-audit-reports/audit-overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/audit-overview.md",
+        "docs/05-audit-reports/phase-1d-documentation-inventory.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0191",
+      "claim": "Link `phase-2a-security-scan.md` in `docs/05-audit-reports/audit-overview.md` resolves.",
+      "source": "docs/05-audit-reports/audit-overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/audit-overview.md",
+        "docs/05-audit-reports/phase-2a-security-scan.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0192",
+      "claim": "Link `phase-2-security-quality-complete.md` in `docs/05-audit-reports/audit-overview.md` resolves.",
+      "source": "docs/05-audit-reports/audit-overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/audit-overview.md",
+        "docs/05-audit-reports/phase-2-security-quality-complete.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0193",
+      "claim": "Link `phase-3-manual-review-findings.md` in `docs/05-audit-reports/audit-overview.md` resolves.",
+      "source": "docs/05-audit-reports/audit-overview.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/audit-overview.md",
+        "docs/05-audit-reports/phase-3-manual-review-findings.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0194",
+      "claim": "Link `AUDIT-SUMMARY-2025-10-16.md` in `docs/05-audit-reports/audit-overview.md` resolves.",
+      "source": "docs/05-audit-reports/audit-overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/audit-overview.md",
+        "docs/05-audit-reports/AUDIT-SUMMARY-2025-10-16.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0195",
+      "claim": "Link `architecture-audit-2025-10-16.md` in `docs/05-audit-reports/audit-overview.md` resolves.",
+      "source": "docs/05-audit-reports/audit-overview.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/05-audit-reports/audit-overview.md",
+        "docs/05-audit-reports/architecture-audit-2025-10-16.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0196",
+      "claim": "Link `./00_overview.md` in `docs/spec/dope-memory/v1/README.md` resolves.",
+      "source": "docs/spec/dope-memory/v1/README.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/spec/dope-memory/v1/README.md",
+        "docs/spec/dope-memory/v1/00_overview.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0197",
+      "claim": "Link `./01_architecture.md` in `docs/spec/dope-memory/v1/README.md` resolves.",
+      "source": "docs/spec/dope-memory/v1/README.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/spec/dope-memory/v1/README.md",
+        "docs/spec/dope-memory/v1/01_architecture.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0198",
+      "claim": "Link `./02_data_model_sqlite.md` in `docs/spec/dope-memory/v1/README.md` resolves.",
+      "source": "docs/spec/dope-memory/v1/README.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/spec/dope-memory/v1/README.md",
+        "docs/spec/dope-memory/v1/02_data_model_sqlite.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0199",
+      "claim": "Link `./03_data_model_postgres.md` in `docs/spec/dope-memory/v1/README.md` resolves.",
+      "source": "docs/spec/dope-memory/v1/README.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/spec/dope-memory/v1/README.md",
+        "docs/spec/dope-memory/v1/03_data_model_postgres.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0200",
+      "claim": "Link `./04_event_taxonomy.md` in `docs/spec/dope-memory/v1/README.md` resolves.",
+      "source": "docs/spec/dope-memory/v1/README.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/spec/dope-memory/v1/README.md",
+        "docs/spec/dope-memory/v1/04_event_taxonomy.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0201",
+      "claim": "Link `./05_promotion_redaction.md` in `docs/spec/dope-memory/v1/README.md` resolves.",
+      "source": "docs/spec/dope-memory/v1/README.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/spec/dope-memory/v1/README.md",
+        "docs/spec/dope-memory/v1/05_promotion_redaction.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0202",
+      "claim": "Link `./06_retrieval_ranking.md` in `docs/spec/dope-memory/v1/README.md` resolves.",
+      "source": "docs/spec/dope-memory/v1/README.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/spec/dope-memory/v1/README.md",
+        "docs/spec/dope-memory/v1/06_retrieval_ranking.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0203",
+      "claim": "Link `./07_mcp_contracts.md` in `docs/spec/dope-memory/v1/README.md` resolves.",
+      "source": "docs/spec/dope-memory/v1/README.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/spec/dope-memory/v1/README.md",
+        "docs/spec/dope-memory/v1/07_mcp_contracts.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0204",
+      "claim": "Link `./08_phased_roadmap.md` in `docs/spec/dope-memory/v1/README.md` resolves.",
+      "source": "docs/spec/dope-memory/v1/README.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/spec/dope-memory/v1/README.md",
+        "docs/spec/dope-memory/v1/08_phased_roadmap.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0205",
+      "claim": "Link `./09_test_plan.md` in `docs/spec/dope-memory/v1/README.md` resolves.",
+      "source": "docs/spec/dope-memory/v1/README.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/spec/dope-memory/v1/README.md",
+        "docs/spec/dope-memory/v1/09_test_plan.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0206",
+      "claim": "Link `./10_risk_register.md` in `docs/spec/dope-memory/v1/README.md` resolves.",
+      "source": "docs/spec/dope-memory/v1/README.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/spec/dope-memory/v1/README.md",
+        "docs/spec/dope-memory/v1/10_risk_register.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0207",
+      "claim": "Link `docs/PHASE1_SPRINT_PLAN.md` in `docs/systems/adhd-engine/interruption-shield/quickstart.md` resolves.",
+      "source": "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+        "docs/systems/adhd-engine/interruption-shield/docs/PHASE1_SPRINT_PLAN.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0208",
+      "claim": "Link `../../docs/COMPONENT_7_ENVIRONMENTAL_INTERRUPTION_SHIELD.md` in `docs/systems/adhd-engine/interruption-shield/quickstart.md` resolves.",
+      "source": "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+        "docs/systems/docs/COMPONENT_7_ENVIRONMENTAL_INTERRUPTION_SHIELD.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0209",
+      "claim": "Link `docs/PHASE1_SPRINT_PLAN.md` in `docs/systems/adhd-engine/interruption-shield/quickstart.md` resolves.",
+      "source": "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+        "docs/systems/adhd-engine/interruption-shield/docs/PHASE1_SPRINT_PLAN.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0210",
+      "claim": "Link `README.md` in `docs/systems/adhd-engine/interruption-shield/quickstart.md` resolves.",
+      "source": "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/adhd-engine/interruption-shield/quickstart.md",
+        "docs/systems/adhd-engine/interruption-shield/README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0211",
+      "claim": "Link `../../02-how-to/adhd-features-user-guide.md` in `docs/systems/adhd-features/README.md` resolves.",
+      "source": "docs/systems/adhd-features/README.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/adhd-features/README.md",
+        "docs/02-how-to/adhd-features-user-guide.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0212",
+      "claim": "Link `../../02-how-to/adhd-features-quick-reference.md` in `docs/systems/adhd-features/README.md` resolves.",
+      "source": "docs/systems/adhd-features/README.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/adhd-features/README.md",
+        "docs/02-how-to/adhd-features-quick-reference.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0213",
+      "claim": "Link `../adhd-engine-api.md` in `docs/systems/adhd-features/README.md` resolves.",
+      "source": "docs/systems/adhd-features/README.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/adhd-features/README.md",
+        "docs/systems/adhd-engine-api.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0214",
+      "claim": "Link `../../../services/adhd_engine/README.md` in `docs/systems/adhd-features/README.md` resolves.",
+      "source": "docs/systems/adhd-features/README.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/adhd-features/README.md",
+        "services/adhd_engine/README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0215",
+      "claim": "Link `../../../services/adhd_engine/` in `docs/systems/adhd-features/README.md` resolves.",
+      "source": "docs/systems/adhd-features/README.md",
+      "status": "verified_true",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/adhd-features/README.md",
+        "services/adhd_engine"
+      ]
+    },
+    {
+      "claim_id": "DPC0216",
+      "claim": "Link `src/context_portal_mcp/db/models.py` in `docs/systems/conport/release-notes.md` resolves.",
+      "source": "docs/systems/conport/release-notes.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/conport/release-notes.md",
+        "docs/systems/conport/src/context_portal_mcp/db/models.py"
+      ]
+    },
+    {
+      "claim_id": "DPC0217",
+      "claim": "Link `src/context_portal_mcp/db/database.py` in `docs/systems/conport/release-notes.md` resolves.",
+      "source": "docs/systems/conport/release-notes.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/conport/release-notes.md",
+        "docs/systems/conport/src/context_portal_mcp/db/database.py"
+      ]
+    },
+    {
+      "claim_id": "DPC0218",
+      "claim": "Link `README.md` in `docs/systems/conport/release-notes.md` resolves.",
+      "source": "docs/systems/conport/release-notes.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/conport/release-notes.md",
+        "docs/systems/conport/README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0219",
+      "claim": "Link `CONTRIBUTING.md` in `docs/systems/conport/release-notes.md` resolves.",
+      "source": "docs/systems/conport/release-notes.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/conport/release-notes.md",
+        "docs/systems/conport/CONTRIBUTING.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0220",
+      "claim": "Link `README.md` in `docs/systems/conport/release-notes.md` resolves.",
+      "source": "docs/systems/conport/release-notes.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/conport/release-notes.md",
+        "docs/systems/conport/README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0221",
+      "claim": "Link `v0.2.3_UPDATE_GUIDE.md` in `docs/systems/conport/release-notes.md` resolves.",
+      "source": "docs/systems/conport/release-notes.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/conport/release-notes.md",
+        "docs/systems/conport/v0.2.3_UPDATE_GUIDE.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0222",
+      "claim": "Link `v0.2.3_UPDATE_GUIDE.md` in `docs/systems/conport/release-notes.md` resolves.",
+      "source": "docs/systems/conport/release-notes.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/conport/release-notes.md",
+        "docs/systems/conport/v0.2.3_UPDATE_GUIDE.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0223",
+      "claim": "Link `PERFORMANCE_TUNING.md` in `docs/systems/dope-context/api-reference.md` resolves.",
+      "source": "docs/systems/dope-context/api-reference.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/dope-context/api-reference.md",
+        "docs/systems/dope-context/PERFORMANCE_TUNING.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0224",
+      "claim": "Link `README.md` in `docs/systems/dope-context/deployment.md` resolves.",
+      "source": "docs/systems/dope-context/deployment.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/dope-context/deployment.md",
+        "docs/systems/dope-context/README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0225",
+      "claim": "Link `API_REFERENCE.md` in `docs/systems/dope-context/deployment.md` resolves.",
+      "source": "docs/systems/dope-context/deployment.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/dope-context/deployment.md",
+        "docs/systems/dope-context/API_REFERENCE.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0226",
+      "claim": "Link `./docs/F002_USER_GUIDE.md` in `docs/systems/serena/multi-workspace-guide.md` resolves.",
+      "source": "docs/systems/serena/multi-workspace-guide.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/serena/multi-workspace-guide.md",
+        "docs/systems/serena/docs/F002_USER_GUIDE.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0227",
+      "claim": "Link `./multi_workspace_wrapper.py` in `docs/systems/serena/multi-workspace-guide.md` resolves.",
+      "source": "docs/systems/serena/multi-workspace-guide.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/serena/multi-workspace-guide.md",
+        "docs/systems/serena/multi_workspace_wrapper.py"
+      ]
+    },
+    {
+      "claim_id": "DPC0228",
+      "claim": "Link `../../services/shared/complexity_coordinator/` in `docs/systems/serena/multi-workspace-guide.md` resolves.",
+      "source": "docs/systems/serena/multi-workspace-guide.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/serena/multi-workspace-guide.md",
+        "docs/services/shared/complexity_coordinator"
+      ]
+    },
+    {
+      "claim_id": "DPC0229",
+      "claim": "Link `./adhd_features.py` in `docs/systems/serena/multi-workspace-guide.md` resolves.",
+      "source": "docs/systems/serena/multi-workspace-guide.md",
+      "status": "verified_false",
+      "method": "link_resolution",
+      "evidence": [
+        "docs/systems/serena/multi-workspace-guide.md",
+        "docs/systems/serena/adhd_features.py"
+      ]
+    },
+    {
+      "claim_id": "DPC0230",
+      "claim": "docs_index.yaml target `QUICK_START.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "QUICK_START.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0231",
+      "claim": "docs_index.yaml target `INSTALL.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "INSTALL.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0232",
+      "claim": "docs_index.yaml target `README.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0233",
+      "claim": "docs_index.yaml target `CHANGELOG.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "CHANGELOG.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0234",
+      "claim": "docs_index.yaml target `docs/00-MASTER-INDEX.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/00-MASTER-INDEX.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0235",
+      "claim": "docs_index.yaml target `docs/03-reference/systems/conport/conport-kg-status.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/03-reference/systems/conport/conport-kg-status.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0236",
+      "claim": "docs_index.yaml target `docs/04-explanation/conport-technical-deep-dive.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/04-explanation/conport-technical-deep-dive.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0237",
+      "claim": "docs_index.yaml target `docs/02-how-to/mcp-service-discovery-guide.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/02-how-to/mcp-service-discovery-guide.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0238",
+      "claim": "docs_index.yaml target `docs/05-audit-reports/service-maturity-gap-analysis.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/05-audit-reports/service-maturity-gap-analysis.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0239",
+      "claim": "docs_index.yaml target `docs/03-reference/systems/conport/conport-kg-status.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/03-reference/systems/conport/conport-kg-status.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0240",
+      "claim": "docs_index.yaml target `docs/03-reference/systems/dashboard/tmux-dashboard-readme.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/03-reference/systems/dashboard/tmux-dashboard-readme.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0241",
+      "claim": "docs_index.yaml target `docs/03-reference/systems/dashboard/tmux-dashboard-design.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/03-reference/systems/dashboard/tmux-dashboard-design.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0242",
+      "claim": "docs_index.yaml target `docs/03-reference/systems/dashboard/tmux-metrics-inventory.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/03-reference/systems/dashboard/tmux-metrics-inventory.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0243",
+      "claim": "docs_index.yaml target `docs/03-reference/systems/dashboard/dashboard-implementation-tracker.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/03-reference/systems/dashboard/dashboard-implementation-tracker.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0244",
+      "claim": "docs_index.yaml target `docs/03-reference/systems/dashboard/dashboard-enhancements.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/03-reference/systems/dashboard/dashboard-enhancements.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0245",
+      "claim": "docs_index.yaml target `docs/systems/dopecon-bridge/README.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/systems/dopecon-bridge/README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0246",
+      "claim": "docs_index.yaml target `docs/systems/multi-workspace/README.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/systems/multi-workspace/README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0247",
+      "claim": "docs_index.yaml target `docs/systems/production/README.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/systems/production/README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0248",
+      "claim": "docs_index.yaml target `docs/03-reference/services/task-orchestrator.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/03-reference/services/task-orchestrator.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0249",
+      "claim": "docs_index.yaml target `services/task-orchestrator/docs/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "services/task-orchestrator/docs"
+      ]
+    },
+    {
+      "claim_id": "DPC0250",
+      "claim": "docs_index.yaml target `services/dopecon-bridge/README.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "services/dopecon-bridge/README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0251",
+      "claim": "docs_index.yaml target `services/dopecon-bridge/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "services/dopecon-bridge"
+      ]
+    },
+    {
+      "claim_id": "DPC0252",
+      "claim": "docs_index.yaml target `services/adhd_engine/README.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "services/adhd_engine/README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0253",
+      "claim": "docs_index.yaml target `services/adhd_engine/docs/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "services/adhd_engine/docs"
+      ]
+    },
+    {
+      "claim_id": "DPC0254",
+      "claim": "docs_index.yaml target `docs/04-explanation/DOPEMUX-ORCHESTRATOR-FINAL-SPEC.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/04-explanation/DOPEMUX-ORCHESTRATOR-FINAL-SPEC.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0255",
+      "claim": "docs_index.yaml target `src/dopemux/orchestrator/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "src/dopemux/orchestrator"
+      ]
+    },
+    {
+      "claim_id": "DPC0256",
+      "claim": "docs_index.yaml target `docs/04-explanation/design-decisions/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/04-explanation/design-decisions"
+      ]
+    },
+    {
+      "claim_id": "DPC0257",
+      "claim": "docs_index.yaml target `services/conport_kg_ui/README.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "services/conport_kg_ui/README.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0258",
+      "claim": "docs_index.yaml target `services/conport_kg_ui/src/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "services/conport_kg_ui/src"
+      ]
+    },
+    {
+      "claim_id": "DPC0259",
+      "claim": "docs_index.yaml target `docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/04-explanation/architecture/DOPEMUX_ARCHITECTURE_OVERVIEW.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0260",
+      "claim": "docs_index.yaml target `docs/04-explanation/architecture/system-bible.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/04-explanation/architecture/system-bible.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0261",
+      "claim": "docs_index.yaml target `docs/04-explanation/architecture/multi-instance-implementation.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/04-explanation/architecture/multi-instance-implementation.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0262",
+      "claim": "docs_index.yaml target `docs/90-adr/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/90-adr"
+      ]
+    },
+    {
+      "claim_id": "DPC0263",
+      "claim": "docs_index.yaml target `docs/91-rfc/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/91-rfc"
+      ]
+    },
+    {
+      "claim_id": "DPC0264",
+      "claim": "docs_index.yaml target `docs/02-how-to/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/02-how-to"
+      ]
+    },
+    {
+      "claim_id": "DPC0265",
+      "claim": "docs_index.yaml target `docs/02-how-to/deployment-guide.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/02-how-to/deployment-guide.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0266",
+      "claim": "docs_index.yaml target `docs/02-how-to/integrations/leantime-integration-guide.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/02-how-to/integrations/leantime-integration-guide.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0267",
+      "claim": "docs_index.yaml target `docs/02-how-to/mcp-service-discovery-guide.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/02-how-to/mcp-service-discovery-guide.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0268",
+      "claim": "docs_index.yaml target `docs/02-how-to/role-switching-quickstart.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/02-how-to/role-switching-quickstart.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0269",
+      "claim": "docs_index.yaml target `docs/02-how-to/multi-instance-workflow.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/02-how-to/multi-instance-workflow.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0270",
+      "claim": "docs_index.yaml target `docs/02-how-to/orchestrator-dashboard.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/02-how-to/orchestrator-dashboard.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0271",
+      "claim": "docs_index.yaml target `docs/01-tutorials/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/01-tutorials"
+      ]
+    },
+    {
+      "claim_id": "DPC0272",
+      "claim": "docs_index.yaml target `docs/01-tutorials/START-HERE.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/01-tutorials/START-HERE.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0273",
+      "claim": "docs_index.yaml target `docs/03-reference/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/03-reference"
+      ]
+    },
+    {
+      "claim_id": "DPC0274",
+      "claim": "docs_index.yaml target `docs/03-reference/configuration/PROFILE-YAML-SCHEMA.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/03-reference/configuration/PROFILE-YAML-SCHEMA.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0275",
+      "claim": "docs_index.yaml target `docs/03-reference/features/features-index.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/03-reference/features/features-index.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0276",
+      "claim": "docs_index.yaml target `docs/03-reference/mcp-tools-overview.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/03-reference/mcp-tools-overview.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0277",
+      "claim": "docs_index.yaml target `docs/04-explanation/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/04-explanation"
+      ]
+    },
+    {
+      "claim_id": "DPC0278",
+      "claim": "docs_index.yaml target `docs/04-explanation/serena-v2-technical-deep-dive.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/04-explanation/serena-v2-technical-deep-dive.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0279",
+      "claim": "docs_index.yaml target `docs/04-explanation/conport-technical-deep-dive.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/04-explanation/conport-technical-deep-dive.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0280",
+      "claim": "docs_index.yaml target `docs/archive/completed-projects/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/archive/completed-projects"
+      ]
+    },
+    {
+      "claim_id": "DPC0281",
+      "claim": "docs_index.yaml target `docs/archive/session-notes/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/archive/session-notes"
+      ]
+    },
+    {
+      "claim_id": "DPC0282",
+      "claim": "docs_index.yaml target `docs/archive/deprecated/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/archive/deprecated"
+      ]
+    },
+    {
+      "claim_id": "DPC0283",
+      "claim": "docs_index.yaml target `docs/archive/overview.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docs/archive/overview.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0284",
+      "claim": "docs_index.yaml target `.claude/claude.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        ".claude/claude.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0285",
+      "claim": "docs_index.yaml target `.claude.json` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        ".claude.json"
+      ]
+    },
+    {
+      "claim_id": "DPC0286",
+      "claim": "docs_index.yaml target `.claude/llm.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        ".claude/llm.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0287",
+      "claim": "docs_index.yaml target `.claude/context.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        ".claude/context.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0288",
+      "claim": "docs_index.yaml target `.claude/AGENT_ARCHITECTURE.md` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        ".claude/AGENT_ARCHITECTURE.md"
+      ]
+    },
+    {
+      "claim_id": "DPC0289",
+      "claim": "docs_index.yaml target `services/registry.yaml` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "services/registry.yaml"
+      ]
+    },
+    {
+      "claim_id": "DPC0290",
+      "claim": "docs_index.yaml target `docker-compose.master.yml` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docker-compose.master.yml"
+      ]
+    },
+    {
+      "claim_id": "DPC0291",
+      "claim": "docs_index.yaml target `docker-compose.smoke.yml` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docker-compose.smoke.yml"
+      ]
+    },
+    {
+      "claim_id": "DPC0292",
+      "claim": "docs_index.yaml target `docker-compose.staging.yml` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docker-compose.staging.yml"
+      ]
+    },
+    {
+      "claim_id": "DPC0293",
+      "claim": "docs_index.yaml target `docker-compose.prod.yml` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "docker-compose.prod.yml"
+      ]
+    },
+    {
+      "claim_id": "DPC0294",
+      "claim": "docs_index.yaml target `config/profiles/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "config/profiles"
+      ]
+    },
+    {
+      "claim_id": "DPC0295",
+      "claim": "docs_index.yaml target `config/.claude/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "config/.claude"
+      ]
+    },
+    {
+      "claim_id": "DPC0296",
+      "claim": "docs_index.yaml target `config/env/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "config/env"
+      ]
+    },
+    {
+      "claim_id": "DPC0297",
+      "claim": "docs_index.yaml target `scripts/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "scripts"
+      ]
+    },
+    {
+      "claim_id": "DPC0298",
+      "claim": "docs_index.yaml target `scripts/docs_validator.py` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "scripts/docs_validator.py"
+      ]
+    },
+    {
+      "claim_id": "DPC0299",
+      "claim": "docs_index.yaml target `scripts/docs_frontmatter_guard.py` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "scripts/docs_frontmatter_guard.py"
+      ]
+    },
+    {
+      "claim_id": "DPC0300",
+      "claim": "docs_index.yaml target `scripts/docs_normalize.py` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "scripts/docs_normalize.py"
+      ]
+    },
+    {
+      "claim_id": "DPC0301",
+      "claim": "docs_index.yaml target `scripts/docs_audit/` exists.",
+      "source": "docs/docs_index.yaml",
+      "status": "verified_true",
+      "method": "path_existence_check",
+      "evidence": [
+        "docs/docs_index.yaml",
+        "scripts/docs_audit"
+      ]
+    },
+    {
+      "claim_id": "DPC0302",
+      "claim": "Only MemoryAgent exists and the other six infrastructure agents are missing.",
+      "source": "docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md",
+      "status": "verified_false",
+      "method": "filesystem_verification",
+      "evidence": [
+        "services/agents/memory_agent.py",
+        "services/agents/cognitive_guardian.py",
+        "services/agents/two_plane_orchestrator.py",
+        "services/agents/task_decomposer.py",
+        "services/agents/dopemux_enforcer.py",
+        "services/agents/tool_orchestrator.py",
+        "services/agents/workflow_coordinator.py"
+      ]
+    },
+    {
+      "claim_id": "DPC0303",
+      "claim": "Auto-resume is fully unbuilt in Dopemux runtime.",
+      "source": "docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md",
+      "status": "verified_false",
+      "method": "code_search",
+      "evidence": [
+        "src/dopemux/cli.py",
+        "src/dopemux/worktree_recovery.py",
+        "src/dopemux/instance_manager.py"
+      ]
+    },
+    {
+      "claim_id": "DPC0304",
+      "claim": "Task-Orchestrator event adapters are unbuilt.",
+      "source": "docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md",
+      "status": "verified_false",
+      "method": "filesystem_verification",
+      "evidence": [
+        "services/task-orchestrator/app/adapters/conport_adapter.py",
+        "services/task-orchestrator/app/services/enhanced_orchestrator.py"
+      ]
+    },
+    {
+      "claim_id": "DPC0305",
+      "claim": "Idea/Epic Stage-1/Stage-2 workflow runtime implementation is missing.",
+      "source": "docs/04-explanation/history/UNBUILT_FEATURES_AND_ROADMAP.md",
+      "status": "verified_true",
+      "method": "code_search",
+      "evidence": [
+        "no_runtime_hits_for_workflow_ideas_or_workflow_epics"
+      ]
+    },
+    {
+      "claim_id": "DPC0306",
+      "claim": "Zen MCP server directory was deleted from active runtime tree.",
+      "source": "docs/04-explanation/history/PROJECT_ARCHAEOLOGY_REPORT.md",
+      "status": "verified_true",
+      "method": "filesystem_verification",
+      "evidence": [
+        "docker/mcp-servers/zen",
+        "docker/mcp-servers/pal"
+      ]
+    },
+    {
+      "claim_id": "DPC0307",
+      "claim": "Zen capability was removed without replacement.",
+      "source": "docs/04-explanation/history/PROJECT_ARCHAEOLOGY_REPORT.md",
+      "status": "partially_true",
+      "method": "filesystem_verification",
+      "evidence": [
+        "docker/mcp-servers/zen",
+        "docker/mcp-servers/pal"
+      ]
+    },
+    {
+      "claim_id": "DPC0308",
+      "claim": "WMA <200ms capture guarantee is verified by an automated benchmark suite.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "unverified",
+      "method": "test_presence_check",
+      "evidence": [
+        "tests/perf/test_wma_capture_latency.py"
+      ]
+    },
+    {
+      "claim_id": "DPC0309",
+      "claim": "DopeconBridge is implemented as an event-bus service in active runtime code.",
+      "source": "docs/04-explanation/history/DESIGN_EVOLUTION_2026.md",
+      "status": "verified_true",
+      "method": "filesystem_verification",
+      "evidence": [
+        "services/dopecon-bridge/event_bus.py"
+      ]
+    }
+  ],
+  "summary": {
+    "total": 309,
+    "verified_true": 211,
+    "verified_false": 96,
+    "partially_true": 1,
+    "unverified": 1
+  }
+}

@@ -298,7 +298,7 @@ optimization: "min_query_length: 10, max_results: 3"
 - Framework updates and modernization
 
 ### Desktop Commander - Desktop Automation
-- **Container**: `mcp-desktop-commander`
+- **Container**: `dopemux-mcp-desktop-commander`
 - **Port**: `3012`
 - **Role**: `utility`
 - **Description**: Desktop automation and system control for ADHD workflows
@@ -344,12 +344,26 @@ coordination: "DopeconBridge manages data flow between planes"
 ```
 
 ### Leantime Bridge - Status Authority
-- **Container**: `mcp-leantime-bridge`
+- **Container**: `dopemux-mcp-leantime-bridge`
 - **Port**: `3015`
 - **Role**: `workflow`
 - **Package**: Custom Python MCP bridge
 - **Description**: Master authority for task status and team coordination
 - **Health Check**: `http://localhost:3015/health`
+
+### Plane Coordinator - Two-Plane API
+- **Container**: `dopemux-mcp-plane-coordinator`
+- **Port**: `8090`
+- **Role**: `workflow`
+- **Package**: Task-orchestrator coordination API image
+- **Description**: HTTP coordination API for PM-plane and cognitive-plane operations
+- **Health Check**: `http://localhost:8090/health`
+
+**Key Features:**
+- Cross-plane coordination operations API
+- Conflict detection and resolution workflows
+- Coordination metrics and health endpoints
+- WebSocket event stream for realtime coordination status
 
 **Authority Scope:**
 - **Task Status**: Authoritative source for planned/active/blocked/completed
@@ -378,11 +392,11 @@ coordination: "DopeconBridge manages data flow between planes"
 
 ## 🔗 Network Architecture
 
-### MCP Network (External)
+### Dopemux Network (External)
 ```yaml
-network: "mcp-network"
+network: "dopemux-network"
 type: "external"
-purpose: "Shared network for MCP servers across projects"
+purpose: "Primary network for MCP and support services in the Dopemux stack"
 ```
 
 ### Leantime Network (External Bridge)
@@ -421,9 +435,11 @@ cd /Users/hue/code/dopemux-mvp/docker/mcp-servers
 
 ### Individual Server Control
 ```bash
-docker-compose up -d pal                 # Start PAL apilookup
-docker-compose restart zen                    # Restart Zen
-docker-compose logs -f mas-sequential-thinking  # View MAS logs
+docker compose up -d pal                      # Start PAL apilookup
+docker compose up -d desktop-commander        # Start Desktop Commander
+docker compose up -d leantime-bridge          # Start Leantime bridge
+docker compose up -d plane-coordinator        # Start Plane Coordinator
+docker compose logs -f plane-coordinator      # View Plane Coordinator logs
 ```
 
 ### Health Check All Critical Servers

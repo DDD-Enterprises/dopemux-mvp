@@ -1,10 +1,13 @@
 ---
 id: f6-completion
 title: F6 Completion
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: F6 Completion (explanation) for dopemux documentation and developer workflows.
 ---
 # F6: Abandonment Tracking - Implementation Complete
 
@@ -41,7 +44,7 @@ F6 adds temporal analysis to detect uncommitted work that's been idle for extend
 ### Files Modified (2)
 1. **services/serena/v2/untracked_work_detector.py** (+4 lines)
    - Import AbandonmentTracker
-   - Initialize abandonment_tracker in __init__
+   - Initialize abandonment_tracker in **init**
    - Calculate abandonment score in detect() (Step 3.75)
    - Add abandonment_data to detection result
 

@@ -1,3 +1,5 @@
+from rich.text import Text
+
 # src/dopemux/ui/dashboard.py
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical

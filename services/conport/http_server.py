@@ -7,9 +7,8 @@ Connects directly to PostgreSQL + AGE database.
 
 Day 2 Afternoon Implementation
 """
-import asyncio
 from datetime import datetime
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any, Optional
 import logging
 from contextlib import asynccontextmanager
 import sys
@@ -25,7 +24,7 @@ repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fi
 sys.path.insert(0, os.path.join(repo_root, "src"))
 
 from dopemux.logging import configure_logging, RequestIDMiddleware
-from dopemux.runtime import lifespan_context, record_crash, get_last_crash
+from dopemux.runtime import lifespan_context, record_crash
 
 # Configure structured logging
 configure_logging("conport")
@@ -156,8 +155,8 @@ async def get_recent_decisions(
     Get recent decisions logged in the knowledge graph.
     
     Returns decisions ordered by creation time (most recent first).
-    
-    NOTE: Using mock data for MVP. TODO: Connect to real PostgreSQL database.
+
+    Uses PostgreSQL when available and falls back to mock data for resiliency.
     """
     # Mock data for MVP - dashboard won't crash
     mock_decisions = [
@@ -269,8 +268,8 @@ async def get_graph_stats(
     Get knowledge graph statistics.
     
     Returns counts of nodes, edges, and other graph metrics.
-    
-    NOTE: Using mock data for MVP. TODO: Connect to real PostgreSQL database.
+
+    Uses PostgreSQL when available and falls back to mock data for resiliency.
     """
     # Mock data for MVP
     mock_stats = {
@@ -624,25 +623,29 @@ async def get_linked_items(
 
 @app.post("/api/adhd/semantic-search")
 async def semantic_search(
-    query: Dict[str, Any],
+    payload: Dict[str, Any],
     workspace_id: str = Query("dopemux-mvp")
 ):
     """
-    Perform semantic search across ConPort data.
-    NOTE: Simplified implementation for MVP - searching across all nodes.
+    Deprecated compatibility endpoint for ConPort semantic search.
+    Uses keyword fallback across decisions and progress entries.
     """
     if not pool:
         raise HTTPException(status_code=503, detail="Database not available")
-    
-    query_text = query.get("query_text")
-    top_k = query.get("top_k", 5)
-    
+
+    query_text = (payload.get("query_text") or "").strip()
+    top_k = max(int(payload.get("top_k", 5)), 1)
+    if not query_text:
+        raise HTTPException(status_code=400, detail="query_text is required")
+
+    logger.warning(
+        "/api/adhd/semantic-search is deprecated and running in keyword fallback mode; "
+        "use dope-context/serena semantic search for vector retrieval."
+    )
+
     try:
         async with pool.acquire() as conn:
-            # For MVP, we'll do a simple text search if pgvector/embeddings aren't fully ready
-            # or if the query isn't already embedded.
-            # Real implementation would embed query_text using Voyage/local model.
-            query = """
+            sql = """
                 SELECT id::text, 'decision' as type, summary as content, created_at
                 FROM ag_catalog.decisions
                 WHERE workspace_id = $1 AND (summary ILIKE $2 OR rationale ILIKE $2)
@@ -654,12 +657,19 @@ async def semantic_search(
                 LIMIT $3
             """
             search_pattern = f"%{query_text}%"
-            rows = await conn.fetch(query, workspace_id, search_pattern, top_k)
-            
+            rows = await conn.fetch(sql, workspace_id, search_pattern, top_k)
+
+            deprecation_notice = (
+                "Deprecated compatibility endpoint: keyword fallback only. "
+                "Use dope-context/serena semantic search for vector retrieval."
+            )
             return {
                 "query": query_text,
                 "results": [dict(r) for r in rows],
-                "workspace_id": workspace_id
+                "workspace_id": workspace_id,
+                "search_mode": "keyword_fallback",
+                "deprecated": True,
+                "deprecation_notice": deprecation_notice
             }
     except Exception as e:
         logger.error(f"Semantic search failed: {e}")

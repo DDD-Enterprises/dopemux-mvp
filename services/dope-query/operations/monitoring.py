@@ -28,9 +28,19 @@ except ImportError:
     PROMETHEUS_AVAILABLE = False
     # Fallback mock implementations
     class MockMetric:
-        def inc(self, value=1): pass
-        def observe(self, value): pass
-        def set(self, value): pass
+        def __init__(self):
+            self.value = 0
+            self.observations = []
+
+        def inc(self, value=1):
+            self.value += value
+
+        def observe(self, value):
+            self.observations.append(value)
+
+        def set(self, value):
+            self.value = value
+
         def labels(self, **kwargs): return self
 
     def Counter(*args, **kwargs): return MockMetric()

@@ -45,6 +45,28 @@ class ConPortMCPClient:
         """
         self.mcp_tools = mcp_tools
 
+    def _resolve_semantic_search_tool(self) -> Any:
+        """
+        Resolve semantic-search MCP tool with compatibility fallback.
+
+        Preferred:
+        - mcp__conport__semantic_search
+        Legacy fallback:
+        - mcp__conport__semantic_search_conport
+        """
+        preferred = getattr(self.mcp_tools, "mcp__conport__semantic_search", None)
+        if callable(preferred):
+            return preferred, "mcp__conport__semantic_search"
+
+        legacy = getattr(self.mcp_tools, "mcp__conport__semantic_search_conport", None)
+        if callable(legacy):
+            return legacy, "mcp__conport__semantic_search_conport"
+
+        raise AttributeError(
+            "No ConPort semantic-search MCP tool found "
+            "(expected mcp__conport__semantic_search or mcp__conport__semantic_search_conport)"
+        )
+
     async def log_progress(
         self,
         workspace_id: str,
@@ -466,7 +488,7 @@ class ConPortMCPClient:
             logger.error(f"ConPort get_linked_items failed: {e}")
             raise
 
-    async def semantic_search_conport(
+    async def semantic_search(
         self,
         workspace_id: str,
         query_text: str,
@@ -508,15 +530,48 @@ class ConPortMCPClient:
             if filter_tags_include_all:
                 params["filter_tags_include_all"] = filter_tags_include_all
 
-            # Call ConPort MCP tool
-            result = await self.mcp_tools.mcp__conport__semantic_search_conport(**params)
+            tool, tool_name = self._resolve_semantic_search_tool()
+            result = await tool(**params)
 
-            logger.debug(f"ConPort semantic_search: '{query_text}' -> {len(result.get('results', []))} results")
+            if isinstance(result, dict):
+                result.setdefault("_tool_used", tool_name)
+                result_count = len(result.get("results", []))
+            else:
+                result_count = 0
+            logger.debug(
+                "ConPort semantic_search via %s: '%s' -> %s results",
+                tool_name,
+                query_text,
+                result_count,
+            )
             return result
 
         except Exception as e:
             logger.error(f"ConPort semantic_search failed: {e}")
             raise
+
+    async def semantic_search_conport(
+        self,
+        workspace_id: str,
+        query_text: str,
+        top_k: int = 5,
+        filter_item_types: Optional[List[str]] = None,
+        filter_tags_include_any: Optional[List[str]] = None,
+        filter_tags_include_all: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Backward-compatible alias for semantic_search().
+
+        Keep until all downstream callers migrate off the legacy method name.
+        """
+        return await self.semantic_search(
+            workspace_id=workspace_id,
+            query_text=query_text,
+            top_k=top_k,
+            filter_item_types=filter_item_types,
+            filter_tags_include_any=filter_tags_include_any,
+            filter_tags_include_all=filter_tags_include_all,
+        )
 
     async def get_active_context(
         self,
@@ -762,7 +817,7 @@ class ConPortMCPClient:
         call_specs = []
         for query in queries:
             call_specs.append({
-                "method": "semantic_search_conport",
+                "method": "semantic_search",
                 "kwargs": {
                     "workspace_id": workspace_id,
                     "query_text": query

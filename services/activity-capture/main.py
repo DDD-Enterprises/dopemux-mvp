@@ -13,12 +13,6 @@ ADHD Benefits:
 - Real-time interruption detection
 - Automatic energy/attention assessment
 - Session duration tracking for break recommendations
-
-Architecture:
-- FastAPI service (port 8096)
-- Redis Streams consumer (workspace events)
-- HTTP client to ADHD Engine (port 8095)
-- 5-minute activity aggregation windows
 """
 
 import asyncio
@@ -70,9 +64,9 @@ async def lifespan(app: FastAPI):
 
     try:
         # Read configuration from environment
-        adhd_engine_url = os.getenv("ADHD_ENGINE_URL", "http://localhost:8095")
-        user_id = os.getenv("ADHD_USER_ID", "hue")
-        redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+        adhd_engine_url = os.getenv("ADHD_ENGINE_URL", "http://adhd-engine:8095")
+        user_id = os.getenv("ADHD_USER_ID", "default")
+        redis_url = os.getenv("REDIS_URL", "redis://redis-primary:6379")
         stream_name = os.getenv("STREAM_NAME", "dopemux:events")
         consumer_group = os.getenv("CONSUMER_GROUP", "activity-capture")
         consumer_name = os.getenv("CONSUMER_NAME", "activity-capture-1")
@@ -113,7 +107,7 @@ async def lifespan(app: FastAPI):
 
         logger.info("")
         logger.info("🎉 Activity Capture Service ready!")
-        logger.info(f"📊 Health check: http://localhost:8096/health")
+        logger.info(f"📊 Health check: http://localhost:{os.getenv('API_PORT', '8096')}/health")
         logger.info("")
 
     except Exception as e:
@@ -177,7 +171,7 @@ async def root():
             "workspace.switched (Desktop-Commander)",
             "progress.updated (ConPort - future)"
         ],
-        "adhd_engine": "http://localhost:8095"
+        "adhd_engine": os.getenv("ADHD_ENGINE_URL", "http://adhd-engine:8095")
     }
 
 
@@ -200,8 +194,8 @@ async def health():
     if event_subscriber:
         health_status["components"]["event_subscriber"] = {
             "status": "running" if event_subscriber.running else "stopped",
-            "events_processed": event_subscriber.events_processed,
-            "errors": event_subscriber.errors
+            "events_processed": getattr(event_subscriber, 'events_processed', 0),
+            "errors": getattr(event_subscriber, 'errors', 0)
         }
     else:
         health_status["components"]["event_subscriber"] = {"status": "not_initialized"}
@@ -246,10 +240,11 @@ if __name__ == "__main__":
 
     logger.info("🔧 Starting in development mode...")
 
+    port = int(os.getenv("API_PORT", "8096"))
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8096,
+        port=port,
         reload=True,
         log_level="info"
     )

@@ -36,6 +36,29 @@ docker-compose up -d
 echo "✅ MCP servers started"
 echo ""
 
+# Step 1b: Start PAL (Host)
+echo "🧠 Step 1b: Starting PAL (Host via uv)..."
+cd "$PROJECT_ROOT/docker/mcp-servers/pal/pal-mcp-server"
+pkill -f "pal_http_wrapper.py" || true
+# Ensure dependencies (uv run handles venv creation/sync automatically)
+if ! command -v uv &> /dev/null; then
+    echo "❌ uv not found! PAL requires uv."
+else
+    # Install dependencies first relative to pyproject.toml
+    echo "   Syncing dependencies..."
+    uv sync > /dev/null 2>&1 || echo "   (Sync warning check logs)"
+    
+    MCP_SERVER_PORT=3003 nohup uv run pal_http_wrapper.py > /tmp/pal_server.log 2>&1 &
+    PAL_PID=$!
+    sleep 3
+    if ps -p $PAL_PID >/dev/null; then
+        echo "✅ PAL started (PID: $PAL_PID)"
+    else
+        echo "⚠️ PAL failed to start - check /tmp/pal_server.log"
+    fi
+fi
+echo ""
+
 # Step 2: Start ConPort-KG services (DopeconBridge)
 echo "🔗 Step 2/3: Starting DopeconBridge..."
 cd "$PROJECT_ROOT/docker/conport-kg"

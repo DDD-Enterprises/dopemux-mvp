@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Dev Mode CLI Commands for Dopemux"""
 
+from pathlib import Path
+
 import click
 from rich.console import Console
 from rich.table import Table

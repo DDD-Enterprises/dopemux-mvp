@@ -1,10 +1,14 @@
 ---
 id: weeks-1-4-complete
 title: Weeks 1 4 Complete
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Weeks 1 4 Complete (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Weeks 1-4 Complete: Quick Wins Phase 1
 
@@ -101,7 +105,7 @@ next_review: '2026-05-03'
 2. memory_agent_conport.py (195 lines)
 3. cognitive_guardian.py (350 lines)
 4. demo_claude_code.py (150 lines)
-5. __init__.py (enhanced)
+5. **init**.py (enhanced)
 6. enhanced_orchestrator.py (3 dispatches wired)
 
 **Testing** (4 files, ~805 lines):

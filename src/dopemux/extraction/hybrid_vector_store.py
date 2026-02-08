@@ -648,8 +648,8 @@ class HybridVectorStore:
         elif self.config.index_type == IndexType.IVF_PQ:
             return IVFIndex(self.config)
         elif self.config.index_type == IndexType.SCANN:
-            # TODO: Implement ScaNN
-            raise NotImplementedError("ScaNN not yet implemented")
+            logger.warning("ScaNN index requested but not implemented; falling back to HNSW")
+            return HNSWIndex(self.config)
         else:
             raise ValueError(f"Unsupported index type: {self.config.index_type}")
 

@@ -364,8 +364,6 @@ class EventCoordinator:
 
         except Exception as e:
             return 0
-
-            logger.error(f"Error: {e}")
     # Default Event Processors
 
     async def _process_task_created(self, event: CoordinationEvent) -> None:
@@ -630,63 +628,158 @@ class EventCoordinator:
 
     async def _assign_agent_to_task(self, task_id: str, agent: str) -> None:
         """Assign AI agent to task."""
-        # Placeholder - would dispatch to specific agent
-        pass
+        try:
+            if self.redis_client:
+                key = f"task:agent:{self.workspace_id}:{task_id}"
+                payload = {
+                    "task_id": task_id,
+                    "agent": agent,
+                    "assigned_at": datetime.now(timezone.utc).isoformat(),
+                }
+                await self.redis_client.setex(key, 86400, json.dumps(payload))
+            logger.info("Assigned agent %s to task %s", agent, task_id)
+        except Exception as exc:
+            logger.error("Failed to assign agent to task %s: %s", task_id, exc)
 
     async def _cache_task_context(self, event: CoordinationEvent) -> None:
         """Cache task context for quick access."""
-        # Placeholder - would store in Redis
-        pass
+        try:
+            if not self.redis_client:
+                return
+            task_id = str(event.data.get("task_id") or event.data.get("id") or event.id)
+            key = f"task:context:{self.workspace_id}:{task_id}"
+            payload = {
+                "event_id": event.id,
+                "event_type": event.event_type.value,
+                "data": event.data,
+                "cached_at": datetime.now(timezone.utc).isoformat(),
+            }
+            await self.redis_client.setex(key, 3600, json.dumps(payload))
+        except Exception as exc:
+            logger.error("Failed to cache task context for event %s: %s", event.id, exc)
 
     async def _handle_task_start(self, event: CoordinationEvent) -> None:
         """Handle task start event."""
-        # Placeholder - would setup monitoring and tracking
-        pass
+        task_id = str(event.data.get("task_id") or event.data.get("id") or event.id)
+        await self._cache_task_context(event)
+        if agent := event.data.get("agent"):
+            await self._assign_agent_to_task(task_id, str(agent))
+        self.metrics["task_started_count"] = self.metrics.get("task_started_count", 0) + 1
 
     async def _handle_task_completion(self, event: CoordinationEvent) -> None:
         """Handle task completion event."""
-        # Placeholder - would update all systems and trigger next actions
-        pass
+        self.metrics["task_completed_count"] = self.metrics.get("task_completed_count", 0) + 1
+        await self._propagate_task_update(event)
 
     async def _handle_task_blocked(self, event: CoordinationEvent) -> None:
         """Handle task blocked event."""
-        # Placeholder - would analyze blockers and suggest solutions
-        pass
+        self.metrics["task_blocked_count"] = self.metrics.get("task_blocked_count", 0) + 1
+        await self._propagate_task_update(event)
+        await self._emit_focus_suggestion(
+            {
+                "task_id": event.data.get("task_id"),
+                "reason": event.data.get("block_reason", "blocked"),
+            }
+        )
 
     async def _propagate_task_update(self, event: CoordinationEvent) -> None:
         """Propagate task update to all systems."""
-        # Placeholder - would sync to Leantime, ConPort, local systems
-        pass
+        try:
+            if not self.redis_client:
+                return
+            channel = f"events:task-updates:{self.workspace_id}"
+            payload = {
+                "event_id": event.id,
+                "event_type": event.event_type.value,
+                "data": event.data,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+            await self.redis_client.publish(channel, json.dumps(payload))
+        except Exception as exc:
+            logger.error("Failed to propagate task update for event %s: %s", event.id, exc)
 
     async def _pause_task_gracefully(self, task_id: str) -> None:
         """Pause task with context preservation."""
-        # Placeholder - would preserve current state
-        pass
+        try:
+            if self.redis_client:
+                key = f"task:paused:{self.workspace_id}:{task_id}"
+                payload = {
+                    "task_id": task_id,
+                    "paused_at": datetime.now(timezone.utc).isoformat(),
+                }
+                await self.redis_client.setex(key, 86400, json.dumps(payload))
+        except Exception as exc:
+            logger.error("Failed to pause task %s gracefully: %s", task_id, exc)
 
     async def _store_context_preservation(self, context: Dict[str, Any]) -> None:
         """Store context for later resumption."""
-        # Placeholder - would store in Redis/ConPort
-        pass
+        try:
+            if not self.redis_client:
+                return
+            context_id = context.get("task_id") or context.get("context_id") or "unknown"
+            key = f"context:preservation:{self.workspace_id}:{context_id}"
+            payload = {
+                "context": context,
+                "stored_at": datetime.now(timezone.utc).isoformat(),
+            }
+            await self.redis_client.setex(key, 86400, json.dumps(payload))
+        except Exception as exc:
+            logger.error("Failed to store preserved context: %s", exc)
 
     async def _emit_break_notification(self, notification: Dict[str, Any]) -> None:
         """Emit break notification."""
-        # Placeholder - would send to UI/notification system
-        pass
+        try:
+            if self.redis_client:
+                channel = f"events:break-notifications:{self.workspace_id}"
+                await self.redis_client.publish(channel, json.dumps(notification))
+            self.metrics["break_notifications_emitted"] = (
+                self.metrics.get("break_notifications_emitted", 0) + 1
+            )
+        except Exception as exc:
+            logger.error("Failed to emit break notification: %s", exc)
 
     async def _emit_focus_suggestion(self, suggestion: Dict[str, Any]) -> None:
         """Emit focus mode suggestion."""
-        # Placeholder - would send to focus management system
-        pass
+        try:
+            if self.redis_client:
+                channel = f"events:focus-suggestions:{self.workspace_id}"
+                await self.redis_client.publish(channel, json.dumps(suggestion))
+            self.metrics["focus_suggestions_emitted"] = (
+                self.metrics.get("focus_suggestions_emitted", 0) + 1
+            )
+        except Exception as exc:
+            logger.error("Failed to emit focus suggestion: %s", exc)
 
     async def _emit_auto_decomposition_event(self, task: Dict[str, Any]) -> None:
         """Emit automatic decomposition event."""
-        # Placeholder - would trigger decomposition
-        pass
+        try:
+            if self.redis_client:
+                channel = f"events:auto-decompose:{self.workspace_id}"
+                payload = {
+                    "task": task,
+                    "triggered_at": datetime.now(timezone.utc).isoformat(),
+                }
+                await self.redis_client.publish(channel, json.dumps(payload))
+            self.metrics["auto_decomposition_events"] = (
+                self.metrics.get("auto_decomposition_events", 0) + 1
+            )
+        except Exception as exc:
+            logger.error("Failed to emit auto decomposition event: %s", exc)
 
     async def _setup_sprint_progress_automation(self, sprint_id: str) -> None:
         """Setup automated progress tracking for sprint."""
-        # Placeholder - would configure automatic progress monitoring
-        pass
+        try:
+            if not self.redis_client:
+                return
+            key = f"sprint:automation:{self.workspace_id}:{sprint_id}"
+            payload = {
+                "sprint_id": sprint_id,
+                "automation_enabled": True,
+                "configured_at": datetime.now(timezone.utc).isoformat(),
+            }
+            await self.redis_client.setex(key, 86400, json.dumps(payload))
+        except Exception as exc:
+            logger.error("Failed to setup sprint progress automation for %s: %s", sprint_id, exc)
 
     # Health and Monitoring
 

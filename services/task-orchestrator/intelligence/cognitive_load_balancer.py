@@ -399,6 +399,10 @@ class CognitiveLoadBalancer:
         if cached is not None:
             return cached
 
+        if not self.conport:
+            self._set_cache(cache_key, 0)
+            return 0
+
         # Fetch fresh
         try:
             in_progress = await self.conport.get_progress(
@@ -408,8 +412,7 @@ class CognitiveLoadBalancer:
             count = len(in_progress.get("result", []))
         except Exception as e:
             count = 0
-
-            logger.error(f"Error: {e}")
+            logger.debug("Failed to fetch decision count: %s", e)
         self._set_cache(cache_key, count)
         return count
 
@@ -443,15 +446,39 @@ class CognitiveLoadBalancer:
         if cached is not None:
             return cached
 
-        # Calculate from switch reasons
-        # Interrupts = higher score than intentional switches
-        score = 0.0  # Placeholder for Week 4 implementation
+        score = 0.0
+        if self.switch_recovery:
+            for method_name in (
+                "get_interruption_statistics",
+                "get_recovery_statistics",
+                "get_switch_statistics",
+            ):
+                if not hasattr(self.switch_recovery, method_name):
+                    continue
+                try:
+                    result = getattr(self.switch_recovery, method_name)()
+                    if asyncio.iscoroutine(result):
+                        result = await result
+                    if not isinstance(result, dict):
+                        continue
+                    interruptions = float(
+                        result.get("interruptions", result.get("interrupt_count", result.get("interrupt_switches", 0.0)))
+                    )
+                    intentional = float(result.get("intentional_switches", 0.0))
+                    total = interruptions + intentional
+                    score = min(1.0, interruptions / max(1.0, total))
+                    break
+                except Exception as e:
+                    logger.debug("Failed to fetch interruption stats via %s: %s", method_name, e)
 
         self._set_cache(cache_key, score)
         return score
 
     async def _get_time_since_break(self) -> float:
         """Get minutes since last break (no cache - always fresh)."""
+        if not self.conport:
+            return 30.0
+
         try:
             last_break = await self.conport.get_custom_data(
                 workspace_id=self.workspace_id,
@@ -466,9 +493,7 @@ class CognitiveLoadBalancer:
                     minutes = (datetime.now() - last_break_time).total_seconds() / 60
                     return minutes
         except Exception as e:
-            pass
-
-            logger.error(f"Error: {e}")
+            logger.debug("Failed to fetch last break timestamp: %s", e)
         # Default: assume 30 minutes since break
         return 30.0
 

@@ -14,6 +14,9 @@ tags:
 - quick-reference
 last_review: '2025-10-17'
 next_review: '2026-01-15'
+author: '@hu3mann'
+prelude: Instance Switching Slash Commands (how-to) for dopemux documentation and
+  developer workflows.
 ---
 # Instance Switching Slash Commands
 

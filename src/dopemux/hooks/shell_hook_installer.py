@@ -153,8 +153,6 @@ class ShellHookInstaller:
 
             except Exception as e:
                 return False, f"Failed to install hooks in {config_path}: {e}"
-
-                logger.error(f"Error: {e}")
         if installed_count > 0:
             message = f"Successfully installed Dopemux shell hooks for {shell_type} in {installed_count} configuration file(s)."
             message += "\n\nTo activate: Restart your shell or run 'source ~/.bashrc' (or ~/.zshrc)"
@@ -220,8 +218,6 @@ class ShellHookInstaller:
 
             except Exception as e:
                 return False, f"Failed to uninstall hooks from {config_path}: {e}"
-
-                logger.error(f"Error: {e}")
         if restored_count > 0:
             message = f"Successfully uninstalled hooks from {restored_count} configuration file(s) using backups."
         else:

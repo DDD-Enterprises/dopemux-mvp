@@ -1,11 +1,15 @@
 ---
 id: task-orchestrator-analysis
 title: Task Orchestrator - Comprehensive Analysis
-type: system
+type: reference
 owner: '@hu3mann'
 created: '2026-02-02'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Task Orchestrator - Comprehensive Analysis (reference) for dopemux documentation
+  and developer workflows.
 ---
 # Task Orchestrator - Comprehensive Analysis
 
@@ -351,7 +355,8 @@ Load = 0.4 * task_complexity        # Primary load factor
 - `link_conport_items()` - Create task relationships
 - `log_decision()` - Record architectural decisions
 - `get_decisions()` - Query decision history
-- `semantic_search_conport()` - Semantic task search
+- `semantic_search()` - Primary semantic task search (prefers primary semantic MCP tool with legacy fallback)
+- `semantic_search_conport()` - Backward-compatible alias to `semantic_search()`
 - `get_active_context()` - Current work context
 
 **Integration Pattern**: Wraps ConPort MCP tools with async/await error handling

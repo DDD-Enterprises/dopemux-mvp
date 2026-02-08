@@ -5,6 +5,9 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: 07_Mcp_Contracts (explanation) for dopemux documentation and developer workflows.
 ---
 # Dope-Memory v1 — MCP Tool Contracts
 

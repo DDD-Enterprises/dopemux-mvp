@@ -8,13 +8,15 @@ last_review: '2025-10-30'
 next_review: '2026-01-30'
 adhd_score: 9.0
 tags:
-  - personas
-  - roles
-  - mcp-servers
-  - workflow
-  - adhd-optimization
+- personas
+- roles
+- mcp-servers
+- workflow
+- adhd-optimization
+author: '@hu3mann'
+prelude: Comprehensive Role & Persona Guide (how-to) for dopemux documentation and
+  developer workflows.
 ---
-
 # Dopemux Roles & Personas - Comprehensive Guide
 
 **TL;DR:** Roles control which MCP tools you have access to. Personas are behavioral guidelines that tell Claude Code how to approach tasks. Switch roles based on what you're doing (coding vs planning vs research). Let the persona guide Claude's behavior automatically.

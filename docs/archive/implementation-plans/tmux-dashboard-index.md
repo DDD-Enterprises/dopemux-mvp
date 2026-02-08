@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Tmux Dashboard Index (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Tmux Dashboard Implementation - Index
 
@@ -56,14 +60,14 @@ Created: 2025-10-28
 
 ### Implementation Plans (This Directory)
 
-6. **tmux-dashboard-implementation-tracker.md** (433 lines)
+1. **tmux-dashboard-implementation-tracker.md** (433 lines)
    - Overall progress tracking
    - Phase-by-phase breakdown
    - Technical notes and decisions
    - Success metrics
    - **Use this:** Track ongoing progress
 
-7. **tmux-dashboard-sprint-plan.md** (NEW!)
+2. **tmux-dashboard-sprint-plan.md** (NEW!)
    - Detailed 2-week sprint plan
    - Day-by-day tasks and acceptance criteria
    - Code examples for each feature

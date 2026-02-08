@@ -263,9 +263,7 @@ class ErrorHandler:
                     item = json.loads(item_raw)
                     items.append(item)
                 except Exception as e:
-                    pass
-
-                    logger.error(f"Error: {e}")
+                    logger.debug("Skipping malformed DLQ item: %s", e)
             return items
 
         except Exception as e:

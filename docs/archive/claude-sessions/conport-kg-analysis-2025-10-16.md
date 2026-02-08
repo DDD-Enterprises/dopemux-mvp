@@ -1,10 +1,14 @@
 ---
 id: conport-kg-analysis-2025-10-16
 title: Conport Kg Analysis 2025 10 16
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-01'
 next_review: '2026-05-02'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Conport Kg Analysis 2025 10 16 (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # ConPort KG Comprehensive Analysis Report
 **Date**: 2025-10-16

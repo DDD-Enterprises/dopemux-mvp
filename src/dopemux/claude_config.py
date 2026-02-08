@@ -8,15 +8,19 @@ Config Location: ~/.claude/settings.json
 """
 
 from __future__ import annotations
+import logging
+
 
 import json
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from .profile_models import Profile
 
+
+logger = logging.getLogger(__name__)
 
 # Mapping from profile-friendly names to actual Claude config names
 MCP_NAME_MAPPING = {
@@ -155,10 +159,8 @@ class ClaudeConfig:
             if backup_path and backup_path.exists():
                 try:
                     shutil.copy2(backup_path, self.config_path)
-                except Exception as e:
-                    pass  # Best effort
-
-                    logger.error(f"Error: {e}")
+                except Exception as backup_exc:
+                    logger.error(f"Error: {backup_exc}")
             raise ClaudeConfigError(
                 f"Failed to write config: {e}"
             )
@@ -219,8 +221,9 @@ class ClaudeConfig:
         self,
         profile: Profile,
         create_backup: bool = True,
-        dry_run: bool = False
-    ) -> Dict[str, Any]:
+        dry_run: bool = False,
+        return_backup_path: bool = False,
+    ) -> Union[Dict[str, Any], Tuple[Dict[str, Any], Optional[Path]]]:
         """Apply a profile to Claude configuration.
 
         Filters MCP servers to only those specified in the profile while
@@ -230,9 +233,11 @@ class ClaudeConfig:
             profile: Profile to apply
             create_backup: Whether to backup before writing (default: True)
             dry_run: If True, return what would be written without writing (default: False)
+            return_backup_path: If True, return tuple (new_config, backup_path)
 
         Returns:
-            The new configuration that was (or would be) written
+            The new configuration that was (or would be) written.
+            When return_backup_path=True, returns (new_config, backup_path).
 
         Raises:
             ClaudeConfigError: If profile cannot be applied
@@ -251,9 +256,12 @@ class ClaudeConfig:
         # Note: JSON doesn't support comments, but we can add a field
         new_config["_dopemux_active_profile"] = profile.name
 
+        backup_path: Optional[Path] = None
         if not dry_run:
-            self.write_config(new_config, create_backup=create_backup)
+            backup_path = self.write_config(new_config, create_backup=create_backup)
 
+        if return_backup_path:
+            return new_config, backup_path
         return new_config
 
     def rollback_to_backup(self, backup_path: Path) -> None:

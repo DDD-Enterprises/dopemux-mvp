@@ -24,6 +24,8 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
+logger = logging.getLogger(__name__)
+
 # ConPort-KG imports (sys.path approach validated in deep analysis)
 import sys
 import os
@@ -41,8 +43,6 @@ except ImportError as e:
         pass
     class AttentionStateMonitor:
         pass
-
-logger = logging.getLogger(__name__)
 
 
 class CognitiveGuardianKG:
@@ -79,7 +79,8 @@ class CognitiveGuardianKG:
             enable_kg: Enable KG features (False = graceful degradation mode)
         """
         self.workspace_id = workspace_id
-        self.enable_kg = enable_kg and CONPORT_KG_AVAILABLE
+        # Allow dependency-injected clients even when optional ConPort-KG imports are unavailable.
+        self.enable_kg = enable_kg and (CONPORT_KG_AVAILABLE or age_client is not None)
         
         # Dependency injection with defaults
         if self.enable_kg:

@@ -5,7 +5,7 @@ Auto-detects optimal profile based on context signals with ADHD-friendly scoring
 Implements weighted scoring algorithm from design spec.
 """
 
-from typing import Optional, List, Dict, Tuple
+from typing import Optional, List, Dict, Tuple, Any
 
 import logging
 
@@ -17,6 +17,9 @@ from datetime import datetime
 import fnmatch
 import subprocess
 import os
+import json
+from urllib.request import Request, urlopen
+from urllib.error import URLError, HTTPError
 
 from .profile_models import Profile
 from .profile_parser import ProfileParser
@@ -76,10 +79,10 @@ class ProfileDetector:
         Args:
             profile_dir: Directory containing profile YAML files
         """
-        from .profile_commands import get_profiles_directory
+        from .profile_manager import ProfileManager
 
         # Get profiles directory
-        profiles_directory = profile_dir or get_profiles_directory()
+        profiles_directory = profile_dir or ProfileManager().profiles_dir
 
         # Parse all profiles
         self.parser = ProfileParser(validate_mcps=False)
@@ -280,20 +283,29 @@ class ProfileDetector:
         if not patterns or not recent_files:
             return 0.0
 
-        # Check if any recent file matches any pattern
+        # Row 2.1.5 requirement: score by match percentage (0-10 points).
+        candidates: List[str] = []
+        seen = set()
+        for file in recent_files[:10]:
+            normalized = str(file).strip()
+            if not normalized or normalized in seen:
+                continue
+            candidates.append(normalized)
+            seen.add(normalized)
+
+        if not candidates:
+            return 0.0
+
         matches = 0
-        for file in recent_files[:10]:  # Check last 10 files
+        for file in candidates:
+            file_name = Path(file).name
             for pattern in patterns:
-                if fnmatch.fnmatch(file, pattern):
+                if fnmatch.fnmatch(file, pattern) or fnmatch.fnmatch(file_name, pattern):
                     matches += 1
                     break  # Count each file once
 
-        if matches == 0:
-            return 0.0
-
-        # Partial scoring: more matches = higher score
-        ratio = min(matches / 5, 1.0)  # Cap at 5 matches
-        return self.WEIGHT_FILE_PATTERNS * ratio
+        match_ratio = matches / len(candidates)
+        return self.WEIGHT_FILE_PATTERNS * match_ratio
 
     def _gather_context(self) -> DetectionContext:
         """Auto-gather detection context from environment"""
@@ -344,30 +356,92 @@ class ProfileDetector:
                 recent.extend([str(p.name) for p in context.current_dir.glob(ext)][:3])
             context.recent_files = recent[:10]
 
-        # Query ADHD Engine for energy and attention states
-        try:
-            # Try to import ADHD Engine client
-            import sys
-            sys.path.append(str(Path(__file__).parent.parent.parent / "services" / "adhd_engine"))
-            from api.routes import get_energy_level, get_attention_state
-            import httpx
+        # Query ADHD Engine for energy and attention states.
+        # Row 2.1.3 requirement: query runtime service (5448 default), graceful fallback.
+        energy_level, attention_mode = self._fetch_adhd_engine_state()
+        if energy_level:
+            context.energy_level = energy_level
+        if attention_mode:
+            context.attention_mode = attention_mode
 
-            # Get energy level (mock user_id for now)
-            energy_response = get_energy_level("default_user")
-            if energy_response.energy_level:
-                context.energy_level = energy_response.energy_level.lower()
-
-            # Get attention state
-            attention_response = get_attention_state("default_user")
-            if attention_response.attention_state:
-                context.attention_mode = attention_response.attention_state.lower()
-
-        except Exception as e:
-            # ADHD Engine not available, leave as None
-            pass
-
-            logger.error(f"Error: {e}")
         return context
+
+    def _adhd_engine_base_urls(self) -> List[str]:
+        """
+        Build ADHD Engine base URLs in priority order.
+
+        Priority:
+        1. DOPMUX_ADHD_ENGINE_BASE_URL if provided.
+        2. DOPMUX_ADHD_ENGINE_PORT if provided.
+        3. Historical default port 5448.
+        4. Current service default port 8095.
+        """
+        explicit_base = os.getenv("DOPEMUX_ADHD_ENGINE_BASE_URL", "").strip()
+        if explicit_base:
+            return [explicit_base.rstrip("/")]
+
+        ports: List[int] = []
+        env_port = os.getenv("DOPEMUX_ADHD_ENGINE_PORT", "").strip()
+        if env_port.isdigit():
+            ports.append(int(env_port))
+
+        for fallback in (5448, 8095):
+            if fallback not in ports:
+                ports.append(fallback)
+
+        return [f"http://localhost:{port}" for port in ports]
+
+    def _read_json_url(self, url: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+        """
+        Read JSON payload from an HTTP endpoint.
+        """
+        req = Request(url=url, headers=headers or {}, method="GET")
+        with urlopen(req, timeout=1.5) as resp:
+            payload = resp.read().decode("utf-8")
+        return json.loads(payload)
+
+    def _fetch_adhd_engine_state(self) -> Tuple[Optional[str], Optional[str]]:
+        """
+        Fetch energy and attention state from ADHD Engine API.
+
+        Returns:
+            (energy_level, attention_mode), lowercased when present.
+            (None, None) when service is unavailable.
+        """
+        user_id = os.getenv("DOPEMUX_ADHD_USER_ID", "default_user").strip() or "default_user"
+        api_key = os.getenv("ADHD_ENGINE_API_KEY", "").strip()
+        headers: Dict[str, str] = {}
+        if api_key:
+            headers["X-API-Key"] = api_key
+
+        for base_url in self._adhd_engine_base_urls():
+            try:
+                energy_data = self._read_json_url(
+                    f"{base_url}/api/v1/energy-level/{user_id}",
+                    headers=headers,
+                )
+                attention_data = self._read_json_url(
+                    f"{base_url}/api/v1/attention-state/{user_id}",
+                    headers=headers,
+                )
+
+                raw_energy = energy_data.get("energy_level")
+                raw_attention = attention_data.get("attention_state")
+
+                energy_level = raw_energy.lower() if isinstance(raw_energy, str) and raw_energy else None
+                attention_mode = raw_attention.lower() if isinstance(raw_attention, str) and raw_attention else None
+
+                if energy_level or attention_mode:
+                    return energy_level, attention_mode
+
+            except (HTTPError, URLError, TimeoutError, json.JSONDecodeError, OSError, ValueError) as exc:
+                logger.debug("ADHD Engine probe failed at %s: %s", base_url, exc)
+                continue
+            except Exception as exc:
+                logger.debug("Unexpected ADHD Engine probe error at %s: %s", base_url, exc)
+                continue
+
+        return None, None
 
     def get_all_scores(self, context: Optional[DetectionContext] = None) -> Dict[str, ProfileMatch]:
         """

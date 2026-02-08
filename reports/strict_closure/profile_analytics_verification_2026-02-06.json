@@ -1,0 +1,40 @@
+{
+  "run_timestamp_utc": "2026-02-07T00:58:00Z",
+  "branch": "codex/wave-next",
+  "backlog_items": [
+    "4.4.1: Metrics collection",
+    "4.4.2: dopemux profile stats command",
+    "4.4.3: Analytics dashboard"
+  ],
+  "implementation": {
+    "runtime_modules": [
+      "src/dopemux/profile_analytics.py",
+      "src/dopemux/profile_commands.py",
+      "src/dopemux/cli.py"
+    ],
+    "verified_behaviors": [
+      "switch analytics include duration and MCP/tool-count metrics persisted through profile telemetry path",
+      "profile stats command consumes aggregated analytics and presents ADHD-optimized usage insights",
+      "ASCII dashboard output includes profile usage table and time-of-day heatmap"
+    ],
+    "tests": [
+      "tests/unit/test_profile_analytics.py::test_analyze_switches_computes_duration_and_mcp_averages",
+      "tests/unit/test_profile_analytics.py::test_log_switch_includes_duration_and_mcp_metrics",
+      "tests/unit/test_profile_analytics.py::test_display_stats_includes_ascii_heatmap_and_usage_insights",
+      "tests/unit/test_profile_use_command.py::test_use_profile_logs_switch_duration_and_mcp_count"
+    ]
+  },
+  "verification": {
+    "commands": [
+      {
+        "command": "pytest -q --no-cov tests/unit/test_profile_analytics.py tests/unit/test_profile_use_command.py tests/unit/test_profile_management_commands.py tests/unit/test_profile_manager_detection.py tests/unit/test_profile_cli_registration.py tests/unit/test_auto_detection_service.py tests/test_claude_config.py",
+        "status": "pass"
+      },
+      {
+        "command": "python -m py_compile src/dopemux/profile_analytics.py src/dopemux/profile_commands.py",
+        "status": "pass"
+      }
+    ]
+  },
+  "status": "implemented"
+}

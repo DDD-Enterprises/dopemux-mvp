@@ -13,9 +13,11 @@ Code Reuse: 80% from Zen MCP (listmodels wrapper)
 """
 
 import asyncio
+import json
 import logging
-from datetime import datetime, timezone
-from typing import Optional, Dict, Any, List
+import os
+from pathlib import Path
+from typing import Optional, Dict, Any
 from dataclasses import dataclass
 from enum import Enum
 
@@ -95,6 +97,7 @@ class ToolOrchestrator:
         self,
         workspace_id: str,
         conport_client: Optional[Any] = None,
+        config: Optional[Any] = None,
         enable_cost_tracking: bool = True
     ):
         """
@@ -103,10 +106,12 @@ class ToolOrchestrator:
         Args:
             workspace_id: Absolute path to workspace
             conport_client: ConPort MCP client for metrics logging
+            config: Optional settings object (e.g., exposes zen_model_catalog)
             enable_cost_tracking: Track estimated costs
         """
         self.workspace_id = workspace_id
         self.conport_client = conport_client
+        self.config = config
         self.enable_cost_tracking = enable_cost_tracking
 
         # Available models (from Zen MCP listmodels)
@@ -141,8 +146,11 @@ class ToolOrchestrator:
 
         Week 8: 80% code reuse - wrapper around mcp__zen__listmodels
         """
-        # TODO: Call real mcp__zen__listmodels when Zen MCP connected
-        # For now, use hardcoded model catalog
+        external_catalog = self._load_external_model_catalog()
+        if external_catalog:
+            self.available_models = external_catalog
+            logger.info(f"📋 Loaded {len(self.available_models)} models from external catalog")
+            return
 
         self.available_models = {
             # Fast tier (Intelligence 12-13)
@@ -209,6 +217,70 @@ class ToolOrchestrator:
         }
 
         logger.info(f"📋 Loaded {len(self.available_models)} models")
+
+    def _load_external_model_catalog(self) -> Dict[str, Dict[str, Any]]:
+        """Load model catalog from config/env when provided by Zen integration."""
+        raw_catalog: Any = None
+
+        if self.config is not None:
+            raw_catalog = getattr(self.config, "zen_model_catalog", None)
+
+        if raw_catalog is None:
+            raw_catalog = os.getenv("DOPEMUX_ZEN_MODEL_CATALOG")
+
+        if raw_catalog is None:
+            catalog_path = os.getenv("DOPEMUX_ZEN_MODEL_CATALOG_FILE")
+            if catalog_path:
+                try:
+                    raw_catalog = Path(catalog_path).read_text(encoding="utf-8")
+                except OSError as exc:
+                    logger.warning("Failed to read DOPEMUX_ZEN_MODEL_CATALOG_FILE=%s: %s", catalog_path, exc)
+                    return {}
+
+        if not raw_catalog:
+            return {}
+
+        if isinstance(raw_catalog, str):
+            try:
+                raw_catalog = json.loads(raw_catalog)
+            except json.JSONDecodeError as exc:
+                logger.warning("Invalid DOPMUX_ZEN_MODEL_CATALOG JSON: %s", exc)
+                return {}
+
+        if not isinstance(raw_catalog, dict):
+            logger.warning("External model catalog must be a mapping of model->metadata")
+            return {}
+
+        def _to_int(value: Any, default: int) -> int:
+            try:
+                return int(value)
+            except (TypeError, ValueError):
+                return default
+
+        def _to_float(value: Any, default: float) -> float:
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return default
+
+        normalized: Dict[str, Dict[str, Any]] = {}
+        for model_name, metadata in raw_catalog.items():
+            if not isinstance(metadata, dict):
+                continue
+            tier_raw = str(metadata.get("tier", ModelTier.MID.value)).lower()
+            try:
+                tier = ModelTier(tier_raw)
+            except ValueError:
+                tier = ModelTier.MID
+            normalized[str(model_name)] = {
+                "tier": tier,
+                "intelligence": _to_int(metadata.get("intelligence", 14), 14),
+                "context": str(metadata.get("context", "400K")),
+                "cost_per_1m": _to_float(metadata.get("cost_per_1m", 1.0), 1.0),
+                "avg_latency": _to_float(metadata.get("avg_latency", 3.0), 3.0),
+            }
+
+        return normalized
 
     def _load_selection_rules(self) -> Dict[str, Any]:
         """
@@ -316,21 +388,28 @@ class ToolOrchestrator:
         complexity_tier = self._get_complexity_tier(complexity)
 
         # Select primary MCP server based on task type
-        if task_type in self.selection_rules["task_types"]:
-            rule = self.selection_rules["task_types"][task_type]
+        rule = self.selection_rules["task_types"].get(task_type)
+        resolved_task_type = task_type
+        if rule is None:
+            resolved_task_type = "analysis"
+            rule = self.selection_rules["task_types"][resolved_task_type]
+            logger.warning("Unknown task type '%s'; defaulting to '%s'", task_type, resolved_task_type)
 
-            # Select model for this tool
-            model = await self._select_model_for_complexity(complexity_tier, task_type)
+        # Select model for this tool
+        model = await self._select_model_for_complexity(complexity_tier, resolved_task_type)
 
-            selections["primary"] = ToolSelection(
-                primary_tool=rule["primary"],
-                method=rule.get("method"),
-                model=model["name"] if model else None,
-                fallback_tool=rule.get("fallback"),
-                rationale=f"{task_type} task (complexity: {complexity:.2f})",
-                estimated_cost=model.get("cost_per_1m", 0.0) if model else 0.0,
-                estimated_latency=model.get("avg_latency", 0.0) if model else 0.0
-            )
+        selections["primary"] = ToolSelection(
+            primary_tool=rule["primary"],
+            method=rule.get("method"),
+            model=model["name"] if model else None,
+            fallback_tool=rule.get("fallback"),
+            rationale=f"{resolved_task_type} task (complexity: {complexity:.2f})",
+            estimated_cost=model.get("cost_per_1m", 0.0) if model else 0.0,
+            estimated_latency=model.get("avg_latency", 0.0) if model else 0.0
+        )
+
+        if self.enable_cost_tracking and model:
+            self.metrics["total_estimated_cost"] += float(model.get("cost_per_1m", 0.0))
 
         # Add supporting tools based on requirements
         if requirements:

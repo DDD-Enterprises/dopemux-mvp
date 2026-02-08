@@ -20,6 +20,47 @@ from .core import cache_manager
 logger = logging.getLogger(__name__)
 
 
+def _build_mcp_error_detail(
+    service: str,
+    tool_name: str,
+    status: Optional[int] = None,
+    upstream_text: str = "",
+    transport_error: Optional[str] = None,
+) -> str:
+    """Generate actionable error details for MCP upstream failures."""
+    context = f"{service}.{tool_name}"
+    if transport_error:
+        base = f"MCP call failed for {context}: {transport_error}"
+    else:
+        base = f"MCP call failed for {context} with upstream status {status}"
+        if upstream_text:
+            base += f" ({upstream_text[:300]})"
+
+    if service == "leantime-bridge":
+        lowered = upstream_text.lower()
+        setup_signals = (
+            "token",
+            "api key",
+            "unauthorized",
+            "forbidden",
+            "setup",
+            "install",
+            "wizard",
+            "login",
+            "not configured",
+            "redirect",
+        )
+        if transport_error or status in {401, 403, 404, 409, 422, 500, 502, 503} or any(
+            signal in lowered for signal in setup_signals
+        ):
+            base += (
+                " | Leantime readiness hint: complete the Leantime web setup wizard at "
+                "http://localhost:8080, generate/verify API credentials, and configure "
+                "LEANTIME_API_TOKEN for leantime-bridge."
+            )
+    return base
+
+
 class MCPClientManager:
     """Manages connections to instance-specific MCP servers."""
 
@@ -44,14 +85,37 @@ class MCPClientManager:
 
         try:
             async with self.session.post(url, json=arguments) as response:
-                response.raise_for_status()
-                result = await response.json()
+                raw_text = await response.text()
+                if response.status >= 400:
+                    detail = _build_mcp_error_detail(
+                        service=service,
+                        tool_name=tool_name,
+                        status=response.status,
+                        upstream_text=raw_text,
+                    )
+                    logger.error("❌ %s", detail)
+                    raise HTTPException(status_code=502, detail=detail)
+
+                if raw_text:
+                    try:
+                        result = json.loads(raw_text)
+                    except json.JSONDecodeError:
+                        result = {"raw_response": raw_text}
+                else:
+                    result = {}
                 logger.debug(f"🔧 {service}.{tool_name} -> {result}")
                 return result
 
+        except HTTPException:
+            raise
         except aiohttp.ClientError as e:
-            logger.error(f"❌ MCP call failed: {service}.{tool_name} - {e}")
-            raise HTTPException(status_code=502, detail=f"Service {service} unavailable")
+            detail = _build_mcp_error_detail(
+                service=service,
+                tool_name=tool_name,
+                transport_error=str(e),
+            )
+            logger.error("❌ %s", detail)
+            raise HTTPException(status_code=502, detail=detail)
 
     def _get_service_url(self, service: str) -> str:
         """Get instance-specific service URL."""

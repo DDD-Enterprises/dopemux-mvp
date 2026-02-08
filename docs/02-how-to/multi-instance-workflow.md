@@ -14,6 +14,9 @@ tags:
 - parallel-development
 last_review: '2025-10-17'
 next_review: '2026-01-15'
+author: '@hu3mann'
+prelude: Multi-Instance Workflow Guide (how-to) for dopemux documentation and developer
+  workflows.
 ---
 # Multi-Instance Workflow Guide
 

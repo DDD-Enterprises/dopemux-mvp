@@ -423,6 +423,7 @@ class EnhancedLSPWrapper:
             async with self.request_semaphore:
                 # Wait for server to be ready
                 await self.server_ready[language].wait()
+                start_time = time.time()
 
                 # Send definition request
                 request = {

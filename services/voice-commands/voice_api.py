@@ -4,6 +4,8 @@ Voice Commands API Server
 FastAPI server for voice-activated task decomposition
 """
 
+import logging
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -14,6 +16,8 @@ import os
 
 from voice_task_decomposer import VoiceTaskDecomposer
 from conport_integration import VoiceConPortIntegration
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Voice Commands API", version="1.0.0")
 

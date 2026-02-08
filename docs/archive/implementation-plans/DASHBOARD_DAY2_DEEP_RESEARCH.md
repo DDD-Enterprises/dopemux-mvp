@@ -5,6 +5,10 @@ type: explanation
 owner: '@hu3mann'
 last_review: '2025-11-10'
 next_review: '2026-02-08'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Dashboard_Day2_Deep_Research (explanation) for dopemux documentation and
+  developer workflows.
 ---
 # Dashboard Day 2: Deep Research & Planning 🔬
 
@@ -382,24 +386,24 @@ Priority 4: Exact numbers (only on hover/drill-down)
    - Color: Green (low), Red (high)
 
 ### Tier 2: Flow State Metrics (Should Have)
-4. **Flow Duration** (24-hour window)
+1. **Flow Duration** (24-hour window)
    - Query: `adhd_flow_duration_seconds`
    - Update: Every 5 min
    - Scale: Minutes in flow
    - Color: Green (high), Yellow (low)
 
-5. **Break Adherence** (7-day window)
+2. **Break Adherence** (7-day window)
    - Query: `adhd_break_adherence_rate`
    - Update: Every 5 min
    - Scale: 0-100%
    - Color: Green (>80%), Yellow (60-80%), Red (<60%)
 
 ### Tier 3: Pattern Metrics (Nice to Have)
-6. **Decision Quality** (7-day trend)
+1. **Decision Quality** (7-day trend)
    - Query: `conport_decision_quality_score`
    - Update: Every 5 min
 
-7. **Pattern Matches** (24-hour trend)
+2. **Pattern Matches** (24-hour trend)
    - Query: `serena_pattern_matches_total`
    - Update: Every 1 min
 

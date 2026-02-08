@@ -1,0 +1,10 @@
+{
+  "artifact": "mcp_token_management_doc_verification_2026-02-06",
+  "generated_on": "2026-02-06",
+  "status": "implemented",
+  "claim": "Document MCP token budgeting best practices for future MCP development (add to docs/best-practices/mcp-token-management.md)",
+  "evidence": {
+    "doc_path": "docs/best-practices/mcp-token-management.md",
+    "docs_index_path": "docs/docs_index.yaml"
+  }
+}

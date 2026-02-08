@@ -15,6 +15,7 @@ Architecture:
 """
 
 import json
+import logging
 import uuid
 from datetime import datetime, date
 from typing import Dict, List, Optional, Any, Union
@@ -28,6 +29,8 @@ from mcp.types import TextContent, ImageContent
 # Database connection (assuming asyncpg or similar)
 import asyncpg
 from pgvector.asyncpg import register_vector
+
+logger = logging.getLogger(__name__)
 
 class EntityType(Enum):
     DECISION = "decision"
@@ -367,35 +370,59 @@ class ConPortMCPTools:
 
     async def semantic_search(self, workspace_id: str, query: str, entity_types: List[str] = None,
                             top_k: int = 5) -> List[Dict]:
-        """Semantic search across entities using vector similarity"""
-        # This would integrate with Voyage embeddings
-        # Simplified implementation - in practice would use vector search
-        entity_filter = ""
-        if entity_types:
-            entity_filter = f" AND entity_type IN ({','.join(f'${i+3}' for i in range(len(entity_types)))})"
-
-        query_sql = f"""
-            SELECT entity_type, entity_id, content, chunk_index,
-                   1 - (embedding <=> $1::vector) as similarity_score
-            FROM semantic_chunks
-            WHERE workspace_id = $2 {entity_filter}
-            ORDER BY embedding <=> $1::vector
-            LIMIT $3
-        """
-
-        # Note: This requires actual embedding generation for the query
-        # In practice, you'd call Voyage API here
+        """Deprecated semantic search shim using keyword fallback for compatibility."""
+        logger.warning(
+            "conport.semantic_search is deprecated and running in keyword fallback mode; "
+            "use dope-context/serena semantic search for vector retrieval."
+        )
+        top_k = max(int(top_k), 1)
+        search_pattern = f"%{query}%"
         async with self.db_pool.acquire() as conn:
-            # Placeholder - actual implementation would embed the query first
-            rows = await conn.fetch("""
-                SELECT entity_type, entity_id, content, chunk_index, 0.5 as similarity_score
-                FROM semantic_chunks
+            rows = await conn.fetch(
+                """
+                SELECT
+                    'decision'::text AS entity_type,
+                    id::text AS entity_id,
+                    summary AS content,
+                    created_at
+                FROM decisions
                 WHERE workspace_id = $1
+                  AND (summary ILIKE $2 OR rationale ILIKE $2)
+                  AND ($4::text[] IS NULL OR 'decision' = ANY($4))
+                UNION ALL
+                SELECT
+                    'progress_entry'::text AS entity_type,
+                    id::text AS entity_id,
+                    description AS content,
+                    created_at
+                FROM progress_entries
+                WHERE workspace_id = $1
+                  AND description ILIKE $2
+                  AND ($4::text[] IS NULL OR 'progress_entry' = ANY($4))
                 ORDER BY created_at DESC
-                LIMIT $2
-            """, workspace_id, top_k)
+                LIMIT $3
+                """,
+                workspace_id,
+                search_pattern,
+                top_k,
+                entity_types if entity_types else None,
+            )
 
-        return [dict(row) for row in rows]
+        deprecation_notice = (
+            "Deprecated compatibility shim: ConPort semantic_search uses keyword fallback only. "
+            "Use dope-context/serena semantic search for vector retrieval."
+        )
+        return [
+            {
+                **dict(row),
+                "chunk_index": None,
+                "similarity_score": None,
+                "search_mode": "keyword_fallback",
+                "deprecated": True,
+                "deprecation_notice": deprecation_notice,
+            }
+            for row in rows
+        ]
 
 # =====================================================
 # MCP TOOL REGISTRATION

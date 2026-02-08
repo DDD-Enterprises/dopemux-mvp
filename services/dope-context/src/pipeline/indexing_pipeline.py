@@ -14,7 +14,7 @@ import hashlib
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 from datetime import datetime
 
 from ..preprocessing.code_chunker import CodeChunker, CodeChunk, ChunkingConfig
@@ -122,7 +122,7 @@ class IndexingPipeline:
     def __init__(
         self,
         chunker: CodeChunker,
-        context_generator: Optional["OpenAIContextGenerator"],
+        context_generator: Optional[Any],
         standard_embedder: VoyageEmbedder,
         contextualized_embedder: ContextualizedEmbedder,
         vector_search: MultiVectorSearch,

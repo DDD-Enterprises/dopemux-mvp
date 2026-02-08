@@ -1,0 +1,25 @@
+{
+  "artifact": "reports/strict_closure/leantime_route_error_contract_verification_2026-02-07.json",
+  "generated_at_utc": "2026-02-07T00:00:00Z",
+  "summary": {
+    "scope": "dopecon-bridge MCP client upstream error handling for PM plane",
+    "status": "implemented_and_verified",
+    "remaining_blocker": "external_leantime_manual_setup",
+    "tests_executed": [
+      "services/dopecon-bridge/tests/test_leantime_route_contract.py::test_mcp_client_includes_leantime_setup_hint_on_upstream_error",
+      "services/dopecon-bridge/tests/test_leantime_route_contract.py::test_mcp_client_preserves_non_leantime_status_context"
+    ]
+  },
+  "implementation": {
+    "files": [
+      "services/dopecon-bridge/main.py",
+      "services/dopecon-bridge/dopecon_bridge/clients.py",
+      "services/dopecon-bridge/tests/test_leantime_route_contract.py"
+    ],
+    "behavior": [
+      "Preserve upstream HTTP status/body context in 502 details instead of generic 'service unavailable'.",
+      "Attach explicit Leantime setup guidance when PM-plane failures indicate incomplete setup or missing API credentials.",
+      "Keep additive/no-breaking external API behavior."
+    ]
+  }
+}

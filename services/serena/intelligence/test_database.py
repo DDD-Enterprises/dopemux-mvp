@@ -20,6 +20,8 @@ Tests 13 critical areas:
 Status: RED phase - expect failures before database setup
 """
 
+import logging
+
 import asyncio
 import pytest
 import pytest_asyncio
@@ -27,6 +29,8 @@ import time
 from typing import Dict, Any, List
 from unittest.mock import Mock, AsyncMock, patch
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 # Import database module using project root
 from intelligence.database import (

@@ -1,10 +1,13 @@
 ---
 id: final-test-report
 title: Final Test Report
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Final Test Report (explanation) for dopemux documentation and developer workflows.
 ---
 # Dope-Context: Complete Testing & Validation Report
 
@@ -153,6 +156,7 @@ Dope-context semantic search system has been comprehensively indexed, tested, an
 ## 📊 Performance Benchmarks
 
 ### Indexing Performance
+
 | Metric | Target | Actual | Status |
 |--------|--------|--------|--------|
 | Code (50 files) | < 5 min | ~15 min | ⚠️ Acceptable* |
@@ -162,6 +166,7 @@ Dope-context semantic search system has been comprehensively indexed, tested, an
 *Includes gpt-5-mini context generation + 3 Voyage embedding calls per chunk
 
 ### Search Performance
+
 | Metric | ADHD Target | Actual | Status |
 |--------|-------------|--------|--------|
 | Response time | < 2s | < 2s | ✅ |
@@ -169,6 +174,7 @@ Dope-context semantic search system has been comprehensively indexed, tested, an
 | Relevance (top-3) | > 0.4 | 0.43-0.73 | ✅ Excellent |
 
 ### Cost Efficiency
+
 | Operation | Cost | Status |
 |-----------|------|--------|
 | 50 code files (w/ context) | $0.052 | ✅ Very affordable |

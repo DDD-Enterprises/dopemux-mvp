@@ -1,10 +1,14 @@
 ---
 id: PHASE2_REFACTOR_PLAN
 title: Phase2_Refactor_Plan
-type: historical
+type: explanation
 owner: '@hu3mann'
 last_review: '2026-02-02'
 next_review: '2026-05-03'
+author: '@hu3mann'
+date: '2026-02-05'
+prelude: Phase2_Refactor_Plan (explanation) for dopemux documentation and developer
+  workflows.
 ---
 # Phase 2 Full Refactor - Remaining Work
 
@@ -91,13 +95,13 @@ from reflection.reflection import ReflectionGenerator
 from trajectory.manager import TrajectoryManager
 ```
 
-3. **Initialize in `DopeMemoryMCPServer.__init__()`**:
+1. **Initialize in `DopeMemoryMCPServer.__init__()`**:
 ```python
 self.reflection_gen = None  # Lazy init per workspace
 self.trajectory_mgr = None  # Lazy init per workspace
 ```
 
-4. **Update endpoints** to use new modules:
+1. **Update endpoints** to use new modules:
 ```python
 @app.post("/tools/memory_generate_reflection")
 async def memory_generate_reflection(request: MemoryGenerateReflectionRequest):
