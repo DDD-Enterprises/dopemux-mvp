@@ -11,7 +11,7 @@ Instead of starting all 17 configured servers, use profiles to start only what y
 | Profile | Servers | Use Case | Startup Time | Memory |
 |---------|---------|----------|--------------|--------|
 | **minimal** | 5 | Quick workflows, basic development | ~30s | ~300MB |
-| **development** | 10 | Full-featured development | ~45s | ~700MB |
+| **development** | 9 | Full-featured development | ~45s | ~700MB |
 | **full** | 13+ | Complete feature set, production | ~60s | ~1GB |
 
 ---
@@ -48,13 +48,12 @@ Instead of starting all 17 configured servers, use profiles to start only what y
 ### Development Profile
 **Start command**: `docker-compose --profile development up -d`
 
-**Servers** (10):
-Includes minimal + these 5:
+**Servers** (9):
+Includes minimal + these 4:
 6. **dope-context** - Semantic code/doc search
 7. **task-orchestrator** - Task management (37 tools)
-8. **context7** - Official documentation
-9. **desktop-commander** - Desktop automation
-10. **exa** - Neural web search
+8. **desktop-commander** - Desktop automation
+9. **exa** - Neural web search
 
 **Use Case**:
 - Feature development
@@ -66,7 +65,7 @@ Includes minimal + these 5:
 - ✅ All minimal features
 - ✅ Semantic search (dope-context)
 - ✅ Task management (task-orchestrator)
-- ✅ Official docs (context7)
+- ✅ Official docs (PAL apilookup, default)
 - ✅ Research (exa)
 - ❌ Deep research (gptr-mcp)
 - ❌ Project management integration
@@ -145,7 +144,7 @@ docker-compose --profile minimal up -d gptr-mcp
 | Profile | Memory | CPU (idle) | Disk | Containers |
 |---------|--------|------------|------|------------|
 | **Minimal** | ~300MB | <2% | ~500MB | 5 |
-| **Development** | ~700MB | <4% | ~1GB | 10 |
+| **Development** | ~700MB | <4% | ~1GB | 9 |
 | **Full** | ~1GB | <6% | ~1.5GB | 13 |
 
 ### Startup Times
@@ -202,7 +201,7 @@ docker-compose up -d pal litellm serena qdrant
 ```bash
 docker-compose up -d \
   pal litellm serena qdrant \
-  dope-context task-orchestrator context7 desktop-commander exa
+  dope-context task-orchestrator desktop-commander exa
 ```
 
 #### Full Servers
@@ -239,7 +238,10 @@ services:
 docker-compose up -d pal litellm serena qdrant
 
 # Need research? Add on-demand
-docker-compose up -d exa context7
+docker-compose up -d exa
+
+# Optional legacy docs source (if required by a workflow)
+docker-compose up -d context7
 
 # Deep work? Add semantic search
 docker-compose up -d dope-context
@@ -257,7 +259,7 @@ docker-compose up -d pal serena litellm
 docker-compose up -d task-orchestrator
 
 # Research: Add search tools
-docker-compose up -d dope-context exa context7
+docker-compose up -d dope-context exa
 
 # Track metrics: Add activity capture
 docker-compose up -d activity-capture

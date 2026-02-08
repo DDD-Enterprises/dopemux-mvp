@@ -25,7 +25,7 @@ It is **NOT** a Two-Plane coordinator - that architecture was simplified. It's n
 - Redis Streams queue management
 - Event bus coordination (pub/sub)
 - Multi-instance event isolation
-- MetaMCP role-based tool filtering enforcement
+- Legacy MetaMCP role-filtering references (historical only; not runtime authority)
 
 **DopeconBridge NEVER:**
 
@@ -170,9 +170,9 @@ Content-Type: application/json
 # Returns: {"allowed": false, "authority": "conport", "reason": "Only ConPort can update task status"}
 ```
 
-## MetaMCP Role-Based Tool Filtering
+## Legacy MetaMCP Role-Based Tool Filtering (Historical)
 
-The DopeconBridge enforces **tool-level boundaries** via MetaMCP configuration:
+DopeconBridge no longer depends on a MetaMCP broker as runtime authority. Keep this section as legacy context only; current authority is profile-driven tool exposure and orchestrator policy (ADR-210).
 
 ```yaml
 # MetaMCP Role Configuration (enforced by DopeconBridge)
