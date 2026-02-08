@@ -267,7 +267,6 @@ class ADHDAccommodationEngine:
             self._attention_state_monitor(),
             self._cognitive_load_monitor(),
             self._break_timing_monitor(),
-            self._break_timing_monitor(),
             self._hyperfocus_protection_monitor(),
             self._context_switch_analyzer(),
             self._start_event_listener()
@@ -305,7 +304,8 @@ class ADHDAccommodationEngine:
         # Let's import the event bus if available.
         try:
             from ..event_emitter import ADHDEventEmitter
-            self.event_bus = ADHDEventEmitter(self.conport) # Wrapper
+            # Event emitter expects a Redis URL, not a bridge adapter object.
+            self.event_bus = ADHDEventEmitter(settings.redis_url)
         except ImportError:
             self.event_bus = None
             
