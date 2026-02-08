@@ -160,6 +160,14 @@ def main() -> int:
                 else str(_json_or_text(out_list_projects))
             ),
             "token_status": "set" if "LEANTIME_API_TOKEN=set" in out_env else "unset",
+            "setup_required_signal_present": (
+                (
+                    isinstance(_json_or_text(out_health_deep), dict)
+                    and _json_or_text(out_health_deep).get("status") == "needs_setup"
+                )
+                or "/install" in str(_json_or_text(out_health_deep)).lower()
+                or "/install" in str(_json_or_text(out_list_projects)).lower()
+            ),
             "queue_fail_signal_present": (
                 fail_counts["emails_fail"] > 0
                 or fail_counts["httprequests_fail"] > 0
