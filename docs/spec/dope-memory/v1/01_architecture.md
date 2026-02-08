@@ -94,6 +94,25 @@ Curated entries
 Reflections (Phase 2)
 - Durable, derived from curated entries
 
+## Capture Adapters and Canonical Ledger
+- Canonical per-project ledger path: `repo_root/.dopemux/chronicle.sqlite`
+- Repo root resolution is deterministic:
+  - Walk upward from current path
+  - First match of `.git/` or `.dopemux/` is authoritative
+  - If no marker exists, capture fails closed with a user-visible error
+- Capture adapters must write through one shared capture client:
+  - `plugin` (Claude hook capture)
+  - `cli` (Dopemux CLI capture)
+  - `mcp` (MCP/bridge capture)
+  - `auto` (context-driven selection)
+- Capture writes append-only `raw_activity_events` with:
+  - redaction before persistence
+  - deterministic idempotency key (`event_id`)
+  - duplicate-safe inserts (`INSERT OR IGNORE`)
+- Injection policy remains explicit:
+  - Capture does not auto-inject prompt context
+  - Retrieval/injection is controlled by explicit tool calls only
+
 ## Determinism Requirements
 Ordering
 - Primary: importance_score DESC
