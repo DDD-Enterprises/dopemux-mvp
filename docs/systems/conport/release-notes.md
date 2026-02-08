@@ -36,7 +36,7 @@ and prefers dope-context/Serena retrieval for primary semantic flows.
 ### Fixes & Improvements
 
 - **Pydantic Validation Fix:** Corrected an issue where Pydantic's `ge=1` constraint was being applied before the `IntCoercionMixin` could convert string-based integers, causing validation errors. The fix ensures that string-to-integer coercion happens before validation, allowing for more flexible input.
-- Timezone-aware datetimes: replaced naive UTC usage with aware UTC across models and DB code, and registered SQLite adapters/converters for reliable UTC round-tripping. Files: [src/context_portal_mcp/db/models.py](src/context_portal_mcp/db/models.py), [src/context_portal_mcp/db/database.py](src/context_portal_mcp/db/database.py).
+- Timezone-aware datetimes: replaced naive UTC usage with aware UTC across models and DB code, and registered SQLite adapters/converters for reliable UTC round-tripping. Files: `src/context_portal_mcp/db/models.py`, `src/context_portal_mcp/db/database.py` (upstream Context Portal paths).
 - Integer-like string inputs: added lenient parsing that coerces digit-only strings to integers before validation in relevant argument models. Credit: @cipradu.
 - Dependency security: addressed Starlette advisory GHSA-2c2j-9gv5-cj73 by upgrading FastAPI to 0.116.2 and constraining Starlette to >=0.47.2,<0.49.0; verified via pip-audit: "No known vulnerabilities found."
 
@@ -243,8 +243,8 @@ This release focuses on enhancing deployment flexibility and improving the PyPI 
 ### Key Updates
 
 - **Official Docker Image:** Context Portal MCP is now available as an official Docker image on Docker Hub (`greatscottymac/context-portal-mcp`). This provides a streamlined way to deploy and run ConPort without needing to manage Python environments directly.
-  - Updated [`README.md`](README.md) with comprehensive instructions on how to pull and run the Docker image, including direct `docker run` commands and recommended MCP client configurations for seamless IDE integration.
-  - Added a new section to [`CONTRIBUTING.md`](CONTRIBUTING.md) detailing the process for building and publishing Docker images for contributors.
+  - Updated `README.md` with comprehensive instructions on how to pull and run the Docker image, including direct `docker run` commands and recommended MCP client configurations for seamless IDE integration.
+  - Added a new section to `CONTRIBUTING.md` detailing the process for building and publishing Docker images for contributors.
 
 - **PyPI Package Improvements:**
   - The `context-portal-mcp` PyPI package has been updated to version `0.2.5`.
@@ -304,11 +304,11 @@ This release focuses on improving the stability, reliability, and user experienc
   - Corrected Alembic `script_location` in `alembic.ini` and ensured all necessary Alembic configuration files are correctly bundled within the PyPI package. This significantly improves the robustness of database migrations for new installations and updates.
   - Verified successful data import and custom data handling after fresh database migrations.
 - **Updated and Clarified Documentation:**
-  - Revised [`README.md`](README.md) and [`v0.2.3_UPDATE_GUIDE.md`](v0.2.3_UPDATE_GUIDE.md) to provide the most accurate and up-to-date instructions.
+  - Revised `README.md` and `v0.2.3_UPDATE_GUIDE.md` to provide the most accurate and up-to-date instructions.
   - Updated `uv` commands in the documentation to `uv pip install` and `uv pip uninstall` for correct usage.
   - Clarified Alembic setup, `workspace_id` usage, and requirements for custom data values to be valid JSON.
 
-We recommend all users update to `v0.2.3` for these critical improvements. Please refer to the [v0.2.3_UPDATE_GUIDE.md](v0.2.3_UPDATE_GUIDE.md) for detailed update instructions.
+We recommend all users update to `v0.2.3` for these critical improvements. Please refer to `v0.2.3_UPDATE_GUIDE.md` for detailed update instructions.
 
 <br>
 
