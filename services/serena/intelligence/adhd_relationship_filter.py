@@ -798,14 +798,6 @@ class ADHDRelationshipFilter:
 
         return recommendations
 
-    # Placeholder implementations for complex operations
-    def _assess_cognitive_fatigue(self, context: NavigationContext, profile: PersonalLearningProfile) -> float:
-        """Assess cognitive fatigue level."""
-        # Simplified implementation
-        duration_factor = context.session_duration_minutes / profile.average_attention_span_minutes
-        return min(1.0, max(0.0, duration_factor - 0.5))
-
-
 # Convenience functions
 async def create_adhd_relationship_filter(
     profile_manager: PersonalLearningProfileManager,
