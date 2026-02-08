@@ -5,13 +5,18 @@ Production-quality test fixtures and configuration for comprehensive testing.
 """
 
 import asyncio
+import logging
 import os
-import pytest
-import pytest_asyncio
-from typing import AsyncGenerator, Generator, Dict, Any
-from unittest.mock import AsyncMock, MagicMock
 import tempfile
 import shutil
+from pathlib import Path
+from typing import AsyncGenerator, Generator, Dict, Any, Optional
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
+import pytest_asyncio
+
+logger = logging.getLogger(__name__)
 
 # Test database configuration
 TEST_DATABASE_URL = os.getenv(
@@ -27,6 +32,77 @@ TEST_SETTINGS = {
     "debug": True,
     "testing": True
 }
+
+
+def _runtime_test_database_url() -> str:
+    """Read the current test DB URL (supports runtime override by fixtures)."""
+    return os.getenv("TEST_DATABASE_URL", TEST_DATABASE_URL)
+
+
+def _to_asyncpg_url(database_url: str) -> str:
+    """Normalize database URL for SQLAlchemy async engine."""
+    if database_url.startswith("postgresql+asyncpg://"):
+        return database_url
+    return database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+
+def _to_sync_pg_url(database_url: str) -> str:
+    """Normalize database URL for Alembic migrations."""
+    return database_url.replace("postgresql+asyncpg://", "postgresql://", 1)
+
+
+def _find_alembic_ini(service_root: Path) -> Optional[Path]:
+    """Locate Alembic config file if present."""
+    candidates = (
+        service_root / "alembic.ini",
+        service_root.parent / "alembic.ini",
+        service_root.parent.parent / "alembic.ini",
+    )
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def _find_migration_dir(service_root: Path) -> Optional[Path]:
+    """Locate migration script directory if present."""
+    candidates = (
+        service_root / "migrations",
+        service_root / "alembic",
+        service_root / "db" / "migrations",
+    )
+    for candidate in candidates:
+        if (candidate / "env.py").exists():
+            return candidate
+    return None
+
+
+async def _run_alembic_migrations_if_available(database_url: str) -> None:
+    """
+    Run Alembic upgrades for tests when migration assets exist.
+
+    No-op when Alembic config/scripts are absent.
+    """
+    service_root = Path(__file__).resolve().parents[1]
+    alembic_ini = _find_alembic_ini(service_root)
+    migration_dir = _find_migration_dir(service_root)
+
+    if alembic_ini is None and migration_dir is None:
+        return
+
+    try:
+        from alembic import command
+        from alembic.config import Config
+    except ImportError:
+        logger.warning("Alembic is not installed; skipping migration execution in test fixture")
+        return
+
+    config = Config(str(alembic_ini)) if alembic_ini else Config()
+    if migration_dir is not None:
+        config.set_main_option("script_location", str(migration_dir))
+    config.set_main_option("sqlalchemy.url", _to_sync_pg_url(database_url))
+
+    await asyncio.to_thread(command.upgrade, config, "head")
 
 @pytest.fixture(scope="session")
 def event_loop():
@@ -84,8 +160,9 @@ async def db_session(database_container):
     from sqlalchemy.orm import sessionmaker
 
     # Create async engine for testing
+    database_url = _runtime_test_database_url()
     engine = create_async_engine(
-        TEST_DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"),
+        _to_asyncpg_url(database_url),
         echo=False,
         pool_pre_ping=True
     )
@@ -120,8 +197,7 @@ async def clean_db(db_session):
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-    # Run migrations if needed
-    # TODO: Add alembic migration execution here
+    await _run_alembic_migrations_if_available(str(db_session.bind.url))
 
     yield db_session
 
@@ -134,6 +210,7 @@ def mock_user_data() -> Dict[str, Any]:
         "id": 1,
         "email": "test@example.com",
         "username": "testuser",
+        "password": "SecurePass123!",
         "password_hash": "hashed_password",
         "is_active": True,
         "created_at": "2024-01-01T00:00:00Z",
