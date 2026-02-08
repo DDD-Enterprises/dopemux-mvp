@@ -30,7 +30,7 @@ def git_repo_with_worktrees():
         main_path.mkdir()
 
         # Initialize git repo
-        subprocess.run(["git", "init"], cwd=main_path, check=True, capture_output=True)
+        subprocess.run(["git", "init", "-b", "main"], cwd=main_path, check=True, capture_output=True)
         subprocess.run(
             ["git", "config", "user.name", "Test User"],
             cwd=main_path,

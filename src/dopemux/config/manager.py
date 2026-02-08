@@ -552,20 +552,18 @@ class ConfigManager:
             },
             "pal": {
                 "enabled": True,
-                "command": "uvx",
+                "command": "uv",
                 "args": [
-                    "--from",
-                    "git+https://github.com/BeehiveInnovations/pal-mcp-server.git",
-                    "pal-mcp-server",
+                    "run",
+                    "--directory",
+                    "/Users/hue/code/dopemux-mvp/docker/mcp-servers/pal/pal-mcp-server",
+                    "python",
+                    "server.py"
                 ],
                 "env": {
-                    "OPENAI_API_KEY": "${OPENAI_API_KEY}",
-                    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
-                    "GEMINI_API_KEY": "${GEMINI_API_KEY}",
-                    "XAI_API_KEY": "${XAI_API_KEY}",
                     "DISABLED_TOOLS": "refactor,testgen,secaudit,docgen,tracer",
                     "DEFAULT_MODEL": "auto",
-                    "PAL_DEFAULT_PROVIDER": "openrouter",
+                    "PAL_DEFAULT_PROVIDER": "openrouter"
                 },
                 "timeout": 30,
                 "auto_restart": True,

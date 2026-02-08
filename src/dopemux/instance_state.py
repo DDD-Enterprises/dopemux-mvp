@@ -10,11 +10,16 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, List
 import json
+import os
+import socket
+from urllib.parse import urlparse
 import asyncio
 import aiohttp
 import logging
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_CONPORT_PORT = 3007
 
 
 @dataclass
@@ -57,11 +62,16 @@ class InstanceState:
             if isinstance(s, str):
                 s2 = s.replace('Z', '+00:00')
                 try:
-                    return datetime.fromisoformat(s2)
+                    dt = datetime.fromisoformat(s2)
                 except Exception as e:
                     # Fallback to naive parse
-                    return datetime.strptime(s.split('.')[0], '%Y-%m-%dT%H:%M:%S')
-            return datetime.now(timezone.utc)
+                    dt = datetime.strptime(s.split('.')[0], '%Y-%m-%dT%H:%M:%S')
+            else:
+                dt = datetime.now(timezone.utc)
+
+            if dt.tzinfo is None:
+                return dt.replace(tzinfo=timezone.utc)
+            return dt.astimezone(timezone.utc)
 
         data['created_at'] = _parse_iso(data['created_at'])
         data['last_active'] = _parse_iso(data['last_active'])
@@ -340,16 +350,21 @@ class InstanceStateManager:
         # Get all orphaned instances
         orphaned = await self.find_orphaned_instances()
 
+        def _as_utc(dt: datetime) -> datetime:
+            if dt.tzinfo is None:
+                return dt.replace(tzinfo=timezone.utc)
+            return dt.astimezone(timezone.utc)
+
         # Filter by age
         cutoff_date = datetime.now(timezone.utc) - timedelta(days=max_age_days)
         filtered = [
             state for state in orphaned
-            if state.last_active >= cutoff_date
+            if _as_utc(state.last_active) >= cutoff_date
         ]
 
         # Sort by most recent first if requested
         if sort_by_recent:
-            filtered.sort(key=lambda s: s.last_active, reverse=True)
+            filtered.sort(key=lambda s: _as_utc(s.last_active), reverse=True)
 
         # Limit count
         return filtered[:limit]
@@ -396,12 +411,90 @@ class InstanceStateManager:
             return False
 
 
+def _safe_int(value: Optional[str]) -> Optional[int]:
+    """Best-effort integer parsing."""
+    if value is None:
+        return None
+    try:
+        return int(value.strip())
+    except (ValueError, AttributeError):
+        return None
+
+
+def _port_is_listening(port: int, host: str = "127.0.0.1", timeout: float = 0.35) -> bool:
+    """Check whether a port is open on localhost (best-effort, non-fatal)."""
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def resolve_conport_port(port: Optional[int] = None) -> int:
+    """
+    Resolve the ConPort HTTP port with graceful fallbacks.
+
+    Order of precedence:
+        1. Explicit argument
+        2. DOPEMUX_CONPORT_PORT / CONPORT_PORT environment overrides
+        3. Port extracted from CONPORT_URL
+        4. DOPEMUX_PORT_BASE + 7 (per-instance mapping)
+        5. Preferred defaults (3007, then 3004 legacy)
+
+    If multiple candidates are available, the resolver probes localhost
+    to pick whichever port is actively listening to minimize user setup.
+    """
+    candidates: List[int] = []
+    seen: set[int] = set()
+
+    def add_candidate(value: Optional[int]) -> None:
+        if value is None or value <= 0:
+            return
+        if value not in seen:
+            candidates.append(value)
+            seen.add(value)
+
+    add_candidate(port)
+    add_candidate(_safe_int(os.getenv("DOPEMUX_CONPORT_PORT")))
+    add_candidate(_safe_int(os.getenv("CONPORT_PORT")))
+
+    url_host: Optional[str] = None
+    url_value = os.getenv("CONPORT_URL")
+    if url_value:
+        try:
+            parsed = urlparse(url_value)
+            if parsed.port:
+                add_candidate(parsed.port)
+            url_host = parsed.hostname
+        except Exception:
+            pass
+
+    base_port = _safe_int(os.getenv("DOPEMUX_PORT_BASE"))
+    if base_port:
+        add_candidate(base_port + 7)
+
+    add_candidate(DEFAULT_CONPORT_PORT)
+    add_candidate(3004)  # Legacy default
+
+    if not candidates:
+        candidates.append(DEFAULT_CONPORT_PORT)
+
+    can_probe_local = url_host in (None, "", "localhost", "127.0.0.1")
+    if can_probe_local:
+        for candidate in candidates:
+            if _port_is_listening(candidate):
+                return candidate
+
+    # Fallback: return first candidate even if nothing is reachable
+    return candidates[0]
+
+
 # Synchronous wrapper functions for CLI usage
 
 def save_instance_state_sync(
     state: InstanceState,
     workspace_id: str,
-    conport_port: int = 3004
+    conport_port: Optional[int] = None
 ) -> bool:
     """
     Synchronous wrapper for save_instance_state.
@@ -414,7 +507,8 @@ def save_instance_state_sync(
     Returns:
         True if saved successfully, False otherwise
     """
-    manager = InstanceStateManager(workspace_id, conport_port)
+    resolved_port = resolve_conport_port(conport_port)
+    manager = InstanceStateManager(workspace_id, resolved_port)
     try:
         return asyncio.run(manager.save_instance_state(state))
     finally:
@@ -424,7 +518,7 @@ def save_instance_state_sync(
 def load_instance_state_sync(
     instance_id: str,
     workspace_id: str,
-    conport_port: int = 3004
+    conport_port: Optional[int] = None
 ) -> Optional[InstanceState]:
     """
     Synchronous wrapper for load_instance_state.
@@ -437,7 +531,8 @@ def load_instance_state_sync(
     Returns:
         InstanceState if found, None otherwise
     """
-    manager = InstanceStateManager(workspace_id, conport_port)
+    resolved_port = resolve_conport_port(conport_port)
+    manager = InstanceStateManager(workspace_id, resolved_port)
     try:
         return asyncio.run(manager.load_instance_state(instance_id))
     finally:
@@ -446,7 +541,7 @@ def load_instance_state_sync(
 
 def list_all_instance_states_sync(
     workspace_id: str,
-    conport_port: int = 3004
+    conport_port: Optional[int] = None
 ) -> List[InstanceState]:
     """
     Synchronous wrapper for list_all_instance_states.
@@ -458,7 +553,8 @@ def list_all_instance_states_sync(
     Returns:
         List of all InstanceState objects
     """
-    manager = InstanceStateManager(workspace_id, conport_port)
+    resolved_port = resolve_conport_port(conport_port)
+    manager = InstanceStateManager(workspace_id, resolved_port)
     try:
         return asyncio.run(manager.list_all_instance_states())
     finally:
@@ -468,7 +564,7 @@ def list_all_instance_states_sync(
 def cleanup_instance_state_sync(
     instance_id: str,
     workspace_id: str,
-    conport_port: int = 3004
+    conport_port: Optional[int] = None
 ) -> bool:
     """
     Synchronous wrapper for cleanup_instance_state.
@@ -481,7 +577,8 @@ def cleanup_instance_state_sync(
     Returns:
         True if cleaned successfully, False otherwise
     """
-    manager = InstanceStateManager(workspace_id, conport_port)
+    resolved_port = resolve_conport_port(conport_port)
+    manager = InstanceStateManager(workspace_id, resolved_port)
     try:
         return asyncio.run(manager.cleanup_instance_state(instance_id))
     finally:

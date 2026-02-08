@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import List, Optional
 import subprocess
 import asyncio
+import inspect
 import logging
 
 from .instance_state import InstanceState, InstanceStateManager
@@ -129,20 +130,20 @@ class WorktreeRecoveryMenu:
         if not options:
             return
 
-        logger.info("\n" + "=" * 70)
-        logger.info("🔄 Found orphaned worktree sessions - would you like to recover one?")
-        logger.info("=" * 70)
+        print("\n" + "=" * 70)
+        print("🔄 Found orphaned worktree sessions - would you like to recover one?")
+        print("=" * 70)
 
         for opt in options:
-            logger.info(opt.format_menu_line())
+            print(opt.format_menu_line())
 
-        logger.info(f"\n  0. 🏠 Stay in main worktree (default after {self.timeout_seconds}s; press Enter)")
+        print(f"\n  0. 🏠 Stay in main worktree (default after {self.timeout_seconds}s; press Enter)")
 
         if has_more:
-            logger.info("  a. 📋 Show all recoverable sessions")
+            print("  a. 📋 Show all recoverable sessions")
 
-        logger.info("\n" + "=" * 70)
-        logger.info("💡 Tip: Choose a session to restore context and continue where you left off")
+        print("\n" + "=" * 70)
+        print("💡 Tip: Choose a session to restore context and continue where you left off")
 
     async def get_user_input_async(self, prompt: str, timeout: int) -> Optional[str]:
         """
@@ -458,6 +459,10 @@ def show_recovery_menu_sync(
             return await menu.show_recovery_menu()
         finally:
             # Ensure aiohttp session is closed
-            await menu.manager._close_session()
+            close_session = getattr(menu.manager, "_close_session", None)
+            if close_session:
+                maybe_awaitable = close_session()
+                if inspect.isawaitable(maybe_awaitable):
+                    await maybe_awaitable
 
     return asyncio.run(_run_with_cleanup())

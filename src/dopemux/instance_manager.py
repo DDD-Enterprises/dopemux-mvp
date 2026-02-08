@@ -450,7 +450,7 @@ def detect_instances_sync(workspace_root: Path) -> List[RunningInstance]:
 def detect_orphaned_instances_sync(
     workspace_root: Path,
     workspace_id: str,
-    conport_port: int = 3007
+    conport_port: Optional[int] = None
 ) -> List[dict]:
     """
     Detect orphaned instances (crashed with worktrees still existing).
@@ -473,15 +473,18 @@ def detect_orphaned_instances_sync(
     """
     from .instance_state import (
         list_all_instance_states_sync,
-        save_instance_state_sync
+        save_instance_state_sync,
+        resolve_conport_port,
     )
+
+    resolved_port = resolve_conport_port(conport_port)
 
     # Get running instances via health probes
     running_instances = detect_instances_sync(workspace_root)
     running_ids = {inst.instance_id for inst in running_instances}
 
     # Get all saved states from ConPort
-    all_states = list_all_instance_states_sync(workspace_id, conport_port)
+    all_states = list_all_instance_states_sync(workspace_id, resolved_port)
 
     # Find orphaned: saved as active but not actually running
     orphaned = []
@@ -501,7 +504,7 @@ def detect_orphaned_instances_sync(
 
         # Mark as orphaned in ConPort
         state.status = 'orphaned'
-        save_instance_state_sync(state, workspace_id, conport_port)
+        save_instance_state_sync(state, workspace_id, resolved_port)
 
         # Add to orphaned list
         orphaned.append({
