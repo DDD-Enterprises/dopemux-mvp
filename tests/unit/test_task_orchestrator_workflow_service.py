@@ -6,8 +6,10 @@ import pytest
 
 
 SERVICE_ROOT = Path(__file__).resolve().parents[2] / "services" / "task-orchestrator"
-if str(SERVICE_ROOT) not in sys.path:
-    sys.path.insert(0, str(SERVICE_ROOT))
+SERVICE_ROOT_STR = str(SERVICE_ROOT)
+if SERVICE_ROOT_STR in sys.path:
+    sys.path.remove(SERVICE_ROOT_STR)
+sys.path.insert(0, SERVICE_ROOT_STR)
 
 # Prevent cross-test module collisions from other services that also expose
 # a top-level `app.py` module on sys.path.
